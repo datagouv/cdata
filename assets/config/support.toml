@@ -3,187 +3,132 @@ title = "Comment pouvons-nous vous aider ?"
 [[choices]]
 label = "💁🏻‍♀️ J'ai une question"
 id = "help"
+title = "Votre question porte sur ?"
 
-  [choices.link]
-  title = "Votre question porte sur ?"
+  [[choices.choices]]
+  label = "Des données en particulier"
+  id = "dataset"
+  title = "Sur quelles données avez vous des questions ?"
+    [[choices.choices.choices]]
+    label = "Associations (RNA)"
+    id = "rna"
+    answer = "answers/numero_rna.md"
 
-    [[choices.link.choices]]
-    label = "Des données en particulier"
-    id = "dataset"
+    [[choices.choices.choices]]
+    label = "Personnes décédées"
+    id = "deces"
+    answer = "answers/deces.md"
 
-      [choices.link.choices.link]
-      title = "Sur quelles données avez vous des questions ?"
+    [[choices.choices.choices]]
+    label = "Formation"
+    id = "formation"
+    answer = "answers/formation.md"
 
-        [[choices.link.choices.link.choices]]
-        label = "Associations (RNA)"
-        id = "rna"
+    [[choices.choices.choices]]
+    label = "SIREN & SIRET"
+    id = "siret"
+    answer = "answers/siret.md"
 
-          [choices.link.choices.link.choices.link]
-          path = "answers/numero_rna.md"
+    [[choices.choices.choices]]
+    label = "Immobilier (DVF)"
+    id = "dvf"
+    answer = "answers/dvf.md"
 
-        [[choices.link.choices.link.choices]]
-        label = "Personnes décédées"
-        id = "deces"
+    [[choices.choices.choices]]
+    label = "Base Adresse Nationale (BAN)"
+    id = "ban"
+    answer = "answers/ban.md"
 
-          [choices.link.choices.link.choices.link]
-          path = "answers/deces.md"
+    [[choices.choices.choices]]
+    label = "API découpage administratif"
+    id = "decoupage"
+    answer = "answers/decoupe.md"  
 
-        [[choices.link.choices.link.choices]]
-        label = "Formation"
-        id = "formation"
+    [[choices.choices.choices]]
+    label = "IRVE"
+    id = "irve"
+    answer = "answers/irve.md"
+      
+    [[choices.choices.choices]]
+    label = "Données géographiques"
+    id = "geo"
+    title = "Que souhaitez-vous nous dire ?"
+    recipient = "geo@data.gouv.fr"
+      
+    [[choices.choices.choices]]
+    label = "Autre"
+    id = "other"
+    answer = "answers/question_donnees.md"
 
-          [choices.link.choices.link.choices.link]
-          path = "answers/formation.md"
+  [[choices.choices]]
+  label = "Une API"
+  id = "api"
+  title = "Comment pouvons-nous vous aider ?"
+    [[choices.choices.choices]]
+    label = "Demande d'information sur une API spécifique"
+    id = "apispecifique"
+    answer = "answers/api_api-specifique.md"
 
-        [[choices.link.choices.link.choices]]
-        label = "SIREN & SIRET"
-        id = "siret"
+    [[choices.choices.choices]]
+    label = "API non-référencée dans le catalogue"
+    id = "apinonreferencee"
+    answer = "answers/api_recherche-api-non-referencee.md"
 
-          [choices.link.choices.link.choices.link]
-          path = "answers/siret.md"
+    [[choices.choices.choices]]
+    label = "Référencer une API"
+    id = "referencerapi"
+    answer = "answers/api_referencer-api.md"
 
-        [[choices.link.choices.link.choices]]
-        label = "Immobilier (DVF)"
-        id = "dvf"
+    [[choices.choices.choices]]
+    label = "API en accès restreint"
+    id = "apiaccesrestreint"
+    answer = "answers/api_api-acces-restreint.md"
 
-          [choices.link.choices.link.choices.link]
-          path = "answers/dvf.md"
+    [[choices.choices.choices]]
+    label = "Autre"
+    id = "apiother"
+    answer = "answers/api_other.md"
 
-        [[choices.link.choices.link.choices]]
-        label = "Base Adresse Nationale (BAN)"
-        id = "ban"
+  [[choices.choices]]
+  label = "Une procédure administrative"
+  id = "admin"
+  answer = "answers/demarches_admin.md"
 
-          [choices.link.choices.link.choices.link]
-          path = "answers/ban.md"
-
-        [[choices.link.choices.link.choices]]
-        label = "API découpage administratif"
-        id = "decoupage"
-
-          [choices.link.choices.link.choices.link]
-          path = "answers/decoupe.md"
-
-        [[choices.link.choices.link.choices]]
-        label = "IRVE"
-        id = "irve"
-
-          [choices.link.choices.link.choices.link]
-          path = "answers/irve.md"
-
-        [[choices.link.choices.link.choices]]
-        label = "Données géographiques"
-        id = "geo"
-
-          [choices.link.choices.link.choices.link.form]
-          title = "Que souhaitez-vous nous dire ?"
-          recipient = "geo@data.gouv.fr"
-
-        [[choices.link.choices.link.choices]]
-        label = "Autre"
-        id = "other"
-
-          [choices.link.choices.link.choices.link]
-          path = "answers/question_donnees.md"
-
-    [[choices.link.choices]]
-    label = "Une API"
-    id = "api"
-
-      [choices.link.choices.link]
-      title = "Comment pouvons-nous vous aider ?"
-
-        [[choices.link.choices.link.choices]]
-        label = "Demande d'information sur une API spécifique"
-        id = "apispecifique"
-
-          [choices.link.choices.link.choices.link]
-          path = "answers/api_api-specifique.md"
-
-        [[choices.link.choices.link.choices]]
-        label = "API non-référencée dans le catalogue"
-        id = "apinonreferencee"
-
-          [choices.link.choices.link.choices.link]
-          path = "answers/api_recherche-api-non-referencee.md"
-
-        [[choices.link.choices.link.choices]]
-        label = "Référencer une API"
-        id = "referencerapi"
-
-          [choices.link.choices.link.choices.link]
-          path = "answers/api_referencer-api.md"
-
-        [[choices.link.choices.link.choices]]
-        label = "API en accès restreint"
-        id = "apiaccesrestreint"
-
-          [choices.link.choices.link.choices.link]
-          path = "answers/api_api-acces-restreint.md"
-
-        [[choices.link.choices.link.choices]]
-        label = "Autre"
-        id = "apiother"
-
-          [choices.link.choices.link.choices.link]
-          path = "answers/api_other.md"
-
-    [[choices.link.choices]]
-    label = "Une procédure administrative"
-    id = "admin"
-
-      [choices.link.choices.link]
-      path = "answers/demarches_admin.md"
-
-    [[choices.link.choices]]
+  [[choices.choices]]
     label = "L'utilisation de data.gouv.fr"
     id = "datagouv"
+    title = "Comment pouvons-nous vous aider ?"
+      [[choices.choices.choices]]
+      label = "Faire certifier son organisation"
+      id = "certification"
+      title = "Pensez à nous envoyer un lien vers votre organisation ?"
+      recipient = "certification@data.gouv.fr"
 
-      [choices.link.choices.link]
-      title = "Comment pouvons-nous vous aider ?"
+      [[choices.choices.choices]]
+      label = "Référencer ou moissonner ses données sur data.gouv.fr"
+      id = "moissonnage"
+      title = "Que souhaitez-vous nous dire ?"
+      recipient = "moissonnage@data.gouv.fr"
 
-        [[choices.link.choices.link.choices]]
-        label = "Faire certifier son organisation"
-        id = "certification"
-
-          [choices.link.choices.link.choices.link.form]
-          title = "Pensez à nous envoyer un lien vers votre organisation ?"
-          recipient = "certification@data.gouv.fr"
-
-        [[choices.link.choices.link.choices]]
-        label = "Référencer ou moissonner ses données sur data.gouv.fr"
-        id = "moissonnage"
-
-          [choices.link.choices.link.choices.link.form]
-          title = "Que souhaitez-vous nous dire ?"
-          recipient = "moissonnage@data.gouv.fr"
-
-        [[choices.link.choices.link.choices]]
-        label = "Autre"
-        id = "autre"
-
-          [choices.link.choices.link.choices.link.form]
-          title = "Que souhaitez-vous nous dire ?"
-          recipient = "support@data.gouv.fr"
+      [[choices.choices.choices]]
+      label = "Autre"
+      id = "autre"
+      title = "Que souhaitez-vous nous dire ?"
+      recipient = "support@data.gouv.fr"  
 
 [[choices]]
 label = "💡 Demande de données"
 id = "opendata"
-
-  [choices.link]
-  path = "answers/demande_donnees.md"
+answer = "answers/demande_donnees.md"
 
 [[choices]]
 label = "🐛 Soumettre un bug"
 id = "bug"
-
-  [choices.link.form]
-  title = "Quel problème rencontrez-vous ?"
-  recipient = "support@data.gouv.fr"
+title = "Quel problème rencontrez-vous ?"
+recipient = "support@data.gouv.fr"
 
 [[choices]]
 label = "💬 Faire un retour sur data.gouv.fr"
 id = "feedback"
-
-  [choices.link.form]
-  title = "Que souhaitez-vous nous dire ?"
-  recipient = "support@data.gouv.fr"
+title = "Que souhaitez-vous nous dire ?"
+recipient = "support@data.gouv.fr"
