@@ -73,24 +73,27 @@
           v-else
           class="fr-grid-row fr-grid-row--middle no-wrap wrap-md"
         >
+          <p
+            v-if="showEditAndWarning"
+            class="fr-col-auto fr-mr-1w fr-m-0"
+          >
+            <FileEditModal
+              :resource="resourceForm"
+              button-color="secondary"
+              button-size="sm"
+              @submit="save"
+            />
+          </p>
           <p class="fr-col-auto fr-m-0">
             <BrandedButton
               color="secondary"
               :icon="RiDeleteBinLine"
               icon-only
+              size="sm"
               @click="$emit('delete')"
             >
               {{ $t("Remove file") }}
             </BrandedButton>
-          </p>
-          <p
-            v-if="showEditAndWarning"
-            class="fr-col-auto fr-ml-1w fr-m-0"
-          >
-            <FileEditModal
-              :resource="resourceForm"
-              @submit="save"
-            />
           </p>
         </div>
       </div>
