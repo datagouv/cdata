@@ -1,4 +1,5 @@
 title = "Comment pouvons-nous vous aider ?"
+id = 'how-to-help'
 
 [[choices]]
 label = "💁🏻‍♀️ J'ai une question"

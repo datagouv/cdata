@@ -2,23 +2,15 @@
   <div>
     <div class="container">
       <Breadcrumb>
-        <li>
-          <NuxtLinkLocale
-            class="fr-breadcrumb__link"
-            :external="true"
-            to="/"
-          >
-            {{ $t('Home') }}
-          </NuxtLinkLocale>
-        </li>
-        <li>
-          <a
-            class="fr-breadcrumb__link"
-            aria-current="page"
-          >
-            {{ $t('Posts') }}
-          </a>
-        </li>
+        <BreadcrumbItem
+          :external="true"
+          to="/"
+        >
+          {{ $t('Home') }}
+        </BreadcrumbItem>
+        <BreadcrumbItem>
+          {{ $t('Posts') }}
+        </BreadcrumbItem>
       </Breadcrumb>
     </div>
     <div class="border-b border-gray-lowest">
@@ -51,6 +43,7 @@
 <script setup lang="ts">
 import { Pagination } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 
