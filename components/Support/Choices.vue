@@ -10,21 +10,61 @@
     @keydown.enter.prevent="$emit('select', active)"
     @focusout="focusOut"
   >
-    <SupportChoice
-      v-for="choice in question.choices"
-      :key="choice.id"
-      :active="isActive(choice.id)"
-      :selected="choice.id === selected"
-      @select="$emit('select', choice.id)"
-    >
-      {{ choice.label }}
-    </SupportChoice>
+    <template v-if="'choices' in question">
+      <SupportChoice
+        v-for="choice in question.choices"
+        :key="choice.id"
+        :active="isActive(choice.id)"
+        :selected="choice.id === selected"
+        @select="$emit('select', choice.id)"
+      >
+        {{ choice.label }}
+      </SupportChoice>
+    </template>
+    <template v-else-if="'recipient' in question">
+      <form
+        class="w-4xl"
+        @submit="submit(question)"
+      >
+        <InputGroup
+          v-model="form.email"
+          label="Votre adresse email"
+          type="email"
+          :required="true"
+          :has-error="!!getFirstError('email')"
+          :error-text="getFirstError('email')"
+          @input="touch('email')"
+        />
+        <InputGroup
+          v-model="form.subject"
+          label="Le sujet de votre question"
+          type="text"
+          :required="true"
+          :has-error="!!getFirstError('subject')"
+          :error-text="getFirstError('subject')"
+          @input="touch('subject')"
+        />
+        <InputGroup
+          v-model="form.body"
+          label="Votre question"
+          type="textarea"
+          :required="true"
+          :has-error="!!getFirstError('body')"
+          :error-text="getFirstError('body')"
+          @input="touch('body')"
+        />
+        <BrandedButton type="submit">
+          Envoyer
+        </BrandedButton>
+      </form>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
+import { BrandedButton } from '@datagouv/components-next'
 import useActiveDescendant from '~/datagouv-components/src/composables/useActiveDescendant'
-import type { Question } from '~/types/support'
+import type { Question, QuestionWithRecipient } from '~/types/support'
 
 defineEmits<{
   select: [id: string | undefined]
@@ -35,5 +75,22 @@ const props = defineProps<{
   selected: string | undefined
 }>()
 
-const { isActive, active, focusOut, handleKeyPressForActiveDescendant } = useActiveDescendant(props.question.choices, 'horizontal')
+const { isActive, active, focusOut, handleKeyPressForActiveDescendant } = useActiveDescendant('choices' in props.question ? props.question.choices : [], 'horizontal')
+
+const { form, touch, getFirstError, validate } = useForm({
+  email: '',
+  subject: '',
+  body: '',
+}, {
+  email: [required(), email()],
+  subject: [required()],
+  body: [required()],
+}, {
+})
+
+function submit(question: QuestionWithRecipient) {
+  if (!validate()) {
+    return
+  }
+}
 </script>
