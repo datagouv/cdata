@@ -138,7 +138,6 @@ onMounted(() => {
 })
 
 const submit = (close: () => void) => {
-  console.log('file edit modal submit')
   emit('submit', close, resourceForm.value)
 }
 const cancel = (close: () => void) => {

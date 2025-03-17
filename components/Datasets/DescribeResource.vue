@@ -357,9 +357,7 @@ const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extens
 const { data: schemas } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/')
 
 const submit = () => {
-  console.log('describe resource submit')
   if (validate()) {
-    console.log('Describe resource validated')
     if (newFile.value) {
       if (form.value.filetype !== 'file') throw new Error('Cannot update file of not local file')
 

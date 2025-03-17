@@ -17,9 +17,9 @@
       :current-step
     />
 
-    <DescribePost
+    <DescribeResource
       v-if="currentStep === 1"
-      :post="postForm"
+      v-model="resourceForm"
       type="create"
       :submit-label="t('Next')"
       @submit="postNext"
@@ -38,7 +38,7 @@
 <script setup lang="ts">
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import DescribePost from '~/components/Posts/DescribePost.vue'
+import DescribeResource from '~/components/Datasets/DescribeResource.vue'
 import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { Post, PostForm } from '~/types/posts'
@@ -95,8 +95,7 @@ function moveToStep(step: number) {
   return navigateTo({ path: route.path, query: { ...route.query, step } })
 }
 
-function postNext(form: PostForm) {
-  postForm.value = form
+function postNext() {
   moveToStep(2)
 }
 
