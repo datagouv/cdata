@@ -87,7 +87,7 @@ const url = computed(() => `/api/1/posts/${route.params.id}/`)
 const { data: post } = await useAPI<Post>(url)
 
 useSeoMeta({
-  title: post.value.name,
-  robots: !post.value.published ? 'noindex, nofollow' : 'all',
+  title: () => post.value ? post.value.name : '',
+  robots: () => (!post.value || !post.value.published) ? 'noindex, nofollow' : 'all',
 })
 </script>

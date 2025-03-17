@@ -20,35 +20,31 @@
     <DescribeResource
       v-if="currentStep === 1"
       v-model="resourceForm"
-      type="create"
+      type="create-community"
       :submit-label="t('Next')"
       @submit="postNext"
-    />
-    <PostContentForm
-      v-if="currentStep === 2"
-      :post="postForm"
-      type="create"
-      :submit-label="t('Save')"
-      @submit="save"
-    />
+    >
+      <div class="flex justify-end">
+        <BrandedButton type="submit">
+          {{ $t('Save') }}
+        </BrandedButton>
+      </div>
+    </DescribeResource>
     <div class="h-64" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { BrandedButton, type Dataset, type DatasetV2 } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import DescribeResource from '~/components/Datasets/DescribeResource.vue'
 import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
-import type { Post, PostForm } from '~/types/posts'
-import { toApi } from '~/utils/posts'
+import type { DatasetSuggest, ResourceForm } from '~/types/types'
 
 const { t } = useI18n()
 const route = useRoute()
-const localePath = useLocalePath()
-const { $api, $fileApi } = useNuxtApp()
-const me = useMe()
 
 const steps = computed(() => [
   t('Describe your community resource'),
@@ -57,36 +53,24 @@ const steps = computed(() => [
 
 const POST_FORM_STATE = 'post-form'
 
-const postForm = useState<PostForm>(POST_FORM_STATE, () => ({
-  name: '',
-  body_type: 'markdown',
-  content: '',
-  credit_to: '',
-  credit_url: '',
-  headline: '',
-  published: null,
-  owner: me.value,
-  tags: [],
-  image: null,
-} satisfies PostForm))
-
-const POST_LOADING_STATE = 'post-loading'
-
-const newPost = useState<Post | null>(
-  'new-post',
-  () => null,
-)
-
-const loading = useState<boolean>(
-  POST_LOADING_STATE,
-  () => false,
-)
+const resourceForm = useState<ResourceForm>(POST_FORM_STATE, () => ({
+  owned: null,
+  resource: null,
+  title: '',
+  type: 'main',
+  description: '',
+  schema: null,
+  filetype: null,
+  url: '',
+  mime: null,
+  format: null,
+} satisfies ResourceForm))
 
 const currentStep = computed(() => parseInt(route.query.step as string) || 1)
 const isCurrentStepValid = computed(() => {
   if (currentStep.value < 1) return false
   if (currentStep.value > steps.value.length) return false
-  if (currentStep.value === 2 && (!postForm.value || !postForm.value.name)) return false
+  // if (currentStep.value === 2 && (!postForm.value || !postForm.value.name)) return false
 
   return true
 })
@@ -95,31 +79,19 @@ function moveToStep(step: number) {
   return navigateTo({ path: route.path, query: { ...route.query, step } })
 }
 
-function postNext() {
-  moveToStep(2)
+function postNext(additionalData: { dataset: Dataset | DatasetV2 | DatasetSuggest | null }) {
+  if (!additionalData.dataset) throw new Error('create-community should always submit with a dataset')
+
+  save(additionalData.dataset)
+  // moveToStep(2)
 }
 
-async function save(form: { content: string }) {
+async function save(dataset: Dataset | DatasetV2 | DatasetSuggest) {
   try {
-    loading.value = true
-    postForm.value.content = form.content
-    newPost.value = await $api<Post>('/api/1/posts/', {
-      method: 'POST',
-      body: JSON.stringify(toApi(postForm.value)),
-    })
-
-    if (postForm.value.image && typeof postForm.value.image !== 'string') {
-      const formData = new FormData()
-      formData.set('file', postForm.value.image)
-      await $fileApi(`/api/1/posts/${newPost.value.id}/image/`, {
-        method: 'POST',
-        body: formData,
-      })
-    }
-    await navigateTo(localePath(`/beta/admin/posts/${newPost.value.id}`))
+    await saveResourceForm(dataset, resourceForm.value)
   }
   finally {
-    clearNuxtState(POST_LOADING_STATE)
+    // clearNuxtState(POST_LOADING_STATE)
   }
 }
 

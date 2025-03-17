@@ -2,7 +2,7 @@ import type { Dataset, DatasetV2, Frequency, License, RegisteredSchema, Resource
 import type { FetchError } from 'ofetch'
 import { v4 as uuidv4 } from 'uuid'
 
-import type { DatasetForm, FileInfo, NewDatasetForApi, ResourceForm, SpatialGranularity, SpatialZone } from '~/types/types'
+import type { DatasetForm, DatasetSuggest, FileInfo, NewDatasetForApi, ResourceForm, SpatialGranularity, SpatialZone } from '~/types/types'
 
 export function useResourceForm(file: MaybeRef<ResourceForm>) {
   const isRemote = computed(() => toValue(file).filetype === 'remote')
@@ -226,7 +226,7 @@ export async function sendFile(url: string, resourceForm: ResourceForm, fileInfo
   }
 }
 
-export function getResourcesUrls(dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource | CommunityResource | null): { metadataUrl: string, metadataMethod: 'POST' | 'PUT', uploadUrl: string } {
+export function getResourcesUrls(dataset: Dataset | DatasetV2 | DatasetSuggest | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource | CommunityResource | null): { metadataUrl: string, metadataMethod: 'POST' | 'PUT', uploadUrl: string } {
   if (resource) {
     if ('organization' in resource) {
       // Existing community resource
@@ -255,7 +255,7 @@ export function getResourcesUrls(dataset: Dataset | DatasetV2 | Omit<Dataset, 'r
   }
 }
 
-export async function saveResourceForm(dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resourceForm: ResourceForm) {
+export async function saveResourceForm(dataset: Dataset | DatasetV2 | DatasetSuggest | Omit<Dataset, 'resources' | 'community_resources'>, resourceForm: ResourceForm) {
   const { $api } = useNuxtApp()
 
   const { metadataUrl, metadataMethod, uploadUrl } = getResourcesUrls(dataset, resourceForm.resource)
@@ -312,7 +312,14 @@ export async function retry<T>(promise: () => Promise<T>, count: number): Promis
 }
 
 export function guessFormat(resourceForm: ResourceForm, extensions: Array<string>): string | null {
-  if (resourceForm.filetype === 'remote') return resourceForm.format.trim().toLowerCase()
+  if (resourceForm.filetype === 'remote') {
+    if (resourceForm.format) {
+      return resourceForm.format.trim().toLowerCase()
+    }
+    else {
+      return null
+    }
+  }
 
   if (resourceForm.resource && resourceForm.resource.format) {
     return resourceForm.resource.format.trim().toLowerCase()

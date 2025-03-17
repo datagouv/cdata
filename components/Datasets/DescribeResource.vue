@@ -1,36 +1,130 @@
 <template>
-  <form
-    :id="formId"
+  <FormWithAccordions
+    :form-info
+    :form-id
+    :no-margin="inModal"
     @submit.prevent="submit"
   >
-    <div class="flex">
-      <Sidemenu
-        class="w-5/12 hidden lg:block"
-        :button-text="$t('Help')"
-        :on-right="true"
-        :show-border="false"
+    <SimpleBanner
+      v-if="type === 'create-community'"
+      type="primary"
+      class="mb-4 flex items-center space-x-5"
+    >
+      <NuxtImg
+        src="/illustrations/truck.svg"
+        loading="lazy"
+        class="size-14 shrink-0"
+        alt=""
+      />
+      <div class="w-full">
+        <p class="font-bold mb-1">
+          {{ $t('What is a community resource?') }}
+        </p>
+        <p class="m-0 text-xs/5">
+          {{ $t('A community resource is content added by a user, a cross-referencing of data for example, to enrich or complete a public community resource.') }}
+        </p>
+      </div>
+    </SimpleBanner>
+
+    <RequiredExplanation />
+
+    <FormFieldset
+      v-if="type === 'create-community'"
+      :legend="$t('Producer')"
+    >
+      <FieldsetElement form-key="owned">
+        <ProducerSelect
+          v-model="form.owned"
+          :label="t('Check the identity with which you want to publish')"
+          :required="true"
+          :error-text="getFirstError('owned')"
+          :warning-text="getFirstWarning('owned')"
+        />
+      </FieldsetElement>
+    </FormFieldset>
+
+    <FormFieldset :legend="fileOrLinkLegend">
+      <FieldsetElement
+        v-if="form.filetype === 'file' || !form.filetype"
+        form-key="file"
       >
-        <template #title>
-          <span
-            class="fr-icon--sm fr-icon-question-line"
-            aria-hidden="true"
+        <div v-if="newFile">
+          <label
+            v-if="type === 'update'"
+            class="fr-label fr-mb-1w"
+          >
+            {{ $t('The current file will be replaced by') }}
+          </label>
+          <FileCard
+            v-if="newFile"
+            :model-value="{
+              owned: null,
+              filetype: 'file',
+              title: newFile.name,
+              type: 'main',
+              description: '',
+              schema: null,
+              file: {
+                raw: newFile,
+                state: { status: 'waiting' },
+              },
+              resource: null,
+            }"
+            class="fr-mb-3v"
+            :show-edit-and-warning="false"
+            :extensions
+            @delete="newFile = null; form.filetype = null"
           />
-          {{ $t('Help') }}
-        </template>
-        <AccordionGroup>
-          <Accordion
-            v-if="isRemote"
-            :id="chooseTheCorrectLinkAccordionId"
-            :title="$t('Choose the correct link')"
-            :state="accordionState('url')"
-          >
+        </div>
+        <UploadGroup
+          v-else
+          :show-label="type === 'update'"
+          :label="type === 'update' ? $t('Replace file') : $t('New file')"
+          type="drop"
+          :accept="extensions.join(',')"
+          :multiple="false"
+          :hint-text="$t('Max size: 420 Mb.')"
+          @change="setFiles"
+        />
+      </FieldsetElement>
+
+      <p
+        v-if="!form.filetype"
+        class="fr-hr-or w-full text-transform-lowercase fr-text--regular"
+      >
+        <span class="fr-hr-or-text">{{ t('or') }}</span>
+      </p>
+
+      <FieldsetElement
+        v-if="form.filetype === 'remote' || !form.filetype"
+        form-key="url"
+      >
+        <InputGroup
+          v-model="form.url"
+          :label="$t('Exact link to the file')"
+          :required="true"
+          :has-error="!!getFirstError('url')"
+          :error-text="getFirstError('url')"
+        />
+
+        <template #accordion>
+          <HelpAccordion :title="$t('Choose the correct link')">
             {{ $t("It's advised to put the link to the file itself instead of a web page to allow {site} to parse it.") }}
-          </Accordion>
-          <Accordion
-            :id="nameAFileAccordionId"
-            :title="nameAFile"
-            :state="accordionState('title')"
-          >
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+    </FormFieldset>
+
+    <FormFieldset :legend="$t('Description')">
+      <FieldsetElement form-key="title">
+        <InputGroup
+          v-model="form.title"
+          :label="$t('Title')"
+          :required="true"
+        />
+
+        <template #accordion>
+          <HelpAccordion :title="nameAFile">
             <div class="prose prose-neutral fr-m-0">
               <p class="fr-m-0 fr-mb-1w">
                 {{ $t("It is recommended to choose a title that can inform any user about the content of the file. Some practices to avoid:") }}
@@ -42,12 +136,21 @@
                 <li>{{ $t("giving a title that is too technical and derived from business nomenclatures.") }}</li>
               </ul>
             </div>
-          </Accordion>
-          <Accordion
-            :id="chooseTheRightTypeOfFileAccordionId"
-            :title="$t('Publish the correct file types')"
-            :state="accordionState('type')"
-          >
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+      <FieldsetElement form-key="type">
+        <SelectGroup
+          v-model="form.type"
+          :label="$t('Type')"
+          :required="true"
+          :has-error="!!getFirstError('type')"
+          :error-text="getFirstError('type') || undefined"
+          :options="fileTypes"
+        />
+
+        <template #accordion>
+          <HelpAccordion :title="$t('Publish the correct file types')">
             <div class="prose prose-neutral fr-m-0">
               <p class="fr-m-0 fr-mb-1w">
                 {{ $t("You can choose from the following types:") }}
@@ -61,28 +164,18 @@
                 </li>
               </ul>
             </div>
-          </Accordion>
-          <Accordion
-            :id="chooseTheCorrectFormatAccordionId"
-            :title="$t('Choose the right format')"
-            :state="accordionState('format')"
-          >
-            <div class="prose prose-neutral fr-m-0">
-              <p class="fr-m-0 fr-mb-1w">
-                {{ $t("The formats must be:") }}
-              </p>
-              <ul>
-                <li>{{ $t("open : an open format doesn't add technical specifications that restrict data use (i.e. using a paid software) ;") }}</li>
-                <li>{{ $t("easily reusable : a format easily reusable implies that anybody or server can reuse easily the dataset ;") }}</li>
-                <li>{{ $t("usable in an automated processing system : an automated processing system allows to make automatic operations, related to data exploitation (i.e. a CSV file is easily usable by an automated system unlike a PDF file).") }}</li>
-              </ul>
-            </div>
-          </Accordion>
-          <Accordion
-            :id="writeAGoodDescriptionAccordionId"
-            :title="$t('Add documentation')"
-            :state="accordionState('description')"
-          >
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+      <FieldsetElement form-key="description">
+        <InputGroup
+          v-model="form.description"
+          type="markdown"
+          :label="$t('Description')"
+        />
+
+        <template #accordion>
+          <HelpAccordion :title="$t('Add documentation')">
             <div class="prose prose-neutral fr-m-0">
               <p class="fr-m-0 fr-mb-1w">
                 {{ $t("The description of a file facilitates the reuse of data. It includes, among others:") }}
@@ -96,19 +189,25 @@
                 <li>{{ $t("a description of major changes.") }}</li>
               </ul>
             </div>
-            <SimpleBanner
-              v-if="getFirstWarning('description')"
-              class="font-bold mt-2"
-              type="warning"
-            >
-              {{ getFirstWarning("description") }}
-            </SimpleBanner>
-          </Accordion>
-          <Accordion
-            :id="selectASchemaAccordionId"
-            :title="$t('Select a schema')"
-            :state="accordionState('schema')"
-          >
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+      <FieldsetElement form-key="schema">
+        <SearchableSelect
+          v-model="form.schema"
+          :label="$t('Schema')"
+          :placeholder="$t('Search a schema…')"
+          :display-value="(option) => option.name"
+          :get-option-id="(option) => option.name"
+          :options="schemas"
+          :multiple="false"
+
+          :error-text="getFirstError('schema')"
+          :warning-text="getFirstWarning('schema')"
+        />
+
+        <template #accordion>
+          <HelpAccordion :title="$t('Select a schema')">
             <i18n-t
               keypath="It is possible to identify an existing data schema by visiting the {schema} website, that references a list of existing data schema."
               tag="p"
@@ -118,243 +217,145 @@
                 <a :href="config.public.schemasSite.url">{{ config.public.schemasSite.name }}</a>
               </template>
             </i18n-t>
-          </Accordion>
-        </AccordionGroup>
-      </Sidemenu>
-      <div class="w-full lg:w-7/12">
-        <component
-          :is="inModal ? 'div' : PaddedContainer"
-          :class="inModal ? '' : 'overflow-auto'"
-        >
-          <fieldset
-            class="fr-fieldset min-width-0"
-            aria-labelledby="description-legend"
-          >
-            <legend
-              id="description-legend"
-              class="fr-fieldset__legend"
-            >
-              <h2 class="text-sm font-bold uppercase mb-3">
-                {{ $t("File metadata") }}
-              </h2>
-            </legend>
-            <div class="fr-fieldset__element">
-              <FileCard
-                v-model="form"
-                class="mb-3"
-                :hide-actions="true"
-                :extensions
-              />
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+      <FieldsetElement
+        v-if="form.filetype === 'remote'"
+        form-key="mime"
+      >
+        <SearchableSelect
+          v-model="form.mime"
+          :label="$t('Mime type')"
+          :placeholder="$t('Search a mime type…')"
+          :display-value="(option) => option.text"
+          :get-option-id="(option) => option.text"
+          :allow-new-option="(query) => ({ text: query })"
+          :suggest="suggestMime"
+          :multiple="false"
+
+          :error-text="getFirstError('mime')"
+          :warning-text="getFirstWarning('mime')"
+        />
+      </FieldsetElement>
+      <FieldsetElement
+        v-if="form.filetype === 'remote'"
+        form-key="mime"
+      >
+        <SearchableSelect
+          v-model="form.format"
+          :label="$t('Format')"
+          :placeholder="$t('Search a format…')"
+          :display-value="(option) => option"
+          :allow-new-option="(query) => query"
+          :options="extensions"
+          :multiple="false"
+          class="mb-6"
+          required
+
+          :error-text="getFirstError('format')"
+          :warning-text="getFirstWarning('format')"
+        />
+
+        <template #accordion>
+          <HelpAccordion :title="$t('Choose the right format')">
+            <div class="prose prose-neutral fr-m-0">
+              <p class="fr-m-0 fr-mb-1w">
+                {{ $t("The formats must be:") }}
+              </p>
+              <ul>
+                <li>{{ $t("open : an open format doesn't add technical specifications that restrict data use (i.e. using a paid software) ;") }}</li>
+                <li>{{ $t("easily reusable : a format easily reusable implies that anybody or server can reuse easily the dataset ;") }}</li>
+                <li>{{ $t("usable in an automated processing system : an automated processing system allows to make automatic operations, related to data exploitation (i.e. a CSV file is easily usable by an automated system unlike a PDF file).") }}</li>
+              </ul>
             </div>
-            <RequiredExplanation class="px-2" />
-            <LinkedToAccordion
-              v-if="form.filetype === 'remote'"
-              class="fr-fieldset__element min-width-0"
-              :accordion="chooseTheCorrectLinkAccordionId"
-              @blur="touch('url')"
-            >
-              <InputGroup
-                v-model="form.url"
-                :label="$t('Link url')"
-                :required="true"
-                :has-error="!!getFirstError('url')"
-                :error-text="getFirstError('url')"
-              />
-            </LinkedToAccordion>
-            <div
-              v-if="form.filetype === 'file'"
-              class="fr-fieldset__element"
-            >
-              <div v-if="newFile">
-                <label
-                  class="fr-label fr-mb-1w"
-                >
-                  {{ $t('The current file will be replaced by') }}
-                </label>
-                <FileCard
-                  v-if="newFile"
-                  :model-value="{
-                    filetype: 'file',
-                    title: newFile.name,
-                    type: 'main',
-                    description: '',
-                    schema: null,
-                    file: {
-                      raw: newFile,
-                      state: { status: 'waiting' },
-                    },
-                    resource: null,
-                  }"
-                  class="fr-mb-3v"
-                  :show-edit-and-warning="false"
-                  :extensions
-                  @delete="newFile = null"
-                />
-              </div>
-              <UploadGroup
-                v-else
-                show-label
-                :label="$t('Replace file')"
-                type="drop"
-                :accept="extensions.join(',')"
-                :multiple="false"
-                :hint-text="$t('Max size: 420 Mb. Multiple files allowed.')"
-                @change="setFiles"
-              />
-            </div>
-            <LinkedToAccordion
-              class="fr-fieldset__element min-width-0"
-              :accordion="nameAFileAccordionId"
-              @blur="touch('title')"
-            >
-              <InputGroup
-                v-model="form.title"
-                :label="fileTitle"
-                :required="true"
-                :has-error="!!getFirstError('title')"
-                :error-text="getFirstError('title')"
-              />
-            </LinkedToAccordion>
-            <LinkedToAccordion
-              class="fr-fieldset__element min-width-0"
-              :accordion="chooseTheRightTypeOfFileAccordionId"
-              @blur="touch('type')"
-            >
-              <SelectGroup
-                v-model="form.type"
-                :label="$t('Type')"
-                :required="true"
-                :has-error="!!getFirstError('type')"
-                :error-text="getFirstError('type') || undefined"
-                :options="fileTypes"
-              />
-            </LinkedToAccordion>
-            <LinkedToAccordion
-              v-if="form.filetype === 'remote'"
-              class="fr-fieldset__element min-width-0"
-              :accordion="chooseTheCorrectFormatAccordionId"
-              @blur="touch('format')"
-            >
-              <SearchableSelect
-                v-model="form.format"
-                :label="$t('Format')"
-                :placeholder="$t('Search a format…')"
-                :display-value="(option) => option"
-                :allow-new-option="(query) => query"
-                :options="extensions"
-                :multiple="false"
-                class="mb-6"
-                required
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+    </FormFieldset>
 
-                :error-text="getFirstError('format')"
-                :warning-text="getFirstWarning('format')"
-              />
-            </LinkedToAccordion>
-            <LinkedToAccordion
-              class="fr-fieldset__element min-width-0"
-              :accordion="writeAGoodDescriptionAccordionId"
-            >
-              <InputGroup
-                v-model="form.description"
-                :label="$t('Description')"
-                :has-warning="!!getFirstWarning('description')"
-                :error-text="getFirstWarning('description')"
-                type="markdown"
-                @change="touch('description')"
-              />
-            </LinkedToAccordion>
-            <LinkedToAccordion
-              class="fr-fieldset__element min-width-0"
-              :accordion="selectASchemaAccordionId"
-              @blur="touch('schema')"
-            >
-              <SearchableSelect
-                v-model="form.schema"
-                :label="$t('Schema')"
-                :placeholder="$t('Search a schema…')"
-                :display-value="(option) => option.name"
-                :get-option-id="(option) => option.name"
-                :options="schemas"
-                :multiple="false"
+    <DatasetsSelect
+      v-if="type === 'create-community'"
+      v-model="datasets"
+      :label="$t('Associate a dataset')"
+      class="w-full"
+      single
+    />
 
-                :error-text="getFirstError('schema')"
-                :warning-text="getFirstWarning('schema')"
-              />
-            </LinkedToAccordion>
-            <LinkedToAccordion
-              v-if="form.filetype === 'remote'"
-              class="fr-fieldset__element min-width-0"
-              :accordion="whatIsAMimeTypeAccordionId"
-              @blur="touch('mime')"
-            >
-              <SearchableSelect
-                v-model="form.mime"
-                :label="$t('Mime type')"
-                :placeholder="$t('Search a mime type…')"
-                :display-value="(option) => option.text"
-                :get-option-id="(option) => option.text"
-                :allow-new-option="(query) => ({ text: query })"
-                :suggest="suggestMime"
-                :multiple="false"
-
-                :error-text="getFirstError('mime')"
-                :warning-text="getFirstWarning('mime')"
-              />
-            </LinkedToAccordion>
-          </fieldset>
-        </component>
-      </div>
-    </div>
-  </form>
+    <slot />
+  </FormWithAccordions>
 </template>
 
 <script setup lang="ts">
 import { getResourceLabel, RESOURCE_TYPE, SimpleBanner } from '@datagouv/components-next'
-import type { SchemaResponseData } from '@datagouv/components-next'
+import type { Dataset, DatasetV2, SchemaResponseData } from '@datagouv/components-next'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
-import PaddedContainer from '../PaddedContainer/PaddedContainer.vue'
-import type { ResourceForm } from '~/types/types'
-import type { KeysOfUnion } from '~/composables/useForm'
+import FieldsetElement from '../Form/FieldsetElement.vue'
+import HelpAccordion from '../Form/HelpAccordion.vue'
+import type { DatasetSuggest, ResourceForm } from '~/types/types'
 
 const { t } = useI18n()
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
 
-withDefaults(defineProps<{
-  type: 'create' | 'update'
+const props = withDefaults(defineProps<{
+  type: 'create-community' | 'update'
   inModal?: boolean
   formId?: string
 }>(), {
   inModal: false,
 })
 const emit = defineEmits<{
-  (e: 'submit'): void
+  (e: 'submit', additionalData: { dataset: Dataset | DatasetV2 | DatasetSuggest | null }): void
 }>()
 
 const resourceForm = defineModel<ResourceForm>({ required: true })
-const { form, getFirstError, getFirstWarning, touch, validate } = useResourceForm(resourceForm)
+const { form, getFirstError, getFirstWarning, validate, formInfo } = useResourceForm(resourceForm)
 
+const datasets = ref([])
 const newFile = ref<File | null>(null)
+
+watchEffect(() => {
+  if (props.type !== 'create-community') return
+
+  if (form.value.url) {
+    form.value.filetype = 'remote'
+    newFile.value = null
+  }
+  else {
+    form.value.filetype = null
+  }
+})
+
+watchEffect(() => {
+  if (props.type !== 'create-community') return
+
+  if (newFile.value) {
+    form.value.filetype = 'file'
+    form.value.url = ''
+  }
+  else {
+    form.value.filetype = null
+  }
+})
 
 const isRemote = computed(() => resourceForm.value.filetype === 'remote')
 const nameAFile = computed(() => isRemote.value ? t('Name a link') : t('Name a file'))
-const fileTitle = computed(() => isRemote.value ? t('Link title') : t('File title'))
+const fileOrLinkLegend = computed(() => {
+  if (props.type === 'create-community') return t('File or link')
+
+  return isRemote.value ? t('Link') : t('File')
+})
 const fileTypes = RESOURCE_TYPE.map(type => ({ label: getResourceLabel(type), value: type }))
 
 const setFiles = (files: Array<File>) => {
   newFile.value = files[0]
 }
 
-const chooseTheCorrectLinkAccordionId = useId()
-const nameAFileAccordionId = useId()
-const chooseTheRightTypeOfFileAccordionId = useId()
-const chooseTheCorrectFormatAccordionId = useId()
-const writeAGoodDescriptionAccordionId = useId()
-const selectASchemaAccordionId = useId()
-const whatIsAMimeTypeAccordionId = useId()
-
 const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extensions/')
 const { data: schemas } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/')
+
+const { toast } = useToast()
 
 const submit = () => {
   if (validate()) {
@@ -367,7 +368,14 @@ const submit = () => {
       }
     }
 
-    emit('submit')
+    if (props.type === 'create-community' && !datasets.value.length) {
+      toast.error(t('Please associate a dataset'))
+      return
+    }
+
+    emit('submit', {
+      dataset: props.type === 'create-community' ? datasets.value[0] : null,
+    })
   }
 }
 
@@ -378,11 +386,5 @@ const suggestMime = async (query: string) => {
       size: 5,
     },
   })
-}
-const accordionState = (key: KeysOfUnion<typeof form.value>) => {
-  if (getFirstError(key)) return 'error'
-  if (getFirstWarning(key)) return 'warning'
-
-  return 'default'
 }
 </script>

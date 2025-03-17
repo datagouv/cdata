@@ -232,6 +232,7 @@ export type FileResourceFileType = 'file'
 export type ResourceFileType = RemoteResourceFileType | FileResourceFileType
 
 export type BaseResourceForm = {
+  owned: Owned | null
   resource: Resource | CommunityResource | null // Use to know if we update an existing resource or create a new resource
   title: string
   type: ResourceType
@@ -240,10 +241,10 @@ export type BaseResourceForm = {
 }
 
 export type ResourceFormRemote = BaseResourceForm & {
-  filetype: RemoteResourceFileType
+  filetype: RemoteResourceFileType | null
   url: string
   mime: { text: string } | null
-  format: string
+  format: string | null
 }
 
 export type FileLoadingState = { status: 'waiting' } | { status: 'loading' } | { status: 'failed', message: string } | { status: 'uploaded', resource: Resource }
