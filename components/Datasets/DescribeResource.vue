@@ -274,7 +274,7 @@
     </FormFieldset>
 
     <DatasetsSelect
-      v-if="type === 'create-community'"
+      v-if="type === 'create-community' && 'dataset' in form"
       v-model="datasets"
       :label="$t('Associate a dataset')"
       class="w-full"
@@ -314,32 +314,6 @@ const { form, getFirstError, getFirstWarning, validate, formInfo } = useResource
 const datasets = ref([])
 const newFile = ref<File | null>(null)
 
-watchEffect(() => {
-  if (props.type !== 'create-community') return
-
-  if ('url' in form.value && form.value.url) {
-    form.value.filetype = 'remote'
-    newFile.value = null
-  }
-  else {
-    form.value.filetype = null
-  }
-})
-
-watchEffect(() => {
-  if (props.type !== 'create-community') return
-
-  if (newFile.value) {
-    form.value.filetype = 'file'
-    if ('url' in form.value) {
-      delete form.value.url
-    }
-  }
-  else {
-    form.value.filetype = null
-  }
-})
-
 const isRemote = computed(() => resourceForm.value.filetype === 'remote')
 const nameAFile = computed(() => isRemote.value ? t('Name a link') : t('Name a file'))
 const fileOrLinkLegend = computed(() => {
@@ -350,7 +324,11 @@ const fileOrLinkLegend = computed(() => {
 const fileTypes = RESOURCE_TYPE.map(type => ({ label: getResourceLabel(type), value: type }))
 
 const setFiles = (files: Array<File>) => {
+  form.value.filetype = 'file'
   newFile.value = files[0]
+  if ('url' in form.value) {
+    delete form.value.url
+  }
 }
 
 const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extensions/')
@@ -372,6 +350,12 @@ const submit = () => {
     if (props.type === 'create-community' && !datasets.value.length) {
       toast.error(t('Please associate a dataset'))
       return
+    }
+
+    console.log(form.value)
+
+    if ('dataset' in form.value) {
+      form.value.dataset = datasets.value[0]
     }
 
     emit('submit')

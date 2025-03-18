@@ -105,7 +105,7 @@ import { cloneDeep } from 'lodash-es'
 import { RiDeleteBin6Line, RiPencilLine } from '@remixicon/vue'
 import ModalWithButton from '../Modal/ModalWithButton.vue'
 import DescribeResource from './DescribeResource.vue'
-import type { ResourceForm } from '~/types/types'
+import type { CommunityResourceForm, ResourceForm } from '~/types/types'
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()
@@ -115,7 +115,7 @@ const props = withDefaults(defineProps<{
   openOnMounted?: boolean
   loading?: boolean
   dataset?: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'> // only require for deleting a resource :-(
-  resource: ResourceForm
+  resource: ResourceForm | CommunityResourceForm
   buttonColor?: InstanceType<typeof BrandedButton>['$props']['color']
   buttonSize?: InstanceType<typeof BrandedButton>['$props']['size']
 }>(), {
@@ -125,7 +125,7 @@ const props = withDefaults(defineProps<{
   buttonSize: 'xs',
 })
 const emit = defineEmits<{
-  (e: 'submit', close: () => void, file: ResourceForm): void
+  (e: 'submit', close: () => void, file: ResourceForm | CommunityResourceForm): void
   (e: 'cancel' | 'delete'): void
 }>()
 

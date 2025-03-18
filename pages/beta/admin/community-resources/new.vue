@@ -22,7 +22,7 @@
       v-model="resourceForm"
       type="create-community"
       :submit-label="t('Next')"
-      @submit="postNext"
+      @submit="save"
     >
       <div class="flex justify-end">
         <BrandedButton type="submit">
@@ -30,14 +30,20 @@
         </BrandedButton>
       </div>
     </DescribeResource>
+
+    <CompleteResourcePublicationStep
+      v-if="currentStep === 2 && communityResource"
+      :resource="communityResource"
+    />
     <div class="h-64" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, type CommunityResource } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import CompleteResourcePublicationStep from '~/components/Datasets/CompleteResourcePublicationStep.vue'
 import DescribeResource from '~/components/Datasets/DescribeResource.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { CommunityResourceForm } from '~/types/types'
@@ -52,6 +58,11 @@ const steps = computed(() => [
 
 const COMMUNITY_RESOURCE_FORM_STATE = 'community-resource-form'
 
+const communityResource = useState<CommunityResource | null>(
+  'new-community-resource',
+  () => null,
+)
+
 const resourceForm = useState<CommunityResourceForm>(COMMUNITY_RESOURCE_FORM_STATE, () => ({
   owned: null,
   dataset: null,
@@ -60,7 +71,7 @@ const resourceForm = useState<CommunityResourceForm>(COMMUNITY_RESOURCE_FORM_STA
   type: 'main',
   description: '',
   schema: null,
-  filetype: 'remote',
+  filetype: null,
   url: '',
   mime: null,
   format: null,
@@ -70,7 +81,7 @@ const currentStep = computed(() => parseInt(route.query.step as string) || 1)
 const isCurrentStepValid = computed(() => {
   if (currentStep.value < 1) return false
   if (currentStep.value > steps.value.length) return false
-  // if (currentStep.value === 2 && (!postForm.value || !postForm.value.name)) return false
+  if (currentStep.value === 2 && (!communityResource.value || !communityResource.value.title)) return false
 
   return true
 })
@@ -79,18 +90,9 @@ function moveToStep(step: number) {
   return navigateTo({ path: route.path, query: { ...route.query, step } })
 }
 
-function postNext() {
-  save()
-  // moveToStep(2)
-}
-
 async function save() {
-  try {
-    await saveResourceForm(resourceForm.value.dataset, resourceForm.value)
-  }
-  finally {
-    // clearNuxtState(POST_LOADING_STATE)
-  }
+  communityResource.value = await saveResourceForm(resourceForm.value.dataset, resourceForm.value)
+  moveToStep(2)
 }
 
 watchEffect(() => {

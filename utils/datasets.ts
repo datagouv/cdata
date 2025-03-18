@@ -258,7 +258,11 @@ export function isCommunityResource(resource: Resource | CommunityResource): boo
   return 'organization' in resource || 'owner' in resource
 }
 
-export function getResourcesUrls(dataset: Dataset | DatasetV2 | DatasetSuggest | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource | CommunityResource | null, isCommunityResource: boolean): { metadataUrl: string, metadataMethod: 'POST' | 'PUT', uploadUrl: string } {
+export function getResourcesUrls(
+  dataset: Dataset | DatasetV2 | DatasetSuggest | Omit<Dataset, 'resources' | 'community_resources'>,
+  resource: Resource | CommunityResource | null,
+  isCommunityResource: boolean, // Useful if `resource` is `null`
+): { metadataUrl: string, metadataMethod: 'POST' | 'PUT', uploadUrl: string } {
   if (resource) {
     if (isCommunityResource) {
       // Existing community resource
@@ -297,7 +301,11 @@ export function getResourcesUrls(dataset: Dataset | DatasetV2 | DatasetSuggest |
   }
 }
 
-export async function saveResourceForm(dataset: Dataset | DatasetV2 | DatasetSuggest | Omit<Dataset, 'resources' | 'community_resources'>, resourceForm: ResourceForm | CommunityResourceForm) {
+type CommunityOrResource<T extends ResourceForm | CommunityResourceForm> = T extends CommunityResourceForm
+  ? CommunityResource
+  : Resource
+
+export async function saveResourceForm<T extends ResourceForm | CommunityResourceForm>(dataset: Dataset | DatasetV2 | DatasetSuggest | Omit<Dataset, 'resources' | 'community_resources'>, resourceForm: T): Promise<CommunityOrResource<T>> {
   const { $api } = useNuxtApp()
 
   const { metadataUrl, metadataMethod, uploadUrl } = getResourcesUrls(dataset, resourceForm.resource, 'dataset' in resourceForm)
@@ -308,7 +316,7 @@ export async function saveResourceForm(dataset: Dataset | DatasetV2 | DatasetSug
 
   // If this is a remote file, it's easy just send all the information to the server.
   if (resourceForm.filetype === 'remote') {
-    return await $api<Resource>(metadataUrl, {
+    return await $api<CommunityOrResource<T>>(metadataUrl, {
       method: metadataMethod,
       body: JSON.stringify(resourceToApi(resourceForm)),
     })
@@ -336,11 +344,10 @@ export async function saveResourceForm(dataset: Dataset | DatasetV2 | DatasetSug
   const { metadataUrl: newMetadataUrl, metadataMethod: alwaysPut } = getResourcesUrls(dataset, resource, 'dataset' in resourceForm)
 
   // Then we need to update the resource's metadata
-  const updatedResource = await $api<Resource>(newMetadataUrl, {
+  return await $api<CommunityOrResource<T>>(newMetadataUrl, {
     method: alwaysPut,
     body: JSON.stringify(resourceToApi(resourceForm)),
   })
-  return updatedResource
 }
 
 export async function retry<T>(promise: () => Promise<T>, count: number): Promise<T> {
@@ -385,7 +392,7 @@ export function guessFormatFromRawFile(file: File, extensions: Array<string>): s
   return null
 }
 
-export function getFilesize(resourceForm: ResourceForm): number | null {
+export function getFilesize(resourceForm: ResourceForm | CommunityResourceForm): number | null {
   if (resourceForm.filetype === 'file' && resourceForm.file) {
     return resourceForm.file.raw.size
   }
