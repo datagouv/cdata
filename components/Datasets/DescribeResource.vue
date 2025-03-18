@@ -29,7 +29,7 @@
     <RequiredExplanation />
 
     <FormFieldset
-      v-if="'owned' in form"
+      v-if="type === 'create-community' && 'owned' in form"
       :legend="$t('Producer')"
     >
       <FieldsetElement form-key="owned">

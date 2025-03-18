@@ -91,7 +91,7 @@ import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
-import type { AdminBadgeType, CommunityResourceSortedBy, ResourceForm, SortDirection } from '~/types/types'
+import type { AdminBadgeType, CommunityResourceForm, CommunityResourceSortedBy, ResourceForm, SortDirection } from '~/types/types'
 import FileEditModal from '~/components/Datasets/FileEditModal.vue'
 
 const props = defineProps<{
@@ -105,7 +105,6 @@ const emit = defineEmits<{
   (event: 'refresh'): void
 }>()
 
-const config = useRuntimeConfig()
 const { t } = useI18n()
 const { toast } = useToast()
 
@@ -141,7 +140,7 @@ function getStatus(communityResource: CommunityResource): { label: string, type:
 }
 
 const loading = ref(false)
-const updateResource = async (communityResource: CommunityResource, closeModal: () => void, resourceForm: ResourceForm) => {
+const updateResource = async (communityResource: CommunityResource, closeModal: () => void, resourceForm: ResourceForm | CommunityResourceForm) => {
   loading.value = true
 
   try {
