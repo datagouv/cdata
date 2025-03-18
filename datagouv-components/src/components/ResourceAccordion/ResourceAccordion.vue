@@ -143,7 +143,7 @@
           class="fr-col-auto fr-ml-3v fr-m-0 z-2"
         >
           <EditButton
-            :dataset-id="datasetId"
+            :dataset-id="dataset.id"
             :resource-id="resource.id"
             :is-community-resource="isCommunityResource"
           />
@@ -306,12 +306,12 @@
 import { ref, computed, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RiDownloadLine, RiFileCopyLine } from '@remixicon/vue'
-import { useRoute } from 'vue-router'
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
 import { filesize, summarize } from '../../functions/helpers'
 import { markdown } from '../../functions/markdown'
 import { formatRelativeIfRecentDate } from '../../functions/dates'
 import type { CommunityResource, Resource } from '../../types/resources'
+import type { Dataset, DatasetV2 } from '../../types/datasets'
 import TabGroup from '../Tabs/TabGroup.vue'
 import TabList from '../Tabs/TabList.vue'
 import Tab from '../Tabs/Tab.vue'
@@ -323,6 +323,7 @@ import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
 import { getResourceFormatIcon, getResourceTitleId } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
+import { getResourceExternalUrl } from '../../functions/datasets'
 import Metadata from './Metadata.vue'
 import SchemaBadge from './SchemaBadge.vue'
 import ResourceIcon from './ResourceIcon.vue'
@@ -333,7 +334,7 @@ import Preview from './Preview.vue'
 const OGC_SERVICES_FORMATS = ['ogc:wfs', 'ogc:wms', 'wfs', 'wms']
 
 const props = withDefaults(defineProps<{
-  datasetId: string
+  dataset: Dataset | DatasetV2
   expandedOnMount?: boolean
   isCommunityResource?: boolean
   resource: Resource | CommunityResource
@@ -419,9 +420,7 @@ const lastUpdate = props.resource.last_modified
 const availabilityChecked = props.resource.extras && 'check:available' in props.resource.extras
 const unavailable = availabilityChecked && props.resource.extras['check:available'] === false
 
-const route = useRoute()
-
-const resourceExternalUrl = computed(() => `${route.fullPath}#/${props.isCommunityResource ? 'community-resources' : 'resources'}/${props.resource.id}`)
+const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset, props.resource))
 
 const resourceContentId = 'resource-' + props.resource.id
 const resourceHeaderId = 'resource-' + props.resource.id + '-header'

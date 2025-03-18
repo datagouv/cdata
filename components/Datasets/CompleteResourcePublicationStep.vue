@@ -29,22 +29,20 @@
       :extensions
     />
 
-    <div class="flex justify-between">
-      <div class="fr-grid-row fr-grid-row--right">
-        <BrandedButton
-          color="primary"
-          :href="resource.dataset.page"
-          external
-        >
-          {{ $t("Go to public page") }}
-        </BrandedButton>
-      </div>
+    <div class="mt-6 flex justify-end">
+      <BrandedButton
+        color="primary"
+        :href="getResourceExternalUrl(resource.dataset, resource)"
+        external
+      >
+        {{ $t("Go to public page") }}
+      </BrandedButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, type CommunityResource, type SchemaResponseData } from '@datagouv/components-next'
+import { BrandedButton, getResourceExternalUrl, SimpleBanner, type CommunityResource, type SchemaResponseData } from '@datagouv/components-next'
 
 defineProps<{
   resource: CommunityResource

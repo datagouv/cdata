@@ -254,10 +254,6 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
   }
 }
 
-export function isCommunityResource(resource: Resource | CommunityResource): boolean {
-  return 'organization' in resource || 'owner' in resource
-}
-
 export function getResourcesUrls(
   dataset: Dataset | DatasetV2 | DatasetSuggest | Omit<Dataset, 'resources' | 'community_resources'>,
   resource: Resource | CommunityResource | null,

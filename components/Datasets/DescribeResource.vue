@@ -104,6 +104,15 @@
           :required="true"
           :has-error="!!getFirstError('url')"
           :error-text="getFirstError('url')"
+          @change="(value) => {
+            if (value) {
+              form.filetype = 'remote'
+              newFile = null
+            }
+            else {
+              form.filetype = null
+            }
+          }"
         />
 
         <template #accordion>
