@@ -439,7 +439,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, getUserAvatar } from '@datagouv/components-next'
+import { BrandedButton, getUserAvatar } from '@datagouv/components-next'
 import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiGovernmentLine, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { NuxtImg, NuxtLinkLocale } from '#components'
@@ -471,7 +471,7 @@ const menu = [
     { label: t('{site} guides', { site: config.public.title }), link: config.public.guidesUrl, external: true },
   ], external: true },
   { label: t('News'), link: '/posts/' },
-  { label: t('Contact us'), link: 'https://support.data.gouv.fr/', external: true },
+  { label: t('Contact us'), link: '/support/', external: true },
 ]
 
 const publishMenu = [
