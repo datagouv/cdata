@@ -35,13 +35,12 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type Dataset, type DatasetV2 } from '@datagouv/components-next'
+import { BrandedButton } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import DescribeResource from '~/components/Datasets/DescribeResource.vue'
-import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
-import type { DatasetSuggest, ResourceForm } from '~/types/types'
+import type { CommunityResourceForm } from '~/types/types'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -51,20 +50,21 @@ const steps = computed(() => [
   t('Complete your publishing'),
 ])
 
-const POST_FORM_STATE = 'post-form'
+const COMMUNITY_RESOURCE_FORM_STATE = 'community-resource-form'
 
-const resourceForm = useState<ResourceForm>(POST_FORM_STATE, () => ({
+const resourceForm = useState<CommunityResourceForm>(COMMUNITY_RESOURCE_FORM_STATE, () => ({
   owned: null,
+  dataset: null,
   resource: null,
   title: '',
   type: 'main',
   description: '',
   schema: null,
-  filetype: null,
+  filetype: 'remote',
   url: '',
   mime: null,
   format: null,
-} satisfies ResourceForm))
+} satisfies CommunityResourceForm))
 
 const currentStep = computed(() => parseInt(route.query.step as string) || 1)
 const isCurrentStepValid = computed(() => {
@@ -79,16 +79,14 @@ function moveToStep(step: number) {
   return navigateTo({ path: route.path, query: { ...route.query, step } })
 }
 
-function postNext(additionalData: { dataset: Dataset | DatasetV2 | DatasetSuggest | null }) {
-  if (!additionalData.dataset) throw new Error('create-community should always submit with a dataset')
-
-  save(additionalData.dataset)
+function postNext() {
+  save()
   // moveToStep(2)
 }
 
-async function save(dataset: Dataset | DatasetV2 | DatasetSuggest) {
+async function save() {
   try {
-    await saveResourceForm(dataset, resourceForm.value)
+    await saveResourceForm(resourceForm.value.dataset, resourceForm.value)
   }
   finally {
     // clearNuxtState(POST_LOADING_STATE)

@@ -150,7 +150,7 @@ const deleting = ref(false)
 const deleteResource = async (dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource, close: () => void) => {
   deleting.value = true
   try {
-    const { metadataUrl } = getResourcesUrls(dataset, resource)
+    const { metadataUrl } = getResourcesUrls(dataset, resource, isCommunityResource(resource))
     await $api(metadataUrl, { method: 'DELETE' })
     emit('delete')
   }

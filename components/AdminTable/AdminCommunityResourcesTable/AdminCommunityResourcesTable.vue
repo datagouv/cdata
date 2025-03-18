@@ -44,16 +44,11 @@
       >
         <td>
           <AdminContentWithTooltip class="fr-text--bold">
-            <a
-              class="fr-link fr-reset-link"
-              :href="getCommunityResourceLinkToAdmin(communityResource)"
-            >
-              <TextClamp
-                :text="communityResource.title"
-                :auto-resize="true"
-                :max-lines="2"
-              />
-            </a>
+            <TextClamp
+              :text="communityResource.title"
+              :auto-resize="true"
+              :max-lines="2"
+            />
           </AdminContentWithTooltip>
           <p v-if="communityResource.dataset">
             <LinkToSubject
@@ -121,10 +116,6 @@ function sorted(column: CommunityResourceSortedBy) {
     return props.sortDirection
   }
   return null
-}
-
-function getCommunityResourceLinkToAdmin(communityResource: CommunityResource) {
-  return `${config.public.apiBase}/en/admin/dataset/${communityResource.dataset.id}/community-resource/${communityResource.id}/`
 }
 
 function getStatus(communityResource: CommunityResource): { label: string, type: AdminBadgeType } {

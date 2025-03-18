@@ -29,7 +29,7 @@
     <RequiredExplanation />
 
     <FormFieldset
-      v-if="type === 'create-community'"
+      v-if="'owned' in form"
       :legend="$t('Producer')"
     >
       <FieldsetElement form-key="owned">
@@ -58,7 +58,6 @@
           <FileCard
             v-if="newFile"
             :model-value="{
-              owned: null,
               filetype: 'file',
               title: newFile.name,
               type: 'main',
@@ -288,11 +287,11 @@
 
 <script setup lang="ts">
 import { getResourceLabel, RESOURCE_TYPE, SimpleBanner } from '@datagouv/components-next'
-import type { Dataset, DatasetV2, SchemaResponseData } from '@datagouv/components-next'
+import type { SchemaResponseData } from '@datagouv/components-next'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 import FieldsetElement from '../Form/FieldsetElement.vue'
 import HelpAccordion from '../Form/HelpAccordion.vue'
-import type { DatasetSuggest, ResourceForm } from '~/types/types'
+import type { CommunityResourceForm, ResourceForm } from '~/types/types'
 
 const { t } = useI18n()
 const config = useRuntimeConfig()
@@ -306,10 +305,10 @@ const props = withDefaults(defineProps<{
   inModal: false,
 })
 const emit = defineEmits<{
-  (e: 'submit', additionalData: { dataset: Dataset | DatasetV2 | DatasetSuggest | null }): void
+  (e: 'submit'): void
 }>()
 
-const resourceForm = defineModel<ResourceForm>({ required: true })
+const resourceForm = defineModel<ResourceForm | CommunityResourceForm>({ required: true })
 const { form, getFirstError, getFirstWarning, validate, formInfo } = useResourceForm(resourceForm)
 
 const datasets = ref([])
@@ -318,7 +317,7 @@ const newFile = ref<File | null>(null)
 watchEffect(() => {
   if (props.type !== 'create-community') return
 
-  if (form.value.url) {
+  if ('url' in form.value && form.value.url) {
     form.value.filetype = 'remote'
     newFile.value = null
   }
@@ -332,7 +331,9 @@ watchEffect(() => {
 
   if (newFile.value) {
     form.value.filetype = 'file'
-    form.value.url = ''
+    if ('url' in form.value) {
+      delete form.value.url
+    }
   }
   else {
     form.value.filetype = null
@@ -373,9 +374,7 @@ const submit = () => {
       return
     }
 
-    emit('submit', {
-      dataset: props.type === 'create-community' ? datasets.value[0] : null,
-    })
+    emit('submit')
   }
 }
 

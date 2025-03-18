@@ -232,7 +232,6 @@ export type FileResourceFileType = 'file'
 export type ResourceFileType = RemoteResourceFileType | FileResourceFileType
 
 export type BaseResourceForm = {
-  owned: Owned | null
   resource: Resource | CommunityResource | null // Use to know if we update an existing resource or create a new resource
   title: string
   type: ResourceType
@@ -241,10 +240,17 @@ export type BaseResourceForm = {
 }
 
 export type ResourceFormRemote = BaseResourceForm & {
-  filetype: RemoteResourceFileType | null
+  filetype: RemoteResourceFileType
   url: string
   mime: { text: string } | null
   format: string | null
+}
+
+export type UnknownResourceForm = BaseResourceForm & {
+  filetype: null
+  url?: string
+  mime?: { text: string } | null
+  format?: string | null
 }
 
 export type FileLoadingState = { status: 'waiting' } | { status: 'loading' } | { status: 'failed', message: string } | { status: 'uploaded', resource: Resource }
@@ -256,6 +262,13 @@ export type ResourceFormLocal = BaseResourceForm & {
 }
 
 export type ResourceForm = ResourceFormRemote | ResourceFormLocal
+
+export type AdditionalDataForCommunityResourceForm = {
+  owned: Owned | null
+  dataset: Dataset | DatasetV2 | DatasetSuggest | null
+}
+// Useful to be able to exclude by resource.type = 'remote' | 'file' some data
+export type CommunityResourceForm = (ResourceFormRemote & AdditionalDataForCommunityResourceForm) | (ResourceFormLocal & AdditionalDataForCommunityResourceForm) | (UnknownResourceForm & AdditionalDataForCommunityResourceForm)
 
 export type NewOrganization = {
   acronym: string | null
