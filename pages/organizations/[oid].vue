@@ -95,9 +95,12 @@ const me = useMaybeMe()
 const url = computed(() => `/api/1/organizations/${route.params.oid}/`)
 const { data: organization, status } = await useAPI<Organization>(url)
 
+const title = computed(() => organization.value?.name)
+const robots = computed(() => organization.value && !organization.value.metrics.dataservices && !organization.value.metrics.datasets && !organization.value.metrics.reuses ? 'noindex, nofollow' : 'all')
+
 useSeoMeta({
-  title: organization.value.name,
-  robots: !organization.value.metrics.dataservices && !organization.value.metrics.datasets && !organization.value.metrics.reuses ? 'noindex, nofollow' : 'all',
+  title,
+  robots,
 })
 
 const type = computed(() => getOrganizationType(organization.value))
