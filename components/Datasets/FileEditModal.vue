@@ -10,11 +10,11 @@
       #button="{ attrs, listeners }"
     >
       <BrandedButton
-        color="secondary-softer"
         v-bind="attrs"
         icon-only
         :icon="RiPencilLine"
-        size="xs"
+        :color="buttonColor"
+        :size="buttonSize"
         keep-margins-even-without-borders
         v-on="listeners"
       >
@@ -414,9 +414,13 @@ const props = withDefaults(defineProps<{
   loading?: boolean
   dataset?: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'> // only require for deleting a resource :-(
   resource: ResourceForm
+  buttonColor?: InstanceType<typeof BrandedButton>['$props']['color']
+  buttonSize?: InstanceType<typeof BrandedButton>['$props']['size']
 }>(), {
   loading: false,
   openOnMounted: false,
+  buttonColor: 'secondary-softer',
+  buttonSize: 'xs',
 })
 const emit = defineEmits<{
   (e: 'submit', close: () => void, file: ResourceForm): void

@@ -63,7 +63,7 @@
 import { BrandedButton } from '@datagouv/components-next'
 import { SimpleBanner, type Reuse } from '@datagouv/components-next'
 import { RiLightbulbLine } from '@remixicon/vue'
-import ReuseCard from '~/components/Reuses/Card/NuxtCard.vue'
+import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 
 defineProps<{
   reuse: Reuse

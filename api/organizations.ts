@@ -1,4 +1,4 @@
-import type { Organization } from '@datagouv/components-next'
+import type { Badge, Organization } from '@datagouv/components-next'
 
 type UploadLogoResponse = {
   image: string
@@ -26,4 +26,25 @@ export async function updateOrganization(organization: MaybeRefOrGetter<Organiza
     },
   })
   return resp
+}
+
+export async function updateOrganizationBadges(organization: Organization, newBadges: Array<Badge>) {
+  const api = useNuxtApp().$api
+
+  const oldKinds = organization.badges.map(badge => badge.kind)
+  const newKinds = newBadges.map(badge => badge.kind)
+  for (const kind of newKinds) {
+    if (oldKinds.includes(kind)) continue
+
+    await api(`api/1/organizations/${organization.id}/badges/`, {
+      method: 'POST',
+      body: { kind },
+    })
+  }
+
+  for (const kind of oldKinds) {
+    if (newKinds.includes(kind)) continue
+
+    await api(`api/1/organizations/${organization.id}/badges/${kind}`, { method: 'DELETE' })
+  }
 }

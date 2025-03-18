@@ -1,9 +1,9 @@
-export type ValidationFunction<T> = (value: T, key: string, t: (key: string, values?: Record<string, unknown>) => string) => string | null
-
 export type KeysOfUnion<T> = T extends T ? keyof T : never
 
+export type ValidationFunction<T, K extends KeysOfUnion<T>, V extends T[K]> = (value: V, key: K, form: T, t: (key: string, values?: Record<string, unknown>) => string) => string | null
+
 export type ValidationsRules<Type> = {
-  [Property in KeysOfUnion<Type>]?: Array<ValidationFunction<Type[Property]>>;
+  [Property in KeysOfUnion<Type>]?: Array<ValidationFunction<Type, Property, Type[Property]>>;
 }
 export type ValidationsMessages<Type> = {
   [Property in KeysOfUnion<Type>]?: Array<string>;
@@ -27,13 +27,13 @@ export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsR
     errors.value[key] = []
 
     for (const rule of errorsRules[key] || []) {
-      const result = rule(form.value[key], key.toString(), t)
+      const result = rule(form.value[key], key, form.value, t)
       if (result) errors.value[key].push(result)
     }
 
     warnings.value[key] = []
     for (const rule of warningsRules[key] || []) {
-      const result = rule(form.value[key], key.toString(), t)
+      const result = rule(form.value[key], key, form.value, t)
       if (result) warnings.value[key].push(result)
     }
   }
@@ -69,49 +69,57 @@ export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsR
   return { form, formInfo, ...formInfo }
 }
 
-export function required<T>(message: string | null = null): ValidationFunction<T> {
-  return (value: T, key: string, t) => {
-    if (!value || (Array.isArray(value) && !value.length)) return message || t('The field {property} is required.', { property: t(key) })
+export function required<T, K extends KeysOfUnion<T>, V extends T[K]>(message: string | null = null): ValidationFunction<T, K, V> {
+  return (value: T[keyof T], key: K, form: T, t) => {
+    if (!value || (Array.isArray(value) && !value.length)) return message || t('The field {property} is required.', { property: t(key.toString()) })
 
     return null
   }
 }
 
-export function requiredIf<T>(condition: Ref<boolean>, message: string | null = null): ValidationFunction<T> {
-  return (value: T, key: string, t) => {
+export function requiredIf<T, K extends KeysOfUnion<T>, V extends T[K]>(condition: Ref<boolean>, message: string | null = null): ValidationFunction<T, K, V> {
+  return (value: T[keyof T], key: K, form: T, t) => {
     if (!condition.value) return null
-    if (!value || (Array.isArray(value) && !value.length)) return message || t('The field {property} is required.', { property: t(key) })
+    if (!value || (Array.isArray(value) && !value.length)) return message || t('The field {property} is required.', { property: t(key.toString()) })
 
     return null
   }
 }
 
-export function minLength<T extends string | undefined>(min: number, message: string | null = null): ValidationFunction<T> {
-  return (value: T, key: string, t) => {
+export function requiredIfFalsy<T, K extends KeysOfUnion<T>, V extends T[K]>(nonFalsyKey: keyof T, message: string | null = null): ValidationFunction<T, K, V> {
+  return (value: T[typeof nonFalsyKey], key: K, form: T, t) => {
+    if ((!value || (Array.isArray(value) && !value.length)) && !form[nonFalsyKey]) return message || t('The field {property} is required.', { property: t(key.toString()) })
+
+    return null
+  }
+}
+
+export function minLength<T, K extends KeysOfUnion<T>, V extends (string | undefined) & T[K]>(min: number, message: string | null = null): ValidationFunction<T, K, V> {
+  return (value: V, key: K, form: T, t) => {
     if (value && value.length >= min) return null
 
-    return message || t('The field {property} should be of at least {min} characters', { property: t(key), min })
+    return message || t('The field {property} should be of at least {min} characters', { property: t(key.toString()), min })
   }
 }
 
-export function url<T extends string | undefined | null>(message: string | null = null): ValidationFunction<T> {
-  return (value: T, key: string, t) => {
+export function url<T, K extends KeysOfUnion<T>, V extends (string | undefined | null) & T[K]>(message: string | null = null): ValidationFunction<T, K, V> {
+  return (value: V, key: K, form: T, t) => {
     if (!value) return null
     try {
       new URL(value)
       return null
     }
     catch {
-      return message || t('The field {property} should be a valid URL', { property: t(key) })
+      return message || t('The field {property} should be a valid URL', { property: t(key.toString()) })
     }
   }
 }
 
-export function email<T extends string | undefined>(message: string | null = null): ValidationFunction<T> {
-  return (value: T, key: string, t) => {
+export function email<T, K extends KeysOfUnion<T>, V extends (string | undefined) & T[K]>(message: string | null = null): ValidationFunction<T, K, V> {
+  return (value: V, key: K, form: T, t) => {
     if (!value) return null
     if (/^\S+@\S+\.\S+$/.exec(value)) return null
 
-    return message || t('The field {property} should be a valid email', { property: t(key) })
+    return message || t('The field {property} should be a valid email', { property: t(key.toString()) })
   }
 }

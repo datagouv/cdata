@@ -72,11 +72,10 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { RiDeleteBin6Line } from '@remixicon/vue'
-import { BrandedButton } from '@datagouv/components-next'
-import type { NewOrganization, Organization } from '@datagouv/components-next'
+import type { NewOrganization, Organization, BrandedButton, Badge } from '@datagouv/components-next'
 import AdminLoader from '~/components/AdminLoader/AdminLoader.vue'
 import DescribeOrganizationFrom from '~/components/Organization/New/Step2DescribeOrganization.vue'
-import { updateOrganization, uploadLogo } from '~/api/organizations'
+import { updateOrganization, updateOrganizationBadges, uploadLogo } from '~/api/organizations'
 
 const props = defineProps<{
   organization: Organization
@@ -102,8 +101,11 @@ async function deleteCurrentOrganization() {
   }
 }
 
-async function updateCurrentOrganization(updatedOrganization: NewOrganization | Organization, logo_file: File | null) {
+async function updateCurrentOrganization(updatedOrganization: NewOrganization | Organization, logo_file: File | null, newBadges: Array<Badge> | null) {
   await updateOrganization(updatedOrganization as Organization)
+  if (newBadges && props.organization) {
+    await updateOrganizationBadges(props.organization, newBadges)
+  }
   if (logo_file && props.organization) {
     await uploadLogo(props.organization.id, logo_file)
   }

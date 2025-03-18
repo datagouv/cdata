@@ -20,7 +20,10 @@
         </h1>
       </div>
     </div>
-    <div class="container mt-16 space-y-16 mb-16">
+    <div
+      v-if="posts"
+      class="container mt-16 space-y-16 mb-16"
+    >
       <div class="grid md:grid-cols-6 gap-5">
         <PostCard
           v-for="(post, index) in posts.data"

@@ -2,7 +2,10 @@
 <template>
   <div class="bg-blue-lightest">
     <div class="container">
-      <div class="flex items-center justify-between">
+      <div
+        v-if="organization"
+        class="flex items-center justify-between"
+      >
         <Breadcrumb>
           <BreadcrumbItem
             to="/"
@@ -25,7 +28,10 @@
         </div>
       </div>
     </div>
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-if="organization"
+      :status
+    >
       <div class="container pt-14">
         <p
           v-if="organization.deleted"

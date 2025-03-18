@@ -10,7 +10,7 @@
             {{ reuse.title }}
           </AppLink>
         </h3>
-        <div class=" order-3 text-sm m-0 text-gray-medium">
+        <div class="order-3 text-sm m-0 text-gray-medium">
           <p class="text-sm mb-0 flex items-center">
             <span
               v-if="reuse.organization"
@@ -79,7 +79,7 @@
       </div>
       <ul
         v-if="reuse.private || reuse.archived"
-        class="fr-badges-group"
+        class="list-none m-0 p-0 mt-4 px-4 -mb-2"
       >
         <li v-if="reuse.private">
           <p class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium">
@@ -113,11 +113,6 @@ import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.v
 
 const props = defineProps<{
   reuse: Reuse
-
-  /**
-   * The name of the entity certifying the account
-   */
-  certifier: string
 
   /**
   * The reuseUrl is a route location object to allow Vue Router to navigate to the details of a reuse.

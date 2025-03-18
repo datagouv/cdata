@@ -67,7 +67,7 @@
                 {{ $t('Edit') }}
               </BrandedButton>
             </template>
-            <div class="space-y-4">
+            <form class="block space-y-4">
               <RequiredExplanation />
               <InputGroup
                 v-model="newContactForm.name"
@@ -90,6 +90,8 @@
                 type="email"
                 :label="t('Email')"
                 placeholder="contact@organization.org"
+                :has-error="!!getFirstError('email')"
+                :error-text="getFirstError('email')"
                 @blur="touch('email')"
               />
               <InputGroup
@@ -97,9 +99,11 @@
                 type="url"
                 :label="t('Link')"
                 placeholder="https://..."
+                :has-error="!!getFirstError('contact_form')"
+                :error-text="getFirstError('contact_form')"
                 @blur="touch('contact_form')"
               />
-            </div>
+            </form>
             <template #footer="{ close }">
               <div class="flex-1 flex justify-end">
                 <BrandedButton
@@ -141,18 +145,14 @@ const { $api } = useNuxtApp()
 const { t } = useI18n()
 const { toast } = useToast()
 
-// TODO: use defaultContactForm
-const { form: newContactForm, getFirstError, touch } = useForm({
+const { form: newContactForm, getFirstError, touch, validate } = useForm({
+  ...defaultContactForm,
   id: '',
-  name: '',
-  email: '',
-  contact_form: '',
-  role: 'contact',
 } as ContactPoint, {
   id: [required()],
   name: [required()],
-  email: [email()],
-  contact_form: [url()],
+  email: [email(), requiredIfFalsy('contact_form', t(`An email is required if a link isn't provided`))],
+  contact_form: [url(), requiredIfFalsy('email', t(`A link is required if an email isn't provided`))],
   role: [required()],
 }, {})
 
@@ -161,7 +161,7 @@ const loading = ref(false)
 const roleKey = '/api/1/contacts/roles/'
 const { data: rolesList } = await useAPI<Array<ContactType>>(roleKey, {
   key: roleKey,
-  // getCachedData: getDataFromSSRPayload, add when available
+  getCachedData: getDataFromSSRPayload,
 })
 
 const options = computed(() => rolesList.value?.map(r => ({
@@ -174,8 +174,10 @@ function getRoleLabel(contact: ContactPoint) {
 }
 
 async function updateContactPoint(closeModal: () => void) {
+  if (!validate()) {
+    return
+  }
   loading.value = true
-
   try {
     await saveContactPoint($api, props.organization, newContactForm.value)
     emit('refresh')

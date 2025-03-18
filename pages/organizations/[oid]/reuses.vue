@@ -46,7 +46,7 @@
 <script setup lang="ts">
 import { BrandedButton, Pagination } from '@datagouv/components-next'
 import type { Organization, Reuse } from '@datagouv/components-next'
-import Card from '~/components/Reuses/Card/NuxtCard.vue'
+import Card from '~/components/Reuses/ReuseCard.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{

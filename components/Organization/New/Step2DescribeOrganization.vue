@@ -259,6 +259,17 @@
             </div>
           </LinkedToAccordion>
         </fieldset>
+        <SearchableSelect 
+          v-if="isGlobalAdmin && 'badges' in organization"
+          v-model="newBadges"
+          :label="$t('Badges')"
+          :placeholder="$t('Associate badges to the organization…')"
+          class="mb-6"
+          :options="badges"
+          :get-option-id="(badge) => badgesLabels[badge.kind]"
+          :display-value="(badges) => badges ? humanJoin(badges.map(b => badgesLabels[b.kind])) : ''"
+          :multiple="true"
+        />
         <Alert
           v-if="errors.length"
           type="error"
@@ -304,7 +315,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, OwnerType } from '@datagouv/components-next'
+import { BrandedButton, OwnerType, type Badge } from '@datagouv/components-next'
 import { ASSOCIATION, COMPANY, LOCAL_AUTHORITY, PUBLIC_SERVICE, SimpleBanner, type NewOrganization, type Organization, type OrganizationTypes } from '@datagouv/components-next'
 import { url } from '@vuelidate/validators'
 import { computed, reactive, ref, watchEffect } from 'vue'
@@ -334,7 +345,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   previous: []
-  submit: [submittedOrganization: typeof props.organization, file: File | null]
+  submit: [submittedOrganization: typeof props.organization, file: File | null, newBadges: Array<Badge>]
 }>()
 
 const legend = 'description-legend'
@@ -351,6 +362,14 @@ const addLogoAccordionId = useId()
 const config = useRuntimeConfig()
 const nuxtApp = useNuxtApp()
 const { t } = useI18n()
+
+const me = useMe()
+const isGlobalAdmin = computed(() => isAdmin(me.value))
+
+const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges');
+const badges = computed(() => Object.keys(badgesLabels.value || {}).map(key => ({ kind: key })))
+
+const newBadges = ref('badges' in props.organization ? props.organization.badges : [])
 
 const organization = reactive<NewOrganization | Organization>({ ...props.organization })
 const file = ref<File | null>(null)
@@ -418,7 +437,7 @@ function fieldHasWarning(field: string) {
 function submit() {
   validateRequiredRules().then((valid) => {
     if (valid) {
-      emit('submit', organization, file.value)
+      emit('submit', organization, file.value, newBadges.value)
     }
   })
 }
