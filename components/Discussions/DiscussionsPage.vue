@@ -80,8 +80,6 @@ const pageSize = ref(20)
 const sortedBy = ref<DiscussionSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
-const q = ref('')
-const qDebounced = refDebounced(q, 500) // TODO add 500 in config
 
 function sort(column: DiscussionSortedBy, newDirection: SortDirection) {
   sortedBy.value = column
@@ -91,7 +89,6 @@ function sort(column: DiscussionSortedBy, newDirection: SortDirection) {
 const params = computed(() => {
   const query = {
     sort: sortDirection.value,
-    q: qDebounced.value,
 
     page_size: pageSize.value,
     page: page.value,
