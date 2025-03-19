@@ -7,6 +7,21 @@
       >
         {{ t('{n} discussions', pageData.total) }}
       </h2>
+
+      <div>
+        <SelectGroup
+          v-model="isClosed"
+          hide-label
+          :label="$t('Type')"
+          :required="true"
+          :options="[
+            { label: $t('All discussions'), value: null },
+            { label: $t('Closed discussions'), value: true },
+            { label: $t('Opened discussions'), value: false },
+          ]"
+          hide-null-option
+        />
+      </div>
     </div>
 
     <LoadingBlock :status>
@@ -47,6 +62,7 @@ import { Pagination, type Organization } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { refDebounced } from '@vueuse/core'
 import AdminDiscussionsTable from '../AdminTable/AdminDiscussionsTable/AdminDiscussionsTable.vue'
+import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 import type { PaginatedArray, SortDirection } from '~/types/types'
 import type { DiscussionSortedBy, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
@@ -56,6 +72,8 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+
+const isClosed = ref(null as null | true | false)
 
 const page = ref(1)
 const pageSize = ref(20)
@@ -77,7 +95,11 @@ const params = computed(() => {
 
     page_size: pageSize.value,
     page: page.value,
-  } as Record<string, string | number>
+  } as Record<string, string | number | null | boolean>
+
+  if (isClosed.value !== null) {
+    query['closed'] = isClosed.value ? 'true' : 'false'
+  }
 
   if (props.subject) {
     query['subject'] = props.subject.id
