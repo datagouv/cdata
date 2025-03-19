@@ -7,10 +7,51 @@
       >
         {{ t('{n} files', resourcesPage.total) }}
       </h2>
-      <UploadResourceModal
-        :extensions
-        @new-files="addFiles"
-      />
+      <div class="flex items-center space-x-3">
+        <component :is="resourcesPage && resourcesPage.total > maxSortableFiles ? Tooltip : 'div' ">
+          <BrandedButton
+            v-if="! reorder"
+            color="secondary"
+            size="xs"
+            :icon="RiDraggable"
+            :loading="loadingForOrdering"
+            :disabled="!!resourcesPage && resourcesPage.total > maxSortableFiles"
+            @click="startReorder()"
+          >
+            {{ $t('Reorder files') }}
+          </BrandedButton>
+
+          <template #tooltip>
+            {{ $t('Cannot reorder dataset\'s files when there is more than {max} files', { max: maxSortableFiles }) }}
+          </template>
+        </component>
+        <BrandedButton
+          v-if="reorder"
+          color="primary"
+          size="xs"
+          :icon="RiCheckLine"
+          :disabled="!didSort"
+          :loading="loadingForOrdering"
+          @click="saveReorder()"
+        >
+          {{ $t('Save new order') }}
+        </BrandedButton>
+        <BrandedButton
+          v-if="reorder"
+          color="secondary"
+          size="xs"
+          :icon="RiCheckLine"
+          :loading="loadingForOrdering"
+          @click="cancelReorder()"
+        >
+          {{ $t('Cancel reorder') }}
+        </BrandedButton>
+        <UploadResourceModal
+          v-if="! reorder"
+          :extensions
+          @new-files="addFiles"
+        />
+      </div>
     </div>
 
     <!-- :key is here to force re-render when length change and then re-call onMounted -->
@@ -28,6 +69,10 @@
       <AdminTable v-if="resourcesPage && resourcesPage.data.length">
         <thead>
           <tr>
+            <AdminTableTh
+              v-if="reorder"
+              scope="col"
+            />
             <AdminTableTh
               scope="col"
             >
@@ -59,11 +104,14 @@
             </AdminTableTh>
           </tr>
         </thead>
-        <tbody>
+        <tbody ref="sortableRoot">
           <tr
-            v-for="resource, index in resourcesPage.data"
+            v-for="resource in (reorder ? sortablesFiles : resourcesPage.data)"
             :key="resource.id"
           >
+            <td v-if="reorder">
+              <RiDraggable class="handle" />
+            </td>
             <td>
               <TextClamp
                 :text="resource.title"
@@ -115,10 +163,14 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
+import { BrandedButton, Pagination, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
+import { RiCheckLine, RiDraggable } from '@remixicon/vue'
+import { useSortable } from '@vueuse/integrations/useSortable'
+import { useTemplateRef } from 'vue'
 import AdminTable from '../AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../AdminTable/Table/AdminTableTh.vue'
+import Tooltip from '../Tooltip/Tooltip.vue'
 import UploadResourceModal from './UploadResourceModal.vue'
 import FileEditModal from './FileEditModal.vue'
 import type { AdminBadgeType, PaginatedArray, ResourceForm } from '~/types/types'
@@ -136,18 +188,16 @@ const resourcesPage = ref<PaginatedArray<Resource> | null>(null)
 const page = ref(1)
 const pageSize = ref(20)
 
-const resourcesUrl = computed(() => {
-  if (!dataset.value) return
-
-  const url = new URL(dataset.value.resources.href)
-  url.searchParams.set('page_size', pageSize.value.toString())
-  url.searchParams.set('page', page.value.toString())
-  return url.toString()
+const params = computed(() => {
+  return {
+    page_size: pageSize.value,
+    page: page.value,
+  }
 })
 
 const refreshResources = async () => {
-  if (!resourcesUrl.value) return
-  resourcesPage.value = await $api<PaginatedArray<Resource>>(resourcesUrl.value)
+  if (!dataset.value) return
+  resourcesPage.value = await $api<PaginatedArray<Resource>>(dataset.value.resources.href, { query: params.value })
 }
 watchEffect(async () => await refreshResources())
 
@@ -189,6 +239,59 @@ const updateResource = async (closeModal: () => void, resourceForm: ResourceForm
   }
 
   toast.success(t('Resource updated!'))
+}
+
+const maxSortableFiles = 50 // TODO add to config
+const sortablesFiles = ref<Array<Resource>>([])
+const loadingForOrdering = ref(false)
+const sortableRootRef = useTemplateRef('sortableRoot')
+const didSort = ref(false)
+const reorder = ref(false)
+const startReorder = async () => {
+  if (!dataset.value) return
+  try {
+    useSortable(sortableRootRef, sortablesFiles, {
+      onSort: () => {
+        didSort.value = true
+      },
+    })
+    loadingForOrdering.value = true
+    const baseParams = params.value
+    baseParams.page_size = maxSortableFiles
+    sortablesFiles.value = (await $api<PaginatedArray<Resource>>(dataset.value.resources.href, { query: params.value })).data
+
+    reorder.value = true
+  }
+  catch {
+    reorder.value = false
+  }
+  finally {
+    loadingForOrdering.value = false
+  }
+}
+
+const cancelReorder = () => {
+  reorder.value = false
+  sortablesFiles.value = []
+  didSort.value = false
+}
+
+const saveReorder = async () => {
+  try {
+    loadingForOrdering.value = true
+
+    await $api<PaginatedArray<Resource>>(`/api/1/datasets/${dataset.value.id}/resources/`, {
+      method: 'PUT',
+      body: sortablesFiles.value.map(resource => ({ id: resource.id })),
+    })
+
+    await refreshResources()
+
+    cancelReorder()
+  }
+  finally {
+    loadingForOrdering.value = false
+  }
 }
 
 function getStatus(resource: Resource): { label: string, type: AdminBadgeType } {
