@@ -1,5 +1,6 @@
 <template>
   <ModalWithButton
+    v-if="!thread.closed"
     :title="$t('Respond')"
     size="lg"
   >
