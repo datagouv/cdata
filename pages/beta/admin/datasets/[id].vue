@@ -96,8 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, DatasetQualityTooltipContent } from '@datagouv/components-next'
-import { DatasetQualityScore, summarize, type Dataset } from '@datagouv/components-next'
+import { BrandedButton, DatasetQualityTooltipContent, type DatasetV2, DatasetQualityScore, summarize } from '@datagouv/components-next'
 import { RiDownloadLine, RiEyeLine, RiInformationLine, RiLineChartLine, RiPriceTag3Line } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -108,7 +107,7 @@ const { t } = useI18n()
 const { currentOrganization } = useCurrentOwned()
 
 const route = useRoute()
-const url = computed(() => `/api/1/datasets/${route.params.id}`)
-const { data: dataset } = await useAPI<Dataset>(url)
+const url = computed(() => `/api/2/datasets/${route.params.id}`)
+const { data: dataset } = await useAPI<DatasetV2>(url)
 watchEffect(() => console.log(dataset.value))
 </script>

@@ -103,7 +103,7 @@ import SearchableSelect from '~/components/SearchableSelect.vue'
 import type { DatasetSuggest } from '~/types/types'
 
 const sortableRootRef = useTemplateRef('sortableRoot')
-const datasetsById = ref<Record<string, Dataset>>({})
+const datasetsById = ref<Record<string, Dataset | DatasetV2>>({})
 
 const selectedDatasetsSuggest = defineModel<Array<Dataset | DatasetV2 | DatasetSuggest>>({ required: true })
 const datasetUrl = ref('')
@@ -130,7 +130,7 @@ watchEffect(async () => {
       datasetsById.value[dataset.id] = dataset
     }
     else {
-      datasetsById.value[dataset.id] = await $api<Dataset>(`/api/1/datasets/${dataset.id}/`)
+      datasetsById.value[dataset.id] = await $api<Dataset>(`/api/2/datasets/${dataset.id}/`)
     }
   }
 })
@@ -149,7 +149,7 @@ const loadDatasetByLink = async () => {
   }
   const id = matches[1]
   try {
-    const dataset = await $api<Dataset>(`/api/1/datasets/${id}/`)
+    const dataset = await $api<DatasetV2>(`/api/2/datasets/${id}/`)
     if (selectedDatasetsSuggest.value.find(suggest => suggest.id === dataset.id)) {
       datasetUrlError.value = t('The dataset is already present in the list.')
       return
