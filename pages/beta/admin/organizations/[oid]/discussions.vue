@@ -58,7 +58,6 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const { t } = useI18n()
-const config = useRuntimeConfig()
 
 const page = ref(1)
 const pageSize = ref(20)
@@ -75,20 +74,19 @@ function sort(column: DiscussionSortedBy, newDirection: SortDirection) {
   direction.value = newDirection
 }
 
-const url = computed(() => {
-  const url = new URL(`/api/1/discussions/`, config.public.apiBase)
+const params = computed(() => {
   if (!currentOrganization.value) {
     throw 'Cannot load this component outside organization URL.'
   }
+  return {
+    org: currentOrganization.value.id,
 
-  url.searchParams.set('org', currentOrganization.value.id)
-  url.searchParams.set('sort', sortDirection.value)
-  url.searchParams.set('q', qDebounced.value)
-  url.searchParams.set('page_size', pageSize.value.toString())
-  url.searchParams.set('page', page.value.toString())
+    sort: sortDirection.value,
+    q: qDebounced.value,
 
-  return url.toString()
+    page_size: pageSize.value,
+    page: page.value,
+  }
 })
-
-const { data: pageData, status } = await useAPI<PaginatedArray<Thread>>(url, { lazy: true })
+const { data: pageData, status } = await useAPI<PaginatedArray<Thread>>('/api/1/discussions/', { lazy: true, query: params })
 </script>
