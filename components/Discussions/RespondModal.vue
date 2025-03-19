@@ -42,7 +42,6 @@
           color="warning"
           :loading
           :icon="RiChatDeleteLine"
-          :disabled="!comment"
           @click="send(true, close)"
         >
           {{ $t('Respond & Close') }}
@@ -51,7 +50,6 @@
           color="primary"
           :loading
           :icon="RiSendPlaneLine"
-          :disabled="!comment"
           @click="send(false, close)"
         >
           {{ $t('Respond') }}
