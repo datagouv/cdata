@@ -5,11 +5,15 @@
         <AdminTableTh
           :sorted="sorted('title')"
           scope="col"
+          class="w-1/3"
           @sort="(direction: SortDirection) => $emit('sort', 'title', direction)"
         >
           {{ t("Discussion") }}
         </AdminTableTh>
-        <AdminTableTh scope="col">
+        <AdminTableTh
+          scope="col"
+          class="w-44"
+        >
           {{ t("Status") }}
         </AdminTableTh>
         <AdminTableTh
@@ -27,6 +31,7 @@
         <AdminTableTh
           :sorted="sorted('created')"
           scope="col"
+          class="w-44"
           @sort="(direction: SortDirection) => $emit('sort', 'created', direction)"
         >
           {{ t("Created at") }}
@@ -34,6 +39,7 @@
         <AdminTableTh
           :sorted="sorted('closed')"
           scope="col"
+          class="w-44"
           @sort="(direction: SortDirection) => $emit('sort', 'closed', direction)"
         >
           {{ t("Closed at") }}
