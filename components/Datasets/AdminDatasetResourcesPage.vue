@@ -8,21 +8,21 @@
         {{ t('{n} files', resourcesPage.total) }}
       </h2>
       <div class="flex items-center space-x-3">
-        <component :is="resourcesPage && resourcesPage.total > maxSortableFiles ? Tooltip : 'div' ">
+        <component :is="resourcesPage && resourcesPage.total > config.public.maxSortableFiles ? Tooltip : 'div' ">
           <BrandedButton
             v-if="! reorder"
             color="secondary"
             size="xs"
             :icon="RiDraggable"
             :loading="loadingForOrdering"
-            :disabled="!!resourcesPage && resourcesPage.total > maxSortableFiles"
+            :disabled="!!resourcesPage && resourcesPage.total > config.public.maxSortableFiles"
             @click="startReorder()"
           >
             {{ $t('Reorder files') }}
           </BrandedButton>
 
           <template #tooltip>
-            {{ $t('Cannot reorder dataset\'s files when there is more than {max} files', { max: maxSortableFiles }) }}
+            {{ $t('Cannot reorder dataset\'s files when there is more than {max} files', { max: config.public.maxSortableFiles }) }}
           </template>
         </component>
         <BrandedButton
@@ -241,7 +241,7 @@ const updateResource = async (closeModal: () => void, resourceForm: ResourceForm
   toast.success(t('Resource updated!'))
 }
 
-const maxSortableFiles = 50 // TODO add to config
+const config = useRuntimeConfig()
 const sortablesFiles = ref<Array<Resource>>([])
 const loadingForOrdering = ref(false)
 const sortableRootRef = useTemplateRef('sortableRoot')
@@ -257,7 +257,7 @@ const startReorder = async () => {
     })
     loadingForOrdering.value = true
     const baseParams = params.value
-    baseParams.page_size = maxSortableFiles
+    baseParams.page_size = config.public.maxSortableFiles
     sortablesFiles.value = (await $api<PaginatedArray<Resource>>(dataset.value.resources.href, { query: params.value })).data
 
     reorder.value = true
