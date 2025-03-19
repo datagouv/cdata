@@ -997,5 +997,13 @@
   "Edit the contact point": "Éditer le point de contact",
   "Contact point updated!": "Point de contact mis à jour!",
   "Contact points": "Points de contact",
-  "": ""
+  "Actions": "Actions",
+  "All discussions": "Toutes les discussions",
+  "Closed discussions": "Discussions clôturées",
+  "Opened discussions": "Discussions ouvertes",
+  "Respond": "Répondre",
+  "Respond to the discussion": "Répondre à la discussion",
+  "Posted on {date}": "Posté le {date}",
+  "Your message": "Votre message",
+  "Respond & Close": "Répondre & Clôturer"
 }

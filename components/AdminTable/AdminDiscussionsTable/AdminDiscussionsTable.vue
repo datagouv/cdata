@@ -127,6 +127,11 @@
           >
             {{ getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id]) }}
           </BrandedButton>
+
+          <DiscussionsRespondModal
+            :thread="discussion"
+            @responded="$emit('refresh')"
+          />
         </td>
       </tr>
     </tbody>
@@ -152,6 +157,7 @@ const props = defineProps<{
 
 defineEmits<{
   (event: 'sort', column: DiscussionSortedBy, direction: SortDirection): void
+  (event: 'refresh'): void
 }>()
 
 const { t } = useI18n()
