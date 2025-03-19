@@ -2,7 +2,7 @@
   <NuxtLayout>
     <div class="fr-container fr-py-9v">
       <div class="prose">
-        <template v-if="error.statusCode === 404">
+        <template v-if="error && error.statusCode === 404">
           <h1>{{ $t('Error 404') }}</h1>
           <p>{{ $t("The page you're looking for cannot be found.") }}</p>
         </template>
@@ -10,7 +10,7 @@
           <h1>{{ $t('Error') }}</h1>
           <p>{{ $t('Something did not work as expected.') }}</p>
 
-          <p>
+          <p v-if="error">
             <strong>{{ error.message }}</strong>
           </p>
         </template>

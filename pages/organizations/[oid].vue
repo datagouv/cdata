@@ -2,7 +2,10 @@
 <template>
   <div class="bg-blue-lightest">
     <div class="container">
-      <div class="flex items-center justify-between">
+      <div
+        v-if="organization"
+        class="flex items-center justify-between"
+      >
         <Breadcrumb>
           <BreadcrumbItem
             to="/"
@@ -25,7 +28,10 @@
         </div>
       </div>
     </div>
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-if="organization"
+      :status
+    >
       <div class="container pt-14">
         <p
           v-if="organization.deleted"
@@ -89,9 +95,12 @@ const me = useMaybeMe()
 const url = computed(() => `/api/1/organizations/${route.params.oid}/`)
 const { data: organization, status } = await useAPI<Organization>(url)
 
+const title = computed(() => organization.value?.name)
+const robots = computed(() => organization.value && !organization.value.metrics.dataservices && !organization.value.metrics.datasets && !organization.value.metrics.reuses ? 'noindex, nofollow' : 'all')
+
 useSeoMeta({
-  title: organization.value.name,
-  robots: !organization.value.metrics.dataservices && !organization.value.metrics.datasets && !organization.value.metrics.reuses ? 'noindex, nofollow' : 'all',
+  title,
+  robots,
 })
 
 const type = computed(() => getOrganizationType(organization.value))

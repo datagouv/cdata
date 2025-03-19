@@ -1,6 +1,9 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <div class="container mb-24">
+  <div
+    v-if="post"
+    class="container mb-24"
+  >
     <div class="flex items-center">
       <Breadcrumb class="flex-1">
         <li>
@@ -86,8 +89,20 @@ const me = useMaybeMe()
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
 const { data: post } = await useAPI<Post>(url)
 
+const name = computed(() => post.value?.name)
+const robots = computed(() => !post.value?.published ? 'noindex, nofollow' : 'all')
+
 useSeoMeta({
-  title: () => post.value ? post.value.name : '',
-  robots: () => (!post.value || !post.value.published) ? 'noindex, nofollow' : 'all',
+  title: name,
+  robots: robots,
+})
+useHead({
+  script: [
+    {
+      'data-udata': 'https://www.data.gouv.fr/',
+      'src': 'https://static.data.gouv.fr/static/oembed.js',
+      'body': true,
+    },
+  ],
 })
 </script>
