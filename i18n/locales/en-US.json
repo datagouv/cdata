@@ -1027,5 +1027,12 @@
   "Describe your community resource": "Describe your community resource",
   "Request pending approval": "Request pending approval",
   "This organization hasn't published any reuses yet.": "This organization hasn't published any reuses yet.",
-  "What's a reuse ?": "What's a reuse ?"
+  "What's a reuse ?": "What's a reuse ?",
+  "Reorder files": "Reorder files",
+  "Cannot reorder dataset's files when there is more than {max} files": "Cannot reorder dataset's files when there is more than {max} files",
+  "Save new order": "Save new order",
+  "Cancel reorder": "Cancel reorder",
+  "Move up": "Move up",
+  "Move down": "Move down",
+  "See public page": "See public page"
 }

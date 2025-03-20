@@ -1035,5 +1035,12 @@
   "Describe your community resource": "Décrivez votre ressource communautaire",
   "Request pending approval": "Requêtes en attente d'approbation",
   "This organization hasn't published any reuses yet.": "Cette organisation n'a pas encore publié de réutilisations.",
-  "What's a reuse ?": "Qu'est-ce qu'une réutilisation ?"
+  "What's a reuse ?": "Qu'est-ce qu'une réutilisation ?",
+  "Reorder files": "Réordonner les fichiers",
+  "Cannot reorder dataset's files when there is more than {max} files": "Impossible de réordonner les fichiers quand il y a plus de {max} fichiers",
+  "Save new order": "Sauvegarder le nouvel ordre",
+  "Cancel reorder": "Annuler le changement d'ordre",
+  "Move up": "Déplacer vers le haut",
+  "Move down": "Déplacer vers le bas",
+  "See public page": "Voir la page publique"
 }
