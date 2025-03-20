@@ -1,5 +1,8 @@
 <template>
-  <form class="flex">
+  <form
+    :id="formId"
+    class="flex"
+  >
     <Sidemenu
       class="w-5/12 hidden lg:block"
       :button-text="$t('Help')"
@@ -20,7 +23,10 @@
       />
     </Sidemenu>
     <div class="w-full lg:w-7/12">
-      <div class="fr-p-3w bg-white">
+      <div
+        class="bg-white"
+        :class="{ 'fr-p-3w': !noMargin }"
+      >
         <slot />
       </div>
     </div>
@@ -32,9 +38,13 @@ import type { FormInfo } from '~/composables/useForm'
 
 import { key } from '~/components/Accordion/injectionKey'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   formInfo: FormInfo<T>
-}>()
+  formId?: string
+  noMargin?: boolean
+}>(), {
+  noMargin: false,
+})
 const accordionsId = useId()
 
 provide('accordionsId', accordionsId)

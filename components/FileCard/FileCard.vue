@@ -152,9 +152,9 @@ import { computed } from 'vue'
 import { RiCodeSSlashLine, RiDeleteBinLine, RiInformationLine, RiLink, RiMapPin2Line } from '@remixicon/vue'
 import FileEditModal from '../Datasets/FileEditModal.vue'
 import FileLoader from './FileLoader.vue'
-import type { ResourceForm } from '~/types/types'
+import type { CommunityResourceForm, ResourceForm } from '~/types/types'
 
-const resourceForm = defineModel<ResourceForm>({ required: true })
+const resourceForm = defineModel<ResourceForm | CommunityResourceForm>({ required: true })
 
 withDefaults(defineProps<{
   showEditAndWarning?: boolean
@@ -169,7 +169,7 @@ defineEmits<{
   (e: 'delete' | 'edit'): void
 }>()
 
-const save = (close: () => void, form: ResourceForm) => {
+const save = (close: () => void, form: ResourceForm | CommunityResourceForm) => {
   // We don't want to link the `form` inside the modal to the
   // model here because otherwise when clicking "cancel" the
   // modification are still present

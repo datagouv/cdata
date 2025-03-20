@@ -440,7 +440,7 @@
 
 <script setup lang="ts">
 import { Avatar, BrandedButton, getUserAvatar } from '@datagouv/components-next'
-import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiGovernmentLine, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine } from '@remixicon/vue'
+import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiGovernmentLine, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiP2pLine, RiGitPullRequestLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { NuxtImg, NuxtLinkLocale } from '#components'
 import SiteLogo from '~/components/SiteLogo.vue'
@@ -480,6 +480,7 @@ const publishMenu = [
   { label: t('A reuse'), icon: RiLineChartLine, link: '/beta/admin/reuses/new/' },
   { label: t('A harverster'), icon: RiServerLine, link: '/beta/admin/harvesters/new/' },
   { label: t('An organization'), icon: RiGovernmentLine, link: '/beta/admin/organizations/new/' },
+  { label: t('A community resource'), icon: RiGitPullRequestLine, link: '/beta/admin/community-resources/new/' },
   { label: t('A post'), icon: RiArticleLine, link: '/beta/admin/posts/new/', show: isAdmin(me.value ?? null) },
 ]
 

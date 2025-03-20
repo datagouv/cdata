@@ -44,16 +44,11 @@
       >
         <td>
           <AdminContentWithTooltip class="fr-text--bold">
-            <a
-              class="fr-link fr-reset-link"
-              :href="getCommunityResourceLinkToAdmin(communityResource)"
-            >
-              <TextClamp
-                :text="communityResource.title"
-                :auto-resize="true"
-                :max-lines="2"
-              />
-            </a>
+            <TextClamp
+              :text="communityResource.title"
+              :auto-resize="true"
+              :max-lines="2"
+            />
           </AdminContentWithTooltip>
           <p v-if="communityResource.dataset">
             <LinkToSubject
@@ -96,7 +91,7 @@ import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
-import type { AdminBadgeType, CommunityResourceSortedBy, ResourceForm, SortDirection } from '~/types/types'
+import type { AdminBadgeType, CommunityResourceForm, CommunityResourceSortedBy, ResourceForm, SortDirection } from '~/types/types'
 import FileEditModal from '~/components/Datasets/FileEditModal.vue'
 
 const props = defineProps<{
@@ -110,7 +105,6 @@ const emit = defineEmits<{
   (event: 'refresh'): void
 }>()
 
-const config = useRuntimeConfig()
 const { t } = useI18n()
 const { toast } = useToast()
 
@@ -121,10 +115,6 @@ function sorted(column: CommunityResourceSortedBy) {
     return props.sortDirection
   }
   return null
-}
-
-function getCommunityResourceLinkToAdmin(communityResource: CommunityResource) {
-  return `${config.public.apiBase}/en/admin/dataset/${communityResource.dataset.id}/community-resource/${communityResource.id}/`
 }
 
 function getStatus(communityResource: CommunityResource): { label: string, type: AdminBadgeType } {
@@ -150,7 +140,7 @@ function getStatus(communityResource: CommunityResource): { label: string, type:
 }
 
 const loading = ref(false)
-const updateResource = async (communityResource: CommunityResource, closeModal: () => void, resourceForm: ResourceForm) => {
+const updateResource = async (communityResource: CommunityResource, closeModal: () => void, resourceForm: ResourceForm | CommunityResourceForm) => {
   loading.value = true
 
   try {
