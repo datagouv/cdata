@@ -110,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { DatasetCard, DatasetQuality, ReadMore, ResourceAccordion, SimpleBanner, type Dataset } from '@datagouv/components-next'
+import { DatasetCard, DatasetQuality, ReadMore, ResourceAccordion, SimpleBanner, type DatasetV2 } from '@datagouv/components-next'
 import DatasetSearchPage from '~/components/Datasets/SearchPage.vue'
 import AdminBadge from '~/design-system/AdminBadge.vue'
 import BannerAction from '~/design-system/BannerAction.vue'
@@ -120,5 +120,5 @@ import BrandedButton from '~/design-system/BrandedButton.vue'
 import OrganizationNameWithCertificate from '~/design-system/OrganizationNameWithCertificate.vue'
 import SearchInput from '~/design-system/SearchInput.vue'
 
-const { data: dataset } = await useAPI<Dataset>('/api/1/datasets/repertoire-national-des-elus-1')
+const { data: dataset } = await useAPI<DatasetV2>('/api/2/datasets/repertoire-national-des-elus-1')
 </script>
