@@ -1,15 +1,15 @@
 <template>
-  <div>
+  <div lang="fr">
     <div class="container">
       <Breadcrumb>
         <BreadcrumbItem
           :external="true"
           to="/"
         >
-          {{ $t('Home') }}
+          Accueil
         </BreadcrumbItem>
         <BreadcrumbItem>
-          {{ $t('Support') }}
+          Support
         </BreadcrumbItem>
       </Breadcrumb>
     </div>
@@ -26,9 +26,12 @@
       </h2>
       <div
         v-for="(question, index) in questions"
-        :key="question.title"
+        :key="question.id"
       >
-        <SupportTitle :id="question.id">
+        <SupportTitle
+          v-if="question.title"
+          :id="question.title"
+        >
           {{ question.title }}
         </SupportTitle>
         <SupportChoices
@@ -48,23 +51,22 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import type { Question } from '~/types/support'
 
 const firstQuestion: Question = { id, title, choices }
-const questions = ref([firstQuestion])
+const questions = ref<Array<Question>>([firstQuestion])
 const answers = ref<Array<string>>([])
 
 function select(id: string, index: number) {
   answers.value[index] = id
 }
 
-watchEffect(() => {
+watchEffect(async () => {
   console.log(choices)
   questions.value = [firstQuestion]
   for (const step in answers.value) {
     const id = answers.value[step]
-    const answer = questions.value[step].choices?.find(choice => choice.id === id)
+    const answer = questions.value[step] && 'choices' in questions.value[step] && questions.value[step].choices.find(choice => choice.id === id)
     if (answer) {
       questions.value.push(answer)
     }
-    console.log(step, answer)
   }
 })
 </script>

@@ -1,0 +1,2 @@
+Le site data.gouv.fr ne permet pas aux particuliers de remplir des formalités administratives et notre support n'est pas en mesure de vous aider sur ces sujets. Vous pouvez trouver une réponse à votre question sur le site [service-public.fr](https://www.service-public.fr/associations/vosdroits/F34727).
+<button href="https://www.service-public.fr/associations/vosdroits/F34727">Aller sur service-public.fr</button>

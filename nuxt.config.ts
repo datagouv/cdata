@@ -137,7 +137,8 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
 
   vite: {
-    plugins: [toml, tailwindcss()],
+    assetsInclude: ['**/*.md'],
+    plugins: [toml(), tailwindcss()],
     server: {
       allowedHosts: ['dev.local'],
     },

@@ -13,42 +13,42 @@ title = "Votre question porte sur ?"
     [[choices.choices.choices]]
     label = "Associations (RNA)"
     id = "rna"
-    answer = "answers/numero_rna.md"
+    answer = "numero_rna"
 
     [[choices.choices.choices]]
     label = "Personnes décédées"
     id = "deces"
-    answer = "answers/deces.md"
+    answer = "deces"
 
     [[choices.choices.choices]]
     label = "Formation"
     id = "formation"
-    answer = "answers/formation.md"
+    answer = "formation"
 
     [[choices.choices.choices]]
     label = "SIREN & SIRET"
     id = "siret"
-    answer = "answers/siret.md"
+    answer = "siret"
 
     [[choices.choices.choices]]
     label = "Immobilier (DVF)"
     id = "dvf"
-    answer = "answers/dvf.md"
+    answer = "dvf"
 
     [[choices.choices.choices]]
     label = "Base Adresse Nationale (BAN)"
     id = "ban"
-    answer = "answers/ban.md"
+    answer = "ban"
 
     [[choices.choices.choices]]
     label = "API découpage administratif"
     id = "decoupage"
-    answer = "answers/decoupe.md"  
+    answer = "decoupe"  
 
     [[choices.choices.choices]]
     label = "IRVE"
     id = "irve"
-    answer = "answers/irve.md"
+    answer = "irve"
       
     [[choices.choices.choices]]
     label = "Données géographiques"
@@ -59,7 +59,7 @@ title = "Votre question porte sur ?"
     [[choices.choices.choices]]
     label = "Autre"
     id = "other"
-    answer = "answers/question_donnees.md"
+    answer = "question_donnees"
 
   [[choices.choices]]
   label = "Une API"
@@ -68,32 +68,32 @@ title = "Votre question porte sur ?"
     [[choices.choices.choices]]
     label = "Demande d'information sur une API spécifique"
     id = "apispecifique"
-    answer = "answers/api_api-specifique.md"
+    answer = "api_api-specifique"
 
     [[choices.choices.choices]]
     label = "API non-référencée dans le catalogue"
     id = "apinonreferencee"
-    answer = "answers/api_recherche-api-non-referencee.md"
+    answer = "api_recherche-api-non-referencee"
 
     [[choices.choices.choices]]
     label = "Référencer une API"
     id = "referencerapi"
-    answer = "answers/api_referencer-api.md"
+    answer = "api_referencer-api"
 
     [[choices.choices.choices]]
     label = "API en accès restreint"
     id = "apiaccesrestreint"
-    answer = "answers/api_api-acces-restreint.md"
+    answer = "api_api-acces-restreint"
 
     [[choices.choices.choices]]
     label = "Autre"
     id = "apiother"
-    answer = "answers/api_other.md"
+    answer = "api_other"
 
   [[choices.choices]]
   label = "Une procédure administrative"
   id = "admin"
-  answer = "answers/demarches_admin.md"
+  answer = "demarches_admin"
 
   [[choices.choices]]
     label = "L'utilisation de data.gouv.fr"
@@ -120,7 +120,9 @@ title = "Votre question porte sur ?"
 [[choices]]
 label = "💡 Demande de données"
 id = "opendata"
-answer = "answers/demande_donnees.md"
+answer = "demande_donnees"
+button_link = 'https://forum.data.gouv.fr/c/recherche-et-ouverture-de-donnees/8'
+button_text = 'Consulter le forum'
 
 [[choices]]
 label = "🐛 Soumettre un bug"

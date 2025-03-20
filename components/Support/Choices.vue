@@ -2,7 +2,7 @@
   <div
     class="flex flex-wrap gap-2"
     role="listbox"
-    :aria-labelledby="question.id"
+    :aria-labelledby="question.title"
     tabindex="0"
     :aria-activedescendant="active"
     @keydown="handleKeyPressForActiveDescendant"
@@ -58,11 +58,36 @@
         </BrandedButton>
       </form>
     </template>
+    <template v-else-if="'answer' in question">
+      <SimpleBanner
+        type="gray"
+        class="p-8"
+      >
+        <h4 class="font-extrabold mb-3 text-lg">
+          Explication
+        </h4>
+        <MarkdownViewer
+          v-if="answerResponse"
+          :content="answerResponse"
+        />
+        <div
+          v-if="'button_link' in question"
+          class="mt-2 text-center"
+        >
+          <BrandedButton
+            :href="question.button_link"
+          >
+            {{ question.button_text }}
+          </BrandedButton>
+        </div>
+      </SimpleBanner>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import MarkdownViewer from '~/components/MarkdownViewer/MarkdownViewer.vue'
 import useActiveDescendant from '~/datagouv-components/src/composables/useActiveDescendant'
 import type { Question, QuestionWithRecipient } from '~/types/support'
 
@@ -75,6 +100,8 @@ const props = defineProps<{
   selected: string | undefined
 }>()
 
+const answerResponse = ref('')
+
 const { isActive, active, focusOut, handleKeyPressForActiveDescendant } = useActiveDescendant('choices' in props.question ? props.question.choices : [], 'horizontal')
 
 const { form, touch, getFirstError, validate } = useForm({
@@ -86,6 +113,13 @@ const { form, touch, getFirstError, validate } = useForm({
   subject: [required()],
   body: [required()],
 }, {
+})
+
+watchEffect(async () => {
+  if (props.question && 'answer' in props.question) {
+    const module = await import(`~/assets/config/answers/${props.question.answer}.md?raw`)
+    answerResponse.value = module.default
+  }
 })
 
 function submit(question: QuestionWithRecipient) {
