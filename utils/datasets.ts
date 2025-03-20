@@ -2,9 +2,9 @@ import type { Dataset, DatasetV2, Frequency, License, RegisteredSchema, Resource
 import type { FetchError } from 'ofetch'
 import { v4 as uuidv4 } from 'uuid'
 
-import type { DatasetForm, FileInfo, NewDatasetForApi, ResourceForm, SpatialGranularity, SpatialZone } from '~/types/types'
+import type { CommunityResourceForm, DatasetForm, DatasetSuggest, FileInfo, NewDatasetForApi, ResourceForm, SpatialGranularity, SpatialZone } from '~/types/types'
 
-export function useResourceForm(file: MaybeRef<ResourceForm>) {
+export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceForm>) {
   const isRemote = computed(() => toValue(file).filetype === 'remote')
   const { t } = useI18n()
 
@@ -82,19 +82,19 @@ export function toApi(form: DatasetForm, overrides: { private?: boolean, archive
   }
 }
 
-export function resourceToForm(resource: Resource, schemas: Array<RegisteredSchema>): ResourceForm {
-  const form = {
+export function resourceToForm(resource: Resource | CommunityResource, schemas: Array<RegisteredSchema>): ResourceForm | CommunityResourceForm {
+  let baseForm = {
     title: resource.title,
     type: resource.type,
     description: resource.description || '',
     schema: schemas.find(schema => schema.name === resource.schema?.name) || null,
 
     resource,
-  }
+  } as ResourceForm
 
   if (resource.filetype === 'remote') {
-    return {
-      ...form,
+    baseForm = {
+      ...baseForm,
       filetype: 'remote',
       url: resource.url,
       format: resource.format,
@@ -102,8 +102,8 @@ export function resourceToForm(resource: Resource, schemas: Array<RegisteredSche
     }
   }
   else if (resource.filetype === 'file') {
-    return {
-      ...form,
+    baseForm = {
+      ...baseForm,
       filetype: 'file',
       file: null,
     }
@@ -111,9 +111,21 @@ export function resourceToForm(resource: Resource, schemas: Array<RegisteredSche
   else {
     throwOnNever(resource.filetype, `Unknown resource.filetype ${resource.filetype}`)
   }
+
+  if ('dataset' in resource) {
+    // This is a community resource
+    return {
+      ...baseForm,
+      dataset: resource.dataset,
+      owned: resource.organization ? { organization: resource.organization, owner: null } : { owner: resource.owner, organization: null },
+    } satisfies CommunityResourceForm
+  }
+  else {
+    return baseForm
+  }
 }
 
-export function resourceToApi(form: ResourceForm): Resource {
+export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resource | CommunityResource {
   let resource = {
     filetype: form.filetype,
     title: form.title,
@@ -122,12 +134,18 @@ export function resourceToApi(form: ResourceForm): Resource {
     schema: form.schema,
   } as Resource
 
-  if (form.filetype === 'remote') {
-    resource = { ...resource, ...{
+  if (!form.filetype) {
+    throw new Error('Cannot convert to API a ResourceForm without filetype information')
+  }
+  else if (form.filetype === 'remote') {
+    if (!form.format) throw new Error('`format` is required for remote Resource')
+
+    resource = {
+      ...resource,
       url: form.url,
       format: form.format,
       mime: form.mime?.text || '',
-    } }
+    }
   }
   else if (form.filetype === 'file') {
     // Do nothing
@@ -136,10 +154,20 @@ export function resourceToApi(form: ResourceForm): Resource {
     throwOnNever(form, 'Unknown file type')
   }
 
+  if ('dataset' in form) {
+    if (!form.owned) throw new Error('`owned` is required for CommunityResource')
+
+    return {
+      ...resource,
+      dataset: form.dataset,
+      ...form.owned.organization ? { organization: form.owned.organization, owner: null } : { owner: form.owned.owner, organization: null },
+    } satisfies CommunityResource
+  }
+
   return resource
 }
 
-export async function sendFile(url: string, resourceForm: ResourceForm, fileInfo: FileInfo): Promise<Resource> {
+export async function sendFile(url: string, resourceForm: ResourceForm | CommunityResourceForm, fileInfo: FileInfo): Promise<Resource | CommunityResource> {
   const { $fileApi, $i18n } = useNuxtApp()
   const config = useRuntimeConfig()
 
@@ -226,9 +254,13 @@ export async function sendFile(url: string, resourceForm: ResourceForm, fileInfo
   }
 }
 
-export function getResourcesUrls(dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource | CommunityResource | null): { metadataUrl: string, metadataMethod: 'POST' | 'PUT', uploadUrl: string } {
+export function getResourcesUrls(
+  dataset: Dataset | DatasetV2 | DatasetSuggest | Omit<Dataset, 'resources' | 'community_resources'>,
+  resource: Resource | CommunityResource | null,
+  isCommunityResource: boolean, // Useful if `resource` is `null`
+): { metadataUrl: string, metadataMethod: 'POST' | 'PUT', uploadUrl: string } {
   if (resource) {
-    if ('organization' in resource) {
+    if (isCommunityResource) {
       // Existing community resource
       return {
         metadataUrl: `/api/1/datasets/community_resources/${resource.id}/`,
@@ -246,23 +278,41 @@ export function getResourcesUrls(dataset: Dataset | DatasetV2 | Omit<Dataset, 'r
     }
   }
   else {
-    // New resource
-    return {
-      metadataUrl: `/api/1/datasets/${dataset.id}/resources/`,
-      metadataMethod: 'POST',
-      uploadUrl: `/api/1/datasets/${dataset.id}/upload/`,
+    if (isCommunityResource) {
+      // New community resource
+      return {
+        metadataUrl: `/api/1/datasets/community_resources/`,
+        metadataMethod: 'POST',
+        uploadUrl: `/api/1/datasets/${dataset.id}/upload/community/`,
+      }
+    }
+    else {
+      // New classic resource
+      return {
+        metadataUrl: `/api/1/datasets/${dataset.id}/resources/`,
+        metadataMethod: 'POST',
+        uploadUrl: `/api/1/datasets/${dataset.id}/upload/`,
+      }
     }
   }
 }
 
-export async function saveResourceForm(dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resourceForm: ResourceForm) {
+type CommunityOrResource<T extends ResourceForm | CommunityResourceForm> = T extends CommunityResourceForm
+  ? CommunityResource
+  : Resource
+
+export async function saveResourceForm<T extends ResourceForm | CommunityResourceForm>(dataset: Dataset | DatasetV2 | DatasetSuggest | Omit<Dataset, 'resources' | 'community_resources'>, resourceForm: T): Promise<CommunityOrResource<T>> {
   const { $api } = useNuxtApp()
 
-  const { metadataUrl, metadataMethod, uploadUrl } = getResourcesUrls(dataset, resourceForm.resource)
+  const { metadataUrl, metadataMethod, uploadUrl } = getResourcesUrls(dataset, resourceForm.resource, 'dataset' in resourceForm)
+
+  if (!resourceForm.filetype) {
+    throw new Error('Cannot save a resource without filetype')
+  }
 
   // If this is a remote file, it's easy just send all the information to the server.
   if (resourceForm.filetype === 'remote') {
-    return await $api<Resource>(metadataUrl, {
+    return await $api<CommunityOrResource<T>>(metadataUrl, {
       method: metadataMethod,
       body: JSON.stringify(resourceToApi(resourceForm)),
     })
@@ -287,14 +337,13 @@ export async function saveResourceForm(dataset: Dataset | DatasetV2 | Omit<Datas
     }
   }
 
-  const { metadataUrl: newMetadataUrl, metadataMethod: alwaysPut } = getResourcesUrls(dataset, resource)
+  const { metadataUrl: newMetadataUrl, metadataMethod: alwaysPut } = getResourcesUrls(dataset, resource, 'dataset' in resourceForm)
 
   // Then we need to update the resource's metadata
-  const updatedResource = await $api<Resource>(newMetadataUrl, {
+  return await $api<CommunityOrResource<T>>(newMetadataUrl, {
     method: alwaysPut,
     body: JSON.stringify(resourceToApi(resourceForm)),
   })
-  return updatedResource
 }
 
 export async function retry<T>(promise: () => Promise<T>, count: number): Promise<T> {
@@ -311,14 +360,21 @@ export async function retry<T>(promise: () => Promise<T>, count: number): Promis
   }
 }
 
-export function guessFormat(resourceForm: ResourceForm, extensions: Array<string>): string | null {
-  if (resourceForm.filetype === 'remote') return resourceForm.format.trim().toLowerCase()
+export function guessFormat(resourceForm: ResourceForm | CommunityResourceForm, extensions: Array<string>): string | null {
+  if (resourceForm.filetype === 'remote') {
+    if (resourceForm.format) {
+      return resourceForm.format.trim().toLowerCase()
+    }
+    else {
+      return null
+    }
+  }
 
   if (resourceForm.resource && resourceForm.resource.format) {
     return resourceForm.resource.format.trim().toLowerCase()
   }
 
-  if (!resourceForm.file) return null
+  if (!resourceForm.filetype || !resourceForm.file) return null
   return guessFormatFromRawFile(resourceForm.file.raw, extensions)
 }
 
@@ -332,7 +388,7 @@ export function guessFormatFromRawFile(file: File, extensions: Array<string>): s
   return null
 }
 
-export function getFilesize(resourceForm: ResourceForm): number | null {
+export function getFilesize(resourceForm: ResourceForm | CommunityResourceForm): number | null {
   if (resourceForm.filetype === 'file' && resourceForm.file) {
     return resourceForm.file.raw.size
   }
