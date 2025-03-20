@@ -188,7 +188,7 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
 
   // We do not check currently if the file is already loading if the user
   // called the function multiple times. But it shouldn't happen?
-  fileInfo.state = { status: 'loading' }
+  fileInfo.state = { status: 'loading', percentage_between_0_and_1: 0 }
 
   // If it's a local file, first we need to send the file data as multipart/form-data
   const uuid = uuidv4()
@@ -202,7 +202,6 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
     if (fileInfo.raw.size && fileInfo.raw.size > chunkSize) {
       const nbChunks = Math.ceil(fileInfo.raw.size / chunkSize)
       let chunkStart = 0
-      const promises = []
 
       for (let i = 0; i < nbChunks; i++) {
         const chunk = fileInfo.raw.slice(chunkStart, chunkStart + chunkSize, fileInfo.raw.type)
@@ -215,7 +214,7 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
         chunkData.set('totalparts', nbChunks.toString())
         chunkData.set('chunksize', chunk.size.toString())
 
-        promises.push(retry(() => {
+        await retry(() => {
           return $fileApi<{
             error: string | null
             message: string
@@ -225,11 +224,12 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
             method: 'POST',
             body: chunkData,
           })
-        }, 3))
+        }, 3)
+
         chunkStart += chunkSize
+        fileInfo.state = { status: 'loading', percentage_between_0_and_1: chunkStart / fileInfo.raw.size }
       }
 
-      await Promise.all(promises)
       formData.delete('file') // Remove the file, it has already be sent in chunks
       formData.set('totalparts', nbChunks.toString())
     }

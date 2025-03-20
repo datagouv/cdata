@@ -253,7 +253,7 @@ export type UnknownResourceForm = BaseResourceForm & {
   format?: string | null
 }
 
-export type FileLoadingState = { status: 'waiting' } | { status: 'loading' } | { status: 'failed', message: string } | { status: 'uploaded', resource: Resource }
+export type FileLoadingState = { status: 'waiting' } | { status: 'loading', percentage_between_0_and_1: number } | { status: 'failed', message: string } | { status: 'uploaded', resource: Resource }
 export type FileInfo = { raw: File, state: FileLoadingState }
 
 export type ResourceFormLocal = BaseResourceForm & {

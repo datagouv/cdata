@@ -22,6 +22,15 @@
     </template>
 
     <template #default="{ close }">
+      <div
+        v-if="'file' in resourceForm && resourceForm.file && resourceForm.file.state.status === 'loading'"
+        class="fixed h-2 top-0 inset-x-0 flex"
+      >
+        <div
+          class="bg-datagouv-dark h-full"
+          :style="{ width: `${resourceForm.file.state.percentage_between_0_and_1 * 100}%` }"
+        />
+      </div>
       <DescribeResource
         v-model="resourceForm"
         type="update"
