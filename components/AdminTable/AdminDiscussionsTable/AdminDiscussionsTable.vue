@@ -46,6 +46,7 @@
         </AdminTableTh>
         <AdminTableTh
           scope="col"
+          class="w-28"
         >
           {{ t("Actions") }}
         </AdminTableTh>
