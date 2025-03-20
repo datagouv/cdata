@@ -72,6 +72,7 @@
             <AdminTableTh
               v-if="reorder"
               scope="col"
+              class="w-32"
             />
             <AdminTableTh
               scope="col"
@@ -106,11 +107,33 @@
         </thead>
         <tbody ref="sortableRoot">
           <tr
-            v-for="resource in (reorder ? sortablesFiles : resourcesPage.data)"
+            v-for="resource, index in files"
             :key="resource.id"
           >
             <td v-if="reorder">
-              <RiDraggable class="handle" />
+              <div class="flex items-center">
+                <BrandedButton
+                  :icon="RiArrowUpLine"
+                  color="secondary-softer"
+                  keep-margins-even-without-borders
+                  :disabled="index === 0"
+                  icon-only
+                  @click="moveFile(index, index - 1)"
+                >
+                  {{ $t('Move up') }}
+                </BrandedButton>
+                <RiDraggable class="handle" />
+                <BrandedButton
+                  :icon="RiArrowDownLine"
+                  color="secondary-softer"
+                  keep-margins-even-without-borders
+                  :disabled="index === files.length - 1"
+                  icon-only
+                  @click="moveFile(index, index + 1)"
+                >
+                  {{ $t('Move down') }}
+                </BrandedButton>
+              </div>
             </td>
             <td>
               <TextClamp
@@ -165,7 +188,7 @@
 <script setup lang="ts">
 import { BrandedButton, Pagination, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
-import { RiCheckLine, RiDraggable } from '@remixicon/vue'
+import { RiArrowDownLine, RiArrowUpLine, RiCheckLine, RiDraggable } from '@remixicon/vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { useTemplateRef } from 'vue'
 import AdminTable from '../AdminTable/Table/AdminTable.vue'
@@ -247,6 +270,9 @@ const loadingForOrdering = ref(false)
 const sortableRootRef = useTemplateRef('sortableRoot')
 const didSort = ref(false)
 const reorder = ref(false)
+
+const files = computed(() => reorder.value ? sortablesFiles.value : resourcesPage.value?.data || [])
+
 const startReorder = async () => {
   if (!dataset.value) return
   try {
@@ -268,6 +294,15 @@ const startReorder = async () => {
   finally {
     loadingForOrdering.value = false
   }
+}
+
+const moveFile = (fromIndex: number, toIndex: number) => {
+  if (!reorder.value) throw new Error('Cannot moveFile outside reorder')
+
+  const file = sortablesFiles.value[fromIndex]
+  sortablesFiles.value.splice(fromIndex, 1)
+  sortablesFiles.value.splice(toIndex, 0, file)
+  didSort.value = true
 }
 
 const cancelReorder = () => {
