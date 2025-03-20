@@ -1,13 +1,15 @@
 <template>
-  <Avatar
-    v-bind="$attrs"
-    :user="user"
-    :size
-    :rounded="true"
-  />
-  <span class="fr-ml-1v fr-text--bold">
-    {{ user.first_name }}
-    {{ user.last_name }}
+  <span class="inline-flex items-center space-x-1">
+    <Avatar
+      v-bind="$attrs"
+      :user="user"
+      :size
+      :rounded="true"
+    />
+    <span class="fr-text--bold">
+      {{ user.first_name }}
+      {{ user.last_name }}
+    </span>
   </span>
 </template>
 
