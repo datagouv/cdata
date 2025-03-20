@@ -12,6 +12,7 @@
       </BreadcrumbItem>
     </Breadcrumb>
     <OrganizationListPage
+      v-if="organizations"
       :link="getLink"
       :organizations
       :sort

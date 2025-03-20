@@ -145,11 +145,10 @@
               {{ t("Last connection") }}
             </AdminTableTh>
             <AdminTableTh
-              v-if="isOrgAdmin"
-              class="w-16"
+              class="w-24"
               scope="col"
             >
-              {{ t("Action") }}
+              {{ t("Actions") }}
             </AdminTableTh>
           </tr>
         </thead>
@@ -159,7 +158,18 @@
             :key="member.user.id"
           >
             <td>
-              <p class="fr-text--bold fr-m-0">
+              <p v-if="isGlobalAdmin">
+                <NuxtLinkLocale
+                  :to="`/beta/admin/users/${member.user.id}/profile`"
+                  class="fr-text--bold fr-m-0"
+                >
+                  {{ member.user.first_name }} {{ member.user.last_name }}
+                </NuxtLinkLocale>
+              </p>
+              <p
+                v-else
+                class="fr-text--bold fr-m-0"
+              >
                 {{ member.user.first_name }} {{ member.user.last_name }}
               </p>
               <p class="fr-m-0 fr-text--xs text-mention-grey f-italic inline-flex items-center">
@@ -185,81 +195,94 @@
               <span v-if="member.user.last_login_at">{{ formatFromNow(member.user.last_login_at) }}</span>
               <span v-else>{{ t("No connection") }}</span>
             </td>
-            <td v-if="isOrgAdmin">
-              <ModalWithButton
-                :title="$t('Edit member')"
-                size="lg"
-                @open="newRole = member.role"
-              >
-                <template #button="{ attrs, listeners }">
-                  <BrandedButton
-                    color="secondary-softer"
-                    :icon="RiPencilLine"
-                    icon-only
-                    size="xs"
-                    keep-margins-even-without-borders
-                    v-bind="attrs"
-                    v-on="listeners"
-                  >
-                    {{ t("Edit") }}
-                  </BrandedButton>
-                </template>
+            <td>
+              <div class="flex items-center">
+                <BrandedButton
+                  :href="member.user.page"
+                  color="secondary-softer"
+                  :icon="RiEyeLine"
+                  size="xs"
+                  icon-only
+                  keep-margins-even-without-borders
+                >
+                  {{ $t('See public page') }}
+                </BrandedButton>
+                <ModalWithButton
+                  v-if="isOrgAdmin"
+                  :title="$t('Edit member')"
+                  size="lg"
+                  @open="newRole = member.role"
+                >
+                  <template #button="{ attrs, listeners }">
+                    <BrandedButton
+                      color="secondary-softer"
+                      :icon="RiPencilLine"
+                      icon-only
+                      size="xs"
+                      keep-margins-even-without-borders
+                      v-bind="attrs"
+                      v-on="listeners"
+                    >
+                      {{ t("Edit") }}
+                    </BrandedButton>
+                  </template>
 
-                <template #default="{ close }">
-                  <div class="fr-grid-row fr-grid-row--middle fr-mb-2w">
-                    <Avatar
-                      class="fr-mr-1v"
-                      :user="member.user"
-                      :rounded="true"
-                      :size="24"
-                    />
-                    <p class="fr-text--bold fr-m-0 fr-mr-1v">
-                      {{ member.user.first_name }} {{ member.user.last_name }}
-                    </p>
-                    <AdminEmail
-                      v-if="member.user.email"
-                      :email="member.user.email"
-                    />
-                  </div>
-                  <form
-                    class="flex flex-wrap gap-4 items-end"
-                    @submit.prevent="updateRole(member, close)"
-                  >
-                    <div class="flex-1">
-                      <SelectGroup
-                        v-if="roles.length > 0"
-                        v-model="newRole"
-                        :label="t('Role of the member')"
-                        :options="rolesOptions"
+                  <template #default="{ close }">
+                    <div class="fr-grid-row fr-grid-row--middle fr-mb-2w">
+                      <Avatar
+                        class="fr-mr-1v"
+                        :user="member.user"
+                        :rounded="true"
+                        :size="24"
+                      />
+                      <p class="fr-text--bold fr-m-0 fr-mr-1v">
+                        {{ member.user.first_name }} {{ member.user.last_name }}
+                      </p>
+                      <AdminEmail
+                        v-if="member.user.email"
+                        :email="member.user.email"
                       />
                     </div>
-                    <div>
-                      <BrandedButton
-                        type="submit"
-                        :disabled="loading"
-                      >
-                        {{ t("Validate") }}
-                      </BrandedButton>
-                    </div>
-                  </form>
-                  <BannerAction
-                    class="mt-4"
-                    type="danger"
-                    :title="$t('Remove member from the organization')"
-                  >
-                    {{ t("Be careful, this action can't be reverse.") }}
-                    <template #button>
-                      <BrandedButton
-                        :loading
-                        :icon="RiLogoutBoxRLine"
-                        @click="removeMemberFromOrganization(member, close)"
-                      >
-                        {{ t('Remove member') }}
-                      </BrandedButton>
-                    </template>
-                  </BannerAction>
-                </template>
-              </ModalWithButton>
+                    <form
+                      class="flex flex-wrap gap-4 items-end"
+                      @submit.prevent="updateRole(member, close)"
+                    >
+                      <div class="flex-1">
+                        <SelectGroup
+                          v-if="roles.length > 0"
+                          v-model="newRole"
+                          :label="t('Role of the member')"
+                          :options="rolesOptions"
+                        />
+                      </div>
+                      <div>
+                        <BrandedButton
+                          type="submit"
+                          :disabled="loading"
+                        >
+                          {{ t("Validate") }}
+                        </BrandedButton>
+                      </div>
+                    </form>
+                    <BannerAction
+                      class="mt-4"
+                      type="danger"
+                      :title="$t('Remove member from the organization')"
+                    >
+                      {{ t("Be careful, this action can't be reverse.") }}
+                      <template #button>
+                        <BrandedButton
+                          :loading
+                          :icon="RiLogoutBoxRLine"
+                          @click="removeMemberFromOrganization(member, close)"
+                        >
+                          {{ t('Remove member') }}
+                        </BrandedButton>
+                      </template>
+                    </BannerAction>
+                  </template>
+                </ModalWithButton>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -272,7 +295,7 @@
 import { Avatar, getUserAvatar, type Member, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RiAddLine, RiLogoutBoxRLine, RiMailLine, RiPencilLine } from '@remixicon/vue'
+import { RiAddLine, RiEye2Line, RiEyeLine, RiLogoutBoxRLine, RiMailLine, RiPencilLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import type { AdminBadgeType, MemberRole, PendingMembershipRequest, UserSuggest } from '~/types/types'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
@@ -313,7 +336,8 @@ const refreshAll = async () => {
   ])
 }
 
-const isOrgAdmin = computed(() => isAdmin(me.value) || (organization && organization.value.members.some(member => member.user.id === me.value.id && member.role === 'admin')))
+const isGlobalAdmin = computed(() => isAdmin(me.value))
+const isOrgAdmin = computed(() => isGlobalAdmin.value || (organization && organization.value.members.some(member => member.user.id === me.value.id && member.role === 'admin')))
 
 const newRole = ref<MemberRole | null>(null)
 const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })

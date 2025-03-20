@@ -60,7 +60,7 @@
           {{ $t('Request pending approval') }}
         </BrandedButton>
         <ModalWithButton
-          v-else-if="!alreadyMember"
+          v-else-if="me && !alreadyMember"
           size="lg"
           :title="$t('Ask to join the organization')"
         >
@@ -231,11 +231,16 @@ watchEffect(async () => {
   metricsViewsTotal.value = metrics.datasetsViewsTotal
 })
 
-const { data: pendingRequests, status, refresh } = await useAPI<Array<PendingMembershipRequest | MembershipRequest>>(`/api/1/organizations/${props.organization.id}/membership/`, {
-  query: {
-    user: me.value?.id,
-    status: 'pending',
-  },
+const { data: pendingRequests, status, refresh } = await useAsyncData<Array<PendingMembershipRequest | MembershipRequest>>('membership-requests', () => {
+  if (me.value) {
+    return $api(`/api/1/organizations/${props.organization.id}/membership/`, {
+      query: {
+        user: me.value?.id,
+        status: 'pending',
+      },
+    })
+  }
+  return Promise.resolve([])
 })
 
 async function sendRequest(comment: string, closeModal: () => void) {
