@@ -46,6 +46,9 @@ export default defineNuxtPlugin({
             else if ('message' in response._data) {
               message = response._data.message
             }
+            else if ('errors' in response._data && typeof response._data.errors === 'object') {
+              message = Object.entries(response._data.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
+            }
           }
           catch (e) {
             console.error(e)

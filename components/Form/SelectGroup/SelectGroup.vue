@@ -26,6 +26,7 @@
       :disabled="disabled"
     >
       <option
+        v-if="! hideNullOption"
         :value="null"
         disabled
         hidden
@@ -68,7 +69,7 @@ import Required from '~/components/Required/Required.vue'
 
 export type Option = {
   label: string
-  value?: string | boolean
+  value?: string | boolean | null
   disabled?: boolean
   hidden?: boolean
   selected?: boolean
@@ -85,6 +86,7 @@ export type SelectGroupProps = {
   options: Array<Option>
   required?: boolean
   validText?: string
+  hideNullOption?: boolean
 }
 
 const model = defineModel()
@@ -99,6 +101,7 @@ const props = withDefaults(defineProps<SelectGroupProps>(), {
   required: false,
   validText: '',
   hideLabel: false,
+  hideNullOption: false,
 })
 
 const id = useId()

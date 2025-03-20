@@ -1,139 +1,112 @@
 <template>
-  <div class="bg-white fr-p-3w">
+  <div>
     <div class="flex flex-wrap justify-between items-center">
       <h2
-        v-if="pageData"
+        v-if="status === 'success' && pageData.total"
         class="text-sm font-bold uppercase m-0"
       >
         {{ t('{n} discussions', pageData.total) }}
       </h2>
+
+      <div>
+        <SelectGroup
+          v-model="isClosed"
+          hide-label
+          :label="$t('Type')"
+          :required="true"
+          :options="[
+            { label: $t('All discussions'), value: null },
+            { label: $t('Closed discussions'), value: true },
+            { label: $t('Opened discussions'), value: false },
+          ]"
+          hide-null-option
+        />
+      </div>
     </div>
 
     <LoadingBlock :status>
-      <AdminTable v-if="pageData && pageData.data.length">
-        <thead>
-          <tr>
-            <AdminTableTh
-              scope="col"
-            >
-              {{ t('Discussion') }}
-            </AdminTableTh>
-            <AdminTableTh scope="col">
-              {{ t("Status") }}
-            </AdminTableTh>
-            <AdminTableTh
-              scope="col"
-            >
-              {{ t('Created at') }}
-            </AdminTableTh>
-            <AdminTableTh
-              scope="col"
-            >
-              {{ t('Closed at') }}
-            </AdminTableTh>
-            <AdminTableTh
-              scope="col"
-            >
-              {{ t("Action") }}
-            </AdminTableTh>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="thread in pageData.data"
-            :key="thread.id"
-          >
-            <td>
-              <TextClamp
-                :text="thread.title"
-                :auto-resize="true"
-                :max-lines="2"
-              />
-            </td>
-            <td>
-              <AdminBadge
-                size="xs"
-                :type="getStatus(thread).type"
-              >
-                {{ getStatus(thread).label }}
-              </AdminBadge>
-            </td>
-            <td>
-              {{ formatDate(thread.created) }}
-            </td>
-            <td>
-              {{ formatDate(thread.closed) }}
-            </td>
-            <td>
-              <BrandedButton
-                size="xs"
-                color="secondary-softer"
-                :icon="RiEyeLine"
-                :href="getDiscussionUrl(thread.id, subject)"
-                external
-                keep-margins-even-without-borders
-              />
-            </td>
-          </tr>
-        </tbody>
-      </AdminTable>
-      <Pagination
-        v-if="pageData && pageData.total > pageSize"
-        :page="page"
-        :page-size="pageSize"
-        :total-results="pageData.total"
-        @change="(changedPage: number) => page = changedPage"
-      />
+      <div v-if="pageData && pageData.total > 0">
+        <AdminDiscussionsTable
+          :discussions="pageData.data"
+          :sort-direction="direction"
+          :sorted-by
+          :subject
+          @sort="sort"
+          @refresh="refresh"
+        />
+        <Pagination
+          :page="page"
+          :page-size="pageSize"
+          :total-results="pageData.total"
+          @change="(changedPage: number) => page = changedPage"
+        />
+      </div>
     </LoadingBlock>
+
+    <div
+      v-if="pageData && !pageData.total"
+      class="flex flex-col items-center"
+    >
+      <nuxt-img
+        src="/illustrations/discussion.svg"
+        class="h-20"
+      />
+      <p class="fr-text--bold fr-my-3v">
+        {{ t(`There is no discussion yet`) }}
+      </p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Pagination } from '@datagouv/components-next'
+import { Pagination, type Organization } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
-import { RiEyeLine } from '@remixicon/vue'
-import AdminTable from '../AdminTable/Table/AdminTable.vue'
-import AdminTableTh from '../AdminTable/Table/AdminTableTh.vue'
-import type { AdminBadgeType, PaginatedArray } from '~/types/types'
-import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
+import AdminDiscussionsTable from '../AdminTable/AdminDiscussionsTable/AdminDiscussionsTable.vue'
+import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
+import type { PaginatedArray, SortDirection } from '~/types/types'
+import type { DiscussionSortedBy, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
 const props = defineProps<{
-  subject: DiscussionSubjectTypes
+  organization?: Organization
+  subject?: DiscussionSubjectTypes
 }>()
 
 const { t } = useI18n()
 
+const isClosed = ref(null as null | true | false)
+
 const page = ref(1)
 const pageSize = ref(20)
+const sortedBy = ref<DiscussionSortedBy>('created')
+const direction = ref<SortDirection>('desc')
+const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
+
+function sort(column: DiscussionSortedBy, newDirection: SortDirection) {
+  sortedBy.value = column
+  direction.value = newDirection
+}
 
 const params = computed(() => {
-  return {
-    for: props.subject.id,
+  const query = {
+    sort: sortDirection.value,
 
     page_size: pageSize.value,
     page: page.value,
+  } as Record<string, string | number | null | boolean>
+
+  if (isClosed.value !== null) {
+    query['closed'] = isClosed.value ? 'true' : 'false'
   }
+
+  if (props.subject) {
+    query['subject'] = props.subject.id
+  }
+
+  if (props.organization) {
+    query['org'] = props.organization.id
+  }
+
+  return query
 })
-const { data: pageData, status } = await useAPI<PaginatedArray<Thread>>('/api/1/discussions/', { lazy: true, query: params })
-
-function getStatus(thread: Thread): { label: string, type: AdminBadgeType } {
-  if (thread.closed) {
-    return {
-      label: t('Closed'),
-      type: 'secondary',
-    }
-  }
-
-  if (thread.discussion.length === 1) {
-    return {
-      label: t('New'),
-      type: 'primary',
-    }
-  }
-
-  return {
-    label: t('Responded'),
-    type: 'secondary',
-  }
-}
+const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Thread>>('/api/1/discussions/', { lazy: true, query: params })
 </script>

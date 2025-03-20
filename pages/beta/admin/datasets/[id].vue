@@ -109,5 +109,4 @@ const { currentOrganization } = useCurrentOwned()
 const route = useRoute()
 const url = computed(() => `/api/2/datasets/${route.params.id}`)
 const { data: dataset } = await useAPI<DatasetV2>(url)
-watchEffect(() => console.log(dataset.value))
 </script>

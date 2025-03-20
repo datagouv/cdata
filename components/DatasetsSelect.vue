@@ -8,10 +8,11 @@
       class="fr-fieldset__legend"
     >
       <h2 class="text-sm font-bold uppercase mb-3">
-        {{ t("Associated datasets") }}
+        {{ label }}
       </h2>
     </legend>
     <div
+      v-if="selectedDatasets.length"
       ref="sortableRoot"
       class="w-full mb-8"
     >
@@ -20,7 +21,10 @@
         :key="dataset.id"
         class="flex items-center space-x-2"
       >
-        <div class="shrink-0">
+        <div
+          v-if="! single"
+          class="shrink-0"
+        >
           <BrandedButton
             color="primary-softer"
             :title="t('Drag to move this content')"
@@ -46,7 +50,10 @@
       </div>
     </div>
 
-    <div class="fr-fieldset__element">
+    <div
+      v-if="!selectedDatasetsSuggest.length || !single"
+      class="fr-fieldset__element"
+    >
       <SearchableSelect
         v-model="selectedDatasetsSuggest"
         :label="$t('Look for a dataset')"
@@ -102,6 +109,13 @@ import CardLg from '~/components/dataset/card-lg.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
 import type { DatasetSuggest } from '~/types/types'
 
+const props = withDefaults(defineProps<{
+  single?: boolean
+  label?: string
+}>(), {
+  single: false,
+})
+
 const sortableRootRef = useTemplateRef('sortableRoot')
 const datasetsById = ref<Record<string, Dataset | DatasetV2>>({})
 
@@ -112,6 +126,8 @@ useSortable(sortableRootRef, selectedDatasetsSuggest)
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()
+
+const label = computed(() => props.label || t('Associated datasets'))
 
 const suggestDataset = async (query: string): Promise<Array<DatasetSuggest>> => {
   return await $api<Array<DatasetSuggest>>('/api/1/datasets/suggest/', {
