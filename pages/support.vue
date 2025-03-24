@@ -54,12 +54,17 @@ const firstQuestion: Question = { id, title, choices }
 const questions = ref<Array<Question>>([firstQuestion])
 const answers = ref<Array<string>>([])
 
+const { t } = useI18n()
+
+useSeoMeta({
+  title: t('Support'),
+})
+
 function select(id: string, index: number) {
   answers.value[index] = id
 }
 
 watchEffect(async () => {
-  console.log(choices)
   questions.value = [firstQuestion]
   for (const step in answers.value) {
     const id = answers.value[step]

@@ -24,7 +24,7 @@
     <template v-else-if="'recipient' in question">
       <form
         class="w-4xl"
-        @submit="submit(question)"
+        @submit.prevent="submit(question)"
       >
         <InputGroup
           v-model="form.email"
@@ -33,7 +33,7 @@
           :required="true"
           :has-error="!!getFirstError('email')"
           :error-text="getFirstError('email')"
-          @input="touch('email')"
+          @blur="touch('email')"
         />
         <InputGroup
           v-model="form.subject"
@@ -42,7 +42,7 @@
           :required="true"
           :has-error="!!getFirstError('subject')"
           :error-text="getFirstError('subject')"
-          @input="touch('subject')"
+          @blur="touch('subject')"
         />
         <InputGroup
           v-model="form.body"
@@ -51,7 +51,7 @@
           :required="true"
           :has-error="!!getFirstError('body')"
           :error-text="getFirstError('body')"
-          @input="touch('body')"
+          @blur="touch('body')"
         />
         <BrandedButton type="submit">
           Envoyer
@@ -126,5 +126,13 @@ function submit(question: QuestionWithRecipient) {
   if (!validate()) {
     return
   }
+  $fetch('/api/send-message', {
+    method: 'POST',
+    body: {
+      email: form.value.email,
+      subject: form.value.subject,
+      body: form.value.body,
+    },
+  })
 }
 </script>

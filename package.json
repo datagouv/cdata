@@ -44,6 +44,7 @@
     "@vueuse/integrations": "^12.0",
     "@vueuse/nuxt": "^12.0",
     "axios": "^1.8.2",
+    "crisp-api": "^9.9.0",
     "dayjs": "^1.11.13",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
