@@ -12,6 +12,9 @@
     "postinstall": "nuxt prepare",
     "vue-i18n-extract": "vue-i18n-extract report --vueFiles './?(api|assets|components|composables|design-system|layouts|middleware|pages|plugins|public|server|types|utils)/**/*.?(ts|vue)' --languageFiles './i18n/locales/*.json' --separator '^' --add --noEmptyTranslation '*'"
   },
+  "resolutions": {
+    "chokidar": "^3"
+  },
   "dependencies": {
     "@datagouv/components": "^2.0.5",
     "@datagouv/components-next": "file:datagouv-components",
