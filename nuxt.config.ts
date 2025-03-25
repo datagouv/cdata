@@ -75,6 +75,7 @@ export default defineNuxtConfig({
       newsletterSubscriptionUrl: 'https://qvo970cr.sibpages.com/',
 
       resourceFileUploadChunk: 2 * 1000 * 1000,
+      maxSortableFiles: 50,
 
       licenses: {
         'Autorités administratives': [
