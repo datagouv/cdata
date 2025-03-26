@@ -3,10 +3,10 @@
 </template>
 
 <script setup lang="ts">
-import type { Dataset } from '@datagouv/components-next'
+import type { DatasetV2 } from '@datagouv/components-next'
 import AdminDatasetResourcesPage from '~/components/Datasets/AdminDatasetResourcesPage.vue'
 
 defineProps<{
-  dataset: Dataset
+  dataset: DatasetV2
 }>()
 </script>

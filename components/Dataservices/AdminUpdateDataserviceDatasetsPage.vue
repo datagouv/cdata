@@ -28,10 +28,10 @@ const route = useRoute()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
 const { data: dataservice } = await useAPI<Dataservice>(url)
 const datasets = ref<Array<Dataset | DatasetV2 | DatasetSuggest>>([])
-const datasetsPage = ref<PaginatedArray<Dataset> | null>(null)
+const datasetsPage = ref<PaginatedArray<DatasetV2> | null>(null)
 watchEffect(async () => {
   if (!dataservice.value) return
-  datasetsPage.value = await $api<PaginatedArray<Dataset>>(`/api/1/datasets/?dataservice=${dataservice.value.id}`)
+  datasetsPage.value = await $api<PaginatedArray<DatasetV2>>(`/api/2/datasets/?dataservice=${dataservice.value.id}`)
   // TODO use page data to see if there is others datasets linked and add a warning message?
   datasets.value = datasetsPage.value.data
 })
