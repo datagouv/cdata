@@ -137,6 +137,13 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
 
   vite: {
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: 'modern-compiler',
+        },
+      },
+    },
     plugins: [tailwindcss()],
     server: {
       allowedHosts: ['dev.local'],
