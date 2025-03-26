@@ -14,8 +14,8 @@ export type QuestionWithAnswer = BaseQuestion & ({ answer: string } | {
   button_text: string
 })
 
-export type QuestionWithRecipient = BaseQuestion & {
-  recipient: string
+export type QuestionWithSegment = BaseQuestion & {
+  segment: string
 }
 
-export type Question = QuestionWithChoices | QuestionWithAnswer | QuestionWithRecipient
+export type Question = QuestionWithChoices | QuestionWithAnswer | QuestionWithSegment

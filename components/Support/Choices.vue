@@ -21,7 +21,7 @@
         {{ choice.label }}
       </SupportChoice>
     </template>
-    <template v-else-if="'recipient' in question">
+    <template v-else-if="'segment' in question">
       <form
         class="w-4xl"
         @submit.prevent="submit(question)"
@@ -89,7 +89,7 @@
 import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import MarkdownViewer from '~/components/MarkdownViewer/MarkdownViewer.vue'
 import useActiveDescendant from '~/datagouv-components/src/composables/useActiveDescendant'
-import type { Question, QuestionWithRecipient } from '~/types/support'
+import type { Question, QuestionWithSegment } from '~/types/support'
 
 defineEmits<{
   select: [id: string | undefined]
@@ -122,7 +122,7 @@ watchEffect(async () => {
   }
 })
 
-function submit(question: QuestionWithRecipient) {
+function submit(question: QuestionWithSegment) {
   if (!validate()) {
     return
   }
@@ -130,6 +130,7 @@ function submit(question: QuestionWithRecipient) {
     method: 'POST',
     body: {
       email: form.value.email,
+      segment: question.segment,
       subject: form.value.subject,
       body: form.value.body,
     },

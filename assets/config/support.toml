@@ -68,7 +68,7 @@ title = "Votre question porte sur ?"
     label = "Données géographiques"
     id = "geo"
     title = "Que souhaitez-vous nous dire ?"
-    recipient = "geo@data.gouv.fr"
+    segment = "fonctionnel : geo"
       
     [[choices.choices.choices]]
     label = "Autre"
@@ -125,19 +125,19 @@ title = "Votre question porte sur ?"
       label = "Faire certifier son organisation"
       id = "certification"
       title = "Pensez à nous envoyer un lien vers votre organisation ?"
-      recipient = "certification@data.gouv.fr"
+      segment = "fonctionnel : certification"
 
       [[choices.choices.choices]]
       label = "Référencer ou moissonner ses données sur data.gouv.fr"
       id = "moissonnage"
       title = "Que souhaitez-vous nous dire ?"
-      recipient = "moissonnage@data.gouv.fr"
+      segment = "fonctionnel : moissonnage"
 
       [[choices.choices.choices]]
       label = "Autre"
       id = "autre"
       title = "Que souhaitez-vous nous dire ?"
-      recipient = "support@data.gouv.fr"  
+      segment = "fonctionnel : utilisation de data.gouv.fr"  
 
 [[choices]]
 label = "💡 Demande de données"
@@ -150,10 +150,10 @@ button_text = 'Consulter le forum'
 label = "🐛 Soumettre un bug"
 id = "bug"
 title = "Quel problème rencontrez-vous ?"
-recipient = "support@data.gouv.fr"
+segment = "technique : bug"
 
 [[choices]]
 label = "💬 Faire un retour sur data.gouv.fr"
 id = "feedback"
 title = "Que souhaitez-vous nous dire ?"
-recipient = "support@data.gouv.fr"
+segment = "fonctionnel : retour sur data.gouv.fr"
