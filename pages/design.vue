@@ -70,7 +70,7 @@
       <ResourceAccordion
         v-if="dataset && dataset.resources.length"
         :resource="dataset.resources[1]"
-        :dataset-id="dataset.id"
+        :dataset="dataset"
         can-edit
       />
 

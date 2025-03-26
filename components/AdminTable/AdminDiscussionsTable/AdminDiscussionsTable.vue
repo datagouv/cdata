@@ -5,9 +5,16 @@
         <AdminTableTh
           :sorted="sorted('title')"
           scope="col"
+          class="w-1/3"
           @sort="(direction: SortDirection) => $emit('sort', 'title', direction)"
         >
           {{ t("Discussion") }}
+        </AdminTableTh>
+        <AdminTableTh
+          scope="col"
+          class="w-44"
+        >
+          {{ t("Status") }}
         </AdminTableTh>
         <AdminTableTh
           scope="col"
@@ -22,17 +29,26 @@
           {{ t("Last comment") }}
         </AdminTableTh>
         <AdminTableTh
+          :sorted="sorted('created')"
+          scope="col"
+          class="w-44"
+          @sort="(direction: SortDirection) => $emit('sort', 'created', direction)"
+        >
+          {{ t("Created at") }}
+        </AdminTableTh>
+        <AdminTableTh
           :sorted="sorted('closed')"
           scope="col"
+          class="w-44"
           @sort="(direction: SortDirection) => $emit('sort', 'closed', direction)"
         >
           {{ t("Closed at") }}
         </AdminTableTh>
         <AdminTableTh
           scope="col"
-          class="w-1/5"
+          class="w-28"
         >
-          {{ t("Link to the discussion") }}
+          {{ t("Actions") }}
         </AdminTableTh>
       </tr>
     </thead>
@@ -49,7 +65,7 @@
               :max-lines="1"
             />
           </p>
-          <p v-if="subjects[discussion.subject.id]">
+          <p v-if="!subject && subjects[discussion.subject.id]">
             <a
               class="fr-link inline-flex"
               :href="getSubjectPage(subjects[discussion.subject.id])"
@@ -68,6 +84,14 @@
             </a>
           </p>
         </td>
+        <td>
+          <AdminBadge
+            size="xs"
+            :type="getStatus(discussion).type"
+          >
+            {{ getStatus(discussion).label }}
+          </AdminBadge>
+        </td>
         <td class="font-mono text-right">
           {{ discussion.discussion.length }}
         </td>
@@ -84,23 +108,31 @@
           </div>
         </td>
         <td>
+          {{ formatDate(discussion.created) }}
+        </td>
+        <td>
           <template v-if="discussion.closed">
             {{ formatDate(discussion.closed) }}
           </template>
         </td>
         <td>
-          <a
-            v-if="subjects[discussion.subject.id]"
-            class="fr-link inline-flex"
-            :href="getDiscussionUrl(discussion.id, subjects[discussion.subject.id])"
-            target="_blank"
+          <BrandedButton
+            v-if="subject || subjects[discussion.subject.id]"
+            size="xs"
+            color="secondary-softer"
+            :href="getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id])"
+            :icon="RiEyeLine"
+            icon-only
+            external
+            keep-margins-even-without-borders
           >
-            <TextClamp
-              :text="getDiscussionUrl(discussion.id, subjects[discussion.subject.id])"
-              :auto-resize="true"
-              :max-lines="1"
-            />
-          </a>
+            {{ getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id]) }}
+          </BrandedButton>
+
+          <DiscussionsRespondModal
+            :thread="discussion"
+            @responded="$emit('refresh')"
+          />
         </td>
       </tr>
     </tbody>
@@ -108,22 +140,25 @@
 </template>
 
 <script setup lang="ts">
-import { AvatarWithName } from '@datagouv/components-next'
+import { AvatarWithName, BrandedButton } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
+import { RiEyeLine } from '@remixicon/vue'
 import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
 import type { Comment, DiscussionSortedBy, DiscussionSubjectTypes, Thread } from '~/types/discussions'
-import type { SortDirection } from '~/types/types'
+import type { AdminBadgeType, SortDirection } from '~/types/types'
 import { getDiscussionUrl, getSubject, getSubjectTypeIcon, getSubjectTitle } from '~/utils/discussions'
 
 const props = defineProps<{
   discussions: Array<Thread>
   sortDirection: SortDirection
   sortedBy: DiscussionSortedBy
+  subject?: DiscussionSubjectTypes
 }>()
 
 defineEmits<{
   (event: 'sort', column: DiscussionSortedBy, direction: SortDirection): void
+  (event: 'refresh'): void
 }>()
 
 const { t } = useI18n()
@@ -133,6 +168,8 @@ const subjects = ref<Record<string, DiscussionSubjectTypes | null>>({})
 const subjectsPromises = ref<Record<string, Promise<void>>>({})
 
 watchEffect(async () => {
+  if (props.subject) return
+
   for (const discussion of props.discussions) {
     if (discussion.subject.id in subjectsPromises.value) continue
 
@@ -154,5 +191,26 @@ function sorted(column: DiscussionSortedBy) {
 
 function getLastComment(discussion: Thread): Comment {
   return discussion.discussion.slice(-1)[0]
+}
+
+function getStatus(thread: Thread): { label: string, type: AdminBadgeType } {
+  if (thread.closed) {
+    return {
+      label: t('Closed'),
+      type: 'secondary',
+    }
+  }
+
+  if (thread.discussion.length === 1) {
+    return {
+      label: t('New'),
+      type: 'primary',
+    }
+  }
+
+  return {
+    label: t('Responded'),
+    type: 'secondary',
+  }
 }
 </script>

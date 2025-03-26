@@ -1,23 +1,17 @@
-# Nuxt 3 Minimal Starter
+# cdata
 
 Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
 ## Setup
 
-Make sure to install the dependencies:
+Make sure to install datagouv-components and cdata dependencies:
 
 ```bash
 # npm
+cd ./datagouv-components
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
+cd ..
+npm install
 ```
 
 ## Development Server
@@ -27,15 +21,6 @@ Start the development server on `http://localhost:3000`:
 ```bash
 # npm
 npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
 ### Working without `udata` backend
@@ -47,6 +32,24 @@ NUXT_PUBLIC_API_BASE=https://demo.data.gouv.fr  # Or your dedicated development 
 NUXT_PUBLIC_DEV_API_KEY=your_api_key_from_dev
 ```
 
+### Troubleshooting
+
+If you encounter `ENOSPC` errors, you may want to increase the system limit of file watchers :
+
+```bash
+# linux 
+sudo sysctl fs.inotify.max_user_watches=131070
+
+# macos
+sudo sysctl -w kern.maxfiles=131070
+sudo sysctl -w kern.maxfilesperproc=131070
+```
+
+If you encounter `EBADF` errors, you are probably affected by [this chokidar issue](https://github.com/paulmillr/chokidar/issues/1385).
+You can try to :
+1. disable devtools
+2. add `overrides` to the package.json and lock `"chokidar": "^3.6.0"`
+
 ## Production
 
 Build the application for production:
@@ -54,15 +57,6 @@ Build the application for production:
 ```bash
 # npm
 npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
 ```
 
 Locally preview production build:
@@ -70,15 +64,6 @@ Locally preview production build:
 ```bash
 # npm
 npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.

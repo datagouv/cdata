@@ -243,10 +243,17 @@ export type ResourceFormRemote = BaseResourceForm & {
   filetype: RemoteResourceFileType
   url: string
   mime: { text: string } | null
-  format: string
+  format: string | null
 }
 
-export type FileLoadingState = { status: 'waiting' } | { status: 'loading' } | { status: 'failed', message: string } | { status: 'uploaded', resource: Resource }
+export type UnknownResourceForm = BaseResourceForm & {
+  filetype: null
+  url?: string
+  mime?: { text: string } | null
+  format?: string | null
+}
+
+export type FileLoadingState = { status: 'waiting' } | { status: 'loading', percentage_between_0_and_1: number } | { status: 'failed', message: string } | { status: 'uploaded', resource: Resource }
 export type FileInfo = { raw: File, state: FileLoadingState }
 
 export type ResourceFormLocal = BaseResourceForm & {
@@ -255,6 +262,13 @@ export type ResourceFormLocal = BaseResourceForm & {
 }
 
 export type ResourceForm = ResourceFormRemote | ResourceFormLocal
+
+export type AdditionalDataForCommunityResourceForm = {
+  owned: Owned | null
+  dataset: Dataset | DatasetV2 | DatasetSuggest | null
+}
+// Useful to be able to exclude by resource.type = 'remote' | 'file' some data
+export type CommunityResourceForm = (ResourceFormRemote & AdditionalDataForCommunityResourceForm) | (ResourceFormLocal & AdditionalDataForCommunityResourceForm) | (UnknownResourceForm & AdditionalDataForCommunityResourceForm)
 
 export type NewOrganization = {
   acronym: string | null
