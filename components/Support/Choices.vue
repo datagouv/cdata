@@ -6,8 +6,8 @@
     tabindex="0"
     :aria-activedescendant="active"
     @keydown="handleKeyPressForActiveDescendant"
-    @keydown.space.prevent="$emit('select', active)"
-    @keydown.enter.prevent="$emit('select', active)"
+    @keydown.space="selectActiveChoice"
+    @keydown.enter="selectActiveChoice"
     @focusout="focusOut"
   >
     <template v-if="'choices' in question">
@@ -53,7 +53,19 @@
           :error-text="getFirstError('body')"
           @blur="touch('body')"
         />
-        <BrandedButton type="submit">
+        <div
+          v-if="messageSent"
+          class="flex w-56 text-center"
+        >
+          <SimpleBanner type="primary">
+            Message envoyé !
+          </SimpleBanner>
+        </div>
+        <BrandedButton
+          v-else
+          type="submit"
+          :loading
+        >
           Envoyer
         </BrandedButton>
       </form>
@@ -91,7 +103,7 @@ import MarkdownViewer from '~/components/MarkdownViewer/MarkdownViewer.vue'
 import useActiveDescendant from '~/datagouv-components/src/composables/useActiveDescendant'
 import type { Question, QuestionWithSegment } from '~/types/support'
 
-defineEmits<{
+const emit = defineEmits<{
   select: [id: string | undefined]
 }>()
 
@@ -101,6 +113,10 @@ const props = defineProps<{
 }>()
 
 const answerResponse = ref('')
+const loading = ref(false)
+const messageSent = ref(false)
+
+const { toast } = useToast()
 
 const { isActive, active, focusOut, handleKeyPressForActiveDescendant } = useActiveDescendant('choices' in props.question ? props.question.choices : [], 'horizontal')
 
@@ -122,18 +138,35 @@ watchEffect(async () => {
   }
 })
 
-function submit(question: QuestionWithSegment) {
+function selectActiveChoice(e: Event) {
+  if (active.value) {
+    e.preventDefault()
+    emit('select', active.value)
+  }
+}
+
+async function submit(question: QuestionWithSegment) {
   if (!validate()) {
     return
   }
-  $fetch('/api/send-message', {
-    method: 'POST',
-    body: {
-      email: form.value.email,
-      segment: question.segment,
-      subject: form.value.subject,
-      body: form.value.body,
-    },
-  })
+  loading.value = true
+  try {
+    await $fetch('/api/send-message', {
+      method: 'POST',
+      body: {
+        email: form.value.email,
+        segment: question.segment,
+        subject: form.value.subject,
+        body: form.value.body,
+      },
+    })
+    messageSent.value = true
+  }
+  catch {
+    toast.error(`Une erreur est survenue lors de l'envoi de votre demande`)
+  }
+  finally {
+    loading.value = false
+  }
 }
 </script>

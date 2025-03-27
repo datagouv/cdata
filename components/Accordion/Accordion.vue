@@ -13,6 +13,7 @@
       >
         <component
           :is="icon"
+          v-if="showIcon"
           class="fr-mr-2w shrink-0"
           :class="iconColor"
           size="24px"
@@ -39,9 +40,10 @@ import type { AccordionState } from '~/types/form'
 import { key, type AccordionRegister } from '~/components/Accordion/injectionKey'
 
 const props = withDefaults(defineProps<{
-  id: string | undefined
+  id?: string | undefined
   title: string
   state?: AccordionState
+  showIcon?: boolean
 }>(), {
   state: 'default',
 })
