@@ -33,8 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import BannerAction from '~/components/BannerAction.vue'
+import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import DescribePost from '~/components/Posts/DescribePost.vue'
 import type { Post, PostForm } from '~/types/posts'
 import { toApi, toForm } from '~/utils/posts'
