@@ -86,9 +86,9 @@
         />
       </div>
       <SearchableSelect
-        class="fr-input-group"
         v-if="isGlobalAdmin"
         v-model="form.roles"
+        class="fr-input-group"
         :label="$t('Roles')"
         :options="allRolesAsString"
         :placeholder="t('Select a role')"
@@ -115,7 +115,10 @@
           :for="apiKeyId"
         >
           {{ $t('API Key') }}
-          <span class="fr-hint-text" v-if="user.apikey">
+          <span
+            v-if="user.apikey"
+            class="fr-hint-text"
+          >
             {{ $t('Warning: If you erase your API key you risk to loose acces to {site} services', { site: config.public.title }) }}
           </span>
         </label>
@@ -124,8 +127,8 @@
             <div class="relative">
               <input
                 :id="apiKeyId"
-                type="password"
                 v-model="user.apikey"
+                type="password"
                 class="fr-input !pr-8"
                 disabled
               >
@@ -153,7 +156,10 @@
                 <span v-else>{{ $t('Generate') }}</span>
               </BrandedButton>
             </div>
-            <div class="flex-none" v-if="user.apikey">
+            <div
+              v-if="user.apikey"
+              class="flex-none"
+            >
               <BrandedButton
                 color="danger"
                 size="xs"
@@ -286,13 +292,13 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, CopyButton } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, CopyButton } from '@datagouv/components-next'
 import { Avatar, type User } from '@datagouv/components-next'
 import { RiDeleteBin6Line, RiEditLine, RiEyeLine, RiRecycleLine, RiSaveLine } from '@remixicon/vue'
-import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
-import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
 import { uploadProfilePicture } from '~/api/users'
-import SearchableSelect from '../SearchableSelect.vue'
+import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import SearchableSelect from '~/components/SearchableSelect.vue'
 
 const props = defineProps<{
   user: User

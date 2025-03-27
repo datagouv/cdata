@@ -108,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, isCommunityResource } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, isCommunityResource } from '@datagouv/components-next'
 import type { Dataset, DatasetV2, Resource } from '@datagouv/components-next'
 import { cloneDeep } from 'lodash-es'
 import { RiDeleteBin6Line, RiPencilLine } from '@remixicon/vue'

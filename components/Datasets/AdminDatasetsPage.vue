@@ -41,6 +41,7 @@
           v-if="organization"
           :href="pageData.total ? `/organizations/${organization.id}/datasets.csv` : undefined"
           size="xs"
+          :external="true"
           :icon="RiDownloadLine"
         >
           {{ t('Download catalog') }}
