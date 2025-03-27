@@ -115,6 +115,7 @@
           </div>
         </SimpleBanner>
 
+        <RequiredExplanation />
         <fieldset
           class="fr-fieldset"
           :aria-labelledby="legend"
@@ -259,7 +260,7 @@
             </div>
           </LinkedToAccordion>
         </fieldset>
-        <SearchableSelect 
+        <SearchableSelect
           v-if="isGlobalAdmin && 'badges' in organization"
           v-model="newBadges"
           :label="$t('Badges')"
@@ -315,8 +316,8 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, OwnerType, type Badge } from '@datagouv/components-next'
-import { ASSOCIATION, COMPANY, LOCAL_AUTHORITY, PUBLIC_SERVICE, SimpleBanner, type NewOrganization, type Organization, type OrganizationTypes } from '@datagouv/components-next'
+import { ASSOCIATION, COMPANY, LOCAL_AUTHORITY, PUBLIC_SERVICE, BrandedButton, OwnerType, SimpleBanner } from '@datagouv/components-next'
+import type { Badge, NewOrganization, Organization, OrganizationTypes } from '@datagouv/components-next'
 import { url } from '@vuelidate/validators'
 import { computed, reactive, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -366,7 +367,7 @@ const { t } = useI18n()
 const me = useMe()
 const isGlobalAdmin = computed(() => isAdmin(me.value))
 
-const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges');
+const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges')
 const badges = computed(() => Object.keys(badgesLabels.value || {}).map(key => ({ kind: key })))
 
 const newBadges = ref('badges' in props.organization ? props.organization.badges : [])
