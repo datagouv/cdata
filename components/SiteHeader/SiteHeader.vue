@@ -480,7 +480,6 @@ const publishMenu = [
   { label: t('A reuse'), icon: RiLineChartLine, link: '/beta/admin/reuses/new/' },
   { label: t('A harverster'), icon: RiServerLine, link: '/beta/admin/harvesters/new/' },
   { label: t('An organization'), icon: RiGovernmentLine, link: '/beta/admin/organizations/new/' },
-  { label: t('A community resource'), icon: RiGitPullRequestLine, link: '/beta/admin/community-resources/new/' },
   { label: t('A post'), icon: RiArticleLine, link: '/beta/admin/posts/new/', show: isAdmin(me.value ?? null) },
 ]
 
