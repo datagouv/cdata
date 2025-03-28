@@ -52,40 +52,40 @@
           </div>
         </div>
       </section>
-      <BrandedButton />
+      <DSBrandedButton />
       <AdminBadge />
-      <BannerAction />
-      <BannerNotif />
-      <OrganizationNameWithCertificate />
+      <div class="container">
+        <BannerAction />
+        <BannerNotif />
+        <OrganizationNameWithCertificate />
 
-      <DatasetCard
-        v-if="dataset"
-        :dataset
-        dataset-url="#"
-      />
-      <DatasetQuality
-        v-if="dataset"
-        :quality="dataset.quality"
-      />
-      <ResourceAccordion
-        v-if="dataset && dataset.resources.length"
-        :resource="dataset.resources[1]"
-        :dataset="dataset"
-        can-edit
-      />
+        <DatasetCard
+          v-if="dataset"
+          :dataset
+          dataset-url="#"
+        />
+        <DatasetQuality
+          v-if="dataset"
+          :quality="dataset.quality"
+        />
+        <ResourceAccordion
+          v-if="dataset && dataset.resources.length"
+          :resource="dataset.resources[1]"
+          :dataset="dataset"
+          can-edit
+        />
 
-      <ReadMore v-if="dataset">
-        <div class="prose">
-          {{ dataset.description }}
+        <ReadMore v-if="dataset">
+          <div class="prose">
+            {{ dataset.description }}
+          </div>
+        </ReadMore>
+
+        <SearchInput />
+        <div class="bg-white py-4 px-4 -mx-4">
+          <DatasetSearchPage />
         </div>
-      </ReadMore>
-
-      <SearchInput />
-      <div class="bg-white py-4 px-4 -mx-4">
-        <DatasetSearchPage />
       </div>
-    </div>
-    <div class="space-y-8 py-8 pb-64">
       <h2 class="!mb-3">
         SimpleBanner
       </h2>
@@ -97,8 +97,28 @@
       >
         Lorem ipsum dolor sit amet consectetur adipisicing elit. Odit vel corporis molestias exercitationem quod ad facilis laborum officiis nesciunt, rem, deserunt illo delectus tempore distinctio natus sed architecto, reiciendis consectetur.
       </SimpleBanner>
+      <h2 class="mb-3">
+        Support Card
+      </h2>
+      <div class="grid md:grid-cols-2">
+        <SupportCard
+          image="/img/forum.svg"
+          title="Forum"
+          description="Echangez avec la communauté, partagez vos retours sur la plateforme et demandez l'ouverture de données."
+        >
+          <template #link>
+            <BrandedButton
+              href="https://forum.data.gouv.fr"
+              color="tertiary"
+              :icon="RiArrowRightLine"
+              :icon-right="true"
+            >
+              Voir le forum
+            </BrandedButton>
+          </template>
+        </SupportCard>
+      </div>
     </div>
-    <div />
     <div class="space-y-8 py-8 pb-64">
       <h2 class="!mb-3">
         Full width content
@@ -110,13 +130,14 @@
 </template>
 
 <script setup lang="ts">
-import { DatasetCard, DatasetQuality, ReadMore, ResourceAccordion, SimpleBanner, type Dataset } from '@datagouv/components-next'
+import { BrandedButton, DatasetCard, DatasetQuality, ReadMore, ResourceAccordion, SimpleBanner, type Dataset } from '@datagouv/components-next'
+import { RiArrowRightLine } from '@remixicon/vue'
 import DatasetSearchPage from '~/components/Datasets/SearchPage.vue'
 import AdminBadge from '~/design-system/AdminBadge.vue'
 import BannerAction from '~/design-system/BannerAction.vue'
 import BannerNotif from '~/design-system/BannerNotif.vue'
 import BannerSticky from '~/design-system/BannerSticky.vue'
-import BrandedButton from '~/design-system/BrandedButton.vue'
+import DSBrandedButton from '~/design-system/BrandedButton.vue'
 import OrganizationNameWithCertificate from '~/design-system/OrganizationNameWithCertificate.vue'
 import SearchInput from '~/design-system/SearchInput.vue'
 

@@ -4,7 +4,10 @@
     class="fr-accordion"
     data-type="accordion"
   >
-    <h3 class="fr-accordion__title !mb-0">
+    <h3
+      :id="titleAccordionId"
+      class="fr-accordion__title !mb-0"
+    >
       <DisclosureButton
         class="fr-accordion__btn !text-neutral-900"
         :aria-expanded="isOpen(accordionId)"
@@ -13,6 +16,7 @@
       >
         <component
           :is="icon"
+          v-if="showIcon"
           class="fr-mr-2w shrink-0"
           :class="iconColor"
           size="24px"
@@ -39,16 +43,19 @@ import type { AccordionState } from '~/types/form'
 import { key, type AccordionRegister } from '~/components/Accordion/injectionKey'
 
 const props = withDefaults(defineProps<{
-  id: string | undefined
+  id?: string | undefined
   title: string
   state?: AccordionState
+  showIcon?: boolean
 }>(), {
   state: 'default',
 })
 
-const { isOpen, toggle, unregister } = inject(key) as AccordionRegister
+const { isOpen, open, toggle, unregister } = inject(key) as AccordionRegister
 
 const accordionId = props.id || useId()
+const titleAccordionId = `faq-${useId()}`
+const route = useRoute()
 const icon = computed(() => {
   switch (props.state) {
     case 'error':
@@ -77,6 +84,11 @@ const iconColor = computed(() => {
     case 'disabled':
     default:
       return 'text-neutral-500'
+  }
+})
+onMounted(() => {
+  if (route.hash === `#${titleAccordionId}`) {
+    open(accordionId)
   }
 })
 onUnmounted(() => unregister(accordionId))
