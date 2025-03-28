@@ -367,7 +367,10 @@
           </p>
         </Accordion>
       </AccordionGroup>
-      <h2 class="text-4xl font-extrabold text-gray-title my-16">
+      <h2
+        id="support-tree"
+        class="text-4xl font-extrabold text-gray-title my-16"
+      >
         Vous n’avez pas trouvé ce que vous cherchez ?
       </h2>
       <div
@@ -399,6 +402,7 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import type { Question } from '~/types/support'
 
 const config = useRuntimeConfig()
+const route = useRoute()
 const firstQuestion: Question = { id, title, choices }
 const questions = ref<Array<Question>>([firstQuestion])
 const answers = ref<Array<string>>([])
@@ -411,7 +415,20 @@ useSeoMeta({
 
 function select(id: string, index: number) {
   answers.value[index] = id
+  const params = route.params.path.join('/')
+  const pathWithoutParams = route.path.slice(0, route.path.indexOf(params))
+  const url = new URL(`${window.location.origin}${pathWithoutParams}${answers.value.join('/')}/`)
+  url.hash = '#support-tree'
+  window.history.replaceState(null, '', url)
 }
+onMounted(async () => {
+  for (const level in route.params.path as Array<string>) {
+    const answer = route.params.path[level]
+    if (answer) {
+      answers.value[level] = answer
+    }
+  }
+})
 
 watchEffect(async () => {
   questions.value = [firstQuestion]

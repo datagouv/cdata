@@ -13,6 +13,7 @@
     <template v-if="'choices' in question">
       <SupportChoice
         v-for="choice in question.choices"
+        :id="choice.id"
         :key="choice.id"
         :active="isActive(choice.id)"
         :selected="choice.id === selected"
