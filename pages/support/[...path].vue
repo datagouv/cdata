@@ -415,7 +415,7 @@ useSeoMeta({
 
 function select(id: string, index: number) {
   answers.value[index] = id
-  const params = route.params.path.join('/')
+  const params = (route.params.path as Array<string>).join('/')
   const pathWithoutParams = route.path.slice(0, route.path.indexOf(params))
   const url = new URL(`${window.location.origin}${pathWithoutParams}${answers.value.join('/')}/`)
   url.hash = '#support-tree'
