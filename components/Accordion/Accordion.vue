@@ -4,7 +4,10 @@
     class="fr-accordion"
     data-type="accordion"
   >
-    <h3 class="fr-accordion__title !mb-0">
+    <h3
+      :id="titleAccordionId"
+      class="fr-accordion__title !mb-0"
+    >
       <DisclosureButton
         class="fr-accordion__btn !text-neutral-900"
         :aria-expanded="isOpen(accordionId)"
@@ -48,9 +51,11 @@ const props = withDefaults(defineProps<{
   state: 'default',
 })
 
-const { isOpen, toggle, unregister } = inject(key) as AccordionRegister
+const { isOpen, open, toggle, unregister } = inject(key) as AccordionRegister
 
 const accordionId = props.id || useId()
+const titleAccordionId = `faq-${useId()}`
+const route = useRoute()
 const icon = computed(() => {
   switch (props.state) {
     case 'error':
@@ -79,6 +84,11 @@ const iconColor = computed(() => {
     case 'disabled':
     default:
       return 'text-neutral-500'
+  }
+})
+onMounted(() => {
+  if (route.hash === `#${titleAccordionId}`) {
+    open(accordionId)
   }
 })
 onUnmounted(() => unregister(accordionId))
