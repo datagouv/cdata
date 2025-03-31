@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import type { Reuse, ReuseType } from '@datagouv/components-next'
 import { RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'

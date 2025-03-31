@@ -43,7 +43,7 @@ import {
   useSlots,
 } from 'vue'
 import AppLink from './AppLink.vue'
-import { bannerActionTypeKey } from '~/components/BannerAction.vue'
+import { bannerActionTypeKey } from './BannerAction.vue'
 
 type ColorType = 'primary' | 'primary-soft' | 'primary-softer' | 'secondary' | 'secondary-softer' | 'warning' | 'danger' | 'tertiary'
 
