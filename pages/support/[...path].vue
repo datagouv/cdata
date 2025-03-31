@@ -416,18 +416,18 @@ useSeoMeta({
 function updateUrl(path: string, hash = '') {
   const params = route.params.path ? (route.params.path as Array<string>).join('/') : ''
   const pathWithoutParams = route.params.path ? route.path.slice(0, route.path.indexOf(params)) : route.path
-  const url = new URL(`${window.location.origin}${pathWithoutParams}${path}/`)
-  url.hash = hash
+  const url = new URL(window.location.origin + pathWithoutParams + (path ? `${path}/` : path))
+  url.hash = `#${hash}`
   window.history.replaceState(null, '', url)
 }
 
 function accordionOpened(id: string) {
-  updateUrl(id)
+  updateUrl('', id)
 }
 
 function select(id: string, index: number) {
   answers.value[index] = id
-  updateUrl(answers.value.join('/'), '#support-tree')
+  updateUrl(answers.value.join('/'), 'support-tree')
 }
 onMounted(async () => {
   for (const level in route.params.path as Array<string>) {
