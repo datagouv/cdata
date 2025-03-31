@@ -61,7 +61,7 @@
       <h2 class="text-4xl font-extrabold text-gray-title my-16">
         Questions les plus fréquentes
       </h2>
-      <AccordionGroup>
+      <AccordionGroup @open="accordionOpened">
         <Accordion
           :show-icon="false"
           title="Vos données sont visibles dans la base Sirene et vous souhaitez les rendre privées ?"
@@ -413,13 +413,21 @@ useSeoMeta({
   title: t('Support'),
 })
 
-function select(id: string, index: number) {
-  answers.value[index] = id
+function updateUrl(path: string, hash = '') {
   const params = route.params.path ? (route.params.path as Array<string>).join('/') : ''
   const pathWithoutParams = route.params.path ? route.path.slice(0, route.path.indexOf(params)) : route.path
-  const url = new URL(`${window.location.origin}${pathWithoutParams}${answers.value.join('/')}/`)
-  url.hash = '#support-tree'
+  const url = new URL(`${window.location.origin}${pathWithoutParams}${path}/`)
+  url.hash = hash
   window.history.replaceState(null, '', url)
+}
+
+function accordionOpened(id: string) {
+  updateUrl(id)
+}
+
+function select(id: string, index: number) {
+  answers.value[index] = id
+  updateUrl(answers.value.join('/'), '#support-tree')
 }
 onMounted(async () => {
   for (const level in route.params.path as Array<string>) {

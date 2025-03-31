@@ -10,9 +10,9 @@
     >
       <DisclosureButton
         class="fr-accordion__btn !text-neutral-900"
-        :aria-expanded="isOpen(accordionId)"
+        :aria-expanded="isOpen(titleAccordionId)"
         :aria-controls="accordionId"
-        @click="toggle(accordionId)"
+        @click="toggle(titleAccordionId)"
       >
         <component
           :is="icon"
@@ -25,7 +25,7 @@
       </DisclosureButton>
     </h3>
     <DisclosurePanel
-      v-show="isOpen(accordionId)"
+      v-show="isOpen(titleAccordionId)"
       :id="accordionId"
       class="px-4 pt-4 pb-6"
       static
@@ -54,7 +54,7 @@ const props = withDefaults(defineProps<{
 const { isOpen, open, toggle, unregister } = inject(key) as AccordionRegister
 
 const accordionId = props.id || useId()
-const titleAccordionId = `faq-${useId()}`
+const titleAccordionId = `accordion-${useId()}`
 const route = useRoute()
 const icon = computed(() => {
   switch (props.state) {
@@ -88,8 +88,8 @@ const iconColor = computed(() => {
 })
 onMounted(() => {
   if (route.hash === `#${titleAccordionId}`) {
-    open(accordionId)
+    open(titleAccordionId)
   }
 })
-onUnmounted(() => unregister(accordionId))
+onUnmounted(() => unregister(titleAccordionId))
 </script>
