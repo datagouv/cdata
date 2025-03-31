@@ -300,7 +300,7 @@
 <script setup lang="ts">
 import { BannerAction, BrandedButton, CopyButton } from '@datagouv/components-next'
 import { Avatar, type User } from '@datagouv/components-next'
-import { RiDeleteBin6Line, RiEditLine, RiEyeLine, RiMailLine, RiRecycleLine, RiSaveLine } from '@remixicon/vue'
+import { RiDeleteBin6Line, RiEditLine, RiEyeLine, RiRecycleLine, RiSaveLine } from '@remixicon/vue'
 import { uploadProfilePicture } from '~/api/users'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
