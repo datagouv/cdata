@@ -30,7 +30,7 @@
 
     <InputGroup
       v-model="comment"
-      type="markdown"
+      type="textarea"
       :label="$t('Your message')"
     />
 
