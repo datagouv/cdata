@@ -16,9 +16,12 @@
             :size="80"
           />
         </div>
-        <h2 class="w-full flex-none md:flex-1 !mb-0 fr-h3">
-          {{ user.first_name }} {{ user.last_name }}
-        </h2>
+        <div class="w-full flex-none md:flex-1">
+          <h2 class="!mb-0 fr-h3">
+            {{ user.first_name }} {{ user.last_name }}
+          </h2>
+          <AdminEmail :user />
+        </div>
         <div class="flex-none">
           <BrandedButton
             size="xs"
@@ -174,7 +177,7 @@
         </div>
       </div>
       <div
-        v-if="user.id === me.id"
+        v-if="user.id === me.id || isGlobalAdmin"
         class="fr-input-group"
       >
         <label
@@ -195,7 +198,10 @@
               >
             </div>
           </div>
-          <div class="fr-col-auto">
+          <div
+            v-if="user.id === me.id"
+            class="fr-col-auto"
+          >
             <BrandedButton
               color="secondary"
               size="xs"
@@ -294,7 +300,7 @@
 <script setup lang="ts">
 import { BannerAction, BrandedButton, CopyButton } from '@datagouv/components-next'
 import { Avatar, type User } from '@datagouv/components-next'
-import { RiDeleteBin6Line, RiEditLine, RiEyeLine, RiRecycleLine, RiSaveLine } from '@remixicon/vue'
+import { RiDeleteBin6Line, RiEditLine, RiEyeLine, RiMailLine, RiRecycleLine, RiSaveLine } from '@remixicon/vue'
 import { uploadProfilePicture } from '~/api/users'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'

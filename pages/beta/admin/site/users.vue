@@ -56,15 +56,7 @@
                     {{ user.first_name }} {{ user.last_name }}
                   </NuxtLinkLocale>
                 </p>
-                <p class="fr-m-0 fr-text--xs text-mention-grey f-italic inline-flex items-center">
-                  <RiMailLine class="size-3" />
-                  <TextClamp
-                    class="fr-px-1v"
-                    :text="user.email"
-                    :auto-resize="true"
-                    :max-lines="1"
-                  />
-                </p>
+                <AdminEmail :user />
               </td>
               <td>{{ formatDate(user.since) }}</td>
               <td>{{ user.metrics.datasets || 0 }}</td>
