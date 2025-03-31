@@ -48,7 +48,7 @@
         >
           <template #link>
             <BrandedButton
-              :href="config.public.supportUrl"
+              :href="config.public.guidesUrl"
               color="tertiary"
               :icon="RiArrowRightLine"
               :icon-right="true"
