@@ -177,7 +177,7 @@
         </div>
       </div>
       <div
-        v-if="user.id === me.id || isGlobalAdmin"
+        v-if="user.id === me.id"
         class="fr-input-group"
       >
         <label
@@ -198,10 +198,7 @@
               >
             </div>
           </div>
-          <div
-            v-if="user.id === me.id"
-            class="fr-col-auto"
-          >
+          <div class="fr-col-auto">
             <BrandedButton
               color="secondary"
               size="xs"
