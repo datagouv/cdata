@@ -150,7 +150,7 @@
 
 <script setup lang="ts">
 import { RiCalendarEventLine, RiCheckboxCircleLine, RiLink, RiPlayLargeLine, RiToolsLine } from '@remixicon/vue'
-import { BrandedButton } from '@datagouv/components-next'
+import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import HarvesterBadge from '~/components/Harvesters/HarvesterBadge.vue'

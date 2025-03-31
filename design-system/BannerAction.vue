@@ -20,5 +20,5 @@
 
 <script setup lang="ts">
 import { RiSendPlaneLine } from '@remixicon/vue'
-import { BrandedButton } from '@datagouv/components-next'
+import { BannerAction, BrandedButton } from '@datagouv/components-next'
 </script>

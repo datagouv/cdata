@@ -82,7 +82,7 @@
 <script setup lang="ts">
 import type { Dataservice } from '@datagouv/components-next'
 import { RiArchiveLine, RiDeleteBin6Line } from '@remixicon/vue'
-import { BrandedButton } from '@datagouv/components-next'
+import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'
 import type { DataserviceForm, LinkToSubject } from '~/types/types'
 import { toForm, toApi } from '~/utils/dataservices'

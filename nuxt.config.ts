@@ -75,6 +75,7 @@ export default defineNuxtConfig({
       newsletterSubscriptionUrl: 'https://qvo970cr.sibpages.com/',
 
       resourceFileUploadChunk: 2 * 1000 * 1000,
+      maxSortableFiles: 50,
 
       licenses: {
         'Autorités administratives': [
@@ -136,6 +137,13 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
 
   vite: {
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: 'modern-compiler',
+        },
+      },
+    },
     plugins: [tailwindcss()],
     server: {
       allowedHosts: ['dev.local'],

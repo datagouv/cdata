@@ -22,6 +22,15 @@
     </template>
 
     <template #default="{ close }">
+      <div
+        v-if="'file' in resourceForm && resourceForm.file && resourceForm.file.state.status === 'loading'"
+        class="fixed h-2 top-0 inset-x-0 flex"
+      >
+        <div
+          class="bg-datagouv-dark h-full"
+          :style="{ width: `${resourceForm.file.state.percentage_between_0_and_1 * 100}%` }"
+        />
+      </div>
       <DescribeResource
         v-model="resourceForm"
         type="update"
@@ -99,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, isCommunityResource } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, isCommunityResource } from '@datagouv/components-next'
 import type { Dataset, DatasetV2, Resource } from '@datagouv/components-next'
 import { cloneDeep } from 'lodash-es'
 import { RiDeleteBin6Line, RiPencilLine } from '@remixicon/vue'

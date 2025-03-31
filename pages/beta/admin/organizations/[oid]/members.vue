@@ -292,10 +292,10 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, getUserAvatar, type Member, type Organization } from '@datagouv/components-next'
+import { Avatar, BannerAction, getUserAvatar, type Member, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RiAddLine, RiEye2Line, RiEyeLine, RiLogoutBoxRLine, RiMailLine, RiPencilLine } from '@remixicon/vue'
+import { RiAddLine, RiEyeLine, RiLogoutBoxRLine, RiMailLine, RiPencilLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import type { AdminBadgeType, MemberRole, PendingMembershipRequest, UserSuggest } from '~/types/types'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'

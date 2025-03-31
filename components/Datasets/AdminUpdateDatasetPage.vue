@@ -72,8 +72,8 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
 import type { DatasetV2, Frequency, License } from '@datagouv/components-next'
+import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import { RiArchiveLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity } from '~/types/types'
