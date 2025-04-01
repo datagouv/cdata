@@ -45,6 +45,6 @@ export default defineEventHandler(async (event) => {
     CrispClient.website.sendMessageInConversation(websiteId, sessionId, message)
   }
   catch (e) {
-    console.log(e)
+    console.error(e)
   }
 })
