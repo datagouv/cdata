@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   const CrispClient = new Crisp()
 
   const config = useRuntimeConfig(event)
-  const websiteId = '60fe27e1-7f04-45c9-8b0d-833e95f10c79'
+  const websiteId = config.crispWebsiteId
   CrispClient.authenticateTier('plugin', config.crispIdentifier, config.crispKey)
 
   const message = {

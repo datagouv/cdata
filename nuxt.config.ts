@@ -32,6 +32,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     crispIdentifier: '',
     crispKey: '',
+    crispWebsiteId: '',
     public: {
       i18n: {
         baseUrl: 'https://www.data.gouv.fr/', // NUXT_PUBLIC_I18N_BASE_URL
