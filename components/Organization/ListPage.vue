@@ -97,6 +97,11 @@ const props = defineProps<{
   organizations: PaginatedArray<Organization>
 
   /**
+   * The starting q
+   */
+  q: string
+
+  /**
    * The starting sort
    */
   sort: string | undefined
@@ -116,7 +121,7 @@ const config = useRuntimeConfig()
 const inputId = useId()
 const selectId = useId()
 
-const q = ref()
+const q = ref(props.q ?? '')
 
 const qDebounced = debouncedRef(q, config.public.searchAutocompleteDebounce)
 const sort = ref(props.sort ?? '')
