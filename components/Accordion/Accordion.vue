@@ -54,7 +54,7 @@ const props = withDefaults(defineProps<{
 const { isOpen, open, toggle, unregister } = inject(key) as AccordionRegister
 
 const accordionId = props.id || useId()
-const titleAccordionId = `accordion-${useId()}`
+const titleAccordionId = props.title.toLocaleLowerCase().replace(/\s/g, '-')
 const route = useRoute()
 const icon = computed(() => {
   switch (props.state) {
