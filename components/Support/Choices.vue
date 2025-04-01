@@ -152,7 +152,7 @@ async function submit(question: QuestionWithSegment) {
   }
   loading.value = true
   try {
-    await $fetch('/api/send-message', {
+    await $fetch('/nuxt-api/send-message', {
       method: 'POST',
       body: {
         email: form.value.email,
