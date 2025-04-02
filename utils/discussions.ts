@@ -1,4 +1,4 @@
-import type { Dataservice, Dataset, Reuse } from '@datagouv/components-next'
+import type { Dataservice, DatasetV2, Reuse } from '@datagouv/components-next'
 import { RiArticleLine, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
 import type { $Fetch } from 'ofetch'
 import type { DiscussionSubject, DiscussionSubjectTypes } from '~/types/discussions'
@@ -8,7 +8,7 @@ export async function getSubject(api: $Fetch, subject: DiscussionSubject): Promi
     case 'Dataservice':
       return await api<Dataservice>(`/api/1/dataservices/${subject.id}`)
     case 'Dataset':
-      return await api<Dataset>(`/api/1/datasets/${subject.id}`)
+      return await api<DatasetV2>(`/api/2/datasets/${subject.id}`)
     case 'Reuse':
       return await api<Reuse>(`/api/1/reuses/${subject.id}`)
     default:

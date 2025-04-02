@@ -1,4 +1,4 @@
-import type { Dataservice, Dataset, Reuse, User } from '@datagouv/components-next'
+import type { Dataservice, Dataset, DatasetV2, Reuse, User } from '@datagouv/components-next'
 import type { Post } from './posts'
 
 export type DiscussionSortedBy = 'title' | 'created' | 'closed'
@@ -16,7 +16,7 @@ export type Comment = { content: string, posted_by: User, posted_on: string, spa
 
 export type Discussion = Array<Comment>
 
-export type DiscussionSubjectTypes = Dataservice | Dataset | Reuse | Post
+export type DiscussionSubjectTypes = Dataservice | Dataset | DatasetV2 | Reuse | Post
 
 export type DiscussionSubject = {
   class: 'Dataservice' | 'Dataset' | 'Reuse' | 'Post' | 'Topic' | 'Organization'
