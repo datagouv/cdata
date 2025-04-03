@@ -76,10 +76,8 @@
 
       <DiscussionsList
         class="mt-16"
-        :subject="{
-          class: 'Post',
-          id: post.id,
-        }"
+        type="Post"
+        :subject="post"
       />
     </template>
     <template v-else>

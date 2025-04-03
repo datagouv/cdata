@@ -32,14 +32,27 @@
     <div>
       {{ $t('Posted the {date}', { date: formatDate(comment.last_edit_at || comment.posted_on) }) }}
     </div>
+    <div v-if="isProducer">
+      —
+    </div>
+    <AdminBadge
+      v-if="isProducer"
+      size="xs"
+      type="primary"
+    >
+      {{ $t('Producer') }}
+    </AdminBadge>
   </div>
 </template>
 
 <script setup lang="ts">
 import { Avatar } from '@datagouv/components-next'
-import type { Comment } from '~/types/discussions'
+import { isProducerOfSubject, type Comment, type DiscussionSubjectTypes } from '~/types/discussions'
 
-defineProps<{
+const props = defineProps<{
   comment: Comment
+  subject: DiscussionSubjectTypes
 }>()
+
+const isProducer = computed(() => isProducerOfSubject(props.subject, props.comment))
 </script>

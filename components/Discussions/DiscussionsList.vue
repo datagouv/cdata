@@ -23,7 +23,7 @@
     <NewDiscussionForm
       v-if="newDiscussion"
       class="mb-5"
-      :subject
+      :subject="{ class: type, id: subject.id }"
       @new="refresh(); newDiscussion = false"
       @close="newDiscussion = false"
     />
@@ -35,6 +35,7 @@
             v-for="thread in pageData.data"
             :key="thread.id"
             :thread
+            :subject
             @change="refresh"
           />
         </div>
@@ -70,10 +71,11 @@ import { RiAddLine } from '@remixicon/vue'
 import NewDiscussionForm from './NewDiscussionForm.vue'
 import DiscussionCard from './DiscussionCard.vue'
 import type { PaginatedArray, SortDirection } from '~/types/types'
-import type { DiscussionSortedBy, DiscussionSubject, Thread } from '~/types/discussions'
+import type { DiscussionSortedBy, DiscussionSubject, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
 const props = defineProps<{
-  subject: DiscussionSubject
+  type: DiscussionSubject['class']
+  subject: DiscussionSubjectTypes
 }>()
 
 const { t } = useI18n()

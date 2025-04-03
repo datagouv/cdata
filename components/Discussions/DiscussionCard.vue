@@ -2,6 +2,7 @@
   <div class="p-4 border border-gray-default rounded space-y-3">
     <ThreadHeader
       :thread
+      :subject
       show-actions
       @deleted="$emit('change')"
     />
@@ -41,6 +42,7 @@
           :for-delete-info="{ thread, index }"
           :for-edit-info="{ thread, index }"
           :comment
+          :subject
           @change="$emit('change')"
         />
       </template>
@@ -79,10 +81,11 @@ import { Avatar, BrandedButton } from '@datagouv/components-next'
 import ThreadHeader from './ThreadHeader.vue'
 import CommentBlock from './CommentBlock.vue'
 import RespondForm from './RespondForm.vue'
-import type { Thread } from '~/types/discussions'
+import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
 defineProps<{
   thread: Thread
+  subject: DiscussionSubjectTypes
 }>()
 defineEmits<{
   change: []

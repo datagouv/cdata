@@ -25,7 +25,10 @@
         </BrandedButton>
       </div>
     </div>
-    <DiscussionCommentHeader :comment="thread.discussion[0]" />
+    <DiscussionCommentHeader
+      :subject
+      :comment="thread.discussion[0]"
+    />
   </header>
 </template>
 
@@ -34,10 +37,11 @@ import { RiFlagLine, RiLockLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import DeleteThreadModal from './DeleteThreadModal.vue'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
-import type { Thread } from '~/types/discussions'
+import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
 withDefaults(defineProps<{
   thread: Thread
+  subject: DiscussionSubjectTypes
   showActions?: boolean
 }>(), {
   showActions: false,

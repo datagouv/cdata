@@ -1,8 +1,15 @@
 <template>
-  <div class="border-l-2 pl-2.5 border-gray-default">
+  <div
+    class="border-l-2 pl-2.5 "
+    :class="{
+      'border-datagouv-dark': isProducer,
+      'border-gray-default': !isProducer,
+    }"
+  >
     <div class="flex justify-between items-center">
       <DiscussionCommentHeader
         :comment
+        :subject
         class="mb-1"
       />
       <div class="space-x-2">
@@ -43,10 +50,11 @@ import { BrandedButton } from '@datagouv/components-next'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
 import DeleteCommentModal from './DeleteCommentModal.vue'
 import EditCommentModal from './EditCommentModal.vue'
-import type { Comment, Thread } from '~/types/discussions'
+import { isProducerOfSubject, type Comment, type DiscussionSubjectTypes, type Thread } from '~/types/discussions'
 
-defineProps<{
+const props = defineProps<{
   comment: Comment
+  subject: DiscussionSubjectTypes
   forDeleteInfo?: {
     thread: Thread
     index: number
@@ -59,4 +67,6 @@ defineProps<{
 defineEmits<{
   change: []
 }>()
+
+const isProducer = computed(() => isProducerOfSubject(props.subject, props.comment))
 </script>
