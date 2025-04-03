@@ -297,7 +297,7 @@ openDataLinks.push({ label: t('Portal for European data'), link: 'https://data.e
 const platformLinks: Array<Link> = [
   { label: t('Guides'), link: config.public.guidesUrl },
   { label: t('Roadmap and news'), link: '/pages/roadmap' },
-  { label: t('Contact us'), link: config.public.supportUrl },
+  { label: t('Contact us'), link: '/support' },
   { label: t('Give us your feedback'), link: config.public.feedbackFormUrl },
   { label: t('Statistics'), link: '/dashboard' },
 ]
