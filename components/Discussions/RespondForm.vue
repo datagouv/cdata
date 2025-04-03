@@ -63,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, type Owned } from '@datagouv/components-next'
 import { RiChatDeleteLine, RiCloseLine } from '@remixicon/vue'
 import type { Thread } from '~/types/discussions'
 
@@ -80,7 +80,7 @@ const { $api } = useNuxtApp()
 
 const loading = ref(false)
 const { form, getFirstError, getFirstWarning } = useForm({
-  owned: null,
+  owned: null as Owned | null,
   comment: '',
 })
 
@@ -91,6 +91,7 @@ const send = async (close: boolean) => {
     await $api(`/api/1/discussions/${props.thread.id}`, {
       method: 'POST',
       body: {
+        organization: form.value.owned?.organization,
         comment: form.value.comment,
         close,
       },
