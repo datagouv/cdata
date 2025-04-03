@@ -33,6 +33,6 @@ export type Thread = {
   permissions: { delete: boolean, close: boolean }
 }
 
-export type Comment = { content: string, posted_by: User, posted_on: string, spam?: Spam, permissions: { delete: boolean } }
+export type Comment = { content: string, posted_by: User, posted_on: string, last_edit_at?: string | null, spam?: Spam, permissions: { delete: boolean, edit: boolean } }
 
 export type Discussion = Array<Comment>

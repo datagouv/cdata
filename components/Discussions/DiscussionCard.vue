@@ -39,8 +39,9 @@
         <CommentBlock
           v-else
           :for-delete-info="{ thread, index }"
+          :for-edit-info="{ thread, index }"
           :comment
-          @deleted="$emit('change')"
+          @change="$emit('change')"
         />
       </template>
       <RespondForm

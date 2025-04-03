@@ -5,16 +5,23 @@
         :comment
         class="mb-1"
       />
-      <div>
+      <div class="space-x-2">
+        <EditCommentModal
+          v-if="forEditInfo && comment.permissions.edit"
+          :thread="forEditInfo.thread"
+          :comment
+          :index="forEditInfo.index"
+          @edited="$emit('change')"
+        />
         <DeleteCommentModal
           v-if="forDeleteInfo && comment.permissions.delete"
           :thread="forDeleteInfo.thread"
           :comment
           :index="forDeleteInfo.index"
-          @deleted="$emit('deleted')"
+          @deleted="$emit('change')"
         />
         <BrandedButton
-          v-else-if="! comment.permissions.delete"
+          v-if="! comment.permissions.delete"
           color="secondary"
           size="xs"
           :icon="RiFlagLine"
@@ -35,6 +42,7 @@ import { RiFlagLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
 import DeleteCommentModal from './DeleteCommentModal.vue'
+import EditCommentModal from './EditCommentModal.vue'
 import type { Comment, Thread } from '~/types/discussions'
 
 defineProps<{
@@ -43,8 +51,12 @@ defineProps<{
     thread: Thread
     index: number
   }
+  forEditInfo?: {
+    thread: Thread
+    index: number
+  }
 }>()
 defineEmits<{
-  deleted: []
+  change: []
 }>()
 </script>

@@ -15,7 +15,7 @@
     </div>
     <div>—</div>
     <div>
-      {{ $t('Posted the {date}', { date: formatDate(comment.posted_on) }) }}
+      {{ $t('Posted the {date}', { date: formatDate(comment.last_edit_at || comment.posted_on) }) }}
     </div>
   </div>
 </template>

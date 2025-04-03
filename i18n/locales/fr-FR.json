@@ -1053,5 +1053,7 @@
   "Are you sure you want to delete this message?": "Êtes-vous sûrs de vouloir supprimer ce message ?",
   "Delete comment": "Supprimer le commentaire",
   "Choose the identity with which you want to publish this message": "Choisissez l'identité avec laquelle vous souhaitez publier ce message",
-  "Please remain courteous and constructive. Avoid sharing personal information.": "Merci de rester courtois et constructif. Eviter de communiquer des données personnelles."
+  "Please remain courteous and constructive. Avoid sharing personal information.": "Merci de rester courtois et constructif. Eviter de communiquer des données personnelles.",
+  "See discussion": "Voir la discussion",
+  "Hide discussion": "Cacher la discussion"
 }
