@@ -1,4 +1,5 @@
 import { ofetch } from 'ofetch'
+import matter from 'gray-matter'
 
 /**
  * Get the datagouv page based on the path
@@ -10,7 +11,7 @@ export default cachedEventHandler(async (event) => {
   const repo = config.pagesGhRepoName
   if (!slug || !repo)
     return new Response(null, { status: 404 })
-  const branch = config.PagesGhRepoBranch
+  const branch = config.pagesGhRepoBranch
   let rawUrl = `https://raw.githubusercontent.com/${repo}/${branch}/pages/${slug}`
   let ghUrl = `https://github.com/${repo}/blob/${branch}/pages/${slug}`
 
@@ -30,13 +31,14 @@ export default cachedEventHandler(async (event) => {
   rawUrl = `${rawUrl}.${extension}`
   ghUrl = `${ghUrl}.${extension}`
 
-  const content = await ofetch<string>(rawUrl, {
+  const response = await ofetch<string>(rawUrl, {
     timeout: 5000,
   })
-
+  const content = matter(response)
   return {
     ghUrl,
-    content,
+    content: content.content,
+    data: content.data,
     extension,
   }
-}, { maxAge: 3600 })
+}, { maxAge: 1, swr: false })

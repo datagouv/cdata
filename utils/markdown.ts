@@ -1,5 +1,5 @@
 import type hast from 'hast'
-import behead from 'remark-behead'
+import behead, { type Options } from 'remark-behead'
 import remarkBreaks from 'remark-breaks'
 import rehypeHighlight from 'rehype-highlight'
 import remarkParse from 'remark-parse'
@@ -43,8 +43,7 @@ function lazyLoadPlugin(this: Processor): Transformer {
 
 export function formatMarkdown(md: string, minDepth = 3) {
   const result = unified()
-    // somehow this type is working when `minDepth` is required but not when it has a default value
-    .use(behead, { minDepth })
+    .use(behead, { minDepth: minDepth > 1 ? minDepth : undefined } as Options)
     // Take Markdown as input and turn it into MD syntax tree
     .use(remarkParse, { fragment: true })
     .use(remarkBreaks)
