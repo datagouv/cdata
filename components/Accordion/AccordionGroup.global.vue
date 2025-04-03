@@ -16,6 +16,10 @@ withDefaults(defineProps<{
   as: 'div',
 })
 
+const emit = defineEmits<{
+  open: [id: string]
+}>()
+
 const opened = ref<string | null>(null)
 
 provide(key, {
@@ -33,6 +37,7 @@ provide(key, {
     }
     else {
       opened.value = id
+      emit('open', id)
     }
   },
 
