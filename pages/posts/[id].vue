@@ -73,6 +73,14 @@
         :class="markdownClasses"
         v-html="post.content"
       />
+
+      <DiscussionsList
+        class="mt-16"
+        :subject="{
+          class: 'Post',
+          id: post.id,
+        }"
+      />
     </template>
     <template v-else>
       {{ $t('This post is not published yet !') }}

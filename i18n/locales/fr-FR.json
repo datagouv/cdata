@@ -1042,5 +1042,16 @@
   "Cancel reorder": "Annuler le changement d'ordre",
   "Move up": "Déplacer vers le haut",
   "Move down": "Déplacer vers le bas",
-  "See public page": "Voir la page publique"
+  "See public page": "Voir la page publique",
+  "Posted the {date}": "Posté le {date}",
+  "the {date}": "le {date}",
+  "Discussion closed by ": "Discussion close par",
+  "Are you sure you want to delete this discussion?": "Êtes-vous sûr de vouloir supprimer cette discussion ?",
+  "This action is irreversible. All comments in this discussion will also be deleted.": "Cette action est irréversible. Tous les commentaires de cette discussion seront aussi supprimés.",
+  "This action is irreversible.": "Cette action est irréversible.",
+  "Delete discussion and comments": "Supprimer la discussion et les commentaires",
+  "Are you sure you want to delete this message?": "Êtes-vous sûrs de vouloir supprimer ce message ?",
+  "Delete comment": "Supprimer le commentaire",
+  "Choose the identity with which you want to publish this message": "Choisissez l'identité avec laquelle vous souhaitez publier ce message",
+  "Please remain courteous and constructive. Avoid sharing personal information.": "Merci de rester courtois et constructif. Eviter de communiquer des données personnelles."
 }

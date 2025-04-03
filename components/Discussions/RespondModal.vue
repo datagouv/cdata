@@ -6,6 +6,7 @@
   >
     <template #button="{ attrs, listeners }">
       <BrandedButton
+        v-if="buttonType === 'icon-for-table'"
         :icon="RiChatNewLine"
         size="xs"
         color="secondary-softer"
@@ -16,22 +17,29 @@
       >
         {{ $t('Respond to the discussion') }}
       </BrandedButton>
+      <BrandedButton
+        v-if="buttonType === 'classic-button'"
+        size="xs"
+        color="secondary"
+        v-bind="attrs"
+        v-on="listeners"
+      >
+        {{ $t('Respond') }}
+      </BrandedButton>
     </template>
 
-    <div>
+    <div class="mb-5">
       <p class="font-bold text-base mb-0">
         {{ thread.title }}
       </p>
-      <p>
-        <AvatarWithName :user="lastComment.posted_by" />
-        — {{ $t('Posted on {date}', { date: formatDate(lastComment.posted_on) }) }}
-      </p>
+      <DiscussionCommentHeader :comment="lastComment" />
     </div>
 
     <InputGroup
       v-model="comment"
       type="textarea"
       :label="$t('Your message')"
+      :placeholder="$t('Please remain courteous and constructive. Avoid sharing personal information.')"
     />
 
     <template #footer="{ close }">
@@ -39,6 +47,7 @@
         class="flex-1 flex justify-end space-x-4"
       >
         <BrandedButton
+          v-if="thread.permissions.close"
           color="warning"
           :loading
           :icon="RiChatDeleteLine"
@@ -61,11 +70,13 @@
 
 <script setup lang="ts">
 import { RiChatDeleteLine, RiChatNewLine, RiSendPlaneLine } from '@remixicon/vue'
-import { AvatarWithName, BrandedButton } from '@datagouv/components-next'
+import { BrandedButton } from '@datagouv/components-next'
+import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
 import type { Thread } from '~/types/discussions'
 
 const props = defineProps<{
   thread: Thread
+  buttonType: 'icon-for-table' | 'classic-button'
 }>()
 const emit = defineEmits<{
   (e: 'responded'): void
@@ -91,6 +102,7 @@ const send = async (closeThread: boolean, closeModal: () => void) => {
       },
     })
     emit('responded')
+    comment.value = ''
     closeModal()
   }
   finally {

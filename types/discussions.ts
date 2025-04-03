@@ -7,15 +7,6 @@ export type Spam = {
   status?: string
 }
 
-export type Subject = {
-  id: string
-  class: string
-}
-
-export type Comment = { content: string, posted_by: User, posted_on: string, spam?: Spam }
-
-export type Discussion = Array<Comment>
-
 export type DiscussionSubjectTypes = Dataservice | Dataset | Reuse | Post
 
 export type DiscussionSubject = {
@@ -26,12 +17,8 @@ export type DiscussionSubject = {
 export type NewDiscussion = {
   title: string
   comment: string
-  subject: Subject
+  subject: DiscussionSubject
 }
-
-export type CreateDiscussion = (discussion: NewDiscussion) => Promise<Thread>
-
-export type CreateComment = (comment: string) => Promise<Thread>
 
 export type Thread = {
   id: string
@@ -43,4 +30,9 @@ export type Thread = {
   closed_by: User
   spam?: Spam
   subject: DiscussionSubject
+  permissions: { delete: boolean, close: boolean }
 }
+
+export type Comment = { content: string, posted_by: User, posted_on: string, spam?: Spam, permissions: { delete: boolean } }
+
+export type Discussion = Array<Comment>

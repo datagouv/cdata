@@ -131,6 +131,7 @@
 
           <DiscussionsRespondModal
             :thread="discussion"
+            button-type="icon-for-table"
             @responded="$emit('refresh')"
           />
         </td>
