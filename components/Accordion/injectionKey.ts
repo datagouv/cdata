@@ -1,4 +1,5 @@
 export type AccordionRegister = {
+  withIcon: boolean
   isOpen(id: string): boolean
   toggle: (id: string) => void
   open: (id: string) => void
