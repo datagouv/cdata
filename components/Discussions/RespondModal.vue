@@ -6,7 +6,6 @@
   >
     <template #button="{ attrs, listeners }">
       <BrandedButton
-        v-if="buttonType === 'icon-for-table'"
         :icon="RiChatNewLine"
         size="xs"
         color="secondary-softer"
@@ -17,22 +16,16 @@
       >
         {{ $t('Respond to the discussion') }}
       </BrandedButton>
-      <BrandedButton
-        v-if="buttonType === 'classic-button'"
-        size="xs"
-        color="secondary"
-        v-bind="attrs"
-        v-on="listeners"
-      >
-        {{ $t('Respond') }}
-      </BrandedButton>
     </template>
 
     <div class="mb-5">
       <p class="font-bold text-base mb-0">
         {{ thread.title }}
       </p>
-      <DiscussionCommentHeader :comment="lastComment" />
+      <DiscussionCommentHeader
+        :subject
+        :comment="lastComment"
+      />
     </div>
 
     <InputGroup
@@ -72,11 +65,11 @@
 import { RiChatDeleteLine, RiChatNewLine, RiSendPlaneLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
-import type { Thread } from '~/types/discussions'
+import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
 const props = defineProps<{
   thread: Thread
-  buttonType: 'icon-for-table' | 'classic-button'
+  subject?: DiscussionSubjectTypes
 }>()
 const emit = defineEmits<{
   (e: 'responded'): void

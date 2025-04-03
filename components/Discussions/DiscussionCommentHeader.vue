@@ -29,8 +29,11 @@
       </NuxtLink>
     </div>
     <div>—</div>
-    <div>
-      {{ $t('Posted the {date}', { date: formatDate(comment.last_edit_at || comment.posted_on) }) }}
+    <div v-if="comment.last_edit_at">
+      {{ $t('Updated the {date}', { date: formatDate(comment.last_edit_at) }) }}
+    </div>
+    <div v-else>
+      {{ $t('Posted the {date}', { date: formatDate(comment.posted_on) }) }}
     </div>
     <div v-if="isProducer">
       —
@@ -51,8 +54,8 @@ import { isProducerOfSubject, type Comment, type DiscussionSubjectTypes } from '
 
 const props = defineProps<{
   comment: Comment
-  subject: DiscussionSubjectTypes
+  subject?: DiscussionSubjectTypes
 }>()
 
-const isProducer = computed(() => isProducerOfSubject(props.subject, props.comment))
+const isProducer = computed(() => props.subject && isProducerOfSubject(props.subject, props.comment))
 </script>

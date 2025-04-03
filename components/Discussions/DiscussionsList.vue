@@ -88,11 +88,6 @@ const sortedBy = ref<DiscussionSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 
-function sort(column: DiscussionSortedBy, newDirection: SortDirection) {
-  sortedBy.value = column
-  direction.value = newDirection
-}
-
 const newDiscussion = ref(false)
 
 const params = computed(() => {
