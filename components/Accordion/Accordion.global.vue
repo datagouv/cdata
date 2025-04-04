@@ -16,7 +16,7 @@
       >
         <component
           :is="icon"
-          v-if="showIcon"
+          v-if="withIcon"
           class="fr-mr-2w shrink-0"
           :class="iconColor"
           size="24px"
@@ -46,12 +46,11 @@ const props = withDefaults(defineProps<{
   id?: string | undefined
   title: string
   state?: AccordionState
-  showIcon?: boolean
 }>(), {
   state: 'default',
 })
 
-const { isOpen, open, toggle, unregister } = inject(key) as AccordionRegister
+const { isOpen, open, toggle, unregister, withIcon } = inject(key) as AccordionRegister
 
 const accordionId = props.id || useId()
 const titleAccordionId = props.title.toLocaleLowerCase().replace(/\s/g, '-')

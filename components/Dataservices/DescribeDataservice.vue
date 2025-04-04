@@ -13,7 +13,7 @@
         />
         {{ $t('Help') }}
       </template>
-      <AccordionGroup>
+      <AccordionGroup :with-icon="true">
         <Accordion
           :id="nameDataserviceAccordionId"
           :title="t('Name your API')"
