@@ -16,7 +16,7 @@
       >
         <component
           :is="icon"
-          v-if="showIcon || withIcon"
+          v-if="withIcon"
           class="fr-mr-2w shrink-0"
           :class="iconColor"
           size="24px"
@@ -46,7 +46,6 @@ const props = withDefaults(defineProps<{
   id?: string | undefined
   title: string
   state?: AccordionState
-  showIcon?: boolean
 }>(), {
   state: 'default',
 })
