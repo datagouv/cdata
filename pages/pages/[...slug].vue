@@ -13,14 +13,23 @@
       </BreadcrumbItem>
     </Breadcrumb>
     <LoadingBlock :status>
-      <MarkdownViewer
-        v-if="data.extension === 'md'"
-        :content="data.content"
-        :min-heading="1"
-      />
-      <ComponentDefinedInSetup
+      <div v-if="status === 'success' && data">
+        <MarkdownViewer
+          v-if="data.extension === 'md'"
+          :content="data.content"
+          :min-heading="1"
+        />
+        <ComponentDefinedInSetup
+          v-else
+        />
+      </div>
+      <div
         v-else
-      />
+        class="py-9 prose"
+      >
+        <h1>{{ $t('Error 404') }}</h1>
+        <p>{{ $t("The page you're looking for cannot be found.") }}</p>
+      </div>
     </LoadingBlock>
   </div>
 </template>
