@@ -1,4 +1,4 @@
-import type { Dataservice, Dataset, Reuse, User } from '@datagouv/components-next'
+import type { Dataservice, Dataset, Organization, Reuse, User } from '@datagouv/components-next'
 import type { Post } from './posts'
 
 export type DiscussionSortedBy = 'title' | 'created' | 'closed'
@@ -6,15 +6,6 @@ export type DiscussionSortedBy = 'title' | 'created' | 'closed'
 export type Spam = {
   status?: string
 }
-
-export type Subject = {
-  id: string
-  class: string
-}
-
-export type Comment = { content: string, posted_by: User, posted_on: string, spam?: Spam }
-
-export type Discussion = Array<Comment>
 
 export type DiscussionSubjectTypes = Dataservice | Dataset | Reuse | Post
 
@@ -26,12 +17,8 @@ export type DiscussionSubject = {
 export type NewDiscussion = {
   title: string
   comment: string
-  subject: Subject
+  subject: DiscussionSubject
 }
-
-export type CreateDiscussion = (discussion: NewDiscussion) => Promise<Thread>
-
-export type CreateComment = (comment: string) => Promise<Thread>
 
 export type Thread = {
   id: string
@@ -43,4 +30,29 @@ export type Thread = {
   closed_by: User
   spam?: Spam
   subject: DiscussionSubject
+  permissions: { delete: boolean, close: boolean }
+}
+
+export type Comment = {
+  content: string
+  posted_by: User
+  posted_on: string
+  posted_by_organization: Organization | null
+  last_edit_at?: string | null
+  spam?: Spam
+  permissions: { delete: boolean, edit: boolean }
+}
+
+export type Discussion = Array<Comment>
+
+export function isProducerOfSubject(subject: DiscussionSubjectTypes, comment: Comment): boolean {
+  if (subject.owner && !comment.posted_by_organization && subject.owner.id === comment.posted_by.id) {
+    return true
+  }
+
+  if ('organization' in subject && subject.organization && comment.posted_by_organization && subject.organization.id == comment.posted_by_organization.id) {
+    return true
+  }
+
+  return false
 }

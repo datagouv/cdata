@@ -15,7 +15,9 @@
     @close="emit('close')"
   >
     <DialogPanel
+      :as="form ? 'form': undefined"
       class="md:!container md:mx-auto fr-container--fluid pointer-events-none"
+      @submit="$emit('submit', $event)"
     >
       <div class="grid grid-cols-12 p-0 m-0 justify-center max-h-full overflow-auto">
         <div
@@ -82,14 +84,18 @@ const props = withDefaults(defineProps<{
 
   /** The modal size, can be fullscreen for special ones  */
   size?: 'sm' | 'md' | 'lg' | 'fullscreen'
+
+  form?: boolean
 }>(), {
   opened: false,
   showTitle: true,
   size: 'md',
+  form: false,
 })
 
 const emit = defineEmits<{
   close: []
+  submit: [e: SubmitEvent]
 }>()
 
 const randomId = useId()
