@@ -34,6 +34,9 @@ export default defineEventHandler(async (event) => {
   if (newPeople) {
     CrispClient.website.addNewPeopleProfile(websiteId, {
       email,
+      person: {
+        nickname: 'Visiteur',
+      },
     })
   }
   try {

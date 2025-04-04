@@ -140,10 +140,13 @@
                   v-for="item in platformLinks"
                   :key="item.label"
                 >
-                  <a
+                  <NuxtLinkLocale
                     class="fr-footer__top-link"
-                    :href="item.link"
-                  >{{ item.label }}</a>
+                    :to="item.link"
+                    :external="item.external"
+                  >
+                    {{ item.label }}
+                  </NuxtLinkLocale>
                 </li>
               </ul>
             </div>
@@ -295,11 +298,11 @@ openDataLinks.push({ label: t('Follow data opening'), link: 'https://ouverture.d
 openDataLinks.push({ label: t('Portal for European data'), link: 'https://data.europa.eu' })
 
 const platformLinks: Array<Link> = [
-  { label: t('Guides'), link: config.public.guidesUrl },
-  { label: t('Roadmap and news'), link: '/pages/roadmap' },
+  { label: t('Guides'), link: config.public.guidesUrl, external: true },
+  { label: t('Roadmap and news'), link: '/pages/roadmap', external: true },
   { label: t('Contact us'), link: '/support' },
-  { label: t('Give us your feedback'), link: config.public.feedbackFormUrl },
-  { label: t('Statistics'), link: '/dashboard' },
+  { label: t('Give us your feedback'), link: config.public.feedbackFormUrl, external: true },
+  { label: t('Statistics'), link: '/dashboard', external: true },
 ]
 
 const resourcesLinks: Array<Link> = [
@@ -315,7 +318,7 @@ const footerLinks: Array<Link> = [
   { label: t('Terms of use'), link: '/pages/legal/cgu' },
   { label: t('Tracking and privacy'), link: '/pages/gouvfr.suivi' },
   { label: t('Legal notice'), link: '/pages/legal/legal-notice' },
-  { label: t('Accessibility: partially compliant'), link: '/pagelegal/accessibility' },
+  { label: t('Accessibility: partially compliant'), link: '/pages/legal/accessibility' },
 ]
 
 const networkLinks: Array<Link> = [

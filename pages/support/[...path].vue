@@ -32,7 +32,7 @@
         >
           <template #link>
             <BrandedButton
-              :href="config.public.supportUrl"
+              :href="config.public.forumUrl"
               color="tertiary"
               :icon="RiArrowRightLine"
               :icon-right="true"
@@ -61,9 +61,10 @@
       <h2 class="text-4xl font-extrabold text-gray-title my-16">
         Questions les plus fréquentes
       </h2>
-      <AccordionGroup @open="accordionOpened">
+      <AccordionGroup
+        @open="accordionOpened"
+      >
         <Accordion
-          :show-icon="false"
           title="Vos données sont visibles dans la base Sirene et vous souhaitez les rendre privées ?"
         >
           <p class="m-0">
@@ -74,7 +75,6 @@
           </p>
         </Accordion>
         <Accordion
-          :show-icon="false"
           title="Vous cherchez votre numéro de SIRET, SIREN ou RNA ?"
         >
           <p>
@@ -96,7 +96,6 @@
           </p>
         </Accordion>
         <Accordion
-          :show-icon="false"
           title="Vous avez une question sur le fichier des personnes décédées ?"
         >
           <p class="m-0">
@@ -112,7 +111,6 @@
           </p>
         </Accordion>
         <Accordion
-          :show-icon="false"
           title="Vous avez une question sur l'application DVF (demandes de valeurs foncières) ?"
         >
           <p>
@@ -137,7 +135,6 @@
           </ul>
         </Accordion>
         <Accordion
-          :show-icon="false"
           title="Vous avez une question sur la base adresse nationale ? Une adresse est incorrecte ?"
         >
           <p class="mb-0">
@@ -148,7 +145,6 @@
           </p>
         </Accordion>
         <Accordion
-          :show-icon="false"
           title="Vous avez une question sur le cadastre ?"
         >
           <p class="mb-0">
@@ -164,7 +160,6 @@
           </p>
         </Accordion>
         <Accordion
-          :show-icon="false"
           title="Vous avez une question sur les limites d'appels de l’API découpage administratif (API Geo) ?"
         >
           <p class="mb-0">
@@ -181,7 +176,6 @@
           </p>
         </Accordion>
         <Accordion
-          :show-icon="false"
           title="Vous avez une question sur des données relatives au COVID-19 ?"
         >
           <ul class="list-disc pl-4">
@@ -206,7 +200,6 @@
           </ul>
         </Accordion>
         <Accordion
-          :show-icon="false"
           title="Vous recherchez une API ou une base de données des plaques d'immatriculation, permis de conduire, ou des cartes grises ?"
         >
           <p>
@@ -217,7 +210,6 @@
           </p>
         </Accordion>
         <Accordion
-          :show-icon="false"
           title="Vous avez une question sur le répertoire national des infrastructures de recharge pour véhicules électriques (IRVE) ?"
         >
           <p class="mb-0">
@@ -229,7 +221,6 @@
           </p>
         </Accordion>
         <Accordion
-          :show-icon="false"
           :title="`Vous cherchez l'API Tiers de prestations pour bénéficier du dispositif d'avance immédiate du crédit d'impôt « service à la personne » ?`"
         >
           <p class="mb-0">
@@ -240,7 +231,6 @@
           </p>
         </Accordion>
         <Accordion
-          :show-icon="false"
           title="Vous avez une question relative à vos données personnelles ?"
         >
           <p class="mb-0">
@@ -251,7 +241,6 @@
           </p>
         </Accordion>
         <Accordion
-          :show-icon="false"
           title="Vous avez une question sur un titre de séjour ?"
         >
           <p class="mb-0">
@@ -280,7 +269,6 @@
           </ul>
         </Accordion>
         <Accordion
-          :show-icon="false"
           title="Vous avez un doute ou avez été victime de fraude ou d'escroquerie ?"
         >
           <p class="mb-1">
@@ -308,7 +296,6 @@
           </ul>
         </Accordion>
         <Accordion
-          :show-icon="false"
           title="Vous avez une question sur le compte professionnel de formation (CPF) ?"
         >
           <p class="mb-0">
@@ -321,7 +308,6 @@
           </p>
         </Accordion>
         <Accordion
-          :show-icon="false"
           title="Vous avez une question sur un organisme de formation ou une certification Qualiopi ?"
         >
           <p>
@@ -356,7 +342,6 @@
           </p>
         </Accordion>
         <Accordion
-          :show-icon="false"
           title="Vous rencontrez un problème avec DataPass ?"
         >
           <p class="mb-0">
