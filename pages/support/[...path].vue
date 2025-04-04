@@ -32,7 +32,7 @@
         >
           <template #link>
             <BrandedButton
-              :href="config.public.supportUrl"
+              :href="config.public.forumUrl"
               color="tertiary"
               :icon="RiArrowRightLine"
               :icon-right="true"
