@@ -15,7 +15,6 @@
       >
         <DisclosureButton
           class="fr-sidemenu__btn"
-          hidden
         >
           {{ buttonText }}
         </DisclosureButton>
