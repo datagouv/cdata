@@ -8,11 +8,23 @@
         />
         <span>{{ thread.title }}</span>
       </h3>
-      <div v-if="showActions">
+      <div
+        v-if="showActions"
+        class="space-x-2"
+      >
+        <EditCommentModal
+          v-if="firstComment.permissions.edit"
+          :subject
+          :thread="thread"
+          :comment="firstComment"
+          :index="0"
+          @edited="$emit('change')"
+        />
         <DeleteThreadModal
           v-if="thread.permissions.delete"
+          :subject
           :thread
-          @deleted="$emit('deleted')"
+          @deleted="$emit('change')"
         />
         <BrandedButton
           v-else
@@ -37,9 +49,10 @@ import { RiFlagLine, RiLockLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import DeleteThreadModal from './DeleteThreadModal.vue'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
+import EditCommentModal from './EditCommentModal.vue'
 import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   thread: Thread
   subject: DiscussionSubjectTypes
   showActions?: boolean
@@ -47,6 +60,8 @@ withDefaults(defineProps<{
   showActions: false,
 })
 defineEmits<{
-  deleted: []
+  change: []
 }>()
+
+const firstComment = computed(() => props.thread.discussion[0])
 </script>

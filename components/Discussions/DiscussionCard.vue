@@ -4,7 +4,7 @@
       :thread
       :subject
       show-actions
-      @deleted="$emit('change')"
+      @change="$emit('change')"
     />
     <div
       v-if="thread.closed"

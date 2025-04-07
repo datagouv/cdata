@@ -20,7 +20,10 @@
     </template>
 
     <template #default>
-      <ThreadHeader :thread />
+      <ThreadHeader
+        :subject
+        :thread
+      />
       <div
         class="prose whitespace-pre"
       >
@@ -58,9 +61,10 @@
 import { RiDeleteBin6Line } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import ThreadHeader from './ThreadHeader.vue'
-import type { Thread } from '~/types/discussions'
+import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
 const props = defineProps<{
+  subject: DiscussionSubjectTypes
   thread: Thread
 }>()
 const emit = defineEmits<{
