@@ -17,12 +17,9 @@
       </BrandedButton>
     </div>
     <div class="flex flex-col w-full space-y-4">
-      <RequiredExplanation />
-
       <ProducerSelect
         v-model="form.owned"
         :label="t('Choose the identity with which you want to publish this message')"
-        :required="true"
         :error-text="getFirstError('owned')"
         :warning-text="getFirstWarning('owned')"
       />
@@ -30,7 +27,6 @@
       <InputGroup
         v-model="form.comment"
         :label="$t('Your message')"
-        :required="true"
         type="textarea"
         :has-error="!!getFirstError('comment')"
         :has-warning="!!getFirstWarning('comment')"
