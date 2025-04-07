@@ -20,7 +20,10 @@
     </template>
 
     <template #default>
-      <CommentBlock :comment />
+      <CommentBlock
+        :comment
+        :subject
+      />
       <div class="mt-16">
         <InputGroup
           v-model="form.comment"
@@ -62,9 +65,10 @@
 import { RiPencilLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import CommentBlock from './CommentBlock.vue'
-import type { Comment, Thread } from '~/types/discussions'
+import type { Comment, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
 const props = defineProps<{
+  subject: DiscussionSubjectTypes
   thread: Thread
   comment: Comment
   index: number

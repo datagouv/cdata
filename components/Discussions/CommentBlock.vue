@@ -15,6 +15,7 @@
       <div class="space-x-2">
         <EditCommentModal
           v-if="forEditInfo && comment.permissions.edit"
+          :subject
           :thread="forEditInfo.thread"
           :comment
           :index="forEditInfo.index"
@@ -22,6 +23,7 @@
         />
         <DeleteCommentModal
           v-if="forDeleteInfo && comment.permissions.delete"
+          :subject
           :thread="forDeleteInfo.thread"
           :comment
           :index="forDeleteInfo.index"
