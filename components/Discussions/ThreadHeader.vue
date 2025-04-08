@@ -26,15 +26,7 @@
           :thread
           @deleted="$emit('change')"
         />
-        <BrandedButton
-          v-else
-          color="secondary"
-          size="xs"
-          :icon="RiFlagLine"
-          icon-only
-        >
-          {{ $t('Report') }}
-        </BrandedButton>
+        <ReportModal :subject="{ class: 'Discussion', id: thread.id }" />
       </div>
     </div>
     <DiscussionCommentHeader
@@ -47,6 +39,7 @@
 <script setup lang="ts">
 import { RiFlagLine, RiLockLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
+import ReportModal from '../Spam/ReportModal.vue'
 import DeleteThreadModal from './DeleteThreadModal.vue'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
 import EditCommentModal from './EditCommentModal.vue'
