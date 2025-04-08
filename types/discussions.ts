@@ -28,6 +28,7 @@ export type Thread = {
   created: string
   closed: string
   closed_by: User
+  closed_by_organization: Organization | null
   spam?: Spam
   subject: DiscussionSubject
   permissions: { delete: boolean, close: boolean }

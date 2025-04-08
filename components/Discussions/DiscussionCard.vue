@@ -12,13 +12,28 @@
     >
       {{ $t('Discussion closed by ') }}
       <span class="inline-flex items-center space-x-1 text-mention-grey">
+        <Placeholder
+          v-if="thread.closed_by_organization"
+          type="organization"
+          :src="thread.closed_by_organization.logo_thumbnail"
+          class="size-3"
+        />
         <Avatar
+          v-else
           :user="thread.closed_by"
           :rounded="true"
           class="size-3"
         />
         <NuxtLink
-          class=""
+          v-if="thread.closed_by_organization"
+          class="link"
+          :href="thread.closed_by_organization.page"
+        >
+          {{ thread.closed_by_organization.name }}
+        </NuxtLink>
+        <NuxtLink
+          v-else
+          class="link"
           :href="thread.closed_by.page"
         >
           {{ thread.closed_by.first_name }} {{ thread.closed_by.last_name }}
