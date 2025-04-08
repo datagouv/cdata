@@ -24,11 +24,11 @@
         :subject
         :thread
       />
-      <div
-        class="prose whitespace-pre"
+      <ReadMore
+        class="prose whitespace-pre-line max-w-none"
       >
         {{ thread.discussion[0].content }}
-      </div>
+      </ReadMore>
       <div class="mt-16 font-bold">
         {{ $t('This action is irreversible. All comments in this discussion will also be deleted.') }}
       </div>
@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 import { RiDeleteBin6Line } from '@remixicon/vue'
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, ReadMore } from '@datagouv/components-next'
 import ThreadHeader from './ThreadHeader.vue'
 import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
 

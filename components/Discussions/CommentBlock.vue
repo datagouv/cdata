@@ -44,15 +44,15 @@
         </BrandedButton>
       </div>
     </div>
-    <div class="prose whitespace-pre">
+    <ReadMore class="prose whitespace-pre-line max-w-none">
       {{ comment.content }}
-    </div>
+    </ReadMore>
   </div>
 </template>
 
 <script setup lang="ts">
 import { RiFlagLine } from '@remixicon/vue'
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, ReadMore } from '@datagouv/components-next'
 import ReportModal from '../Spam/ReportModal.vue'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
 import DeleteCommentModal from './DeleteCommentModal.vue'

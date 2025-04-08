@@ -46,12 +46,12 @@
         v-for="comment, index in thread.discussion"
         :key="index"
       >
-        <div
+        <ReadMore
           v-if="index == 0"
-          class="prose whitespace-pre"
+          class="prose whitespace-pre-line max-w-none"
         >
           {{ comment.content }}
-        </div>
+        </ReadMore>
         <CommentBlock
           v-else
           :thread
@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton } from '@datagouv/components-next'
+import { Avatar, BrandedButton, ReadMore } from '@datagouv/components-next'
 import ThreadHeader from './ThreadHeader.vue'
 import CommentBlock from './CommentBlock.vue'
 import RespondForm from './RespondForm.vue'
