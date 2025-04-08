@@ -29,6 +29,7 @@
           :index="forDeleteInfo.index"
           @deleted="$emit('change')"
         />
+        <ReportModal :subject="{ class: 'Discussion', id: thread.id }" />
         <BrandedButton
           v-if="! comment.permissions.delete"
           color="secondary"
@@ -49,12 +50,14 @@
 <script setup lang="ts">
 import { RiFlagLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
+import ReportModal from '../Spam/ReportModal.vue'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
 import DeleteCommentModal from './DeleteCommentModal.vue'
 import EditCommentModal from './EditCommentModal.vue'
 import { isProducerOfSubject, type Comment, type DiscussionSubjectTypes, type Thread } from '~/types/discussions'
 
 const props = defineProps<{
+  thread: Thread
   comment: Comment
   subject: DiscussionSubjectTypes
   forDeleteInfo?: {

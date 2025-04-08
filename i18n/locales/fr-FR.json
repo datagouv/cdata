@@ -1055,5 +1055,11 @@
   "Choose the identity with which you want to publish this message": "Choisissez l'identité avec laquelle vous souhaitez publier ce message",
   "Please remain courteous and constructive. Avoid sharing personal information.": "Merci de rester courtois et constructif. Eviter de communiquer des données personnelles.",
   "See discussion": "Voir la discussion",
-  "Hide discussion": "Cacher la discussion"
+  "Hide discussion": "Cacher la discussion",
+  "Updated the {date}": "Mis à jour le {date}",
+  "Please only report serious concerns.": "Merci de ne signaler qu’en cas d’inquiétude sérieuse.",
+  "See our terms of use.": "Voir nos modalités d'utilisation.",
+  "The {site} team will review the content to determine if it violates {terms}. Thank you for your help.": "L’équipe de {site} examinera le contenu pour déterminer si celui-ci enfreint {terms}. Merci pour votre aide.",
+  "our terms of use": "nos modalités d'utilisation",
+  "Avoid sharing personal information.": "Évitez de partager des informations personnelles."
 }

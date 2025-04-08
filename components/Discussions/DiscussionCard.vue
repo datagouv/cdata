@@ -39,6 +39,7 @@
         </div>
         <CommentBlock
           v-else
+          :thread
           :for-delete-info="{ thread, index }"
           :for-edit-info="{ thread, index }"
           :comment

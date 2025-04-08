@@ -21,6 +21,7 @@
 
     <template #default>
       <CommentBlock
+        :thread
         :comment
         :subject
       />
