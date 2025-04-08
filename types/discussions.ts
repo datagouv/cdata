@@ -31,7 +31,7 @@ export type Thread = {
   closed_by_organization: Organization | null
   spam?: Spam
   subject: DiscussionSubject
-  permissions: { delete: boolean, close: boolean }
+  permissions: { delete: boolean, edit: boolean, close: boolean }
 }
 
 export type Comment = {

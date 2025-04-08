@@ -27,6 +27,16 @@
       />
       <div class="mt-16">
         <InputGroup
+          v-if="index === 0 && thread.permissions.edit"
+          v-model="form.title"
+          :label="$t('Title')"
+          :required="true"
+          :has-error="!!getFirstError('title')"
+          :has-warning="!!getFirstWarning('title')"
+          :error-text="getFirstError('title')"
+        />
+
+        <InputGroup
           v-model="form.comment"
           :label="$t('Your message')"
           :required="true"
@@ -82,6 +92,7 @@ const { t } = useI18n()
 const { $api } = useNuxtApp()
 
 const { form, getFirstError, getFirstWarning } = useForm({
+  title: props.thread.title,
   comment: props.comment.content,
 })
 
@@ -91,12 +102,23 @@ const editMessage = async (_: SubmitEvent, close: () => void) => {
   loading.value = true
 
   try {
-    await $api(`/api/1/discussions/${props.thread.id}/comments/${props.index}`, {
-      method: 'PUT',
-      body: {
-        comment: form.value.comment,
-      },
-    })
+    if (form.value.title != props.thread.title) {
+      await $api(`/api/1/discussions/${props.thread.id}`, {
+        method: 'PUT',
+        body: {
+          title: form.value.title,
+        },
+      })
+    }
+    if (form.value.comment != props.comment.content) {
+      await $api(`/api/1/discussions/${props.thread.id}/comments/${props.index}`, {
+        method: 'PUT',
+        body: {
+          comment: form.value.comment,
+        },
+      })
+    }
+
     close()
     emit('edited')
   }
