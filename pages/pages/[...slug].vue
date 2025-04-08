@@ -15,12 +15,14 @@
     <LoadingBlock :status>
       <div v-if="status === 'success' && data">
         <MarkdownViewer
-          v-if="data.extension === 'md'"
+          v-if="data.data.extension === 'md'"
           :content="data.content"
           :min-heading="1"
+          size="md"
         />
         <ComponentDefinedInSetup
           v-else
+          :class="markdownClasses"
         />
       </div>
       <div
@@ -40,7 +42,13 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const route = useRoute()
 
-const { data, status } = useFetch(`/nuxt-api/pages/${route.params.slug ? route.params.slug.join('/') : ''}`)
+const { data, status } = useFetch<{
+  data: {
+    extension: string
+    title: string
+  }
+  content: string
+}>(`/nuxt-api/pages/${route.params.slug ? route.params.slug.join('/') : ''}`)
 
 const title = computed(() => data.value?.data.title)
 
@@ -48,10 +56,9 @@ useSeoMeta({
   title,
 })
 
-const compTemplate = computed(() => data.value.content)
+const compTemplate = computed(() => data.value?.content)
 
 const ComponentDefinedInSetup = computed(() => h({
-  class: markdownClasses,
   template: compTemplate.value,
 }) as Component)
 </script>
