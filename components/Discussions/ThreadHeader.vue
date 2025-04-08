@@ -26,7 +26,10 @@
           :thread
           @deleted="$emit('change')"
         />
-        <ReportModal :subject="{ class: 'Discussion', id: thread.id }" />
+        <ReportModal
+          v-if="! thread.permissions.delete"
+          :subject="{ class: 'Discussion', id: thread.id }"
+        />
       </div>
     </div>
     <DiscussionCommentHeader

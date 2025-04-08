@@ -29,7 +29,10 @@
           :index="forDeleteInfo.index"
           @deleted="$emit('change')"
         />
-        <ReportModal :subject="{ class: 'Discussion', id: thread.id }" />
+        <ReportModal
+          v-if="! comment.permissions.delete"
+          :subject="{ class: 'Discussion', id: thread.id }"
+        />
         <BrandedButton
           v-if="! comment.permissions.delete"
           color="secondary"
