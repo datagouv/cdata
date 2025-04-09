@@ -30,7 +30,7 @@
           @deleted="$emit('change')"
         />
         <ReportModal
-          v-if="! comment.permissions.delete"
+          v-if="! comment.permissions.delete && ! comment.permissions.edit"
           :subject="{ class: 'Discussion', id: thread.id }"
         />
       </div>

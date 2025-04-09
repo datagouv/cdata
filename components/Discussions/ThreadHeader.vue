@@ -26,8 +26,9 @@
           :thread
           @deleted="$emit('change')"
         />
+        <!-- ! firstComment.permissions.edit is temporary because we can own the comment but cannot delete it… -->
         <ReportModal
-          v-if="! thread.permissions.delete"
+          v-if="! thread.permissions.delete && ! firstComment.permissions.edit"
           :subject="{ class: 'Discussion', id: thread.id }"
         />
       </div>
