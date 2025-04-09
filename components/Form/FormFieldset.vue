@@ -16,10 +16,6 @@
       <h2 class="text-sm font-bold uppercase mb-3">
         {{ legend }}
       </h2>
-
-      <div>
-        hello
-      </div>
     </legend>
 
     <slot />
