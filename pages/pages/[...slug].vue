@@ -18,7 +18,7 @@
         :class="markdownClasses"
       >
         <MarkdownViewer
-          v-if="data.data.extension === 'md'"
+          v-if="data.extension === 'md'"
           :content="data.content"
           :min-heading="1"
           size="md"
@@ -46,9 +46,9 @@ const route = useRoute()
 
 const { data, status } = useFetch<{
   data: {
-    extension: string
     title: string
   }
+  extension: string
   content: string
 }>(`/nuxt-api/pages/${route.params.slug ? route.params.slug.join('/') : ''}`)
 

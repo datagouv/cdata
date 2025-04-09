@@ -1,5 +1,5 @@
-import { ofetch } from 'ofetch'
 import matter from 'gray-matter'
+import { ofetch } from 'ofetch'
 
 /**
  * Get the datagouv page based on the path
@@ -14,12 +14,14 @@ export default cachedEventHandler(async (event) => {
   const branch = config.pagesGhRepoBranch
   let rawUrl = `https://raw.githubusercontent.com/${repo}/${branch}/pages/${slug}`
   let ghUrl = `https://github.com/${repo}/blob/${branch}/pages/${slug}`
+  console.log(slug)
+  console.log(`${rawUrl}.md`)
 
   let extension = 'html'
   try {
-    const res = (await ofetch(`${rawUrl}.md`, {
+    const res = await fetch(`${rawUrl}.md`, {
       method: 'HEAD',
-    }))
+    })
     if (res.status == 200) {
       extension = 'md'
     }
