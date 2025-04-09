@@ -7,12 +7,25 @@
     <h1 class="font-bold text-2xl mb-5">
       {{ t("Harvesters") }}
     </h1>
-    <h2
+    <div
       v-if="pageData && pageData.total"
-      class="text-sm font-bold uppercase m-0"
+      class="flex items-center justify-between"
     >
-      {{ t('{n} harvesters', pageData.total) }}
-    </h2>
+      <h2
+        class="text-sm font-bold uppercase m-0"
+      >
+        {{ t('{n} harvesters', pageData.total) }}
+      </h2>
+      <div class="flex space-x-2.5 fr-grid-row fr-grid-row--right">
+        <AdminInput
+          v-if="!organization"
+          v-model="q"
+          type="search"
+          :icon="RiSearchLine"
+          :placeholder="$t('Search')"
+        />
+      </div>
+    </div>
 
     <LoadingBlock :status>
       <div v-if="pageData && pageData.total > 0">
@@ -120,19 +133,35 @@
         src="/illustrations/harvester.svg"
         class="w-24"
       />
-      <p class="fr-text--bold fr-my-3v">
-        {{ t(`You haven't published a harvester yet`) }}
-      </p>
-      <AdminPublishButton type="harvester" />
+      <template
+        v-if="organization"
+      >
+        <p class="fr-text--bold fr-my-3v">
+          {{ t(`You haven't published a harvester yet`) }}
+        </p>
+        <AdminPublishButton type="harvester" />
+      </template>
+      <template v-else-if="q">
+        <p class="fr-text--bold fr-my-3v">
+          {{ t(`No results for "{q}"`, { q }) }}
+        </p>
+        <BrandedButton
+          color="primary"
+          @click="q = qDebounced = ''"
+        >
+          {{ $t('Reset filters') }}
+        </BrandedButton>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Pagination, type Organization } from '@datagouv/components-next'
+import { Pagination, BrandedButton, type Organization } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { RiSearchLine } from '@remixicon/vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
 import HarvesterBadge from './HarvesterBadge.vue'
