@@ -14,8 +14,6 @@ export default cachedEventHandler(async (event) => {
   const branch = config.pagesGhRepoBranch
   let rawUrl = `https://raw.githubusercontent.com/${repo}/${branch}/pages/${slug}`
   let ghUrl = `https://github.com/${repo}/blob/${branch}/pages/${slug}`
-  console.log(slug)
-  console.log(`${rawUrl}.md`)
 
   let extension = 'html'
   try {

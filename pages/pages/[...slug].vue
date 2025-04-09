@@ -47,15 +47,28 @@ const route = useRoute()
 const { data, status } = useFetch<{
   data: {
     title: string
+    description?: string
   }
   extension: string
   content: string
 }>(`/nuxt-api/pages/${route.params.slug ? route.params.slug.join('/') : ''}`)
 
 const title = computed(() => data.value?.data.title)
+const description = computed(() => data.value?.data.description)
 
 useSeoMeta({
   title,
+  description,
+})
+
+useHead({
+  script: [
+    {
+      'data-udata': 'https://www.data.gouv.fr/',
+      'src': 'https://static.data.gouv.fr/static/oembed.js',
+      'body': true,
+    },
+  ],
 })
 
 const compTemplate = computed(() => data.value?.content)
