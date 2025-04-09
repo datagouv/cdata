@@ -13,7 +13,10 @@
       </BreadcrumbItem>
     </Breadcrumb>
     <LoadingBlock :status>
-      <div v-if="status === 'success' && data">
+      <div
+        v-if="status === 'success' && data"
+        :class="markdownClasses"
+      >
         <MarkdownViewer
           v-if="data.data.extension === 'md'"
           :content="data.content"
@@ -22,7 +25,6 @@
         />
         <ComponentDefinedInSetup
           v-else
-          :class="markdownClasses"
         />
       </div>
       <div
