@@ -97,7 +97,6 @@ const send = async () => {
         comment: form.value.comment,
       }),
     })
-    close()
     emit('new')
   }
   finally {
