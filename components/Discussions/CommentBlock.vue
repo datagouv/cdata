@@ -33,15 +33,6 @@
           v-if="! comment.permissions.delete"
           :subject="{ class: 'Discussion', id: thread.id }"
         />
-        <BrandedButton
-          v-if="! comment.permissions.delete"
-          color="secondary"
-          size="xs"
-          :icon="RiFlagLine"
-          icon-only
-        >
-          {{ $t('Report') }}
-        </BrandedButton>
       </div>
     </div>
     <ReadMore class="prose whitespace-pre-line max-w-none">
