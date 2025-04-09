@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite'
+import toml from './rollup-plugin-smol-toml'
 
 // const swrDuration = process.env.NUXT_TEMPLATE_CACHE_DURATION ? parseInt(process.env.NUXT_TEMPLATE_CACHE_DURATION) : 60
 // https://nuxt.com/docs/api/configuration/nuxt-config
@@ -29,6 +30,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
+    crispIdentifier: '',
+    crispKey: '',
+    crispWebsiteId: '',
     public: {
       i18n: {
         baseUrl: 'https://www.data.gouv.fr/', // NUXT_PUBLIC_I18N_BASE_URL
@@ -137,6 +141,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
 
   vite: {
+    assetsInclude: ['**/*.md'],
     css: {
       preprocessorOptions: {
         scss: {
@@ -144,7 +149,7 @@ export default defineNuxtConfig({
         },
       },
     },
-    plugins: [tailwindcss()],
+    plugins: [toml(), tailwindcss()],
     server: {
       allowedHosts: ['dev.local'],
     },
