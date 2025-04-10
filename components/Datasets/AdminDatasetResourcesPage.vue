@@ -22,7 +22,7 @@
           </BrandedButton>
 
           <template #tooltip>
-            {{ $t('Cannot reorder dataset\'s files when there is more than {max} files', { max: config.public.maxSortableFiles }) }}
+            {{ $t(`Cannot reorder dataset's files when there is more than {max} files`, { max: config.public.maxSortableFiles }) }}
           </template>
         </component>
         <BrandedButton
