@@ -42,13 +42,13 @@
 </template>
 
 <script setup lang="ts">
-import { RiFlagLine } from '@remixicon/vue'
-import { BrandedButton, ReadMore } from '@datagouv/components-next'
+import { ReadMore } from '@datagouv/components-next'
 import ReportModal from '../Spam/ReportModal.vue'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
 import DeleteCommentModal from './DeleteCommentModal.vue'
 import EditCommentModal from './EditCommentModal.vue'
-import { isProducerOfSubject, type Comment, type DiscussionSubjectTypes, type Thread } from '~/types/discussions'
+import type { Comment, DiscussionSubjectTypes, Thread } from '~/types/discussions'
+import { isProducerOfSubject } from '~/utils/discussions'
 
 const props = defineProps<{
   thread: Thread

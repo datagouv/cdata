@@ -50,7 +50,8 @@
 
 <script setup lang="ts">
 import { Avatar } from '@datagouv/components-next'
-import { isProducerOfSubject, type Comment, type DiscussionSubjectTypes } from '~/types/discussions'
+import type { Comment, DiscussionSubjectTypes } from '~/types/discussions'
+import { isProducerOfSubject } from '~/utils/discussions'
 
 const props = defineProps<{
   comment: Comment

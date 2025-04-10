@@ -45,15 +45,3 @@ export type Comment = {
 }
 
 export type Discussion = Array<Comment>
-
-export function isProducerOfSubject(subject: DiscussionSubjectTypes, comment: Comment): boolean {
-  if (subject.owner && !comment.posted_by_organization && subject.owner.id === comment.posted_by.id) {
-    return true
-  }
-
-  if ('organization' in subject && subject.organization && comment.posted_by_organization && subject.organization.id == comment.posted_by_organization.id) {
-    return true
-  }
-
-  return false
-}
