@@ -75,6 +75,7 @@
       />
 
       <DiscussionsList
+        v-if="config.public.allowDiscussionsInPosts"
         class="mt-16"
         type="Post"
         :subject="post"
@@ -90,6 +91,7 @@
 import EditButton from '~/components/BrandedButton/EditButton.vue'
 import type { Post } from '~/types/posts'
 
+const config = useRuntimeConfig()
 const route = useRoute()
 const me = useMaybeMe()
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
