@@ -13,7 +13,7 @@
           color="secondary"
           size="xs"
           :icon="RiAddLine"
-          @click="newDiscussion = true"
+          @click="showDiscussionForm"
         >
           {{ t("Start a new discussion") }}
         </BrandedButton>
@@ -88,7 +88,19 @@ const sortedBy = ref<DiscussionSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 
+const me = useMaybeMe()
+const localePath = useLocalePath()
+
 const newDiscussion = ref(false)
+
+const showDiscussionForm = () => {
+  if (me.value) {
+    newDiscussion.value = true
+  }
+  else {
+    navigateTo(localePath('/login'), { external: true })
+  }
+}
 
 const params = computed(() => {
   const query = {

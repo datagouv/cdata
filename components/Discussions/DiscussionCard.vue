@@ -84,7 +84,7 @@
         v-else-if="!showRespondForm"
         color="secondary"
         size="xs"
-        @click="showRespondForm = true"
+        @click="showRespondFormIfConnected"
       >
         {{ $t('Respond') }}
       </BrandedButton>
@@ -109,4 +109,15 @@ defineEmits<{
 
 const openDiscussionIfClosed = ref(false)
 const showRespondForm = ref(false)
+const localePath = useLocalePath()
+const me = useMaybeMe()
+
+const showRespondFormIfConnected = () => {
+  if (me.value) {
+    showRespondForm.value = true
+  }
+  else {
+    navigateTo(localePath('/login'), { external: true })
+  }
+}
 </script>
