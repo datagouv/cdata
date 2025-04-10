@@ -29,7 +29,7 @@
       >
         {{ thread.discussion[0].content }}
       </ReadMore>
-      <div class="mt-16 font-bold">
+      <div class="mt-4 font-bold">
         {{ $t('This action is irreversible. All comments in this discussion will also be deleted.') }}
       </div>
     </template>

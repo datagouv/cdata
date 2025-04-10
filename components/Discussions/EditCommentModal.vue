@@ -25,7 +25,7 @@
         :comment
         :subject
       />
-      <div class="mt-16">
+      <div class="mt-4">
         <InputGroup
           v-if="index === 0 && thread.permissions.edit"
           v-model="form.title"

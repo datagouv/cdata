@@ -25,7 +25,7 @@
         :comment
         :subject
       />
-      <div class="mt-16 font-bold">
+      <div class="mt-4 font-bold">
         {{ $t('This action is irreversible.') }}
       </div>
     </template>
