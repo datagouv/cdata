@@ -67,6 +67,7 @@
         v-if="post.body_type === 'markdown'"
         :content="post.content"
         :min-heading="2"
+        size="md"
       />
       <div
         v-else

@@ -465,9 +465,9 @@ const menu = [
   { label: t('Reuses'), link: '/reuses/', external: true },
   { label: t('Organizations'), link: '/organizations/' },
   { label: t('Getting started on {site}', { site: config.public.title }), items: [
-    { label: t('What is {site}?', { site: config.public.title }), link: '/pages/about/a-propos_data-gouv/', external: true },
-    { label: t('How to publish data?'), link: '/pages/onboarding/producteurs/', external: true },
-    { label: t('How to use data?'), link: '/pages/onboarding/reutilisateurs/', external: true },
+    { label: t('What is {site}?', { site: config.public.title }), link: '/pages/about/a-propos_data-gouv/' },
+    { label: t('How to publish data?'), link: '/pages/onboarding/producteurs/' },
+    { label: t('How to use data?'), link: '/pages/onboarding/reutilisateurs/' },
     { label: t('{site} guides', { site: config.public.title }), link: config.public.guidesUrl, external: true },
   ], external: true },
   { label: t('News'), link: '/posts/' },

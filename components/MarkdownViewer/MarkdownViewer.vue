@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <div
-    :class="markdownClasses"
+    :class="size === 'sm' ? markdownSmClasses : markdownClasses"
     v-html="formatMarkdown(content, minHeading)"
   />
 </template>
@@ -10,7 +10,9 @@
 withDefaults(defineProps<{
   content: string
   minHeading?: 1 | 2 | 3 | 4 | 5 | 6
+  size?: 'sm' | 'md'
 }>(), {
   minHeading: 3,
+  size: 'sm',
 })
 </script>
