@@ -65,6 +65,13 @@
       @cancel="removeFirstNewFile"
     />
 
+    <FileEditModalFromHashClient
+      :schemas
+      :dataset
+      @submit="updateResource"
+      @delete="refreshResources"
+    />
+
     <LoadingBlock :status>
       <AdminTable v-if="resourcesPage && resourcesPage.data.length">
         <thead>
@@ -196,7 +203,8 @@ import AdminTableTh from '../AdminTable/Table/AdminTableTh.vue'
 import Tooltip from '../Tooltip/Tooltip.vue'
 import UploadResourceModal from './UploadResourceModal.vue'
 import FileEditModal from './FileEditModal.vue'
-import type { AdminBadgeType, PaginatedArray, ResourceForm } from '~/types/types'
+import FileEditModalFromHashClient from './FileEditModalFromHash.client.vue'
+import type { AdminBadgeType, CommunityResourceForm, PaginatedArray, ResourceForm } from '~/types/types'
 
 const route = useRoute()
 const { toast } = useToast()
@@ -235,7 +243,7 @@ const addFiles = (files: Array<ResourceForm>) => {
 const removeFirstNewFile = () => {
   resourceForms.value = [...resourceForms.value.slice(1)]
 }
-const saveFirstNewFile = async (closeModal: () => void, form: ResourceForm) => {
+const saveFirstNewFile = async (closeModal: () => void, form: ResourceForm | CommunityResourceForm) => {
   loading.value = true
   try {
     await saveResourceForm(dataset.value, form)
@@ -249,7 +257,7 @@ const saveFirstNewFile = async (closeModal: () => void, form: ResourceForm) => {
   page.value = 1
   refreshResources()
 }
-const updateResource = async (closeModal: () => void, resourceForm: ResourceForm) => {
+const updateResource = async (closeModal: () => void, resourceForm: ResourceForm | CommunityResourceForm) => {
   loading.value = true
 
   try {
