@@ -1042,5 +1042,9 @@
   "Cancel reorder": "Annuler le changement d'ordre",
   "Move up": "Déplacer vers le haut",
   "Move down": "Déplacer vers le bas",
-  "See public page": "Voir la page publique"
+  "See public page": "Voir la page publique",
+  "Cannot reorder dataset\\'s files when there is more than {max} files": "Cannot reorder dataset\\'s files when there is more than {max} files",
+  "Search among {count} reuses on {site}": "Rechercher parmi les {count} réutilisations sur {site}",
+  "All": "Tout",
+  "Support": "Support"
 }

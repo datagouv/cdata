@@ -2,17 +2,16 @@ import { ofetch } from 'ofetch'
 import { useComponentsConfig } from '../config'
 import type { ReuseType } from '../types/reuses'
 
-let reuseTypesRequest: Array<ReuseType> | null = null
+let reuseTypesRequest: Promise<Array<ReuseType>> | null = null
 
 export async function fetchReuseTypes() {
-  if (reuseTypesRequest) {
-    return reuseTypesRequest
+  if (!reuseTypesRequest) {
+    const config = useComponentsConfig()
+    reuseTypesRequest = ofetch<Array<ReuseType>>('api/1/reuses/types/', {
+      baseURL: config.apiBase,
+    })
   }
-  const config = useComponentsConfig()
-  reuseTypesRequest = await ofetch<Array<ReuseType>>('api/1/reuses/types/', {
-    baseURL: config.apiBase,
-  })
-  return reuseTypesRequest
+  return await reuseTypesRequest
 }
 
 export function getType(types: Array<ReuseType>, id: string): string {
