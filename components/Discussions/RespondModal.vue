@@ -18,20 +18,21 @@
       </BrandedButton>
     </template>
 
-    <div>
+    <div class="mb-5">
       <p class="font-bold text-base mb-0">
         {{ thread.title }}
       </p>
-      <p>
-        <AvatarWithName :user="lastComment.posted_by" />
-        — {{ $t('Posted on {date}', { date: formatDate(lastComment.posted_on) }) }}
-      </p>
+      <DiscussionCommentHeader
+        :subject
+        :comment="lastComment"
+      />
     </div>
 
     <InputGroup
       v-model="comment"
       type="textarea"
       :label="$t('Your message')"
+      :placeholder="$t('Please remain courteous and constructive. Avoid sharing personal information.')"
     />
 
     <template #footer="{ close }">
@@ -39,6 +40,7 @@
         class="flex-1 flex justify-end space-x-4"
       >
         <BrandedButton
+          v-if="thread.permissions.close"
           color="warning"
           :loading
           :icon="RiChatDeleteLine"
@@ -61,11 +63,13 @@
 
 <script setup lang="ts">
 import { RiChatDeleteLine, RiChatNewLine, RiSendPlaneLine } from '@remixicon/vue'
-import { AvatarWithName, BrandedButton } from '@datagouv/components-next'
-import type { Thread } from '~/types/discussions'
+import { BrandedButton } from '@datagouv/components-next'
+import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
+import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
 const props = defineProps<{
   thread: Thread
+  subject?: DiscussionSubjectTypes
 }>()
 const emit = defineEmits<{
   (e: 'responded'): void
@@ -91,6 +95,7 @@ const send = async (closeThread: boolean, closeModal: () => void) => {
       },
     })
     emit('responded')
+    comment.value = ''
     closeModal()
   }
   finally {

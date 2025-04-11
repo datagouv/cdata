@@ -77,7 +77,7 @@ export type Option = {
 
 export type SelectGroupProps = {
   disabled?: boolean
-  errorText?: string
+  errorText?: string | null
   hasError?: boolean
   hintText?: string
   isValid?: boolean
