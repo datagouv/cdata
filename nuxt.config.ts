@@ -29,10 +29,16 @@ export default defineNuxtConfig({
   },
   css: ['~/assets/css/main.css'],
 
+  vue: {
+    runtimeCompiler: true,
+  },
+
   runtimeConfig: {
     crispIdentifier: '',
     crispKey: '',
     crispWebsiteId: '',
+    pagesGhRepoName: 'datagouv/datagouvfr-pages',
+    pagesGhRepoBranch: 'master',
     public: {
       i18n: {
         baseUrl: 'https://www.data.gouv.fr/', // NUXT_PUBLIC_I18N_BASE_URL

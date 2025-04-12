@@ -90,7 +90,7 @@
     </div>
     <div class="p-1">
       <Milkdown
-        :class="markdownClasses"
+        :class="[markdownSmClasses, markdownTableEditorCLasses]"
       />
     </div>
   </div>
