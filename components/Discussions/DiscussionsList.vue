@@ -1,39 +1,45 @@
 <template>
   <div>
     <div
-      v-if="status === 'success' && pageData.total"
-      class="flex flex-wrap justify-between items-center"
+      v-if="status === 'success'"
+      class="flex flex-wrap justify-between items-center mb-5"
     >
-      <h2 class="text-sm font-bold uppercase m-0">
+      <h2 class="text-sm font-bold uppercase m-0 text-gray-title">
         {{ t('{n} discussions', pageData.total) }}
       </h2>
 
       <div>
-        <SelectGroup
-          v-model="isClosed"
-          hide-label
-          :label="$t('Type')"
-          :required="true"
-          :options="[
-            { label: $t('All discussions'), value: null },
-            { label: $t('Closed discussions'), value: true },
-            { label: $t('Opened discussions'), value: false },
-          ]"
-          hide-null-option
-        />
+        <BrandedButton
+          color="secondary"
+          size="xs"
+          :icon="RiAddLine"
+          @click="showDiscussionForm"
+        >
+          {{ t("Start a new discussion") }}
+        </BrandedButton>
       </div>
     </div>
 
+    <NewDiscussionForm
+      v-if="newDiscussion"
+      class="mb-5"
+      :subject="{ class: type, id: subject.id }"
+      @new="refresh(); newDiscussion = false"
+      @close="newDiscussion = false"
+    />
+
     <LoadingBlock :status>
       <div v-if="pageData && pageData.total > 0">
-        <AdminDiscussionsTable
-          :discussions="pageData.data"
-          :sort-direction="direction"
-          :sorted-by
-          :subject
-          @sort="sort"
-          @refresh="refresh"
-        />
+        <div class="space-y-2.5">
+          <DiscussionCard
+            v-for="thread in pageData.data"
+            :key="thread.id"
+            :thread
+            :subject
+            @change="refresh"
+          />
+        </div>
+
         <Pagination
           :page="page"
           :page-size="pageSize"
@@ -59,16 +65,17 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, type Organization } from '@datagouv/components-next'
+import { BrandedButton, Pagination } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
-import AdminDiscussionsTable from '../AdminTable/AdminDiscussionsTable/AdminDiscussionsTable.vue'
-import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
+import { RiAddLine } from '@remixicon/vue'
+import NewDiscussionForm from './NewDiscussionForm.vue'
+import DiscussionCard from './DiscussionCard.vue'
 import type { PaginatedArray, SortDirection } from '~/types/types'
-import type { DiscussionSortedBy, DiscussionSubjectTypes, Thread } from '~/types/discussions'
+import type { DiscussionSortedBy, DiscussionSubject, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
 const props = defineProps<{
-  organization?: Organization
-  subject?: DiscussionSubjectTypes
+  type: DiscussionSubject['class']
+  subject: DiscussionSubjectTypes
 }>()
 
 const { t } = useI18n()
@@ -81,9 +88,18 @@ const sortedBy = ref<DiscussionSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 
-function sort(column: DiscussionSortedBy, newDirection: SortDirection) {
-  sortedBy.value = column
-  direction.value = newDirection
+const me = useMaybeMe()
+const localePath = useLocalePath()
+
+const newDiscussion = ref(false)
+
+const showDiscussionForm = () => {
+  if (me.value) {
+    newDiscussion.value = true
+  }
+  else {
+    navigateTo(localePath('/login'), { external: true })
+  }
 }
 
 const params = computed(() => {
@@ -100,10 +116,6 @@ const params = computed(() => {
 
   if (props.subject) {
     query['for'] = props.subject.id
-  }
-
-  if (props.organization) {
-    query['org'] = props.organization.id
   }
 
   return query

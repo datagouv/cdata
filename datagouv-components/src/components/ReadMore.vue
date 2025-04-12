@@ -16,11 +16,11 @@
         'relative pt-2.5': expanded,
         'absolute pt-20 bg-linear-to-b from-white/0 via-70% via-white/100 to-white/100': !expanded,
       }"
-      @click.prevent="toggle"
+      @click.stop="toggle"
     >
       <BrandedButton
         color="primary-softer"
-        @click="toggle"
+        @click.stop="toggle"
       >
         <template v-if="expanded">
           {{ $t("Read less") }}
