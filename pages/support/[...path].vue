@@ -68,7 +68,10 @@
         <h3 class="text-2xl font-bold text-gray-title mt-10 mb-4">
           Entreprise
         </h3>
-        <Accordion title="Vos données sont visibles dans la base Sirene et vous souhaitez les rendre privées ?">
+        <Accordion
+          title="Vos données sont visibles dans la base Sirene et vous souhaitez les rendre privées ?"
+          heading="h4"
+        >
           <p class="m-0">
             Si vous souhaitez rendre privées les données de votre organisation, vous devez en faire la demande auprès de l'Insee qui publie ces données dans le répertoire Sirene. Les étapes de cette demande sont détaillées dans <a
               href="https://www.insee.fr/fr/information/7456564"
@@ -76,7 +79,10 @@
             >ce guide de l'Insee</a>. Pour les entrepreneurs individuels, voici un lien direct vers la <a href="https://statut-diffusion-sirene.insee.fr/">téléprocédure</a>.
           </p>
         </Accordion>
-        <Accordion title="Vous cherchez votre numéro de SIRET, SIREN ou RNA ?">
+        <Accordion
+          title="Vous cherchez votre numéro de SIRET, SIREN ou RNA ?"
+          heading="h4"
+        >
           <p>
             Si vous recherchez votre numéro SIRET ou SIREN, vous pouvez vous rendre sur le site <a
               href="https://annuaire-entreprises.data.gouv.fr/"
@@ -95,7 +101,10 @@
             >Service-Public.fr</a>.
           </p>
         </Accordion>
-        <Accordion title="Vous avez une question sur un organisme de formation ou une certification Qualiopi ?">
+        <Accordion
+          title="Vous avez une question sur un organisme de formation ou une certification Qualiopi ?"
+          heading="h4"
+        >
           <p>
             Notre équipe n'est pas en mesure de vous aider sur ces questions.
             Si vous ne trouvez pas réponse à votre question dans les éléments suivants vous pouvez contacter <a
@@ -130,7 +139,10 @@
         <h3 class="text-2xl font-bold text-gray-title mt-10 mb-4">
           Données foncières, cadastre et adresses
         </h3>
-        <Accordion title="Vous avez une question sur l'application DVF (demandes de valeurs foncières) ?">
+        <Accordion
+          title="Vous avez une question sur l'application DVF (demandes de valeurs foncières) ?"
+          heading="h4"
+        >
           <p>
             Vous pouvez consulter la <a
               href="https://explore.data.gouv.fr/fr/immobilier?onglet=faq"
@@ -152,7 +164,10 @@
             </li>
           </ul>
         </Accordion>
-        <Accordion title="Vous avez une question sur le cadastre ?">
+        <Accordion
+          title="Vous avez une question sur le cadastre ?"
+          heading="h4"
+        >
           <p class="mb-0">
             Si vous avez une question sur le cadastre (rechercher un propriétaire,
             remonter une erreur dans les données de valeur foncière, s’informer sur la mitoyenneté, etc.), nous vous invitons à consulter notre <a
@@ -165,7 +180,10 @@
             >le guide dédié</a>.
           </p>
         </Accordion>
-        <Accordion title="Vous avez une question sur la base adresse nationale ? Une adresse est incorrecte ?">
+        <Accordion
+          title="Vous avez une question sur la base adresse nationale ? Une adresse est incorrecte ?"
+          heading="h4"
+        >
           <p class="mb-0">
             Vous pouvez consulter la <a
               href="https://adresse.data.gouv.fr/nous-contacter"
@@ -178,7 +196,10 @@
         <h3 class="text-2xl font-bold text-gray-title mt-10 mb-4">
           APIs publiques
         </h3>
-        <Accordion title="Vous avez une question sur les limites d'appels de l’API découpage administratif (API Geo) ?">
+        <Accordion
+          title="Vous avez une question sur les limites d'appels de l’API découpage administratif (API Geo) ?"
+          heading="h4"
+        >
           <p class="mb-0">
             Les volumétries d'appel sont décrites dans la <a href="https://www.data.gouv.fr/fr/dataservices/api-decoupage-administratif-api-geo/">fiche de l'API</a>.
           </p>
@@ -192,7 +213,10 @@
             >ces instructions</a>.
           </p>
         </Accordion>
-        <Accordion title="Vous recherchez une API ou une base de données des plaques d'immatriculation, permis de conduire, ou des cartes grises ?">
+        <Accordion
+          title="Vous recherchez une API ou une base de données des plaques d'immatriculation, permis de conduire, ou des cartes grises ?"
+          heading="h4"
+        >
           <p>
             Les volumétries d'appel sont décrites dans la <a href="https://www.data.gouv.fr/fr/dataservices/api-decoupage-administratif-api-geo/">fiche de l'API</a>.
           </p>
@@ -200,7 +224,10 @@
             Il existe des API et bases de données, celles-ci ne sont pas référencées sur data.gouv.fr à ce jour. Ces API et bases de données, qui sont opérées par le Ministère de l'Intérieur, sont en accès restreint à un petit nombre d'acteurs institutionnels. Notre support n'est pas en mesure de vous aider à ce sujet.
           </p>
         </Accordion>
-        <Accordion :title="`Vous cherchez l'API Tiers de prestations pour bénéficier du dispositif d'avance immédiate du crédit d'impôt « service à la personne » ?`">
+        <Accordion
+          :title="`Vous cherchez l'API Tiers de prestations pour bénéficier du dispositif d'avance immédiate du crédit d'impôt « service à la personne » ?`"
+          heading="h4"
+        >
           <p class="mb-0">
             Cette API n'est pas référencée sur data.gouv.fr car il s'agit d'une démarche en ligne. Vous pouvez accéder à cette démarche de l'Urssaf en suivant <a
               href="https://www.demarches-simplifiees.fr/commencer/api-tiers-de-prestations"
@@ -208,7 +235,10 @@
             >ce lien vers Démarches simplifiées</a>.
           </p>
         </Accordion>
-        <Accordion title="Vous rencontrez un problème avec DataPass ?">
+        <Accordion
+          title="Vous rencontrez un problème avec DataPass ?"
+          heading="h4"
+        >
           <p class="mb-0">
             DataPass est un service permettant aux administrations et collectivités d'être habilitées à accéder à des données en accès restreint. Que vous soyez une administration fournisseur de données ou utilisatrice de données, vous pouvez vous référez à la <a
               href="https://datapass.api.gouv.fr/faq"
@@ -221,7 +251,10 @@
         <h3 class="text-2xl font-bold text-gray-title mt-10 mb-4">
           Autres données
         </h3>
-        <Accordion title="Vous avez une question sur le répertoire national des infrastructures de recharge pour véhicules électriques (IRVE) ?">
+        <Accordion
+          title="Vous avez une question sur le répertoire national des infrastructures de recharge pour véhicules électriques (IRVE) ?"
+          heading="h4"
+        >
           <p class="mb-0">
             Nous vous invitons à consulter <a
               href="https://doc.transport.data.gouv.fr/producteurs/infrastructures-de-recharge-de-vehicules-electriques-irve"
@@ -230,7 +263,10 @@
             concernant la création et la publication des données de ces données.
           </p>
         </Accordion>
-        <Accordion title="Vous avez une question sur des données relatives au COVID-19 ?">
+        <Accordion
+          title="Vous avez une question sur des données relatives au COVID-19 ?"
+          heading="h4"
+        >
           <ul class="list-disc pl-4">
             <li>
               Pour toute information sur la COVID-19 vous pouvez consulter le site <a
@@ -257,7 +293,10 @@
         <h3 class="text-2xl font-bold text-gray-title mt-10 mb-4">
           Autres questions fréquentes
         </h3>
-        <Accordion title="Vous avez une question relative à vos données personnelles ?">
+        <Accordion
+          title="Vous avez une question relative à vos données personnelles ?"
+          heading="h4"
+        >
           <p class="mb-0">
             L'organisme en mesure de vous aider est <a
               href="https://www.cnil.fr/"
@@ -265,7 +304,10 @@
             >la Commission nationale de l'informatique et des libertés (CNIL)</a>.
           </p>
         </Accordion>
-        <Accordion title="Vous avez une question sur un titre de séjour ?">
+        <Accordion
+          title="Vous avez une question sur un titre de séjour ?"
+          heading="h4"
+        >
           <p class="mb-0">
             Le site data.gouv.fr ne permet pas aux particuliers de remplir des formalités administratives et notre support n'est pas en mesure de vous aider sur ces sujets.
             Vous pouvez vous référer à l'administration compétente ou consulter les liens suivants :
@@ -291,7 +333,10 @@
             </li>
           </ul>
         </Accordion>
-        <Accordion title="Vous avez un doute ou avez été victime de fraude ou d'escroquerie ?">
+        <Accordion
+          title="Vous avez un doute ou avez été victime de fraude ou d'escroquerie ?"
+          heading="h4"
+        >
           <p class="mb-1">
             Notre équipe n'est pas en mesure de vous aider sur ces questions. Vous pouvez vous référer à :
           </p>
@@ -316,7 +361,10 @@
             </li>
           </ul>
         </Accordion>
-        <Accordion title="Vous avez une question sur le compte professionnel de formation (CPF) ?">
+        <Accordion
+          title="Vous avez une question sur le compte professionnel de formation (CPF) ?"
+          heading="h4"
+        >
           <p class="mb-0">
             Notre équipe n'est pas en mesure de vous aider sur ces questions. Vous pouvez vous référer à
             <a
