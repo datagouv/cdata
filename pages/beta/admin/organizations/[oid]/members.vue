@@ -172,15 +172,7 @@
               >
                 {{ member.user.first_name }} {{ member.user.last_name }}
               </p>
-              <p class="fr-m-0 fr-text--xs text-mention-grey f-italic inline-flex items-center">
-                <RiMailLine class="size-3" />
-                <TextClamp
-                  class="fr-px-1v"
-                  :text="member.user.email"
-                  :auto-resize="true"
-                  :max-lines="1"
-                />
-              </p>
+              <AdminEmail :user="member.user" />
             </td>
             <td>
               <AdminBadge
@@ -238,10 +230,12 @@
                       <p class="fr-text--bold fr-m-0 fr-mr-1v">
                         {{ member.user.first_name }} {{ member.user.last_name }}
                       </p>
-                      <AdminEmail
+                      <p
                         v-if="member.user.email"
-                        :email="member.user.email"
-                      />
+                        class="px-1 rounded-2 monospace text-sm text-gray-medium bg-gray-lower m-0"
+                      >
+                        {{ member.user.email }}
+                      </p>
                     </div>
                     <form
                       class="flex flex-wrap gap-4 items-end"
@@ -295,7 +289,7 @@
 import { Avatar, BannerAction, getUserAvatar, type Member, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RiAddLine, RiEyeLine, RiLogoutBoxRLine, RiMailLine, RiPencilLine } from '@remixicon/vue'
+import { RiAddLine, RiEyeLine, RiLogoutBoxRLine, RiPencilLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import type { AdminBadgeType, MemberRole, PendingMembershipRequest, UserSuggest } from '~/types/types'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'

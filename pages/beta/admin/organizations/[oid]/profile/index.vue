@@ -81,6 +81,9 @@ import { updateOrganization, updateOrganizationBadges, uploadLogo } from '~/api/
 const props = defineProps<{
   organization: Organization
 }>()
+const emit = defineEmits<{
+  refresh: []
+}>()
 
 const { t } = useI18n()
 const { toast } = useToast()
@@ -112,6 +115,7 @@ async function updateCurrentOrganization(updatedOrganization: NewOrganization | 
   }
 
   toast.success(t('Organization updated !'))
+  emit('refresh')
 
   window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
 }

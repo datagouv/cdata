@@ -99,7 +99,7 @@ const params = computed(() => {
   }
 
   if (props.subject) {
-    query['subject'] = props.subject.id
+    query['for'] = props.subject.id
   }
 
   if (props.organization) {

@@ -53,12 +53,13 @@
     <NuxtPage
       :page-key="route => route.fullPath"
       :organization
+      @refresh="$emit('refresh')"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Placeholder, isOrganizationCertified, type Organization } from '@datagouv/components-next'
+import { BrandedButton, isOrganizationCertified, type Organization } from '@datagouv/components-next'
 import { RiEyeLine } from '@remixicon/vue'
 import { useI18n } from 'vue-i18n'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
@@ -67,6 +68,9 @@ import PaddedContainer from '~/components/PaddedContainer/PaddedContainer.vue'
 
 const props = defineProps<{
   organization: Organization
+}>()
+defineEmits<{
+  refresh: []
 }>()
 
 const localPath = useLocalePath()

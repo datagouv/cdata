@@ -14,7 +14,7 @@
         />
         {{ $t('Help') }}
       </template>
-      <AccordionGroup>
+      <AccordionGroup :with-icon="true">
         <Accordion
           :id="publishFileAccordionId"
           :title="$t('Choose the right format')"

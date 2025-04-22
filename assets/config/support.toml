@@ -1,0 +1,159 @@
+title = "Comment pouvons-nous vous aider ?"
+id = 'how-to-help'
+
+[[choices]]
+label = "💁🏻‍♀️ J'ai une question"
+id = "help"
+title = "Votre question porte sur ?"
+
+  [[choices.choices]]
+  label = "Des données en particulier"
+  id = "dataset"
+  title = "Sur quelles données avez vous des questions ?"
+    [[choices.choices.choices]]
+    label = "Associations (RNA)"
+    id = "rna"
+    answer = "numero_rna"
+    button_link = "https://www.journal-officiel.gouv.fr/pages/associations-recherche/?sort=cronosort&disjunctive.source"
+    button_text = "Chercher votre numéro RNA"
+
+    [[choices.choices.choices]]
+    label = "Personnes décédées"
+    id = "deces"
+    answer = "deces"
+    button_link = "https://deces.matchid.io/search"
+    button_text = "Faire une recherche"
+
+    [[choices.choices.choices]]
+    label = "Formation"
+    id = "formation"
+    answer = "formation"
+
+    [[choices.choices.choices]]
+    label = "SIREN & SIRET"
+    id = "siret"
+    answer = "siret"
+    button_link = "https://annuaire-entreprises.data.gouv.fr/"
+    button_text = "Se rendre sur Annuaire des Entreprises"
+
+    [[choices.choices.choices]]
+    label = "Immobilier (DVF)"
+    id = "dvf"
+    answer = "dvf"
+    button_link = "https://explore.data.gouv.fr/immobilier?onglet=faq&filtre=tous&lat=46.30000&lng=2.00000&zoom=4.80"
+    button_text = "Voir la foire aux questions dédiée"
+
+    [[choices.choices.choices]]
+    label = "Base Adresse Nationale (BAN)"
+    id = "ban"
+    answer = "ban"
+    button_link = "https://adresse.data.gouv.fr/nous-contacter"
+    button_text = "Voir la foire aux questions dédiée"
+
+    [[choices.choices.choices]]
+    label = "API découpage administratif"
+    id = "decoupage"
+    answer = "decoupe"
+    button_link = "https://guides.data.gouv.fr/reutiliser-des-donnees/utiliser-les-api-geographiques/utiliser-lapi-decoupage-administratif"
+    button_text = "Découvrez notre guide dédié"
+
+    [[choices.choices.choices]]
+    label = "IRVE"
+    id = "irve"
+    answer = "irve"
+    button_link = "https://doc.transport.data.gouv.fr/type-donnees/infrastructures-de-recharge-de-vehicules-electriques-irve"
+    button_text = "Voir la documentation"
+      
+    [[choices.choices.choices]]
+    label = "Données géographiques"
+    id = "geo"
+    title = "Que souhaitez-vous nous dire ?"
+    segment = "geo"
+      
+    [[choices.choices.choices]]
+    label = "Autre"
+    id = "other"
+    answer = "question_donnees"
+    button_link = "https://guides.data.gouv.fr/guide-data.gouv.fr/jeux-de-donnees/gerer-un-jeu-de-donnees#repondre-aux-discussions"
+    button_text = "Voir un exemple"
+
+  [[choices.choices]]
+  label = "Une API"
+  id = "api"
+  title = "Comment pouvons-nous vous aider ?"
+    [[choices.choices.choices]]
+    label = "Demande d'information sur une API spécifique"
+    id = "apispecifique"
+    answer = "api_api-specifique"
+
+    [[choices.choices.choices]]
+    label = "API non-référencée dans le catalogue"
+    id = "apinonreferencee"
+    answer = "api_recherche-api-non-referencee"
+    button_link = "https://forum.data.gouv.fr/c/recherche-et-ouverture-de-donnees/8"
+    button_text = "Consulter le forum"
+
+    [[choices.choices.choices]]
+    label = "Référencer une API"
+    id = "referencerapi"
+    answer = "api_referencer-api"
+    button_link = "https://www.data.gouv.fr/fr/beta/admin/me/dataservices"
+    button_text = "Référencer une API"
+
+    [[choices.choices.choices]]
+    label = "API en accès restreint"
+    id = "apiaccesrestreint"
+    answer = "api_api-acces-restreint"
+
+    [[choices.choices.choices]]
+    label = "Autre"
+    id = "apiother"
+    answer = "api_other"
+
+  [[choices.choices]]
+  label = "Une procédure administrative"
+  id = "admin"
+  answer = "demarches_admin"
+  button_link = "http://service-public.fr/"
+  button_text = "Aller sur service-public.fr"
+
+  [[choices.choices]]
+    label = "L'utilisation de data.gouv.fr"
+    id = "datagouv"
+    title = "Comment pouvons-nous vous aider ?"
+      [[choices.choices.choices]]
+      label = "Faire certifier son organisation"
+      id = "certification"
+      title = "Pensez à nous envoyer un lien vers votre organisation ?"
+      segment = "certification"
+
+      [[choices.choices.choices]]
+      label = "Référencer ou moissonner ses données sur data.gouv.fr"
+      id = "moissonnage"
+      title = "Que souhaitez-vous nous dire ?"
+      segment = "moissonnage"
+
+      [[choices.choices.choices]]
+      label = "Autre"
+      id = "autre"
+      title = "Que souhaitez-vous nous dire ?"
+      segment = "feedback"  
+
+[[choices]]
+label = "💡 Demande de données"
+id = "opendata"
+answer = "demande_donnees"
+button_link = 'https://forum.data.gouv.fr/c/recherche-et-ouverture-de-donnees/8'
+button_text = 'Consulter le forum'
+
+[[choices]]
+label = "🐛 Soumettre un bug"
+id = "bug"
+title = "Quel problème rencontrez-vous ?"
+segment = "bug"
+
+[[choices]]
+label = "💬 Faire un retour sur data.gouv.fr"
+id = "feedback"
+title = "Que souhaitez-vous nous dire ?"
+segment = "feedback"

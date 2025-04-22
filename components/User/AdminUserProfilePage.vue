@@ -16,9 +16,12 @@
             :size="80"
           />
         </div>
-        <h2 class="w-full flex-none md:flex-1 !mb-0 fr-h3">
-          {{ user.first_name }} {{ user.last_name }}
-        </h2>
+        <div class="w-full flex-none md:flex-1">
+          <h2 class="!mb-0 fr-h3">
+            {{ user.first_name }} {{ user.last_name }}
+          </h2>
+          <AdminEmail :user />
+        </div>
         <div class="flex-none">
           <BrandedButton
             size="xs"

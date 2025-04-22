@@ -56,15 +56,7 @@
                     {{ user.first_name }} {{ user.last_name }}
                   </NuxtLinkLocale>
                 </p>
-                <p class="fr-m-0 fr-text--xs text-mention-grey f-italic inline-flex items-center">
-                  <RiMailLine class="size-3" />
-                  <TextClamp
-                    class="fr-px-1v"
-                    :text="user.email"
-                    :auto-resize="true"
-                    :max-lines="1"
-                  />
-                </p>
+                <AdminEmail :user />
               </td>
               <td>{{ formatDate(user.since) }}</td>
               <td>{{ user.metrics.datasets || 0 }}</td>
@@ -115,7 +107,7 @@ import { Pagination, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RiMailLine, RiSearchLine } from '@remixicon/vue'
+import { RiSearchLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import type { DiscussionSortedBy } from '~/types/discussions'
 import type { PaginatedArray, SortDirection } from '~/types/types'

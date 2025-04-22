@@ -3,22 +3,28 @@
     :is="as"
     class="fr-accordions-group"
   >
-    <slot ref="" />
+    <slot />
   </component>
 </template>
 
 <script setup lang="ts">
 import { key } from '~/components/Accordion/injectionKey'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   as?: string
+  withIcon?: boolean
 }>(), {
   as: 'div',
 })
 
+const emit = defineEmits<{
+  open: [id: string]
+}>()
+
 const opened = ref<string | null>(null)
 
 provide(key, {
+  withIcon: props.withIcon,
   isOpen(id: string) {
     return opened.value === id
   },
@@ -33,6 +39,7 @@ provide(key, {
     }
     else {
       opened.value = id
+      emit('open', id)
     }
   },
 
