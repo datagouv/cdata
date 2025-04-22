@@ -1038,5 +1038,6 @@
   "Cannot reorder dataset\\'s files when there is more than {max} files": "Cannot reorder dataset\\'s files when there is more than {max} files",
   "Search among {count} reuses on {site}": "Search among {count} reuses on {site}",
   "All": "All",
-  "Support": "Support"
+  "Support": "Support",
+  "{n}%": "{n}%"
 }

@@ -1046,5 +1046,6 @@
   "Cannot reorder dataset\\'s files when there is more than {max} files": "Cannot reorder dataset\\'s files when there is more than {max} files",
   "Search among {count} reuses on {site}": "Rechercher parmi les {count} réutilisations sur {site}",
   "All": "Tout",
-  "Support": "Support"
+  "Support": "Support",
+  "{n}%": "{n}%"
 }

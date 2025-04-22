@@ -2,7 +2,7 @@
   <component
     :is="icon"
     v-if="icon"
-    class="size-3.5"
+    class="size-3.5 flex-none"
   />
 </template>
 
