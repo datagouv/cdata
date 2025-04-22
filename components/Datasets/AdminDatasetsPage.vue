@@ -96,8 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { Pagination, type Dataset, type Organization, type User } from '@datagouv/components-next'
+import { BrandedButton, type DatasetV2, Pagination, type Dataset, type Organization, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -140,5 +139,5 @@ const params = computed(() => {
   }
 })
 
-const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Dataset>>('/api/1/datasets/', { lazy: true, query: params })
+const { data: pageData, status, refresh } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/', { lazy: true, query: params })
 </script>
