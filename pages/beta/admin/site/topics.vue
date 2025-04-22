@@ -51,7 +51,7 @@
               :key="topic.id"
             >
               <td>
-                <NuxtLinkLocale :to="`/beta/admin/topics/${topic.id}/profile`">
+                <NuxtLinkLocale :to="`/beta/admin/topics/${topic.id}`">
                   {{ topic.name }}
                 </NuxtLinkLocale>
               </td>
