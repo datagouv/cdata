@@ -42,7 +42,7 @@ const id = useId() as string
 withDefaults(defineProps<{
   title: string
   showTitle?: boolean
-  size?: 'sm' | 'md' | 'lg' | 'fullscreen'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'fullscreen'
 }>(), {
   showTitle: true,
   size: 'md',

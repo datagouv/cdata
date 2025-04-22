@@ -22,7 +22,7 @@
         class="flex items-center space-x-2"
       >
         <div
-          v-if="! single"
+          v-if="! single && allowReorder"
           class="shrink-0"
         >
           <BrandedButton
@@ -112,8 +112,10 @@ import type { DatasetSuggest } from '~/types/types'
 const props = withDefaults(defineProps<{
   single?: boolean
   label?: string
+  allowReorder?: boolean
 }>(), {
   single: false,
+  allowReorder: true,
 })
 
 const sortableRootRef = useTemplateRef('sortableRoot')
