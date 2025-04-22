@@ -141,16 +141,16 @@ const qDebounced = refDebounced(q, 500) // TODO add 500 in config
 const datasetsStatus = defineModel<string | null>()
 
 const statusOption = [{
-  label: t('public'),
+  label: t('Public'),
   id: 'public',
 }, {
-  label: t('archived'),
+  label: t('Archived'),
   id: 'archived',
 }, {
-  label: t('draft'),
+  label: t('Draft'),
   id: 'private',
 }, {
-  label: t('deleted'),
+  label: t('Deleted'),
   id: 'deleted',
 }]
 

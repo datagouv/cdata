@@ -1038,9 +1038,5 @@
   "Cannot reorder dataset\\'s files when there is more than {max} files": "Cannot reorder dataset\\'s files when there is more than {max} files",
   "Filter by status": "Filter by status",
   "No results": "No results",
-  "public": "public",
-  "archived": "archived",
-  "draft": "draft",
-  "deleted": "deleted",
   "Support": "Support"
 }
