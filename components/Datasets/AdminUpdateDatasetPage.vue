@@ -114,6 +114,7 @@ const { data: granularities } = await useAPI<Array<SpatialGranularity>>('/api/1/
 
 const url = computed(() => `/api/2/datasets/${route.params.id}`)
 const { data: dataset, refresh } = await useAPI<DatasetV2>(url)
+
 const datasetForm = ref<DatasetForm | null>(null)
 const harvested = ref(false)
 watchEffect(() => {
@@ -158,8 +159,8 @@ async function deleteDataset() {
     await $api(`/api/1/datasets/${route.params.id}`, {
       method: 'DELETE',
     })
-    if (route.params.oid) {
-      await navigateTo(localePath(`/beta/admin/organizations/${route.params.oid}/datasets`), { replace: true })
+    if (dataset.value.organization) {
+      await navigateTo(localePath(`/beta/admin/organizations/${dataset.value.organization.id}/datasets`), { replace: true })
     }
     else {
       await navigateTo(localePath('/beta/admin/me/datasets'), { replace: true })

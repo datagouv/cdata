@@ -898,6 +898,7 @@
   "Search “{query}” in {type}": "Rechercher « {query} » dans les {type}",
   "Transfer dataservice": "Transférer l'API",
   "Topics": "Thématiques",
+  "{n} topics": "{n} thématiques",
   "Reference Data": "Données de référence",
   "Follow data opening": "Suivre l'ouverture des données",
   "Portal for European data": "Portail des données européennes",
