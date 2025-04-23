@@ -197,49 +197,7 @@
           </HelpAccordion>
         </template>
       </FieldsetElement>
-      <FieldsetElement
-        form-key="schema"
-        class="space-y-2"
-      >
-        <SearchableSelect
-          v-model="form.schema"
-          :label="$t('Schema')"
-          :placeholder="$t('Search a schema referenced on {site}…', { site: config.public.schemasSite.name })"
-          :display-value="(option) => option.name"
-          :get-option-id="(option) => option.name"
-          :options="schemas"
-          :multiple="false"
 
-          :error-text="getFirstError('schema')"
-          :warning-text="getFirstWarning('schema')"
-        />
-        <Divider v-if="!form.schema">
-          {{ $t('or') }}
-        </Divider>
-        <InputGroup
-          v-if="!form.schema"
-          v-model="form.schema_url"
-          :label="t('Add a link to the schema')"
-          :placeholder="'https://...'"
-          :error-text="getFirstError('schema_url')"
-          :warning-text="getFirstWarning('schema_url')"
-          class="w-full !mb-0"
-        />
-
-        <template #accordion>
-          <HelpAccordion :title="$t('Select a schema')">
-            <i18n-t
-              keypath="It is possible to identify an existing data schema by visiting the {schema} website, that references a list of existing data schema."
-              tag="p"
-              class="fr-m-0 fr-mb-1w"
-            >
-              <template #schema>
-                <a :href="config.public.schemasSite.url">{{ config.public.schemasSite.name }}</a>
-              </template>
-            </i18n-t>
-          </HelpAccordion>
-        </template>
-      </FieldsetElement>
       <FieldsetElement
         v-if="form.filetype === 'remote'"
         form-key="mime"
@@ -289,6 +247,51 @@
                 <li>{{ $t("usable in an automated processing system : an automated processing system allows to make automatic operations, related to data exploitation (i.e. a CSV file is easily usable by an automated system unlike a PDF file).") }}</li>
               </ul>
             </div>
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+    </FormFieldset>
+    <FormFieldset :legend="$t('Data schema')">
+      <FieldsetElement
+        form-key="schema"
+        class="space-y-2"
+      >
+        <SearchableSelect
+          v-model="form.schema"
+          :label="$t('Schema')"
+          :placeholder="$t('Search a schema referenced on {site}…', { site: config.public.schemasSite.name })"
+          :display-value="(option) => option.name"
+          :get-option-id="(option) => option.name"
+          :options="schemas"
+          :multiple="false"
+
+          :error-text="getFirstError('schema')"
+          :warning-text="getFirstWarning('schema')"
+        />
+        <Divider v-if="!form.schema">
+          {{ $t('or') }}
+        </Divider>
+        <InputGroup
+          v-if="!form.schema"
+          v-model="form.schema_url"
+          :label="t('Add a link to the schema')"
+          :placeholder="'https://...'"
+          :error-text="getFirstError('schema_url')"
+          :warning-text="getFirstWarning('schema_url')"
+          class="w-full !mb-0"
+        />
+
+        <template #accordion>
+          <HelpAccordion :title="$t('Select a schema')">
+            <i18n-t
+              keypath="It is possible to identify an existing data schema by visiting the {schema} website, that references a list of existing data schema."
+              tag="p"
+              class="fr-m-0 fr-mb-1w"
+            >
+              <template #schema>
+                <a :href="config.public.schemasSite.url">{{ config.public.schemasSite.name }}</a>
+              </template>
+            </i18n-t>
           </HelpAccordion>
         </template>
       </FieldsetElement>
