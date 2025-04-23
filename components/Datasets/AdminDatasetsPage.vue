@@ -36,6 +36,7 @@
           :placeholder="$t('Filter by status')"
           :options="statusOption"
           :display-value="(option) => option.label"
+          :multiple="false"
           class="mb-0"
         />
         <AdminInput
@@ -138,7 +139,7 @@ const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 const q = ref('')
 const qDebounced = refDebounced(q, 500) // TODO add 500 in config
-const datasetsStatus = defineModel<string | null>()
+const datasetsStatus = ref<string | null>(null)
 
 const statusOption = [{
   label: t('Public'),
