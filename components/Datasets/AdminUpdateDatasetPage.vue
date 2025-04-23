@@ -72,8 +72,8 @@
 </template>
 
 <script setup lang="ts">
+import type { DatasetV2, Frequency, License } from '@datagouv/components-next'
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
-import type { Dataset, Frequency, License } from '@datagouv/components-next'
 import { RiArchiveLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity } from '~/types/types'
@@ -112,8 +112,8 @@ const licenses = computed(() => {
 })
 const { data: granularities } = await useAPI<Array<SpatialGranularity>>('/api/1/spatial/granularities/', { lazy: true })
 
-const url = computed(() => `/api/1/datasets/${route.params.id}`)
-const { data: dataset, refresh } = await useAPI<Dataset>(url)
+const url = computed(() => `/api/2/datasets/${route.params.id}`)
+const { data: dataset, refresh } = await useAPI<DatasetV2>(url)
 const datasetForm = ref<DatasetForm | null>(null)
 const harvested = ref(false)
 watchEffect(() => {

@@ -146,12 +146,12 @@ watchEffect(async () => {
       datasetsById.value[dataset.id] = dataset
     }
     else {
-      datasetsById.value[dataset.id] = await $api<Dataset>(`/api/1/datasets/${dataset.id}/`)
+      datasetsById.value[dataset.id] = await $api<DatasetV2>(`/api/2/datasets/${dataset.id}/`)
     }
   }
 })
 
-const selectedDatasets = computed<Array<Dataset | DatasetV2>>(() => {
+const selectedDatasets = computed<Array<Dataset | DatasetV2 | DatasetSuggest>>(() => {
   return selectedDatasetsSuggest.value.map((datasetSuggest) => {
     return datasetsById.value[datasetSuggest.id] || null
   }).filter(dataset => dataset)
@@ -165,7 +165,7 @@ const loadDatasetByLink = async () => {
   }
   const id = matches[1]
   try {
-    const dataset = await $api<Dataset>(`/api/1/datasets/${id}/`)
+    const dataset = await $api<DatasetV2>(`/api/2/datasets/${id}/`)
     if (selectedDatasetsSuggest.value.find(suggest => suggest.id === dataset.id)) {
       datasetUrlError.value = t('The dataset is already present in the list.')
       return

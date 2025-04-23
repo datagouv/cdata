@@ -42,6 +42,7 @@ export default defineNuxtConfig({
     public: {
       i18n: {
         baseUrl: 'https://www.data.gouv.fr/', // NUXT_PUBLIC_I18N_BASE_URL
+        defaultLocale: 'en', // NUXT_PUBLIC_I18N_DEFAULT_LOCALE
       },
 
       apiBase: 'http://dev.local:7000',
@@ -189,7 +190,6 @@ export default defineNuxtConfig({
       },
     ],
     lazy: true,
-    defaultLocale: 'en',
     strategy: 'prefix',
     trailingSlash: true,
   },
