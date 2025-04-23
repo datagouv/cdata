@@ -204,7 +204,7 @@
         <SearchableSelect
           v-model="form.schema"
           :label="$t('Schema')"
-          :placeholder="$t('Search a schema…')"
+          :placeholder="$t('Search a schema referenced on {site}…', { site: config.public.schemasSite.name })"
           :display-value="(option) => option.name"
           :get-option-id="(option) => option.name"
           :options="schemas"
