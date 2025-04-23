@@ -7,6 +7,8 @@
 </template>
 
 <script setup lang="ts">
+import { formatMarkdown, markdownClasses, markdownSmClasses } from '~/utils/markdown'
+
 withDefaults(defineProps<{
   content: string
   minHeading?: 1 | 2 | 3 | 4 | 5 | 6
