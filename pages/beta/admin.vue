@@ -95,7 +95,10 @@ const me = useMe()
 const { locale } = useI18n()
 const config = useRuntimeConfig()
 
-useSeoMeta({ title: 'Admin' })
+useSeoMeta({
+  title: 'Admin',
+  robots: 'noindex, nofollow',
+})
 
 const { organizations, users } = useCurrentOwned()
 const isSiteAdmin = computed(() => me.value.roles?.includes('admin') || false)
