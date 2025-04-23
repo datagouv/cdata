@@ -72,6 +72,13 @@
             </template>
           </Tooltip>
         </AdminTableTh>
+        <AdminTableTh
+          v-if="$slots.actions"
+          class="w-16"
+          scope="col"
+        >
+          {{ $t('Actions') }}
+        </AdminTableTh>
       </tr>
     </thead>
     <tbody>
@@ -113,6 +120,12 @@
         </td>
         <td class="font-mono text-right">
           {{ summarize(reuse.metrics.followers) }}
+        </td>
+        <td v-if="$slots.actions">
+          <slot
+            name="actions"
+            :reuse
+          />
         </td>
       </tr>
     </tbody>
