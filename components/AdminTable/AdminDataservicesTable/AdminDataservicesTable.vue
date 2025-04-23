@@ -27,6 +27,12 @@
         <AdminTableTh align="right">
           {{ t("Availability") }}
         </AdminTableTh>
+        <AdminTableTh
+          scope="col"
+          class="w-28"
+        >
+          {{ t("Actions") }}
+        </AdminTableTh>
       </tr>
     </thead>
     <tbody>
@@ -70,14 +76,38 @@
         <td class="font-mono text-right">
           <span v-if="dataservice.availability">{{ dataservice.availability }}%</span>
         </td>
+        <td>
+          <BrandedButton
+            size="xs"
+            color="secondary-softer"
+            :href="dataservice.self_web_url"
+            :icon="RiEyeLine"
+            icon-only
+            external
+            keep-margins-even-without-borders
+          >
+            {{ $t('Show public page') }}
+          </BrandedButton>
+          <BrandedButton
+            size="xs"
+            color="secondary-softer"
+            :href="getDataserviceAdminUrl(dataservice)"
+            :icon="RiPencilLine"
+            icon-only
+            keep-margins-even-without-borders
+          >
+            {{ $t('Edit') }}
+          </BrandedButton>
+        </td>
       </tr>
     </tbody>
   </AdminTable>
 </template>
 
 <script setup lang="ts">
-import type { Dataservice } from '@datagouv/components-next'
+import { BrandedButton, type Dataservice } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
+import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'

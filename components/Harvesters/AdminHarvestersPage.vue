@@ -73,6 +73,12 @@
               >
                 {{ t("Dataservices") }}
               </AdminTableTh>
+              <AdminTableTh
+                scope="col"
+                class="w-28"
+              >
+                {{ t("Actions") }}
+              </AdminTableTh>
             </tr>
           </thead>
           <tbody v-if="pageData">
@@ -112,6 +118,18 @@
               </td>
               <td class="font-mono text-right">
                 {{ getHarvesterDataservices(harvester) }}
+              </td>
+              <td>
+                <BrandedButton
+                  size="xs"
+                  color="secondary-softer"
+                  :href="getHarvesterAdminUrl(harvester)"
+                  :icon="RiPencilLine"
+                  icon-only
+                  keep-margins-even-without-borders
+                >
+                  {{ $t('Edit') }}
+                </BrandedButton>
               </td>
             </tr>
           </tbody>
@@ -161,7 +179,7 @@ import { Pagination, BrandedButton, type Organization } from '@datagouv/componen
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RiSearchLine } from '@remixicon/vue'
+import { RiPencilLine, RiSearchLine } from '@remixicon/vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
 import HarvesterBadge from './HarvesterBadge.vue'

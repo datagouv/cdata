@@ -72,6 +72,12 @@
             </template>
           </Tooltip>
         </AdminTableTh>
+        <AdminTableTh
+          scope="col"
+          class="w-28"
+        >
+          {{ t("Actions") }}
+        </AdminTableTh>
       </tr>
     </thead>
     <tbody>
@@ -114,15 +120,39 @@
         <td class="font-mono text-right">
           {{ summarize(reuse.metrics.followers) }}
         </td>
+        <td>
+          <BrandedButton
+            size="xs"
+            color="secondary-softer"
+            :href="reuse.page"
+            :icon="RiEyeLine"
+            icon-only
+            external
+            keep-margins-even-without-borders
+          >
+            {{ $t('Show public page') }}
+          </BrandedButton>
+          <BrandedButton
+            size="xs"
+            color="secondary-softer"
+            :href="getReuseAdminUrl(reuse)"
+            :icon="RiPencilLine"
+            icon-only
+            keep-margins-even-without-borders
+          >
+            {{ $t('Edit') }}
+          </BrandedButton>
+        </td>
       </tr>
     </tbody>
   </AdminTable>
 </template>
 
 <script setup lang="ts">
-import { summarize } from '@datagouv/components-next'
+import { BrandedButton, summarize } from '@datagouv/components-next'
 import type { Reuse } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
+import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'

@@ -43,6 +43,12 @@
               <AdminTableTh scope="col">
                 {{ t("Reuses") }}
               </AdminTableTh>
+              <AdminTableTh
+                scope="col"
+                class="w-28"
+              >
+                {{ t("Actions") }}
+              </AdminTableTh>
             </tr>
           </thead>
           <tbody>
@@ -52,7 +58,10 @@
             >
               <td>
                 <p class="fr-text--bold fr-m-0">
-                  <NuxtLinkLocale :to="`/beta/admin/users/${user.id}/profile`">
+                  <NuxtLinkLocale
+                    class="fr-link fr-reset-link"
+                    :to="`/beta/admin/users/${user.id}/profile`"
+                  >
                     {{ user.first_name }} {{ user.last_name }}
                   </NuxtLinkLocale>
                 </p>
@@ -61,6 +70,29 @@
               <td>{{ formatDate(user.since) }}</td>
               <td>{{ user.metrics.datasets || 0 }}</td>
               <td>{{ user.metrics.reuses || 0 }}</td>
+              <td>
+                <BrandedButton
+                  size="xs"
+                  color="secondary-softer"
+                  :href="user.page"
+                  :icon="RiEyeLine"
+                  icon-only
+                  external
+                  keep-margins-even-without-borders
+                >
+                  {{ $t('Show public page') }}
+                </BrandedButton>
+                <BrandedButton
+                  size="xs"
+                  color="secondary-softer"
+                  :href="`/beta/admin/users/${user.id}/profile`"
+                  :icon="RiPencilLine"
+                  icon-only
+                  keep-margins-even-without-borders
+                >
+                  {{ $t('Edit') }}
+                </BrandedButton>
+              </td>
             </tr>
           </tbody>
         </AdminTable>
@@ -107,7 +139,7 @@ import { Pagination, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RiSearchLine } from '@remixicon/vue'
+import { RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import type { DiscussionSortedBy } from '~/types/discussions'
 import type { PaginatedArray, SortDirection } from '~/types/types'
