@@ -29,8 +29,8 @@
       </NuxtLink>
     </div>
     <div>—</div>
-    <div v-if="comment.last_edit_at">
-      {{ $t('Updated the {date}', { date: formatDate(comment.last_edit_at) }) }}
+    <div v-if="comment.last_modified_at">
+      {{ $t('Updated the {date}', { date: formatDate(comment.last_modified_at) }) }}
     </div>
     <div v-else>
       {{ $t('Posted the {date}', { date: formatDate(comment.posted_on) }) }}

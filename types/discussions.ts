@@ -39,7 +39,7 @@ export type Comment = {
   posted_by: User
   posted_on: string
   posted_by_organization: Organization | null
-  last_edit_at?: string | null
+  last_modified_at?: string | null
   spam?: Spam
   permissions: { delete: boolean, edit: boolean }
 }
