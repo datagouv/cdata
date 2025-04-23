@@ -19,9 +19,7 @@
       :class="{ 'border-plain-error': hasError }"
     >
       {{ $t('Drag and drop files') }}
-      <p class="fr-hr-or w-50 text-transform-lowercase fr-text--regular fr-mt-3v">
-        <span class="fr-hr-or-text">{{ $t('or') }}</span>
-      </p>
+      <Divider>{{ $t('or') }}</Divider>
       <input
         :id="id"
         ref="input"

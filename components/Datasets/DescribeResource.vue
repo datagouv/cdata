@@ -87,12 +87,9 @@
         />
       </FieldsetElement>
 
-      <p
-        v-if="!form.filetype"
-        class="fr-hr-or w-full text-transform-lowercase fr-text--regular"
-      >
-        <span class="fr-hr-or-text">{{ t('or') }}</span>
-      </p>
+      <Divider v-if="!form.filetype">
+        {{ $t('or') }}
+      </Divider>
 
       <FieldsetElement
         v-if="form.filetype === 'remote' || !form.filetype"
@@ -200,7 +197,10 @@
           </HelpAccordion>
         </template>
       </FieldsetElement>
-      <FieldsetElement form-key="schema">
+      <FieldsetElement
+        form-key="schema"
+        class="space-y-2"
+      >
         <SearchableSelect
           v-model="form.schema"
           :label="$t('Schema')"
@@ -212,6 +212,18 @@
 
           :error-text="getFirstError('schema')"
           :warning-text="getFirstWarning('schema')"
+        />
+        <Divider v-if="!form.schema">
+          {{ $t('or') }}
+        </Divider>
+        <InputGroup
+          v-if="!form.schema"
+          v-model="form.schema_url"
+          :label="t('Add a link to the schema')"
+          :placeholder="'https://...'"
+          :error-text="getFirstError('schema_url')"
+          :warning-text="getFirstWarning('schema_url')"
+          class="w-full !mb-0"
         />
 
         <template #accordion>
