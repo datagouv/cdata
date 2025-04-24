@@ -25,7 +25,7 @@
                 {{ $t('Type') }}
               </dt>
               <dd class="p-0 text-sm text-mention-grey">
-                {{ type.label }}
+                {{ label }}
               </dd>
             </div>
             <div>
@@ -39,6 +39,12 @@
                   class="text-xs px-2 py-1 rounded-xl bg-gray-default"
                 >
                   {{ tag }}
+                </span>
+                <span
+                  v-if="!reuse.tags?.length"
+                  class="text-mention-grey"
+                >
+                  {{ $t('No tags set') }}
                 </span>
               </dd>
             </div>
@@ -161,7 +167,7 @@ const props = defineProps<{
 const route = useRoute()
 const page = ref(parseInt(route.query.page as LocationQueryValue ?? '1', 10))
 
-const type = useReuseType(props.reuse.type)
+const { label } = useReuseType(props.reuse.type)
 
 const { data: relatedReuses, status } = await useAPI<PaginatedArray<Reuse>>(`/api/2/reuses/search/`, {
   headers: {
