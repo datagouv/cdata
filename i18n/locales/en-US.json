@@ -70,7 +70,7 @@
   "Delete {t}": "Delete {t}",
   "Delete": "Delete",
   "Schema": "Schema",
-  "Search a schema…": "Search a schema…",
+  "Search a schema referenced on {site}…": "Search a schema referenced on {site}…",
   "Sort by:": "Sort by:",
   "Relevance": "Relevance",
   "Filter results": "Filter results",

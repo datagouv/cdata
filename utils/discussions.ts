@@ -1,14 +1,14 @@
-import type { Dataservice, Dataset, Reuse } from '@datagouv/components-next'
+import type { Dataservice, DatasetV2, Reuse } from '@datagouv/components-next'
 import { RiArticleLine, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
 import type { $Fetch } from 'ofetch'
-import type { DiscussionSubject, DiscussionSubjectTypes } from '~/types/discussions'
+import type { Comment, DiscussionSubject, DiscussionSubjectTypes } from '~/types/discussions'
 
 export async function getSubject(api: $Fetch, subject: DiscussionSubject): Promise<DiscussionSubjectTypes | null> {
   switch (subject.class) {
     case 'Dataservice':
       return await api<Dataservice>(`/api/1/dataservices/${subject.id}`)
     case 'Dataset':
-      return await api<Dataset>(`/api/1/datasets/${subject.id}`)
+      return await api<DatasetV2>(`/api/2/datasets/${subject.id}`)
     case 'Reuse':
       return await api<Reuse>(`/api/1/reuses/${subject.id}`)
     default:
@@ -60,4 +60,16 @@ export function getDiscussionUrl(discussionId: string, subject: DiscussionSubjec
     return ''
   }
   return `${getSubjectPage(subject)}#/discussions/${discussionId}`
+}
+
+export function isProducerOfSubject(subject: DiscussionSubjectTypes, comment: Comment): boolean {
+  if (subject.owner && !comment.posted_by_organization && subject.owner.id === comment.posted_by.id) {
+    return true
+  }
+
+  if ('organization' in subject && subject.organization && comment.posted_by_organization && subject.organization.id == comment.posted_by_organization.id) {
+    return true
+  }
+
+  return false
 }

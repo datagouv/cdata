@@ -1,4 +1,4 @@
-import type { Dataset, DatasetV2, Frequency, License, RegisteredSchema, Resource, CommunityResource } from '@datagouv/components-next'
+import type { Dataset, DatasetV2, Frequency, License, RegisteredSchema, Resource, CommunityResource, Schema } from '@datagouv/components-next'
 import type { FetchError } from 'ofetch'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -36,7 +36,7 @@ export function getDatasetAdminUrl(dataset: Dataset | DatasetV2): string {
   return `/beta/admin/datasets/${dataset.id}`
 }
 
-export function toForm(dataset: Dataset, licenses: Array<License>, frequencies: Array<Frequency>, zones: Array<SpatialZone>, granularities: Array<SpatialGranularity>): DatasetForm {
+export function toForm(dataset: Dataset | DatasetV2, licenses: Array<License>, frequencies: Array<Frequency>, zones: Array<SpatialZone>, granularities: Array<SpatialGranularity>): DatasetForm {
   return {
     owned: dataset.organization ? { organization: dataset.organization, owner: null } : { owner: dataset.owner, organization: null },
     title: dataset.title,
@@ -83,11 +83,14 @@ export function toApi(form: DatasetForm, overrides: { private?: boolean, archive
 }
 
 export function resourceToForm(resource: Resource | CommunityResource, schemas: Array<RegisteredSchema>): ResourceForm | CommunityResourceForm {
+  const registeredSchema = schemas.find(schema => schema.name === resource.schema?.name) || null
+
   let baseForm = {
     title: resource.title,
     type: resource.type,
     description: resource.description || '',
-    schema: schemas.find(schema => schema.name === resource.schema?.name) || null,
+    schema: registeredSchema,
+    schema_url: (registeredSchema || !resource.schema || !resource.schema.url) ? null : resource.schema.url,
 
     resource,
   } as ResourceForm
@@ -126,12 +129,20 @@ export function resourceToForm(resource: Resource | CommunityResource, schemas: 
 }
 
 export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resource | CommunityResource {
+  let schema = null as Schema | null
+  if (form.schema) {
+    schema = form.schema
+  }
+  else if (form.schema_url) {
+    schema = { name: null, url: form.schema_url, version: null }
+  }
+
   let resource = {
     filetype: form.filetype,
     title: form.title,
     type: form.type,
     description: form.description,
-    schema: form.schema,
+    schema,
   } as Resource
 
   if (!form.filetype) {

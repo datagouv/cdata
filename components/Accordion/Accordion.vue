@@ -4,7 +4,8 @@
     class="fr-accordion"
     data-type="accordion"
   >
-    <h3
+    <component
+      :is="heading"
       :id="titleAccordionId"
       class="fr-accordion__title !mb-0"
     >
@@ -23,7 +24,7 @@
         />
         {{ title }}
       </DisclosureButton>
-    </h3>
+    </component>
     <DisclosurePanel
       v-show="isOpen(titleAccordionId)"
       :id="accordionId"
@@ -46,8 +47,10 @@ const props = withDefaults(defineProps<{
   id?: string | undefined
   title: string
   state?: AccordionState
+  heading?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
 }>(), {
   state: 'default',
+  heading: 'h3',
 })
 
 const { isOpen, open, toggle, unregister, withIcon } = inject(key) as AccordionRegister
