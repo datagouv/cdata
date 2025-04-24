@@ -27,10 +27,7 @@
         <AdminTableTh align="right">
           {{ t("Availability") }}
         </AdminTableTh>
-        <AdminTableTh
-          scope="col"
-          class="w-28"
-        >
+        <AdminTableTh scope="col">
           {{ t("Actions") }}
         </AdminTableTh>
       </tr>
