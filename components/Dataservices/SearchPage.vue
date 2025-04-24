@@ -186,7 +186,7 @@ import type { DataserviceSearchParams, OrganizationOrSuggest, OrganizationSugges
 import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 
 const props = defineProps<{
-  organization: Organization
+  organization?: Organization
 }>()
 
 type Facets = {
