@@ -131,6 +131,7 @@
 
           <DiscussionsRespondModal
             :thread="discussion"
+            :subject
             @responded="$emit('refresh')"
           />
         </td>

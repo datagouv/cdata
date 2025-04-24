@@ -19,7 +19,9 @@
     :show-title
     :size
     v-bind="$attrs"
+    :form
     @close="close"
+    @submit="$emit('submit', $event, close)"
   >
     <template #iconTitle>
       <slot name="iconTitle" />
@@ -43,12 +45,15 @@ withDefaults(defineProps<{
   title: string
   showTitle?: boolean
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'fullscreen'
+  form?: boolean
 }>(), {
   showTitle: true,
   size: 'md',
+  form: false,
 })
 const emits = defineEmits<{
   (e: 'open' | 'close'): void
+  (name: 'submit', e: SubmitEvent, close: () => void): void
 }>()
 const isOpen = defineModel<boolean>()
 
