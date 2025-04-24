@@ -20,8 +20,17 @@
             {{ reuse.title }}
           </BreadcrumbItem>
         </Breadcrumb>
-        <div v-if="isAdmin(me)">
+        <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
+          <FollowButton :url="`/reuses/${reuse.id}/followers/`" />
+          <BrandedButton
+            :href="reuse.url"
+            :new-tab="true"
+            size="xs"
+          >
+            {{ $t('See the reuse') }}
+          </BrandedButton>
           <EditButton
+            v-if="isAdmin(me)"
             :id="reuse.id"
             type="reuses"
           />

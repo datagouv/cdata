@@ -17,7 +17,7 @@
                 {{ $t('Topic') }}
               </dt>
               <dd class="p-0 text-sm text-mention-grey">
-                {{ reuse.topic }}
+                {{ topic }}
               </dd>
             </div>
             <div>
@@ -130,56 +130,51 @@
         class="min-h-32"
       >
         <h2 class="uppercase text-sm mb-2.5">
-          {{ $t('{n} reuses from the same creator', { n: relatedReuses.total }) }}
+          {{ $t('{n} reuses from the same creator', { n: relatedReuses.length }) }}
         </h2>
         <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <ReuseCard
-            v-for="related in relatedReuses.data"
+            v-for="related in relatedReuses"
             :key="related.id"
             :reuse="related"
           />
         </div>
-        <Pagination
-          v-if="relatedReuses.total > relatedReuses.page_size"
-          class="mt-3"
-          :page="relatedReuses.page"
-          :page-size="relatedReuses.page_size"
-          :total-results="relatedReuses.total"
-          :link="getLink"
-          @change="change"
-        />
       </LoadingBlock>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useReuseType, BrandedButton, Pagination, StatBox, type Reuse } from '@datagouv/components-next'
+import { useReuseType, BrandedButton, StatBox, type Reuse, type ReuseTopic } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
-import type { LocationQueryValue } from 'vue-router'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
+import { getTopic } from '~/datagouv-components/src/functions/reuses'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{
   reuse: Reuse
 }>()
 
-const route = useRoute()
-const page = ref(parseInt(route.query.page as LocationQueryValue ?? '1', 10))
-
 const { label } = useReuseType(props.reuse.type)
 
-const { data: relatedReuses, status } = await useAPI<PaginatedArray<Reuse>>(`/api/2/reuses/search/`, {
+const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
+
+const topic = computed(() => getTopic(topics.value, props.reuse.topic))
+
+const { data: reuses, status } = await useAPI<PaginatedArray<Reuse>>(`/api/2/reuses/search/`, {
   headers: {
     'X-Fields': reusesXFields,
   },
   params: {
-    page,
-    page_size: 3,
+    page: 1,
+    page_size: 4,
     organization: props.reuse.organization?.id,
     owner: props.reuse.owner?.id,
   },
 })
+
+// We want 3 reuses, but we don't want the one from the current page
+const relatedReuses = computed(() => reuses.value.data.filter(r => props.reuse.id != r.id).slice(0, 3))
 
 const metricsViews = ref<null | Record<string, number>>(null)
 const metricsViewsTotal = ref<null | number>(null)
@@ -198,15 +193,4 @@ const downloadStatsUrl = computed(() => {
 
   return createReuseMetricsUrl(metricsViews.value)
 })
-
-function change(newPage: number) {
-  page.value = newPage
-  return navigateTo({
-    ...route,
-    query: {
-      ...route.query,
-      page: newPage,
-    },
-  })
-}
 </script>

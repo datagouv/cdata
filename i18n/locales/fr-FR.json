@@ -1072,5 +1072,7 @@
   "{n}%": "{n}%",
   "{n} associated datasets": "aucun jeu de données associé | {n} jeu de données associé | {n} jeux de données associés",
   "{n} reuses from the same creator": "{n} réutilisations du même créateur | {n} réutilisation du même créateur | {n} réutilisations du même créateur",
-  "Download the statistics as CSV": "Télécharger les statistiques au format CSV"
+  "Download the statistics as CSV": "Télécharger les statistiques au format CSV",
+  "Topic": "Thématique",
+  "No tags set": "Aucun mot clé"
 }

@@ -1042,5 +1042,7 @@
   "{n}%": "{n}%",
   "{n} associated datasets": "no associated datasets | {n} associated dataset | {n} associated datasets",
   "{n} reuses from the same creator": "{n} reuses from the same creator | {n} reuse from the same creator | {n} reuses from the same creator",
-  "Download the statistics as CSV": "Download the statistics as CSV"
+  "Download the statistics as CSV": "Download the statistics as CSV",
+  "Topic": "Topic",
+  "No tags set": "No tags set"
 }

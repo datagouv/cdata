@@ -8,7 +8,7 @@ import type { Harvest } from './types/harvest'
 import type { License } from './types/licenses'
 import type { Member, MemberRole, NewOrganization, Organization } from './types/organizations'
 import type { Owned, OwnedWithId } from './types/owned'
-import type { NewReuse, Reuse, ReuseType } from './types/reuses'
+import type { NewReuse, Reuse, ReuseTopic, ReuseType } from './types/reuses'
 import type { TopicV2 } from './types/topics'
 import type { CommunityResource, FileResourceFileType, RemoteResourceFileType, ResourceFileType, ResourceType, Resource } from './types/resources'
 import type { Weight, WellType } from './types/ui'
@@ -86,6 +86,7 @@ export type {
   ResourceFileType,
   ResourceType,
   Reuse,
+  ReuseTopic,
   ReuseType,
   TopicV2,
   User,
