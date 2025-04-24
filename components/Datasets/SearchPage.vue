@@ -164,6 +164,7 @@
                 v-else-if="organization"
                 :href="$localePath(`/organizations/${organization.slug}/datasets.csv`)"
                 color="secondary"
+                :external="true"
                 :icon="RiDownloadLine"
               >
                 {{ t('Download the list as CSV') }}

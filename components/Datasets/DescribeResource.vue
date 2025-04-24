@@ -361,8 +361,6 @@ const submit = () => {
       return
     }
 
-    console.log(form.value)
-
     if ('dataset' in form.value) {
       form.value.dataset = datasets.value[0]
     }

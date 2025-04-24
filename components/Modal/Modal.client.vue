@@ -83,7 +83,7 @@ const props = withDefaults(defineProps<{
   showTitle?: boolean
 
   /** The modal size, can be fullscreen for special ones  */
-  size?: 'sm' | 'md' | 'lg' | 'fullscreen'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'fullscreen'
 
   form?: boolean
 }>(), {
@@ -112,6 +112,8 @@ function getSize() {
       return 'md:col-start-4 md:col-span-6 lg:col-start-5 lg:col-span-4'
     case 'lg':
       return 'md:col-start-3 md:col-span-8'
+    case 'xl':
+      return 'md:col-start-2 md:col-span-10'
     case 'fullscreen':
       return ''
   }

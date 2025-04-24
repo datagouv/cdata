@@ -1,5 +1,10 @@
 import { Crisp } from 'crisp-api'
 
+export function getNicknameFromEmail(email: string) {
+  const nicknameParts = email.split('@')[0].split('.')
+  return nicknameParts.map(part => part.toLowerCase()).join(' ')
+}
+
 export default defineEventHandler(async (event) => {
   // Prevents the use of `application/x-www-form-urlencoded` which is subject to CSRF request
   if (event.headers.get('Content-Type') !== 'application/json') {
@@ -35,7 +40,7 @@ export default defineEventHandler(async (event) => {
     CrispClient.website.addNewPeopleProfile(websiteId, {
       email,
       person: {
-        nickname: 'Visiteur',
+        nickname: getNicknameFromEmail(email),
       },
     })
   }
@@ -43,6 +48,7 @@ export default defineEventHandler(async (event) => {
     const { session_id: sessionId } = await CrispClient.website.createNewConversation(websiteId)
     await CrispClient.website.updateConversationMetas(websiteId, sessionId, {
       email,
+      nickname: getNicknameFromEmail(email),
       segments: ['support.data.gouv.fr', body.segment],
     })
     CrispClient.website.sendMessageInConversation(websiteId, sessionId, message)

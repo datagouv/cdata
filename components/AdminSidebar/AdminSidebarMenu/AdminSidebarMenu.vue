@@ -160,6 +160,11 @@
               to="/beta/admin/site/community-resources"
             />
             <AdminSidebarLink
+              :icon="RiBookShelfLine"
+              :label="$t('Topics')"
+              to="/beta/admin/site/topics"
+            />
+            <AdminSidebarLink
               :icon="RiArticleLine"
               :label="$t('Posts')"
               to="/beta/admin/site/posts"
@@ -175,7 +180,7 @@
 import { Avatar } from '@datagouv/components-next'
 import type { Organization, User } from '@datagouv/components-next'
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
-import { RiArticleLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiGitPullRequestLine, RiGroup3Line, RiLineChartLine, RiParentLine, RiPlanetLine, RiRobot2Line, RiServerLine, RiUserLine } from '@remixicon/vue'
+import { RiArticleLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiGitPullRequestLine, RiGroup3Line, RiLineChartLine, RiParentLine, RiPlanetLine, RiRobot2Line, RiServerLine, RiUserLine } from '@remixicon/vue'
 import { key, type AccordionRegister } from '~/components/Accordion/injectionKey'
 import AdminSidebarLink from '~/components/AdminSidebar/AdminSidebarLink/AdminSidebarLink.vue'
 
@@ -201,6 +206,8 @@ const { isOpen, open, toggle, unregister } = inject(key) as AccordionRegister
 const { currentUser, currentOrganization } = useCurrentOwned()
 const route = useRoute()
 
+const isGlobalAdmin = computed(() => isAdmin(me.value))
+
 watchEffect(() => {
   if (currentUser.value && props.user && currentUser.value.id === props.user.id) {
     open(id)
@@ -210,7 +217,7 @@ watchEffect(() => {
     open(id)
   }
 
-  if (! props.organization && ! props.user && route.name && route.name.toString().startsWith('beta-admin-site')) {
+  if (!props.organization && !props.user && route.name && route.name.toString().startsWith('beta-admin-site')) {
     open(id)
   }
 })

@@ -1,4 +1,4 @@
-import type { Dataservice, Dataset, Organization, Reuse, User } from '@datagouv/components-next'
+import type { Dataservice, Dataset, DatasetV2, Organization, Reuse, User } from '@datagouv/components-next'
 import type { Post } from './posts'
 
 export type DiscussionSortedBy = 'title' | 'created' | 'closed'
@@ -7,7 +7,12 @@ export type Spam = {
   status?: string
 }
 
-export type DiscussionSubjectTypes = Dataservice | Dataset | Reuse | Post
+export type Subject = {
+  id: string
+  class: string
+}
+
+export type DiscussionSubjectTypes = Dataservice | Dataset | DatasetV2 | Reuse | Post
 
 export type DiscussionSubject = {
   class: 'Dataservice' | 'Dataset' | 'Reuse' | 'Post' | 'Topic' | 'Organization'

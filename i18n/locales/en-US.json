@@ -1034,5 +1034,9 @@
   "Cancel reorder": "Cancel reorder",
   "Move up": "Move up",
   "Move down": "Move down",
-  "See public page": "See public page"
+  "See public page": "See public page",
+  "Cannot reorder dataset\\'s files when there is more than {max} files": "Cannot reorder dataset\\'s files when there is more than {max} files",
+  "Filter by status": "Filter by status",
+  "No results": "No results",
+  "Support": "Support"
 }

@@ -53,9 +53,9 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type Dataset, type User } from '@datagouv/components-next'
+import { BrandedButton, type DatasetV2, type User } from '@datagouv/components-next'
 import { RiCheckLine, RiCloseLine, RiSendPlaneLine } from '@remixicon/vue'
 
 const { data: user } = await useAPI<User>(`/api/1/users/antonin-garrone`)
-const { data: dataset } = await useAPI<Dataset>(`/api/1/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret`)
+const { data: dataset } = await useAPI<DatasetV2>(`/api/2/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret`)
 </script>

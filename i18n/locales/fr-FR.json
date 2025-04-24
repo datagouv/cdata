@@ -898,6 +898,7 @@
   "Search “{query}” in {type}": "Rechercher « {query} » dans les {type}",
   "Transfer dataservice": "Transférer l'API",
   "Topics": "Thématiques",
+  "{n} topics": "{n} thématiques",
   "Reference Data": "Données de référence",
   "Follow data opening": "Suivre l'ouverture des données",
   "Portal for European data": "Portail des données européennes",
@@ -1061,5 +1062,9 @@
   "See our terms of use.": "Voir nos modalités d'utilisation.",
   "The {site} team will review the content to determine if it violates {terms}. Thank you for your help.": "L’équipe de {site} examinera le contenu pour déterminer si celui-ci enfreint {terms}. Merci pour votre aide.",
   "our terms of use": "nos modalités d'utilisation",
-  "Avoid sharing personal information.": "Évitez de partager des informations personnelles."
+  "Avoid sharing personal information.": "Évitez de partager des informations personnelles.",
+  "Cannot reorder dataset\\'s files when there is more than {max} files": "Impossible de réordonner les fichiers quand il y a plus de {max} fichiers",
+  "Filter by status": "Filtrer par statut",
+  "No results": "Pas de résultats",
+  "Support": "Support"
 }

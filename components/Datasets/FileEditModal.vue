@@ -3,6 +3,8 @@
     v-model="open"
     :title="t('File metadata')"
     size="fullscreen"
+    @open="setHash"
+    @close="removeHash"
   >
     <template
       v-if="!openOnMounted"
@@ -138,13 +140,22 @@ const emit = defineEmits<{
   (e: 'cancel' | 'delete'): void
 }>()
 
-const resourceForm = ref(cloneDeep(props.resource))
+const route = useRoute()
 
+const resourceForm = ref(cloneDeep(props.resource))
 const open = ref(false)
 
 onMounted(() => {
   if (props.openOnMounted) open.value = true
 })
+const setHash = () => {
+  if (!props.resource.resource) return
+  window.history.replaceState(null, '', `${route.path}#${props.resource.resource.id}`)
+}
+const removeHash = () => {
+  if (!props.resource.resource) return
+  window.history.replaceState(null, '', `${route.path}`)
+}
 
 const submit = (close: () => void) => {
   emit('submit', close, resourceForm.value)
