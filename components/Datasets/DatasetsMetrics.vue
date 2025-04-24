@@ -82,7 +82,7 @@
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
 import { StatBox, type Organization } from '@datagouv/components-next'
-import { RiDownloadLine, RiTestTubeLine } from '@remixicon/vue'
+import { RiDownloadLine } from '@remixicon/vue'
 
 const props = defineProps<{
   organization: Organization

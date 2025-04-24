@@ -15,7 +15,7 @@
       v-if="reuses"
       :link="getLink"
       :reuses
-      :q
+      :q="(q as string)"
       :sort
       :status
       :topic
@@ -66,7 +66,7 @@ const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/'
 
 const { data: reuses, status } = await useAPI<PaginatedArray<Reuse>>(`/api/2/reuses/search/`, {
   headers: {
-    'X-Fields': 'data{archived,deleted,featured,id,owner,organization,metrics,created_at,last_modified,title,slug,page,description,type,url,image,image_thumbnail},page,page_size,total',
+    'X-Fields': reusesXFields,
   },
   params: {
     q,

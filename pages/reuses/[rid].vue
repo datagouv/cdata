@@ -91,7 +91,7 @@
         class="mt-12"
         :links="[
           { label: $t('Description'), href: `/reuses/${route.params.rid}/` },
-          { label: $t('Discussions'), href: `/reuses/${route.params.rid}/discussions`, count: reuse.metrics.discussions },
+          { label: $t('Discussions'), href: `/reuses/${route.params.rid}/discussions`, count: reuse.metrics.discussions ?? 0 },
         ]"
       />
       <div class="bg-white pt-5 pb-8 lg:pb-24">

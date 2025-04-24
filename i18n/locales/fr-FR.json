@@ -1047,5 +1047,8 @@
   "Search among {count} reuses on {site}": "Rechercher parmi les {count} réutilisations sur {site}",
   "All": "Tout",
   "Support": "Support",
-  "{n}%": "{n}%"
+  "{n}%": "{n}%",
+  "{n} associated datasets": "aucun jeu de données associé | {n} jeu de données associé | {n} jeux de données associés",
+  "{n} reuses from the same creator": "{n} réutilisations du même créateur | {n} réutilisation du même créateur | {n} réutilisations du même créateur",
+  "Download the statistics as CSV": "Télécharger les statistiques au format CSV"
 }

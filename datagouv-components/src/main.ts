@@ -41,6 +41,8 @@ import StatBox from './components/StatBox.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
+export * from './composables/useReuseType'
+
 export * from './functions/dates'
 export * from './functions/organizations'
 export * from './functions/resources'

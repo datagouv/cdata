@@ -5,7 +5,7 @@
       :type="getOrganizationType(organization)"
     />
     <div
-      class="mb-0 truncate"
+      class="mb-0 truncate flex-initial"
       :class="{ 'text-sm': size === 'sm' }"
     >
       {{ organization.name }}

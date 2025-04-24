@@ -48,7 +48,7 @@
         </div>
       </div>
       <div class="fr-col-12 fr-col-sm">
-        <h4 class="fr-text--md fr-mb-0 fr-grid-row">
+        <h4 class="fr-text--md mb-0 fr-grid-row">
           <slot
             name="datasetUrl"
             :dataset="dataset"
@@ -76,13 +76,13 @@
         </h4>
         <div
           v-if="dataset.organization || dataset.owner"
-          class="fr-text--sm fr-m-0 flex"
+          class="text-sm m-0 flex truncate"
         >
           <template v-if="dataset.organization">
-            <div class="fr-mr-1v">
+            <div class="-mr-1 flex-initial">
               <AppLink
                 v-if="organizationUrl"
-                class="fr-link fr-text--sm flex items-center relative z-20"
+                class="link text-sm flex items-center relative z-[2]"
                 :to="organizationUrl"
               >
                 <OrganizationNameWithCertificate :organization="dataset.organization" />
@@ -95,7 +95,7 @@
           </template>
           <div
             v-else
-            class="fr-mr-1v truncate"
+            class="mr-1 truncate"
           >
             {{ ownerName }}
           </div>
