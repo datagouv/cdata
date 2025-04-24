@@ -347,7 +347,4 @@ watch(searchResultsStatus, () => {
     toast.error(t(`The search request failed`))
   }
 })
-
-const count = defineModel<number | null>()
-watchEffect(() => count.value = searchResults.value ? searchResults.value.total : null)
 </script>
