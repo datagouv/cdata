@@ -186,7 +186,7 @@ import type { DataserviceSearchParams, OrganizationOrSuggest, OrganizationSugges
 import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 
 const props = defineProps<{
-  organization: Organization
+  organization?: Organization
 }>()
 
 type Facets = {
@@ -347,4 +347,7 @@ watch(searchResultsStatus, () => {
     toast.error(t(`The search request failed`))
   }
 })
+
+const count = defineModel<number | null>()
+watchEffect(() => count.value = searchResults.value ? searchResults.value.total : null)
 </script>
