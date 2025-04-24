@@ -119,12 +119,8 @@
             </template>
           </Tooltip>
         </AdminTableTh>
-        <AdminTableTh
-          v-if="$slots.actions"
-          class="w-16"
-          scope="col"
-        >
-          {{ $t('Actions') }}
+        <AdminTableTh scope="col">
+          {{ t("Actions") }}
         </AdminTableTh>
       </tr>
     </thead>
@@ -190,7 +186,28 @@
         <td class="font-mono text-right">
           {{ summarize(dataset.metrics.followers) }}
         </td>
-        <td v-if="$slots.actions">
+        <td>
+          <BrandedButton
+            size="xs"
+            color="secondary-softer"
+            :href="dataset.page"
+            :icon="RiEyeLine"
+            icon-only
+            external
+            keep-margins-even-without-borders
+          >
+            {{ $t('Show public page') }}
+          </BrandedButton>
+          <BrandedButton
+            size="xs"
+            color="secondary-softer"
+            :href="getDatasetAdminUrl(dataset)"
+            :icon="RiPencilLine"
+            icon-only
+            keep-margins-even-without-borders
+          >
+            {{ $t('Edit') }}
+          </BrandedButton>
           <slot
             name="actions"
             :dataset
@@ -202,9 +219,10 @@
 </template>
 
 <script setup lang="ts">
-import { summarize, DatasetQualityScore, DatasetQualityInline, DatasetQualityTooltipContent } from '@datagouv/components-next'
+import { summarize, DatasetQualityScore, DatasetQualityInline, DatasetQualityTooltipContent, BrandedButton } from '@datagouv/components-next'
 import type { Dataset, DatasetV2 } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
+import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '../../AdminBadge/AdminBadge.vue'
 import AdminContentWithTooltip from '../../AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import AdminTable from '../Table/AdminTable.vue'

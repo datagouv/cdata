@@ -144,10 +144,7 @@
             >
               {{ t("Last connection") }}
             </AdminTableTh>
-            <AdminTableTh
-              class="w-24"
-              scope="col"
-            >
+            <AdminTableTh scope="col">
               {{ t("Actions") }}
             </AdminTableTh>
           </tr>

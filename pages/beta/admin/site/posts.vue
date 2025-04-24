@@ -78,6 +78,17 @@
               <td>{{ formatDate(post.last_modified) }}</td>
               <td>
                 <BrandedButton
+                  size="xs"
+                  color="secondary-softer"
+                  :href="post.page"
+                  :icon="RiEyeLine"
+                  icon-only
+                  external
+                  keep-margins-even-without-borders
+                >
+                  {{ $t('Show public page') }}
+                </BrandedButton>
+                <BrandedButton
                   :href="`/beta/admin/posts/${post.id}`"
                   color="secondary-softer"
                   :icon="RiPencilLine"
@@ -134,7 +145,7 @@ import { Pagination, BrandedButton } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RiAddLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
+import { RiAddLine, RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
 import type { AdminBadgeType, PaginatedArray } from '~/types/types'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'

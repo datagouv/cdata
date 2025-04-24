@@ -44,10 +44,7 @@
         >
           {{ t("Closed at") }}
         </AdminTableTh>
-        <AdminTableTh
-          scope="col"
-          class="w-28"
-        >
+        <AdminTableTh scope="col">
           {{ t("Actions") }}
         </AdminTableTh>
       </tr>

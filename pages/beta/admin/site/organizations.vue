@@ -49,6 +49,9 @@
               <AdminTableTh scope="col">
                 {{ t("Members") }}
               </AdminTableTh>
+              <AdminTableTh scope="col">
+                {{ t("Actions") }}
+              </AdminTableTh>
             </tr>
           </thead>
           <tbody>
@@ -64,7 +67,10 @@
                     :size="20"
                   />
                   <AdminContentWithTooltip>
-                    <NuxtLinkLocale :to="`/beta/admin/organizations/${organization.id}/profile`">
+                    <NuxtLinkLocale
+                      class="fr-link fr-reset-link"
+                      :to="`/beta/admin/organizations/${organization.id}/profile`"
+                    >
                       <TextClamp
                         :text="organization.name"
                         :auto-resize="true"
@@ -94,6 +100,29 @@
                 <NuxtLinkLocale :to="`/beta/admin/organizations/${organization.id}/members`">
                   {{ organization.metrics.members || 0 }}
                 </NuxtLinkLocale>
+              </td>
+              <td>
+                <BrandedButton
+                  size="xs"
+                  color="secondary-softer"
+                  :href="organization.page"
+                  :icon="RiEyeLine"
+                  icon-only
+                  external
+                  keep-margins-even-without-borders
+                >
+                  {{ $t('Show public page') }}
+                </BrandedButton>
+                <BrandedButton
+                  size="xs"
+                  color="secondary-softer"
+                  :href="`/beta/admin/organizations/${organization.id}/profile`"
+                  :icon="RiPencilLine"
+                  icon-only
+                  keep-margins-even-without-borders
+                >
+                  {{ $t('Edit') }}
+                </BrandedButton>
               </td>
             </tr>
           </tbody>
@@ -142,7 +171,7 @@ import { Pagination, type Organization } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RiSearchLine } from '@remixicon/vue'
+import { RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
 import type { DiscussionSortedBy } from '~/types/discussions'
 import type { PaginatedArray, SortDirection } from '~/types/types'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
