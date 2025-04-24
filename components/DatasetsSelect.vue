@@ -74,9 +74,7 @@
           </div>
         </template>
       </SearchableSelect>
-      <p class="fr-hr-or w-full text-transform-lowercase fr-text--regular">
-        <span class="fr-hr-or-text">{{ t('or') }}</span>
-      </p>
+      <Divider>{{ $t('or') }}</Divider>
       <form
         class="flex items-end space-x-4"
         @submit.prevent="loadDatasetByLink"

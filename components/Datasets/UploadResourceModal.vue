@@ -45,9 +45,7 @@
           :extensions
           @delete="removeFile(index)"
         />
-        <p class="fr-hr-or text-transform-lowercase fr-text--regular text-mention-grey fr-mt-3v">
-          <span class="fr-hr-or-text">{{ $t('or') }}</span>
-        </p>
+        <Divider>{{ $t('or') }}</Divider>
         <h2 class="text-sm font-bold uppercase mb-2">
           {{ $t('Add a link') }}
         </h2>

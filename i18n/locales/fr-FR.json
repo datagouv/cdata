@@ -70,7 +70,7 @@
   "Delete {t}": "Supprimer {t}",
   "Delete": "Supprimer",
   "Schema": "Schéma",
-  "Search a schema…": "Chercher un schéma…",
+  "Search a schema referenced on {site}…": "Chercher un schéma référencé sur {site}…",
   "Sort by:": "Trier par :",
   "Relevance": "Pertinence",
   "Filter results": "Filtrer les résultats",

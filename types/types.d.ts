@@ -239,6 +239,7 @@ export type BaseResourceForm = {
   type: ResourceType
   description: string
   schema: RegisteredSchema | null
+  schema_url: string | null
 }
 
 export type ResourceFormRemote = BaseResourceForm & {
