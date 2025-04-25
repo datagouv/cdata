@@ -1,11 +1,11 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Users') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Topics') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
     <h1 class="fr-h3 fr-mb-5v">
-      {{ t("Users") }}
+      {{ t("Topics") }}
     </h1>
     <div
       v-if="pageData"
@@ -13,7 +13,7 @@
     >
       <div class="fr-col">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ t('{n} users', pageData.total) }}
+          {{ t('{n} topics', pageData.total) }}
         </h2>
       </div>
       <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
@@ -43,53 +43,21 @@
               <AdminTableTh scope="col">
                 {{ t("Reuses") }}
               </AdminTableTh>
-              <AdminTableTh scope="col">
-                {{ t("Actions") }}
-              </AdminTableTh>
             </tr>
           </thead>
           <tbody>
             <tr
-              v-for="user in pageData.data"
-              :key="user.id"
+              v-for="topic in pageData.data"
+              :key="topic.id"
             >
               <td>
-                <p class="fr-text--bold fr-m-0">
-                  <NuxtLinkLocale
-                    class="fr-link fr-reset-link"
-                    :to="`/beta/admin/users/${user.id}/profile`"
-                  >
-                    {{ user.first_name }} {{ user.last_name }}
-                  </NuxtLinkLocale>
-                </p>
-                <AdminEmail :user />
+                <NuxtLinkLocale :to="`/beta/admin/topics/${topic.id}`">
+                  {{ topic.name }}
+                </NuxtLinkLocale>
               </td>
-              <td>{{ formatDate(user.since) }}</td>
-              <td>{{ user.metrics.datasets || 0 }}</td>
-              <td>{{ user.metrics.reuses || 0 }}</td>
-              <td>
-                <BrandedButton
-                  size="xs"
-                  color="secondary-softer"
-                  :href="user.page"
-                  :icon="RiEyeLine"
-                  icon-only
-                  external
-                  keep-margins-even-without-borders
-                >
-                  {{ $t('Show public page') }}
-                </BrandedButton>
-                <BrandedButton
-                  size="xs"
-                  color="secondary-softer"
-                  :href="`/beta/admin/users/${user.id}/profile`"
-                  :icon="RiPencilLine"
-                  icon-only
-                  keep-margins-even-without-borders
-                >
-                  {{ $t('Edit') }}
-                </BrandedButton>
-              </td>
+              <td>{{ formatDate(topic.created_at) }}</td>
+              <td>{{ topic.datasets.total }}</td>
+              <td>{{ topic.reuses.total }}</td>
             </tr>
           </tbody>
         </AdminTable>
@@ -125,18 +93,18 @@
         v-else
         class="fr-text--bold fr-my-3v"
       >
-        {{ t(`No users`) }}
+        {{ t(`No topics`) }}
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Pagination, type User } from '@datagouv/components-next'
+import { Pagination, type TopicV2 } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
+import { RiSearchLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import type { DiscussionSortedBy } from '~/types/discussions'
 import type { PaginatedArray, SortDirection } from '~/types/types'
@@ -147,7 +115,6 @@ import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import AdminInput from '~/components/AdminInput.vue'
 
 const { t } = useI18n()
-const config = useRuntimeConfig()
 
 const page = ref(1)
 const pageSize = ref(20)
@@ -157,17 +124,15 @@ const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${s
 const q = ref('')
 const qDebounced = refDebounced(q, 500) // TODO add 500 in config
 
-const url = computed(() => {
-  const url = new URL(`/api/1/users`, config.public.apiBase)
+const query = computed(() => {
+  return {
+    q: qDebounced.value,
+    sort: sortDirection.value,
 
-  url.searchParams.set('deleted', 'true')
-  url.searchParams.set('sort', sortDirection.value)
-  url.searchParams.set('q', qDebounced.value)
-  url.searchParams.set('page_size', pageSize.value.toString())
-  url.searchParams.set('page', page.value.toString())
-
-  return url.toString()
+    page_size: pageSize.value,
+    page: page.value,
+  }
 })
 
-const { data: pageData, status } = await useAPI<PaginatedArray<User>>(url, { lazy: true })
+const { data: pageData, status } = await useAPI<PaginatedArray<TopicV2>>('/api/2/topics', { query, lazy: true })
 </script>

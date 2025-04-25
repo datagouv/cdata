@@ -1,4 +1,4 @@
-import type { Dataservice, Dataset, DatasetV2, Reuse, User } from '@datagouv/components-next'
+import type { Dataservice, Dataset, DatasetV2, Organization, Reuse, User } from '@datagouv/components-next'
 import type { Post } from './posts'
 
 export type DiscussionSortedBy = 'title' | 'created' | 'closed'
@@ -12,10 +12,6 @@ export type Subject = {
   class: string
 }
 
-export type Comment = { content: string, posted_by: User, posted_on: string, spam?: Spam }
-
-export type Discussion = Array<Comment>
-
 export type DiscussionSubjectTypes = Dataservice | Dataset | DatasetV2 | Reuse | Post
 
 export type DiscussionSubject = {
@@ -26,12 +22,8 @@ export type DiscussionSubject = {
 export type NewDiscussion = {
   title: string
   comment: string
-  subject: Subject
+  subject: DiscussionSubject
 }
-
-export type CreateDiscussion = (discussion: NewDiscussion) => Promise<Thread>
-
-export type CreateComment = (comment: string) => Promise<Thread>
 
 export type Thread = {
   id: string
@@ -41,6 +33,20 @@ export type Thread = {
   created: string
   closed: string
   closed_by: User
+  closed_by_organization: Organization | null
   spam?: Spam
   subject: DiscussionSubject
+  permissions: { delete: boolean, edit: boolean, close: boolean }
 }
+
+export type Comment = {
+  content: string
+  posted_by: User
+  posted_on: string
+  posted_by_organization: Organization | null
+  last_modified_at?: string | null
+  spam?: Spam
+  permissions: { delete: boolean, edit: boolean }
+}
+
+export type Discussion = Array<Comment>

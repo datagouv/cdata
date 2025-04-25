@@ -156,6 +156,8 @@ export type NewDatasetForApi = {
   }
 }
 
+type ReuseSuggest = Pick<Reuse, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
+
 export type ReuseForm = {
   owned: Owned | null
   title: string
@@ -237,6 +239,7 @@ export type BaseResourceForm = {
   type: ResourceType
   description: string
   schema: RegisteredSchema | null
+  schema_url: string | null
 }
 
 export type ResourceFormRemote = BaseResourceForm & {

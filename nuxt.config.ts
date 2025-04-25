@@ -115,6 +115,8 @@ export default defineNuxtConfig({
 
       readOnlyMode: false,
 
+      allowDiscussionsInPosts: false,
+
       sentry: {
         dsn: '',
       },

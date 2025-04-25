@@ -44,10 +44,7 @@
         >
           {{ t("Closed at") }}
         </AdminTableTh>
-        <AdminTableTh
-          scope="col"
-          class="w-28"
-        >
+        <AdminTableTh scope="col">
           {{ t("Actions") }}
         </AdminTableTh>
       </tr>
@@ -131,6 +128,7 @@
 
           <DiscussionsRespondModal
             :thread="discussion"
+            :subject
             @responded="$emit('refresh')"
           />
         </td>

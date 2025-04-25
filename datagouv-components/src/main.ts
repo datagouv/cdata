@@ -9,7 +9,9 @@ import type { License } from './types/licenses'
 import type { Member, MemberRole, NewOrganization, Organization } from './types/organizations'
 import type { Owned, OwnedWithId } from './types/owned'
 import type { NewReuse, Reuse, ReuseType } from './types/reuses'
+import type { TopicV2 } from './types/topics'
 import type { CommunityResource, FileResourceFileType, RemoteResourceFileType, ResourceFileType, ResourceType, Resource } from './types/resources'
+import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User } from './types/users'
 
@@ -84,6 +86,8 @@ export type {
   ResourceType,
   Reuse,
   ReuseType,
+  Site,
+  TopicV2,
   User,
   Weight,
   WellType,
