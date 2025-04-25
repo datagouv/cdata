@@ -37,7 +37,6 @@
                   color="secondary"
                   :title="$t('Subscribe to our newsletter')"
                   href="/pages/webinaires/"
-                  :external="true"
                 >
                   {{ $t("See our next events") }}
                 </BrandedButton>
