@@ -1066,6 +1066,7 @@
   "Cannot reorder dataset\\'s files when there is more than {max} files": "Impossible de réordonner les fichiers quand il y a plus de {max} fichiers",
   "Filter by status": "Filtrer par statut",
   "No results": "Pas de résultats",
+  "Support": "Support",
   "Search among {count} reuses on {site}": "Rechercher parmi les {count} réutilisations sur {site}",
   "All": "Tout",
   "Support": "Support",
