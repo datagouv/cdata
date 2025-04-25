@@ -41,7 +41,7 @@
       v-if="reuse"
       :status
     >
-      <div class="container pt-14 min-h-32">
+      <div class="container pt-10 min-h-32">
         <div class="flex flex-wrap">
           <div class="w-full md:w-5/12 flex flex-col justify-center">
             <p
@@ -90,20 +90,26 @@
           </div>
           <div class="w-7/12">
             <NuxtImg
-              class="w-full object-contain max-h-[500px]"
+              class="w-full object-contain max-h-[400px]"
               :src="reuse.image ?? undefined"
             />
           </div>
         </div>
+        <Divider
+          class="my-5"
+          color="border-gray-default"
+        />
       </div>
       <FullPageTabs
-        class="mt-12"
         :links="[
           { label: $t('Description'), href: `/reuses/${route.params.rid}/` },
-          { label: $t('Discussions'), href: `/reuses/${route.params.rid}/discussions`, count: reuse.metrics.discussions ?? 0 },
+          { label: $t('Discussions'), href: `/reuses/${route.params.rid}/discussions/`, count: reuse.metrics.discussions ?? 0 },
         ]"
       />
-      <div class="bg-white pt-5 pb-8 lg:pb-24">
+      <div
+        id="page"
+        class="bg-white pt-5 pb-8 lg:pb-24"
+      >
         <NuxtPage
           v-if="reuse"
           class="container"
