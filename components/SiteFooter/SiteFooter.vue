@@ -247,7 +247,7 @@
             >
               <NuxtLinkLocale
                 :to="item.link"
-                :external="true"
+                :external="item.external ?? false"
                 class="fr-footer__bottom-link"
               >
                 {{ item.label }}
@@ -273,7 +273,7 @@
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
-import { RiBlueskyLine, RiGithubLine, RiLinkedinBoxLine, RiMastodonLine, RiRssLine, RiTwitterLine } from '@remixicon/vue'
+import { RiBlueskyLine, RiGithubLine, RiLinkedinBoxLine, RiMastodonLine, RiRssLine } from '@remixicon/vue'
 
 const config = useRuntimeConfig()
 
@@ -282,6 +282,7 @@ const { t } = useI18n()
 type Link = {
   label: string
   link: string
+  external?: boolean
 }
 
 const openDataLinks: Array<Link> = [
@@ -315,7 +316,7 @@ const resourcesLinks: Array<Link> = [
 const footerLinks: Array<Link> = [
   { label: t('Licenses'), link: '/pages/legal/licences' },
   { label: t('Terms of use'), link: '/pages/legal/cgu' },
-  { label: t('Tracking and privacy'), link: '/pages/gouvfr.suivi' },
+  { label: t('Tracking and privacy'), link: '/suivi', external: true },
   { label: t('Legal notice'), link: '/pages/legal/legal-notice' },
   { label: t('Accessibility: partially compliant'), link: '/pages/legal/accessibility' },
 ]
