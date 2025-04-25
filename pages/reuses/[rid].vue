@@ -21,7 +21,7 @@
           </BreadcrumbItem>
         </Breadcrumb>
         <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
-          <FollowButton :url="`/reuses/${reuse.id}/followers/`" />
+          <FollowButton :url="`api/1/reuses/${reuse.id}/followers/`" />
           <BrandedButton
             :href="reuse.url"
             :new-tab="true"
