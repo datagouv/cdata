@@ -350,8 +350,8 @@
 <script setup lang="ts">
 import { SimpleBanner, type ReuseType } from '@datagouv/components-next'
 import { computed } from 'vue'
-import Accordion from '~/components/Accordion/Accordion.vue'
-import AccordionGroup from '~/components/Accordion/AccordionGroup.vue'
+import Accordion from '~/components/Accordion/Accordion.global.vue'
+import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplanation.vue'
 import type { ReuseForm, Owned, ReuseTopic } from '~/types/types'

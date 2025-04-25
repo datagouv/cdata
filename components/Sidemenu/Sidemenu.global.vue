@@ -5,7 +5,7 @@
   >
     <nav
       class="fr-sidemenu"
-      :class="{ 'fr-sidemenu--right': onRight, 'fr-sidemenu--no-border': !showBorder, 'fr-sidemenu--sticky': fixed }"
+      :class="{ 'fr-sidemenu--right': onRight, 'fr-sidemenu--no-border': !showBorder, 'fr-sidemenu--sticky': fixed, 'fr-sidemenu--sticky-full-height': stickyFullHeight }"
       :aria-labelledby="titleId"
     >
       <Disclosure
@@ -15,7 +15,6 @@
       >
         <DisclosureButton
           class="fr-sidemenu__btn"
-          hidden
         >
           {{ buttonText }}
         </DisclosureButton>
@@ -36,13 +35,13 @@
 <script setup lang="ts">
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 
-withDefaults(defineProps<
-  {
-    fixed?: boolean
-    showBorder?: boolean
-    onRight?: boolean
-    buttonText: string
-  }>(), {
+withDefaults(defineProps<{
+  fixed?: boolean
+  stickyFullHeight?: boolean
+  showBorder?: boolean
+  onRight?: boolean
+  buttonText: string
+}>(), {
   fixed: false,
   showBorder: true,
   onRight: false,
