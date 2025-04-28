@@ -142,7 +142,10 @@
             :reuse="related"
           />
         </div>
-        <div class="flex flex-col items-center">
+        <div
+          v-else
+          class="flex flex-col items-center"
+        >
           <NuxtImg
             src="/illustrations/reuse.svg"
             width="137"
