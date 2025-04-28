@@ -67,7 +67,10 @@
                 </dd>
               </div>
 
-              <div class="space-y-1">
+              <div
+                v-if="dataservice.rate_limiting "
+                class="space-y-1"
+              >
                 <dt class="text-gray-plain font-bold">
                   {{ $t('Rate limiting') }}
                 </dt>
@@ -76,7 +79,10 @@
                 </dd>
               </div>
 
-              <div class="space-y-1">
+              <div
+                v-if="dataservice.availability"
+                class="space-y-1"
+              >
                 <dt class="text-gray-plain font-bold">
                   {{ $t('Availability') }}
                 </dt>
@@ -99,6 +105,7 @@
 
         <div class="container space-y-4">
           <SimpleBanner
+            v-if="dataservice.business_documentation_url"
             type="primary-frame"
             class="flex items-center justify-between"
           >
@@ -107,9 +114,10 @@
             </div>
             <BrandedButton
               color="primary"
-              :to="dataservice.business_documentation_url"
+              :href="dataservice.business_documentation_url"
               :icon="RiExternalLinkLine"
               icon-right
+              external
             >
               {{ $t('Business documentation') }}
             </BrandedButton>
