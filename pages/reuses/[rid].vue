@@ -21,7 +21,11 @@
           </BreadcrumbItem>
         </Breadcrumb>
         <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
-          <FollowButton :url="`api/1/reuses/${reuse.id}/followers/`" />
+          <FollowButton
+            v-if="follower"
+            :following="follower.total > 0"
+            :url="`api/1/reuses/${reuse.id}/followers/`"
+          />
           <BrandedButton
             :href="reuse.url"
             :new-tab="true"
@@ -126,12 +130,24 @@ import { RiDeleteBinLine } from '@remixicon/vue'
 import EditButton from '~/components/BrandedButton/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReuseDetails from '~/datagouv-components/src/components/ReuseDetails.vue'
+import type { PaginatedArray } from '~/types/types'
 
 const route = useRoute()
 const me = useMaybeMe()
 
 const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
 const { data: reuse, status } = await useAPI<Reuse>(url)
+
+const followUrl = computed(() => `/api/1/reuses/${reuse.value.id}/followers/`)
+const { data: follower, followStatus } = await useAPI<PaginatedArray<{
+  id: string
+  follower: string
+  since: string
+}>>(followUrl, {
+  query: {
+    user: me.value?.id ?? undefined,
+  },
+})
 
 const title = computed(() => reuse.value?.title)
 const robots = computed(() => reuse.value && !reuse.value.metrics.datasets && !reuse.value.metrics.datasets ? 'noindex, nofollow' : 'all')
