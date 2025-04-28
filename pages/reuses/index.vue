@@ -20,17 +20,18 @@
       :status
       :topic
       :topics
+      :total-reuses="site.metrics.reuses"
       @change="change"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Reuse } from '@datagouv/components-next'
+import type { Reuse, ReuseTopic, Site } from '@datagouv/components-next'
 import type { LocationQueryValue } from 'vue-router'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ListPage from '~/components/Reuses/ListPage.vue'
-import type { PaginatedArray, ReuseTopic } from '~/types/types'
+import type { PaginatedArray } from '~/types/types'
 
 const { t } = useI18n()
 
@@ -61,6 +62,8 @@ function change(newQs: string, newTopic: string | undefined, newSort: string | u
     },
   })
 }
+
+const { data: site } = await useAPI<Site>('/api/1/site')
 
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
 

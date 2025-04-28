@@ -7,7 +7,7 @@
     class="block mb-3"
   >
     {{ $t('Search among {count} reuses on {site}', {
-      count: reuses.total,
+      count: totalReuses,
       site: config.public.title,
     }) }}
   </label>
@@ -106,11 +106,11 @@
 
 <script setup lang="ts">
 import { BrandedButton, Pagination } from '@datagouv/components-next'
-import type { Reuse } from '@datagouv/components-next'
+import type { Reuse, ReuseTopic } from '@datagouv/components-next'
 import { RiSearch2Line } from '@remixicon/vue'
 import { debouncedRef } from '@vueuse/core'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
-import type { PaginatedArray, RequestStatus, ReuseTopic } from '~/types/types'
+import type { PaginatedArray, RequestStatus } from '~/types/types'
 
 const props = defineProps<{
   /**
@@ -147,6 +147,11 @@ const props = defineProps<{
    * Reuse topics from API
    */
   topics: Array<ReuseTopic>
+
+  /**
+   * Number of reuses for this site or organization
+   */
+  totalReuses: number
 }>()
 
 const emit = defineEmits<{

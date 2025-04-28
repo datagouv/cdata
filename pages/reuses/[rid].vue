@@ -21,11 +21,13 @@
           </BreadcrumbItem>
         </Breadcrumb>
         <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
-          <FollowButton
-            v-if="follower"
-            :following="follower.total > 0"
-            :url="`api/1/reuses/${reuse.id}/followers/`"
-          />
+          <LoadingBlock :status="followStatus">
+            <FollowButton
+              v-if="reuse"
+              :following="follower.total > 0"
+              :url="`api/1/reuses/${reuse.id}/followers/`"
+            />
+          </LoadingBlock>
           <BrandedButton
             :href="reuse.url"
             :new-tab="true"
@@ -112,7 +114,7 @@
       />
       <div
         id="page"
-        class="bg-white pt-5 pb-8 lg:pb-24"
+        class="bg-white pt-5 pb-8"
       >
         <NuxtPage
           v-if="reuse"
@@ -139,7 +141,7 @@ const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
 const { data: reuse, status } = await useAPI<Reuse>(url)
 
 const followUrl = computed(() => `/api/1/reuses/${reuse.value.id}/followers/`)
-const { data: follower, followStatus } = await useAPI<PaginatedArray<{
+const { data: follower, status: followStatus } = await useAPI<PaginatedArray<{
   id: string
   follower: string
   since: string

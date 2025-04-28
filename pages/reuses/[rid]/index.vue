@@ -132,12 +132,25 @@
         <h2 class="uppercase text-sm mb-2.5">
           {{ $t('{n} reuses from the same creator', { n: relatedReuses.length }) }}
         </h2>
-        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div
+          v-if="relatedReuses.length"
+          class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+        >
           <ReuseCard
             v-for="related in relatedReuses"
             :key="related.id"
             :reuse="related"
           />
+        </div>
+        <div class="flex flex-col items-center">
+          <NuxtImg
+            src="/illustrations/reuse.svg"
+            width="137"
+            height="104"
+          />
+          <p class="mt-4 mb-5 font-bold text-lg">
+            {{ $t('There are no other reuses from this creator.') }}
+          </p>
         </div>
       </LoadingBlock>
     </section>
