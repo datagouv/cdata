@@ -47,6 +47,7 @@
       :links="[
         { href: localPath(organizationUrl), label: t('Profile') },
         { href: localPath(`${organizationUrl}/contacts/`), label: t('Contact points') },
+        { href: localPath(`${organizationUrl}/activities/`), label: t('Activities') },
       ]"
     />
 

@@ -33,6 +33,7 @@
           { href: getReuseAdminUrl(reuse), label: t('Metadata') },
           { href: `${getReuseAdminUrl(reuse)}/datasets`, label: t('Datasets') },
           { href: `${getReuseAdminUrl(reuse)}/discussions`, label: t('Discussions') },
+          { href: `${getReuseAdminUrl(reuse)}/activities`, label: t('Activities') },
         ]"
       />
 
