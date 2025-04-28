@@ -116,12 +116,6 @@
           :summary="metricsViewsTotal"
           class="mb-8 md:mb-0"
         />
-        <StatBox
-          :title="$t('Followers')"
-          type="line"
-          :summary="reuse.metrics.followers"
-          class="mb-8 md:mb-0"
-        />
       </div>
     </section>
     <section>

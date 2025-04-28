@@ -31,26 +31,24 @@
       >
         {{ summarize(summary, 2) }}
       </p>
-      <div v-if="!data">
-        <ContentLoader
-          v-if="data === null"
-          :width="120"
-          :height="30"
-          :speed="2"
-          primary-color="#f3f3f3"
-          secondary-color="#ecebeb"
-          class="fr-ml-1w"
-        >
-          <rect
-            x="0"
-            y="0"
-            rx="3"
-            ry="3"
-            width="120"
-            height="30"
-          />
-        </ContentLoader>
-      </div>
+      <ContentLoader
+        v-if="data === null"
+        :width="120"
+        :height="30"
+        :speed="2"
+        primary-color="#f3f3f3"
+        secondary-color="#ecebeb"
+        class="fr-ml-1w"
+      >
+        <rect
+          x="0"
+          y="0"
+          rx="3"
+          ry="3"
+          width="120"
+          height="30"
+        />
+      </ContentLoader>
       <div
         v-else-if="changesThisYear"
         class="fr-ml-1w"
@@ -85,7 +83,7 @@ import SmallChart from './SmallChart.vue'
 
 const props = defineProps<{
   title: string
-  data?: Record<string, number> | null
+  data: Record<string, number> | null
   type: 'line' | 'bar'
   summary: number | null
 }>()
