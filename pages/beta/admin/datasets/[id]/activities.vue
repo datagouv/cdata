@@ -37,7 +37,7 @@
                 </p>
               </div>
               <p class="m-0 text-xs text-gray-title flex-1">
-                {{ activity.label }}
+                {{ getActivityTranslation(activity) }}
               </p>
               <p class="m-0 text-xs text-gray-medium">
                 {{ $t('on {date}', { date: formatDate(activity.created_at) }) }}
@@ -60,7 +60,8 @@
 <script setup lang="ts">
 import { Avatar, Pagination, type Dataset } from '@datagouv/components-next'
 import PaddedContainer from '~/components/PaddedContainer/PaddedContainer.vue'
-import type { Activity, PaginatedArray } from '~/types/types'
+import type { Activity } from '~/types/activity'
+import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{
   dataset: Dataset
