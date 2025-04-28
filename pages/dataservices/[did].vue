@@ -1,0 +1,186 @@
+<template>
+  <div>
+    <div class="container">
+      <div
+        v-if="dataservice"
+        class="flex flex-wrap items-center justify-between"
+      >
+        <Breadcrumb>
+          <BreadcrumbItem
+            to="/"
+            :external="true"
+          >
+            {{ $t('Home') }}
+          </BreadcrumbItem>
+          <BreadcrumbItem to="/dataservices">
+            {{ $t('Dataservices') }}
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            {{ dataservice.title }}
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </div>
+    </div>
+    <LoadingBlock
+      v-if="dataservice"
+      :status
+    >
+      <div class="space-y-8">
+        <div class="container pt-14 min-h-32">
+          <h1 class="text-2xl text-gray-title">
+            {{ dataservice.title }}
+          </h1>
+          <div class="flex">
+            <div class="flex-1">
+              <ReadMore
+                class="prose whitespace-pre-line max-w-none"
+              >
+                {{ dataservice.description }}
+              </ReadMore>
+            </div>
+            <dl class="w-[384px] space-y-2.5">
+              <div class="space-y-1">
+                <dt class="text-gray-plain font-bold">
+                  {{ $t('Producer') }}
+                </dt>
+                <dd class="p-0">
+                <!-- <OrganizationCard
+                  v-if="dataservice.organization"
+                  :organization="dataservice.organization"
+                /> -->
+                </dd>
+              </div>
+
+              <div class="space-y-1">
+                <dt class="text-gray-plain font-bold">
+                  {{ $t('Contact') }}
+                </dt>
+                <dd class="p-0" />
+              </div>
+
+              <div class="space-y-1">
+                <dt class="text-gray-plain font-bold">
+                  {{ $t('Last update') }}
+                </dt>
+                <dd class="p-0">
+                  {{ formatDate(dataservice.metadata_modified_at) }}
+                </dd>
+              </div>
+
+              <div class="space-y-1">
+                <dt class="text-gray-plain font-bold">
+                  {{ $t('Rate limiting') }}
+                </dt>
+                <dd class="p-0">
+                  {{ dataservice.rate_limiting }}
+                </dd>
+              </div>
+
+              <div class="space-y-1">
+                <dt class="text-gray-plain font-bold">
+                  {{ $t('Availability') }}
+                </dt>
+                <dd class="p-0">
+                  {{ dataservice.availability }}
+                </dd>
+              </div>
+
+              <div class="space-y-1">
+                <dt class="text-gray-plain font-bold">
+                  {{ $t('Access') }}
+                </dt>
+                <dd class="p-0">
+                  <DataserviceAccessTypeBadge :dataservice />
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="container space-y-4">
+          <SimpleBanner
+            type="primary-frame"
+            class="flex items-center justify-between"
+          >
+            <div class="text-datagouv-dark font-bold text-xl">
+              {{ $t('Access the API') }}
+            </div>
+            <BrandedButton
+              color="primary"
+              :to="dataservice.business_documentation_url"
+              :icon="RiExternalLinkLine"
+              icon-right
+            >
+              {{ $t('Business documentation') }}
+            </BrandedButton>
+          </SimpleBanner>
+          <SimpleBanner
+            v-if="dataservice.machine_documentation_url"
+            type="primary-frame"
+          >
+            <button
+              type="button"
+              class="min-h-[42px] w-full flex items-center justify-between"
+              @click="openSwagger = !openSwagger"
+            >
+              <div class="text-datagouv-dark font-bold text-xl">
+                {{ $t('Swagger') }}
+              </div>
+              <RiArrowUpSLine
+                v-if="openSwagger"
+                class="size-6 text-gray-title"
+              />
+              <RiArrowDownSLine
+                v-else
+                class="size-6 text-gray-title"
+              />
+            </button>
+            <Swagger
+              v-if="openSwagger"
+              :url="dataservice.machine_documentation_url"
+            />
+          </SimpleBanner>
+        </div>
+
+        <FullPageTabs
+          class="mt-12"
+          :links="[
+            { label: $t('Informations'), href: `/dataservices/${route.params.did}/` },
+            { label: $t('Discussions'), href: `/dataservices/${route.params.did}/discussions`, count: dataservice.metrics.discussions ?? 0 },
+          ]"
+        />
+        <div class="bg-white pt-5 pb-8 lg:pb-24">
+          <NuxtPage
+            v-if="dataservice"
+            class="container"
+            :dataservice
+          />
+        </div>
+      </div>
+    </LoadingBlock>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { BrandedButton, Swagger, OrganizationNameWithCertificate, ReadMore, SimpleBanner, type Dataservice } from '@datagouv/components-next'
+import { RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine } from '@remixicon/vue'
+import DataserviceAccessTypeBadge from '~/components/AdminTable/AdminDataservicesTable/DataserviceAccessTypeBadge.vue'
+import EditButton from '~/components/BrandedButton/EditButton.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+
+const route = useRoute()
+const me = useMaybeMe()
+
+const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
+const { data: dataservice, status } = await useAPI<Dataservice>(url)
+
+const title = computed(() => dataservice.value?.title)
+const robots = computed(() => dataservice.value ? 'noindex, nofollow' : 'all')
+
+useSeoMeta({
+  title,
+  robots,
+})
+
+const openSwagger = ref(false)
+</script>
