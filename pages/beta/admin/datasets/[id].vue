@@ -84,6 +84,7 @@
           { href: getDatasetAdminUrl(dataset), label: t('Metadata') },
           { href: `${getDatasetAdminUrl(dataset)}/files`, label: t('Files') },
           { href: `${getDatasetAdminUrl(dataset)}/discussions`, label: t('Discussions') },
+          { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activities') },
         ]"
       />
 

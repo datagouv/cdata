@@ -309,3 +309,17 @@ export type TransferRequest = {
   responded: string | null
   reponse_comment: string | null
 }
+
+export type Activity = {
+  actor: User
+  organization: Organization | null
+  related_to: string
+  related_to_id: string
+  related_to_kind: string
+  related_to_url: string
+  created_at: string
+  label: string
+  key: string
+  icon: string
+  extras: Record<string, any>
+}
