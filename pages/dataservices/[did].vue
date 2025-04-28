@@ -55,7 +55,13 @@
                 <dt class="text-gray-plain font-bold">
                   {{ $t('Contact') }}
                 </dt>
-                <dd class="p-0" />
+                <dd class="p-0">
+                  <ContactPoint
+                    v-for="contact in dataservice.contact_points"
+                    :key="contact.id"
+                    :contact
+                  />
+                </dd>
               </div>
 
               <div class="space-y-1">
@@ -175,6 +181,7 @@ import { RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiArrowUpSLine, RiDel
 import DataserviceAccessTypeBadge from '~/components/AdminTable/AdminDataservicesTable/DataserviceAccessTypeBadge.vue'
 import EditButton from '~/components/BrandedButton/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import ContactPoint from '~/components/ContactPoint.vue'
 
 const route = useRoute()
 const me = useMaybeMe()
