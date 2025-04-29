@@ -193,8 +193,8 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Swagger, OrganizationNameWithCertificate, ReadMore, SimpleBanner, type Dataservice, AvatarWithName } from '@datagouv/components-next'
-import { RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine } from '@remixicon/vue'
+import { BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName } from '@datagouv/components-next'
+import { RiArrowDownSLine, RiArrowUpSLine, RiExternalLinkLine } from '@remixicon/vue'
 import DataserviceAccessTypeBadge from '~/components/AdminTable/AdminDataservicesTable/DataserviceAccessTypeBadge.vue'
 import EditButton from '~/components/BrandedButton/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'

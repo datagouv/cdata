@@ -4,8 +4,9 @@
       type="organization"
       :src="organization.logo_thumbnail"
       class="shrink-0 size-8"
-      :size="''"
+      :size="32"
     />
+    <!-- :size=32 is the same as size-8, should remove the size prop to use Tailwind… -->
     <NuxtLink
       :to="organization.page"
       class="link"
