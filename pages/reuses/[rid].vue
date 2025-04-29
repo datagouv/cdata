@@ -23,7 +23,7 @@
         <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
           <LoadingBlock :status="followStatus">
             <FollowButton
-              v-if="reuse"
+              v-if="reuse && follower"
               :following="follower.total > 0"
               :url="`api/1/reuses/${reuse.id}/followers/`"
             />
@@ -77,6 +77,23 @@
                 />
               </NuxtLinkLocale>
             </div>
+            <div
+              v-else-if="reuse.owner"
+              class="flex gap-2 items-center"
+            >
+              <Avatar
+                :user="reuse.owner"
+                :size="24"
+                :rounded="true"
+              />
+              <NuxtLinkLocale
+                class="link block"
+                :to="`/user/${reuse.owner.slug}/`"
+                :external="true"
+              >
+                {{ reuse.owner.first_name }} {{ reuse.owner.last_name }}
+              </NuxtLinkLocale>
+            </div>
             <h1 class="!text-2xl !font-extrabold !mb-1">
               {{ reuse.title }}
             </h1>
@@ -127,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, OrganizationNameWithCertificate, type Reuse } from '@datagouv/components-next'
+import { Avatar, BrandedButton, OrganizationNameWithCertificate, type Reuse } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
 import EditButton from '~/components/BrandedButton/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -138,9 +155,9 @@ const route = useRoute()
 const me = useMaybeMe()
 
 const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
-const { data: reuse, status } = await useAPI<Reuse>(url)
+const { data: reuse, status } = await useAPI<Reuse | null>(url)
 
-const followUrl = computed(() => `/api/1/reuses/${reuse.value.id}/followers/`)
+const followUrl = computed(() => `/api/1/reuses/${route.params.rid}/followers/`)
 const { data: follower, status: followStatus } = await useAPI<PaginatedArray<{
   id: string
   follower: string
