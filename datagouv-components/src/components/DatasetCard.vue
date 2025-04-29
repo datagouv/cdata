@@ -1,5 +1,6 @@
 <template>
   <div class="fr-my-2w fr-p-2w border border-gray-default relative hover:bg-gray-some">
+    <div :id />
     <div
       v-if="dataset.private || dataset.archived"
       class="absolute top-0 fr-grid-row fr-grid-row--middle fr-mt-n3v fr-ml-n1v"
@@ -25,8 +26,8 @@
         {{ t('Archived') }}
       </p>
     </div>
-    <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--top">
-      <div class="fr-col-auto">
+    <div class="flex flex-wrap md:flex-nowrap gap-4 items-start">
+      <div class="flex-none">
         <div class="flex justify-center items-center p-3 border border-gray-lower bg-[#fff]">
           <Placeholder
             v-if="dataset.organization"
@@ -47,8 +48,8 @@
           />
         </div>
       </div>
-      <div class="fr-col-12 fr-col-sm">
-        <h4 class="fr-text--md mb-0 fr-grid-row">
+      <div class="flex-1 overflow-hidden">
+        <h4 class="w-full text-base mb-0 flex">
           <slot
             name="datasetUrl"
             :dataset="dataset"
@@ -56,19 +57,12 @@
           >
             <AppLink
               :to="datasetUrl"
-              class="text-gray-800 text-base bg-none fr-grid-row"
+              class="text-gray-title text-base bg-none flex truncate"
             >
-              <component
-                :is="config.textClamp"
-                v-if="config && config.textClamp"
-                class="fr-col"
-                :auto-resize="true"
-                :text="dataset.title"
-                :max-lines="1"
-              />
+              <span class="block flex-initial truncate">{{ dataset.title }}</span>
               <small
                 v-if="dataset.acronym"
-                class="fr-col-auto fr-ml-1w"
+                class="flex-none ml-2"
               >{{ dataset.acronym }}</small>
               <span class="absolute inset-0" />
             </AppLink>
@@ -79,10 +73,10 @@
           class="text-sm m-0 flex truncate"
         >
           <template v-if="dataset.organization">
-            <div class="-mr-1 flex-initial">
+            <div class="-mr-0.5 flex-initial truncate">
               <AppLink
                 v-if="organizationUrl"
-                class="link text-sm flex items-center relative z-[2]"
+                class="link text-sm flex items-center relative z-[2] truncate"
                 :to="organizationUrl"
               >
                 <OrganizationNameWithCertificate :organization="dataset.organization" />
@@ -104,8 +98,11 @@
           </div>
         </div>
         <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium">
-          <div class="fr-hidden flex-sm dash-after-sm text-gray-500">
-            <DatasetQualityInline :quality="dataset.quality" />
+          <div class="fr-hidden flex-sm dash-after-sm text-gray-500 -ml-2.5">
+            <DatasetQualityInline
+              :quality="dataset.quality"
+              :teleport-id="id"
+            />
           </div>
           <div class="fr-grid-row fr-grid-row--middle fr-mr-1v">
             <p
@@ -153,7 +150,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
-import { computed, ref, watchEffect } from 'vue'
+import { computed, ref, useId, watchEffect } from 'vue'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import { summarize } from '../functions/helpers'
 import { formatRelativeIfRecentDate } from '../functions/dates'
@@ -189,6 +186,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { t } = useI18n()
+const id = useId()
 const ownerName = computed(() => getOwnerName(props.dataset))
 const config = useComponentsConfig()
 
