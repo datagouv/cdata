@@ -6,10 +6,15 @@
       class="shrink-0 size-8"
       :size="''"
     />
-    <OrganizationNameWithCertificate
-      class="w-full"
-      :organization
-    />
+    <NuxtLink
+      :to="organization.page"
+      class="link"
+    >
+      <OrganizationNameWithCertificate
+        class="w-full"
+        :organization
+      />
+    </NuxtLink>
   </div>
 </template>
 
