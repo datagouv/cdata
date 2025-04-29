@@ -38,20 +38,29 @@
                 {{ dataservice.description }}
               </ReadMore>
             </div>
-            <dl class="w-[384px] space-y-2.5">
+            <dl class="max-w-[384px] space-y-2.5">
               <div class="space-y-1">
                 <dt class="text-gray-plain font-bold">
                   {{ $t('Producer') }}
                 </dt>
                 <dd class="p-0">
-                <!-- <OrganizationCard
-                  v-if="dataservice.organization"
-                  :organization="dataservice.organization"
-                /> -->
+                  <OrganizationOwner
+                    v-if="dataservice.organization"
+                    :organization="dataservice.organization"
+                  />
+                  <AvatarWithName
+                    v-if="dataservice.owner"
+                    :size="32"
+                    :user="dataservice.owner"
+                    class="space-x-2"
+                  />
                 </dd>
               </div>
 
-              <div class="space-y-1">
+              <div
+                v-if="dataservice.contact_points.length"
+                class="space-y-1"
+              >
                 <dt class="text-gray-plain font-bold">
                   {{ $t('Contact') }}
                 </dt>
@@ -176,12 +185,13 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Swagger, OrganizationNameWithCertificate, ReadMore, SimpleBanner, type Dataservice } from '@datagouv/components-next'
+import { BrandedButton, Swagger, OrganizationNameWithCertificate, ReadMore, SimpleBanner, type Dataservice, AvatarWithName } from '@datagouv/components-next'
 import { RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine } from '@remixicon/vue'
 import DataserviceAccessTypeBadge from '~/components/AdminTable/AdminDataservicesTable/DataserviceAccessTypeBadge.vue'
 import EditButton from '~/components/BrandedButton/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
+import OrganizationOwner from '~/components/OrganizationOwner.vue'
 
 const route = useRoute()
 const me = useMaybeMe()
