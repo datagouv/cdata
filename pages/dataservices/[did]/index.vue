@@ -2,7 +2,7 @@
   <div class="space-y-5">
     <section
       v-if="status === 'success'"
-      class="flex flex-wrap justify-between items-center mb-5"
+      class="mb-5"
     >
       <h2 class="text-sm font-bold uppercase m-0 text-gray-title">
         {{ $t('{n} datasets', pageData.total) }}

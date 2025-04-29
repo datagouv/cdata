@@ -26,8 +26,8 @@
       :status
     >
       <div class="space-y-8">
-        <div class="container pt-14 min-h-32">
-          <h1 class="text-2xl text-gray-title">
+        <div class="container pt-3 min-h-32">
+          <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
             {{ dataservice.title }}
           </h1>
           <div class="flex">
@@ -102,7 +102,7 @@
                   {{ $t('Availability') }}
                 </dt>
                 <dd class="p-0">
-                  {{ dataservice.availability }}
+                  {{ dataservice.availability }}%
                 </dd>
               </div>
 
