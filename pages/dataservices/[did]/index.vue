@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="space-y-5">
     <section
       v-if="status === 'success'"
       class="flex flex-wrap justify-between items-center mb-5"
@@ -61,11 +61,41 @@
         />
       </div>
     </section>
+    <SectionCollapse
+      :title="$t('Technical information')"
+      :button-text="$t('See technical information')"
+    >
+      <DescriptionList class="mb-2">
+        <div>
+          <DescriptionListTerm>{{ $t('Latest update') }}</DescriptionListTerm>
+          <DescriptionListDetails>{{ formatDate(dataservice.metadata_modified_at) }}</DescriptionListDetails>
+        </div>
+        <div>
+          <DescriptionListTerm>{{ $t('ID') }}</DescriptionListTerm>
+          <DescriptionListDetails class="flex items-center gap-2">
+            {{ dataservice.id }}
+            <CopyButton
+              class="!-mt-0.5"
+              :label="$t('Copy ID')"
+              :copied-label="$t('ID copied')"
+              :text="dataservice.id"
+              :hide-label="true"
+            />
+          </DescriptionListDetails>
+        </div>
+      </DescriptionList>
+      <DescriptionList>
+        <div>
+          <DescriptionListTerm>{{ $t('Creation date') }}</DescriptionListTerm>
+          <DescriptionListDetails>{{ formatDate(dataservice.created_at) }}</DescriptionListDetails>
+        </div>
+      </DescriptionList>
+    </SectionCollapse>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Pagination, StatBox, type Dataservice, type DatasetV2 } from '@datagouv/components-next'
+import { BrandedButton, CopyButton, Pagination, StatBox, type Dataservice, type DatasetV2 } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'
 
