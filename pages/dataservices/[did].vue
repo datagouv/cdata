@@ -19,6 +19,13 @@
             {{ dataservice.title }}
           </BreadcrumbItem>
         </Breadcrumb>
+        <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
+          <EditButton
+            v-if="isAdmin(me)"
+            :id="dataservice.id"
+            type="dataservices"
+          />
+        </div>
       </div>
     </div>
     <LoadingBlock
