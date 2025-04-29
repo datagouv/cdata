@@ -72,7 +72,7 @@
       <h2 class="uppercase text-sm mb-2.5">
         {{ $t('{n} associated datasets', { n: reuse.metrics.datasets }) }}
       </h2>
-      <div class="grid md:grid-cols-2 gap-5">
+      <div class="grid xl:grid-cols-2 gap-5">
         <DatasetCardLg
           v-for="dataset in reuse.datasets"
           :key="dataset.id"
