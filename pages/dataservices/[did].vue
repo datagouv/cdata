@@ -30,15 +30,16 @@
           <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
             {{ dataservice.title }}
           </h1>
-          <div class="flex flex-col md:flex-row">
-            <div class="flex-1">
-              <ReadMore
-                class="prose whitespace-pre-line max-w-none"
-              >
-                {{ dataservice.description }}
+          <div class="flex flex-col md:space-x-10 md:flex-row">
+            <div class="flex-1 overflow-x-hidden">
+              <ReadMore class="">
+                <MarkdownViewer
+                  :content="dataservice.description"
+                  :min-heading="3"
+                />
               </ReadMore>
             </div>
-            <dl class="pl-0 w-full md:max-w-[384px] space-y-2.5">
+            <dl class="pl-0 w-full shrink-0 md:w-[384px] space-y-2.5">
               <div class="space-y-1">
                 <dt class="text-gray-plain font-bold">
                   {{ $t('Producer') }}
