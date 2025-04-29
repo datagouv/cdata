@@ -1,5 +1,5 @@
 <template>
-  <div class="fr-my-2w fr-p-2w border border-gray-default relative hover:bg-gray-some">
+  <div class="p-4 border border-gray-default relative hover:bg-gray-some">
     <div :id />
     <div
       v-if="dataset.private || dataset.archived"
