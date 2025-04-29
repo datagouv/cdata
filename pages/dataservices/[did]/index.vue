@@ -8,7 +8,7 @@
         {{ $t('{n} datasets', pageData.total) }}
       </h2>
 
-      <div class="grid grid-cols-2 gap-5">
+      <div class="grid sm:grid-cols-2 gap-5">
         <DatasetCardLg
           v-for="dataset in pageData.data"
           :key="dataset.id"

@@ -30,7 +30,7 @@
           <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
             {{ dataservice.title }}
           </h1>
-          <div class="flex">
+          <div class="flex flex-col md:flex-row">
             <div class="flex-1">
               <ReadMore
                 class="prose whitespace-pre-line max-w-none"
@@ -38,7 +38,7 @@
                 {{ dataservice.description }}
               </ReadMore>
             </div>
-            <dl class="max-w-[384px] space-y-2.5">
+            <dl class="pl-0 w-full md:max-w-[384px] space-y-2.5">
               <div class="space-y-1">
                 <dt class="text-gray-plain font-bold">
                   {{ $t('Producer') }}
