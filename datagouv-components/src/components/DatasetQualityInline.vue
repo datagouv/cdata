@@ -1,7 +1,10 @@
 <template>
   <div class="m-0 flex flex-wrap items-center text-sm text-gray-medium">
     <div class="fr-grid-row fr-grid-row--middle">
-      <Toggletip class="relative z-2">
+      <Toggletip
+        class="relative z-2"
+        :teleport-id
+      >
         <template #toggletip>
           <DatasetQualityTooltipContent :quality />
         </template>
@@ -24,5 +27,6 @@ import Toggletip from './Toggletip.vue'
 
 defineProps<{
   quality: Quality
+  teleportId?: string
 }>()
 </script>

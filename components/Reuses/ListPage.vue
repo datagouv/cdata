@@ -1,13 +1,13 @@
 <template>
   <h1 class="!mb-2">
-    {{ $t('Organizations') }}
+    {{ $t('Reuses') }}
   </h1>
   <label
     :for="inputId"
     class="block mb-3"
   >
-    {{ $t('Search among {count} organizations on {site}', {
-      count: organizations.total,
+    {{ $t('Search among {count} reuses on {site}', {
+      count: totalReuses,
       site: config.public.title,
     }) }}
   </label>
@@ -27,9 +27,35 @@
       {{ $t('Search') }}
     </BrandedButton>
   </div>
+  <div class="fr-grid-row fr-mb-1v fr-displayed-lg">
+    <ul class="fr-tags-group">
+      <li>
+        <button
+          type="button"
+          class="fr-tag"
+          :aria-pressed="!topic"
+          @click="topic = undefined"
+        >
+          {{ $t('All') }}
+        </button>
+      </li>
+      <li
+        v-for="currentTopic in topics"
+        :key="currentTopic.id"
+      >
+        <button
+          class="fr-tag"
+          :aria-pressed="currentTopic.id === topic"
+          @click="topic = currentTopic.id"
+        >
+          {{ currentTopic.label }}
+        </button>
+      </li>
+    </ul>
+  </div>
   <div class="flex justify-between items-center mb-6">
     <p class="mb-0">
-      {{ $t('{count} results', { count: organizations.total }) }}
+      {{ $t('{count} results', { count: reuses.total }) }}
     </p>
     <div class="flex items-center gap-1">
       <label
@@ -61,28 +87,29 @@
   </div>
   <LoadingBlock :status>
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 mb-16">
-      <OrganizationCard
-        v-for="organization in organizations.data"
-        :key="organization.id"
+      <ReuseCard
+        v-for="reuse in reuses.data"
+        :key="reuse.id"
         class="col-span-1"
-        :organization
+        :reuse
       />
     </div>
   </LoadingBlock>
   <Pagination
-    :page="organizations.page"
-    :page-size="organizations.page_size"
-    :total-results="organizations.total"
+    :page="reuses.page"
+    :page-size="reuses.page_size"
+    :total-results="reuses.total"
     :link="link"
-    @change="(p: number) => $emit('change', q, sortParam, p)"
+    @change="(p: number) => $emit('change', q, topic, sortParam, p)"
   />
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, OrganizationCard, Pagination } from '@datagouv/components-next'
-import type { Organization } from '@datagouv/components-next'
+import { BrandedButton, Pagination } from '@datagouv/components-next'
+import type { Reuse, ReuseTopic } from '@datagouv/components-next'
 import { RiSearch2Line } from '@remixicon/vue'
 import { debouncedRef } from '@vueuse/core'
+import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import type { PaginatedArray, RequestStatus } from '~/types/types'
 
 const props = defineProps<{
@@ -92,9 +119,9 @@ const props = defineProps<{
   link?: (page: number) => string
 
   /**
-   * List of organizations to show
+   * List of reuses to show
    */
-  organizations: PaginatedArray<Organization>
+  reuses: PaginatedArray<Reuse>
 
   /**
    * The starting q
@@ -110,10 +137,25 @@ const props = defineProps<{
    * The API request status
    */
   status: RequestStatus
+
+  /**
+   * The starting sort
+   */
+  topic: string | undefined
+
+  /**
+   * Reuse topics from API
+   */
+  topics: Array<ReuseTopic>
+
+  /**
+   * Number of reuses for this site or organization
+   */
+  totalReuses: number
 }>()
 
 const emit = defineEmits<{
-  change: [q: string, sort: string | undefined, page: number]
+  change: [q: string, topic: string | undefined, sort: string | undefined, page: number]
 }>()
 
 const config = useRuntimeConfig()
@@ -126,9 +168,10 @@ const q = ref(props.q ?? '')
 const qDebounced = debouncedRef(q, config.public.searchAutocompleteDebounce)
 const sort = ref(props.sort ?? '')
 const sortParam = computed(() => sort.value ? sort.value : undefined)
+const topic = ref(props.topic)
 
-watch([sort, qDebounced], async ([_newSort, newQ]) => {
-  emit('change', newQ, sortParam.value, 1)
+watch([sort, topic, qDebounced], async ([_newSort, newTopic, newQ]) => {
+  emit('change', newQ, newTopic, sortParam.value, 1)
 
   document.children[0].scrollIntoView({ behavior: 'smooth', block: 'start' })
 })

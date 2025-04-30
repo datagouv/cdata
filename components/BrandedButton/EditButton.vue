@@ -14,7 +14,7 @@ import { BrandedButton } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 
 const props = defineProps<{
-  type: 'organizations' | 'posts' | 'dataservices'
+  type: 'organizations' | 'posts' | 'reuses' | 'dataservices'
   id: string
 }>()
 
@@ -26,7 +26,7 @@ const link = computed(() => {
     case 'organizations':
       return `${base}profile`
     case 'posts':
-      return base
+    case 'reuses':
     case 'dataservices':
       return base
     default:

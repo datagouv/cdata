@@ -22,6 +22,7 @@
   --color-mention-grey: #666; /* Copy from --text-mention-grey */
   --color-gray-title: #161616;
   --color-gray-medium: #666666;
+  --color-gray-low: #929292;
   --color-gray-lower-hover: #d2d2d2;
   --color-gray-lower-active: #c1c1c1;
   --color-gray-lower: #eeeeee;
@@ -100,5 +101,36 @@
   ::backdrop,
   ::file-selector-button {
     border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+@layer components {
+  meter.quality-score {
+    background: none;
+    border: 1px solid var(--color-gray-default);
+    border-radius: 8px;
+    height: 10px;
+    vertical-align: baseline;
+  }
+  meter.quality-score::-webkit-meter-bar {
+    height: 10px;
+    background: whiteSmoke;
+    border-radius: 8px;
+  }
+  meter.quality-score::-moz-meter-bar {
+    background: whiteSmoke;
+    border-radius: 8px;
+  }
+  meter.quality-score::-webkit-meter-suboptimum-value {
+    background-color: var(--color-gray-low);
+  }
+  meter.quality-score:-moz-meter-sub-optimum::-moz-meter-bar {
+    background-color: var(--color-gray-low);
+  }
+  meter.quality-score::-webkit-meter-optimum-value {
+    background-color: #27A658;
+  }
+  meter.quality-score:-moz-meter-optimum::-moz-meter-bar {
+    background-color: #27A658;
   }
 }

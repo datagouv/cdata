@@ -1039,5 +1039,15 @@
   "No results": "No results",
   "Error 404": "Error 404",
   "The page you're looking for cannot be found.": "The page you're looking for cannot be found.",
-  "Support": "Support"
+  "Search among {count} reuses on {site}": "Search among {count} reuses on {site}",
+  "All": "All",
+  "Support": "Support",
+  "{n}%": "{n}%",
+  "{n} associated datasets": "no associated datasets | {n} associated dataset | {n} associated datasets",
+  "{n} reuses from the same creator": "{n} reuses from the same creator | {n} reuse from the same creator | {n} reuses from the same creator",
+  "Download the statistics as CSV": "Download the statistics as CSV",
+  "Topic": "Topic",
+  "No tags set": "No tags set",
+  "There are no other reuses from this creator.": "There are no other reuses from this creator.",
+  "See reuse": "See reuse"
 }
