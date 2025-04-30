@@ -1,6 +1,6 @@
 {
   "name": "@datagouv/components-next",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": false,
   "type": "module",
   "main": "./src/main.ts",
@@ -19,7 +19,7 @@
     "format": "prettier --write src/",
     "css": "tailwindcss -i ./assets/main.css -o ./dist/components.css --minify --optimize",
     "i18n": "intlify compile --source ./src/locales/**/*.json --output ./dist/locales",
-    "preversion": "npm run css && npm run i18n && npm run build-only",
+    "preversion": "npm run build-only && npm run css && npm run i18n",
     "publish-stable": "npm publish --access public"
   },
   "dependencies": {
