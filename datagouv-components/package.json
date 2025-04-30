@@ -1,6 +1,6 @@
 {
   "name": "@datagouv/components-next",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": false,
   "type": "module",
   "main": "./src/main.ts",
@@ -19,13 +19,12 @@
     "format": "prettier --write src/",
     "css": "tailwindcss -i ./assets/main.css -o ./dist/components.css --minify --optimize",
     "i18n": "intlify compile --source ./src/locales/**/*.json --output ./dist/locales",
-    "postinstall": "npm run css && npm run i18n",
+    "prepare": "npm run css && npm run i18n",
     "publish-stable": "npm publish --access public"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
     "@remixicon/vue": "^4.5.0",
-    "@tailwindcss/cli": "^4.0.8",
     "chart.js": "^4.4.8",
     "markdown-it": "^14.1.0",
     "ofetch": "^1.4.1",
@@ -38,6 +37,7 @@
   },
   "devDependencies": {
     "@intlify/cli": "^0.13.1",
+    "@tailwindcss/cli": "^4.0.8",
     "@tailwindcss/typography": "^0.5.16",
     "@tsconfig/node22": "^22.0.0",
     "@types/node": "^22.13.1",
