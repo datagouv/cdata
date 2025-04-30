@@ -1,17 +1,21 @@
 <template>
   <div class="flex justify-start">
     <nav class="flex space-x-1 font-medium rounded border border-neutral-300">
-      <NuxtLinkLocale
+      <template
         v-for="link in links"
         :key="link.label"
-        :to="link.href"
-        class="group block rounded bg-none bg-transparent border border-transparent -m-px no-underline outline-none aria-current-page:border aria-current-page:border-primary aria-current-page:text-primary p-1"
-        :aria-current="isCurrent(link.href) ? 'page': false"
       >
-        <span class="rounded  px-2 ">
-          {{ link.label }}
-        </span>
-      </NuxtLinkLocale>
+        <NuxtLinkLocale
+          v-if="show(link.href)"
+          :to="link.href"
+          class="group block rounded bg-none bg-transparent border border-transparent -m-px no-underline outline-none aria-current-page:border aria-current-page:border-primary aria-current-page:text-primary p-1"
+          :aria-current="isCurrent(link.href) ? 'page': false"
+        >
+          <span class="rounded px-2">
+            {{ link.label }}
+          </span>
+        </NuxtLinkLocale>
+      </template>
     </nav>
   </div>
 </template>
@@ -24,8 +28,18 @@ defineProps<{
 const route = useRoute()
 const localePath = useLocalePath()
 
-const isCurrent = (href: string) => {
+function isCurrent(href: string) {
   return localePath(href) === route.fullPath
+}
+
+function show(href: string) {
+  const router = useRouter()
+  const route = router.resolve(localePath(href))
+  const me = useMaybeMe()
+  if (route.meta.requiredRole) {
+    return me.value?.roles?.includes(route.meta.requiredRole as string) ?? false
+  }
+  return true
 }
 </script>
 

@@ -5,6 +5,10 @@
 <script setup lang="ts">
 import type { Organization } from '@datagouv/components-next'
 
+definePageMeta({
+  requiredRole: 'admin',
+})
+
 defineProps<{
   organization: Organization
 }>()
