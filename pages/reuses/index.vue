@@ -12,7 +12,6 @@
       </BreadcrumbItem>
     </Breadcrumb>
     <ListPage
-      v-if="reuses"
       :link="getLink"
       :reuses
       :q="(q as string)"

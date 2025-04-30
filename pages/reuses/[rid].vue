@@ -23,23 +23,27 @@
         <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
           <LoadingBlock :status="followStatus">
             <FollowButton
-              v-if="reuse && follower"
-              :following="follower.total > 0"
+              v-if="reuse"
+              :following="follower?.total > 0"
               :url="`api/1/reuses/${reuse.id}/followers/`"
             />
           </LoadingBlock>
-          <BrandedButton
-            :href="reuse.url"
-            :new-tab="true"
-            size="xs"
-          >
-            {{ $t('See the reuse') }}
-          </BrandedButton>
-          <EditButton
-            v-if="isAdmin(me)"
-            :id="reuse.id"
-            type="reuses"
-          />
+          <div>
+            <BrandedButton
+              :href="reuse.url"
+              :new-tab="true"
+              size="xs"
+            >
+              {{ $t('See the reuse') }}
+            </BrandedButton>
+          </div>
+          <div>
+            <EditButton
+              v-if="isAdmin(me)"
+              :id="reuse.id"
+              type="reuses"
+            />
+          </div>
         </div>
       </div>
     </div>
