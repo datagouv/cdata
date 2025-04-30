@@ -183,11 +183,6 @@ export type NewReuseForApi = {
   tags: Array<string>
 }
 
-export type ReuseTopic = {
-  id: string
-  label: string
-}
-
 export type DataserviceForm = {
   owned: Owned | null
   title: string

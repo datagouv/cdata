@@ -14,7 +14,7 @@
           <p class="text-sm mb-0 flex items-center">
             <span
               v-if="reuse.organization"
-              class="relative block truncate z-[2] flex-1"
+              class="relative block truncate break-all z-[2] flex-initial"
             >
               <AppLink
                 v-if="organizationUrl"
@@ -34,36 +34,10 @@
               v-else-if="ownerName"
               class="mr-1 truncate"
             >{{ ownerName }}</span>
-            <RiSubtractLine class="size-4 fill-gray-medium" />
-            <span>{{ t('published {date}', { date: formatRelativeIfRecentDate(reuse.created_at, { dateStyle: 'medium' }) }) }}</span>
+            <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
+            <span class="block flex-none">{{ t('published {date}', { date: formatRelativeIfRecentDate(reuse.created_at, { dateStyle: 'medium' }) }) }}</span>
           </p>
-          <div class="flex flex-wrap items-center gap-0.5">
-            <p class="text-sm mb-0">
-              {{ reuseType }}
-            </p>
-            <RiSubtractLine
-              aria-hidden="true"
-              class="size-4 fill-gray-medium"
-            />
-            <p
-              class="text-sm mb-0 flex items-center gap-0.5"
-              :aria-label="t('{n} views', reuse.metrics.views)"
-            >
-              <RiEyeLine
-                aria-hidden="true"
-                class="size-3.5"
-              />{{ summarize(reuse.metrics.views) }}
-            </p>
-            <p
-              class="text-sm mb-0 flex items-center gap-0.5"
-              :aria-label="t('{n} followers', reuse.metrics.followers)"
-            >
-              <RiStarLine
-                aria-hidden="true"
-                class="size-3.5"
-              />{{ summarize(reuse.metrics.followers) }}
-            </p>
-          </div>
+          <ReuseDetails :reuse />
         </div>
       </div>
     </div>
@@ -99,17 +73,16 @@
 </template>
 
 <script setup lang="ts">
-import { RiEyeLine, RiLockLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
+import { RiLockLine, RiSubtractLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
-import useReuseType from '../composables/useReuseType'
 import { formatRelativeIfRecentDate } from '../functions/dates'
-import { summarize } from '../functions/helpers'
 import { getOwnerName } from '../functions/owned'
 import type { Reuse } from '../types/reuses'
 import AppLink from './AppLink.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
+import ReuseDetails from './ReuseDetails.vue'
 
 const props = defineProps<{
   reuse: Reuse
@@ -130,5 +103,4 @@ const props = defineProps<{
 const { t } = useI18n()
 
 const ownerName = computed(() => getOwnerName(props.reuse))
-const { label: reuseType } = useReuseType(() => props.reuse.type)
 </script>
