@@ -1,6 +1,6 @@
 {
   "name": "@datagouv/components-next",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": false,
   "type": "module",
   "main": "./src/main.ts",
@@ -25,6 +25,7 @@
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
     "@remixicon/vue": "^4.5.0",
+    "@tailwindcss/cli": "^4.0.8",
     "chart.js": "^4.4.8",
     "markdown-it": "^14.1.0",
     "ofetch": "^1.4.1",
@@ -37,7 +38,6 @@
   },
   "devDependencies": {
     "@intlify/cli": "^0.13.1",
-    "@tailwindcss/cli": "^4.0.8",
     "@tailwindcss/typography": "^0.5.16",
     "@tsconfig/node22": "^22.0.0",
     "@types/node": "^22.13.1",
