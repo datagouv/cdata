@@ -1,9 +1,14 @@
 {
   "name": "@datagouv/components-next",
   "version": "0.0.1",
-  "private": true,
+  "private": false,
   "type": "module",
   "main": "./src/main.ts",
+  "files": [
+    "assets",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
@@ -14,7 +19,8 @@
     "format": "prettier --write src/",
     "css": "tailwindcss -i ./assets/main.css -o ./dist/components.css --minify --optimize",
     "i18n": "intlify compile --source ./src/locales/**/*.json --output ./dist/locales",
-    "postinstall": "npm run css && npm run i18n"
+    "postinstall": "npm run css && npm run i18n",
+    "publish-stable": "npm publish --access public"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
@@ -50,5 +56,17 @@
     "vite": "^6.0.11",
     "vite-plugin-vue-devtools": "^7.7.1",
     "vue-tsc": "^2.2.0"
-  }
+  },
+  "author": {
+    "name": "DINUM"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/datagouv/cdata.git"
+  },
+  "bugs": {
+    "url": "https://github.com/datagouv/cdata/issues"
+  },
+  "homepage": "https://github.com/datagouv/cdata#readme"
 }
