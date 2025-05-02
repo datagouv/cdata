@@ -25,7 +25,7 @@ jobs:
         working-directory: ./datagouv-components
       
       - name: Run datagouv-components scripts
-        run: npm run preversion
+        run: npm run css && npm run i18n
         working-directory: ./datagouv-components
 
       - name: Install dependencies
