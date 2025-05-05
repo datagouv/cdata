@@ -37,6 +37,7 @@ import Placeholder from './components/Placeholder.vue'
 import ReadMore from './components/ReadMore.vue'
 import ResourceAccordion from './components/ResourceAccordion/ResourceAccordion.vue'
 import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
+import Swagger from './components/ResourceAccordion/Swagger.vue'
 import ReuseCard from './components/ReuseCard.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
 import StatBox from './components/StatBox.vue'
@@ -144,4 +145,5 @@ export {
   ReuseCard,
   SimpleBanner,
   StatBox,
+  Swagger,
 }

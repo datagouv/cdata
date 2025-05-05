@@ -60,12 +60,7 @@
           </AdminBadge>
         </td>
         <td>
-          <AdminBadge
-            size="xs"
-            :type="getAccess(dataservice).type"
-          >
-            {{ getAccess(dataservice).label }}
-          </AdminBadge>
+          <DataserviceAccessTypeBadge :dataservice />
         </td>
         <td>{{ formatDate(dataservice.created_at) }}</td>
         <td>{{ formatDate(dataservice.metadata_modified_at) }}</td>
@@ -109,6 +104,7 @@ import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
+import DataserviceAccessTypeBadge from './DataserviceAccessTypeBadge.vue'
 import type { AdminBadgeType, DataserviceSortedBy, SortDirection } from '~/types/types'
 
 const props = defineProps<{
@@ -149,22 +145,5 @@ function getStatus(dataservice: Dataservice): { label: string, type: AdminBadgeT
       type: 'primary',
     }
   }
-}
-
-function getAccess(dataservice: Dataservice): { label: string, type: AdminBadgeType } | null {
-  return {
-    open: {
-      label: t('Open'),
-      type: 'success' as AdminBadgeType,
-    },
-    open_with_account: {
-      label: t('Open with account'),
-      type: 'warning' as AdminBadgeType,
-    },
-    restricted: {
-      label: t('Restricted'),
-      type: 'warning' as AdminBadgeType,
-    },
-  }[dataservice.access_type]
 }
 </script>
