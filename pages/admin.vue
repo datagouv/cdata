@@ -50,7 +50,7 @@
         <div class="flex flex-wrap space-x-8">
           <div class="w-full flex-none md:flex-1 flex items-center space-x-2">
             <RiInformationLine class="size-6 -mt-0.5" />
-            <div>{{ t("You're on the new admin interface in beta.") }}</div>
+            <div>{{ t("You're on the new admin interface.") }}</div>
           </div>
           <div class="space-x-4">
             <a
@@ -59,12 +59,6 @@
               target="_blank"
             >
               {{ $t('Give your opinion') }}
-            </a>
-            <a
-              class="fr-link fr-link--external"
-              :href="`/${locale}/admin`"
-            >
-              {{ $t('Go back to the old admin') }}
             </a>
           </div>
         </div>

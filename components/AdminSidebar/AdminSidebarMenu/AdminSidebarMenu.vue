@@ -217,7 +217,7 @@ watchEffect(() => {
     open(id)
   }
 
-  if (!props.organization && !props.user && route.name && route.name.toString().startsWith('beta-admin-site')) {
+  if (!props.organization && !props.user && route.name && route.name.toString().startsWith('admin-site')) {
     open(id)
   }
 })

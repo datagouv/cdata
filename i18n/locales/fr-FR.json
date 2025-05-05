@@ -613,7 +613,7 @@
   "Home": "Accueil",
   "description": "description",
   "Close the modal window": "Fermer la fenêtre modale",
-  "You're on the new admin interface in beta.": "Vous êtes sur la nouvelle interface d’administration en version bêta.",
+  "You're on the new admin interface.": "Vous êtes sur la nouvelle interface d’administration.",
   "Give your opinion": "Donnez votre avis",
   "Go back to the old admin": "Revenir sur l'ancienne interface",
   "A dataservice": "Une API",
