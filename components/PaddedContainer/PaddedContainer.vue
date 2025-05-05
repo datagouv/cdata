@@ -19,10 +19,10 @@ const props = withDefaults(defineProps<{
 const background = computed(() => {
   switch (props.color) {
     case 'alt-grey':
-      return 'bg-[var(--background-alt-grey)]'
+      return 'bg-gray-some'
     case 'white':
     default:
-      return 'bg-[var(--background-default-grey)]'
+      return 'bg-white'
   }
 })
 </script>
