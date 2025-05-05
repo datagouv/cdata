@@ -111,7 +111,6 @@ const menu = computed(() => {
         path: '/dataservices/',
         query: { q: query.value.trim() },
       }),
-      external: true,
     },
     {
       icon: RiLineChartLine,
@@ -120,7 +119,6 @@ const menu = computed(() => {
         path: '/reuses/',
         query: { q: query.value.trim() },
       }),
-      external: true,
     },
     {
       icon: RiGovernmentLine,
@@ -129,7 +127,6 @@ const menu = computed(() => {
         path: '/organizations/',
         query: { q: query.value.trim() },
       }),
-      external: true,
     },
   ]
 })
