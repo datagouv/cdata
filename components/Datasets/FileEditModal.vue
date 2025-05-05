@@ -150,7 +150,7 @@ onMounted(() => {
 })
 const setHash = () => {
   if (!props.resource.resource) return
-  window.history.replaceState(null, '', `${route.path}#${props.resource.resource.id}`)
+  window.history.replaceState(null, '', `${route.path}?resource_id=${props.resource.resource.id}`)
 }
 const removeHash = () => {
   if (!props.resource.resource) return

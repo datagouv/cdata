@@ -19,12 +19,11 @@ const props = defineProps<{
 const { $api } = useNuxtApp()
 
 const resource = ref<ResourceForm | CommunityResourceForm | null>(null)
+const route = useRoute()
 
 onMounted(async () => {
-  const hash = window.location.hash
-  if (!hash) return
-
-  const resourceId = hash.substring(1)
+  const resourceId = route.query.resource_id
+  if (Array.isArray(resourceId) || !resourceId) return
 
   if (props.dataset) { // this is a dataset's resource
     resource.value = resourceToForm(await $api<Resource>(`/api/1/datasets/${props.dataset.id}/resources/${resourceId}/`), props.schemas)
