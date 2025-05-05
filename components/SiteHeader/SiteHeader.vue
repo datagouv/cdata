@@ -461,8 +461,8 @@ const searchInputId = useId()
 
 const menu = [
   { label: t('Data'), link: '/datasets/', external: true },
-  { label: t('API'), link: '/dataservices/', external: true },
-  { label: t('Reuses'), link: '/reuses/', external: true },
+  { label: t('API'), link: '/dataservices/' },
+  { label: t('Reuses'), link: '/reuses/' },
   { label: t('Organizations'), link: '/organizations/' },
   { label: t('Getting started on {site}', { site: config.public.title }), items: [
     { label: t('What is {site}?', { site: config.public.title }), link: '/pages/about/a-propos_data-gouv/' },
