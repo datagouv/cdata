@@ -128,10 +128,10 @@ async function deleteReuse() {
       method: 'DELETE',
     })
     if (route.params.oid) {
-      await navigateTo(localePath(`/beta/admin/organizations/${route.params.oid}/reuses`), { replace: true })
+      await navigateTo(localePath(`/admin/organizations/${route.params.oid}/reuses`), { replace: true })
     }
     else {
-      await navigateTo(localePath('/beta/admin/me/reuses'), { replace: true })
+      await navigateTo(localePath('/admin/me/reuses'), { replace: true })
     }
   }
   finally {

@@ -24,7 +24,7 @@
         <BrandedButton
           size="xs"
           :icon="RiAddLine"
-          href="/beta/admin/posts/new"
+          href="/admin/posts/new"
         >
           {{ $t('Create a post') }}
         </BrandedButton>
@@ -89,7 +89,7 @@
                   {{ $t('Show public page') }}
                 </BrandedButton>
                 <BrandedButton
-                  :href="`/beta/admin/posts/${post.id}`"
+                  :href="`/admin/posts/${post.id}`"
                   color="secondary-softer"
                   :icon="RiPencilLine"
                   icon-only

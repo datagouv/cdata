@@ -153,7 +153,7 @@
       <BrandedButton
         color="primary"
         size="xs"
-        :href="`/beta/admin/harvesters/${harvester.id}/configuration`"
+        :href="`/admin/harvesters/${harvester.id}/configuration`"
       >
         {{ $t('Go to configuration') }}
       </BrandedButton>

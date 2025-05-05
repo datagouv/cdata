@@ -63,18 +63,18 @@
     <div class="fr-grid-row fr-grid-row--right gap-3">
       <BrandedButton
         color="secondary"
-        :href="`/beta/admin/organizations/${organization.id}/profile`"
+        :href="`/admin/organizations/${organization.id}/profile`"
       >
         {{ $t("Manage the organization") }}
       </BrandedButton>
       <BrandedButton
-        href="/beta/admin/reuses/new"
+        href="/admin/reuses/new"
         color="primary"
       >
         {{ $t("Publish a reuse") }}
       </BrandedButton>
       <BrandedButton
-        href="/beta/admin/datasets/new"
+        href="/admin/datasets/new"
         color="primary"
       >
         {{ $t("Publish a dataset") }}

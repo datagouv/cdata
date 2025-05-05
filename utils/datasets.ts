@@ -33,7 +33,7 @@ export function isClosedFormat(resource: ResourceForm, extensions: Array<string>
 }
 
 export function getDatasetAdminUrl(dataset: Dataset | DatasetV2): string {
-  return `/beta/admin/datasets/${dataset.id}`
+  return `/admin/datasets/${dataset.id}`
 }
 
 export function toForm(dataset: Dataset | DatasetV2, licenses: Array<License>, frequencies: Array<Frequency>, zones: Array<SpatialZone>, granularities: Array<SpatialGranularity>): DatasetForm {

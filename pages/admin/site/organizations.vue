@@ -1,11 +1,11 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Users') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Organizations') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
     <h1 class="fr-h3 fr-mb-5v">
-      {{ t("Users") }}
+      {{ t("Organizations") }}
     </h1>
     <div
       v-if="pageData"
@@ -13,7 +13,7 @@
     >
       <div class="fr-col">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ t('{n} users', pageData.total) }}
+          {{ t('{n} organizations', pageData.total) }}
         </h2>
       </div>
       <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
@@ -27,7 +27,7 @@
     </div>
 
     <LoadingBlock :status>
-      <div v-if="pageData && pageData.total">
+      <div v-if="pageData && pageData.total > 0">
         <AdminTable>
           <thead>
             <tr>
@@ -41,7 +41,13 @@
                 {{ t("Datasets") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
+                {{ t("Dataservices") }}
+              </AdminTableTh>
+              <AdminTableTh scope="col">
                 {{ t("Reuses") }}
+              </AdminTableTh>
+              <AdminTableTh scope="col">
+                {{ t("Members") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
                 {{ t("Actions") }}
@@ -50,28 +56,56 @@
           </thead>
           <tbody>
             <tr
-              v-for="user in pageData.data"
-              :key="user.id"
+              v-for="organization in pageData.data"
+              :key="organization.id"
             >
               <td>
-                <p class="fr-text--bold fr-m-0">
-                  <NuxtLinkLocale
-                    class="fr-link fr-reset-link"
-                    :to="`/beta/admin/users/${user.id}/profile`"
-                  >
-                    {{ user.first_name }} {{ user.last_name }}
-                  </NuxtLinkLocale>
-                </p>
-                <AdminEmail :user />
+                <div class="flex items-center space-x-2">
+                  <Placeholder
+                    type="organization"
+                    :src="organization.logo_thumbnail"
+                    :size="20"
+                  />
+                  <AdminContentWithTooltip>
+                    <NuxtLinkLocale
+                      class="fr-link fr-reset-link"
+                      :to="`/admin/organizations/${organization.id}/profile`"
+                    >
+                      <TextClamp
+                        :text="organization.name"
+                        :auto-resize="true"
+                        :max-lines="2"
+                      />
+                    </NuxtLinkLocale>
+                  </AdminContentWithTooltip>
+                </div>
               </td>
-              <td>{{ formatDate(user.since) }}</td>
-              <td>{{ user.metrics.datasets || 0 }}</td>
-              <td>{{ user.metrics.reuses || 0 }}</td>
+              <td>{{ formatDate(organization.created_at) }}</td>
+              <td>
+                <NuxtLinkLocale :to="`/admin/organizations/${organization.id}/datasets`">
+                  {{ organization.metrics.datasets || 0 }}
+                </NuxtLinkLocale>
+              </td>
+              <td>
+                <NuxtLinkLocale :to="`/admin/organizations/${organization.id}/dataservices`">
+                  {{ organization.metrics.dataservices || 0 }}
+                </NuxtLinkLocale>
+              </td>
+              <td>
+                <NuxtLinkLocale :to="`/admin/organizations/${organization.id}/reuses`">
+                  {{ organization.metrics.reuses || 0 }}
+                </NuxtLinkLocale>
+              </td>
+              <td>
+                <NuxtLinkLocale :to="`/admin/organizations/${organization.id}/members`">
+                  {{ organization.metrics.members || 0 }}
+                </NuxtLinkLocale>
+              </td>
               <td>
                 <BrandedButton
                   size="xs"
                   color="secondary-softer"
-                  :href="user.page"
+                  :href="organization.page"
                   :icon="RiEyeLine"
                   icon-only
                   external
@@ -82,7 +116,7 @@
                 <BrandedButton
                   size="xs"
                   color="secondary-softer"
-                  :href="`/beta/admin/users/${user.id}/profile`"
+                  :href="`/admin/organizations/${organization.id}/profile`"
                   :icon="RiPencilLine"
                   icon-only
                   keep-margins-even-without-borders
@@ -107,7 +141,7 @@
       class="flex flex-col items-center"
     >
       <nuxt-img
-        src="/illustrations/users.svg"
+        src="/illustrations/organization.svg"
         class="h-20"
       />
       <template v-if="q">
@@ -125,25 +159,26 @@
         v-else
         class="fr-text--bold fr-my-3v"
       >
-        {{ t(`No users`) }}
+        {{ t(`No organizations`) }}
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Pagination, type User } from '@datagouv/components-next'
+import { BrandedButton } from '@datagouv/components-next'
+import { Pagination, type Organization } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
-import { BrandedButton } from '@datagouv/components-next'
 import type { DiscussionSortedBy } from '~/types/discussions'
 import type { PaginatedArray, SortDirection } from '~/types/types'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
+import Placeholder from '~/components/Placeholder/Placeholder.vue'
 import AdminInput from '~/components/AdminInput.vue'
 
 const { t } = useI18n()
@@ -158,7 +193,7 @@ const q = ref('')
 const qDebounced = refDebounced(q, 500) // TODO add 500 in config
 
 const url = computed(() => {
-  const url = new URL(`/api/1/users`, config.public.apiBase)
+  const url = new URL(`/api/1/organizations`, config.public.apiBase)
 
   url.searchParams.set('deleted', 'true')
   url.searchParams.set('sort', sortDirection.value)
@@ -169,5 +204,5 @@ const url = computed(() => {
   return url.toString()
 })
 
-const { data: pageData, status } = await useAPI<PaginatedArray<User>>(url, { lazy: true })
+const { data: pageData, status } = await useAPI<PaginatedArray<Organization>>(url, { lazy: true })
 </script>

@@ -1,17 +1,17 @@
 <template>
   <Breadcrumb>
-    <BreadcrumbItem to="/beta/admin">
+    <BreadcrumbItem to="/admin">
       {{ $t('Administration') }}
     </BreadcrumbItem>
     <BreadcrumbItem
       v-if="currentOrganization"
-      :to="`/beta/admin/organizations/${currentOrganization.id}/profile`"
+      :to="`/admin/organizations/${currentOrganization.id}/profile`"
     >
       {{ currentOrganization.name }}
     </BreadcrumbItem>
     <BreadcrumbItem
       v-if="currentUser"
-      :to="currentUser.id === me.id ? `/beta/admin/me/profile` : `/beta/admin/users/${currentUser.id}/profile`"
+      :to="currentUser.id === me.id ? `/admin/me/profile` : `/admin/users/${currentUser.id}/profile`"
     >
       {{ currentUser.first_name }} {{ currentUser.last_name }}
     </BreadcrumbItem>

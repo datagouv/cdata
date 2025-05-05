@@ -134,7 +134,7 @@ export default defineNuxtConfig({
     '/*/posts/': { ssr: true },
     '/*/posts/**': { ssr: true },
     // Admin dashboard renders only on server-side
-    '/*/beta/admin/**': { ssr: true },
+    '/*/admin/**': { ssr: true },
   },
 
   sourcemap: { client: 'hidden' },

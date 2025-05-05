@@ -50,7 +50,7 @@
         <div class="flex flex-wrap space-x-8">
           <div class="w-full flex-none md:flex-1 flex items-center space-x-2">
             <RiInformationLine class="size-6 -mt-0.5" />
-            <div>{{ t("You're on the new admin interface in beta.") }}</div>
+            <div>{{ t("You're on the new admin interface.") }}</div>
           </div>
           <div class="space-x-4">
             <a
@@ -59,12 +59,6 @@
               target="_blank"
             >
               {{ $t('Give your opinion') }}
-            </a>
-            <a
-              class="fr-link fr-link--external"
-              :href="`/${locale}/admin`"
-            >
-              {{ $t('Go back to the old admin') }}
             </a>
           </div>
         </div>
@@ -100,12 +94,12 @@ useSeoMeta({ title: 'Admin' })
 const { organizations, users } = useCurrentOwned()
 const isSiteAdmin = computed(() => me.value.roles?.includes('admin') || false)
 
-if (route.name === localeRoute('/beta/admin/')?.name) {
+if (route.name === localeRoute('/admin/')?.name) {
   if (me.value.organizations.length > 0) {
-    await navigateTo(localePath(`/beta/admin/organizations/${me.value.organizations[0].id}/datasets`), { replace: true })
+    await navigateTo(localePath(`/admin/organizations/${me.value.organizations[0].id}/datasets`), { replace: true })
   }
   else {
-    await navigateTo(localePath('/beta/admin/me/datasets'), { replace: true })
+    await navigateTo(localePath('/admin/me/datasets'), { replace: true })
   }
 }
 </script>

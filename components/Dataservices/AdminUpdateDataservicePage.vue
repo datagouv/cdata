@@ -169,10 +169,10 @@ async function deleteDataservice() {
       method: 'DELETE',
     })
     if (route.params.oid) {
-      await navigateTo(localePath(`/beta/admin/organizations/${route.params.oid}/dataservices`), { replace: true })
+      await navigateTo(localePath(`/admin/organizations/${route.params.oid}/dataservices`), { replace: true })
     }
     else {
-      await navigateTo(localePath('/beta/admin/me/dataservices'), { replace: true })
+      await navigateTo(localePath('/admin/me/dataservices'), { replace: true })
     }
   }
   finally {

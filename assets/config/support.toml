@@ -97,7 +97,7 @@ title = "Votre question porte sur ?"
     label = "Référencer une API"
     id = "referencerapi"
     answer = "api_referencer-api"
-    button_link = "https://www.data.gouv.fr/fr/beta/admin/me/dataservices"
+    button_link = "https://www.data.gouv.fr/fr/admin/me/dataservices"
     button_text = "Référencer une API"
 
     [[choices.choices.choices]]

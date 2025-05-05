@@ -3,43 +3,43 @@
     <AdminBreadcrumb>
       <BreadcrumbItem
         v-if="currentOrganization"
-        :to="`/beta/admin/organizations/${currentOrganization.id}/dataservices`"
+        :to="`/admin/organizations/${currentOrganization.id}/reuses`"
       >
-        {{ t('Dataservices') }}
+        {{ t('Reuses') }}
       </BreadcrumbItem>
-      <BreadcrumbItem v-if="dataservice">
-        {{ dataservice.title }}
+      <BreadcrumbItem v-if="reuse">
+        {{ reuse.title }}
       </BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <div v-if="dataservice">
+    <div v-if="reuse">
       <div class="flex flex-wrap items-center justify-between mb-5 gap-x-4 gap-y-2">
         <h1 class="flex-none w-full md:flex-1 font-bold text-2xl !mb-0">
-          {{ dataservice.title }}
+          {{ reuse.title }}
         </h1>
         <BrandedButton
-          :href="dataservice.self_web_url"
+          :href="reuse.page"
           color="secondary"
           size="xs"
           :icon="RiEyeLine"
         >
-          {{ t('See the dataservice page') }}
+          {{ t('See the reuse page') }}
         </BrandedButton>
       </div>
 
       <TabLinks
         class="mb-5"
         :links="[
-          { href: getDataserviceAdminUrl(dataservice), label: t('Metadata') },
-          { href: `${getDataserviceAdminUrl(dataservice)}/datasets`, label: t('Associated datasets') },
-          { href: `${getDataserviceAdminUrl(dataservice)}/discussions`, label: t('Discussions') },
-          { href: `${getDataserviceAdminUrl(dataservice)}/activities`, label: t('Activities') },
+          { href: getReuseAdminUrl(reuse), label: t('Metadata') },
+          { href: `${getReuseAdminUrl(reuse)}/datasets`, label: t('Datasets') },
+          { href: `${getReuseAdminUrl(reuse)}/discussions`, label: t('Discussions') },
+          { href: `${getReuseAdminUrl(reuse)}/activities`, label: t('Activities') },
         ]"
       />
 
       <NuxtPage
         :page-key="route => route.fullPath"
-        :dataservice
+        :reuse
       />
     </div>
   </div>
@@ -47,7 +47,7 @@
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
-import type { Dataservice } from '@datagouv/components-next'
+import type { Reuse } from '@datagouv/components-next'
 import { RiEyeLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -55,8 +55,8 @@ import TabLinks from '~/components/TabLinks.vue'
 
 const { t } = useI18n()
 
-const route = useRoute()
 const { currentOrganization } = useCurrentOwned()
-const url = computed(() => `/api/1/dataservices/${route.params.id}`)
-const { data: dataservice } = await useAPI<Dataservice>(url, { lazy: true })
+const route = useRoute()
+const url = computed(() => `/api/1/reuses/${route.params.id}`)
+const { data: reuse } = await useAPI<Reuse>(url, { lazy: true })
 </script>

@@ -100,7 +100,7 @@ async function deleteCurrentOrganization() {
   if (props.organization) {
     await $api(`api/1/organizations/${props.organization.id}/`, { method: 'DELETE' })
     reloadNuxtApp({
-      path: localPath('/beta/admin/me/profile'),
+      path: localPath('/admin/me/profile'),
     })
   }
 }

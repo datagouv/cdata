@@ -163,10 +163,10 @@ const deleteHarvester = async () => {
     })
 
     if (harvester.value.organization) {
-      await navigateTo(localePath(`/beta/admin/organizations/${harvester.value.organization.id}/harvesters`), { replace: true })
+      await navigateTo(localePath(`/admin/organizations/${harvester.value.organization.id}/harvesters`), { replace: true })
     }
     else {
-      await navigateTo(localePath(`/beta/admin/user/me`), { replace: true })
+      await navigateTo(localePath(`/admin/user/me`), { replace: true })
     }
   }
   finally {

@@ -764,7 +764,7 @@
   "The field {property} should be of at least {min} characters": "The field {property} should be of at least {min} characters",
   "The field {property} should be a valid URL": "The field {property} should be a valid URL",
   "The field {property} should be a valid email": "The field {property} should be a valid email",
-  "You're on the new admin interface in beta.": "You're on the new admin interface in beta.",
+  "You're on the new admin interface.": "You're on the new admin interface.",
   "Give your opinion": "Give your opinion",
   "Go back to the old admin": "Go back to the old admin",
   "Failed to upload file {title}": "Failed to upload file {title}",
