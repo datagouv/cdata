@@ -31,7 +31,7 @@ export function useCurrentOwned() {
       return users.value[route.params.uid] || null
     }
 
-    if (route.fullPath.includes('/beta/admin/me/')) {
+    if (route.fullPath.includes('/admin/me/')) {
       currentOwnedId.value = null // fallback to route
       return me.value
     }

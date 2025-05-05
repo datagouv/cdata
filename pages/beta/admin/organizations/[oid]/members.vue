@@ -157,7 +157,7 @@
             <td>
               <p v-if="isGlobalAdmin">
                 <NuxtLinkLocale
-                  :to="`/beta/admin/users/${member.user.id}/profile`"
+                  :to="`/admin/users/${member.user.id}/profile`"
                   class="fr-text--bold fr-m-0"
                 >
                   {{ member.user.first_name }} {{ member.user.last_name }}

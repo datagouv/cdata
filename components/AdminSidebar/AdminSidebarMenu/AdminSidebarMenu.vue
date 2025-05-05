@@ -50,76 +50,76 @@
             <AdminSidebarLink
               :icon="RiDatabase2Line"
               :label="$t('Datasets')"
-              :to="me.id === user.id ? `/beta/admin/me/datasets` : `/beta/admin/users/${user.id}/datasets`"
+              :to="me.id === user.id ? `/admin/me/datasets` : `/admin/users/${user.id}/datasets`"
             />
             <AdminSidebarLink
               :icon="RiRobot2Line"
               :label="$t('Dataservices')"
-              :to="me.id === user.id ? `/beta/admin/me/dataservices` : `/beta/admin/users/${user.id}/dataservices`"
+              :to="me.id === user.id ? `/admin/me/dataservices` : `/admin/users/${user.id}/dataservices`"
             />
             <AdminSidebarLink
               :icon="RiLineChartLine"
               :label="$t('Reuses')"
-              :to="me.id === user.id ? `/beta/admin/me/reuses` : `/beta/admin/users/${user.id}/reuses`"
+              :to="me.id === user.id ? `/admin/me/reuses` : `/admin/users/${user.id}/reuses`"
             />
             <AdminSidebarLink
               :icon="RiGitPullRequestLine"
               :label="$t('Community Resources')"
-              :to="me.id === user.id ? `/beta/admin/me/community-resources` : `/beta/admin/users/${user.id}/community-resources`"
+              :to="me.id === user.id ? `/admin/me/community-resources` : `/admin/users/${user.id}/community-resources`"
             />
             <AdminSidebarLink
               :icon="RiUserLine"
               :label="$t('Profile')"
-              :to="me.id === user.id ? `/beta/admin/me/profile` : `/beta/admin/users/${user.id}/profile`"
+              :to="me.id === user.id ? `/admin/me/profile` : `/admin/users/${user.id}/profile`"
             />
           </template>
           <template v-else-if="organization">
             <AdminSidebarLink
               :icon="RiDatabase2Line"
               :label="$t('Datasets')"
-              :to="`/beta/admin/organizations/${organization.id}/datasets`"
+              :to="`/admin/organizations/${organization.id}/datasets`"
               @click="$emit('click')"
             />
             <AdminSidebarLink
               :icon="RiRobot2Line"
               :label="$t('Dataservices')"
-              :to="`/beta/admin/organizations/${organization.id}/dataservices`"
+              :to="`/admin/organizations/${organization.id}/dataservices`"
               @click="$emit('click')"
             />
             <AdminSidebarLink
               :icon="RiLineChartLine"
               :label="$t('Reuses')"
-              :to="`/beta/admin/organizations/${organization.id}/reuses`"
+              :to="`/admin/organizations/${organization.id}/reuses`"
               @click="$emit('click')"
             />
             <AdminSidebarLink
               :icon="RiChat3Line"
               :label="$t('Discussions')"
-              :to="`/beta/admin/organizations/${organization.id}/discussions`"
+              :to="`/admin/organizations/${organization.id}/discussions`"
               @click="$emit('click')"
             />
             <AdminSidebarLink
               :icon="RiParentLine"
               :label="$t('Members')"
-              :to="`/beta/admin/organizations/${organization.id}/members`"
+              :to="`/admin/organizations/${organization.id}/members`"
               @click="$emit('click')"
             />
             <AdminSidebarLink
               :icon="RiServerLine"
               :label="$t('Harvesters')"
-              :to="`/beta/admin/organizations/${organization.id}/harvesters`"
+              :to="`/admin/organizations/${organization.id}/harvesters`"
               @click="$emit('click')"
             />
             <AdminSidebarLink
               :icon="RiGitPullRequestLine"
               :label="$t('Community Resources')"
-              :to="`/beta/admin/organizations/${organization.id}/community-resources`"
+              :to="`/admin/organizations/${organization.id}/community-resources`"
               @click="$emit('click')"
             />
             <AdminSidebarLink
               :icon="RiUserLine"
               :label="$t('Profile')"
-              :to="`/beta/admin/organizations/${organization.id}/profile`"
+              :to="`/admin/organizations/${organization.id}/profile`"
               @click="$emit('click')"
             />
           </template>
@@ -127,47 +127,47 @@
             <AdminSidebarLink
               :icon="RiDatabase2Line"
               :label="$t('Datasets')"
-              to="/beta/admin/site/datasets"
+              to="/admin/site/datasets"
             />
             <AdminSidebarLink
               :icon="RiRobot2Line"
               :label="$t('Dataservices')"
-              to="/beta/admin/site/dataservices"
+              to="/admin/site/dataservices"
             />
             <AdminSidebarLink
               :icon="RiLineChartLine"
               :label="$t('Reuses')"
-              to="/beta/admin/site/reuses"
+              to="/admin/site/reuses"
             />
             <AdminSidebarLink
               :icon="RiBuilding2Line"
               :label="$t('Organizations')"
-              to="/beta/admin/site/organizations"
+              to="/admin/site/organizations"
             />
             <AdminSidebarLink
               :icon="RiGroup3Line"
               :label="$t('Users')"
-              to="/beta/admin/site/users"
+              to="/admin/site/users"
             />
             <AdminSidebarLink
               :icon="RiServerLine"
               :label="$t('Harvesters')"
-              to="/beta/admin/site/harvesters"
+              to="/admin/site/harvesters"
             />
             <AdminSidebarLink
               :icon="RiGitPullRequestLine"
               :label="$t('Community Resources')"
-              to="/beta/admin/site/community-resources"
+              to="/admin/site/community-resources"
             />
             <AdminSidebarLink
               :icon="RiBookShelfLine"
               :label="$t('Topics')"
-              to="/beta/admin/site/topics"
+              to="/admin/site/topics"
             />
             <AdminSidebarLink
               :icon="RiArticleLine"
               :label="$t('Posts')"
-              to="/beta/admin/site/posts"
+              to="/admin/site/posts"
             />
           </template>
         </ul>

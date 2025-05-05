@@ -77,5 +77,5 @@ defineEmits<{
 const localPath = useLocalePath()
 const { t } = useI18n()
 
-const organizationUrl = computed(() => `/beta/admin/organizations/${props.organization?.id}/profile`)
+const organizationUrl = computed(() => `/admin/organizations/${props.organization?.id}/profile`)
 </script>

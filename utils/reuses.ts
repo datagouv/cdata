@@ -4,7 +4,7 @@ import type { DatasetSuggest, NewReuseForApi, ReuseForm, ReuseTopic } from '~/ty
 export const reusesXFields = 'data{archived,deleted,featured,id,owner,organization,metrics,created_at,last_modified,title,slug,page,description,type,url,image,image_thumbnail},page,page_size,total'
 
 export function getReuseAdminUrl(reuse: Reuse): string {
-  return `/beta/admin/reuses/${reuse.id}`
+  return `/admin/reuses/${reuse.id}`
 }
 
 export function toForm(reuse: Reuse, types: Array<ReuseType>, topics: Array<ReuseTopic>): ReuseForm {

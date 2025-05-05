@@ -100,12 +100,12 @@ useSeoMeta({ title: 'Admin' })
 const { organizations, users } = useCurrentOwned()
 const isSiteAdmin = computed(() => me.value.roles?.includes('admin') || false)
 
-if (route.name === localeRoute('/beta/admin/')?.name) {
+if (route.name === localeRoute('/admin/')?.name) {
   if (me.value.organizations.length > 0) {
-    await navigateTo(localePath(`/beta/admin/organizations/${me.value.organizations[0].id}/datasets`), { replace: true })
+    await navigateTo(localePath(`/admin/organizations/${me.value.organizations[0].id}/datasets`), { replace: true })
   }
   else {
-    await navigateTo(localePath('/beta/admin/me/datasets'), { replace: true })
+    await navigateTo(localePath('/admin/me/datasets'), { replace: true })
   }
 }
 </script>

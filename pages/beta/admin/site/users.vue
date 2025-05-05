@@ -57,7 +57,7 @@
                 <p class="fr-text--bold fr-m-0">
                   <NuxtLinkLocale
                     class="fr-link fr-reset-link"
-                    :to="`/beta/admin/users/${user.id}/profile`"
+                    :to="`/admin/users/${user.id}/profile`"
                   >
                     {{ user.first_name }} {{ user.last_name }}
                   </NuxtLinkLocale>
@@ -82,7 +82,7 @@
                 <BrandedButton
                   size="xs"
                   color="secondary-softer"
-                  :href="`/beta/admin/users/${user.id}/profile`"
+                  :href="`/admin/users/${user.id}/profile`"
                   :icon="RiPencilLine"
                   icon-only
                   keep-margins-even-without-borders

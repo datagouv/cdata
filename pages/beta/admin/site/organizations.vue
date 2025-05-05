@@ -69,7 +69,7 @@
                   <AdminContentWithTooltip>
                     <NuxtLinkLocale
                       class="fr-link fr-reset-link"
-                      :to="`/beta/admin/organizations/${organization.id}/profile`"
+                      :to="`/admin/organizations/${organization.id}/profile`"
                     >
                       <TextClamp
                         :text="organization.name"
@@ -82,22 +82,22 @@
               </td>
               <td>{{ formatDate(organization.created_at) }}</td>
               <td>
-                <NuxtLinkLocale :to="`/beta/admin/organizations/${organization.id}/datasets`">
+                <NuxtLinkLocale :to="`/admin/organizations/${organization.id}/datasets`">
                   {{ organization.metrics.datasets || 0 }}
                 </NuxtLinkLocale>
               </td>
               <td>
-                <NuxtLinkLocale :to="`/beta/admin/organizations/${organization.id}/dataservices`">
+                <NuxtLinkLocale :to="`/admin/organizations/${organization.id}/dataservices`">
                   {{ organization.metrics.dataservices || 0 }}
                 </NuxtLinkLocale>
               </td>
               <td>
-                <NuxtLinkLocale :to="`/beta/admin/organizations/${organization.id}/reuses`">
+                <NuxtLinkLocale :to="`/admin/organizations/${organization.id}/reuses`">
                   {{ organization.metrics.reuses || 0 }}
                 </NuxtLinkLocale>
               </td>
               <td>
-                <NuxtLinkLocale :to="`/beta/admin/organizations/${organization.id}/members`">
+                <NuxtLinkLocale :to="`/admin/organizations/${organization.id}/members`">
                   {{ organization.metrics.members || 0 }}
                 </NuxtLinkLocale>
               </td>
@@ -116,7 +116,7 @@
                 <BrandedButton
                   size="xs"
                   color="secondary-softer"
-                  :href="`/beta/admin/organizations/${organization.id}/profile`"
+                  :href="`/admin/organizations/${organization.id}/profile`"
                   :icon="RiPencilLine"
                   icon-only
                   keep-margins-even-without-borders

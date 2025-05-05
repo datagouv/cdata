@@ -160,10 +160,10 @@ async function deleteDataset() {
       method: 'DELETE',
     })
     if (dataset.value.organization) {
-      await navigateTo(localePath(`/beta/admin/organizations/${dataset.value.organization.id}/datasets`), { replace: true })
+      await navigateTo(localePath(`/admin/organizations/${dataset.value.organization.id}/datasets`), { replace: true })
     }
     else {
-      await navigateTo(localePath('/beta/admin/me/datasets'), { replace: true })
+      await navigateTo(localePath('/admin/me/datasets'), { replace: true })
     }
   }
   finally {

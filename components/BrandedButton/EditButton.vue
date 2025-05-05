@@ -21,7 +21,7 @@ const props = defineProps<{
 const { t } = useI18n()
 
 const link = computed(() => {
-  const base = `/beta/admin/${props.type}/${props.id}/`
+  const base = `/admin/${props.type}/${props.id}/`
   switch (props.type) {
     case 'organizations':
       return `${base}profile`

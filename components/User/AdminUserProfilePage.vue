@@ -412,7 +412,7 @@ async function deleteUser() {
     }
     else {
       toast.success(t('User deleted!'))
-      await navigateTo(localePath(`/beta/admin/site/users`), { replace: true })
+      await navigateTo(localePath(`/admin/site/users`), { replace: true })
     }
   }
   finally {

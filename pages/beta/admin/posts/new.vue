@@ -131,7 +131,7 @@ async function save(form: { content: string }) {
         body: formData,
       })
     }
-    await navigateTo(localePath(`/beta/admin/posts/${newPost.value.id}`))
+    await navigateTo(localePath(`/admin/posts/${newPost.value.id}`))
   }
   finally {
     clearNuxtState(POST_LOADING_STATE)

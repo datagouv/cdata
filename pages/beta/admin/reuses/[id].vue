@@ -3,7 +3,7 @@
     <AdminBreadcrumb>
       <BreadcrumbItem
         v-if="currentOrganization"
-        :to="`/beta/admin/organizations/${currentOrganization.id}/reuses`"
+        :to="`/admin/organizations/${currentOrganization.id}/reuses`"
       >
         {{ t('Reuses') }}
       </BreadcrumbItem>

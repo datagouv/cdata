@@ -1,7 +1,7 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem :to="`/beta/admin/site/posts`">
+      <BreadcrumbItem :to="`/admin/site/posts`">
         {{ t('Posts') }}
       </BreadcrumbItem>
       <BreadcrumbItem v-if="post">
@@ -27,8 +27,8 @@
       <TabLinks
         class="mb-5"
         :links="[
-          { href: `/beta/admin/posts/${post.id}`, label: t('Metadata') },
-          { href: `/beta/admin/posts/${post.id}/content`, label: t('Content') },
+          { href: `/admin/posts/${post.id}`, label: t('Metadata') },
+          { href: `/admin/posts/${post.id}/content`, label: t('Content') },
         ]"
       />
 

@@ -26,13 +26,13 @@ const config = useRuntimeConfig()
 const link = computed(() => {
   switch (props.type) {
     case 'dataset':
-      return '/beta/admin/datasets/new'
+      return '/admin/datasets/new'
     case 'harvester':
-      return `/beta/admin/harvesters/new/`
+      return `/admin/harvesters/new/`
     case 'reuse':
-      return '/beta/admin/reuses/new'
+      return '/admin/reuses/new'
     case 'dataservice':
-      return '/beta/admin/dataservices/new'
+      return '/admin/dataservices/new'
     default:
       throwOnNever(props.type, '')
       return ''

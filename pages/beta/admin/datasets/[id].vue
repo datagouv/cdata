@@ -3,7 +3,7 @@
     <AdminBreadcrumb>
       <BreadcrumbItem
         v-if="currentOrganization"
-        :to="`/beta/admin/organizations/${currentOrganization.id}/datasets`"
+        :to="`/admin/organizations/${currentOrganization.id}/datasets`"
       >
         {{ t('Datasets') }}
       </BreadcrumbItem>
