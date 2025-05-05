@@ -1,8 +1,8 @@
 <template>
   <component
     :is="href ? AppLink: 'button'"
-    class="inline-flex items-center rounded-full font-medium border !bg-none !no-underline"
-    :class="[colors, sizes, removePaddingsIfNoBorders, isDisabled ? '!opacity-50' : '', iconRight ? 'flex-row-reverse space-x-reverse' : '']"
+    class="inline-flex items-center rounded-full font-medium border !bg-none !no-underline after:content-none"
+    :class="[colors, sizes, removePaddingsIfNoBorders, isDisabled ? '!opacity-50' : '', iconRight && !newTab ? 'flex-row-reverse space-x-reverse' : '']"
     :disabled="isDisabled"
     :aria-disabled="isDisabled"
     :role="href ? 'link' : ''"
@@ -26,6 +26,10 @@
       class="whitespace-nowrap"
       :class="iconOnly ? 'sr-only' : ''"
     ><slot /></span>
+    <RiExternalLinkLine
+      v-if="newTab"
+      :class="iconSize"
+    />
   </component>
 </template>
 
@@ -42,6 +46,7 @@ import {
   Text,
   useSlots,
 } from 'vue'
+import { RiExternalLinkLine } from '@remixicon/vue'
 import AppLink from './AppLink.vue'
 import { bannerActionTypeKey } from './BannerAction.vue'
 

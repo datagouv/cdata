@@ -1,6 +1,8 @@
 import type { Dataset, DatasetV2, Reuse, ReuseType } from '@datagouv/components-next'
 import type { DatasetSuggest, NewReuseForApi, ReuseForm, ReuseTopic } from '~/types/types'
 
+export const reusesXFields = 'data{archived,deleted,featured,id,owner,organization,metrics,created_at,last_modified,title,slug,page,description,type,url,image,image_thumbnail},page,page_size,total'
+
 export function getReuseAdminUrl(reuse: Reuse): string {
   return `/beta/admin/reuses/${reuse.id}`
 }
@@ -32,4 +34,38 @@ export function toApi(form: ReuseForm, overrides: { datasets?: Array<Dataset | D
     topic: form.topic?.id || '',
     tags: form.tags.map(t => t.text),
   }
+}
+
+export async function getReuseMetrics(rid: string) {
+  // Fetching last 12 months
+  const response = await fetch(`https://metric-api.data.gouv.fr/api/reuses/data/?reuse_id__exact=${rid}&metric_month__sort=desc&page_size=12`)
+  const page = await response.json()
+
+  const reuseViews: Record<string, number> = {}
+
+  for (const { metric_month, monthly_visit } of page.data) {
+    reuseViews[metric_month] = monthly_visit
+  }
+  // Fetching totals
+  const totalResponse = await fetch(`https://metric-api.data.gouv.fr/api/reuses_total/data/?reuse_id__exact=${rid}`)
+  const totalPage = await totalResponse.json()
+
+  let reuseViewsTotal = 0
+  if (page.data[0]) {
+    reuseViewsTotal = totalPage.data[0].visit
+  }
+  return {
+    reuseViews,
+    reuseViewsTotal,
+  }
+}
+
+export function createReuseMetricsUrl(reuseViews: Record<string, number>) {
+  let data = 'month,visit\n'
+
+  for (const month in reuseViews) {
+    data += `${month},${reuseViews[month]}\n`
+  }
+
+  return URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
 }

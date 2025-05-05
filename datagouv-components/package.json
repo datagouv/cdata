@@ -1,9 +1,14 @@
 {
   "name": "@datagouv/components-next",
-  "version": "0.0.1",
-  "private": true,
+  "version": "0.0.7",
+  "private": false,
   "type": "module",
   "main": "./src/main.ts",
+  "files": [
+    "assets",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
@@ -14,20 +19,27 @@
     "format": "prettier --write src/",
     "css": "tailwindcss -i ./assets/main.css -o ./dist/components.css --minify --optimize",
     "i18n": "intlify compile --source ./src/locales/**/*.json --output ./dist/locales",
-    "postinstall": "npm run css && npm run i18n"
+    "preversion": "npm run build-only && npm run css && npm run i18n",
+    "publish-stable": "npm publish --access public"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
     "@remixicon/vue": "^4.5.0",
+    "@vueuse/core": "^13.1.0",
     "chart.js": "^4.4.8",
     "markdown-it": "^14.1.0",
     "ofetch": "^1.4.1",
     "popmotion": "^8.7.6",
+    "remark": "^15.0.1",
+    "remark-gfm": "^4.0.1",
+    "strip-markdown": "^6.0.0",
+    "swagger-themes": "^1.4.3",
     "swagger-ui": "^5.20.1",
     "vue": "^3.5.13",
     "vue-content-loader": "^2.0.1",
     "vue-i18n": "^10.0.6",
-    "vue-router": "^4.5.0"
+    "vue-router": "^4.5.0",
+    "vue3-text-clamp": "^0.1.2"
   },
   "devDependencies": {
     "@intlify/cli": "^0.13.1",
@@ -50,5 +62,17 @@
     "vite": "^6.0.11",
     "vite-plugin-vue-devtools": "^7.7.1",
     "vue-tsc": "^2.2.0"
-  }
+  },
+  "author": {
+    "name": "DINUM"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/datagouv/cdata.git"
+  },
+  "bugs": {
+    "url": "https://github.com/datagouv/cdata/issues"
+  },
+  "homepage": "https://github.com/datagouv/cdata#readme"
 }

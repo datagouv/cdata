@@ -1104,5 +1104,14 @@
   "Reuse deletion": "Suppression de la réutilisation",
   "Reuse discussion": "Discussion sur la réutilisation",
   "Reuse follow": "Abonnement à la réutilisation",
-  "User follow": "Abonnement à l'utilisateur"
+  "User follow": "Abonnement à l'utilisateur",
+  "All": "Tout",
+  "{n}%": "{n}%",
+  "{n} reuses from the same creator": "{n} réutilisations du même créateur | {n} réutilisation du même créateur | {n} réutilisations du même créateur",
+  "{n} associated datasets": "aucun jeu de données associé | {n} jeu de données associé | {n} jeux de données associés",
+  "Download the statistics as CSV": "Télécharger les statistiques au format CSV",
+  "Topic": "Thématique",
+  "There are no other reuses from this creator.": "Il n'y a pas d'autres réutilisations du même créateur.",
+  "No tags set": "Aucun mot clé",
+  "See reuse": "Voir la réutilisation"
 }

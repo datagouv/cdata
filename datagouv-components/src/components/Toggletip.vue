@@ -1,5 +1,6 @@
 <template>
   <Popover
+    v-slot="{ open }"
     class="relative text-gray-title"
     :focus="true"
   >
@@ -10,30 +11,40 @@
     >
       <slot />
     </PopoverButton>
-    <PopoverPanel
-      ref="toggletip"
-      v-slot="{ close }"
-      class="toggletip"
-      :class="{
-        'fr-p-0': noMargin,
-        'left-0': position === 'right',
-      }"
+    <component
+      :is="teleportId ? Teleport : 'div'"
+      v-if="open"
+      :to="`#${teleportId}`"
+      :defer="teleportId ? true : undefined"
     >
-      <slot
-        name="toggletip"
-        :close
-      />
-    </PopoverPanel>
+      <PopoverPanel
+        ref="toggletip"
+        v-slot="{ close }"
+        class="toggletip"
+        :class="{
+          'p-0': noMargin,
+          'left-0': position === 'right',
+          'ml-6 top-24': teleportId,
+        }"
+      >
+        <slot
+          name="toggletip"
+          :close
+        />
+      </PopoverPanel>
+    </component>
   </Popover>
 </template>
 
 <script setup lang="ts">
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
+import { Teleport } from 'vue'
 import ToggletipButton from './ToggletipButton.vue'
 
 withDefaults(defineProps<{
   noMargin?: boolean
   position?: 'left' | 'right'
+  teleportId?: string
 }>(), {
   noMargin: false,
   position: 'left',

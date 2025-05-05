@@ -26,6 +26,8 @@
 </template>
 
 <script lang="ts">
+import { provide, type InjectionKey } from 'vue'
+
 export const bannerActionTypeKey = Symbol() as InjectionKey<'primary' | 'danger' | 'warning'>
 </script>
 
