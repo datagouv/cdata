@@ -68,19 +68,26 @@
         </div>
       </div>
     </section>
-    <section>
+    <section v-if="datasets">
       <h2 class="uppercase text-sm mb-2.5">
-        {{ $t('{n} associated datasets', { n: reuse.metrics.datasets }) }}
+        {{ $t('{n} associated datasets', { n: datasets.total }) }}
       </h2>
       <div class="grid xl:grid-cols-2 gap-5">
         <DatasetCardLg
-          v-for="dataset in reuse.datasets"
+          v-for="dataset in datasets.data"
           :key="dataset.id"
           :dataset="dataset"
           :show-description="false"
           class="m-0"
         />
       </div>
+      <Pagination
+        class="mt-4"
+        :page="datasetsPage"
+        :page-size="datasetsPageSize"
+        :total-results="datasets.total"
+        @change="(changedPage: number) => datasetsPage = changedPage"
+      />
     </section>
     <section>
       <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
@@ -155,7 +162,7 @@
 </template>
 
 <script setup lang="ts">
-import { useReuseType, BrandedButton, StatBox, type Reuse, type ReuseTopic } from '@datagouv/components-next'
+import { useReuseType, BrandedButton, StatBox, type Reuse, type ReuseTopic, type DatasetV2, Pagination } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import { getTopic } from '~/datagouv-components/src/functions/reuses'
@@ -168,6 +175,17 @@ const props = defineProps<{
 const { label } = useReuseType(props.reuse.type)
 
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
+
+const datasetsPage = ref(1)
+const datasetsPageSize = ref(10)
+const datasetsQuery = computed(() => {
+  return {
+    page: datasetsPage.value,
+    page_size: datasetsPageSize.value,
+    reuse: props.reuse.id,
+  }
+})
+const { data: datasets } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets', { query: datasetsQuery })
 
 const topic = computed(() => getTopic(topics.value, props.reuse.topic))
 
