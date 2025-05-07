@@ -17,4 +17,5 @@ export type Activity = {
   key: ActivityKey
   icon: string
   extras: Record<string, any>
+  changes?: Array<string>
 }

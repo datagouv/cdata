@@ -38,6 +38,7 @@
               </div>
               <p class="m-0 text-xs text-gray-title flex-1">
                 {{ getActivityTranslation(activity) }}
+                <small v-if="activity.changes">{{ activity.changes }}</small>
               </p>
               <p class="m-0 text-xs text-gray-medium">
                 {{ $t('on {date}', { date: formatDate(activity.created_at) }) }}
