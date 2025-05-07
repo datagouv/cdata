@@ -1114,5 +1114,14 @@
   "Topic": "Thématique",
   "There are no other reuses from this creator.": "Il n'y a pas d'autres réutilisations du même créateur.",
   "No tags set": "Aucun mot clé",
-  "See reuse": "Voir la réutilisation"
+  "See reuse": "Voir la réutilisation",
+  "Contact": "Contact",
+  "Creator": "Créateur",
+  "Publisher": "Éditeur",
+  "Access the API": "Accéder à l'API",
+  "Business documentation": "Documentation métier",
+  "Swagger": "Swagger",
+  "Copy ID": "Copier l'ID",
+  "ID copied": "ID copié !",
+  "See the reuse": "Voir la réutilisation"
 }
