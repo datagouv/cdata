@@ -9,7 +9,7 @@
     <!-- :size=32 is the same as size-8, should remove the size prop to use Tailwind… -->
     <NuxtLink
       :to="organization.page"
-      class="link"
+      class="link flex-1 min-w-0"
     >
       <OrganizationNameWithCertificate
         class="w-full"
