@@ -162,7 +162,7 @@
               </BrandedButton>
               <BrandedButton
                 v-else-if="organization"
-                :href="$localePath(`/organizations/${organization.slug}/datasets.csv`)"
+                :href="`${config.public.apiBase}/api/1/organizations/${organization.slug}/datasets.csv`"
                 color="secondary"
                 :external="true"
                 :icon="RiDownloadLine"
