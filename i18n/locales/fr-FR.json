@@ -1114,5 +1114,22 @@
   "Topic": "Thématique",
   "There are no other reuses from this creator.": "Il n'y a pas d'autres réutilisations du même créateur.",
   "No tags set": "Aucun mot clé",
-  "See reuse": "Voir la réutilisation"
+  "See reuse": "Voir la réutilisation",
+  "Contact": "Contact",
+  "Creator": "Createur",
+  "Publisher": "Publisher",
+  "Access the API": "Accéder à l'API",
+  "Business documentation": "Documentation métier",
+  "Swagger": "Swagger",
+  "Copy ID": "Copier l'identifiant",
+  "ID copied": "Identifiant copié",
+  "See the reuse": "Voir la réutilisation",
+  "Resource additon": "Ajout d'une resource",
+  "Resource update": "Mise à jour d'une resource",
+  "Resource deletion": "Suppression d'une resource",
+  "Dataservice creation": "Création de l'API",
+  "Dataservice update": "Mise à jour de l'API",
+  "Dataservice deletion": "Suppression de l'API",
+  "Dataservice discussion": "Discussion sur l'API",
+  "Dataservice follow": "Abonnement à l'API"
 }
