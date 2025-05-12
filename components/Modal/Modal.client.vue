@@ -16,17 +16,19 @@
   >
     <DialogPanel
       :as="form ? 'form': undefined"
-      class="md:!container md:mx-auto fr-container--fluid pointer-events-none"
+      class="w-full h-full pointer-events-none"
       @submit="$emit('submit', $event)"
     >
-      <div class="grid grid-cols-12 p-0 m-0 justify-center max-h-full overflow-auto">
+      <div
+        class="h-full md:container md:mx-auto fr-container--fluid grid grid-cols-12 p-0 m-0 justify-center"
+      >
         <div
-          class="col-span-12"
+          class="col-span-12 overflow-y-auto"
           :class="contentSize"
         >
           <div
-            class="pointer-events-auto z-[2000] bg-white"
-            :class="{ 'overflow-y-visible max-h-full': isFullscreen, 'overflow-y-auto drop-shadow max-h-[calc(100vh - 2rem)]': !isFullscreen }"
+            class="pointer-events-auto z-[2000] bg-white max-h-full"
+            :class="{ 'overflow-y-visible': isFullscreen, 'drop-shadow overflow-y-auto': !isFullscreen }"
           >
             <div
               class="flex items-center justify-end pt-4 px-4 sm:px-8 pb-2"
