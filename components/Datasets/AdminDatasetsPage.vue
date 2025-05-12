@@ -131,6 +131,8 @@ const props = defineProps<{
 }>()
 const { t } = useI18n()
 
+const config = useRuntimeConfig()
+
 const page = ref(1)
 const pageSize = ref(20)
 const sortedBy = ref<DatasetSortedBy>('created')
