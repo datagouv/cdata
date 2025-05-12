@@ -112,7 +112,7 @@ const query = computed(() => {
   }
 })
 
-const { data: pageData, status } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets', { query })
+const { data: pageData, status } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/', { query })
 
 const metricsViews = ref<null | Record<string, number>>(null)
 const metricsViewsTotal = ref<null | number>(null)
