@@ -65,7 +65,7 @@
       @cancel="removeFirstNewFile"
     />
 
-    <FileEditModalFromHashClient
+    <FileEditModalFromQueryStringClient
       :schemas
       :dataset
       @submit="updateResource"
@@ -203,7 +203,7 @@ import AdminTableTh from '../AdminTable/Table/AdminTableTh.vue'
 import Tooltip from '../Tooltip/Tooltip.vue'
 import UploadResourceModal from './UploadResourceModal.vue'
 import FileEditModal from './FileEditModal.vue'
-import FileEditModalFromHashClient from './FileEditModalFromHash.client.vue'
+import FileEditModalFromQueryStringClient from './FileEditModalFromQueryString.client.vue'
 import type { AdminBadgeType, CommunityResourceForm, PaginatedArray, ResourceForm } from '~/types/types'
 
 const route = useRoute()

@@ -1,5 +1,5 @@
 <template>
-  <FileEditModalFromHashClient
+  <FileEditModalFromQueryStringClient
     :schemas
     @submit="(closeModal, resourceForm) => updateResource(resourceForm.resource, closeModal, resourceForm)"
   />
@@ -98,7 +98,7 @@ import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import type { AdminBadgeType, CommunityResourceForm, CommunityResourceSortedBy, ResourceForm, SortDirection } from '~/types/types'
 import FileEditModal from '~/components/Datasets/FileEditModal.vue'
-import FileEditModalFromHashClient from '~/components/Datasets/FileEditModalFromHash.client.vue'
+import FileEditModalFromQueryStringClient from '~/components/Datasets/FileEditModalFromQueryString.client.vue'
 
 const props = defineProps<{
   communityResources: Array<CommunityResource>
