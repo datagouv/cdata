@@ -120,6 +120,20 @@
                 </dt>
                 <dd class="p-0">
                   <DataserviceAccessTypeBadge :dataservice />
+
+                  <div
+                    v-if="dataservice.authorization_request_url"
+                    class="mt-2"
+                  >
+                    <a
+                      :href="dataservice.authorization_request_url"
+                      rel="ugc nofollow noopener"
+                      target="_blank"
+                      class="fr-text--sm fr-link"
+                    >
+                      {{ $t("Faire une demande d'habilitation") }}
+                    </a>
+                  </div>
                 </dd>
               </div>
             </dl>
