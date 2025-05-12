@@ -15,7 +15,7 @@
       v-if="organizations"
       :link="getLink"
       :organizations
-      :q
+      :initial-q="q"
       :sort
       :status
       @change="change"
@@ -35,7 +35,12 @@ useSeoMeta({
   title: t('Organizations'),
 })
 const route = useRoute()
-const q = ref(route.query.q ?? '')
+const q = ref('')
+watchEffect(() => {
+  if (Array.isArray(route.query.q)) return
+  if (!route.query.q) return
+  q.value = route.query.q
+})
 const sort = ref((route.query.sort as string | null) || undefined)
 const page = ref(parseInt(route.query.page as LocationQueryValue ?? '1', 10))
 const pageSize = 21
