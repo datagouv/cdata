@@ -2,6 +2,7 @@
   <FileEditModal
     v-if="resource"
     :resource
+    :dataset
     open-on-mounted
   />
 </template>
