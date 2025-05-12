@@ -3,8 +3,8 @@
     v-model="open"
     :title="t('File metadata')"
     size="fullscreen"
-    @open="setHash"
-    @close="removeHash"
+    @open="setQueryString"
+    @close="removeQueryString"
   >
     <template
       v-if="!openOnMounted"
@@ -148,11 +148,11 @@ const open = ref(false)
 onMounted(() => {
   if (props.openOnMounted) open.value = true
 })
-const setHash = () => {
+const setQueryString = () => {
   if (!props.resource.resource) return
   window.history.replaceState(null, '', `${route.path}?resource_id=${props.resource.resource.id}`)
 }
-const removeHash = () => {
+const removeQueryString = () => {
   if (!props.resource.resource) return
   window.history.replaceState(null, '', `${route.path}`)
 }
