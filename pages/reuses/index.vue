@@ -14,7 +14,7 @@
     <ListPage
       :link="getLink"
       :reuses
-      :q="(q as string)"
+      :initial-q="q"
       :sort
       :status
       :topic
@@ -39,7 +39,12 @@ useSeoMeta({
 })
 
 const route = useRoute()
-const q = ref(route.query.q ?? '')
+const q = ref('')
+watchEffect(() => {
+  if (Array.isArray(route.query.q)) return
+  if (!route.query.q) return
+  q.value = route.query.q
+})
 const sort = ref((route.query.sort as string | null) || undefined)
 const topic = ref((route.query.topic as string | null) || undefined)
 const page = ref(parseInt(route.query.page as LocationQueryValue ?? '1', 10))

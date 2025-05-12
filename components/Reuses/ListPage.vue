@@ -126,7 +126,7 @@ const props = defineProps<{
   /**
    * The starting q
    */
-  q: string
+  initialQ: string
 
   /**
    * The starting sort
@@ -163,7 +163,10 @@ const config = useRuntimeConfig()
 const inputId = useId()
 const selectId = useId()
 
-const q = ref(props.q ?? '')
+const q = ref('')
+watchEffect(() => {
+  q.value = props.initialQ
+})
 
 const qDebounced = debouncedRef(q, config.public.searchAutocompleteDebounce)
 const sort = ref(props.sort ?? '')
