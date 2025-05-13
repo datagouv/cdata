@@ -11,6 +11,7 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxtjs/i18n',
     '@sentry/nuxt/module',
+    '@nuxtjs/sitemap',
   ],
   devtools: { enabled: true, componentInspector: false },
 
@@ -31,6 +32,11 @@ export default defineNuxtConfig({
 
   vue: {
     runtimeCompiler: true,
+  },
+
+  site: {
+    url: '',
+    name: 'data.gouv.fr'
   },
 
   runtimeConfig: {
@@ -209,6 +215,42 @@ export default defineNuxtConfig({
     sourceMapsUploadOptions: {
       // disable sourcemaps upload from build, it's done later during the release with sentry-cli
       enabled: false,
+    },
+  },
+
+  sitemap: {
+    sitemaps: {
+      content: {
+        includeGlobalSources: true,
+        includeAppSources: true,
+        exclude: ['/admin/**'],
+      },
+      dataservices: {
+        sources: [
+          '/nuxt-api/__sitemap__/dataservices',
+        ],
+      },
+      datasets: {
+        sources: [
+          '/nuxt-api/__sitemap__/datasets',
+        ],
+      },
+      organizations: {
+        sources: [
+          '/nuxt-api/__sitemap__/organizations',
+        ],
+      },
+      posts: {
+        sources: [
+          '/nuxt-api/__sitemap__/posts',
+        ],
+      },
+      reuses: {
+        sources: [
+          '/nuxt-api/__sitemap__/reuses',
+        ],
+      },
+      // TODO: add support and *pages*
     },
   },
   // TODO: add sentry config for stack traces based on source maps
