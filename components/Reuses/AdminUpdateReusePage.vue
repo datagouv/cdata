@@ -148,7 +148,12 @@ async function feature() {
       method,
     })
     await refresh()
-    toast.success(t('Réutilisation mise en avant !'))
+    if (method === 'DELETE') {
+      toast.success(t('Réutilisation retirée de la mise en avant !'))
+    }
+    else {
+      toast.success(t('Réutilisation mise en avant !'))
+    }
   }
   catch {
     toast.error(t('Impossible de mettre en avant cette réutilisation'))
