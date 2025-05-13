@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="resources"
+    v-if="resources && resources.total > 0"
     class="space-y-5"
   >
     <SimpleBanner type="warning">
@@ -26,13 +26,41 @@
       </div>
     </div>
   </div>
+  <div
+    v-else-if="resources"
+    class="flex flex-col items-center"
+  >
+    <nuxt-img
+      src="/illustrations/schema.svg"
+      class="h-20"
+    />
+    <p class="fr-text--bold fr-my-3v">
+      {{ $t(`Il n'y a pas encore de ressources communautaires pour ce jeu de données.`) }}
+    </p>
+    <div class="flex items-center space-x-4">
+      <BrandedButton
+        color="primary"
+        :href="`/admin/community-resources/new?dataset_id=${dataset.id}`"
+      >
+        {{ $t('Partagez vos ressources') }}
+      </BrandedButton>
+      <BrandedButton
+        color="secondary"
+        :href="config.public.guidesCommunityResources"
+      >
+        {{ $t('En savoir plus sur la communauté') }}
+      </BrandedButton>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { Pagination, ResourceAccordion, SimpleBanner, type CommunityResource, type DatasetV2 } from '@datagouv/components-next'
+import { BrandedButton, Pagination, ResourceAccordion, SimpleBanner, type CommunityResource, type DatasetV2 } from '@datagouv/components-next'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{ dataset: DatasetV2 }>()
+
+const config = useRuntimeConfig()
 
 const page = ref(1)
 const query = computed(() => ({
