@@ -67,7 +67,9 @@
         </div>
         <div v-if="dataset.spatial.geom">
           <DescriptionListTerm>{{ $t('Couverture géographique') }}</DescriptionListTerm>
-          <DescriptionListDetails>{{ dataset.spatial.geom }}</DescriptionListDetails>
+          <DescriptionListDetails>
+            <LeafletMapClient :geojson="dataset.spatial.geom" />
+          </DescriptionListDetails>
         </div>
         <div v-if="dataset.spatial.granularity">
           <DescriptionListTerm>{{ $t('Granularité de la couverture territoriale') }}</DescriptionListTerm>
@@ -80,6 +82,7 @@
 
 <script setup lang="ts">
 import { CopyButton, type DatasetV2WithFullObject } from '@datagouv/components-next'
+import LeafletMapClient from '~/components/LeafletMap.client.vue'
 
 defineProps<{ dataset: DatasetV2WithFullObject }>()
 </script>
