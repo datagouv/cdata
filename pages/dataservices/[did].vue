@@ -34,6 +34,32 @@
     >
       <div class="space-y-8">
         <div class="container pt-3 min-h-32">
+          <div class="flex gap-3 mb-2">
+            <AdminBadge
+              v-if="dataservice.deleted_at"
+              :icon="RiDeleteBinLine"
+              size="sm"
+              type="secondary"
+            >
+              {{ $t('Deleted') }}
+            </AdminBadge>
+            <AdminBadge
+              v-if="dataservice.private"
+              :icon="RiLockLine"
+              size="sm"
+              type="secondary"
+            >
+              {{ $t('Draft') }}
+            </AdminBadge>
+            <AdminBadge
+              v-if="dataservice.archived_at"
+              :icon="RiLockLine"
+              size="sm"
+              type="secondary"
+            >
+              {{ $t('Archived') }}
+            </AdminBadge>
+          </div>
           <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
             {{ dataservice.title }}
           </h1>
@@ -208,7 +234,8 @@
 
 <script setup lang="ts">
 import { BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName } from '@datagouv/components-next'
-import { RiArrowDownSLine, RiArrowUpSLine, RiExternalLinkLine } from '@remixicon/vue'
+import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
+import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import DataserviceAccessTypeBadge from '~/components/AdminTable/AdminDataservicesTable/DataserviceAccessTypeBadge.vue'
 import EditButton from '~/components/BrandedButton/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
