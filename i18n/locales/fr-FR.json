@@ -1071,6 +1071,7 @@
   "Search among {count} dataservices on {site}": "Rechercher parmi les {count} API sur {site}",
   "Rechercher parmi les {count} jeux de données sur {site}": "Rechercher parmi les {count} jeux de données sur {site}",
   "{n} {label}": "{n} {label}",
+  "Ce jeu de données a été publié à l'initiative et sous la responsabilité de {author}.": "Ce jeu de données a été publié à l'initiative et sous la responsabilité de {author}.",
   "Show public page": "Voir la page publique",
   "Add a link to the schema": "Ajouter un lien vers le schéma",
   "Edit message": "Édit le message",
