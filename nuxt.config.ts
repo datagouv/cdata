@@ -219,6 +219,7 @@ export default defineNuxtConfig({
   },
 
   sitemap: {
+    cacheMaxAgeSeconds: 3600, // 1 hour
     sitemaps: {
       content: {
         includeGlobalSources: true,
