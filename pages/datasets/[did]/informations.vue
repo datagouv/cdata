@@ -24,7 +24,9 @@
         </div>
         <div v-if="dataset.license">
           <DescriptionListTerm>{{ $t('License') }}</DescriptionListTerm>
-          <DescriptionListDetails>{{ dataset.license }}</DescriptionListDetails>
+          <DescriptionListDetails>
+            <License :license="dataset.license" />
+          </DescriptionListDetails>
         </div>
       </DescriptionList>
     </div>
@@ -39,7 +41,7 @@
         </div>
         <div v-if="dataset.frequency">
           <DescriptionListTerm>{{ $t('Fréquence') }}</DescriptionListTerm>
-          <DescriptionListDetails>{{ dataset.frequency }}</DescriptionListDetails>
+          <DescriptionListDetails>{{ dataset.frequency.label }}</DescriptionListDetails>
         </div>
         <div v-if="dataset.temporal_coverage">
           <DescriptionListTerm>{{ $t('Couverture temporelle') }}</DescriptionListTerm>
@@ -61,7 +63,7 @@
       <DescriptionList>
         <div v-if="dataset.spatial.zones && dataset.spatial.zones.length">
           <DescriptionListTerm>{{ $t('Zones') }}</DescriptionListTerm>
-          <DescriptionListDetails>{{ humanJoin(dataset.spatial.zones) }}</DescriptionListDetails>
+          <DescriptionListDetails>{{ humanJoin(dataset.spatial.zones.map(z => z.name)) }}</DescriptionListDetails>
         </div>
         <div v-if="dataset.spatial.geom">
           <DescriptionListTerm>{{ $t('Couverture géographique') }}</DescriptionListTerm>
@@ -69,7 +71,7 @@
         </div>
         <div v-if="dataset.spatial.granularity">
           <DescriptionListTerm>{{ $t('Granularité de la couverture territoriale') }}</DescriptionListTerm>
-          <DescriptionListDetails>{{ dataset.spatial.granularity }}</DescriptionListDetails>
+          <DescriptionListDetails>{{ dataset.spatial.granularity.name }}</DescriptionListDetails>
         </div>
       </DescriptionList>
     </div>
@@ -77,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { CopyButton, type DatasetV2 } from '@datagouv/components-next'
+import { CopyButton, type DatasetV2WithFullObject } from '@datagouv/components-next'
 
-defineProps<{ dataset: DatasetV2 }>()
+defineProps<{ dataset: DatasetV2WithFullObject }>()
 </script>

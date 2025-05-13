@@ -12,12 +12,7 @@
 <script setup lang="ts">
 import type { License } from '@datagouv/components-next'
 
-const props = defineProps<{
-  licenseId: string
+defineProps<{
+  license: License
 }>()
-
-const { data: licenses } = await useAPI<Array<License>>('/api/1/datasets/licenses/')
-const license = computed(() => {
-  return licenses.value.find(l => l.id === props.licenseId)
-})
 </script>

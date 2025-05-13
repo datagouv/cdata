@@ -95,7 +95,7 @@
                   {{ $t('License') }}
                 </dt>
                 <dd class="p-0 text-sm">
-                  <License :license-id="dataset.license" />
+                  <License :license="dataset.license" />
                 </dd>
               </div>
 
@@ -114,6 +114,33 @@
                   show-item-warnings
                 />
               </div>
+
+              <SimpleBanner
+                v-if="dataset.harvest && 'remote_url' in dataset.harvest"
+                type="primary-frame"
+              >
+                {{ $t("Ce jeu de données provient d'un portail externe.") }}
+                <NuxtLink
+                  :to="dataset.harvest.remote_url"
+                  rel="ugc nofollow noopener"
+                >
+                  {{ $t("Voir la source originale.") }}
+                </NuxtLink>
+              </SimpleBanner>
+              <SimpleBanner
+                v-if="'transport:url' in dataset.extras && dataset.extras['transport:url']"
+                type="primary-frame"
+              >
+                <i18n-t
+                  keypath="Consulter ce jeu de données sur {link} pour bénéficier d'informations supplémentaires : validations, visualisations, etc."
+                  tag="p"
+                  class="!m-0"
+                >
+                  <template #link>
+                    <NuxtLink :href="dataset.extras['transport:url']">{{ $t("le Point d'Accès National aux données de mobilités") }}</NuxtLink>
+                  </template>
+                </i18n-t>
+              </SimpleBanner>
             </dl>
           </div>
         </div>
@@ -122,7 +149,7 @@
           class="mt-12"
           :links="[
             { label: $t('Fichiers'), href: `/datasets/${route.params.did}/`, count: dataset.resources.total },
-            { label: $t('Réutilisations et API'), href: `/datasets/${route.params.did}/reuses_and_dataservices` },
+            { label: $t('Réutilisations et API'), href: `/datasets/${route.params.did}/reuses_and_dataservices`, count: (dataset.metrics.dataservices || 0) + (dataset.metrics.reuses || 0) },
             { label: $t('Discussions'), href: `/datasets/${route.params.did}/discussions`, count: dataset.metrics.discussions ?? 0 },
             { label: $t('Ressources communautaires'), href: `/datasets/${route.params.did}/community-resources` },
             { label: $t('Informations'), href: `/datasets/${route.params.did}/informations` },
@@ -141,7 +168,7 @@
 </template>
 
 <script setup lang="ts">
-import { ReadMore, AvatarWithName, type DatasetV2, SimpleBanner, DatasetQuality } from '@datagouv/components-next'
+import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality } from '@datagouv/components-next'
 import EditButton from '~/components/BrandedButton/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
@@ -151,7 +178,11 @@ const route = useRoute()
 const me = useMaybeMe()
 
 const url = computed(() => `/api/2/datasets/${route.params.did}/`)
-const { data: dataset, status } = await useAPI<DatasetV2>(url)
+const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
+  headers: {
+    'X-Get-Datasets-Full-Objects': 'True',
+  },
+})
 
 const title = computed(() => dataset.value?.title)
 const robots = computed(() => dataset.value ? 'noindex, nofollow' : 'all')
