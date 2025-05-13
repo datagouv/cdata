@@ -3,7 +3,13 @@
     v-model="selectedItem"
     as="div"
     class="relative"
+    nullable
   >
+    <!--
+      `nullable` is required here because otherwise the Combobox will set the active value on click outside
+      See the listener here for the blur event https://github.com/tailwindlabs/headlessui/blob/%40headlessui/vue%40v1.7.23/packages/%40headlessui-vue/src/components/combobox/combobox.ts#L1250-L1252
+      This is probably a bug in HeadlessUI https://github.com/tailwindlabs/headlessui/issues/3615
+    -->
     <div
       class="relative w-full bg-white sm:text-sm"
     >
