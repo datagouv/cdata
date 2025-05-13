@@ -141,8 +141,25 @@
             </p>
           </div>
         </SimpleBanner>
-
         <RequiredExplanation />
+        <fieldset
+          v-if="isGlobalAdmin && type === 'update'"
+          class="fr-fieldset"
+        >
+          <legend
+            id="featured-legend"
+            class="fr-fieldset__legend"
+          >
+            <h2 class="text-sm font-bold uppercase mb-3">
+              {{ $t("Featured") }}
+            </h2>
+          </legend>
+          <ToggleSwitch
+            v-model="form.featured"
+            :label="$t('Feature')"
+            @update:model-value="$emit('feature')"
+          />
+        </fieldset>
         <fieldset
           v-if="type === 'create'"
           class="fr-fieldset"
@@ -348,13 +365,14 @@
 </template>
 
 <script setup lang="ts">
-import { SimpleBanner, type ReuseType } from '@datagouv/components-next'
+import { SimpleBanner, type ReuseTopic, type ReuseType } from '@datagouv/components-next'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
+import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplanation.vue'
-import type { ReuseForm, Owned, ReuseTopic } from '~/types/types'
+import type { ReuseForm, Owned } from '~/types/types'
 
 const reuseForm = defineModel<ReuseForm>({ required: true })
 const props = defineProps<{
@@ -362,12 +380,13 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (event: 'submit'): void
+  (event: 'feature' | 'submit'): void
 }>()
 
 const { t } = useI18n()
 
 const user = useMe()
+const isGlobalAdmin = computed(() => isAdmin(user.value))
 
 const nameReuseAccordionId = useId()
 const addLinkAccordionId = useId()
@@ -385,6 +404,7 @@ const ownedOptions = computed<Array<Owned>>(() => {
 })
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(reuseForm, {
+  featured: [],
   owned: [required()],
   title: [required()],
   description: [required()],
@@ -421,5 +441,5 @@ function submit() {
   if (validate()) {
     emit('submit')
   }
-};
+}
 </script>

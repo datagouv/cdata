@@ -1124,5 +1124,17 @@
   "Swagger": "Swagger",
   "Copy ID": "Copier l'ID",
   "ID copied": "ID copié !",
-  "See the reuse": "Voir la réutilisation"
+  "See the reuse": "Voir la réutilisation",
+  "Feature": "Feature",
+  "Faire une demande d'habilitation": "Faire une demande d'habilitation",
+  "Accueil": "Accueil",
+  "Jeux de données": "Jeux de données",
+  "Transférer cette réutilisation": "Transférer cette réutilisation",
+  "Supprimer cette réutilisation": "Supprimer cette réutilisation",
+  "Attention, cette action ne peut pas être annulée.": "Attention, cette action ne peut pas être annulée.",
+  "Êtes-vous sûr de vouloir supprimer cette réutilisation?": "Êtes-vous sûr de vouloir supprimer cette réutilisation?",
+  "Cette action ne peut pas être annulée.": "Cette action ne peut pas être annulée.",
+  "Réutilisation mise à jour!": "Réutilisation mise à jour!",
+  "Réutilisation mise en avant !": "Réutilisation mise en avant !",
+  "Impossible de mettre en avant cette réutilisation": "Impossible de mettre en avant cette réutilisation"
 }
