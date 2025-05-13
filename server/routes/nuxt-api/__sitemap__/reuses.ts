@@ -4,13 +4,22 @@ import type { SitemapUrl } from '#sitemap/types'
 export default defineSitemapEventHandler(async () => {
   const config = useRuntimeConfig()
 
-  return await $fetch<{ path: string }[]>('/api/1/reuses/?page_size=100', {
-    baseURL: config.public.apiBase,
-    headers: { 'X-Fields': 'data{page}' },
-  })
-    .then(reuses => reuses.data.map(p => ({
-      loc: p.page,
-      // make sure the reuse ends up in the reuses sitemap
-      _sitemap: 'reuses',
-    } satisfies SitemapUrl)))
+  const pageSize = 200
+
+  let nextPage = config.public.apiBase + `/api/1/reuses/?page_size=${pageSize}`
+  const reuses = []
+
+  do {
+    await $fetch<{ path: string }[]>(nextPage, {
+      headers: { 'X-Fields': 'data{page},next_page' },
+    }).then((result) => {
+      nextPage = result.next_page
+      reuses.push(...result.data.map(p => ({
+        loc: p.page,
+        _sitemap: 'reuses',
+      } satisfies SitemapUrl)))
+    })
+  } while (nextPage)
+
+  return reuses
 })
