@@ -156,11 +156,9 @@
         :extra="dataset.harvest"
         title-level="h3"
       >
-        <template
-          v-if="isMeAdmin() && dataset.harvest.source_id"
-          #buttons
-        >
+        <template #buttons>
           <BrandedButton
+            v-if="isMeAdmin() && dataset.harvest.source_id"
             size="xs"
             color="secondary"
             :icon="RiServerLine"
