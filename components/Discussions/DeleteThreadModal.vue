@@ -80,7 +80,7 @@ const deleteThread = async (_: SubmitEvent, close: () => void) => {
   loading.value = true
 
   try {
-    await $api(`/api/1/discussions/${props.thread.id}`, { method: 'DELETE' })
+    await $api(`/api/1/discussions/${props.thread.id}/`, { method: 'DELETE' })
     close()
     emit('deleted')
   }

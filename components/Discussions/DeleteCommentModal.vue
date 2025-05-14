@@ -78,7 +78,7 @@ const deleteMessage = async (_: SubmitEvent, close: () => void) => {
   loading.value = true
 
   try {
-    await $api(`/api/1/discussions/${props.thread.id}/comments/${props.index}`, { method: 'DELETE' })
+    await $api(`/api/1/discussions/${props.thread.id}/comments/${props.index}/`, { method: 'DELETE' })
     close()
     emit('deleted')
   }
