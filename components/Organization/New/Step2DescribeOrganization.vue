@@ -261,7 +261,7 @@
           </LinkedToAccordion>
         </fieldset>
         <SearchableSelect
-          v-if="isGlobalAdmin && 'badges' in organization"
+          v-if="isMeAdmin() && 'badges' in organization"
           v-model="newBadges"
           :label="$t('Badges')"
           :placeholder="$t('Associate badges to the organization…')"
@@ -363,9 +363,6 @@ const addLogoAccordionId = useId()
 const config = useRuntimeConfig()
 const nuxtApp = useNuxtApp()
 const { t } = useI18n()
-
-const me = useMe()
-const isGlobalAdmin = computed(() => isAdmin(me.value))
 
 const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges')
 const badges = computed(() => Object.keys(badgesLabels.value || {}).map(key => ({ kind: key })))

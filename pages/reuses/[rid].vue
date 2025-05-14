@@ -39,7 +39,7 @@
           </div>
           <div>
             <EditButton
-              v-if="isAdmin(me)"
+              v-if="isMeAdmin()"
               :id="reuse.id"
               type="reuses"
             />

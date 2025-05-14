@@ -21,7 +21,7 @@
         </Breadcrumb>
         <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
           <EditButton
-            v-if="isAdmin(me)"
+            v-if="isMeAdmin()"
             :id="dataservice.id"
             type="dataservices"
           />

@@ -480,7 +480,7 @@ const publishMenu = [
   { label: t('A reuse'), icon: RiLineChartLine, link: '/admin/reuses/new/' },
   { label: t('A harverster'), icon: RiServerLine, link: '/admin/harvesters/new/' },
   { label: t('An organization'), icon: RiGovernmentLine, link: '/admin/organizations/new/' },
-  { label: t('A post'), icon: RiArticleLine, link: '/admin/posts/new/', show: isAdmin(me.value ?? null) },
+  { label: t('A post'), icon: RiArticleLine, link: '/admin/posts/new/', show: isMeAdmin() },
 ]
 
 const filteredPublishMenu = computed(() => publishMenu.filter(item => !('show' in item) || item.show))

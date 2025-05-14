@@ -143,7 +143,7 @@
         </SimpleBanner>
         <RequiredExplanation />
         <fieldset
-          v-if="isGlobalAdmin && type === 'update'"
+          v-if="isMeAdmin() && type === 'update'"
           class="fr-fieldset"
         >
           <legend
@@ -181,6 +181,7 @@
               :required="true"
               :error-text="getFirstError('owned')"
               :warning-text="getFirstWarning('owned')"
+              :all="isMeAdmin()"
               @focusout="touch('owned')"
             />
           </div>
@@ -386,7 +387,6 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const user = useMe()
-const isGlobalAdmin = computed(() => isAdmin(user.value))
 
 const nameReuseAccordionId = useId()
 const addLinkAccordionId = useId()

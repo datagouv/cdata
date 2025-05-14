@@ -1,11 +1,11 @@
 <template>
   <div class="container bg-white mx-0 py-4">
-    <h1 class="text-sm font-bold uppercase">
+    <h1 class="text-sm font-bold uppercase mb-3">
       {{ $t("Publishing type") }}
     </h1>
     <SimpleBanner
       type="primary"
-      class="fr-mb-3w"
+      class="mb-6"
     >
       <span
         class="fr-icon-info-line fr-mr-1w"

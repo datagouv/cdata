@@ -7,15 +7,14 @@ export function useAPI<T, U = T>(
   url: MaybeRefOrGetter<string>,
   options?: UseFetchOptions<T, U>,
 ) {
-  const me = useMaybeMe()
   const { setCurrentOrganization, setCurrentUser } = useCurrentOwned()
-
+  const isAdmin = isMeAdmin()
   return useFetch(url, {
     ...options,
     $fetch: useNuxtApp().$api,
   })
     .then((response) => {
-      if (me.value && isAdmin(me.value)) {
+      if (isAdmin) {
         // Check the response to see if an `organization` or an `owner` is present
         // to add this organization/user to the menu.
         const data = toValue(response.data)

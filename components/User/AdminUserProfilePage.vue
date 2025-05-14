@@ -89,7 +89,7 @@
         />
       </div>
       <SearchableSelect
-        v-if="isGlobalAdmin"
+        v-if="isMeAdmin()"
         v-model="form.roles"
         class="fr-input-group"
         :label="$t('Roles')"
@@ -321,8 +321,6 @@ const loading = ref(false)
 
 const profilePicture = ref<File | null>(null)
 
-const isGlobalAdmin = computed(() => isAdmin(me.value))
-
 const { data: allRoles } = await useAPI<Array<{ name: string }>>('/api/1/users/roles')
 const allRolesAsString = computed(() => (allRoles.value || []).map(r => r.name))
 
@@ -362,7 +360,7 @@ async function updateUser() {
         last_name: form.value.last_name,
         about: form.value.about,
         website: form.value.website,
-        roles: isGlobalAdmin.value ? form.value.roles : props.user.roles,
+        roles: isMeAdmin() ? form.value.roles : props.user.roles,
       },
     })
     toast.success(t('Profile updated !'))
