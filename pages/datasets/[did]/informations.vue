@@ -157,7 +157,7 @@
         title-level="h3"
       >
         <template
-          v-if="dataset.harvest.source_id"
+          v-if="isMeAdmin() && dataset.harvest.source_id"
           #buttons
         >
           <BrandedButton
