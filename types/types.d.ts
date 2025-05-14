@@ -135,6 +135,7 @@ export type DatasetForm = {
   spatial_zones: Array<SpatialZone>
   spatial_granularity: SpatialGranularity | null
   private: boolean
+  featured: boolean
 }
 
 export type NewDatasetForApi = {
