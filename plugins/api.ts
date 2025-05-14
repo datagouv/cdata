@@ -38,6 +38,18 @@ export default defineNuxtPlugin({
             await nuxtApp.runWithContext(() => navigateTo(localePath('/login'), { external: true }))
           }
 
+          const t = (nuxtApp.$i18n as NuxtApp['$i18n']).t
+
+          if (response.status === 429) {
+            toast.error(t('Erreur API 429 : trop de requêtes. Veuillez réessayer plus tard.'))
+            return
+          }
+
+          if (response.status === 403) {
+            toast.error(t('Erreur API 403 : accès interdit.'))
+            return
+          }
+
           let message
           try {
             if ('error' in response._data) {
@@ -52,7 +64,7 @@ export default defineNuxtPlugin({
           }
           catch (e) {
             console.error(e)
-            message = (nuxtApp.$i18n as NuxtApp['$i18n']).t('The API returned an unexpected error')
+            message = t('The API returned an unexpected error')
           }
 
           toast.error(message)
