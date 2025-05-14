@@ -5,61 +5,64 @@
       v-model="datasetForm"
       type="update"
       :harvested
-      :submit-label="t('Save')"
+      :submit-label="t('Sauvegarder')"
+      @feature="feature"
       @submit="save"
     >
       <div class="mt-5 space-y-5">
         <TransferBanner
           type="Dataset"
           :subject="dataset"
-          :label="$t('Transfer dataset')"
+          :label="$t('Transférer  le jeu de données')"
         />
         <BannerAction
           type="warning"
-          :title="dataset.archived ? $t('Unarchive the dataset') : $t('Archive the dataset')"
+          :title="dataset.archived ? $t('Désarchiver le jeu de données') : $t('Archiver le jeu de données')"
         >
-          {{ $t("An archived dataset is no longer indexed but still accessible for users with the direct link.") }}
+          {{ $t("Un jeu de données archivé n'est plus indexé mais reste accessible aux utilisateurs avec un lien direct.") }}
 
           <template #button>
             <BrandedButton
               :icon="RiArchiveLine"
+              :disabled="isLoading"
               @click="archiveDataset"
             >
-              {{ dataset.archived ? $t('Unarchive') : $t('Archive') }}
+              {{ dataset.archived ? $t('Désarchiver') : $t('Archiver') }}
             </BrandedButton>
           </template>
         </BannerAction>
         <BannerAction
           type="danger"
-          :title="$t('Delete the dataset')"
+          :title="$t('Supprimer le jeu de données')"
         >
-          {{ $t("Be careful, this action can't be reverse.") }}
+          {{ $t("Attention, cette action ne peut pas être annulée.") }}
 
           <template #button>
             <ModalWithButton
-              :title="$t('Are you sure you want to delete this dataset ?')"
+              :title="$t('Etes-vous sûr de vouloir supprimer ce jeu de données ?')"
               size="lg"
             >
               <template #button="{ attrs, listeners }">
                 <BrandedButton
                   :icon="RiDeleteBin6Line"
+                  :disabled="isLoading"
                   v-bind="attrs"
                   v-on="listeners"
                 >
-                  {{ $t('Delete') }}
+                  {{ $t('Supprimer') }}
                 </BrandedButton>
               </template>
               <p class="fr-text--bold">
-                {{ $t("This action can't be reverse.") }}
+                {{ $t("Cette action est irréversible.") }}
               </p>
               <template #footer>
                 <div class="flex-1 flex justify-end">
                   <BrandedButton
                     color="danger"
-                    :disabled="loading"
+                    :disabled="isLoading"
                     @click="deleteDataset"
                   >
-                    {{ $t("Delete the dataset") }}
+                    {{ $t("Supprimer le jeu de données") }}
                   </BrandedButton>
                 </div>
               </template>
@@ -84,7 +87,7 @@ const { $api } = useNuxtApp()
 const config = useRuntimeConfig()
 
 const route = useRoute()
-const loading = ref(false)
+const { start, finish, isLoading } = useLoadingIndicator()
 
 const localePath = useLocalePath()
 
@@ -128,7 +131,7 @@ async function save() {
   if (!datasetForm.value) throw new Error('No dataset form')
 
   try {
-    loading.value = true
+    start()
     if (
       datasetForm.value.contact_points
       && datasetForm.value.owned?.organization
@@ -145,16 +148,16 @@ async function save() {
       body: JSON.stringify(toApi(datasetForm.value, { private: datasetForm.value.private })),
     })
 
-    toast.success(t('Dataset updated!'))
+    toast.success(t('Jeu de données mis à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    loading.value = false
+    finish()
   }
 }
 
 async function deleteDataset() {
-  loading.value = true
+  start()
   try {
     await $api(`/api/1/datasets/${route.params.id}`, {
       method: 'DELETE',
@@ -167,13 +170,13 @@ async function deleteDataset() {
     }
   }
   finally {
-    loading.value = false
+    finish()
   }
 }
 
 async function archiveDataset() {
   if (!datasetForm.value) throw new Error('No dataset form')
-  loading.value = true
+  start()
   try {
     await $api(`/api/1/datasets/${dataset.value.id}/`, {
       method: 'PUT',
@@ -181,14 +184,37 @@ async function archiveDataset() {
     })
     refresh()
     if (dataset.value.archived) {
-      toast.success(t('Dataset unarchived!'))
+      toast.success(t('Jeu de données désarchivé!'))
     }
     else {
-      toast.success(t('Dataset archived!'))
+      toast.success(t('Jeu de données archivé!'))
     }
   }
   finally {
-    loading.value = false
+    finish()
+  }
+}
+
+async function feature() {
+  const method = dataset.value.featured ? 'DELETE' : 'POST'
+  try {
+    start()
+    await $api(`/api/1/datasets/${route.params.id}/featured`, {
+      method,
+    })
+    await refresh()
+    if (method === 'DELETE') {
+      toast.success(t('Jeu de données retiré de la mise en avant !'))
+    }
+    else {
+      toast.success(t('Jeu de données mis en avant !'))
+    }
+  }
+  catch {
+    toast.error(t('Impossible de mettre en avant ce jeu de données'))
+  }
+  finally {
+    finish()
   }
 }
 </script>

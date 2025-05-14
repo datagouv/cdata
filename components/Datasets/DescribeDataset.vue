@@ -186,6 +186,24 @@
 
         <RequiredExplanation />
         <fieldset
+          v-if="isGlobalAdmin && type === 'update'"
+          class="fr-fieldset"
+        >
+          <legend
+            id="featured-legend"
+            class="fr-fieldset__legend"
+          >
+            <h2 class="text-sm font-bold uppercase mb-3">
+              {{ $t("Featured") }}
+            </h2>
+          </legend>
+          <ToggleSwitch
+            v-model="form.featured"
+            :label="$t('Feature')"
+            @update:model-value="$emit('feature')"
+          />
+        </fieldset>
+        <fieldset
           v-if="type === 'create'"
           class="fr-fieldset"
           aria-labelledby="description-legend"
@@ -584,6 +602,7 @@ import { RiAddLine, RiStarFill } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
+import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone } from '~/types/types'
@@ -596,12 +615,16 @@ const props = defineProps<{
   harvested?: boolean
 }>()
 const emit = defineEmits<{
+  feature: []
   previous: []
   submit: []
 }>()
 
 const { t } = useI18n()
 const config = useRuntimeConfig()
+
+const user = useMe()
+const isGlobalAdmin = computed(() => isAdmin(user.value))
 
 const nameDatasetAccordionId = useId()
 const addAcronymAccordionId = useId()
