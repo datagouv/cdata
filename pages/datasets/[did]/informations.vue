@@ -128,8 +128,8 @@
         </h3>
         <CopyButton
           :hide-label="true"
-          :label="$t('Copy embed')"
-          :copied-label="$t('Embed copied')"
+          :label="$t('Copier le code embarqué')"
+          :copied-label="$t('Code embarqué copié !')"
           :text="getDatasetOEmbedHtml('dataset', dataset.id)"
         />
       </div>
@@ -141,19 +141,42 @@
         @click="(e) => (e.target as HTMLTextAreaElement).select()"
       />
     </div>
-    <ExtraAccordion
-      class="py-6"
-      :button-text="$t('See extras')"
-      :title-text="$t('Extras')"
-      :extra="props.dataset.extras"
-      title-level="h3"
-    />
+    <div>
+      <ExtraAccordion
+        class="pt-6"
+        :button-text="$t('Voir les extras')"
+        :title-text="$t('Extras')"
+        :extra="dataset.extras"
+        title-level="h3"
+      />
+      <ExtraAccordion
+        v-if="dataset.harvest"
+        :button-text="$t('Voir les extras du moissonnage')"
+        :title-text="$t('Moissonnage')"
+        :extra="dataset.harvest"
+        title-level="h3"
+      >
+        <template
+          v-if="dataset.harvest.source_id"
+          #buttons
+        >
+          <BrandedButton
+            size="xs"
+            color="secondary"
+            :icon="RiServerLine"
+            :href="`/admin/harvesters/${dataset.harvest.source_id}/`"
+          >
+            {{ $t('Voir la source du moissonnage') }}
+          </BrandedButton>
+        </template>
+      </ExtraAccordion>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { BrandedButton, CopyButton, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
-import { RiBook2Line, RiCheckboxCircleLine } from '@remixicon/vue'
+import { RiBook2Line, RiCheckboxCircleLine, RiServerLine } from '@remixicon/vue'
 import LeafletMapClient from '~/components/LeafletMap.client.vue'
 import ExtraAccordion from '~/datagouv-components/src/components/ExtraAccordion.vue'
 import getDatasetOEmbedHtml from '~/datagouv-components/src/functions/datasets'
