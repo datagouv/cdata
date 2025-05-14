@@ -1116,5 +1116,13 @@
   "Swagger": "Swagger",
   "Copy ID": "Copy ID",
   "ID copied": "ID copied",
-  "See the reuse": "See the reuse"
+  "See the reuse": "See the reuse",
+  "Resource additon": "Resource additon",
+  "Resource update": "Resource update",
+  "Resource deletion": "Resource deletion",
+  "Dataservice creation": "Dataservice creation",
+  "Dataservice update": "Dataservice update",
+  "Dataservice deletion": "Dataservice deletion",
+  "Dataservice discussion": "Dataservice discussion",
+  "Dataservice follow": "Dataservice follow"
 }
