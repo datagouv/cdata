@@ -27,8 +27,8 @@
           :class="contentSize"
         >
           <div
-            class="pointer-events-auto z-[2000] bg-white max-h-full"
-            :class="{ 'overflow-y-visible': isFullscreen, 'drop-shadow overflow-y-auto': !isFullscreen }"
+            class="pointer-events-auto z-[2000] bg-white"
+            :class="{ 'overflow-y-visible h-full': isFullscreen, 'drop-shadow overflow-y-auto max-h-[calc(100%-2rem)]': !isFullscreen }"
           >
             <div
               class="flex items-center justify-end pt-4 px-4 sm:px-8 pb-2"
