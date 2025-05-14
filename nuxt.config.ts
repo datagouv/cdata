@@ -231,11 +231,6 @@ export default defineNuxtConfig({
           '/nuxt-api/__sitemap__/dataservices',
         ],
       },
-      datasets: {
-        sources: [
-          '/nuxt-api/__sitemap__/datasets',
-        ],
-      },
       organizations: {
         sources: [
           '/nuxt-api/__sitemap__/organizations',
@@ -251,6 +246,15 @@ export default defineNuxtConfig({
           '/nuxt-api/__sitemap__/reuses',
         ],
       },
+      // split datasets between 10 pages
+      ...Array.from({ length: 10 }, (_, i) => i + 1).map(page => ({
+        [`datasets_${page}`]: {
+          sources: [
+            `/nuxt-api/__sitemap__/datasets?page=${page}`,
+          ],
+        },
+      })).reduce((acc, obj) => ({ ...acc, ...obj }), {}),
+
       // TODO: add support and *pages*
     },
   },
