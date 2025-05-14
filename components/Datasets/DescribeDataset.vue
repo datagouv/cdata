@@ -205,7 +205,7 @@
               :required="true"
               :error-text="getFirstError('owned')"
               :warning-text="getFirstWarning('owned')"
-              :all=""
+              :all="isMeAdmin()"
             />
           </div>
         </fieldset>
