@@ -34,6 +34,11 @@ export function isAdmin(me: Me | null | undefined): boolean {
   return me.roles ? me.roles.includes('admin') : false
 }
 
+export function isMeAdmin(): boolean {
+  const me = useMaybeMe()
+  return isAdmin(me.value)
+}
+
 export const loadMe = async (meState: Ref<Me | null | undefined>) => {
   // Here we cannot use the `useAPI` composable because
   // we don't want the classic error management that redirect

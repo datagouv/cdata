@@ -205,6 +205,7 @@
               :required="true"
               :error-text="getFirstError('owned')"
               :warning-text="getFirstWarning('owned')"
+              :all=""
             />
           </div>
         </fieldset>

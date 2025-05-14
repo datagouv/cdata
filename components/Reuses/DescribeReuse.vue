@@ -143,7 +143,7 @@
         </SimpleBanner>
         <RequiredExplanation />
         <fieldset
-          v-if="isGlobalAdmin && type === 'update'"
+          v-if="isMeAdmin() && type === 'update'"
           class="fr-fieldset"
         >
           <legend
@@ -386,7 +386,6 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const user = useMe()
-const isGlobalAdmin = computed(() => isAdmin(user.value))
 
 const nameReuseAccordionId = useId()
 const addLinkAccordionId = useId()
