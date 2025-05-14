@@ -141,6 +141,13 @@
         @click="(e) => (e.target as HTMLTextAreaElement).select()"
       />
     </div>
+    <ExtraAccordion
+      class="py-6"
+      :button-text="$t('See extras')"
+      :title-text="$t('Extras')"
+      :extra="props.dataset.extras"
+      title-level="h3"
+    />
   </div>
 </template>
 
@@ -148,6 +155,7 @@
 import { BrandedButton, CopyButton, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
 import { RiBook2Line, RiCheckboxCircleLine } from '@remixicon/vue'
 import LeafletMapClient from '~/components/LeafletMap.client.vue'
+import ExtraAccordion from '~/datagouv-components/src/components/ExtraAccordion.vue'
 import getDatasetOEmbedHtml from '~/datagouv-components/src/functions/datasets'
 
 const props = defineProps<{ dataset: DatasetV2WithFullObject }>()
