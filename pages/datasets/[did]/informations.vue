@@ -1,9 +1,9 @@
 <template>
   <div class="divide-y">
     <div class="space-y-1 py-6">
-      <div class="uppercase text-gray-plain text-sm font-bold">
+      <h3 class="uppercase text-gray-plain text-sm font-bold">
         {{ $t('Informations') }}
-      </div>
+      </h3>
       <DescriptionList>
         <div v-if="dataset.tags && dataset.tags.length">
           <DescriptionListTerm>{{ $t('Mots-clés') }}</DescriptionListTerm>
@@ -31,9 +31,9 @@
       </DescriptionList>
     </div>
     <div class="space-y-1 py-6">
-      <div class="uppercase text-gray-plain text-sm font-bold">
+      <h3 class="uppercase text-gray-plain text-sm font-bold">
         {{ $t('Temporalité') }}
-      </div>
+      </h3>
       <DescriptionList>
         <div>
           <DescriptionListTerm>{{ $t('Création') }}</DescriptionListTerm>
@@ -57,9 +57,9 @@
       v-if="dataset.spatial"
       class="space-y-1 py-6"
     >
-      <div class="uppercase text-gray-plain text-sm font-bold">
+      <h3 class="uppercase text-gray-plain text-sm font-bold">
         {{ $t('Couverture spatiale') }}
-      </div>
+      </h3>
       <DescriptionList>
         <div v-if="dataset.spatial.zones && dataset.spatial.zones.length">
           <DescriptionListTerm>{{ $t('Zones') }}</DescriptionListTerm>
@@ -81,16 +81,16 @@
       v-if="schemas && schemas.length"
       class="space-y-1 py-6"
     >
-      <div class="uppercase text-gray-plain text-sm font-bold">
+      <h3 class="uppercase text-gray-plain text-sm font-bold">
         {{ $t('Schéma de données') }}
-      </div>
+      </h3>
       <div>
         <div
           v-for="schema, index in schemas"
           :key="index"
         >
-          <div>
-            <p>
+          <div class=" text-gray-medium">
+            <p class="text-sm">
               {{ $t('Les fichiers du jeu de données suivent le schéma :') }}
               <Tag
                 type="secondary"
@@ -99,7 +99,7 @@
                 {{ schema.name || schema.url }}
               </Tag>
             </p>
-            <p>
+            <p class="text-sm">
               <i18n-t keypath="Les schémas de données permettent de décrire des modèles de données, découvrez comment les schémas améliorent la qualité des données et quels sont les cas d'usages possibles sur {link}">
                 <template #link>
                   <NuxtLink
@@ -121,6 +121,26 @@
         </div>
       </div>
     </div>
+    <div class="space-y-1 py-6">
+      <div class="flex items-center space-x-2 mb-1">
+        <h3 class="mb-0 uppercase text-gray-plain text-sm font-bold ">
+          {{ $t('Intégrer sur votre site') }}
+        </h3>
+        <CopyButton
+          :hide-label="true"
+          :label="$t('Copy embed')"
+          :copied-label="$t('Embed copied')"
+          :text="getDatasetOEmbedHtml('dataset', dataset.id)"
+        />
+      </div>
+      <textarea
+        ref="textAreaRef"
+        class="bg-gray-lower text-gray-medium rounded font-mono text-sm px-1 py-[2px] w-full border resize-none"
+        :value="getDatasetOEmbedHtml('dataset', dataset.id)"
+        readonly="true"
+        @click="(e) => (e.target as HTMLTextAreaElement).select()"
+      />
+    </div>
   </div>
 </template>
 
@@ -128,6 +148,7 @@
 import { BrandedButton, CopyButton, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
 import { RiBook2Line, RiCheckboxCircleLine } from '@remixicon/vue'
 import LeafletMapClient from '~/components/LeafletMap.client.vue'
+import getDatasetOEmbedHtml from '~/datagouv-components/src/functions/datasets'
 
 const props = defineProps<{ dataset: DatasetV2WithFullObject }>()
 
