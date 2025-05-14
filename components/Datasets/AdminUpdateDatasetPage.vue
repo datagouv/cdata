@@ -39,7 +39,7 @@
 
           <template #button>
             <ModalWithButton
-              :title="$t('Etes-vous sûr de vouloir supprimer ce jeu de données ?')"
+              :title="$t('Êtes-vous sûr de vouloir supprimer ce jeu de données ?')"
               size="lg"
             >
               <template #button="{ attrs, listeners }">
