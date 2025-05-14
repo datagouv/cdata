@@ -65,6 +65,7 @@
                   <SimpleBanner
                     v-if="dataset.owner"
                     type="warning"
+                    class="text-sm"
                   >
                     {{ $t("Ce jeu de données a été publié à l'initiative et sous la responsabilité de {author}.", { author: `${dataset.owner.first_name} ${dataset.owner.last_name}` }) }}
                   </SimpleBanner>
@@ -118,6 +119,7 @@
               <SimpleBanner
                 v-if="dataset.harvest && 'remote_url' in dataset.harvest"
                 type="primary-frame"
+                class="text-sm"
               >
                 {{ $t("Ce jeu de données provient d'un portail externe.") }}
                 <NuxtLink
@@ -134,7 +136,7 @@
                 <i18n-t
                   keypath="Consulter ce jeu de données sur {link} pour bénéficier d'informations supplémentaires : validations, visualisations, etc."
                   tag="p"
-                  class="!m-0"
+                  class="!m-0 text-sm"
                 >
                   <template #link>
                     <NuxtLink :href="dataset.extras['transport:url']">{{ $t("le Point d'Accès National aux données de mobilités") }}</NuxtLink>
