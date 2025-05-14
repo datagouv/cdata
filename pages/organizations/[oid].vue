@@ -20,7 +20,7 @@
             {{ organization.name }}
           </BreadcrumbItem>
         </Breadcrumb>
-        <div v-if="isAdmin(me) || isMember">
+        <div v-if="isMeAdmin() || isMember">
           <EditButton
             :id="organization.id"
             type="organizations"

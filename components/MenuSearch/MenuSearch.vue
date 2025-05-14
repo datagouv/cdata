@@ -1,8 +1,15 @@
 <template>
   <Combobox
+    v-model="selectedItem"
     as="div"
     class="relative"
+    nullable
   >
+    <!--
+      `nullable` is required here because otherwise the Combobox will set the active value on click outside
+      See the listener here for the blur event https://github.com/tailwindlabs/headlessui/blob/%40headlessui/vue%40v1.7.23/packages/%40headlessui-vue/src/components/combobox/combobox.ts#L1250-L1252
+      This is probably a bug in HeadlessUI https://github.com/tailwindlabs/headlessui/issues/3615
+    -->
     <div
       class="relative w-full bg-white sm:text-sm"
     >
@@ -36,16 +43,13 @@
           :key="item.type"
           v-slot="{ active }"
           as="template"
+          :value="item"
         >
           <li
             class="relative cursor-default select-none px-4 hover:bg-gray-some *:last:border-0"
             :class="{ 'text-datagouv': active }"
           >
-            <NuxtLink
-              :to="item.to"
-              :external="item.external"
-              class="flex items-center space-x-2 border-b py-3"
-            >
+            <div class="flex items-center space-x-2 border-b py-3">
               <component
                 :is="item.icon"
                 class="h-4 w-4"
@@ -78,7 +82,7 @@
               <div aria-hidden="true">
                 <RiArrowRightSLine class="h-4 w-4" />
               </div>
-            </NuxtLink>
+            </div>
           </li>
         </ComboboxOption>
       </ComboboxOptions>
@@ -89,10 +93,24 @@
 <script setup lang="ts">
 import { RiArrowRightSLine, RiDatabase2Line, RiGovernmentLine, RiLineChartLine, RiRobot2Line, RiSearchLine } from '@remixicon/vue'
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions, TransitionRoot } from '@headlessui/vue'
+import type { Component } from 'vue'
+
+type Item = {
+  icon: Component
+  type: string
+  to: string
+  external: boolean
+}
 
 const { t } = useI18n()
 const localePath = useLocalePath()
 const query = ref('')
+const selectedItem = ref<null | Item>(null)
+
+watch(selectedItem, () => {
+  if (!selectedItem.value) return
+  navigateTo(selectedItem.value.to, { external: selectedItem.value.external })
+})
 const menu = computed(() => {
   return [
     {

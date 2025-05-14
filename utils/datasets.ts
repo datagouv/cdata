@@ -50,6 +50,7 @@ export function toForm(dataset: Dataset | DatasetV2, licenses: Array<License>, f
     spatial_zones: dataset.spatial?.zones?.map(id => zones.find(z => z.id === id)).filter(z => z !== undefined) || [],
     spatial_granularity: granularities.find(g => g.id === dataset.spatial?.granularity) || null,
     private: dataset.private,
+    featured: dataset.featured,
   }
 }
 

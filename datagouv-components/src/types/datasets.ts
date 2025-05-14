@@ -43,9 +43,10 @@ export type BaseDataset = Owned & {
     granularity?: string
   } | null
   contact_points: Array<ContactPoint>
+  featured: boolean
 }
 
-export type NewDataset = Omit<BaseDataset, keyof OwnedWithId> & OwnedWithId
+export type NewDataset = Omit<BaseDataset, keyof OwnedWithId | 'featured'> & OwnedWithId
 
 export type Rel = {
   rel: string
