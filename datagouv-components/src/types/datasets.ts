@@ -1,3 +1,4 @@
+import type { GeoJsonObject } from 'geojson'
 import type { Badges } from './badges'
 import type { Harvest } from './harvest'
 import type { Owned, OwnedWithId } from './owned'
@@ -88,6 +89,6 @@ export type DatasetV2WithFullObject = Omit<DatasetV2, 'license' | 'frequency' | 
   spatial: {
     zones?: Array<SpatialZone>
     granularity?: Granularity
-    geom?: unknown
+    geom?: GeoJsonObject
   } | null
 }

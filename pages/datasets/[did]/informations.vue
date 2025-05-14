@@ -77,12 +77,61 @@
         </div>
       </DescriptionList>
     </div>
+    <div
+      v-if="schemas && schemas.length"
+      class="space-y-1 py-6"
+    >
+      <div class="uppercase text-gray-plain text-sm font-bold">
+        {{ $t('Schéma de données') }}
+      </div>
+      <div>
+        <div
+          v-for="schema, index in schemas"
+          :key="index"
+        >
+          <div>
+            <p>
+              {{ $t('Les fichiers du jeu de données suivent le schéma :') }}
+              <Tag
+                type="secondary"
+                :icon="RiCheckboxCircleLine"
+              >
+                {{ schema.name || schema.url }}
+              </Tag>
+            </p>
+            <p>
+              <i18n-t keypath="Les schémas de données permettent de décrire des modèles de données, découvrez comment les schémas améliorent la qualité des données et quels sont les cas d'usages possibles sur {link}">
+                <template #link>
+                  <NuxtLink
+                    :to="config.public.schemasSite.url"
+                    external
+                  >{{ config.public.schemasSite.name }}</NuxtLink>
+                </template>
+              </i18n-t>
+            </p>
+          </div>
+          <div v-if="schema.url">
+            <BrandedButton
+              color="secondary"
+              :icon="RiBook2Line"
+            >
+              {{ $t('Voir la documentation de schéma') }}
+            </BrandedButton>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { CopyButton, type DatasetV2WithFullObject } from '@datagouv/components-next'
+import { BrandedButton, CopyButton, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
+import { RiBook2Line, RiCheckboxCircleLine } from '@remixicon/vue'
 import LeafletMapClient from '~/components/LeafletMap.client.vue'
 
-defineProps<{ dataset: DatasetV2WithFullObject }>()
+const props = defineProps<{ dataset: DatasetV2WithFullObject }>()
+
+const config = useRuntimeConfig()
+
+const { data: schemas } = await useAPI<Array<Schema>>(`/api/2/datasets/${props.dataset.id}/schemas/`)
 </script>
