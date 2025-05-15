@@ -14,7 +14,7 @@
           v-model="searchByResourceType[index].value"
           :placeholder="$t('Rechercher')"
         />
-        <div>
+        <div class="space-y-2.5">
           <ResourceAccordion
             v-for="resource in data.value.data"
             :key="resource.id"
