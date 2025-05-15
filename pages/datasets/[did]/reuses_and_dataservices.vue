@@ -1,6 +1,9 @@
 <template>
   <div class="space-y-5">
-    <div class="space-y-1">
+    <div
+      v-if="dataservices && dataservices.total"
+      class="space-y-1"
+    >
       <div class="uppercase text-gray-plain text-sm font-bold">
         {{ $t('{n} dataservices', { n: dataservices.total }) }}
       </div>
@@ -19,7 +22,11 @@
         />
       </div>
     </div>
-    <div class="space-y-1">
+    <RecommendationsReuses :dataset />
+    <div
+      v-if="reuses && reuses.total"
+      class="space-y-1"
+    >
       <div class="uppercase text-gray-plain text-sm font-bold">
         {{ $t('{n} reuses', { n: reuses.total }) }}
       </div>
