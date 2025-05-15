@@ -11,6 +11,10 @@
         v-for="recommendationDataset in datasets"
         :key="recommendationDataset.id"
         class="p-0"
+        data-track-content
+        data-content-name="dataset recommendations"
+        :data-content-piece="recommendationDataset.title"
+        :data-content-target="recommendationDataset.page"
       >
         <DatasetCardLg :dataset="recommendationDataset" />
       </li>

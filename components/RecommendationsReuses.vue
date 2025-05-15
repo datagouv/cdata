@@ -13,6 +13,10 @@
           :key="reuse.id"
           :reuse-url="reuse.page"
           :reuse
+          data-track-content
+          data-content-name="reuse recommendations"
+          :data-content-piece="reuse.title"
+          :data-content-target="reuse.page"
         />
       </div>
     </div>
