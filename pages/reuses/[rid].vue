@@ -170,7 +170,7 @@
 import { Avatar, BrandedButton, OrganizationNameWithCertificate, type Reuse } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
-import EditButton from '~/components/BrandedButton/EditButton.vue'
+import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReuseDetails from '~/datagouv-components/src/components/ReuseDetails.vue'
 import type { PaginatedArray } from '~/types/types'

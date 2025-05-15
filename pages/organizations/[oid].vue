@@ -84,7 +84,7 @@
 <script setup lang="ts">
 import { OrganizationNameWithCertificate, OwnerType, getOrganizationType, type Organization } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
-import EditButton from '~/components/BrandedButton/EditButton.vue'
+import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import Placeholder from '~/components/Placeholder/Placeholder.vue'
 
