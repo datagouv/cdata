@@ -45,7 +45,9 @@
         </div>
         <div v-if="dataset.temporal_coverage">
           <DescriptionListTerm>{{ $t('Couverture temporelle') }}</DescriptionListTerm>
-          <DescriptionListDetails>{{ dataset.temporal_coverage }}</DescriptionListDetails>
+          <DescriptionListDetails>
+            <DateRangeDetails :range="dataset.temporal_coverage" />
+          </DescriptionListDetails>
         </div>
         <div>
           <DescriptionListTerm>{{ $t('Dernière mise à jour') }}</DescriptionListTerm>
@@ -143,6 +145,7 @@
     </div>
     <div>
       <ExtraAccordion
+        v-if="dataset.extras && Object.keys(dataset.extras).length"
         class="pt-6"
         :button-text="$t('Voir les extras')"
         :title-text="$t('Extras')"
@@ -168,7 +171,7 @@
           </BrandedButton>
         </template>
       </ExtraAccordion>
-      <section>
+      <section class="pt-6">
         <div class="flex items-center justify-between space-x-2 mb-1">
           <h3 class="mb-0 uppercase text-gray-plain text-sm font-bold ">
             {{ $t('Statistiques des 12 derniers mois') }}
