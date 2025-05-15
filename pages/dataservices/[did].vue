@@ -19,7 +19,7 @@
             {{ dataservice.title }}
           </BreadcrumbItem>
         </Breadcrumb>
-        <div class="flex gap-2.5">
+        <div class="flex gap-3 items-center">
           <EditButton
             v-if="isMeAdmin()"
             :id="dataservice.id"
