@@ -87,7 +87,7 @@ const lastComment = computed(() => {
 const send = async (closeThread: boolean, closeModal: () => void) => {
   try {
     loading.value = true
-    await $api(`/api/1/discussions/${props.thread.id}`, {
+    await $api(`/api/1/discussions/${props.thread.id}/`, {
       method: 'POST',
       body: {
         comment: comment.value,

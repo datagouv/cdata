@@ -103,7 +103,7 @@ const editMessage = async (_: SubmitEvent, close: () => void) => {
 
   try {
     if (form.value.title != props.thread.title) {
-      await $api(`/api/1/discussions/${props.thread.id}`, {
+      await $api(`/api/1/discussions/${props.thread.id}/`, {
         method: 'PUT',
         body: {
           title: form.value.title,
@@ -111,7 +111,7 @@ const editMessage = async (_: SubmitEvent, close: () => void) => {
       })
     }
     if (form.value.comment != props.comment.content) {
-      await $api(`/api/1/discussions/${props.thread.id}/comments/${props.index}`, {
+      await $api(`/api/1/discussions/${props.thread.id}/comments/${props.index}/`, {
         method: 'PUT',
         body: {
           comment: form.value.comment,
