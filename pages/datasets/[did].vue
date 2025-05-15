@@ -42,6 +42,32 @@
     >
       <div class="space-y-8">
         <div class="container pt-3 min-h-32">
+          <div class="flex gap-3 mb-2">
+            <AdminBadge
+              v-if="dataset.deleted"
+              :icon="RiDeleteBinLine"
+              size="sm"
+              type="secondary"
+            >
+              {{ $t('Deleted') }}
+            </AdminBadge>
+            <AdminBadge
+              v-if="dataset.private"
+              :icon="RiLockLine"
+              size="sm"
+              type="secondary"
+            >
+              {{ $t('Draft') }}
+            </AdminBadge>
+            <AdminBadge
+              v-if="dataset.archived"
+              :icon="RiLockLine"
+              size="sm"
+              type="secondary"
+            >
+              {{ $t('Archived') }}
+            </AdminBadge>
+          </div>
           <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
             {{ dataset.title }}
           </h1>
@@ -184,6 +210,7 @@
 
 <script setup lang="ts">
 import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified } from '@datagouv/components-next'
+import { RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
