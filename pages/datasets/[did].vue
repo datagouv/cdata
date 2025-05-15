@@ -160,6 +160,8 @@
                 <NuxtLink
                   :to="dataset.harvest.remote_url"
                   rel="ugc nofollow noopener"
+                  target="_blank"
+                  external
                 >
                   {{ $t("Voir la source originale.") }}
                 </NuxtLink>
