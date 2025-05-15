@@ -6,7 +6,7 @@
     <Toggletip
       position="right"
       no-margin
-      class="relative z-2"
+      class="relative z-2 -ml-3 top-1 -my-3"
     >
       <template #toggletip="{ close }">
         <div class="flex justify-between border-bottom">
