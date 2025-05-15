@@ -1,5 +1,5 @@
-import type { Dataset, DatasetV2, Reuse, ReuseType } from '@datagouv/components-next'
-import type { DatasetSuggest, NewReuseForApi, ReuseForm, ReuseTopic } from '~/types/types'
+import type { Dataset, DatasetV2, Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
+import type { DatasetSuggest, NewReuseForApi, ReuseForm } from '~/types/types'
 
 export const reusesXFields = 'data{archived,deleted,featured,id,owner,organization,metrics,created_at,last_modified,title,slug,page,description,type,url,image,image_thumbnail},page,page_size,total'
 
@@ -18,6 +18,7 @@ export function toForm(reuse: Reuse, types: Array<ReuseType>, topics: Array<Reus
     tags: reuse.tags?.map(text => ({ text })) || [],
     image: reuse.image,
     private: reuse.private,
+    featured: reuse.featured,
   }
 }
 

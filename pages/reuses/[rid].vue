@@ -39,7 +39,7 @@
           </div>
           <div>
             <EditButton
-              v-if="isAdmin(me)"
+              v-if="isMeAdmin()"
               :id="reuse.id"
               type="reuses"
             />
@@ -54,13 +54,32 @@
       <div class="container pt-10 min-h-32">
         <div class="flex flex-wrap">
           <div class="w-full md:w-5/12 flex flex-col justify-center">
-            <p
-              v-if="reuse.deleted"
-              class="fr-badge mb-2 flex gap-1 items-center"
-            >
-              <RiDeleteBinLine class="size-3.5" />
-              {{ $t('Deleted') }}
-            </p>
+            <div class="flex gap-3 mb-2">
+              <AdminBadge
+                v-if="reuse.deleted"
+                :icon="RiDeleteBinLine"
+                size="sm"
+                type="secondary"
+              >
+                {{ $t('Deleted') }}
+              </AdminBadge>
+              <AdminBadge
+                v-if="reuse.private"
+                :icon="RiLockLine"
+                size="sm"
+                type="secondary"
+              >
+                {{ $t('Draft') }}
+              </AdminBadge>
+              <AdminBadge
+                v-if="reuse.archived"
+                :icon="RiLockLine"
+                size="sm"
+                type="secondary"
+              >
+                {{ $t('Archived') }}
+              </AdminBadge>
+            </div>
             <div
               v-if="reuse.organization"
               class="flex gap-2 items-center"
@@ -149,7 +168,8 @@
 
 <script setup lang="ts">
 import { Avatar, BrandedButton, OrganizationNameWithCertificate, type Reuse } from '@datagouv/components-next'
-import { RiDeleteBinLine } from '@remixicon/vue'
+import { RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
+import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/BrandedButton/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReuseDetails from '~/datagouv-components/src/components/ReuseDetails.vue'
