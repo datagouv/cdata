@@ -11,6 +11,7 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxtjs/i18n',
     '@sentry/nuxt/module',
+    '@nuxtjs/sitemap',
   ],
   devtools: { enabled: true, componentInspector: false },
 
@@ -31,6 +32,11 @@ export default defineNuxtConfig({
 
   vue: {
     runtimeCompiler: true,
+  },
+
+  site: {
+    url: 'https://www.data.gouv.fr',
+    name: 'data.gouv.fr',
   },
 
   runtimeConfig: {
@@ -209,6 +215,51 @@ export default defineNuxtConfig({
     sourceMapsUploadOptions: {
       // disable sourcemaps upload from build, it's done later during the release with sentry-cli
       enabled: false,
+    },
+  },
+
+  sitemap: {
+    cacheMaxAgeSeconds: 3600, // 1 hour
+    sitemaps: {
+      content: {
+        includeGlobalSources: true,
+        includeAppSources: true,
+        exclude: ['/admin/**'],
+      },
+      dataservices: {
+        sources: [
+          '/nuxt-api/__sitemap__/dataservices',
+        ],
+      },
+      organizations: {
+        sources: [
+          '/nuxt-api/__sitemap__/organizations',
+        ],
+      },
+      posts: {
+        sources: [
+          '/nuxt-api/__sitemap__/posts',
+        ],
+      },
+      reuses: {
+        sources: [
+          '/nuxt-api/__sitemap__/reuses',
+        ],
+      },
+      // split datasets between 10 pages
+      ...Array.from({ length: 10 }, (_, i) => i + 1).map(page => ({
+        [`datasets_${page}`]: {
+          sources: [
+            `/nuxt-api/__sitemap__/datasets?page=${page}`,
+          ],
+        },
+      })).reduce((acc, obj) => ({ ...acc, ...obj }), {}),
+      pages: {
+        sources: [
+          '/nuxt-api/__sitemap__/pages',
+        ],
+      },
+      // TODO: add support
     },
   },
   // TODO: add sentry config for stack traces based on source maps
