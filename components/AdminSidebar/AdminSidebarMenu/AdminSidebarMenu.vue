@@ -206,8 +206,6 @@ const { isOpen, open, toggle, unregister } = inject(key) as AccordionRegister
 const { currentUser, currentOrganization } = useCurrentOwned()
 const route = useRoute()
 
-const isGlobalAdmin = computed(() => isAdmin(me.value))
-
 watchEffect(() => {
   if (currentUser.value && props.user && currentUser.value.id === props.user.id) {
     open(id)

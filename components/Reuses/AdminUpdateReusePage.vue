@@ -4,13 +4,14 @@
       v-if="reuseForm"
       v-model="reuseForm"
       type="update"
+      @feature="feature"
       @submit="save"
     >
       <template #button>
         <BrandedButton
           type="submit"
           color="primary"
-          :disabled="loading"
+          :disabled="isLoading"
         >
           {{ t("Save") }}
         </BrandedButton>
@@ -19,17 +20,17 @@
         <TransferBanner
           type="Reuse"
           :subject="reuse"
-          :label="$t('Transfer reuse')"
+          :label="$t('Transférer cette réutilisation')"
         />
         <BannerAction
           class="mt-5"
           type="danger"
-          :title="$t('Delete the reuse')"
+          :title="$t('Supprimer cette réutilisation')"
         >
-          {{ $t("Be careful, this action can't be reverse.") }}
+          {{ $t("Attention, cette action ne peut pas être annulée.") }}
           <template #button>
             <ModalWithButton
-              :title="$t('Are you sure you want to delete this reuse ?')"
+              :title="$t('Êtes-vous sûr de vouloir supprimer cette réutilisation?')"
               size="lg"
             >
               <template #button="{ attrs, listeners }">
@@ -44,16 +45,16 @@
                 </BrandedButton>
               </template>
               <p class="fr-text--bold">
-                {{ $t("This action can't be reverse.") }}
+                {{ $t("Cette action ne peut pas être annulée.") }}
               </p>
               <template #footer>
                 <div class="flex-1 flex justify-end">
                   <BrandedButton
                     color="danger"
-                    :disabled="loading"
+                    :disabled="isLoading"
                     @click="deleteReuse"
                   >
-                    {{ $t("Delete the reuse") }}
+                    {{ $t("Supprimer cette réutilisation") }}
                   </BrandedButton>
                 </div>
               </template>
@@ -67,10 +68,10 @@
 
 <script setup lang="ts">
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
-import type { Reuse, ReuseType } from '@datagouv/components-next'
+import type { Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
 import { RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
-import type { ReuseForm, ReuseTopic } from '~/types/types'
+import type { ReuseForm } from '~/types/types'
 import { toForm, toApi } from '~/utils/reuses'
 
 const { t } = useI18n()
@@ -78,12 +79,12 @@ const { $api, $fileApi } = useNuxtApp()
 const { toast } = useToast()
 
 const route = useRoute()
-const loading = ref(false)
+const { start, finish, isLoading } = useLoadingIndicator()
 
 const localePath = useLocalePath()
 
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
-const { data: reuse } = await useAPI<Reuse>(url, { lazy: true })
+const { data: reuse, refresh } = await useAPI<Reuse>(url, { lazy: true })
 
 const { data: types } = await useAPI<Array<ReuseType>>('/api/1/reuses/types', { lazy: true })
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics', { lazy: true })
@@ -93,11 +94,11 @@ watchEffect(() => {
   reuseForm.value = toForm(reuse.value, types.value || [], topics.value || [])
 })
 
-const save = async () => {
+async function save() {
   if (!reuseForm.value) throw new Error('No reuse form')
 
   try {
-    loading.value = true
+    start()
 
     await $api(`/api/1/reuses/${reuse.value.id}/`, {
       method: 'PUT',
@@ -113,16 +114,16 @@ const save = async () => {
       })
     }
 
-    toast.success(t('Reuse updated!'))
+    toast.success(t('Réutilisation mise à jour!'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    loading.value = false
+    finish()
   }
 }
 
 async function deleteReuse() {
-  loading.value = true
+  start()
   try {
     await $api(`/api/1/reuses/${route.params.id}`, {
       method: 'DELETE',
@@ -135,7 +136,30 @@ async function deleteReuse() {
     }
   }
   finally {
-    loading.value = false
+    finish()
+  }
+}
+
+async function feature() {
+  const method = reuse.value.featured ? 'DELETE' : 'POST'
+  try {
+    start()
+    await $api(`/api/1/reuses/${route.params.id}/featured`, {
+      method,
+    })
+    await refresh()
+    if (method === 'DELETE') {
+      toast.success(t('Réutilisation retirée de la mise en avant !'))
+    }
+    else {
+      toast.success(t('Réutilisation mise en avant !'))
+    }
+  }
+  catch {
+    toast.error(t('Impossible de mettre en avant cette réutilisation'))
+  }
+  finally {
+    finish()
   }
 }
 </script>

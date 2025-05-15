@@ -82,7 +82,7 @@
         </BannerAction>
 
         <BannerAction
-          v-if="isGlobalAdmin && harvester.validation.state === 'pending'"
+          v-if="isMeAdmin() && harvester.validation.state === 'pending'"
           class="mt-3"
           type="primary"
           :title="$t('Harvester validation')"
@@ -162,9 +162,7 @@ const { t } = useI18n()
 const { $api } = useNuxtApp()
 const { toast } = useToast()
 
-const me = useMe()
 const { currentOrganization } = useCurrentOwned()
-const isGlobalAdmin = computed(() => isAdmin(me.value))
 
 const route = useRoute()
 const url = computed(() => `/api/1/harvest/source/${route.params.id}`)

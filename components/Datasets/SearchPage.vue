@@ -162,7 +162,7 @@
               </BrandedButton>
               <BrandedButton
                 v-else-if="organization"
-                :href="$localePath(`/organizations/${organization.slug}/datasets.csv`)"
+                :href="`${config.public.apiBase}/api/1/organizations/${organization.slug}/datasets.csv`"
                 color="secondary"
                 :external="true"
                 :icon="RiDownloadLine"
@@ -341,7 +341,16 @@ const organizationTypes = getOrganizationTypes()
 /**
  * Search query
  */
-const queryString = ref(params.q ?? '')
+const route = useRoute()
+const queryString = ref('')
+watchEffect(() => {
+  // We use route.query here instead of params because params doesn't change when Nuxt
+  // navigates between page (for exemple when we use the search menu to search for a dataservice
+  // while in the dataservice search page)
+  if (Array.isArray(route.query.q)) return
+  if (!route.query.q) return
+  queryString.value = route.query.q
+})
 
 const deboucedQuery = debouncedRef(queryString, config.public.searchAutocompleteDebounce)
 

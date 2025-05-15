@@ -242,7 +242,7 @@
       </div>
     </FormFieldset>
     <FormFieldset
-      v-if="isGlobalAdmin && type != 'create'"
+      v-if="isMeAdmin() && type != 'create'"
       :legend="$t('Advanced')"
     >
       <FieldsetElement form-key="schedule">
@@ -281,8 +281,6 @@ const emit = defineEmits<{
 const model = defineModel<HarvesterForm>({ required: true })
 const { t } = useI18n()
 
-const me = useMe()
-
 onMounted(() => {
   if (props.type === 'update') validate()
 })
@@ -304,8 +302,6 @@ const backendOptions = computed(() => {
     label: backend.label,
   }))
 })
-
-const isGlobalAdmin = computed(() => isAdmin(me.value))
 
 const backendInfo = computed(() => {
   if (!backends.value) return null
