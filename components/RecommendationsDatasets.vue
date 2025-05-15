@@ -33,7 +33,6 @@ const datasetsIds = computed(() => {
   const recommendations = props.dataset.extras['recommendations'] || null
   if (!recommendations || !recommendations.length) return []
 
-  console.log(recommendations)
   return recommendations.map((r: { id: string }) => r.id)
 })
 
