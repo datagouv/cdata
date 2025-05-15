@@ -254,8 +254,12 @@ export default defineNuxtConfig({
           ],
         },
       })).reduce((acc, obj) => ({ ...acc, ...obj }), {}),
-
-      // TODO: add support and *pages*
+      pages: {
+        sources: [
+          '/nuxt-api/__sitemap__/pages',
+        ],
+      },
+      // TODO: add support
     },
   },
   // TODO: add sentry config for stack traces based on source maps
