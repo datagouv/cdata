@@ -11,7 +11,7 @@ export default <RouterConfig>{
     if (savedPosition) return savedPosition
 
     for (const fromPart of from.matched) {
-      for (const toPart of from.matched) {
+      for (const toPart of to.matched) {
         if (fromPart.path === toPart.path && fromPart.meta.keepScroll) {
           // We have the same parent and this parent ask to keep scroll between its children
           return false
