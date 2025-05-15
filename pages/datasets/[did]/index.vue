@@ -60,7 +60,7 @@ import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{ dataset: DatasetV2 }>()
 
-const url = computed(() => `/api/2/datasets/${props.dataset.id}/resources`)
+const url = computed(() => `/api/2/datasets/${props.dataset.id}/resources/`)
 
 const pageSize = ref(10)
 
