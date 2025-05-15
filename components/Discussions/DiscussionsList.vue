@@ -1,73 +1,109 @@
 <template>
   <div>
     <div
-      v-if="status === 'success'"
-      class="flex flex-wrap justify-between items-center mb-5"
+      v-if="selectedDiscussion"
+      class="space-y-4"
     >
-      <h2 class="text-sm font-bold uppercase m-0 text-gray-title">
-        {{ t('{n} discussions', pageData.total) }}
-      </h2>
-
-      <div>
+      <SimpleBanner
+        type="primary"
+        class="flex justify-between items-center"
+      >
+        <p class="!mb-0">
+          {{ $t('Vous consultez une discussion spécifique sur {subject}.', {
+            subject: {
+              Dataservice: $t('cette API'),
+              Dataset: $t('ce jeu de donnée'),
+              Reuse: $t('cette réutilisation'),
+              Post: $t('cet article'),
+              Topic: $t('ce bouquet'),
+              Organization: $t('cette organization'),
+            }[type],
+          }) }}
+        </p>
         <BrandedButton
-          color="secondary"
-          size="xs"
-          :icon="RiAddLine"
-          @click="showDiscussionForm"
+          color="secondary-softer"
+          keep-margins-even-without-borders
+          :icon="RiCloseCircleLine"
+          :href="{ name: route.name, params: route.params, query: { ...route.query, discussion_id: undefined } }"
         >
-          {{ t("Start a new discussion") }}
+          {{ $t("Voir toutes les discussions") }}
         </BrandedButton>
-      </div>
+      </SimpleBanner>
+      <DiscussionCard
+        :thread="selectedDiscussion"
+        :subject
+      />
     </div>
+    <div v-else>
+      <div
+        v-if="status === 'success'"
+        class="flex flex-wrap justify-between items-center mb-5"
+      >
+        <h2 class="text-sm font-bold uppercase m-0 text-gray-title">
+          {{ t('{n} discussions', pageData.total) }}
+        </h2>
 
-    <NewDiscussionForm
-      v-if="newDiscussion"
-      class="mb-5"
-      :subject="{ class: type, id: subject.id }"
-      @new="refresh(); newDiscussion = false"
-      @close="newDiscussion = false"
-    />
+        <div>
+          <BrandedButton
+            color="secondary"
+            size="xs"
+            :icon="RiAddLine"
+            @click="showDiscussionForm"
+          >
+            {{ t("Start a new discussion") }}
+          </BrandedButton>
+        </div>
+      </div>
 
-    <LoadingBlock :status>
-      <div v-if="pageData && pageData.total > 0">
-        <div class="space-y-2.5">
-          <DiscussionCard
-            v-for="thread in pageData.data"
-            :key="thread.id"
-            :thread
-            :subject
-            @change="refresh"
+      <NewDiscussionForm
+        v-if="newDiscussion"
+        class="mb-5"
+        :subject="{ class: type, id: subject.id }"
+        @new="refresh(); newDiscussion = false"
+        @close="newDiscussion = false"
+      />
+
+      <LoadingBlock :status>
+        <div v-if="pageData && pageData.total > 0">
+          <div class="space-y-2.5">
+            <DiscussionCard
+              v-for="thread in pageData.data"
+              :key="thread.id"
+              :thread
+              :subject
+              @change="refresh"
+            />
+          </div>
+
+          <Pagination
+            :page="page"
+            :page-size="pageSize"
+            :total-results="pageData.total"
+            @change="(changedPage: number) => page = changedPage"
           />
         </div>
+      </LoadingBlock>
 
-        <Pagination
-          :page="page"
-          :page-size="pageSize"
-          :total-results="pageData.total"
-          @change="(changedPage: number) => page = changedPage"
+      <div
+        v-if="pageData && !pageData.total"
+        class="flex flex-col items-center"
+      >
+        <nuxt-img
+          src="/illustrations/discussion.svg"
+          class="h-20"
         />
+        <p class="fr-text--bold fr-my-3v">
+          {{ t(`There is no discussion yet`) }}
+        </p>
       </div>
-    </LoadingBlock>
-
-    <div
-      v-if="pageData && !pageData.total"
-      class="flex flex-col items-center"
-    >
-      <nuxt-img
-        src="/illustrations/discussion.svg"
-        class="h-20"
-      />
-      <p class="fr-text--bold fr-my-3v">
-        {{ t(`There is no discussion yet`) }}
-      </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Pagination } from '@datagouv/components-next'
+import { BrandedButton, Pagination, SimpleBanner } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
-import { RiAddLine } from '@remixicon/vue'
+import { RiAddLine, RiCloseCircleLine } from '@remixicon/vue'
 import NewDiscussionForm from './NewDiscussionForm.vue'
 import DiscussionCard from './DiscussionCard.vue'
 import type { PaginatedArray, SortDirection } from '~/types/types'
@@ -121,4 +157,16 @@ const params = computed(() => {
   return query
 })
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Thread>>('/api/1/discussions/', { lazy: true, query: params })
+
+const route = useRoute()
+const { $api } = useNuxtApp()
+const selectedDiscussion = ref<Thread | null>(null)
+watchEffect(async () => {
+  if ('discussion_id' in route.query && route.query.discussion_id) {
+    selectedDiscussion.value = await $api<Thread>(`/api/1/discussions/${route.query.discussion_id}/`)
+  }
+  else {
+    selectedDiscussion.value = null
+  }
+})
 </script>
