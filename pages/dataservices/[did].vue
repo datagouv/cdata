@@ -71,6 +71,7 @@
             <div class="flex-1 overflow-x-hidden">
               <ReadMore class="">
                 <MarkdownViewer
+                  size="md"
                   :content="dataservice.description"
                   :min-heading="3"
                 />
