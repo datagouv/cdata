@@ -2,9 +2,11 @@
   <div>
     <div
       v-if="selectedDiscussion"
+      ref="selectedDiscussionBannerRef"
       class="space-y-4"
     >
       <SimpleBanner
+
         type="primary"
         class="flex justify-between items-center"
       >
@@ -161,9 +163,13 @@ const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Thread>>
 const route = useRoute()
 const { $api } = useNuxtApp()
 const selectedDiscussion = ref<Thread | null>(null)
+const selectedDiscussionBanner = useTemplateRef('selectedDiscussionBannerRef')
 watchEffect(async () => {
   if ('discussion_id' in route.query && route.query.discussion_id) {
     selectedDiscussion.value = await $api<Thread>(`/api/1/discussions/${route.query.discussion_id}/`)
+    nextTick(() => {
+      selectedDiscussionBanner.value?.scrollIntoView({ behavior: 'smooth' })
+    })
   }
   else {
     selectedDiscussion.value = null
