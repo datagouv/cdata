@@ -223,6 +223,10 @@ import ReportModal from '~/components/Spam/ReportModal.vue'
 const route = useRoute()
 const me = useMaybeMe()
 
+definePageMeta({
+  keepScroll: true,
+})
+
 const url = computed(() => `/api/2/datasets/${route.params.did}/`)
 const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
   headers: {
