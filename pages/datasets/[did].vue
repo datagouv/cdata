@@ -24,6 +24,10 @@
             v-if="dataset"
             :url="`/api/1/datasets/${dataset.id}/followers/`"
           />
+          <ReportModal
+            v-if="!isOrganizationCertified(dataset.organization)"
+            :subject="{ id: dataset.id, class: 'Dataset' }"
+          />
           <EditButton
             v-if="isAdmin(me)"
             :id="dataset.id"
@@ -179,11 +183,12 @@
 </template>
 
 <script setup lang="ts">
-import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality } from '@datagouv/components-next'
+import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified } from '@datagouv/components-next'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
+import ReportModal from '~/components/Spam/ReportModal.vue'
 
 const route = useRoute()
 const me = useMaybeMe()
