@@ -35,8 +35,8 @@ export default defineNuxtConfig({
   },
 
   site: {
-    url: '',
-    name: 'data.gouv.fr'
+    url: 'https://www.data.gouv.fr',
+    name: 'data.gouv.fr',
   },
 
   runtimeConfig: {
