@@ -7,7 +7,21 @@
       <DescriptionList>
         <div v-if="dataset.tags && dataset.tags.length">
           <DescriptionListTerm>{{ $t('Mots-clés') }}</DescriptionListTerm>
-          <DescriptionListDetails>{{ humanJoin(dataset.tags) }}</DescriptionListDetails>
+          <DescriptionListDetails class="flex flex-wrap gap-2 items-start">
+            <NuxtLinkLocale
+              v-for="tag in dataset.tags"
+              :key="tag"
+              class="fr-raw-link"
+              :href="`/datasets?tag=${tag}`"
+            >
+              <Tag
+
+                type="secondary"
+              >
+                {{ tag }}
+              </Tag>
+            </NuxtLinkLocale>
+          </DescriptionListDetails>
         </div>
         <div>
           <DescriptionListTerm>{{ $t('ID') }}</DescriptionListTerm>
