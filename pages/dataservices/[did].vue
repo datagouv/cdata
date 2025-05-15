@@ -261,4 +261,10 @@ useSeoMeta({
 })
 
 const openSwagger = ref(false)
+
+onMounted(async () => {
+  await redirectLegacyHashes([
+    { from: 'discussions', to: `/dataservices/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+  ])
+})
 </script>
