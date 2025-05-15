@@ -20,6 +20,10 @@
           </BreadcrumbItem>
         </Breadcrumb>
         <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
+          <FollowButton
+            v-if="dataset"
+            :url="`/api/1/datasets/${dataset.id}/followers/`"
+          />
           <EditButton
             v-if="isAdmin(me)"
             :id="dataset.id"
