@@ -147,6 +147,11 @@
           </div>
         </div>
 
+        <RecommendationExternal
+          v-if="dataset"
+          :dataset
+        />
+
         <FullPageTabs
           class="mt-12"
           :links="[
