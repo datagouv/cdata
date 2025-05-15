@@ -1,9 +1,9 @@
 <template>
   <li
     v-if="!qualityItem"
-    class="text-warning-dark flex flex-wrap items-center m-1"
+    class="text-warning-dark flex flex-wrap items-center"
   >
-    <p class="fr-my-0 fr-text--sm">
+    <p class="!m-0 text-sm">
       <span
         class="fr-icon-warning-line fr-icon--sm"
         aria-hidden="true"

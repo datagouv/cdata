@@ -86,12 +86,6 @@
       </div>
       <div class="flex items-center fr-ml-4v buttons">
         <p
-          v-if="unavailable"
-          class="text-default-warning fr-m-0 fr-mr-2v"
-        >
-          {{ t('Unavailable') }}
-        </p>
-        <p
           v-if="resource.format === 'url'"
           class="fr-col-auto fr-ml-3v fr-m-0 z-2"
         >
@@ -128,10 +122,10 @@
           <BrandedButton
             :href="resource.latest"
             rel="ugc nofollow noopener"
-            :title="t('Download file')"
+            :title="downloadButtonTitle"
             download
             class="relative text-transform-uppercase matomo_download z-2"
-            :icon="RiDownloadLine"
+            :icon="unavailable ? RiFileWarningLine : RiDownloadLine"
             size="xs"
             :aria-describedby="resourceTitleId"
           >
@@ -305,7 +299,7 @@
 <script setup lang="ts">
 import { ref, computed, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RiDownloadLine, RiFileCopyLine } from '@remixicon/vue'
+import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine } from '@remixicon/vue'
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
 import { filesize, summarize } from '../../functions/helpers'
 import { markdown } from '../../functions/markdown'
@@ -418,7 +412,9 @@ const owner = computed(() => communityResource.value ? getOwnerName(communityRes
 
 const lastUpdate = props.resource.last_modified
 const availabilityChecked = props.resource.extras && 'check:available' in props.resource.extras
+
 const unavailable = availabilityChecked && props.resource.extras['check:available'] === false
+const downloadButtonTitle = unavailable ? t(`Le robot de {certifier} n'a pas pu accéder à ce fichier - Télécharger le fichier en {format}`, { certifier: config.name, format: format.value }) : t(`Télécharger le fichier en {format}`, { format: format.value })
 
 const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset, props.resource))
 

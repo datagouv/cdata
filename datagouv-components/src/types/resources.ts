@@ -30,7 +30,7 @@ export type Resource = {
   last_modified: string
   latest: string
   preview_url: string
-  schema: Schema
+  schema: Schema | null
   url: string
 }
 

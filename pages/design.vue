@@ -4,6 +4,29 @@
       <h1 class="!mb-3">
         Design System
       </h1>
+      <div class="space-y-8 py-8 pb-64">
+        <h2 class="!mb-3">
+          DateRangeDetails
+        </h2>
+
+        <div class="flex flex-col">
+          <DateRangeDetails :range="{ start: '2024-01-01', end: null }" />
+          <DateRangeDetails :range="{ start: '2024-01-01', end: '2024-12-31' }" />
+          <DateRangeDetails :range="{ start: '2024-01-01', end: '2025-12-31' }" />
+          <DateRangeDetails :range="{ start: '2024-01-01', end: '2026-12-31' }" />
+
+          <DateRangeDetails :range="{ start: '2024-02-01', end: null }" />
+          <DateRangeDetails :range="{ start: '2024-01-01', end: '2024-01-31' }" />
+          <DateRangeDetails :range="{ start: '2024-01-01', end: '2024-02-29' }" />
+          <DateRangeDetails :range="{ start: '2024-01-01', end: '2024-03-31' }" />
+          <DateRangeDetails :range="{ start: '2024-12-01', end: '2025-01-31' }" />
+          <DateRangeDetails :range="{ start: '2024-12-01', end: '2025-04-30' }" />
+
+          <DateRangeDetails :range="{ start: '2024-02-12', end: null }" />
+          <DateRangeDetails :range="{ start: '2024-01-01', end: '2024-01-12' }" />
+          <DateRangeDetails :range="{ start: '2024-01-01', end: '2024-01-01' }" />
+        </div>
+      </div>
       <section>
         <h2 class="!mb-3">
           Colors
@@ -133,6 +156,7 @@
 import { BrandedButton, DatasetCard, DatasetQuality, ReadMore, ResourceAccordion, SimpleBanner, type DatasetV2 } from '@datagouv/components-next'
 import { RiArrowRightLine } from '@remixicon/vue'
 import DatasetSearchPage from '~/components/Datasets/SearchPage.vue'
+import DateRangeDetails from '~/components/DateRangeDetails.vue'
 import AdminBadge from '~/design-system/AdminBadge.vue'
 import BannerAction from '~/design-system/BannerAction.vue'
 import BannerNotif from '~/design-system/BannerNotif.vue'

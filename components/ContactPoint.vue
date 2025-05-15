@@ -4,7 +4,7 @@
       :is="link ? 'a' : 'span'"
       :href="link"
       rel="ugc nofollow noopener"
-      target="_blank"
+      :target="link ? '_blank' : undefined"
       class="text-grey-title text-overflow-ellipsis overflow-hidden"
     >
       {{ label }}
