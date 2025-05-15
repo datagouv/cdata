@@ -28,6 +28,7 @@
         />
       </div>
     </div>
+    <RecommendationsDatasets :dataset />
   </div>
 </template>
 

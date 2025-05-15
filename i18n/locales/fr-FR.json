@@ -95,6 +95,7 @@
   "The identity of this public service is certified by {certifier}": "L'identité de ce service public est certifiée par {certifier}",
   "{n} reuses": "{n} réutilisations | {n} réutilisation | {n} réutilisations",
   "{n} réutilisations recommandées": "{n} réutilisations recommandées | {n} réutilisation recommandée | {n} réutilisations recommandées",
+  "{n} jeux de données recommandés": "{n} jeux de données recommandés | {n} jeu de données recommandé | {n} jeux de données recommandés",
   "Metadata quality:": "Qualité des métadonnées:",
   "Data description filled": "Description des données renseignée",
   "Data description empty": "Description des données non renseignée",
