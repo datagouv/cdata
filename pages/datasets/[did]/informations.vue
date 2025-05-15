@@ -255,7 +255,6 @@ watchEffect(async () => {
   if (page.data[0]) {
     const totalResponse = await fetch(`https://metric-api.data.gouv.fr/api/datasets_total/data/?dataset_id__exact=${props.dataset.id}`)
     const totalPage = await totalResponse.json()
-    console.log(totalPage.data[0])
 
     datasetVisitsTotal.value = totalPage.data[0].visit
     datasetDownloadsResourcesTotal.value = totalPage.data[0].download_resource
