@@ -19,11 +19,15 @@
             {{ dataservice.title }}
           </BreadcrumbItem>
         </Breadcrumb>
-        <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
+        <div class="flex gap-3 items-center">
           <EditButton
             v-if="isMeAdmin()"
             :id="dataservice.id"
             type="dataservices"
+          />
+          <ReportModal
+            v-if="!isOrganizationCertified(dataservice.organization)"
+            :subject="{ id: dataservice.id, class: 'Dataservice' }"
           />
         </div>
       </div>
@@ -233,17 +237,17 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import DataserviceAccessTypeBadge from '~/components/AdminTable/AdminDataservicesTable/DataserviceAccessTypeBadge.vue'
-import EditButton from '~/components/BrandedButton/EditButton.vue'
+import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
+import ReportModal from '~/components/Spam/ReportModal.vue'
 
 const route = useRoute()
-const me = useMaybeMe()
 
 const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
 const { data: dataservice, status } = await useAPI<Dataservice>(url)
