@@ -37,11 +37,15 @@
               {{ $t('See the reuse') }}
             </BrandedButton>
           </div>
-          <div>
+          <div class="flex gap-3 items-center">
             <EditButton
               v-if="isMeAdmin()"
               :id="reuse.id"
               type="reuses"
+            />
+            <ReportModal
+              v-if="!isOrganizationCertified(reuse.organization)"
+              :subject="{ id: reuse.id, class: 'Reuse' }"
             />
           </div>
         </div>
@@ -167,11 +171,12 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, OrganizationNameWithCertificate, type Reuse } from '@datagouv/components-next'
+import { isOrganizationCertified, Avatar, BrandedButton, OrganizationNameWithCertificate, type Reuse } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import ReportModal from '~/components/Spam/ReportModal.vue'
 import ReuseDetails from '~/datagouv-components/src/components/ReuseDetails.vue'
 import type { PaginatedArray } from '~/types/types'
 
