@@ -24,7 +24,7 @@
           {{ t('Created at') }}
         </AdminTableTh>
         <AdminTableTh
-          class="w-36"
+          class="min-w-56"
           :sorted="sorted('last_update')"
           scope="col"
           @sort="(direction: SortDirection) => updateSort('last_update', direction)"
@@ -155,7 +155,19 @@
           {{ formatDate(dataset.created_at) }}
         </td>
         <td>
-          {{ formatDate(dataset.last_modified) }}
+          <div v-if="dataset.id in activities">
+            <p>{{ formatDate(activities[dataset.id].created_at) }}</p>
+            <p class="inline-flex items-center">
+              {{ t('by ') }}
+              <AvatarWithName
+                class="fr-ml-1v"
+                :user="activities[dataset.id].actor"
+              />
+            </p>
+          </div>
+          <template v-else>
+            {{ formatDate(dataset.last_modified) }}
+          </template>
         </td>
         <td class="font-mono text-right">
           {{ getFilesCount(dataset) }}
@@ -219,7 +231,7 @@
 </template>
 
 <script setup lang="ts">
-import { summarize, DatasetQualityScore, DatasetQualityInline, DatasetQualityTooltipContent, BrandedButton } from '@datagouv/components-next'
+import { summarize, DatasetQualityScore, DatasetQualityTooltipContent, BrandedButton, AvatarWithName } from '@datagouv/components-next'
 import type { Dataset, DatasetV2 } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
@@ -228,17 +240,21 @@ import AdminContentWithTooltip from '../../AdminContentWithTooltip/AdminContentW
 import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
 import Tooltip from '../../Tooltip/Tooltip.vue'
+import type { Activity } from '~/types/activity'
 import type { AdminBadgeType, DatasetSortedBy, SortDirection } from '~/types/types'
 
 const emit = defineEmits<{
   (event: 'sort', column: DatasetSortedBy, direction: SortDirection): void
 }>()
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
+  activities?: Record<Dataset['id'], Activity>
   datasets: Array<Dataset | DatasetV2>
   sortDirection?: SortDirection
   sortedBy?: DatasetSortedBy
-}>()
+}>(), {
+  activities: () => ({}),
+})
 
 const { t } = useI18n()
 
