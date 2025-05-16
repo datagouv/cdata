@@ -15,15 +15,15 @@
     @close="emit('close')"
   >
     <DialogPanel
-      :as="form ? 'form': undefined"
-      class="w-full h-full pointer-events-none"
+      :as="form ? 'form': 'div'"
+      class="w-full h-full"
       @submit="$emit('submit', $event)"
     >
       <div
         class="h-full md:container md:mx-auto fr-container--fluid grid grid-cols-12 p-0 m-0 justify-center"
       >
         <div
-          class="col-span-12 overflow-y-auto"
+          class="col-span-12 overflow-y-auto grid grid-cols-1 items-center"
           :class="contentSize"
         >
           <div
@@ -47,7 +47,7 @@
               </BrandedButton>
             </div>
             <div
-              class="px-4 sm:px-8 mb-[3.5rem] sm:mb-[4rem] contrast-more:border-solid contrast-more:border-1"
+              class="px-4 sm:px-8 pb-[3.5rem] sm:pb-[4rem] contrast-more:border-solid contrast-more:border-1"
               :class="{ 'pl-0 pr-0': isFullscreen }"
             >
               <DialogTitle
@@ -60,7 +60,10 @@
               </DialogTitle>
               <slot />
             </div>
-            <div class="flex p-4 sm:px-8 -mt-10 sticky bottom-0 bg-white contrast-more:border-solid contrast-more:border-t-1 motion-reduce:transition-none">
+            <div
+              v-if="$slots.footer"
+              class="flex p-4 sm:px-8 -mt-10 sticky bottom-0 bg-white contrast-more:border-solid contrast-more:border-t-1 motion-reduce:transition-none"
+            >
               <slot name="footer" />
             </div>
           </div>
