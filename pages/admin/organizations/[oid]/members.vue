@@ -37,7 +37,7 @@
         </h2>
       </div>
       <div
-        v-if="isMeAdmin()"
+        v-if="isOrgAdmin"
         class="flex-none"
       >
         <ModalWithButton
@@ -407,7 +407,7 @@ const canSubmitNewMember = computed(() => {
 
   return true
 })
-const submitNewMember = async (close) => {
+const submitNewMember = async (close: () => void) => {
   if (!canSubmitNewMember.value) return
 
   try {
