@@ -9,7 +9,7 @@
       />
       <NuxtLinkLocale
         :to="to"
-        :aria-current="route.fullPath === localeRoute(to)?.fullPath || hasBreadcrumb ? 'page' : false"
+        :aria-current="route.fullPath === localeRoute(to)?.fullPath || isLastBreadcrumb ? 'page' : false"
       >
         <TextClamp
           :text="label"
@@ -51,7 +51,7 @@ const lastBreadcrumbInSidebar = computed(() => {
   if (!breadcrumbsInSidebar.length) return null
   return breadcrumbsInSidebar[breadcrumbsInSidebar.length - 1]
 })
-const hasBreadcrumb = computed(() => {
+const isLastBreadcrumb = computed(() => {
   if (!lastBreadcrumbInSidebar.value) return false
   return localeRoute(lastBreadcrumbInSidebar.value)?.fullPath === localeRoute(props.to)?.fullPath
 })
