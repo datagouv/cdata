@@ -233,6 +233,8 @@ import getDatasetOEmbedHtml from '~/datagouv-components/src/functions/datasets'
 
 const props = defineProps<{ dataset: DatasetV2WithFullObject }>()
 
+useSeoMeta({ robots: 'noindex' })
+
 const config = useRuntimeConfig()
 
 const { data: schemas } = await useAPI<Array<Schema>>(`/api/2/datasets/${props.dataset.id}/schemas/`)

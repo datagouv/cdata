@@ -60,6 +60,8 @@ import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{ dataset: DatasetV2 }>()
 
+useSeoMeta({ robots: 'noindex' })
+
 const config = useRuntimeConfig()
 
 const page = ref(1)

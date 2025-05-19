@@ -57,6 +57,8 @@ import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 
 const props = defineProps<{ dataset: DatasetV2 }>()
 
+useSeoMeta({ robots: 'noindex' })
+
 const dataservicesPage = ref(1)
 const dataservicesQuery = computed(() => ({
   dataset: props.dataset.id,

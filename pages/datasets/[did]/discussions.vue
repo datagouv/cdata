@@ -10,4 +10,6 @@ import type { DatasetV2 } from '@datagouv/components-next'
 import DiscussionsList from '~/components/Discussions/DiscussionsList.vue'
 
 defineProps<{ dataset: DatasetV2 }>()
+
+useSeoMeta({ robots: 'noindex' })
 </script>
