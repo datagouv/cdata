@@ -55,7 +55,7 @@
       v-if="reuse"
       :status
     >
-      <div class="container pt-10 min-h-32">
+      <div class="container py-10 min-h-32">
         <div class="flex flex-wrap">
           <div class="w-full md:w-5/12 flex flex-col justify-center">
             <div class="flex gap-3 mb-2">
@@ -145,10 +145,6 @@
             />
           </div>
         </div>
-        <Divider
-          class="my-5"
-          color="border-gray-default"
-        />
       </div>
       <FullPageTabs
         :links="[
