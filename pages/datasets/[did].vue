@@ -28,6 +28,16 @@
             v-if="!isOrganizationCertified(dataset.organization)"
             :subject="{ id: dataset.id, class: 'Dataset' }"
           />
+          <BrandedButton
+            v-if="exploreUrl"
+            :href="exploreUrl"
+            :icon="RiExternalLinkFill"
+            icon-right
+            size="xs"
+            target="blank"
+          >
+            {{ $t("Explore data") }}
+          </BrandedButton>
           <EditButton
             v-if="isAdmin(me)"
             :id="dataset.id"
@@ -212,13 +222,15 @@
 </template>
 
 <script setup lang="ts">
-import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified } from '@datagouv/components-next'
-import { RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
+import exp from 'constants'
+import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, type Resource, BrandedButton } from '@datagouv/components-next'
+import { RiDeleteBinLine, RiExternalLinkFill, RiLockLine } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
+import type { PaginatedArray } from '~/types/types'
 
 const route = useRoute()
 const me = useMaybeMe()
@@ -248,5 +260,15 @@ onMounted(async () => {
     { from: 'community-resources', to: `/datasets/${route.params.did}/community-resources/`, queryParam: 'resource_id' },
     { from: 'information', to: `/datasets/${route.params.did}/informations/` },
   ])
+})
+
+const { data: resources } = await useAPI<PaginatedArray<Resource>>(`/api/2/datasets/${route.params.did}/resources/`, { query: { type: 'main' } })
+const exploreUrl = computed(() => {
+  if (!resources.value) return null
+  for (const resource of resources.value.data) {
+    if (!resource.preview_url) continue
+    return resource.preview_url
+  }
+  return null
 })
 </script>
