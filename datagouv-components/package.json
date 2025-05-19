@@ -27,6 +27,7 @@
     "@remixicon/vue": "^4.5.0",
     "@vueuse/core": "^13.1.0",
     "chart.js": "^4.4.8",
+    "dompurify": "^3.2.5",
     "markdown-it": "^14.1.0",
     "ofetch": "^1.4.1",
     "popmotion": "^8.7.6",
