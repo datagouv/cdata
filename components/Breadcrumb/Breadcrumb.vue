@@ -45,25 +45,12 @@ const updateBreadcrumbs = () => {
 }
 
 const observer = ref<MutationObserver | null>(null)
-onMounted(() => {
-  updateBreadcrumbs()
-})
+onMounted(() => updateBreadcrumbs())
 onMounted(() => {
   if (!root.value) return
   if (typeof MutationObserver === 'undefined') return
 
-  observer.value = new MutationObserver(() => {
-    if (updating.value) return
-    updating.value = true
-    nextTick(() => {
-      try {
-        updateBreadcrumbs()
-      }
-      finally {
-        updating.value = false
-      }
-    })
-  })
+  observer.value = new MutationObserver(updateBreadcrumbs)
   observer.value.observe(root.value, {
     childList: true,
   })
