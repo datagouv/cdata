@@ -100,32 +100,21 @@
       <h3 class="uppercase text-gray-plain text-sm font-bold">
         {{ $t('Schéma de données') }}
       </h3>
-      <div>
+      <div class="space-y-4">
         <div
           v-for="schema, index in schemas"
           :key="index"
+          class="flex flex-col md:flex-row gap-2 justify-between items-center"
         >
-          <div class=" text-gray-medium">
-            <p class="text-sm">
-              {{ $t('Les fichiers du jeu de données suivent le schéma :') }}
-              <Tag
-                type="secondary"
-                :icon="RiCheckboxCircleLine"
-              >
-                {{ schema.name || schema.url }}
-              </Tag>
-            </p>
-            <p class="text-sm">
-              <i18n-t keypath="Les schémas de données permettent de décrire des modèles de données, découvrez comment les schémas améliorent la qualité des données et quels sont les cas d'usages possibles sur {link}">
-                <template #link>
-                  <NuxtLink
-                    :to="config.public.schemasSite.url"
-                    external
-                  >{{ config.public.schemasSite.name }}</NuxtLink>
-                </template>
-              </i18n-t>
-            </p>
-          </div>
+          <p class=" text-sm mb-0">
+            {{ $t('Les fichiers du jeu de données suivent le schéma :') }}
+            <Tag
+              type="secondary"
+              :icon="RiCheckboxCircleLine"
+            >
+              {{ schema.name || schema.url }}
+            </Tag>
+          </p>
           <!-- I think it's always true but not sure with TypeScript types… -->
           <div v-if="schema.url || schema.name">
             <BrandedButton
@@ -133,10 +122,20 @@
               :icon="RiBook2Line"
               :href="schema.url ? schema.url : `${config.public.schemasSite.url}${schema.name}`"
             >
-              {{ $t('Voir la documentation de schéma') }}
+              {{ $t('Voir la documentation du schéma') }}
             </BrandedButton>
           </div>
         </div>
+        <p class="text-sm">
+          <i18n-t keypath="Les schémas de données permettent de décrire des modèles de données, découvrez comment les schémas améliorent la qualité des données et quels sont les cas d'usages possibles sur {link}">
+            <template #link>
+              <NuxtLink
+                :to="config.public.schemasSite.url"
+                external
+              >{{ config.public.schemasSite.name }}</NuxtLink>
+            </template>
+          </i18n-t>
+        </p>
       </div>
     </div>
     <div class="space-y-1 py-6">
