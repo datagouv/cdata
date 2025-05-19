@@ -9,10 +9,9 @@
           class="fr-icon-warning-line"
           aria-hidden="true"
         />
-        {{ t("The preview of this file failed to load.") }}
+        {{ t("The map preview of this file failed to load.") }}
       </p>
     </div>
-    <PreviewLoader v-else-if="loading" />
     <template v-else>
       <div class="bg-blue-100 text-datagouv fr-hidden fr-unhidden-md p-4">
         <div class="fr-grid-row fr-grid-row--middle fr-grid-row--gutters">
@@ -39,11 +38,11 @@
           </p>
         </div>
       </div>
+      <div style="height: 500px;" ref="containerRef" />
+      <div class="fr-px-5v fr-pt-5v">
+        {{ t("Map preview updated on {date}", { date: lastUpdate }) }}
+      </div>
     </template>
-    <div style="height: 500px;" ref="containerRef" />
-    <div class="fr-px-5v">
-      {{ t("Map preview updated on {date}", { date: lastUpdate }) }}
-    </div>
   </div>
 </template>
 
@@ -56,17 +55,13 @@ import maplibregl from 'maplibre-gl'
 import { formatDate } from '../../functions/dates'
 import type { Resource } from '../../types/resources'
 import BrandedButton from '../BrandedButton.vue'
+import styleVector from '../../../assets/json/vector.json'
 import franceSvg from './france.svg?raw'
-import PreviewLoader from './PreviewLoader.vue'
 
 const props = defineProps<{ resource: Resource }>()
 
-console.log(props.resource)
-console.log(props.resource.extras)
-
 const { t } = useI18n()
 
-const loading = ref(true)
 const hasError = ref(false)
 const pmtilesUrl = props.resource.extras['analysis:parsing:pmtiles_url']
 const pmtilesViewerUrl = computed(() => `https://pmtiles.io/#${pmtilesUrl}`)
@@ -85,87 +80,38 @@ async function displayMap() {
   protocol.add(p)
 
   p.getHeader().then((h) => {
-    p.getMetadata().then((metadata) => {
-      loading.value = false
-      const style = {
-        version: 8,
-        sources: {
-          pmtiles_source: {
-            type: 'vector',
-            url: `pmtiles://${pmtilesUrl}`,
-            attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
-          },
-        },
-        layers: [],
-      }
-      metadata.vector_layers.forEach((layer) => {
-        style.layers.push({
-          'id': layer.id,
-          'source': 'pmtiles_source',
-          'source-layer': layer.id,
-          'type': 'fill',
-          'paint': {
-            'fill-color': 'steelblue',
-          },
-        })
-      })
-
-      new maplibregl.Map({
-        container: container.value, // container id
-        style: style,
-        center: [0, 0], // starting position [lng, lat]
-        zoom: h.maxZoom - 2,
-        center: [h.centerLon, h.centerLat],
-      })
+    const map = new maplibregl.Map({
+      container: container.value, // container id
+      style: styleVector,
+      zoom: h.maxZoom - 2,
+      center: [h.centerLon, h.centerLat],
     })
-  })
 
-  // await import('leaflet/dist/leaflet.css')
-  // const L = await import('leaflet')
-  // loading.value = false
-  // console.log(container.value)
-  // if (!container.value) return
-  // const map = L.map(container.value).setView([0, 0], 0)
-
-  // const layer = protomapsL.leafletLayer({ url: pmtilesUrl, flavor: 'light', lang: 'en' })
-  // layer.addTo(map)
-
-  // const p = new PMTiles(pmtilesUrl)
-  // p.getHeader().then((h) => {
-  //   const layer = leafletLayer(p, {
-  //     maxzoom: h.maxZoom,
-  //     attribution:
-  //       'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.',
-  //   })
-  //   layer.addTo(map)
-  // })
+    map.on('load', () => {
+      p.getMetadata().then((metadata) => {
+        map.addSource('pmtiles_source', {
+          type: 'vector',
+          url: `pmtiles://${pmtilesUrl}`,
+          attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+        })
+        metadata.vector_layers.forEach((layer) => {
+          map.addLayer({
+            'id': layer.id,
+            'source': 'pmtiles_source',
+            'source-layer': layer.id,
+            'type': 'fill',
+            'paint': {
+              'fill-color': 'steelblue',
+              'fill-opacity': { base: 1, stops: [[0, 0.9], [10, 0.3]] },
+            },
+          })
+        })
+      }).catch(() => hasError.value = true)
+    })
+  }).catch(() => hasError.value = true)
 }
 
 onMounted(() => {
   displayMap()
 })
 </script>
-
-<style scoped>
-.style-cell {
-  height: 3rem;
-  overflow-y: auto;
-}
-
-.col-width {
-  width: 20rem;
-}
-
-.cell-padding {
-  padding: 0.5rem 0rem 0.5rem 1.2rem!important;
-}
-
-td {
-  border-right: 1px solid #CECECE;
-  border-bottom: 1px solid #CECECE;
-}
-
-th {
-  border-right: 1px solid #CECECE;
-}
-</style>
