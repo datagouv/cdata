@@ -10,6 +10,7 @@
       <NuxtLinkLocale
         :to="to"
         :aria-current="(route.name === localeRoute(to)?.name && route.params.oid === localeRoute(to)?.params.oid) ? 'page' : false"
+        class="[[aria-current=page]]:-translate-y-0.5"
       >
         <TextClamp
           :text="label"
