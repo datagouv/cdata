@@ -24,7 +24,7 @@
               {{ t("Explore data in detail") }}
             </p>
             <p class="fr-text--sm fr-m-0 f-italic">
-              {{ t("Use our tool to get an overview of data, learn about different columns or perform filters and sorts.") }}
+              {{ t("Use PMTiles viewer to get an overview of geojson data.") }}
             </p>
           </div>
           <p class="fr-col-auto fr-my-0">
@@ -94,21 +94,33 @@ async function displayMap() {
           url: `pmtiles://${pmtilesUrl}`,
           attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
         })
-        metadata.vector_layers.forEach((layer) => {
+
+        metadata.tilestats.layers.forEach((layer) => {
+          const typeLayer = computed(() => {
+            switch (layer.geometry) {
+              case 'Polygon':
+                return 'fill'
+              case 'Point':
+                return `circle`
+              default:
+                throwOnNever(layer.geometry, 'Unsupported geometry')
+                return ''
+            }
+          })
           map.addLayer({
-            'id': layer.id,
+            'id': layer.layer,
             'source': 'pmtiles_source',
-            'source-layer': layer.id,
-            'type': 'fill',
+            'source-layer': layer.layer,
+            'type': typeLayer.value,
             'paint': {
-              'fill-color': 'steelblue',
-              'fill-opacity': { base: 1, stops: [[0, 0.9], [10, 0.3]] },
+              [`${typeLayer.value}-color`]: 'steelblue',
+              [`${typeLayer.value}-opacity`]: { base: 1, stops: [[0, 0.9], [10, 0.6]] },
             },
           })
         })
-      }).catch(() => hasError.value = true)
+      }).catch (() => hasError.value = true)
     })
-  }).catch(() => hasError.value = true)
+  }).catch (() => hasError.value = true)
 }
 
 onMounted(() => {
