@@ -25,6 +25,7 @@
         />
       </div>
     </section>
+    <Divider class="my-10" />
     <section>
       <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
         <div>
@@ -97,6 +98,7 @@
 <script setup lang="ts">
 import { BrandedButton, CopyButton, Pagination, StatBox, type Dataservice, type DatasetV2 } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
+import Divider from '~/components/Divider.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{ dataservice: Dataservice }>()
