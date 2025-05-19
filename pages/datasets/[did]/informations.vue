@@ -126,10 +126,12 @@
               </i18n-t>
             </p>
           </div>
-          <div v-if="schema.url">
+          <!-- I think it's always true but not sure with TypeScript types… -->
+          <div v-if="schema.url || schema.name">
             <BrandedButton
               color="secondary"
               :icon="RiBook2Line"
+              :href="schema.url ? schema.url : `${config.public.schemasSite.url}${schema.name}`"
             >
               {{ $t('Voir la documentation de schéma') }}
             </BrandedButton>
