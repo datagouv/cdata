@@ -254,11 +254,9 @@ const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
 const { data: dataservice, status } = await useAPI<Dataservice>(url)
 
 const title = computed(() => dataservice.value?.title)
-const robots = computed(() => dataservice.value ? 'noindex, nofollow' : 'all')
 
 useSeoMeta({
   title,
-  robots,
 })
 
 const openSwagger = ref(false)
