@@ -150,5 +150,13 @@
   "URL copied!": "URL copied!",
   "Copy stable URL": "Copy stable URL",
   "Stable URL copied!": "Stable URL copied!",
-  "Download file as ": "Download file as "
+  "Download file as ": "Download file as ",
+  "The map preview of this file failed to load.": "The map preview of this file failed to load.",
+  "Use PMTiles viewer to get an overview of geojson data.": "Use PMTiles viewer to get an overview of geojson data.",
+  "Explore map": "Explore map",
+  "Map preview updated on {date}": "Map preview updated on {date}",
+  "Map": "Map",
+  "Le robot de {certifier} n'a pas pu accéder à ce fichier - Télécharger le fichier en {format}": "Le robot de {certifier} n'a pas pu accéder à ce fichier - Télécharger le fichier en {format}",
+  "Télécharger le fichier en {format}": "Télécharger le fichier en {format}",
+  "The API returned an unexpected error": "The API returned an unexpected error"
 }
