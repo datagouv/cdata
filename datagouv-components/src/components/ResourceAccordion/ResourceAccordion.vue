@@ -175,6 +175,9 @@
             <div v-if="tab.key === 'data'">
               <Preview :resource="resource" />
             </div>
+            <div v-if="tab.key === 'map'">
+              <Pmtiles :resource="resource" />
+            </div>
             <div
               v-if="tab.key === 'description'"
               class="fr-pl-4v fr-pr-4v"
@@ -324,6 +327,7 @@ import ResourceIcon from './ResourceIcon.vue'
 import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
+import Pmtiles from './Pmtiles.vue'
 
 const OGC_SERVICES_FORMATS = ['ogc:wfs', 'ogc:wms', 'wfs', 'wms']
 
@@ -352,6 +356,10 @@ const hasPreview = computed(() => {
     && (config.tabularAllowRemote || props.resource.filetype === 'file')
 })
 
+const hasPmtiles = computed(() => {
+  return props.resource.extras['analysis:parsing:pmtiles_url']
+})
+
 const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('File'))
 
 const ogcService = computed(() => OGC_SERVICES_FORMATS.includes(props.resource.format))
@@ -373,6 +381,10 @@ const tabsOptions = computed(() => {
 
   if (hasPreview.value) {
     options.push({ key: 'data', label: t('Data') })
+  }
+
+  if (hasPmtiles.value) {
+    options.push({ key: 'map', label: t('Map') })
   }
 
   if (props.resource.description) {
