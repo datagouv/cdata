@@ -1,5 +1,4 @@
 import type { $Fetch } from 'nitropack'
-import type { Dataset, DatasetV2 } from '~/datagouv-components/src/main'
 import type { Activity } from '~/types/activity'
 import type { PaginatedArray } from '~/types/types'
 
@@ -23,15 +22,15 @@ export function getActivityTranslation(activity: Activity) {
   }[activity.key] ?? activity.label
 }
 
-export async function getActitiesForDatasets(api: $Fetch, datasets: Array<Dataset | DatasetV2>) {
-  const activityPromises: Record<DatasetV2['id'], Promise<PaginatedArray<Activity>>> = {}
-  for (const dataset of datasets) {
-    if (dataset.id in activityPromises) {
+export async function getActitiesForObjects(api: $Fetch, auditables: Array<{ id: string }>) {
+  const activityPromises: Record<string, Promise<PaginatedArray<Activity>>> = {}
+  for (const auditable of auditables) {
+    if (auditable.id in activityPromises) {
       continue
     }
-    activityPromises[dataset.id] = api<PaginatedArray<Activity>>('/api/1/activity/', {
+    activityPromises[auditable.id] = api<PaginatedArray<Activity>>('/api/1/activity/', {
       params: {
-        related_to: dataset.id,
+        related_to: auditable.id,
       },
     })
   }
@@ -43,5 +42,5 @@ export async function getActitiesForDatasets(api: $Fetch, datasets: Array<Datase
         activities[activity.related_to_id] = activity
       }
       return activities
-    }, {} as Record<Dataset['id'], Activity>)
+    }, {} as Record<string, Activity>)
 }

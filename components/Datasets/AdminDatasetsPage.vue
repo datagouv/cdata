@@ -205,7 +205,7 @@ const params = computed(() => {
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/', { lazy: true, query: params })
 
 watch(pageData, async (data) => {
-  const activities = await getActitiesForDatasets($api, data.data)
+  const activities = await getActitiesForObjects($api, data.data)
   datasetActivities.value = { ...datasetActivities.value, ...activities }
 })
 </script>

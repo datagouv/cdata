@@ -248,7 +248,7 @@ const emit = defineEmits<{
 }>()
 
 const props = withDefaults(defineProps<{
-  activities?: Record<Dataset['id'], Activity>
+  activities?: Record<string, Activity>
   datasets: Array<Dataset | DatasetV2>
   sortDirection?: SortDirection
   sortedBy?: DatasetSortedBy
