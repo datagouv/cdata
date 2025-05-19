@@ -52,6 +52,7 @@ import { useI18n } from 'vue-i18n'
 import { RiExternalLinkFill } from '@remixicon/vue'
 import { Protocol, PMTiles } from 'pmtiles'
 import maplibregl from 'maplibre-gl'
+import DOMPurify from 'dompurify'
 import { formatDate } from '../../functions/dates'
 import type { Resource } from '../../types/resources'
 import BrandedButton from '../BrandedButton.vue'
@@ -99,9 +100,8 @@ async function displayMap() {
       else {
         const coordinates = e.lngLat
         const description = Object.keys(e.features[0].properties).map((element) => {
-          return `<b>${element} :</b> ${e.features[0].properties[element]}`
+          return `<b>${DOMPurify.sanitize(element)} :</b> ${DOMPurify.sanitize(e.features[0].properties[element])}`
         }).join('<br>')
-        // TODO: HTML unsafe
         popup.setLngLat(coordinates).setHTML(description).addTo(map)
       }
     }
