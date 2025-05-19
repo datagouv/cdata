@@ -35,9 +35,11 @@ const props = defineProps<{
 }>()
 
 const id = useId()
+// :BreadcrumbInSidebar
 const breadcrumbs = useBreadcrumbs()
 const sidebarLinks = useSidebarLinks()
 
+// We key by ID to avoid destroying a value created by another component.
 onMounted(() => sidebarLinks.value[id] = props.to)
 // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
 onUnmounted(() => delete sidebarLinks.value[id])
