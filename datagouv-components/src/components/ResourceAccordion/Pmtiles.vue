@@ -38,7 +38,7 @@
           </p>
         </div>
       </div>
-      <div style="height: 500px;" ref="containerRef" />
+      <div style="height: 600px;" ref="containerRef" />
       <div class="fr-px-5v fr-pt-5v">
         {{ t("Map preview updated on {date}", { date: lastUpdate }) }}
       </div>
@@ -64,7 +64,7 @@ const { t } = useI18n()
 
 const hasError = ref(false)
 const pmtilesUrl = props.resource.extras['analysis:parsing:pmtiles_url']
-const pmtilesViewerUrl = computed(() => `https://pmtiles.io/#${pmtilesUrl}`)
+const pmtilesViewerUrl = computed(() => `https://pmtiles.io/#url=${encodeURIComponent(pmtilesUrl)}`)
 
 const lastUpdate = formatDate(props.resource.extras['analysis:parsing:finished_at'])
 
@@ -86,6 +86,25 @@ async function displayMap() {
       zoom: h.maxZoom - 2,
       center: [h.centerLon, h.centerLat],
     })
+    map.addControl(new maplibregl.NavigationControl())
+
+    const popup = new maplibregl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+    })
+
+    function showMapPopup(e) {
+      if (!e.features || !e.features[0])
+        popup.remove()
+      else {
+        const coordinates = e.lngLat
+        const description = Object.keys(e.features[0].properties).map((element) => {
+          return `<b>${element} :</b> ${e.features[0].properties[element]}`
+        }).join('<br>')
+        // TODO: HTML unsafe
+        popup.setLngLat(coordinates).setHTML(description).addTo(map)
+      }
+    }
 
     map.on('load', () => {
       p.getMetadata().then((metadata) => {
@@ -117,6 +136,10 @@ async function displayMap() {
               [`${typeLayer.value}-opacity`]: { base: 1, stops: [[0, 0.9], [10, 0.6]] },
             },
           })
+          map.on('mousemove', layer.layer, showMapPopup)
+          map.on('touchmove', layer.layer, showMapPopup)
+          map.on('click', layer.layer, showMapPopup)
+          map.on('mouseleave', layer.layer, showMapPopup)
         })
       }).catch (() => hasError.value = true)
     })
