@@ -40,7 +40,7 @@
         </div>
       </div>
     </template>
-    <div ref="containerRef" />
+    <div style="height: 500px;" ref="containerRef" />
     <div class="fr-px-5v">
       {{ t("Map preview updated on {date}", { date: lastUpdate }) }}
     </div>
@@ -85,36 +85,39 @@ async function displayMap() {
   protocol.add(p)
 
   p.getHeader().then((h) => {
-    const style = {
-      version: 8,
-      sources: {
-        example_source: {
-          type: 'vector',
-          url: `pmtiles://${pmtilesUrl}`,
-          attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+    p.getMetadata().then((metadata) => {
+      loading.value = false
+      const style = {
+        version: 8,
+        sources: {
+          pmtiles_source: {
+            type: 'vector',
+            url: `pmtiles://${pmtilesUrl}`,
+            attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+          },
         },
-      },
-      layers: [
-        {
-          'id': 'tmp9zuproip',
-          'source': 'example_source',
-          'source-layer': 'landuse',
+        layers: [],
+      }
+      metadata.vector_layers.forEach((layer) => {
+        style.layers.push({
+          'id': layer.id,
+          'source': 'pmtiles_source',
+          'source-layer': layer.id,
           'type': 'fill',
           'paint': {
             'fill-color': 'steelblue',
           },
-        },
-      ],
-    }
+        })
+      })
 
-    const map = new maplibregl.Map({
-      container: container.value, // container id
-      style: style,
-      center: [0, 0], // starting position [lng, lat]
-      zoom: h.maxZoom - 2,
-      center: [h.centerLon, h.centerLat],
+      new maplibregl.Map({
+        container: container.value, // container id
+        style: style,
+        center: [0, 0], // starting position [lng, lat]
+        zoom: h.maxZoom - 2,
+        center: [h.centerLon, h.centerLat],
+      })
     })
-    map.showTileBoundaries = true
   })
 
   // await import('leaflet/dist/leaflet.css')
