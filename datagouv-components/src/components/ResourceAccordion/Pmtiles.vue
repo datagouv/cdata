@@ -121,6 +121,8 @@ async function displayMap() {
                 return 'fill'
               case 'Point':
                 return `circle`
+              case 'LineString':
+                return `line`
               default:
                 throwOnNever(layer.geometry, 'Unsupported geometry')
                 return ''
