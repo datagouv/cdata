@@ -4,92 +4,103 @@
       class="mx-auto flex flex-wrap pb-1 gap-2 *:flex *:gap-1"
       role="menubar"
     >
-      <div role="group">
-        <EditorButton
-          :icon="RiArrowGoBackLine"
-          :title="t('Undo')"
-          @click="() => call(undoCommand.key)"
+      <template v-if="!raw">
+        <div role="group">
+          <EditorButton
+            :icon="RiArrowGoBackLine"
+            :title="t('Undo')"
+            @click="() => call(undoCommand.key)"
+          />
+          <EditorButton
+            :icon="RiArrowGoForwardLine"
+            :title="t('Redo')"
+            @click="() => call(redoCommand.key)"
+          />
+        </div>
+        <div
+          role="separator"
+          class="w-px bg-neutral-300 my-1"
         />
-        <EditorButton
-          :icon="RiArrowGoForwardLine"
-          :title="t('Redo')"
-          @click="() => call(redoCommand.key)"
+        <div role="group">
+          <EditorButton
+            :icon="RiBold"
+            :title="t('Bold')"
+            @click="() => call(toggleStrongCommand.key)"
+          />
+          <EditorButton
+            :icon="RiItalic"
+            :title="t('Italic')"
+            @click="() => call(toggleEmphasisCommand.key)"
+          />
+          <EditorButton
+            :icon="RiH1"
+            :title="t('Title')"
+            @click="() => call(wrapInHeadingCommand.key, 3)"
+          />
+          <EditorButton
+            :icon="RiH2"
+            :title="t('Subtitle')"
+            @click="() => call(wrapInHeadingCommand.key, 4)"
+          />
+        </div>
+        <div
+          role="separator"
+          class="w-px bg-neutral-300 my-1"
         />
-      </div>
-      <div
-        role="separator"
-        class="w-px bg-neutral-300 my-1"
-      />
-      <div role="group">
-        <EditorButton
-          :icon="RiBold"
-          :title="t('Bold')"
-          @click="() => call(toggleStrongCommand.key)"
+        <div role="group">
+          <EditorButton
+            :icon="RiTable2"
+            :title="t('Table')"
+            @click="() => call(insertTableCommand.key)"
+          />
+          <EditorButton
+            :icon="RiLink"
+            :title="t('Link')"
+            @click="() => call(insertLinkCommand.key)"
+          />
+          <ImageModalButton
+            @send="(data: ImageModalForm) => call(insertImageCommand.key, data)"
+          />
+        </div>
+        <div
+          role="separator"
+          class="w-px bg-neutral-300 my-1"
         />
+        <div role="group">
+          <EditorButton
+            :icon="RiListUnordered"
+            :title="t('List unordered')"
+            @click="() => call(wrapInBulletListCommand.key)"
+          />
+          <EditorButton
+            :icon="RiListOrdered"
+            :title="t('List ordered')"
+            @click="() => call(wrapInOrderedListCommand.key)"
+          />
+          <EditorButton
+            :icon="RiCodeSSlashLine"
+            :title="t('Code block')"
+            @click="() => call(createCodeBlockCommand.key)"
+          />
+          <EditorButton
+            :icon="RiDoubleQuotesL"
+            :title="t('Quote')"
+            @click="() => call(wrapInBlockquoteCommand.key)"
+          />
+        </div>
+      </template>
+      <div class="ml-auto">
         <EditorButton
-          :icon="RiItalic"
-          :title="t('Italic')"
-          @click="() => call(toggleEmphasisCommand.key)"
-        />
-        <EditorButton
-          :icon="RiH1"
-          :title="t('Title')"
-          @click="() => call(wrapInHeadingCommand.key, 3)"
-        />
-        <EditorButton
-          :icon="RiH2"
-          :title="t('Subtitle')"
-          @click="() => call(wrapInHeadingCommand.key, 4)"
-        />
-      </div>
-      <div
-        role="separator"
-        class="w-px bg-neutral-300 my-1"
-      />
-      <div role="group">
-        <EditorButton
-          :icon="RiTable2"
-          :title="t('Table')"
-          @click="() => call(insertTableCommand.key)"
-        />
-        <EditorButton
-          :icon="RiLink"
-          :title="t('Link')"
-          @click="() => call(insertLinkCommand.key)"
-        />
-        <ImageModalButton
-          @send="(data: ImageModalForm) => call(insertImageCommand.key, data)"
-        />
-      </div>
-      <div
-        role="separator"
-        class="w-px bg-neutral-300 my-1"
-      />
-      <div role="group">
-        <EditorButton
-          :icon="RiListUnordered"
-          :title="t('List unordered')"
-          @click="() => call(wrapInBulletListCommand.key)"
-        />
-        <EditorButton
-          :icon="RiListOrdered"
-          :title="t('List ordered')"
-          @click="() => call(wrapInOrderedListCommand.key)"
-        />
-        <EditorButton
-          :icon="RiCodeSSlashLine"
-          :title="t('Code block')"
-          @click="() => call(createCodeBlockCommand.key)"
-        />
-        <EditorButton
-          :icon="RiDoubleQuotesL"
-          :title="t('Quote')"
-          @click="() => call(wrapInBlockquoteCommand.key)"
+          :icon="raw ? RiHtml5Line : RiMarkdownLine"
+          :title="raw ? $t('Voir le HTML') : $t('Voir le markdown')"
+          @click="raw = !raw"
         />
       </div>
     </div>
     <div class="p-1">
+      <textarea v-if="raw" :value @change="$emit('change', $event.target.value)" class="w-full text-sm" rows="10"></textarea>
       <Milkdown
+        v-else
         :class="[markdownSmClasses, markdownTableEditorCLasses]"
       />
     </div>
@@ -121,7 +132,7 @@ import {
   columnResizingPlugin,
 } from '@milkdown/preset-gfm'
 import { callCommand } from '@milkdown/utils'
-import { RiArrowGoBackLine, RiArrowGoForwardLine, RiBold, RiCodeSSlashLine, RiDoubleQuotesL, RiH1, RiH2, RiItalic, RiLink, RiListOrdered, RiListUnordered, RiTable2 } from '@remixicon/vue'
+import { RiArrowGoBackLine, RiArrowGoForwardLine, RiBold, RiCodeSSlashLine, RiDoubleQuotesL, RiH1, RiH2, RiHtml5Line, RiItalic, RiLink, RiListOrdered, RiListUnordered, RiMarkdownLine, RiTable2 } from '@remixicon/vue'
 import { Milkdown, useEditor } from '@milkdown/vue'
 import { usePluginViewFactory, useWidgetViewFactory } from '@prosemirror-adapter/vue'
 import { useDebounceFn } from '@vueuse/core'
@@ -139,6 +150,7 @@ import { tableTooltip, tableTooltipCtx } from '~/components/MarkdownEditor/Milkd
 import TableTooltip from '~/components/MarkdownEditor/Milkdown/TableTooltip/TableTooltip.vue'
 import EditorButton from '~/components/MarkdownEditor/EditorButton.vue'
 import type { MarkdownEditorProps } from '~/components/MarkdownEditor/types'
+import { clipboard } from '@milkdown/kit/plugin/clipboard'
 
 import 'prosemirror-view/style/prosemirror.css'
 import 'prosemirror-tables/style/tables.css'
@@ -152,6 +164,7 @@ const emit = defineEmits<{
   (event: 'editorMounted'): void
 }>()
 
+const raw = ref(false)
 const onChange = useDebounceFn((markdown: string) => emit('change', markdown), 300)
 
 const { t } = useI18n()
@@ -217,6 +230,7 @@ const editor = useEditor(root =>
       })
     })
     .use(commonmark)
+    .use(clipboard)
     .use(gfmPlugins)
     .use(history)
     .use(linkEditPlugins)

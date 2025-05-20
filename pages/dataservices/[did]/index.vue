@@ -7,13 +7,17 @@
       <h2 class="text-sm font-bold uppercase m-0 text-gray-title">
         {{ $t('{n} datasets', pageData.total) }}
       </h2>
-
-      <div class="grid sm:grid-cols-2 gap-5">
+      <div
+        class="grid gap-5"
+        :class="{
+          'lg:grid-cols-2': pageData.total > 1,
+        }"
+      >
         <DatasetCardLg
           v-for="dataset in pageData.data"
           :key="dataset.id"
           :dataset
-          :show-description="false"
+          :show-description="pageData.total == 1"
         />
       </div>
       <div class="w-full mt-6 flex justify-center">
@@ -25,6 +29,7 @@
         />
       </div>
     </section>
+    <Divider class="my-10" />
     <section>
       <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
         <div>
@@ -97,6 +102,7 @@
 <script setup lang="ts">
 import { BrandedButton, CopyButton, Pagination, StatBox, type Dataservice, type DatasetV2 } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
+import Divider from '~/components/Divider.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{ dataservice: Dataservice }>()
