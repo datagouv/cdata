@@ -22,7 +22,7 @@
                 <h1 class="mb-0">
                   {{ user.first_name }} {{ user.last_name }}
                 </h1>
-                <NuxtLink v-if="user.website" :href="user.website" external noindex>{{ user.website }}</NuxtLink>
+                <NuxtLink v-if="user.website" :href="user.website" external rel="ugc nofollow noopener">{{ user.website }}</NuxtLink>
             </div>
         </div>
         <div class="flex flex-col items-end gap-2">
@@ -56,6 +56,9 @@
 import { Avatar, OrganizationCard, type User } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
+useSeoMeta({
+  robots: "nofollow",
+})
 
 const route = useRoute()
 const url = computed(() => `/api/1/users/${route.params.id}`)
