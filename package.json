@@ -23,6 +23,7 @@
     "@iconify/vue": "^4.1.2",
     "@milkdown/core": "^7.5.0",
     "@milkdown/ctx": "^7.5.0",
+    "@milkdown/plugin-clipboard": "^7.10.5",
     "@milkdown/plugin-history": "^7.5.0",
     "@milkdown/plugin-listener": "^7.5.0",
     "@milkdown/plugin-tooltip": "^7.5.3",
