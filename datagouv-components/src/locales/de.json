@@ -151,12 +151,13 @@
   "Copy stable URL": "Copy stable URL",
   "Stable URL copied!": "Stable URL copied!",
   "Download file as ": "Download file as ",
-  "The map preview of this file failed to load.": "The map preview of this file failed to load.",
-  "Use PMTiles viewer to get an overview of geojson data.": "Use PMTiles viewer to get an overview of geojson data.",
-  "Explore map": "Explore map",
-  "Map preview updated on {date}": "Map preview updated on {date}",
+  "L'aperçu cartographique de ce fichier n'a pas pu être chargé.": "L'aperçu cartographique de ce fichier n'a pas pu être chargé.",
+  "Utiliser un visualisateur PMTiles pour obtenir un aperçu des données.": "Utiliser un visualisateur PMTiles pour obtenir un aperçu des données.",
+  "Explorer la carte": "Explorer la carte",
+  "Aperçu de la carte mis à jour le {date}": "Aperçu de la carte mis à jour le {date}",
   "Map": "Map",
   "Le robot de {certifier} n'a pas pu accéder à ce fichier - Télécharger le fichier en {format}": "Le robot de {certifier} n'a pas pu accéder à ce fichier - Télécharger le fichier en {format}",
   "Télécharger le fichier en {format}": "Télécharger le fichier en {format}",
-  "The API returned an unexpected error": "The API returned an unexpected error"
+  "The API returned an unexpected error": "The API returned an unexpected error",
+  "Explorer les données en détail": "Explorer les données en détail"
 }

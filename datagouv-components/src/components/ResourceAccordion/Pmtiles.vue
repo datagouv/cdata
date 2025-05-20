@@ -9,7 +9,7 @@
           class="fr-icon-warning-line"
           aria-hidden="true"
         />
-        {{ t("The map preview of this file failed to load.") }}
+        {{ t("L'aperçu cartographique de ce fichier n'a pas pu être chargé.") }}
       </p>
     </div>
     <template v-else>
@@ -21,10 +21,10 @@
           />
           <div class="fr-col">
             <p class="fr-text--bold fr-m-0">
-              {{ t("Explore data in detail") }}
+              {{ t("Explorer les données en détail") }}
             </p>
             <p class="fr-text--sm fr-m-0 f-italic">
-              {{ t("Use PMTiles viewer to get an overview of geojson data.") }}
+              {{ t("Utiliser un visualisateur PMTiles pour obtenir un aperçu des données.") }}
             </p>
           </div>
           <p class="fr-col-auto fr-my-0">
@@ -33,14 +33,14 @@
               :icon="RiExternalLinkFill"
               icon-right
             >
-              {{ t("Explore map") }}
+              {{ t("Explorer la carte") }}
             </BrandedButton>
           </p>
         </div>
       </div>
       <div style="height: 600px;" ref="containerRef" />
       <div class="fr-px-5v fr-pt-5v">
-        {{ t("Map preview updated on {date}", { date: lastUpdate }) }}
+        {{ t("Aperçu de la carte mis à jour le {date}", { date: lastUpdate }) }}
       </div>
     </template>
   </div>
