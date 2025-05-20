@@ -4,92 +4,91 @@
       class="mx-auto flex flex-wrap pb-1 gap-2 *:flex *:gap-1"
       role="menubar"
     >
-      <div role="group" v-if="! raw">
-        <EditorButton
-          :icon="RiArrowGoBackLine"
-          :title="t('Undo')"
-          @click="() => call(undoCommand.key)"
+      <template v-if="!raw">
+        <div role="group">
+          <EditorButton
+            :icon="RiArrowGoBackLine"
+            :title="t('Undo')"
+            @click="() => call(undoCommand.key)"
+          />
+          <EditorButton
+            :icon="RiArrowGoForwardLine"
+            :title="t('Redo')"
+            @click="() => call(redoCommand.key)"
+          />
+        </div>
+        <div
+          role="separator"
+          class="w-px bg-neutral-300 my-1"
         />
-        <EditorButton
-          :icon="RiArrowGoForwardLine"
-          :title="t('Redo')"
-          @click="() => call(redoCommand.key)"
+        <div role="group">
+          <EditorButton
+            :icon="RiBold"
+            :title="t('Bold')"
+            @click="() => call(toggleStrongCommand.key)"
+          />
+          <EditorButton
+            :icon="RiItalic"
+            :title="t('Italic')"
+            @click="() => call(toggleEmphasisCommand.key)"
+          />
+          <EditorButton
+            :icon="RiH1"
+            :title="t('Title')"
+            @click="() => call(wrapInHeadingCommand.key, 3)"
+          />
+          <EditorButton
+            :icon="RiH2"
+            :title="t('Subtitle')"
+            @click="() => call(wrapInHeadingCommand.key, 4)"
+          />
+        </div>
+        <div
+          role="separator"
+          class="w-px bg-neutral-300 my-1"
         />
-      </div>
-      <div
-        role="separator"
-        class="w-px bg-neutral-300 my-1"
-        v-if="!raw"
-      />
-      <div role="group" v-if="!raw">
-        <EditorButton
-          :icon="RiBold"
-          :title="t('Bold')"
-          @click="() => call(toggleStrongCommand.key)"
+        <div role="group">
+          <EditorButton
+            :icon="RiTable2"
+            :title="t('Table')"
+            @click="() => call(insertTableCommand.key)"
+          />
+          <EditorButton
+            :icon="RiLink"
+            :title="t('Link')"
+            @click="() => call(insertLinkCommand.key)"
+          />
+          <ImageModalButton
+            @send="(data: ImageModalForm) => call(insertImageCommand.key, data)"
+          />
+        </div>
+        <div
+          role="separator"
+          class="w-px bg-neutral-300 my-1"
         />
-        <EditorButton
-          :icon="RiItalic"
-          :title="t('Italic')"
-          @click="() => call(toggleEmphasisCommand.key)"
-        />
-        <EditorButton
-          :icon="RiH1"
-          :title="t('Title')"
-          @click="() => call(wrapInHeadingCommand.key, 3)"
-        />
-        <EditorButton
-          :icon="RiH2"
-          :title="t('Subtitle')"
-          @click="() => call(wrapInHeadingCommand.key, 4)"
-        />
-      </div>
-      <div
-        role="separator"
-        class="w-px bg-neutral-300 my-1"
-        v-if="!raw"
-      />
-      <div role="group" v-if="!raw">
-        <EditorButton
-          :icon="RiTable2"
-          :title="t('Table')"
-          @click="() => call(insertTableCommand.key)"
-        />
-        <EditorButton
-          :icon="RiLink"
-          :title="t('Link')"
-          @click="() => call(insertLinkCommand.key)"
-        />
-        <ImageModalButton
-          @send="(data: ImageModalForm) => call(insertImageCommand.key, data)"
-        />
-      </div>
-      <div
-        role="separator"
-        class="w-px bg-neutral-300 my-1"
-        v-if="!raw"
-      />
-      <div role="group" v-if="!raw">
-        <EditorButton
-          :icon="RiListUnordered"
-          :title="t('List unordered')"
-          @click="() => call(wrapInBulletListCommand.key)"
-        />
-        <EditorButton
-          :icon="RiListOrdered"
-          :title="t('List ordered')"
-          @click="() => call(wrapInOrderedListCommand.key)"
-        />
-        <EditorButton
-          :icon="RiCodeSSlashLine"
-          :title="t('Code block')"
-          @click="() => call(createCodeBlockCommand.key)"
-        />
-        <EditorButton
-          :icon="RiDoubleQuotesL"
-          :title="t('Quote')"
-          @click="() => call(wrapInBlockquoteCommand.key)"
-        />
-      </div>
+        <div role="group">
+          <EditorButton
+            :icon="RiListUnordered"
+            :title="t('List unordered')"
+            @click="() => call(wrapInBulletListCommand.key)"
+          />
+          <EditorButton
+            :icon="RiListOrdered"
+            :title="t('List ordered')"
+            @click="() => call(wrapInOrderedListCommand.key)"
+          />
+          <EditorButton
+            :icon="RiCodeSSlashLine"
+            :title="t('Code block')"
+            @click="() => call(createCodeBlockCommand.key)"
+          />
+          <EditorButton
+            :icon="RiDoubleQuotesL"
+            :title="t('Quote')"
+            @click="() => call(wrapInBlockquoteCommand.key)"
+          />
+        </div>
+      </template>
       <div class="ml-auto">
         <EditorButton
           :icon="raw ? RiHtml5Line : RiMarkdownLine"
