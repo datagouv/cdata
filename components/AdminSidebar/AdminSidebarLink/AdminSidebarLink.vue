@@ -9,6 +9,7 @@
       />
       <NuxtLinkLocale
         :to="to"
+        class="[[aria-current=page]]:-translate-y-0.5"
         :aria-current="route.fullPath === localeRoute(to)?.fullPath || isLastBreadcrumb ? 'page' : false"
       >
         <TextClamp
