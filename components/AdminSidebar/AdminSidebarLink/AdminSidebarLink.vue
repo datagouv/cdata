@@ -9,7 +9,7 @@
       />
       <NuxtLinkLocale
         :to="to"
-        :aria-current="(route.name === localeRoute(to)?.name && route.params.oid === localeRoute(to)?.params.oid) ? 'page' : false"
+        :aria-current="route.fullPath === localeRoute(to)?.fullPath || isLastBreadcrumb ? 'page' : false"
       >
         <TextClamp
           :text="label"
@@ -28,11 +28,35 @@ import type { RouteLocationRaw } from 'vue-router'
 const route = useRoute()
 const localeRoute = useLocaleRoute()
 
-defineProps<{
+const props = defineProps<{
   label: string
   icon: Component
   to: RouteLocationRaw
 }>()
+
+const id = useId()
+// :BreadcrumbInSidebar
+const breadcrumbs = useBreadcrumbs()
+const sidebarLinks = useSidebarLinks()
+
+// We key by ID to avoid destroying a value created by another component.
+onMounted(() => sidebarLinks.value[id] = props.to)
+// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+onUnmounted(() => delete sidebarLinks.value[id])
+
+const lastBreadcrumbInSidebar = computed(() => {
+  const breadcrumbsInSidebar = breadcrumbs.value.filter((breadcrumbUrl) => {
+    if (!breadcrumbUrl) return false
+    return Object.values(sidebarLinks.value)
+      .find(sidebarLink => localeRoute(sidebarLink)?.fullPath === localeRoute(breadcrumbUrl)?.fullPath)
+  })
+  if (!breadcrumbsInSidebar.length) return null
+  return breadcrumbsInSidebar[breadcrumbsInSidebar.length - 1]
+})
+const isLastBreadcrumb = computed(() => {
+  if (!lastBreadcrumbInSidebar.value) return false
+  return localeRoute(lastBreadcrumbInSidebar.value)?.fullPath === localeRoute(props.to)?.fullPath
+})
 </script>
 
 <style scoped>
