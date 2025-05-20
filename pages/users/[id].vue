@@ -1,21 +1,36 @@
 <template>
-  <div class="container mb-16">
-    <Breadcrumb>
-      <BreadcrumbItem
-        to="/"
-        :external="true"
-      >
-        {{ $t('Accueil') }}
-      </BreadcrumbItem>
-      <BreadcrumbItem>
-        {{ $t('Utilisateurs') }}
-      </BreadcrumbItem>
-      <BreadcrumbItem v-if="user">
-        {{ user.first_name }} {{ user.last_name }}
-      </BreadcrumbItem>
-    </Breadcrumb>
-
-    <div class="space-y-8" v-if="user">
+  <div class="container mb-16" v-if="user">
+    <div
+        v-if="user"
+        class="flex flex-wrap items-center justify-between"
+    >
+        <Breadcrumb>
+            <BreadcrumbItem
+                to="/"
+                :external="true"
+            >
+                {{ $t('Accueil') }}
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+                {{ $t('Utilisateurs') }}
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+                {{ user.first_name }} {{ user.last_name }}
+            </BreadcrumbItem>
+        </Breadcrumb>
+        <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
+            <BrandedButton href="/admin/me/profile" size="xs" :icon="RiEdit2Line" v-if="me && me.id === user.id">
+                {{ $t('Éditer mon profil') }}
+            </BrandedButton>
+            <EditButton
+              v-else-if="me && isAdmin(me)"
+              
+              :id="user.id"
+              type="users"
+            />
+        </div>
+    </div>
+    <div class="space-y-8">
         <div class="flex justify-between items-center">
             <div class="flex items-center space-x-8" >
                 <Avatar rounded :user class="shrink-0" :size="80" />
@@ -55,12 +70,16 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, OrganizationCard, type User } from '@datagouv/components-next'
+import { Avatar, BrandedButton, OrganizationCard, type User } from '@datagouv/components-next'
+import { RiEdit2Line } from '@remixicon/vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import EditButton from '~/components/Buttons/EditButton.vue'
 
 useSeoMeta({
   robots: "nofollow",
 })
+
+const me = useMaybeMe()
 
 const route = useRoute()
 const url = computed(() => `/api/1/users/${route.params.id}`)
