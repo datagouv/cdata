@@ -4,7 +4,7 @@
       class="mx-auto flex flex-wrap pb-1 gap-2 *:flex *:gap-1"
       role="menubar"
     >
-      <div role="group">
+      <div role="group" v-if="! raw">
         <EditorButton
           :icon="RiArrowGoBackLine"
           :title="t('Undo')"
@@ -19,8 +19,9 @@
       <div
         role="separator"
         class="w-px bg-neutral-300 my-1"
+        v-if="!raw"
       />
-      <div role="group">
+      <div role="group" v-if="!raw">
         <EditorButton
           :icon="RiBold"
           :title="t('Bold')"
@@ -45,8 +46,9 @@
       <div
         role="separator"
         class="w-px bg-neutral-300 my-1"
+        v-if="!raw"
       />
-      <div role="group">
+      <div role="group" v-if="!raw">
         <EditorButton
           :icon="RiTable2"
           :title="t('Table')"
@@ -64,8 +66,9 @@
       <div
         role="separator"
         class="w-px bg-neutral-300 my-1"
+        v-if="!raw"
       />
-      <div role="group">
+      <div role="group" v-if="!raw">
         <EditorButton
           :icon="RiListUnordered"
           :title="t('List unordered')"
@@ -87,9 +90,18 @@
           @click="() => call(wrapInBlockquoteCommand.key)"
         />
       </div>
+      <div class="ml-auto">
+        <EditorButton
+          :icon="raw ? RiHtml5Line : RiMarkdownLine"
+          :title="raw ? $t('Voir le HTML') : $t('Voir le markdown')"
+          @click="raw = !raw"
+        />
+      </div>
     </div>
     <div class="p-1">
+      <textarea v-if="raw" :value @change="$emit('change', $event.target.value)" class="w-full text-sm" rows="10"></textarea>
       <Milkdown
+        v-else
         :class="[markdownSmClasses, markdownTableEditorCLasses]"
       />
     </div>
@@ -121,7 +133,7 @@ import {
   columnResizingPlugin,
 } from '@milkdown/preset-gfm'
 import { callCommand } from '@milkdown/utils'
-import { RiArrowGoBackLine, RiArrowGoForwardLine, RiBold, RiCodeSSlashLine, RiDoubleQuotesL, RiH1, RiH2, RiItalic, RiLink, RiListOrdered, RiListUnordered, RiTable2 } from '@remixicon/vue'
+import { RiArrowGoBackLine, RiArrowGoForwardLine, RiBold, RiCodeSSlashLine, RiDoubleQuotesL, RiH1, RiH2, RiHtml5Line, RiItalic, RiLink, RiListOrdered, RiListUnordered, RiMarkdownLine, RiTable2 } from '@remixicon/vue'
 import { Milkdown, useEditor } from '@milkdown/vue'
 import { usePluginViewFactory, useWidgetViewFactory } from '@prosemirror-adapter/vue'
 import { useDebounceFn } from '@vueuse/core'
@@ -152,6 +164,7 @@ const emit = defineEmits<{
   (event: 'editorMounted'): void
 }>()
 
+const raw = ref(false)
 const onChange = useDebounceFn((markdown: string) => emit('change', markdown), 300)
 
 const { t } = useI18n()
