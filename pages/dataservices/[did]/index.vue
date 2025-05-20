@@ -7,13 +7,17 @@
       <h2 class="text-sm font-bold uppercase m-0 text-gray-title">
         {{ $t('{n} datasets', pageData.total) }}
       </h2>
-
-      <div class="grid sm:grid-cols-2 gap-5">
+      <div
+        class="grid gap-5"
+        :class="{
+          'lg:grid-cols-2': pageData.total > 1,
+        }"
+      >
         <DatasetCardLg
           v-for="dataset in pageData.data"
           :key="dataset.id"
           :dataset
-          :show-description="false"
+          :show-description="pageData.total == 1"
         />
       </div>
       <div class="w-full mt-6 flex justify-center">
