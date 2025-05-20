@@ -14,7 +14,7 @@
     <div
       v-if="selectedDatasets.length"
       ref="sortableRoot"
-      class="w-full mb-8"
+      class="w-full mb-8 gap-4"
     >
       <div
         v-for="(dataset, index) in selectedDatasets"
