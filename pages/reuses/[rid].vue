@@ -21,13 +21,10 @@
           </BreadcrumbItem>
         </Breadcrumb>
         <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
-          <LoadingBlock :status="followStatus">
-            <FollowButton
-              v-if="reuse"
-              :following="follower?.total > 0"
-              :url="`api/1/reuses/${reuse.id}/followers/`"
-            />
-          </LoadingBlock>
+          <FollowButton
+            v-if="reuse"
+            :url="`/api/1/reuses/${reuse.id}/followers/`"
+          />
           <div>
             <BrandedButton
               :href="reuse.url"
@@ -174,24 +171,11 @@ import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import ReuseDetails from '~/datagouv-components/src/components/ReuseDetails.vue'
-import type { PaginatedArray } from '~/types/types'
 
 const route = useRoute()
-const me = useMaybeMe()
 
 const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
 const { data: reuse, status } = await useAPI<Reuse | null>(url)
-
-const followUrl = computed(() => `/api/1/reuses/${route.params.rid}/followers/`)
-const { data: follower, status: followStatus } = await useAPI<PaginatedArray<{
-  id: string
-  follower: string
-  since: string
-}>>(followUrl, {
-  query: {
-    user: me.value?.id ?? undefined,
-  },
-})
 
 const title = computed(() => reuse.value?.title)
 const robots = computed(() => reuse.value && !reuse.value.metrics.datasets && !reuse.value.metrics.datasets ? 'noindex, nofollow' : 'all')

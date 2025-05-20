@@ -1,4 +1,6 @@
-export function humanJoin(array: Array<string>): string {
+export function humanJoin(source: Array<string>): string {
+  const array = [...source]
+
   const nuxtApp = useNuxtApp()
   if (!array.length) return ''
   if (array.length === 1) return array[0]

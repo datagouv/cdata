@@ -46,6 +46,7 @@
     "@tailwindcss/cli": "^4.0.8",
     "@tailwindcss/typography": "^0.5.16",
     "@tsconfig/node22": "^22.0.0",
+    "@types/geojson": "^7946.0.16",
     "@types/node": "^22.13.1",
     "@types/swagger-ui": "^3.52.4",
     "@vitejs/plugin-vue": "^5.2.1",

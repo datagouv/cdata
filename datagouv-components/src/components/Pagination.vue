@@ -1,6 +1,7 @@
 <template>
   <nav
     v-if="totalResults > pageSize"
+    ref="navRef"
     role="navigation"
     class="fr-pagination fr-pagination--centered"
     :aria-label="t('Pagination')"
@@ -11,7 +12,7 @@
           :href="getHref(1)"
           class="fr-pagination__link fr-pagination__link--first"
           data-testid="first-page"
-          @click.prevent="onClick(1)"
+          @click.prevent.stop="onClick(1)"
         >
           {{ t('First page') }}
         </a>
@@ -21,7 +22,7 @@
           :href="getHref(page - 1)"
           class="fr-pagination__link fr-pagination__link--prev fr-pagination__link--lg-label"
           data-testid="previous-page"
-          @click.prevent="previousPage"
+          @click.prevent.stop="previousPage"
         >
           {{ t('Previous page') }}
         </a>
@@ -34,7 +35,7 @@
           :class="{ 'fr-hidden fr-unhidden-sm': page > 1 }"
           :title="t('Page {nb}', { nb: 1 })"
           :data-testid="1"
-          @click.prevent="onClick(1)"
+          @click.prevent.stop="onClick(1)"
         >
           1
         </a>
@@ -51,7 +52,7 @@
           :href="getHref(index)"
           :title="t('Page {nb}', { nb: index })"
           :data-testid="index"
-          @click.prevent="onClick(index)"
+          @click.prevent.stop="onClick(index)"
         >
           {{ index }}
         </a>
@@ -69,7 +70,7 @@
           :href="getHref(pageCount)"
           :title="t('Page {nb}', { nb: pageCount })"
           :data-testid="pageCount"
-          @click.prevent="onClick(pageCount)"
+          @click.prevent.stop="onClick(pageCount)"
         >
           {{ pageCount }}
         </a>
@@ -79,7 +80,7 @@
           class="fr-pagination__link fr-pagination__link--next fr-pagination__link--lg-label"
           :href="getHref(page + 1)"
           data-testid="next-page"
-          @click.prevent="nextPage"
+          @click.prevent.stop="nextPage"
         >
           {{ t('Next page') }}
         </a>
@@ -89,7 +90,7 @@
           class="fr-pagination__link fr-pagination__link--last"
           :href="getHref(pageCount)"
           data-testid="last-page"
-          @click.prevent="onClick(pageCount)"
+          @click.prevent.stop="onClick(pageCount)"
         >
           {{ t('Last page') }}
         </a>
@@ -99,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 type Props = {
@@ -176,23 +177,33 @@ const { t } = useI18n()
 const pageCount = computed(() => Math.ceil(props.totalResults / props.pageSize))
 const visiblePages = computed(() => getVisiblePages(props.page, pageCount.value))
 
+const nav = useTemplateRef('navRef')
+function change(index: number) {
+  emit('change', index)
+
+  if (!nav.value || !nav.value.parentElement) return
+
+  nav.value.parentElement.style.scrollMarginTop = '100px'
+  nav.value.parentElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 function onClick(index: number) {
   if (index !== props.page) {
-    return emit('change', index)
+    change(index)
   }
 }
 
 function nextPage() {
   const index = props.page + 1
   if (index <= pageCount.value) {
-    return emit('change', index)
+    change(index)
   }
 }
 
 function previousPage() {
   const index = props.page - 1
   if (index > 0) {
-    return emit('change', index)
+    change(index)
   }
 }
 
