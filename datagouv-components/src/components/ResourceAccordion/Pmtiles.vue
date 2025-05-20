@@ -64,10 +64,10 @@ const props = defineProps<{ resource: Resource }>()
 const { t } = useI18n()
 
 const hasError = ref(false)
-const pmtilesUrl = props.resource.extras['analysis:parsing:pmtiles_url']
+const pmtilesUrl = computed(() => props.resource.extras['analysis:parsing:pmtiles_url'])
 const pmtilesViewerUrl = computed(() => `https://pmtiles.io/#url=${encodeURIComponent(pmtilesUrl)}`)
 
-const lastUpdate = formatDate(props.resource.extras['analysis:parsing:finished_at'])
+const lastUpdate = computed(() => formatDate(props.resource.extras['analysis:parsing:finished_at']))
 
 const container = useTemplateRef('containerRef')
 
@@ -77,7 +77,7 @@ async function displayMap() {
   const protocol = new Protocol()
   maplibregl.addProtocol('pmtiles', protocol.tile)
 
-  const p = new PMTiles(pmtilesUrl)
+  const p = new PMTiles(pmtilesUrl.value)
   protocol.add(p)
 
   p.getHeader().then((h) => {
@@ -110,7 +110,7 @@ async function displayMap() {
       p.getMetadata().then((metadata) => {
         map.addSource('pmtiles_source', {
           type: 'vector',
-          url: `pmtiles://${pmtilesUrl}`,
+          url: `pmtiles://${pmtilesUrl.value}`,
           attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
         })
 

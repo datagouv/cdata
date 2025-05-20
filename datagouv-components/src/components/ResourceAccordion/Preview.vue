@@ -197,7 +197,7 @@ function sortByField(col: string) {
   getTableInfos(currentPage.value, sortConfig.value)
 };
 
-const lastUpdate = formatDate(props.resource.extras['analysis:parsing:finished_at'])
+const lastUpdate = computed(() => formatDate(props.resource.extras['analysis:parsing:finished_at']))
 
 onMounted(() => {
   getTableInfos(currentPage.value)
