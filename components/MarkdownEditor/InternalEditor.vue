@@ -151,6 +151,7 @@ import { tableTooltip, tableTooltipCtx } from '~/components/MarkdownEditor/Milkd
 import TableTooltip from '~/components/MarkdownEditor/Milkdown/TableTooltip/TableTooltip.vue'
 import EditorButton from '~/components/MarkdownEditor/EditorButton.vue'
 import type { MarkdownEditorProps } from '~/components/MarkdownEditor/types'
+import { clipboard } from '@milkdown/kit/plugin/clipboard'
 
 import 'prosemirror-view/style/prosemirror.css'
 import 'prosemirror-tables/style/tables.css'
@@ -230,6 +231,7 @@ const editor = useEditor(root =>
       })
     })
     .use(commonmark)
+    .use(clipboard)
     .use(gfmPlugins)
     .use(history)
     .use(linkEditPlugins)
