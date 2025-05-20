@@ -15,41 +15,43 @@
       </BreadcrumbItem>
     </Breadcrumb>
 
-    <div class="flex justify-between items-center mb-8" v-if="user">
-        <div class="flex items-center space-x-8" >
-            <Avatar rounded :user class="shrink-0" :size="80" />
-            <div>
-                <h1 class="mb-0">
-                  {{ user.first_name }} {{ user.last_name }}
-                </h1>
-                <NuxtLink v-if="user.website" :href="user.website" external rel="ugc nofollow noopener">{{ user.website }}</NuxtLink>
+    <div class="space-y-8" v-if="user">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-8" >
+                <Avatar rounded :user class="shrink-0" :size="80" />
+                <div>
+                    <h1 class="mb-0">
+                      {{ user.first_name }} {{ user.last_name }}
+                    </h1>
+                    <NuxtLink v-if="user.website" :href="user.website" external rel="ugc nofollow noopener">{{ user.website }}</NuxtLink>
+                </div>
+            </div>
+            <div class="flex flex-col items-end gap-2">
+                <div class="flex gap-2">
+                    <AdminBadge size="xs" type="secondary">{{ $t('{n} jeux de données', { n: user.metrics.datasets }) }}</AdminBadge>
+                    <AdminBadge size="xs" type="secondary">{{ $t('{n} réutilisations', { n: user.metrics.reuses }) }}</AdminBadge>
+                    <AdminBadge size="xs" type="secondary">{{ $t('{n} API', { n: user.metrics.dataservices }) }}</AdminBadge>
+                </div>
+    
+                <div class="flex gap-2">
+                    <AdminBadge size="xs" type="secondary">{{ $t('{n} abonnés', { n: user.metrics.followers }) }}</AdminBadge>
+                    <AdminBadge size="xs" type="secondary">{{ $t('{n} personnes suivies', { n: user.metrics.following }) }}</AdminBadge>
+                </div>
             </div>
         </div>
-        <div class="flex flex-col items-end gap-2">
-            <div class="flex gap-2">
-                <AdminBadge size="xs" type="secondary">{{ $t('{n} jeux de données', { n: user.metrics.datasets }) }}</AdminBadge>
-                <AdminBadge size="xs" type="secondary">{{ $t('{n} réutilisations', { n: user.metrics.reuses }) }}</AdminBadge>
-                <AdminBadge size="xs" type="secondary">{{ $t('{n} API', { n: user.metrics.dataservices }) }}</AdminBadge>
-            </div>
-
-            <div class="flex gap-2">
-                <AdminBadge size="xs" type="secondary">{{ $t('{n} abonnés', { n: user.metrics.followers }) }}</AdminBadge>
-                <AdminBadge size="xs" type="secondary">{{ $t('{n} personnes suivies', { n: user.metrics.following }) }}</AdminBadge>
-            </div>
+    
+        <div v-if="user.organizations.length" class="grid md:grid-cols-3 gap-4">
+            <OrganizationCard v-for="organization in user.organizations" :organization :key="organization.id" />
         </div>
+    
+        <MarkdownViewer
+            v-if="user.about"
+            class="w-full"
+            :content="user.about"
+            :min-heading="2"
+        />
     </div>
-
-    <div v-if="user && user.organizations.length" class="grid md:grid-cols-3 gap-4">
-        <OrganizationCard v-for="organization in user.organizations" :organization :key="organization.id" />
-    </div>
-
-    <MarkdownViewer
-        v-if="user && user.about"
-        class="w-full"
-        :content="user.about"
-        :min-heading="2"
-    />
-</div>
+  </div>
 </template>
 
 <script setup lang="ts">
