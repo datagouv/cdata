@@ -1,6 +1,35 @@
 <template>
   <div class="space-y-5">
     <div
+      v-if="selectedResource"
+      ref="selectedResourceBannerRef"
+      class="space-y-4"
+    >
+      <SimpleBanner
+
+        type="primary"
+        class="flex justify-between items-center"
+      >
+        <p class="!mb-0">
+          {{ $t('Vous consultez une resource spécifique.') }}
+        </p>
+        <BrandedButton
+          color="secondary-softer"
+          keep-margins-even-without-borders
+          :icon="RiCloseCircleLine"
+          :href="{ name: route.name, params: route.params, query: { ...route.query, resource_id: undefined } }"
+        >
+          {{ $t("Voir toutes les resources") }}
+        </BrandedButton>
+      </SimpleBanner>
+      <ResourceAccordion
+        :dataset
+        :resource="selectedResource"
+        expanded-on-mount
+      />
+    </div>
+    <div
+      v-else
       v-for="{ data, status }, index in resourcesByTypes"
       :key="RESOURCE_TYPE[index]"
       class="space-y-1"
@@ -55,7 +84,8 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getResourceLabel, Pagination, RESOURCE_TYPE, ResourceAccordion, type DatasetV2, type Resource } from '@datagouv/components-next'
+import { BrandedButton, getResourceLabel, Pagination, RESOURCE_TYPE, ResourceAccordion, SimpleBanner, type DatasetV2, type Resource } from '@datagouv/components-next'
+import { RiCloseCircleLine } from '@remixicon/vue';
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{ dataset: DatasetV2 }>()
@@ -88,5 +118,21 @@ const resourcesByTypes = computed(() => {
     }
   }
   return result
+})
+
+const route = useRoute()
+const { $api } = useNuxtApp()
+const selectedResource = ref<Resource | null>(null)
+const selectedResourceBanner = useTemplateRef('selectedResourceBannerRef')
+watchEffect(async () => {
+  if ('resource_id' in route.query && route.query.resource_id) {
+    selectedResource.value = await $api<Resource>(`/api/1/datasets/${props.dataset.id}/resources/${route.query.resource_id}/`)
+    nextTick(() => {
+      selectedResourceBanner.value?.scrollIntoView({ behavior: 'smooth' })
+    })
+  }
+  else {
+    selectedResource.value = null
+  }
 })
 </script>
