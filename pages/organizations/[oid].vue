@@ -108,6 +108,7 @@ useSeoMeta({
   title,
   robots,
 })
+await useJsonLd('organization', route.params.oid)
 
 const type = computed(() => getOrganizationType(organization.value))
 const isMember = computed(() => organization.value.members.some(member => member.user.id === me.value?.id))
