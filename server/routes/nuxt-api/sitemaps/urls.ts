@@ -14,7 +14,7 @@ export default defineSitemapEventHandler(async (event) => {
   const selfWebUrlKey = type == 'dataservice' ? 'self_web_url' : 'page'
 
   // computing starting api page and max page for this sitemap section
-  let currentPage = null
+  let currentPage = 1
   let maxPage = null
   await $fetch<{ path: string }[]>(`${config.public.apiBase}/api/1/${type}s/`, {
     headers: { 'X-Fields': 'total' },
