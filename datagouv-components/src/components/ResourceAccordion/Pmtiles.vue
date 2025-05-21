@@ -13,7 +13,9 @@
       </p>
     </div>
     <template v-else>
-      <div class="bg-blue-100 text-datagouv fr-hidden fr-unhidden-md p-4">
+      <div
+        v-if="pmtilesViewerBaseUrl"
+        class="bg-blue-100 text-datagouv fr-hidden fr-unhidden-md p-4">
         <div class="fr-grid-row fr-grid-row--middle fr-grid-row--gutters">
           <div
             class="fr-col-auto"
@@ -53,6 +55,7 @@ import { RiExternalLinkFill } from '@remixicon/vue'
 import { Protocol, PMTiles } from 'pmtiles'
 import maplibregl from 'maplibre-gl'
 import DOMPurify from 'dompurify'
+import { useComponentsConfig } from '../../config'
 import { formatDate } from '../../functions/dates'
 import type { Resource } from '../../types/resources'
 import BrandedButton from '../BrandedButton.vue'
@@ -63,9 +66,13 @@ const props = defineProps<{ resource: Resource }>()
 
 const { t } = useI18n()
 
+const config = useComponentsConfig()
+
 const hasError = ref(false)
 const pmtilesUrl = computed(() => props.resource.extras['analysis:parsing:pmtiles_url'])
-const pmtilesViewerUrl = computed(() => `https://pmtiles.io/#url=${encodeURIComponent(pmtilesUrl)}`)
+const pmtilesViewerUrl = computed(() => {
+  return config.pmtilesViewerBaseUrl ? `${config.pmtilesViewerBaseUrl}${encodeURIComponent(pmtilesUrl)}` : null
+})
 
 const lastUpdate = computed(() => formatDate(props.resource.extras['analysis:parsing:finished_at']))
 
