@@ -246,6 +246,7 @@
           >
             <InputGroup
               v-model="form.title"
+              class="mb-3"
               :aria-describedby="nameDatasetAccordionId"
               :label="$t('Dataset name')"
               :required="true"
@@ -253,6 +254,7 @@
               :has-warning="!!getFirstWarning('title')"
               :error-text="getFirstError('title')"
             />
+            <TestBanner :field="form.title" />
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -599,7 +601,7 @@
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
 import { SimpleBanner, type Frequency, type License } from '@datagouv/components-next'
-import { RiAddLine, RiStarFill } from '@remixicon/vue'
+import { RiAddLine, RiInformationLine, RiStarFill } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
