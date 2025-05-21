@@ -85,7 +85,7 @@ const props = defineProps<{
   title: string
   data: Record<string, number> | null
   type: 'line' | 'bar'
-  summary: number | null
+  summary?: number | null
 }>()
 
 const { t } = useI18n()
@@ -97,4 +97,10 @@ const lastMonthIndex = computed(() => lastMonth.value ? months.value.indexOf(las
 const lastValue = computed(() => lastMonthIndex.value !== null ? values.value[lastMonthIndex.value] : null)
 
 const changesThisYear = computed(() => Math.max(...values.value) > 0)
+const summary = computed(() => {
+  if (props.summary !== undefined) return props.summary
+  if (!props.data) return null
+
+  return Object.values(props.data).reduce((a, b) => a + b, 0)
+})
 </script>

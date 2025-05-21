@@ -26,3 +26,29 @@ export async function redirectLegacyHashes(instructions: Array<{ from: string, t
     }
   }
 }
+<<<<<<< Updated upstream
+=======
+
+export async function useJsonLd(type: 'dataset' | 'dataservice' | 'organization', id: string) {
+  const url = {
+    dataset: `/api/1/datasets/${id}/rdf.jsonld`,
+    dataservice: `/api/1/dataservices/${id}/rdf.jsonld`,
+    organization: `/api/1/organizations/${id}/catalog.jsonld`,
+  }[type]
+
+  const { data: jsonld } = await useAPI(url)
+
+  useHead({
+    script: [
+      {
+        type: 'application/ld+json',
+        textContent: jsonld,
+      },
+    ],
+  })
+}
+
+export function arraySum(array: Array<number>): number {
+  return array.reduce((a, b) => a + b)
+}
+>>>>>>> Stashed changes
