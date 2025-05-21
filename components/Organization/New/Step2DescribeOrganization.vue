@@ -136,6 +136,7 @@
           >
             <InputGroup
               v-model="organization.name"
+              class="mb-3"
               data-testid="nameInput"
               :aria-describedby="nameOrganizationAccordionId"
               :label="t('Name')"
@@ -144,6 +145,7 @@
               :has-warning="fieldHasWarning('name')"
               :error-text="getErrorText('name')"
             />
+            <TestBanner :field="organization.name" />
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"

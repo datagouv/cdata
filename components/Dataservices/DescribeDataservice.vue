@@ -209,6 +209,7 @@
           >
             <InputGroup
               v-model="form.title"
+              class="mb-3"
               :aria-describedby="nameDataserviceAccordionId"
               :label="t('Dataservice name')"
               :required="true"
@@ -216,6 +217,7 @@
               :has-warning="!!getFirstWarning('title')"
               :error-text="getFirstError('title')"
             />
+            <TestBanner :field="form.title" />
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -480,6 +482,7 @@ import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ContactPointSelect from '~/components/ContactPointSelect.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
+import TestBanner from '~/components/TestBanner.vue'
 import type { DataserviceForm, Owned } from '~/types/types'
 
 const props = defineProps<{

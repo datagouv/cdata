@@ -205,6 +205,7 @@
           >
             <InputGroup
               v-model="reuseForm.title"
+              class="mb-3"
               :aria-describedby="nameReuseAccordionId"
               :label="t('Reuse name')"
               :required="true"
@@ -212,6 +213,7 @@
               :has-warning="!!getFirstWarning('title')"
               :error-text="getFirstError('title')"
             />
+            <TestBanner :field="reuseForm.title" />
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"

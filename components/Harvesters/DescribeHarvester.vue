@@ -45,9 +45,11 @@
       <FieldsetElement form-key="name">
         <InputGroup
           v-model="form.name"
+          class="mb-3"
           :label="$t('Name')"
           :required="true"
         />
+        <TestBanner :field="form.name" />
 
         <template #accordion>
           <HelpAccordion :title="$t('Naming your harvester')">

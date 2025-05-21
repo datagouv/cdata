@@ -601,7 +601,7 @@
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
 import { SimpleBanner, type Frequency, type License } from '@datagouv/components-next'
-import { RiAddLine, RiInformationLine, RiStarFill } from '@remixicon/vue'
+import { RiAddLine, RiStarFill } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
