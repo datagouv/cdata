@@ -39,7 +39,7 @@ export async function useJsonLd(type: 'dataset' | 'dataservice' | 'organization'
   useHead({
     script: [
       {
-        type: 'application/ld-json',
+        type: 'application/ld+json',
         textContent: jsonld,
       },
     ],
