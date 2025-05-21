@@ -71,6 +71,7 @@
             <div class="flex-1 overflow-x-hidden">
               <ReadMore class="">
                 <MarkdownViewer
+                  size="md"
                   :content="dataservice.description"
                   :min-heading="3"
                 />
@@ -133,14 +134,18 @@
               </div>
 
               <div
-                v-if="dataservice.availability"
                 class="space-y-1"
               >
                 <dt class="text-gray-plain font-bold">
-                  {{ $t('Availability') }}
+                  {{ $t('Taux de disponibilité') }}
                 </dt>
                 <dd class="p-0">
-                  {{ dataservice.availability }}%
+                  <span v-if="dataservice.availability">
+                    {{ dataservice.availability }}%
+                  </span>
+                  <span v-else>
+                    {{ $t('Non communiqué') }}
+                  </span>
                 </dd>
               </div>
 
@@ -253,12 +258,17 @@ const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
 const { data: dataservice, status } = await useAPI<Dataservice>(url)
 
 const title = computed(() => dataservice.value?.title)
-const robots = computed(() => dataservice.value ? 'noindex, nofollow' : 'all')
 
 useSeoMeta({
   title,
-  robots,
 })
+await useJsonLd('dataservice', route.params.did)
 
 const openSwagger = ref(false)
+
+onMounted(async () => {
+  await redirectLegacyHashes([
+    { from: 'discussions', to: `/dataservices/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+  ])
+})
 </script>

@@ -5,6 +5,7 @@
         <AdminTableTh
           :sorted="sorted('title')"
           scope="col"
+          class="w-1/3"
           @sort="(direction: SortDirection) => $emit('sort', 'title', direction)"
         >
           {{ t("Dataservice title") }}
@@ -21,10 +22,10 @@
         <AdminTableTh>
           {{ t("Modified at") }}
         </AdminTableTh>
-        <AdminTableTh>
+        <AdminTableTh class="w-64">
           {{ t("Rate limiting") }}
         </AdminTableTh>
-        <AdminTableTh align="right">
+        <AdminTableTh>
           {{ t("Availability") }}
         </AdminTableTh>
         <AdminTableTh scope="col">

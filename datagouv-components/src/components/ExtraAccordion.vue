@@ -14,19 +14,22 @@
           {{ titleText }}
         </component>
       </div>
-      <div class="fr-col-auto">
+      <div class="fr-col-auto space-x-4">
+        <slot name="buttons" />
         <DisclosureButton
           :as="BrandedButton"
           color="secondary-softer"
           keep-margins-even-without-borders
           :icon="open ? RiArrowUpSLine : RiArrowDownSLine"
         >
-          <template v-if="open">
+          {{ buttonText }}
+
+          <span
+            v-if="open"
+            class="sr-only"
+          >
             {{ $t('Close details') }}
-          </template>
-          <template v-else>
-            {{ buttonText }}
-          </template>
+          </span>
         </DisclosureButton>
       </div>
     </header>

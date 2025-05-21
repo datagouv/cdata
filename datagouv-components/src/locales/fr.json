@@ -150,5 +150,14 @@
   "URL copied!": "URL Copiée !",
   "Copy stable URL": "Copier l'URL stable",
   "Stable URL copied!": "URL stable copiée !",
-  "Download file as ": "Télécharger la liste au format "
+  "Download file as ": "Télécharger la liste au format ",
+  "Le robot de {certifier} n'a pas pu accéder à ce fichier - Télécharger le fichier en {format}": "Le robot de {certifier} n'a pas pu accéder à ce fichier - Télécharger le fichier en {format}",
+  "Télécharger le fichier en {format}": "Télécharger le fichier en {format}",
+  "Aperçu de la carte mis à jour le {date}": "Aperçu de la carte mis à jour le {date}",
+  "L'aperçu cartographique de ce fichier n'a pas pu être chargé.": "L'aperçu cartographique de ce fichier n'a pas pu être chargé.",
+  "Utiliser un visualisateur PMTiles pour obtenir un aperçu des données.": "Utiliser un visualisateur PMTiles pour obtenir un aperçu des données.",
+  "Explorer la carte": "Explorer la carte",
+  "Map": "Carte",
+  "The API returned an unexpected error": "L'API a retourné une erreur inattendue",
+  "Explorer les données en détail": "Explorer les données en détail"
 }

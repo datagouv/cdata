@@ -1,8 +1,12 @@
+import type { GeoJsonObject } from 'geojson'
 import type { Badges } from './badges'
 import type { Harvest } from './harvest'
 import type { Owned, OwnedWithId } from './owned'
 import type { Resource } from './resources'
 import type { ContactPoint } from './contact_point'
+import type { License } from './licenses'
+import type { Frequency } from './frequency'
+import type { Granularity, SpatialZone } from './granularity'
 
 export type Quality = {
   all_resources_available: boolean
@@ -78,4 +82,14 @@ export type Dataset = BaseDataset & {
 export type DatasetV2 = Owned & Omit<Dataset, 'resources' | 'community_resources'> & {
   resources: Rel
   community_resources: Rel
+}
+
+export type DatasetV2WithFullObject = Omit<DatasetV2, 'license' | 'frequency' | 'spatial'> & {
+  license: License
+  frequency: Frequency
+  spatial: {
+    zones?: Array<SpatialZone>
+    granularity?: Granularity
+    geom?: GeoJsonObject
+  } | null
 }
