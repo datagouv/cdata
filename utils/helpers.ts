@@ -26,3 +26,22 @@ export async function redirectLegacyHashes(instructions: Array<{ from: string, t
     }
   }
 }
+
+export async function useJsonLd(type: 'dataset' | 'dataservice', id: string)
+{
+  const url = {
+    'dataset': `/api/1/datasets/${id}/rdf.jsonld`,
+    'dataservice': `/api/1/dataservices/${id}/rdf.jsonld`,
+  }[type]
+
+  const { data: jsonld } = await useAPI(url)
+
+  useHead({
+    script: [
+        {
+            type: 'application/ld-json',
+            textContent: jsonld,
+        },
+    ],
+  });
+}
