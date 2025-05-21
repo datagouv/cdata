@@ -37,7 +37,7 @@
         </h2>
       </div>
       <div
-        v-if="isAdmin"
+        v-if="isOrgAdmin"
         class="flex-none"
       >
         <ModalWithButton
@@ -155,7 +155,7 @@
             :key="member.user.id"
           >
             <td>
-              <p v-if="isGlobalAdmin">
+              <p v-if="isMeAdmin()">
                 <NuxtLinkLocale
                   :to="`/admin/users/${member.user.id}/profile`"
                   class="fr-text--bold fr-m-0"
@@ -327,8 +327,7 @@ const refreshAll = async () => {
   ])
 }
 
-const isGlobalAdmin = computed(() => isAdmin(me.value))
-const isOrgAdmin = computed(() => isGlobalAdmin.value || (organization && organization.value.members.some(member => member.user.id === me.value.id && member.role === 'admin')))
+const isOrgAdmin = computed(() => isMeAdmin() || (organization && organization.value.members.some(member => member.user.id === me.value.id && member.role === 'admin')))
 
 const newRole = ref<MemberRole | null>(null)
 const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })
@@ -408,7 +407,7 @@ const canSubmitNewMember = computed(() => {
 
   return true
 })
-const submitNewMember = async (close) => {
+const submitNewMember = async (close: () => void) => {
   if (!canSubmitNewMember.value) return
 
   try {

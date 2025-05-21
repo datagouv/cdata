@@ -18,14 +18,14 @@
         <Placeholder
           v-if="option.organization"
           type="organization"
+          :lazy="false"
           :src="option.organization.logo_thumbnail"
           :size="20"
         />
         <NuxtImg
           v-else
           class="rounded-full border border-gray-default size-5"
-          :src="avatar"
-          loading="lazy"
+          :src="getUserAvatar(option.owner, 24)"
           alt=""
         />
         <span v-if="option.organization">{{ option.organization.name }}</span>
@@ -53,8 +53,6 @@ const { t } = useI18n()
 const user = useMe()
 const { $api } = useNuxtApp()
 
-const avatar = computed(() => getUserAvatar(user.value, 24))
-
 const ownedOptions = computed<Array<Owned>>(() => {
   return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: user.value, organization: null }]
 })
@@ -63,6 +61,7 @@ const suggest = computed(() => {
   if (!props.all) return undefined
 
   return async (query: string) => {
+    if (!query) return Promise.resolve(ownedOptions.value)
     const users = await $api<Array<User>>('/api/1/users/suggest/', {
       query: {
         q: query,

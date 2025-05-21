@@ -14,7 +14,7 @@
     <ListPage
       :link="getLink"
       :reuses
-      :q="(q as string)"
+      :initial-q="q"
       :sort
       :status
       :topic
@@ -39,8 +39,14 @@ useSeoMeta({
 })
 
 const route = useRoute()
-const q = ref(route.query.q ?? '')
+const q = ref('')
+watchEffect(() => {
+  if (Array.isArray(route.query.q)) return
+  if (!route.query.q) return
+  q.value = route.query.q
+})
 const sort = ref((route.query.sort as string | null) || undefined)
+const tag = ref((route.query.tag as string | null) || undefined)
 const topic = ref((route.query.topic as string | null) || undefined)
 const page = ref(parseInt(route.query.page as LocationQueryValue ?? '1', 10))
 const pageSize = 21
@@ -57,6 +63,7 @@ function change(newQs: string, newTopic: string | undefined, newSort: string | u
       q: q.value,
       page: page.value,
       sort: sort.value,
+      tag: tag.value,
       topic: topic.value,
     },
   })
@@ -75,6 +82,7 @@ const { data: reuses, status } = await useAPI<PaginatedArray<Reuse>>(`/api/2/reu
     page,
     page_size: pageSize,
     sort,
+    tag,
     topic,
   },
 })

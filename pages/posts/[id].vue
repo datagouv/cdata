@@ -32,7 +32,7 @@
           </a>
         </li>
       </Breadcrumb>
-      <div v-if="isAdmin(me)">
+      <div v-if="isMeAdmin()">
         <EditButton
           :id="post.id"
           type="posts"
@@ -42,7 +42,7 @@
     <h1 class="!text-4.5xl !font-extrabold !mb-0">
       {{ post.name }}
     </h1>
-    <template v-if="post.published || isAdmin(me)">
+    <template v-if="post.published || isMeAdmin()">
       <p
         v-if="post.published"
         class="text-xs mb-0"
@@ -89,12 +89,11 @@
 </template>
 
 <script setup lang="ts">
-import EditButton from '~/components/BrandedButton/EditButton.vue'
+import EditButton from '~/components/Buttons/EditButton.vue'
 import type { Post } from '~/types/posts'
 
 const config = useRuntimeConfig()
 const route = useRoute()
-const me = useMaybeMe()
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
 const { data: post } = await useAPI<Post>(url)
 

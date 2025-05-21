@@ -19,11 +19,15 @@
             {{ dataservice.title }}
           </BreadcrumbItem>
         </Breadcrumb>
-        <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
+        <div class="flex gap-3 items-center">
           <EditButton
-            v-if="isAdmin(me)"
+            v-if="isMeAdmin()"
             :id="dataservice.id"
             type="dataservices"
+          />
+          <ReportModal
+            v-if="!isOrganizationCertified(dataservice.organization)"
+            :subject="{ id: dataservice.id, class: 'Dataservice' }"
           />
         </div>
       </div>
@@ -34,6 +38,32 @@
     >
       <div class="space-y-8">
         <div class="container pt-3 min-h-32">
+          <div class="flex gap-3 mb-2">
+            <AdminBadge
+              v-if="dataservice.deleted_at"
+              :icon="RiDeleteBinLine"
+              size="sm"
+              type="secondary"
+            >
+              {{ $t('Deleted') }}
+            </AdminBadge>
+            <AdminBadge
+              v-if="dataservice.private"
+              :icon="RiLockLine"
+              size="sm"
+              type="secondary"
+            >
+              {{ $t('Draft') }}
+            </AdminBadge>
+            <AdminBadge
+              v-if="dataservice.archived_at"
+              :icon="RiLockLine"
+              size="sm"
+              type="secondary"
+            >
+              {{ $t('Archived') }}
+            </AdminBadge>
+          </div>
           <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
             {{ dataservice.title }}
           </h1>
@@ -41,6 +71,7 @@
             <div class="flex-1 overflow-x-hidden">
               <ReadMore class="">
                 <MarkdownViewer
+                  size="md"
                   :content="dataservice.description"
                   :min-heading="3"
                 />
@@ -103,14 +134,18 @@
               </div>
 
               <div
-                v-if="dataservice.availability"
                 class="space-y-1"
               >
                 <dt class="text-gray-plain font-bold">
-                  {{ $t('Availability') }}
+                  {{ $t('Taux de disponibilité') }}
                 </dt>
                 <dd class="p-0">
-                  {{ dataservice.availability }}%
+                  <span v-if="dataservice.availability">
+                    {{ dataservice.availability }}%
+                  </span>
+                  <span v-else>
+                    {{ $t('Non communiqué') }}
+                  </span>
                 </dd>
               </div>
 
@@ -120,6 +155,20 @@
                 </dt>
                 <dd class="p-0">
                   <DataserviceAccessTypeBadge :dataservice />
+
+                  <div
+                    v-if="dataservice.authorization_request_url"
+                    class="mt-2"
+                  >
+                    <a
+                      :href="dataservice.authorization_request_url"
+                      rel="ugc nofollow noopener"
+                      target="_blank"
+                      class="fr-text--sm fr-link"
+                    >
+                      {{ $t("Faire une demande d'habilitation") }}
+                    </a>
+                  </div>
                 </dd>
               </div>
             </dl>
@@ -193,27 +242,33 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName } from '@datagouv/components-next'
-import { RiArrowDownSLine, RiArrowUpSLine, RiExternalLinkLine } from '@remixicon/vue'
+import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName } from '@datagouv/components-next'
+import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
+import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import DataserviceAccessTypeBadge from '~/components/AdminTable/AdminDataservicesTable/DataserviceAccessTypeBadge.vue'
-import EditButton from '~/components/BrandedButton/EditButton.vue'
+import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
+import ReportModal from '~/components/Spam/ReportModal.vue'
 
 const route = useRoute()
-const me = useMaybeMe()
 
 const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
 const { data: dataservice, status } = await useAPI<Dataservice>(url)
 
 const title = computed(() => dataservice.value?.title)
-const robots = computed(() => dataservice.value ? 'noindex, nofollow' : 'all')
 
 useSeoMeta({
   title,
-  robots,
 })
+await useJsonLd('dataservice', route.params.did)
 
 const openSwagger = ref(false)
+
+onMounted(async () => {
+  await redirectLegacyHashes([
+    { from: 'discussions', to: `/dataservices/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+  ])
+})
 </script>

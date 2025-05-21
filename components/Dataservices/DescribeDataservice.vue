@@ -185,6 +185,7 @@
               :options="ownedOptions"
               :error-text="getFirstError('owned')"
               :warning-text="getFirstWarning('owned')"
+              :all="isMeAdmin()"
               @focusout="touch('owned')"
             />
           </div>

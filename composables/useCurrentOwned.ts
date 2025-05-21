@@ -43,10 +43,12 @@ export function useCurrentOwned() {
   })
 
   const setCurrentOrganization = (organization: Organization) => {
+    if (currentOwnedId.value && 'organization' in currentOwnedId.value && currentOwnedId.value.organization === organization.id) return
     currentOwnedId.value = { organization: organization.id }
     organizations.value[organization.id] = organization
   }
   const setCurrentUser = (user: User) => {
+    if (currentOwnedId.value && 'user' in currentOwnedId.value && currentOwnedId.value.user === user.id) return
     currentOwnedId.value = { user: user.id }
     users.value[user.id] = user
   }

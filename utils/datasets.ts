@@ -50,6 +50,7 @@ export function toForm(dataset: Dataset | DatasetV2, licenses: Array<License>, f
     spatial_zones: dataset.spatial?.zones?.map(id => zones.find(z => z.id === id)).filter(z => z !== undefined) || [],
     spatial_granularity: granularities.find(g => g.id === dataset.spatial?.granularity) || null,
     private: dataset.private,
+    featured: dataset.featured,
   }
 }
 
@@ -65,7 +66,7 @@ export function toApi(form: DatasetForm, overrides: { private?: boolean, archive
     acronym: form.acronym,
     tags: form.tags.map(t => t.text),
     license: form.license?.id || '',
-    contact_points: form.contact_points && contactPoints.length ? contactPoints : undefined,
+    contact_points: form.contact_points ? (contactPoints.length ? contactPoints : null) : undefined, // The udata API doesn't delete the last contact point if sending an empty array, we need to send `null` to remove all contact points (see :RemoveAllContactPoints in udata)
     frequency: form.frequency?.id || '',
     temporal_coverage: form.temporal_coverage.start
       ? {

@@ -23,7 +23,8 @@ app.vueApp.use(datagouv, {
   devApiKey: runtimeConfig.public.devApiKey,
   staticUrl: runtimeConfig.public.staticUrl,
   tabularApiUrl: 'https://tabular-api.data.gouv.fr',
-  tabularApiAllowRemote: true,
+  tabularAllowRemote: true,
+  pmtilesViewerBaseUrl: null,
   datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
   customUseFetch: useAPI as UseFetchFunction, // Why this `as` is required?
   textClamp: TextClamp,

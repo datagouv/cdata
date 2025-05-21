@@ -47,7 +47,7 @@
         />
         <BrandedButton
           v-if="organization"
-          :href="pageData.total ? `/organizations/${organization.id}/datasets.csv` : undefined"
+          :href="pageData.total ? `${config.public.apiBase}/api/1/organizations/${organization.id}/datasets.csv` : undefined"
           size="xs"
           :external="true"
           :icon="RiDownloadLine"
@@ -130,6 +130,8 @@ const props = defineProps<{
   user?: User | null
 }>()
 const { t } = useI18n()
+
+const config = useRuntimeConfig()
 
 const page = ref(1)
 const pageSize = ref(20)

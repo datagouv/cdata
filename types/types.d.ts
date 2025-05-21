@@ -135,6 +135,7 @@ export type DatasetForm = {
   spatial_zones: Array<SpatialZone>
   spatial_granularity: SpatialGranularity | null
   private: boolean
+  featured: boolean
 }
 
 export type NewDatasetForApi = {
@@ -159,6 +160,7 @@ export type NewDatasetForApi = {
 type ReuseSuggest = Pick<Reuse, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
 
 export type ReuseForm = {
+  featured: boolean
   owned: Owned | null
   title: string
   url: string

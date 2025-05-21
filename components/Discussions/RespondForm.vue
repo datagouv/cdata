@@ -84,7 +84,7 @@ const send = async (close: boolean) => {
   loading.value = true
 
   try {
-    await $api(`/api/1/discussions/${props.thread.id}`, {
+    await $api(`/api/1/discussions/${props.thread.id}/`, {
       method: 'POST',
       body: {
         organization: form.value.owned?.organization,

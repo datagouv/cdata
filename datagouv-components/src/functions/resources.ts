@@ -1,6 +1,7 @@
 import { readonly, type Component } from 'vue'
 
 import { useI18n } from 'vue-i18n'
+import { RiEarthLine, RiMap2Line } from '@remixicon/vue'
 import Archive from '../components/Icons/Archive.vue'
 import Code from '../components/Icons/Code.vue'
 import Documentation from '../components/Icons/Documentation.vue'
@@ -29,7 +30,6 @@ export function getResourceFormatIcon(format: string): Component | null {
     case 'gpx':
     case 'shx':
     case 'ovr':
-    case 'geojson':
     case 'gpkg':
     case 'grib2':
     case 'dbf':
@@ -64,6 +64,13 @@ export function getResourceFormatIcon(format: string): Component | null {
     case 'xlsx':
     case 'parquet':
       return Table
+    case 'geojson':
+      return RiMap2Line
+    case 'ogc:wfs':
+    case 'ogc:wms':
+    case 'wfs':
+    case 'wms':
+      return RiEarthLine
     case 'png':
     case 'jpg':
     case 'jpeg':

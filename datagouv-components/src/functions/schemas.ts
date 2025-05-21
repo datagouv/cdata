@@ -27,7 +27,7 @@ export type Schema = {
   name?: string | null
   url?: string | null
   version?: string | null
-} | null
+}
 
 export interface ValidataError {
   code: string
@@ -63,8 +63,9 @@ export async function getCatalog(): Promise<SchemaResponseData> {
   })
 }
 
-export function findSchemaInCatalog(catalog: Array<RegisteredSchema>, schema: Schema): RegisteredSchema | null {
-  return catalog.find(registeredSchema => schema?.name === registeredSchema.name) || null
+export function findSchemaInCatalog(catalog: Array<RegisteredSchema>, schema: Schema | null): RegisteredSchema | null {
+  if (!schema) return null
+  return catalog.find(registeredSchema => schema.name === registeredSchema.name) || null
 }
 
 export function getSchemaDocumentation(name: string): string {
