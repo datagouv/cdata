@@ -14,7 +14,7 @@
     </div>
     <template v-else>
       <div
-        v-if="pmtilesViewerBaseUrl"
+        v-if="pmtilesViewerUrl"
         class="bg-blue-100 text-datagouv fr-hidden fr-unhidden-md p-4">
         <div class="fr-grid-row fr-grid-row--middle fr-grid-row--gutters">
           <div
@@ -71,7 +71,7 @@ const config = useComponentsConfig()
 const hasError = ref(false)
 const pmtilesUrl = computed(() => props.resource.extras['analysis:parsing:pmtiles_url'])
 const pmtilesViewerUrl = computed(() => {
-  return config.pmtilesViewerBaseUrl ? `${config.pmtilesViewerBaseUrl}${encodeURIComponent(pmtilesUrl)}` : null
+  return config.pmtilesViewerBaseUrl ? `${config.pmtilesViewerBaseUrl}${encodeURIComponent(pmtilesUrl.value)}` : null
 })
 
 const lastUpdate = computed(() => formatDate(props.resource.extras['analysis:parsing:finished_at']))
