@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/vite'
 import toml from './rollup-plugin-smol-toml'
 
+const nbSitemapsDatasets = 10
 // const swrDuration = process.env.NUXT_TEMPLATE_CACHE_DURATION ? parseInt(process.env.NUXT_TEMPLATE_CACHE_DURATION) : 60
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -228,35 +229,35 @@ export default defineNuxtConfig({
       },
       dataservices: {
         sources: [
-          '/nuxt-api/__sitemap__/dataservices',
+          '/nuxt-api/sitemaps/urls?type=dataservice',
         ],
       },
       organizations: {
         sources: [
-          '/nuxt-api/__sitemap__/organizations',
+          '/nuxt-api/sitemaps/urls?type=organization',
         ],
       },
       posts: {
         sources: [
-          '/nuxt-api/__sitemap__/posts',
+          '/nuxt-api/sitemaps/urls?type=post',
         ],
       },
       reuses: {
         sources: [
-          '/nuxt-api/__sitemap__/reuses',
+          '/nuxt-api/sitemaps/urls?type=reuse',
         ],
       },
-      // split datasets between 10 pages
-      ...Array.from({ length: 10 }, (_, i) => i + 1).map(page => ({
-        [`datasets_${page}`]: {
+      // split datasets between nbSitemapsDatasets sections
+      ...Array.from({ length: nbSitemapsDatasets }, (_, i) => i + 1).map(section => ({
+        [`datasets_${section}`]: {
           sources: [
-            `/nuxt-api/__sitemap__/datasets?page=${page}`,
+            `/nuxt-api/sitemaps/urls?type=dataset&section=${section}&nbSitemapSections=${nbSitemapsDatasets}`,
           ],
         },
       })).reduce((acc, obj) => ({ ...acc, ...obj }), {}),
       pages: {
         sources: [
-          '/nuxt-api/__sitemap__/pages',
+          '/nuxt-api/sitemaps/pages',
         ],
       },
       // TODO: add support
