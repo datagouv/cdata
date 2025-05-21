@@ -14,6 +14,7 @@ export type PluginConfig = {
   tabularApiPageSize?: number
   tabularAllowRemote?: boolean
   tabularApiDataserviceId?: string
+  pmtilesViewerBaseUrl: string // Base URL of a pmtiles viewer (ex: https://pmtiles.io/#url=)
   customUseFetch?: UseFetchFunction | null
   textClamp?: string | Component | null
   appLink?: Component | null

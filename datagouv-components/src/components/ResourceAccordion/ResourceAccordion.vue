@@ -175,6 +175,9 @@
             <div v-if="tab.key === 'data'">
               <Preview :resource="resource" />
             </div>
+            <div v-if="tab.key === 'map'">
+              <Pmtiles :resource="resource" />
+            </div>
             <div
               v-if="tab.key === 'description'"
               class="fr-pl-4v fr-pr-4v"
@@ -254,25 +257,28 @@
                     class="relative"
                   />
                 </dd>
-                <template v-if="resource.extras['analysis:parsing:parquet_url']">
+                <template v-if="generatedFormats">
                   <dt class="font-bold fr-text--sm fr-mb-0">
                     {{ $t('Auto-generated formats from {platform}', { platform: config.name }) }}
                   </dt>
-                  <dd class="text-sm ml-0 mt-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
+                  <dd
+                    v-for="generatedFormat in generatedFormats"
+                    :key="generatedFormat.format"
+                    class="text-sm ml-0 mt-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
                     <span>
                       <span class="text-datagouv fr-icon-download-line fr-icon--sm fr-mr-1v fr-mt-1v" />
                       <a
-                        :href="resource.extras['analysis:parsing:parquet_url']"
+                        :href="generatedFormat.url"
                         class="fr-link"
                         rel="ugc nofollow noopener"
                       >
-                        <span>{{ $t('Format {format}', { format: 'parquet' }) }}<span v-if="resource.extras['analysis:parsing:parquet_size']"> - {{ filesize(resource.extras['analysis:parsing:parquet_size']) }}</span></span>
+                        <span>{{ $t('Format {format}', { format: generatedFormat.format }) }}<span v-if="generatedFormat.size"> - {{ filesize(generatedFormat.size) }}</span></span>
                       </a>
                     </span>
                     <CopyButton
                       :label="$t('Copy link')"
                       :copied-label="$t('Link copied!')"
-                      :text="resource.extras['analysis:parsing:parquet_url']"
+                      :text="generatedFormat.url"
                       class="relative"
                     />
                   </dd>
@@ -324,8 +330,10 @@ import ResourceIcon from './ResourceIcon.vue'
 import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
+import Pmtiles from './Pmtiles.vue'
 
 const OGC_SERVICES_FORMATS = ['ogc:wfs', 'ogc:wms', 'wfs', 'wms']
+const GENERATED_FORMATS = ['parquet', 'pmtiles']
 
 const props = withDefaults(defineProps<{
   dataset: Dataset | DatasetV2
@@ -350,11 +358,26 @@ const hasPreview = computed(() => {
     && props.resource.extras['analysis:parsing:finished_at']
     && !props.resource.extras['analysis:parsing:error']
     && (config.tabularAllowRemote || props.resource.filetype === 'file')
+    && !props.resource.extras['analysis:parsing:pmtiles_url'] // TODO: have a dedicated extra for tabular parsing
+})
+
+const hasPmtiles = computed(() => {
+  return props.resource.extras['analysis:parsing:pmtiles_url']
 })
 
 const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('File'))
 
 const ogcService = computed(() => OGC_SERVICES_FORMATS.includes(props.resource.format))
+
+const generatedFormats = computed(() => {
+  return GENERATED_FORMATS
+    .filter(format => `analysis:parsing:${format}_url` in props.resource.extras)
+    .map(format => ({
+      url: props.resource.extras[`analysis:parsing:${format}_url`],
+      size: props.resource.extras[`analysis:parsing:${format}_size`],
+      format: format,
+    }))
+})
 
 const open = ref(props.expandedOnMount)
 const toggle = () => {
@@ -373,6 +396,10 @@ const tabsOptions = computed(() => {
 
   if (hasPreview.value) {
     options.push({ key: 'data', label: t('Data') })
+  }
+
+  if (hasPmtiles.value) {
+    options.push({ key: 'map', label: t('Map') })
   }
 
   if (props.resource.description) {
