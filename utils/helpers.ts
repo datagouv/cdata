@@ -45,7 +45,3 @@ export async function useJsonLd(type: 'dataset' | 'dataservice' | 'organization'
     ],
   })
 }
-
-export function arraySum(array: Array<number>): number {
-  return array.reduce((a, b) => a + b)
-}
