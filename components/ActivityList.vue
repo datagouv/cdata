@@ -23,7 +23,7 @@
             <div class="relative flex size-6 flex-none items-center justify-center bg-white">
               <div class="size-[7px] rounded-full bg-gray-silver" />
             </div>
-            <div class="flex w-full gap-x-3 items-center">
+            <div class="flex w-full gap-x-3 items-start">
               <div class="flex items-center">
                 <Avatar
                   :rounded="true"
@@ -36,13 +36,30 @@
                   {{ activity.actor.last_name }}
                 </p>
               </div>
-              <p class="m-0 text-xs text-gray-title flex-1">
+              <details
+                v-if="hasChanges(activity)"
+                class="flex-1"
+              >
+                <summary class="m-0 text-xs text-gray-title">
+                  {{ getActivityTranslation(activity) }}
+                </summary>
+                <div class="font-mono text-xs rounded-sm bg-gray-some p-4 m-2">
+                  <ul class="list-['-'] pl-2 m-0">
+                    <li
+                      v-for="change in activity.changes"
+                      :key="change"
+                      class="pl-1"
+                    >
+                      {{ change }}
+                    </li>
+                  </ul>
+                </div>
+              </details>
+              <p
+                v-else
+                class="m-0 text-xs text-gray-title flex-1"
+              >
                 {{ getActivityTranslation(activity) }}
-                <small
-                  v-if="activity.changes && Array.isArray(activity.changes) && activity.changes.length"
-                >
-                  {{ activity.changes }}
-                </small>
               </p>
               <p class="m-0 text-xs text-gray-medium">
                 {{ $t('on {date}', { date: formatDate(activity.created_at) }) }}
@@ -95,4 +112,8 @@ const groupedActivities = computed(() => activities?.value.data.reduce((grouped,
   grouped[activityMonth].push(activity)
   return grouped
 }, {} as Record<string, Array<Activity>>))
+
+function hasChanges(activity: Activity) {
+  return activity.changes && Array.isArray(activity.changes) && activity.changes.length
+}
 </script>
