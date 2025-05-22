@@ -35,12 +35,12 @@
       >
         <StatBox
           :title="$t('Visites des jeux de données')"
-          :data="site.details_metrics.visit_dataset"
+          :data="site.metrics.datasets_visits_by_months"
           type="line"
         />
         <StatBox
           :title="$t('Téléchargement des resources')"
-          :data="site.details_metrics.download_resource"
+          :data="site.metrics.resources_downloads_by_months"
           type="line"
         />
       </div>
@@ -50,19 +50,19 @@
       >
         <StatBox
           :title="$t('Jeux de données')"
-          :data="site.details_metrics.dataset_metrics"
+          :data="site.metrics.datasets_by_months"
           type="bar"
           :summary="site.metrics.datasets"
         />
         <StatBox
           :title="$t('Moissoneurs')"
-          :data="site.details_metrics.harvest_metrics"
+          :data="site.metrics.harvesters_by_months"
           type="bar"
           :summary="site.metrics.harvesters"
         />
         <StatBox
           :title="$t('Réutilisations')"
-          :data="site.details_metrics.reuse_metrics"
+          :data="site.metrics.reuses_by_months"
           type="bar"
           :summary="site.metrics.reuses"
         />
@@ -73,19 +73,19 @@
       >
         <StatBox
           :title="$t('Organisations')"
-          :data="site.details_metrics.organization_metrics"
+          :data="site.metrics.organizations_by_months"
           type="bar"
           :summary="site.metrics.organizations"
         />
         <StatBox
           :title="$t('Utilisateurs')"
-          :data="site.details_metrics.user_metrics"
+          :data="site.metrics.users_by_months"
           type="bar"
           :summary="site.metrics.users"
         />
         <StatBox
           :title="$t('Discussions')"
-          :data="site.details_metrics.discussion_metrics"
+          :data="site.metrics.discussions_by_months"
           type="bar"
           :summary="site.metrics.discussions"
         />
@@ -95,11 +95,12 @@
 </template>
 
 <script setup lang="ts">
+import type { Site } from '@datagouv/components-next'
 import { BrandedButton, SimpleBanner, StatBox } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const config = useRuntimeConfig()
-const { data: site } = await useAPI('/api/1/site')
+const { data: site } = await useAPI<Site>('/api/1/site')
 </script>
