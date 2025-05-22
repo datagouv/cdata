@@ -14,7 +14,7 @@ import { BrandedButton } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 
 const props = defineProps<{
-  type: 'organizations' | 'posts' | 'reuses' | 'dataservices' | 'datasets'
+  type: 'organizations' | 'users' | 'posts' | 'reuses' | 'dataservices' | 'datasets'
   id: string
 }>()
 
@@ -29,6 +29,7 @@ const link = computed(() => {
     case 'reuses':
     case 'dataservices':
     case 'datasets':
+    case 'users':
       return base
     default:
       return throwOnNever(props.type as never, t('No other type defined'))
