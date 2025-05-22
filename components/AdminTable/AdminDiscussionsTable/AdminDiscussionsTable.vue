@@ -113,24 +113,25 @@
           </template>
         </td>
         <td>
-          <BrandedButton
-            v-if="subject || subjects[discussion.subject.id]"
-            size="xs"
-            color="secondary-softer"
-            :href="getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id])"
-            :icon="RiEyeLine"
-            icon-only
-            external
-            keep-margins-even-without-borders
-          >
-            {{ getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id]) }}
-          </BrandedButton>
+          <template v-if="subject || subjects[discussion.subject.id]">
+            <BrandedButton
+              size="xs"
+              color="secondary-softer"
+              :href="getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id])"
+              :icon="RiEyeLine"
+              icon-only
+              external
+              keep-margins-even-without-borders
+            >
+              {{ getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id]) }}
+            </BrandedButton>
 
-          <DiscussionsRespondModal
-            :thread="discussion"
-            :subject
-            @responded="$emit('refresh')"
-          />
+            <DiscussionsRespondModal
+              :thread="discussion"
+              :subject="(subject || subjects[discussion.subject.id]) ?? undefined"
+              @responded="$emit('refresh')"
+            />
+          </template>
         </td>
       </tr>
     </tbody>

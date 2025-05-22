@@ -89,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-import EditButton from '~/components/BrandedButton/EditButton.vue'
+import EditButton from '~/components/Buttons/EditButton.vue'
 import type { Post } from '~/types/posts'
 
 const config = useRuntimeConfig()

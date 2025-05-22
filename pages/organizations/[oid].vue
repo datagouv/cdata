@@ -20,10 +20,15 @@
             {{ organization.name }}
           </BreadcrumbItem>
         </Breadcrumb>
-        <div v-if="isMeAdmin() || isMember">
+        <div class="flex gap-3 items-center">
           <EditButton
+            v-if="isMeAdmin() || isMember"
             :id="organization.id"
             type="organizations"
+          />
+          <ReportModal
+            v-if="!isOrganizationCertified(organization)"
+            :subject="{ id: organization.id, class: 'Organization' }"
           />
         </div>
       </div>
@@ -82,11 +87,12 @@
 </template>
 
 <script setup lang="ts">
-import { OrganizationNameWithCertificate, OwnerType, getOrganizationType, type Organization } from '@datagouv/components-next'
+import { isOrganizationCertified, OrganizationNameWithCertificate, OwnerType, getOrganizationType, type Organization } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
-import EditButton from '~/components/BrandedButton/EditButton.vue'
+import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import Placeholder from '~/components/Placeholder/Placeholder.vue'
+import ReportModal from '~/components/Spam/ReportModal.vue'
 
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -102,6 +108,7 @@ useSeoMeta({
   title,
   robots,
 })
+await useJsonLd('organization', route.params.oid)
 
 const type = computed(() => getOrganizationType(organization.value))
 const isMember = computed(() => organization.value.members.some(member => member.user.id === me.value?.id))

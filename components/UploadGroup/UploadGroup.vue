@@ -15,11 +15,13 @@
     <PaddedContainer
       ref="dropFilesHere"
       color="alt-grey"
-      class="fr-grid-row fr-grid-row--middle flex-direction-column border border-gray-default border-dashed text-mention-grey fr-text--bold"
+      class="flex flex-col items-center gap-2 border border-gray-default border-dashed text-mention-grey font-bold"
       :class="{ 'border-plain-error': hasError }"
     >
-      {{ $t('Drag and drop files') }}
-      <Divider>{{ $t('or') }}</Divider>
+      <div>{{ $t('Drag and drop files') }}</div>
+      <Divider color="bg-gray-200">
+        {{ $t('or') }}
+      </Divider>
       <input
         :id="id"
         ref="input"

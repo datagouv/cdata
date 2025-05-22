@@ -72,12 +72,17 @@
       <h2 class="uppercase text-sm mb-2.5">
         {{ $t('{n} associated datasets', { n: datasets.total }) }}
       </h2>
-      <div class="grid xl:grid-cols-2 gap-5">
+      <div
+        class="grid gap-5"
+        :class="{
+          'lg:grid-cols-2': datasets.total > 1,
+        }"
+      >
         <DatasetCardLg
           v-for="dataset in datasets.data"
           :key="dataset.id"
           :dataset="dataset"
-          :show-description="false"
+          :show-description="datasets.total === 1"
           class="m-0"
         />
       </div>

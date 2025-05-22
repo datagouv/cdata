@@ -1,17 +1,19 @@
 <template>
-  <div class="relative">
+  <div
+    class="w-full flex items-center justify-between"
+    aria-hidden="true"
+  >
     <div
-      class="absolute inset-0 flex items-center"
-      aria-hidden="true"
-    >
-      <div
-        class="w-full border-t"
-        :class="color"
-      />
+      class="flex-1 h-px"
+      :class="color"
+    />
+    <div class="px-3 text-sm text-mention-grey">
+      <slot />
     </div>
-    <div class="relative flex justify-center">
-      <span class="bg-white px-3 text-sm text-mention-grey"><slot /></span>
-    </div>
+    <div
+      class="flex-1 h-px"
+      :class="color"
+    />
   </div>
 </template>
 
@@ -19,6 +21,6 @@
 withDefaults(defineProps<{
   color?: string
 }>(), {
-  color: 'border-gray-300',
+  color: 'bg-gray-300',
 })
 </script>
