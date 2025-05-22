@@ -20,6 +20,8 @@
           size="xs"
           :icon="RiDownloadLine"
           color="secondary"
+          :href="downloadUrl"
+          external
         >
           {{ $t('Télécharger les statistiques de trafic au format CSV') }}
         </BrandedButton>
@@ -97,4 +99,8 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const config = useRuntimeConfig()
 const { data: site } = await useAPI<Site>('/api/1/site')
+
+const downloadUrl = computed(() => {
+  return `${config.public.metricsApi}/api/site/data/csv/?metric_month__sort=asc`
+})
 </script>
