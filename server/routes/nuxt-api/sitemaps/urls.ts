@@ -1,6 +1,8 @@
 import { defineSitemapEventHandler } from '#imports'
 import type { SitemapUrl } from '#sitemap/types'
 
+const API_V2_TYPES = ['dataset']
+
 export default defineSitemapEventHandler(async (event) => {
   const config = useRuntimeConfig()
 
@@ -26,7 +28,8 @@ export default defineSitemapEventHandler(async (event) => {
       maxPage += 1 // add last incomplete page on the last sitemap
   })
 
-  let nextPageUrl = config.public.apiBase + `/api/1/${type}s/?page_size=${pageSize}&page=${currentPage}`
+  const apiVersion = API_V2_TYPES.includes(type) ? 2 : 1
+  let nextPageUrl = config.public.apiBase + `/api/${apiVersion}/${type}s/?page_size=${pageSize}&page=${currentPage}`
   const pages = []
 
   do {
