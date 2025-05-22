@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="container space-y-6 pb-8">
+    <div class="container pb-8">
       <Breadcrumb>
         <BreadcrumbItem
           to="/"
@@ -12,7 +12,7 @@
           {{ $t('Tableau de bord du site') }}
         </BreadcrumbItem>
       </Breadcrumb>
-      <div class="flex justify-between items-center">
+      <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl text-gray-title  mb-0 font-extrabold">
           {{ $t('Statistiques des 12 derniers mois') }}
         </h1>
@@ -25,13 +25,16 @@
         </BrandedButton>
       </div>
 
-      <SimpleBanner type="primary">
+      <SimpleBanner
+        type="primary"
+        class="mb-6"
+      >
         {{ $t('Évolution des statistiques et indicateurs d\'usage de {site} mis à jour quotidiennement.', { site: config.public.title }) }}
       </SimpleBanner>
 
       <div
         v-if="site"
-        class="grid grid-cols-3 gap-4"
+        class="grid grid-cols-3 gap-x-4 gap-y-8"
       >
         <StatBox
           :title="$t('Visites des jeux de données')"
@@ -43,11 +46,7 @@
           :data="site.metrics.resources_downloads_by_months"
           type="line"
         />
-      </div>
-      <div
-        v-if="site"
-        class="grid grid-cols-3 gap-4"
-      >
+        <div />
         <StatBox
           :title="$t('Jeux de données')"
           :data="site.metrics.datasets_by_months"
@@ -66,11 +65,6 @@
           type="bar"
           :summary="site.metrics.reuses"
         />
-      </div>
-      <div
-        v-if="site"
-        class="grid grid-cols-3 gap-4"
-      >
         <StatBox
           :title="$t('Organisations')"
           :data="site.metrics.organizations_by_months"
