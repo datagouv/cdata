@@ -255,7 +255,7 @@
 
         <template #button>
           <ModalWithButton
-            :title="$t('Are you sure you want to delete this organization ?')"
+            :title="$t('Are you sure you want to delete this user ?')"
             size="lg"
           >
             <template #button="{ attrs, listeners }">
@@ -277,14 +277,32 @@
               <p>{{ $t("If you want to delete your published content too, start by deleting the contents before deleting your account.") }}</p>
             </template>
             <template #footer>
-              <div class="flex-1 flex justify-end">
-                <BrandedButton
-                  color="danger"
-                  :disabled="loading"
-                  @click="deleteUser"
+              <div class="w-full flex justify-end space-x-4">
+                <div
+                  v-if="isMeAdmin()"
                 >
-                  {{ $t("Delete your account") }}
-                </BrandedButton>
+                  <BrandedButton
+                    color="warning"
+                    :disabled="loading"
+                    @click="() => deleteUser({ spam: true })"
+                  >
+                    {{ $t("Delete as spam (no email sent and discussions deletion)") }}
+                  </BrandedButton>
+                </div>
+                <div>
+                  <BrandedButton
+                    color="danger"
+                    :disabled="loading"
+                    @click="() => deleteUser({ spam: false })"
+                  >
+                    <span v-if="user.id === me.id">
+                      {{ $t("Delete your account") }}
+                    </span>
+                    <span v-else>
+                      {{ $t("Delete this account") }}
+                    </span>
+                  </BrandedButton>
+                </div>
               </div>
             </template>
           </ModalWithButton>
@@ -399,10 +417,14 @@ async function deleteApiKey() {
 
 const localePath = useLocalePath()
 
-async function deleteUser() {
+async function deleteUser({ spam = false }) {
   loading.value = true
   try {
-    await $api(props.user.id === me.value.id ? '/api/1/me/' : `/api/1/users/${props.user.id}`, {
+    let deleteUserUrl = props.user.id === me.value.id ? '/api/1/me/' : `/api/1/users/${props.user.id}`
+    if (props.user.id !== me.value.id && spam) {
+      deleteUserUrl += '?no_mail=true&delete_comments=true'
+    }
+    await $api(deleteUserUrl, {
       method: 'DELETE',
     })
     if (props.user.id === me.value.id) {
