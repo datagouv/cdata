@@ -6,11 +6,11 @@ import type { Comment, DiscussionSubject, DiscussionSubjectTypes } from '~/types
 export async function getSubject(api: $Fetch, subject: DiscussionSubject): Promise<DiscussionSubjectTypes | null> {
   switch (subject.class) {
     case 'Dataservice':
-      return await api<Dataservice>(`/api/1/dataservices/${subject.id}`)
+      return await api<Dataservice>(`/api/1/dataservices/${subject.id}/`)
     case 'Dataset':
-      return await api<DatasetV2>(`/api/2/datasets/${subject.id}`)
+      return await api<DatasetV2>(`/api/2/datasets/${subject.id}/`)
     case 'Reuse':
-      return await api<Reuse>(`/api/1/reuses/${subject.id}`)
+      return await api<Reuse>(`/api/1/reuses/${subject.id}/`)
     default:
       return null
   };

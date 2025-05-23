@@ -134,5 +134,5 @@ const query = computed(() => {
   }
 })
 
-const { data: pageData, status } = await useAPI<PaginatedArray<TopicV2>>('/api/2/topics', { query, lazy: true })
+const { data: pageData, status } = await useAPI<PaginatedArray<TopicV2>>('/api/2/topics/', { query, lazy: true })
 </script>
