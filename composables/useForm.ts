@@ -102,6 +102,14 @@ export function minLength<T, K extends KeysOfUnion<T>, V extends (string | undef
   }
 }
 
+export function testNotAllowed<T, K extends KeysOfUnion<T>, V extends (string | undefined) & T[K]>(demoServer: string, message: string | null = null): ValidationFunction<T, K, V> {
+  return (value: V, key: K, form: T, t) => {
+    if (value && value.toLowerCase().split(' ').includes('test')) return message || t('Si vous voulez faire des tests, utilisez « {demoServer} ».', { demoServer })
+
+    return null
+  }
+}
+
 export function url<T, K extends KeysOfUnion<T>, V extends (string | undefined | null) & T[K]>(message: string | null = null): ValidationFunction<T, K, V> {
   return (value: V, key: K, form: T, t) => {
     if (!value) return null

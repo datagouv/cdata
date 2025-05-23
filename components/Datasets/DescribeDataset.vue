@@ -57,13 +57,6 @@
               <li>{{ $t("Dataset maintenance ;") }}</li>
               <li>{{ $t("Legal and ethical considerations.") }}</li>
             </ul>
-            <SimpleBanner
-              v-if="getFirstWarning('description')"
-              class="font-bold mt-2"
-              type="warning"
-            >
-              {{ getFirstWarning("description") }}
-            </SimpleBanner>
           </div>
         </Accordion>
         <Accordion
@@ -74,13 +67,6 @@
           <p class="fr-m-0">
             {{ $t("Tags characterize your dataset. They are public and improve the dataset's search engine optimization during a user search.") }}
           </p>
-          <SimpleBanner
-            v-if="getFirstWarning('tags')"
-            class="font-bold mt-2"
-            type="warning"
-          >
-            {{ getFirstWarning("tags") }}
-          </SimpleBanner>
         </Accordion>
         <Accordion
           :id="selectLicenseAccordionId"
@@ -90,13 +76,6 @@
           <p class="fr-m-0">
             {{ $t("Licenses define the rules for reuse. By choosing a reuse license, you ensure that the published dataset will be reused according to the usage conditions you have defined.") }}
           </p>
-          <SimpleBanner
-            v-if="getFirstWarning('license')"
-            class="font-bold mt-2"
-            type="warning"
-          >
-            {{ getFirstWarning('license') }}
-          </SimpleBanner>
         </Accordion>
         <Accordion
           v-if="form.owned?.organization"
@@ -116,13 +95,6 @@
           <p class="fr-m-0">
             {{ $t("The update frequency corresponds to how often you plan to update the published data. This update frequency is only indicative.") }}
           </p>
-          <SimpleBanner
-            v-if="getFirstWarning('frequency')"
-            class="font-bold mt-2"
-            type="warning"
-          >
-            {{ getFirstWarning("frequency") }}
-          </SimpleBanner>
         </Accordion>
         <Accordion
           :id="addTemporalCoverageAccordionId"
@@ -133,13 +105,6 @@
             {{ $t("The temporal coverage indicates the time range of the published data.") }} <br>
             {{ $t("For example : from 2012 to 2015.") }}
           </p>
-          <SimpleBanner
-            v-if="getFirstWarning('temporal_coverage')"
-            class="font-bold mt-2"
-            type="warning"
-          >
-            {{ getFirstWarning("temporal_coverage") }}
-          </SimpleBanner>
         </Accordion>
         <Accordion
           :id="addSpatialInformationAccordionId"
@@ -151,13 +116,6 @@
             {{ $t("The spatial granularity indicates the finest geographical level of detail that your data can cover.") }} <br>
             {{ $t("For example: at the department or municipality scale.") }}
           </p>
-          <SimpleBanner
-            v-if="getFirstWarning('spatial_granularity')"
-            class="font-bold mt-2"
-            type="warning"
-          >
-            {{ getFirstWarning("spatial_granularity") }}
-          </SimpleBanner>
         </Accordion>
       </AccordionGroup>
     </Sidemenu>
@@ -254,7 +212,12 @@
               :has-warning="!!getFirstWarning('title')"
               :error-text="getFirstError('title')"
             />
-            <TestBanner :field="form.title" />
+            <SimpleBanner
+              v-if="getFirstWarning('title')"
+              type="warning"
+            >
+              {{ getFirstWarning("title") }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -272,6 +235,7 @@
           >
             <InputGroup
               v-model="form.description"
+              class="mb-3"
               :label="$t('Description')"
               :required="true"
               type="markdown"
@@ -280,6 +244,12 @@
               :error-text="getFirstError('description')"
               @change="touch('description')"
             />
+            <SimpleBanner
+              v-if="getFirstWarning('description')"
+              type="warning"
+            >
+              {{ getFirstWarning("description") }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -288,9 +258,16 @@
           >
             <TagsSelect
               v-model="form.tags"
+              class="mb-3"
               :error-text="getFirstError('tags')"
               :warning-text="getFirstWarning('tags')"
             />
+            <SimpleBanner
+              v-if="getFirstWarning('tags')"
+              type="warning"
+            >
+              {{ getFirstWarning("tags") }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -345,6 +322,12 @@
                 </div>
               </template>
             </SearchableSelect>
+            <SimpleBanner
+              v-if="getFirstWarning('license')"
+              type="warning"
+            >
+              {{ getFirstWarning('license') }}
+            </SimpleBanner>
           </LinkedToAccordion>
         </fieldset>
         <fieldset
@@ -411,6 +394,7 @@
           >
             <SearchableSelect
               v-model="form.frequency"
+              class="mb-3"
               :label="$t('Update frequency')"
               :placeholder="$t('Search a frequency…')"
               :get-option-id="(frequency) => frequency.label"
@@ -421,6 +405,12 @@
               :error-text="getFirstError('frequency')"
               :warning-text="getFirstWarning('frequency')"
             />
+            <SimpleBanner
+              v-if="getFirstWarning('frequency')"
+              type="warning"
+            >
+              {{ getFirstWarning("frequency") }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             :accordion="addTemporalCoverageAccordionId"
@@ -447,6 +437,12 @@
                 :show-label-inside="true"
               />
             </div>
+            <SimpleBanner
+              v-if="getFirstWarning('temporal_coverage')"
+              type="warning"
+            >
+              {{ getFirstWarning("temporal_coverage") }}
+            </SimpleBanner>
           </LinkedToAccordion>
         </fieldset>
         <fieldset
@@ -522,6 +518,7 @@
               <div class="fr-col-12">
                 <SearchableSelect
                   v-model="form.spatial_granularity"
+                  class="mb-3"
                   :label="$t('Spatial granularity')"
                   :placeholder="$t('Search a granularity…')"
                   :get-option-id="(granularity) => granularity.id"
@@ -536,6 +533,12 @@
                     {{ granularity.name }}
                   </template>
                 </SearchableSelect>
+                <SimpleBanner
+                  v-if="getFirstWarning('spatial_granularity')"
+                  type="warning"
+                >
+                  {{ getFirstWarning("spatial_granularity") }}
+                </SimpleBanner>
               </div>
             </div>
           </LinkedToAccordion>
@@ -688,6 +691,7 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
   frequency: [required()],
   private: [],
 }, {
+  title: [testNotAllowed(config.public.demoServer.name)],
   description: [minLength(200, t(`It's advised to have a {property} of at least {min} characters.`, { property: t('description'), min: 200 }))],
   tags: [required(t('Adding tags helps improve the SEO of your data.'))],
   license: [required()],

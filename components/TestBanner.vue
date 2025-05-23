@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { SimpleBanner } from '@datagouv/components-next'
-import { RiInformationLine } from '@remixicon/vue';
+import { RiInformationLine } from '@remixicon/vue'
 
 defineProps<{ field: string }>()
 

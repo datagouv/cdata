@@ -49,7 +49,6 @@
           :label="$t('Name')"
           :required="true"
         />
-        <TestBanner :field="form.name" />
 
         <template #accordion>
           <HelpAccordion :title="$t('Naming your harvester')">
@@ -282,6 +281,7 @@ const emit = defineEmits<{
 
 const model = defineModel<HarvesterForm>({ required: true })
 const { t } = useI18n()
+const config = useRuntimeConfig()
 
 onMounted(() => {
   if (props.type === 'update') validate()
@@ -294,6 +294,7 @@ const { form, getFirstError, getFirstWarning, formInfo, validate } = useForm(mod
   url: [required()],
   backend: [required()],
 }, {
+  name: [testNotAllowed(config.public.demoServer.name)],
   description: [minLength(500)],
 })
 

@@ -130,7 +130,6 @@
           :label="$t('Title')"
           :required="true"
         />
-        <TestBanner :field="form.title" />
 
         <template #accordion>
           <HelpAccordion :title="nameAFile">

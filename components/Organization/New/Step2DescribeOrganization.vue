@@ -1,5 +1,8 @@
 <template>
-  <div class="flex">
+  <FormWithAccordions
+    :form-info
+    @submit.prevent="submit"
+  >
     <Sidemenu
       class="w-5/12 hidden lg:block"
       :button-text="t('Help')"
@@ -14,15 +17,6 @@
         {{ t('Help') }}
       </template>
       <AccordionGroup :with-icon="true">
-        <Accordion
-          :id="nameOrganizationAccordionId"
-          :title="t('Naming your organization')"
-          :state="state.name"
-        >
-          <p class="fr-m-0">
-            {{ t("The public name of your organization.") }} <br>
-          </p>
-        </Accordion>
         <Accordion
           :id="addAcronymAccordionId"
           :title="t('Choose an acronym')"
@@ -58,11 +52,11 @@
             {{ t("Please indicate here what your organization does and what mission it fulfills. Add any information that will allow users to contact you: email address, mailing address, Twitter account, etc.") }}
           </p>
           <SimpleBanner
-            v-if="fieldHasWarning('description')"
+            v-if="getFirstWarning('description')"
             class="font-bold mt-2"
             type="warning"
           >
-            {{ getWarningText("description") }}
+            {{ getFirstWarning("description") }}
           </SimpleBanner>
         </Accordion>
         <Accordion
@@ -82,13 +76,6 @@
           <p class="fr-m-0">
             {{ t(`If your organization has a logo or a profile picture, please upload it here. To upload a logo, click on the "Choose a file from your computer" button. The following image formats are accepted: png, jpg/jpeg.`) }}
           </p>
-          <SimpleBanner
-            v-if="fieldHasWarning('frequency')"
-            class="font-bold mt-2"
-            type="warning"
-          >
-            {{ getWarningText("frequency") }}
-          </SimpleBanner>
         </Accordion>
       </AccordionGroup>
     </Sidemenu>
@@ -116,24 +103,8 @@
         </SimpleBanner>
 
         <RequiredExplanation />
-        <fieldset
-          class="fr-fieldset"
-          :aria-labelledby="legend"
-        >
-          <legend
-            v-if="showLegend"
-            :id="legend"
-            class="fr-fieldset__legend"
-          >
-            <h2 class="text-sm font-bold uppercase mb-3">
-              {{ t("Description") }}
-            </h2>
-          </legend>
-          <LinkedToAccordion
-            class="fr-fieldset__element"
-            :accordion="nameOrganizationAccordionId"
-            @blur="vWarning$.name.$touch"
-          >
+        <FormFieldset :legend="$t('Description')">
+          <FieldsetElement form-key="name">
             <InputGroup
               v-model="organization.name"
               class="mb-3"
@@ -141,12 +112,23 @@
               :aria-describedby="nameOrganizationAccordionId"
               :label="t('Name')"
               :required="true"
-              :has-error="fieldHasError('name')"
-              :has-warning="fieldHasWarning('name')"
-              :error-text="getErrorText('name')"
+              :has-error="!!getFirstError('name')"
+              :has-warning="!!getFirstWarning('name')"
+              :error-text="getFirstError('name')"
             />
-            <TestBanner :field="organization.name" />
-          </LinkedToAccordion>
+            <template #accordion>
+              <HelpAccordion :title="$t('Nommez votre organisation')">
+                <p class="fr-m-0">
+                  {{ $t("Le nom public de votre organisation.") }} <br>
+                </p>
+              </HelpAccordion>
+            </template>
+          </FieldsetElement>
+        </FormFieldset>
+        <fieldset
+          class="fr-fieldset"
+          :aria-labelledby="legend"
+        >
           <LinkedToAccordion
             class="fr-fieldset__element"
             :accordion="addAcronymAccordionId"
@@ -167,9 +149,9 @@
               data-testid="siretInput"
               :aria-describedby="addSiretAccordionId"
               :label="t('SIRET Number')"
-              :has-error="fieldHasError('business_number_id')"
-              :has-warning="fieldHasWarning('business_number_id')"
-              :error-text="t('This SIRET is not valid')"
+              :has-error="!!getFirstError('business_number_id')"
+              :has-warning="!!getFirstWarning('business_number_id')"
+              :error-text="getFirstError('business_number_id')"
             />
           </LinkedToAccordion>
           <ClientOnly>
@@ -206,10 +188,10 @@
               :label="t('Description')"
               :required="true"
               type="markdown"
-              :has-error="fieldHasError('description')"
-              :has-warning="fieldHasWarning('description')"
-              :error-text="getErrorText('description')"
-              @change="vWarning$.description.$touch"
+              :has-error="!!getFirstError('description')"
+              :has-warning="!!getFirstWarning('description')"
+              :error-text="getFirstError('description')"
+              @change="touch('description')"
             />
           </LinkedToAccordion>
           <LinkedToAccordion
@@ -222,9 +204,9 @@
               :aria-describedby="addDescriptionAccordionId"
               :label="t('Website')"
               type="url"
-              :has-error="fieldHasError('url')"
-              :has-warning="fieldHasWarning('url')"
-              :error-text="getErrorText('url')"
+              :has-error="!!getFirstError('url')"
+              :has-warning="!!getFirstWarning('url')"
+              :error-text="getFirstError('url')"
             />
           </LinkedToAccordion>
         </fieldset>
@@ -232,7 +214,7 @@
           <LinkedToAccordion
             class="fr-fieldset__element"
             :accordion="addLogoAccordionId"
-            @blur="vWarning$.acronym.$touch"
+            @blur="touch('logo')"
           >
             <legend>
               <p class="fr-mb-1w">
@@ -305,8 +287,8 @@
             {{ $t('Previous') }}
           </BrandedButton>
           <BrandedButton
+            type="submit"
             color="primary"
-            @click="submit"
           >
             {{ submitLabel }}
           </BrandedButton>
@@ -314,27 +296,23 @@
         <slot />
       </PaddedContainer>
     </div>
-  </div>
+  </FormWithAccordions>
 </template>
 
 <script setup lang="ts">
 import { ASSOCIATION, COMPANY, LOCAL_AUTHORITY, PUBLIC_SERVICE, BrandedButton, OwnerType, SimpleBanner } from '@datagouv/components-next'
 import type { Badge, NewOrganization, Organization, OrganizationTypes } from '@datagouv/components-next'
-import { url } from '@vuelidate/validators'
-import { computed, reactive, ref, watchEffect } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { createMinLengthWarning, createRequired } from '~/utils/i18n'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import Alert from '~/components/Alert/Alert.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
 import LinkedToAccordion from '~/components/LinkedToAccordion/LinkedToAccordion.vue'
 import UploadGroup from '~/components/UploadGroup/UploadGroup.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
-import type { PublishingFormAccordionState } from '~/types/form'
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   type: 'create' | 'update'
-  organization: NewOrganization | Organization
   errors: Array<string>
   submitLabel: string
   loading?: boolean
@@ -346,9 +324,11 @@ const props = withDefaults(defineProps<{
   showWell: true,
 })
 
+const organization = defineModel<NewOrganization | Organization>({ required: true })
+
 const emit = defineEmits<{
   previous: []
-  submit: [submittedOrganization: typeof props.organization, file: File | null, newBadges: Array<Badge>]
+  submit: [submittedOrganization: typeof organization, file: File | null, newBadges: Array<Badge>]
 }>()
 
 const legend = 'description-legend'
@@ -363,20 +343,15 @@ const addWebsiteAccordionId = useId()
 const addLogoAccordionId = useId()
 
 const config = useRuntimeConfig()
-const nuxtApp = useNuxtApp()
 const { t } = useI18n()
 
 const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges')
 const badges = computed(() => Object.keys(badgesLabels.value || {}).map(key => ({ kind: key })))
 
-const newBadges = ref('badges' in props.organization ? props.organization.badges : [])
+const newBadges = ref('badges' in organization.value ? organization.value.badges : [])
 
-const organization = reactive<NewOrganization | Organization>({ ...props.organization })
 const file = ref<File | null>(null)
 const imagePreview = ref<HTMLImageElement | null>(null)
-
-const required = createRequired(nuxtApp.$i18n)
-const minLengthWarning = createMinLengthWarning(nuxtApp.$i18n)
 
 const checkOrga = ref({
   name: '',
@@ -385,61 +360,33 @@ const checkOrga = ref({
   exists: null as boolean | null,
 })
 
-const checkBusinessId = () => {
-  if (!organization.business_number_id || organization.business_number_id.length == 0) {
-    return true
-  }
-  else if (organization.business_number_id.length == 14 && checkOrga.value.exists) {
-    return true
-  }
-  else {
-    return false
+function checkBusinessId<T, K extends KeysOfUnion<T>, V extends (string | undefined) & T[K]>(check: MaybeRefOrGetter<{ exists: boolean }>, message: string | null = null): ValidationFunction<T, K, V> {
+  return (value: V, key: K, form: T, t) => {
+    if (!value || value.length == 0) {
+      return null
+    }
+    else if (value.length === 14 && toValue(check).exists) {
+      return null
+    }
+    else {
+      return message || t('Ce numéro SIRET est invalide.')
+    }
   }
 }
 
-const requiredRules = {
-  business_number_id: { custom: checkBusinessId },
-  description: { required },
-  name: { required },
-  url: { url },
-}
-
-const warningRules = {
-  acronym: {},
-  business_number_id: { custom: checkBusinessId },
-  description: { required, minLengthValue: minLengthWarning(config.public.qualityDescriptionLength) },
-  logo: {},
-  name: { required },
-  url: { url },
-}
-
-const { getErrorText, getFunctionalState, getWarningText, hasError, hasWarning, validateRequiredRules, v$, vWarning$ } = useFunctionalState(organization, requiredRules, warningRules)
-
-const state = computed<Record<string, PublishingFormAccordionState>>(() => {
-  return {
-    acronym: vWarning$.value.acronym.$dirty ? 'info' : 'disabled',
-    business_number_id: getFunctionalState(vWarning$.value.business_number_id.$dirty, v$.value.business_number_id.$invalid, vWarning$.value.business_number_id.$error),
-    description: getFunctionalState(vWarning$.value.description.$dirty, v$.value.description.$invalid, vWarning$.value.description.$error),
-    logo: vWarning$.value.logo.$dirty ? 'info' : 'disabled',
-    name: getFunctionalState(vWarning$.value.name.$dirty, v$.value.name.$invalid, vWarning$.value.name.$error),
-    url: getFunctionalState(vWarning$.value.url.$dirty, v$.value.url.$invalid, vWarning$.value.url.$error),
-  }
+const { form, formInfo, getFirstError, getFirstWarning, touch, validate } = useForm(organization, {
+  business_number_id: [checkBusinessId(checkOrga)],
+  description: [required()],
+  name: [required()],
+  url: [url()],
+}, {
+  description: [minLength(config.public.qualityDescriptionLength)],
 })
 
-function fieldHasError(field: string) {
-  return hasError(state, field)
-}
-
-function fieldHasWarning(field: string) {
-  return hasWarning(state, field)
-}
-
 function submit() {
-  validateRequiredRules().then((valid) => {
-    if (valid) {
-      emit('submit', organization, file.value, newBadges.value)
-    }
-  })
+  if (validate()) {
+    emit('submit', organization, file.value, newBadges.value)
+  }
 }
 
 function addFiles(newFile: Array<File>) {
@@ -449,11 +396,11 @@ function addFiles(newFile: Array<File>) {
   }
 }
 
-  type SearchAdditionalData = {
-    collectivite_territoriale: { code: number } | null
-    est_service_public: boolean
-    est_association: boolean
-  }
+type SearchAdditionalData = {
+  collectivite_territoriale: { code: number } | null
+  est_service_public: boolean
+  est_association: boolean
+}
 
 function getOrganizationType(complements: SearchAdditionalData): OrganizationTypes {
   if (complements.collectivite_territoriale) {
@@ -469,7 +416,7 @@ function getOrganizationType(complements: SearchAdditionalData): OrganizationTyp
 }
 
 watchEffect(() => {
-  const siret = organization.business_number_id?.replace(/\s/g, '')
+  const siret = form.value.business_number_id?.replace(/\s/g, '')
   if (config.public.searchSirenUrl && siret?.length === 14) {
       type SearchSirenResponse = {
         total_results: number

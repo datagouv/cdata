@@ -40,13 +40,6 @@
           <p class="fr-m-0">
             {{ t("Write a clear and precise description of the API. Users need to understand the purpose of the API, the data provided, the scope covered (is the data exhaustive, are there any gaps?), the frequency of data updates, as well as the parameters with which they can make a call.") }}
           </p>
-          <SimpleBanner
-            v-if="getFirstWarning('description')"
-            class="font-bold mt-2"
-            type="warning"
-          >
-            {{ getFirstWarning("description") }}
-          </SimpleBanner>
         </Accordion>
         <Accordion
           :id="addBaseUrlAccordionId"
@@ -111,13 +104,6 @@
           <p class="fr-m-0">
             {{ $t("Please indicate whether the dataservice is freely accessible or whether a user requires a token to access the data.") }}
           </p>
-          <SimpleBanner
-            v-if="getFirstWarning('access_type')"
-            class="font-bold mt-2"
-            type="warning"
-          >
-            {{ getFirstWarning("access_type") }}
-          </SimpleBanner>
         </Accordion>
         <Accordion
           :id="addAuthorizationUrlAccordionId"
@@ -217,7 +203,13 @@
               :has-warning="!!getFirstWarning('title')"
               :error-text="getFirstError('title')"
             />
-            <TestBanner :field="form.title" />
+            <SimpleBanner
+              v-if="getFirstWarning('title')"
+              class="mt-2"
+              type="warning"
+            >
+              {{ getFirstWarning("title") }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -240,6 +232,7 @@
           >
             <InputGroup
               v-model="form.description"
+              class="mb-3"
               :label="$t('Description')"
               :required="true"
               type="markdown"
@@ -248,6 +241,13 @@
               :error-text="getFirstError('description')"
               @change="touch('description')"
             />
+            <SimpleBanner
+              v-if="getFirstWarning('description')"
+              class="mt-2"
+              type="warning"
+            >
+              {{ getFirstWarning("description") }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -405,6 +405,13 @@
                 { value: 'restricted', label: t('Restricted') },
               ]"
             />
+            <SimpleBanner
+              v-if="getFirstWarning('access_type')"
+              class="mt-2"
+              type="warning"
+            >
+              {{ getFirstWarning("access_type") }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -482,7 +489,6 @@ import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ContactPointSelect from '~/components/ContactPointSelect.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
-import TestBanner from '~/components/TestBanner.vue'
 import type { DataserviceForm, Owned } from '~/types/types'
 
 const props = defineProps<{
@@ -498,6 +504,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const user = useMe()
+const config = useRuntimeConfig()
 
 const nameDataserviceAccordionId = useId()
 const acronymDataserviceAccordionId = useId()
@@ -527,6 +534,7 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
   business_documentation_url: [url()],
   private: [],
 }, {
+  title: [testNotAllowed(config.public.demoServer.name)],
   description: [minLength(200, t(`It's advised to have a {property} of at least {min} characters.`, { property: t('description'), min: 200 }))],
 })
 
