@@ -3,299 +3,224 @@
     :form-info
     @submit.prevent="submit"
   >
-    <Sidemenu
-      class="w-5/12 hidden lg:block"
-      :button-text="t('Help')"
-      :on-right="true"
-      :fixed="true"
+    <SimpleBanner
+      v-if="showWell"
+      type="primary"
+      class="mb-4 flex items-center space-x-5"
     >
-      <template #title>
-        <span
-          class="fr-icon--sm fr-icon-question-line"
-          aria-hidden="true"
-        />
-        {{ t('Help') }}
-      </template>
-      <AccordionGroup :with-icon="true">
-        <Accordion
-          :id="addAcronymAccordionId"
-          :title="t('Choose an acronym')"
-          :state="state.acronym"
-        >
-          <div class="prose prose-neutral fr-m-0">
-            <p class="fr-m-0">
-              {{ t('The acronym of your organization, if it exists.') }}
-            </p>
-          </div>
-        </Accordion>
-        <Accordion
-          :id="addSiretAccordionId"
-          :title="t('Why provide a SIRET number?')"
-          :state="state.business_number_id"
-        >
-          <p class="fr-m-0">
-            {{ t("A SIRET number will allow us to assign a type to your organization (administrations, local authorities, businesses, etc.) and will facilitate your certification. The number must have 14 digits.") }} <br>
-            {{ t("Please note that all administrations have a SIRET number.") }} <br>
-            {{ t("You can find your SIRET on ") }}<a
-              class="text-decoration-underline"
-              href="https://annuaire-entreprises.data.gouv.fr/"
-              target="_blank"
-            >{{ t("l’Annuaire des Entreprises.") }}</a>
-          </p>
-        </Accordion>
-        <Accordion
-          :id="addDescriptionAccordionId"
-          :title="t('Write a good description')"
-          :state="state.description"
-        >
-          <p class="fr-m-0">
-            {{ t("Please indicate here what your organization does and what mission it fulfills. Add any information that will allow users to contact you: email address, mailing address, Twitter account, etc.") }}
-          </p>
-          <SimpleBanner
-            v-if="getFirstWarning('description')"
-            class="font-bold mt-2"
-            type="warning"
-          >
-            {{ getFirstWarning("description") }}
-          </SimpleBanner>
-        </Accordion>
-        <Accordion
-          :id="addWebsiteAccordionId"
-          :title="t('Provide a website')"
-          :state="state.url"
-        >
-          <p class="fr-m-0">
-            {{ t("If your organization has a website, please provide its URL.") }}
-          </p>
-        </Accordion>
-        <Accordion
-          :id="addLogoAccordionId"
-          :title="t('Choose the right logo')"
-          :state="state.logo"
-        >
-          <p class="fr-m-0">
-            {{ t(`If your organization has a logo or a profile picture, please upload it here. To upload a logo, click on the "Choose a file from your computer" button. The following image formats are accepted: png, jpg/jpeg.`) }}
-          </p>
-        </Accordion>
-      </AccordionGroup>
-    </Sidemenu>
-    <div class="w-full lg:w-7/12">
-      <PaddedContainer>
-        <SimpleBanner
-          v-if="showWell"
-          type="primary"
-          class="mb-4 flex items-center space-x-5"
-        >
-          <NuxtImg
-            src="/illustrations/organization.svg"
-            loading="lazy"
-            class="size-14 shrink-0"
-            alt=""
-          />
-          <div class="w-full">
-            <p class="font-bold mb-1">
-              {{ t('What is an organization?') }}
-            </p>
-            <p class="m-0 text-xs/5">
-              {{ t('An organization is an entity in which many users can collaborate. The datasets published under the organization can be edited by its members.') }}
-            </p>
-          </div>
-        </SimpleBanner>
+      <NuxtImg
+        src="/illustrations/organization.svg"
+        loading="lazy"
+        class="size-14 shrink-0"
+        alt=""
+      />
+      <div class="w-full">
+        <p class="font-bold mb-1">
+          {{ t('What is an organization?') }}
+        </p>
+        <p class="m-0 text-xs/5">
+          {{ t('An organization is an entity in which many users can collaborate. The datasets published under the organization can be edited by its members.') }}
+        </p>
+      </div>
+    </SimpleBanner>
 
-        <RequiredExplanation />
-        <FormFieldset :legend="$t('Description')">
-          <FieldsetElement form-key="name">
-            <InputGroup
-              v-model="organization.name"
-              class="mb-3"
-              data-testid="nameInput"
-              :aria-describedby="nameOrganizationAccordionId"
-              :label="t('Name')"
-              :required="true"
-              :has-error="!!getFirstError('name')"
-              :has-warning="!!getFirstWarning('name')"
-              :error-text="getFirstError('name')"
-            />
-            <template #accordion>
-              <HelpAccordion :title="$t('Nommez votre organisation')">
-                <p class="fr-m-0">
-                  {{ $t("Le nom public de votre organisation.") }} <br>
-                </p>
-              </HelpAccordion>
-            </template>
-          </FieldsetElement>
-        </FormFieldset>
-        <fieldset
-          class="fr-fieldset"
-          :aria-labelledby="legend"
-        >
-          <LinkedToAccordion
-            class="fr-fieldset__element"
-            :accordion="addAcronymAccordionId"
+    <RequiredExplanation />
+    <FormFieldset :legend="$t('Description')">
+      <FieldsetElement form-key="name">
+        <InputGroup
+          v-model="organization.name"
+          class="mb-3"
+          :label="t('Nom')"
+          :required="true"
+          :has-error="!!getFirstError('name')"
+          :has-warning="!!getFirstWarning('name')"
+          :error-text="getFirstError('name')"
+        />
+        <template #accordion>
+          <HelpAccordion :title="$t('Nommez votre organisation')">
+            <p class="fr-m-0">
+              {{ $t("Le nom public de votre organisation.") }} <br>
+            </p>
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+      <FieldsetElement form-key="acronym">
+        <InputGroup
+          v-model="organization.acronym"
+          :label="t('Acronyme')"
+        />
+        <template #accordion>
+          <HelpAccordion :title="$t('Choisir un acronyme')">
+            <p class="fr-m-0">
+              {{ $t("L'acronyme de votre organisation, s'il existe.") }} <br>
+            </p>
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+      <FieldsetElement form-key="business_number_id">
+        <InputGroup
+          v-model="organization.business_number_id"
+          :label="t('Numéro SIRET')"
+          :has-error="!!getFirstError('business_number_id')"
+          :has-warning="!!getFirstWarning('business_number_id')"
+          :error-text="getFirstError('business_number_id')"
+        />
+        <ClientOnly>
+          <div
+            v-if="checkOrga.exists !== null"
+            class="fr-col mx-2 mb-2 bg-contrast-grey text-align-center p-4"
           >
-            <InputGroup
-              v-model="organization.acronym"
-              data-testid="acronymInput"
-              :aria-describedby="addAcronymAccordionId"
-              :label="t('Acronym')"
-            />
-          </LinkedToAccordion>
-          <LinkedToAccordion
-            class="fr-fieldset__element"
-            :accordion="addSiretAccordionId"
-          >
-            <InputGroup
-              v-model="organization.business_number_id"
-              data-testid="siretInput"
-              :aria-describedby="addSiretAccordionId"
-              :label="t('SIRET Number')"
-              :has-error="!!getFirstError('business_number_id')"
-              :has-warning="!!getFirstWarning('business_number_id')"
-              :error-text="getFirstError('business_number_id')"
-            />
-          </LinkedToAccordion>
-          <ClientOnly>
-            <div
-              v-if="checkOrga.exists !== null"
-              class="fr-col fr-mx-1w fr-mb-1w bg-contrast-grey text-align-center fr-p-2w"
-            >
-              <div v-if="checkOrga.exists">
-                <p class="fr-m-0 fr-text--sm fr-text--bold">
-                  {{ t('The SIRET n° {number} is matching', { number: organization.business_number_id }) }}
-                </p>
-                <p class="fr-m-0 fr-text--xs">
-                  {{ checkOrga.name }}
-                </p>
-                <OwnerType
-                  :type="checkOrga.type"
-                  color="black"
-                  size="xs"
-                />
-              </div>
-              <div v-else>
-                <p>{{ t('No organization found matching this SIRET on annuaire-entreprises.data.gouv.fr') }}</p>
-              </div>
-            </div>
-          </ClientOnly>
-          <LinkedToAccordion
-            class="fr-fieldset__element"
-            :accordion="addDescriptionAccordionId"
-          >
-            <InputGroup
-              v-model="organization.description"
-              data-testid="descriptionInput"
-              :aria-describedby="addDescriptionAccordionId"
-              :label="t('Description')"
-              :required="true"
-              type="markdown"
-              :has-error="!!getFirstError('description')"
-              :has-warning="!!getFirstWarning('description')"
-              :error-text="getFirstError('description')"
-              @change="touch('description')"
-            />
-          </LinkedToAccordion>
-          <LinkedToAccordion
-            class="fr-fieldset__element"
-            :accordion="addWebsiteAccordionId"
-          >
-            <InputGroup
-              v-model="organization.url"
-              data-testid="websiteInput"
-              :aria-describedby="addDescriptionAccordionId"
-              :label="t('Website')"
-              type="url"
-              :has-error="!!getFirstError('url')"
-              :has-warning="!!getFirstWarning('url')"
-              :error-text="getFirstError('url')"
-            />
-          </LinkedToAccordion>
-        </fieldset>
-        <fieldset>
-          <LinkedToAccordion
-            class="fr-fieldset__element"
-            :accordion="addLogoAccordionId"
-            @blur="touch('logo')"
-          >
-            <legend>
-              <p class="fr-mb-1w">
-                {{ t("Logo") }}
+            <div v-if="checkOrga.exists">
+              <p class="m-0 text-sm font-bold">
+                {{ t('Le SIRET n°{number} correspond', { number: organization.business_number_id }) }}
               </p>
-            </legend>
-            <UploadGroup
-              :label="t('Logo')"
-              :title="t('Logo')"
-              hint-text="Max size: 4Mo. Accepted formats: JPG, JPEG, PNG"
-              accept=".jpeg, .jpg, .png"
-              :is-valid="!!file"
-              :valid-text="t('Your file is valid')"
-              @change="addFiles"
-            />
-            <div
-              v-show="imagePreview?.src"
-              class="text-align-center"
-            >
-              <NuxtImg
-                ref="imagePreview"
-                class="fr-col fr-mx-1w fr-mb-1w"
-                width="300px"
-                loading="lazy"
-                alt=""
+              <p class="m-0 text-xs">
+                {{ checkOrga.name }}
+              </p>
+              <OwnerType
+                class="justify-center"
+                :type="checkOrga.type"
+                color="black"
+                size="xs"
               />
             </div>
-          </LinkedToAccordion>
-        </fieldset>
-        <SearchableSelect
-          v-if="isMeAdmin() && 'badges' in organization"
-          v-model="newBadges"
-          :label="$t('Badges')"
-          :placeholder="$t('Associate badges to the organization…')"
-          class="mb-6"
-          :options="badges"
-          :get-option-id="(badge) => badgesLabels[badge.kind]"
-          :display-value="(badges) => badges ? humanJoin(badges.map(b => badgesLabels[b.kind])) : ''"
-          :multiple="true"
+            <div v-else>
+              <p>{{ t('Aucune organisation ne correspond à ce SIRET sur annuaire-entreprises.data.gouv.fr') }}</p>
+            </div>
+          </div>
+        </ClientOnly>
+        <template #accordion>
+          <HelpAccordion :title="$t('Pourquoi fournir un numéro SIRET ?')">
+            <p class="fr-m-0">
+              {{ t("Un numéro SIRET nous permettra d’attribuer un type à votre organisation (administrations, collectivités, entreprises etc.) et facilitera votre certification. Le numéro doit faire 14 chiffres.") }} <br>
+              {{ t("Veuillez noter que toutes les administrations ont un numéro SIRET.") }} <br>
+              {{ t("Vous pouvez trouver votre SIRET sur ") }}<a
+                class="text-decoration-underline"
+                href="https://annuaire-entreprises.data.gouv.fr/"
+                target="_blank"
+              >{{ t("l’Annuaire des Entreprises.") }}</a>
+            </p>
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+      <FieldsetElement form-key="description">
+        <InputGroup
+          v-model="organization.description"
+          :label="t('Description')"
+          :required="true"
+          type="markdown"
+          :has-error="!!getFirstError('description')"
+          :has-warning="!!getFirstWarning('description')"
+          :error-text="getFirstError('description')"
+          @change="touch('description')"
         />
-        <Alert
-          v-if="errors.length"
-          type="error"
-          class="fr-mt-n2w fr-mb-2w"
-        >
-          <template #title>
-            {{ t("An error occured | Some errors occured", errors.length) }}
-          </template>
-          <ul v-if="errors.length > 1">
-            <li
-              v-for="error in errors"
-              :key="error"
-            >
-              {{ error }}
-            </li>
-          </ul>
-          <p v-else>
-            {{ errors[0] }}
-          </p>
-        </Alert>
+        <template #accordion>
+          <HelpAccordion :title="$t('Écrire une bonne description')">
+            <p class="fr-m-0">
+              {{ $t("Veuillez indiquer ici ce que votre organisation fait et quelle mission elle accomplit. Ajoutez toutes les informations qui permettront aux utilisateurs de vous contacter : adresse e-mail, adresse postale, compte Twitter, etc.") }} <br>
+            </p>
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+      <FieldsetElement form-key="url">
+        <InputGroup
+          v-model="organization.url"
+          :label="t('Website')"
+          type="url"
+          :has-error="!!getFirstError('url')"
+          :has-warning="!!getFirstWarning('url')"
+          :error-text="getFirstError('url')"
+        />
+        <template #accordion>
+          <HelpAccordion :title="$t('Indiquer un site web')">
+            <p class="fr-m-0">
+              {{ $t("Si votre organisation a un site web, veuillez fournir son URL.") }} <br>
+            </p>
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+    </FormFieldset>
+    <FormFieldset :legend="$t('Logo')">
+      <FieldsetElement form-key="logo">
+        <UploadGroup
+          :label="t('Logo')"
+          :title="t('Logo')"
+          hint-text="Max size: 4Mo. Accepted formats: JPG, JPEG, PNG"
+          accept=".jpeg, .jpg, .png"
+          :is-valid="!!file"
+          :valid-text="t('Your file is valid')"
+          @change="addFiles"
+        />
         <div
-          class="fr-grid-row"
-          :class="{ 'fr-grid-row--right': type === 'update', 'justify-between': type === 'create' }"
+          v-show="imagePreview"
+          class="w-full flex justify-center"
         >
-          <BrandedButton
-            v-if="type === 'create'"
-            color="secondary"
-            @click="$emit('previous')"
+          <img
+            :src="imagePreview"
+            class="fr-col mx-2 mb-2"
+            width="300px"
+            alt=""
           >
-            {{ $t('Previous') }}
-          </BrandedButton>
-          <BrandedButton
-            type="submit"
-            color="primary"
-          >
-            {{ submitLabel }}
-          </BrandedButton>
         </div>
-        <slot />
-      </PaddedContainer>
+        <template #accordion>
+          <HelpAccordion :title="$t('Choisir le bon logo')">
+            <p class="fr-m-0">
+              {{ $t(`Si votre organisation a un logo ou une photo de profil, veuillez la téléverser ici. Pour téléverser un logo, cliquez sur le bouton "Choisir un fichier à partir de votre ordinateur". Les formats d'image suivants sont acceptés : png, jpg/jpeg.`) }} <br>
+            </p>
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+    </FormFieldset>
+    <SearchableSelect
+      v-if="isMeAdmin() && 'badges' in organization"
+      v-model="newBadges"
+      :label="$t('Badges')"
+      :placeholder="$t('Associate badges to the organization…')"
+      class="mb-6"
+      :options="badges"
+      :get-option-id="(badge) => badgesLabels[badge.kind]"
+      :display-value="(badges) => badges ? humanJoin(badges.map(b => badgesLabels[b.kind])) : ''"
+      :multiple="true"
+    />
+    <Alert
+      v-if="errors.length"
+      type="error"
+      class="fr-mt-n2w fr-mb-2w"
+    >
+      <template #title>
+        {{ t("An error occured | Some errors occured", errors.length) }}
+      </template>
+      <ul v-if="errors.length > 1">
+        <li
+          v-for="error in errors"
+          :key="error"
+        >
+          {{ error }}
+        </li>
+      </ul>
+      <p v-else>
+        {{ errors[0] }}
+      </p>
+    </Alert>
+    <div
+      class="fr-grid-row"
+      :class="{ 'fr-grid-row--right': type === 'update', 'justify-between': type === 'create' }"
+    >
+      <BrandedButton
+        v-if="type === 'create'"
+        color="secondary"
+        @click="$emit('previous')"
+      >
+        {{ $t('Previous') }}
+      </BrandedButton>
+      <BrandedButton
+        type="submit"
+        color="primary"
+      >
+        {{ submitLabel }}
+      </BrandedButton>
     </div>
+    <slot />
   </FormWithAccordions>
 </template>
 
@@ -304,12 +229,13 @@ import { ASSOCIATION, COMPANY, LOCAL_AUTHORITY, PUBLIC_SERVICE, BrandedButton, O
 import type { Badge, NewOrganization, Organization, OrganizationTypes } from '@datagouv/components-next'
 import { computed, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
-import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import Alert from '~/components/Alert/Alert.vue'
+import FieldsetElement from '~/components/Form/FieldsetElement.vue'
+import FormFieldset from '~/components/Form/FormFieldset.vue'
+import HelpAccordion from '~/components/Form/HelpAccordion.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
-import LinkedToAccordion from '~/components/LinkedToAccordion/LinkedToAccordion.vue'
+import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplanation.vue'
 import UploadGroup from '~/components/UploadGroup/UploadGroup.vue'
-import Accordion from '~/components/Accordion/Accordion.global.vue'
 
 withDefaults(defineProps<{
   type: 'create' | 'update'
@@ -328,19 +254,8 @@ const organization = defineModel<NewOrganization | Organization>({ required: tru
 
 const emit = defineEmits<{
   previous: []
-  submit: [submittedOrganization: typeof organization, file: File | null, newBadges: Array<Badge>]
+  submit: [file: File | null, newBadges: Array<Badge>]
 }>()
-
-const legend = 'description-legend'
-
-defineExpose({ legend })
-
-const nameOrganizationAccordionId = useId()
-const addAcronymAccordionId = useId()
-const addDescriptionAccordionId = useId()
-const addSiretAccordionId = useId()
-const addWebsiteAccordionId = useId()
-const addLogoAccordionId = useId()
 
 const config = useRuntimeConfig()
 const { t } = useI18n()
@@ -351,7 +266,7 @@ const badges = computed(() => Object.keys(badgesLabels.value || {}).map(key => (
 const newBadges = ref('badges' in organization.value ? organization.value.badges : [])
 
 const file = ref<File | null>(null)
-const imagePreview = ref<HTMLImageElement | null>(null)
+const imagePreview = computed(() => file.value ? URL.createObjectURL(file.value) : undefined)
 
 const checkOrga = ref({
   name: '',
@@ -381,19 +296,17 @@ const { form, formInfo, getFirstError, getFirstWarning, touch, validate } = useF
   url: [url()],
 }, {
   description: [minLength(config.public.qualityDescriptionLength)],
+  name: [testNotAllowed(config.public.demoServer.name)],
 })
 
 function submit() {
   if (validate()) {
-    emit('submit', organization, file.value, newBadges.value)
+    emit('submit', file.value, newBadges.value)
   }
 }
 
 function addFiles(newFile: Array<File>) {
   file.value = newFile[0]
-  if (imagePreview.value) {
-    imagePreview.value.src = URL.createObjectURL(file.value)
-  }
 }
 
 type SearchAdditionalData = {
