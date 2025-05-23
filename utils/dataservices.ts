@@ -35,7 +35,7 @@ export function toApi(form: DataserviceForm, overrides: { archived_at?: string |
     private: overrides.private,
     archived_at: overrides.archived_at,
     datasets: overrides.datasets ? overrides.datasets.map(({ id }) => id) : undefined,
-    contact_points: form.contact_points && contactPoints.length ? contactPoints : undefined,
+    contact_points: form.contact_points ? contactPoints : undefined,
     access_type: form.access_type,
     base_api_url: form.base_api_url || null,
     authorization_request_url: form.authorization_request_url || null,

@@ -252,6 +252,8 @@ useSeoMeta({
   title,
 })
 
+await useJsonLd('dataset', route.params.did)
+
 onMounted(async () => {
   await redirectLegacyHashes([
     { from: 'resources', to: `/datasets/${route.params.did}/`, queryParam: 'resource_id' },

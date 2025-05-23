@@ -262,6 +262,7 @@ const title = computed(() => dataservice.value?.title)
 useSeoMeta({
   title,
 })
+await useJsonLd('dataservice', route.params.did)
 
 const openSwagger = ref(false)
 
