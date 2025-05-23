@@ -3,8 +3,10 @@
  * The rest of the metrics aren't stored yet at the organization level
  */
 export async function getOrganizationMetrics(oid: string) {
+  const config = useRuntimeConfig()
+
   // Fetching last 12 months
-  const response = await fetch(`https://metric-api.data.gouv.fr/api/organizations/data/?organization_id__exact=${oid}&metric_month__sort=desc&page_size=12`)
+  const response = await fetch(`${config.public.metricsApi}/api/organizations/data/?organization_id__exact=${oid}&metric_month__sort=desc&page_size=12`)
   const page = await response.json()
 
   const datasetsViews: Record<string, number> = {}
@@ -17,7 +19,7 @@ export async function getOrganizationMetrics(oid: string) {
     reusesViews[metric_month] = monthly_visit_reuse
   }
   // Fetching totals
-  const totalResponse = await fetch(`https://metric-api.data.gouv.fr/api/organizations_total/data/?organization_id__exact=${oid}`)
+  const totalResponse = await fetch(`${config.public.metricsApi}/api/organizations_total/data/?organization_id__exact=${oid}`)
   const totalPage = await totalResponse.json()
 
   let datasetsViewsTotal = 0
