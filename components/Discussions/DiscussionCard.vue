@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, ReadMore } from '@datagouv/components-next'
+import { Avatar, BrandedButton, formatDate, ReadMore } from '@datagouv/components-next'
 import ThreadHeader from './ThreadHeader.vue'
 import CommentBlock from './CommentBlock.vue'
 import RespondForm from './RespondForm.vue'

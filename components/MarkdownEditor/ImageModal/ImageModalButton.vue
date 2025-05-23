@@ -24,14 +24,14 @@
       :placeholder="t('Paste your link…')"
       :required="true"
       type="url"
-      :has-error="fieldHasError('src')"
-      :error-text="getErrorText('src')"
+      :has-error="!!getFirstError('src')"
+      :error-text="getFirstError('src')"
     />
     <details>
       <summary data-testid="summary">
         {{ t("Customize accessibility options") }}
       </summary>
-      <div class="fr-my-1w">
+      <div class="my-2">
         <InputGroup
           v-model="form.alt"
           :label="t('Image alternative text')"
@@ -78,10 +78,6 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const nuxtApp = useNuxtApp()
-
-const required = createRequired(nuxtApp.$i18n)
-
 const initialState = {
   src: '',
   title: '',
@@ -90,36 +86,22 @@ const initialState = {
 
 const form = reactive<ImageModalForm>({ ...initialState })
 
-const requiredRules = {
-  src: { required },
-}
-
-const { getErrorText, getFunctionalState, hasError, reset, validateRequiredRules, v$ } = useFunctionalState(form, requiredRules, requiredRules)
-
-const state = computed(() => {
-  return {
-    src: getFunctionalState(v$.value.src.$dirty, v$.value.src.$error, false),
-  }
+const { getFirstError, removeErrorsAndWarnings, validate } = useForm(form, {
+  src: [required()],
 })
-
-function fieldHasError(field: string) {
-  return hasError(state, field)
-}
 
 function resetForm(close: () => void) {
   form.src = initialState.src
   form.title = initialState.title
   form.alt = initialState.alt
-  reset()
+  removeErrorsAndWarnings()
   close()
 };
 
 function send(close: () => void) {
-  validateRequiredRules().then((valid) => {
-    if (valid) {
-      emit('send', { ...form })
-      resetForm(close)
-    }
-  })
+  if (validate()) {
+    emit('send', { ...form })
+    resetForm(close)
+  }
 };
 </script>

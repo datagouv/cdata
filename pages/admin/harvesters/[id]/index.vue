@@ -162,7 +162,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, BrandedButton } from '@datagouv/components-next'
+import { Pagination, BrandedButton, formatDate } from '@datagouv/components-next'
 import { RiArchiveLine, RiCheckLine, RiCloseLine, RiEyeOffLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'

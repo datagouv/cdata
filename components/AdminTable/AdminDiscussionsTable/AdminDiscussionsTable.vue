@@ -139,7 +139,7 @@
 </template>
 
 <script setup lang="ts">
-import { AvatarWithName, BrandedButton } from '@datagouv/components-next'
+import { AvatarWithName, BrandedButton, formatDate } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { RiEyeLine } from '@remixicon/vue'
 import AdminTable from '../Table/AdminTable.vue'

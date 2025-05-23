@@ -193,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Pagination, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
+import { BrandedButton, formatDate, Pagination, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { RiArrowDownLine, RiArrowUpLine, RiCheckLine, RiDraggable } from '@remixicon/vue'
 import { useSortable } from '@vueuse/integrations/useSortable'

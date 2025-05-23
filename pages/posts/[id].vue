@@ -89,6 +89,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatDate } from '@datagouv/components-next'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import type { Post } from '~/types/posts'
 
