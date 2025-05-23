@@ -41,13 +41,6 @@
             <p class="fr-m-0">
               {{ t('Please indicate the type under which to categorize the reuse (API, application, news article, visualization, etc.).') }}
             </p>
-            <SimpleBanner
-              v-if="getFirstWarning('type')"
-              class="font-bold mt-2"
-              type="warning"
-            >
-              {{ getFirstWarning("type") }}
-            </SimpleBanner>
           </div>
         </Accordion>
         <Accordion
@@ -58,13 +51,6 @@
           <p class="fr-m-0">
             {{ t("Choose the theme associated with your reuse.") }}
           </p>
-          <SimpleBanner
-            v-if="getFirstWarning('topic')"
-            class="font-bold mt-2"
-            type="warning"
-          >
-            {{ getFirstWarning("topic") }}
-          </SimpleBanner>
         </Accordion>
         <Accordion
           :id="addDescriptionAccordionId"
@@ -74,13 +60,6 @@
           <p class="fr-m-0">
             {{ t("You can provide information about the method of creating the reuse, what the reuse allows to do or show, or tell more about yourself and the context of this reuse. It is preferable to maintain a neutral tone: if the reuse resembles too much like a promotional message, we may delete it.") }}
           </p>
-          <SimpleBanner
-            v-if="getFirstWarning('description')"
-            class="font-bold mt-2"
-            type="warning"
-          >
-            {{ getFirstWarning("description") }}
-          </SimpleBanner>
         </Accordion>
         <Accordion
           :id="addTagsAccordionId"
@@ -90,13 +69,6 @@
           <p class="fr-m-0">
             {{ t("Keywords appear on the presentation page and improve search engine optimization when a user is searching. From each keyword, you can obtain a list of reuses for which the keyword has also been assigned.") }}
           </p>
-          <SimpleBanner
-            v-if="getFirstWarning('tags')"
-            class="font-bold mt-2"
-            type="warning"
-          >
-            {{ getFirstWarning("tags") }}
-          </SimpleBanner>
         </Accordion>
         <Accordion
           :id="addImageAccordionId"
@@ -106,13 +78,6 @@
           <p class="fr-m-0">
             {{ t(`If your reuse takes the form of a graphical representation, you can provide a preview to other users through an image or screenshot. This image will appear in the "Reuses" section of the associated dataset page. When relevant, screenshots are more effective in conveying what the reuse is about, so they are preferable to logos or illustrations, for example.`) }}
           </p>
-          <SimpleBanner
-            v-if="getFirstWarning('image')"
-            class="font-bold mt-2"
-            type="warning"
-          >
-            {{ getFirstWarning("image") }}
-          </SimpleBanner>
         </Accordion>
       </AccordionGroup>
     </Sidemenu>
@@ -213,7 +178,12 @@
               :has-warning="!!getFirstWarning('title')"
               :error-text="getFirstError('title')"
             />
-            <TestBanner :field="reuseForm.title" />
+            <SimpleBanner
+              v-if="getFirstWarning('title')"
+              type="warning"
+            >
+              {{ getFirstWarning("title") }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -239,6 +209,7 @@
           >
             <SearchableSelect
               v-model="reuseForm.type"
+              class="mb-3"
               :label="$t('Type')"
               :placeholder="$t('Search a type…')"
               :get-option-id="(type) => type.label"
@@ -249,6 +220,12 @@
               :error-text="getFirstError('type')"
               :warning-text="getFirstWarning('type')"
             />
+            <SimpleBanner
+              v-if="getFirstWarning('type')"
+              type="warning"
+            >
+              {{ getFirstWarning("type") }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -257,6 +234,7 @@
           >
             <SearchableSelect
               v-model="reuseForm.topic"
+              class="mb-3"
               :label="$t('Theme')"
               :placeholder="$t('Search a theme…')"
               :get-option-id="(topic) => topic.label"
@@ -267,6 +245,12 @@
               :error-text="getFirstError('topic')"
               :warning-text="getFirstWarning('topic')"
             />
+            <SimpleBanner
+              v-if="getFirstWarning('topic')"
+              type="warning"
+            >
+              {{ getFirstWarning("topic") }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -274,6 +258,7 @@
           >
             <InputGroup
               v-model="reuseForm.description"
+              class="mb-3"
               :label="t('Description')"
               :required="true"
               type="markdown"
@@ -282,6 +267,12 @@
               :error-text="getFirstError('description')"
               @change="touch('description')"
             />
+            <SimpleBanner
+              v-if="getFirstWarning('description')"
+              type="warning"
+            >
+              {{ getFirstWarning("description") }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -290,9 +281,16 @@
           >
             <TagsSelect
               v-model="form.tags"
+              class="mb-3"
               :error-text="getFirstError('tags')"
               :warning-text="getFirstWarning('tags')"
             />
+            <SimpleBanner
+              v-if="getFirstWarning('tags')"
+              type="warning"
+            >
+              {{ getFirstWarning("tags") }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -322,6 +320,13 @@
                 alt=""
               />
             </div>
+            <SimpleBanner
+              v-if="getFirstWarning('image')"
+              class="mt-2"
+              type="warning"
+            >
+              {{ getFirstWarning("image") }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <fieldset
             v-if="type === 'update'"
@@ -389,6 +394,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const user = useMe()
+const config = useRuntimeConfig()
 
 const nameReuseAccordionId = useId()
 const addLinkAccordionId = useId()
@@ -416,6 +422,7 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(reuseF
   image: [required()],
   private: [],
 }, {
+  title: [testNotAllowed(config.public.demoServer.name)],
   description: [minLength(200, t(`It's advised to have a {property} of at least {min} characters.`, { property: t('description'), min: 200 }))],
 })
 
