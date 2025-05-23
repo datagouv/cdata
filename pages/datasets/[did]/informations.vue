@@ -225,7 +225,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, CopyButton, StatBox, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
+import { BrandedButton, CopyButton, formatDate, StatBox, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
 import { RiBook2Line, RiCheckboxCircleLine, RiDownloadLine, RiServerLine } from '@remixicon/vue'
 import LeafletMapClient from '~/components/LeafletMap.client.vue'
 import ExtraAccordion from '~/datagouv-components/src/components/ExtraAccordion.vue'

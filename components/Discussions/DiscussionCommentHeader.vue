@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar } from '@datagouv/components-next'
+import { Avatar, formatDate } from '@datagouv/components-next'
 import type { Comment, DiscussionSubjectTypes } from '~/types/discussions'
 import { isProducerOfSubject } from '~/utils/discussions'
 

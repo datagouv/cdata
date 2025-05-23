@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar } from '@datagouv/components-next'
+import { Avatar, formatDate } from '@datagouv/components-next'
 import type { User } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import AdminBadge from './AdminBadge/AdminBadge.vue'

@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, Pagination } from '@datagouv/components-next'
+import { Avatar, formatDate, Pagination } from '@datagouv/components-next'
 import PaddedContainer from '~/components/PaddedContainer/PaddedContainer.vue'
 import type { Activity } from '~/types/activity'
 import type { PaginatedArray } from '~/types/types'
