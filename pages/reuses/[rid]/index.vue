@@ -167,7 +167,7 @@
 </template>
 
 <script setup lang="ts">
-import { useReuseType, BrandedButton, StatBox, type Reuse, type ReuseTopic, type DatasetV2, Pagination } from '@datagouv/components-next'
+import { useReuseType, BrandedButton, StatBox, type Reuse, type ReuseTopic, type DatasetV2, Pagination, formatDate } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import { getTopic } from '~/datagouv-components/src/functions/reuses'

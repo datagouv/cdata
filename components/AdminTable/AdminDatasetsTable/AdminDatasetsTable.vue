@@ -219,7 +219,7 @@
 </template>
 
 <script setup lang="ts">
-import { summarize, DatasetQualityScore, DatasetQualityInline, DatasetQualityTooltipContent, BrandedButton } from '@datagouv/components-next'
+import { summarize, DatasetQualityScore, DatasetQualityInline, DatasetQualityTooltipContent, BrandedButton, formatDate } from '@datagouv/components-next'
 import type { Dataset, DatasetV2 } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'

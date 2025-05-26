@@ -147,7 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, filesize as formatFilesize, ResourceIcon } from '@datagouv/components-next'
+import { BrandedButton, filesize as formatFilesize, formatRelativeIfRecentDate, ResourceIcon } from '@datagouv/components-next'
 import { computed } from 'vue'
 import { RiCodeSSlashLine, RiDeleteBinLine, RiInformationLine, RiLink, RiMapPin2Line } from '@remixicon/vue'
 import FileEditModal from '../Datasets/FileEditModal.vue'

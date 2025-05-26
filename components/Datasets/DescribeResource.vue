@@ -48,43 +48,45 @@
         v-if="form.filetype === 'file' || !form.filetype"
         form-key="file"
       >
-        <div v-if="newFile">
-          <label
-            v-if="type === 'update'"
-            class="fr-label fr-mb-1w"
-          >
-            {{ $t('The current file will be replaced by') }}
-          </label>
-          <FileCard
-            v-if="newFile"
-            :model-value="{
-              filetype: 'file',
-              title: newFile.name,
-              type: 'main',
-              description: '',
-              schema: null,
-              file: {
-                raw: newFile,
-                state: { status: 'waiting' },
-              },
-              resource: null,
-            }"
-            class="fr-mb-3v"
-            :show-edit-and-warning="false"
-            :extensions
-            @delete="newFile = null; form.filetype = null"
+        <LoadingBlock :status>
+          <div v-if="newFile">
+            <label
+              v-if="type === 'update'"
+              class="fr-label fr-mb-1w"
+            >
+              {{ $t('The current file will be replaced by') }}
+            </label>
+            <FileCard
+              v-if="newFile"
+              :model-value="{
+                filetype: 'file',
+                title: newFile.name,
+                type: 'main',
+                description: '',
+                schema: null,
+                file: {
+                  raw: newFile,
+                  state: { status: 'waiting' },
+                },
+                resource: null,
+              }"
+              class="fr-mb-3v"
+              :show-edit-and-warning="false"
+              :extensions
+              @delete="newFile = null; form.filetype = null"
+            />
+          </div>
+          <UploadGroup
+            v-else
+            :show-label="type === 'update'"
+            :label="type === 'update' ? $t('Replace file') : $t('New file')"
+            type="drop"
+            :accept="extensions.join(',')"
+            :multiple="false"
+            :hint-text="$t('Max size: 420 Mb.')"
+            @change="setFiles"
           />
-        </div>
-        <UploadGroup
-          v-else
-          :show-label="type === 'update'"
-          :label="type === 'update' ? $t('Replace file') : $t('New file')"
-          type="drop"
-          :accept="extensions.join(',')"
-          :multiple="false"
-          :hint-text="$t('Max size: 420 Mb.')"
-          @change="setFiles"
-        />
+        </LoadingBlock>
       </FieldsetElement>
 
       <Divider v-if="!form.filetype">
@@ -124,6 +126,7 @@
       <FieldsetElement form-key="title">
         <InputGroup
           v-model="form.title"
+          class="mb-3"
           :label="$t('Title')"
           :required="true"
         />
@@ -256,44 +259,46 @@
         form-key="schema"
         class="space-y-2"
       >
-        <SearchableSelect
-          v-model="form.schema"
-          :label="$t('Schema')"
-          :placeholder="$t('Search a schema referenced on {site}…', { site: config.public.schemasSite.name })"
-          :display-value="(option) => option.name"
-          :get-option-id="(option) => option.name"
-          :options="schemas"
-          :multiple="false"
+        <LoadingBlock :status="schemaStatus">
+          <SearchableSelect
+            v-model="form.schema"
+            :label="$t('Schema')"
+            :placeholder="$t('Search a schema referenced on {site}…', { site: config.public.schemasSite.name })"
+            :display-value="(option) => option.name"
+            :get-option-id="(option) => option.name"
+            :options="schemas"
+            :multiple="false"
 
-          :error-text="getFirstError('schema')"
-          :warning-text="getFirstWarning('schema')"
-        />
-        <Divider v-if="!form.schema">
-          {{ $t('or') }}
-        </Divider>
-        <InputGroup
-          v-if="!form.schema"
-          v-model="form.schema_url"
-          :label="t('Add a link to the schema')"
-          :placeholder="'https://...'"
-          :error-text="getFirstError('schema_url')"
-          :warning-text="getFirstWarning('schema_url')"
-          class="w-full !mb-0"
-        />
+            :error-text="getFirstError('schema')"
+            :warning-text="getFirstWarning('schema')"
+          />
+          <Divider v-if="!form.schema">
+            {{ $t('or') }}
+          </Divider>
+          <InputGroup
+            v-if="!form.schema"
+            v-model="form.schema_url"
+            :label="t('Add a link to the schema')"
+            :placeholder="'https://...'"
+            :error-text="getFirstError('schema_url')"
+            :warning-text="getFirstWarning('schema_url')"
+            class="w-full !mb-0"
+          />
 
-        <template #accordion>
-          <HelpAccordion :title="$t('Select a schema')">
-            <i18n-t
-              keypath="It is possible to identify an existing data schema by visiting the {schema} website, that references a list of existing data schema."
-              tag="p"
-              class="fr-m-0 fr-mb-1w"
-            >
-              <template #schema>
-                <a :href="config.public.schemasSite.url">{{ config.public.schemasSite.name }}</a>
-              </template>
-            </i18n-t>
-          </HelpAccordion>
-        </template>
+          <template #accordion>
+            <HelpAccordion :title="$t('Select a schema')">
+              <i18n-t
+                keypath="It is possible to identify an existing data schema by visiting the {schema} website, that references a list of existing data schema."
+                tag="p"
+                class="fr-m-0 fr-mb-1w"
+              >
+                <template #schema>
+                  <a :href="config.public.schemasSite.url">{{ config.public.schemasSite.name }}</a>
+                </template>
+              </i18n-t>
+            </HelpAccordion>
+          </template>
+        </LoadingBlock>
       </FieldsetElement>
     </FormFieldset>
 
@@ -355,8 +360,8 @@ const setFiles = (files: Array<File>) => {
   }
 }
 
-const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extensions/')
-const { data: schemas } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/')
+const { data: extensions, status } = await useAPI<Array<string>>('/api/1/datasets/extensions/', { lazy: true })
+const { data: schemas, status: schemaStatus } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/', { lazy: true })
 
 const { toast } = useToast()
 

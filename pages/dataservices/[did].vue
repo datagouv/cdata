@@ -242,7 +242,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, formatDate } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import DataserviceAccessTypeBadge from '~/components/AdminTable/AdminDataservicesTable/DataserviceAccessTypeBadge.vue'

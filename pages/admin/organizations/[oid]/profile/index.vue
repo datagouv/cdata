@@ -2,7 +2,6 @@
   <div>
     <h2
       v-if="form"
-      :id="form.legend"
       class="text-sm font-bold uppercase mb-5"
     >
       {{ t("Edit profile") }}
@@ -11,9 +10,9 @@
     <DescribeOrganizationFrom
       v-if="organization"
       ref="form"
+      v-model="organizationForm"
       type="update"
       :submit-label="$t('Save')"
-      :organization="organization"
       :errors="errors"
       :show-legend="false"
       :show-well="false"
@@ -73,7 +72,7 @@
 import { useI18n } from 'vue-i18n'
 import { RiDeleteBin6Line } from '@remixicon/vue'
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
-import type { NewOrganization, Organization, Badge } from '@datagouv/components-next'
+import type { Organization, Badge } from '@datagouv/components-next'
 import AdminLoader from '~/components/AdminLoader/AdminLoader.vue'
 import DescribeOrganizationFrom from '~/components/Organization/New/Step2DescribeOrganization.vue'
 import { updateOrganization, updateOrganizationBadges, uploadLogo } from '~/api/organizations'
@@ -93,6 +92,10 @@ const localPath = useLocalePath()
 const form = ref<InstanceType<typeof DescribeOrganizationFrom> | null>(null)
 
 const errors = ref([])
+const organizationForm = ref<Organization>({ ...props.organization })
+watchEffect(() => {
+  organizationForm.value = props.organization
+})
 
 const loading = computed(() => !props.organization)
 
@@ -105,8 +108,8 @@ async function deleteCurrentOrganization() {
   }
 }
 
-async function updateCurrentOrganization(updatedOrganization: NewOrganization | Organization, logo_file: File | null, newBadges: Array<Badge> | null) {
-  await updateOrganization(updatedOrganization as Organization)
+async function updateCurrentOrganization(logo_file: File | null, newBadges: Array<Badge> | null) {
+  await updateOrganization(organizationForm.value)
   if (newBadges && props.organization) {
     await updateOrganizationBadges(props.organization, newBadges)
   }
