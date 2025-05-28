@@ -17,7 +17,6 @@
 const root = useTemplateRef('rootRef')
 const breadcrumbs = useBreadcrumbs()
 const route = useRoute()
-const updating = ref(false)
 
 //
 // :BreadcrumbInSidebar
