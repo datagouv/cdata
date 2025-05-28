@@ -44,6 +44,9 @@
                   <summary class="m-0 text-xs text-gray-title">
                     {{ getActivityTranslation(activity) }}
                   </summary>
+                  <p class="m-2 text-xs">
+                    {{ $t('Aucun Champs mis à jour : | 1 Champ mis à jour : | {n} Champs mis à jour :', { n: activity.changes?.length }) }}
+                  </p>
                   <div class="font-mono text-xs rounded-sm bg-gray-some p-4 m-2">
                     <ul class="list-['-'] pl-2 m-0">
                       <li
@@ -63,7 +66,7 @@
                   {{ getActivityTranslation(activity) }}
                 </p>
                 <p class="m-0 text-xs text-gray-medium">
-                  {{ $t('on {date}', { date: formatDate(activity.created_at) }) }}
+                  {{ $t('le {date}', { date: formatDate(activity.created_at) }) }}
                 </p>
               </div>
             </li>

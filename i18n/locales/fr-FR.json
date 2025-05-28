@@ -1241,5 +1241,8 @@
   "Suppression de la réutilisation": "Suppression de la réutilisation",
   "Discussion sur la réutilisation": "Discussion sur la réutilisation",
   "Nouveau favori sur la réutilisation": "Nouveau favori sur la réutilisation",
-  "Nouveau favori sur l'utilisateur": "Nouveau favori sur l'utilisateur"
+  "Nouveau favori sur l'utilisateur": "Nouveau favori sur l'utilisateur",
+  "Aucun Champs mis à jour : | 1 Champ mis à jour : | {n} Champs mis à jour :": "Aucun Champs mis à jour : | 1 Champ mis à jour : | {n} Champs mis à jour :",
+  "le {date}": "le {date}",
+  "Il n'y a pas encore d'activité": "Il n'y a pas encore d'activité"
 }

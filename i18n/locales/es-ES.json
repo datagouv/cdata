@@ -1072,7 +1072,7 @@
   "Avoid sharing personal information.": "Avoid sharing personal information.",
   "The {site} team will review the content to determine if it violates {terms}. Thank you for your help.": "The {site} team will review the content to determine if it violates {terms}. Thank you for your help.",
   "Activities": "Activities",
-  "on {date}": "on {date}",
+  "le {date}": "le {date}",
   "{n} topics": "{n} topics",
   "No topics": "No topics",
   "Add datasets": "Add datasets",
@@ -1234,5 +1234,7 @@
   "Suppression de la réutilisation": "Suppression de la réutilisation",
   "Discussion sur la réutilisation": "Discussion sur la réutilisation",
   "Nouveau favori sur la réutilisation": "Nouveau favori sur la réutilisation",
-  "Nouveau favori sur l'utilisateur": "Nouveau favori sur l'utilisateur"
+  "Nouveau favori sur l'utilisateur": "Nouveau favori sur l'utilisateur",
+  "Aucun Champs mis à jour : | 1 Champ mis à jour : | {n} Champs mis à jour :": "Aucun Champs mis à jour : | 1 Champ mis à jour : | {n} Champs mis à jour :",
+  "Il n'y a pas encore d'activité": "Il n'y a pas encore d'activité"
 }

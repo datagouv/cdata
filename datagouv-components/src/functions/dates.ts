@@ -24,7 +24,7 @@ export const formatFromNow = (date: Date | string | null) => {
   }
   const { t, locale } = useI18n()
   if (!('RelativeTimeFormat' in Intl)) {
-    return t('on {date}', { date: formatDate(date) })
+    return t('le {date}', { date: formatDate(date) })
   }
   const today = new Date()
   today.setHours(0)
@@ -79,7 +79,7 @@ export const formatRelativeIfRecentDate = (date: Date | string | null, options: 
   dateWithoutTime.setSeconds(0)
   const diff = Math.abs(dateWithoutTime.getTime() - today.getTime())
   if (Math.round(diff / (SECONDS_IN_A_DAY * 30)) >= 1) {
-    return t('on {date}', { date: formatDate(date, options) })
+    return t('le {date}', { date: formatDate(date, options) })
   }
   return formatFromNow(date)
 }
