@@ -141,6 +141,15 @@
           </template>
         </SupportCard>
       </div>
+      <div>
+        <h2 class="mb-3">
+          Oembeds
+        </h2>
+        <div data-udata-dataservice="my-amazing-api" />
+        <div data-udata-dataset="base-adresse-nationale" />
+        <div data-udata-reuse="5fbf724d677c5e31fdedea88" />
+        <div data-udata-organization="test-kls-developpement" />
+      </div>
     </div>
     <div class="space-y-8 py-8 pb-64">
       <h2 class="!mb-3">
@@ -164,6 +173,18 @@ import BannerSticky from '~/design-system/BannerSticky.vue'
 import DSBrandedButton from '~/design-system/BrandedButton.vue'
 import OrganizationNameWithCertificate from '~/design-system/OrganizationNameWithCertificate.vue'
 import SearchInput from '~/design-system/SearchInput.vue'
+
+const config = useRuntimeConfig()
+
+useHead({
+  script: [
+    {
+      'data-udata': config.public.frontBase,
+      'src': '/oembed.js',
+      'body': true,
+    },
+  ],
+})
 
 const { data: dataset } = await useAPI<DatasetV2>('/api/2/datasets/repertoire-national-des-elus-1')
 </script>
