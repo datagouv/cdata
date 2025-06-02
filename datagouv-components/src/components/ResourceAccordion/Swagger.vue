@@ -6,7 +6,7 @@
 import { onMounted } from 'vue'
 import SwaggerUI from 'swagger-ui'
 import 'swagger-ui/dist/swagger-ui.css'
-import 'swagger-themes/themes/newspaper.css'
+import '../../../assets/swagger-themes/newspaper.css'
 
 const props = defineProps<{
   url: string
