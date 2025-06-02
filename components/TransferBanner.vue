@@ -89,7 +89,7 @@
 <script setup lang="ts">
 import type { Dataservice, Dataset, DatasetV2, Reuse, Owned } from '@datagouv/components-next'
 import { RiSendPlaneLine } from '@remixicon/vue'
-import { BannerAction, BrandedButton, formatDate } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, useFormatDate } from '@datagouv/components-next'
 import type { LinkToSubject, TransferRequest } from '~/types/types'
 
 const props = defineProps<{
@@ -101,6 +101,7 @@ const props = defineProps<{
 const { $api } = useNuxtApp()
 const { toast } = useToast()
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 const loading = ref(false)
 const to = ref<Owned | null>(null)

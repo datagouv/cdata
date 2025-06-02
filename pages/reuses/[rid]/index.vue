@@ -167,7 +167,7 @@
 </template>
 
 <script setup lang="ts">
-import { useReuseType, BrandedButton, StatBox, type Reuse, type ReuseTopic, type DatasetV2, Pagination, formatDate } from '@datagouv/components-next'
+import { useReuseType, BrandedButton, StatBox, type Reuse, type ReuseTopic, type DatasetV2, Pagination, useFormatDate } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import { getTopic } from '~/datagouv-components/src/functions/reuses'
@@ -176,6 +176,8 @@ import type { PaginatedArray } from '~/types/types'
 const props = defineProps<{
   reuse: Reuse
 }>()
+
+const { formatDate } = useFormatDate()
 
 const { label } = useReuseType(props.reuse.type)
 

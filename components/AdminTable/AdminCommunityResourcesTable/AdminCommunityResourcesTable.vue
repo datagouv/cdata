@@ -90,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatDate, type CommunityResource, type SchemaResponseData } from '@datagouv/components-next'
+import { useFormatDate, type CommunityResource, type SchemaResponseData } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
@@ -112,6 +112,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 const { toast } = useToast()
 
 const { data: schemas } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/')

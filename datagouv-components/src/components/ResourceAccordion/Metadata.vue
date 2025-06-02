@@ -6,7 +6,7 @@ import CopyButton from '../CopyButton.vue'
 import DescriptionDetails from '../DescriptionDetails.vue'
 import DescriptionList from '../DescriptionList.vue'
 import DescriptionTerm from '../DescriptionTerm.vue'
-import { formatDate } from '../../functions/dates'
+import { useFormatDate } from '../../functions/dates'
 import { filesize } from '../../functions/helpers'
 import ExtraAccordion from '../ExtraAccordion.vue'
 import { getResourceTitleId, getResourceLabel } from '../../functions/resources'
@@ -20,6 +20,7 @@ const hasExtras = computed(() => Object.keys(props.resource.extras).length)
 const resourceTitleId = computed(() => getResourceTitleId(props.resource))
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 const config = useComponentsConfig()
 </script>
 

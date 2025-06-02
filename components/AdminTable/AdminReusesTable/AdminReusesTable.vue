@@ -150,7 +150,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, formatDate, summarize } from '@datagouv/components-next'
+import { BrandedButton, summarize, useFormatDate } from '@datagouv/components-next'
 import type { Reuse } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
@@ -172,6 +172,7 @@ defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 function sorted(column: ReuseSortedBy) {
   if (props.sortedBy === column) {
