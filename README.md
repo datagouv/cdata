@@ -10,6 +10,7 @@ Make sure to install datagouv-components and cdata dependencies:
 # npm
 cd ./datagouv-components
 npm install
+npm run i18n
 cd ..
 npm install
 ```
