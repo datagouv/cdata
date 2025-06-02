@@ -100,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, CopyButton, Pagination, StatBox, type Dataservice, type DatasetV2 } from '@datagouv/components-next'
+import { BrandedButton, CopyButton, formatDate, Pagination, StatBox, type Dataservice, type DatasetV2 } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import type { PaginatedArray } from '~/types/types'

@@ -7,15 +7,16 @@ import type { CommunityResourceForm, DatasetForm, DatasetSuggest, FileInfo, NewD
 export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceForm>) {
   const isRemote = computed(() => toValue(file).filetype === 'remote')
   const { t } = useI18n()
+  const config = useRuntimeConfig()
 
   return useForm(file, {
     title: [required()],
     type: [required()],
-
     url: [requiredIf(isRemote)],
     format: [requiredIf(isRemote)],
   }, {
     description: [minLength(200, t(`It's advised to have a {property} of at least {min} characters.`, { property: t('description'), min: 200 }))],
+    title: [testNotAllowed(config.public.demoServer?.name)],
   })
 }
 

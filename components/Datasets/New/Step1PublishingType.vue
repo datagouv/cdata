@@ -4,6 +4,7 @@
       {{ $t("Publishing type") }}
     </h1>
     <SimpleBanner
+      v-if="config.public.demoServer?.name"
       type="primary"
       class="mb-6"
     >
