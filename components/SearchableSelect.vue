@@ -4,10 +4,10 @@
     :class="{ 'fr-input-group--error': errorText, 'fr-input-group--warning': !errorText && warningText, 'fr-input-group--valid': validText }"
   >
     <label
-      v-if="label"
       :for="id"
       :title="explanation"
       class="fr-label"
+      :class="{ 'sr-only': hideLabel }"
     >
       {{ label }}
       <Required :required="required" />
@@ -164,9 +164,10 @@ const props = withDefaults(defineProps<{
   warningText?: string | null
   hintText?: string
   explanation?: string
-  label?: string
+  label: string
   placeholder?: string
   loading?: boolean
+  hideLabel?: boolean
 
   getOptionId?: (option: T) => string | number
   groupBy?: (option: T) => string
@@ -181,6 +182,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   required: false,
   loading: false,
+  hideLabel: false,
   displayValue: (_: ModelType): string => '',
   groupBy: (_: T): string => '',
   getOptionId: (option: T): string | number => {
