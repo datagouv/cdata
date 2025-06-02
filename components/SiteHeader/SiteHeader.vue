@@ -490,6 +490,6 @@ function getAriaCurrent(link: string) {
     return 'page'
   }
   const routesInPath = router.getRoutes().map(route => route.path).filter(path => currentRoute.path.startsWith(path))
-  return routesInPath.includes(localePath(link))
+  return routesInPath.includes(link)
 }
 </script>

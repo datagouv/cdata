@@ -187,7 +187,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, CopyButton, OrganizationNameWithCertificate, StatBox, type Organization } from '@datagouv/components-next'
+import { Avatar, BrandedButton, CopyButton, formatDate, OrganizationNameWithCertificate, StatBox, type Organization } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
 

@@ -157,6 +157,10 @@ export default defineNuxtConfig({
   },
   compatibilityDate: '2024-04-03',
 
+  nitro: {
+    compressPublicAssets: true,
+  },
+
   vite: {
     assetsInclude: ['**/*.md'],
     css: {
