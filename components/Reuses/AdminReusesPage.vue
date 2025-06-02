@@ -35,6 +35,7 @@
     <LoadingBlock :status>
       <div v-if="pageData && pageData.total > 0">
         <AdminReusesTable
+          :activities="reuseActivities"
           :reuses="pageData ? pageData.data : []"
           :sort-direction="direction"
           :sorted-by
@@ -97,6 +98,8 @@ const props = defineProps<{
   user?: User | null
 }>()
 
+const { $api } = useNuxtApp()
+
 const page = ref(1)
 const pageSize = ref(20)
 const sortedBy = ref<ReuseSortedBy>('created')
@@ -104,6 +107,7 @@ const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 const q = ref('')
 const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const reuseActivities = ref({})
 
 function sort(column: ReuseSortedBy, newDirection: SortDirection) {
   sortedBy.value = column
@@ -123,4 +127,9 @@ const params = computed(() => {
 })
 
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Reuse>>('/api/1/reuses/', { lazy: true, query: params })
+
+watch(pageData, async (data) => {
+  const activities = await getActitiesForObjects($api, data.data, 'created_at')
+  reuseActivities.value = { ...reuseActivities.value, ...activities }
+})
 </script>

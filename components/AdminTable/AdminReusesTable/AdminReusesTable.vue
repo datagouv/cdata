@@ -104,7 +104,21 @@
             {{ getStatus(reuse).label }}
           </AdminBadge>
         </td>
-        <td>{{ formatDate(reuse.created_at) }}</td>
+        <td>
+          <div v-if="reuse.id in activities">
+            <p>{{ formatDate(activities[reuse.id].created_at) }}</p>
+            <p class="inline-flex items-center">
+              {{ t('by ') }}
+              <AvatarWithName
+                class="fr-ml-1v"
+                :user="activities[reuse.id].actor"
+              />
+            </p>
+          </div>
+          <template v-else>
+            {{ formatDate(reuse.created_at) }}
+          </template>
+        </td>
         <td class="font-mono text-right">
           {{ summarize(reuse.datasets.length) }}
         </td>
@@ -150,7 +164,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, summarize } from '@datagouv/components-next'
+import { AvatarWithName, BrandedButton, summarize } from '@datagouv/components-next'
 import type { Reuse } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
@@ -159,9 +173,11 @@ import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import Tooltip from '../../../components/Tooltip/Tooltip.vue'
+import type { Activity } from '~/types/activity'
 import type { AdminBadgeType, ReuseSortedBy, SortDirection } from '~/types/types'
 
 const props = defineProps<{
+  activities: Record<string, Activity>
   reuses: Array<Reuse>
   sortedBy: ReuseSortedBy
   sortDirection: SortDirection
