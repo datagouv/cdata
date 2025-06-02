@@ -72,7 +72,7 @@ import type { Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
 import { RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
 import type { ReuseForm } from '~/types/types'
-import { toForm, toApi } from '~/utils/reuses'
+import { toApi } from '~/utils/reuses'
 
 const { t } = useI18n()
 const { $api, $fileApi } = useNuxtApp()
@@ -91,7 +91,7 @@ const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics',
 
 const reuseForm = ref<ReuseForm | null>(null)
 watchEffect(() => {
-  reuseForm.value = toForm(reuse.value, types.value || [], topics.value || [])
+  reuseForm.value = reuseToForm(reuse.value, types.value || [], topics.value || [])
 })
 
 async function save() {

@@ -13,7 +13,6 @@
 <script setup lang="ts">
 import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import type { Post } from '~/types/posts'
-import { toForm } from '~/utils/posts'
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()
@@ -22,7 +21,7 @@ const { toast } = useToast()
 const route = useRoute()
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
 const { data: post, refresh } = await useAPI<Post>(url, { lazy: true })
-const postForm = computed(() => toForm(post.value))
+const postForm = computed(() => postToForm(post.value))
 
 const loading = ref(false)
 

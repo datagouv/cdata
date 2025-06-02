@@ -85,7 +85,7 @@ import { RiArchiveLine, RiDeleteBin6Line } from '@remixicon/vue'
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'
 import type { DataserviceForm, LinkToSubject } from '~/types/types'
-import { toForm, toApi } from '~/utils/dataservices'
+import { toApi } from '~/utils/dataservices'
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()
@@ -107,7 +107,7 @@ const dataserviceSubject = computed<Dataservice & LinkToSubject>(() => {
 const dataserviceForm = ref<DataserviceForm | null>(null)
 const harvested = ref(false)
 watchEffect(() => {
-  dataserviceForm.value = toForm(dataservice.value)
+  dataserviceForm.value = dataserviceToForm(dataservice.value)
   harvested.value = isHarvested(dataservice.value)
 })
 

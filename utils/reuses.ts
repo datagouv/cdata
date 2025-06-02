@@ -7,7 +7,7 @@ export function getReuseAdminUrl(reuse: Reuse): string {
   return `/admin/reuses/${reuse.id}`
 }
 
-export function toForm(reuse: Reuse, types: Array<ReuseType>, topics: Array<ReuseTopic>): ReuseForm {
+export function reuseToForm(reuse: Reuse, types: Array<ReuseType>, topics: Array<ReuseTopic>): ReuseForm {
   return {
     owned: reuse.organization ? { organization: reuse.organization, owner: null } : { owner: reuse.owner, organization: null },
     title: reuse.title,

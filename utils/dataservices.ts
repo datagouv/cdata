@@ -5,7 +5,7 @@ export function getDataserviceAdminUrl(dataservice: Dataservice): string {
   return `/admin/dataservices/${dataservice.id}`
 }
 
-export function toForm(dataservice: Dataservice): DataserviceForm {
+export function dataserviceToForm(dataservice: Dataservice): DataserviceForm {
   return {
     owned: dataservice.organization ? { organization: dataservice.organization, owner: null } : { owner: dataservice.owner, organization: null },
     title: dataservice.title,

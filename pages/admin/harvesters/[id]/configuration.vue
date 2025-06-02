@@ -96,7 +96,7 @@ import DescribeHarvester from '~/components/Harvesters/DescribeHarvester.vue'
 import JobPage from '~/components/Harvesters/JobPage.vue'
 import PreviewLoader from '~/components/Harvesters/PreviewLoader.vue'
 import type { HarvesterForm, HarvesterJob, HarvesterSource } from '~/types/harvesters'
-import { toForm, toApi } from '~/utils/harvesters'
+import { toApi } from '~/utils/harvesters'
 
 const route = useRoute()
 const { $api } = useNuxtApp()
@@ -110,7 +110,7 @@ const loading = ref(false)
 
 const harvesterForm = ref<HarvesterForm | null>(null)
 watchEffect(() => {
-  harvesterForm.value = toForm(harvester.value)
+  harvesterForm.value = harvesterToForm(harvester.value)
 })
 
 const save = async () => {

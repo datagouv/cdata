@@ -37,7 +37,7 @@ export function getDatasetAdminUrl(dataset: Dataset | DatasetV2): string {
   return `/admin/datasets/${dataset.id}`
 }
 
-export function toForm(dataset: Dataset | DatasetV2, licenses: Array<License>, frequencies: Array<Frequency>, zones: Array<SpatialZone>, granularities: Array<SpatialGranularity>): DatasetForm {
+export function datasetToForm(dataset: Dataset | DatasetV2, licenses: Array<License>, frequencies: Array<Frequency>, zones: Array<SpatialZone>, granularities: Array<SpatialGranularity>): DatasetForm {
   return {
     owned: dataset.organization ? { organization: dataset.organization, owner: null } : { owner: dataset.owner, organization: null },
     title: dataset.title,

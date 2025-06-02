@@ -80,7 +80,7 @@ import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import { RiArchiveLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity } from '~/types/types'
-import { toForm, toApi } from '~/utils/datasets'
+import { toApi } from '~/utils/datasets'
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()
@@ -122,7 +122,7 @@ const datasetForm = ref<DatasetForm | null>(null)
 const harvested = ref(false)
 watchEffect(() => {
   if (dataset.value && licenses.value && frequencies.value && granularities.value) {
-    datasetForm.value = toForm(dataset.value, licenses.value, frequencies.value, [], granularities.value)
+    datasetForm.value = datasetToForm(dataset.value, licenses.value, frequencies.value, [], granularities.value)
     harvested.value = isHarvested(dataset.value)
   }
 })
