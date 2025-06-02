@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import DatasetEmbeddedCard from '~/components/Datasets/DatasetEmbeddedCard.global.vue'
+import DatasetEmbeddedCard from '~/components/Datasets/EmbeddedCard.global.vue'
 
 definePageMeta({
   layout: false,
