@@ -190,7 +190,7 @@ const datasetsQuery = computed(() => {
     reuse: props.reuse.id,
   }
 })
-const { data: datasets } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets', { query: datasetsQuery })
+const { data: datasets } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/', { query: datasetsQuery })
 
 const topic = computed(() => getTopic(topics.value, props.reuse.topic))
 

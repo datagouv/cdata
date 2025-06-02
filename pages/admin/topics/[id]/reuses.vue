@@ -92,7 +92,7 @@ const page = ref(1)
 const params = computed(() => {
   return { page: page.value }
 })
-const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Reuse>>(`/api/2/topics/${props.topic.id}/reuses`, { lazy: true, query: params })
+const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Reuse>>(`/api/2/topics/${props.topic.id}/reuses/`, { lazy: true, query: params })
 
 const { $api } = useNuxtApp()
 const { toast } = useToast()
@@ -109,7 +109,7 @@ const save = async (close: () => void) => {
   await refresh()
 }
 const removeReuse = async (reuse: Reuse) => {
-  await $api(`/api/2/topics/${props.topic.id}/reuses/${reuse.id}`, { method: 'DELETE' })
+  await $api(`/api/2/topics/${props.topic.id}/reuses/${reuse.id}/`, { method: 'DELETE' })
 
   toast.success(t('Removed.'))
   await refresh()
