@@ -77,7 +77,6 @@ import type {
   DataserviceForm,
   DatasetSuggest,
 } from '~/types/types'
-import { toApi } from '~/utils/dataservices'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -160,7 +159,7 @@ async function save() {
 
     newDataservice.value = await $api<Dataservice>('/api/1/dataservices/', {
       method: 'POST',
-      body: JSON.stringify(toApi(dataserviceForm.value, {
+      body: JSON.stringify(dataserviceToApi(dataserviceForm.value, {
         datasets: datasets.value,
         private: true,
       })),
@@ -185,7 +184,7 @@ async function updateDataservice(asPrivate: boolean) {
       loading.value = true
       await $api<Dataservice>(`/api/1/dataservices/${newDataservice.value.id}/`, {
         method: 'PATCH',
-        body: JSON.stringify(toApi(dataserviceToForm(newDataservice.value), {
+        body: JSON.stringify(dataserviceToApi(dataserviceToForm(newDataservice.value), {
           private: false,
         })),
       })

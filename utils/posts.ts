@@ -9,7 +9,7 @@ export function postToForm(post: Post): PostForm {
   }
 }
 
-export function toApi(form: PostForm): NewPostForApi {
+export function postToApi(form: PostForm): NewPostForApi {
   return {
     ...form,
     tags: form.tags.map(({ text }) => text),

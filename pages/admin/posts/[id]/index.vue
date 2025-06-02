@@ -36,7 +36,6 @@
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import DescribePost from '~/components/Posts/DescribePost.vue'
 import type { Post, PostForm } from '~/types/posts'
-import { toApi } from '~/utils/posts'
 
 const { t } = useI18n()
 const { $api, $fileApi } = useNuxtApp()
@@ -55,7 +54,7 @@ const save = async (form: PostForm) => {
 
     await $api(`/api/1/posts/${post.value.id}/`, {
       method: 'PUT',
-      body: JSON.stringify(toApi(form)),
+      body: JSON.stringify(postToApi(form)),
     })
 
     if (form.image && typeof form.image !== 'string') {

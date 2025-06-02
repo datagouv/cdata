@@ -55,7 +55,7 @@ export function datasetToForm(dataset: Dataset | DatasetV2, licenses: Array<Lice
   }
 }
 
-export function toApi(form: DatasetForm, overrides: { private?: boolean, archived?: string | null } = {}): NewDatasetForApi {
+export function datasetToApi(form: DatasetForm, overrides: { private?: boolean, archived?: string | null } = {}): NewDatasetForApi {
   const contactPoints = form.contact_points?.filter(cp => cp !== null && 'id' in cp).map(cp => cp.id) ?? []
   return {
     organization: form.owned?.organization?.id,

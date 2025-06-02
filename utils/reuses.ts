@@ -22,7 +22,7 @@ export function reuseToForm(reuse: Reuse, types: Array<ReuseType>, topics: Array
   }
 }
 
-export function toApi(form: ReuseForm, overrides: { datasets?: Array<Dataset | DatasetV2 | DatasetSuggest>, private?: boolean } = {}): NewReuseForApi {
+export function reuseToApi(form: ReuseForm, overrides: { datasets?: Array<Dataset | DatasetV2 | DatasetSuggest>, private?: boolean } = {}): NewReuseForApi {
   return {
     organization: form.owned?.organization?.id,
     owner: form.owned?.owner?.id,

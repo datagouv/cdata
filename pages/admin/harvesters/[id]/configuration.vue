@@ -96,7 +96,6 @@ import DescribeHarvester from '~/components/Harvesters/DescribeHarvester.vue'
 import JobPage from '~/components/Harvesters/JobPage.vue'
 import PreviewLoader from '~/components/Harvesters/PreviewLoader.vue'
 import type { HarvesterForm, HarvesterJob, HarvesterSource } from '~/types/harvesters'
-import { toApi } from '~/utils/harvesters'
 
 const route = useRoute()
 const { $api } = useNuxtApp()
@@ -121,7 +120,7 @@ const save = async () => {
 
     await $api(`/api/1/harvest/source/${harvester.value.id}`, {
       method: 'PUT',
-      body: JSON.stringify(toApi(harvesterForm.value)),
+      body: JSON.stringify(harvesterToApi(harvesterForm.value)),
     })
 
     if (harvester.value.schedule !== harvesterForm.value.schedule) {
@@ -150,7 +149,7 @@ const preview = async () => {
 
   previewJob.value = await $api<HarvesterJob>('/api/1/harvest/source/preview', {
     method: 'POST',
-    body: toApi(harvesterForm.value),
+    body: harvesterToApi(harvesterForm.value),
   })
 }
 

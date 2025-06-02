@@ -69,7 +69,6 @@ import Step3AddResources from '~/components/Datasets/New/Step3AddResources.vue'
 import Step4CompletePublication from '~/components/Datasets/New/Step4CompletePublication.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { DatasetForm, EnrichedLicense, ResourceForm, SpatialGranularity, SpatialZone, Tag } from '~/types/types'
-import { toApi } from '~/utils/datasets'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 
 const { t } = useI18n()
@@ -144,7 +143,7 @@ async function save() {
 
     const dataset = newDataset.value = newDataset.value || await $api<Dataset>('/api/1/datasets/', {
       method: 'POST',
-      body: JSON.stringify(toApi(datasetForm.value, { private: true })),
+      body: JSON.stringify(datasetToApi(datasetForm.value, { private: true })),
     })
 
     const results = await Promise.allSettled(resources.value.map((_, i: number) => saveResourceForm(dataset, resources.value[i])))

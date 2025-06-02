@@ -56,7 +56,6 @@ import DescribePost from '~/components/Posts/DescribePost.vue'
 import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { Post, PostForm } from '~/types/posts'
-import { toApi } from '~/utils/posts'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -120,7 +119,7 @@ async function save(form: { content: string }) {
     postForm.value.content = form.content
     newPost.value = await $api<Post>('/api/1/posts/', {
       method: 'POST',
-      body: JSON.stringify(toApi(postForm.value)),
+      body: JSON.stringify(postToApi(postForm.value)),
     })
 
     if (postForm.value.image && typeof postForm.value.image !== 'string') {
