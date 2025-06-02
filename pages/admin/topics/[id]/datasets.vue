@@ -91,7 +91,7 @@ const page = ref(1)
 const params = computed(() => {
   return { page: page.value }
 })
-const { data: pageData, status, refresh } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/topics/${props.topic.id}/datasets`, { lazy: true, query: params })
+const { data: pageData, status, refresh } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/topics/${props.topic.id}/datasets/`, { lazy: true, query: params })
 
 const { $api } = useNuxtApp()
 const { toast } = useToast()
@@ -108,7 +108,7 @@ const save = async (close: () => void) => {
   await refresh()
 }
 const removeDataset = async (dataset: Dataset | DatasetV2) => {
-  await $api(`/api/2/topics/${props.topic.id}/datasets/${dataset.id}`, { method: 'DELETE' })
+  await $api(`/api/2/topics/${props.topic.id}/datasets/${dataset.id}/`, { method: 'DELETE' })
 
   toast.success(t('Removed.'))
   await refresh()

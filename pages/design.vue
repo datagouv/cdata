@@ -165,5 +165,5 @@ import DSBrandedButton from '~/design-system/BrandedButton.vue'
 import OrganizationNameWithCertificate from '~/design-system/OrganizationNameWithCertificate.vue'
 import SearchInput from '~/design-system/SearchInput.vue'
 
-const { data: dataset } = await useAPI<DatasetV2>('/api/2/datasets/repertoire-national-des-elus-1')
+const { data: dataset } = await useAPI<DatasetV2>('/api/2/datasets/repertoire-national-des-elus-1/')
 </script>
