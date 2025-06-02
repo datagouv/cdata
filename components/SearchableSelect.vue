@@ -4,6 +4,7 @@
     :class="{ 'fr-input-group--error': errorText, 'fr-input-group--warning': !errorText && warningText, 'fr-input-group--valid': validText }"
   >
     <label
+      v-if="label"
       :for="id"
       :title="explanation"
       class="fr-label"
