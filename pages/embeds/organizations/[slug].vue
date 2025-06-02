@@ -3,6 +3,8 @@
 </template>
 
 <script setup lang="ts">
+import OrganizationEmbeddedCard from '~/components/Organization/OrganizationEmbeddedCard.global.vue'
+
 definePageMeta({
   layout: false,
 })
