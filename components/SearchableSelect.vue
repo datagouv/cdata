@@ -163,7 +163,7 @@ const props = withDefaults(defineProps<{
   warningText?: string | null
   hintText?: string
   explanation?: string
-  label: string
+  label?: string
   placeholder?: string
   loading?: boolean
 
