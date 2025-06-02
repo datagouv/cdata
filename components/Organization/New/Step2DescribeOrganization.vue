@@ -296,7 +296,7 @@ const { form, formInfo, getFirstError, getFirstWarning, touch, validate } = useF
   url: [url()],
 }, {
   description: [minLength(config.public.qualityDescriptionLength)],
-  name: [testNotAllowed(config.public.demoServer.name)],
+  name: [testNotAllowed(config.public.demoServer?.name)],
 })
 
 function submit() {

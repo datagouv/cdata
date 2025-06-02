@@ -294,7 +294,7 @@ const { form, getFirstError, getFirstWarning, formInfo, validate } = useForm(mod
   url: [required()],
   backend: [required()],
 }, {
-  name: [testNotAllowed(config.public.demoServer.name)],
+  name: [testNotAllowed(config.public.demoServer?.name)],
   description: [minLength(500)],
 })
 

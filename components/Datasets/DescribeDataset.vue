@@ -691,7 +691,7 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
   frequency: [required()],
   private: [],
 }, {
-  title: [testNotAllowed(config.public.demoServer.name)],
+  title: [testNotAllowed(config.public.demoServer?.name)],
   description: [minLength(200, t(`It's advised to have a {property} of at least {min} characters.`, { property: t('description'), min: 200 }))],
   tags: [required(t('Adding tags helps improve the SEO of your data.'))],
   license: [required()],
