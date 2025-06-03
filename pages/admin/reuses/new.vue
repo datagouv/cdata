@@ -193,7 +193,7 @@ async function updateReuse(asPrivate: boolean) {
     }
   }
 
-  await navigateTo(newReuse.value.page, { external: true })
+  await navigateTo(newReuse.value.page)
 }
 
 watchEffect(() => {

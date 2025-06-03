@@ -120,7 +120,6 @@ const menu = computed(() => {
         path: '/datasets/',
         query: { q: query.value.trim() },
       }),
-      external: true,
     },
     {
       icon: RiRobot2Line,
