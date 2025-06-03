@@ -248,7 +248,7 @@ const datasetDownloadsResourcesTotal = ref(0)
 
 watchEffect(async () => {
   // Fetching last 12 months
-  const response = await fetch(`https://metric-api.data.gouv.fr/api/datasets/data/?dataset_id__exact=${props.dataset.id}&metric_month__sort=desc&page_size=12`)
+  const response = await fetch(`${config.public.metricsApi}/api/datasets/data/?dataset_id__exact=${props.dataset.id}&metric_month__sort=desc&page_size=12`)
   const page = await response.json()
 
   for (const { metric_month, monthly_visit, monthly_download_resource } of page.data) {
@@ -257,7 +257,7 @@ watchEffect(async () => {
   }
   // Fetching totals
   if (page.data[0]) {
-    const totalResponse = await fetch(`https://metric-api.data.gouv.fr/api/datasets_total/data/?dataset_id__exact=${props.dataset.id}`)
+    const totalResponse = await fetch(`${config.public.metricsApi}/api/datasets_total/data/?dataset_id__exact=${props.dataset.id}`)
     const totalPage = await totalResponse.json()
 
     datasetVisitsTotal.value = totalPage.data[0].visit
