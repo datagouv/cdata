@@ -80,7 +80,6 @@ import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import { RiArchiveLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity } from '~/types/types'
-import { toForm, toApi } from '~/utils/datasets'
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()
@@ -115,14 +114,14 @@ const licenses = computed(() => {
 })
 const { data: granularities } = await useAPI<Array<SpatialGranularity>>('/api/1/spatial/granularities/', { lazy: true })
 
-const url = computed(() => `/api/2/datasets/${route.params.id}`)
+const url = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset, refresh } = await useAPI<DatasetV2>(url)
 
 const datasetForm = ref<DatasetForm | null>(null)
 const harvested = ref(false)
 watchEffect(() => {
   if (dataset.value && licenses.value && frequencies.value && granularities.value) {
-    datasetForm.value = toForm(dataset.value, licenses.value, frequencies.value, [], granularities.value)
+    datasetForm.value = datasetToForm(dataset.value, licenses.value, frequencies.value, [], granularities.value)
     harvested.value = isHarvested(dataset.value)
   }
 })
@@ -145,7 +144,7 @@ async function save() {
 
     await $api(`/api/1/datasets/${dataset.value.id}/`, {
       method: 'PUT',
-      body: JSON.stringify(toApi(datasetForm.value, { private: datasetForm.value.private })),
+      body: JSON.stringify(datasetToApi(datasetForm.value, { private: datasetForm.value.private })),
     })
 
     toast.success(t('Jeu de données mis à jour !'))
@@ -180,7 +179,7 @@ async function archiveDataset() {
   try {
     await $api(`/api/1/datasets/${dataset.value.id}/`, {
       method: 'PUT',
-      body: JSON.stringify(toApi(datasetForm.value, { archived: dataset.value.archived ? null : new Date().toISOString() })),
+      body: JSON.stringify(datasetToApi(datasetForm.value, { archived: dataset.value.archived ? null : new Date().toISOString() })),
     })
     refresh()
     if (dataset.value.archived) {

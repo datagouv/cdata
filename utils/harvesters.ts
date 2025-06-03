@@ -13,7 +13,7 @@ export function isHarvested(dataset: Dataservice | Dataset | DatasetV2) {
   return !!dataset.harvest?.source_id || false
 }
 
-export function toForm(harvester: HarvesterSource): HarvesterForm {
+export function harvesterToForm(harvester: HarvesterSource): HarvesterForm {
   return {
     owned: harvester.organization ? { organization: harvester.organization, owner: null } : { owner: harvester.owner, organization: null },
     name: harvester.name,
@@ -28,7 +28,7 @@ export function toForm(harvester: HarvesterSource): HarvesterForm {
   }
 }
 
-export function toApi(form: HarvesterForm): HarvesterSource {
+export function harvesterToApi(form: HarvesterForm): HarvesterSource {
   return {
     organization: form.owned?.organization?.id,
     owner: form.owned?.owner?.id,

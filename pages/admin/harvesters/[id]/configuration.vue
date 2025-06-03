@@ -96,7 +96,6 @@ import DescribeHarvester from '~/components/Harvesters/DescribeHarvester.vue'
 import JobPage from '~/components/Harvesters/JobPage.vue'
 import PreviewLoader from '~/components/Harvesters/PreviewLoader.vue'
 import type { HarvesterForm, HarvesterJob, HarvesterSource } from '~/types/harvesters'
-import { toForm, toApi } from '~/utils/harvesters'
 
 const route = useRoute()
 const { $api } = useNuxtApp()
@@ -110,7 +109,7 @@ const loading = ref(false)
 
 const harvesterForm = ref<HarvesterForm | null>(null)
 watchEffect(() => {
-  harvesterForm.value = toForm(harvester.value)
+  harvesterForm.value = harvesterToForm(harvester.value)
 })
 
 const save = async () => {
@@ -121,7 +120,7 @@ const save = async () => {
 
     await $api(`/api/1/harvest/source/${harvester.value.id}`, {
       method: 'PUT',
-      body: JSON.stringify(toApi(harvesterForm.value)),
+      body: JSON.stringify(harvesterToApi(harvesterForm.value)),
     })
 
     if (harvester.value.schedule !== harvesterForm.value.schedule) {
@@ -150,7 +149,7 @@ const preview = async () => {
 
   previewJob.value = await $api<HarvesterJob>('/api/1/harvest/source/preview', {
     method: 'POST',
-    body: toApi(harvesterForm.value),
+    body: harvesterToApi(harvesterForm.value),
   })
 }
 
@@ -166,7 +165,7 @@ const deleteHarvester = async () => {
       await navigateTo(localePath(`/admin/organizations/${harvester.value.organization.id}/harvesters`), { replace: true })
     }
     else {
-      await navigateTo(localePath(`/admin/user/me`), { replace: true })
+      await navigateTo(localePath(`/admin/me/datasets`), { replace: true })
     }
   }
   finally {

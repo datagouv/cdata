@@ -45,6 +45,7 @@
       <FieldsetElement form-key="name">
         <InputGroup
           v-model="form.name"
+          class="mb-3"
           :label="$t('Name')"
           :required="true"
         />
@@ -280,6 +281,7 @@ const emit = defineEmits<{
 
 const model = defineModel<HarvesterForm>({ required: true })
 const { t } = useI18n()
+const config = useRuntimeConfig()
 
 onMounted(() => {
   if (props.type === 'update') validate()
@@ -292,6 +294,7 @@ const { form, getFirstError, getFirstWarning, formInfo, validate } = useForm(mod
   url: [required()],
   backend: [required()],
 }, {
+  name: [testNotAllowed(config.public.demoServer?.name)],
   description: [minLength(500)],
 })
 

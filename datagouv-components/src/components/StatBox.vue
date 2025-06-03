@@ -77,7 +77,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ContentLoader } from 'vue-content-loader'
-import { formatDate } from '../functions/dates'
+import { useFormatDate } from '../functions/dates'
 import { summarize } from '../functions/helpers'
 import SmallChart from './SmallChart.vue'
 
@@ -89,6 +89,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 const months = computed(() => props.data ? Object.keys(props.data) : [])
 const values = computed(() => props.data ? Object.values(props.data) : [])

@@ -7,15 +7,16 @@ import type { CommunityResourceForm, DatasetForm, DatasetSuggest, FileInfo, NewD
 export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceForm>) {
   const isRemote = computed(() => toValue(file).filetype === 'remote')
   const { t } = useI18n()
+  const config = useRuntimeConfig()
 
   return useForm(file, {
     title: [required()],
     type: [required()],
-
     url: [requiredIf(isRemote)],
     format: [requiredIf(isRemote)],
   }, {
     description: [minLength(200, t(`It's advised to have a {property} of at least {min} characters.`, { property: t('description'), min: 200 }))],
+    title: [testNotAllowed(config.public.demoServer?.name)],
   })
 }
 
@@ -36,7 +37,7 @@ export function getDatasetAdminUrl(dataset: Dataset | DatasetV2): string {
   return `/admin/datasets/${dataset.id}`
 }
 
-export function toForm(dataset: Dataset | DatasetV2, licenses: Array<License>, frequencies: Array<Frequency>, zones: Array<SpatialZone>, granularities: Array<SpatialGranularity>): DatasetForm {
+export function datasetToForm(dataset: Dataset | DatasetV2, licenses: Array<License>, frequencies: Array<Frequency>, zones: Array<SpatialZone>, granularities: Array<SpatialGranularity>): DatasetForm {
   return {
     owned: dataset.organization ? { organization: dataset.organization, owner: null } : { owner: dataset.owner, organization: null },
     title: dataset.title,
@@ -54,7 +55,7 @@ export function toForm(dataset: Dataset | DatasetV2, licenses: Array<License>, f
   }
 }
 
-export function toApi(form: DatasetForm, overrides: { private?: boolean, archived?: string | null } = {}): NewDatasetForApi {
+export function datasetToApi(form: DatasetForm, overrides: { private?: boolean, archived?: string | null } = {}): NewDatasetForApi {
   const contactPoints = form.contact_points?.filter(cp => cp !== null && 'id' in cp).map(cp => cp.id) ?? []
   return {
     organization: form.owned?.organization?.id,

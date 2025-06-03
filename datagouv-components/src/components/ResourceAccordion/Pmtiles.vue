@@ -56,7 +56,7 @@ import { Protocol, PMTiles } from 'pmtiles'
 import maplibregl from 'maplibre-gl'
 import DOMPurify from 'dompurify'
 import { useComponentsConfig } from '../../config'
-import { formatDate } from '../../functions/dates'
+import { useFormatDate } from '../../functions/dates'
 import type { Resource } from '../../types/resources'
 import BrandedButton from '../BrandedButton.vue'
 import styleVector from '../../../assets/json/vector.json'
@@ -65,6 +65,7 @@ import franceSvg from './france.svg?raw'
 const props = defineProps<{ resource: Resource }>()
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 const config = useComponentsConfig()
 

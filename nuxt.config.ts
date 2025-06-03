@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/vite'
 import toml from './rollup-plugin-smol-toml'
 
+const nbSitemapsDatasets = 10
 // const swrDuration = process.env.NUXT_TEMPLATE_CACHE_DURATION ? parseInt(process.env.NUXT_TEMPLATE_CACHE_DURATION) : 60
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -11,6 +12,7 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxtjs/i18n',
     '@sentry/nuxt/module',
+    '@nuxtjs/sitemap',
   ],
   devtools: { enabled: true, componentInspector: false },
 
@@ -31,6 +33,11 @@ export default defineNuxtConfig({
 
   vue: {
     runtimeCompiler: true,
+  },
+
+  site: {
+    url: 'https://www.data.gouv.fr',
+    name: 'data.gouv.fr',
   },
 
   runtimeConfig: {
@@ -152,6 +159,10 @@ export default defineNuxtConfig({
   },
   compatibilityDate: '2024-04-03',
 
+  nitro: {
+    compressPublicAssets: true,
+  },
+
   vite: {
     assetsInclude: ['**/*.md'],
     css: {
@@ -212,6 +223,51 @@ export default defineNuxtConfig({
     sourceMapsUploadOptions: {
       // disable sourcemaps upload from build, it's done later during the release with sentry-cli
       enabled: false,
+    },
+  },
+
+  sitemap: {
+    cacheMaxAgeSeconds: 3600, // 1 hour
+    sitemaps: {
+      content: {
+        includeGlobalSources: true,
+        includeAppSources: true,
+        exclude: ['/admin/**'],
+      },
+      dataservices: {
+        sources: [
+          '/nuxt-api/sitemaps/urls?type=dataservice',
+        ],
+      },
+      organizations: {
+        sources: [
+          '/nuxt-api/sitemaps/urls?type=organization',
+        ],
+      },
+      posts: {
+        sources: [
+          '/nuxt-api/sitemaps/urls?type=post',
+        ],
+      },
+      reuses: {
+        sources: [
+          '/nuxt-api/sitemaps/urls?type=reuse',
+        ],
+      },
+      // split datasets between nbSitemapsDatasets sections
+      ...Array.from({ length: nbSitemapsDatasets }, (_, i) => i + 1).map(section => ({
+        [`datasets_${section}`]: {
+          sources: [
+            `/nuxt-api/sitemaps/urls?type=dataset&section=${section}&nbSitemapSections=${nbSitemapsDatasets}`,
+          ],
+        },
+      })).reduce((acc, obj) => ({ ...acc, ...obj }), {}),
+      pages: {
+        sources: [
+          '/nuxt-api/sitemaps/pages',
+        ],
+      },
+      // TODO: add support
     },
   },
   // TODO: add sentry config for stack traces based on source maps

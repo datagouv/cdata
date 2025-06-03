@@ -85,7 +85,6 @@ import { RiArchiveLine, RiDeleteBin6Line } from '@remixicon/vue'
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'
 import type { DataserviceForm, LinkToSubject } from '~/types/types'
-import { toForm, toApi } from '~/utils/dataservices'
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()
@@ -107,7 +106,7 @@ const dataserviceSubject = computed<Dataservice & LinkToSubject>(() => {
 const dataserviceForm = ref<DataserviceForm | null>(null)
 const harvested = ref(false)
 watchEffect(() => {
-  dataserviceForm.value = toForm(dataservice.value)
+  dataserviceForm.value = dataserviceToForm(dataservice.value)
   harvested.value = isHarvested(dataservice.value)
 })
 
@@ -129,7 +128,7 @@ async function save() {
     }
     await $api(`/api/1/dataservices/${dataservice.value.id}/`, {
       method: 'PATCH',
-      body: JSON.stringify(toApi(dataserviceForm.value, { private: dataserviceForm.value.private })),
+      body: JSON.stringify(dataserviceToApi(dataserviceForm.value, { private: dataserviceForm.value.private })),
     })
 
     toast.success(t('Dataservice updated!'))
@@ -147,7 +146,7 @@ async function archiveDataservice() {
     loading.value = true
     await $api(`/api/1/dataservices/${dataservice.value.id}/`, {
       method: 'PATCH',
-      body: JSON.stringify(toApi(dataserviceForm.value, { archived_at: dataservice.value.archived_at ? null : new Date().toISOString() })),
+      body: JSON.stringify(dataserviceToApi(dataserviceForm.value, { archived_at: dataservice.value.archived_at ? null : new Date().toISOString() })),
     })
     refresh()
     if (dataservice.value.archived_at) {

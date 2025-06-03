@@ -98,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type Dataservice } from '@datagouv/components-next'
+import { BrandedButton, useFormatDate, type Dataservice } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
@@ -119,6 +119,7 @@ defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 function sorted(column: DataserviceSortedBy) {
   if (props.sortedBy === column) {

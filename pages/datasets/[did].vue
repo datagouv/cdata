@@ -222,8 +222,7 @@
 </template>
 
 <script setup lang="ts">
-import exp from 'constants'
-import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, type Resource, BrandedButton } from '@datagouv/components-next'
+import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, type Resource, BrandedButton, useFormatDate } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiExternalLinkFill, RiLockLine } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -233,6 +232,7 @@ import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const route = useRoute()
+const { formatDate } = useFormatDate()
 const me = useMaybeMe()
 
 definePageMeta({

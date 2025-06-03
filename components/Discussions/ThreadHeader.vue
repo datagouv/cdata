@@ -7,6 +7,11 @@
           class="size-4"
         />
         <span>{{ thread.title }}</span>
+        <CopyButton
+          :label="$t('Copier le lien vers cette discussion')"
+          :copied-label="$t('Lien copié')"
+          :text="getDiscussionUrl(thread.id, subject)"
+        />
       </h3>
       <div
         v-if="showActions"
@@ -41,8 +46,8 @@
 </template>
 
 <script setup lang="ts">
-import { RiFlagLine, RiLockLine } from '@remixicon/vue'
-import { BrandedButton } from '@datagouv/components-next'
+import { RiLockLine } from '@remixicon/vue'
+import { CopyButton } from '@datagouv/components-next'
 import ReportModal from '../Spam/ReportModal.vue'
 import DeleteThreadModal from './DeleteThreadModal.vue'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'

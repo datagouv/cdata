@@ -112,7 +112,7 @@
               />
               <NuxtLinkLocale
                 class="link block"
-                :to="`/user/${reuse.owner.slug}/`"
+                :to="`/users/${reuse.owner.slug}/`"
                 :external="true"
               >
                 {{ reuse.owner.first_name }} {{ reuse.owner.last_name }}

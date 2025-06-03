@@ -147,7 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, filesize as formatFilesize, ResourceIcon } from '@datagouv/components-next'
+import { BrandedButton, filesize as formatFilesize, useFormatDate, ResourceIcon } from '@datagouv/components-next'
 import { computed } from 'vue'
 import { RiCodeSSlashLine, RiDeleteBinLine, RiInformationLine, RiLink, RiMapPin2Line } from '@remixicon/vue'
 import FileEditModal from '../Datasets/FileEditModal.vue'
@@ -168,6 +168,8 @@ withDefaults(defineProps<{
 defineEmits<{
   (e: 'delete' | 'edit'): void
 }>()
+
+const { formatRelativeIfRecentDate } = useFormatDate()
 
 const save = (close: () => void, form: ResourceForm | CommunityResourceForm) => {
   // We don't want to link the `form` inside the modal to the

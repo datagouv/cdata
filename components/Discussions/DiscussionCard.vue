@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, ReadMore } from '@datagouv/components-next'
+import { Avatar, BrandedButton, ReadMore, useFormatDate } from '@datagouv/components-next'
 import ThreadHeader from './ThreadHeader.vue'
 import CommentBlock from './CommentBlock.vue'
 import RespondForm from './RespondForm.vue'
@@ -110,6 +110,7 @@ defineEmits<{
 const openDiscussionIfClosed = ref(false)
 const showRespondForm = ref(false)
 const localePath = useLocalePath()
+const { formatDate } = useFormatDate()
 const me = useMaybeMe()
 
 const showRespondFormIfConnected = () => {
