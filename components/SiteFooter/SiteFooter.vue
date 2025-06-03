@@ -316,7 +316,7 @@ const resourcesLinks: Array<Link> = [
 const footerLinks: Array<Link> = [
   { label: t('Licenses'), link: '/pages/legal/licences' },
   { label: t('Terms of use'), link: '/pages/legal/cgu' },
-  { label: t('Tracking and privacy'), link: '/suivi', external: true },
+  { label: t('Tracking and privacy'), link: '/pages/suivi' },
   { label: t('Legal notice'), link: '/pages/legal/legal-notice' },
   { label: t('Accessibility: partially compliant'), link: '/pages/legal/accessibility' },
 ]
