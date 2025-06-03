@@ -18,4 +18,7 @@ const props = defineProps<{
   slug: string
 }>()
 const { data, status } = await useAPI<Reuse>(`/api/1/reuses/${props.slug}/`, { lazy: true })
+watchEffect(() => {
+  console.log(data.value)
+})
 </script>

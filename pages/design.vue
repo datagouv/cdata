@@ -143,6 +143,58 @@
       </div>
       <div>
         <h2 class="mb-3">
+          Embedded cards
+        </h2>
+
+        <div class="not-prose space-y-4">
+          <DatasetsEmbeddedCard slug="municipales-2020-resultats-2nd-tour" />
+          <DatasetsEmbeddedCard slug="elections-municipales-2020-liste-des-candidats-elus-au-t1-et-liste-des-communes-entierement-pourvues" />
+          <DatasetsEmbeddedCard slug="elections-municipales-2020-candidatures-au-second-tour" />
+          <DatasetsEmbeddedCard slug="election-presidentielle-des-23-avril-et-7-mai-2017-resultats-definitifs-du-2nd-tour" />
+          <DatasetsEmbeddedCard slug="election-presidentielle-des-23-avril-et-7-mai-2017-resultats-definitifs-du-2nd-tour-par-communes" />
+          <DatasetsEmbeddedCard slug="election-presidentielle-des-23-avril-et-7-mai-2017-resultats-definitifs-du-2nd-tour-par-bureaux-de-vote" />
+          <DatasetsEmbeddedCard slug="election-presidentielle-des-23-avril-et-7-mai-2017-resultats-definitifs-du-1er-tour-1" />
+          <DatasetsEmbeddedCard slug="election-presidentielle-des-23-avril-et-7-mai-2017-resultats-definitifs-du-1er-tour-par-communes" />
+          <DatasetsEmbeddedCard slug="election-presidentielle-des-23-avril-et-7-mai-2017-resultats-definitifs-du-1er-tour-par-bureaux-de-vote" />
+          <DatasetsEmbeddedCard slug="elections-legislatives-des-11-et-18-juin-2017-resultats-par-bureaux-de-vote-du-1er-tour" />
+          <DatasetsEmbeddedCard slug="elections-legislatives-des-11-et-18-juin-2017-resultats-par-communes-du-1er-tour" />
+          <DatasetsEmbeddedCard slug="elections-legislatives-des-11-et-18-juin-2017-resultats-du-1er-tour" />
+          <DatasetsEmbeddedCard slug="elections-legislatives-des-11-et-18-juin-2017-resultats-du-2nd-tour-par-communes" />
+          <DatasetsEmbeddedCard slug="elections-legislatives-des-11-et-18-juin-2017-resultats-du-2nd-tour" />
+          <DatasetsEmbeddedCard slug="elections-presidentielles-1965-2012-1" />
+          <DatasetsEmbeddedCard slug="elections-senatoriales-2017-resultats" />
+          <DatasetsEmbeddedCard slug="elections-senatoriales-du-24-septembre-2017-liste-des-candidats" />
+        </div>
+
+        <div class="my-4 not-prose grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <ReusesEmbeddedCard
+            class="flex-1"
+            slug="5e5e9da68b4c4124032dd8d0"
+          />
+          <ReusesEmbeddedCard
+            class="flex-1"
+            slug="5e6119c26f44414855933838"
+          />
+          <ReusesEmbeddedCard
+            class="flex-1"
+            slug="590184d188ee3868583cacbf"
+          />
+          <ReusesEmbeddedCard
+            class="flex-1"
+            slug="5a0f248588ee38158386f2c7"
+          />
+          <ReusesEmbeddedCard
+            class="flex-1"
+            slug="594bc842c751df6fd2111dc1"
+          />
+          <ReusesEmbeddedCard
+            class="flex-1"
+            slug="59436df3c751df61b37da9a8"
+          />
+        </div>
+      </div>
+      <div>
+        <h2 class="mb-3">
           Oembeds
         </h2>
         <div data-udata-dataservice="my-amazing-api" />

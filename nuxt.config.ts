@@ -14,7 +14,7 @@ export default defineNuxtConfig({
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
   ],
-  devtools: { enabled: true, componentInspector: false },
+  devtools: { enabled: false, componentInspector: false },
 
   app: {
     head: {
