@@ -225,7 +225,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, CopyButton, formatDate, StatBox, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
+import { BrandedButton, CopyButton, StatBox, useFormatDate, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
 import { RiBook2Line, RiCheckboxCircleLine, RiDownloadLine, RiServerLine } from '@remixicon/vue'
 import LeafletMapClient from '~/components/LeafletMap.client.vue'
 import ExtraAccordion from '~/datagouv-components/src/components/ExtraAccordion.vue'
@@ -236,6 +236,7 @@ const props = defineProps<{ dataset: DatasetV2WithFullObject }>()
 useSeoMeta({ robots: 'noindex' })
 
 const config = useRuntimeConfig()
+const { formatDate } = useFormatDate()
 
 const { data: schemas } = await useAPI<Array<Schema>>(`/api/2/datasets/${props.dataset.id}/schemas/`)
 

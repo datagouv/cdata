@@ -108,7 +108,7 @@ import { useI18n } from 'vue-i18n'
 import { RiArrowDownLine, RiArrowUpLine, RiExternalLinkFill } from '@remixicon/vue'
 import Pagination from '../Pagination.vue'
 import { getData, type SortConfig } from '../../functions/tabularApi'
-import { formatDate } from '../../functions/dates'
+import { useFormatDate } from '../../functions/dates'
 import type { Resource } from '../../types/resources'
 import { useComponentsConfig } from '../../config'
 import BrandedButton from '../BrandedButton.vue'
@@ -118,6 +118,7 @@ import PreviewLoader from './PreviewLoader.vue'
 const props = defineProps<{ resource: Resource }>()
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 const rows = ref<Array<Record<string, unknown>>>([])
 const columns = ref<Array<string>>([])

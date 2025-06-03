@@ -89,12 +89,14 @@
 </template>
 
 <script setup lang="ts">
-import { formatDate } from '@datagouv/components-next'
+import { useFormatDate } from '@datagouv/components-next'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import type { Post } from '~/types/posts'
 
 const config = useRuntimeConfig()
 const route = useRoute()
+const { formatDate } = useFormatDate()
+
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
 const { data: post } = await useAPI<Post>(url)
 

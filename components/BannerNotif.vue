@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, formatDate } from '@datagouv/components-next'
+import { Avatar, useFormatDate } from '@datagouv/components-next'
 import type { User } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import AdminBadge from './AdminBadge/AdminBadge.vue'
@@ -61,4 +61,6 @@ defineProps<{
   user: User
   date: Date
 }>()
+
+const { formatDate } = useFormatDate()
 </script>

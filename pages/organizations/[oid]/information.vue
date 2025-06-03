@@ -187,7 +187,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, CopyButton, formatDate, OrganizationNameWithCertificate, StatBox, type Organization } from '@datagouv/components-next'
+import { Avatar, BrandedButton, CopyButton, OrganizationNameWithCertificate, StatBox, useFormatDate, type Organization } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
 
@@ -196,6 +196,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()

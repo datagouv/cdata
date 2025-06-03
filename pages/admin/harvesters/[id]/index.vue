@@ -162,7 +162,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, BrandedButton, formatDate } from '@datagouv/components-next'
+import { Pagination, BrandedButton, useFormatDate } from '@datagouv/components-next'
 import { RiArchiveLine, RiCheckLine, RiCloseLine, RiEyeOffLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
@@ -174,6 +174,8 @@ const page = ref(1)
 const pageSize = ref(20)
 
 const route = useRoute()
+const { formatDate } = useFormatDate()
+
 const sourceUrl = computed(() => `/api/1/harvest/source/${route.params.id}`)
 const { data: harvester } = await useAPI<HarvesterSource>(sourceUrl, { lazy: true })
 

@@ -97,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, formatDate, Pagination } from '@datagouv/components-next'
+import { Avatar, Pagination, useFormatDate } from '@datagouv/components-next'
 import PaddedContainer from '~/components/PaddedContainer/PaddedContainer.vue'
 import type { Activity } from '~/types/activity'
 import type { PaginatedArray } from '~/types/types'
@@ -107,6 +107,8 @@ const props = defineProps<{
 }>()
 
 const route = useRoute()
+const { formatDate } = useFormatDate()
+
 const page = ref(parseInt(route.query.page as string | undefined ?? '1', 10))
 
 const { data: activities, status } = await useAPI<PaginatedArray<Activity>>('/api/1/activity/', {

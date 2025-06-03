@@ -193,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, formatDate, Pagination, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
+import { BrandedButton, Pagination, useFormatDate, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { RiArrowDownLine, RiArrowUpLine, RiCheckLine, RiDraggable } from '@remixicon/vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
@@ -209,6 +209,7 @@ import type { AdminBadgeType, CommunityResourceForm, PaginatedArray, ResourceFor
 const route = useRoute()
 const { toast } = useToast()
 const { $api } = useNuxtApp()
+const { formatDate } = useFormatDate()
 
 const { data: schemas } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/')
 const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extensions/')

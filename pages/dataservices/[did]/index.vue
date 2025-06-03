@@ -100,12 +100,14 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, CopyButton, formatDate, Pagination, StatBox, type Dataservice, type DatasetV2 } from '@datagouv/components-next'
+import { BrandedButton, CopyButton, Pagination, StatBox, useFormatDate, type Dataservice, type DatasetV2 } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{ dataservice: Dataservice }>()
+
+const { formatDate } = useFormatDate()
 
 const pageSize = 6
 const page = ref(1)
