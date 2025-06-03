@@ -238,5 +238,5 @@ useHead({
   ],
 })
 
-const { data: dataset } = await useAPI<DatasetV2>('/api/2/datasets/repertoire-national-des-elus-1')
+const { data: dataset } = await useAPI<DatasetV2>('/api/2/datasets/repertoire-national-des-elus-1/')
 </script>

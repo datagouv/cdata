@@ -153,7 +153,7 @@ import type { RouteLocationRaw } from 'vue-router'
 import { computed, ref, useId, watchEffect } from 'vue'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import { summarize } from '../functions/helpers'
-import { formatRelativeIfRecentDate } from '../functions/dates'
+import { useFormatDate } from '../functions/dates'
 import { getOwnerName } from '../functions/owned'
 import { removeMarkdown } from '../functions/markdown'
 import { useComponentsConfig } from '../config'
@@ -186,6 +186,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { t } = useI18n()
+const { formatRelativeIfRecentDate } = useFormatDate()
 const id = useId()
 const ownerName = computed(() => getOwnerName(props.dataset))
 const config = useComponentsConfig()

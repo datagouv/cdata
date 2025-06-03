@@ -238,7 +238,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination } from '@datagouv/components-next'
+import { Pagination, useFormatDate } from '@datagouv/components-next'
 import { RiAlertLine, RiArchiveLine, RiCalendarEventLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiEyeOffLine, RiInformationLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
@@ -248,6 +248,7 @@ import type { AdminBadgeType } from '~/types/types'
 
 const config = useRuntimeConfig()
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 const props = withDefaults(defineProps<{
   job: HarvesterJob

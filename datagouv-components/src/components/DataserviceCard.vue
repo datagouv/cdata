@@ -133,7 +133,7 @@ import { computed, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
 import { useComponentsConfig } from '../config'
-import { formatRelativeIfRecentDate } from '../functions/dates'
+import { useFormatDate } from '../functions/dates'
 import { removeMarkdown } from '../functions/markdown'
 import { getOwnerName } from '../functions/owned'
 import type { Dataservice } from '../types/dataservices'
@@ -163,6 +163,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { t } = useI18n()
+const { formatRelativeIfRecentDate } = useFormatDate()
 const ownerName = computed(() => getOwnerName(props.dataservice))
 const showBadge = computed(() => props.dataservice.access_type === 'restricted' || props.dataservice.private || props.dataservice.archived_at)
 

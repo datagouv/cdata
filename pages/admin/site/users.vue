@@ -132,7 +132,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, type User } from '@datagouv/components-next'
+import { Pagination, useFormatDate, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -148,6 +148,7 @@ import AdminInput from '~/components/AdminInput.vue'
 
 const { t } = useI18n()
 const config = useRuntimeConfig()
+const { formatDate } = useFormatDate()
 
 const page = ref(1)
 const pageSize = ref(20)

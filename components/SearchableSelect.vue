@@ -7,6 +7,7 @@
       :for="id"
       :title="explanation"
       class="fr-label"
+      :class="{ 'sr-only': hideLabel }"
     >
       {{ label }}
       <Required :required="required" />
@@ -166,6 +167,7 @@ const props = withDefaults(defineProps<{
   label: string
   placeholder?: string
   loading?: boolean
+  hideLabel?: boolean
 
   getOptionId?: (option: T) => string | number
   groupBy?: (option: T) => string
@@ -180,6 +182,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   required: false,
   loading: false,
+  hideLabel: false,
   displayValue: (_: ModelType): string => '',
   groupBy: (_: T): string => '',
   getOptionId: (option: T): string | number => {

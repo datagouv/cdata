@@ -72,7 +72,6 @@ import type { Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
 import { RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
 import type { ReuseForm } from '~/types/types'
-import { toForm, toApi } from '~/utils/reuses'
 
 const { t } = useI18n()
 const { $api, $fileApi } = useNuxtApp()
@@ -91,7 +90,7 @@ const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics',
 
 const reuseForm = ref<ReuseForm | null>(null)
 watchEffect(() => {
-  reuseForm.value = toForm(reuse.value, types.value || [], topics.value || [])
+  reuseForm.value = reuseToForm(reuse.value, types.value || [], topics.value || [])
 })
 
 async function save() {
@@ -102,7 +101,7 @@ async function save() {
 
     await $api(`/api/1/reuses/${reuse.value.id}/`, {
       method: 'PUT',
-      body: JSON.stringify(toApi(reuseForm.value, { private: reuseForm.value.private })),
+      body: JSON.stringify(reuseToApi(reuseForm.value, { private: reuseForm.value.private })),
     })
 
     if (reuseForm.value.image && typeof reuseForm.value.image !== 'string') {

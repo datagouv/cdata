@@ -5,6 +5,13 @@
     @focusout="focusOut"
   >
     <slot />
+    <SimpleBanner
+      v-if="warning"
+      class="mt-3"
+      type="warning"
+    >
+      {{ warning }}
+    </SimpleBanner>
 
     <ClientOnly>
       <Teleport
@@ -18,6 +25,7 @@
 </template>
 
 <script setup lang="ts" generic="T">
+import { SimpleBanner } from '@datagouv/components-next'
 import { key, type AccordionRegister } from '~/components/Accordion/injectionKey'
 
 const props = defineProps<{
@@ -25,11 +33,12 @@ const props = defineProps<{
 }>()
 
 const accordionsId = inject<string>('accordionsId')
-const { touch } = inject<FormInfo<T>>('formInfo', undefined as never)
+const { getFirstWarning, touch } = inject<FormInfo<T>>('formInfo', undefined as never)
 provide('formKey', props.formKey as string)
 
 const slots = useSlots()
 const hasAccordion = computed(() => slots.accordion)
+const warning = computed(() => getFirstWarning(props.formKey))
 
 const innerAccordionId = useId()
 const accordionId = computed(() => {

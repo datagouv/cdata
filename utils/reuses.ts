@@ -7,7 +7,7 @@ export function getReuseAdminUrl(reuse: Reuse): string {
   return `/admin/reuses/${reuse.id}`
 }
 
-export function toForm(reuse: Reuse, types: Array<ReuseType>, topics: Array<ReuseTopic>): ReuseForm {
+export function reuseToForm(reuse: Reuse, types: Array<ReuseType>, topics: Array<ReuseTopic>): ReuseForm {
   return {
     owned: reuse.organization ? { organization: reuse.organization, owner: null } : { owner: reuse.owner, organization: null },
     title: reuse.title,
@@ -22,7 +22,7 @@ export function toForm(reuse: Reuse, types: Array<ReuseType>, topics: Array<Reus
   }
 }
 
-export function toApi(form: ReuseForm, overrides: { datasets?: Array<Dataset | DatasetV2 | DatasetSuggest>, private?: boolean } = {}): NewReuseForApi {
+export function reuseToApi(form: ReuseForm, overrides: { datasets?: Array<Dataset | DatasetV2 | DatasetSuggest>, private?: boolean } = {}): NewReuseForApi {
   return {
     organization: form.owned?.organization?.id,
     owner: form.owned?.owner?.id,
@@ -38,8 +38,10 @@ export function toApi(form: ReuseForm, overrides: { datasets?: Array<Dataset | D
 }
 
 export async function getReuseMetrics(rid: string) {
+  const config = useRuntimeConfig()
+
   // Fetching last 12 months
-  const response = await fetch(`https://metric-api.data.gouv.fr/api/reuses/data/?reuse_id__exact=${rid}&metric_month__sort=desc&page_size=12`)
+  const response = await fetch(`${config.public.metricsApi}/api/reuses/data/?reuse_id__exact=${rid}&metric_month__sort=desc&page_size=12`)
   const page = await response.json()
 
   const reuseViews: Record<string, number> = {}
@@ -48,7 +50,7 @@ export async function getReuseMetrics(rid: string) {
     reuseViews[metric_month] = monthly_visit
   }
   // Fetching totals
-  const totalResponse = await fetch(`https://metric-api.data.gouv.fr/api/reuses_total/data/?reuse_id__exact=${rid}`)
+  const totalResponse = await fetch(`${config.public.metricsApi}/api/reuses_total/data/?reuse_id__exact=${rid}`)
   const totalPage = await totalResponse.json()
 
   let reuseViewsTotal = 0

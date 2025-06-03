@@ -71,7 +71,6 @@ import DescribeHarvester from '~/components/Harvesters/DescribeHarvester.vue'
 import PreviewStep from '~/components/Harvesters/PreviewStep.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { HarvesterForm, HarvesterSource } from '~/types/harvesters'
-import { toApi } from '~/utils/harvesters'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -137,7 +136,7 @@ async function save() {
     loading.value = true
     newHarvester.value = await $api<HarvesterSource>('/api/1/harvest/sources/', {
       method: 'POST',
-      body: JSON.stringify(toApi(harvesterForm.value)),
+      body: JSON.stringify(harvesterToApi(harvesterForm.value)),
     })
 
     await moveToStep(3)

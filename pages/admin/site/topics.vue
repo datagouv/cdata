@@ -100,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, type TopicV2 } from '@datagouv/components-next'
+import { Pagination, useFormatDate, type TopicV2 } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -115,6 +115,7 @@ import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import AdminInput from '~/components/AdminInput.vue'
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 const page = ref(1)
 const pageSize = ref(20)
@@ -134,5 +135,5 @@ const query = computed(() => {
   }
 })
 
-const { data: pageData, status } = await useAPI<PaginatedArray<TopicV2>>('/api/2/topics', { query, lazy: true })
+const { data: pageData, status } = await useAPI<PaginatedArray<TopicV2>>('/api/2/topics/', { query, lazy: true })
 </script>

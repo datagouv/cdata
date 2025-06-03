@@ -100,12 +100,15 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, CopyButton, Pagination, StatBox, type Dataservice, type DatasetV2 } from '@datagouv/components-next'
+import { BrandedButton, CopyButton, Pagination, StatBox, useFormatDate, type Dataservice, type DatasetV2 } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{ dataservice: Dataservice }>()
+
+const config = useRuntimeConfig()
+const { formatDate } = useFormatDate()
 
 const pageSize = 6
 const page = ref(1)
@@ -118,13 +121,13 @@ const query = computed(() => {
   }
 })
 
-const { data: pageData, status } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets', { query })
+const { data: pageData, status } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/', { query })
 
 const metricsViews = ref<null | Record<string, number>>(null)
 const metricsViewsTotal = ref<null | number>(null)
 watchEffect(async () => {
   if (!props.dataservice.id) return
-  const response = await fetch(`https://metric-api.data.gouv.fr/api/dataservices/data/?dataservice_id__exact=${props.dataservice.id}&metric_month__sort=desc&page_size=12`)
+  const response = await fetch(`${config.public.metricsApi}/api/dataservices/data/?dataservice_id__exact=${props.dataservice.id}&metric_month__sort=desc&page_size=12`)
   const page = await response.json()
 
   const views: Record<string, number> = {}
@@ -133,7 +136,7 @@ watchEffect(async () => {
     views[metric_month] = monthly_visit
   }
   // Fetching totals
-  const totalResponse = await fetch(`https://metric-api.data.gouv.fr/api/dataservices_total/data/?dataservice_id__exact=${props.dataservice.id}`)
+  const totalResponse = await fetch(`${config.public.metricsApi}/api/dataservices_total/data/?dataservice_id__exact=${props.dataservice.id}`)
   const totalPage = await totalResponse.json()
 
   let totalViews = 0

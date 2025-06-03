@@ -26,14 +26,6 @@
       static
     >
       <slot />
-
-      <SimpleBanner
-        v-if="warning"
-        class="font-bold mt-2"
-        type="warning"
-      >
-        {{ warning }}
-      </SimpleBanner>
     </DisclosurePanel>
   </Disclosure>
 </template>
@@ -42,7 +34,6 @@
 import { computed } from 'vue'
 import { RiCloseLine, RiErrorWarningLine, RiSubtractLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
-import { SimpleBanner } from '@datagouv/components-next'
 import { key, type AccordionRegister } from '~/components/Accordion/injectionKey'
 
 defineProps<{
@@ -54,8 +45,6 @@ const formKey = inject<KeysOfUnion<T>>('formKey', undefined as never)
 const { getFirstError, getFirstWarning } = inject<FormInfo<T>>('formInfo', undefined as never)
 
 const { toggle, isOpen } = inject(key) as AccordionRegister
-
-const warning = computed(() => getFirstWarning(formKey))
 
 const icon = computed(() => {
   if (getFirstError(formKey)) return RiCloseLine

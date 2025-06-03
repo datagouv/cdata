@@ -40,9 +40,9 @@
     />
     <OrganizationNewStep2DescribeOrganization
       v-if="currentStep === 2"
+      v-model="organizationForm"
       type="create"
       :submit-label="$t('Next')"
-      :organization="organizationForm"
       :errors="errors"
       :loading
       @previous="moveToStep(1)"
@@ -104,14 +104,14 @@ function moveToStep(step: number) {
   navigateTo({ path: route.path, query: { ...route.query, step } })
 }
 
-async function createOrganizationAndMoveToNextStep(org: NewOrganization, logo_file: File | null) {
+async function createOrganizationAndMoveToNextStep(logo_file: File | null) {
   errors.value = []
   let moveToNextStep = false
   try {
     loading.value = true
     newOrganization.value = await $api<Organization>('/api/1/organizations/', {
       method: 'POST',
-      body: JSON.stringify(org),
+      body: JSON.stringify(organizationForm.value),
     })
     moveToNextStep = true
   }

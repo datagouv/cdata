@@ -22,9 +22,12 @@
 </template>
 
 <script setup lang="ts">
+import { useFormatDate } from '@datagouv/components-next'
 import type { Post } from '~/types/posts'
 
 defineProps<{
   post: Post
 }>()
+
+const { formatDate } = useFormatDate()
 </script>

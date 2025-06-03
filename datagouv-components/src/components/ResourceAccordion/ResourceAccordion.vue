@@ -309,7 +309,7 @@ import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine } from '@remixicon/vu
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
 import { filesize, summarize } from '../../functions/helpers'
 import { markdown } from '../../functions/markdown'
-import { formatRelativeIfRecentDate } from '../../functions/dates'
+import { useFormatDate } from '../../functions/dates'
 import type { CommunityResource, Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 import TabGroup from '../Tabs/TabGroup.vue'
@@ -352,6 +352,7 @@ const config = useComponentsConfig()
 const Swagger = defineAsyncComponent(() => import('./Swagger.vue'))
 
 const { t } = useI18n()
+const { formatRelativeIfRecentDate } = useFormatDate()
 
 const hasPreview = computed(() => {
   return config.tabularApiUrl
