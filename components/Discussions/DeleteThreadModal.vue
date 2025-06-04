@@ -25,7 +25,7 @@
         :thread
       />
       <ReadMore
-        class="prose whitespace-pre-line max-w-none"
+        class="prose whitespace-pre-line max-w-none text-sm"
       >
         {{ thread.discussion[0].content }}
       </ReadMore>
