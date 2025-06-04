@@ -5,14 +5,14 @@ import { ofetch } from 'ofetch'
  * Get the datagouv page based on the path
  * The result is cached for 1h
  */
-export default defineEventHandler(async (event) => {
+export default cachedEventHandler(async (event) => {
   const slug = event.context.params?.slug
   const config = useRuntimeConfig()
   const repo = config.pagesGhRepoName
   if (!slug || !repo)
     return new Response(null, { status: 404 })
   const branch = config.pagesGhRepoBranch
-  let rawUrl = `http://dev.local:3000/datagouvfr-pages/pages/${slug}`
+  let rawUrl = `https://raw.githubusercontent.com/${repo}/${branch}/pages/${slug}`
   let ghUrl = `https://github.com/${repo}/blob/${branch}/pages/${slug}`
 
   let extension = 'html'
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
   ghUrl = `${ghUrl}.${extension}`
 
   const response = await ofetch<string>(rawUrl, {
-    timeout: 20000,
+    timeout: 5000,
   })
   const content = matter(response)
   return {
@@ -41,4 +41,4 @@ export default defineEventHandler(async (event) => {
     data: content.data,
     extension,
   }
-})
+}, { maxAge: 1, swr: false })
