@@ -16,5 +16,5 @@ import type { Dataservice } from '@datagouv/components-next'
 const props = defineProps<{
   slug: string
 }>()
-const { data, status } = await useAPI<Dataservice>(`/api/1/dataservices/${props.slug}/`, { lazy: true })
+const { data, status } = await useAPI<Dataservice>(`/api/1/dataservices/${props.slug}/`, { lazy: true, server: false })
 </script>

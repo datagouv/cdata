@@ -1,5 +1,5 @@
 <template>
-  <ReusesEmbeddedCard :slug="($route.params.slug as string)" />
+  <EmbedsReuseCard :slug="($route.params.slug as string)" />
 </template>
 
 <script setup lang="ts">

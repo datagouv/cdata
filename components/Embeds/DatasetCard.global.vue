@@ -16,5 +16,5 @@ import type { DatasetV2 } from '@datagouv/components-next'
 const props = defineProps<{
   slug: string
 }>()
-const { data, status } = await useAPI<DatasetV2>(`/api/2/datasets/${props.slug}/`, { lazy: true })
+const { data, status } = await useAPI<DatasetV2>(`/api/2/datasets/${props.slug}/`, { lazy: true, server: false })
 </script>

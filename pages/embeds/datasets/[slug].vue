@@ -1,5 +1,5 @@
 <template>
-  <DatasetsEmbeddedCard :slug="($route.params.slug as string)" />
+  <EmbedsDatasetCard :slug="($route.params.slug as string)" />
 </template>
 
 <script setup lang="ts">
