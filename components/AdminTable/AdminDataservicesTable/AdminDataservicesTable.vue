@@ -135,6 +135,12 @@ function getStatus(dataservice: Dataservice): { label: string, type: AdminBadgeT
       type: 'danger',
     }
   }
+  else if (dataservice.archived_at) {
+    return {
+      label: t('Archived'),
+      type: 'warning',
+    }
+  }
   else if (dataservice.private) {
     return {
       label: t('Draft'),
