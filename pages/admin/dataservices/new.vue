@@ -194,7 +194,7 @@ async function updateDataservice(asPrivate: boolean) {
     }
   }
 
-  await navigateTo(newDataservice.value.self_web_url, { external: true })
+  await navigateTo(newDataservice.value.self_web_url)
 }
 
 watchEffect(() => {

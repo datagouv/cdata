@@ -299,10 +299,10 @@ openDataLinks.push({ label: t('Portal for European data'), link: 'https://data.e
 
 const platformLinks: Array<Link> = [
   { label: t('Guides'), link: config.public.guidesUrl, external: true },
-  { label: t('Roadmap and news'), link: '/pages/roadmap', external: true },
+  { label: t('Roadmap and news'), link: '/pages/roadmap' },
   { label: t('Contact us'), link: '/support' },
   { label: t('Give us your feedback'), link: config.public.feedbackFormUrl, external: true },
-  { label: t('Statistics'), link: '/dashboard', external: true },
+  { label: t('Statistics'), link: '/dashboard' },
 ]
 
 const resourcesLinks: Array<Link> = [
