@@ -35,7 +35,7 @@
         />
       </div>
     </div>
-    <ReadMore class="prose whitespace-pre-line max-w-none">
+    <ReadMore class="prose whitespace-pre-line max-w-none text-sm">
       {{ comment.content }}
     </ReadMore>
   </div>

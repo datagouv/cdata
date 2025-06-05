@@ -48,7 +48,7 @@
       >
         <ReadMore
           v-if="index == 0"
-          class="prose whitespace-pre-line max-w-none"
+          class="prose whitespace-pre-line max-w-none text-sm"
         >
           {{ comment.content }}
         </ReadMore>
