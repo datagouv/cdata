@@ -398,6 +398,8 @@ import { RiArrowRightLine, RiLineChartLine, RiSearchLine, RiVipDiamondLine } fro
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 
+useSeoMeta({ title: 'Accueil — data.gouv.fr' })
+
 const config = useRuntimeConfig()
 const { t } = useI18n()
 const { formatDate } = useFormatDate()
