@@ -9,7 +9,10 @@ Make sure to install datagouv-components and cdata dependencies:
 ```bash
 # npm
 cd ./datagouv-components
-npm install
+
+# In my Linux installation this command break the build of cdata. You may try it if it doesn't work without it on your machine.
+# npm install 
+
 npm run i18n
 cd ..
 npm install
