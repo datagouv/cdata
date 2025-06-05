@@ -79,6 +79,10 @@ export default defineNuxtConfig({
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
 
+      homepagePublishDatasetOnboarding: '/pages/onboarding/producteurs',
+      homepagePublishReuseOnboarding: '/pages/onboarding/reutilisateurs',
+      homepageAboutUs: '/pages/about/a-propos_data-gouv',
+      homepageExplore: 'https://explore.data.gouv.fr',
       homepageRightNow: {
         title: 'Données relatives aux Énergies',
         url: '/pages/donnees-energie',
