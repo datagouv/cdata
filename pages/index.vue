@@ -2,30 +2,22 @@
   <div>
     <section class="py-8 sm:py-[200px] bg-[url(''),radial-gradient(rgba(255,255,255,0.8),rgba(217,217,217,0)),url('/nuxt_images/homepage/hero.png')] bg-center">
       <div class="max-w-[800px] mx-auto px-4 flex flex-col items-center space-y-8">
-        <div class="flex flex-col sm:flex-row gap-5 items-center">
+        <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-5 items-center">
           <NuxtLinkLocale
             v-if="lastPost"
-            class="max-w-[340px] inline-flex items-center fr-raw-link text-sm/loose px-3 text-primary border  border-primary rounded-lg bg-white text-overflow-ellipsis"
+            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-primary border  border-primary rounded-lg bg-white"
             :to="`/posts/${lastPost.slug}`"
           >
-            <span
-              aria-hidden="true"
-              class="fr-icon-newspaper-line fr-icon--sm fr-mr-1w"
-            />
-            <span class="fr-text--bold fr-mb-0">{{ $t('Actualités') }}</span>
-            <span class="text-overflow-ellipsis">&nbsp;: {{ lastPost.name }}</span>
+            <RiBardLine class="size-4 shrink-0" />
+            <span class="truncate"><span class="font-bold">{{ $t('Actualités') }}</span><span>&nbsp;: {{ lastPost.name }}</span></span>
           </NuxtLinkLocale>
           <NuxtLinkLocale
             v-if="config.public.homepageRightNow"
-            class="max-w-[340px] inline-flex items-center fr-raw-link text-sm/loose px-3 text-primary border  border-primary rounded-lg bg-white text-overflow-ellipsis"
+            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-primary border  border-primary rounded-lg bg-white"
             :to="config.public.homepageRightNow.url"
           >
-            <span
-              aria-hidden="true"
-              class="fr-icon-notification-3-line fr-icon--sm fr-mr-1w"
-            />
-            <span class="fr-text--bold fr-mb-0">{{ $t('En ce moment') }}</span>
-            <span class="text-overflow-ellipsis">&nbsp;: {{ config.public.homepageRightNow.title }}</span>
+            <RiBardLine class="size-4 shrink-0" />
+            <span class="truncate"><span class="font-bold">{{ $t('En ce moment') }}</span><span>&nbsp;: {{ config.public.homepageRightNow.title }}</span></span>
           </NuxtLinkLocale>
         </div>
         <div class="space-y-4">
@@ -394,7 +386,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, summarize, useFormatDate, type Site } from '@datagouv/components-next'
-import { RiArrowRightLine, RiLineChartLine, RiSearchLine, RiVipDiamondLine } from '@remixicon/vue'
+import { RiArrowRightLine, RiBardLine, RiLineChartLine, RiNewspaperLine, RiSearchLine, RiVipDiamondLine } from '@remixicon/vue'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 
