@@ -522,7 +522,7 @@ watchEffect(() => {
   params.schema = facets.value.schema?.name ?? undefined
   params.geozone = facets.value.geozone?.id ?? undefined
   params.granularity = facets.value.granularity?.id ?? undefined
-  if (currentPage.value > 1) params.page = currentPage.value.toString()
+  if (currentPage.value >= 1) params.page = currentPage.value.toString()
   params.q = deboucedQuery.value ?? undefined
   params.sort = searchSort.value ?? null
   return params
