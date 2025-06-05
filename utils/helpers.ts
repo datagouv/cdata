@@ -28,19 +28,26 @@ export async function redirectLegacyHashes(instructions: Array<{ from: string, t
 }
 
 export async function useJsonLd(type: 'dataset' | 'dataservice' | 'organization', id: string) {
+  /**
+   * First we included the full JSON-LD inline in a script tag for Google but it adds
+   * a lot of perfomances problems for datasets or organizations with a lot of resources.
+   * By W3C, JSON-LD could be linked in a <link> alternate tag. Google doesn't seems to support
+   * this way of doing but the DCAT in JSON-LD exposition may not be understand by Google either.
+   *
+   * https://www.w3.org/TR/json-ld11/#alternate-document-location
+   */
   const url = {
     dataset: `/api/1/datasets/${id}/rdf.jsonld`,
     dataservice: `/api/1/dataservices/${id}/rdf.jsonld`,
     organization: `/api/1/organizations/${id}/catalog.jsonld`,
   }[type]
 
-  const { data: jsonld } = await useAPI(url)
-
   useHead({
-    script: [
+    link: [
       {
         type: 'application/ld+json',
-        textContent: jsonld,
+        rel: 'alternate',
+        href: url,
       },
     ],
   })
