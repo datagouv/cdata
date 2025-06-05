@@ -151,6 +151,11 @@
           <EmbedsDatasetCard slug="elections-municipales-2020-liste-des-candidats-elus-au-t1-et-liste-des-communes-entierement-pourvues" />
         </div>
 
+        <div class="not-prose space-y-4">
+          <EmbedsDataserviceCard slug="6659caeba08e0235a5f9cdcf" />
+          <EmbedsDataserviceCard slug="67163c3fe5dd136891772a1e" />
+        </div>
+
         <div class="my-4 not-prose grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <EmbedsReuseCard
             class="flex-1"
@@ -165,6 +170,20 @@
             slug="590184d188ee3868583cacbf"
           />
         </div>
+        <div class="my-4 not-prose grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <EmbedsOrganizationCard
+            class="flex-1"
+            slug="616457b78bab54483d09da7a"
+          />
+          <EmbedsOrganizationCard
+            class="flex-1"
+            slug="57835da788ee3878b367b0c8"
+          />
+          <EmbedsOrganizationCard
+            class="flex-1"
+            slug="534fff81a3a7292c64a77e5c"
+          />
+        </div>
       </div>
       <div>
         <h2 class="mb-3">
@@ -173,7 +192,7 @@
         <div data-udata-dataservice="my-amazing-api" />
         <div data-udata-dataset="base-adresse-nationale" />
         <div data-udata-reuse="5fbf724d677c5e31fdedea88" />
-        <div data-udata-organization="test-kls-developpement" />
+        <div data-udata-organization="616457b78bab54483d09da7a" />
       </div>
     </div>
     <div class="space-y-8 py-8 pb-64">
