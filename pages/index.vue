@@ -1,7 +1,7 @@
 <template>
   <div>
     <section class="py-8 sm:py-[200px] bg-[url(''),radial-gradient(rgba(255,255,255,0.8),rgba(217,217,217,0)),url('/nuxt_images/homepage/hero.png')] bg-center">
-      <div class="max-w-[800px] mx-auto flex flex-col items-center space-y-8">
+      <div class="max-w-[800px] mx-auto px-4 flex flex-col items-center space-y-8">
         <div class="flex flex-col sm:flex-row gap-5 items-center">
           <NuxtLinkLocale
             v-if="lastPost"
@@ -36,13 +36,17 @@
             {{ $t('Utilisez, partagez et améliorez les données publiques') }}
           </p>
         </div>
-        <div class="flex flex-col sm:flex-row items-center gap-2.5">
-          <BrandedButton href="/datasets">
+        <div class="w-full flex flex-col sm:flex-row items-center gap-2.5">
+          <BrandedButton
+            href="/datasets"
+            class="w-full sm:w-auto"
+          >
             {{ $t('Découvrez les jeux de données') }}
           </BrandedButton>
           <BrandedButton
             href="/reuses"
             color="primary-soft"
+            class="w-full sm:w-auto"
           >
             {{ $t('Explorez les réutilisations de données') }}
           </BrandedButton>
@@ -98,19 +102,23 @@
           </div>
 
           <div class="flex flex-col sm:flex-row items-center gap-4">
-            <BrandedButton href="/datasets">
+            <BrandedButton
+              href="/datasets"
+              class="w-full sm:w-auto"
+            >
               {{ $t('Voir les données') }}
             </BrandedButton>
             <BrandedButton
               :href="config.public.homepagePublishDatasetOnboarding"
               color="primary-soft"
+              class="w-full sm:w-auto"
             >
               {{ $t('Comment publier des données ?') }}
             </BrandedButton>
           </div>
         </div>
       </div>
-      <div class="px-8 flex justify-center pt-8 sm:pt-10 overflow-hidden bg-gray-some">
+      <div class="hidden sm:flex px-8 justify-center pt-8 sm:pt-10 overflow-hidden bg-gray-some">
         <figure class="w-full max-w-lg flex flex-col items-center">
           <figcaption class="uppercase font-bold text-gray-low mb-6">
             {{ $t('Jeux de données') }}
@@ -121,7 +129,7 @@
           />
         </figure>
       </div>
-      <div class="px-8 flex justify-center py-8 sm:pt-10 sm:pb-20 bg-gray-some">
+      <div class="hidden sm:flex px-8 justify-center py-8 sm:pt-10 sm:pb-20 bg-gray-some">
         <figure class="w-full max-w-lg flex flex-col items-center">
           <figcaption class="uppercase font-bold text-gray-low mb-6">
             {{ $t('Réutilisations') }}
@@ -180,12 +188,16 @@
           </div>
 
           <div class="flex flex-col sm:flex-row items-center gap-4">
-            <BrandedButton href="/reuses">
+            <BrandedButton
+              href="/reuses"
+              class="w-full sm:w-auto"
+            >
               {{ $t('Voir les réutilisations') }}
             </BrandedButton>
             <BrandedButton
               :href="config.public.homepagePublishReuseOnboarding"
               color="primary-soft"
+              class="w-full sm:w-auto"
             >
               {{ $t('Comment réutiliser des données ?') }}
             </BrandedButton>
@@ -194,7 +206,7 @@
       </div>
     </section>
     <section class="bg-gray-dark text-white">
-      <div class="max-w-7xl mx-auto py-16 space-y-8">
+      <div class="max-w-7xl mx-auto px-4 py-16 space-y-8">
         <div>
           <h2 class="text-3xl font-normal mb-0">
             {{ $t('La mission {site}', { site: config.public.title }) }}
@@ -215,7 +227,7 @@
           <h4 class="text-base uppercase font-bold text-gray-low">
             {{ $t('Nos objectifs') }}
           </h4>
-          <div class="grid grid-cols-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 space-y-6 sm:space-y-0">
             <div
               v-for="{ label, icon } in [
                 { label: $t('Faciliter la découvrabilité des données'), icon: RiSearchLine },
@@ -223,7 +235,7 @@
                 { label: $t('Encourager la réutilisation des données'), icon: RiLineChartLine },
               ]"
               :key="label"
-              class="px-8 border-l border-white space-y-2"
+              class="px-4 sm:px-8 border-l border-white space-y-2"
             >
               <component
                 :is="icon"
@@ -239,6 +251,7 @@
           <BrandedButton
             :href="config.public.homepageAboutUs"
             color="secondary"
+            class="w-full sm:w-auto"
           >
             {{ $t('En savoir plus sur {name}', { name: config.public.title }) }}
           </BrandedButton>
@@ -291,6 +304,7 @@
             :href="config.public.homepageExplore"
             color="secondary"
             external
+            class="w-full sm:w-auto"
           >
             {{ $t('Découvrez nos explorations de données') }}
           </BrandedButton>
@@ -334,17 +348,17 @@
       </div>
     </section>
     <section v-if="lastPost">
-      <div class="max-w-7xl mx-auto py-16 space-y-8">
+      <div class="max-w-7xl mx-auto px-4 py-16 space-y-8">
         <h2 class="text-base uppercase font-bold text-gray-low mb-6">
           {{ $t('L\'actualité {name}', { name: config.public.title }) }}
         </h2>
-        <div class="grid grid-cols-12 gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-8">
           <img
             v-if="lastPost.image"
             :src="lastPost.image"
-            class="col-span-5"
+            class="sm:col-span-5"
           >
-          <div class="col-span-7 flex flex-col justify-center space-y-8">
+          <div class="sm:col-span-7 flex flex-col justify-center space-y-8">
             <div class="space-y-2">
               <h3 class="text-gray-title font-extrabold text-3xl">
                 {{ lastPost.name }}
@@ -356,13 +370,17 @@
                 {{ lastPost.headline }}
               </p>
             </div>
-            <div class="flex items-center space-x-2">
-              <BrandedButton :href="lastPost.page">
+            <div class="flex flex-col sm:flex-row items-center gap-2">
+              <BrandedButton
+                :href="lastPost.page"
+                class="w-full sm:w-auto"
+              >
                 {{ $t('Consulter l\'article') }}
               </BrandedButton>
               <BrandedButton
                 color="primary-soft"
                 href="/posts"
+                class="w-full sm:w-auto"
               >
                 {{ $t('Voir toutes les actualités') }}
               </BrandedButton>

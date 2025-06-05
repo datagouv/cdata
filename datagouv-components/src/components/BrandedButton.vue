@@ -1,7 +1,7 @@
 <template>
   <component
     :is="href ? AppLink: 'button'"
-    class="inline-flex items-center rounded-full font-medium border !bg-none !no-underline after:content-none"
+    class="inline-flex items-center justify-center rounded-full font-medium border !bg-none !no-underline after:content-none"
     :class="[colors, sizes, removePaddingsIfNoBorders, isDisabled ? '!opacity-50' : '', iconRight && !newTab ? 'flex-row-reverse space-x-reverse' : '']"
     :disabled="isDisabled"
     :aria-disabled="isDisabled"
