@@ -19,6 +19,7 @@
         { href: `/admin/topics/${topic.id}`, label: $t('Metadata') },
         { href: `/admin/topics/${topic.id}/datasets`, label: $t('Datasets') },
         { href: `/admin/topics/${topic.id}/reuses`, label: $t('Reuses') },
+        { href: `/admin/topics/${topic.id}/activities`, label: $t('Activities') },
       ]"
     />
 

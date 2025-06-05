@@ -5,7 +5,7 @@ export type ActivityKey = 'dataset:created' | 'dataset:updated' | 'dataset:delet
   | 'dataservice:created' | 'dataservice:updated' | 'dataservice:deleted' | 'dataservice:discussed' | 'dataservice:followed'
   | 'organization:created' | 'organization:updated' | 'organization:followed'
   | 'reuse:created' | 'reuse:updated' | 'reuse:deleted' | 'reuse:discussed' | 'reuse:followed'
-  | 'user:followed'
+  | 'user:followed' | 'topic:created' | 'topic:updated'
 
 export type Activity = {
   actor: User
