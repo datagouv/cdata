@@ -333,17 +333,56 @@
         </div>
       </div>
     </section>
+    <section v-if="lastPost">
+      <div class="max-w-7xl mx-auto py-16 space-y-8">
+        <h2 class="text-base uppercase font-bold text-gray-low mb-6">
+          {{ $t('L\'actualité {name}', { name: config.public.title }) }}
+        </h2>
+        <div class="grid grid-cols-12 gap-8">
+          <img
+            v-if="lastPost.image"
+            :src="lastPost.image"
+            class="col-span-5"
+          >
+          <div class="col-span-7 flex flex-col justify-center space-y-8">
+            <div class="space-y-2">
+              <h3 class="text-gray-title font-extrabold text-3xl">
+                {{ lastPost.name }}
+              </h3>
+              <p class="text-mention-grey text-sm">
+                {{ $t('Publié le {date}', { date: formatDate(lastPost.published) }) }}
+              </p>
+              <p class="text-gray-plain mb-0">
+                {{ lastPost.headline }}
+              </p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <BrandedButton :href="lastPost.page">
+                {{ $t('Consulter l\'article') }}
+              </BrandedButton>
+              <BrandedButton
+                color="primary-soft"
+                href="/posts"
+              >
+                {{ $t('Voir toutes les actualités') }}
+              </BrandedButton>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, summarize, type Site } from '@datagouv/components-next'
+import { BrandedButton, summarize, useFormatDate, type Site } from '@datagouv/components-next'
 import { RiArrowRightLine, RiLineChartLine, RiSearchLine, RiVipDiamondLine } from '@remixicon/vue'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 
 const config = useRuntimeConfig()
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts')
 const { data: site } = await useAPI<Site>('/api/1/site')
