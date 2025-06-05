@@ -1,7 +1,7 @@
 <template>
   <div>
     <section class="py-8 sm:py-[200px] bg-[url(''),radial-gradient(rgba(255,255,255,0.8),rgba(217,217,217,0)),url('/nuxt_images/homepage/hero.png')] bg-center">
-      <div class="max-w-[800px] mx-auto px-4 flex flex-col items-center space-y-8">
+      <div class="max-w-[800px] mx-auto px-6 flex flex-col items-center space-y-8">
         <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-5 items-center">
           <NuxtLinkLocale
             v-if="lastPost"
@@ -24,7 +24,7 @@
           <h1 class="text-6xl font-extrabold text-primary text-center">
             {{ $t('La plateforme des données publiques françaises') }}
           </h1>
-          <p class="fr-text--alt f-italic fr-h4 fr-mb-4w fr-text--regular m-0 text-primary text-align-center">
+          <p class="font-spectral italic text-2xl text-center text-primary">
             {{ $t('Utilisez, partagez et améliorez les données publiques') }}
           </p>
         </div>
@@ -46,14 +46,14 @@
       </div>
     </section>
     <section class="grid grid-cols-1 sm:grid-cols-2">
-      <div class="px-8 flex justify-center py-8 sm:py-24">
+      <div class="px-6 flex justify-center py-8 sm:py-24">
         <div class="w-full max-w-lg space-y-8">
           <div class="space-y-2">
             <nuxt-img
               src="/illustrations/dataset.svg"
               class="h-16"
             />
-            <h2 class="fs-xxxl text-title-grey font-800 fr-mb-1w">
+            <h2 class="text-3xl text-gray-title font-extrabold">
               {{ $t('Le catalogue des données françaises') }}
             </h2>
             <p>{{ $t('Découvrez des données sur tous les sujets, produites par l’administration et la société civile.') }}</p>
@@ -110,7 +110,7 @@
           </div>
         </div>
       </div>
-      <div class="hidden sm:flex px-8 justify-center pt-8 sm:pt-10 overflow-hidden bg-gray-some">
+      <div class="hidden sm:flex px-6 justify-center pt-8 sm:pt-10 overflow-hidden bg-gray-some">
         <figure class="w-full max-w-lg flex flex-col items-center">
           <figcaption class="uppercase font-bold text-gray-low mb-6">
             {{ $t('Jeux de données') }}
@@ -121,7 +121,7 @@
           />
         </figure>
       </div>
-      <div class="hidden sm:flex px-8 justify-center py-8 sm:pt-10 sm:pb-20 bg-gray-some">
+      <div class="hidden sm:flex px-6 justify-center py-8 sm:pt-10 sm:pb-20 bg-gray-some">
         <figure class="w-full max-w-lg flex flex-col items-center">
           <figcaption class="uppercase font-bold text-gray-low mb-6">
             {{ $t('Réutilisations') }}
@@ -132,14 +132,14 @@
           />
         </figure>
       </div>
-      <div class="px-8 flex justify-center py-8 sm:py-24">
+      <div class="px-6 flex justify-center py-8 sm:py-24">
         <div class="w-full max-w-lg space-y-8">
           <div class="space-y-2">
             <nuxt-img
               src="/illustrations/discussion.svg"
               class="h-16"
             />
-            <h2 class="fs-xxxl text-title-grey font-800 fr-mb-1w">
+            <h2 class="text-3xl text-gray-title font-extrabold">
               {{ $t('Une communauté dynamique et engagée') }}
             </h2>
             <p>{{ $t('Partagez votre usage des données et échangez entre producteurs et réutilisateurs de données.') }}</p>
@@ -198,7 +198,7 @@
       </div>
     </section>
     <section class="bg-gray-dark text-white">
-      <div class="max-w-7xl mx-auto px-4 py-16 space-y-8">
+      <div class="max-w-7xl mx-auto px-6 py-16 space-y-8">
         <div>
           <h2 class="text-3xl font-normal mb-0">
             {{ $t('La mission {site}', { site: config.public.title }) }}
@@ -340,7 +340,7 @@
       </div>
     </section>
     <section v-if="lastPost">
-      <div class="max-w-7xl mx-auto px-4 py-16 space-y-8">
+      <div class="max-w-7xl mx-auto px-6 py-16 space-y-8">
         <h2 class="text-base uppercase font-bold text-gray-low mb-6">
           {{ $t('L\'actualité {name}', { name: config.public.title }) }}
         </h2>
