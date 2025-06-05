@@ -1,9 +1,6 @@
 <template>
-  <div class="fr-p-3w bg-white">
-    <SimpleBanner
-      type="primary"
-      class="mb-6"
-    >
+  <div class="fr-p-3w bg-white space-y-6">
+    <SimpleBanner type="primary">
       <div class="fr-grid-row">
         <div class="fr-col-auto fr-mr-3v">
           <NuxtImg
@@ -22,7 +19,7 @@
         </div>
       </div>
     </SimpleBanner>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       <ReuseCard
         :reuse
         class="xl:col-start-2"
