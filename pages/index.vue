@@ -36,7 +36,7 @@
             {{ $t('Utilisez, partagez et améliorez les données publiques') }}
           </p>
         </div>
-        <div class="w-full flex flex-col sm:flex-row items-center gap-2.5">
+        <div class="w-full flex flex-col justify-center sm:flex-row items-center gap-2.5">
           <BrandedButton
             href="/datasets"
             class="w-full sm:w-auto"
