@@ -1,5 +1,5 @@
 <template>
-  <div class="border border-gray-default relative fr-enlarge-link">
+  <div class="border border-gray-default bg-white relative fr-enlarge-link">
     <div class="h-[4.5rem] pt-4 px-4 bg-blue-lighter" />
     <div class="px-4 pb-4 pt-5 mt-2">
       <div class="inline-flex border border-gray-default p-1.5 absolute top-4 left-4 bg-white">

@@ -1,6 +1,6 @@
 <template>
   <div class="relative">
-    <div :class="{ 'opacity-50': loading }">
+    <div :class="{ 'opacity-50 min-h-64': loading }">
       <slot />
     </div>
     <div

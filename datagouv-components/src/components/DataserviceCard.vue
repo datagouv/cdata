@@ -1,6 +1,6 @@
 <template>
   <article
-    class="my-4 p-4 border border-gray-default fr-enlarge-link"
+    class="my-4 p-4 bg-white border border-gray-default fr-enlarge-link"
     :class="{
       'border-tabular-api': isTabularApi,
       'mt-6': showBadge,

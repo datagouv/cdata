@@ -141,6 +141,59 @@
           </template>
         </SupportCard>
       </div>
+      <div>
+        <h2 class="mb-3">
+          Embedded cards
+        </h2>
+
+        <div class="not-prose space-y-4">
+          <EmbedsDatasetCard slug="municipales-2020-resultats-2nd-tour" />
+          <EmbedsDatasetCard slug="elections-municipales-2020-liste-des-candidats-elus-au-t1-et-liste-des-communes-entierement-pourvues" />
+        </div>
+
+        <div class="not-prose space-y-4">
+          <EmbedsDataserviceCard slug="6659caeba08e0235a5f9cdcf" />
+          <EmbedsDataserviceCard slug="67163c3fe5dd136891772a1e" />
+        </div>
+
+        <div class="my-4 not-prose grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <EmbedsReuseCard
+            class="flex-1"
+            slug="5e5e9da68b4c4124032dd8d0"
+          />
+          <EmbedsReuseCard
+            class="flex-1"
+            slug="5e6119c26f44414855933838"
+          />
+          <EmbedsReuseCard
+            class="flex-1"
+            slug="590184d188ee3868583cacbf"
+          />
+        </div>
+        <div class="my-4 not-prose grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <EmbedsOrganizationCard
+            class="flex-1"
+            slug="616457b78bab54483d09da7a"
+          />
+          <EmbedsOrganizationCard
+            class="flex-1"
+            slug="57835da788ee3878b367b0c8"
+          />
+          <EmbedsOrganizationCard
+            class="flex-1"
+            slug="534fff81a3a7292c64a77e5c"
+          />
+        </div>
+      </div>
+      <div>
+        <h2 class="mb-3">
+          Oembeds
+        </h2>
+        <div data-udata-dataservice="my-amazing-api" />
+        <div data-udata-dataset="base-adresse-nationale" />
+        <div data-udata-reuse="5fbf724d677c5e31fdedea88" />
+        <div data-udata-organization="616457b78bab54483d09da7a" />
+      </div>
     </div>
     <div class="space-y-8 py-8 pb-64">
       <h2 class="!mb-3">
@@ -153,6 +206,7 @@
 </template>
 
 <script setup lang="ts">
+import { EmbedsDatasetCard, EmbedsReuseCard } from '#components'
 import { BrandedButton, DatasetCard, DatasetQuality, ReadMore, ResourceAccordion, SimpleBanner, type DatasetV2 } from '@datagouv/components-next'
 import { RiArrowRightLine } from '@remixicon/vue'
 import DatasetSearchPage from '~/components/Datasets/SearchPage.vue'
@@ -164,6 +218,18 @@ import BannerSticky from '~/design-system/BannerSticky.vue'
 import DSBrandedButton from '~/design-system/BrandedButton.vue'
 import OrganizationNameWithCertificate from '~/design-system/OrganizationNameWithCertificate.vue'
 import SearchInput from '~/design-system/SearchInput.vue'
+
+const config = useRuntimeConfig()
+
+useHead({
+  script: [
+    {
+      'data-udata': config.public.frontBase,
+      'src': '/oembed.js',
+      'body': true,
+    },
+  ],
+})
 
 const { data: dataset } = await useAPI<DatasetV2>('/api/2/datasets/repertoire-national-des-elus-1/')
 </script>
