@@ -6,10 +6,21 @@ Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introdu
 
 Make sure to install datagouv-components and cdata dependencies:
 
+There is two installations paths, one is working on some machine and one on another, we recommand to try both for the time being. But we would like to fix these problems.
+
 ```bash
-# npm
-cd ./datagouv-components
 npm install
+cd ./datagouv-components
+npm run i18n
+```
+
+If this first option is not working on your local environment, try the second one (maybe delete and re-clone the repository to be sure)
+
+```bash
+cd ./datagouv-components
+npm install 
+npm run i18n
+
 cd ..
 npm install
 ```

@@ -231,7 +231,7 @@
 </template>
 
 <script setup lang="ts">
-import { summarize, DatasetQualityScore, DatasetQualityTooltipContent, BrandedButton, AvatarWithName } from '@datagouv/components-next'
+import { summarize, DatasetQualityScore, DatasetQualityTooltipContent, BrandedButton, AvatarWithName, useFormatDate } from '@datagouv/components-next'
 import type { Dataset, DatasetV2 } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
@@ -257,6 +257,7 @@ const props = withDefaults(defineProps<{
 })
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 function updateSort(column: DatasetSortedBy, direction: SortDirection) {
   emit('sort', column, direction)

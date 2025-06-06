@@ -460,7 +460,7 @@ const router = useRouter()
 const searchInputId = useId()
 
 const menu = [
-  { label: t('Data'), link: '/datasets/', external: true },
+  { label: t('Data'), link: '/datasets/' },
   { label: t('API'), link: '/dataservices/' },
   { label: t('Reuses'), link: '/reuses/' },
   { label: t('Organizations'), link: '/organizations/' },
@@ -490,6 +490,6 @@ function getAriaCurrent(link: string) {
     return 'page'
   }
   const routesInPath = router.getRoutes().map(route => route.path).filter(path => currentRoute.path.startsWith(path))
-  return routesInPath.includes(localePath(link))
+  return routesInPath.includes(link)
 }
 </script>

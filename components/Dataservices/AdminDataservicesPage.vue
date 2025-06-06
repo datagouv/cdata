@@ -22,13 +22,22 @@
           {{ t('{n} dataservices', pageData.total) }}
         </h2>
       </div>
-      <div class="flex-none">
+      <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
         <AdminInput
           v-model="q"
           type="search"
           :icon="RiSearchLine"
           :placeholder="$t('Search')"
         />
+        <BrandedButton
+          v-if="organization"
+          :href="pageData.total ? `${config.public.apiBase}/api/1/organizations/${organization.id}/dataservices.csv` : undefined"
+          size="xs"
+          :external="true"
+          :icon="RiDownloadLine"
+        >
+          {{ t('Download catalog') }}
+        </BrandedButton>
       </div>
     </div>
 
@@ -85,7 +94,7 @@ import { Pagination, type Dataservice, type Organization, type User } from '@dat
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RiSearchLine } from '@remixicon/vue'
+import { RiDownloadLine, RiSearchLine } from '@remixicon/vue'
 import AdminInput from '../AdminInput.vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
@@ -96,6 +105,7 @@ import type { Activity } from '~/types/activity'
 const { t } = useI18n()
 const { $api } = useNuxtApp()
 
+const config = useRuntimeConfig()
 const page = ref(1)
 const pageSize = ref(20)
 const sortedBy = ref<DataserviceSortedBy>('title')

@@ -299,10 +299,10 @@ openDataLinks.push({ label: t('Portal for European data'), link: 'https://data.e
 
 const platformLinks: Array<Link> = [
   { label: t('Guides'), link: config.public.guidesUrl, external: true },
-  { label: t('Roadmap and news'), link: '/pages/roadmap', external: true },
+  { label: t('Roadmap and news'), link: '/pages/roadmap' },
   { label: t('Contact us'), link: '/support' },
   { label: t('Give us your feedback'), link: config.public.feedbackFormUrl, external: true },
-  { label: t('Statistics'), link: '/dashboard', external: true },
+  { label: t('Statistics'), link: '/dashboard' },
 ]
 
 const resourcesLinks: Array<Link> = [
@@ -316,7 +316,7 @@ const resourcesLinks: Array<Link> = [
 const footerLinks: Array<Link> = [
   { label: t('Licenses'), link: '/pages/legal/licences' },
   { label: t('Terms of use'), link: '/pages/legal/cgu' },
-  { label: t('Tracking and privacy'), link: '/suivi', external: true },
+  { label: t('Tracking and privacy'), link: '/pages/suivi' },
   { label: t('Legal notice'), link: '/pages/legal/legal-notice' },
   { label: t('Accessibility: partially compliant'), link: '/pages/legal/accessibility' },
 ]

@@ -112,7 +112,7 @@
 </template>
 
 <script setup lang="ts">
-import { AvatarWithName, BrandedButton, type Dataservice } from '@datagouv/components-next'
+import { AvatarWithName, BrandedButton, useFormatDate, type Dataservice } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
@@ -137,6 +137,7 @@ defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 function sorted(column: DataserviceSortedBy) {
   if (props.sortedBy === column) {
@@ -150,6 +151,12 @@ function getStatus(dataservice: Dataservice): { label: string, type: AdminBadgeT
     return {
       label: t('Deleted'),
       type: 'danger',
+    }
+  }
+  else if (dataservice.archived_at) {
+    return {
+      label: t('Archived'),
+      type: 'warning',
     }
   }
   else if (dataservice.private) {

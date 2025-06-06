@@ -27,6 +27,8 @@ export function getActivityTranslation(activity: Activity) {
     'reuse:discussed': t('Discussion sur la réutilisation'),
     'reuse:followed': t('Nouveau favori sur la réutilisation'),
     'user:followed': t(`Nouveau favori sur l'utilisateur`),
+    'topic:created': t('Création de la thématique'),
+    'topic:updated': t('Mise à jour de la thématique'),
   }[activity.key] ?? activity.label
 }
 

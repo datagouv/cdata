@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar } from '@datagouv/components-next'
+import { Avatar, useFormatDate } from '@datagouv/components-next'
 import type { Comment, DiscussionSubjectTypes } from '~/types/discussions'
 import { isProducerOfSubject } from '~/utils/discussions'
 
@@ -57,6 +57,8 @@ const props = defineProps<{
   comment: Comment
   subject?: DiscussionSubjectTypes
 }>()
+
+const { formatDate } = useFormatDate()
 
 const isProducer = computed(() => props.subject && isProducerOfSubject(props.subject, props.comment))
 </script>

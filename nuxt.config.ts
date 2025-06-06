@@ -56,6 +56,8 @@ export default defineNuxtConfig({
       staticUrl: 'https://static.data.gouv.fr/static/',
       devApiKey: undefined,
 
+      metricsApi: 'https://metric-api.data.gouv.fr',
+
       qualityDescriptionLength: 100,
       searchAutocompleteDebounce: 200,
       searchSirenUrl: 'https://recherche-entreprises.api.gouv.fr/search',
@@ -156,6 +158,10 @@ export default defineNuxtConfig({
     inlineStyles: false,
   },
   compatibilityDate: '2024-04-03',
+
+  nitro: {
+    compressPublicAssets: true,
+  },
 
   vite: {
     assetsInclude: ['**/*.md'],

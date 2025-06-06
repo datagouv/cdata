@@ -283,7 +283,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BannerAction, getUserAvatar, type Member, type Organization } from '@datagouv/components-next'
+import { Avatar, BannerAction, getUserAvatar, useFormatDate, type Member, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RiAddLine, RiEyeLine, RiLogoutBoxRLine, RiPencilLine } from '@remixicon/vue'
@@ -300,6 +300,7 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const config = useRuntimeConfig()
 const { t } = useI18n()
+const { formatDate, formatFromNow } = useFormatDate()
 const { $api } = useNuxtApp()
 
 const me = useMe()

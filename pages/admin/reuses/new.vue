@@ -77,7 +77,6 @@ import type {
   DatasetSuggest,
   ReuseForm,
 } from '~/types/types'
-import { toApi } from '~/utils/reuses'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -155,7 +154,7 @@ async function save() {
     loading.value = true
     newReuse.value = await $api<Reuse>('/api/1/reuses/', {
       method: 'POST',
-      body: JSON.stringify(toApi(reuseForm.value, { private: true, datasets: datasets.value })),
+      body: JSON.stringify(reuseToApi(reuseForm.value, { private: true, datasets: datasets.value })),
     })
 
     if (reuseForm.value.image && typeof reuseForm.value.image !== 'string') {
@@ -194,7 +193,7 @@ async function updateReuse(asPrivate: boolean) {
     }
   }
 
-  await navigateTo(newReuse.value.page, { external: true })
+  await navigateTo(newReuse.value.page)
 }
 
 watchEffect(() => {

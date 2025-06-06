@@ -77,7 +77,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ContentLoader } from 'vue-content-loader'
-import { formatDate } from '../functions/dates'
+import { useFormatDate } from '../functions/dates'
 import { summarize } from '../functions/helpers'
 import SmallChart from './SmallChart.vue'
 
@@ -85,10 +85,11 @@ const props = defineProps<{
   title: string
   data: Record<string, number> | null
   type: 'line' | 'bar'
-  summary: number | null
+  summary?: number | null
 }>()
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 const months = computed(() => props.data ? Object.keys(props.data) : [])
 const values = computed(() => props.data ? Object.values(props.data) : [])
@@ -97,4 +98,10 @@ const lastMonthIndex = computed(() => lastMonth.value ? months.value.indexOf(las
 const lastValue = computed(() => lastMonthIndex.value !== null ? values.value[lastMonthIndex.value] : null)
 
 const changesThisYear = computed(() => Math.max(...values.value) > 0)
+const summary = computed(() => {
+  if (props.summary !== undefined) return props.summary
+  if (!props.data) return null
+
+  return Object.values(props.data).reduce((a, b) => a + b, 0)
+})
 </script>

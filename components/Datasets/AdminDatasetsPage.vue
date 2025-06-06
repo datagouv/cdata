@@ -34,10 +34,12 @@
         <SearchableSelect
           v-model="datasetsStatus"
           :placeholder="$t('Filter by status')"
+          :label="$t('Filter by status')"
           :options="statusOption"
           :display-value="(option) => option.label"
           :multiple="false"
           class="mb-0"
+          hide-label
         />
         <AdminInput
           v-model="q"

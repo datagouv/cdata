@@ -141,7 +141,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, BrandedButton } from '@datagouv/components-next'
+import { Pagination, BrandedButton, useFormatDate } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -154,6 +154,7 @@ import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import type { Post } from '~/types/posts'
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 const page = ref(1)
 const pageSize = ref(20)

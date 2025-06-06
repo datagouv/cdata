@@ -77,7 +77,7 @@ import { RiLockLine, RiSubtractLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
-import { formatRelativeIfRecentDate } from '../functions/dates'
+import { useFormatDate } from '../functions/dates'
 import { getOwnerName } from '../functions/owned'
 import type { Reuse } from '../types/reuses'
 import AppLink from './AppLink.vue'
@@ -101,6 +101,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const { formatRelativeIfRecentDate } = useFormatDate()
 
 const ownerName = computed(() => getOwnerName(props.reuse))
 </script>

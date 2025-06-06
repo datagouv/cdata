@@ -225,7 +225,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, CopyButton, StatBox, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
+import { BrandedButton, CopyButton, StatBox, useFormatDate, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
 import { RiBook2Line, RiCheckboxCircleLine, RiDownloadLine, RiServerLine } from '@remixicon/vue'
 import LeafletMapClient from '~/components/LeafletMap.client.vue'
 import ExtraAccordion from '~/datagouv-components/src/components/ExtraAccordion.vue'
@@ -236,6 +236,7 @@ const props = defineProps<{ dataset: DatasetV2WithFullObject }>()
 useSeoMeta({ robots: 'noindex' })
 
 const config = useRuntimeConfig()
+const { formatDate } = useFormatDate()
 
 const { data: schemas } = await useAPI<Array<Schema>>(`/api/2/datasets/${props.dataset.id}/schemas/`)
 
@@ -247,7 +248,7 @@ const datasetDownloadsResourcesTotal = ref(0)
 
 watchEffect(async () => {
   // Fetching last 12 months
-  const response = await fetch(`https://metric-api.data.gouv.fr/api/datasets/data/?dataset_id__exact=${props.dataset.id}&metric_month__sort=desc&page_size=12`)
+  const response = await fetch(`${config.public.metricsApi}/api/datasets/data/?dataset_id__exact=${props.dataset.id}&metric_month__sort=desc&page_size=12`)
   const page = await response.json()
 
   for (const { metric_month, monthly_visit, monthly_download_resource } of page.data) {
@@ -256,7 +257,7 @@ watchEffect(async () => {
   }
   // Fetching totals
   if (page.data[0]) {
-    const totalResponse = await fetch(`https://metric-api.data.gouv.fr/api/datasets_total/data/?dataset_id__exact=${props.dataset.id}`)
+    const totalResponse = await fetch(`${config.public.metricsApi}/api/datasets_total/data/?dataset_id__exact=${props.dataset.id}`)
     const totalPage = await totalResponse.json()
 
     datasetVisitsTotal.value = totalPage.data[0].visit
