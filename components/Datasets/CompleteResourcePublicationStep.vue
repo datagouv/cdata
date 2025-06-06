@@ -1,9 +1,6 @@
 <template>
-  <div class="fr-p-3w bg-white">
-    <SimpleBanner
-      type="primary"
-      class="mb-6"
-    >
+  <div class="fr-p-3w bg-white space-y-6">
+    <SimpleBanner type="primary">
       <div class="fr-grid-row">
         <div class="fr-col-auto fr-mr-3v">
           <NuxtImg
@@ -29,7 +26,7 @@
       :extensions
     />
 
-    <div class="mt-6 flex justify-end">
+    <div class="flex justify-end">
       <BrandedButton
         color="primary"
         :href="getResourceExternalUrl(resource.dataset, resource)"
