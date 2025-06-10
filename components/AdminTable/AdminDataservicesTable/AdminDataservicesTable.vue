@@ -64,7 +64,21 @@
           <DataserviceAccessTypeBadge :dataservice />
         </td>
         <td>{{ formatDate(dataservice.created_at) }}</td>
-        <td>{{ formatDate(dataservice.metadata_modified_at) }}</td>
+        <td>
+          <div v-if="dataservice.id in activities">
+            <p>{{ formatDate(activities[dataservice.id].created_at) }}</p>
+            <p class="inline-flex items-center">
+              {{ t('by ') }}
+              <AvatarWithName
+                class="fr-ml-1v"
+                :user="activities[dataservice.id].actor"
+              />
+            </p>
+          </div>
+          <template v-else>
+            {{ formatDate(dataservice.metadata_modified_at) }}
+          </template>
+        </td>
         <td>{{ dataservice.rate_limiting }}</td>
         <td class="font-mono text-right">
           <span v-if="dataservice.availability">{{ dataservice.availability }}%</span>
@@ -98,7 +112,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, useFormatDate, type Dataservice } from '@datagouv/components-next'
+import { AvatarWithName, BrandedButton, useFormatDate, type Dataservice } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
@@ -106,13 +120,17 @@ import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import DataserviceAccessTypeBadge from './DataserviceAccessTypeBadge.vue'
+import type { Activity } from '~/types/activity'
 import type { AdminBadgeType, DataserviceSortedBy, SortDirection } from '~/types/types'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
+  activities?: Record<string, Activity>
   dataservices: Array<Dataservice>
   sortedBy: DataserviceSortedBy
   sortDirection: SortDirection
-}>()
+}>(), {
+  activities: () => ({}),
+})
 
 defineEmits<{
   (event: 'sort', column: DataserviceSortedBy, direction: SortDirection): void

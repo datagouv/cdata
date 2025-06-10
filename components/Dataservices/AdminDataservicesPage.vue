@@ -44,6 +44,7 @@
     <LoadingBlock :status>
       <div v-if="pageData && pageData.total > 0">
         <AdminDataservicesTable
+          :activities="dataserviceActivities"
           :dataservices="pageData ? pageData.data : []"
           :sort-direction="direction"
           :sorted-by
@@ -99,8 +100,10 @@ import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
 import AdminDataservicesTable from '~/components/AdminTable/AdminDataservicesTable/AdminDataservicesTable.vue'
 import type { DataserviceSortedBy, PaginatedArray, SortDirection } from '~/types/types'
+import type { Activity } from '~/types/activity'
 
 const { t } = useI18n()
+const { $api } = useNuxtApp()
 
 const config = useRuntimeConfig()
 const page = ref(1)
@@ -110,6 +113,7 @@ const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 const q = ref('')
 const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const dataserviceActivities = ref<Record<Dataservice['id'], Activity>>({})
 
 const props = defineProps<{
   organization?: Organization | null
@@ -134,4 +138,9 @@ const params = computed(() => {
 })
 
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Dataservice>>('/api/1/dataservices/', { lazy: true, query: params })
+
+watch(pageData, async (data) => {
+  const activities = await getActitiesForObjects($api, data.data)
+  dataserviceActivities.value = { ...dataserviceActivities.value, ...activities }
+})
 </script>
