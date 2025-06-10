@@ -32,8 +32,8 @@ const route = useRoute()
 const updateBreadcrumbs = () => {
   if (!root.value) return
   breadcrumbs.value = [...root.value.children].map((child) => {
-    const isBreadcrumbItem = (child as HTMLElement).dataset.breadcrumbItem
-    if (isBreadcrumbItem) {
+    const isBreadcrumbItem = 'breadcrumbItem' in (child as HTMLElement).dataset
+    if (!isBreadcrumbItem) {
       console.error('Child of `Breadcrumb` is not a `BreadcrumbItem`')
       return null
     }
