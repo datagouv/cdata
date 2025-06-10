@@ -66,7 +66,7 @@
       />
 
       <LoadingBlock :status>
-        <div v-if="pageData && pageData.total > 0">
+        <div v-if="pageData && pageData.total > 0" class="space-y-5">
           <div class="space-y-2.5">
             <DiscussionCard
               v-for="thread in pageData.data"

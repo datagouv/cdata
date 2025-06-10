@@ -45,7 +45,7 @@ app.vueApp.use(datagouv, {
   apiBase: runtimeConfig.public.apiBase,
   devApiKey: runtimeConfig.public.devApiKey,
   staticUrl: runtimeConfig.public.staticUrl,
-  tabularApiUrl: 'https://tabular-api.data.gouv.fr',
+  tabularApiUrl: runtimeConfig.public.tabularApiUrl,
   tabularApiAllowRemote: true,
   datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
   customUseFetch: useAPI as UseFetchFunction, // Why this `as` is required?
