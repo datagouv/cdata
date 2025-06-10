@@ -57,6 +57,7 @@ export default defineNuxtConfig({
       devApiKey: undefined,
 
       metricsApi: 'https://metric-api.data.gouv.fr',
+      tabularApiUrl: 'https://tabular-api.data.gouv.fr',
 
       qualityDescriptionLength: 100,
       searchAutocompleteDebounce: 200,
