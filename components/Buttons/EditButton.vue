@@ -1,6 +1,6 @@
 <template>
   <BrandedButton
-    color="danger"
+    color="warning"
     :href="link"
     :icon="RiEdit2Line"
     size="xs"
@@ -25,11 +25,12 @@ const link = computed(() => {
   switch (props.type) {
     case 'organizations':
       return `${base}profile`
+    case 'users':
+      return `${base}profile`
     case 'posts':
     case 'reuses':
     case 'dataservices':
     case 'datasets':
-    case 'users':
       return base
     default:
       return throwOnNever(props.type as never, t('No other type defined'))
