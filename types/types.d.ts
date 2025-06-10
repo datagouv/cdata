@@ -1,4 +1,4 @@
-import type { Dataset, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource } from '@datagouv/components-next'
+import type { Dataset, CommunityResource, Dataservice, DataserviceAccessAudienceCondition, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource } from '@datagouv/components-next'
 
 export type AxisAlignment = 'start' | 'center' | 'end'
 
@@ -197,6 +197,11 @@ export type DataserviceForm = {
   technical_documentation_url: string | null
   business_documentation_url: string | null
   access_type: 'open' | 'restricted' | 'open_with_account'
+  access_audience: {
+    local_authority_and_administration: DataserviceAccessAudienceCondition | null
+    company_and_association: DataserviceAccessAudienceCondition | null
+    private: DataserviceAccessAudienceCondition | null
+  }
   rate_limiting: string
   availability: string
   private: boolean
@@ -213,6 +218,11 @@ export type NewDataserviceForApi = {
   datasets?: Array<string>
   contact_points?: Array<string> | null
   access_type: 'open' | 'open_with_account' | 'restricted'
+  access_audience: {
+    local_authority_and_administration: DataserviceAccessAudienceCondition | null
+    company_and_association: DataserviceAccessAudienceCondition | null
+    private: DataserviceAccessAudienceCondition | null
+  }
   base_api_url: string | null
   authorization_request_url: string | null
   machine_documentation_url: string | null

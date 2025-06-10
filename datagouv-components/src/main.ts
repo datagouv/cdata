@@ -1,7 +1,7 @@
 import type { App, Plugin } from 'vue'
 import type { Badge, Badges } from './types/badges'
 import type { Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
-import type { NewDataservice, Dataservice } from './types/dataservices'
+import type { NewDataservice, Dataservice, DataserviceAccessAudienceCondition } from './types/dataservices'
 import type { Frequency, Frequencies } from './types/frequency'
 import type { Granularity, Granularities, SpatialZone } from './types/granularity'
 import type { Harvest } from './types/harvest'
@@ -66,6 +66,7 @@ export type {
   DatasetV2,
   DatasetV2WithFullObject,
   Dataservice,
+  DataserviceAccessAudienceCondition,
   NewDataservice,
   FileResourceFileType,
   Frequency,
