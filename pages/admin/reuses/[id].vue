@@ -1,11 +1,17 @@
 <template>
   <div>
-    <AdminBreadcrumb>
+    <AdminBreadcrumb v-if="reuse">
       <BreadcrumbItem
-        v-if="currentOrganization"
-        :to="`/admin/organizations/${currentOrganization.id}/reuses`"
+        v-if="reuse.owner"
+        :to="me.id === reuse.owner.id ? `/admin/me/reuses` : `/admin/users/${reuse.owner.id}/reuses`"
       >
-        {{ t('Reuses') }}
+        {{ t('Réutilisations') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem
+        v-else-if="reuse.organization"
+        :to="`/admin/organizations/${reuse.organization.id}/reuses`"
+      >
+        {{ t('Réutilisations') }}
       </BreadcrumbItem>
       <BreadcrumbItem v-if="reuse">
         {{ reuse.title }}
@@ -55,7 +61,7 @@ import TabLinks from '~/components/TabLinks.vue'
 
 const { t } = useI18n()
 
-const { currentOrganization } = useCurrentOwned()
+const me = useMe()
 const route = useRoute()
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
 const { data: reuse } = await useAPI<Reuse>(url, { lazy: true })

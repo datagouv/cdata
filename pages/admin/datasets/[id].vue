@@ -1,13 +1,19 @@
 <template>
   <div>
-    <AdminBreadcrumb>
+    <AdminBreadcrumb v-if="dataset">
       <BreadcrumbItem
-        v-if="currentOrganization"
-        :to="`/admin/organizations/${currentOrganization.id}/datasets`"
+        v-if="dataset.owner"
+        :to="me.id === dataset.owner.id ? `/admin/me/datasets` : `/admin/users/${dataset.owner.id}/datasets`"
       >
-        {{ t('Datasets') }}
+        {{ t('Jeux de données') }}
       </BreadcrumbItem>
-      <BreadcrumbItem v-if="dataset">
+      <BreadcrumbItem
+        v-else-if="dataset.organization"
+        :to="`/admin/organizations/${dataset.organization.id}/datasets`"
+      >
+        {{ t('Jeux de données') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem>
         {{ dataset.title }}
       </BreadcrumbItem>
     </AdminBreadcrumb>
@@ -104,8 +110,7 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 
 const { t } = useI18n()
-
-const { currentOrganization } = useCurrentOwned()
+const me = useMe()
 
 const route = useRoute()
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
