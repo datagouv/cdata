@@ -178,7 +178,7 @@ async function updateDataset(asPrivate: boolean) {
     }
   }
 
-  await navigateTo(newDataset.value.page)
+  await navigateTo(`/datasets/${newDataset.value.slug}`)
 }
 
 watchEffect(() => {

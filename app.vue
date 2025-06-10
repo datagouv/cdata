@@ -22,7 +22,7 @@ app.vueApp.use(datagouv, {
   apiBase: runtimeConfig.public.apiBase,
   devApiKey: runtimeConfig.public.devApiKey,
   staticUrl: runtimeConfig.public.staticUrl,
-  tabularApiUrl: 'https://tabular-api.data.gouv.fr',
+  tabularApiUrl: runtimeConfig.public.tabularApiUrl,
   tabularAllowRemote: true,
   pmtilesViewerBaseUrl: null,
   datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
