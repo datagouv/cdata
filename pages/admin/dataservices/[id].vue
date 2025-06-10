@@ -1,11 +1,17 @@
 <template>
   <div>
-    <AdminBreadcrumb>
+    <AdminBreadcrumb v-if="dataservice">
       <BreadcrumbItem
-        v-if="currentOrganization"
-        :to="`/admin/organizations/${currentOrganization.id}/dataservices`"
+        v-if="dataservice.owner"
+        :to="me.id === dataservice.owner.id ? `/admin/me/dataservices` : `/admin/users/${dataservice.owner.id}/dataservices`"
       >
-        {{ t('Dataservices') }}
+        {{ t('API') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem
+        v-else-if="dataservice.organization"
+        :to="`/admin/organizations/${dataservice.organization.id}/dataservices`"
+      >
+        {{ t('API') }}
       </BreadcrumbItem>
       <BreadcrumbItem v-if="dataservice">
         {{ dataservice.title }}
@@ -56,7 +62,7 @@ import TabLinks from '~/components/TabLinks.vue'
 const { t } = useI18n()
 
 const route = useRoute()
-const { currentOrganization } = useCurrentOwned()
+const me = useMe()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
 const { data: dataservice } = await useAPI<Dataservice>(url, { lazy: true })
 </script>
