@@ -8,47 +8,20 @@
       {{ title }}
     </h3>
     <div class="fr-grid-row fr-grid-row--middle">
-      <ContentLoader
+      <div
         v-if="summary === null"
-        :width="92"
-        :height="32"
-        :speed="2"
-        primary-color="#f3f3f3"
-        secondary-color="#ecebeb"
-      >
-        <rect
-          x="0"
-          y="0"
-          rx="3"
-          ry="3"
-          width="92"
-          height="32"
-        />
-      </ContentLoader>
+        class="animate-pulse-placeholder w-[92px] h-[32px] bg-gray-default rounded"
+      />
       <p
         v-else
         class="h1 line-height-1 fr-m-0"
       >
         {{ summarize(summary, 2) }}
       </p>
-      <ContentLoader
+      <div
         v-if="data === null"
-        :width="120"
-        :height="30"
-        :speed="2"
-        primary-color="#f3f3f3"
-        secondary-color="#ecebeb"
-        class="fr-ml-1w"
-      >
-        <rect
-          x="0"
-          y="0"
-          rx="3"
-          ry="3"
-          width="120"
-          height="30"
-        />
-      </ContentLoader>
+        class="animate-pulse-placeholder w-[120px] h-[30px] bg-gray-default rounded"
+      />
       <div
         v-else-if="changesThisYear"
         class="fr-ml-1w"
@@ -76,7 +49,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ContentLoader } from 'vue-content-loader'
 import { useFormatDate } from '../functions/dates'
 import { summarize } from '../functions/helpers'
 import SmallChart from './SmallChart.vue'
