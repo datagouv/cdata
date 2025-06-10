@@ -41,7 +41,6 @@ const updateBreadcrumbs = () => {
     return (child as HTMLElement).dataset.breadcrumbTo || null
   })
   breadcrumbs.value.push(route.fullPath)
-  console.log(breadcrumbs.value)
 }
 
 const observer = ref<MutationObserver | null>(null)
