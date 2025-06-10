@@ -32,15 +32,16 @@ const route = useRoute()
 const updateBreadcrumbs = () => {
   if (!root.value) return
   breadcrumbs.value = [...root.value.children].map((child) => {
-    const component = '__vueParentComponent' in child ? child.__vueParentComponent as { props?: { to?: string } } : null
-    if (!component || !component.props) {
-      console.error('Child of `Breadcrumb` is not a vue component')
+    const isBreadcrumbItem = (child as HTMLElement).dataset.breadcrumbItem
+    if (isBreadcrumbItem) {
+      console.error('Child of `Breadcrumb` is not a `BreadcrumbItem`')
       return null
     }
 
-    return component.props.to as string
+    return (child as HTMLElement).dataset.breadcrumbTo || null
   })
   breadcrumbs.value.push(route.fullPath)
+  console.log(breadcrumbs.value)
 }
 
 const observer = ref<MutationObserver | null>(null)

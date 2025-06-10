@@ -1,5 +1,8 @@
 <template>
-  <li>
+  <li
+    data-breadcrumb-item
+    :data-breadcrumb-to="to"
+  >
     <a
       v-if="isCurrent"
       class="fr-breadcrumb__link"
