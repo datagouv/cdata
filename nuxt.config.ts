@@ -52,6 +52,8 @@ export default defineNuxtConfig({
         defaultLocale: 'en', // NUXT_PUBLIC_I18N_DEFAULT_LOCALE
       },
 
+      commitId: undefined,
+
       apiBase: 'http://dev.local:7000',
       frontBase: 'http://dev.local:3000',
       staticUrl: 'https://static.data.gouv.fr/static/',

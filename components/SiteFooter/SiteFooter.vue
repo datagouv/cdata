@@ -188,11 +188,11 @@
                 </li>
                 <li>
                   <a
-                    href="https://github.com/datagouv/cdata/"
-                    :title="$t('data.gouv.fr extension: cdata')"
+                    :href="config.public.commitId ? `https://github.com/datagouv/cdata/commit/${config.public.commitId}` : 'https://github.com/datagouv/cdata/'"
+                    :title="config.public.commitId ? $t('Version {version}', { version: config.public.commitId }) : undefined"
                     class="fr-footer__top-link"
                   >
-                    {{ $t('data.gouv.fr front-end') }}
+                    {{ $t('Interface utilisateur de data.gouv.fr : cdata') }}
                   </a>
                 </li>
               </ul>
@@ -306,10 +306,10 @@ const platformLinks: Array<Link> = [
 ]
 
 const resourcesLinks: Array<Link> = [
-  { label: 'api.gouv.fr', link: 'https://api.gouv.fr' },
   { label: config.public.schemasSite.name, link: config.public.schemasSite.url },
   { label: 'meteo.data.gouv.fr', link: 'https://meteo.data.gouv.fr' },
   { label: 'transport.data.gouv.fr', link: 'https://transport.data.gouv.fr' },
+  { label: 'ecologie.data.gouv.fr', link: 'https://ecologie.data.gouv.fr' },
   { label: 'defis.data.gouv.fr', link: 'https://defis.data.gouv.fr' },
 ]
 
