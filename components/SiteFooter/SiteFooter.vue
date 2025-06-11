@@ -188,11 +188,11 @@
                 </li>
                 <li>
                   <a
-                    href="https://github.com/datagouv/cdata/"
-                    :title="$t('data.gouv.fr extension: cdata')"
+                    :href="config.public.commitId ? `https://github.com/datagouv/cdata/commit/${config.public.commitId}` : 'https://github.com/datagouv/cdata/'"
+                    :title="config.public.commitId ? $t('Version {version}', { version: config.public.commitId }) : undefined"
                     class="fr-footer__top-link"
                   >
-                    {{ $t('data.gouv.fr front-end') }}
+                    {{ $t('Interface utilisateur de data.gouv.fr : cdata') }}
                   </a>
                 </li>
               </ul>

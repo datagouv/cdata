@@ -5,8 +5,8 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "build": "nuxt build",
-    "dev": "nuxt dev",
+    "build": "NUXT_PUBLIC_COMMIT_ID=`git rev-parse --short HEAD` nuxt build",
+    "dev": "NUXT_PUBLIC_COMMIT_ID=`git rev-parse --short HEAD` nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
