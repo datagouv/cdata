@@ -219,7 +219,7 @@
                 >
                   {{ $t('Original format') }}
                 </dt>
-                <dd class="text-sm pl-0 mt-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
+                <dd class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
                   <span v-if="resource.format === 'url'">
                     <a
                       :href="resource.latest"
@@ -264,7 +264,7 @@
                   <dd
                     v-for="generatedFormat in generatedFormats"
                     :key="generatedFormat.format"
-                    class="text-sm pl-0 mt-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center"
+                    class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center"
                   >
                     <span>
                       <span class="text-datagouv fr-icon-download-line fr-icon--sm fr-mr-1v fr-mt-1v" />
