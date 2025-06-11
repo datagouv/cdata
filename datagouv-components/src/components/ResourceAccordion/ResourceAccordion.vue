@@ -140,6 +140,7 @@
             :dataset-id="dataset.id"
             :resource-id="resource.id"
             :is-community-resource="isCommunityResource"
+            size="xs"
           />
         </p>
         <div
