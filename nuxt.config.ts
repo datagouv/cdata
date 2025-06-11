@@ -14,7 +14,7 @@ export default defineNuxtConfig({
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
   ],
-  devtools: { enabled: true, componentInspector: false },
+  devtools: { enabled: false, componentInspector: false },
 
   app: {
     head: {
@@ -53,6 +53,7 @@ export default defineNuxtConfig({
       },
 
       apiBase: 'http://dev.local:7000',
+      frontBase: 'http://dev.local:3000',
       staticUrl: 'https://static.data.gouv.fr/static/',
       devApiKey: undefined,
 

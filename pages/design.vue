@@ -141,6 +141,59 @@
           </template>
         </SupportCard>
       </div>
+      <div>
+        <h2 class="mb-3">
+          Embedded cards
+        </h2>
+
+        <div class="not-prose space-y-4">
+          <EmbedsDatasetCard slug="municipales-2020-resultats-2nd-tour" />
+          <EmbedsDatasetCard slug="elections-municipales-2020-liste-des-candidats-elus-au-t1-et-liste-des-communes-entierement-pourvues" />
+        </div>
+
+        <div class="not-prose space-y-4">
+          <EmbedsDataserviceCard slug="api-tabulaire-data-gouv-fr-beta" />
+          <EmbedsDataserviceCard slug="api-sirene-open-data" />
+        </div>
+
+        <div class="my-4 not-prose grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <EmbedsReuseCard
+            class="flex-1"
+            slug="datafrance-plateforme-de-visualisation-open-data"
+          />
+          <EmbedsReuseCard
+            class="flex-1"
+            slug="lannuaire-des-entreprises"
+          />
+          <EmbedsReuseCard
+            class="flex-1"
+            slug="geozones"
+          />
+        </div>
+        <div class="my-4 not-prose grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <EmbedsOrganizationCard
+            class="flex-1"
+            slug="sante-publique-france"
+          />
+          <EmbedsOrganizationCard
+            class="flex-1"
+            slug="cnil"
+          />
+          <EmbedsOrganizationCard
+            class="flex-1"
+            slug="sncf"
+          />
+        </div>
+      </div>
+      <div>
+        <h2 class="mb-3">
+          Oembeds
+        </h2>
+        <div data-udata-dataservice="api-sirene-open-data" />
+        <div data-udata-dataset="base-adresse-nationale" />
+        <div data-udata-reuse="geozones" />
+        <div data-udata-organization="sante-publique-france" />
+      </div>
     </div>
     <div class="space-y-8 py-8 pb-64">
       <h2 class="!mb-3">
@@ -164,6 +217,18 @@ import BannerSticky from '~/design-system/BannerSticky.vue'
 import DSBrandedButton from '~/design-system/BrandedButton.vue'
 import OrganizationNameWithCertificate from '~/design-system/OrganizationNameWithCertificate.vue'
 import SearchInput from '~/design-system/SearchInput.vue'
+
+const config = useRuntimeConfig()
+
+useHead({
+  script: [
+    {
+      'data-udata': config.public.frontBase,
+      'src': '/oembed.js',
+      'body': true,
+    },
+  ],
+})
 
 const { data: dataset } = await useAPI<DatasetV2>('/api/2/datasets/repertoire-national-des-elus-1/')
 </script>
