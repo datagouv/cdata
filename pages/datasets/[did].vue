@@ -98,7 +98,7 @@
                 />
               </ReadMore>
             </div>
-            <dl class="pl-0 w-full shrink-0 md:w-[384px] space-y-3">
+            <dl class="pl-0 w-full shrink-0 md:w-[384px] space-y-4">
               <div class="space-y-1">
                 <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
                   {{ $t('Producer') }}
