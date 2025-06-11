@@ -78,8 +78,15 @@
               {{ $t('Archived') }}
             </AdminBadge>
           </div>
-          <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
+          <h1 class="text-2xl text-gray-title font-extrabold mb-6">
             {{ dataset.title }}
+
+            <span
+              v-if="dataset.acronym"
+              class="text-xs text-gray-title font-bold"
+            >
+              {{ dataset.acronym }}
+            </span>
           </h1>
           <div class="flex flex-col md:space-x-10 md:flex-row">
             <div class="flex-1 overflow-x-hidden">
