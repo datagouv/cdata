@@ -1,19 +1,18 @@
 <template>
   <div>
-    <div
+    <SimpleBanner
       v-if="hasError"
-      class="bg-warning-lightest text-warning-dark p-3 mt-8 mx-8 mb-3"
+      type="warning"
+      class="flex items-center space-x-2"
     >
-      <p class="fr-grid-row fr-m-0">
-        <span
-          class="fr-icon-warning-line"
-          aria-hidden="true"
-        />
-        {{ t("The preview of this file failed to load.") }}
-      </p>
-    </div>
+      <RiErrorWarningLine class="shink-0 size-6" />
+      <span>{{ t("The preview of this file failed to load.") }}</span>
+    </SimpleBanner>
     <PreviewLoader v-else-if="loading" />
-    <template v-else>
+    <div
+      v-else
+      class="-mx-4"
+    >
       <div class="bg-blue-100 text-datagouv fr-hidden fr-unhidden-md p-4">
         <div class="fr-grid-row fr-grid-row--middle fr-grid-row--gutters">
           <div
@@ -39,9 +38,9 @@
           </p>
         </div>
       </div>
-      <div class="fr-table fr-table--no-background fr-p-0 fr-pt-0-5v fr-m-0">
+      <div class="fr-table fr-table--no-background fr-p-0 fr-m-0">
         <table class="fr-mb-3w">
-          <caption class="fr-sr-only">
+          <caption class="sr-only">
             {{ t('Preview of {name}', { name: resource.title }) }}
           </caption>
           <thead>
@@ -98,20 +97,21 @@
         {{ t('{count} columns', columns.length) }} —
         {{ t('{count} rows', rowCount) }}
       </div>
-    </template>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RiArrowDownLine, RiArrowUpLine, RiExternalLinkFill } from '@remixicon/vue'
+import { RiArrowDownLine, RiArrowUpLine, RiErrorWarningLine, RiExternalLinkFill } from '@remixicon/vue'
 import Pagination from '../Pagination.vue'
 import { getData, type SortConfig } from '../../functions/tabularApi'
 import { useFormatDate } from '../../functions/dates'
 import type { Resource } from '../../types/resources'
 import { useComponentsConfig } from '../../config'
 import BrandedButton from '../BrandedButton.vue'
+import SimpleBanner from '../SimpleBanner.vue'
 import franceSvg from './france.svg?raw'
 import PreviewLoader from './PreviewLoader.vue'
 
@@ -127,7 +127,7 @@ const hasError = ref(false)
 const sortConfig = ref<SortConfig>(null)
 const rowCount = ref(0)
 const config = useComponentsConfig()
-const pageSize = computed(() => config.tabularApiPageSize || 20)
+const pageSize = computed(() => config.tabularApiPageSize || 15)
 const currentPage = ref(1)
 
 /**

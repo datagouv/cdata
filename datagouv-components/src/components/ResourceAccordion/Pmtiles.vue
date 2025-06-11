@@ -1,21 +1,21 @@
 <template>
   <div>
-    <div
+    <SimpleBanner
       v-if="hasError"
-      class="bg-warning-lightest text-warning-dark p-3 mt-8 mx-8 mb-3"
+      type="warning"
+      class="flex items-center space-x-2"
     >
-      <p class="fr-grid-row fr-m-0">
-        <span
-          class="fr-icon-warning-line"
-          aria-hidden="true"
-        />
-        {{ t("L'aperçu cartographique de ce fichier n'a pas pu être chargé.") }}
-      </p>
-    </div>
-    <template v-else>
+      <RiErrorWarningLine class="shink-0 size-6" />
+      <span>{{ t("L'aperçu cartographique de ce fichier n'a pas pu être chargé.") }}</span>
+    </SimpleBanner>
+    <div
+      v-else
+      class="-mx-4"
+    >
       <div
         v-if="pmtilesViewerUrl"
-        class="bg-blue-100 text-datagouv fr-hidden fr-unhidden-md p-4">
+        class="bg-blue-100 text-datagouv fr-hidden fr-unhidden-md p-4"
+      >
         <div class="fr-grid-row fr-grid-row--middle fr-grid-row--gutters">
           <div
             class="fr-col-auto"
@@ -40,18 +40,21 @@
           </p>
         </div>
       </div>
-      <div style="height: 600px;" ref="containerRef" />
+      <div
+        ref="containerRef"
+        style="height: 600px;"
+      />
       <div class="fr-px-5v fr-pt-5v">
         {{ t("Aperçu de la carte mis à jour le {date}", { date: lastUpdate }) }}
       </div>
-    </template>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RiExternalLinkFill } from '@remixicon/vue'
+import { RiErrorWarningLine, RiExternalLinkFill } from '@remixicon/vue'
 import { Protocol, PMTiles } from 'pmtiles'
 import maplibregl from 'maplibre-gl'
 import DOMPurify from 'dompurify'
@@ -60,6 +63,7 @@ import { useFormatDate } from '../../functions/dates'
 import type { Resource } from '../../types/resources'
 import BrandedButton from '../BrandedButton.vue'
 import styleVector from '../../../assets/json/vector.json'
+import SimpleBanner from '../SimpleBanner.vue'
 import franceSvg from './france.svg?raw'
 
 const props = defineProps<{ resource: Resource }>()
