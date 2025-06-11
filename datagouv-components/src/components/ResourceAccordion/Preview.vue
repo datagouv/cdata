@@ -38,9 +38,9 @@
           </p>
         </div>
       </div>
-      <div class="fr-table fr-table--no-background fr-p-0 fr-pt-0-5v fr-m-0">
+      <div class="fr-table fr-table--no-background fr-p-0 fr-m-0">
         <table class="fr-mb-3w">
-          <caption class="fr-sr-only">
+          <caption class="sr-only">
             {{ t('Preview of {name}', { name: resource.title }) }}
           </caption>
           <thead>
@@ -127,7 +127,7 @@ const hasError = ref(false)
 const sortConfig = ref<SortConfig>(null)
 const rowCount = ref(0)
 const config = useComponentsConfig()
-const pageSize = computed(() => config.tabularApiPageSize || 20)
+const pageSize = computed(() => config.tabularApiPageSize || 15)
 const currentPage = ref(1)
 
 /**
