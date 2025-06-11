@@ -47,6 +47,8 @@
     "axios": "^1.8.2",
     "crisp-api": "^9.9.0",
     "dayjs": "^1.11.13",
+    "geopf-extensions-openlayers": "^1.0.0-beta.4",
+    "geoportal-access-lib": "^3.4.6",
     "gray-matter": "^4.0.3",
     "leaflet": "^1.9.4",
     "lodash": "^4.17.21",

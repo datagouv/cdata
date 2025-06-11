@@ -178,7 +178,14 @@
               <Preview :resource="resource" />
             </div>
             <div v-if="tab.key === 'map'">
-              <Pmtiles :resource="resource" />
+              <Pmtiles
+                v-if="hasPmtiles"
+                :resource="resource"
+              />
+              <MapContainer
+                v-if="ogcService"
+                :resource="resource"
+              />
             </div>
             <div
               v-if="tab.key === 'description'"
@@ -329,6 +336,7 @@ import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
 import Pmtiles from './Pmtiles.vue'
+import MapContainer from './MapContainer.vue'
 
 const OGC_SERVICES_FORMATS = ['ogc:wfs', 'ogc:wms', 'wfs', 'wms']
 const GENERATED_FORMATS = ['parquet', 'pmtiles']
@@ -397,7 +405,7 @@ const tabsOptions = computed(() => {
     options.push({ key: 'data', label: t('Data') })
   }
 
-  if (hasPmtiles.value) {
+  if (hasPmtiles.value || ogcService.value) {
     options.push({ key: 'map', label: t('Map') })
   }
 
