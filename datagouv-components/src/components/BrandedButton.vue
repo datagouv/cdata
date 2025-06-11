@@ -1,7 +1,7 @@
 <template>
   <component
     :is="href ? AppLink: 'button'"
-    class="inline-flex items-center rounded-full font-medium border !bg-none !no-underline after:content-none"
+    class="inline-flex items-center justify-center rounded-full font-medium border !bg-none !no-underline after:content-none"
     :class="[colors, sizes, removePaddingsIfNoBorders, isDisabled ? '!opacity-50' : '', iconRight && !newTab ? 'flex-row-reverse space-x-reverse' : '']"
     :disabled="isDisabled"
     :aria-disabled="isDisabled"
@@ -110,7 +110,7 @@ const isDisabled = computed(() => props.disabled || props.loading)
 const colors = computed(() => {
   return {
     'primary': `text-white bg-datagouv-dark !border-datagouv-dark ${!isDisabled.value ? 'hover:!bg-datagouv-hover hover:!border-datagouv-hover' : ''}`,
-    'primary-soft': `text-datagouv-dark bg-transparent !border-datagouv-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'primary-soft': `text-datagouv-dark bg-white !border-datagouv-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'primary-softer': `text-datagouv-dark bg-transparent !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'secondary': `text-gray-plain bg-white !border-gray-plain ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'secondary-softer': `text-gray-plain !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,

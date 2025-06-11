@@ -81,6 +81,15 @@ export default defineNuxtConfig({
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
 
+      homepagePublishDatasetOnboarding: '/pages/onboarding/producteurs',
+      homepagePublishReuseOnboarding: '/pages/onboarding/reutilisateurs',
+      homepageAboutUs: '/pages/about/a-propos_data-gouv',
+      homepageExplore: 'https://explore.data.gouv.fr',
+      homepageRightNow: {
+        title: 'Données relatives aux Énergies',
+        url: '/pages/donnees-energie',
+      },
+
       datasetPublishingGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
       datasetQualityGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/jeux-de-donnees/publier-un-jeu-de-donnees',
       dataSearchFeedbackFormUrl: 'https://tally.so/r/mDKv1N',
