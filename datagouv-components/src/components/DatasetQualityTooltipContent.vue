@@ -1,5 +1,5 @@
 <template>
-  <h5 class="fr-text--sm fr-my-0">
+  <h5 class="text-sm text-gray-plain font-bold">
     {{ t("Metadata quality:") }}
   </h5>
   <ul class="list-none pl-0">

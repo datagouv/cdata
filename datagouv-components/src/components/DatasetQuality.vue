@@ -1,14 +1,14 @@
 <template>
-  <div class="flex items-center text-gray-plain font-bold pb-0">
+  <div class="flex items-center">
     <Toggletip class="-ml-3">
       {{ $t('Metadata quality:') }}
       <template #toggletip>
         <DatasetQualityTooltipContent :quality />
       </template>
     </Toggletip>
-    <p class="fr-m-0 fr-mr-1v">
+    <div class="text-sm text-gray-plain font-bold">
       {{ $t('Metadata quality:') }}
-    </p>
+    </div>
   </div>
   <DatasetQualityScore
     :score="quality.score"

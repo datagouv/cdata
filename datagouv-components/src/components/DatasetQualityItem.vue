@@ -2,7 +2,7 @@
   <li>
     <p
       v-if="passed"
-      class="fr-my-0"
+      class="fr-my-0 text-sm"
     >
       <span
         class="fr-icon-check-line"

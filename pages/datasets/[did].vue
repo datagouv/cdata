@@ -85,7 +85,7 @@
             <div class="flex-1 overflow-x-hidden">
               <ReadMore class="">
                 <MarkdownViewer
-                  size="md"
+                  size="sm"
                   :content="dataset.description"
                   :min-heading="3"
                 />
@@ -93,7 +93,7 @@
             </div>
             <dl class="pl-0 w-full shrink-0 md:w-[384px] space-y-3">
               <div class="space-y-1">
-                <dt class="text-gray-plain font-bold mb-0 pb-0">
+                <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
                   {{ $t('Producer') }}
                 </dt>
                 <dd class="p-0 text-sm">
@@ -121,7 +121,7 @@
                 v-if="dataset.contact_points.length"
                 class="space-y-1"
               >
-                <dt class="text-gray-plain font-bold mb-0 pb-0">
+                <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
                   {{ $t('Contact') }}
                 </dt>
                 <dd class="p-0 text-sm">
@@ -137,7 +137,7 @@
                 v-if="dataset.license"
                 class="space-y-1"
               >
-                <dt class="text-gray-plain font-bold pb-0">
+                <dt class="text-sm text-gray-plain font-bold pb-0">
                   {{ $t('License') }}
                 </dt>
                 <dd class="p-0 text-sm">
@@ -146,7 +146,7 @@
               </div>
 
               <div class="space-y-1">
-                <dt class="text-gray-plain font-bold pb-0">
+                <dt class="text-sm text-gray-plain font-bold pb-0">
                   {{ $t('Last update') }}
                 </dt>
                 <dd class="p-0 text-sm">
