@@ -412,7 +412,10 @@
             >
               {{ getFirstWarning("access_type") }}
             </SimpleBanner>
-            <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 items-end">
+            <div
+              v-if="form.access_type === 'restricted'"
+              class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 items-end"
+            >
               <SelectGroup
                 v-model="form.access_audience.local_authority_and_administration"
                 class="mb-0"

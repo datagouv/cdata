@@ -151,11 +151,10 @@
 
               <div class="space-y-1">
                 <dt class="text-gray-plain font-bold">
-                  {{ $t('Access') }}
+                  {{ $t('Accès') }}
                 </dt>
                 <dd class="p-0">
                   <DataserviceAccessTypeBadge :dataservice />
-
                   <div
                     v-if="dataservice.authorization_request_url"
                     class="mt-2"
@@ -169,6 +168,26 @@
                       {{ $t("Faire une demande d'habilitation") }}
                     </a>
                   </div>
+                </dd>
+                <dt class="text-gray-plain font-bold">
+                  {{ $t('Publics éligibles') }}
+                </dt>
+                <dd
+                  v-if="dataservice.access_type === 'restricted'"
+                  class="p-0"
+                >
+                  <ul class="list-none p-0 space-y-1 m-0">
+                    <template
+                      v-for="audience in (['local_authority_and_administration', 'company_and_association', 'private'] as Array<keyof Dataservice['access_audience']>)"
+                      :key="audience"
+                    >
+                      <DataservicesAccessAudienceCondition
+                        v-if="dataservice.access_audience[audience]"
+                        :condition="dataservice.access_audience[audience]"
+                        :audience
+                      />
+                    </template>
+                  </ul>
                 </dd>
               </div>
             </dl>
@@ -242,7 +261,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, type DataserviceAccessAudienceCondition } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import DataserviceAccessTypeBadge from '~/components/AdminTable/AdminDataservicesTable/DataserviceAccessTypeBadge.vue'
@@ -251,6 +270,7 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
+import { DataservicesAccessAudienceCondition } from '#components'
 
 const route = useRoute()
 const { formatDate } = useFormatDate()
