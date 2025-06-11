@@ -53,6 +53,7 @@ export default defineNuxtConfig({
       },
 
       commitId: undefined,
+      banner: undefined,
 
       apiBase: 'http://dev.local:7000',
       frontBase: 'http://dev.local:3000',
