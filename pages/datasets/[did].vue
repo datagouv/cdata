@@ -90,6 +90,9 @@
           </h1>
           <div class="flex flex-col md:space-x-10 md:flex-row">
             <div class="flex-1 overflow-x-hidden">
+              <div class="text-sm text-gray-plain font-bold mb-1 pb-0">
+                {{ $t('Description') }}
+              </div>
               <ReadMore class="">
                 <MarkdownViewer
                   size="sm"
