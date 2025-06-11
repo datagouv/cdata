@@ -10,7 +10,7 @@ export type SortConfig = {
  * Call Tabular-api to get table content
  */
 export function getData(config: PluginConfig, id: string, page: number, sortConfig?: SortConfig) {
-  let url = `${config.tabularApiUrl}/api/resources/${id}/data/?page=${page}&page_size=${config.tabularApiPageSize || 20}`
+  let url = `${config.tabularApiUrl}/api/resources/${id}/data/?page=${page}&page_size=${config.tabularApiPageSize || 15}`
   if (sortConfig) {
     url = url + `&${sortConfig.column}__sort=${sortConfig.type}`
   }
