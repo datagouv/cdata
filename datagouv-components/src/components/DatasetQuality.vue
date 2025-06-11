@@ -1,6 +1,9 @@
 <template>
   <div class="flex items-center">
-    <Toggletip class="-ml-3">
+    <Toggletip
+      class="-ml-3 mt-px"
+      size="2xs"
+    >
       {{ $t('Metadata quality:') }}
       <template #toggletip>
         <DatasetQualityTooltipContent :quality />
