@@ -12,7 +12,7 @@
     </p>
     <p
       v-else
-      class="my-0 text-gray-medium"
+      class="my-0 text-gray-medium text-sm"
     >
       <span
         class="fr-icon-warning-line"
