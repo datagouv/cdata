@@ -13,11 +13,11 @@
 </template>
 
 <script setup lang="ts">
-import type { Dataservice, DataserviceAccessAudienceCondition } from '@datagouv/components-next'
+import type { DataserviceAccessAudienceCondition, DataserviceAccessAudienceType } from '@datagouv/components-next'
 import { RiCheckDoubleLine, RiCheckLine, RiCloseLine } from '@remixicon/vue'
 
 const props = defineProps<{
-  audience: keyof Dataservice['access_audience']
+  audience: DataserviceAccessAudienceType
   condition: DataserviceAccessAudienceCondition
 }>()
 

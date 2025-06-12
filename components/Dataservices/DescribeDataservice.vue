@@ -417,7 +417,7 @@
               class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 items-end"
             >
               <SelectGroup
-                v-model="form.access_audience.local_authority_and_administration"
+                v-model="form.access_audiences.local_authority_and_administration"
                 class="mb-0"
                 :label="$t('Service public')"
                 :options="[
@@ -427,7 +427,7 @@
                 ]"
               />
               <SelectGroup
-                v-model="form.access_audience.company_and_association"
+                v-model="form.access_audiences.company_and_association"
                 class="mb-0"
                 :label="$t('Entreprise et associations')"
                 :options="[
@@ -437,7 +437,7 @@
                 ]"
               />
               <SelectGroup
-                v-model="form.access_audience.private"
+                v-model="form.access_audiences.private"
                 :label="$t('Particulier')"
                 :options="[
                   { label: $t('Oui'), value: 'yes' },

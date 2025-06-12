@@ -31,6 +31,10 @@ export type NewDataservice = Omit<BaseDataservice, keyof OwnedWithId> & OwnedWit
 
 export type DataserviceAccessAudienceCondition = 'yes' | 'no' | 'under_condition'
 
+export type DataserviceAccessAudienceType = 'local_authority_and_administration' | 'company_and_association' | 'private'
+
+export type DataserviceAccessAudience = { role: DataserviceAccessAudienceType, condition: DataserviceAccessAudienceType }
+
 export type Dataservice = Owned & {
   acronym: string
   archived_at: string | null
@@ -57,11 +61,7 @@ export type Dataservice = Owned & {
   harvest: Harvest
   id: string
   access_type: 'open' | 'restricted' | 'open_with_account'
-  access_audience: {
-    local_authority_and_administration: DataserviceAccessAudienceCondition | null
-    company_and_association: DataserviceAccessAudienceCondition | null
-    private: DataserviceAccessAudienceCondition | null
-  }
+  access_audiences: Array<DataserviceAccessAudience>
   license: string | null
   metadata_modified_at: string
   metrics: { discussions: number, followers: number, reuses: number, views: number }

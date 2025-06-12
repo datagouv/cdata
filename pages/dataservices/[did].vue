@@ -178,12 +178,12 @@
                 >
                   <ul class="list-none p-0 space-y-1 m-0">
                     <template
-                      v-for="audience in (['local_authority_and_administration', 'company_and_association', 'private'] as Array<keyof Dataservice['access_audience']>)"
+                      v-for="audience in (['local_authority_and_administration', 'company_and_association', 'private'] as Array<DataserviceAccessAudienceType>)"
                       :key="audience"
                     >
                       <DataservicesAccessAudienceCondition
-                        v-if="dataservice.access_audience[audience]"
-                        :condition="dataservice.access_audience[audience]"
+                        v-if="dataservice.access_audiences[audience]"
+                        :condition="dataservice.access_audiences[audience]"
                         :audience
                       />
                     </template>
@@ -261,7 +261,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, type DataserviceAccessAudienceCondition } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, type DataserviceAccessAudienceCondition, type DataserviceAccessAudienceType } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import DataserviceAccessTypeBadge from '~/components/AdminTable/AdminDataservicesTable/DataserviceAccessTypeBadge.vue'
