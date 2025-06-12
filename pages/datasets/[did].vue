@@ -78,22 +78,32 @@
               {{ $t('Archived') }}
             </AdminBadge>
           </div>
-          <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
+          <h1 class="text-2xl text-gray-title font-extrabold mb-6">
             {{ dataset.title }}
+
+            <span
+              v-if="dataset.acronym"
+              class="text-xs text-gray-title font-bold"
+            >
+              {{ dataset.acronym }}
+            </span>
           </h1>
           <div class="flex flex-col md:space-x-10 md:flex-row">
             <div class="flex-1 overflow-x-hidden">
+              <div class="text-sm text-gray-plain font-bold mb-1 pb-0">
+                {{ $t('Description') }}
+              </div>
               <ReadMore class="">
                 <MarkdownViewer
-                  size="md"
+                  size="sm"
                   :content="dataset.description"
                   :min-heading="3"
                 />
               </ReadMore>
             </div>
-            <dl class="pl-0 w-full shrink-0 md:w-[384px] space-y-3">
+            <dl class="pl-0 w-full shrink-0 md:w-[384px] space-y-4">
               <div class="space-y-1">
-                <dt class="text-gray-plain font-bold mb-0 pb-0">
+                <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
                   {{ $t('Producer') }}
                 </dt>
                 <dd class="p-0 text-sm">
@@ -121,7 +131,7 @@
                 v-if="dataset.contact_points.length"
                 class="space-y-1"
               >
-                <dt class="text-gray-plain font-bold mb-0 pb-0">
+                <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
                   {{ $t('Contact') }}
                 </dt>
                 <dd class="p-0 text-sm">
@@ -137,7 +147,7 @@
                 v-if="dataset.license"
                 class="space-y-1"
               >
-                <dt class="text-gray-plain font-bold pb-0">
+                <dt class="text-sm text-gray-plain font-bold pb-0">
                   {{ $t('License') }}
                 </dt>
                 <dd class="p-0 text-sm">
@@ -146,7 +156,7 @@
               </div>
 
               <div class="space-y-1">
-                <dt class="text-gray-plain font-bold pb-0">
+                <dt class="text-sm text-gray-plain font-bold pb-0">
                   {{ $t('Last update') }}
                 </dt>
                 <dd class="p-0 text-sm">

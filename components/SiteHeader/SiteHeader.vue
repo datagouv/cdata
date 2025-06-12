@@ -3,6 +3,14 @@
     role="banner"
     class="fr-header"
   >
+    <div
+      v-if="config.public.banner"
+      class="bg-primary text-white py-4"
+    >
+      <div class="fr-container">
+        {{ config.public.banner }}
+      </div>
+    </div>
     <div class="fr-header__body">
       <div
         class="fr-container"
