@@ -57,6 +57,7 @@
     "mitt": "^3.0.1",
     "nuxt": "^3.16.1",
     "ofetch": "^1.4.1",
+    "ol": "^10.5.0",
     "popmotion": "^8.7.6",
     "rehype-highlight": "^7.0.1",
     "rehype-raw": "^7.0.0",
