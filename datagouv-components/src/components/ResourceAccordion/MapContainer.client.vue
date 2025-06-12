@@ -1,4 +1,11 @@
-<script setup lang = "js">
+<template>
+  <div
+    id="map"
+    ref="mapRef"
+  />
+</template>
+
+<script setup lang = "ts">
 import { onMounted, ref } from 'vue'
 
 import View from 'ol/View'
@@ -37,7 +44,8 @@ import Gp from 'geoportal-access-lib'
 let map = null
 const mapRef = ref(0)
 
-onMounted(() => {
+
+async function displayMap() {
   const cfg = new Gp.Services.Config({
     customConfigFile: 'https://raw.githubusercontent.com/IGNF/geoportal-configuration/new-url/dist/fullConfig.json',
     onSuccess: () => {
@@ -61,7 +69,6 @@ onMounted(() => {
         bar: false,
       })
       map.addControl(scaleControl)
-
       const territories = new Territories({
         collapsed: false,
         draggable: true,
@@ -247,15 +254,12 @@ onMounted(() => {
     },
   })
   cfg.call()
+}
+
+onMounted(() => {
+  displayMap()
 })
 </script>
-
-<template>
-  <div
-    id="map"
-    ref="mapRef"
-  />
-</template>
 
 <style>
   #map {
