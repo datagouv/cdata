@@ -50,18 +50,19 @@
                 :key="index"
                 scope="col"
               >
-                <div class="fr-grid-row fr-grid-row--middle col-width">
-                  <BrandedButton
-                    color="secondary-softer"
-                    :icon="isSortedBy(col) && sortConfig && sortConfig.type == 'asc' ? RiArrowUpLine : RiArrowDownLine"
-                    icon-right
-                    size="xs"
-                    @click="sortByField(col)"
-                  >
+                <BrandedButton
+                  color="secondary-softer"
+                  :icon="isSortedBy(col) && sortConfig && sortConfig.type == 'asc' ? RiArrowUpLine : RiArrowDownLine"
+                  icon-right
+                  size="xs"
+                  @click="sortByField(col)"
+                >
+                  <!-- There is a weird bug with `sr-only`, I needed to add a relative parent to avoid full page x scrolling into the void…  -->
+                  <span class="relative">
                     {{ col }}
                     <span class="sr-only">{{ sortConfig && sortConfig.type == 'desc' ? t("Sort ascending") : t("Sort descending") }}</span>
-                  </BrandedButton>
-                </div>
+                  </span>
+                </BrandedButton>
               </th>
             </tr>
           </thead>
