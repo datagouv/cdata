@@ -111,7 +111,10 @@ async function createOrganizationAndMoveToNextStep(logo_file: File | null) {
     loading.value = true
     newOrganization.value = await $api<Organization>('/api/1/organizations/', {
       method: 'POST',
-      body: JSON.stringify(organizationForm.value),
+      body: JSON.stringify({
+        ...organizationForm.value,
+        business_number_id: cleanSiret(organizationForm.value.business_number_id),
+      }),
     })
     moveToNextStep = true
   }

@@ -49,3 +49,8 @@ export function createOrganizationMetricsUrl(datasetsViews: Record<string, numbe
 
   return URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
 }
+
+export function cleanSiret(siret: string | null | undefined): string | null {
+  if (!siret) return null
+  return siret.replace(/\s+/g, '')
+}

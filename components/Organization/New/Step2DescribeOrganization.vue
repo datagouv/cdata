@@ -277,15 +277,25 @@ const checkOrga = ref({
 
 function checkBusinessId<T, K extends KeysOfUnion<T>, V extends (string | undefined) & T[K]>(check: MaybeRefOrGetter<{ exists: boolean }>, message: string | null = null): ValidationFunction<T, K, V> {
   return (value: V, key: K, form: T, t) => {
-    if (!value || value.length == 0) {
-      return null
+    const clean = cleanSiret(value)
+    if (!clean) return null
+
+    if (/^\d{9}$/.test(clean)) return message || t('Veuillez renseigner un SIRET (14 chiffres) et non pas un SIREN (9 chiffres).')
+    if (!/^\d{14}$/.test(clean)) return message || t('Un numéro SIRET doit contenir 14 chiffres.')
+
+    // Algorithme de Luhn
+    let sum = 0
+    for (let i = 0; i < 14; i++) {
+      let digit = parseInt(clean.charAt(i), 10)
+      if (i % 2 === 0) {
+        digit *= 2
+        if (digit > 9) digit -= 9
+      }
+      sum += digit
     }
-    else if (value.length === 14 && toValue(check).exists) {
-      return null
-    }
-    else {
-      return message || t('Ce numéro SIRET est invalide.')
-    }
+
+    if (sum % 10 === 0) return null
+    return message || t('Ce numéro SIRET est invalide.')
   }
 }
 
