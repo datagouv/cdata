@@ -52,3 +52,7 @@ export async function useJsonLd(type: 'dataset' | 'dataservice' | 'organization'
     ],
   })
 }
+
+export function removeLangPrefix(url: string): string {
+  return url.replace(/^\/(fr)|(en)/, '')
+}

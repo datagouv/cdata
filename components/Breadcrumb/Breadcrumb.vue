@@ -40,7 +40,7 @@ const updateBreadcrumbs = () => {
 
     return (child as HTMLElement).dataset.breadcrumbTo || null
   })
-  breadcrumbs.value.push(route.fullPath)
+  breadcrumbs.value.push(removeLangPrefix(route.fullPath))
 }
 
 const observer = ref<MutationObserver | null>(null)
