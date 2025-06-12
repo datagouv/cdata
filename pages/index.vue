@@ -1,6 +1,6 @@
 <template>
   <div>
-    <section class="py-8 sm:py-[200px] bg-[url(''),radial-gradient(rgba(255,255,255,0.8),rgba(217,217,217,0)),url('/nuxt_images/homepage/hero.png')] bg-center">
+    <section class="py-8 sm:py-[200px] bg-cover bg-[url(''),radial-gradient(rgba(255,255,255,0.8),rgba(217,217,217,0)),url('/nuxt_images/homepage/hero.png')]">
       <div class="max-w-[800px] mx-auto px-6 flex flex-col items-center space-y-8">
         <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-5 items-center">
           <NuxtLinkLocale
@@ -51,7 +51,7 @@
           <div class="space-y-2">
             <nuxt-img
               src="/illustrations/dataset.svg"
-              class="h-16"
+              class="h-16 grayscale"
             />
             <h2 class="text-3xl text-gray-title font-extrabold">
               {{ $t('Le catalogue des données françaises') }}
@@ -87,6 +87,7 @@
                 ]"
                 :key="name"
                 :src="`/nuxt_images/organizations/${name}.png`"
+                :srcset="`/nuxt_images/organizations/${name}.png, /nuxt_images/organizations/${name}@2x.png 2x, /nuxt_images/organizations/${name}@3x.png 3x`"
                 :alt="label"
                 class="size-20 grayscale opacity-80 object-contain"
               />
@@ -117,6 +118,7 @@
           </figcaption>
           <nuxt-img
             src="/nuxt_images/homepage/datasets.png"
+            srcset="/nuxt_images/homepage/datasets.png, /nuxt_images/homepage/datasets@2x.png 2x, /nuxt_images/homepage/datasets@3x.png 3x"
             class="w-full sm:-mb-16"
           />
         </figure>
@@ -128,6 +130,7 @@
           </figcaption>
           <nuxt-img
             src="/nuxt_images/homepage/reuses.png"
+            srcset="/nuxt_images/homepage/reuses.png, /nuxt_images/homepage/reuses@2x.png 2x, /nuxt_images/homepage/reuses@3x.png 3x"
             class="w-full"
           />
         </figure>
@@ -137,7 +140,7 @@
           <div class="space-y-2">
             <nuxt-img
               src="/illustrations/discussion.svg"
-              class="h-16"
+              class="h-16 grayscale"
             />
             <h2 class="text-3xl text-gray-title font-extrabold">
               {{ $t('Une communauté dynamique et engagée') }}
@@ -173,6 +176,7 @@
                 ]"
                 :key="name"
                 :src="`/nuxt_images/organizations/${name}.png`"
+                :srcset="`/nuxt_images/organizations/${name}.png, /nuxt_images/organizations/${name}@2x.png 2x, /nuxt_images/organizations/${name}@3x.png 3x`"
                 :alt="label"
                 class="size-20 grayscale opacity-80 object-contain"
               />
@@ -267,6 +271,7 @@
               >
                 <nuxt-img
                   :src="`/nuxt_images/homepage/${exploration.image}.png`"
+                  :srcset="`/nuxt_images/homepage/${exploration.image}.png, /nuxt_images/homepage/${exploration.image}@2x.png 2x`"
                   class="w-full h-[300px] object-cover"
                 />
                 <div class="p-4 space-y-2.5">
