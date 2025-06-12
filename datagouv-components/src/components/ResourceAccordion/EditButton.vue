@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { RiPencilLine } from '@remixicon/vue'
-import { useComponentsConfig } from '../../config'
+import { computed } from 'vue'
 import BrandedButton from '../BrandedButton.vue'
 
 type Props = {
@@ -26,9 +26,13 @@ const props = withDefaults(defineProps<Props>(), {
   isCommunityResource: false,
 })
 
-const config = useComponentsConfig()
-
 const { t } = useI18n()
-const resourceType = props.isCommunityResource ? 'community-resource' : 'resource'
-const adminUrl = `${config.baseUrl}/dataset/${props.datasetId}/${resourceType}/${props.resourceId}`
+
+const adminUrl = computed(() => {
+  if (props.isCommunityResource) {
+    return `/admin/site/community-resources/?resource_id=${props.resourceId}`
+  }
+
+  return `/admin/datasets/${props.datasetId}/files/?resource_id=${props.resourceId}`
+})
 </script>
