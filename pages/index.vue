@@ -87,6 +87,7 @@
                 ]"
                 :key="name"
                 :src="`/nuxt_images/organizations/${name}.png`"
+                :srcset="`/nuxt_images/organizations/${name}.png, /nuxt_images/organizations/${name}@2x.png 2x, /nuxt_images/organizations/${name}@3x.png 3x`"
                 :alt="label"
                 class="size-20 grayscale opacity-80 object-contain"
               />
@@ -117,6 +118,7 @@
           </figcaption>
           <nuxt-img
             src="/nuxt_images/homepage/datasets.png"
+            srcset="/nuxt_images/homepage/datasets.png, /nuxt_images/homepage/datasets@2x.png 2x, /nuxt_images/homepage/datasets@3x.png 3x"
             class="w-full sm:-mb-16"
           />
         </figure>
@@ -128,6 +130,7 @@
           </figcaption>
           <nuxt-img
             src="/nuxt_images/homepage/reuses.png"
+            srcset="/nuxt_images/homepage/reuses.png, /nuxt_images/homepage/reuses@2x.png 2x, /nuxt_images/homepage/reuses@3x.png 3x"
             class="w-full"
           />
         </figure>
@@ -173,6 +176,7 @@
                 ]"
                 :key="name"
                 :src="`/nuxt_images/organizations/${name}.png`"
+                :srcset="`/nuxt_images/organizations/${name}.png, /nuxt_images/organizations/${name}@2x.png 2x, /nuxt_images/organizations/${name}@3x.png 3x`"
                 :alt="label"
                 class="size-20 grayscale opacity-80 object-contain"
               />
@@ -267,6 +271,7 @@
               >
                 <nuxt-img
                   :src="`/nuxt_images/homepage/${exploration.image}.png`"
+                  :srcset="`/nuxt_images/homepage/${exploration.image}.png, /nuxt_images/homepage/${exploration.image}@2x.png 2x`"
                   class="w-full h-[300px] object-cover"
                 />
                 <div class="p-4 space-y-2.5">
