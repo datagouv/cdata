@@ -115,7 +115,7 @@ const rawResourcesByTypes = await Promise.all(
 const resourcesByTypes = computed(() => {
   const result = {} as Record<number, typeof rawResourcesByTypes[number]>
   for (const index in rawResourcesByTypes) {
-    if (rawResourcesByTypes[index].data.value.total > 0 || searchByResourceType[index].value) {
+    if (rawResourcesByTypes[index].data.value?.total > 0 || searchByResourceType[index].value) {
       result[index] = rawResourcesByTypes[index]
     }
   }

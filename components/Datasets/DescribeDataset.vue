@@ -36,7 +36,7 @@
         </Accordion>
         <Accordion
           :id="writeAGoodDescriptionAccordionId"
-          :title="$t('Write a good description')"
+          :title="$t('Écrire une bonne description')"
           :state="accordionState('description')"
         >
           <div class="prose prose-neutral m-0">
@@ -80,11 +80,11 @@
         <Accordion
           v-if="form.owned?.organization"
           :id="contactPointAccordionId"
-          :title="$t('Define a point of contact')"
+          :title="$t('Définir un point de contact')"
           :state="accordionState('contact_points')"
         >
           <p class="fr-m-0">
-            {{ $t("Specify a contact point, such as an email or a link to a form, so users can reach you in case of issues or for questions.") }}
+            {{ $t("Spécifiez un point de contact, comme un email ou un lien vers un formulaire, pour que les utilisateurs puissent vous joindre en cas de problème ou pour poser des questions.") }}
           </p>
         </Accordion>
         <Accordion
@@ -340,7 +340,7 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-0">
-              {{ harvested ? t("Attributions and Contact points") : t("Contact points") }}
+              {{ harvested ? t("Attributions et points de contacts") : t("Contact points") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -564,7 +564,7 @@
                     class="fr-label"
                     for="checkboxes-hint-el-sm-1"
                   >
-                    {{ t('Switch to draft mode') }}
+                    {{ t('Passer en mode brouillon') }}
                     <span class="fr-hint-text">{{ t('The dataset will only be visible to members of your organization.') }}</span>
                   </label>
                   <div
