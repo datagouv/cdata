@@ -170,6 +170,7 @@ export type ReuseForm = {
   tags: Array<Tag>
   image: File | string | null
   private: boolean
+  archived: string | null
 }
 
 export type NewReuseForApi = {
@@ -177,6 +178,7 @@ export type NewReuseForApi = {
   owner?: string
   title: string
   private?: boolean
+  archived?: string | null
   description: string
   datasets: Array<string> | undefined
   url: string

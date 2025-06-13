@@ -11,7 +11,7 @@
         <BrandedButton
           type="submit"
           color="primary"
-          :disabled="isLoading"
+          :loading="isLoading"
         >
           {{ t("Save") }}
         </BrandedButton>
@@ -22,6 +22,22 @@
           :subject="reuse"
           :label="$t('Transférer cette réutilisation')"
         />
+        <BannerAction
+          type="warning"
+          :title="reuse.archived ? $t('Désarchiver la réutilisation') : $t('Archiver la réutilisation')"
+        >
+          {{ $t("Une réutilisation archivée n'est plus indexée mais reste accessible aux utilisateurs avec un lien direct.") }}
+
+          <template #button>
+            <BrandedButton
+              :icon="RiArchiveLine"
+              :loading="isLoading"
+              @click="archiveReuse"
+            >
+              {{ reuse.archived ? $t('Désarchiver') : $t('Archiver') }}
+            </BrandedButton>
+          </template>
+        </BannerAction>
         <BannerAction
           class="mt-5"
           type="danger"
@@ -51,7 +67,7 @@
                 <div class="flex-1 flex justify-end">
                   <BrandedButton
                     color="danger"
-                    :disabled="isLoading"
+                    :loading="isLoading"
                     @click="deleteReuse"
                   >
                     {{ $t("Supprimer cette réutilisation") }}
@@ -69,7 +85,7 @@
 <script setup lang="ts">
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import type { Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
-import { RiDeleteBin6Line } from '@remixicon/vue'
+import { RiArchiveLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
 import type { ReuseForm } from '~/types/types'
 
@@ -133,6 +149,31 @@ async function deleteReuse() {
     else {
       await navigateTo(localePath('/admin/me/reuses'), { replace: true })
     }
+  }
+  finally {
+    finish()
+  }
+}
+
+async function archiveReuse() {
+  if (!reuseForm.value) throw new Error('No reuse form')
+
+  try {
+    start()
+
+    await $api(`/api/1/reuses/${reuse.value.id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(reuseToApi(reuseForm.value, { archived: reuseForm.value.archived ? null : (new Date()).toISOString() })),
+    })
+
+    refresh()
+    if (reuse.value.archived) {
+      toast.success(t('Réutilisation désarchivée!'))
+    }
+    else {
+      toast.success(t('Réutilisation archivée!'))
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
     finish()
