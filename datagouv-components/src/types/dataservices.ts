@@ -33,7 +33,7 @@ export type DataserviceAccessAudienceCondition = 'yes' | 'no' | 'under_condition
 
 export type DataserviceAccessAudienceType = 'local_authority_and_administration' | 'company_and_association' | 'private'
 
-export type DataserviceAccessAudience = { role: DataserviceAccessAudienceType, condition: DataserviceAccessAudienceType }
+export type DataserviceAccessAudience = { role: DataserviceAccessAudienceType, condition: DataserviceAccessAudienceCondition }
 
 export type Dataservice = Owned & {
   acronym: string

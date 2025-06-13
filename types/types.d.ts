@@ -1,4 +1,4 @@
-import type { Dataset, CommunityResource, Dataservice, DataserviceAccessAudience, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource } from '@datagouv/components-next'
+import type { Dataset, CommunityResource, Dataservice, DataserviceAccessAudience, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, DataserviceAccessAudienceType, DataserviceAccessAudienceCondition } from '@datagouv/components-next'
 
 export type AxisAlignment = 'start' | 'center' | 'end'
 
@@ -197,7 +197,7 @@ export type DataserviceForm = {
   technical_documentation_url: string | null
   business_documentation_url: string | null
   access_type: 'open' | 'restricted' | 'open_with_account'
-  access_audiences: Array<DataserviceAccessAudience>
+  access_audiences: Record<DataserviceAccessAudienceType, DataserviceAccessAudienceCondition>
   rate_limiting: string
   availability: string
   private: boolean

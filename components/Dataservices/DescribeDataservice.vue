@@ -417,33 +417,12 @@
               class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 items-end"
             >
               <SelectGroup
-                v-model="form.access_audiences.local_authority_and_administration"
+                v-for="accessAudienceType in accessAudienceTypes"
+                :key="accessAudienceType"
+                v-model="form.access_audiences[accessAudienceType]"
                 class="mb-0"
-                :label="$t('Service public')"
-                :options="[
-                  { label: $t('Oui'), value: 'yes' },
-                  { label: $t('Non'), value: 'no' },
-                  { label: $t('Sous certaines conditions'), value: 'under_condition' },
-                ]"
-              />
-              <SelectGroup
-                v-model="form.access_audiences.company_and_association"
-                class="mb-0"
-                :label="$t('Entreprise et associations')"
-                :options="[
-                  { label: $t('Oui'), value: 'yes' },
-                  { label: $t('Non'), value: 'no' },
-                  { label: $t('Sous certaines conditions'), value: 'under_condition' },
-                ]"
-              />
-              <SelectGroup
-                v-model="form.access_audiences.private"
-                :label="$t('Particulier')"
-                :options="[
-                  { label: $t('Oui'), value: 'yes' },
-                  { label: $t('Non'), value: 'no' },
-                  { label: $t('Sous certaines conditions'), value: 'under_condition' },
-                ]"
+                :label="getAccessAudienceType(accessAudienceType)"
+                :options="accessAudienceConditionOptions"
               />
             </div>
           </LinkedToAccordion>
@@ -516,7 +495,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, type DataserviceAccessAudienceCondition, type DataserviceAccessAudienceType } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
@@ -554,9 +533,20 @@ const rateLimitingDataserviceAccordionId = useId()
 const availabilityDataserviceAccordionId = useId()
 const contactPointAccordionId = useId()
 
+const { getAccessAudienceCondition, getAccessAudienceType } = useAccessAudience()
+
 const ownedOptions = computed<Array<Owned>>(() => {
   return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: user.value, organization: null }]
 })
+
+const accessAudienceConditions: Array<DataserviceAccessAudienceCondition> = ['yes', 'no', 'under_condition']
+
+const accessAudienceTypes: Array<DataserviceAccessAudienceType> = ['local_authority_and_administration', 'company_and_association', 'private']
+
+const accessAudienceConditionOptions = computed(() => accessAudienceConditions.map(condition => ({
+  value: condition,
+  label: getAccessAudienceCondition(condition).label,
+})))
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(dataserviceForm, {
   owned: [required()],
@@ -588,5 +578,5 @@ function submit() {
   if (validate()) {
     emit('submit')
   }
-};
+}
 </script>

@@ -14,28 +14,15 @@
 
 <script setup lang="ts">
 import type { DataserviceAccessAudienceCondition, DataserviceAccessAudienceType } from '@datagouv/components-next'
-import { RiCheckDoubleLine, RiCheckLine, RiCloseLine } from '@remixicon/vue'
 
 const props = defineProps<{
   audience: DataserviceAccessAudienceType
   condition: DataserviceAccessAudienceCondition
 }>()
 
-const { t } = useI18n()
+const { getAccessAudienceCondition, getAccessAudienceType } = useAccessAudience()
 
-const accessAudienceCondition = computed(() => {
-  return {
-    yes: { icon: RiCheckDoubleLine, label: t('Oui'), color: 'text-success-dark' },
-    no: { icon: RiCloseLine, label: t('Non'), color: 'text-danger-dark' },
-    under_condition: { icon: RiCheckLine, label: t('Sous condition'), color: 'text-warning-dark' },
-  }[props.condition]
-})
+const accessAudienceCondition = computed(() => getAccessAudienceCondition(props.condition))
 
-const accessAudienceLabel = computed(() => {
-  return {
-    local_authority_and_administration: t('Collectivé et Administration'),
-    company_and_association: t('Entreprise et Association'),
-    private: t('Particulier'),
-  }[props.audience]
-})
+const accessAudienceLabel = computed(() => getAccessAudienceType(props.audience))
 </script>
