@@ -182,8 +182,8 @@
                       :key="audience"
                     >
                       <DataservicesAccessAudienceCondition
-                        v-if="dataservice.access_audiences[audience]"
-                        :condition="dataservice.access_audiences[audience]"
+                        v-if="getAccessAudience(audience)?.condition"
+                        :condition="getAccessAudience(audience)!.condition"
                         :audience
                       />
                     </template>
@@ -286,6 +286,10 @@ useSeoMeta({
 await useJsonLd('dataservice', route.params.did)
 
 const openSwagger = ref(false)
+
+function getAccessAudience(type: DataserviceAccessAudienceType) {
+  return dataservice.value.access_audiences.find(a => a.role === type)
+}
 
 onMounted(async () => {
   await redirectLegacyHashes([

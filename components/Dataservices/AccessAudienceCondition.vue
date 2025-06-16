@@ -2,6 +2,7 @@
   <li
     :key="audience"
     class="flex gap-1 items-center"
+    :title="`${accessAudienceLabel}: ${accessAudienceCondition.label}`"
   >
     <component
       :is="accessAudienceCondition.icon"
