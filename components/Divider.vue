@@ -7,7 +7,10 @@
       class="flex-1 h-px"
       :class="color"
     />
-    <div class="px-3 text-sm text-mention-grey">
+    <div
+      v-if="$slots.default"
+      class="px-3 text-sm text-mention-grey"
+    >
       <slot />
     </div>
     <div
