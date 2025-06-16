@@ -26,7 +26,7 @@
         :dataset
         :resource="selectedResource"
         expanded-on-mount
-        :can-edit="isMeAdmin() || dataset.permissions.edit_resources"
+        :can-edit="dataset.permissions.edit_resources"
       />
     </div>
     <div
@@ -50,7 +50,7 @@
             :key="resource.id"
             :dataset
             :resource
-            :can-edit="isMeAdmin() || dataset.permissions.edit_resources"
+            :can-edit="dataset.permissions.edit_resources"
           />
           <Pagination
             :total-results="data.value.total"
