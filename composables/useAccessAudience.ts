@@ -14,7 +14,7 @@ export function useAccessAudience() {
 
   const getAccessAudienceType = (audience: DataserviceAccessAudienceType) => {
     return {
-      local_authority_and_administration: t('Collectivé et Administration'),
+      local_authority_and_administration: t('Collectivité et Administration'),
       company_and_association: t('Entreprise et Association'),
       private: t('Particulier'),
     }[audience]
