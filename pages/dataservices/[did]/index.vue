@@ -8,7 +8,7 @@
         {{ $t('{n} datasets', pageData.total) }}
       </h2>
       <div
-        class="grid gap-5"
+        class="grid gap-5 mt-2"
         :class="{
           'lg:grid-cols-2': pageData.total > 1,
         }"
