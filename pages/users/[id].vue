@@ -128,8 +128,11 @@
         />
       </div>
 
-      <div v-if="user && datasets && datasets.total">
-        <h2 class="text-sm font-bold uppercase mb-3">
+      <div
+        v-if="user && datasets && datasets.total"
+        class="space-y-3"
+      >
+        <h2 class="text-sm font-bold uppercase">
           {{ $t('{n} jeu de données suivi | {n} jeux de données suivis', { n: datasets.total }) }}
         </h2>
 
@@ -140,13 +143,21 @@
             :dataset
           />
         </div>
+
+        <Pagination
+          :total-results="datasets.total"
+          :page-size="datasets.page_size"
+          :page="datasets.page"
+          :link="getLink"
+          @change="(newPage) => datasetPage = newPage"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, OrganizationCard, type DatasetV2, type User } from '@datagouv/components-next'
+import { Avatar, BrandedButton, OrganizationCard, Pagination, type DatasetV2, type User } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 import { DatasetCardLg } from '#components'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -160,8 +171,10 @@ const route = useRoute()
 const url = computed(() => `/api/1/users/${route.params.id}`)
 const { data: user } = await useAPI<User>(url)
 
+const datasetPage = ref(1)
 const datasetsParams = computed(() => {
   return {
+    page: datasetPage.value,
     followed_by: user.value.id,
   }
 })
