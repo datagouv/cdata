@@ -58,6 +58,7 @@ export type Dataservice = Owned & {
   license: string | null
   metadata_modified_at: string
   metrics: { discussions: number, followers: number, reuses: number, views: number }
+  permissions: { edit: boolean, delete: boolean }
   private: boolean
   rate_limiting: string
   self_api_url: string

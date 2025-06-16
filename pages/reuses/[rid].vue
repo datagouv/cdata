@@ -36,7 +36,7 @@
           </div>
           <div class="flex gap-3 items-center">
             <EditButton
-              v-if="isMeAdmin()"
+              v-if="isMeAdmin() || reuse.permissions.edit"
               :id="reuse.id"
               type="reuses"
             />

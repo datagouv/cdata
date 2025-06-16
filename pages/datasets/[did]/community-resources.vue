@@ -16,6 +16,7 @@
           :key="resource.id"
           :dataset
           :resource
+          :can-edit="resource.permissions.edit"
         />
         <Pagination
           :total-results="resources.total"

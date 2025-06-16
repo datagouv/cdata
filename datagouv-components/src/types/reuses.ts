@@ -36,6 +36,7 @@ export type Reuse = BaseReuse & {
   slug: string
   page: string
   uri: string
+  permissions: { edit: boolean, delete: boolean }
 }
 
 export type ReuseType = {

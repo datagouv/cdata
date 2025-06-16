@@ -32,7 +32,6 @@
         </BrandedButton>
         <EditButton
           v-else-if="me && isAdmin(me)"
-
           :id="user.id"
           type="users"
         />

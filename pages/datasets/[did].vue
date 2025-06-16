@@ -39,7 +39,7 @@
             {{ $t("Explore data") }}
           </BrandedButton>
           <EditButton
-            v-if="isAdmin(me)"
+            v-if="isAdmin(me) || dataset.permissions.edit"
             :id="dataset.id"
             type="datasets"
           />
