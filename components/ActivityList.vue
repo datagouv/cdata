@@ -85,8 +85,8 @@
         class="flex flex-col items-center"
       >
         <nuxt-img
-          src="/illustrations/camera.svg"
-          class="h-20"
+          src="/illustrations/list.svg"
+          class="h-32"
         />
         <p class="fr-text--bold fr-my-3v">
           {{ $t(`Il n'y a pas encore d'activité`) }}
