@@ -10,7 +10,7 @@
       <template #button>
         <BrandedButton
           type="submit"
-          :disabled="loading"
+          :loading="loading"
         >
           {{ t("Save") }}
         </BrandedButton>

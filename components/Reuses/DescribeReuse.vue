@@ -350,7 +350,7 @@
                     class="fr-label"
                     for="checkboxes-hint-el-sm-1"
                   >
-                    {{ t('Switch to draft mode') }}
+                    {{ t('Passer en mode brouillon') }}
                     <span class="fr-hint-text">{{ t('The reuse will only be visible to members of your organization.') }}</span>
                   </label>
                   <div

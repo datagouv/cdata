@@ -25,7 +25,7 @@
             v-if="reuse"
             :url="`/api/1/reuses/${reuse.id}/followers/`"
           />
-          <div>
+          <div v-if="!reuse.archived">
             <BrandedButton
               :href="reuse.url"
               :new-tab="true"
@@ -125,7 +125,10 @@
               :reuse
               class="mt-1 mb-0"
             />
-            <div class="mt-6">
+            <div
+              v-if="!reuse.archived"
+              class="mt-6"
+            >
               <BrandedButton
                 size="xs"
                 :href="reuse.url"
