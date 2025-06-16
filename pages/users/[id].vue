@@ -102,41 +102,73 @@
         </div>
       </div>
 
-      <div
-        v-if="user.organizations.length"
-        class="grid md:grid-cols-3 gap-4"
-      >
-        <OrganizationCard
-          v-for="organization in user.organizations"
-          :key="organization.id"
-          :organization
+      <div v-if="user.organizations.length">
+        <h2 class="text-sm font-bold uppercase mb-3">
+          {{ $t('{n} organisation | {n} organizations', { n: user.organizations.length }) }}
+        </h2>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          <OrganizationCard
+            v-for="organization in user.organizations"
+            :key="organization.id"
+            :organization
+          />
+        </div>
+      </div>
+
+      <div v-if="user.about">
+        <h2 class="text-sm font-bold uppercase mb-3">
+          {{ $t('Description') }}
+        </h2>
+        <MarkdownViewer
+          v-if="user.about"
+          class="w-full"
+          :content="user.about"
+          :min-heading="2"
         />
       </div>
 
-      <MarkdownViewer
-        v-if="user.about"
-        class="w-full"
-        :content="user.about"
-        :min-heading="2"
-      />
+      <div v-if="user && datasets && datasets.total">
+        <h2 class="text-sm font-bold uppercase mb-3">
+          {{ $t('{n} jeu de données suivi | {n} jeux de données suivis', { n: datasets.total }) }}
+        </h2>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <DatasetCardLg
+            v-for="dataset in datasets.data"
+            :key="dataset.id"
+            :dataset
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, OrganizationCard, type User } from '@datagouv/components-next'
+import { Avatar, BrandedButton, OrganizationCard, type DatasetV2, type User } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
+import { DatasetCardLg } from '#components'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import DeleteUserModal from '~/components/User/DeleteUserModal.vue'
-
-useSeoMeta({
-  robots: 'nofollow',
-})
+import type { PaginatedArray } from '~/types/types'
 
 const me = useMaybeMe()
 
 const route = useRoute()
 const url = computed(() => `/api/1/users/${route.params.id}`)
 const { data: user } = await useAPI<User>(url)
+
+const datasetsParams = computed(() => {
+  return {
+    followed_by: user.value.id,
+  }
+})
+const { data: datasets } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/datasets`, { query: datasetsParams })
+const title = computed(() => user.value ? `${user.value.first_name} ${user.value.last_name}` : null)
+useSeoMeta({
+  robots: 'noindex, nofollow',
+  title,
+})
 </script>
