@@ -16,6 +16,7 @@
           :key="resource.id"
           :dataset
           :resource
+          is-community-resource
         />
         <Pagination
           :total-results="resources.total"
