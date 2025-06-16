@@ -157,7 +157,7 @@
                   <DataserviceAccessTypeBadge :dataservice />
                   <div
                     v-if="dataservice.authorization_request_url"
-                    class="mt-2"
+                    class="mt-2.5"
                   >
                     <a
                       :href="dataservice.authorization_request_url"
@@ -169,26 +169,27 @@
                     </a>
                   </div>
                 </dd>
-                <dt class="text-gray-plain font-bold">
-                  {{ $t('Publics éligibles') }}
-                </dt>
-                <dd
-                  v-if="dataservice.access_type === 'restricted'"
-                  class="p-0"
-                >
-                  <ul class="list-none p-0 space-y-1 m-0">
-                    <template
-                      v-for="audience in (['local_authority_and_administration', 'company_and_association', 'private'] as Array<DataserviceAccessAudienceType>)"
-                      :key="audience"
-                    >
-                      <DataservicesAccessAudienceCondition
-                        v-if="getAccessAudience(audience)?.condition"
-                        :condition="getAccessAudience(audience)!.condition"
-                        :audience
-                      />
-                    </template>
-                  </ul>
-                </dd>
+                <template v-if="dataservice.access_type === 'restricted'">
+                  <dt class="text-gray-plain font-bold mt-2.5">
+                    {{ $t('Publics éligibles') }}
+                  </dt>
+                  <dd
+                    class="p-0"
+                  >
+                    <ul class="list-none p-0 space-y-1 m-0">
+                      <template
+                        v-for="audience in (['local_authority_and_administration', 'company_and_association', 'private'] as Array<DataserviceAccessAudienceType>)"
+                        :key="audience"
+                      >
+                        <DataservicesAccessAudienceCondition
+                          v-if="getAccessAudience(audience)?.condition"
+                          :condition="getAccessAudience(audience)!.condition"
+                          :audience
+                        />
+                      </template>
+                    </ul>
+                  </dd>
+                </template>
               </div>
             </dl>
           </div>
