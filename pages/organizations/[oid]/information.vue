@@ -244,18 +244,6 @@ const metricsDownloadsTotal = ref<null | number>(null)
 const metricsReuses = ref<null | Record<string, number>>(null)
 const metricsReusesTotal = ref<null | number>(null)
 
-const reason = ref('')
-
-const alreadyMember = computed(() => me.value?.organizations.find(organization => organization.id === props.organization.id))
-
-const downloadStatsUrl = computed(() => {
-  if (!metricsDatasetsViews.value || !metricsDownloads.value || !metricsDataservicesViews.value || !metricsReuses.value) {
-    return null
-  }
-
-  return createOrganizationMetricsUrl(metricsDatasetsViews.value, metricsDownloads.value, metricsDataservicesViews.value, metricsReuses.value)
-})
-
 watchEffect(async () => {
   const metrics = await getOrganizationMetrics(props.organization.id)
   metricsDownloads.value = metrics.downloads
@@ -267,6 +255,18 @@ watchEffect(async () => {
   metricsDatasetsViews.value = metrics.datasetsViews
   metricsDatasetsViewsTotal.value = metrics.datasetsViewsTotal
 })
+
+const downloadStatsUrl = computed(() => {
+  if (!metricsDatasetsViews.value || !metricsDownloads.value || !metricsDataservicesViews.value || !metricsReuses.value) {
+    return null
+  }
+
+  return createOrganizationMetricsUrl(metricsDatasetsViews.value, metricsDownloads.value, metricsDataservicesViews.value, metricsReuses.value)
+})
+
+const reason = ref('')
+
+const alreadyMember = computed(() => me.value?.organizations.find(organization => organization.id === props.organization.id))
 
 const { data: pendingRequests, status, refresh } = await useAsyncData<Array<PendingMembershipRequest | MembershipRequest>>('membership-requests', () => {
   if (me.value) {
