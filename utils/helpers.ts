@@ -24,6 +24,12 @@ export async function redirectLegacyHashes(instructions: Array<{ from: string, t
       await navigateTo({ path: to, query }, { redirectCode: 301 })
       return
     }
+    if (queryParam && route.hash.startsWith(`#${from}-`)) {
+      const query = {} as Record<string, string>
+      query[queryParam] = route.hash.substring(`#${from}-`.length)
+      await navigateTo({ path: to, query }, { redirectCode: 301 })
+      return
+    }
   }
 }
 
