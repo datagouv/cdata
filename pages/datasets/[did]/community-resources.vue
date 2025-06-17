@@ -16,6 +16,7 @@
           :key="resource.id"
           :dataset
           :resource
+          :can-edit="resource.permissions.edit"
           is-community-resource
         />
         <Pagination

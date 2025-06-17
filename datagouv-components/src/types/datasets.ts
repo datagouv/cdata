@@ -77,6 +77,8 @@ export type Dataset = BaseDataset & {
   }
   harvest: Harvest
   extras: Record<string, any>
+  permissions: { edit: boolean, edit_resources: boolean, delete: boolean }
+
 }
 
 export type DatasetV2 = Owned & Omit<Dataset, 'resources' | 'community_resources'> & {

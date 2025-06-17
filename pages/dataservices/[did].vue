@@ -21,7 +21,7 @@
         </Breadcrumb>
         <div class="flex gap-3 items-center">
           <EditButton
-            v-if="isMeAdmin()"
+            v-if="dataservice.permissions.edit"
             :id="dataservice.id"
             type="dataservices"
           />
