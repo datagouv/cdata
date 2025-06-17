@@ -18,17 +18,19 @@ export function reuseToForm(reuse: Reuse, types: Array<ReuseType>, topics: Array
     tags: reuse.tags?.map(text => ({ text })) || [],
     image: reuse.image,
     private: reuse.private,
+    archived: reuse.archived,
     featured: reuse.featured,
   }
 }
 
-export function reuseToApi(form: ReuseForm, overrides: { datasets?: Array<Dataset | DatasetV2 | DatasetSuggest>, private?: boolean } = {}): NewReuseForApi {
+export function reuseToApi(form: ReuseForm, overrides: { datasets?: Array<Dataset | DatasetV2 | DatasetSuggest>, private?: boolean, archived?: string | null } = {}): NewReuseForApi {
   return {
     organization: form.owned?.organization?.id,
     owner: form.owned?.owner?.id,
     title: form.title,
     url: form.url,
     private: overrides.private,
+    archived: overrides.archived,
     description: form.description,
     datasets: overrides.datasets ? overrides.datasets.map(({ id }) => id) : undefined,
     type: form.type?.id || '',
