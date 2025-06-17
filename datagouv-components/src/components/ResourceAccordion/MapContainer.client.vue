@@ -1,5 +1,14 @@
 <template>
+  <SimpleBanner
+    v-if="hasError"
+    type="warning"
+    class="flex items-center space-x-2"
+  >
+    <RiErrorWarningLine class="shink-0 size-6" />
+    <span>{{ t("L'aperçu cartographique de ce fichier n'a pas pu être chargé.") }}</span>
+  </SimpleBanner>
   <div
+    v-else
     id="map"
     ref="mapRef"
   />
@@ -7,6 +16,7 @@
 
 <script setup lang = "ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import View from 'ol/View'
 import Map from 'ol/Map'
@@ -24,14 +34,18 @@ import {
   SearchEngine,
   ControlList,
 } from 'geopf-extensions-openlayers'
-
 import Gp from 'geoportal-access-lib'
+
+import SimpleBanner from '../SimpleBanner.vue'
 import type { Resource } from '../../types/resources'
 
 const props = defineProps<{ resource: Resource }>()
 
+const { t } = useI18n()
+
 let map = null
 const mapRef = ref(0)
+const hasError = ref(false)
 
 async function displayMap() {
   await import('ol/ol.css')
@@ -89,11 +103,21 @@ async function displayMap() {
       layerImport._formContainer.dispatchEvent(new CustomEvent('submit', { cancelable: true }))
 
       // Wait for GetCapabilities to be called before trying to show layer
+      let count = 10
       function showLayer() {
-        const layerInfo = layerImport._getCapResponseWMSLayers.filter(layer => layer.Name == props.resource.title)[0]
-        layerImport._addGetCapWMSLayer(layerInfo)
+        if (!layerImport._getCapResponseWMSLayers) {
+          count--
+          if (count > 0)
+            setTimeout(showLayer, 500)
+          else
+            hasError.value = true
+        }
+        else {
+          const layerInfo = layerImport._getCapResponseWMSLayers.filter(layer => layer.Name == props.resource.title)[0]
+          layerImport._addGetCapWMSLayer(layerInfo)
+        }
       }
-      setTimeout(showLayer, 2000)
+      setTimeout(showLayer, 500)
 
       map.addControl(layerImport)
 
@@ -132,6 +156,7 @@ async function displayMap() {
     },
     onFailure: (e) => {
       console.error(e)
+      hasError.value = true
     },
   })
   cfg.call()

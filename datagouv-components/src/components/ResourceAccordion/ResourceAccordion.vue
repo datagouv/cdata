@@ -183,7 +183,7 @@
                 :resource="resource"
               />
               <MapContainer
-                v-if="ogcService"
+                v-if="ogcWms"
                 :resource="resource"
               />
             </div>
@@ -338,6 +338,7 @@ import Preview from './Preview.vue'
 import Pmtiles from './Pmtiles.vue'
 
 const OGC_SERVICES_FORMATS = ['ogc:wfs', 'ogc:wms', 'wfs', 'wms']
+const OGC_WMS_FORMATS = ['ogc:wms', 'wms']
 const GENERATED_FORMATS = ['parquet', 'pmtiles']
 
 const props = withDefaults(defineProps<{
@@ -375,6 +376,7 @@ const hasPmtiles = computed(() => {
 const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('File'))
 
 const ogcService = computed(() => OGC_SERVICES_FORMATS.includes(props.resource.format))
+const ogcWms = computed(() => OGC_WMS_FORMATS.includes(props.resource.format))
 
 const generatedFormats = computed(() => {
   return GENERATED_FORMATS
@@ -405,7 +407,7 @@ const tabsOptions = computed(() => {
     options.push({ key: 'data', label: t('Data') })
   }
 
-  if (hasPmtiles.value || ogcService.value) {
+  if (hasPmtiles.value || ogcWms.value) {
     options.push({ key: 'map', label: t('Map') })
   }
 
