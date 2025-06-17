@@ -15,27 +15,13 @@ import TileLayer from 'ol/layer/Tile'
 import OSM from 'ol/source/OSM'
 
 import {
-  Catalog,
   CRS,
-  Drawing,
-  ElevationPath,
-  GetFeatureInfo,
   GeoportalAttribution,
   GeoportalFullScreen,
-  GeoportalOverviewMap,
   GeoportalZoom,
-  Isocurve,
-  MeasureArea,
-  MeasureAzimuth,
-  MeasureLength,
-  MousePosition as GeoportalMousePosition,
   LayerImport,
   LayerSwitcher,
-  Legends,
-  ReverseGeocode,
-  Route,
   SearchEngine,
-  Territories,
   ControlList,
 } from 'geopf-extensions-openlayers'
 
@@ -44,8 +30,12 @@ import Gp from 'geoportal-access-lib'
 let map = null
 const mapRef = ref(0)
 
-
 async function displayMap() {
+  await import('ol/ol.css')
+  await import('@gouvfr/dsfr/dist/dsfr.css')
+  await import('@gouvfr/dsfr/dist/utility/icons/icons.css')
+  await import('geopf-extensions-openlayers/css/Dsfr.css')
+
   const cfg = new Gp.Services.Config({
     customConfigFile: 'https://raw.githubusercontent.com/IGNF/geoportal-configuration/new-url/dist/fullConfig.json',
     onSuccess: () => {
@@ -69,97 +59,16 @@ async function displayMap() {
         bar: false,
       })
       map.addControl(scaleControl)
-      const territories = new Territories({
-        collapsed: false,
-        draggable: true,
-        position: 'top-right',
-        panel: true,
-        auto: true,
-        thumbnail: false,
-        reduce: false,
-        tiles: 3,
-      })
-      map.addControl(territories)
 
       const fullscreen = new GeoportalFullScreen({
         position: 'top-right',
       })
       map.addControl(fullscreen)
 
-      const legends = new Legends({
-        collapsed: true,
-        position: 'bottom-left',
-        panel: true,
-        auto: true,
-        info: true,
-      })
-      map.addControl(legends)
-
-      const catalog = new Catalog({
-        position: 'top-left',
-        categories: [
-          {
-            title: 'Données',
-            id: 'data',
-            items: [
-              {
-                title: 'WMTS',
-                default: true,
-                filter: {
-                  field: 'service',
-                  value: 'WMTS',
-                },
-              },
-              {
-                title: 'WMS',
-                filter: {
-                  field: 'service',
-                  value: 'WMS',
-                },
-              },
-              {
-                title: 'TMS',
-                filter: {
-                  field: 'service',
-                  value: 'TMS',
-                },
-              },
-              {
-                title: 'Tout',
-                filter: null,
-              },
-            ],
-          },
-        ],
-      })
-      map.addControl(catalog)
-
-      const drawing = new Drawing({
-        position: 'top-left',
-      })
-      map.addControl(drawing)
-
-      const overmap = new GeoportalOverviewMap({
-        position: 'bottom-left',
-      })
-      map.addControl(overmap)
-
       const zoom = new GeoportalZoom({
         position: 'bottom-left',
       })
       map.addControl(zoom)
-
-      const iso = new Isocurve({
-        position: 'bottom-left',
-        listable: true,
-      })
-      map.addControl(iso)
-
-      const layerImport = new LayerImport({
-        position: 'bottom-left',
-        listable: true,
-      })
-      map.addControl(layerImport)
 
       const layerSwitcher = new LayerSwitcher({
         options: {
@@ -168,26 +77,9 @@ async function displayMap() {
       })
       map.addControl(layerSwitcher)
 
-      const mp = new GeoportalMousePosition({
-        position: 'top-right',
-      })
-      map.addControl(mp)
-
-      const route = new Route({
-        position: 'top-right',
-        listable: true,
-      })
-      map.addControl(route)
-
-      const reverse = new ReverseGeocode({
-        position: 'top-right',
-        listable: true,
-      })
-      map.addControl(reverse)
-
       const search = new SearchEngine({
         displayButtonAdvancedSearch: true,
-        displayButtonGeolocate: true,
+        displayButtonGeolocate: false,
         displayButtonCoordinateSearch: true,
         displayButtonClose: false,
         collapsible: false,
@@ -206,37 +98,6 @@ async function displayMap() {
         markerUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAzNiIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4Ij48cGF0aCBmaWxsPSIjMDAwMDkxIiBkPSJNMTguMzY0IDMuNjM2YTkgOSAwIDAgMSAwIDEyLjcyOEwxMiAyMi43MjhsLTYuMzY0LTYuMzY0QTkgOSAwIDAgMSAxOC4zNjQgMy42MzZaTTEyIDhhMiAyIDAgMSAwIDAgNCAyIDIgMCAwIDAgMC00WiIvPjwvc3ZnPg==',
       })
       map.addControl(search)
-
-      const feature = new GetFeatureInfo({
-        options: {
-          position: 'top-right',
-        },
-      })
-      map.addControl(feature)
-
-      const measureLength = new MeasureLength({
-        position: 'bottom-left',
-        listable: true,
-      })
-      map.addControl(measureLength)
-
-      const measureArea = new MeasureArea({
-        position: 'bottom-left',
-        listable: true,
-      })
-      map.addControl(measureArea)
-
-      const measureAzimuth = new MeasureAzimuth({
-        position: 'bottom-left',
-        listable: true,
-      })
-      map.addControl(measureAzimuth)
-
-      const measureProfil = new ElevationPath({
-        position: 'bottom-left',
-        listable: true,
-      })
-      map.addControl(measureProfil)
 
       const attributions = new GeoportalAttribution({
         position: 'bottom-right',
