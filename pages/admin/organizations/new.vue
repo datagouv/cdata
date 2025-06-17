@@ -67,6 +67,7 @@ const { t } = useI18n()
 const config = useRuntimeConfig()
 const route = useRoute()
 const { $api } = useNuxtApp()
+const { organizations } = useCurrentOwned()
 const me = useMe()
 
 const steps = computed(() => ([
@@ -116,6 +117,7 @@ async function createOrganizationAndMoveToNextStep(logo_file: File | null) {
         business_number_id: cleanSiret(organizationForm.value.business_number_id),
       }),
     })
+    organizations.value[newOrganization.value.id] = newOrganization.value
     moveToNextStep = true
   }
   catch (e) {
