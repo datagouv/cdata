@@ -1,30 +1,18 @@
 <template>
   <div>
     <Breadcrumb>
-      <li>
-        <NuxtLinkLocale
-          class="fr-breadcrumb__link"
-          to="/"
-        >
-          {{ t("Home") }}
-        </NuxtLinkLocale>
-      </li>
-      <li>
-        <NuxtLinkLocale
-          class="fr-breadcrumb__link"
-          to="/dataservices"
-        >
-          {{ t("Dataservices") }}
-        </NuxtLinkLocale>
-      </li>
-      <li>
-        <a
-          class="fr-breadcrumb__link"
-          aria-current="page"
-        >
-          {{ t("Publishing form") }}
-        </a>
-      </li>
+      <BreadcrumbItem
+        to="/"
+        external
+      >
+        {{ $t('Accueil') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem to="/dataservices">
+        {{ $t('APIs') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem>
+        {{ $t('Formulaire de publication') }}
+      </BreadcrumbItem>
     </Breadcrumb>
 
     <Stepper
@@ -69,6 +57,7 @@
 import { BrandedButton } from '@datagouv/components-next'
 import type { Dataservice, Dataset, DatasetV2 } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'
 import Step2AddDatasets from '~/components/Dataservices/New/Step2AddDatasets.vue'
 import Step3CompletePublication from '~/components/Dataservices/New/Step3CompletePublication.vue'
