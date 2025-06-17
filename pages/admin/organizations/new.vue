@@ -1,32 +1,18 @@
 <template>
   <div>
     <Breadcrumb>
-      <li>
-        <NuxtLinkLocale
-          class="fr-breadcrumb__link"
-          to="/"
-          :external="true"
-        >
-          {{ t('Home') }}
-        </NuxtLinkLocale>
-      </li>
-      <li>
-        <NuxtLinkLocale
-          class="fr-breadcrumb__link"
-          to="/organizations"
-          :external="true"
-        >
-          {{ t('Organizations') }}
-        </NuxtLinkLocale>
-      </li>
-      <li>
-        <a
-          class="fr-breadcrumb__link"
-          aria-current="page"
-        >
-          {{ t('Publishing form') }}
-        </a>
-      </li>
+      <BreadcrumbItem
+        to="/"
+        external
+      >
+        {{ $t('Accueil') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem to="/organizations">
+        {{ $t('Organisations') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem>
+        {{ $t('Formulaire de publication') }}
+      </BreadcrumbItem>
     </Breadcrumb>
 
     <Stepper
@@ -62,6 +48,7 @@ import { uploadLogo } from '~/api/organizations'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import { loadMe } from '~/utils/auth'
 import type { NewOrganization } from '~/types/types'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const { t } = useI18n()
 const config = useRuntimeConfig()
