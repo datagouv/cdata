@@ -26,6 +26,9 @@ import {
 } from 'geopf-extensions-openlayers'
 
 import Gp from 'geoportal-access-lib'
+import type { Resource } from '../../types/resources'
+
+const props = defineProps<{ resource: Resource }>()
 
 let map = null
 const mapRef = ref(0)
@@ -76,6 +79,23 @@ async function displayMap() {
         },
       })
       map.addControl(layerSwitcher)
+
+      const layerImport = new LayerImport({
+        position: 'bottom-left',
+        listable: true,
+        layerTypes: ['WMS'],
+      })
+      layerImport._serviceUrlImportInput.value = props.resource.url
+      layerImport._formContainer.dispatchEvent(new CustomEvent('submit', { cancelable: true }))
+
+      // Wait for GetCapabilities to be called before trying to show layer
+      function showLayer() {
+        const layerInfo = layerImport._getCapResponseWMSLayers.filter(layer => layer.Name == props.resource.title)[0]
+        layerImport._addGetCapWMSLayer(layerInfo)
+      }
+      setTimeout(showLayer, 2000)
+
+      map.addControl(layerImport)
 
       const search = new SearchEngine({
         displayButtonAdvancedSearch: true,
