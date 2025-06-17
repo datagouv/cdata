@@ -106,6 +106,7 @@ export default defineNuxtConfig({
       reuseGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/reutilisations',
       harvesterRequestValidationUrl: 'https://support.data.gouv.fr/help/datagouv/moissonnage#support-tree',
       harvesterPreviewMaxItems: 20, // SHould be the same as `HARVEST_PREVIEW_MAX_ITEMS` in udata
+      harvesterAllowManualRun: false,
 
       newsletterSubscriptionUrl: 'https://qvo970cr.sibpages.com/',
 
