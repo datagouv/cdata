@@ -57,6 +57,14 @@
                   </template>
                 </Tooltip>
               </AdminTableTh>
+              <AdminTableTh
+                class="w-8"
+                scope="col"
+              >
+                <div class="sr-only">
+                  {{ $t('Actions') }}
+                </div>
+              </AdminTableTh>
             </tr>
           </thead>
           <tbody>
@@ -86,6 +94,19 @@
               </td>
               <td class="font-mono text-right">
                 {{ summarize(dataservice.metrics.followers) }}
+              </td>
+              <td>
+                <BrandedButton
+                  size="xs"
+                  color="secondary-softer"
+                  :href="getCsvUrl(dataservice)"
+                  :icon="RiDownloadLine"
+                  icon-only
+                  external
+                  keep-margins-even-without-borders
+                >
+                  {{ $t(`Télécharger les statistiques de l'API`) }}
+                </BrandedButton>
               </td>
             </tr>
           </tbody>
@@ -125,6 +146,8 @@ const props = defineProps<{
   organization: Organization
 }>()
 
+const config = useRuntimeConfig()
+
 const page = ref(1)
 const pageSize = ref(20)
 const sortedBy = ref<DataserviceSortedBy>('title')
@@ -143,6 +166,10 @@ const params = computed(() => {
 })
 
 const { data: pageData, status } = await useAPI<PaginatedArray<Dataservice>>('/api/1/dataservices/', { lazy: true, query: params })
+
+function getCsvUrl(dataservice: Dataservice) {
+  return `${config.public.metricsApi}/api/dataservices/data/csv/?dataservice_id__exact=${dataservice.id}&metric_month__sort=asc`
+}
 
 function sort(column: DataserviceSortedBy, newDirection: SortDirection) {
   sortedBy.value = column

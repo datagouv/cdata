@@ -67,6 +67,14 @@
                   </template>
                 </Tooltip>
               </AdminTableTh>
+              <AdminTableTh
+                class="w-8"
+                scope="col"
+              >
+                <div class="sr-only">
+                  {{ $t('Actions') }}
+                </div>
+              </AdminTableTh>
             </tr>
           </thead>
           <tbody>
@@ -96,6 +104,19 @@
               </td>
               <td class="font-mono text-right">
                 {{ summarize(reuse.metrics.followers) }}
+              </td>
+              <td>
+                <BrandedButton
+                  size="xs"
+                  color="secondary-softer"
+                  :href="getCsvUrl(reuse)"
+                  :icon="RiDownloadLine"
+                  icon-only
+                  external
+                  keep-margins-even-without-borders
+                >
+                  {{ $t("Télécharger les statistiques de la réutilisation") }}
+                </BrandedButton>
               </td>
             </tr>
           </tbody>
@@ -135,6 +156,8 @@ const props = defineProps<{
   organization: Organization
 }>()
 
+const config = useRuntimeConfig()
+
 const downloadStatsUrl = computed(() => `/api/1/organizations/${props.organization.id}/reuses.csv`)
 
 const page = ref(1)
@@ -154,6 +177,10 @@ const params = computed(() => {
 })
 
 const { data: pageData, status } = await useAPI<PaginatedArray<Reuse>>('/api/1/reuses/', { lazy: true, query: params })
+
+function getCsvUrl(reuse: Reuse) {
+  return `${config.public.metricsApi}/api/reuses/data/csv/?reuse_id__exact=${reuse.id}&metric_month__sort=asc`
+}
 
 function sort(column: ReuseSortedBy, newDirection: SortDirection) {
   sortedBy.value = column

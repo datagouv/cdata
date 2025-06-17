@@ -137,13 +137,12 @@
                   size="xs"
                   color="secondary-softer"
                   :href="getCsvUrl(dataset)"
-                  :download="`${dataset.slug}.csv`"
                   :icon="RiDownloadLine"
                   icon-only
                   external
                   keep-margins-even-without-borders
                 >
-                  {{ $t('Download dataset statistics') }}
+                  {{ $t('Télécharger les statistiques du jeu de données') }}
                 </BrandedButton>
               </td>
             </tr>
@@ -208,7 +207,7 @@ const params = computed(() => {
 const { data: pageData, status } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/', { lazy: true, server: false, query: params })
 
 function getCsvUrl(dataset: DatasetV2) {
-  return `${config.public.metricsApi}/api/datasets/data/?dataset_id__exact=${dataset.id}&metric_month__sort=asc`
+  return `${config.public.metricsApi}/api/datasets/data/csv/?dataset_id__exact=${dataset.id}&metric_month__sort=asc`
 }
 
 function sort(column: DatasetSortedBy, newDirection: SortDirection) {
