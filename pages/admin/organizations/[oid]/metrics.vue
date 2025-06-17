@@ -12,9 +12,9 @@
       class="mb-5"
       :links="[
         { href: localPath(metricsUrl), label: $t('Organisation') },
-        { href: localPath(`${metricsUrl}/contacts/`), label: $t('Jeux de données') },
-        { href: localPath(`${metricsUrl}/activities/`), label: $t('API') },
-        { href: localPath(`${metricsUrl}/activities/`), label: $t('Réutilisation') },
+        { href: localPath(`${metricsUrl}/datasets/`), label: $t('Jeux de données') },
+        { href: localPath(`${metricsUrl}/dataservices/`), label: $t('API') },
+        { href: localPath(`${metricsUrl}/reuses/`), label: $t('Réutilisation') },
       ]"
     />
 
