@@ -103,12 +103,14 @@ async function displayMap() {
       layerImport._formContainer.dispatchEvent(new CustomEvent('submit', { cancelable: true }))
 
       // Wait for GetCapabilities to be called before trying to show layer
-      let count = 10
+      // TODO: use signal handling to know whether GetCapabilities failed or not 
+      const waitTimeout = 500
+      let retry = 10
       function showLayer() {
         if (!layerImport._getCapResponseWMSLayers) {
-          count--
-          if (count > 0)
-            setTimeout(showLayer, 500)
+          retry--
+          if (retry > 0)
+            setTimeout(showLayer, waitTimeout)
           else
             hasError.value = true
         }
@@ -117,42 +119,14 @@ async function displayMap() {
           layerImport._addGetCapWMSLayer(layerInfo)
         }
       }
-      setTimeout(showLayer, 500)
+      setTimeout(showLayer, waitTimeout)
 
       map.addControl(layerImport)
-
-      const search = new SearchEngine({
-        displayButtonAdvancedSearch: true,
-        displayButtonGeolocate: false,
-        displayButtonCoordinateSearch: true,
-        displayButtonClose: false,
-        collapsible: false,
-        resources: {
-          search: true,
-        },
-        searchOptions: {
-          addToMap: true,
-          filterServices: 'WMTS,WMS,TMS,WFS',
-          filterLayersPriority: 'PLAN.IGN,GEOGRAPHICALGRIDSYSTEMS.MAPS.BDUNI.J1,GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2,CADASTRALPARCELS.PARCELLAIRE_EXPRESS,ORTHOIMAGERY.ORTHOPHOTOS',
-          filterWMTSPriority: true,
-          serviceOptions: {
-            maximumResponses: 20,
-          },
-        },
-        markerUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAzNiIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4Ij48cGF0aCBmaWxsPSIjMDAwMDkxIiBkPSJNMTguMzY0IDMuNjM2YTkgOSAwIDAgMSAwIDEyLjcyOEwxMiAyMi43MjhsLTYuMzY0LTYuMzY0QTkgOSAwIDAgMSAxOC4zNjQgMy42MzZaTTEyIDhhMiAyIDAgMSAwIDAgNCAyIDIgMCAwIDAgMC00WiIvPjwvc3ZnPg==',
-      })
-      map.addControl(search)
 
       const attributions = new GeoportalAttribution({
         position: 'bottom-right',
       })
       map.addControl(attributions)
-
-      const controlList = new ControlList({
-        draggable: false,
-        position: 'bottom-right',
-      })
-      map.addControl(controlList)
     },
     onFailure: (e) => {
       console.error(e)
