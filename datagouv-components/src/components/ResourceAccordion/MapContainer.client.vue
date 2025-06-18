@@ -89,6 +89,11 @@ async function displayMap() {
   })
   map.addControl(layerSwitcher)
 
+  const attributions = new GeoportalAttribution({
+    position: 'bottom-right',
+  })
+  map.addControl(attributions)
+
   const layerImport = new LayerImport({
     position: 'bottom-left',
     listable: true,
@@ -96,6 +101,8 @@ async function displayMap() {
   })
   layerImport._serviceUrlImportInput.value = props.resource.url
   layerImport._formContainer.dispatchEvent(new CustomEvent('submit', { cancelable: true }))
+
+  map.addControl(layerImport)
 
   // Wait for GetCapabilities to be called before trying to show layer
   // TODO: use signal handling to know whether GetCapabilities failed or not 
@@ -115,13 +122,6 @@ async function displayMap() {
     }
   }
   setTimeout(showLayer, waitTimeout)
-
-  map.addControl(layerImport)
-
-  const attributions = new GeoportalAttribution({
-    position: 'bottom-right',
-  })
-  map.addControl(attributions)
 }
 
 onMounted(() => {
