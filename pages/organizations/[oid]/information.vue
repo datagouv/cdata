@@ -2,19 +2,18 @@
   <div>
     <div class="flex flex-wrap mb-2">
       <h2 class="!text-sm !mb-2.5 w-full flex-none sm:flex-1">
-        {{ $t('Statistics from the last 12 months') }}
+        {{ $t('Statistiques des 12 derniers mois') }}
       </h2>
       <div>
         <BrandedButton
           color="secondary"
           :disabled="!downloadStatsUrl"
           :href="downloadStatsUrl || ''"
-          :title="$t('Download file')"
           download="stats.csv"
           :icon="RiDownloadLine"
           size="xs"
         >
-          {{ $t('Download statistics as CSV') }}
+          {{ $t('Télécharger les statistiques au format CSV') }}
         </BrandedButton>
       </div>
     </div>
@@ -23,21 +22,21 @@
     >
       <ClientOnly>
         <StatBox
-          :title="$t('Views')"
+          :title="$t('Visites des jeux de données')"
           :data="metricsViews"
           type="line"
           :summary="metricsViewsTotal"
           class="md:w-1/3 mb-8 md:mb-0"
         />
         <StatBox
-          :title="$t('Downloads')"
+          :title="$t('Téléchargements des données')"
           :data="metricsDownloads"
           type="line"
           :summary="metricsDownloadsTotal"
           class="md:w-1/3 mb-8 md:mb-0"
         />
         <StatBox
-          :title="$t('Reuses Visits')"
+          :title="$t('Visites des réutilisations')"
           :data="metricsReuses"
           type="line"
           :summary="metricsReusesTotal"
@@ -46,8 +45,8 @@
       </ClientOnly>
     </section>
     <SectionCollapse
-      :title="$t('Members')"
-      :button-text="$t('See members')"
+      :title="$t('Membres')"
+      :button-text="$t('Voir les membres')"
     >
       <template #buttons>
         <BrandedButton
@@ -57,12 +56,12 @@
           :icon="RiCheckLine"
           :disabled="true"
         >
-          {{ $t('Request pending approval') }}
+          {{ $t(`Requête en attente d'approbation`) }}
         </BrandedButton>
         <ModalWithButton
           v-else-if="me && !alreadyMember"
           size="lg"
-          :title="$t('Ask to join the organization')"
+          :title="$t(`Demander à rejoindre l'organisation`)"
         >
           <template #button="{ attrs, listeners }">
             <div>
@@ -74,7 +73,7 @@
                 v-bind="attrs"
                 v-on="listeners"
               >
-                {{ $t('Ask to join the organization') }}
+                {{ $t(`Demander à rejoindre l'organisation`) }}
               </BrandedButton>
             </div>
           </template>
