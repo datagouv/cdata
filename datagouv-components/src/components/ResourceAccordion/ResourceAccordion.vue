@@ -326,7 +326,7 @@ import { trackEvent } from '../../functions/matomo'
 import CopyButton from '../CopyButton.vue'
 import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
-import { getResourceFormatIcon, getResourceTitleId } from '../../functions/resources'
+import { getResourceFormatIcon, getResourceTitleId, detectOgcService } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
 import { getResourceExternalUrl } from '../../functions/datasets'
 import Metadata from './Metadata.vue'
@@ -337,8 +337,6 @@ import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
 import Pmtiles from './Pmtiles.vue'
 
-const OGC_SERVICES_FORMATS = ['ogc:wfs', 'ogc:wms', 'wfs', 'wms']
-const OGC_WMS_FORMATS = ['ogc:wms', 'wms']
 const GENERATED_FORMATS = ['parquet', 'pmtiles']
 
 const props = withDefaults(defineProps<{
@@ -375,8 +373,9 @@ const hasPmtiles = computed(() => {
 
 const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('File'))
 
-const ogcService = computed(() => OGC_SERVICES_FORMATS.includes(props.resource.format))
-const ogcWms = computed(() => OGC_WMS_FORMATS.includes(props.resource.format))
+const ogcService = computed(() => detectOgcService(props.resource))
+
+const ogcWms = computed(() => ogcService.value === 'wms')
 
 const generatedFormats = computed(() => {
   return GENERATED_FORMATS
