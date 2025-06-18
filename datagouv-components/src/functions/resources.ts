@@ -110,9 +110,11 @@ export const OGC_SERVICES_FORMATS = ['wfs', 'wms']
 export const detectOgcService = (resource: Resource) => {
   // Detect OGC Services either based on format or a URL with GetCapabilities and known REQUEST type
   // Return the format if found else false
-  const format = resource.format.replace(/^ogc:/, '')
-  if (OGC_SERVICES_FORMATS.includes(format))
-    return format
+  if (resource.format) {
+    const format = resource.format.replace(/^ogc:/, '')
+    if (OGC_SERVICES_FORMATS.includes(format))
+      return format
+  }
   const url = resource.url.toLowerCase()
   if (url.includes('request=getcapabilities')) {
     for (const format of OGC_SERVICES_FORMATS)
