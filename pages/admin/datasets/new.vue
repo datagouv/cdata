@@ -135,10 +135,9 @@ async function save() {
       body: JSON.stringify(datasetToApi(datasetForm.value, { private: true })),
     })
 
-    const tasks = resources.value.map((_, i: number) => saveResourceForm(dataset, resources.value[i]))
     let results: Array<PromiseSettledResult<Resource>> = []
-    for (const chunk of chunkArray(tasks, config.public.maxNumberOfResourcesToUploadInParallel)) {
-      results = [...results, ...await Promise.allSettled(chunk)]
+    for (const chunk of chunkArray(resources.value, config.public.maxNumberOfResourcesToUploadInParallel)) {
+      results = [...results, ...await Promise.allSettled(chunk.map((_, i: number) => saveResourceForm(dataset, resources.value[i])))]
     }
 
     if (results.every(f => f.status !== 'rejected')) {
