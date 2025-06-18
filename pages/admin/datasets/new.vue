@@ -135,12 +135,14 @@ async function save() {
       body: JSON.stringify(datasetToApi(datasetForm.value, { private: true })),
     })
 
-    const results = await Promise.allSettled(resources.value.map((_, i: number) => saveResourceForm(dataset, resources.value[i])))
-
-    if (results.every(f => f.status !== 'rejected')) {
-      await moveToStep(4)
-      clearNuxtState(DATASET_FORM_STATE)
-      clearNuxtState(DATASET_FILES_STATE)
+    const tasks = resources.value.map((_, i: number) => saveResourceForm(dataset, resources.value[i]))
+    for (const chunk of chunkArray(tasks, config.public.maxNumberOfResourcesToUploadInParallel)) {
+      const results = await Promise.allSettled(chunk)
+      if (results.every(f => f.status !== 'rejected')) {
+        await moveToStep(4)
+        clearNuxtState(DATASET_FORM_STATE)
+        clearNuxtState(DATASET_FILES_STATE)
+      }
     }
   }
   finally {
