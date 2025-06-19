@@ -355,9 +355,9 @@ const { formatRelativeIfRecentDate } = useFormatDate()
 const hasPreview = computed(() => {
   return config.tabularApiUrl
     && props.resource.extras['analysis:parsing:finished_at']
+    && props.resource.extras['analysis:parsing:parsing_table']
     && !props.resource.extras['analysis:parsing:error']
     && (config.tabularAllowRemote || props.resource.filetype === 'file')
-    && !props.resource.extras['analysis:parsing:pmtiles_url'] // TODO: have a dedicated extra for tabular parsing
 })
 
 const hasPmtiles = computed(() => {
