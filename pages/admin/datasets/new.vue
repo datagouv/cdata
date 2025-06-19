@@ -137,7 +137,7 @@ async function save() {
 
     let results: Array<PromiseSettledResult<Resource>> = []
     for (const chunk of chunkArray(resources.value, config.public.maxNumberOfResourcesToUploadInParallel)) {
-      results = [...results, ...await Promise.allSettled(chunk.map((_, i: number) => saveResourceForm(dataset, resources.value[i])))]
+      results = [...results, ...await Promise.allSettled(chunk.map(resource => saveResourceForm(dataset, resource)))]
     }
 
     if (results.every(f => f.status !== 'rejected')) {
