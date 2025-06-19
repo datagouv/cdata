@@ -34,6 +34,10 @@ export default defineNuxtPlugin({
           }
         },
         async onResponseError({ response }) {
+          if (response.status === 404) {
+            showError({ statusCode: 404, statusMessage: 'Page Not Found' })
+          }
+
           if (response.status === 401) {
             await nuxtApp.runWithContext(() => navigateTo(localePath('/login'), { external: true }))
           }
