@@ -66,3 +66,7 @@ export function chunkArray<T>(array: T[], size: number): T[][] {
   }
   return result
 }
+
+export function removeLangPrefix(url: string): string {
+  return url.replace(/^\/(fr)|(en)/, '')
+}
