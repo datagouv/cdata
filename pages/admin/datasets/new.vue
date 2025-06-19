@@ -1,30 +1,18 @@
 <template>
   <div>
     <Breadcrumb>
-      <li>
-        <NuxtLinkLocale
-          class="fr-breadcrumb__link"
-          to="/"
-        >
-          {{ t('Home') }}
-        </NuxtLinkLocale>
-      </li>
-      <li>
-        <NuxtLinkLocale
-          class="fr-breadcrumb__link"
-          to="/datasets"
-        >
-          {{ t('Datasets') }}
-        </NuxtLinkLocale>
-      </li>
-      <li>
-        <a
-          class="fr-breadcrumb__link"
-          aria-current="page"
-        >
-          {{ t('Publishing form') }}
-        </a>
-      </li>
+      <BreadcrumbItem
+        to="/"
+        external
+      >
+        {{ $t('Accueil') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem to="/datasets">
+        {{ $t('Jeux de données') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem>
+        {{ $t('Formulaire de publication') }}
+      </BreadcrumbItem>
     </Breadcrumb>
 
     <Stepper
@@ -62,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Dataset, Frequency, Owned } from '@datagouv/components-next'
+import type { Dataset, Frequency, Owned, Resource } from '@datagouv/components-next'
 import Step1PublishingType from '~/components/Datasets/New/Step1PublishingType.vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import Step3AddResources from '~/components/Datasets/New/Step3AddResources.vue'
@@ -70,6 +58,7 @@ import Step4CompletePublication from '~/components/Datasets/New/Step4CompletePub
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { DatasetForm, EnrichedLicense, ResourceForm, SpatialGranularity, SpatialZone, Tag } from '~/types/types'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const { t } = useI18n()
 const config = useRuntimeConfig()
@@ -146,7 +135,10 @@ async function save() {
       body: JSON.stringify(datasetToApi(datasetForm.value, { private: true })),
     })
 
-    const results = await Promise.allSettled(resources.value.map((_, i: number) => saveResourceForm(dataset, resources.value[i])))
+    let results: Array<PromiseSettledResult<Resource>> = []
+    for (const chunk of chunkArray(resources.value, config.public.maxNumberOfResourcesToUploadInParallel)) {
+      results = [...results, ...await Promise.allSettled(chunk.map(resource => saveResourceForm(dataset, resource)))]
+    }
 
     if (results.every(f => f.status !== 'rejected')) {
       await moveToStep(4)

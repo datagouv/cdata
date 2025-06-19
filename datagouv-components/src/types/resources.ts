@@ -34,4 +34,4 @@ export type Resource = {
   url: string
 }
 
-export type CommunityResource = Owned & Resource & { dataset: Omit<Dataset, 'resources' | 'community_resources'> }
+export type CommunityResource = Owned & Resource & { dataset: Omit<Dataset, 'resources' | 'community_resources'>, permissions: { edit: boolean, delete: boolean } }

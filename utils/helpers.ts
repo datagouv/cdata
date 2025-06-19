@@ -24,6 +24,12 @@ export async function redirectLegacyHashes(instructions: Array<{ from: string, t
       await navigateTo({ path: to, query }, { redirectCode: 301 })
       return
     }
+    if (queryParam && route.hash.startsWith(`#${from}-`)) {
+      const query = {} as Record<string, string>
+      query[queryParam] = route.hash.substring(`#${from}-`.length)
+      await navigateTo({ path: to, query }, { redirectCode: 301 })
+      return
+    }
   }
 }
 
@@ -51,6 +57,14 @@ export async function useJsonLd(type: 'dataset' | 'dataservice' | 'organization'
       },
     ],
   })
+}
+
+export function chunkArray<T>(array: T[], size: number): T[][] {
+  const result: T[][] = []
+  for (let i = 0; i < array.length; i += size) {
+    result.push(array.slice(i, i + size))
+  }
+  return result
 }
 
 export function removeLangPrefix(url: string): string {

@@ -25,7 +25,7 @@
             v-if="reuse"
             :url="`/api/1/reuses/${reuse.id}/followers/`"
           />
-          <div>
+          <div v-if="!reuse.archived">
             <BrandedButton
               :href="reuse.url"
               :new-tab="true"
@@ -36,7 +36,7 @@
           </div>
           <div class="flex gap-3 items-center">
             <EditButton
-              v-if="isMeAdmin()"
+              v-if="reuse.permissions.edit"
               :id="reuse.id"
               type="reuses"
             />
@@ -125,7 +125,10 @@
               :reuse
               class="mt-1 mb-0"
             />
-            <div class="mt-6">
+            <div
+              v-if="!reuse.archived"
+              class="mt-6"
+            >
               <BrandedButton
                 size="xs"
                 :href="reuse.url"
@@ -183,5 +186,12 @@ const robots = computed(() => reuse.value && !reuse.value.metrics.datasets && !r
 useSeoMeta({
   title,
   robots,
+})
+
+onMounted(async () => {
+  await redirectLegacyHashes([
+    { from: 'discussions', to: `/dataservices/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+    { from: 'discussion', to: `/datasets/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+  ])
 })
 </script>

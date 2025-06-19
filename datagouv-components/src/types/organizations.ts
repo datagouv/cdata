@@ -28,10 +28,13 @@ export type Organization = NewOrganization & {
   members: Array<Member>
   metrics: {
     dataservices: number
+    dataservices_by_months: Record<string, number>
     datasets: number
+    datasets_by_months: Record<string, number>
     followers: number
     members: number
     reuses: number
+    reuses_by_months: Record<string, number>
     views: number
   }
   page: string

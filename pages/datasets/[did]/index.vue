@@ -26,11 +26,12 @@
         :dataset
         :resource="selectedResource"
         expanded-on-mount
+        :can-edit="dataset.permissions.edit_resources"
       />
     </div>
     <div
-      v-else
       v-for="{ data, status }, index in resourcesByTypes"
+      v-else
       :key="RESOURCE_TYPE[index]"
       class="space-y-1"
     >
@@ -49,6 +50,7 @@
             :key="resource.id"
             :dataset
             :resource
+            :can-edit="dataset.permissions.edit_resources"
           />
           <Pagination
             :total-results="data.value.total"
@@ -85,7 +87,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, getResourceLabel, Pagination, RESOURCE_TYPE, ResourceAccordion, SimpleBanner, type DatasetV2, type Resource } from '@datagouv/components-next'
-import { RiCloseCircleLine } from '@remixicon/vue';
+import { RiCloseCircleLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{ dataset: DatasetV2 }>()
@@ -113,7 +115,7 @@ const rawResourcesByTypes = await Promise.all(
 const resourcesByTypes = computed(() => {
   const result = {} as Record<number, typeof rawResourcesByTypes[number]>
   for (const index in rawResourcesByTypes) {
-    if (rawResourcesByTypes[index].data.value.total > 0 || searchByResourceType[index].value) {
+    if (rawResourcesByTypes[index].data.value?.total > 0 || searchByResourceType[index].value) {
       result[index] = rawResourcesByTypes[index]
     }
   }

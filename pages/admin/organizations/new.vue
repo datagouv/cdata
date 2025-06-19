@@ -1,32 +1,18 @@
 <template>
   <div>
     <Breadcrumb>
-      <li>
-        <NuxtLinkLocale
-          class="fr-breadcrumb__link"
-          to="/"
-          :external="true"
-        >
-          {{ t('Home') }}
-        </NuxtLinkLocale>
-      </li>
-      <li>
-        <NuxtLinkLocale
-          class="fr-breadcrumb__link"
-          to="/organizations"
-          :external="true"
-        >
-          {{ t('Organizations') }}
-        </NuxtLinkLocale>
-      </li>
-      <li>
-        <a
-          class="fr-breadcrumb__link"
-          aria-current="page"
-        >
-          {{ t('Publishing form') }}
-        </a>
-      </li>
+      <BreadcrumbItem
+        to="/"
+        external
+      >
+        {{ $t('Accueil') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem to="/organizations">
+        {{ $t('Organisations') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem>
+        {{ $t('Formulaire de publication') }}
+      </BreadcrumbItem>
     </Breadcrumb>
 
     <Stepper
@@ -62,11 +48,13 @@ import { uploadLogo } from '~/api/organizations'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import { loadMe } from '~/utils/auth'
 import type { NewOrganization } from '~/types/types'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const { t } = useI18n()
 const config = useRuntimeConfig()
 const route = useRoute()
 const { $api } = useNuxtApp()
+const { organizations, currentOwnedId } = useCurrentOwned()
 const me = useMe()
 
 const steps = computed(() => ([
@@ -111,8 +99,13 @@ async function createOrganizationAndMoveToNextStep(logo_file: File | null) {
     loading.value = true
     newOrganization.value = await $api<Organization>('/api/1/organizations/', {
       method: 'POST',
-      body: JSON.stringify(organizationForm.value),
+      body: JSON.stringify({
+        ...organizationForm.value,
+        business_number_id: cleanSiret(organizationForm.value.business_number_id),
+      }),
     })
+    organizations.value[newOrganization.value.id] = newOrganization.value
+    currentOwnedId.value = { organization: newOrganization.value.id }
     moveToNextStep = true
   }
   catch (e) {

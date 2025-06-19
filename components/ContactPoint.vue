@@ -41,8 +41,8 @@ const label = computed(() => {
 const role = computed(() => {
   return {
     contact: t('Contact'),
-    creator: t('Creator'),
-    publisher: t('Publisher'),
+    creator: t('Créateur'),
+    publisher: t('Éditeur'),
   }[props.contact.role]
 })
 </script>

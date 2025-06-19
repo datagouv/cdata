@@ -139,8 +139,8 @@ const params = computed(() => {
 
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Dataservice>>('/api/1/dataservices/', { lazy: true, query: params })
 
-watch(pageData, async (data) => {
-  const activities = await getActitiesForObjects($api, data.data)
+watchEffect(async () => {
+  const activities = await getActitiesForObjects($api, pageData.value.data)
   dataserviceActivities.value = { ...dataserviceActivities.value, ...activities }
 })
 </script>

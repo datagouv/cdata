@@ -79,9 +79,6 @@
         <option value="-followers">
           {{ $t('Followers') }}
         </option>
-        <option value="-reuses">
-          {{ $t('Reuses') }}
-        </option>
       </select>
     </div>
   </div>

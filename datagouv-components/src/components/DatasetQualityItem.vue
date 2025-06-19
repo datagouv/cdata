@@ -2,7 +2,7 @@
   <li>
     <p
       v-if="passed"
-      class="fr-my-0"
+      class="fr-my-0 text-sm"
     >
       <span
         class="fr-icon-check-line"
@@ -12,7 +12,7 @@
     </p>
     <p
       v-else
-      class="my-0 text-gray-medium"
+      class="my-0 text-gray-medium text-sm"
     >
       <span
         class="fr-icon-warning-line"

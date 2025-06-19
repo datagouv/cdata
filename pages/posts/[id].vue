@@ -6,32 +6,20 @@
   >
     <div class="flex items-center">
       <Breadcrumb class="flex-1">
-        <li>
-          <NuxtLinkLocale
-            class="fr-breadcrumb__link"
-            :external="true"
-            to="/"
-          >
-            {{ $t('Home') }}
-          </NuxtLinkLocale>
-        </li>
-        <li>
-          <NuxtLinkLocale
-            class="fr-breadcrumb__link"
-            to="/posts"
-          >
-            {{ $t('Posts') }}
-          </NuxtLinkLocale>
-        </li>
-        <li>
-          <a
-            class="fr-breadcrumb__link"
-            aria-current="page"
-          >
-            {{ post.name }}
-          </a>
-        </li>
+        <BreadcrumbItem
+          to="/"
+          external
+        >
+          {{ $t('Accueil') }}
+        </BreadcrumbItem>
+        <BreadcrumbItem to="/posts">
+          {{ $t('Articles') }}
+        </BreadcrumbItem>
+        <BreadcrumbItem v-if="post">
+          {{ post.name }}
+        </BreadcrumbItem>
       </Breadcrumb>
+
       <div v-if="isMeAdmin()">
         <EditButton
           :id="post.id"
@@ -90,6 +78,7 @@
 
 <script setup lang="ts">
 import { useFormatDate } from '@datagouv/components-next'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import type { Post } from '~/types/posts'
 

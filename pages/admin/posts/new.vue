@@ -1,30 +1,18 @@
 <template>
   <div>
     <Breadcrumb>
-      <li>
-        <NuxtLinkLocale
-          class="fr-breadcrumb__link"
-          to="/"
-        >
-          {{ t("Home") }}
-        </NuxtLinkLocale>
-      </li>
-      <li>
-        <NuxtLinkLocale
-          class="fr-breadcrumb__link"
-          to="/posts"
-        >
-          {{ t("Posts") }}
-        </NuxtLinkLocale>
-      </li>
-      <li>
-        <a
-          class="fr-breadcrumb__link"
-          aria-current="page"
-        >
-          {{ t("Publishing form") }}
-        </a>
-      </li>
+      <BreadcrumbItem
+        to="/"
+        external
+      >
+        {{ $t('Accueil') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem to="/posts">
+        {{ $t('Articles') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem>
+        {{ $t('Formulaire de publication') }}
+      </BreadcrumbItem>
     </Breadcrumb>
 
     <Stepper
@@ -52,6 +40,7 @@
 
 <script setup lang="ts">
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import DescribePost from '~/components/Posts/DescribePost.vue'
 import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'

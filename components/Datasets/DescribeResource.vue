@@ -49,43 +49,45 @@
         form-key="file"
       >
         <LoadingBlock :status>
-          <div v-if="newFile">
-            <label
-              v-if="type === 'update'"
-              class="fr-label fr-mb-1w"
-            >
-              {{ $t('The current file will be replaced by') }}
-            </label>
-            <FileCard
-              v-if="newFile"
-              :model-value="{
-                filetype: 'file',
-                title: newFile.name,
-                type: 'main',
-                description: '',
-                schema: null,
-                file: {
-                  raw: newFile,
-                  state: { status: 'waiting' },
-                },
-                resource: null,
-              }"
-              class="fr-mb-3v"
-              :show-edit-and-warning="false"
-              :extensions
-              @delete="newFile = null; form.filetype = null"
+          <div v-if="extensions">
+            <div v-if="newFile">
+              <label
+                v-if="type === 'update'"
+                class="fr-label fr-mb-1w"
+              >
+                {{ $t('The current file will be replaced by') }}
+              </label>
+              <FileCard
+                v-if="newFile"
+                :model-value="{
+                  filetype: 'file',
+                  title: newFile.name,
+                  type: 'main',
+                  description: '',
+                  schema: null,
+                  file: {
+                    raw: newFile,
+                    state: { status: 'waiting' },
+                  },
+                  resource: null,
+                }"
+                class="fr-mb-3v"
+                :show-edit-and-warning="false"
+                :extensions
+                @delete="newFile = null; form.filetype = null"
+              />
+            </div>
+            <UploadGroup
+              v-else
+              :show-label="type === 'update'"
+              :label="type === 'update' ? $t('Replace file') : $t('New file')"
+              type="drop"
+              :accept="extensions.join(',')"
+              :multiple="false"
+              :hint-text="$t('Max size: 420 Mb.')"
+              @change="setFiles"
             />
           </div>
-          <UploadGroup
-            v-else
-            :show-label="type === 'update'"
-            :label="type === 'update' ? $t('Replace file') : $t('New file')"
-            type="drop"
-            :accept="extensions.join(',')"
-            :multiple="false"
-            :hint-text="$t('Max size: 420 Mb.')"
-            @change="setFiles"
-          />
         </LoadingBlock>
       </FieldsetElement>
 

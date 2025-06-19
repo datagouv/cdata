@@ -2,7 +2,7 @@
   <div class="flex">
     <Sidemenu
       class="w-5/12 hidden lg:block"
-      :button-text="$t('Help')"
+      :button-text="$t('Aide')"
       :on-right="true"
       :fixed="true"
     >
@@ -11,116 +11,116 @@
           class="fr-icon--sm fr-icon-question-line"
           aria-hidden="true"
         />
-        {{ $t('Help') }}
+        {{ $t('Aide') }}
       </template>
       <AccordionGroup :with-icon="true">
         <Accordion
           :id="nameDataserviceAccordionId"
-          :title="t('Name your API')"
+          :title="t('Nommer son API')"
           :state="accordionState('title')"
         >
           <p class="fr-m-0">
-            {{ t('Give your API a relevant and explicit name to reflect its function or application domain. A good name helps users search for and identify the API easily.') }}
+            {{ t(`Donnez un nom pertinent et explicite à votre API pour qu’elle reflète sa fonction ou son domaine d’application. Un bon nom facilite la recherche et l’identification par les utilisateurs. Ajouter systématiquement le préfixe "API" pour uniformisation.`) }}
           </p>
         </Accordion>
         <Accordion
           :id="acronymDataserviceAccordionId"
-          :title="t('Add an acronym to the API')"
+          :title="t(`Ajouter un sigle ou un acronyme à l'API`)"
           :state="accordionState('acronym')"
         >
           <p class="fr-m-0">
-            {{ t('You have the option to add an acronym to your API. The letters that make up this acronym do not need to be separated by periods.') }}
+            {{ t('Vous avez la possibilité d’apposer un sigle à votre API. Les lettres qui composent ce sigle n’ont pas besoin d’être séparées par des points.') }}
           </p>
         </Accordion>
         <Accordion
           :id="addDescriptionAccordionId"
-          :title="t('Write a good description')"
+          :title="t('Écrire une bonne description')"
           :state="accordionState('description')"
         >
           <p class="fr-m-0">
-            {{ t("Write a clear and precise description of the API. Users need to understand the purpose of the API, the data provided, the scope covered (is the data exhaustive, are there any gaps?), the frequency of data updates, as well as the parameters with which they can make a call.") }}
+            {{ t("Rédigez une description claire et précise de l'API. Les usagers ont besoin de comprendre l'objectif de l'API, les données délivrées, le périmètre couvert (la donnée est-elle exhaustive, y-a t'il des manques ?), la fréquence d'actualisation de la donnée, ainsi que les paramètres avec lesquels ils peuvent effectuer un appel.") }}
           </p>
         </Accordion>
         <Accordion
           :id="addBaseUrlAccordionId"
-          :title="t('Define the correct link to the API')"
+          :title="t('Définir le bon lien vers l’API')"
           :state="accordionState('base_api_url')"
         >
           <p class="fr-m-0">
-            {{ t("The base URL of an API is the common entry point for all requests, often consisting of a domain or server address. It serves as the foundation to which specific paths (endpoints) are added to access the various resources of the API.") }}
+            {{ t("L'URL de base d'une API est le point d'entrée commun à toutes les requêtes, souvent constitué d'un domaine ou d'une adresse serveur. Elle sert de fondation à laquelle on ajoute des chemins (endpoints) spécifiques pour accéder aux différentes ressources de l'API.") }}
           </p>
         </Accordion>
         <Accordion
           :id="machineDocumentationUrlAccordionId"
-          :title="t('Add a link to the machine documentation')"
+          :title="t('Ajouter un lien vers la documentation machine')"
           :state="accordionState('machine_documentation_url')"
         >
           <p class="fr-m-0">
-            {{ t("Ideally, provide an OpenAPI (swagger) link that allows developers to explore the endpoints, see the available methods, and test requests directly from the documentation. In the case of geographic services, you can provide a link to the service with a GetCapabilities request to obtain the service's metadata.") }}
+            {{ t("Idéalement, proposez un lien OpenAPI (swagger) qui permet aux développeurs d'explorer les endpoints, voir les méthodes disponibles, et tester des requêtes directement depuis la documentation. Dans le cas de services géographiques, vous pouvez renseigner un lien vers le service avec une requête GetCapabilities pour obtenir les métadonnées du service.") }}
           </p>
         </Accordion>
         <Accordion
           :id="technicalDocumentationUrlAccordionId"
-          :title="t('Add a link to the technical documentation')"
+          :title="t('Ajouter un lien vers la documentation technique')"
           :state="accordionState('machine_documentation_url')"
         >
           <p class="fr-m-0">
-            {{ t("Add access to the general technical documentation of the API and indicate the integration steps.") }}
+            {{ t("Ajoutez un accès vers la documentation technique générale de l'API et indiquant les étapes d'intégration.") }}
           </p>
         </Accordion>
         <Accordion
           :id="rateLimitingDataserviceAccordionId"
-          :title="t('Set the rate limiting')"
+          :title="t('Indiquer le rate limiting')"
           :state="accordionState('rate_limiting')"
         >
           <p class="fr-m-0">
-            {{ t('You can specify the rate limiting for your API.') }}
+            {{ t(`Si le nombre d'appels à votre API est contraint, veuillez définir ici le nombre maximal d'appels par minute, voire par IP et/ou jeton.`) }}
           </p>
         </Accordion>
         <Accordion
           :id="availabilityDataserviceAccordionId"
-          :title="t('Add the availability')"
+          :title="t('Indiquer la disponibilité')"
           :state="accordionState('availability')"
         >
           <p class="fr-m-0">
-            {{ t('Specify the mean availability of your dataservice. Value should be a percentage.') }}
+            {{ t('Spécifier la disponibilité moyenne de votre API. La valeur doit être un pourcentage.') }}
           </p>
         </Accordion>
         <Accordion
           v-if="form.owned?.organization"
           :id="contactPointAccordionId"
-          :title="$t('Define a point of contact')"
+          :title="$t('Définir un point de contact')"
           :state="accordionState('contact_points')"
         >
           <p class="fr-m-0">
-            {{ $t("Specify a contact point, such as an email or a link to a form, so users can reach you in case of issues or for questions.") }}
+            {{ $t("Spécifiez un point de contact, comme un email ou un lien vers un formulaire, pour que les utilisateurs puissent vous joindre en cas de problème ou pour poser des questions.") }}
           </p>
         </Accordion>
         <Accordion
           :id="accessTypeAccordionId"
-          :title="$t('Select an access type')"
+          :title="$t('Sélectionner un type d’accès')"
           :state="accordionState('access_type')"
         >
           <p class="fr-m-0">
-            {{ $t("Please indicate whether the dataservice is freely accessible or whether a user requires a token to access the data.") }}
+            {{ $t("Choisissez le type d’accès (ouvert, ouvert avec compte ou restreint). Sélectionnez « ouvert » si les données sont en open data. Sélectionnez « ouvert avec compte » si l'accès aux données est soumis à la nécessité de posséder un compte. Si vous sélectionnez « restreint », précisez les types de publics éligibles à obtenir l'accès à cette API.") }}
           </p>
         </Accordion>
         <Accordion
           :id="addAuthorizationUrlAccordionId"
-          :title="t('Add a link to the authorization')"
+          :title="t('Ajouter un lien vers la demande d’habilitation')"
           :state="accordionState('authorization_request_url')"
         >
           <p class="fr-m-0">
-            {{ t("If your API is restricted access, please add the link to the access request form. Are you an administration? The Datapass solution allows you to easily create and manage access request forms for data.") }}
+            {{ t("Si votre API est en accès restreint, veuillez ajouter le lien vers le formulaire de demande d'accès. Vous êtes une administration ? La solution Datapass vous permet de créer et administrer facilement des formulaires de demande d'accès à la donnée.") }}
           </p>
         </Accordion>
         <Accordion
           :id="addBusinessUrlAccordionId"
-          :title="t('Add a link to the business documentation')"
+          :title="t('Ajouter un lien vers la documentation métier')"
           :state="accordionState('business_documentation_url')"
         >
           <p class="fr-m-0">
-            {{ t("The business documentation of your API that explains its capabilities and use cases, in addition to the technical documentation.") }}
+            {{ t("La documentation métier de votre API explique son périmètre et ses cas d'usages. Elle vient en complément de la documentation technique.") }}
           </p>
         </Accordion>
       </AccordionGroup>
@@ -143,10 +143,10 @@
           />
           <div class="w-full">
             <p class="font-bold mb-1">
-              {{ t('What is a dataservice?') }}
+              {{ t(`Qu'est-ce qu'une API ?`) }}
             </p>
             <p class="m-0 text-xs/5">
-              {{ t('A dataservice is a computer tool that allows a website or software to communicate with another computer and exchange data.') }}
+              {{ t('Une API est un outil informatique qui permet à un site internet ou à un logiciel de communiquer avec un autre ordinateur et échanger de la donnée.') }}
             </p>
           </div>
         </SimpleBanner>
@@ -161,13 +161,13 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Producer") }}
+              {{ $t("Producteur") }}
             </h2>
           </legend>
           <div class="fr-fieldset__element">
             <ProducerSelect
               v-model="form.owned"
-              :label="t('Check the identity with which you want to publish')"
+              :label="t(`Vérifiez l'identité avec laquelle vous souhaitez publier`)"
               :options="ownedOptions"
               :error-text="getFirstError('owned')"
               :warning-text="getFirstWarning('owned')"
@@ -197,7 +197,7 @@
               v-model="form.title"
               class="mb-3"
               :aria-describedby="nameDataserviceAccordionId"
-              :label="t('Dataservice name')"
+              :label="t(`Nom de l'API`)"
               :required="true"
               :has-error="!!getFirstError('title')"
               :has-warning="!!getFirstWarning('title')"
@@ -219,7 +219,7 @@
             <InputGroup
               v-model="form.acronym"
               :aria-describedby="acronymDataserviceAccordionId"
-              :label="t('Acronym')"
+              :label="t('Acronyme')"
               :required="false"
               :has-error="!!getFirstError('acronym')"
               :has-warning="!!getFirstWarning('acronym')"
@@ -257,7 +257,7 @@
             <InputGroup
               v-model="form.base_api_url"
               :aria-describedby="addBaseUrlAccordionId"
-              :label="t('Dataservice Base URL')"
+              :label="t('Lien racine de l’API')"
               type="url"
               placeholder="https://..."
               :required="false"
@@ -274,7 +274,7 @@
             <InputGroup
               v-model="form.machine_documentation_url"
               :aria-describedby="machineDocumentationUrlAccordionId"
-              :label="t('Dataservice machine description URL')"
+              :label="t(`Lien vers la documentation machine de l'API`)"
               type="url"
               placeholder="https://..."
               :required="false"
@@ -291,7 +291,7 @@
             <InputGroup
               v-model="form.technical_documentation_url"
               :aria-describedby="technicalDocumentationUrlAccordionId"
-              :label="t('Dataservice technical description URL')"
+              :label="t(`Lien vers la documentation technique de l'API`)"
               type="url"
               placeholder="https://..."
               :required="false"
@@ -323,7 +323,7 @@
             <InputGroup
               v-model="form.availability"
               :aria-describedby="acronymDataserviceAccordionId"
-              :label="t('Availability')"
+              :label="t('Disponibilité')"
               type="number"
               placeholder="99,9"
               :required="false"
@@ -343,7 +343,7 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-0">
-              {{ harvested ? t("Attributions and Contact points") : t("Contact points") }}
+              {{ harvested ? t("Attributions et points de contacts") : t("Points de contact") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -374,7 +374,7 @@
               :icon="RiAddLine"
               @click="form.contact_points.push({ ...defaultContactForm })"
             >
-              {{ harvested ? t('New Attribution') : t('New Contact') }}
+              {{ harvested ? t('Nouvelle attribution') : t('Nouveau contact') }}
             </BrandedButton>
           </LinkedToAccordion>
         </fieldset>
@@ -387,7 +387,7 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Access") }}
+              {{ $t("Accès") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -398,7 +398,7 @@
             <RadioButtons
               v-model="form.access_type"
               class="!mb-0"
-              :label="t('Access type')"
+              :label="t(`Type d'accès`)"
               :options="[
                 { value: 'open', label: t('Open') },
                 { value: 'open_with_account', label: t('Open with account') },
@@ -412,6 +412,19 @@
             >
               {{ getFirstWarning("access_type") }}
             </SimpleBanner>
+            <div
+              v-if="form.access_type === 'restricted'"
+              class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 items-end"
+            >
+              <SelectGroup
+                v-for="accessAudienceType in accessAudienceTypes"
+                :key="accessAudienceType"
+                v-model="form.access_audiences[accessAudienceType]"
+                class="mb-0"
+                :label="getAccessAudienceType(accessAudienceType)"
+                :options="accessAudienceConditionOptions"
+              />
+            </div>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -421,7 +434,7 @@
             <InputGroup
               v-model="form.authorization_request_url"
               :aria-describedby="addAuthorizationUrlAccordionId"
-              :label="t('Dataservice authorization request URL')"
+              :label="t(`Lien vers l'outil d’habilitation d'accès`)"
               type="url"
               placeholder="https://..."
               :required="false"
@@ -438,7 +451,7 @@
             <InputGroup
               v-model="form.business_documentation_url"
               :aria-describedby="addBusinessUrlAccordionId"
-              :label="t('Dataservice business documentation URL')"
+              :label="t(`Lien vers la documentation métier de l'API`)"
               type="url"
               placeholder="https://..."
               :required="false"
@@ -463,8 +476,8 @@
             class="fr-label"
             for="checkboxes-hint-el-sm-1"
           >
-            {{ t('Switch to draft mode') }}
-            <span class="fr-hint-text">{{ t('The dataservice will only be visible to members of your organization.') }}</span>
+            {{ t('Passer en mode brouillon') }}
+            <span class="fr-hint-text">{{ t(`L'API ne sera visible que par les membres de l’organisation.`) }}</span>
           </label>
           <div
             id="checkboxes-hint-el-sm-1-messages"
@@ -482,7 +495,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, type DataserviceAccessAudienceCondition, type DataserviceAccessAudienceType } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
@@ -490,6 +503,7 @@ import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ContactPointSelect from '~/components/ContactPointSelect.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import type { DataserviceForm, Owned } from '~/types/types'
+import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 
 const props = defineProps<{
   harvested?: boolean
@@ -519,9 +533,20 @@ const rateLimitingDataserviceAccordionId = useId()
 const availabilityDataserviceAccordionId = useId()
 const contactPointAccordionId = useId()
 
+const { getAccessAudienceCondition, getAccessAudienceType } = useAccessAudience()
+
 const ownedOptions = computed<Array<Owned>>(() => {
   return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: user.value, organization: null }]
 })
+
+const accessAudienceConditions: Array<DataserviceAccessAudienceCondition> = ['yes', 'no', 'under_condition']
+
+const accessAudienceTypes: Array<DataserviceAccessAudienceType> = ['local_authority_and_administration', 'company_and_association', 'private']
+
+const accessAudienceConditionOptions = computed(() => accessAudienceConditions.map(condition => ({
+  value: condition,
+  label: getAccessAudienceCondition(condition).label,
+})))
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(dataserviceForm, {
   owned: [required()],
@@ -553,5 +578,5 @@ function submit() {
   if (validate()) {
     emit('submit')
   }
-};
+}
 </script>
