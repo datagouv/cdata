@@ -282,8 +282,6 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
-import { DataservicesAccessAudienceCondition } from '#components'
-import { template } from 'lodash'
 
 const route = useRoute()
 const { formatDate } = useFormatDate()
