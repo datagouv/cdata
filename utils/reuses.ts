@@ -64,13 +64,3 @@ export async function getReuseMetrics(rid: string) {
     reuseViewsTotal,
   }
 }
-
-export function createReuseMetricsUrl(reuseViews: Record<string, number>) {
-  let data = 'month,visit\n'
-
-  for (const month in reuseViews) {
-    data += `${month},${reuseViews[month]}\n`
-  }
-
-  return URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
-}
