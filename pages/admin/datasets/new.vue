@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Dataset, Frequency, Owned } from '@datagouv/components-next'
+import type { Dataset, Frequency, Owned, Resource } from '@datagouv/components-next'
 import Step1PublishingType from '~/components/Datasets/New/Step1PublishingType.vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import Step3AddResources from '~/components/Datasets/New/Step3AddResources.vue'
@@ -135,7 +135,10 @@ async function save() {
       body: JSON.stringify(datasetToApi(datasetForm.value, { private: true })),
     })
 
-    const results = await Promise.allSettled(resources.value.map((_, i: number) => saveResourceForm(dataset, resources.value[i])))
+    let results: Array<PromiseSettledResult<Resource>> = []
+    for (const chunk of chunkArray(resources.value, config.public.maxNumberOfResourcesToUploadInParallel)) {
+      results = [...results, ...await Promise.allSettled(chunk.map((_, i: number) => saveResourceForm(dataset, resources.value[i])))]
+    }
 
     if (results.every(f => f.status !== 'rejected')) {
       await moveToStep(4)
