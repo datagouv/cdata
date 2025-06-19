@@ -154,7 +154,13 @@
                   {{ $t('Accès') }}
                 </dt>
                 <dd class="p-0">
-                  <DataserviceAccessTypeBadge :dataservice />
+                  <DataserviceAccessTypeBadge
+                    v-if="dataservice.access_type"
+                    :dataservice
+                  />
+                  <template v-else>
+                    {{ $t('Non spécifié') }}
+                  </template>
                   <div
                     v-if="dataservice.authorization_request_url"
                     class="mt-2.5"
@@ -276,7 +282,6 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
-import { DataservicesAccessAudienceCondition } from '#components'
 
 const route = useRoute()
 const { formatDate } = useFormatDate()
