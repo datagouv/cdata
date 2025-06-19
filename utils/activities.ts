@@ -32,8 +32,11 @@ export function getActivityTranslation(activity: Activity) {
   }[activity.key] ?? activity.label
 }
 
-export async function getActitiesForObjects(api: $Fetch, auditables: Array<{ id: string }>, sort: '-created_at' | 'created_at' = '-created_at') {
+export async function getActitiesForObjects(api: $Fetch, auditables: Array<{ id: string }> | undefined, sort: '-created_at' | 'created_at' = '-created_at') {
   const activityPromises: Record<string, Promise<PaginatedArray<Activity>>> = {}
+  if (!auditables) {
+    return Promise.resolve({})
+  }
   for (const auditable of auditables) {
     if (auditable.id in activityPromises) {
       continue

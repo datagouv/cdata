@@ -26,52 +26,6 @@
         >
           {{ t("Datasets") }}
         </AdminTableTh>
-        <AdminTableTh
-          scope="col"
-          class="w-16"
-        >
-          <Tooltip>
-            <span
-              class="fr-icon--sm fr-icon-chat-3-line"
-              aria-hidden="true"
-            />
-            <template #tooltip>
-              {{ t('Discussions') }}
-            </template>
-          </Tooltip>
-        </AdminTableTh>
-        <AdminTableTh
-          class="w-16"
-          :sorted="sorted('views')"
-          scope="col"
-          @sort="(direction: SortDirection) => $emit('sort', 'views', direction)"
-        >
-          <Tooltip>
-            <span
-              class="fr-icon--sm fr-icon-eye-line"
-              aria-hidden="true"
-            />
-            <template #tooltip>
-              {{ t('Views') }}
-            </template>
-          </Tooltip>
-        </AdminTableTh>
-        <AdminTableTh
-          class="w-16"
-          :sorted="sorted('followers')"
-          scope="col"
-          @sort="(direction: SortDirection) => $emit('sort', 'followers', direction)"
-        >
-          <Tooltip>
-            <span
-              class="fr-icon--sm fr-icon-star-s-line"
-              aria-hidden="true"
-            />
-            <template #tooltip>
-              {{ t('Favorites') }}
-            </template>
-          </Tooltip>
-        </AdminTableTh>
         <AdminTableTh scope="col">
           {{ t("Actions") }}
         </AdminTableTh>
@@ -121,15 +75,6 @@
         </td>
         <td class="font-mono text-right">
           {{ summarize(reuse.datasets.length) }}
-        </td>
-        <td class="font-mono text-right">
-          {{ summarize(reuse.metrics.discussions) }}
-        </td>
-        <td class="font-mono text-right">
-          {{ summarize(reuse.metrics.views) }}
-        </td>
-        <td class="font-mono text-right">
-          {{ summarize(reuse.metrics.followers) }}
         </td>
         <td>
           <BrandedButton

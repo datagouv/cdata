@@ -122,6 +122,12 @@
               :to="`/admin/organizations/${organization.id}/profile`"
               @click="$emit('click')"
             />
+            <AdminSidebarLink
+              :icon="RiBarChartBoxLine"
+              :label="$t('Metrics')"
+              :to="`/admin/organizations/${organization.id}/metrics`"
+              @click="$emit('click')"
+            />
           </template>
           <template v-else>
             <AdminSidebarLink
@@ -180,7 +186,7 @@
 import { Avatar } from '@datagouv/components-next'
 import type { Organization, User } from '@datagouv/components-next'
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
-import { RiArticleLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiGitPullRequestLine, RiGroup3Line, RiLineChartLine, RiParentLine, RiPlanetLine, RiRobot2Line, RiServerLine, RiUserLine } from '@remixicon/vue'
+import { RiArticleLine, RiBarChartBoxLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiGitPullRequestLine, RiGroup3Line, RiLineChartLine, RiParentLine, RiPlanetLine, RiRobot2Line, RiServerLine, RiUserLine } from '@remixicon/vue'
 import { key, type AccordionRegister } from '~/components/Accordion/injectionKey'
 import AdminSidebarLink from '~/components/AdminSidebar/AdminSidebarLink/AdminSidebarLink.vue'
 

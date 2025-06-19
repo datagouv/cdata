@@ -15,12 +15,6 @@
       @done="refresh"
     />
 
-    <DatasetsMetrics
-      v-if="organization && pageData && pageData.total > 0"
-      class="mb-8"
-      :organization
-    />
-
     <div
       v-if="pageData"
       class="flex flex-wrap gap-x-4 gap-y-2 items-center"

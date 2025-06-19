@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div class="flex flex-wrap mb-2">
-      <h2 class="!text-sm !mb-2.5 w-full flex-none sm:flex-1">
+    <div class="flex flex-wrap mb-6">
+      <h2 class="text-sm w-full flex-none sm:flex-1 mb-0">
         {{ $t('Statistics from the last 12 months') }}
       </h2>
       <div>
@@ -19,29 +19,60 @@
       </div>
     </div>
     <section
-      class="flex flex-col md:flex-row px-4 pb-4"
+      class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 pb-4"
+    >
+      <ClientOnly>
+        <StatBox
+          :title="$t('Jeux de données')"
+          :data="organization.metrics.datasets_by_months"
+          type="bar"
+          :summary="organization.metrics.datasets"
+        />
+        <StatBox
+          :title="$t('API')"
+          :data="organization.metrics.dataservices_by_months"
+          type="bar"
+          :summary="organization.metrics.dataservices"
+        />
+        <StatBox
+          :title="$t('Réutilisations')"
+          :data="organization.metrics.reuses_by_months"
+          type="bar"
+          :summary="organization.metrics.reuses"
+        />
+      </ClientOnly>
+    </section>
+    <Divider
+      color="bg-gray-default"
+      class="mb-6 pr-24"
+    />
+    <section
+      class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 pb-4"
     >
       <ClientOnly>
         <StatBox
           :title="$t('Views')"
-          :data="metricsViews"
+          :data="metricsDatasetsViews"
           type="line"
-          :summary="metricsViewsTotal"
-          class="md:w-1/3 mb-8 md:mb-0"
+          :summary="metricsDatasetsViewsTotal"
         />
         <StatBox
           :title="$t('Downloads')"
           :data="metricsDownloads"
           type="line"
           :summary="metricsDownloadsTotal"
-          class="md:w-1/3 mb-8 md:mb-0"
+        />
+        <StatBox
+          :title="$t('Dataservices Visits')"
+          :data="metricsDataservicesViews"
+          type="line"
+          :summary="metricsDataservicesViewsTotal"
         />
         <StatBox
           :title="$t('Reuses Visits')"
           :data="metricsReuses"
           type="line"
           :summary="metricsReusesTotal"
-          class="md:w-1/3 mb-8 md:mb-0"
         />
       </ClientOnly>
     </section>
@@ -189,6 +220,7 @@
 <script setup lang="ts">
 import { Avatar, BrandedButton, CopyButton, OrganizationNameWithCertificate, StatBox, useFormatDate, type Organization } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
+import Divider from '~/components/Divider.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
 
 const props = defineProps<{
@@ -203,24 +235,14 @@ const { $api } = useNuxtApp()
 const { toast } = useToast()
 const me = useMaybeMe()
 
-const metricsViews = ref<null | Record<string, number>>(null)
-const metricsViewsTotal = ref<null | number>(null)
+const metricsDataservicesViews = ref<null | Record<string, number>>(null)
+const metricsDataservicesViewsTotal = ref<null | number>(null)
+const metricsDatasetsViews = ref<null | Record<string, number>>(null)
+const metricsDatasetsViewsTotal = ref<null | number>(null)
 const metricsDownloads = ref<null | Record<string, number>>(null)
 const metricsDownloadsTotal = ref<null | number>(null)
 const metricsReuses = ref<null | Record<string, number>>(null)
 const metricsReusesTotal = ref<null | number>(null)
-
-const reason = ref('')
-
-const alreadyMember = computed(() => me.value?.organizations.find(organization => organization.id === props.organization.id))
-
-const downloadStatsUrl = computed(() => {
-  if (!metricsViews.value || !metricsDownloads.value || !metricsReuses.value) {
-    return null
-  }
-
-  return createOrganizationMetricsUrl(metricsViews.value, metricsDownloads.value, metricsReuses.value)
-})
 
 watchEffect(async () => {
   const metrics = await getOrganizationMetrics(props.organization.id)
@@ -228,9 +250,23 @@ watchEffect(async () => {
   metricsDownloadsTotal.value = metrics.downloadsTotal
   metricsReuses.value = metrics.reusesViews
   metricsReusesTotal.value = metrics.reusesViewsTotal
-  metricsViews.value = metrics.datasetsViews
-  metricsViewsTotal.value = metrics.datasetsViewsTotal
+  metricsDataservicesViews.value = metrics.dataservicesViews
+  metricsDataservicesViewsTotal.value = metrics.dataservicesViewsTotal
+  metricsDatasetsViews.value = metrics.datasetsViews
+  metricsDatasetsViewsTotal.value = metrics.datasetsViewsTotal
 })
+
+const downloadStatsUrl = computed(() => {
+  if (!metricsDatasetsViews.value || !metricsDownloads.value || !metricsDataservicesViews.value || !metricsReuses.value) {
+    return null
+  }
+
+  return createOrganizationMetricsUrl(metricsDatasetsViews.value, metricsDownloads.value, metricsDataservicesViews.value, metricsReuses.value)
+})
+
+const reason = ref('')
+
+const alreadyMember = computed(() => me.value?.organizations.find(organization => organization.id === props.organization.id))
 
 const { data: pendingRequests, status, refresh } = await useAsyncData<Array<PendingMembershipRequest | MembershipRequest>>('membership-requests', () => {
   if (me.value) {
