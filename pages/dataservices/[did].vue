@@ -176,18 +176,23 @@
                   <dd
                     class="p-0"
                   >
-                    <ul class="list-none p-0 space-y-1 m-0">
+                    <ul
+                      v-if="accessAudiences.length"
+                      class="list-none p-0 space-y-1 m-0"
+                    >
                       <template
-                        v-for="audience in (['local_authority_and_administration', 'company_and_association', 'private'] as Array<DataserviceAccessAudienceType>)"
+                        v-for="audience in accessAudiences"
                         :key="audience"
                       >
                         <DataservicesAccessAudienceCondition
-                          v-if="getAccessAudience(audience)?.condition"
-                          :condition="getAccessAudience(audience)!.condition"
-                          :audience
+                          :condition="audience.condition"
+                          :audience="audience.role"
                         />
                       </template>
                     </ul>
+                    <template v-else>
+                      {{ $t('Non spécifiés') }}
+                    </template>
                   </dd>
                 </template>
               </div>
@@ -262,7 +267,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, type DataserviceAccessAudienceCondition, type DataserviceAccessAudienceType } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, type DataserviceAccessAudienceCondition, type DataserviceAccessAudienceType, type DataserviceAccessAudience } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import DataserviceAccessTypeBadge from '~/components/AdminTable/AdminDataservicesTable/DataserviceAccessTypeBadge.vue'
@@ -288,9 +293,9 @@ await useJsonLd('dataservice', route.params.did)
 
 const openSwagger = ref(false)
 
-function getAccessAudience(type: DataserviceAccessAudienceType) {
-  return dataservice.value.access_audiences.find(a => a.role === type)
-}
+const accessAudiences = computed(() => (['local_authority_and_administration', 'company_and_association', 'private'] as Array<DataserviceAccessAudienceType>)
+  .map(type => dataservice.value.access_audiences.find(a => a.role === type))
+  .filter(Boolean) as Array<DataserviceAccessAudience>)
 
 onMounted(async () => {
   await redirectLegacyHashes([

@@ -9,7 +9,7 @@
     </h1>
     <PaddedContainer
       v-if="organization"
-      class="fr-mb-5v"
+      class="mb-5"
     >
       <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle justify-between">
         <div class="fr-col-12 fr-col-md fr-grid-row fr-grid-row--middle">

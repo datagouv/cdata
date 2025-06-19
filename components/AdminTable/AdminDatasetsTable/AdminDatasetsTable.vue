@@ -43,82 +43,6 @@
         >
           {{ t('Score') }}
         </AdminTableTh>
-        <AdminTableTh
-          class="w-16"
-          scope="col"
-        >
-          <Tooltip>
-            <span
-              class="fr-icon--sm fr-icon-chat-3-line"
-              aria-hidden="true"
-            />
-            <template #tooltip>
-              {{ t('Discussions') }}
-            </template>
-          </Tooltip>
-        </AdminTableTh>
-        <AdminTableTh
-          class="w-16"
-          :sorted="sorted('views')"
-          scope="col"
-          @sort="(direction: SortDirection) => updateSort('views', direction)"
-        >
-          <Tooltip>
-            <span
-              class="fr-icon--sm fr-icon-eye-line"
-              aria-hidden="true"
-            />
-            <template #tooltip>
-              {{ t('Views') }}
-            </template>
-          </Tooltip>
-        </AdminTableTh>
-        <AdminTableTh
-          class="w-16"
-          scope="col"
-        >
-          <Tooltip>
-            <span
-              class="fr-icon--sm fr-icon-download-line"
-              aria-hidden="true"
-            />
-            <template #tooltip>
-              {{ t('Downloads') }}
-            </template>
-          </Tooltip>
-        </AdminTableTh>
-        <AdminTableTh
-          class="w-16"
-          :sorted="sorted('reuses')"
-          scope="col"
-          @sort="(direction: SortDirection) => updateSort('reuses', direction)"
-        >
-          <Tooltip>
-            <span
-              class="fr-icon--sm fr-icon-line-chart-line"
-              aria-hidden="true"
-            />
-            <template #tooltip>
-              {{ t('Reuses') }}
-            </template>
-          </Tooltip>
-        </AdminTableTh>
-        <AdminTableTh
-          class="w-16"
-          :sorted="sorted('followers')"
-          scope="col"
-          @sort="(direction: SortDirection) => updateSort('followers', direction)"
-        >
-          <Tooltip>
-            <span
-              class="fr-icon--sm fr-icon-star-s-line"
-              aria-hidden="true"
-            />
-            <template #tooltip>
-              {{ t('Favorites') }}
-            </template>
-          </Tooltip>
-        </AdminTableTh>
         <AdminTableTh scope="col">
           {{ t("Actions") }}
         </AdminTableTh>
@@ -183,21 +107,6 @@
             </template>
           </Tooltip>
         </td>
-        <td class="font-mono text-right">
-          {{ summarize(dataset.metrics.discussions) }}
-        </td>
-        <td class="font-mono text-right">
-          {{ summarize(dataset.metrics.views) }}
-        </td>
-        <td class="font-mono text-right">
-          {{ summarize(dataset.metrics.resources_downloads ?? 0) }}
-        </td>
-        <td class="font-mono text-right">
-          {{ summarize(dataset.metrics.reuses) }}
-        </td>
-        <td class="font-mono text-right">
-          {{ summarize(dataset.metrics.followers) }}
-        </td>
         <td>
           <BrandedButton
             size="xs"
@@ -231,7 +140,7 @@
 </template>
 
 <script setup lang="ts">
-import { summarize, DatasetQualityScore, DatasetQualityTooltipContent, BrandedButton, AvatarWithName, useFormatDate } from '@datagouv/components-next'
+import { DatasetQualityScore, DatasetQualityTooltipContent, BrandedButton, AvatarWithName, useFormatDate } from '@datagouv/components-next'
 import type { Dataset, DatasetV2 } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
