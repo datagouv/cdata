@@ -164,6 +164,7 @@ const qDebounced = refDebounced(q, 500) // TODO add 500 in config
 const params = computed(() => {
   return {
     with_drafts: true,
+    sort: '-created_at',
 
     q: qDebounced.value,
     page_size: pageSize.value,
