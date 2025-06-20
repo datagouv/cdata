@@ -9,6 +9,39 @@
       @feature="feature"
       @submit="save"
     >
+      <template #top>
+        <BannerAction
+          class="mb-4"
+          type="primary"
+          :title="$t('Modifier la visibilité du jeu de données')"
+        >
+          <i18n-t
+            v-if="dataset.private"
+            keypath="Ce jeu de données est actuellement {status}. Seul vous ou les membres de votre organisation pouvez le voir et y contribuer."
+          >
+            <template #status>
+              <strong>{{ $t('privé') }}</strong>
+            </template>
+          </i18n-t>
+          <i18n-t
+            v-else
+            keypath="Ce jeu de données est actuellement {status}. N'importe qui sur Internet peut voir ce jeu de données."
+          >
+            <template #status>
+              <strong>{{ $t('public') }}</strong>
+            </template>
+          </i18n-t>
+
+          <template #button>
+            <BrandedButton
+              :loading="isLoading"
+              @click="switchDatasetPrivate"
+            >
+              {{ dataset.private ? $t('Publier le jeu de données') : $t('Passer en brouillon') }}
+            </BrandedButton>
+          </template>
+        </BannerAction>
+      </template>
       <div class="mt-5 space-y-5">
         <TransferBanner
           type="Dataset"
@@ -24,7 +57,7 @@
           <template #button>
             <BrandedButton
               :icon="RiArchiveLine"
-              :disabled="isLoading"
+              :loading="isLoading"
               @click="archiveDataset"
             >
               {{ dataset.archived ? $t('Désarchiver') : $t('Archiver') }}
@@ -45,7 +78,7 @@
               <template #button="{ attrs, listeners }">
                 <BrandedButton
                   :icon="RiDeleteBin6Line"
-                  :disabled="isLoading"
+                  :loading="isLoading"
                   v-bind="attrs"
                   v-on="listeners"
                 >
@@ -59,7 +92,7 @@
                 <div class="flex-1 flex justify-end">
                   <BrandedButton
                     color="danger"
-                    :disabled="isLoading"
+                    :loading="isLoading"
                     @click="deleteDataset"
                   >
                     {{ $t("Supprimer le jeu de données") }}
@@ -166,6 +199,27 @@ async function deleteDataset() {
     }
     else {
       await navigateTo(localePath('/admin/me/datasets'), { replace: true })
+    }
+  }
+  finally {
+    finish()
+  }
+}
+
+async function switchDatasetPrivate() {
+  if (!datasetForm.value) throw new Error('No dataset form')
+  start()
+  try {
+    await $api(`/api/1/datasets/${dataset.value.id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(datasetToApi(datasetForm.value, { private: !dataset.value.private })),
+    })
+    refresh()
+    if (dataset.value.private) {
+      toast.success(t('Jeu de données passé en brouillon!'))
+    }
+    else {
+      toast.success(t('Jeu de données publié!'))
     }
   }
   finally {

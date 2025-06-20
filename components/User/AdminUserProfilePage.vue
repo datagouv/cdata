@@ -251,7 +251,7 @@
         :title="$t('Delete the account')"
         class="mt-4"
       >
-        {{ $t("Be careful, this action can't be reverse.") }}
+        {{ $t("Attention, cette action ne peut pas être annulée.") }}
 
         <template #button>
           <DeleteUserModal :user />

@@ -7,43 +7,76 @@
       type="update"
       @submit="save"
     >
+      <template #top>
+        <BannerAction
+          class="mb-4"
+          type="primary"
+          :title="$t(`Modifier la visibilité de l'API`)"
+        >
+          <i18n-t
+            v-if="dataservice.private"
+            keypath="Cette API est actuellement {status}. Seul vous ou les membres de votre organisation pouvez le voir et y contribuer."
+          >
+            <template #status>
+              <strong>{{ $t('privée') }}</strong>
+            </template>
+          </i18n-t>
+          <i18n-t
+            v-else
+            keypath="Cette API est actuellement {status}. N'importe qui sur Internet peut voir cette API."
+          >
+            <template #status>
+              <strong>{{ $t('publique') }}</strong>
+            </template>
+          </i18n-t>
+
+          <template #button>
+            <BrandedButton
+              :loading="isLoading"
+              @click="switchDataservicePrivate"
+            >
+              {{ dataservice.private ? $t("Publier l'API") : $t('Passer en brouillon') }}
+            </BrandedButton>
+          </template>
+        </BannerAction>
+      </template>
       <template #button>
         <BrandedButton
           type="submit"
-          :loading="loading"
+          :loading="isLoading"
         >
-          {{ t("Save") }}
+          {{ t("Sauvegarder") }}
         </BrandedButton>
       </template>
       <div class="mt-5 space-y-5">
         <TransferBanner
           type="Dataservice"
           :subject="dataserviceSubject"
-          :label="$t('Transfer dataservice')"
+          :label="$t(`Transférer l'API`)"
         />
         <BannerAction
           type="warning"
-          :title="dataservice.archived_at ? $t('Unarchive the dataservice') : $t('Archive the dataservice')"
+          :title="dataservice.archived_at ? $t(`Désarchiver l'API`) : $t(`Archiver l'API`)"
         >
-          {{ $t("An archived dataservice is no longer indexed but still accessible for users with the direct link.") }}
+          {{ $t("Une API archivée n'est plus indexée mais reste accessible auxutilisateurs avec le lien direct.") }}
 
           <template #button>
             <BrandedButton
               :icon="RiArchiveLine"
               @click="archiveDataservice"
             >
-              {{ dataservice.archived_at ? $t('Unarchive') : $t('Archive') }}
+              {{ dataservice.archived_at ? $t('Désarchiver') : $t('Archiver') }}
             </BrandedButton>
           </template>
         </BannerAction>
         <BannerAction
           type="danger"
-          :title="$t('Delete the dataservice')"
+          :title="$t(`Supprimer l'API`)"
         >
-          {{ $t("Be careful, this action can't be reverse.") }}
+          {{ $t("Attention, cette action ne peut pas être annulée.") }}
           <template #button>
             <ModalWithButton
-              :title="$t('Are you sure you want to delete this dataservice ?')"
+              :title="$t('Êtes-vous sûr de vouloir supprimer cette API ?')"
               size="lg"
             >
               <template #button="{ attrs, listeners }">
@@ -64,7 +97,7 @@
                 <div class="flex-1 flex justify-end">
                   <BrandedButton
                     color="danger"
-                    :disabled="loading"
+                    :loading="isLoading"
                     @click="deleteDataservice"
                   >
                     {{ $t("Delete the dataservice") }}
@@ -91,7 +124,7 @@ const { $api } = useNuxtApp()
 const { toast } = useToast()
 
 const route = useRoute()
-const loading = ref(false)
+const { start, finish, isLoading } = useLoadingIndicator()
 
 const localePath = useLocalePath()
 
@@ -114,7 +147,7 @@ async function save() {
   if (!dataserviceForm.value) throw new Error('No dataservice form')
 
   try {
-    loading.value = true
+    start()
 
     if (
       dataserviceForm.value.contact_points
@@ -135,7 +168,7 @@ async function save() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    loading.value = false
+    finish()
   }
 }
 
@@ -143,7 +176,7 @@ async function archiveDataservice() {
   if (!dataserviceForm.value) throw new Error('No dataservice form')
 
   try {
-    loading.value = true
+    start()
     await $api(`/api/1/dataservices/${dataservice.value.id}/`, {
       method: 'PATCH',
       body: JSON.stringify(dataserviceToApi(dataserviceForm.value, { archived_at: dataservice.value.archived_at ? null : new Date().toISOString() })),
@@ -157,12 +190,34 @@ async function archiveDataservice() {
     }
   }
   finally {
-    loading.value = false
+    finish()
+  }
+}
+
+async function switchDataservicePrivate() {
+  if (!dataserviceForm.value) throw new Error('No dataservice form')
+
+  try {
+    start()
+    await $api(`/api/1/dataservices/${dataservice.value.id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(dataserviceToApi(dataserviceForm.value, { private: !dataservice.value.private })),
+    })
+    refresh()
+    if (dataservice.value.private) {
+      toast.success(t('API publiée!'))
+    }
+    else {
+      toast.success(t('API passée en brouillon!'))
+    }
+  }
+  finally {
+    finish()
   }
 }
 
 async function deleteDataservice() {
-  loading.value = true
+  start()
   try {
     await $api(`/api/1/dataservices/${route.params.id}`, {
       method: 'DELETE',
@@ -175,7 +230,7 @@ async function deleteDataservice() {
     }
   }
   finally {
-    loading.value = false
+    finish()
   }
 }
 </script>

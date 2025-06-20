@@ -126,7 +126,7 @@
                 class="space-y-1"
               >
                 <dt class="text-gray-plain font-bold">
-                  {{ $t('Rate limiting') }}
+                  {{ $t(`Limite d'appels`) }}
                 </dt>
                 <dd class="p-0">
                   {{ dataservice.rate_limiting }}
