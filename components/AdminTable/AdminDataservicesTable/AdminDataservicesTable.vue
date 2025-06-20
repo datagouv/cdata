@@ -23,7 +23,7 @@
           {{ t("Modified at") }}
         </AdminTableTh>
         <AdminTableTh class="w-64">
-          {{ t("Rate limiting") }}
+          {{ t("Limite d'appels") }}
         </AdminTableTh>
         <AdminTableTh>
           {{ t("Availability") }}

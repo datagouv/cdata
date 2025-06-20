@@ -147,7 +147,7 @@
               color="secondary"
               @click="form.filters.splice(index, 1)"
             >
-              {{ $t('Remove') }}
+              {{ $t('Supprimer') }}
             </BrandedButton>
           </div>
           <button
@@ -196,7 +196,7 @@
                 color="secondary"
                 @click="form.configs.splice(index, 1)"
               >
-                {{ $t('Remove') }}
+                {{ $t('Supprimer') }}
               </BrandedButton>
             </div>
           </div>

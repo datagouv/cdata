@@ -142,6 +142,8 @@
           </div>
         </SimpleBanner>
 
+        <slot name="top" />
+
         <RequiredExplanation />
         <fieldset
           v-if="isGlobalAdmin && type === 'update'"
@@ -542,40 +544,6 @@
               </div>
             </div>
           </LinkedToAccordion>
-          <fieldset
-            v-if="type === 'update'"
-            class="fr-fieldset__element"
-          >
-            <fieldset
-              id="checkboxes-hint-el-sm"
-              class="fr-fieldset"
-              aria-labelledby="checkboxes-hint-el-sm-legend checkboxes-hint-el-sm-messages"
-            >
-              <div class="fr-fieldset__element">
-                <div class="fr-checkbox-group fr-checkbox-group--sm">
-                  <input
-                    id="checkboxes-hint-el-sm-1"
-                    v-model="datasetForm.private"
-                    name="checkboxes-hint-el-sm-1"
-                    type="checkbox"
-                    aria-describedby="checkboxes-hint-el-sm-1-messages"
-                  >
-                  <label
-                    class="fr-label"
-                    for="checkboxes-hint-el-sm-1"
-                  >
-                    {{ t('Passer en mode brouillon') }}
-                    <span class="fr-hint-text">{{ t('The dataset will only be visible to members of your organization.') }}</span>
-                  </label>
-                  <div
-                    id="checkboxes-hint-el-sm-1-messages"
-                    class="fr-messages-group"
-                    aria-live="assertive"
-                  />
-                </div>
-              </div>
-            </fieldset>
-          </fieldset>
         </fieldset>
         <div
           class="fr-grid-row"

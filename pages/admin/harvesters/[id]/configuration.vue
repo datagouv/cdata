@@ -52,7 +52,7 @@
       type="danger"
       :title="$t('Delete the harvester')"
     >
-      {{ $t("Be careful, this action can't be reverse.") }}
+      {{ $t("Attention, cette action ne peut pas être annulée.") }}
       <template #button>
         <ModalWithButton
           :title="$t('Are you sure you want to delete this harvester?')"
