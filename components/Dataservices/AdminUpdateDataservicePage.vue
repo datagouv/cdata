@@ -15,7 +15,7 @@
         >
           <i18n-t
             v-if="dataservice.private"
-            keypath="Cette API est actuellement {status}. Seul vous ou les membres de votre organisation pouvez le voir et y contribuer."
+            keypath="Cette API est actuellement {status}. Seul vous ou les membres de votre organisation pouvez la voir et y contribuer."
           >
             <template #status>
               <strong>{{ $t('privée') }}</strong>

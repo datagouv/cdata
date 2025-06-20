@@ -212,14 +212,14 @@ async function switchDatasetPrivate() {
   try {
     await $api(`/api/1/datasets/${dataset.value.id}/`, {
       method: 'PUT',
-      body: JSON.stringify(datasetToApi(datasetForm.value, { private: !dataset.value.private })),
+      body: JSON.stringify(datasetToApi(datasetForm.value, { private: !datasetForm.value.private })),
     })
     refresh()
-    if (dataset.value.private) {
-      toast.success(t('Jeu de données passé en brouillon!'))
+    if (datasetForm.value.private) {
+      toast.success(t('Jeu de données publié!'))
     }
     else {
-      toast.success(t('Jeu de données publié!'))
+      toast.success(t('Jeu de données passé en brouillon!'))
     }
   }
   finally {
