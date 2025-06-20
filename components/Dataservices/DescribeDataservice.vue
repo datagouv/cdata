@@ -150,6 +150,9 @@
             </p>
           </div>
         </SimpleBanner>
+
+        <slot name="top" />
+
         <RequiredExplanation />
         <fieldset
           v-if="type === 'create'"

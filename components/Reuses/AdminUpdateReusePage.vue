@@ -96,8 +96,6 @@ const { toast } = useToast()
 const route = useRoute()
 const { start, finish, isLoading } = useLoadingIndicator()
 
-const localePath = useLocalePath()
-
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
 const { data: reuse, refresh } = await useAPI<Reuse>(url, { lazy: true })
 
@@ -143,12 +141,6 @@ async function deleteReuse() {
     await $api(`/api/1/reuses/${route.params.id}`, {
       method: 'DELETE',
     })
-    if (route.params.oid) {
-      await navigateTo(localePath(`/admin/organizations/${route.params.oid}/reuses`), { replace: true })
-    }
-    else {
-      await navigateTo(localePath('/admin/me/reuses'), { replace: true })
-    }
   }
   finally {
     finish()

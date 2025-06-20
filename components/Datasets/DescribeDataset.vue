@@ -142,6 +142,8 @@
           </div>
         </SimpleBanner>
 
+        <slot name="top" />
+
         <RequiredExplanation />
         <fieldset
           v-if="isGlobalAdmin && type === 'update'"

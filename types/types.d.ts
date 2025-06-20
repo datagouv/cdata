@@ -142,6 +142,7 @@ export type NewDatasetForApi = {
   title: string
   private?: boolean
   archived?: string | null
+  deleted?: null
   acronym?: string
   description: string
   organization?: string
@@ -210,6 +211,7 @@ export type NewDataserviceForApi = {
   owner?: string
   title: string
   archived_at?: string | null
+  deleted_at?: null
   private?: boolean
   acronym?: string
   description: string

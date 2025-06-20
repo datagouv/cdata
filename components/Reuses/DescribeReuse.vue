@@ -106,6 +106,9 @@
             </p>
           </div>
         </SimpleBanner>
+
+        <slot name="top" />
+
         <RequiredExplanation />
         <fieldset
           v-if="isMeAdmin() && type === 'update'"

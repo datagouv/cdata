@@ -70,9 +70,9 @@
         <td>
           <AdminBadge
             size="xs"
-            :type="getStatus(dataset).type"
+            :type="getDatasetStatus(dataset).type"
           >
-            {{ getStatus(dataset).label }}
+            {{ getDatasetStatus(dataset).label }}
           </AdminBadge>
         </td>
         <td>
@@ -150,7 +150,7 @@ import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
 import Tooltip from '../../Tooltip/Tooltip.vue'
 import type { Activity } from '~/types/activity'
-import type { AdminBadgeType, DatasetSortedBy, SortDirection } from '~/types/types'
+import type { DatasetSortedBy, SortDirection } from '~/types/types'
 
 const emit = defineEmits<{
   (event: 'sort', column: DatasetSortedBy, direction: SortDirection): void
@@ -167,6 +167,7 @@ const props = withDefaults(defineProps<{
 
 const { t } = useI18n()
 const { formatDate } = useFormatDate()
+const { getDatasetStatus } = useDatasetStatus()
 
 function updateSort(column: DatasetSortedBy, direction: SortDirection) {
   emit('sort', column, direction)
@@ -187,32 +188,5 @@ function getFilesCount(dataset: Dataset | DatasetV2) {
     return dataset.resources.length
   }
   return dataset.resources.total
-}
-
-function getStatus(dataset: Dataset | DatasetV2): { label: string, type: AdminBadgeType } {
-  if (dataset.deleted) {
-    return {
-      label: t('Deleted'),
-      type: 'danger',
-    }
-  }
-  else if (dataset.archived) {
-    return {
-      label: t('Archived'),
-      type: 'warning',
-    }
-  }
-  else if (dataset.private) {
-    return {
-      label: t('Draft'),
-      type: 'secondary',
-    }
-  }
-  else {
-    return {
-      label: t('Public'),
-      type: 'primary',
-    }
-  }
 }
 </script>
