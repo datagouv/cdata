@@ -267,6 +267,7 @@ await useJsonLd('dataset', route.params.did)
 onMounted(async () => {
   await redirectLegacyHashes([
     { from: 'resources', to: `/datasets/${route.params.did}/`, queryParam: 'resource_id' },
+    { from: 'resource', to: `/datasets/${route.params.did}/`, queryParam: 'resource_id' },
     { from: 'community-reuses', to: `/datasets/${route.params.did}/reuses_and_dataservices/` },
     { from: 'discussions', to: `/datasets/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
     { from: 'discussion', to: `/datasets/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
