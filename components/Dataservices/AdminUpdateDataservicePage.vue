@@ -19,7 +19,7 @@
           <template #button>
             <BrandedButton
               :icon="RiArrowGoBackLine"
-              :disabled="isLoading"
+              :loading="isLoading"
               @click="restoreDataservice"
             >
               {{ $t('Restaurer') }}
@@ -85,7 +85,7 @@
                 <div class="flex-1 flex justify-end">
                   <BrandedButton
                     color="danger"
-                    :disabled="loading"
+                    :loading="isLoading"
                     @click="deleteDataservice"
                   >
                     {{ $t("Delete the dataservice") }}
@@ -175,6 +175,7 @@ async function archiveDataservice() {
     else {
       toast.success(t('Dataservice archived!'))
     }
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
     loading.value = false
@@ -198,14 +199,17 @@ async function restoreDataservice() {
 }
 
 async function deleteDataservice() {
-  loading.value = true
+  start()
   try {
     await $api(`/api/1/dataservices/${route.params.id}`, {
       method: 'DELETE',
     })
+    refresh()
+    toast.success(t('API supprimée!'))
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    loading.value = false
+    finish()
   }
 }
 </script>
