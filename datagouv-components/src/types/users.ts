@@ -1,8 +1,9 @@
-import type { Organization } from "./organizations"
+import type { Organization } from './organizations'
 
 export type User = {
   id: string
   slug?: string
+  email?: string
   first_name: string
   last_name: string
   about: string
