@@ -78,7 +78,12 @@
                         loading="lazy"
                         alt=""
                       />
-                      <span>{{ user.first_name }} {{ user.last_name }}</span>
+                      <span>{{ user.first_name }} {{ user.last_name }}
+                        <small
+                          v-if="user.email"
+                          class="text-gray-medium"
+                        >({{ user.email }})</small>
+                      </span>
                     </div>
                   </template>
                 </SearchableSelect>
