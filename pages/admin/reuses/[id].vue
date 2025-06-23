@@ -33,6 +33,18 @@
         </BrandedButton>
       </div>
 
+      <div class="text-sm text-mentionGrey space-y-1.5 mb-5">
+        <div class="space-x-1">
+          <span>{{ $t('Statut') }}:</span>
+          <AdminBadge
+            size="xs"
+            :type="getReuseStatus(reuse).type"
+          >
+            {{ getReuseStatus(reuse).label }}
+          </AdminBadge>
+        </div>
+      </div>
+
       <TabLinks
         class="mb-5"
         :links="[
@@ -63,6 +75,7 @@ const { t } = useI18n()
 
 const me = useMe()
 const route = useRoute()
+const { getReuseStatus } = useReuseStatus()
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
 const { data: reuse } = await useAPI<Reuse>(url, { lazy: true })
 </script>

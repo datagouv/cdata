@@ -7,6 +7,26 @@
       @feature="feature"
       @submit="save"
     >
+      <template #top>
+        <BannerAction
+          v-if="reuse.deleted"
+          class="mb-4"
+          type="warning"
+          :title="$t('Restaurer la réutilisation')"
+        >
+          {{ $t("Sans restauration, la réutilisation sera définitivement supprimée dans la nuit.") }}
+
+          <template #button>
+            <BrandedButton
+              :icon="RiArrowGoBackLine"
+              :loading="isLoading"
+              @click="restoreReuse"
+            >
+              {{ $t('Restaurer') }}
+            </BrandedButton>
+          </template>
+        </BannerAction>
+      </template>
       <template #button>
         <BrandedButton
           type="submit"
@@ -39,6 +59,7 @@
           </template>
         </BannerAction>
         <BannerAction
+          v-if="!reuse.deleted"
           class="mt-5"
           type="danger"
           :title="$t('Supprimer cette réutilisation')"
@@ -85,7 +106,7 @@
 <script setup lang="ts">
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import type { Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
-import { RiArchiveLine, RiDeleteBin6Line } from '@remixicon/vue'
+import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
 import type { ReuseForm } from '~/types/types'
 
@@ -141,6 +162,9 @@ async function deleteReuse() {
     await $api(`/api/1/reuses/${route.params.id}`, {
       method: 'DELETE',
     })
+    refresh()
+    toast.success(t('Réutilisation supprimée!'))
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
     finish()
@@ -165,6 +189,26 @@ async function archiveReuse() {
     else {
       toast.success(t('Réutilisation archivée!'))
     }
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+  }
+  finally {
+    finish()
+  }
+}
+
+async function restoreReuse() {
+  if (!reuseForm.value) throw new Error('No reuse form')
+
+  try {
+    start()
+
+    await $api(`/api/1/reuses/${reuse.value.id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(reuseToApi(reuseForm.value, { deleted: null })),
+    })
+
+    refresh()
+    toast.success(t('Réutilisation restaurée!'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {

@@ -180,6 +180,7 @@ export type NewReuseForApi = {
   title: string
   private?: boolean
   archived?: string | null
+  deleted?: null
   description: string
   datasets: Array<string> | undefined
   url: string
