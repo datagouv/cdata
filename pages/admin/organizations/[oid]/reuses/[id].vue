@@ -24,7 +24,7 @@
       <TabLinks
         class="mb-5"
         :links="[
-          { href: getReuseAdminUrl(reuse), label: t('Metadata') },
+          { href: getReuseAdminUrl(reuse), label: t('Métadonnées') },
           { href: `${getReuseAdminUrl(reuse)}/datasets`, label: t('Associated datasets') },
         ]"
       />

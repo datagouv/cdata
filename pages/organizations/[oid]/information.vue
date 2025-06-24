@@ -57,7 +57,7 @@
           :summary="metricsDatasetsViewsTotal"
         />
         <StatBox
-          :title="$t('Downloads')"
+          :title="$t('Téléchargements')"
           :data="metricsDownloads"
           type="line"
           :summary="metricsDownloadsTotal"

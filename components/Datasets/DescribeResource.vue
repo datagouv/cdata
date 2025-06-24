@@ -350,7 +350,7 @@ const nameAFile = computed(() => isRemote.value ? t('Name a link') : t('Name a f
 const fileOrLinkLegend = computed(() => {
   if (props.type === 'create-community') return t('File or link')
 
-  return isRemote.value ? t('Link') : t('File')
+  return isRemote.value ? t('Link') : t('Fichier')
 })
 const fileTypes = RESOURCE_TYPE.map(type => ({ label: getResourceLabel(type), value: type }))
 

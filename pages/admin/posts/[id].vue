@@ -27,7 +27,7 @@
       <TabLinks
         class="mb-5"
         :links="[
-          { href: `/admin/posts/${post.id}`, label: t('Metadata') },
+          { href: `/admin/posts/${post.id}`, label: t('Métadonnées') },
           { href: `/admin/posts/${post.id}/content`, label: t('Content') },
         ]"
       />

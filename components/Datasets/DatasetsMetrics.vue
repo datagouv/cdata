@@ -62,7 +62,7 @@
         class="md:w-1/3 mb-8 md:mb-0"
       />
       <StatBox
-        :title="t('Downloads')"
+        :title="t('Téléchargements')"
         :data="metricsDownloads"
         type="line"
         :summary="metricsDownloadsTotal"

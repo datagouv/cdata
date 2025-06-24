@@ -36,7 +36,7 @@
       <TabLinks
         class="mb-5"
         :links="[
-          { href: getDataserviceAdminUrl(dataservice), label: t('Metadata') },
+          { href: getDataserviceAdminUrl(dataservice), label: t('Métadonnées') },
           { href: `${getDataserviceAdminUrl(dataservice)}/datasets`, label: t('Associated datasets') },
           { href: `${getDataserviceAdminUrl(dataservice)}/discussions`, label: t('Discussions') },
           { href: `${getDataserviceAdminUrl(dataservice)}/activities`, label: t('Activities') },

@@ -364,7 +364,7 @@ const hasPmtiles = computed(() => {
   return props.resource.extras['analysis:parsing:pmtiles_url']
 })
 
-const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('File'))
+const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('Fichier'))
 
 const ogcService = computed(() => OGC_SERVICES_FORMATS.includes(props.resource.format))
 
@@ -394,11 +394,11 @@ const tabsOptions = computed(() => {
   const options = []
 
   if (hasPreview.value) {
-    options.push({ key: 'data', label: t('Data') })
+    options.push({ key: 'data', label: t('Données') })
   }
 
   if (hasPmtiles.value) {
-    options.push({ key: 'map', label: t('Map') })
+    options.push({ key: 'map', label: t('Carte') })
   }
 
   if (props.resource.description) {
@@ -406,11 +406,11 @@ const tabsOptions = computed(() => {
   }
 
   if (hasPreview.value) {
-    options.push({ key: 'data-structure', label: t('Data structure') })
+    options.push({ key: 'data-structure', label: t('Structure des données') })
   }
 
-  options.push({ key: 'metadata', label: t('Metadata') })
-  options.push({ key: 'downloads', label: t('Downloads') })
+  options.push({ key: 'metadata', label: t('Métadonnées') })
+  options.push({ key: 'downloads', label: t('Téléchargements') })
 
   if (hasPreview.value) {
     options.push({ key: 'swagger', label: t('Swagger') })

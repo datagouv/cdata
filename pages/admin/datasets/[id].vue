@@ -37,7 +37,7 @@
         <div class="text-sm text-mentionGrey space-y-1.5">
           <div class="space-x-1 flex items-center">
             <RiPriceTag3Line class="inline size-3" />
-            <span>{{ $t('Metadata:') }}</span>
+            <span>{{ $t('Métadonnées:') }}</span>
             <Tooltip>
               <DatasetQualityScore
                 class="w-32"
@@ -67,7 +67,7 @@
                   <span>{{ summarize(dataset.metrics.resources_downloads ?? 0) }}</span>
                 </span>
                 <template #tooltip>
-                  {{ $t('Downloads') }}
+                  {{ $t('Téléchargements') }}
                 </template>
               </Tooltip>
               <Tooltip class="inline">
@@ -87,7 +87,7 @@
       <TabLinks
         class="mb-5"
         :links="[
-          { href: getDatasetAdminUrl(dataset), label: t('Metadata') },
+          { href: getDatasetAdminUrl(dataset), label: t('Métadonnées') },
           { href: `${getDatasetAdminUrl(dataset)}/files`, label: t('Files') },
           { href: `${getDatasetAdminUrl(dataset)}/discussions`, label: t('Discussions') },
           { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activities') },
