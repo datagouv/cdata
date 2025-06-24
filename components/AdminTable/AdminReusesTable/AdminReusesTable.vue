@@ -151,13 +151,13 @@ function getStatus(reuse: Reuse): { label: string, type: AdminBadgeType } {
   }
   else if (reuse.archived) {
     return {
-      label: t('Archived'),
+      label: t('Archivé'),
       type: 'warning',
     }
   }
   else if (reuse.private) {
     return {
-      label: t('Draft'),
+      label: t('Brouillon'),
       type: 'secondary',
     }
   }

@@ -467,7 +467,7 @@
                 <div>
                   <SearchableSelect
                     v-model="form.spatial_zones"
-                    :label="$t('Spatial coverage')"
+                    :label="$t('Couverture spatiale')"
                     :placeholder="$t('Search a spatial coverage…')"
                     :suggest="suggestSpatial"
                     :multiple="true"

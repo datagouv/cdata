@@ -271,7 +271,7 @@ function getStatus(item: HarvestItem): { label: string, type: AdminBadgeType } {
     done: { label: t('Done'), type: 'success' as AdminBadgeType },
     failed: { label: t('Failed'), type: 'danger' as AdminBadgeType },
     skipped: { label: t('Skipped'), type: 'secondary' as AdminBadgeType },
-    archived: { label: t('Archived'), type: 'secondary' as AdminBadgeType },
+    archived: { label: t('Archivé'), type: 'secondary' as AdminBadgeType },
   }[item.status]
 }
 

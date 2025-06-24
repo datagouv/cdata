@@ -63,7 +63,7 @@
               <div>
                 <SearchableSelect
                   v-model="addForm.user"
-                  :label="$t('User')"
+                  :label="$t('Utilisateur')"
                   :placeholder="$t('Search a user')"
                   class="mb-6"
                   :display-value="(user) => `${user.first_name} ${user.last_name}`"

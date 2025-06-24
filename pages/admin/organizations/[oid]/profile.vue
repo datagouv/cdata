@@ -24,7 +24,7 @@
             <span
               v-if="isOrganizationCertified(organization)"
               class="fr-icon-success-line fr-icon--lg text-datagouv"
-              :title="t('The identity of this public service is certified by {certifier}', { certifier: $config.public.title })"
+              :title="t(`L'identité de ce service public est certifiée par {certifier}`, { certifier: $config.public.title })"
               aria-hidden="true"
             />
           </div>

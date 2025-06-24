@@ -256,7 +256,7 @@
         </template>
       </FieldsetElement>
     </FormFieldset>
-    <FormFieldset :legend="$t('Data schema')">
+    <FormFieldset :legend="$t('Schéma de données')">
       <FieldsetElement
         form-key="schema"
         class="space-y-2"

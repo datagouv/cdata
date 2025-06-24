@@ -30,7 +30,7 @@
             class="text-sm fr-m-0 dash-after"
           >
             <!-- Not sure if this date is useful, since it's about modification on a ressource  -->
-            {{ $t('Updated {date}', { date: formatRelativeIfRecentDate(resourceForm.resource.last_modified) }) }}
+            {{ $t('Mis à jour {date}', { date: formatRelativeIfRecentDate(resourceForm.resource.last_modified) }) }}
           </p>
           <p
             v-if="guessFormat(resourceForm, extensions)"

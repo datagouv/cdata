@@ -53,7 +53,7 @@
               size="sm"
               type="secondary"
             >
-              {{ $t('Draft') }}
+              {{ $t('Brouillon') }}
             </AdminBadge>
             <AdminBadge
               v-if="dataservice.archived_at"
@@ -61,7 +61,7 @@
               size="sm"
               type="secondary"
             >
-              {{ $t('Archived') }}
+              {{ $t('Archivé') }}
             </AdminBadge>
           </div>
           <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
@@ -114,7 +114,7 @@
 
               <div class="space-y-1">
                 <dt class="text-gray-plain font-bold">
-                  {{ $t('Last update') }}
+                  {{ $t('Dernière mise à jour') }}
                 </dt>
                 <dd class="p-0">
                   {{ formatDate(dataservice.metadata_modified_at) }}

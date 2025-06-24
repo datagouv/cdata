@@ -70,7 +70,7 @@
                 size="sm"
                 type="secondary"
               >
-                {{ $t('Draft') }}
+                {{ $t('Brouillon') }}
               </AdminBadge>
               <AdminBadge
                 v-if="reuse.archived"
@@ -78,7 +78,7 @@
                 size="sm"
                 type="secondary"
               >
-                {{ $t('Archived') }}
+                {{ $t('Archivé') }}
               </AdminBadge>
             </div>
             <div

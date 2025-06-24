@@ -146,10 +146,10 @@ const statusOption = [{
   label: t('Public'),
   id: 'public',
 }, {
-  label: t('Archived'),
+  label: t('Archivé'),
   id: 'archived',
 }, {
-  label: t('Draft'),
+  label: t('Brouillon'),
   id: 'private',
 }, {
   label: t('Deleted'),

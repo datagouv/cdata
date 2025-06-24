@@ -19,7 +19,7 @@
         keep-margins-even-without-borders
         v-on="listeners"
       >
-        {{ $t("Edit file") }}
+        {{ $t("Éditer le fichier") }}
       </BrandedButton>
     </template>
 

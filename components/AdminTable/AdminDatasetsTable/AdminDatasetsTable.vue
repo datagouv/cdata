@@ -198,13 +198,13 @@ function getStatus(dataset: Dataset | DatasetV2): { label: string, type: AdminBa
   }
   else if (dataset.archived) {
     return {
-      label: t('Archived'),
+      label: t('Archivé'),
       type: 'warning',
     }
   }
   else if (dataset.private) {
     return {
-      label: t('Draft'),
+      label: t('Brouillon'),
       type: 'secondary',
     }
   }

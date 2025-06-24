@@ -119,7 +119,7 @@
             </SearchableSelect>
             <SearchableSelect
               v-model="facets.geozone"
-              :label="t('Spatial coverage')"
+              :label="t('Couverture spatiale')"
               :placeholder="t('All coverages')"
               :suggest="suggestSpatialCoverages"
               :get-option-id="(coverage) => coverage.id"
@@ -503,7 +503,7 @@ const isFiltered = computed(() => {
 
 const sortOptions = [
   { label: t('Creation date'), value: '-created' },
-  { label: t('Last update'), value: '-last_update' },
+  { label: t('Dernière mise à jour'), value: '-last_update' },
   { label: t('Number of followers'), value: '-followers' },
   { label: t('Number of reuses'), value: '-reuses' },
 ]

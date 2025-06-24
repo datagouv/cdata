@@ -65,7 +65,7 @@
           size="xs"
           :loading
         >
-          {{ t("Update") }}
+          {{ t("Mise à jour") }}
         </BrandedButton>
       </div>
     </template>

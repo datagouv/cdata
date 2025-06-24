@@ -29,7 +29,7 @@
             {{ dataset.id }}
             <CopyButton
               class="!-mt-0.5"
-              :label="$t('Copy ID')"
+              :label="$t(`Copier l'ID`)"
               :copied-label="$t('ID copied')"
               :text="dataset.id"
               :hide-label="true"

@@ -13,7 +13,7 @@
           class="fr-icon-lock-line fr-icon--sm"
           aria-hidden="true"
         />
-        {{ t('Draft') }}
+        {{ t('Brouillon') }}
       </p>
       <p
         v-if="dataset.archived"
@@ -23,7 +23,7 @@
           class="fr-icon-archive-line fr-icon--sm"
           aria-hidden="true"
         />
-        {{ t('Archived') }}
+        {{ t('Archivé') }}
       </p>
     </div>
     <div class="flex flex-wrap md:flex-nowrap gap-4 items-start">
@@ -94,7 +94,7 @@
             {{ ownerName }}
           </div>
           <div class="text-gray-medium dash-before-sm whitespace-nowrap">
-            {{ $t('Updated {date}', { date: formatRelativeIfRecentDate(dataset.last_update, { dateStyle: 'medium' }) }) }}
+            {{ $t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataset.last_update, { dateStyle: 'medium' }) }) }}
           </div>
         </div>
         <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium">
@@ -107,7 +107,7 @@
           <div class="fr-grid-row fr-grid-row--middle fr-mr-1v">
             <p
               class="fr-text--sm fr-my-0"
-              :aria-label="t('{n} resources downloads', dataset.metrics.resources_downloads)"
+              :aria-label="t('{n} téléchargements des ressources', dataset.metrics.resources_downloads)"
             >
               <span
                 class="fr-icon-download-line fr-icon--sm fr-px-1v"
@@ -116,7 +116,7 @@
             </p>
             <p
               class="fr-text--sm fr-my-0"
-              :aria-label="t('{n} followers', dataset.metrics.followers)"
+              :aria-label="t('{n} abonnés', dataset.metrics.followers)"
             >
               <span
                 class="fr-icon-star-line fr-icon--sm fr-px-1v"
@@ -125,7 +125,7 @@
             </p>
             <p
               class="fr-text--sm fr-my-0"
-              :aria-label="t('{n} reuses', dataset.metrics.reuses)"
+              :aria-label="t('{n} réutilisations', dataset.metrics.reuses)"
             >
               <span
                 class="fr-icon-line-chart-line fr-icon--sm fr-px-1v"

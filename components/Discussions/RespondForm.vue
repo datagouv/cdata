@@ -13,7 +13,7 @@
         size="xs"
         @click="$emit('close')"
       >
-        {{ $t('Close') }}
+        {{ $t('Fermer') }}
       </BrandedButton>
     </div>
     <div class="flex flex-col w-full space-y-4">

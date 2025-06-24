@@ -19,7 +19,7 @@
     >
       <div class="w-full flex-none md:flex-1">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ t('{n} reuses', pageData.total) }}
+          {{ t('{n} réutilisations', pageData.total) }}
         </h2>
       </div>
       <div class="flex-none">

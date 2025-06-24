@@ -18,7 +18,7 @@
           class="fr-icon-lock-line fr-icon--sm"
           aria-hidden="true"
         />
-        {{ t('Restricted access') }}
+        {{ t('Accès restreint') }}
       </p>
       <p
         v-if="dataservice.private"
@@ -28,7 +28,7 @@
           class="fr-icon-lock-line fr-icon--sm"
           aria-hidden="true"
         />
-        {{ t('Draft') }}
+        {{ t('Brouillon') }}
       </p>
       <p
         v-if="dataservice.archived_at"
@@ -38,7 +38,7 @@
           class="fr-icon-lock-line fr-icon--sm"
           aria-hidden="true"
         />
-        {{ t('Archived') }}
+        {{ t('Archivé') }}
       </p>
     </div>
     <h4 class="fr-text--md fr-mb-0">
@@ -103,17 +103,17 @@
         :text="ownerName"
         :max-lines="1"
       />
-      <span class="dash-before whitespace-nowrap">{{ t('Updated {date}', { date: formatRelativeIfRecentDate(dataservice.metadata_modified_at, { dateStyle: 'medium' }) }) }}</span>
+      <span class="dash-before whitespace-nowrap">{{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataservice.metadata_modified_at, { dateStyle: 'medium' }) }) }}</span>
     </p>
     <p class="text-sm text-gray-medium mb-0 mt-1">
       <span class="fr-icon-information-line fr-icon--sm text-gray-medium" />
-      {{ t('Availability :') }}
+      {{ t('Disponibilité :') }}
       <span class="text-gray-plain">
         <template v-if="dataservice.availability">
           {{ t('{n}%', dataservice.availability) }}
         </template>
         <template v-else>
-          {{ t('unknown') }}
+          {{ t('inconnue') }}
         </template>
       </span>
     </p>

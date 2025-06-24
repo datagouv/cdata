@@ -50,7 +50,7 @@
             </div>
             <div>
               <dt class="font-bold text-sm pb-1">
-                {{ $t('Last update') }}
+                {{ $t('Dernière mise à jour') }}
               </dt>
               <dd class="p-0 text-sm text-mention-grey">
                 {{ formatDate(reuse.last_modified) }}

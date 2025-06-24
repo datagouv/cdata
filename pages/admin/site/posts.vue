@@ -183,7 +183,7 @@ function getStatus(post: Post): { label: string, type: AdminBadgeType } {
   }
   else {
     return {
-      label: t('Draft'),
+      label: t('Brouillon'),
       type: 'secondary',
     }
   }

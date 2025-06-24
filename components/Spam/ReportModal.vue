@@ -77,7 +77,7 @@
           color="primary"
           @click="close"
         >
-          {{ $t('Close') }}
+          {{ $t('Fermer') }}
         </BrandedButton>
         <BrandedButton
           v-if="! reported"
