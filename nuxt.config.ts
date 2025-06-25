@@ -107,6 +107,7 @@ export default defineNuxtConfig({
       harvesterRequestValidationUrl: 'https://support.data.gouv.fr/help/datagouv/moissonnage#support-tree',
       harvesterPreviewMaxItems: 20, // SHould be the same as `HARVEST_PREVIEW_MAX_ITEMS` in udata
       harvestEnableManualRun: false,
+      harvestBackendsForHidingQuality: ['CSW-ISO-19139'],
 
       newsletterSubscriptionUrl: 'https://qvo970cr.sibpages.com/',
 

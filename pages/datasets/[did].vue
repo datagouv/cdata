@@ -167,9 +167,17 @@
               <div>
                 <DatasetQuality
                   :quality="dataset.quality"
-                  show-item-warnings
+                  :hide-warnings
                 />
               </div>
+
+              <SimpleBanner
+                v-if="hideWarnings"
+                type="primary-frame"
+                class="text-sm"
+              >
+                {{ $t("La qualité des métadonnées peut être trompeuse car les métadonnées de la source originale peuvent avoir été perdues lors de leur récupération. Nous travaillons actuellement à améliorer la situation.") }}
+              </SimpleBanner>
 
               <SimpleBanner
                 v-if="dataset.harvest && 'remote_url' in dataset.harvest"
@@ -243,7 +251,7 @@ import type { PaginatedArray } from '~/types/types'
 
 const route = useRoute()
 const { formatDate } = useFormatDate()
-const me = useMaybeMe()
+const config = useRuntimeConfig()
 
 definePageMeta({
   keepScroll: true,
@@ -260,6 +268,13 @@ const title = computed(() => dataset.value?.title)
 
 useSeoMeta({
   title,
+})
+
+const hideWarnings = computed(() => {
+  if (!dataset.value.harvest) return false
+  if (!dataset.value.harvest.backend) return false
+
+  return config.public.harvestBackendsForHidingQuality.includes(dataset.value.harvest.backend)
 })
 
 await useJsonLd('dataset', route.params.did)
