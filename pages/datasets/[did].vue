@@ -267,7 +267,6 @@ import type { PaginatedArray } from '~/types/types'
 const config = useRuntimeConfig()
 const route = useRoute()
 const { formatDate } = useFormatDate()
-const config = useRuntimeConfig()
 
 definePageMeta({
   keepScroll: true,
