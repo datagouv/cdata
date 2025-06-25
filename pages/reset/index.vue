@@ -13,14 +13,14 @@
         class="space-y-6"
         @submit.prevent="reset"
       >
-        <RequiredExplanation />
-
-        <div
-          v-if="errorMessage"
-          class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
+        <SimpleBanner
+          v-if="getAllErrorsInErrorFields(errors, '')"
+          type="danger"
         >
-          {{ errorMessage }}
-        </div>
+          {{ getAllErrorsInErrorFields(errors, "") }}
+        </SimpleBanner>
+
+        <RequiredExplanation />
 
         <div>
           <InputGroup
@@ -28,6 +28,8 @@
             type="email"
             :label="$t('Adresse email')"
             class="w-full !mb-0"
+            :error-text="getAllErrorsInErrorFields(errors, 'email')"
+            :has-error="!! getAllErrorsInErrorFields(errors, 'email')"
             required
           />
         </div>
@@ -36,6 +38,7 @@
           <Captchetat
             v-model:uuid="captchaUuid"
             v-model:code="captchaCode"
+            :errors="getAllErrorsInErrorFields(errors, 'captcha_code')"
           />
         </div>
 
@@ -63,6 +66,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import type { FieldsErrors } from '~/types/form'
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()
@@ -75,7 +79,7 @@ const captchaCode = ref('')
 
 const loading = ref(false)
 const success = ref(false)
-const errorMessage = ref('')
+const errors = ref<FieldsErrors>({})
 
 const reset = async () => {
   loading.value = true
@@ -91,6 +95,11 @@ const reset = async () => {
     })
 
     success.value = true
+  }
+  catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const fieldsErrors = (e as any)?.response?._data?.response?.field_errors
+    if (fieldsErrors) errors.value = fieldsErrors
   }
   finally {
     loading.value = false

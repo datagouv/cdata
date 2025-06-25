@@ -37,6 +37,8 @@
       type="text"
       :label="$t('Saisissez les caractères de l\'image')"
       class="w-full !mb-0"
+      :error-text="errors"
+      :has-error="!! errors"
       required
     />
   </div>
@@ -47,6 +49,10 @@ import { RiRefreshLine, RiVolumeUpLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 
 const config = useRuntimeConfig()
+
+defineProps<{
+  errors: string | null
+}>()
 
 const uuid = defineModel<string>('uuid', { required: true })
 const code = defineModel<string>('code', { required: true })
