@@ -2,26 +2,35 @@
   <div v-if="data">
     <div
       v-if="data"
-      class="flex space-x-4"
+      class="flex items-center space-x-4"
     >
       <img
         :src="data.imageb64"
         :alt="$t('Recopiez les lettres présentes sur cette image')"
       >
-      <button
-        type="button"
-        @click="playSound"
-      >
-        <RiVolumeUpLine class="size-9" />
-        <span class="sr-only">{{ $t('Énoncer le code du captcha') }}</span>
-      </button>
-      <button
-        type="button"
-        @click="() => refresh()"
-      >
-        <RiRefreshLine class="size-8" />
-        <span class="sr-only">{{ $t('Générer un nouveau captcha') }}</span>
-      </button>
+      <div class="flex items-center">
+        <BrandedButton
+          type="button"
+          :icon="RiVolumeUpLine"
+          icon-only
+          size="xl"
+          color="secondary-softer"
+          keep-margins-even-without-borders
+          @click="playSound"
+        >
+          {{ $t('Énoncer le code du captcha') }}
+        </BrandedButton>
+        <BrandedButton
+          :icon="RiRefreshLine"
+          color="secondary-softer"
+          size="xl"
+          icon-only
+          keep-margins-even-without-borders
+          @click="() => refresh()"
+        >
+          {{ $t('Générer un nouveau captcha') }}
+        </BrandedButton>
+      </div>
     </div>
     <InputGroup
       v-model="code"
@@ -35,6 +44,7 @@
 
 <script setup lang="ts">
 import { RiRefreshLine, RiVolumeUpLine } from '@remixicon/vue'
+import { BrandedButton } from '@datagouv/components-next'
 
 const config = useRuntimeConfig()
 
