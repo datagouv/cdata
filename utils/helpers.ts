@@ -1,3 +1,5 @@
+import type { FieldsErrors } from "~/types/form"
+
 export function humanJoin(source: Array<string>): string {
   const array = [...source]
 
@@ -65,6 +67,12 @@ export function chunkArray<T>(array: T[], size: number): T[][] {
     result.push(array.slice(i, i + size))
   }
   return result
+}
+
+export function getAllErrorsInErrorFields(errors: FieldsErrors, key: string): string | null {
+  if (!(key in errors)) return null
+  if (!errors[key].length) return null
+  return errors[key].join(', ')
 }
 
 export function removeLangPrefix(url: string): string {

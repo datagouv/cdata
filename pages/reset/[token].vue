@@ -11,19 +11,15 @@
       >
         <RequiredExplanation />
 
-        <div
-          v-if="errorMessage"
-          class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
-        >
-          {{ errorMessage }}
-        </div>
-
         <div>
           <InputGroup
             v-model="password"
             type="password"
             :label="$t('Mot de passe')"
             class="w-full !mb-0"
+            :error-text="getAllErrorsInErrorFields(errors, 'password')"
+            :has-error="!! getAllErrorsInErrorFields(errors, 'password')"
+            required
           />
         </div>
         <div>
@@ -32,6 +28,9 @@
             type="password"
             :label="$t('Confirmer le mot de passe')"
             class="w-full !mb-0"
+            :error-text="getAllErrorsInErrorFields(errors, 'passwordConfirmation')"
+            :has-error="!! getAllErrorsInErrorFields(errors, 'passwordConfirmation')"
+            required
           />
         </div>
 
@@ -50,33 +49,43 @@
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
+import type { FieldsErrors } from '~/types/form'
 
 const { $api } = useNuxtApp()
 const { toast } = useToast()
 const { t } = useI18n()
+const route = useRoute()
+const localePath = useLocalePath()
+const me = useMaybeMe()
 
 useSeoMeta({ title: t('Réinitialiser le mot de passe') })
 
 const password = ref('')
 const passwordConfirmation = ref('')
-const route = useRoute()
 
 const loading = ref(false)
-const errorMessage = ref('')
+const errors = ref<FieldsErrors>({})
 
 const reset = async () => {
   loading.value = true
 
   try {
-    await $api(`/fr/reset/${route.params.token}`, {
+    await $api(`/fr/reset/${route.params.token}/`, {
       method: 'POST',
       body: {
         password: password.value,
+        password_confirm: passwordConfirmation.value,
       },
     })
 
     toast.success(t('Votre mot de passe a bien été réinitialisé. Vous êtes maintenant connecté.'))
-    await navigateTo('/login')
+    await loadMe(me)
+    await navigateTo(localePath('/'))
+  }
+  catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const fieldsErrors = (e as any)?.response?._data?.response?.field_errors
+    if (fieldsErrors) errors.value = fieldsErrors
   }
   finally {
     loading.value = false

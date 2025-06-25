@@ -50,6 +50,11 @@ export default defineNuxtPlugin({
             return
           }
 
+          if (response.status === 400) {
+            toast.error(t('Le formulaire contient des erreurs.'))
+            return
+          }
+
           let message
           try {
             if ('error' in response._data) {

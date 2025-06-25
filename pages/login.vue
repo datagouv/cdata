@@ -24,6 +24,7 @@
             type="email"
             :label="$t('Adresse email')"
             class="w-full !mb-0"
+            required
           />
         </div>
 
@@ -33,6 +34,7 @@
             type="password"
             :label="$t('Mot de passe')"
             class="w-full !mb-0"
+            required
           />
         </div>
 

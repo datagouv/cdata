@@ -28,6 +28,7 @@
             type="email"
             :label="$t('Adresse email')"
             class="w-full !mb-0"
+            required
           />
         </div>
 
