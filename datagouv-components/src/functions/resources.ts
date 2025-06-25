@@ -63,7 +63,6 @@ export function getResourceFormatIcon(format: string): Component | null {
     case 'xls':
     case 'xlsx':
     case 'parquet':
-      return Table
     case 'csv.gz':
       return Table
     case 'geojson':
