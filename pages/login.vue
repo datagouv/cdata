@@ -9,20 +9,22 @@
         class="space-y-6"
         @submit.prevent="connect"
       >
-        <RequiredExplanation />
-
-        <div
-          v-if="errorMessage"
-          class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
+        <SimpleBanner
+          v-if="getAllErrorsInErrorFields(errors, '')"
+          type="danger"
         >
-          {{ errorMessage }}
-        </div>
+          {{ getAllErrorsInErrorFields(errors, "") }}
+        </SimpleBanner>
+
+        <RequiredExplanation />
 
         <div>
           <InputGroup
             v-model="email"
             type="email"
             :label="$t('Adresse email')"
+            :error-text="getAllErrorsInErrorFields(errors, 'email')"
+            :has-error="!! getAllErrorsInErrorFields(errors, 'email')"
             class="w-full !mb-0"
             required
           />
@@ -34,6 +36,8 @@
             type="password"
             :label="$t('Mot de passe')"
             class="w-full !mb-0"
+            :error-text="getAllErrorsInErrorFields(errors, 'password')"
+            :has-error="!! getAllErrorsInErrorFields(errors, 'password')"
             required
           />
         </div>
@@ -57,9 +61,9 @@
         <div class="flex justify-center">
           <BrandedButton
             type="submit"
-            :disabled="isLoading"
+            :loading="loading"
           >
-            {{ isLoading ? $t('Connexion...') : $t('Se connecter') }}
+            {{ $t('Se connecter') }}
           </BrandedButton>
         </div>
 
@@ -74,83 +78,47 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import type { FieldsErrors } from '~/types/form'
 
 const { $api } = useNuxtApp()
 const { t } = useI18n()
+const { toast } = useToast()
+const localePath = useLocalePath()
 
 useSeoMeta({ title: t('Connexion') })
 
 const email = ref('thibaud.dauce@data.gouv.fr')
 const password = ref('password')
 const rememberMe = ref(false)
-const isLoading = ref(false)
-const errorMessage = ref('')
+const loading = ref(false)
+const errors = ref<FieldsErrors>({})
 const me = useMe()
 
 const connect = async () => {
-  if (isLoading.value) return
-
-  isLoading.value = true
-  errorMessage.value = ''
+  loading.value = true
 
   try {
-    // const { response: { csrf_token } } = await $api<{ response: { csrf_token: string } }>('/fr/login/', {
-    //   method: 'GET',
-    // })
-
-    // console.log(csrf_token)
-
-    const token = useToken()
-
-    const { response } = await $api<{ response: { user: { authentication_token: string } } }>('/fr/login/?include_auth_token=true', {
+    await $api<{ response: { user: { authentication_token: string } } }>('/fr/login/', {
       method: 'POST',
       body: {
         email: email.value,
         password: password.value,
         remember: rememberMe.value,
       },
-      // headers: {
-      //   'X-CSRF-Token': csrf_token,
-      // },
     })
 
-    // const newToken = response.user.authentication_token
-    // token.value = newToken
-    // refreshCookie('token')
+    toast.success(t('Vous êtes maintenant connecté.'))
     await loadMe(me)
+    await navigateTo(localePath('/'))
   }
-  catch (error: any) {
-    // Gestion des erreurs Flask Security
-    if (error.status === 400) {
-      console.log(error)
-      // Erreurs de validation
-      if (error.data?.errors) {
-        errorMessage.value = Object.values(error.data.errors).flat().join(', ')
-      }
-      else if (error.data?.error) {
-        errorMessage.value = error.data.error
-      }
-      else {
-        errorMessage.value = 'Email ou mot de passe incorrect'
-      }
-    }
-    else if (error.status === 401) {
-      errorMessage.value = 'Email ou mot de passe incorrect'
-    }
-    else if (error.status === 429) {
-      errorMessage.value = 'Trop de tentatives de connexion. Veuillez réessayer plus tard.'
-    }
-    else if (error.status === 422) {
-      // Erreurs CSRF ou de validation
-      errorMessage.value = 'Erreur de sécurité. Veuillez actualiser la page et réessayer.'
-    }
-    else {
-      errorMessage.value = 'Une erreur est survenue. Veuillez réessayer.'
-    }
+  catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const fieldsErrors = (e as any)?.response?._data?.response?.field_errors
+    if (fieldsErrors) errors.value = fieldsErrors
   }
   finally {
-    isLoading.value = false
+    loading.value = false
   }
 }
 </script>

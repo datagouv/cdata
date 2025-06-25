@@ -9,6 +9,13 @@
         class="space-y-6"
         @submit.prevent="reset"
       >
+        <SimpleBanner
+          v-if="getAllErrorsInErrorFields(errors, '')"
+          type="danger"
+        >
+          {{ getAllErrorsInErrorFields(errors, "") }}
+        </SimpleBanner>
+
         <RequiredExplanation />
 
         <div>
@@ -48,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 
 const { $api } = useNuxtApp()
@@ -59,6 +66,13 @@ const localePath = useLocalePath()
 const me = useMaybeMe()
 
 useSeoMeta({ title: t('Réinitialiser le mot de passe') })
+
+watchEffect(async () => {
+  if (me.value) {
+    toast.success(t('Vous êtes déjà connecté.'))
+    await navigateTo(localePath('/'))
+  }
+})
 
 const password = ref('')
 const passwordConfirmation = ref('')

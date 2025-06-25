@@ -11,7 +11,7 @@
 import { computed } from 'vue'
 
 const props = defineProps<{
-  type: 'primary' | 'primary-frame' | 'warning' | 'gray' | 'success'
+  type: 'primary' | 'primary-frame' | 'warning' | 'gray' | 'danger' | 'success'
 }>()
 
 const classes = computed(() => {
@@ -21,6 +21,7 @@ const classes = computed(() => {
     'warning': 'bg-warning3-lightest text-warning3-dark',
     'gray': 'bg-gray-some text-gray-plain',
     'success': 'bg-success-lightest text-success-dark',
+    'danger': 'bg-danger-lightest text-danger-dark',
   }[props.type]
 })
 </script>
