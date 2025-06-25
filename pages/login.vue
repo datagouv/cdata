@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-some py-6">
+  <div class="bg-gray-some py-6 space-y-6">
     <div class="container bg-white max-w-xl p-6 border border-gray-lower">
       <h1 class="text-center text-2xl">
         {{ $t('Se connecter') }}
@@ -73,6 +73,14 @@
           </NuxtLinkLocale>
         </div>
       </form>
+    </div>
+    <div class="container bg-white max-w-xl p-6 border border-gray-lower flex flex-col sm:items-center">
+      <p class="font-bold text-sm text-center">
+        {{ $t('Vous n\'avez pas de compte ?') }}
+      </p>
+      <BrandedButton href="/register">
+        {{ $t('Créer un compte') }}
+      </BrandedButton>
     </div>
   </div>
 </template>

@@ -140,7 +140,6 @@
                               href="/login"
                               color="primary-softer"
                               size="lg"
-                              :external="true"
                               :icon="RiLockLine"
                               class="w-full"
                             >
@@ -152,7 +151,6 @@
                               color="primary-softer"
                               size="lg"
                               href="/register"
-                              :external="true"
                               class="w-full"
                               :icon="RiAccountCircleLine"
                             >
@@ -313,7 +311,6 @@
                   <BrandedButton
                     color="primary-softer"
                     href="/login"
-                    :external="true"
                     :icon="RiLockLine"
                   >
                     {{ $t("Log in") }}
@@ -323,7 +320,6 @@
                   <BrandedButton
                     color="primary-softer"
                     href="/register"
-                    :external="true"
                     :icon="RiAccountCircleLine"
                   >
                     {{ $t("Register") }}
