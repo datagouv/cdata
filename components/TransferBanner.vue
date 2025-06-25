@@ -3,7 +3,7 @@
     type="primary"
     :title="label"
   >
-    {{ $t("Be careful, this action can't be reverse.") }}
+    {{ $t("Attention, cette action ne peut pas être annulée.") }}
 
     <template #button>
       <ModalWithButton

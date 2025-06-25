@@ -7,6 +7,39 @@
       @feature="feature"
       @submit="save"
     >
+      <template #top>
+        <BannerAction
+          class="mb-4"
+          type="primary"
+          :title="$t('Modifier la visibilité de la réutilisation')"
+        >
+          <i18n-t
+            v-if="reuse.private"
+            keypath="Cette réutilisation est actuellement {status}. Seul vous ou les membres de votre organisation pouvez la voir et y contribuer."
+          >
+            <template #status>
+              <strong>{{ $t('privée') }}</strong>
+            </template>
+          </i18n-t>
+          <i18n-t
+            v-else
+            keypath="Cette réutilisation est actuellement {status}. N'importe qui sur Internet peut voir cette réutilisation."
+          >
+            <template #status>
+              <strong>{{ $t('publique') }}</strong>
+            </template>
+          </i18n-t>
+
+          <template #button>
+            <BrandedButton
+              :loading="isLoading"
+              @click="switchReusePrivate"
+            >
+              {{ reuse.private ? $t('Publier la réutilisation') : $t('Passer en brouillon') }}
+            </BrandedButton>
+          </template>
+        </BannerAction>
+      </template>
       <template #button>
         <BrandedButton
           type="submit"
@@ -57,7 +90,7 @@
                   v-bind="attrs"
                   v-on="listeners"
                 >
-                  {{ $t('Delete') }}
+                  {{ $t('Supprimer') }}
                 </BrandedButton>
               </template>
               <p class="fr-text--bold">
@@ -172,6 +205,31 @@ async function archiveReuse() {
     }
     else {
       toast.success(t('Réutilisation archivée!'))
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+  }
+  finally {
+    finish()
+  }
+}
+
+async function switchReusePrivate() {
+  if (!reuseForm.value) throw new Error('No reuse form')
+
+  try {
+    start()
+
+    await $api(`/api/1/reuses/${reuse.value.id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(reuseToApi(reuseForm.value, { private: !reuseForm.value.private })),
+    })
+
+    refresh()
+    if (reuse.value.private) {
+      toast.success(t('Réutilisation publiée!'))
+    }
+    else {
+      toast.success(t('Réutilisation passée en brouillon!'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
