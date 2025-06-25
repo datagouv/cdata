@@ -114,6 +114,10 @@ export default defineNuxtConfig({
       resourceFileUploadChunk: 2 * 1000 * 1000,
       maxSortableFiles: 50,
 
+      captcheta: {
+        style: 'captchaFR',
+      },
+
       licenses: {
         'Autorités administratives': [
           { value: 'lov2', recommended: true, code: 'etalab-2.0' },
