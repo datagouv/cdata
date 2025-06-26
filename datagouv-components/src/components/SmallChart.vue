@@ -2,14 +2,18 @@
   <div>
     <canvas
       ref="canvasRef"
-      width="120"
-      height="30"
+      :width="width*2"
+      :height="height*2"
+      :style="{ width: width + 'px', height: height + 'px' }"
     />
-    <div class="fr-grid-row justify-between">
-      <p class="text-xxs fr-m-0 text-mention-grey">
+    <div
+      v-if="showAxisLabel"
+      class="flex flex-wrap justify-between"
+    >
+      <p class="text-[0.625rem] m-0 text-gray-medium">
         {{ startDate }}
       </p>
-      <p class="text-xxs fr-m-0 text-mention-grey">
+      <p class="text-[0.625rem] m-0 text-gray-medium">
         {{ endDate }}
       </p>
     </div>
@@ -27,10 +31,16 @@ const LIGHT_COLOR_WITH_OPACITY = 'rgba(182, 207, 251, 0.7)'
 
 const props = withDefaults(defineProps<{
   data: Record<string, number>
-  type: 'line' | 'bar'
+  height?: number
   lastWithLowEmphasis?: boolean
+  showAxisLabel?: boolean
+  type: 'line' | 'bar'
+  width?: number
 }>(), {
+  height: 30,
   lastWithLowEmphasis: false,
+  showAxisLabel: true,
+  width: 120,
 })
 
 const last = (ctx, value) => {
@@ -85,8 +95,10 @@ const startDate = computed(() => months.value.length ? getMonthYear(months.value
 const endDate = computed(() => months.value.length ? getMonthYear(months.value[months.value.length - 1]) : null)
 
 const OPTIONS = {
-  animation: false,
-  responsive: true,
+  animation: true,
+  devicePixelRatio: 1,
+  responsive: false,
+  clip: false,
   plugins: {
     legend: {
       display: false,
@@ -105,6 +117,7 @@ const OPTIONS = {
       backgroundColor: COLOR,
       borderColor: COLOR,
       borderJoinStyle: 'round',
+      borderWidth: 3,
       tension: 0.35,
     },
     point: {
@@ -125,7 +138,8 @@ const OPTIONS = {
   },
   layout: {
     padding: {
-      top: 1.5, // half border width
+      top: 2, // half border width
+      bottom: 2,
     },
   },
 } satisfies ChartOptions

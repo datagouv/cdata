@@ -1,6 +1,6 @@
 <template>
   <div
-    class="group flex items-center justify-between rounded border p-2.5"
+    class="group flex items-center justify-between gap-2 rounded border p-2.5"
     :data-banner-action-type="type"
     :class="{
       '!border-datagouv bg-datagouv-lightest text-datagouv-dark': type === 'primary',

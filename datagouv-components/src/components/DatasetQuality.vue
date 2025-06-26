@@ -17,7 +17,7 @@
     :score="quality.score"
     class="w-100"
   />
-  <template v-if="showItemWarnings">
+  <template v-if="!hideWarnings">
     <ul class="list-none pl-0">
       <DatasetQualityItemWarning
         :quality-item="quality.dataset_description_quality"
@@ -64,8 +64,8 @@ import DatasetQualityTooltipContent from './DatasetQualityTooltipContent.vue'
 
 withDefaults(defineProps<{
   quality: Quality
-  showItemWarnings?: boolean
+  hideWarnings?: boolean
 }>(), {
-  showItemWarnings: true,
+  hideWarnings: true,
 })
 </script>

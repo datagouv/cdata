@@ -78,7 +78,12 @@
                         loading="lazy"
                         alt=""
                       />
-                      <span>{{ user.first_name }} {{ user.last_name }}</span>
+                      <span>{{ user.first_name }} {{ user.last_name }}
+                        <small
+                          v-if="user.email"
+                          class="text-gray-medium"
+                        >({{ user.email }})</small>
+                      </span>
                     </div>
                   </template>
                 </SearchableSelect>
@@ -260,7 +265,7 @@
                       type="danger"
                       :title="$t('Remove member from the organization')"
                     >
-                      {{ t("Be careful, this action can't be reverse.") }}
+                      {{ t("Attention, cette action ne peut pas être annulée.") }}
                       <template #button>
                         <BrandedButton
                           :loading
