@@ -126,6 +126,7 @@ useSortable(sortableRootRef, selectedDatasetsSuggest)
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()
+const config = useRuntimeConfig()
 
 const label = computed(() => props.label || t('Associated datasets'))
 
@@ -158,16 +159,27 @@ const selectedDatasets = computed<Array<Dataset | DatasetV2 | DatasetSuggest>>((
 })
 
 const loadDatasetByLink = async () => {
+  try {
+    const url = new URL(datasetUrl.value)
+    if (!url.hostname.endsWith(`.${config.public.baseDomain}`)) {
+      datasetUrlError.value = t('Veuillez fournir un lien vers la plateforme {title}. Nous ne pouvons pas lier une API avec un jeu de données externe.', { title: config.public.title })
+      return
+    }
+  }
+  catch {
+    // Do nothing
+  }
+
   const matches = /\/datasets\/(.+?)\/?$/.exec(datasetUrl.value)
   if (!matches) {
-    datasetUrlError.value = t(`The provided URL doesn't look like a datasets URL.`)
+    datasetUrlError.value = t(`L'URL fournie ne ressemble pas à une URL de jeu de données.`)
     return
   }
   const id = matches[1]
   try {
     const dataset = await $api<DatasetV2>(`/api/2/datasets/${id}/`)
     if (selectedDatasetsSuggest.value.find(suggest => suggest.id === dataset.id)) {
-      datasetUrlError.value = t('The dataset is already present in the list.')
+      datasetUrlError.value = t('Ce jeu de données est déjà présent dans la liste.')
       return
     }
 
@@ -177,7 +189,7 @@ const loadDatasetByLink = async () => {
     datasetUrl.value = ''
   }
   catch {
-    datasetUrlError.value = t('Cannot find a dataset identified by {id}.', { id })
+    datasetUrlError.value = t('Impossible de trouver un jeu de données avec l\'identifiant {id}.', { id })
   }
 }
 
