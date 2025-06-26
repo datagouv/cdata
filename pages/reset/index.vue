@@ -82,6 +82,8 @@ const success = ref(false)
 const errors = ref<FieldsErrors>({})
 
 const reset = async () => {
+  if (success.value) return
+
   loading.value = true
   errors.value = {}
 

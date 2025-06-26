@@ -67,6 +67,7 @@ const errors = ref<FieldsErrors>({})
 const success = ref(false)
 
 const connect = async () => {
+  if (success.value) return
   loading.value = true
   errors.value = {}
 
