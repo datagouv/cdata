@@ -35,7 +35,7 @@
       <FieldsetElement form-key="owned">
         <ProducerSelect
           v-model="form.owned"
-          :label="t('Vérifiez l'identité avec laquelle vous souhaitez publier')"
+          :label="t(`Vérifiez l'identité avec laquelle vous souhaitez publier`)"
           :required="true"
           :error-text="getFirstError('owned')"
           :warning-text="getFirstWarning('owned')"
