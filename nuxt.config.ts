@@ -110,7 +110,7 @@ export default defineNuxtConfig({
       publishingHarvesterFeedbackUrl: 'https://tally.so/r/3NMLOQ',
       reuseGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/reutilisations',
       harvesterRequestValidationUrl: 'https://support.data.gouv.fr/help/datagouv/moissonnage#support-tree',
-      harvesterPreviewMaxÉléments : 20, // SHould be the same as `HARVEST_PREVIEW_MAX_ITEMS` in udata
+      harvesterPreviewMaxItems: 20, // SHould be the same as `HARVEST_PREVIEW_MAX_ITEMS` in udata
       harvestEnableManualRun: false,
       harvestBackendsForHidingQuality: ['CSW-ISO-19139'],
 
