@@ -35,6 +35,15 @@
 
       <div class="text-sm text-mentionGrey space-y-1.5 mb-5">
         <div class="space-x-1">
+          <span>{{ $t('Statut') }}:</span>
+          <AdminBadge
+            size="xs"
+            :type="getDataserviceStatus(dataservice).type"
+          >
+            {{ getDataserviceStatus(dataservice).label }}
+          </AdminBadge>
+        </div>
+        <div class="space-x-1">
           <RiBarChartBoxLine class="inline size-3" />
           <span>{{ $t('Statistiques:') }}</span>
           <span class="space-x-2">
@@ -89,6 +98,7 @@ import TabLinks from '~/components/TabLinks.vue'
 const { t } = useI18n()
 
 const route = useRoute()
+const { getDataserviceStatus } = useDataserviceStatus()
 const me = useMe()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
 const { data: dataservice } = await useAPI<Dataservice>(url, { lazy: true })

@@ -11,6 +11,7 @@
     >
       <template #top>
         <BannerAction
+          v-if="!dataset.deleted && !dataset.archived"
           class="mb-4"
           type="primary"
           :title="$t('Modifier la visibilité du jeu de données')"
@@ -41,6 +42,24 @@
             </BrandedButton>
           </template>
         </BannerAction>
+        <BannerAction
+          v-if="dataset.deleted"
+          class="mb-4"
+          type="warning"
+          :title="$t('Restaurer ce jeu de données')"
+        >
+          {{ $t("Sans restauration le jeu de données sera définitivement supprimé dans la nuit.") }}
+
+          <template #button>
+            <BrandedButton
+              :icon="RiArrowGoBackLine"
+              :disabled="isLoading"
+              @click="restoreDataset"
+            >
+              {{ $t('Restaurer') }}
+            </BrandedButton>
+          </template>
+        </BannerAction>
       </template>
       <div class="mt-5 space-y-5">
         <TransferBanner
@@ -65,6 +84,7 @@
           </template>
         </BannerAction>
         <BannerAction
+          v-if="!dataset.deleted"
           type="danger"
           :title="$t('Supprimer le jeu de données')"
         >
@@ -110,7 +130,7 @@
 <script setup lang="ts">
 import type { DatasetV2, Frequency, License } from '@datagouv/components-next'
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
-import { RiArchiveLine, RiDeleteBin6Line } from '@remixicon/vue'
+import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity } from '~/types/types'
 
@@ -120,8 +140,6 @@ const config = useRuntimeConfig()
 
 const route = useRoute()
 const { start, finish, isLoading } = useLoadingIndicator()
-
-const localePath = useLocalePath()
 
 const { toast } = useToast()
 
@@ -180,6 +198,7 @@ async function save() {
       body: JSON.stringify(datasetToApi(datasetForm.value, { private: datasetForm.value.private })),
     })
 
+    refresh()
     toast.success(t('Jeu de données mis à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
@@ -194,12 +213,9 @@ async function deleteDataset() {
     await $api(`/api/1/datasets/${route.params.id}`, {
       method: 'DELETE',
     })
-    if (dataset.value.organization) {
-      await navigateTo(localePath(`/admin/organizations/${dataset.value.organization.id}/datasets`), { replace: true })
-    }
-    else {
-      await navigateTo(localePath('/admin/me/datasets'), { replace: true })
-    }
+    refresh()
+    toast.success(t('Jeu de données supprimé!'))
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
     finish()
@@ -227,6 +243,22 @@ async function switchDatasetPrivate() {
   }
 }
 
+async function restoreDataset() {
+  if (!datasetForm.value) throw new Error('No dataset form')
+  start()
+  try {
+    await $api(`/api/1/datasets/${dataset.value.id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(datasetToApi(datasetForm.value, { deleted: null })),
+    })
+    refresh()
+    toast.success(t('Jeu de données restauré!'))
+  }
+  finally {
+    finish()
+  }
+}
+
 async function archiveDataset() {
   if (!datasetForm.value) throw new Error('No dataset form')
   start()
@@ -242,6 +274,7 @@ async function archiveDataset() {
     else {
       toast.success(t('Jeu de données archivé!'))
     }
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
     finish()

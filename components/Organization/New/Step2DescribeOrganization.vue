@@ -24,6 +24,8 @@
       </div>
     </SimpleBanner>
 
+    <slot name="top" />
+
     <RequiredExplanation />
     <FormFieldset :legend="$t('Description')">
       <FieldsetElement form-key="name">
