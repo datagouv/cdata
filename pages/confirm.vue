@@ -1,17 +1,13 @@
 <template>
-  <div class="bg-gray-some py-6">
+  <div class="bg-gray-some py-6 space-y-6">
     <div class="container bg-white max-w-xl p-6 border border-gray-lower">
       <h1 class="text-center text-2xl">
-        {{ $t('Réinitialiser le mot de passe') }}
+        {{ $t('Renvoyer les instructions de confirmation') }}
       </h1>
-
-      <p class="text-gray-plain text-sm">
-        {{ $t('Vous avez oublié votre mot de passe ? Saisissez votre adresse email ci-dessous et nous vous enverrons les instructions pour en définir un nouveau.') }}
-      </p>
 
       <form
         class="space-y-6"
-        @submit.prevent="reset"
+        @submit.prevent="connect"
       >
         <SimpleBanner
           v-if="getAllErrorsInErrorFields(errors, '')"
@@ -27,18 +23,10 @@
             v-model="email"
             type="email"
             :label="$t('Adresse email')"
-            class="w-full !mb-0"
             :error-text="getAllErrorsInErrorFields(errors, 'email')"
             :has-error="!! getAllErrorsInErrorFields(errors, 'email')"
+            class="w-full !mb-0"
             required
-          />
-        </div>
-
-        <div>
-          <Captchetat
-            v-model:uuid="captchaUuid"
-            v-model:code="captchaCode"
-            :errors="getAllErrorsInErrorFields(errors, 'captcha_code')"
           />
         </div>
 
@@ -46,7 +34,7 @@
           v-if="success"
           type="success"
         >
-          {{ $t('Les instructions de réinitialisation de votre mot de passe ont été envoyées à {email}.', { email }) }}
+          {{ $t('Un email vous a été renvoyé afin de confirmer votre adresse email.') }}
         </SimpleBanner>
         <div
           v-else
@@ -54,9 +42,9 @@
         >
           <BrandedButton
             type="submit"
-            :loading
+            :loading="loading"
           >
-            {{ $t('Réinitialiser le mot de passe') }}
+            {{ $t('Renvoyer les instructions de confirmation') }}
           </BrandedButton>
         </div>
       </form>
@@ -68,30 +56,25 @@
 import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 
-const { t } = useI18n()
 const { $api } = useNuxtApp()
+const { t } = useI18n()
 
-useSeoMeta({ title: t('Réinitialiser le mot de passe') })
+useSeoMeta({ title: t('Renvoyer les instructions de confirmation') })
 
 const email = ref('thibaud.dauce@data.gouv.fr')
-const captchaUuid = ref('')
-const captchaCode = ref('')
-
 const loading = ref(false)
-const success = ref(false)
 const errors = ref<FieldsErrors>({})
+const success = ref(false)
 
-const reset = async () => {
+const connect = async () => {
   loading.value = true
   errors.value = {}
 
   try {
-    await $api('/fr/reset/', {
+    await $api('/fr/confirm/', {
       method: 'POST',
       body: {
         email: email.value,
-        captcha_uuid: captchaUuid.value,
-        captcha_code: captchaCode.value,
       },
     })
 

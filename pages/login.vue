@@ -72,6 +72,11 @@
             {{ $t('Récupérer votre mot de passe') }}
           </NuxtLinkLocale>
         </div>
+        <div class="text-center text-gray-plain text-sm">
+          {{ $t('Instructions de confirmation non reçues ?') }} <NuxtLinkLocale to="/confirm">
+            {{ $t('Renvoyer les instructions') }}
+          </NuxtLinkLocale>
+        </div>
       </form>
     </div>
     <div class="container bg-white max-w-xl p-6 border border-gray-lower flex flex-col sm:items-center">
@@ -105,6 +110,7 @@ const me = useMe()
 
 const connect = async () => {
   loading.value = true
+  errors.value = {}
 
   try {
     await $api<{ response: { user: { authentication_token: string } } }>('/fr/login/', {

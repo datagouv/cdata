@@ -157,6 +157,7 @@ const success = ref(false)
 
 const connect = async () => {
   loading.value = true
+  errors.value = {}
 
   try {
     await $api('/fr/register/', {

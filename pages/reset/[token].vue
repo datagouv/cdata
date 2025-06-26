@@ -82,6 +82,7 @@ const errors = ref<FieldsErrors>({})
 
 const reset = async () => {
   loading.value = true
+  errors.value = {}
 
   try {
     await $api(`/fr/reset/${route.params.token}/`, {
