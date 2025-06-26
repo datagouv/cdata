@@ -7,11 +7,11 @@ export default defineNuxtPlugin({
     const cookie = useRequestHeader('cookie')
     const localePath = useLocalePath()
     const { toast } = useToast()
-    const makeApi = (sendJson = true) => {
+    const makeApi = (apiOptions: { sendJson: boolean, redirectOn404: boolean }) => {
       return $fetch.create({
         baseURL: config.public.apiBase,
         onRequest({ options }) {
-          if (sendJson) {
+          if (apiOptions.sendJson) {
             options.headers.set('Content-Type', 'application/json')
           }
           options.headers.set('Accept', 'application/json')
@@ -35,7 +35,13 @@ export default defineNuxtPlugin({
         },
         async onResponseError({ response }) {
           if (response.status === 404) {
-            showError({ statusCode: 404, statusMessage: 'Page Not Found' })
+            if (apiOptions.redirectOn404) {
+              showError({ statusCode: 404, statusMessage: 'Page Not Found' })
+            }
+            else {
+              // We don't want to show the toast for default 404 Flask response
+              return
+            }
           }
 
           if (response.status === 401) {
@@ -79,8 +85,9 @@ export default defineNuxtPlugin({
     // Expose to useNuxtApp().$api
     return {
       provide: {
-        api: makeApi(),
-        fileApi: makeApi(false),
+        api: makeApi({ sendJson: true, redirectOn404: true }),
+        fileApi: makeApi({ sendJson: false, redirectOn404: false }),
+        apiAllowing404: makeApi({ sendJson: true, redirectOn404: false }),
       },
     }
   },
