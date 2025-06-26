@@ -129,7 +129,9 @@ const params = computed(() => {
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Reuse>>('/api/1/reuses/', { lazy: true, query: params })
 
 watchEffect(async () => {
-  const activities = await getActitiesForObjects($api, pageData.value.data, 'created_at')
-  reuseActivities.value = { ...reuseActivities.value, ...activities }
+  if (pageData.value) {
+    const activities = await getActitiesForObjects($api, pageData.value.data, 'created_at')
+    reuseActivities.value = { ...reuseActivities.value, ...activities }
+  }
 })
 </script>

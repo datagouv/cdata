@@ -6,7 +6,7 @@
     >
       {{ t("Éditer le profil") }}
     </h2>
-    <AdminLoader v-if="loading && !organization" />
+    <AdminLoader v-if="isLoading && !organization" />
     <DescribeOrganizationFrom
       v-if="organization"
       ref="form"
@@ -18,8 +18,29 @@
       :show-well="false"
       @submit="updateCurrentOrganization"
     >
+      <template #top>
+        <BannerAction
+          v-if="isMeAdmin() && organization.deleted"
+          class="mb-4"
+          type="warning"
+          :title="$t(`Restaurer l'organisation`)"
+        >
+          {{ $t("Sans restauration, l'organisation sera définitivement supprimée dans la nuit.") }}
+
+          <template #button>
+            <BrandedButton
+              :icon="RiArrowGoBackLine"
+              :loading="isLoading"
+              @click="restoreOrganization"
+            >
+              {{ $t('Restaurer') }}
+            </BrandedButton>
+          </template>
+        </BannerAction>
+      </template>
       <template #default>
         <BannerAction
+          v-if="!organization.deleted"
           class="mt-12"
           type="danger"
           :title="$t('Supprimer l’organisation')"
@@ -32,7 +53,7 @@
             >
               <template #button="{ attrs, listeners }">
                 <BrandedButton
-                  :disabled="loading"
+                  :loading="isLoading"
                   color="danger"
                   :icon="RiDeleteBin6Line"
                   v-bind="attrs"
@@ -53,7 +74,7 @@
                   <button
                     class="fr-btn fr-btn--secondary rounded-full !text-red-600 !border border-solid !border-red-600 !shadow-none"
                     role="button"
-                    :disabled="loading"
+                    :loading="isLoading"
                     @click="deleteCurrentOrganization"
                   >
                     {{ t("Supprimer l’organisation") }}
@@ -70,7 +91,7 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { RiDeleteBin6Line } from '@remixicon/vue'
+import { RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import type { Organization, Badge } from '@datagouv/components-next'
 import AdminLoader from '~/components/AdminLoader/AdminLoader.vue'
@@ -87,6 +108,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const { toast } = useToast()
 const { $api } = useNuxtApp()
+const { start, finish, isLoading } = useLoadingIndicator()
 const localPath = useLocalePath()
 
 const form = ref<InstanceType<typeof DescribeOrganizationFrom> | null>(null)
@@ -97,29 +119,57 @@ watchEffect(() => {
   organizationForm.value = props.organization
 })
 
-const loading = computed(() => !props.organization)
-
 async function deleteCurrentOrganization() {
   if (props.organization) {
+    start()
     await $api(`api/1/organizations/${props.organization.id}/`, { method: 'DELETE' })
-    reloadNuxtApp({
-      path: localPath('/admin/me/profile'),
+    finish()
+    if (isMeAdmin()) {
+      emit('refresh')
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+    }
+    else {
+      reloadNuxtApp({
+        path: localPath('/admin/me/profile'),
+      })
+    }
+  }
+}
+
+async function restoreOrganization() {
+  start()
+  try {
+    await updateOrganization({
+      ...organizationForm.value,
+      deleted: null,
     })
+    toast.success(t('Organisation restaurée !'))
+    emit('refresh')
+
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+  }
+  finally {
+    finish()
   }
 }
 
 async function updateCurrentOrganization(logo_file: File | null, newBadges: Array<Badge> | null) {
-  await updateOrganization(organizationForm.value)
-  if (newBadges && props.organization) {
-    await updateOrganizationBadges(props.organization, newBadges)
-  }
-  if (logo_file && props.organization) {
-    await uploadLogo(props.organization.id, logo_file)
-  }
+  start()
+  try {
+    await updateOrganization(organizationForm.value)
+    if (newBadges && props.organization) {
+      await updateOrganizationBadges(props.organization, newBadges)
+    }
+    if (logo_file && props.organization) {
+      await uploadLogo(props.organization.id, logo_file)
+    }
+    toast.success(t('Organization updated !'))
+    emit('refresh')
 
-  toast.success(t('Organisation mise à jour !'))
-  emit('refresh')
-
-  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+  }
+  finally {
+    finish()
+  }
 }
 </script>

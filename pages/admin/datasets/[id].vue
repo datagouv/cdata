@@ -35,6 +35,15 @@
         </div>
 
         <div class="text-sm text-mentionGrey space-y-1.5">
+          <div class="space-x-1">
+            <span>{{ $t('Statut') }}:</span>
+            <AdminBadge
+              size="xs"
+              :type="getDatasetStatus(dataset).type"
+            >
+              {{ getDatasetStatus(dataset).label }}
+            </AdminBadge>
+          </div>
           <div class="space-x-1 flex items-center">
             <RiPriceTag3Line class="inline size-3" />
             <span>{{ $t('Métadonnées:') }}</span>
@@ -49,8 +58,8 @@
             </Tooltip>
           </div>
           <div class="space-x-1">
-            <RiInformationLine class="inline size-3" />
-            <span>{{ $t('Informations:') }}</span>
+            <RiBarChartBoxLine class="inline size-3" />
+            <span>{{ $t('Statistiques:') }}</span>
             <span class="space-x-2">
               <Tooltip class="inline">
                 <span class="space-x-0.5 text-sm">
@@ -79,6 +88,15 @@
                   {{ $t('Réutilisations') }}
                 </template>
               </Tooltip>
+              <Tooltip class="inline">
+                <span class="space-x-0.5 text-sm">
+                  <RiStarLine class="inline size-3.5" />
+                  <span>{{ summarize(dataset.metrics.followers) }}</span>
+                </span>
+                <template #tooltip>
+                  {{ $t('Abonnés') }}
+                </template>
+              </Tooltip>
             </span>
           </div>
         </div>
@@ -104,7 +122,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, DatasetQualityTooltipContent, type DatasetV2, DatasetQualityScore, summarize } from '@datagouv/components-next'
-import { RiDownloadLine, RiEyeLine, RiInformationLine, RiLineChartLine, RiPriceTag3Line } from '@remixicon/vue'
+import { RiBarChartBoxLine, RiDownloadLine, RiEyeLine, RiLineChartLine, RiPriceTag3Line, RiStarLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
@@ -113,6 +131,7 @@ const { t } = useI18n()
 const me = useMe()
 
 const route = useRoute()
+const { getDatasetStatus } = useDatasetStatus()
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset } = await useAPI<DatasetV2>(url)
 </script>

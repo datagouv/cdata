@@ -163,13 +163,36 @@
                   {{ formatDate(dataset.last_update) }}
                 </dd>
               </div>
-
+              <div class="grid gap-4 xl:grid-cols-2">
+                <StatBox
+                  :title="$t('Vues')"
+                  :data="datasetVisits"
+                  size="sm"
+                  type="line"
+                  :summary="datasetVisitsTotal"
+                />
+                <StatBox
+                  :title="$t('Téléchargements')"
+                  :data="datasetDownloadsResources"
+                  size="sm"
+                  type="line"
+                  :summary="datasetDownloadsResourcesTotal"
+                />
+              </div>
               <div>
                 <DatasetQuality
                   :quality="dataset.quality"
-                  show-item-warnings
+                  :hide-warnings
                 />
               </div>
+
+              <SimpleBanner
+                v-if="hideWarnings"
+                type="primary-frame"
+                class="text-sm"
+              >
+                {{ $t("La qualité des métadonnées peut être trompeuse car les métadonnées de la source originale peuvent avoir été perdues lors de leur récupération. Nous travaillons actuellement à améliorer la situation.") }}
+              </SimpleBanner>
 
               <SimpleBanner
                 v-if="dataset.harvest && 'remote_url' in dataset.harvest"
@@ -232,7 +255,7 @@
 </template>
 
 <script setup lang="ts">
-import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, type Resource, BrandedButton, useFormatDate } from '@datagouv/components-next'
+import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, type Resource, BrandedButton, useFormatDate, StatBox } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiExternalLinkFill, RiLockLine } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -241,6 +264,7 @@ import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
 
+const config = useRuntimeConfig()
 const route = useRoute()
 const { formatDate } = useFormatDate()
 
@@ -259,6 +283,13 @@ const title = computed(() => dataset.value?.title)
 
 useSeoMeta({
   title,
+})
+
+const hideWarnings = computed(() => {
+  if (!dataset.value.harvest) return false
+  if (!dataset.value.harvest.backend) return false
+
+  return config.public.harvestBackendsForHidingQuality.includes(dataset.value.harvest.backend)
 })
 
 await useJsonLd('dataset', route.params.did)
@@ -283,5 +314,31 @@ const exploreUrl = computed(() => {
     return resource.preview_url
   }
   return null
+})
+
+const datasetVisits = ref<Record<string, number>>({})
+const datasetDownloadsResources = ref<Record<string, number>>({})
+
+const datasetVisitsTotal = ref(0)
+const datasetDownloadsResourcesTotal = ref(0)
+
+watchEffect(async () => {
+  if (!dataset.value.id) return
+  // Fetching last 12 months
+  const response = await fetch(`${config.public.metricsApi}/api/datasets/data/?dataset_id__exact=${dataset.value.id}&metric_month__sort=desc&page_size=12`)
+  const page = await response.json()
+
+  for (const { metric_month, monthly_visit, monthly_download_resource } of page.data) {
+    datasetVisits.value[metric_month] = monthly_visit
+    datasetDownloadsResources.value[metric_month] = monthly_download_resource
+  }
+  // Fetching totals
+  if (page.data[0]) {
+    const totalResponse = await fetch(`${config.public.metricsApi}/api/datasets_total/data/?dataset_id__exact=${dataset.value.id}`)
+    const totalPage = await totalResponse.json()
+
+    datasetVisitsTotal.value = totalPage.data[0].visit
+    datasetDownloadsResourcesTotal.value = totalPage.data[0].download_resource
+  }
 })
 </script>

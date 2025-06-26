@@ -27,6 +27,18 @@
               :title="t(`L'identité de ce service public est certifiée par {certifier}`, { certifier: $config.public.title })"
               aria-hidden="true"
             />
+            <span
+              v-if="organization.deleted"
+              class="h-10 inline-block ml-1"
+            >
+              <AdminBadge
+                class="align-[0.25rem]"
+                type="danger"
+                size="sm"
+              >
+                {{ $t('supprimée') }}
+              </AdminBadge>
+            </span>
           </div>
         </div>
         <div class="fr-col-auto">

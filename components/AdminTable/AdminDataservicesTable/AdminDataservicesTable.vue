@@ -55,9 +55,9 @@
         <td>
           <AdminBadge
             size="xs"
-            :type="getStatus(dataservice).type"
+            :type="getDataserviceStatus(dataservice).type"
           >
-            {{ getStatus(dataservice).label }}
+            {{ getDataserviceStatus(dataservice).label }}
           </AdminBadge>
         </td>
         <td>
@@ -121,7 +121,7 @@ import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import DataserviceAccessTypeBadge from './DataserviceAccessTypeBadge.vue'
 import type { Activity } from '~/types/activity'
-import type { AdminBadgeType, DataserviceSortedBy, SortDirection } from '~/types/types'
+import type { DataserviceSortedBy, SortDirection } from '~/types/types'
 
 const props = withDefaults(defineProps<{
   activities?: Record<string, Activity>
@@ -138,38 +138,12 @@ defineEmits<{
 
 const { t } = useI18n()
 const { formatDate } = useFormatDate()
+const { getDataserviceStatus } = useDataserviceStatus()
 
 function sorted(column: DataserviceSortedBy) {
   if (props.sortedBy === column) {
     return props.sortDirection
   }
   return null
-}
-
-function getStatus(dataservice: Dataservice): { label: string, type: AdminBadgeType } {
-  if (dataservice.deleted_at) {
-    return {
-      label: t('Supprimé'),
-      type: 'danger',
-    }
-  }
-  else if (dataservice.archived_at) {
-    return {
-      label: t('Archivé'),
-      type: 'warning',
-    }
-  }
-  else if (dataservice.private) {
-    return {
-      label: t('Brouillon'),
-      type: 'secondary',
-    }
-  }
-  else {
-    return {
-      label: t('Public'),
-      type: 'primary',
-    }
-  }
 }
 </script>

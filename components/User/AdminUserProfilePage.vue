@@ -275,6 +275,10 @@ const props = defineProps<{
   user: User
 }>()
 
+const emits = defineEmits<{
+  refresh: []
+}>()
+
 const me = useMe()
 const config = useNuxtApp().$config
 const { toast } = useToast()
@@ -314,7 +318,7 @@ async function updateUser() {
   loading.value = true
   if (profilePicture.value) {
     try {
-      await uploadProfilePicture(profilePicture.value)
+      await uploadProfilePicture(profilePicture.value, me.value.id === props.user.id ? null : props.user)
     }
     catch {
       toast.error(t(`Votre image de profil n'a pas pu être téléversée !`))
@@ -333,6 +337,7 @@ async function updateUser() {
     })
     toast.success(t('Profil mis à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+    emits('refresh')
   }
   finally {
     loading.value = false

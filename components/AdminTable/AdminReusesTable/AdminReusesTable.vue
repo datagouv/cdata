@@ -53,9 +53,9 @@
         <td>
           <AdminBadge
             size="xs"
-            :type="getStatus(reuse).type"
+            :type="getReuseStatus(reuse).type"
           >
-            {{ getStatus(reuse).label }}
+            {{ getReuseStatus(reuse).label }}
           </AdminBadge>
         </td>
         <td>
@@ -118,7 +118,7 @@ import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import type { Activity } from '~/types/activity'
-import type { AdminBadgeType, ReuseSortedBy, SortDirection } from '~/types/types'
+import type { ReuseSortedBy, SortDirection } from '~/types/types'
 
 const props = defineProps<{
   activities: Record<string, Activity>
@@ -133,38 +133,12 @@ defineEmits<{
 
 const { t } = useI18n()
 const { formatDate } = useFormatDate()
+const { getReuseStatus } = useReuseStatus()
 
 function sorted(column: ReuseSortedBy) {
   if (props.sortedBy === column) {
     return props.sortDirection
   }
   return null
-}
-
-function getStatus(reuse: Reuse): { label: string, type: AdminBadgeType } {
-  if (reuse.deleted) {
-    return {
-      label: t('Supprimé'),
-      type: 'danger',
-    }
-  }
-  else if (reuse.archived) {
-    return {
-      label: t('Archivé'),
-      type: 'warning',
-    }
-  }
-  else if (reuse.private) {
-    return {
-      label: t('Brouillon'),
-      type: 'secondary',
-    }
-  }
-  else {
-    return {
-      label: t('Public'),
-      type: 'primary',
-    }
-  }
 }
 </script>

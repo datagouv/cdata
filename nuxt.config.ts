@@ -67,7 +67,12 @@ export default defineNuxtConfig({
       searchAutocompleteDebounce: 200,
       searchSirenUrl: 'https://recherche-entreprises.api.gouv.fr/search',
       csvDatasetId: undefined,
+
       title: 'data.gouv.fr',
+
+      // Without www/demo/dev
+      baseDomain: 'data.gouv.fr',
+
       demoServer: {
         url: 'https://demo.data.gouv.fr',
         name: 'demo.data.gouv.fr',
@@ -107,6 +112,7 @@ export default defineNuxtConfig({
       harvesterRequestValidationUrl: 'https://support.data.gouv.fr/help/datagouv/moissonnage#support-tree',
       harvesterPreviewMaxÉléments : 20, // SHould be the same as `HARVEST_PREVIEW_MAX_ITEMS` in udata
       harvestEnableManualRun: false,
+      harvestBackendsForHidingQuality: ['CSW-ISO-19139'],
 
       newsletterSubscriptionUrl: 'https://qvo970cr.sibpages.com/',
 
@@ -118,7 +124,7 @@ export default defineNuxtConfig({
         'Autorités administratives': [
           { value: 'lov2', recommended: true, code: 'etalab-2.0' },
           { value: 'odc-odbl', description: 'License avec obligation de partage à l’identique', code: 'ODbL-1.0' },
-          { value: 'notspecified', description: 'Le Code des relations entre le public et l’administration ne s’applique pas' },
+          { value: 'notspecified', description: 'Le Code des relations entre le public et l’administration s’applique' },
         ],
         'Tous producteurs': [
           { value: 'lov2', recommended: true },

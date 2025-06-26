@@ -2,14 +2,13 @@
   <div>
     <div class="flex flex-wrap mb-6">
       <h2 class="text-sm w-full flex-none sm:flex-1 mb-0">
-        {{ $t('Statistiques générales des 12 derniers mois') }}
+        {{ $t('Statistiques des 12 derniers mois') }}
       </h2>
       <div>
         <BrandedButton
           color="secondary"
           :disabled="!downloadStatsUrl"
           :href="downloadStatsUrl || ''"
-          :title="$t('Télécharger le fichier')"
           download="stats.csv"
           :icon="RiDownloadLine"
           size="xs"
@@ -57,7 +56,7 @@
           :summary="metricsDatasetsViewsTotal"
         />
         <StatBox
-          :title="$t('Téléchargements')"
+          :title="$t('Téléchargements des données')"
           :data="metricsDownloads"
           type="line"
           :summary="metricsDownloadsTotal"

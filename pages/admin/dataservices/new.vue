@@ -100,6 +100,7 @@ const dataserviceForm = useState(
       private: true,
       rate_limiting: '',
       contact_points: [],
+      access_audiences: {} as DataserviceForm['access_audiences'],
     } as DataserviceForm),
 )
 
