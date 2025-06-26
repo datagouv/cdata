@@ -30,14 +30,23 @@
             size="xs"
             :icon="RiEyeLine"
           >
-            {{ t('See the dataset page') }}
+            {{ t('Voir la page publique du jeu de données') }}
           </BrandedButton>
         </div>
 
         <div class="text-sm text-mentionGrey space-y-1.5">
+          <div class="space-x-1">
+            <span>{{ $t('Statut') }}:</span>
+            <AdminBadge
+              size="xs"
+              :type="getDatasetStatus(dataset).type"
+            >
+              {{ getDatasetStatus(dataset).label }}
+            </AdminBadge>
+          </div>
           <div class="space-x-1 flex items-center">
             <RiPriceTag3Line class="inline size-3" />
-            <span>{{ $t('Metadata:') }}</span>
+            <span>{{ $t('Metadonnées:') }}</span>
             <Tooltip>
               <DatasetQualityScore
                 class="w-32"
@@ -49,8 +58,8 @@
             </Tooltip>
           </div>
           <div class="space-x-1">
-            <RiInformationLine class="inline size-3" />
-            <span>{{ $t('Informations:') }}</span>
+            <RiBarChartBoxLine class="inline size-3" />
+            <span>{{ $t('Statistiques:') }}</span>
             <span class="space-x-2">
               <Tooltip class="inline">
                 <span class="space-x-0.5 text-sm">
@@ -58,7 +67,7 @@
                   <span>{{ summarize(dataset.metrics.views ?? 0) }}</span>
                 </span>
                 <template #tooltip>
-                  {{ $t('Views') }}
+                  {{ $t('Vues') }}
                 </template>
               </Tooltip>
               <Tooltip class="inline">
@@ -67,7 +76,7 @@
                   <span>{{ summarize(dataset.metrics.resources_downloads ?? 0) }}</span>
                 </span>
                 <template #tooltip>
-                  {{ $t('Downloads') }}
+                  {{ $t('Téléchargements') }}
                 </template>
               </Tooltip>
               <Tooltip class="inline">
@@ -76,7 +85,16 @@
                   <span>{{ summarize(dataset.metrics.reuses) }}</span>
                 </span>
                 <template #tooltip>
-                  {{ $t('Reuses') }}
+                  {{ $t('Réutilisations') }}
+                </template>
+              </Tooltip>
+              <Tooltip class="inline">
+                <span class="space-x-0.5 text-sm">
+                  <RiStarLine class="inline size-3.5" />
+                  <span>{{ summarize(dataset.metrics.followers) }}</span>
+                </span>
+                <template #tooltip>
+                  {{ $t('Abonnés') }}
                 </template>
               </Tooltip>
             </span>
@@ -87,10 +105,10 @@
       <TabLinks
         class="mb-5"
         :links="[
-          { href: getDatasetAdminUrl(dataset), label: t('Metadata') },
-          { href: `${getDatasetAdminUrl(dataset)}/files`, label: t('Files') },
+          { href: getDatasetAdminUrl(dataset), label: t('Metadonnées') },
+          { href: `${getDatasetAdminUrl(dataset)}/files`, label: t('Fichiers') },
           { href: `${getDatasetAdminUrl(dataset)}/discussions`, label: t('Discussions') },
-          { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activities') },
+          { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activités') },
         ]"
       />
 
@@ -104,7 +122,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, DatasetQualityTooltipContent, type DatasetV2, DatasetQualityScore, summarize } from '@datagouv/components-next'
-import { RiDownloadLine, RiEyeLine, RiInformationLine, RiLineChartLine, RiPriceTag3Line } from '@remixicon/vue'
+import { RiBarChartBoxLine, RiDownloadLine, RiEyeLine, RiLineChartLine, RiPriceTag3Line, RiStarLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
@@ -113,6 +131,7 @@ const { t } = useI18n()
 const me = useMe()
 
 const route = useRoute()
+const { getDatasetStatus } = useDatasetStatus()
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset } = await useAPI<DatasetV2>(url)
 </script>

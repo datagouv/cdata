@@ -25,7 +25,7 @@ export function dataserviceToForm(dataservice: Dataservice): DataserviceForm {
   }
 }
 
-export function dataserviceToApi(form: DataserviceForm, overrides: { archived_at?: string | null, datasets?: Array<Dataset | DatasetV2 | DatasetSuggest>, private?: boolean } = {}): NewDataserviceForApi {
+export function dataserviceToApi(form: DataserviceForm, overrides: { archived_at?: string | null, datasets?: Array<Dataset | DatasetV2 | DatasetSuggest>, private?: boolean, deleted_at?: null } = {}): NewDataserviceForApi {
   const contactPoints = form.contact_points?.filter(cp => cp !== null && 'id' in cp).map(cp => cp.id) ?? []
   return {
     organization: form.owned?.organization?.id,
@@ -35,6 +35,7 @@ export function dataserviceToApi(form: DataserviceForm, overrides: { archived_at
     acronym: form.acronym,
     private: overrides.private,
     archived_at: overrides.archived_at,
+    deleted_at: overrides.deleted_at,
     datasets: overrides.datasets ? overrides.datasets.map(({ id }) => id) : undefined,
     contact_points: form.contact_points ? contactPoints : undefined,
     access_type: form.access_type,

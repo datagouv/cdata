@@ -126,7 +126,7 @@
                 class="space-y-1"
               >
                 <dt class="text-gray-plain font-bold">
-                  {{ $t('Rate limiting') }}
+                  {{ $t(`Limite d'appels`) }}
                 </dt>
                 <dd class="p-0">
                   {{ dataservice.rate_limiting }}
@@ -154,7 +154,13 @@
                   {{ $t('Accès') }}
                 </dt>
                 <dd class="p-0">
-                  <DataserviceAccessTypeBadge :dataservice />
+                  <DataserviceAccessTypeBadge
+                    v-if="dataservice.access_type"
+                    :dataservice
+                  />
+                  <template v-else>
+                    {{ $t('Non spécifié') }}
+                  </template>
                   <div
                     v-if="dataservice.authorization_request_url"
                     class="mt-2.5"
@@ -195,6 +201,16 @@
                     </template>
                   </dd>
                 </template>
+              </div>
+              <div>
+                <StatBox
+                  :title="$t('Views')"
+                  :data="metricsViews"
+                  size="sm"
+                  type="line"
+                  :summary="metricsViewsTotal"
+                  class="mb-8 md:mb-0"
+                />
               </div>
             </dl>
           </div>
@@ -267,7 +283,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, type DataserviceAccessAudienceCondition, type DataserviceAccessAudienceType, type DataserviceAccessAudience } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, type DataserviceAccessAudienceType, type DataserviceAccessAudience, StatBox } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import DataserviceAccessTypeBadge from '~/components/AdminTable/AdminDataservicesTable/DataserviceAccessTypeBadge.vue'
@@ -276,8 +292,8 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
-import { DataservicesAccessAudienceCondition } from '#components'
 
+const config = useRuntimeConfig()
 const route = useRoute()
 const { formatDate } = useFormatDate()
 
@@ -296,6 +312,31 @@ const openSwagger = ref(false)
 const accessAudiences = computed(() => (['local_authority_and_administration', 'company_and_association', 'private'] as Array<DataserviceAccessAudienceType>)
   .map(type => dataservice.value.access_audiences.find(a => a.role === type))
   .filter(Boolean) as Array<DataserviceAccessAudience>)
+
+const metricsViews = ref<null | Record<string, number>>(null)
+const metricsViewsTotal = ref<null | number>(null)
+
+watchEffect(async () => {
+  if (!dataservice.value.id) return
+  const response = await fetch(`${config.public.metricsApi}/api/dataservices/data/?dataservice_id__exact=${dataservice.value.id}&metric_month__sort=desc&page_size=12`)
+  const page = await response.json()
+
+  const views: Record<string, number> = {}
+
+  for (const { metric_month, monthly_visit } of page.data) {
+    views[metric_month] = monthly_visit
+  }
+  // Fetching totals
+  const totalResponse = await fetch(`${config.public.metricsApi}/api/dataservices_total/data/?dataservice_id__exact=${dataservice.value.id}`)
+  const totalPage = await totalResponse.json()
+
+  let totalViews = 0
+  if (page.data[0]) {
+    totalViews = totalPage.data[0].visit
+  }
+  metricsViews.value = views
+  metricsViewsTotal.value = totalViews
+})
 
 onMounted(async () => {
   await redirectLegacyHashes([

@@ -251,7 +251,7 @@
         :title="$t('Delete the account')"
         class="mt-4"
       >
-        {{ $t("Be careful, this action can't be reverse.") }}
+        {{ $t("Attention, cette action ne peut pas être annulée.") }}
 
         <template #button>
           <DeleteUserModal :user />
@@ -273,6 +273,10 @@ import SearchableSelect from '~/components/SearchableSelect.vue'
 
 const props = defineProps<{
   user: User
+}>()
+
+const emits = defineEmits<{
+  refresh: []
 }>()
 
 const me = useMe()
@@ -314,7 +318,7 @@ async function updateUser() {
   loading.value = true
   if (profilePicture.value) {
     try {
-      await uploadProfilePicture(profilePicture.value)
+      await uploadProfilePicture(profilePicture.value, me.value.id === props.user.id ? null : props.user)
     }
     catch {
       toast.error(t(`Your profile picture couldn't be updated !`))
@@ -333,6 +337,7 @@ async function updateUser() {
     })
     toast.success(t('Profile updated !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+    emits('refresh')
   }
   finally {
     loading.value = false

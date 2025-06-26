@@ -70,7 +70,7 @@
         </Accordion>
         <Accordion
           :id="rateLimitingDataserviceAccordionId"
-          :title="t('Indiquer le rate limiting')"
+          :title="t(`Indiquer la limite d'appels`)"
           :state="accordionState('rate_limiting')"
         >
           <p class="fr-m-0">
@@ -150,6 +150,9 @@
             </p>
           </div>
         </SimpleBanner>
+
+        <slot name="top" />
+
         <RequiredExplanation />
         <fieldset
           v-if="type === 'create'"
@@ -308,7 +311,7 @@
             <InputGroup
               v-model="form.rate_limiting"
               :aria-describedby="rateLimitingDataserviceAccordionId"
-              :label="t('Rate limiting')"
+              :label="t(`Limite d'appels`)"
               :required="false"
               :has-error="!!getFirstError('rate_limiting')"
               :has-warning="!!getFirstWarning('rate_limiting')"
@@ -461,30 +464,6 @@
             />
           </LinkedToAccordion>
         </fieldset>
-        <div
-          v-if="type === 'update'"
-          class="fr-checkbox-group fr-checkbox-group--sm mb-4"
-        >
-          <input
-            id="checkboxes-hint-el-sm-1"
-            v-model="dataserviceForm.private"
-            name="checkboxes-hint-el-sm-1"
-            type="checkbox"
-            aria-describedby="checkboxes-hint-el-sm-1-messages"
-          >
-          <label
-            class="fr-label"
-            for="checkboxes-hint-el-sm-1"
-          >
-            {{ t('Passer en mode brouillon') }}
-            <span class="fr-hint-text">{{ t(`L'API ne sera visible que par les membres de l’organisation.`) }}</span>
-          </label>
-          <div
-            id="checkboxes-hint-el-sm-1-messages"
-            class="fr-messages-group"
-            aria-live="assertive"
-          />
-        </div>
         <div class="fr-grid-row fr-grid-row--right">
           <slot name="button" />
         </div>
