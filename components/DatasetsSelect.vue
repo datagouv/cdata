@@ -126,6 +126,7 @@ useSortable(sortableRootRef, selectedDatasetsSuggest)
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()
+const config = useRuntimeConfig()
 
 const label = computed(() => props.label || t('Associated datasets'))
 
@@ -160,8 +161,8 @@ const selectedDatasets = computed<Array<Dataset | DatasetV2 | DatasetSuggest>>((
 const loadDatasetByLink = async () => {
   try {
     const url = new URL(datasetUrl.value)
-    if (!url.hostname.endsWith('.data.gouv.fr')) {
-      datasetUrlError.value = t('Veuillez fournir un lien vers la plateforme data.gouv.fr. Nous ne pouvons pas lier une API avec un jeu de données externe.')
+    if (!url.hostname.endsWith(`.${config.public.baseDomain}`)) {
+      datasetUrlError.value = t('Veuillez fournir un lien vers la plateforme {title}. Nous ne pouvons pas lier une API avec un jeu de données externe.', { title: config.public.title })
       return
     }
   }
