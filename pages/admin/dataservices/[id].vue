@@ -19,7 +19,7 @@
     </AdminBreadcrumb>
 
     <div v-if="dataservice">
-      <div class="flex flex-wrap items-center justify-between mb-5 gap-x-4 gap-y-2">
+      <div class="flex flex-wrap items-center justify-between mb-3 gap-x-4 gap-y-2">
         <h1 class="flex-none w-full md:flex-1 font-bold text-2xl !mb-0">
           {{ dataservice.title }}
         </h1>
@@ -29,7 +29,7 @@
           size="xs"
           :icon="RiEyeLine"
         >
-          {{ t('See the dataservice page') }}
+          {{ t("Voir la page publique de l'API") }}
         </BrandedButton>
       </div>
 
@@ -43,15 +43,39 @@
             {{ getDataserviceStatus(dataservice).label }}
           </AdminBadge>
         </div>
+        <div class="space-x-1">
+          <RiBarChartBoxLine class="inline size-3" />
+          <span>{{ $t('Statistiques:') }}</span>
+          <span class="space-x-2">
+            <Tooltip class="inline">
+              <span class="space-x-0.5 text-sm">
+                <RiEyeLine class="inline size-3.5" />
+                <span>{{ summarize(dataservice.metrics.views ?? 0) }}</span>
+              </span>
+              <template #tooltip>
+                {{ $t('Vues') }}
+              </template>
+            </Tooltip>
+            <Tooltip class="inline">
+              <span class="space-x-0.5 text-sm">
+                <RiStarLine class="inline size-3.5" />
+                <span>{{ summarize(dataservice.metrics.followers) }}</span>
+              </span>
+              <template #tooltip>
+                {{ $t('Abonnés') }}
+              </template>
+            </Tooltip>
+          </span>
+        </div>
       </div>
 
       <TabLinks
         class="mb-5"
         :links="[
-          { href: getDataserviceAdminUrl(dataservice), label: t('Metadata') },
-          { href: `${getDataserviceAdminUrl(dataservice)}/datasets`, label: t('Associated datasets') },
+          { href: getDataserviceAdminUrl(dataservice), label: t('Metadonnées') },
+          { href: `${getDataserviceAdminUrl(dataservice)}/datasets`, label: t('Jeux de données associés') },
           { href: `${getDataserviceAdminUrl(dataservice)}/discussions`, label: t('Discussions') },
-          { href: `${getDataserviceAdminUrl(dataservice)}/activities`, label: t('Activities') },
+          { href: `${getDataserviceAdminUrl(dataservice)}/activities`, label: t('Activités') },
         ]"
       />
 
@@ -64,9 +88,9 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, summarize } from '@datagouv/components-next'
 import type { Dataservice } from '@datagouv/components-next'
-import { RiEyeLine } from '@remixicon/vue'
+import { RiBarChartBoxLine, RiEyeLine, RiStarLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
