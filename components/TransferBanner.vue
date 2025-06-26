@@ -55,7 +55,7 @@
             <span>{{ $t("Vous n’aurez plus accès à la gestion de ce jeu de données.") }}</span>
           </p>
           <ProducerSelect
-            v-model="vers"
+            v-model="to"
             :label="$t('Rechercher une organisation ou un utilisateur')"
             all
           />
