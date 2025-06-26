@@ -7,13 +7,13 @@
           scope="col"
           @sort="(direction: SortDirection) => updateSort('title', direction)"
         >
-          {{ t('Title of the dataset') }}
+          {{ t('Titre du jeu de données') }}
         </AdminTableTh>
         <AdminTableTh
           class="w-20"
           scope="col"
         >
-          {{ t("Status") }}
+          {{ t("Statut") }}
         </AdminTableTh>
         <AdminTableTh
           class="w-36"
@@ -21,7 +21,7 @@
           scope="col"
           @sort="(direction: SortDirection) => updateSort('created', direction)"
         >
-          {{ t('Created at') }}
+          {{ t('Créé le') }}
         </AdminTableTh>
         <AdminTableTh
           class="min-w-56"
@@ -29,13 +29,13 @@
           scope="col"
           @sort="(direction: SortDirection) => updateSort('last_update', direction)"
         >
-          {{ t('Updated at') }}
+          {{ t('Mis à jour le') }}
         </AdminTableTh>
         <AdminTableTh
           class="w-16"
           scope="col"
         >
-          {{ t('Files') }}
+          {{ t('Fichiers') }}
         </AdminTableTh>
         <AdminTableTh
           class="w-36"
@@ -82,7 +82,7 @@
           <div v-if="dataset.id in activities">
             <p>{{ formatDate(activities[dataset.id].created_at) }}</p>
             <p class="inline-flex items-center">
-              {{ t('by ') }}
+              {{ t('par ') }}
               <AvatarWithName
                 class="fr-ml-1v"
                 :user="activities[dataset.id].actor"
@@ -117,7 +117,7 @@
             external
             keep-margins-even-without-borders
           >
-            {{ $t('Show public page') }}
+            {{ $t('Voir la page publique') }}
           </BrandedButton>
           <BrandedButton
             size="xs"
@@ -127,7 +127,7 @@
             icon-only
             keep-margins-even-without-borders
           >
-            {{ $t('Edit') }}
+            {{ $t('Modifier') }}
           </BrandedButton>
           <slot
             name="actions"
@@ -192,7 +192,7 @@ function getFilesCount(dataset: Dataset | DatasetV2) {
 function getStatus(dataset: Dataset | DatasetV2): { label: string, type: AdminBadgeType } {
   if (dataset.deleted) {
     return {
-      label: t('Deleted'),
+      label: t('Supprimé'),
       type: 'danger',
     }
   }

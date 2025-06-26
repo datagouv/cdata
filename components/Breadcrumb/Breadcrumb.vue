@@ -1,7 +1,7 @@
 <template>
   <nav
     rol="navigation"
-    :aria-label="$t(`You're here:`)"
+    :aria-label="$t(`Vous êtes ici :`)"
     class="fr-breadcrumb mb-5"
   >
     <ol

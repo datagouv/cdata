@@ -11,14 +11,14 @@
     >
       <SearchInput
         v-model="queryString"
-        :placeholder="organization ? t('Search a dataset of the organization') : t('Ex. 2022 presidential election')"
+        :placeholder="organization ? t('Search a dataset of the organization') : t('Ex : élection présidentielle 2022')"
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
       <div class="col-span-12 md:col-span-4 lg:col-span-3">
-        <Sidemenu :button-text="t('Filters')">
+        <Sidemenu :button-text="t('Filtres')">
           <template #title>
-            {{ t('Filters') }}
+            {{ t('Filtres') }}
           </template>
           <div class="space-y-4">
             <template v-if="!organization">
@@ -26,8 +26,8 @@
                 v-model="facets.organization"
                 :options="organizations ? organizations.data : []"
                 :suggest="suggestOrganizations"
-                :label="t('Organizations')"
-                :placeholder="t('All organizations')"
+                :label="t('Organisations')"
+                :placeholder="t('Toutes les organisations')"
                 :get-option-id="(option) => option.id"
                 :display-value="(option) => option.name"
                 :filter="(option, query) => (option.name).toLocaleLowerCase().includes(query.toLocaleLowerCase())"
@@ -63,7 +63,7 @@
             </template>
             <SearchableSelect
               v-model="facets.tag"
-              :label="t('Tags')"
+              :label="t('Mots clés')"
               :placeholder="t('All tags')"
               :get-option-id="(tag) => tag"
               :display-value="(value) => value"
@@ -90,7 +90,7 @@
             </SearchableSelect>
             <SearchableSelect
               v-model="facets.license"
-              :label="t('Licenses')"
+              :label="t('Licences')"
               :explanation="t('Licenses define reuse rules for published datasets. See page data.gouv.fr/licences')"
               :placeholder="t('All licenses')"
               :display-value="(value) => value.title"
@@ -158,7 +158,7 @@
                 class="w-full justify-center"
                 @click="resetFilters"
               >
-                {{ t('Reset filters') }}
+                {{ t('Réinitialiser les filtres') }}
               </BrandedButton>
               <BrandedButton
                 v-else-if="organization"
@@ -186,14 +186,14 @@
             class="fr-col-auto my-0"
             role="status"
           >
-            {{ t("{count} results", searchResults.total) }}
+            {{ t("{count} résultats", searchResults.total) }}
           </p>
           <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
             <label
               for="sort-search"
               class="fr-col-auto text-sm m-0 mr-2"
             >
-              {{ t('Sort by:') }}
+              {{ t('Trier par :') }}
             </label>
             <div class="fr-col">
               <select
@@ -204,7 +204,7 @@
                 @change="currentPage = 1"
               >
                 <option value="">
-                  {{ t('Relevance') }}
+                  {{ t('Pertinence') }}
                 </option>
                 <option
                   v-for="{ value, label } in sortOptions"
@@ -502,7 +502,7 @@ const isFiltered = computed(() => {
 })
 
 const sortOptions = [
-  { label: t('Creation date'), value: '-created' },
+  { label: t('Date de création'), value: '-created' },
   { label: t('Dernière mise à jour'), value: '-last_update' },
   { label: t('Number of followers'), value: '-followers' },
   { label: t('Number of reuses'), value: '-reuses' },
@@ -530,7 +530,7 @@ watchEffect(() => {
 
 watch(searchResultsStatus, () => {
   if (searchResultsStatus.value === 'error') {
-    toast.error(t(`The search request failed`))
+    toast.error(t(`La recherche a échoué`))
   }
 })
 </script>

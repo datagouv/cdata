@@ -8,25 +8,25 @@
           class="w-1/3"
           @sort="(direction: SortDirection) => $emit('sort', 'title', direction)"
         >
-          {{ t("Dataservice title") }}
+          {{ t("Titre de l'API") }}
         </AdminTableTh>
         <AdminTableTh class="w-24">
-          {{ t("Status") }}
+          {{ t("Statut") }}
         </AdminTableTh>
         <AdminTableTh class="w-24">
-          {{ t("Access") }}
+          {{ t("Accès") }}
         </AdminTableTh>
         <AdminTableTh>
-          {{ t("Created at") }}
+          {{ t("Créé le") }}
         </AdminTableTh>
         <AdminTableTh>
-          {{ t("Modified at") }}
+          {{ t("Modifié le") }}
         </AdminTableTh>
         <AdminTableTh class="w-64">
-          {{ t("Rate limiting") }}
+          {{ t("Limite d'appels") }}
         </AdminTableTh>
         <AdminTableTh>
-          {{ t("Availability") }}
+          {{ t("Disponibilité") }}
         </AdminTableTh>
         <AdminTableTh scope="col">
           {{ t("Actions") }}
@@ -68,7 +68,7 @@
           <div v-if="dataservice.id in activities">
             <p>{{ formatDate(activities[dataservice.id].created_at) }}</p>
             <p class="inline-flex items-center">
-              {{ t('by ') }}
+              {{ t('par ') }}
               <AvatarWithName
                 class="fr-ml-1v"
                 :user="activities[dataservice.id].actor"
@@ -93,7 +93,7 @@
             external
             keep-margins-even-without-borders
           >
-            {{ $t('Show public page') }}
+            {{ $t('Voir la page publique') }}
           </BrandedButton>
           <BrandedButton
             size="xs"
@@ -103,7 +103,7 @@
             icon-only
             keep-margins-even-without-borders
           >
-            {{ $t('Edit') }}
+            {{ $t('Modifier') }}
           </BrandedButton>
         </td>
       </tr>
@@ -149,7 +149,7 @@ function sorted(column: DataserviceSortedBy) {
 function getStatus(dataservice: Dataservice): { label: string, type: AdminBadgeType } {
   if (dataservice.deleted_at) {
     return {
-      label: t('Deleted'),
+      label: t('Supprimé'),
       type: 'danger',
     }
   }

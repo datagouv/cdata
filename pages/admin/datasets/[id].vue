@@ -30,7 +30,7 @@
             size="xs"
             :icon="RiEyeLine"
           >
-            {{ t('See the dataset page') }}
+            {{ t('Voir la page publique du jeu de données') }}
           </BrandedButton>
         </div>
 
@@ -58,7 +58,7 @@
                   <span>{{ summarize(dataset.metrics.views ?? 0) }}</span>
                 </span>
                 <template #tooltip>
-                  {{ $t('Views') }}
+                  {{ $t('Vues') }}
                 </template>
               </Tooltip>
               <Tooltip class="inline">
@@ -76,7 +76,7 @@
                   <span>{{ summarize(dataset.metrics.reuses) }}</span>
                 </span>
                 <template #tooltip>
-                  {{ $t('Reuses') }}
+                  {{ $t('Réutilisations') }}
                 </template>
               </Tooltip>
             </span>
@@ -88,9 +88,9 @@
         class="mb-5"
         :links="[
           { href: getDatasetAdminUrl(dataset), label: t('Métadonnées') },
-          { href: `${getDatasetAdminUrl(dataset)}/files`, label: t('Files') },
+          { href: `${getDatasetAdminUrl(dataset)}/files`, label: t('Fichiers') },
           { href: `${getDatasetAdminUrl(dataset)}/discussions`, label: t('Discussions') },
-          { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activities') },
+          { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activités') },
         ]"
       />
 

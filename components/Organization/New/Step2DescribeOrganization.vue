@@ -16,10 +16,10 @@
       />
       <div class="w-full">
         <p class="font-bold mb-1">
-          {{ t('What is an organization?') }}
+          {{ t(`Qu'est-ce qu'une organisation ?`) }}
         </p>
         <p class="m-0 text-xs/5">
-          {{ t('An organization is an entity in which many users can collaborate. The datasets published under the organization can be edited by its members.') }}
+          {{ t(`Une organisation est une entité dans laquelle de nombreux utilisateurs peuvent collaborer. Les jeux de données publiés sous l'organisation peuvent être édités par ses membres.`) }}
         </p>
       </div>
     </SimpleBanner>
@@ -125,7 +125,7 @@
       <FieldsetElement form-key="url">
         <InputGroup
           v-model="organization.url"
-          :label="t('Website')"
+          :label="t('Site Internet')"
           type="url"
           :has-error="!!getFirstError('url')"
           :has-warning="!!getFirstWarning('url')"
@@ -145,10 +145,10 @@
         <UploadGroup
           :label="t('Logo')"
           :title="t('Logo')"
-          hint-text="Max size: 4Mo. Accepted formats: JPG, JPEG, PNG"
+          :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
           accept=".jpeg, .jpg, .png"
           :is-valid="!!file"
-          :valid-text="t('Your file is valid')"
+          :valid-text="t('Votre fichier est valide')"
           @change="addFiles"
         />
         <div
@@ -175,7 +175,7 @@
       v-if="isMeAdmin() && 'badges' in organization"
       v-model="newBadges"
       :label="$t('Badges')"
-      :placeholder="$t('Associate badges to the organization…')"
+      :placeholder="$t(`Associer des badges à l'organisation…`)"
       class="mb-6"
       :options="badges"
       :get-option-id="(badge) => badgesLabels[badge.kind]"
@@ -188,7 +188,7 @@
       class="fr-mt-n2w fr-mb-2w"
     >
       <template #title>
-        {{ t("An error occured | Some errors occured", errors.length) }}
+        {{ t("Une erreur est survenue | Des erreurs sont survenues", errors.length) }}
       </template>
       <ul v-if="errors.length > 1">
         <li
@@ -211,7 +211,7 @@
         color="secondary"
         @click="$emit('previous')"
       >
-        {{ $t('Previous') }}
+        {{ $t('Précédent') }}
       </BrandedButton>
       <BrandedButton
         type="submit"

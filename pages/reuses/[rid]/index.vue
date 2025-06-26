@@ -30,7 +30,7 @@
             </div>
             <div>
               <dt class="font-bold text-sm pb-1">
-                {{ $t('Tags') }}
+                {{ $t('Mots clés') }}
               </dt>
               <dd class="flex flex-wrap gap-0.5 p-0 text-sm">
                 <span
@@ -44,7 +44,7 @@
                   v-if="!reuse.tags?.length"
                   class="text-mention-grey"
                 >
-                  {{ $t('No tags set') }}
+                  {{ $t('Aucun mot clé') }}
                 </span>
               </dd>
             </div>
@@ -58,7 +58,7 @@
             </div>
             <div>
               <dt class="font-bold text-sm pb-1">
-                {{ $t('Creation date') }}
+                {{ $t('Date de création') }}
               </dt>
               <dd class="p-0 text-sm text-mention-grey">
                 {{ formatDate(reuse.created_at) }}
@@ -70,7 +70,7 @@
     </section>
     <section v-if="datasets">
       <h2 class="uppercase text-sm mb-2.5">
-        {{ $t('{n} associated datasets', { n: datasets.total }) }}
+        {{ $t('{n} jeux de données associés', { n: datasets.total }) }}
       </h2>
       <div
         class="grid gap-5"
@@ -98,11 +98,11 @@
       <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
         <div>
           <h2 class="uppercase text-sm mb-0">
-            {{ $t('Statistics for the last 12 months') }}
+            {{ $t('Statistiques des 12 derniers mois') }}
           </h2>
           <div class="text-gray-medium font-normal text-sm/6">
-            <span v-if="new Date().getHours() > 7 - 1">{{ $t('Updated this morning') }}</span>
-            <span v-else>{{ $t('Updated yesterday') }}</span>
+            <span v-if="new Date().getHours() > 7 - 1">{{ $t('Mises à jour ce matin') }}</span>
+            <span v-else>{{ $t('Mises à jour hier') }}</span>
           </div>
         </div>
         <div>
@@ -116,13 +116,13 @@
             size="xs"
             class="relative z-2"
           >
-            {{ $t('Download the statistics as CSV') }}
+            {{ $t('Télécharger les statistiques au format CSV') }}
           </BrandedButton>
         </div>
       </div>
       <div class="grid md:grid-cols-3">
         <StatBox
-          :title="$t('Views')"
+          :title="$t('Vues')"
           :data="metricsViews"
           type="line"
           :summary="metricsViewsTotal"
@@ -136,7 +136,7 @@
         class="min-h-32"
       >
         <h2 class="uppercase text-sm mb-2.5">
-          {{ $t('{n} reuses from the same creator', { n: relatedReuses.length }) }}
+          {{ $t('{n} réutilisations du même créateur', { n: relatedReuses.length }) }}
         </h2>
         <div
           v-if="relatedReuses.length"
@@ -158,7 +158,7 @@
             height="104"
           />
           <p class="mt-4 mb-5 font-bold text-lg">
-            {{ $t('There are no other reuses from this creator.') }}
+            {{ $t(`Il n'y a pas d'autres réutilisations du même créateur.`) }}
           </p>
         </div>
       </LoadingBlock>

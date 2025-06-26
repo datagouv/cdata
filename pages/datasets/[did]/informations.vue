@@ -24,13 +24,13 @@
           </DescriptionListDetails>
         </div>
         <div>
-          <DescriptionListTerm>{{ $t('ID') }}</DescriptionListTerm>
+          <DescriptionListTerm>{{ $t('Identifiant') }}</DescriptionListTerm>
           <DescriptionListDetails class="flex items-center gap-2">
             {{ dataset.id }}
             <CopyButton
               class="!-mt-0.5"
-              :label="$t(`Copier l'ID`)"
-              :copied-label="$t('ID copied')"
+              :label="$t(`Copier l'identifiant`)"
+              :copied-label="$t('Identifiant copié !')"
               :text="dataset.id"
               :hide-label="true"
             />
@@ -204,7 +204,7 @@
         <div class="flex flex-col md:flex-row">
           <ClientOnly>
             <StatBox
-              :title="$t('Views')"
+              :title="$t('Vues')"
               :data="datasetVisits"
               type="line"
               :summary="datasetVisitsTotal"

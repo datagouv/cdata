@@ -15,9 +15,9 @@
           :label="$t('Type')"
           :required="true"
           :options="[
-            { label: $t('All discussions'), value: null },
-            { label: $t('Closed discussions'), value: true },
-            { label: $t('Opened discussions'), value: false },
+            { label: $t('Toutes les discussions'), value: null },
+            { label: $t('Discussions clôturées'), value: true },
+            { label: $t('Discussions ouvertes'), value: false },
           ]"
           hide-null-option
         />
@@ -52,7 +52,7 @@
         class="h-20"
       />
       <p class="fr-text--bold fr-my-3v">
-        {{ t(`There is no discussion yet`) }}
+        {{ t(`Il n'y a pas encore de discussion`) }}
       </p>
     </div>
   </div>

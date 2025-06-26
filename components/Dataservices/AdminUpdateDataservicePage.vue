@@ -12,38 +12,38 @@
           type="submit"
           :loading="loading"
         >
-          {{ t("Save") }}
+          {{ t("Sauvegarder") }}
         </BrandedButton>
       </template>
       <div class="mt-5 space-y-5">
         <TransferBanner
           type="Dataservice"
           :subject="dataserviceSubject"
-          :label="$t('Transfer dataservice')"
+          :label="$t(`Transférer l'API`)"
         />
         <BannerAction
           type="warning"
-          :title="dataservice.archived_at ? $t('Unarchive the dataservice') : $t('Archive the dataservice')"
+          :title="dataservice.archived_at ? $t('Désarchiver cette API') : $t('Archiver cette API')"
         >
-          {{ $t("An archived dataservice is no longer indexed but still accessible for users with the direct link.") }}
+          {{ $t("Une API archivée n'est plus indexée mais reste accessible aux utilisateurs avec un lien direct.") }}
 
           <template #button>
             <BrandedButton
               :icon="RiArchiveLine"
               @click="archiveDataservice"
             >
-              {{ dataservice.archived_at ? $t('Unarchive') : $t('Archive') }}
+              {{ dataservice.archived_at ? $t('Désarchiver') : $t('Archiver') }}
             </BrandedButton>
           </template>
         </BannerAction>
         <BannerAction
           type="danger"
-          :title="$t('Delete the dataservice')"
+          :title="$t(`Supprimer l'API`)"
         >
-          {{ $t("Be careful, this action can't be reverse.") }}
+          {{ $t("Attention, cette action ne peut pas être annulée.") }}
           <template #button>
             <ModalWithButton
-              :title="$t('Are you sure you want to delete this dataservice ?')"
+              :title="$t('Êtes-vous sûr de vouloir supprimer cette API ?')"
               size="lg"
             >
               <template #button="{ attrs, listeners }">
@@ -54,11 +54,11 @@
                   v-bind="attrs"
                   v-on="listeners"
                 >
-                  {{ $t('Delete') }}
+                  {{ $t('Supprimer') }}
                 </BrandedButton>
               </template>
               <p class="fr-text--bold">
-                {{ $t("This action can't be reverse.") }}
+                {{ $t("Cette action est irréversible.") }}
               </p>
               <template #footer>
                 <div class="flex-1 flex justify-end">
@@ -67,7 +67,7 @@
                     :disabled="loading"
                     @click="deleteDataservice"
                   >
-                    {{ $t("Delete the dataservice") }}
+                    {{ $t("Supprimer l'API") }}
                   </BrandedButton>
                 </div>
               </template>
@@ -131,7 +131,7 @@ async function save() {
       body: JSON.stringify(dataserviceToApi(dataserviceForm.value, { private: dataserviceForm.value.private })),
     })
 
-    toast.success(t('Dataservice updated!'))
+    toast.success(t('Fiche API mise à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
@@ -150,10 +150,10 @@ async function archiveDataservice() {
     })
     refresh()
     if (dataservice.value.archived_at) {
-      toast.success(t('Dataservice unarchived!'))
+      toast.success(t('API désarchivée!'))
     }
     else {
-      toast.success(t('Dataservice archived!'))
+      toast.success(t('API archivée!'))
     }
   }
   finally {

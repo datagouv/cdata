@@ -16,10 +16,10 @@
       />
       <div class="w-full">
         <p class="font-bold mb-1">
-          {{ $t('What is the harvesting?') }}
+          {{ $t('Qu’est-ce que le moissonnage ?') }}
         </p>
         <p class="m-0 text-xs/5">
-          {{ $t('Harvesting is a mechanism for collecting metadata from a remote catalog and storing it on another platform to provide a second point of access to the data.') }}
+          {{ $t('Le moissonnage est un mécanisme permettant de collecter les métadonnées sur un catalogue distant et de les stocker sur une autre plateforme afin de proposer un second point d’accès aux données.') }}
         </p>
       </div>
     </SimpleBanner>
@@ -28,12 +28,12 @@
 
     <FormFieldset
       v-if="type === 'create'"
-      :legend="$t('Producer')"
+      :legend="$t('Producteur')"
     >
       <FieldsetElement form-key="owned">
         <ProducerSelect
           v-model="form.owned"
-          :label="t('Check the identity with which you want to publish')"
+          :label="t(`Vérifiez l'identité avec laquelle vous souhaitez publier`)"
           :required="true"
           :error-text="getFirstError('owned')"
           :warning-text="getFirstWarning('owned')"
@@ -46,14 +46,14 @@
         <InputGroup
           v-model="form.name"
           class="mb-3"
-          :label="$t('Name')"
+          :label="$t('Nom')"
           :required="true"
         />
 
         <template #accordion>
-          <HelpAccordion :title="$t('Naming your harvester')">
+          <HelpAccordion :title="$t('Choisir un nom')">
             <p class="fr-m-0">
-              {{ $t("Give a name to your harvester. This is an internal reference that helps you keep track if you create multiple harvesters. The name of your harvester will not be public.") }} <br>
+              {{ $t("Donnez un nom à votre moissonneur. Il s’agit d’une référence interne, qui vous permet de vous y retrouver si vous créez plusieurs moissonneurs. Le nom de votre moissonneur ne sera pas public.") }} <br>
             </p>
           </HelpAccordion>
         </template>
@@ -66,9 +66,9 @@
         />
 
         <template #accordion>
-          <HelpAccordion :title="$t('Describe your harvester')">
+          <HelpAccordion :title="$t('Décrire votre moissonneur')">
             <p class="fr-m-0">
-              {{ $t("Add details in the description field for internal use. The description is optional.") }}
+              {{ $t("Ajoutez des précisions dans le champ description pour votre usage interne. La description est facultative.") }}
             </p>
           </HelpAccordion>
         </template>
@@ -82,15 +82,15 @@
         />
 
         <template #accordion>
-          <HelpAccordion :title="$t('Select the correct URL')">
+          <HelpAccordion :title="$t('Sélectionner la bonne URL')">
             <p class="fr-m-0">
-              {{ $t("Enter the URL of the portal to be harvested here. This is usually the URL of the homepage of your open data portal. The URL allows the harvester to browse and retrieve all your datasets.") }}
+              {{ $t("Saisissez ici l’URL du portail à moissonner. Il s’agit généralement de l’URL de la page d’accueil de votre portail d’open data. L’URL permet au moissonneur de parcourir et récupérer tous vos jeux de données.") }}
             </p>
           </HelpAccordion>
         </template>
       </FieldsetElement>
     </FormFieldset>
-    <FormFieldset :legend="$t('Implementation')">
+    <FormFieldset :legend="$t('Implémentation')">
       <FieldsetElement form-key="backend">
         <SelectGroup
           v-model="form.backend"
@@ -99,9 +99,9 @@
           required
         />
         <template #accordion>
-          <HelpAccordion :title="$t('Select the implementation type')">
+          <HelpAccordion :title="$t(`Sélectionner le type d'implémentation`)">
             <p class="fr-m-0">
-              {{ $t("Choose the metadata format (e.g., DCAT, CKAN, etc.). This field is mandatory. Check the documentation for details.") }}
+              {{ $t("Choisissez le format des métadonnées (ex: DCAT, CKAN, etc.). Ce format permet au moissonneur de savoir comment lire et interpréter vos métadonnées, pour bien les retranscrire sur data.gouv.fr.") }}
             </p>
           </HelpAccordion>
         </template>
@@ -112,7 +112,7 @@
         form-key="filters"
       >
         <label class="fr-label">
-          {{ $t('Filters') }}
+          {{ $t('Filtres') }}
         </label>
 
         <div class="space-y-2">
@@ -124,21 +124,21 @@
             <SelectGroup
               v-model="form.filters[index].type"
               class="!mb-0"
-              :label="$t('Filter type')"
+              :label="$t('Type de filtre')"
               hide-label
-              :options="[{ value: 'include', label: $t('Include') }, { value: 'exclude', label: $t('Exclude') }]"
+              :options="[{ value: 'include', label: $t('Inclure') }, { value: 'exclude', label: $t('Exclure') }]"
             />
             <SelectGroup
               v-model="form.filters[index].key"
               class="!mb-0"
-              :label="$t('Filter key')"
+              :label="$t('Clé du filtre')"
               hide-label
               :options="backendInfo.filters.map((filter) => ({ value: filter.key, label: filter.label }))"
             />
             <InputGroup
               v-model="form.filters[index].value"
               class="!mb-0 w-full"
-              :label="$t('Filter value')"
+              :label="$t('Valeur du filtre')"
               hide-label
             />
             <BrandedButton
@@ -147,7 +147,7 @@
               color="secondary"
               @click="form.filters.splice(index, 1)"
             >
-              {{ $t('Remove') }}
+              {{ $t('Supprimer') }}
             </BrandedButton>
           </div>
           <button
@@ -156,13 +156,13 @@
             @click="form.filters.push({ type: 'include', key: backendInfo.filters[0].key, value: '' })"
           >
             <RiAddLine class="size-4" />
-            <span>{{ $t('Add filter') }}</span>
+            <span>{{ $t('Ajouter un filtre') }}</span>
           </button>
         </div>
         <template #accordion>
-          <HelpAccordion :title="$t('Add filters')">
+          <HelpAccordion :title="$t('Ajouter des filtres')">
             <p class="fr-m-0">
-              {{ $t("Filtering allows you to include or exclude a subset of datasets from harvesting. Only datasets that meet all conditions will be processed.") }}
+              {{ $t("Le filtrage donne la possibilité d’inclure ou d’exclure un sous-ensemble de jeux de données du moissonnage. Seuls les jeux de données remplissant toutes les conditions seront traités.") }}
             </p>
           </HelpAccordion>
         </template>
@@ -187,7 +187,7 @@
               <InputGroup
                 v-model="form.configs[index].value"
                 class="!mb-0 w-full"
-                :label="$t('Config type')"
+                :label="$t('Type de configuration')"
                 hide-label
               />
               <BrandedButton
@@ -196,7 +196,7 @@
                 color="secondary"
                 @click="form.configs.splice(index, 1)"
               >
-                {{ $t('Remove') }}
+                {{ $t('Supprimer') }}
               </BrandedButton>
             </div>
           </div>
@@ -209,14 +209,14 @@
               @click="form.configs.push({ key: config.key, value: '' })"
             >
               <RiAddLine class="size-4" />
-              <span>{{ $t('Configure {label}', { label: config.label }) }}</span>
+              <span>{{ $t('Configurer {label}', { label: config.label }) }}</span>
             </button>
           </div>
         </div>
         <template #accordion>
-          <HelpAccordion :title="$t('Add configuration variables')">
+          <HelpAccordion :title="$t('Ajouter des variables de configuration')">
             <p class="fr-m-0">
-              {{ $t("Add an additional configuration variable to your harvester. This is an optional configuration.") }}
+              {{ $t("Ajouter une variable de configuration additionnelle de votre moissonneur. Il s’agit d’une configuration optionnelle.") }}
             </p>
           </HelpAccordion>
         </template>
@@ -228,7 +228,7 @@
         >
           <ToggleSwitch
             v-model="form.active"
-            :label="t('Enabled')"
+            :label="t('Activé')"
           />
         </FieldsetElement>
         <FieldsetElement
@@ -237,19 +237,19 @@
         >
           <ToggleSwitch
             v-model="form.autoarchive"
-            :label="t('Auto-archive')"
+            :label="t('Archivage automatique')"
           />
         </FieldsetElement>
       </div>
     </FormFieldset>
     <FormFieldset
       v-if="isMeAdmin() && type != 'create'"
-      :legend="$t('Advanced')"
+      :legend="$t('Avancé')"
     >
       <FieldsetElement form-key="schedule">
         <InputGroup
           v-model="form.schedule"
-          :label="$t('Schedule')"
+          :label="$t('Planning')"
         />
       </FieldsetElement>
     </FormFieldset>

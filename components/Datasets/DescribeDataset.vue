@@ -2,7 +2,7 @@
   <div class="flex">
     <Sidemenu
       class="w-5/12 hidden lg:block"
-      :button-text="$t('Help')"
+      :button-text="$t('Aide')"
       :on-right="true"
       :fixed="true"
     >
@@ -11,7 +11,7 @@
           class="fr-icon--sm fr-icon-question-line"
           aria-hidden="true"
         />
-        {{ $t('Help') }}
+        {{ $t('Aide') }}
       </template>
       <AccordionGroup :with-icon="true">
         <Accordion
@@ -152,12 +152,12 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Featured") }}
+              {{ $t("Mis en avant") }}
             </h2>
           </legend>
           <ToggleSwitch
             v-model="form.featured"
-            :label="$t('Feature')"
+            :label="$t('Mettre en avant')"
             @update:model-value="$emit('feature')"
           />
         </fieldset>
@@ -171,13 +171,13 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Producer") }}
+              {{ $t("Producteur") }}
             </h2>
           </legend>
           <div class="fr-fieldset__element">
             <ProducerSelect
               v-model="form.owned"
-              :label="t('Check the identity with which you want to publish')"
+              :label="t('Vérifiez l'identité avec laquelle vous souhaitez publier')"
               :required="true"
               :error-text="getFirstError('owned')"
               :warning-text="getFirstWarning('owned')"
@@ -340,7 +340,7 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-0">
-              {{ harvested ? t("Attributions et points de contacts") : t("Contact points") }}
+              {{ harvested ? t("Attributions et points de contacts") : t("Points de contact") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -586,7 +586,7 @@
             color="secondary"
             @click="$emit('previous')"
           >
-            {{ $t('Previous') }}
+            {{ $t('Précédent') }}
           </BrandedButton>
           <BrandedButton
             color="primary"
@@ -692,7 +692,7 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
   private: [],
 }, {
   title: [testNotAllowed(config.public.demoServer?.name)],
-  description: [minLength(200, t(`It's advised to have a {property} of at least {min} characters.`, { property: t('description'), min: 200 }))],
+  description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
   tags: [required(t('Adding tags helps improve the SEO of your data.'))],
   license: [required()],
   frequency: [(f) => {

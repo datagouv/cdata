@@ -31,7 +31,7 @@
           type="submit"
           color="primary"
         >
-          {{ $t("Next") }}
+          {{ $t("Suivant") }}
         </BrandedButton>
       </template>
     </DescribeReuse>
@@ -72,9 +72,9 @@ const route = useRoute()
 const { $api, $fileApi } = useNuxtApp()
 
 const steps = computed(() => [
-  t('Describe your reuse'),
-  t('Link datasets'),
-  t('Complete your publishing'),
+  t('Décrivez votre réutilisation'),
+  t('Lier des jeux de données'),
+  t('Finalisez la publication'),
 ])
 
 const REUSE_FORM_STATE = 'reuse-form'

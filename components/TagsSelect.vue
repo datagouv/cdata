@@ -2,8 +2,8 @@
   <div>
     <SearchableSelect
       v-model="tags"
-      :label="t('Tags')"
-      :placeholder="t('Search a tag…')"
+      :label="t('Mots clés')"
+      :placeholder="t('Chercher un mot clé…')"
       :get-option-id="(tag) => tag.text"
       :allow-new-option="(query) => ({ text: query })"
       :suggest="suggestTags"

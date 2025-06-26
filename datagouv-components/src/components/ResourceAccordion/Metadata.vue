@@ -71,7 +71,7 @@ const config = useComponentsConfig()
         <DescriptionTerm>
           {{ t('Identifiant') }}
           <CopyButton
-            :label="$t(`Copier l'ID`)"
+            :label="$t(`Copier l'identifiant`)"
             :copied-label="$t('ID copié !')"
             :text="resource.id"
             :aria-describedby="resourceTitleId"

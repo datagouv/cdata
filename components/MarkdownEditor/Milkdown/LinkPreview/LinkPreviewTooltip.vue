@@ -18,7 +18,7 @@
     <div class="space-x-2">
       <BrandedButton
         type="button"
-        :title="$t('Edit link')"
+        :title="$t('Modifier le lien')"
         size="xs"
         color="primary-soft"
         :icon="RiPencilLine"
@@ -27,7 +27,7 @@
       <BrandedButton
         color="primary-soft"
         size="xs"
-        :title="t('Remove link')"
+        :title="t('Supprimer le lien')"
         :icon="RiLinkUnlink"
         @click="deleteLink"
       />

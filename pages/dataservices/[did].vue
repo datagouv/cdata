@@ -10,10 +10,10 @@
             to="/"
             :external="true"
           >
-            {{ $t('Home') }}
+            {{ $t('Accueil') }}
           </BreadcrumbItem>
           <BreadcrumbItem to="/dataservices">
-            {{ $t('Dataservices') }}
+            {{ $t('API') }}
           </BreadcrumbItem>
           <BreadcrumbItem>
             {{ dataservice.title }}
@@ -45,7 +45,7 @@
               size="sm"
               type="secondary"
             >
-              {{ $t('Deleted') }}
+              {{ $t('Supprimé') }}
             </AdminBadge>
             <AdminBadge
               v-if="dataservice.private"
@@ -80,7 +80,7 @@
             <dl class="pl-0 w-full shrink-0 md:w-[384px] space-y-2.5">
               <div class="space-y-1">
                 <dt class="text-gray-plain font-bold">
-                  {{ $t('Producer') }}
+                  {{ $t('Producteur') }}
                 </dt>
                 <dd class="p-0">
                   <OrganizationOwner
@@ -126,7 +126,7 @@
                 class="space-y-1"
               >
                 <dt class="text-gray-plain font-bold">
-                  {{ $t('Rate limiting') }}
+                  {{ $t(`Limite d'appels`) }}
                 </dt>
                 <dd class="p-0">
                   {{ dataservice.rate_limiting }}
@@ -213,7 +213,7 @@
             class="flex items-center justify-between"
           >
             <div class="text-datagouv-dark font-bold text-xl">
-              {{ $t('Access the API') }}
+              {{ $t(`Accéder à l'API`) }}
             </div>
             <BrandedButton
               color="primary"
@@ -222,7 +222,7 @@
               icon-right
               external
             >
-              {{ $t('Business documentation') }}
+              {{ $t('Documentation métier') }}
             </BrandedButton>
           </SimpleBanner>
           <SimpleBanner

@@ -1,11 +1,11 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Datasets') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Jeux de données') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
     <h1 class="font-bold text-2xl mb-5">
-      {{ t("Datasets") }}
+      {{ t("Jeux de données") }}
     </h1>
 
     <TransferRequestList
@@ -21,7 +21,7 @@
     >
       <div class="w-full flex-none md:flex-1">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ t('{n} datasets', pageData.total) }}
+          {{ t('{n} jeux de données', pageData.total) }}
         </h2>
       </div>
       <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
@@ -39,7 +39,7 @@
           v-model="q"
           type="search"
           :icon="RiSearchLine"
-          :placeholder="$t('Search')"
+          :placeholder="$t('Recherche')"
         />
         <BrandedButton
           v-if="organization"
@@ -48,7 +48,7 @@
           :external="true"
           :icon="RiDownloadLine"
         >
-          {{ t('Download catalog') }}
+          {{ t('Télécharger le catalogue') }}
         </BrandedButton>
       </div>
     </div>
@@ -84,7 +84,7 @@
           v-if="q"
           class="fr-text--bold fr-my-3v"
         >
-          {{ t(`No results for "{q}"`, { q }) }}
+          {{ t(`Pas de résultats pour « {q} »`, { q }) }}
         </p>
         <p
           v-else
@@ -96,7 +96,7 @@
           color="primary"
           @click="resetFilters"
         >
-          {{ $t('Reset filters') }}
+          {{ $t('Réinitialiser les filtres') }}
         </BrandedButton>
       </template>
       <template v-else>
@@ -152,7 +152,7 @@ const statusOption = [{
   label: t('Brouillon'),
   id: 'private',
 }, {
-  label: t('Deleted'),
+  label: t('Supprimé'),
   id: 'deleted',
 }]
 

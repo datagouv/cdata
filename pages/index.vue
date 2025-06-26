@@ -83,7 +83,7 @@
                   { label: 'Santé publique France', name: 'spf' },
                   { label: 'CNIL', name: 'cnil' },
                   { label: 'INSEE', name: 'insee' },
-                  { label: 'Ministère de l\'Éducation Nationale et de la Jeunesse', name: 'minedu' },
+                  { label: `Ministère de l'Éducation Nationale et de la Jeunesse`, name: 'minedu' },
                 ]"
                 :key="name"
                 :src="`/nuxt_images/organizations/${name}.png`"
@@ -263,7 +263,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div
                 v-for="exploration in [
-                  { title: $t('Explorateur de données de valeurs foncières'), description: $t('Suivez l\'évolution des prix de l\'immobilier et trouver le prix des ventes immobilières.'), url: 'https://explore.data.gouv.fr/fr/immobilier', image: 'dvf' },
+                  { title: $t('Explorateur de données de valeurs foncières'), description: $t(`Suivez l'évolution des prix de l'immobilier et trouver le prix des ventes immobilières.`), url: 'https://explore.data.gouv.fr/fr/immobilier', image: 'dvf' },
                   { title: $t('Annuaire des Entreprises'), description: $t('Vérifiez les informations légales publiques des entreprises, associations et services publics en France.'), url: 'https://annuaire-entreprises.data.gouv.fr/', image: 'annuaire' },
                 ]"
                 :key="exploration.url"
@@ -376,7 +376,7 @@
     <section v-if="lastPost">
       <div class="max-w-7xl mx-auto px-6 py-16 space-y-8">
         <h2 class="text-base uppercase font-bold text-gray-low mb-6">
-          {{ $t('L\'actualité {name}', { name: config.public.title }) }}
+          {{ $t("L'actualité {name}", { name: config.public.title }) }}
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-8">
           <img
@@ -401,7 +401,7 @@
                 :href="lastPost.page"
                 class="w-full sm:w-auto"
               >
-                {{ $t('Consulter l\'article') }}
+                {{ $t("Consulter l'article") }}
               </BrandedButton>
               <BrandedButton
                 color="primary-soft"
@@ -420,7 +420,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, summarize, useFormatDate, type Site } from '@datagouv/components-next'
-import { RiArrowRightLine, RiBardLine, RiLineChartLine, RiNewspaperLine, RiSearchLine, RiVipDiamondLine } from '@remixicon/vue'
+import { RiArrowRightLine, RiBardLine, RiLineChartLine, RiSearchLine, RiVipDiamondLine } from '@remixicon/vue'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 

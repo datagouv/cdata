@@ -25,9 +25,9 @@
       class="h-40"
     />
     <p class="font-bold my-3 text-center">
-      {{ t(`You haven't made a contact point yet.`) }}
+      {{ t(`Vous n'avez pas encore créé de points de contact.`) }}
       <br>
-      {{ t('You can do so while editing a dataservice or a dataset.') }}
+      {{ t('Vous pouvez le faire un éditant un jeu de données ou une API.') }}
     </p>
   </div>
 </template>

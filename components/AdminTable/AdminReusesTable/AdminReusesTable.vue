@@ -7,24 +7,24 @@
           scope="col"
           @sort="(direction: SortDirection) => $emit('sort', 'title', direction)"
         >
-          {{ t("Reuse title") }}
+          {{ t("Titre de la réutilisation") }}
         </AdminTableTh>
         <AdminTableTh>
-          {{ t("Status") }}
+          {{ t("Statut") }}
         </AdminTableTh>
         <AdminTableTh
           :sorted="sorted('created')"
           scope="col"
           @sort="(direction: SortDirection) => $emit('sort', 'created', direction)"
         >
-          {{ t("Created at") }}
+          {{ t("Créé le") }}
         </AdminTableTh>
         <AdminTableTh
           :sorted="sorted('datasets')"
           scope="col"
           @sort="(direction: SortDirection) => $emit('sort', 'datasets', direction)"
         >
-          {{ t("Datasets") }}
+          {{ t("Jeux de données") }}
         </AdminTableTh>
         <AdminTableTh scope="col">
           {{ t("Actions") }}
@@ -62,7 +62,7 @@
           <div v-if="reuse.id in activities">
             <p>{{ formatDate(activities[reuse.id].created_at) }}</p>
             <p class="inline-flex items-center">
-              {{ t('by ') }}
+              {{ t('par ') }}
               <AvatarWithName
                 class="fr-ml-1v"
                 :user="activities[reuse.id].actor"
@@ -86,7 +86,7 @@
             external
             keep-margins-even-without-borders
           >
-            {{ $t('Show public page') }}
+            {{ $t('Voir la page publique') }}
           </BrandedButton>
           <BrandedButton
             size="xs"
@@ -96,7 +96,7 @@
             icon-only
             keep-margins-even-without-borders
           >
-            {{ $t('Edit') }}
+            {{ $t('Modifier') }}
           </BrandedButton>
           <slot
             name="actions"
@@ -117,7 +117,6 @@ import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
-import Tooltip from '../../../components/Tooltip/Tooltip.vue'
 import type { Activity } from '~/types/activity'
 import type { AdminBadgeType, ReuseSortedBy, SortDirection } from '~/types/types'
 
@@ -145,7 +144,7 @@ function sorted(column: ReuseSortedBy) {
 function getStatus(reuse: Reuse): { label: string, type: AdminBadgeType } {
   if (reuse.deleted) {
     return {
-      label: t('Deleted'),
+      label: t('Supprimé'),
       type: 'danger',
     }
   }

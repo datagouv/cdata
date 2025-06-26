@@ -51,14 +51,14 @@
             :form="formId"
             :loading
           >
-            {{ t('Validate') }}
+            {{ t('Valider') }}
           </BrandedButton>
           <BrandedButton
             color="secondary"
             :disabled="loading"
             @click="cancel(close)"
           >
-            {{ t('Cancel') }}
+            {{ t('Annuler') }}
           </BrandedButton>
         </div>
 
@@ -68,7 +68,7 @@
           type="danger"
           :title="$t('Delete the resource')"
         >
-          {{ $t("Be careful, this action can't be reverse.") }}
+          {{ $t("Attention, cette action ne peut pas être annulée.") }}
           <template #button>
             <ModalWithButton
               :title="$t('Are you sure you want to delete this resource?')"
@@ -82,11 +82,11 @@
                   v-bind="attrs"
                   v-on="listeners"
                 >
-                  {{ $t('Delete') }}
+                  {{ $t('Supprimer') }}
                 </BrandedButton>
               </template>
               <p class="fr-text--bold">
-                {{ $t("This action can't be reverse.") }}
+                {{ $t("Cette action est irréversible.") }}
               </p>
               <template #footer>
                 <div

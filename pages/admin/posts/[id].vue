@@ -2,7 +2,7 @@
   <div>
     <AdminBreadcrumb>
       <BreadcrumbItem :to="`/admin/site/posts`">
-        {{ t('Posts') }}
+        {{ t('Articles') }}
       </BreadcrumbItem>
       <BreadcrumbItem v-if="post">
         {{ post.name }}
@@ -20,7 +20,7 @@
           size="xs"
           color="secondary"
         >
-          {{ t('See the post page') }}
+          {{ t(`Voir la page de l'article`) }}
         </BrandedButton>
       </div>
 
@@ -28,7 +28,7 @@
         class="mb-5"
         :links="[
           { href: `/admin/posts/${post.id}`, label: t('Métadonnées') },
-          { href: `/admin/posts/${post.id}/content`, label: t('Content') },
+          { href: `/admin/posts/${post.id}/content`, label: t('Contenu') },
         ]"
       />
 

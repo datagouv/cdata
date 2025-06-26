@@ -13,7 +13,7 @@
         </div>
         <div class="fr-col">
           <p class="fr-m-0 fr-text--xs">
-            {{ t('It is important to associate all the datasets used, as this allows to understand the cross-references and improve the visibility of your reuse.') }}
+            {{ t('Il est important d’associer tous les jeux de données utilisés, car cela permet de comprendre les croisements qui ont été nécessaires et d’améliorer la visibilité de votre réutilisation.') }}
           </p>
         </div>
       </div>
@@ -26,7 +26,7 @@
         color="secondary"
         @click="$emit('previous')"
       >
-        {{ t("Previous") }}
+        {{ t("Précédent") }}
       </BrandedButton>
       <BrandedButton
         color="primary"
@@ -34,7 +34,7 @@
         :loading
         @click="$emit('next')"
       >
-        {{ t("Next") }}
+        {{ t("Suivant") }}
       </BrandedButton>
     </div>
   </div>

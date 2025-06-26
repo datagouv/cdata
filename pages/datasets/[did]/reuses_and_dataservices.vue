@@ -5,7 +5,7 @@
       class="space-y-1"
     >
       <div class="uppercase text-gray-plain text-sm font-bold">
-        {{ $t('{n} dataservices', { n: dataservices.total }) }}
+        {{ $t('{n} API', { n: dataservices.total }) }}
       </div>
       <div class="space-y-2.5">
         <DataserviceCard
@@ -28,7 +28,7 @@
       class="space-y-1"
     >
       <div class="uppercase text-gray-plain text-sm font-bold">
-        {{ $t('{n} reuses', { n: reuses.total }) }}
+        {{ $t('{n} réutilisations', { n: reuses.total }) }}
       </div>
       <div class="space-y-2.5">
         <div class="grid sm:grid-cols-3 gap-2.5">

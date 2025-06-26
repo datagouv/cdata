@@ -4,7 +4,7 @@
       v-if="form"
       class="text-sm font-bold uppercase mb-5"
     >
-      {{ t("Edit profile") }}
+      {{ t("Éditer le profil") }}
     </h2>
     <AdminLoader v-if="loading && !organization" />
     <DescribeOrganizationFrom
@@ -12,7 +12,7 @@
       ref="form"
       v-model="organizationForm"
       type="update"
-      :submit-label="$t('Save')"
+      :submit-label="$t('Sauvegarder')"
       :errors="errors"
       :show-legend="false"
       :show-well="false"
@@ -22,12 +22,12 @@
         <BannerAction
           class="mt-12"
           type="danger"
-          :title="$t('Delete the organization')"
+          :title="$t('Supprimer l’organisation')"
         >
-          {{ t("Be careful, this action can't be reverse.") }}
+          {{ t("Attention, cette action ne peut pas être annulée.") }}
           <template #button>
             <ModalWithButton
-              :title="t('Are you sure you want to delete this organization ?')"
+              :title="t('Êtes-vous sûrs de vouloir supprimer cette organisation ?')"
               size="lg"
             >
               <template #button="{ attrs, listeners }">
@@ -38,15 +38,15 @@
                   v-bind="attrs"
                   v-on="listeners"
                 >
-                  {{ t('Delete') }}
+                  {{ t('Supprimer') }}
                 </BrandedButton>
               </template>
               <template #default>
                 <p class="fr-text--bold">
-                  {{ t("This action can't be reverse.") }}
+                  {{ t("Cette action est irréversible.") }}
                 </p>
-                <p>{{ t("All content published with this organization will stay online, with the same URL but in an anonymous form, i.e. without being linked to a data producer.") }}</p>
-                <p>{{ t("If you want to delete your published content too, start by deleting the contents before deleting your account.") }}</p>
+                <p>{{ t("Tous les contenus publiés par cette organisation resteront en ligne, aux mêmes URL, mais sous forme anonyme, c’est-à-dire sans être rattachés à un producteur de données.") }}</p>
+                <p>{{ t("Si vous souhaitez aussi supprimer les contenus publiées que vous avez publiés, commencez par supprimer les contenus avant de supprimer votre compte.") }}</p>
               </template>
               <template #footer>
                 <div class="flex-1 fr-btns-group fr-btns-group--right fr-btns-group--inline-reverse fr-btns-group--inline-lg fr-btns-group--icon-left">
@@ -56,7 +56,7 @@
                     :disabled="loading"
                     @click="deleteCurrentOrganization"
                   >
-                    {{ t("Delete the organization") }}
+                    {{ t("Supprimer l’organisation") }}
                   </button>
                 </div>
               </template>
@@ -117,7 +117,7 @@ async function updateCurrentOrganization(logo_file: File | null, newBadges: Arra
     await uploadLogo(props.organization.id, logo_file)
   }
 
-  toast.success(t('Organization updated !'))
+  toast.success(t('Organisation mise à jour !'))
   emit('refresh')
 
   window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })

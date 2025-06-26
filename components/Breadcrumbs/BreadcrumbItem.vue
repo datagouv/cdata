@@ -1,7 +1,7 @@
 <template>
   <li
     data-breadcrumb-item
-    :data-breadcrumb-to="to"
+    :data-breadcrumb-to="vers"
   >
     <a
       v-if="isCurrent"

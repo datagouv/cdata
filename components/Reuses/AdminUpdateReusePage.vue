@@ -13,7 +13,7 @@
           color="primary"
           :loading="isLoading"
         >
-          {{ t("Save") }}
+          {{ t("Sauvegarder") }}
         </BrandedButton>
       </template>
       <div class="mt-5 space-y-5">
@@ -57,7 +57,7 @@
                   v-bind="attrs"
                   v-on="listeners"
                 >
-                  {{ $t('Delete') }}
+                  {{ $t('Supprimer') }}
                 </BrandedButton>
               </template>
               <p class="fr-text--bold">

@@ -8,7 +8,7 @@
     <template #button>
       <div class="flex items-center space-x-4">
         <ModalWithButton
-          :title="$t('Preview')"
+          :title="$t('Prévisualiser')"
           size="fullscreen"
           @open="preview"
           @close="previewJob = null"
@@ -19,7 +19,7 @@
               v-bind="attrs"
               v-on="listeners"
             >
-              {{ $t('Preview') }}
+              {{ $t('Prévisualiser') }}
             </BrandedButton>
           </template>
           <div
@@ -42,20 +42,19 @@
           type="submit"
           :loading
         >
-          {{ $t("Save") }}
+          {{ $t("Sauvegarder") }}
         </BrandedButton>
       </div>
     </template>
-
     <BannerAction
       class="mt-5"
       type="danger"
-      :title="$t('Delete the harvester')"
+      :title="$t('Supprimer le moissonneur')"
     >
-      {{ $t("Be careful, this action can't be reverse.") }}
+      {{ $t("Attention, cette action ne peut pas être annulée.") }}
       <template #button>
         <ModalWithButton
-          :title="$t('Are you sure you want to delete this harvester?')"
+          :title="$t('Êtes-vous sûrs de vouloir supprimer ce moissonneur ?')"
           size="lg"
         >
           <template #button="{ attrs, listeners }">
@@ -66,11 +65,11 @@
               v-bind="attrs"
               v-on="listeners"
             >
-              {{ $t('Delete') }}
+              {{ $t('Supprimer') }}
             </BrandedButton>
           </template>
           <p class="fr-text--bold">
-            {{ $t("This action can't be reverse.") }}
+            {{ $t("Cette action est irréversible.") }}
           </p>
           <template #footer>
             <div class="flex-1 flex justify-end">
@@ -79,7 +78,7 @@
                 :disabled="loading"
                 @click="deleteHarvester"
               >
-                {{ $t("Delete the harvester") }}
+                {{ $t("Supprimer le moissonneur") }}
               </BrandedButton>
             </div>
           </template>

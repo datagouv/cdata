@@ -29,7 +29,7 @@
           size="xs"
           :icon="RiEyeLine"
         >
-          {{ t('See the dataservice page') }}
+          {{ t(`Voir la page publique de l'API`) }}
         </BrandedButton>
       </div>
 
@@ -37,9 +37,9 @@
         class="mb-5"
         :links="[
           { href: getDataserviceAdminUrl(dataservice), label: t('Métadonnées') },
-          { href: `${getDataserviceAdminUrl(dataservice)}/datasets`, label: t('Associated datasets') },
+          { href: `${getDataserviceAdminUrl(dataservice)}/datasets`, label: t('Jeux de données associés') },
           { href: `${getDataserviceAdminUrl(dataservice)}/discussions`, label: t('Discussions') },
-          { href: `${getDataserviceAdminUrl(dataservice)}/activities`, label: t('Activities') },
+          { href: `${getDataserviceAdminUrl(dataservice)}/activities`, label: t('Activités') },
         ]"
       />
 

@@ -30,12 +30,12 @@
 
     <FormFieldset
       v-if="type === 'create-community' && 'owned' in form"
-      :legend="$t('Producer')"
+      :legend="$t('Producteur')"
     >
       <FieldsetElement form-key="owned">
         <ProducerSelect
           v-model="form.owned"
-          :label="t('Check the identity with which you want to publish')"
+          :label="t('Vérifiez l'identité avec laquelle vous souhaitez publier')"
           :required="true"
           :error-text="getFirstError('owned')"
           :warning-text="getFirstWarning('owned')"
@@ -101,7 +101,7 @@
       >
         <InputGroup
           v-model="form.url"
-          :label="$t('Exact link to the file')"
+          :label="$t('Lien exact vers le fichier')"
           :required="true"
           :has-error="!!getFirstError('url')"
           :error-text="getFirstError('url')"
@@ -129,7 +129,7 @@
         <InputGroup
           v-model="form.title"
           class="mb-3"
-          :label="$t('Title')"
+          :label="$t('Titre')"
           :required="true"
         />
 
@@ -350,7 +350,7 @@ const nameAFile = computed(() => isRemote.value ? t('Name a link') : t('Name a f
 const fileOrLinkLegend = computed(() => {
   if (props.type === 'create-community') return t('File or link')
 
-  return isRemote.value ? t('Link') : t('Fichier')
+  return isRemote.value ? t('Lien') : t('Fichier')
 })
 const fileTypes = RESOURCE_TYPE.map(type => ({ label: getResourceLabel(type), value: type }))
 

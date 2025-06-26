@@ -59,7 +59,7 @@
               size="sm"
               type="secondary"
             >
-              {{ $t('Deleted') }}
+              {{ $t('Supprimé') }}
             </AdminBadge>
             <AdminBadge
               v-if="dataset.private"
@@ -104,7 +104,7 @@
             <dl class="pl-0 w-full shrink-0 md:w-[384px] space-y-4">
               <div class="space-y-1">
                 <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
-                  {{ $t('Producer') }}
+                  {{ $t('Producteur') }}
                 </dt>
                 <dd class="p-0 text-sm">
                   <OrganizationOwner
@@ -243,7 +243,6 @@ import type { PaginatedArray } from '~/types/types'
 
 const route = useRoute()
 const { formatDate } = useFormatDate()
-const me = useMaybeMe()
 
 definePageMeta({
   keepScroll: true,

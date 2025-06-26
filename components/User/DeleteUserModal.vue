@@ -1,6 +1,6 @@
 <template>
   <ModalWithButton
-    :title="$t('Are you sure you want to delete this user ?')"
+    :title="$t('Êtes-vous sûrs de vouloir supprimer ce compte utilisateur ?')"
     size="lg"
   >
     <template #button="{ attrs, listeners }">
@@ -11,15 +11,15 @@
         v-bind="attrs"
         v-on="listeners"
       >
-        {{ $t('Delete') }}
+        {{ $t('Supprimer') }}
       </BrandedButton>
     </template>
     <template #default>
       <p class="fr-text--bold">
-        {{ $t("This action can't be reverse.") }}
+        {{ $t("Cette action est irréversible.") }}
       </p>
-      <p>{{ $t("All content published with this organization will stay online, with the same URL but in an anonymous form, i.e. without being linked to a data producer.") }}</p>
-      <p>{{ $t("If you want to delete your published content too, start by deleting the contents before deleting your account.") }}</p>
+      <p>{{ $t("Tous les contenus publiés en votre nom resteront en ligne, aux mêmes URL, mais sous forme anonyme, c’est-à-dire sans être rattachés à un producteur de données.") }}</p>
+      <p>{{ $t("Si vous souhaitez aussi supprimer les contenus publiées que vous avez publiés, commencez par supprimer les contenus avant de supprimer votre compte.") }}</p>
     </template>
     <template #footer>
       <div class="w-full flex justify-end space-x-4">
@@ -31,7 +31,7 @@
             :disabled="loading"
             @click="() => deleteUser({ spam: true })"
           >
-            {{ $t("Delete as spam (no email sent and discussions deletion)") }}
+            {{ $t("Supprimer comme spam (pas d'envoi de mail et suppression des discussions)") }}
           </BrandedButton>
         </div>
         <div>
@@ -41,10 +41,10 @@
             @click="() => deleteUser({ spam: false })"
           >
             <span v-if="user.id === me.id">
-              {{ $t("Delete your account") }}
+              {{ $t("Supprimer votre compte") }}
             </span>
             <span v-else>
-              {{ $t("Delete this account") }}
+              {{ $t("Supprimer ce compte") }}
             </span>
           </BrandedButton>
         </div>
@@ -84,7 +84,7 @@ async function deleteUser({ spam = false }) {
       navigateTo(`${config.public.apiBase}/en/logout`, { external: true })
     }
     else {
-      toast.success(t('User deleted!'))
+      toast.success(t('Utilisateur supprimé !'))
       await navigateTo(localePath(`/admin/site/users`), { replace: true })
     }
   }

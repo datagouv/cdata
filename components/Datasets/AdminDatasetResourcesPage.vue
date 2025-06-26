@@ -87,7 +87,7 @@
               {{ t('File name') }}
             </AdminTableTh>
             <AdminTableTh scope="col">
-              {{ t("Status") }}
+              {{ t("Statut") }}
             </AdminTableTh>
             <AdminTableTh scope="col">
               {{ t("Type") }}
@@ -98,12 +98,12 @@
             <AdminTableTh
               scope="col"
             >
-              {{ t('Created at') }}
+              {{ t('Créé le') }}
             </AdminTableTh>
             <AdminTableTh
               scope="col"
             >
-              {{ t('Updated at') }}
+              {{ t('Mis à jour le') }}
             </AdminTableTh>
             <AdminTableTh
               scope="col"
@@ -341,20 +341,20 @@ const saveReorder = async () => {
 function getStatus(resource: Resource): { label: string, type: AdminBadgeType } {
   if (resource.extras['check:available'] === true) {
     return {
-      label: t('Available'),
+      label: t('Disponible'),
       type: 'primary',
     }
   }
 
   if (resource.extras['check:available'] === false) {
     return {
-      label: t('Unavailable'),
+      label: t('Indisponible'),
       type: 'danger',
     }
   }
 
   return {
-    label: t('Unknown'),
+    label: t('Inconnu'),
     type: 'warning',
   }
 }

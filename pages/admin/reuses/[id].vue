@@ -29,7 +29,7 @@
           size="xs"
           :icon="RiEyeLine"
         >
-          {{ t('See the reuse page') }}
+          {{ t('Voir la page publique de la réutilisation') }}
         </BrandedButton>
       </div>
 
@@ -37,9 +37,9 @@
         class="mb-5"
         :links="[
           { href: getReuseAdminUrl(reuse), label: t('Métadonnées') },
-          { href: `${getReuseAdminUrl(reuse)}/datasets`, label: t('Datasets') },
+          { href: `${getReuseAdminUrl(reuse)}/datasets`, label: t('Jeux de données') },
           { href: `${getReuseAdminUrl(reuse)}/discussions`, label: t('Discussions') },
-          { href: `${getReuseAdminUrl(reuse)}/activities`, label: t('Activities') },
+          { href: `${getReuseAdminUrl(reuse)}/activities`, label: t('Activités') },
         ]"
       />
 

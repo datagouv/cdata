@@ -5,7 +5,7 @@
       class="mb-5"
     >
       <h2 class="text-sm font-bold uppercase m-0 text-gray-title">
-        {{ $t('{n} datasets', pageData.total) }}
+        {{ $t('{n} jeux de données', pageData.total) }}
       </h2>
       <div
         class="grid gap-5 mt-2"
@@ -34,11 +34,11 @@
       <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
         <div>
           <h2 class="uppercase text-sm mb-0">
-            {{ $t('Statistics for the last 12 months') }}
+            {{ $t('Statistiques des 12 derniers mois') }}
           </h2>
           <div class="text-gray-medium font-normal text-sm/6">
-            <span v-if="new Date().getHours() > 7 - 1">{{ $t('Updated this morning') }}</span>
-            <span v-else>{{ $t('Updated yesterday') }}</span>
+            <span v-if="new Date().getHours() > 7 - 1">{{ $t('Mises à jour ce matin') }}</span>
+            <span v-else>{{ $t('Mises à jour hier') }}</span>
           </div>
         </div>
         <div>
@@ -52,13 +52,13 @@
             size="xs"
             class="relative z-2"
           >
-            {{ $t('Download the statistics as CSV') }}
+            {{ $t('Télécharger les statistiques au format CSV') }}
           </BrandedButton>
         </div>
       </div>
       <div class="grid md:grid-cols-3">
         <StatBox
-          :title="$t('Views')"
+          :title="$t('Vues')"
           :data="metricsViews"
           type="line"
           :summary="metricsViewsTotal"
@@ -67,22 +67,22 @@
       </div>
     </section>
     <SectionCollapse
-      :title="$t('Technical information')"
-      :button-text="$t('See technical information')"
+      :title="$t('Informations techniques')"
+      :button-text="$t('Voir les informations techniques')"
     >
       <DescriptionList class="mb-2">
         <div>
-          <DescriptionListTerm>{{ $t('Latest update') }}</DescriptionListTerm>
+          <DescriptionListTerm>{{ $t('Dernière mise à jour') }}</DescriptionListTerm>
           <DescriptionListDetails>{{ formatDate(dataservice.metadata_modified_at) }}</DescriptionListDetails>
         </div>
         <div>
-          <DescriptionListTerm>{{ $t('ID') }}</DescriptionListTerm>
+          <DescriptionListTerm>{{ $t('Identifiant') }}</DescriptionListTerm>
           <DescriptionListDetails class="flex items-center gap-2">
             {{ dataservice.id }}
             <CopyButton
               class="!-mt-0.5"
-              :label="$t(`Copier l'ID`)"
-              :copied-label="$t('ID copied')"
+              :label="$t(`Copier l'identifiant`)"
+              :copied-label="$t('Identifiant copié !')"
               :text="dataservice.id"
               :hide-label="true"
             />
@@ -91,7 +91,7 @@
       </DescriptionList>
       <DescriptionList>
         <div>
-          <DescriptionListTerm>{{ $t('Creation date') }}</DescriptionListTerm>
+          <DescriptionListTerm>{{ $t('Date de création') }}</DescriptionListTerm>
           <DescriptionListDetails>{{ formatDate(dataservice.created_at) }}</DescriptionListDetails>
         </div>
       </DescriptionList>

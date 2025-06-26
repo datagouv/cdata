@@ -6,17 +6,17 @@
           :external="true"
           to="/"
         >
-          {{ $t('Home') }}
+          {{ $t('Accueil') }}
         </BreadcrumbItem>
         <BreadcrumbItem>
-          {{ $t('Posts') }}
+          {{ $t('Articles') }}
         </BreadcrumbItem>
       </Breadcrumb>
     </div>
     <div class="border-b border-gray-lowest">
       <div class="container">
         <h1 class="text-4.5xl font-extrabold pt-10 pb-[3.75rem] !mb-0">
-          {{ $t('Posts') }}
+          {{ $t('Articles') }}
         </h1>
       </div>
     </div>
@@ -53,7 +53,7 @@ import type { PaginatedArray } from '~/types/types'
 const { t } = useI18n()
 
 useSeoMeta({
-  title: t('Posts'),
+  title: t('Articles'),
 })
 const route = useRoute()
 const page = ref(route.query.page ?? 1)

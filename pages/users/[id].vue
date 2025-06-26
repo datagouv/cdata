@@ -103,7 +103,7 @@
 
       <div v-if="user.organizations.length">
         <h2 class="text-sm font-bold uppercase mb-3">
-          {{ $t('{n} organisation | {n} organizations', { n: user.organizations.length }) }}
+          {{ $t('{n} organisations', { n: user.organizations.length }) }}
         </h2>
 
         <div class="grid md:grid-cols-3 gap-4">
