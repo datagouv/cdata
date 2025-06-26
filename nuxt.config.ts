@@ -67,7 +67,12 @@ export default defineNuxtConfig({
       searchAutocompleteDebounce: 200,
       searchSirenUrl: 'https://recherche-entreprises.api.gouv.fr/search',
       csvDatasetId: undefined,
+
       title: 'data.gouv.fr',
+
+      // Without www/demo/dev
+      baseDomain: 'data.gouv.fr',
+
       demoServer: {
         url: 'https://demo.data.gouv.fr',
         name: 'demo.data.gouv.fr',

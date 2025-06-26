@@ -35,6 +35,15 @@
         </div>
 
         <div class="text-sm text-mentionGrey space-y-1.5">
+          <div class="space-x-1">
+            <span>{{ $t('Statut') }}:</span>
+            <AdminBadge
+              size="xs"
+              :type="getDatasetStatus(dataset).type"
+            >
+              {{ getDatasetStatus(dataset).label }}
+            </AdminBadge>
+          </div>
           <div class="space-x-1 flex items-center">
             <RiPriceTag3Line class="inline size-3" />
             <span>{{ $t('Metadonnées:') }}</span>
@@ -122,6 +131,7 @@ const { t } = useI18n()
 const me = useMe()
 
 const route = useRoute()
+const { getDatasetStatus } = useDatasetStatus()
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset } = await useAPI<DatasetV2>(url)
 </script>

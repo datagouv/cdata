@@ -23,7 +23,7 @@ export function reuseToForm(reuse: Reuse, types: Array<ReuseType>, topics: Array
   }
 }
 
-export function reuseToApi(form: ReuseForm, overrides: { datasets?: Array<Dataset | DatasetV2 | DatasetSuggest>, private?: boolean, archived?: string | null } = {}): NewReuseForApi {
+export function reuseToApi(form: ReuseForm, overrides: { datasets?: Array<Dataset | DatasetV2 | DatasetSuggest>, private?: boolean, archived?: string | null, deleted?: null } = {}): NewReuseForApi {
   return {
     organization: form.owned?.organization?.id,
     owner: form.owned?.owner?.id,
@@ -31,6 +31,7 @@ export function reuseToApi(form: ReuseForm, overrides: { datasets?: Array<Datase
     url: form.url,
     private: overrides.private,
     archived: overrides.archived,
+    deleted: overrides.deleted,
     description: form.description,
     datasets: overrides.datasets ? overrides.datasets.map(({ id }) => id) : undefined,
     type: form.type?.id || '',

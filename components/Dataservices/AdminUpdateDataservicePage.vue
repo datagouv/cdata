@@ -9,6 +9,7 @@
     >
       <template #top>
         <BannerAction
+          v-if="!dataservice.deleted_at && !dataservice.archived_at"
           class="mb-4"
           type="primary"
           :title="$t(`Modifier la visibilité de l'API`)"
@@ -36,6 +37,24 @@
               @click="switchDataservicePrivate"
             >
               {{ dataservice.private ? $t("Publier l'API") : $t('Passer en brouillon') }}
+            </BrandedButton>
+          </template>
+        </BannerAction>
+        <BannerAction
+          v-if="dataservice.deleted_at"
+          class="mb-4"
+          type="warning"
+          :title="$t('Restaurer cette API')"
+        >
+          {{ $t("Sans restauration l'API sera définitivement supprimée dans la nuit.") }}
+
+          <template #button>
+            <BrandedButton
+              :icon="RiArrowGoBackLine"
+              :loading="isLoading"
+              @click="restoreDataservice"
+            >
+              {{ $t('Restaurer') }}
             </BrandedButton>
           </template>
         </BannerAction>
@@ -70,6 +89,7 @@
           </template>
         </BannerAction>
         <BannerAction
+          v-if="!dataservice.deleted_at"
           type="danger"
           :title="$t(`Supprimer l'API`)"
         >
@@ -114,7 +134,7 @@
 
 <script setup lang="ts">
 import type { Dataservice } from '@datagouv/components-next'
-import { RiArchiveLine, RiDeleteBin6Line } from '@remixicon/vue'
+import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'
 import type { DataserviceForm, LinkToSubject } from '~/types/types'
@@ -125,8 +145,6 @@ const { toast } = useToast()
 
 const route = useRoute()
 const { start, finish, isLoading } = useLoadingIndicator()
-
-const localePath = useLocalePath()
 
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
 const { data: dataservice, refresh } = await useAPI<Dataservice>(url)
@@ -188,6 +206,7 @@ async function archiveDataservice() {
     else {
       toast.success(t('Dataservice archived!'))
     }
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
     finish()
@@ -216,18 +235,31 @@ async function switchDataservicePrivate() {
   }
 }
 
+async function restoreDataservice() {
+  if (!dataserviceForm.value) throw new Error('No dataset form')
+  start()
+  try {
+    await $api(`/api/1/dataservices/${dataservice.value.id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(dataserviceToApi(dataserviceForm.value, { deleted_at: null })),
+    })
+    refresh()
+    toast.success(t('API restaurée!'))
+  }
+  finally {
+    finish()
+  }
+}
+
 async function deleteDataservice() {
   start()
   try {
     await $api(`/api/1/dataservices/${route.params.id}`, {
       method: 'DELETE',
     })
-    if (route.params.oid) {
-      await navigateTo(localePath(`/admin/organizations/${route.params.oid}/dataservices`), { replace: true })
-    }
-    else {
-      await navigateTo(localePath('/admin/me/dataservices'), { replace: true })
-    }
+    refresh()
+    toast.success(t('API supprimée!'))
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
     finish()
