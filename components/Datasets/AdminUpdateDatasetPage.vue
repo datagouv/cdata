@@ -11,6 +11,7 @@
     >
       <template #top>
         <BannerAction
+          v-if="!dataset.deleted && !dataset.archived"
           class="mb-4"
           type="primary"
           :title="$t('Modifier la visibilité du jeu de données')"

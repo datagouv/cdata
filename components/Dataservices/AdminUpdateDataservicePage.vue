@@ -9,6 +9,7 @@
     >
       <template #top>
         <BannerAction
+          v-if="!dataservice.deleted_at && !dataservice.archived_at"
           class="mb-4"
           type="primary"
           :title="$t(`Modifier la visibilité de l'API`)"

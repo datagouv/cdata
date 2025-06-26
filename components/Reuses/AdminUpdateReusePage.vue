@@ -9,6 +9,7 @@
     >
       <template #top>
         <BannerAction
+          v-if="!reuse.deleted && !reuse.archived"
           class="mb-4"
           type="primary"
           :title="$t('Modifier la visibilité de la réutilisation')"
