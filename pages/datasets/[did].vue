@@ -104,7 +104,12 @@
             <dl class="pl-0 w-full shrink-0 md:w-[384px] space-y-4">
               <div class="space-y-1">
                 <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
-                  {{ $t('Producer') }}
+                  <template v-if="dataset.contact_points.length">
+                    {{ $t('Diffuseur') }}
+                  </template>
+                  <template v-else>
+                    {{ $t('Producteur') }}
+                  </template>
                 </dt>
                 <dd class="p-0 text-sm">
                   <OrganizationOwner
@@ -132,7 +137,7 @@
                 class="space-y-1"
               >
                 <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
-                  {{ $t('Contact') }}
+                  {{ $t('Attributions') }}
                 </dt>
                 <dd class="p-0 text-sm">
                   <ContactPoint
