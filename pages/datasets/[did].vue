@@ -104,7 +104,12 @@
             <dl class="pl-0 w-full shrink-0 md:w-[384px] space-y-4">
               <div class="space-y-1">
                 <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
-                  {{ $t('Producer') }}
+                  <template v-if="hasContactPointsWithSpecificRole">
+                    {{ $t('Diffuseur') }}
+                  </template>
+                  <template v-else>
+                    {{ $t('Producteur') }}
+                  </template>
                 </dt>
                 <dd class="p-0 text-sm">
                   <OrganizationOwner
@@ -132,7 +137,12 @@
                 class="space-y-1"
               >
                 <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
-                  {{ $t('Contact') }}
+                  <template v-if="hasContactPointsWithSpecificRole">
+                    {{ $t('Attributions') }}
+                  </template>
+                  <template v-else>
+                    {{ $t('Contacts') }}
+                  </template>
                 </dt>
                 <dd class="p-0 text-sm">
                   <ContactPoint
@@ -290,6 +300,10 @@ const hideWarnings = computed(() => {
   if (!dataset.value.harvest.backend) return false
 
   return config.public.harvestBackendsForHidingQuality.includes(dataset.value.harvest.backend)
+})
+
+const hasContactPointsWithSpecificRole = computed(() => {
+  return dataset.value.contact_points.some(contactPoint => contactPoint.role !== 'contact')
 })
 
 await useJsonLd('dataset', route.params.did)
