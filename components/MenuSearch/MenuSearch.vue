@@ -102,14 +102,19 @@ type Item = {
   external: boolean
 }
 
+const emit = defineEmits<{
+  selected: []
+}>()
+
 const { t } = useI18n()
 const localePath = useLocalePath()
 const query = ref('')
 const selectedItem = ref<null | Item>(null)
 
-watch(selectedItem, () => {
+watch(selectedItem, async () => {
   if (!selectedItem.value) return
-  navigateTo(selectedItem.value.to, { external: selectedItem.value.external })
+  await navigateTo(selectedItem.value.to, { external: selectedItem.value.external })
+  emit('selected')
 })
 const menu = computed(() => {
   return [
