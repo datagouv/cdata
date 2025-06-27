@@ -50,6 +50,11 @@ export default defineNuxtPlugin({
             return
           }
 
+          if (response.status === 400) {
+            toast.error(t('Le formulaire contient des erreurs.'))
+            return
+          }
+
           let message
           try {
             if ('error' in response._data) {
@@ -60,6 +65,9 @@ export default defineNuxtPlugin({
             }
             else if ('errors' in response._data && typeof response._data.errors === 'object') {
               message = Object.entries(response._data.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
+            }
+            else {
+              message = t('The API returned an unexpected error')
             }
           }
           catch (e) {

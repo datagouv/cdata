@@ -122,7 +122,6 @@
                               href="/login"
                               color="primary-softer"
                               size="lg"
-                              :external="true"
                               :icon="RiLockLine"
                               class="w-full"
                             >
@@ -134,7 +133,6 @@
                               color="primary-softer"
                               size="lg"
                               href="/register"
-                              :external="true"
                               class="w-full"
                               :icon="RiAccountCircleLine"
                             >
@@ -277,9 +275,10 @@
                   </li>
                   <li>
                     <BrandedButton
-                      :href="`${config.public.apiBase}/logout`"
+                      type="button"
                       color="primary-softer"
                       :icon="RiLogoutBoxRLine"
+                      @click="logout"
                     >
                       {{ $t('Logout') }}
                     </BrandedButton>
@@ -294,7 +293,6 @@
                   <BrandedButton
                     color="primary-softer"
                     href="/login"
-                    :external="true"
                     :icon="RiLockLine"
                   >
                     {{ $t("Log in") }}
@@ -304,7 +302,6 @@
                   <BrandedButton
                     color="primary-softer"
                     href="/register"
-                    :external="true"
                     :icon="RiAccountCircleLine"
                   >
                     {{ $t("Register") }}
@@ -446,6 +443,7 @@ const localePath = useLocalePath()
 const me = useMaybeMe()
 const currentRoute = useRoute()
 const router = useRouter()
+const url = useRequestURL()
 
 const searchInputId = useId()
 
@@ -481,5 +479,20 @@ function getAriaCurrent(link: string) {
   }
   const routesInPath = router.getRoutes().map(route => route.path).filter(path => currentRoute.path.startsWith(path))
   return routesInPath.includes(link)
+}
+
+const { $api } = useNuxtApp()
+const token = useToken()
+const logout = async () => {
+  token.value = null
+  console.log(token.value)
+  refreshCookie('token')
+
+  await $api('/fr/logout/', {
+    method: 'POST',
+  })
+
+  me.value = null
+  await navigateTo('/')
 }
 </script>

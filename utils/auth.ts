@@ -25,7 +25,10 @@ export const useMaybeMe = () => {
 }
 
 export const useToken = () => {
-  return useCookie('token')
+  return useCookie('token', {
+    secure: true,
+    sameSite: true,
+  })
 }
 
 export function isAdmin(me: Me | null | undefined): boolean {
