@@ -27,8 +27,8 @@
       <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
         <SearchableSelect
           v-model="datasetsStatus"
-          :placeholder="$t('Filter by status')"
-          :label="$t('Filter by status')"
+          :placeholder="$t('Filtrer par statut')"
+          :label="$t('Filtrer par statut')"
           :options="statusOption"
           :display-value="(option) => option.label"
           :multiple="false"

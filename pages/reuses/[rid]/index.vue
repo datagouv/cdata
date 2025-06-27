@@ -14,7 +14,7 @@
           <dl class="p-0 space-y-5">
             <div>
               <dt class="font-bold text-sm pb-1">
-                {{ $t('Topic') }}
+                {{ $t('Thématique') }}
               </dt>
               <dd class="p-0 text-sm text-mention-grey">
                 {{ topic }}

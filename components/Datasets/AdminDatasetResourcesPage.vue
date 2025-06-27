@@ -5,7 +5,7 @@
         v-if="resourcesPage"
         class="text-sm font-bold uppercase m-0"
       >
-        {{ t('{n} files | {n} file | {n} files', resourcesPage.total) }}
+        {{ t('{n} fichiers | {n} fichier | {n} fichiers', resourcesPage.total) }}
       </h2>
       <div class="flex items-center space-x-3">
         <component :is="resourcesPage && resourcesPage.total > config.public.maxSortableFiles ? Tooltip : 'div' ">
@@ -18,11 +18,11 @@
             :disabled="!!resourcesPage && resourcesPage.total > config.public.maxSortableFiles"
             @click="startReorder()"
           >
-            {{ $t('Reorder files') }}
+            {{ $t('Réordonner les fichiers') }}
           </BrandedButton>
 
           <template #tooltip>
-            {{ $t(`Cannot reorder dataset's files when there is more than {max} files`, { max: config.public.maxSortableFiles }) }}
+            {{ $t(`Impossible de réordonner les fichiers quand il y a plus de {max} fichiers`, { max: config.public.maxSortableFiles }) }}
           </template>
         </component>
         <BrandedButton
@@ -34,7 +34,7 @@
           :loading="loadingForOrdering"
           @click="saveReorder()"
         >
-          {{ $t('Save new order') }}
+          {{ $t('Sauvegarder le nouvel ordre') }}
         </BrandedButton>
         <BrandedButton
           v-if="reorder"
@@ -44,7 +44,7 @@
           :loading="loadingForOrdering"
           @click="cancelReorder()"
         >
-          {{ $t('Cancel reorder') }}
+          {{ $t("Annuler le changement d'ordre") }}
         </BrandedButton>
         <UploadResourceModal
           v-if="! reorder"
@@ -84,7 +84,7 @@
             <AdminTableTh
               scope="col"
             >
-              {{ t('File name') }}
+              {{ t('Nom du fichier') }}
             </AdminTableTh>
             <AdminTableTh scope="col">
               {{ t("Statut") }}
@@ -127,7 +127,7 @@
                   icon-only
                   @click="moveFile(index, index - 1)"
                 >
-                  {{ $t('Move up') }}
+                  {{ $t('Déplacer vers le haut') }}
                 </BrandedButton>
                 <RiDraggable class="handle" />
                 <BrandedButton
@@ -138,7 +138,7 @@
                   icon-only
                   @click="moveFile(index, index + 1)"
                 >
-                  {{ $t('Move down') }}
+                  {{ $t('Déplacer vers le bas') }}
                 </BrandedButton>
               </div>
             </td>
