@@ -46,6 +46,10 @@ onMounted(() => sidebarLinks.value[id] = props.to)
 onUnmounted(() => delete sidebarLinks.value[id])
 
 const lastBreadcrumbInSidebar = computed(() => {
+  console.log('---')
+  console.log(breadcrumbs.value)
+  console.log(sidebarLinks.value)
+  console.log('---')
   const breadcrumbsInSidebar = breadcrumbs.value.filter((breadcrumbUrl) => {
     if (!breadcrumbUrl) return false
     return Object.values(sidebarLinks.value)
