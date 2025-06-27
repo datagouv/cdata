@@ -178,7 +178,14 @@
               <Preview :resource="resource" />
             </div>
             <div v-if="tab.key === 'map'">
-              <Pmtiles :resource="resource" />
+              <Pmtiles
+                v-if="hasPmtiles"
+                :resource="resource"
+              />
+              <MapContainer
+                v-if="ogcWms"
+                :resource="resource"
+              />
             </div>
             <div
               v-if="tab.key === 'description'"
@@ -319,7 +326,7 @@ import { trackEvent } from '../../functions/matomo'
 import CopyButton from '../CopyButton.vue'
 import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
-import { getResourceFormatIcon, getResourceTitleId } from '../../functions/resources'
+import { getResourceFormatIcon, getResourceTitleId, detectOgcService } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
 import { getResourceExternalUrl } from '../../functions/datasets'
 import Metadata from './Metadata.vue'
@@ -330,7 +337,6 @@ import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
 import Pmtiles from './Pmtiles.vue'
 
-const OGC_SERVICES_FORMATS = ['ogc:wfs', 'ogc:wms', 'wfs', 'wms']
 const GENERATED_FORMATS = ['parquet', 'pmtiles']
 
 const props = withDefaults(defineProps<{
@@ -348,6 +354,7 @@ const props = withDefaults(defineProps<{
 const config = useComponentsConfig()
 
 const Swagger = defineAsyncComponent(() => import('./Swagger.vue'))
+const MapContainer = defineAsyncComponent(() => import('./MapContainer.client.vue'))
 
 const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
@@ -366,7 +373,9 @@ const hasPmtiles = computed(() => {
 
 const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('Fichier'))
 
-const ogcService = computed(() => OGC_SERVICES_FORMATS.includes(props.resource.format))
+const ogcService = computed(() => detectOgcService(props.resource))
+
+const ogcWms = computed(() => ogcService.value === 'wms')
 
 const generatedFormats = computed(() => {
   return GENERATED_FORMATS
@@ -397,7 +406,7 @@ const tabsOptions = computed(() => {
     options.push({ key: 'data', label: t('Données') })
   }
 
-  if (hasPmtiles.value) {
+  if (hasPmtiles.value || ogcWms.value) {
     options.push({ key: 'map', label: t('Carte') })
   }
 

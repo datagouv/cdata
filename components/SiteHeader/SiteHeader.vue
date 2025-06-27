@@ -40,10 +40,10 @@
                       <RiSearchLine class="size-6" />
                     </button>
                   </template>
-                  <template #default>
+                  <template #default="{ close }">
                     <div class="w-full fr-container fr-container-lg--fluid">
                       <div class="fr-header__search">
-                        <MenuSearch />
+                        <MenuSearch @selected="close" />
                       </div>
                     </div>
                   </template>
