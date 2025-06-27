@@ -42,26 +42,8 @@
                   </template>
                   <template #default>
                     <div class="w-full fr-container fr-container-lg--fluid">
-                      <div
-                        class="fr-search-bar"
-                        role="search"
-                      >
-                        <label
-                          class="fr-label"
-                          :for="searchInputId"
-                        > {{ $t('Recherche') }} </label> <input
-                          :id="searchInputId"
-                          class="fr-input"
-                          :placeholder="$t('Recherche')"
-                          type="search"
-                        > <BrandedButton
-                          type="submit"
-                          color="primary"
-                          class="rounded-l-none rounded-br-none rounded-tr-[0.25rem]"
-                          :title="$t('Recherche')"
-                        >
-                          {{ $t('Recherche') }}
-                        </BrandedButton>
+                      <div class="fr-header__search">
+                        <MenuSearch />
                       </div>
                     </div>
                   </template>
