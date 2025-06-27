@@ -6,7 +6,7 @@
           v-if="pageData && pageData.total"
           class="text-sm font-bold uppercase m-0"
         >
-          {{ $t('{n} jobs', pageData.total) }}
+          {{ $t('{n} jobs | {n} job | {n} jobs', pageData.total) }}
         </h2>
       </div>
       <div class="fr-col-auto fr-grid-row fr-grid-row--middle">

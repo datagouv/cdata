@@ -42,7 +42,7 @@
         class="flex flex-wrap justify-between items-center mb-5"
       >
         <h2 class="text-sm font-bold uppercase m-0 text-gray-title">
-          {{ t('{n} discussions', pageData.total) }}
+          {{ t('{n} discussions | {n} discussion | {n} discussions', pageData.total) }}
         </h2>
 
         <div>

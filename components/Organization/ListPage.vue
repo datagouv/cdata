@@ -29,7 +29,7 @@
   </div>
   <div class="flex justify-between items-center mb-6">
     <p class="mb-0">
-      {{ $t('{count} résultats', { count: organizations.total }) }}
+      {{ $t('{count} résultats | {count} résultat | {count} résultats', { count: organizations.total }) }}
     </p>
     <div class="flex items-center gap-1">
       <label

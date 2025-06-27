@@ -80,7 +80,7 @@
     </section>
     <section v-if="datasets">
       <h2 class="uppercase text-sm mb-2.5">
-        {{ $t('{n} jeux de données associés', { n: datasets.total }) }}
+        {{ $t('aucun jeu de données associé | {n} jeu de données associé | {n} jeux de données associés', { n: datasets.total }) }}
       </h2>
       <div
         class="grid gap-5"
@@ -110,7 +110,7 @@
         class="min-h-32"
       >
         <h2 class="uppercase text-sm mb-2.5">
-          {{ $t('{n} réutilisations du même créateur', { n: relatedReuses.length }) }}
+          {{ $t('{n} réutilisations du même créateur | {n} réutilisation du même créateur | {n} réutilisations du même créateur', { n: relatedReuses.length }) }}
         </h2>
         <div
           v-if="relatedReuses.length"

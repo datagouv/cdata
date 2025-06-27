@@ -103,7 +103,7 @@
     <div>
       <div class="mb-2.5">
         <h2 class="inline text-sm font-bold uppercase mb-0">
-          {{ $t('{n} éléments', job.items.length) }}
+          {{ $t('{n} éléments | {n} élément | {n} éléments', job.items.length) }}
         </h2>
         <span
           v-if="preview && job.items.length >= config.public.harvesterPreviewMaxItems"

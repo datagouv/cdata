@@ -107,7 +107,7 @@
           <div class="fr-grid-row fr-grid-row--middle fr-mr-1v">
             <p
               class="fr-text--sm fr-my-0"
-              :aria-label="t('{n} téléchargements des ressources', dataset.metrics.resources_downloads)"
+              :aria-label="t('{n} téléchargements des ressources | {n} téléchargement des ressources | {n} téléchargements des ressources', dataset.metrics.resources_downloads)"
             >
               <span
                 class="fr-icon-download-line fr-icon--sm fr-px-1v"
@@ -116,7 +116,7 @@
             </p>
             <p
               class="fr-text--sm fr-my-0"
-              :aria-label="t('{n} abonnés', dataset.metrics.followers)"
+              :aria-label="t('{n} abonnés | {n} abonné | {n} abonnés', dataset.metrics.followers)"
             >
               <span
                 class="fr-icon-star-line fr-icon--sm fr-px-1v"
@@ -125,7 +125,7 @@
             </p>
             <p
               class="fr-text--sm fr-my-0"
-              :aria-label="t('{n} réutilisations', dataset.metrics.reuses)"
+              :aria-label="t('{n} réutilisations | {n} réutilisation | {n} réutilisations', dataset.metrics.reuses)"
             >
               <span
                 class="fr-icon-line-chart-line fr-icon--sm fr-px-1v"

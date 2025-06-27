@@ -87,7 +87,7 @@
             class="fr-col-auto my-0"
             role="status"
           >
-            {{ t("{count} résultats", searchResults.total) }}
+            {{ t("{count} résultats | {count} résultat | {count} résultats", searchResults.total) }}
           </p>
           <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
             <label

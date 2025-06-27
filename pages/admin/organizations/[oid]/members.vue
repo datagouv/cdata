@@ -13,7 +13,7 @@
       class="mb-8"
     >
       <h2 class="text-sm font-bold uppercase mt-5 mb-5">
-        {{ t("{n} demandes", { n: membershipRequests.length }) }}
+        {{ t("{n} demandes | {n} demande | {n} demandes", { n: membershipRequests.length }) }}
       </h2>
       <div class="space-y-8 max-w-6xl">
         <AdminMembershipRequest
@@ -33,7 +33,7 @@
     >
       <div class="flex-1">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ t("{n} membres", { n: organization.members.length }) }}
+          {{ t("{n} membres | {n} membre | {n} membres", { n: organization.members.length }) }}
         </h2>
       </div>
       <div

@@ -74,7 +74,7 @@
               size="xs"
               type="secondary"
             >
-              {{ $t('{n} réutilisations', { n: user.metrics.reuses }) }}
+              {{ $t('{n} réutilisations | {n} réutilisation | {n} réutilisations', { n: user.metrics.reuses }) }}
             </AdminBadge>
             <AdminBadge
               size="xs"
@@ -89,13 +89,13 @@
               size="xs"
               type="secondary"
             >
-              {{ $t('{n} abonnés', { n: user.metrics.followers }) }}
+              {{ $t('{n} abonnés | {n} abonné | {n} abonnés', { n: user.metrics.followers }) }}
             </AdminBadge>
             <AdminBadge
               size="xs"
               type="secondary"
             >
-              {{ $t('{n} personnes suivies', { n: user.metrics.following }) }}
+              {{ $t('{n} personnes suivies | 1 personne suivie | {n} personnes suivies', { n: user.metrics.following }) }}
             </AdminBadge>
           </div>
         </div>
@@ -103,7 +103,7 @@
 
       <div v-if="user.organizations.length">
         <h2 class="text-sm font-bold uppercase mb-3">
-          {{ $t('{n} organisations', { n: user.organizations.length }) }}
+          {{ $t('{n} organisations | {n} organisation | {n} organisations', { n: user.organizations.length }) }}
         </h2>
 
         <div class="grid md:grid-cols-3 gap-4">

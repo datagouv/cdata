@@ -5,7 +5,7 @@
         v-if="resourcesPage"
         class="text-sm font-bold uppercase m-0"
       >
-        {{ t('{n} files', resourcesPage.total) }}
+        {{ t('{n} files | {n} file | {n} files', resourcesPage.total) }}
       </h2>
       <div class="flex items-center space-x-3">
         <component :is="resourcesPage && resourcesPage.total > config.public.maxSortableFiles ? Tooltip : 'div' ">

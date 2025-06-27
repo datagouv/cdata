@@ -13,7 +13,7 @@
     >
       <div class="fr-col">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ t('{n} organisations', pageData.total) }}
+          {{ t('{n} organisations | {n} organisation | {n} organisations', pageData.total) }}
         </h2>
       </div>
       <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
