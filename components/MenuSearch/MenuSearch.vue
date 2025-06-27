@@ -36,7 +36,7 @@
       @after-leave="query = ''"
     >
       <ComboboxOptions
-        class="text-left mt-1 max-h-60 overflow-auto rounded-md bg-white text-base shadow-lg focus:outline-none sm:text-sm"
+        class="list-none pl-0 text-left mt-1 mb-0 max-h-60 overflow-auto rounded-md bg-white text-base shadow-lg focus:outline-none sm:text-sm"
       >
         <ComboboxOption
           v-for="item in menu"
