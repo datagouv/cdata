@@ -75,9 +75,9 @@
         />
         <BannerAction
           type="warning"
-          :title="dataservice.archived_at ? $t(`Désarchiver l'API`) : $t(`Archiver l'API`)"
+          :title="dataservice.archived_at ? $t('Désarchiver cette API') : $t('Archiver cette API')"
         >
-          {{ $t("Une API archivée n'est plus indexée mais reste accessible auxutilisateurs avec le lien direct.") }}
+          {{ $t("Une API archivée n'est plus indexée mais reste accessible aux utilisateurs avec un lien direct.") }}
 
           <template #button>
             <BrandedButton
@@ -107,11 +107,11 @@
                   v-bind="attrs"
                   v-on="listeners"
                 >
-                  {{ $t('Delete') }}
+                  {{ $t('Supprimer') }}
                 </BrandedButton>
               </template>
               <p class="fr-text--bold">
-                {{ $t("This action can't be reverse.") }}
+                {{ $t("Cette action est irréversible.") }}
               </p>
               <template #footer>
                 <div class="flex-1 flex justify-end">
@@ -120,7 +120,7 @@
                     :loading="isLoading"
                     @click="deleteDataservice"
                   >
-                    {{ $t("Delete the dataservice") }}
+                    {{ $t("Supprimer l'API") }}
                   </BrandedButton>
                 </div>
               </template>
@@ -182,7 +182,7 @@ async function save() {
       body: JSON.stringify(dataserviceToApi(dataserviceForm.value, { private: dataserviceForm.value.private })),
     })
 
-    toast.success(t('Dataservice updated!'))
+    toast.success(t('Fiche API mise à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
@@ -201,10 +201,10 @@ async function archiveDataservice() {
     })
     refresh()
     if (dataservice.value.archived_at) {
-      toast.success(t('Dataservice unarchived!'))
+      toast.success(t('API désarchivée!'))
     }
     else {
-      toast.success(t('Dataservice archived!'))
+      toast.success(t('API archivée!'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }

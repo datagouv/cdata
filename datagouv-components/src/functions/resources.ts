@@ -92,17 +92,17 @@ export const getResourceLabel = (type: ResourceType) => {
   const { t } = useI18n()
   switch (type) {
     case 'main':
-      return t('Main file')
+      return t('Fichier principal')
     case 'documentation':
       return t('Documentation')
     case 'update':
-      return t('Update')
+      return t('Mise à jour')
     case 'api':
       return t('API')
     case 'code':
-      return t('Source code')
+      return t('Code source')
     case 'other':
-      return t('Other')
+      return t('Autre')
   }
 }
 

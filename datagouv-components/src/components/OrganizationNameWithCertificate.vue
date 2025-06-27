@@ -17,7 +17,7 @@
         'size-4': size === 'sm',
         'size-5': size === 'base',
       }"
-      :title="t('The identity of this public service is certified by {certifier}', { certifier: config.name })"
+      :title="t(`L'identité de ce service public est certifiée par {certifier}`, { certifier: config.name })"
       aria-hidden="true"
     />
   </div>

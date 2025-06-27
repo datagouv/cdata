@@ -46,7 +46,7 @@
           </div>
           <div class="space-x-1 flex items-center">
             <RiPriceTag3Line class="inline size-3" />
-            <span>{{ $t('Metadonnées:') }}</span>
+            <span>{{ $t('Métadonnées:') }}</span>
             <Tooltip>
               <DatasetQualityScore
                 class="w-32"
@@ -105,7 +105,7 @@
       <TabLinks
         class="mb-5"
         :links="[
-          { href: getDatasetAdminUrl(dataset), label: t('Metadonnées') },
+          { href: getDatasetAdminUrl(dataset), label: t('Métadonnées') },
           { href: `${getDatasetAdminUrl(dataset)}/files`, label: t('Fichiers') },
           { href: `${getDatasetAdminUrl(dataset)}/discussions`, label: t('Discussions') },
           { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activités') },

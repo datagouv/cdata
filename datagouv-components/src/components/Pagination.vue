@@ -14,7 +14,7 @@
           data-testid="first-page"
           @click.prevent.stop="onClick(1)"
         >
-          {{ t('First page') }}
+          {{ t('Première page') }}
         </a>
       </li>
       <li>
@@ -24,7 +24,7 @@
           data-testid="previous-page"
           @click.prevent.stop="previousPage"
         >
-          {{ t('Previous page') }}
+          {{ t('Page précédente') }}
         </a>
       </li>
       <li>
@@ -82,7 +82,7 @@
           data-testid="next-page"
           @click.prevent.stop="nextPage"
         >
-          {{ t('Next page') }}
+          {{ t('Page suivante') }}
         </a>
       </li>
       <li>
@@ -92,7 +92,7 @@
           data-testid="last-page"
           @click.prevent.stop="onClick(pageCount)"
         >
-          {{ t('Last page') }}
+          {{ t('Dernière page') }}
         </a>
       </li>
     </ul>

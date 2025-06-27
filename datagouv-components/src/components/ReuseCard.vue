@@ -35,7 +35,7 @@
               class="mr-1 truncate"
             >{{ ownerName }}</span>
             <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
-            <span class="block flex-none">{{ t('published {date}', { date: formatRelativeIfRecentDate(reuse.created_at, { dateStyle: 'medium' }) }) }}</span>
+            <span class="block flex-none">{{ t('publié {date}', { date: formatRelativeIfRecentDate(reuse.created_at, { dateStyle: 'medium' }) }) }}</span>
           </p>
           <ReuseDetails :reuse />
         </div>
@@ -58,13 +58,13 @@
         <li v-if="reuse.private">
           <p class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium">
             <RiLockLine class="size-3.5 mr-0.5" />
-            {{ t('Draft') }}
+            {{ t('Brouillon') }}
           </p>
         </li>
         <li v-if="reuse.archived">
           <p class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium">
             <RiLockLine class="size-3.5 mr-0.5" />
-            {{ t('Archived') }}
+            {{ t('Archivé') }}
           </p>
         </li>
       </ul>

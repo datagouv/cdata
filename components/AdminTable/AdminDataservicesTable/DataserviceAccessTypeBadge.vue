@@ -17,9 +17,9 @@ const { t } = useI18n()
 
 const label = computed(() => {
   return {
-    open: t('Open'),
-    open_with_account: t('Open with account'),
-    restricted: t('Restricted'),
+    open: t('Ouvert'),
+    open_with_account: t('Ouvert avec compte'),
+    restricted: t('Restreint'),
   }[props.dataservice.access_type]
 })
 

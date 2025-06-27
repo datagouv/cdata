@@ -8,7 +8,7 @@
       <ComboboxLabel
         class="fr-label"
       >
-        {{ t('Search for data') }}
+        {{ t('Rechercher des données') }}
       </ComboboxLabel>
       <RiSearch2Line
         class="absolute text-base top-3 left-2"
@@ -17,7 +17,7 @@
       />
       <ComboboxInput
         class="fr-input fr-col-12 !pl-8"
-        :placeholder="t('Search an organization on data.gouv.fr')"
+        :placeholder="t('Rechercher une organisation sur {platform}', { platform: config.public.title })"
         autocomplete="off"
         data-cy="search-input"
         name="q"
@@ -57,6 +57,7 @@ import { Combobox, ComboboxInput, ComboboxLabel, ComboboxOption, ComboboxOptions
 
 const { t } = useI18n()
 const { toast } = useToast()
+const config = useRuntimeConfig()
 const q = ref('')
 const { $api } = useNuxtApp()
 
@@ -72,8 +73,8 @@ async function fetchOptions() {
       link: option.page,
     }))
   }
-  catch (_error) {
-    toast.error(t('An error occurred while fetching the options.'))
+  catch {
+    toast.error(t(`Une erreur s'est produite lors de la mise à jour des options.`))
   }
 }
 

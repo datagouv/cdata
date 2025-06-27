@@ -1,7 +1,7 @@
 <template>
   <span
     v-if="title"
-    class="inline-flex fr-mb-0 align-items-baseline fr-text--xs"
+    class="inline-flex mb-0 items-baseline text-xs"
   >
     <Toggletip
       position="right"
@@ -10,85 +10,85 @@
     >
       <template #toggletip="{ close }">
         <div class="flex justify-between border-bottom">
-          <h5 class="fr-text--sm fr-my-0 fr-p-2v">{{ $t("Data schema") }}</h5>
+          <h5 class="fr-text--sm fr-my-0 fr-p-2v">{{ $t("Schéma de données") }}</h5>
           <button
             type="button"
-            :title="t('Close')"
+            :title="t('Fermer')"
             class="border-left close-button flex items-center justify-center"
             @click="close"
           >&times;</button>
         </div>
-        <div class="fr-p-3v">
+        <div class="p-3">
           <div v-if="validataStatus === 'ok'">
-            {{ t("This file is valid for the shema:") }} <component
+            {{ t("Ce fichier est valide pour le schéma :") }} <component
               :is="documentationUrl ? 'a' : 'span'"
               :href="documentationUrl"
               class="fr-link fr-text--sm"
             >{{ title }}</component>.
           </div>
           <div v-if="validataStatus === 'warnings'">
-            {{ t("This file is valid for the shema:") }} <component
+            {{ t("Ce fichier est valide pour le schéma :") }} <component
               :is="documentationUrl ? 'a' : 'span'"
               :href="documentationUrl"
               class="fr-link fr-text--sm"
-            >{{ title }}</component>. {{ t("But its compliance could be improved.") }}
+            >{{ title }}</component>. {{ t("Mais sa conformité peut être améliorée.") }}
           </div>
           <div v-if="validataStatus === 'ko'">
-            {{ t("This file indicates to follow the schema:") }} <component
+            {{ t("Ce fichier indique suivre le schéma :") }} <component
               :is="documentationUrl ? 'a' : 'span'"
               :href="documentationUrl"
               class="fr-link fr-text--sm"
-            >{{ title }}</component>. {{ t("But is not compliant.") }}
+            >{{ title }}</component>. {{ t("Mais n'est pas conforme.") }}
           </div>
 
           <div
             v-if="validataWarnings.length"
-            class="text-default-warning flex items-center fr-mt-4v"
+            class="text-default-warning flex items-center mt-4"
           >
-            <span class="fr-icon-alert-line fr-icon--sm fr-mr-1v" />
-            <span>{{ validataWarnings.length }} {{ t('advices') }}</span>
+            <span class="fr-icon-alert-line fr-icon--sm mr-1" />
+            <span>{{ validataWarnings.length }} {{ t('recommandations') }}</span>
           </div>
           <div
             v-if="validataStructureErrors.length"
-            class="text-default-warning flex items-center fr-mt-4v"
+            class="text-default-warning flex items-center mt-4"
           >
-            <span class="fr-icon-alert-line fr-icon--sm fr-mr-1v" />
-            <span>{{ validataStructureErrors.length }} {{ t('structure errors') }}</span>
+            <span class="fr-icon-alert-line fr-icon--sm mr-1" />
+            <span>{{ validataStructureErrors.length }} {{ t('erreurs de structures') }}</span>
           </div>
           <div
             v-if="validataBodyErrors.length"
-            class="text-default-warning flex items-center fr-mt-4v"
+            class="text-default-warning flex items-center mt-4"
           >
-            <span class="fr-icon-alert-line fr-icon--sm fr-mr-1v" />
-            <span>{{ validataBodyErrors.length }} {{ t('body errors') }}</span>
+            <span class="fr-icon-alert-line fr-icon--sm mr-1" />
+            <span>{{ validataBodyErrors.length }} {{ t('erreurs de contenus') }}</span>
           </div>
 
           <div
             v-if="validationUrl"
-            class="w-100 text-align-right fr-mt-5v"
+            class="w-full text-right mt-5"
             target="_blank"
           >
-            <a :href="validationUrl">{{ t('See validation report') }}</a>
+            <a :href="validationUrl">{{ t('Voir le rapport de validation') }}</a>
           </div>
         </div>
       </template>
     </Toggletip>
-    <span class="fr-mr-1v text-gray-medium">{{ t("Schema:") }}</span>
+    <span class="mr-1 text-gray-medium">{{ t("Schéma:") }}</span>
     <span class="flex items-center bg-danger-lightest rounded-sm">
       <span class="fr-tag fr-tag--sm">{{ title }}</span>
       <span
         v-if="validataStatus === 'warnings'"
         class="flex items-center padding-sm"
       >
-        <span class="fr-icon-alert-line fr-icon--sm fr-mr-1v" />
-        <span>{{ t("Invalid") }}</span>
+        <span class="fr-icon-alert-line fr-icon--sm mr-1" />
+        <span>{{ t("Invalide") }}</span>
       </span>
       <span
         v-if="validataStatus === 'ko'"
         class="flex items-center text-warning-dark padding-sm"
       >
-        <span class="fr-icon-error-line fr-icon--sm fr-mr-1v" />
-        <span>{{ t("Invalid") }}</span>
+        <span class="fr-icon-error-line fr-icon--sm mr-1" />
+        <span>{{ t("Invalide") }}</span>
       </span>
     </span>
   </span>

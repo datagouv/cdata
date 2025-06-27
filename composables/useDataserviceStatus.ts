@@ -6,19 +6,19 @@ export function useDataserviceStatus() {
   const getDataserviceStatus = (dataservice: Dataservice): { label: string, type: AdminBadgeType } => {
     if (dataservice.deleted_at) {
       return {
-        label: t('Deleted'),
+        label: t('Supprimé'),
         type: 'danger',
       }
     }
     else if (dataservice.archived_at) {
       return {
-        label: t('Archived'),
+        label: t('Archivé'),
         type: 'warning',
       }
     }
     else if (dataservice.private) {
       return {
-        label: t('Draft'),
+        label: t('Brouillon'),
         type: 'secondary',
       }
     }

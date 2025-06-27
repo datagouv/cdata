@@ -26,14 +26,14 @@
               </div>
               <div class="lg:!hidden flex flex-row items-start justify-end p-1 -mr-1 mt-1 order-3 flex-1 self-stretch z-[1000] gap-3">
                 <ModalWithButton
-                  :title="$t('Search')"
+                  :title="$t('Recherche')"
                   :show-title="false"
                   size="fullscreen"
                 >
                   <template #button="{ attrs, listeners }">
                     <button
                       class="flex-none w-10 h-10 text-primary inline-flex items-center justify-center"
-                      :title="$t('Search')"
+                      :title="$t('Recherche')"
                       v-bind="attrs"
                       v-on="listeners"
                     >
@@ -109,7 +109,7 @@
                               class="w-full"
                               size="lg"
                             >
-                              {{ $t('Logout') }}
+                              {{ $t('Se déconnecter') }}
                             </BrandedButton>
                           </li>
                         </ul>
@@ -126,7 +126,7 @@
                               :icon="RiLockLine"
                               class="w-full"
                             >
-                              {{ $t("Log in") }}
+                              {{ $t("Se connecter") }}
                             </BrandedButton>
                           </li>
                           <li>
@@ -138,7 +138,7 @@
                               class="w-full"
                               :icon="RiAccountCircleLine"
                             >
-                              {{ $t("Register") }}
+                              {{ $t("S'enregistrer") }}
                             </BrandedButton>
                           </li>
                         </ul>
@@ -146,7 +146,7 @@
                       <nav
                         class="fr-nav"
                         role="navigation"
-                        :aria-label="$t('Main menu')"
+                        :aria-label="$t('Menu principal')"
                       >
                         <ul class="fr-nav__list">
                           <li
@@ -203,7 +203,7 @@
                                 >
                                   <RiAddLine class="size-4 mr-1" />
                                   <span>
-                                    {{ $t('Publish on') }}
+                                    {{ $t('Publier sur') }}
                                     <SiteLogo />
                                   </span>
                                 </DisclosureButton>
@@ -241,7 +241,7 @@
             <div class="fr-header__service">
               <a
                 href="/"
-                title="Retourner à l'accueil de data.gouv.fr"
+                :title="$t(`Retourner à l'accueil de data.gouv.fr`)"
               >
                 <SiteLogo class="text-gray-logo text-xl tracking-wide" />
               </a>
@@ -281,7 +281,7 @@
                       color="primary-softer"
                       :icon="RiLogoutBoxRLine"
                     >
-                      {{ $t('Logout') }}
+                      {{ $t('Se déconnecter') }}
                     </BrandedButton>
                   </li>
                 </ul>
@@ -297,7 +297,7 @@
                     :external="true"
                     :icon="RiLockLine"
                   >
-                    {{ $t("Log in") }}
+                    {{ $t("Se connecter") }}
                   </BrandedButton>
                 </li>
                 <li>
@@ -307,7 +307,7 @@
                     :external="true"
                     :icon="RiAccountCircleLine"
                   >
-                    {{ $t("Register") }}
+                    {{ $t("S'enregistrer") }}
                   </BrandedButton>
                 </li>
               </ul>
@@ -333,7 +333,7 @@
         <nav
           class="fr-nav"
           role="navigation"
-          :aria-label="$t('Main menu')"
+          :aria-label="$t('Menu principal')"
         >
           <ul class="fr-nav__list">
             <li
@@ -389,7 +389,7 @@
                   >
                     <RiAddLine class="inline size-4 mr-1" />
                     <span>
-                      {{ $t('Publish on') }}
+                      {{ $t('Publier sur') }}
                       <SiteLogo />
                     </span>
                   </PopoverButton>
@@ -450,27 +450,27 @@ const router = useRouter()
 const searchInputId = useId()
 
 const menu = [
-  { label: t('Data'), link: '/datasets/' },
+  { label: t('Données'), link: '/datasets/' },
   { label: t('API'), link: '/dataservices/' },
-  { label: t('Reuses'), link: '/reuses/' },
-  { label: t('Organizations'), link: '/organizations/' },
-  { label: t('Getting started on {site}', { site: config.public.title }), items: [
-    { label: t('What is {site}?', { site: config.public.title }), link: '/pages/about/a-propos_data-gouv/' },
-    { label: t('How to publish data?'), link: '/pages/onboarding/producteurs/' },
-    { label: t('How to use data?'), link: '/pages/onboarding/reutilisateurs/' },
-    { label: t('{site} guides', { site: config.public.title }), link: config.public.guidesUrl, external: true },
+  { label: t('Réutilisations'), link: '/reuses/' },
+  { label: t('Organisations'), link: '/organizations/' },
+  { label: t('Démarrer sur {site}', { site: config.public.title }), items: [
+    { label: t(`Qu'est-ce que {site} ?`, { site: config.public.title }), link: '/pages/about/a-propos_data-gouv/' },
+    { label: t('Comment publier des données ?'), link: '/pages/onboarding/producteurs/' },
+    { label: t('Comment utiliser des données ?'), link: '/pages/onboarding/reutilisateurs/' },
+    { label: t('Les guides {site}', { site: config.public.title }), link: config.public.guidesUrl, external: true },
   ], external: true },
-  { label: t('News'), link: '/posts/' },
-  { label: t('Contact us'), link: '/support/' },
+  { label: t('Nouveautés'), link: '/posts/' },
+  { label: t('Nous écrire'), link: '/support/' },
 ]
 
 const publishMenu = [
-  { label: t('A dataset'), icon: RiDatabase2Line, link: '/admin/datasets/new/' },
-  { label: t('A dataservice'), icon: RiRobot2Line, link: '/admin/dataservices/new/' },
-  { label: t('A reuse'), icon: RiLineChartLine, link: '/admin/reuses/new/' },
-  { label: t('A harverster'), icon: RiServerLine, link: '/admin/harvesters/new/' },
-  { label: t('An organization'), icon: RiGovernmentLine, link: '/admin/organizations/new/' },
-  { label: t('A post'), icon: RiArticleLine, link: '/admin/posts/new/', show: isMeAdmin() },
+  { label: t('Un jeu de données'), icon: RiDatabase2Line, link: '/admin/datasets/new/' },
+  { label: t('Une API'), icon: RiRobot2Line, link: '/admin/dataservices/new/' },
+  { label: t('Une réutilisation'), icon: RiLineChartLine, link: '/admin/reuses/new/' },
+  { label: t('Un moissonneur'), icon: RiServerLine, link: '/admin/harvesters/new/' },
+  { label: t('Une organisation'), icon: RiGovernmentLine, link: '/admin/organizations/new/' },
+  { label: t('Un article'), icon: RiArticleLine, link: '/admin/posts/new/', show: isMeAdmin() },
 ]
 
 const filteredPublishMenu = computed(() => publishMenu.filter(item => !('show' in item) || item.show))

@@ -9,7 +9,7 @@
     />
     <p
       class="text-sm mb-0 flex items-center gap-0.5"
-      :aria-label="t('{n} views', reuse.metrics.views)"
+      :aria-label="t('{n} vues | {n} vue | {n} vues', reuse.metrics.views)"
     >
       <RiEyeLine
         aria-hidden="true"
@@ -18,7 +18,7 @@
     </p>
     <p
       class="text-sm mb-0 flex items-center gap-0.5"
-      :aria-label="t('{n} followers', reuse.metrics.followers)"
+      :aria-label="t('{n} abonnés | {n} abonné | {n} abonnés', reuse.metrics.followers)"
     >
       <RiStarLine
         aria-hidden="true"

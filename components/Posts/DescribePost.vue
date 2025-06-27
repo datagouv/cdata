@@ -16,7 +16,7 @@
       <div class="fr-fieldset__element">
         <InputGroup
           v-model="form.name"
-          :label="$t('Post title')"
+          :label="$t(`Titre de l'article`)"
           :required="true"
           :has-error="!!getFirstError('name')"
           :has-warning="!!getFirstWarning('name')"
@@ -27,7 +27,7 @@
       <div class="fr-fieldset__element">
         <InputGroup
           v-model="form.headline"
-          :label="$t('Headline')"
+          :label="$t('Entête')"
           :has-error="!!getFirstError('headline')"
           :has-warning="!!getFirstWarning('headline')"
           :error-text="getFirstError('headline')"
@@ -38,7 +38,7 @@
       <div class="fr-fieldset__element">
         <RadioButtons
           v-model="form.body_type"
-          :label="t('Content type')"
+          :label="t('Type de contenu')"
           class="!mb-0"
           :options="[
             { value: 'html', label: t('HTML') },
@@ -55,11 +55,11 @@
       </div>
       <div class="fr-fieldset__element">
         <UploadGroup
-          :label="$t('Cover')"
+          :label="$t('Couverture')"
           type="drop"
           accept="jpg,jpeg,png"
           :multiple="true"
-          :hint-text="$t('Max size: 4 Mb. Accepted formats: JPEG, JPG and PNG.')"
+          :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
           show-label
           required
           :has-error="!!getFirstError('image')"
@@ -89,7 +89,7 @@
         color="secondary"
         @click="$emit('previous')"
       >
-        {{ $t('Previous') }}
+        {{ $t('Précédent') }}
       </BrandedButton>
       <BrandedButton
         color="primary"

@@ -6,7 +6,7 @@
     color="warning"
     data-testid="edit-button"
   >
-    {{ t("Edit file") }}
+    {{ t("Éditer le fichier") }}
   </BrandedButton>
 </template>
 

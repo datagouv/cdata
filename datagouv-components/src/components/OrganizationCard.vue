@@ -28,7 +28,10 @@
           :type
         />
         <div>
-          <div class="text-gray-medium flex items-center text-sm gap-0.5" v-if="organization.metrics">
+          <div
+            v-if="organization.metrics"
+            class="text-gray-medium flex items-center text-sm gap-0.5"
+          >
             <RiDatabase2Line class="size-4 -mt-1" /> {{ organization.metrics.datasets }}
             <RiTerminalLine class="size-4 -mt-1 ml-1" /> {{ organization.metrics.dataservices }}
             <RiLineChartLine class="size-4 -mt-1 ml-1" /> {{ organization.metrics.reuses }}

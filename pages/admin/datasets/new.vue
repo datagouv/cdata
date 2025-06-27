@@ -27,7 +27,7 @@
     <DescribeDataset
       v-if="currentStep === 2"
       v-model="datasetForm"
-      :submit-label="t('Next')"
+      :submit-label="t('Suivant')"
       type="create"
       @previous="moveToStep(1)"
       @submit="datasetNext"
@@ -70,10 +70,10 @@ const DATASET_FILES_STATE = 'dataset-files'
 const LOADING_STATE = 'dataset-loading'
 
 const steps = computed(() => ([
-  t('Publish data on {site}', { site: config.public.title }),
-  t('Describe your dataset'),
-  t('Add files'),
-  t('Complete your publishing'),
+  t('Publier des données sur {site}', { site: config.public.title }),
+  t('Décrivez votre jeu de données'),
+  t('Ajoutez des fichiers'),
+  t('Finalisez la publication'),
 ]))
 
 const loading = useState(LOADING_STATE, () => false)

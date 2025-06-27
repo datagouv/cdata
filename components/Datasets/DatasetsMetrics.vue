@@ -17,11 +17,11 @@
             @click="metricsOpen = ! metricsOpen"
           >
             <div class="text-gray-title font-bold text-base/6">
-              {{ t('Statistics for the last 12 months') }}
+              {{ t('Statistiques des 12 derniers mois') }}
             </div>
             <div class="text-gray-medium font-normal text-sm/6">
-              <span v-if="new Date().getHours() > 7 - 1">{{ $t('Updated this morning') }}</span>
-              <span v-else>{{ $t('Updated yesterday') }}</span>
+              <span v-if="new Date().getHours() > 7 - 1">{{ $t('Mises à jour ce matin') }}</span>
+              <span v-else>{{ $t('Mises à jour hier') }}</span>
             </div>
 
             <span class="absolute inset-0 z-1" />
@@ -34,13 +34,13 @@
             :disabled="!downloadStatsUrl"
             :href="downloadStatsUrl || ''"
             rel="ugc nofollow noopener"
-            :title="t('Download file')"
+            :title="t('Télécharger le fichier')"
             download="stats.csv"
             :icon="RiDownloadLine"
             size="xs"
             class="relative z-2"
           >
-            {{ t('Download') }}
+            {{ t('Télécharger') }}
           </BrandedButton>
         </p>
         <div
@@ -55,21 +55,21 @@
       class="flex flex-col md:flex-row px-4 pb-4"
     >
       <StatBox
-        :title="t('Views')"
+        :title="t('Vues')"
         :data="metricsViews"
         type="line"
         :summary="metricsViewsTotal"
         class="md:w-1/3 mb-8 md:mb-0"
       />
       <StatBox
-        :title="t('Downloads')"
+        :title="t('Téléchargements')"
         :data="metricsDownloads"
         type="line"
         :summary="metricsDownloadsTotal"
         class="md:w-1/3 mb-8 md:mb-0"
       />
       <StatBox
-        :title="t('Reuses Visits')"
+        :title="t('Nombre de visites des réutilisations')"
         :data="metricsReuses"
         type="line"
         :summary="metricsReusesTotal"

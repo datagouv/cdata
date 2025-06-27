@@ -11,14 +11,14 @@
     >
       <SearchInput
         v-model="queryString"
-        :placeholder="organization ? t('Search a dataservice of the organization') : t('Ex. 2022 presidential election')"
+        :placeholder="organization ? t(`Recherche une API de l'organisation`) : t('Ex : élection présidentielle 2022')"
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
       <div class="col-span-12 md:col-span-4 lg:col-span-3">
-        <Sidemenu :button-text="t('Filters')">
+        <Sidemenu :button-text="t('Filtres')">
           <template #title>
-            {{ t('Filters') }}
+            {{ t('Filtres') }}
           </template>
           <div class="space-y-4">
             <SearchableSelect
@@ -26,8 +26,8 @@
               v-model="facets.organization"
               :options="organizations ? organizations.data : []"
               :suggest="suggestOrganizations"
-              :label="t('Organizations')"
-              :placeholder="t('All organizations')"
+              :label="t('Organisations')"
+              :placeholder="t('Toutes les organisations')"
               :get-option-id="(option) => option.id"
               :display-value="(option) => option.name"
               :filter="(option, query) => (option.name).toLocaleLowerCase().includes(query.toLocaleLowerCase())"
@@ -49,11 +49,11 @@
             </SearchableSelect>
             <SelectGroup
               v-model="facets.isRestricted"
-              :label="t('Access')"
+              :label="t('Accès')"
               :options="[
-                { value: undefined, label: t('All access terms') },
-                { value: false, label: t('Open APIs to everyone') },
-                { value: true, label: t('Restricted access APIs') },
+                { value: undefined, label: t(`Toutes les modalités d'accès`) },
+                { value: false, label: t('Les API ouvertes à tous') },
+                { value: true, label: t('Les API en accès restreint') },
               ]"
             />
             <div
@@ -68,7 +68,7 @@
                 type="button"
                 @click="resetFilters"
               >
-                {{ t('Reset filters') }}
+                {{ t('Réinitialiser les filtres') }}
               </BrandedButton>
             </div>
           </div>
@@ -87,14 +87,14 @@
             class="fr-col-auto my-0"
             role="status"
           >
-            {{ t("{count} results", searchResults.total) }}
+            {{ t("{count} résultats | {count} résultat | {count} résultats", searchResults.total) }}
           </p>
           <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
             <label
               for="sort-search"
               class="fr-col-auto text-sm m-0 mr-2"
             >
-              {{ t('Sort by:') }}
+              {{ t('Trier par :') }}
             </label>
             <div class="fr-col">
               <select
@@ -105,7 +105,7 @@
                 @change="currentPage = 1"
               >
                 <option value="">
-                  {{ t('Relevance') }}
+                  {{ t('Pertinence') }}
                 </option>
                 <option
                   v-for="{ value, label } in sortOptions"
@@ -169,7 +169,7 @@
       height="117"
     />
     <p class="mt-4 mb-5 font-bold text-lg">
-      {{ $t(`This organization hasn't published any dataservices yet.`) }}
+      {{ $t(`Cette organisation n'a pas encore publié d'APIs.`) }}
     </p>
   </div>
 </template>
@@ -331,7 +331,7 @@ const isFiltered = computed(() => {
   )
 })
 const sortOptions = [
-  { label: t('Creation date'), value: '-created' },
+  { label: t('Date de création'), value: '-created' },
 ]
 
 watchEffect(() => {
@@ -353,7 +353,7 @@ watchEffect(() => {
 
 watch(searchResultsStatus, () => {
   if (searchResultsStatus.value === 'error') {
-    toast.error(t(`The search request failed`))
+    toast.error(t(`La recherche a échoué`))
   }
 })
 </script>

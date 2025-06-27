@@ -403,9 +403,9 @@
               class="!mb-0"
               :label="t(`Type d'accès`)"
               :options="[
-                { value: 'open', label: t('Open') },
-                { value: 'open_with_account', label: t('Open with account') },
-                { value: 'restricted', label: t('Restricted') },
+                { value: 'open', label: t('Ouvert') },
+                { value: 'open_with_account', label: t('Ouvert avec compte') },
+                { value: 'restricted', label: t('Restreint') },
               ]"
             />
             <SimpleBanner
@@ -539,7 +539,7 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
   private: [],
 }, {
   title: [testNotAllowed(config.public.demoServer?.name)],
-  description: [minLength(200, t(`It's advised to have a {property} of at least {min} characters.`, { property: t('description'), min: 200 }))],
+  description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
 })
 
 onMounted(() => {

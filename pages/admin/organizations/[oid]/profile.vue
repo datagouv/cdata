@@ -1,11 +1,11 @@
 <template>
   <div class="fr-container--fluid">
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Profile') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Profil') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
     <h1 class="fr-h3 fr-mb-5v">
-      {{ t("Profile") }}
+      {{ t("Profil") }}
     </h1>
     <PaddedContainer
       v-if="organization"
@@ -24,7 +24,7 @@
             <span
               v-if="isOrganizationCertified(organization)"
               class="fr-icon-success-line fr-icon--lg text-datagouv"
-              :title="t('The identity of this public service is certified by {certifier}', { certifier: $config.public.title })"
+              :title="t(`L'identité de ce service public est certifiée par {certifier}`, { certifier: $config.public.title })"
               aria-hidden="true"
             />
             <span
@@ -48,7 +48,7 @@
             :icon="RiEyeLine"
             size="xs"
           >
-            {{ t('See the organization page') }}
+            {{ t(`Voir la page de l'organisation`) }}
           </BrandedButton>
         </div>
       </div>
@@ -57,9 +57,9 @@
     <TabLinks
       class="mb-5"
       :links="[
-        { href: localPath(organizationUrl), label: t('Profile') },
-        { href: localPath(`${organizationUrl}/contacts/`), label: t('Contact points') },
-        { href: localPath(`${organizationUrl}/activities/`), label: t('Activities') },
+        { href: localPath(organizationUrl), label: t('Profil') },
+        { href: localPath(`${organizationUrl}/contacts/`), label: t('Points de contact') },
+        { href: localPath(`${organizationUrl}/activities/`), label: t('Activités') },
       ]"
     />
 

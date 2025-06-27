@@ -14,19 +14,19 @@
           scope="col"
           class="w-44"
         >
-          {{ t("Status") }}
+          {{ t("Statut") }}
         </AdminTableTh>
         <AdminTableTh
           scope="col"
           class="w-44"
         >
-          {{ t("Number of comments") }}
+          {{ t("Nombre de commentaires") }}
         </AdminTableTh>
         <AdminTableTh
           scope="col"
           class="min-w-56"
         >
-          {{ t("Last comment") }}
+          {{ t("Dernier commentaire") }}
         </AdminTableTh>
         <AdminTableTh
           :sorted="sorted('created')"
@@ -34,7 +34,7 @@
           class="w-44"
           @sort="(direction: SortDirection) => $emit('sort', 'created', direction)"
         >
-          {{ t("Created at") }}
+          {{ t("Créé le") }}
         </AdminTableTh>
         <AdminTableTh
           :sorted="sorted('closed')"
@@ -42,7 +42,7 @@
           class="w-44"
           @sort="(direction: SortDirection) => $emit('sort', 'closed', direction)"
         >
-          {{ t("Closed at") }}
+          {{ t("Fermée le") }}
         </AdminTableTh>
         <AdminTableTh scope="col">
           {{ t("Actions") }}
@@ -96,7 +96,7 @@
           <div>
             <p>{{ formatDate(getLastComment(discussion).posted_on) }}</p>
             <p class="inline-flex items-center">
-              {{ t('by ') }}
+              {{ t('par ') }}
               <AvatarWithName
                 class="fr-ml-1v"
                 :user="getLastComment(discussion).posted_by"
@@ -196,20 +196,20 @@ function getLastComment(discussion: Thread): Comment {
 function getStatus(thread: Thread): { label: string, type: AdminBadgeType } {
   if (thread.closed) {
     return {
-      label: t('Closed'),
+      label: t('Clos'),
       type: 'secondary',
     }
   }
 
   if (thread.discussion.length === 1) {
     return {
-      label: t('New'),
+      label: t('Nouveau'),
       type: 'primary',
     }
   }
 
   return {
-    label: t('Responded'),
+    label: t('Répondu'),
     type: 'secondary',
   }
 }

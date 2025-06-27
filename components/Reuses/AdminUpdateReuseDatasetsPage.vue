@@ -10,7 +10,7 @@
         :disabled="!datasets.length"
         @click="submit"
       >
-        {{ t("Save") }}
+        {{ t("Sauvegarder") }}
       </BrandedButton>
     </div>
   </div>
@@ -42,7 +42,7 @@ const submit = async () => {
     }),
   })
 
-  toast.success(t('Reuse updated!'))
+  toast.success(t('Réutilisation mise à jour !'))
   window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
 }
 </script>

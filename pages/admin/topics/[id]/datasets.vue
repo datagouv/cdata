@@ -6,12 +6,12 @@
     >
       <div class="w-full flex-none md:flex-1">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ $t('{n} datasets', pageData.total) }}
+          {{ $t('{n} jeux de données', pageData.total) }}
         </h2>
       </div>
       <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
         <ModalWithButton
-          :title="$t('Add datasets')"
+          :title="$t('Ajouter des jeux de données')"
           size="xl"
         >
           <template #button="{ attrs, listeners }">
@@ -21,7 +21,7 @@
               v-bind="attrs"
               v-on="listeners"
             >
-              {{ $t('Add datasets') }}
+              {{ $t('Ajouter des jeux de données') }}
             </BrandedButton>
           </template>
 
@@ -37,7 +37,7 @@
                 :disabled="!datasets.length"
                 @click="save(close)"
               >
-                {{ $t("Save") }}
+                {{ $t("Sauvegarder") }}
               </BrandedButton>
             </div>
           </template>
@@ -59,7 +59,7 @@
               size="xs"
               @click="removeDataset(dataset)"
             >
-              {{ $t('Remove dataset') }}
+              {{ $t('Supprimer le jeu de données') }}
             </BrandedButton>
           </template>
         </AdminDatasetsTable>
@@ -102,7 +102,7 @@ const save = async (close: () => void) => {
     body: datasets.value,
   })
 
-  toast.success(t('Saved.'))
+  toast.success(t('Sauvegardé.'))
   close()
   datasets.value = []
   await refresh()
@@ -110,7 +110,7 @@ const save = async (close: () => void) => {
 const removeDataset = async (dataset: Dataset | DatasetV2) => {
   await $api(`/api/2/topics/${props.topic.id}/datasets/${dataset.id}/`, { method: 'DELETE' })
 
-  toast.success(t('Removed.'))
+  toast.success(t('Supprimé.'))
   await refresh()
 }
 </script>

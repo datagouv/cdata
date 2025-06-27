@@ -5,7 +5,7 @@
     :icon="RiEdit2Line"
     size="xs"
   >
-    {{ $t('Edit') }}
+    {{ $t('Modifier') }}
   </BrandedButton>
 </template>
 
@@ -33,7 +33,7 @@ const link = computed(() => {
     case 'datasets':
       return base
     default:
-      return throwOnNever(props.type as never, t('No other type defined'))
+      return throwOnNever(props.type as never, t('Aucun autre type défini'))
   }
 })
 </script>
