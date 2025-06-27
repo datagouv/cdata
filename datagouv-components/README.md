@@ -76,7 +76,7 @@ app.vueApp.use(datagouv, {
 
 Nuxt is responsible for building the JSON file to the correct `vue-i18n` JS format.
 
-2. If the user is not using Nuxt, it should provide the i18n object to the `datagouv` Vue plugin. The plugin will then merge the already built messages's files. Note @dev, the messages's files should be built with `npm run i18n` before publishing the package to NPM.
+2. If the user is not using Nuxt, it should provide the i18n object to the `datagouv` Vue plugin. The plugin will then merge the already built messages's files.
 
 ### `Supense`
 

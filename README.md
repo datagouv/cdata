@@ -11,15 +11,13 @@ There is two installations paths, one is working on some machine and one on anot
 ```bash
 npm install
 cd ./datagouv-components
-npm run i18n
 ```
 
 If this first option is not working on your local environment, try the second one (maybe delete and re-clone the repository to be sure)
 
 ```bash
 cd ./datagouv-components
-npm install 
-npm run i18n
+npm install
 
 cd ..
 npm install
