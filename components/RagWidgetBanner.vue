@@ -12,6 +12,7 @@
         <p>
           <span class="fr-badge fr-badge--green-menthe">BETA</span><i>Ce jeu de données a été traité par un système RAG afin de permettre une interaction basée sur l’analyse sémantique. Vous pouvez le tester ci-dessous !</i>
         </p>
+        <p>Pour tester ce module sur un ensemble plus large de données, <a href="/beta/searchAI">rendez-vous sur le moteur de recherche en version beta.</a></p>
         <h3 class="text-2xl">{{ infosRag.title }}</h3>
 
         <SearchInput
