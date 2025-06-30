@@ -10,8 +10,6 @@
           :to="link.href"
           class="group block rounded bg-none bg-transparent border border-transparent -m-px no-underline outline-none aria-current-page:border aria-current-page:border-primary aria-current-page:text-primary p-1"
           :aria-current="isCurrent(link.href) ? 'page': false"
-          data-breadcrumb-item
-          :data-breadcrumb-to="isCurrent(link.href) ? link.href : undefined"
         >
           <span class="rounded px-2">
             {{ link.label }}
