@@ -59,16 +59,18 @@
         />
       </div>
     </div>
-    <p
-      v-if="lastValue && lastMonth"
-      class="mt-1 mb-0 text-xs text-success-darkest"
-    >
-      <strong>
-        + {{ summarize(lastValue, 2) }}
-      </strong>
-      {{ t(" en ") }}
-      {{ formatDate(lastMonth, { dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }) }}
-    </p>
+    <template v-if="lastValue && lastMonth">
+      <p class="mt-1 mb-0 text-xs">
+        {{ $t('depuis juillet 2022') }}
+      </p>
+      <p class="mt-1 mb-0 text-xs text-success-darkest">
+        <strong>
+          + {{ summarize(lastValue, 2) }}
+        </strong>
+        {{ t(" en ") }}
+        {{ formatDate(lastMonth, { dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }) }}
+      </p>
+    </template>
   </div>
   <div
     v-else
