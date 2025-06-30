@@ -82,7 +82,7 @@
 
         <Divider>{{ $t('ou') }}</Divider>
 
-        <form>
+        <form :action="proconnectUrl">
           <div class="fr-connect-group flex flex-col items-center">
             <button class="fr-connect">
               <span class="fr-connect__login">{{ $t('Se connecter avec') }}</span>
@@ -156,4 +156,6 @@ const connect = async () => {
     loading.value = false
   }
 }
+
+const proconnectUrl = computed(() => `${config.public.apiBase}/api/1/proconnect/login/`)
 </script>
