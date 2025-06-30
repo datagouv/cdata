@@ -2,7 +2,7 @@
   <div>
     <div class="flex flex-wrap mb-6">
       <h2 class="text-sm w-full flex-none sm:flex-1 mb-0">
-        {{ $t('Statistiques des 12 derniers mois') }}
+        {{ $t('Statistiques à partir de juillet 2022') }}
       </h2>
       <div>
         <BrandedButton
