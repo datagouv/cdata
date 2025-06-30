@@ -1,6 +1,6 @@
 <template>
   <ModalWithButton
-    :title="t('Are you sure you want to delete this discussion?')"
+    :title="t('Êtes-vous sûr de vouloir supprimer cette discussion ?')"
     size="lg"
     form
     @submit.prevent="deleteThread"
@@ -15,7 +15,7 @@
         :loading
         v-on="listeners"
       >
-        {{ $t('Delete') }}
+        {{ $t('Supprimer') }}
       </BrandedButton>
     </template>
 
@@ -30,7 +30,7 @@
         {{ thread.discussion[0].content }}
       </ReadMore>
       <div class="mt-4 font-bold">
-        {{ $t('This action is irreversible. All comments in this discussion will also be deleted.') }}
+        {{ $t('Cette action est irréversible. Tous les commentaires de cette discussion seront aussi supprimés.') }}
       </div>
     </template>
 
@@ -42,7 +42,7 @@
           :loading
           @click="close"
         >
-          {{ t("Cancel") }}
+          {{ t("Annuler") }}
         </BrandedButton>
         <BrandedButton
           type="submit"
@@ -50,7 +50,7 @@
           size="xs"
           :loading
         >
-          {{ t("Delete discussion and comments") }}
+          {{ t("Supprimer la discussion et les commentaires") }}
         </BrandedButton>
       </div>
     </template>

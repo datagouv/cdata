@@ -36,7 +36,7 @@
             size="xs"
             target="blank"
           >
-            {{ $t("Explore data") }}
+            {{ $t("Explorer les données") }}
           </BrandedButton>
           <EditButton
             v-if="dataset.permissions.edit"
@@ -59,7 +59,7 @@
               size="sm"
               type="secondary"
             >
-              {{ $t('Deleted') }}
+              {{ $t('Supprimé') }}
             </AdminBadge>
             <AdminBadge
               v-if="dataset.private"
@@ -67,7 +67,7 @@
               size="sm"
               type="secondary"
             >
-              {{ $t('Draft') }}
+              {{ $t('Brouillon') }}
             </AdminBadge>
             <AdminBadge
               v-if="dataset.archived"
@@ -75,7 +75,7 @@
               size="sm"
               type="secondary"
             >
-              {{ $t('Archived') }}
+              {{ $t('Archivé') }}
             </AdminBadge>
           </div>
           <h1 class="text-2xl text-gray-title font-extrabold mb-6">
@@ -158,7 +158,7 @@
                 class="space-y-1"
               >
                 <dt class="text-sm text-gray-plain font-bold pb-0">
-                  {{ $t('License') }}
+                  {{ $t('Licence') }}
                 </dt>
                 <dd class="p-0 text-sm">
                   <License :license="dataset.license" />
@@ -167,7 +167,7 @@
 
               <div class="space-y-1">
                 <dt class="text-sm text-gray-plain font-bold pb-0">
-                  {{ $t('Last update') }}
+                  {{ $t('Dernière mise à jour') }}
                 </dt>
                 <dd class="p-0 text-sm">
                   {{ formatDate(dataset.last_update) }}

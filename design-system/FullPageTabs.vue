@@ -1,10 +1,10 @@
 <template>
   <FullPageTabs
     :links="[
-      { label: $t('Presentation'), href: '/design/' },
-      { label: $t('Datasets'), href: getOrganizationUrl('datasets'), count: 12 },
-      { label: $t('Dataservices'), href: getOrganizationUrl('dataservices') },
-      { label: $t('Reuses'), href: getOrganizationUrl('reuses'), count: 0 },
+      { label: $t('Présentation'), href: '/design/' },
+      { label: $t('Jeux de données'), href: getOrganizationUrl('datasets'), count: 12 },
+      { label: $t('API'), href: getOrganizationUrl('dataservices') },
+      { label: $t('Réutilisations'), href: getOrganizationUrl('reuses'), count: 0 },
       { label: $t('Information'), href: getOrganizationUrl('Information') },
     ]"
   />

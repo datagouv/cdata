@@ -1,11 +1,11 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Members') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Membres') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
     <h1 class="font-bold text-2xl mb-5">
-      {{ t("Members") }}
+      {{ t("Membres") }}
     </h1>
 
     <div
@@ -13,7 +13,7 @@
       class="mb-8"
     >
       <h2 class="text-sm font-bold uppercase mt-5 mb-5">
-        {{ t("{n} requests", { n: membershipRequests.length }) }}
+        {{ t("{n} demandes | {n} demande | {n} demandes", { n: membershipRequests.length }) }}
       </h2>
       <div class="space-y-8 max-w-6xl">
         <AdminMembershipRequest
@@ -33,7 +33,7 @@
     >
       <div class="flex-1">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ t("{n} members", { n: organization.members.length }) }}
+          {{ t("{n} membres | {n} membre | {n} membres", { n: organization.members.length }) }}
         </h2>
       </div>
       <div
@@ -41,7 +41,7 @@
         class="flex-none"
       >
         <ModalWithButton
-          :title="t('Add member to the organization')"
+          :title="t(`Ajouter un membre à l'organisation`)"
           size="lg"
         >
           <template #button="{ attrs, listeners }">
@@ -51,7 +51,7 @@
               v-bind="attrs"
               v-on="listeners"
             >
-              {{ t("Add member") }}
+              {{ t("Ajouter un membre") }}
             </BrandedButton>
           </template>
 
@@ -63,8 +63,8 @@
               <div>
                 <SearchableSelect
                   v-model="addForm.user"
-                  :label="$t('User')"
-                  :placeholder="$t('Search a user')"
+                  :label="$t('Utilisateur')"
+                  :placeholder="$t('Rechercher un utilisateur')"
                   class="mb-6"
                   :display-value="(user) => `${user.first_name} ${user.last_name}`"
                   :suggest="suggestUser"
@@ -91,7 +91,7 @@
               <SelectGroup
                 v-if="roles.length > 0"
                 v-model="addForm.role"
-                :label="t('Role of the member')"
+                :label="t('Rôle du membre')"
                 :options="rolesOptions"
               />
             </form>
@@ -105,7 +105,7 @@
                 :disabled="loading"
                 @click="close"
               >
-                {{ t("Cancel") }}
+                {{ t("Annuler") }}
               </BrandedButton>
               <BrandedButton
                 color="primary"
@@ -114,7 +114,7 @@
                 :form="addFormId"
                 :disabled="loading || !canSubmitNewMember"
               >
-                {{ t("Add to the organization") }}
+                {{ t("Ajouter à l'organisation") }}
               </BrandedButton>
             </div>
           </template>
@@ -129,25 +129,25 @@
         <thead>
           <tr>
             <AdminTableTh scope="col">
-              {{ t("Members") }}
+              {{ t("Membres") }}
             </AdminTableTh>
             <AdminTableTh
               scope="col"
               class="w-36"
             >
-              {{ t("Status") }}
+              {{ t("Statut") }}
             </AdminTableTh>
             <AdminTableTh
               scope="col"
               class="w-28"
             >
-              {{ t("Member since") }}
+              {{ t("Membre depuis") }}
             </AdminTableTh>
             <AdminTableTh
               scope="col"
               class="w-40"
             >
-              {{ t("Last connection") }}
+              {{ t("Dernière connexion") }}
             </AdminTableTh>
             <AdminTableTh scope="col">
               {{ t("Actions") }}
@@ -187,7 +187,7 @@
             <td>{{ formatDate(member.since) }}</td>
             <td>
               <span v-if="member.user.last_login_at">{{ formatFromNow(member.user.last_login_at) }}</span>
-              <span v-else>{{ t("No connection") }}</span>
+              <span v-else>{{ t("Aucune connexion") }}</span>
             </td>
             <td>
               <div class="flex items-center">
@@ -199,11 +199,11 @@
                   icon-only
                   keep-margins-even-without-borders
                 >
-                  {{ $t('See public page') }}
+                  {{ $t('Voir la page publique') }}
                 </BrandedButton>
                 <ModalWithButton
                   v-if="isOrgAdmin"
-                  :title="$t('Edit member')"
+                  :title="$t('Modifier le membre')"
                   size="lg"
                   @open="newRole = member.role"
                 >
@@ -217,7 +217,7 @@
                       v-bind="attrs"
                       v-on="listeners"
                     >
-                      {{ t("Edit") }}
+                      {{ t("Modifier") }}
                     </BrandedButton>
                   </template>
 
@@ -247,7 +247,7 @@
                         <SelectGroup
                           v-if="roles.length > 0"
                           v-model="newRole"
-                          :label="t('Role of the member')"
+                          :label="t('Rôle du membre')"
                           :options="rolesOptions"
                         />
                       </div>
@@ -256,14 +256,14 @@
                           type="submit"
                           :disabled="loading"
                         >
-                          {{ t("Validate") }}
+                          {{ t("Valider") }}
                         </BrandedButton>
                       </div>
                     </form>
                     <BannerAction
                       class="mt-4"
                       type="danger"
-                      :title="$t('Remove member from the organization')"
+                      :title="$t(`Retirer le membre de l'organisation`)"
                     >
                       {{ t("Attention, cette action ne peut pas être annulée.") }}
                       <template #button>
@@ -272,7 +272,7 @@
                           :icon="RiLogoutBoxRLine"
                           @click="removeMemberFromOrganization(member, close)"
                         >
-                          {{ t('Remove member') }}
+                          {{ t('Retirer le membre') }}
                         </BrandedButton>
                       </template>
                     </BannerAction>

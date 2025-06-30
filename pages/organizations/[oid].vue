@@ -11,10 +11,10 @@
             to="/"
             :external="true"
           >
-            {{ $t('Home') }}
+            {{ $t('Accueil') }}
           </BreadcrumbItem>
           <BreadcrumbItem to="/organizations">
-            {{ $t('Organizations') }}
+            {{ $t('Organisations') }}
           </BreadcrumbItem>
           <BreadcrumbItem>
             {{ organization.name }}
@@ -43,7 +43,7 @@
           class="fr-badge mb-2 flex gap-1 items-center"
         >
           <RiDeleteBinLine class="size-3.5" />
-          {{ $t('Deleted') }}
+          {{ $t('Supprimée') }}
         </p>
         <Placeholder
           :src="organization.logo_thumbnail"
@@ -68,11 +68,11 @@
       <FullPageTabs
         class="mt-12"
         :links="[
-          { label: $t('Presentation'), href: `/organizations/${route.params.oid}/` },
-          { label: $t('Datasets'), href: `/organizations/${route.params.oid}/datasets`, count: organization.metrics.datasets },
-          { label: $t('Dataservices'), href: `/organizations/${route.params.oid}/dataservices`, count: organization.metrics.dataservices },
-          { label: $t('Reuses'), href: `/organizations/${route.params.oid}/reuses`, count: organization.metrics.reuses },
-          { label: $t('Information'), href: `/organizations/${route.params.oid}/information` },
+          { label: $t('Présentation'), href: `/organizations/${route.params.oid}/` },
+          { label: $t('Jeux de données'), href: `/organizations/${route.params.oid}/datasets`, count: organization.metrics.datasets },
+          { label: $t('API'), href: `/organizations/${route.params.oid}/dataservices`, count: organization.metrics.dataservices },
+          { label: $t('Réutilisations'), href: `/organizations/${route.params.oid}/reuses`, count: organization.metrics.reuses },
+          { label: $t('Informations'), href: `/organizations/${route.params.oid}/information` },
         ]"
       />
       <div class="bg-white pt-5 pb-8 lg:pb-24">

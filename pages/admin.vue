@@ -3,7 +3,7 @@
     <div class="fr-col-12 fr-col-md-4 fr-col-lg-3 fr-col-xl-2">
       <nav
         class="fr-sidemenu !mx-0 !p-0 md:h-full"
-        :aria-label="t('Administration menu')"
+        :aria-label="t(`Menu d'administration`)"
       >
         <ClientOnly>
           <Disclosure
@@ -15,7 +15,7 @@
               class="fr-sidemenu__btn after:!mr-0"
               hidden
             >
-              {{ t('Open menu') }}
+              {{ t('Ouvrir le menu') }}
             </DisclosureButton>
             <DisclosurePanel>
               <AccordionGroup
@@ -50,7 +50,7 @@
         <div class="flex flex-wrap space-x-8">
           <div class="w-full flex-none md:flex-1 flex items-center space-x-2">
             <RiInformationLine class="size-6 -mt-0.5" />
-            <div>{{ t("You're on the new admin interface.") }}</div>
+            <div>{{ t("Vous êtes sur la nouvelle interface d’administration.") }}</div>
           </div>
           <div class="space-x-4">
             <a
@@ -58,7 +58,7 @@
               :href="config.public.betaAdminFeedbackUrl"
               target="_blank"
             >
-              {{ $t('Give your opinion') }}
+              {{ $t('Donnez votre avis') }}
             </a>
           </div>
         </div>
@@ -86,7 +86,6 @@ const route = useRoute()
 const localePath = useLocalePath()
 const localeRoute = useLocaleRoute()
 const me = useMe()
-const { locale } = useI18n()
 const config = useRuntimeConfig()
 
 useSeoMeta({ title: 'Admin' })

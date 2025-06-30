@@ -5,10 +5,10 @@
         to="/"
         :external="true"
       >
-        {{ $t('Home') }}
+        {{ $t('Accueil') }}
       </BreadcrumbItem>
       <BreadcrumbItem>
-        {{ $t('Organizations') }}
+        {{ $t('Organisations') }}
       </BreadcrumbItem>
     </Breadcrumb>
     <OrganizationListPage
@@ -32,7 +32,7 @@ import type { PaginatedArray } from '~/types/types'
 const { t } = useI18n()
 
 useSeoMeta({
-  title: t('Organizations'),
+  title: t('Organisations'),
 })
 const route = useRoute()
 const q = ref('')

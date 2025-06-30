@@ -3,8 +3,8 @@
     <PaddedContainer class="mb-6">
       <ActionCard
         actions-alignment="center"
-        :title="t('Join an Organization')"
-        :content="t(`An organization is an entity in which many users can collaborate. The published datasets on the organization's name can be edited by its members.`)"
+        :title="t('Rejoindre une organisation')"
+        :content="t(`Une organisation est une entité dans laquelle les utilisateurs peuvent collaborer. Les jeux de données publiés dans une organisation peuvent être édités par ses membres.`)"
         icon="/illustrations/organization.svg"
         :stretch-height="true"
       >
@@ -23,7 +23,7 @@
                     color="primary"
                     @click="$emit('start')"
                   >
-                    {{ t("Create an organization") }}
+                    {{ t("Créer une organisation") }}
                   </BrandedButton>
                 </div>
               </div>

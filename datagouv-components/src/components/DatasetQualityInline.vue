@@ -10,7 +10,7 @@
         </template>
       </Toggletip>
       <p class="my-0 mr-1 text-gray-medium text-sm">
-        {{ $t('Metadata :') }}
+        {{ $t('Métadonnées :') }}
       </p>
       <div class="fr-grid-row fr-grid-row--middle fr-mr-1v">
         <DatasetQualityScore :score="quality.score" />

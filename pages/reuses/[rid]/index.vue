@@ -14,7 +14,7 @@
           <dl class="p-0 space-y-5">
             <div>
               <dt class="font-bold text-sm pb-1">
-                {{ $t('Topic') }}
+                {{ $t('Thématique') }}
               </dt>
               <dd class="p-0 text-sm text-mention-grey">
                 {{ topic }}
@@ -30,7 +30,7 @@
             </div>
             <div>
               <dt class="font-bold text-sm pb-1">
-                {{ $t('Tags') }}
+                {{ $t('Mots clés') }}
               </dt>
               <dd class="flex flex-wrap gap-0.5 p-0 text-sm">
                 <span
@@ -44,13 +44,13 @@
                   v-if="!reuse.tags?.length"
                   class="text-mention-grey"
                 >
-                  {{ $t('No tags set') }}
+                  {{ $t('Aucun mot clé') }}
                 </span>
               </dd>
             </div>
             <div>
               <dt class="font-bold text-sm pb-1">
-                {{ $t('Last update') }}
+                {{ $t('Dernière mise à jour') }}
               </dt>
               <dd class="p-0 text-sm text-mention-grey">
                 {{ formatDate(reuse.last_modified) }}
@@ -58,7 +58,7 @@
             </div>
             <div>
               <dt class="font-bold text-sm pb-1">
-                {{ $t('Creation date') }}
+                {{ $t('Date de création') }}
               </dt>
               <dd class="p-0 text-sm text-mention-grey">
                 {{ formatDate(reuse.created_at) }}
@@ -66,7 +66,7 @@
             </div>
             <div>
               <StatBox
-                :title="$t('Views')"
+                :title="$t('Vues')"
                 :data="metricsViews"
                 size="sm"
                 type="line"
@@ -80,7 +80,7 @@
     </section>
     <section v-if="datasets">
       <h2 class="uppercase text-sm mb-2.5">
-        {{ $t('{n} associated datasets', { n: datasets.total }) }}
+        {{ $t('aucun jeu de données associé | {n} jeu de données associé | {n} jeux de données associés', { n: datasets.total }) }}
       </h2>
       <div
         class="grid gap-5"
@@ -110,7 +110,7 @@
         class="min-h-32"
       >
         <h2 class="uppercase text-sm mb-2.5">
-          {{ $t('{n} reuses from the same creator', { n: relatedReuses.length }) }}
+          {{ $t('{n} réutilisations du même créateur | {n} réutilisation du même créateur | {n} réutilisations du même créateur', { n: relatedReuses.length }) }}
         </h2>
         <div
           v-if="relatedReuses.length"
@@ -132,7 +132,7 @@
             height="104"
           />
           <p class="mt-4 mb-5 font-bold text-lg">
-            {{ $t('There are no other reuses from this creator.') }}
+            {{ $t(`Il n'y a pas d'autres réutilisations du même créateur.`) }}
           </p>
         </div>
       </LoadingBlock>

@@ -4,7 +4,7 @@
       v-if="post"
       :post="postForm"
       type="update"
-      :submit-label="t('Save')"
+      :submit-label="t('Sauvegarder')"
       @submit="save"
     />
   </div>
@@ -36,7 +36,7 @@ const save = async (form: { content: string }) => {
       }),
     })
 
-    toast.success(t('Post updated!'))
+    toast.success(t('Article mis à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
     refresh()
   }

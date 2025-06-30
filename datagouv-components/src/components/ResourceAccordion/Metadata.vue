@@ -31,8 +31,8 @@ const config = useComponentsConfig()
         <DescriptionTerm>
           {{ t('URL') }}
           <CopyButton
-            :label="$t('Copy URL')"
-            :copied-label="$t('URL copied!')"
+            :label="$t(`Copier l'URL`)"
+            :copied-label="$t('URL Copiée !')"
             :text="resource.url"
             :aria-describedby="resourceTitleId"
           />
@@ -49,10 +49,10 @@ const config = useComponentsConfig()
           </code>
         </DescriptionDetails>
         <DescriptionTerm>
-          {{ t('Stable URL') }}
+          {{ t('URL stable') }}
           <CopyButton
-            :label="$t('Copy stable URL')"
-            :copied-label="$t('Stable URL copied!')"
+            :label="$t(`Copier l'URL stable`)"
+            :copied-label="$t('URL stable copiée !')"
             :text="resource.latest"
             :aria-describedby="resourceTitleId"
           />
@@ -69,10 +69,10 @@ const config = useComponentsConfig()
           </code>
         </DescriptionDetails>
         <DescriptionTerm>
-          {{ t('Identifier') }}
+          {{ t('Identifiant') }}
           <CopyButton
-            :label="$t('Copy ID')"
-            :copied-label="$t('ID copied!')"
+            :label="$t(`Copier l'identifiant`)"
+            :copied-label="$t('ID copié !')"
             :text="resource.id"
             :aria-describedby="resourceTitleId"
           />
@@ -92,8 +92,8 @@ const config = useComponentsConfig()
           <DescriptionTerm>
             {{ resource.checksum.type }}
             <CopyButton
-              :label="$t('Copy checksum')"
-              :copied-label="$t('Checksum copied!')"
+              :label="$t('Copier la somme de contrôle')"
+              :copied-label="$t('Somme de contrôle copiée !')"
               :text="resource.checksum.value"
               :aria-describedby="resourceTitleId"
             />
@@ -112,18 +112,18 @@ const config = useComponentsConfig()
         </template>
       </DescriptionList>
       <DescriptionList style="flex-shrink: 0;">
-        <DescriptionTerm>{{ t('Created on') }}</DescriptionTerm>
+        <DescriptionTerm>{{ t('Créée le') }}</DescriptionTerm>
         <DescriptionDetails>
           {{ formatDate(resource.created_at) }}
         </DescriptionDetails>
-        <DescriptionTerm>{{ t('Modified on') }}</DescriptionTerm>
+        <DescriptionTerm>{{ t('Modifiée le') }}</DescriptionTerm>
         <DescriptionDetails>
           {{ formatDate(resource.last_modified) }}
         </DescriptionDetails>
       </DescriptionList>
       <DescriptionList style="flex-shrink: 0;">
         <template v-if="resource.filesize">
-          <DescriptionTerm>{{ t('Size') }}</DescriptionTerm>
+          <DescriptionTerm>{{ t('Taille') }}</DescriptionTerm>
           <DescriptionDetails>
             {{ filesize(resource.filesize) }}
           </DescriptionDetails>
@@ -135,7 +135,7 @@ const config = useComponentsConfig()
           </DescriptionDetails>
         </template>
         <template v-if="resource.mime">
-          <DescriptionTerm>{{ t('MIME Type') }}</DescriptionTerm>
+          <DescriptionTerm>{{ t('Type MIME') }}</DescriptionTerm>
           <DescriptionDetails>
             <code class="code text-overflow-ellipsis">{{ resource.mime }}</code>
           </DescriptionDetails>
@@ -146,8 +146,8 @@ const config = useComponentsConfig()
       <ExtraAccordion
         v-if="hasExtras"
         class="pt-6 mt-6 border-top border-gray-default"
-        :button-text="t('See extras')"
-        :title-text="t('Resource Extras')"
+        :button-text="t('Voir les extras')"
+        :title-text="t('Extras de la ressource')"
         title-level="h5"
         :extra="resource.extras"
       />

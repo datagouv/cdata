@@ -17,15 +17,15 @@
           size="xs"
           :icon="RiEyeLine"
         >
-          {{ t('See the reuse page') }}
+          {{ t('Voir la page publique de la réutilisation') }}
         </BrandedButton>
       </div>
 
       <TabLinks
         class="mb-5"
         :links="[
-          { href: getReuseAdminUrl(reuse), label: t('Metadata') },
-          { href: `${getReuseAdminUrl(reuse)}/datasets`, label: t('Associated datasets') },
+          { href: getReuseAdminUrl(reuse), label: t('Métadonnées') },
+          { href: `${getReuseAdminUrl(reuse)}/datasets`, label: t('Jeux de données associés') },
         ]"
       />
 
@@ -46,8 +46,6 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 
 const { t } = useI18n()
-
-const { currentOrganization } = useCurrentOwned()
 
 const route = useRoute()
 const url = computed(() => `/api/1/reuses/${route.params.id}`)

@@ -8,7 +8,7 @@
         class="fr-mr-1w size-4"
       />
       <NuxtLinkLocale
-        :to="to"
+        :to
         class="[[aria-current=page]]:-translate-y-0.5"
         :aria-current="route.fullPath === localeRoute(to)?.fullPath || isLastBreadcrumb ? 'page' : false"
       >

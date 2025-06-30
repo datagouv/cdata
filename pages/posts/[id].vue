@@ -35,13 +35,13 @@
         v-if="post.published"
         class="text-xs mb-0"
       >
-        {{ $t('Published the {date}', { date: formatDate(post.published) }) }}
+        {{ $t('Publié le {date}', { date: formatDate(post.published) }) }}
       </p>
       <p
         v-else
         class="text-xs mb-0"
       >
-        {{ $t('Not published yet') }}
+        {{ $t('Pas encore publié') }}
       </p>
       <p class="mt-4 mb-6">
         {{ post.headline }}
@@ -71,7 +71,7 @@
       />
     </template>
     <template v-else>
-      {{ $t('This post is not published yet !') }}
+      {{ $t(`Cet article n'est pas encore publié`) }}
     </template>
   </div>
 </template>

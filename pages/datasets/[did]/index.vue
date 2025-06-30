@@ -69,13 +69,13 @@
               class="h-20"
             />
             <p class="fr-text--bold fr-my-3v">
-              {{ $t(`No results for "{q}"`, { q: searchByResourceType[index].value }) }}
+              {{ $t(`Pas de résultats pour « {q} »`, { q: searchByResourceType[index].value }) }}
             </p>
             <BrandedButton
               color="primary"
               @click="searchByResourceType[index].value = ''"
             >
-              {{ $t('Reset filters') }}
+              {{ $t('Réinitialiser les filtres') }}
             </BrandedButton>
           </div>
         </div>

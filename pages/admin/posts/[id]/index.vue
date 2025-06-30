@@ -4,26 +4,26 @@
       v-if="post"
       :post="postForm"
       type="update"
-      :submit-label="t('Save')"
+      :submit-label="t('Sauvegarder')"
       @submit="save"
     >
       <div class="mt-5 space-y-5">
         <BannerAction
           type="warning"
-          :title="post.published ? $t('Unpublish the post') : $t('Publish the post')"
+          :title="post.published ? $t(`Dépublier l'article`) : $t(`'Publier l'article`)"
         >
           <template v-if="post.published">
-            {{ $t('The post will be hidden.') }}
+            {{ $t('Attention l’article ne sera plus visible.') }}
           </template>
           <template v-else>
-            {{ $t("Please note that the post will be visible to everyone once published.") }}
+            {{ $t("Attention l’article sera visible par tous une fois publié.") }}
           </template>
 
           <template #button>
             <BrandedButton
               @click="publishPost"
             >
-              {{ post.published ? $t('Unpublish') : $t('Publish') }}
+              {{ post.published ? $t('Dépublier') : $t('Publier') }}
             </BrandedButton>
           </template>
         </BannerAction>
@@ -66,7 +66,7 @@ const save = async (form: PostForm) => {
       })
     }
 
-    toast.success(t('Post updated!'))
+    toast.success(t('Article mis à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
     refresh()
   }

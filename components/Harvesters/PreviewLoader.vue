@@ -8,10 +8,10 @@
 
       <div class="w-full">
         <p class="font-bold mb-1">
-          {{ $t("Your harvester's preview is loading.") }}
+          {{ $t("La prévisualisation de votre moissonneur est en cours.") }}
         </p>
         <p class="m-0 text-xs/5">
-          {{ $t('This may take a few moments, thank you for your patience!') }}
+          {{ $t('Cela peut prendre quelques instants, merci de votre patience !') }}
         </p>
       </div>
     </SimpleBanner>

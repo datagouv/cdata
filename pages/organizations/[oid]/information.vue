@@ -50,7 +50,7 @@
     >
       <ClientOnly>
         <StatBox
-          :title="$t('Views')"
+          :title="$t('Vues')"
           :data="metricsDatasetsViews"
           type="line"
           :summary="metricsDatasetsViewsTotal"
@@ -62,13 +62,13 @@
           :summary="metricsDownloadsTotal"
         />
         <StatBox
-          :title="$t('Dataservices Visits')"
+          :title="$t('Nombre de visites des API')"
           :data="metricsDataservicesViews"
           type="line"
           :summary="metricsDataservicesViewsTotal"
         />
         <StatBox
-          :title="$t('Reuses Visits')"
+          :title="$t('Nombre de visites des réutilisations')"
           :data="metricsReuses"
           type="line"
           :summary="metricsReusesTotal"
@@ -109,7 +109,7 @@
             </div>
           </template>
           <p class="!mb-4">
-            {{ $t('Organization administrator will have to accept your request.') }}
+            {{ $t(`L'administrateur de l'organisation doit accepter votre demande.`) }}
           </p>
           <p class="flex items-center gap-2 !mb-4 text-sm">
             <Placeholder
@@ -128,8 +128,8 @@
           </p>
           <InputGroup
             v-model="reason"
-            :label="$t('Request reason')"
-            :placeholder="$t('Specify your role in the organization and why you want to join it.')"
+            :label="$t('Motif de la demande')"
+            :placeholder="$t(`Indiquer votre rôle dans l'organisation et pourquoi vous voulez la rejoindre.`)"
             type="textarea"
             :required="true"
           />
@@ -140,14 +140,14 @@
                 size="sm"
                 @click="close"
               >
-                {{ $t('Cancel') }}
+                {{ $t('Annuler') }}
               </BrandedButton>
               <BrandedButton
                 color="primary"
                 size="sm"
                 @click="sendRequest(reason, close)"
               >
-                {{ $t('Send your request') }}
+                {{ $t('Envoyer votre demande') }}
               </BrandedButton>
             </div>
           </template>
@@ -184,22 +184,22 @@
       </div>
     </SectionCollapse>
     <SectionCollapse
-      :title="$t('Technical information')"
-      :button-text="$t('See technical information')"
+      :title="$t('Informations techniques')"
+      :button-text="$t('Voir les informations techniques')"
     >
       <DescriptionList class="mb-2">
         <div>
-          <DescriptionListTerm>{{ $t('Latest update') }}</DescriptionListTerm>
+          <DescriptionListTerm>{{ $t('Dernière mise à jour') }}</DescriptionListTerm>
           <DescriptionListDetails>{{ formatDate(organization.last_modified) }}</DescriptionListDetails>
         </div>
         <div>
-          <DescriptionListTerm>{{ $t('ID') }}</DescriptionListTerm>
+          <DescriptionListTerm>{{ $t('Identifiant') }}</DescriptionListTerm>
           <DescriptionListDetails class="flex items-center gap-2">
             {{ organization.id }}
             <CopyButton
               class="!-mt-0.5"
-              :label="$t('Copy organization ID')"
-              :copied-label="$t('Organization ID copied')"
+              :label="$t(`Copier l'identifiant de l'organisation`)"
+              :copied-label="$t(`Identifiant de l'organisation copié !`)"
               :text="organization.id"
               :hide-label="true"
             />
@@ -208,7 +208,7 @@
       </DescriptionList>
       <DescriptionList>
         <div>
-          <DescriptionListTerm>{{ $t('Creation date') }}</DescriptionListTerm>
+          <DescriptionListTerm>{{ $t('Date de création') }}</DescriptionListTerm>
           <DescriptionListDetails>{{ formatDate(organization.created_at) }}</DescriptionListDetails>
         </div>
       </DescriptionList>
@@ -291,7 +291,7 @@ async function sendRequest(comment: string, closeModal: () => void) {
     closeModal()
   }
   catch {
-    toast.error(t('An error occured while sending your request'))
+    toast.error(t(`Une erreur est survenue pendant l'envoi de votre demande`))
   }
 }
 </script>

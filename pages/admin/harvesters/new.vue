@@ -31,7 +31,7 @@
           type="submit"
           color="primary"
         >
-          {{ $t("Next") }}
+          {{ $t("Suivant") }}
         </BrandedButton>
       </template>
     </DescribeHarvester>
@@ -66,9 +66,9 @@ const route = useRoute()
 const { $api } = useNuxtApp()
 
 const steps = computed(() => [
-  t('Describe your harvester'),
-  t('Preview your harvester'),
-  t('Complete your publishing'),
+  t('Décrire votre moissonneur'),
+  t('Prévisualiser votre moissonneur'),
+  t('Finalisez la publication'),
 ])
 
 const HARSVESTER_FORM_STATE = 'harvester-form'

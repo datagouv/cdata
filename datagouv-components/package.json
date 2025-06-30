@@ -18,8 +18,7 @@
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
     "css": "tailwindcss -i ./assets/main.css -o ./dist/components.css --minify --optimize",
-    "i18n": "intlify compile --source ./src/locales/**/*.json --output ./dist/locales",
-    "preversion": "npm run build-only && npm run css && npm run i18n",
+    "preversion": "npm run build-only && npm run css",
     "publish-stable": "npm publish --access public"
   },
   "dependencies": {

@@ -5,15 +5,15 @@
         to="/"
         :external="true"
       >
-        {{ $t('Home') }}
+        {{ $t('Accueil') }}
       </BreadcrumbItem>
       <BreadcrumbItem>
-        {{ $t('Dataservices') }}
+        {{ $t('API') }}
       </BreadcrumbItem>
     </Breadcrumb>
 
     <h1 class="!mb-2">
-      {{ $t('Dataservices') }}
+      {{ $t('API') }}
     </h1>
     <p
       v-if="site"
@@ -35,7 +35,7 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const { t } = useI18n()
 useSeoMeta({
-  title: t('Dataservices'),
+  title: t('API'),
 })
 
 const config = useRuntimeConfig()

@@ -27,12 +27,12 @@ export function getOrganizationTypes(): Array<{ type: OrganizationTypes | UserTy
   const { t } = useI18n()
   return [{
     type: PUBLIC_SERVICE,
-    label: t('Public service'),
+    label: t('Service public'),
     icon: RiBankLine,
   },
   {
     type: LOCAL_AUTHORITY,
-    label: t('Local authority'),
+    label: t('Collectivité territoriale'),
     icon: RiGovernmentLine,
   },
   {
@@ -42,17 +42,17 @@ export function getOrganizationTypes(): Array<{ type: OrganizationTypes | UserTy
   },
   {
     type: COMPANY,
-    label: t('Company'),
+    label: t('Entreprise'),
     icon: RiBuilding2Line,
   },
   {
     type: OTHER,
-    label: t('Other'),
+    label: t('Autre'),
     icon: null,
   },
   {
     type: USER,
-    label: t('User'),
+    label: t('Utilisateur'),
     icon: RiUserLine,
   }]
 }

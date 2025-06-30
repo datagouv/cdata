@@ -2,13 +2,13 @@
   <div>
     <Breadcrumb>
       <BreadcrumbItem to="/">
-        {{ $t('Home') }}
+        {{ $t('Accueil') }}
       </BreadcrumbItem>
       <BreadcrumbItem>
-        {{ $t('Community resources') }}
+        {{ $t('Ressources communautaires') }}
       </BreadcrumbItem>
       <BreadcrumbItem>
-        {{ $t('Publishing form') }}
+        {{ $t('Formulaire de publication') }}
       </BreadcrumbItem>
     </Breadcrumb>
 
@@ -21,12 +21,12 @@
       v-if="currentStep === 1"
       v-model="resourceForm"
       type="create-community"
-      :submit-label="t('Next')"
+      :submit-label="t('Suivant')"
       @submit="save"
     >
       <div class="flex justify-end">
         <BrandedButton type="submit">
-          {{ $t('Save') }}
+          {{ $t('Sauvegarder') }}
         </BrandedButton>
       </div>
     </DescribeResource>
@@ -52,8 +52,8 @@ const { t } = useI18n()
 const route = useRoute()
 
 const steps = computed(() => [
-  t('Describe your community resource'),
-  t('Complete your publishing'),
+  t('Décrivez votre ressource communautaire'),
+  t('Finalisez la publication'),
 ])
 
 const COMMUNITY_RESOURCE_FORM_STATE = 'community-resource-form'

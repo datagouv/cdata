@@ -5,7 +5,7 @@
   >
     <div class="flex justify-between items-center">
       <div class="font-bold uppercase text-sm/loose text-gray-title">
-        {{ $t('Respond') }}
+        {{ $t('Répondre') }}
       </div>
       <BrandedButton
         :icon="RiCloseLine"
@@ -13,25 +13,25 @@
         size="xs"
         @click="$emit('close')"
       >
-        {{ $t('Close') }}
+        {{ $t('Fermer') }}
       </BrandedButton>
     </div>
     <div class="flex flex-col w-full space-y-4">
       <ProducerSelect
         v-model="form.owned"
-        :label="t('Choose the identity with which you want to publish this message')"
+        :label="t(`Choisissez l'identité avec laquelle vous souhaitez publier ce message`)"
         :error-text="getFirstError('owned')"
         :warning-text="getFirstWarning('owned')"
       />
 
       <InputGroup
         v-model="form.comment"
-        :label="$t('Your message')"
+        :label="$t('Votre message')"
         type="textarea"
         :has-error="!!getFirstError('comment')"
         :has-warning="!!getFirstWarning('comment')"
         :error-text="getFirstError('comment')"
-        :placeholder="$t('Please remain courteous and constructive. Avoid sharing personal information.')"
+        :placeholder="$t('Merci de rester courtois et constructif. Eviter de communiquer des données personnelles.')"
       />
     </div>
 
@@ -44,7 +44,7 @@
         size="xs"
         @click="send(true)"
       >
-        {{ $t('Respond & Close') }}
+        {{ $t('Répondre & Clôturer') }}
       </BrandedButton>
       <BrandedButton
         type="submit"
@@ -52,7 +52,7 @@
         size="xs"
         :loading
       >
-        {{ t("Respond") }}
+        {{ t("Répondre") }}
       </BrandedButton>
     </div>
   </form>

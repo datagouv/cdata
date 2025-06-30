@@ -8,7 +8,7 @@
         class="fr-icon-warning-line"
         aria-hidden="true"
       />
-      {{ $t("The data structure of this file failed to load.") }}
+      {{ $t("La structure de données de ce fichier n'a pas pu être chargée.") }}
     </p>
   </div>
   <PreviewLoader v-else-if="loading" />
@@ -25,7 +25,7 @@
           class="fr-icon-warning-line"
           aria-hidden="true"
         />
-        {{ $t("No data structure found for this file.") }}
+        {{ $t("Aucune structure de données détectée pour ce fichier.") }}
       </p>
     </div>
     <template v-if="hasColumnInfo">

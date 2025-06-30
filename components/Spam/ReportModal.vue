@@ -1,6 +1,6 @@
 <template>
   <ModalWithButton
-    :title="reported ? $t('Thanks for having reported this content') : $t('Report this content')"
+    :title="reported ? $t(`Merci d'avoir signalé ce contenu`) : $t('Signaler ce contenu')"
     size="lg"
   >
     <template #button="{ attrs, listeners }">
@@ -12,13 +12,13 @@
         v-bind="attrs"
         v-on="listeners"
       >
-        {{ $t('Report') }}
+        {{ $t('Signalement') }}
       </BrandedButton>
     </template>
 
     <i18n-t
       v-if="reported"
-      keypath="The {site} team will review the content to determine if it violates {terms}. Thank you for your help."
+      keypath="L’équipe de {site} examinera le contenu pour déterminer si celui-ci enfreint {terms}. Merci pour votre aide."
       tag="p"
     >
       <template #site>
@@ -29,7 +29,7 @@
           to="/pages/legal/cgu/"
           external
         >
-          {{ $t("our terms of use") }}
+          {{ $t("nos modalités d'utilisation") }}
         </NuxtLinkLocale>
       </template>
     </i18n-t>
@@ -43,13 +43,13 @@
           to="/pages/legal/cgu/"
           external
         >
-          {{ $t("See our terms of use.") }}
+          {{ $t("Voir nos modalités d'utilisation.") }}
         </NuxtLinkLocale>
       </SimpleBanner>
 
       <SelectGroup
         v-model="form.reason"
-        :label="$t('Report reason')"
+        :label="$t('Raison du signalement')"
         :required="true"
         :has-error="!!getFirstError('reason')"
         :has-warning="!!getFirstWarning('reason')"
@@ -60,8 +60,8 @@
       <InputGroup
         v-model="form.message"
         type="textarea"
-        :label="$t('Your message')"
-        :placeholder="$t('Avoid sharing personal information.')"
+        :label="$t('Votre message')"
+        :placeholder="$t('Évitez de partager des informations personnelles.')"
         :has-error="!!getFirstError('message')"
         :has-warning="!!getFirstWarning('message')"
         :error-text="getFirstError('message')"
@@ -77,7 +77,7 @@
           color="primary"
           @click="close"
         >
-          {{ $t('Close') }}
+          {{ $t('Fermer') }}
         </BrandedButton>
         <BrandedButton
           v-if="! reported"
@@ -85,7 +85,7 @@
           :loading
           @click="close"
         >
-          {{ $t('Cancel') }}
+          {{ $t('Annuler') }}
         </BrandedButton>
         <BrandedButton
           v-if="! reported"
@@ -94,7 +94,7 @@
           :icon="RiFlagLine"
           @click="send"
         >
-          {{ $t('Report') }}
+          {{ $t('Signalement') }}
         </BrandedButton>
       </div>
     </template>

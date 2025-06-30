@@ -6,19 +6,19 @@ export function useDatasetStatus() {
   const getDatasetStatus = (dataset: Dataset | DatasetV2): { label: string, type: AdminBadgeType } => {
     if (dataset.deleted) {
       return {
-        label: t('Deleted'),
+        label: t('Supprimé'),
         type: 'danger',
       }
     }
     else if (dataset.archived) {
       return {
-        label: t('Archived'),
+        label: t('Archivé'),
         type: 'warning',
       }
     }
     else if (dataset.private) {
       return {
-        label: t('Draft'),
+        label: t('Brouillon'),
         type: 'secondary',
       }
     }

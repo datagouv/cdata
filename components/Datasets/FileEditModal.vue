@@ -19,7 +19,7 @@
         keep-margins-even-without-borders
         v-on="listeners"
       >
-        {{ $t("Edit file") }}
+        {{ $t("Éditer le fichier") }}
       </BrandedButton>
     </template>
 
@@ -51,14 +51,14 @@
             :form="formId"
             :loading
           >
-            {{ t('Validate') }}
+            {{ t('Valider') }}
           </BrandedButton>
           <BrandedButton
             color="secondary"
             :disabled="loading"
             @click="cancel(close)"
           >
-            {{ t('Cancel') }}
+            {{ t('Annuler') }}
           </BrandedButton>
         </div>
 
@@ -82,11 +82,11 @@
                   v-bind="attrs"
                   v-on="listeners"
                 >
-                  {{ $t('Delete') }}
+                  {{ $t('Supprimer') }}
                 </BrandedButton>
               </template>
               <p class="fr-text--bold">
-                {{ $t("This action can't be reverse.") }}
+                {{ $t("Cette action est irréversible.") }}
               </p>
               <template #footer>
                 <div

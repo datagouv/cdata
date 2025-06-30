@@ -11,10 +11,10 @@
             to="/"
             :external="true"
           >
-            {{ $t('Home') }}
+            {{ $t('Accueil') }}
           </BreadcrumbItem>
           <BreadcrumbItem to="/reuses">
-            {{ $t('Reuses') }}
+            {{ $t('Réutilisations') }}
           </BreadcrumbItem>
           <BreadcrumbItem>
             {{ reuse.title }}
@@ -31,7 +31,7 @@
               :new-tab="true"
               size="xs"
             >
-              {{ $t('See the reuse') }}
+              {{ $t('Voir la réutilisation') }}
             </BrandedButton>
           </div>
           <div class="flex gap-3 items-center">
@@ -62,7 +62,7 @@
                 size="sm"
                 type="secondary"
               >
-                {{ $t('Deleted') }}
+                {{ $t('Supprimé') }}
               </AdminBadge>
               <AdminBadge
                 v-if="reuse.private"
@@ -70,7 +70,7 @@
                 size="sm"
                 type="secondary"
               >
-                {{ $t('Draft') }}
+                {{ $t('Brouillon') }}
               </AdminBadge>
               <AdminBadge
                 v-if="reuse.archived"
@@ -78,7 +78,7 @@
                 size="sm"
                 type="secondary"
               >
-                {{ $t('Archived') }}
+                {{ $t('Archivé') }}
               </AdminBadge>
             </div>
             <div
@@ -134,7 +134,7 @@
                 :href="reuse.url"
                 :new-tab="true"
               >
-                {{ $t('See reuse') }}
+                {{ $t('Voir la réutilisation') }}
               </BrandedButton>
             </div>
           </div>

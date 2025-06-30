@@ -10,10 +10,10 @@
     :value="score"
   >
     <template v-if="score >= high">
-      {{ t('Good') }}
+      {{ t('Bon') }}
     </template>
     <template v-else>
-      {{ t('To improve') }}
+      {{ t('À améliorer') }}
     </template>({{ calculatedScore }})
   </meter>
 </template>
