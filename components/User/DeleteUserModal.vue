@@ -73,7 +73,7 @@ const loading = ref(false)
 async function deleteUser({ spam = false }) {
   loading.value = true
   try {
-    let deleteUserUrl = props.user.id === me.value.id ? '/api/1/me/' : `/api/1/users/${props.user.id}`
+    let deleteUserUrl = props.user.id === me.value.id ? '/api/1/me/' : `/api/1/users/${props.user.id}/`
     if (props.user.id !== me.value.id && spam) {
       deleteUserUrl += '?no_mail=true&delete_comments=true'
     }
