@@ -99,7 +99,7 @@
       </ContentLoader>
       <p
         v-else
-        class="font-bold text-[2rem] leading-none m-0"
+        class="font-extrabold text-[2rem] leading-none m-0"
       >
         {{ summarize(summary, 2) }}
       </p>
