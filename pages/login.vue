@@ -5,10 +5,7 @@
         {{ $t('Se connecter') }}
       </h1>
 
-      <form
-        class="space-y-6"
-        @submit.prevent="connect"
-      >
+      <div class="space-y-6">
         <SimpleBanner
           v-if="getAllErrorsInErrorFields(errors, '')"
           type="danger"
@@ -18,54 +15,59 @@
 
         <RequiredExplanation />
 
-        <div>
-          <InputGroup
-            v-model="email"
-            type="email"
-            :label="$t('Adresse email')"
-            :error-text="getAllErrorsInErrorFields(errors, 'email')"
-            :has-error="!! getAllErrorsInErrorFields(errors, 'email')"
-            class="w-full !mb-0"
-            required
-          />
-        </div>
+        <form
+          class="space-y-6"
+          @submit.prevent="connect"
+        >
+          <div>
+            <InputGroup
+              v-model="email"
+              type="email"
+              :label="$t('Adresse email')"
+              :error-text="getAllErrorsInErrorFields(errors, 'email')"
+              :has-error="!! getAllErrorsInErrorFields(errors, 'email')"
+              class="w-full !mb-0"
+              required
+            />
+          </div>
 
-        <div>
-          <InputGroup
-            v-model="password"
-            type="password"
-            :label="$t('Mot de passe')"
-            class="w-full !mb-0"
-            :error-text="getAllErrorsInErrorFields(errors, 'password')"
-            :has-error="!! getAllErrorsInErrorFields(errors, 'password')"
-            required
-          />
-        </div>
+          <div>
+            <InputGroup
+              v-model="password"
+              type="password"
+              :label="$t('Mot de passe')"
+              class="w-full !mb-0"
+              :error-text="getAllErrorsInErrorFields(errors, 'password')"
+              :has-error="!! getAllErrorsInErrorFields(errors, 'password')"
+              required
+            />
+          </div>
 
-        <div class="fr-checkbox-group fr-checkbox-group--sm">
-          <input
-            id="checkboxes-hint-el-sm-1"
-            v-model="rememberMe"
-            name="checkboxes-hint-el-sm-1"
-            type="checkbox"
-            aria-describedby="checkboxes-hint-el-sm-1-messages"
-          >
-          <label
-            class="fr-label"
-            for="checkboxes-hint-el-sm-1"
-          >
-            {{ $t('Se souvenir de moi') }}
-          </label>
-        </div>
+          <div class="fr-checkbox-group fr-checkbox-group--sm">
+            <input
+              id="checkboxes-hint-el-sm-1"
+              v-model="rememberMe"
+              name="checkboxes-hint-el-sm-1"
+              type="checkbox"
+              aria-describedby="checkboxes-hint-el-sm-1-messages"
+            >
+            <label
+              class="fr-label"
+              for="checkboxes-hint-el-sm-1"
+            >
+              {{ $t('Se souvenir de moi') }}
+            </label>
+          </div>
 
-        <div class="flex justify-center">
-          <BrandedButton
-            type="submit"
-            :loading="loading"
-          >
-            {{ $t('Se connecter') }}
-          </BrandedButton>
-        </div>
+          <div class="flex justify-center">
+            <BrandedButton
+              type="submit"
+              :loading="loading"
+            >
+              {{ $t('Se connecter') }}
+            </BrandedButton>
+          </div>
+        </form>
 
         <div class="text-center text-gray-plain text-sm">
           {{ $t('Mot de passe oublié ?') }} <NuxtLinkLocale to="/reset">
@@ -77,7 +79,25 @@
             {{ $t('Renvoyer les instructions') }}
           </NuxtLinkLocale>
         </div>
-      </form>
+
+        <Divider>{{ $t('ou') }}</Divider>
+
+        <form>
+          <div class="fr-connect-group flex flex-col items-center">
+            <button class="fr-connect">
+              <span class="fr-connect__login">{{ $t('Se connecter avec') }}</span>
+              <span class="fr-connect__brand">ProConnect</span>
+            </button>
+            <p>
+              <NuxtLink
+                :href="config.public.proconnect.homepage"
+                target="_blank"
+                rel="noopener"
+              >{{ $t(`Qu'est-ce que ProConnect ?`) }}</NuxtLink>
+            </p>
+          </div>
+        </form>
+      </div>
     </div>
     <div class="container bg-white max-w-xl p-6 border border-gray-lower flex flex-col sm:items-center">
       <p class="font-bold text-sm text-center">
@@ -98,6 +118,7 @@ const { $api } = useNuxtApp()
 const { t } = useI18n()
 const { toast } = useToast()
 const localePath = useLocalePath()
+const config = useRuntimeConfig()
 
 useSeoMeta({ title: t('Connexion') })
 

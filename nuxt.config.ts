@@ -99,6 +99,10 @@ export default defineNuxtConfig({
         url: '/pages/donnees-energie',
       },
 
+      proconnect: {
+        homepage: 'https://agentconnect.gouv.fr/',
+      },
+
       datasetPublishingGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
       datasetQualityGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
       dataSearchFeedbackFormUrl: 'https://tally.so/r/mDKv1N',
