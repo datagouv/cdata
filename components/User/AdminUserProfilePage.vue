@@ -200,6 +200,7 @@
           </div>
           <div class="fr-col-auto">
             <BrandedButton
+              v-if="config.public.changeEmailPage"
               color="secondary"
               size="xs"
               as="a"
@@ -208,6 +209,7 @@
             >
               {{ $t(`Changer d'adresse email`) }}
             </BrandedButton>
+            <ChangeEmailModal v-else />
           </div>
         </div>
       </div>
@@ -244,10 +246,7 @@
             >
               {{ $t('Changer de mot de passe') }}
             </BrandedButton>
-            <ChangePasswordModal
-              v-else
-              :user
-            />
+            <ChangePasswordModal v-else />
           </div>
         </div>
       </div>
@@ -272,6 +271,7 @@ import { Avatar, type User } from '@datagouv/components-next'
 import { RiDeleteBin6Line, RiEditLine, RiEyeLine, RiRecycleLine, RiSaveLine } from '@remixicon/vue'
 import DeleteUserModal from './DeleteUserModal.vue'
 import ChangePasswordModal from './ChangePasswordModal.vue'
+import ChangeEmailModal from './ChangeEmailModal.vue'
 import { uploadProfilePicture } from '~/api/users'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'

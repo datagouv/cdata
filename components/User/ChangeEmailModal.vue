@@ -1,6 +1,6 @@
 <template>
   <ModalWithButton
-    :title="$t('Changer de mot de passe')"
+    :title="$t(`Modifier l'adresse email`)"
     size="lg"
     form
     @submit.prevent="($el, close) => submit(close)"
@@ -14,7 +14,7 @@
         v-bind="attrs"
         v-on="listeners"
       >
-        {{ $t("Changer de mot de passe") }}
+        {{ $t("Modifier l'adresse email") }}
       </BrandedButton>
     </template>
 
@@ -28,27 +28,19 @@
 
       <div>
         <InputGroup
-          v-model="oldPassword"
-          type="password"
-          :label="$t('Mot de passe actuel')"
-          :error-text="getAllErrorsInErrorFields(errors, 'password')"
-          :has-error="!! getAllErrorsInErrorFields(errors, 'password')"
+          v-model="newEmail"
+          type="email"
+          :label="$t('Nouvelle adresse email')"
+          :error-text="getAllErrorsInErrorFields(errors, 'new_email')"
+          :has-error="!! getAllErrorsInErrorFields(errors, 'new_email')"
           required
         />
         <InputGroup
-          v-model="newPassword"
-          type="password"
-          :label="$t('Nouveau mot de passe')"
-          :error-text="getAllErrorsInErrorFields(errors, 'new_password')"
-          :has-error="!! getAllErrorsInErrorFields(errors, 'new_password')"
-          required
-        />
-        <InputGroup
-          v-model="confirmNewPassword"
-          type="password"
-          :label="$t('Confirmer le nouveau mot de passe')"
-          :error-text="getAllErrorsInErrorFields(errors, 'new_password_confirm')"
-          :has-error="!! getAllErrorsInErrorFields(errors, 'new_password_confirm')"
+          v-model="confirmNewEmail"
+          type="email"
+          :label="$t('Confirmer la nouvelle adresse email')"
+          :error-text="getAllErrorsInErrorFields(errors, 'new_email_confirm')"
+          :has-error="!! getAllErrorsInErrorFields(errors, 'new_email_confirm')"
           required
         />
       </div>
@@ -71,7 +63,7 @@
             color="primary"
             :disabled="loading"
           >
-            {{ $t("Changer de mot de passe") }}
+            {{ $t("Modifier l'adresse email") }}
           </BrandedButton>
         </div>
       </div>
@@ -91,30 +83,30 @@ const { t } = useI18n()
 const loading = ref(false)
 const errors = ref<FieldsErrors>({})
 
-const oldPassword = ref('')
-const newPassword = ref('')
-const confirmNewPassword = ref('')
+const newEmail = ref('')
+const confirmNewEmail = ref('')
 
 const submit = async (close: () => void) => {
   loading.value = true
   errors.value = {}
 
   try {
+    // Using change password endpoint to get a CSRF Token because change-email doesn't support JSON.
     const { response: { csrf_token } } = await $api<{ response: { csrf_token: string } }>('/fr/change/')
 
-    await $api('/fr/change/', {
+    await $api('/fr/change-email', {
       method: 'POST',
       body: {
-        password: oldPassword.value,
-        new_password: newPassword.value,
-        new_password_confirm: confirmNewPassword.value,
+        new_email: newEmail.value,
+        new_email_confirm: confirmNewEmail.value,
       },
       headers: {
         'X-CSRFToken': csrf_token,
       },
     })
+    console.log('done')
 
-    toast.success(t('Mot de passe modifié.'))
+    toast.success(t('Adresse email modifiée, veuillez valider le changement via le mail reçu.'))
     close()
   }
   catch (e) {
