@@ -99,12 +99,9 @@ const submit = async (close: () => void) => {
       body: {
         new_email: newEmail.value,
         new_email_confirm: confirmNewEmail.value,
-      },
-      headers: {
-        'X-CSRFToken': csrf_token,
+        csrf_token,
       },
     })
-    console.log('done')
 
     toast.success(t('Adresse email modifiée, veuillez valider le changement via le mail reçu.'))
     close()
