@@ -1,12 +1,12 @@
 <template>
   <p
-    v-if="'email' in user && user.email "
+    v-if="'email' in user && user.email"
     class="fr-m-0 fr-text--xs text-mention-grey f-italic inline-flex items-center"
   >
     <RiMailLine class="size-3" />
     <TextClamp
       class="fr-px-1v"
-      :text="user.email as string"
+      :text="(user.email as string)"
       :auto-resize="true"
       :max-lines="1"
     />

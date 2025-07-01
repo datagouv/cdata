@@ -60,7 +60,7 @@ export async function useFetch<DataT, ErrorT = never>(
           catch (e) {
             console.error(e)
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            message = t('The API returned an unexpected error')
+            message = t(`L'API a retourné une erreur inattendue`)
           }
 
           // TODO Toast outside Nuxt

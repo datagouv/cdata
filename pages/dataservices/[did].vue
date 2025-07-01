@@ -10,10 +10,10 @@
             to="/"
             :external="true"
           >
-            {{ $t('Home') }}
+            {{ $t('Accueil') }}
           </BreadcrumbItem>
           <BreadcrumbItem to="/dataservices">
-            {{ $t('Dataservices') }}
+            {{ $t('API') }}
           </BreadcrumbItem>
           <BreadcrumbItem>
             {{ dataservice.title }}
@@ -45,7 +45,7 @@
               size="sm"
               type="secondary"
             >
-              {{ $t('Deleted') }}
+              {{ $t('Supprimé') }}
             </AdminBadge>
             <AdminBadge
               v-if="dataservice.private"
@@ -53,7 +53,7 @@
               size="sm"
               type="secondary"
             >
-              {{ $t('Draft') }}
+              {{ $t('Brouillon') }}
             </AdminBadge>
             <AdminBadge
               v-if="dataservice.archived_at"
@@ -61,7 +61,7 @@
               size="sm"
               type="secondary"
             >
-              {{ $t('Archived') }}
+              {{ $t('Archivé') }}
             </AdminBadge>
           </div>
           <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
@@ -80,7 +80,7 @@
             <dl class="pl-0 w-full shrink-0 md:w-[384px] space-y-2.5">
               <div class="space-y-1">
                 <dt class="text-gray-plain font-bold">
-                  {{ $t('Producer') }}
+                  {{ $t('Producteur') }}
                 </dt>
                 <dd class="p-0">
                   <OrganizationOwner
@@ -114,7 +114,7 @@
 
               <div class="space-y-1">
                 <dt class="text-gray-plain font-bold">
-                  {{ $t('Last update') }}
+                  {{ $t('Dernière mise à jour') }}
                 </dt>
                 <dd class="p-0">
                   {{ formatDate(dataservice.metadata_modified_at) }}
@@ -223,7 +223,7 @@
             class="flex items-center justify-between"
           >
             <div class="text-datagouv-dark font-bold text-xl">
-              {{ $t('Access the API') }}
+              {{ $t(`Accéder à l'API`) }}
             </div>
             <BrandedButton
               color="primary"
@@ -232,7 +232,7 @@
               icon-right
               external
             >
-              {{ $t('Business documentation') }}
+              {{ $t('Documentation métier') }}
             </BrandedButton>
           </SimpleBanner>
           <SimpleBanner

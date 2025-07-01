@@ -17,41 +17,41 @@ const props = defineProps<{
 
 const { t } = useI18n()
 
-const status = computed< { label: string, type: AdminBadgeType }>(() => {
+const status = computed<{ label: string, type: AdminBadgeType }>(() => {
   switch (props.job.status) {
     case 'pending':
       return {
-        label: t('Pending'),
+        label: t('En attente'),
         type: 'secondary',
       }
     case 'initializing':
       return {
-        label: t('Initializing'),
+        label: t(`En cours d'initialisation`),
         type: 'primary',
       }
     case 'initialized':
       return {
-        label: t('Initialized'),
+        label: t('Initialisé'),
         type: 'secondary',
       }
     case 'processing':
       return {
-        label: t('Processing'),
+        label: t('En traitement'),
         type: 'primary',
       }
     case 'done':
       return {
-        label: t('Done'),
+        label: t('Terminé'),
         type: 'success',
       }
     case 'done-errors':
       return {
-        label: t('Done with errors'),
+        label: t('Terminé avec des erreurs'),
         type: 'warning',
       }
     case 'failed':
       return {
-        label: t('Failed'),
+        label: t('Échoué'),
         type: 'danger',
       }
     default:

@@ -11,10 +11,10 @@
         scope="col"
         @sort="(direction: SortDirection) => $emit('sort', 'title', direction)"
       >
-        {{ t("Resource title") }}
+        {{ t("Titre de la ressource") }}
       </AdminTableTh>
       <AdminTableTh class="w-44">
-        {{ t("Status") }}
+        {{ t("Statut") }}
       </AdminTableTh>
       <AdminTableTh class="w-14">
         {{ t("Format") }}
@@ -25,7 +25,7 @@
         scope="col"
         @sort="(direction: SortDirection) => $emit('sort', 'created_at_internal', direction)"
       >
-        {{ t("Created at") }}
+        {{ t("Créé le") }}
       </AdminTableTh>
       <AdminTableTh
         class="w-32"
@@ -33,7 +33,7 @@
         scope="col"
         @sort="(direction: SortDirection) => $emit('sort', 'last_modified_internal', direction)"
       >
-        {{ t("Modified at") }}
+        {{ t("Modifié le") }}
       </AdminTableTh>
       <AdminTableTh
         class="w-32"
@@ -128,19 +128,19 @@ function getStatus(communityResource: CommunityResource): { label: string, type:
   const checked = communityResource.extras && 'check:available' in communityResource.extras
   if (checked && communityResource.extras['check:available'] === false) {
     return {
-      label: t('Unavailable'),
+      label: t('Indisponible'),
       type: 'danger',
     }
   }
   else if (checked) {
     return {
-      label: t('Available'),
+      label: t('Disponible'),
       type: 'primary',
     }
   }
   else {
     return {
-      label: t('Not checked yet'),
+      label: t('Pas encore contrôlé'),
       type: 'secondary',
     }
   }
@@ -159,6 +159,6 @@ const updateResource = async (communityResource: CommunityResource, closeModal: 
     loading.value = false
   }
 
-  toast.success(t('Community resource updated!'))
+  toast.success(t('Ressource communautaire mise à jour !'))
 }
 </script>

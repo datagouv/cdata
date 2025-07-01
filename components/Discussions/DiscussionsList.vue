@@ -42,7 +42,7 @@
         class="flex flex-wrap justify-between items-center mb-5"
       >
         <h2 class="text-sm font-bold uppercase m-0 text-gray-title">
-          {{ t('{n} discussions', pageData.total) }}
+          {{ t('{n} discussions | {n} discussion | {n} discussions', pageData.total) }}
         </h2>
 
         <div>
@@ -52,7 +52,7 @@
             :icon="RiAddLine"
             @click="showDiscussionForm"
           >
-            {{ t("Start a new discussion") }}
+            {{ t("Démarrer une nouvelle discussion") }}
           </BrandedButton>
         </div>
       </div>
@@ -98,7 +98,7 @@
           class="h-20"
         />
         <p class="fr-text--bold fr-my-3v">
-          {{ t(`There is no discussion yet`) }}
+          {{ t(`Il n'y a pas encore de discussion`) }}
         </p>
       </div>
     </div>

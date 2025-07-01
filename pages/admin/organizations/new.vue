@@ -28,7 +28,7 @@
       v-if="currentStep === 2"
       v-model="organizationForm"
       type="create"
-      :submit-label="$t('Next')"
+      :submit-label="$t('Suivant')"
       :errors="errors"
       :loading
       @previous="moveToStep(1)"
@@ -58,9 +58,9 @@ const { organizations, currentOwnedId } = useCurrentOwned()
 const me = useMe()
 
 const steps = computed(() => ([
-  t('Create or join an organization on {site}', { site: config.public.title }),
-  t('Describe your organization'),
-  t('Finalize your organization'),
+  t('Créer ou rejoindre une organisation sur {site}', { site: config.public.title }),
+  t('Décrivez votre organisation'),
+  t('Finaliser votre organisation'),
 ]))
 
 const organizationForm = ref<NewOrganization>({
@@ -123,7 +123,7 @@ async function createOrganizationAndMoveToNextStep(logo_file: File | null) {
       newOrganization.value.logo_thumbnail = resp.image
     }
     catch {
-      errors.value.push(t('Failed to upload logo, you can upload it again in your management panel'))
+      errors.value.push(t(`Impossible de téléverser le logo, vous pouvez le téléverser à nouveau dans votre panneau d'administration`))
     }
     finally {
       loading.value = false

@@ -84,7 +84,7 @@
               v-if="!filteredAndGroupedOptions && query !== ''"
               class="relative cursor-default select-none px-4 py-2 text-gray-700"
             >
-              Nothing found.
+              {{ $t('Aucun résultat') }}
             </div>
 
             <div

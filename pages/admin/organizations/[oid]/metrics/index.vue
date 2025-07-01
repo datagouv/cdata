@@ -5,7 +5,7 @@
         color="secondary"
         :disabled="!downloadStatsUrl"
         :href="downloadStatsUrl || ''"
-        :title="$t('Download file')"
+        :title="$t('Télécharger le fichier')"
         download="stats.csv"
         :icon="RiDownloadLine"
         size="xs"

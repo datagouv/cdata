@@ -2,18 +2,18 @@
   <AdminTable>
     <thead>
       <AdminTableTh scope="col">
-        {{ t("Contact point name") }}
+        {{ t("Nom du point de contact") }}
       </AdminTableTh>
       <AdminTableTh class="w-44">
-        {{ t("Role") }}
+        {{ t("Rôle") }}
       </AdminTableTh>
       <AdminTableTh>
-        {{ t("Contact Email") }}
+        {{ t("E-mail du contact") }}
       </AdminTableTh>
       <AdminTableTh
         scope="col"
       >
-        {{ t("Contact Url") }}
+        {{ t("Url du point de contact") }}
       </AdminTableTh>
       <AdminTableTh
         class="w-32"
@@ -48,7 +48,7 @@
         </td>
         <td>
           <ModalWithButton
-            :title="$t('Edit the contact point')"
+            :title="$t('Éditer le point de contact')"
             size="lg"
             @open="newContactForm = contactPoint"
             @close="newContactForm = null"
@@ -59,12 +59,12 @@
                 :icon="RiPencilLine"
                 icon-only
                 size="xs"
-                :title="$t('Edit')"
+                :title="$t('Modifier')"
                 keep-margins-even-without-borders
                 v-bind="attrs"
                 v-on="listeners"
               >
-                {{ $t('Edit') }}
+                {{ $t('Modifier') }}
               </BrandedButton>
             </template>
             <form class="block space-y-4">
@@ -72,8 +72,8 @@
               <InputGroup
                 v-model="newContactForm.name"
                 required
-                :label="t('Name')"
-                placeholder="e.g. the service name"
+                :label="t('Nom')"
+                :placeholder="t('ex: le nom du service')"
                 :has-error="!!getFirstError('name')"
                 :error-text="getFirstError('name')"
                 @blur="touch('name')"
@@ -82,13 +82,13 @@
                 v-model="newContactForm.role"
                 :options
                 required
-                :label="t('Role')"
+                :label="t('Rôle')"
                 @blur="touch('role')"
               />
               <InputGroup
                 v-model="newContactForm.email"
                 type="email"
-                :label="t('Email')"
+                :label="t('E-mail')"
                 placeholder="contact@organization.org"
                 :has-error="!!getFirstError('email')"
                 :error-text="getFirstError('email')"
@@ -97,7 +97,7 @@
               <InputGroup
                 v-model="newContactForm.contact_form"
                 type="url"
-                :label="t('Link')"
+                :label="t('Lien')"
                 placeholder="https://..."
                 :has-error="!!getFirstError('contact_form')"
                 :error-text="getFirstError('contact_form')"
@@ -111,7 +111,7 @@
                   :loading
                   @click="updateContactPoint(close)"
                 >
-                  {{ $t('Save') }}
+                  {{ $t('Sauvegarder') }}
                 </BrandedButton>
               </div>
             </template>
@@ -151,8 +151,8 @@ const { form: newContactForm, getFirstError, touch, validate } = useForm({
 } as ContactPoint, {
   id: [required()],
   name: [required()],
-  email: [email(), requiredIfFalsy('contact_form', t(`An email is required if a link isn't provided`))],
-  contact_form: [url(), requiredIfFalsy('email', t(`A link is required if an email isn't provided`))],
+  email: [email(), requiredIfFalsy('contact_form', t(`Une adresse e-mail est requise si un lien n'est pas fourni`))],
+  contact_form: [url(), requiredIfFalsy('email', t(`Un lien est requis si une adresse e-mail n'est pas fournie`))],
   role: [required()],
 }, {})
 
@@ -187,6 +187,6 @@ async function updateContactPoint(closeModal: () => void) {
     loading.value = false
   }
 
-  toast.success(t('Contact point updated!'))
+  toast.success(t('Point de contact mis à jour!'))
 }
 </script>

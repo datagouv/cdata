@@ -223,22 +223,21 @@ export default defineNuxtConfig({
       {
         code: 'en',
         language: 'en',
-        file: 'en-US.json',
       },
       {
         code: 'es',
         language: 'es',
-        file: 'es-ES.json',
       },
       {
         code: 'fr',
         language: 'fr',
-        files: ['fr-FR.json', '../../node_modules/@datagouv/components-next/src/locales/fr.json'],
       },
     ],
     lazy: true,
-    strategy: 'prefix',
+    detectBrowserLanguage: false,
+    strategy: 'no_prefix',
     trailingSlash: true,
+    defaultLocale: 'fr',
   },
   image: {
     screens: {

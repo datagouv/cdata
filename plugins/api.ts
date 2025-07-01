@@ -74,7 +74,7 @@ export default defineNuxtPlugin({
           }
           catch (e) {
             console.error(e)
-            message = t('The API returned an unexpected error')
+            message = t(`L'API a retourné une erreur inattendue`)
           }
 
           toast.error(message)

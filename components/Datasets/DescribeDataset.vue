@@ -2,7 +2,7 @@
   <div class="flex">
     <Sidemenu
       class="w-5/12 hidden lg:block"
-      :button-text="$t('Help')"
+      :button-text="$t('Aide')"
       :on-right="true"
       :fixed="true"
     >
@@ -11,27 +11,27 @@
           class="fr-icon--sm fr-icon-question-line"
           aria-hidden="true"
         />
-        {{ $t('Help') }}
+        {{ $t('Aide') }}
       </template>
       <AccordionGroup :with-icon="true">
         <Accordion
           :id="nameDatasetAccordionId"
-          :title="$t('Naming your dataset')"
+          :title="$t('Nommer son jeu de données')"
           :state="accordionState('title')"
         >
           <p class="fr-m-0">
-            {{ $t("The title of your dataset should be as precise and specific as possible.") }} <br>
-            {{ $t("It should also correspond to the vocabulary used by users.") }} <br>
-            {{ $t("They often search for data in a search engine.") }}
+            {{ $t("Le titre de votre jeu de données doit être le plus précis et spécifique possible. ") }} <br>
+            {{ $t("Il doit également correspondre au vocabulaire employé par les utilisateurs.") }} <br>
+            {{ $t("Ces derniers recherchent les données le plus souvent dans un moteur de recherche.") }}
           </p>
         </Accordion>
         <Accordion
           :id="addAcronymAccordionId"
-          :title="$t('Add an acronym to the dataset')"
+          :title="$t('Ajouter un sigle au jeu de données')"
           :state="accordionState('acronym')"
         >
           <p class="fr-m-0">
-            {{ $t("You have the option to add an acronym to your dataset. The letters that make up this acronym do not need to be separated by periods.") }}
+            {{ $t("Vous avez la possibilité d’apposer un sigle à votre jeu de données. Les lettres qui composent ce sigle n’ont pas besoin d’être séparées par des points.") }}
           </p>
         </Accordion>
         <Accordion
@@ -41,40 +41,40 @@
         >
           <div class="prose prose-neutral m-0">
             <p class="m-0">
-              {{ $t(`The description of your dataset allows to obtain information about the content and structure of the published resources. You can provide:`) }}
+              {{ $t(`La description de votre jeu de données permet aux personnes qui le consultent d’obtenir des informations sur le contenu et la structure des ressources publiées, vous pouvez notamment renseigner :`) }}
             </p>
             <ul class="fr-mt-3v">
-              <li>{{ $t("A list of the files available ;") }}</li>
-              <li>{{ $t("A description of the file format ;") }}</li>
-              <li>{{ $t("The update frequency.") }}</li>
+              <li>{{ $t("La liste des fichiers mis à disposition ;") }}</li>
+              <li>{{ $t("La description du format des fichiers ;") }}</li>
+              <li>{{ $t("La fréquence de mise à jour.") }}</li>
             </ul>
             <ul class="fr-mt-3v">
-              <li>{{ $t("Motivations for creating the dataset ;") }}</li>
-              <li>{{ $t("The composition of the dataset ;") }}</li>
-              <li>{{ $t("The data collection process ;") }}</li>
-              <li>{{ $t("Data preprocessing ;") }}</li>
-              <li>{{ $t("Dataset dissemination ;") }}</li>
-              <li>{{ $t("Dataset maintenance ;") }}</li>
-              <li>{{ $t("Legal and ethical considerations.") }}</li>
+              <li>{{ $t("Les motivations pour la création du jeu de données ;") }}</li>
+              <li>{{ $t("La composition du jeu de données ;") }}</li>
+              <li>{{ $t("Le processus de collecte des données ;") }}</li>
+              <li>{{ $t("Le pré-traitement des données ;") }}</li>
+              <li>{{ $t("La diffusion du jeu de données ;") }}</li>
+              <li>{{ $t("La maintenance du jeu de données ;") }}</li>
+              <li>{{ $t("Les considérations légales et éthiques.") }}</li>
             </ul>
           </div>
         </Accordion>
         <Accordion
           :id="useTagsAccordionId"
-          :title="$t('Use tags')"
+          :title="$t('Mettre des mots-clés')"
           :state="accordionState('tags')"
         >
           <p class="fr-m-0">
-            {{ $t("Tags characterize your dataset. They are public and improve the dataset's search engine optimization during a user search.") }}
+            {{ $t("Les mots clés caractérisent votre jeu de données. Ils sont publics et apportent un meilleur référencement du jeu de données lors d’une recherche utilisateur.") }}
           </p>
         </Accordion>
         <Accordion
           :id="selectLicenseAccordionId"
-          :title="$t('Select a license')"
+          :title="$t('Sélectionner une licence')"
           :state="accordionState('license')"
         >
           <p class="fr-m-0">
-            {{ $t("Licenses define the rules for reuse. By choosing a reuse license, you ensure that the published dataset will be reused according to the usage conditions you have defined.") }}
+            {{ $t("Les licences définissent les règles de réutilisation. En choisissant une licence de réutilisation, vous vous assurez que le jeu de données publié sera réutilisé selon les conditions d’usage que vous avez définies.") }}
           </p>
         </Accordion>
         <Accordion
@@ -89,32 +89,32 @@
         </Accordion>
         <Accordion
           :id="chooseFrequencyAccordionId"
-          :title="$t('Choose the update frequency')"
+          :title="$t('Choisir la fréquence de mise à jour')"
           :state="accordionState('frequency')"
         >
           <p class="fr-m-0">
-            {{ $t("The update frequency corresponds to how often you plan to update the published data. This update frequency is only indicative.") }}
+            {{ $t("La fréquence de mise à jour correspond à la fréquence à laquelle vous prévoyez de mettre à jour les données publiées. Cette fréquence de mise à jour reste indicative.") }}
           </p>
         </Accordion>
         <Accordion
           :id="addTemporalCoverageAccordionId"
-          :title="$t('Provide the temporal coverage')"
+          :title="$t('Renseigner la couverture temporelle')"
           :state="accordionState('temporal_coverage')"
         >
           <p class="fr-m-0">
-            {{ $t("The temporal coverage indicates the time range of the published data.") }} <br>
-            {{ $t("For example : from 2012 to 2015.") }}
+            {{ $t("La couverture temporelle indique la portée dans le temps des données publiées.") }} <br>
+            {{ $t("Par exemple : de 2012 à 2015.") }}
           </p>
         </Accordion>
         <Accordion
           :id="addSpatialInformationAccordionId"
-          :title="$t('Complete the spatial information')"
+          :title="$t('Compléter les informations spatiales')"
           :state="accordionState('spatial_granularity')"
         >
           <!-- TODO add spatial zones too -->
           <p class="fr-m-0">
-            {{ $t("The spatial granularity indicates the finest geographical level of detail that your data can cover.") }} <br>
-            {{ $t("For example: at the department or municipality scale.") }}
+            {{ $t("La granularité spatiale indique le niveau de détail géographique le plus fin que peut couvrir vos données.") }} <br>
+            {{ $t("Par exemple : à l’échelle du département ou de la commune.") }}
           </p>
         </Accordion>
       </AccordionGroup>
@@ -134,10 +134,10 @@
           />
           <div class="w-full">
             <p class="font-bold mb-1">
-              {{ $t('What is a dataset?') }}
+              {{ $t('Qu’est-ce qu’un jeu de données ?') }}
             </p>
             <p class="m-0 text-xs/5">
-              {{ $t('On {site}, a dataset is a set of files.', { site: config.public.title }) }}
+              {{ $t('Sur {site} un jeu de données est un ensemble de fichiers.', { site: config.public.title }) }}
             </p>
           </div>
         </SimpleBanner>
@@ -154,12 +154,12 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Featured") }}
+              {{ $t("Mis en avant") }}
             </h2>
           </legend>
           <ToggleSwitch
             v-model="form.featured"
-            :label="$t('Feature')"
+            :label="$t('Mettre en avant')"
             @update:model-value="$emit('feature')"
           />
         </fieldset>
@@ -173,13 +173,13 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Producer") }}
+              {{ $t("Producteur") }}
             </h2>
           </legend>
           <div class="fr-fieldset__element">
             <ProducerSelect
               v-model="form.owned"
-              :label="t('Check the identity with which you want to publish')"
+              :label="t(`Vérifiez l'identité avec laquelle vous souhaitez publier`)"
               :required="true"
               :error-text="getFirstError('owned')"
               :warning-text="getFirstWarning('owned')"
@@ -228,7 +228,7 @@
           >
             <InputGroup
               v-model="form.acronym"
-              :label="$t('Acronym')"
+              :label="$t('Acronyme')"
             />
           </LinkedToAccordion>
           <LinkedToAccordion
@@ -342,7 +342,7 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-0">
-              {{ harvested ? t("Attributions et points de contacts") : t("Contact points") }}
+              {{ harvested ? t("Attributions et points de contacts") : t("Points de contact") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -386,7 +386,7 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Time") }}
+              {{ $t("Temps") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -397,8 +397,8 @@
             <SearchableSelect
               v-model="form.frequency"
               class="mb-3"
-              :label="$t('Update frequency')"
-              :placeholder="$t('Search a frequency…')"
+              :label="$t('Fréquence de mise à jour')"
+              :placeholder="$t('Recherchez une fréquence…')"
               :get-option-id="(frequency) => frequency.label"
               :display-value="(frequency) => frequency.label"
               :options="frequencies"
@@ -420,12 +420,12 @@
             @blur="touch('temporal_coverage')"
           >
             <p class="!mb-2">
-              {{ $t('Temporal coverage') }}
+              {{ $t('Couverture temporelle') }}
             </p>
             <div class="grid lg:grid-cols-2 gap-4">
               <InputGroup
                 v-model="form.temporal_coverage.start"
-                :label="$t('start')"
+                :label="$t('début')"
                 type="date"
                 :show-label-inside="true"
                 :has-error="!!getFirstError('temporal_coverage')"
@@ -434,7 +434,7 @@
               />
               <InputGroup
                 v-model="form.temporal_coverage.end"
-                :label="$t('end')"
+                :label="$t('fin')"
                 type="date"
                 :show-label-inside="true"
               />
@@ -469,8 +469,8 @@
                 <div>
                   <SearchableSelect
                     v-model="form.spatial_zones"
-                    :label="$t('Spatial coverage')"
-                    :placeholder="$t('Search a spatial coverage…')"
+                    :label="$t('Couverture spatiale')"
+                    :placeholder="$t('Rechercher une couverture spatiale…')"
                     :suggest="suggestSpatial"
                     :multiple="true"
                     class="!mb-0"
@@ -521,8 +521,8 @@
                 <SearchableSelect
                   v-model="form.spatial_granularity"
                   class="mb-3"
-                  :label="$t('Spatial granularity')"
-                  :placeholder="$t('Search a granularity…')"
+                  :label="$t('Granularité spatiale')"
+                  :placeholder="$t('Chercher une granularité…')"
                   :get-option-id="(granularity) => granularity.id"
                   :display-value="(granularity) => granularity.name"
                   :options="granularities"
@@ -554,7 +554,7 @@
             color="secondary"
             @click="$emit('previous')"
           >
-            {{ $t('Previous') }}
+            {{ $t('Précédent') }}
           </BrandedButton>
           <BrandedButton
             color="primary"
@@ -660,7 +660,7 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
   private: [],
 }, {
   title: [testNotAllowed(config.public.demoServer?.name)],
-  description: [minLength(200, t(`It's advised to have a {property} of at least {min} characters.`, { property: t('description'), min: 200 }))],
+  description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
   tags: [required(t('Adding tags helps improve the SEO of your data.'))],
   license: [required()],
   frequency: [(f) => {

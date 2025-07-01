@@ -1,11 +1,11 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Topics') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Thématiques') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
     <h1 class="fr-h3 fr-mb-5v">
-      {{ t("Topics") }}
+      {{ t("Thématiques") }}
     </h1>
     <div
       v-if="pageData"
@@ -13,7 +13,7 @@
     >
       <div class="fr-col">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ t('{n} topics', pageData.total) }}
+          {{ t('{n} thématiques', pageData.total) }}
         </h2>
       </div>
       <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
@@ -21,7 +21,7 @@
           v-model="q"
           type="search"
           :icon="RiSearchLine"
-          :placeholder="$t('Search')"
+          :placeholder="$t('Recherche')"
         />
       </div>
     </div>
@@ -32,16 +32,16 @@
           <thead>
             <tr>
               <AdminTableTh scope="col">
-                {{ t("Name") }}
+                {{ t("Nom") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Created at") }}
+                {{ t("Créé le") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Datasets") }}
+                {{ t("Jeux de données") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Reuses") }}
+                {{ t("Réutilisations") }}
               </AdminTableTh>
             </tr>
           </thead>
@@ -80,20 +80,20 @@
       />
       <template v-if="q">
         <p class="fr-text--bold fr-my-3v">
-          {{ t(`No results for "{q}"`, { q }) }}
+          {{ t(`Pas de résultats pour « {q} »`, { q }) }}
         </p>
         <BrandedButton
           color="primary"
           @click="q = qDebounced = ''"
         >
-          {{ $t('Reset filters') }}
+          {{ $t('Réinitialiser les filtres') }}
         </BrandedButton>
       </template>
       <p
         v-else
         class="fr-text--bold fr-my-3v"
       >
-        {{ t(`No topics`) }}
+        {{ t(`Aucune thématique`) }}
       </p>
     </div>
   </div>

@@ -31,7 +31,7 @@
           type="submit"
           color="primary"
         >
-          {{ $t("Next") }}
+          {{ $t("Suivant") }}
         </BrandedButton>
       </template>
     </DescribeDataservice>
@@ -72,9 +72,9 @@ const route = useRoute()
 const { $api } = useNuxtApp()
 
 const steps = computed(() => [
-  t('Describe your dataservice'),
-  t('Link datasets'),
-  t('Complete your publishing'),
+  t('Décrire votre API'),
+  t('Lier des jeux de données'),
+  t('Finalisez la publication'),
 ])
 
 const DATASERVICE_FORM_STATE = 'dataservice-form'

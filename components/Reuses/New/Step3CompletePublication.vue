@@ -11,10 +11,10 @@
         </div>
         <div class="fr-col">
           <p class="fr-m-0 fr-text--bold">
-            {{ $t('Your reuse is created!') }}
+            {{ $t('Votre réutilisation est créée !') }}
           </p>
           <p class="fr-m-0 fr-text--xs">
-            {{ $t('You can now publish it or save it as a draft.') }}
+            {{ $t('Vous pouvez maintenant le publier ou le sauvegarder en brouillon.') }}
           </p>
         </div>
       </div>
@@ -33,7 +33,7 @@
         :icon="RiLightbulbLine"
         new-tab
       >
-        {{ $t('Give us your feedback on the publishing form') }}
+        {{ $t('Donnez-nous votre avis sur le parcours de publication') }}
       </BrandedButton>
       <div class="fr-grid-row fr-grid-row--right">
         <BrandedButton
@@ -42,14 +42,14 @@
           :disabled="loading"
           @click="submit(true)"
         >
-          {{ $t("Save as draft") }}
+          {{ $t("Sauvegarder le brouillon") }}
         </BrandedButton>
         <BrandedButton
           :loading
           color="primary"
           @click="submit(false)"
         >
-          {{ $t("Publish the reuse") }}
+          {{ $t("Publier la réutilisation") }}
         </BrandedButton>
       </div>
     </div>

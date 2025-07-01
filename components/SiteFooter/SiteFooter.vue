@@ -15,11 +15,11 @@
             <div class="w-full !flex-none sm:!flex-1">
               <div>
                 <p class="font-extrabold text-2xl text-gray-title leading-8 mb-1">
-                  {{ $t("Subscribe to our newsletter") }}
+                  {{ $t("Abonnez-vous à notre lettre d'information") }}
                 </p>
                 <p class="mb-4">
                   {{
-                    $t("To stay up to date about {site} and open data news, subscribe to our newsletter and follow our events.",
+                    $t("Pour ne rien manquer de l’actualité de {site} et de l’open data, inscrivez-vous à notre infolettre et suivez nos événements.",
                        { site: config.public.title })
                   }}
                 </p>
@@ -27,18 +27,18 @@
               <div class="flex flex-wrap gap-4">
                 <BrandedButton
                   color="primary"
-                  :title="$t('Subscribe to our newsletter')"
+                  :title="$t(`Abonnez-vous à notre lettre d'information`)"
                   :href="config.public.newsletterSubscriptionUrl"
                   :external="true"
                 >
-                  {{ $t("Subscribe") }}
+                  {{ $t("Abonnez-vous") }}
                 </BrandedButton>
                 <BrandedButton
                   color="secondary"
-                  :title="$t('Subscribe to our newsletter')"
+                  :title="$t(`Abonnez-vous à notre lettre d'information`)"
                   href="/pages/webinaires/"
                 >
-                  {{ $t("See our next events") }}
+                  {{ $t("Voir nos prochains évènements") }}
                 </BrandedButton>
               </div>
             </div>
@@ -46,14 +46,14 @@
           <div class="w-full mt-6 pt-6 md:mt-0 md:pt-0 md:pl-[6%] md:w-1/3">
             <div class="flex flex-col items-start justify-between h-full">
               <p class="font-extrabold text-2xl leading-8 text-gray-title">
-                {{ $t("Follow us") }}
-                <br> {{ $t("on social media") }}
+                {{ $t("Suivez-nous") }}
+                <br> {{ $t("sur les réseaux sociaux") }}
               </p>
               <ul class="flex justify-between list-none m-0 p-0 *:p-0 -ml-4">
                 <li>
                   <a
                     class="link !inline-flex after:!content-none mx-2 !p-2 min-h-10 mh-10 mw-10 !no-underline hover:!bg-gray-some"
-                    :title="$t('Linkedin - new tab')"
+                    :title="$t('Linkedin - nouvel onglet')"
                     href="https://www.linkedin.com/company/data-gouv-fr/"
                     target="_blank"
                   >
@@ -63,7 +63,7 @@
                 <li>
                   <a
                     class="link !inline-flex after:!content-none mx-2 !p-2 min-h-10 mh-10 mw-10 !no-underline hover:!bg-gray-some"
-                    :title="$t('Mastodon - new tab')"
+                    :title="$t('Mastodon - nouvel onglet')"
                     href="https://social.numerique.gouv.fr/@datagouvfr"
                     target="_blank"
                   >
@@ -73,7 +73,7 @@
                 <li>
                   <a
                     class="link !inline-flex after:!content-none mx-2 !p-2 min-h-10 mh-10 mw-10 !no-underline hover:!bg-gray-some"
-                    :title="$t('Bluesky - new tab')"
+                    :title="$t('Bluesky - nouvel onglet')"
                     href="https://bsky.app/profile/datagouvfr.bsky.social"
                     target="_blank"
                   >
@@ -83,7 +83,7 @@
                 <li>
                   <a
                     class="link !inline-flex after:!content-none mx-2 !p-2 min-h-10 mh-10 mw-10 !no-underline hover:!bg-gray-some"
-                    :title="$t('Github - new tab')"
+                    :title="$t('Github - nouvel onglet')"
                     href="https://github.com/datagouv/data.gouv.fr"
                     target="_blank"
                   >
@@ -93,7 +93,7 @@
                 <li>
                   <NuxtLinkLocale
                     class="link !inline-flex after:!content-none mx-2 !p-2 min-h-10 mh-10 mw-10 !no-underline hover:!bg-gray-some"
-                    :title="$t('RSS - new tab')"
+                    :title="$t('RSS - nouvel onglet')"
                     to="datasets/recent.atom"
                     :external="true"
                     target="_blank"
@@ -116,7 +116,7 @@
           <div class="fr-grid-row fr-grid-row--start fr-grid-row--gutters">
             <div class="fr-col-12 fr-col-sm-3">
               <h3 class="fr-footer__top-cat !text-xs !leading-5 !mb-3">
-                {{ $t('Open Data') }}
+                {{ $t('Données ouvertes') }}
               </h3>
               <ul class="fr-footer__top-list">
                 <li
@@ -132,7 +132,7 @@
             </div>
             <div class="fr-col-12 fr-col-sm-3">
               <h3 class="fr-footer__top-cat !text-xs !leading-5 !mb-3">
-                {{ $t('Platform') }}
+                {{ $t('Plateforme') }}
               </h3>
               <ul class="fr-footer__top-list">
                 <li
@@ -151,7 +151,7 @@
             </div>
             <div class="fr-col-12 fr-col-sm-3">
               <h3 class="fr-footer__top-cat !text-xs !leading-5 !mb-3">
-                {{ $t('Resources') }}
+                {{ $t('Ressources') }}
               </h3>
               <ul class="fr-footer__top-list">
                 <li
@@ -167,7 +167,7 @@
             </div>
             <div class="fr-col-12 fr-col-sm-3">
               <h3 class="fr-footer__top-cat !text-xs !leading-5 !mb-3">
-                {{ $t('Development') }}
+                {{ $t('Développement') }}
               </h3>
               <ul class="fr-footer__top-list">
                 <li>
@@ -175,7 +175,7 @@
                     :href="config.public.apiDocExternalLink"
                     class="fr-footer__top-link"
                   >
-                    {{ $t("Portal's API") }}
+                    {{ $t("API du portail") }}
                   </a>
                 </li>
                 <li>
@@ -183,7 +183,7 @@
                     href="https://github.com/opendatateam/udata/"
                     class="fr-footer__top-link"
                   >
-                    {{ $t('Open-source engine: udata') }}
+                    {{ $t('Moteur open source : udata') }}
                   </a>
                 </li>
                 <li>
@@ -213,14 +213,14 @@
             <a
               class="fr-footer__brand-link"
               href="/"
-              :title="$t('Go back to website home - data.gouv.fr - République Française')"
+              :title="$t(`Retourner à l'accueil du site - data.gouv.fr - République Française`)"
             >
               <SiteLogo class="text-gray-logo text-xl tracking-wide" />
             </a>
           </div>
           <div class="fr-footer__content">
             <p class="fr-footer__content-desc">
-              {{ $t("A product of the Direction Interministérielle du Numérique(DINUM).") }}
+              {{ $t("Un produit de la Direction Interministérielle du Numérique (DINUM).") }}
             </p>
             <ul class="fr-footer__content-list">
               <li
@@ -256,7 +256,7 @@
           </ul>
           <div class="fr-footer__bottom-copy">
             <p>
-              {{ $t("Unless otherwise stated, all content of this site is availabe under") }}
+              {{ $t("Sauf indication contraire, tout le contenu de ce site est disponible sous la licence") }}
               <a
                 href="https://github.com/etalab/licence-ouverte/blob/master/LO.md#licence-ouverte-20open-licence-20"
                 target="_blank"
@@ -286,23 +286,23 @@ type Link = {
 }
 
 const openDataLinks: Array<Link> = [
-  { label: t('Topics'), link: '/pages/thematiques-a-la-une' },
-  { label: t('Reference Data'), link: '/pages/spd/reference' },
+  { label: t('Thématiques'), link: '/pages/thematiques-a-la-une' },
+  { label: t('Données de référence'), link: '/pages/spd/reference' },
 ]
 
 if (config.public.csvDatasetId) {
-  openDataLinks.push({ label: t('Data catalog'), link: `/datasets/${config.public.csvDatasetId}` })
+  openDataLinks.push({ label: t('Catalogue de données'), link: `/datasets/${config.public.csvDatasetId}` })
 }
 
-openDataLinks.push({ label: t('Follow data opening'), link: 'https://ouverture.data.gouv.fr' })
-openDataLinks.push({ label: t('Portal for European data'), link: 'https://data.europa.eu' })
+openDataLinks.push({ label: t(`'Suivre l'ouverture des données`), link: 'https://ouverture.data.gouv.fr' })
+openDataLinks.push({ label: t('Portail des données européennes'), link: 'https://data.europa.eu' })
 
 const platformLinks: Array<Link> = [
   { label: t('Guides'), link: config.public.guidesUrl, external: true },
-  { label: t('Roadmap and news'), link: '/pages/roadmap' },
-  { label: t('Contact us'), link: '/support' },
-  { label: t('Give us your feedback'), link: config.public.feedbackFormUrl, external: true },
-  { label: t('Statistics'), link: '/dashboard' },
+  { label: t('Feuille de route et nouveautés'), link: '/pages/roadmap' },
+  { label: t('Nous écrire'), link: '/support' },
+  { label: t('Donnez votre avis'), link: config.public.feedbackFormUrl, external: true },
+  { label: t('Statistiques'), link: '/dashboard' },
 ]
 
 const resourcesLinks: Array<Link> = [
@@ -314,11 +314,11 @@ const resourcesLinks: Array<Link> = [
 ]
 
 const footerLinks: Array<Link> = [
-  { label: t('Licenses'), link: '/pages/legal/licences' },
-  { label: t('Terms of use'), link: '/pages/legal/cgu' },
-  { label: t('Tracking and privacy'), link: '/pages/suivi' },
-  { label: t('Legal notice'), link: '/pages/legal/legal-notice' },
-  { label: t('Accessibility: partially compliant'), link: '/pages/legal/accessibility' },
+  { label: t('Licences'), link: '/pages/legal/licences' },
+  { label: t(`Modalités d'utilisation`), link: '/pages/legal/cgu' },
+  { label: t('Politique de confidentialité'), link: '/pages/suivi' },
+  { label: t('Mentions légales'), link: '/pages/legal/legal-notice' },
+  { label: t('Accessibilité : partiellement conforme'), link: '/pages/legal/accessibility' },
 ]
 
 const networkLinks: Array<Link> = [

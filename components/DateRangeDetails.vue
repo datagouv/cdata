@@ -3,8 +3,6 @@
 </template>
 
 <script setup lang="ts">
-import { env } from 'process'
-
 const props = defineProps<{
   range: { start: string, end: string | null }
 }>()

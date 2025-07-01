@@ -4,7 +4,7 @@
       type="warning"
       :icon="RiSendPlaneLine"
       class="mb-4"
-      :badge="$t('Pending transfer')"
+      :badge="$t('Transfert en attente')"
       :user="transfer.user || transfer.owner"
       :date="new Date(transfer.created)"
     >
@@ -25,7 +25,7 @@
           class="link"
         >{{ transfer.owner.name }}</a>
 
-        {{ $t('has requested a transfer') }}
+        {{ $t('a demandé un transfert') }}
       </template>
       <template #subtitle>
         <LinkToSubject
@@ -34,14 +34,14 @@
         />
         &nbsp;
         <template v-if="transfer.recipient.class === 'Organization'">
-          {{ $t('to your organization') }}
+          {{ $t('vers votre organization') }}
           <a
             :href="transfer.recipient.page"
             class="link"
           >{{ transfer.recipient.name }}</a>
         </template>
         <template v-if="transfer.recipient.class === 'User'">
-          {{ $t('to') }}
+          {{ $t('vers') }}
           <a
             :href="transfer.recipient.page"
             class="link"
@@ -62,7 +62,7 @@
           :aria-controls="modalId"
           @click="isOpen = true"
         >
-          {{ $t('Accept') }}
+          {{ $t('Accepter') }}
         </BrandedButton>
         <BrandedButton
           v-if="showActions"
@@ -72,14 +72,14 @@
           :aria-controls="modalId"
           @click="isOpen = true"
         >
-          {{ $t('Refuse') }}
+          {{ $t('Refuser') }}
         </BrandedButton>
       </template>
     </BannerNotif>
     <ModalClient
       :modal-id="modalId"
       :opened="isOpen"
-      :title="$t('Pending transfer')"
+      :title="$t('Transfert en attente')"
       size="lg"
       @close="isOpen = false"
     >
@@ -91,7 +91,7 @@
       <InputGroup
         v-model="comment"
         type="textarea"
-        :label="$t('Comment')"
+        :label="$t('Commentaire')"
       />
 
       <template #footer>
@@ -103,7 +103,7 @@
             :aria-controls="modalId"
             @click="respond('accept')"
           >
-            {{ $t('Accept') }}
+            {{ $t('Accepter') }}
           </BrandedButton>
           <BrandedButton
             color="danger"
@@ -112,7 +112,7 @@
             :aria-controls="modalId"
             @click="respond('refuse')"
           >
-            {{ $t('Refuse') }}
+            {{ $t('Refuser') }}
           </BrandedButton>
         </div>
       </template>

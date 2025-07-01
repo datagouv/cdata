@@ -65,7 +65,7 @@
           color="primary"
           :loading="isLoading"
         >
-          {{ t("Save") }}
+          {{ t("Sauvegarder") }}
         </BrandedButton>
       </template>
       <div class="mt-5 space-y-5">

@@ -18,7 +18,7 @@
             :rounded="true"
           />
           <p class="mx-2">
-            <span v-if="me.id === user.id">{{ $t('My Profil') }}</span>
+            <span v-if="me.id === user.id">{{ $t('Mon profil') }}</span>
             <span v-else>{{ user.first_name }} {{ user.last_name }}</span>
           </p>
         </template>
@@ -49,46 +49,46 @@
           <template v-if="user">
             <AdminSidebarLink
               :icon="RiDatabase2Line"
-              :label="$t('Datasets')"
+              :label="$t('Jeux de données')"
               :to="me.id === user.id ? `/admin/me/datasets` : `/admin/users/${user.id}/datasets`"
             />
             <AdminSidebarLink
               :icon="RiRobot2Line"
-              :label="$t('Dataservices')"
+              :label="$t('API')"
               :to="me.id === user.id ? `/admin/me/dataservices` : `/admin/users/${user.id}/dataservices`"
             />
             <AdminSidebarLink
               :icon="RiLineChartLine"
-              :label="$t('Reuses')"
+              :label="$t('Réutilisations')"
               :to="me.id === user.id ? `/admin/me/reuses` : `/admin/users/${user.id}/reuses`"
             />
             <AdminSidebarLink
               :icon="RiGitPullRequestLine"
-              :label="$t('Community Resources')"
+              :label="$t('Ressources communautaires')"
               :to="me.id === user.id ? `/admin/me/community-resources` : `/admin/users/${user.id}/community-resources`"
             />
             <AdminSidebarLink
               :icon="RiUserLine"
-              :label="$t('Profile')"
+              :label="$t('Profil')"
               :to="me.id === user.id ? `/admin/me/profile` : `/admin/users/${user.id}/profile`"
             />
           </template>
           <template v-else-if="organization">
             <AdminSidebarLink
               :icon="RiDatabase2Line"
-              :label="$t('Datasets')"
+              :label="$t('Jeux de données')"
               :to="`/admin/organizations/${organization.id}/datasets`"
               @click="$emit('click')"
             />
             <AdminSidebarLink
               :icon="RiRobot2Line"
-              :label="$t('Dataservices')"
+              :label="$t('API')"
               :to="`/admin/organizations/${organization.id}/dataservices`"
               @click="$emit('click')"
             />
             <AdminSidebarLink
               :icon="RiLineChartLine"
-              :label="$t('Reuses')"
+              :label="$t('Réutilisations')"
               :to="`/admin/organizations/${organization.id}/reuses`"
               @click="$emit('click')"
             />
@@ -100,31 +100,31 @@
             />
             <AdminSidebarLink
               :icon="RiParentLine"
-              :label="$t('Members')"
+              :label="$t('Membres')"
               :to="`/admin/organizations/${organization.id}/members`"
               @click="$emit('click')"
             />
             <AdminSidebarLink
               :icon="RiServerLine"
-              :label="$t('Harvesters')"
+              :label="$t('Moissonneurs')"
               :to="`/admin/organizations/${organization.id}/harvesters`"
               @click="$emit('click')"
             />
             <AdminSidebarLink
               :icon="RiGitPullRequestLine"
-              :label="$t('Community Resources')"
+              :label="$t('Ressources communautaires')"
               :to="`/admin/organizations/${organization.id}/community-resources`"
               @click="$emit('click')"
             />
             <AdminSidebarLink
               :icon="RiUserLine"
-              :label="$t('Profile')"
+              :label="$t('Profil')"
               :to="`/admin/organizations/${organization.id}/profile`"
               @click="$emit('click')"
             />
             <AdminSidebarLink
               :icon="RiBarChartBoxLine"
-              :label="$t('Metrics')"
+              :label="$t('Statistiques')"
               :to="`/admin/organizations/${organization.id}/metrics`"
               @click="$emit('click')"
             />
@@ -132,47 +132,47 @@
           <template v-else>
             <AdminSidebarLink
               :icon="RiDatabase2Line"
-              :label="$t('Datasets')"
+              :label="$t('Jeux de données')"
               to="/admin/site/datasets"
             />
             <AdminSidebarLink
               :icon="RiRobot2Line"
-              :label="$t('Dataservices')"
+              :label="$t('API')"
               to="/admin/site/dataservices"
             />
             <AdminSidebarLink
               :icon="RiLineChartLine"
-              :label="$t('Reuses')"
+              :label="$t('Réutilisations')"
               to="/admin/site/reuses"
             />
             <AdminSidebarLink
               :icon="RiBuilding2Line"
-              :label="$t('Organizations')"
+              :label="$t('Organisations')"
               to="/admin/site/organizations"
             />
             <AdminSidebarLink
               :icon="RiGroup3Line"
-              :label="$t('Users')"
+              :label="$t('Utilisateurs')"
               to="/admin/site/users"
             />
             <AdminSidebarLink
               :icon="RiServerLine"
-              :label="$t('Harvesters')"
+              :label="$t('Moissonneurs')"
               to="/admin/site/harvesters"
             />
             <AdminSidebarLink
               :icon="RiGitPullRequestLine"
-              :label="$t('Community Resources')"
+              :label="$t('Ressources communautaires')"
               to="/admin/site/community-resources"
             />
             <AdminSidebarLink
               :icon="RiBookShelfLine"
-              :label="$t('Topics')"
+              :label="$t('Thématiques')"
               to="/admin/site/topics"
             />
             <AdminSidebarLink
               :icon="RiArticleLine"
-              :label="$t('Posts')"
+              :label="$t('Articles')"
               to="/admin/site/posts"
             />
           </template>

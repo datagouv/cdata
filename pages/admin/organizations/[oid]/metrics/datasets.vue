@@ -5,6 +5,7 @@
         color="secondary"
         :disabled="!downloadStatsUrl"
         :href="downloadStatsUrl || ''"
+        :external="true"
         download="stats.csv"
         :icon="RiDownloadLine"
         size="xs"

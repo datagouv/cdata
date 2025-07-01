@@ -31,7 +31,7 @@
         disabled
         hidden
       >
-        {{ $t("Select an option") }}
+        {{ $t("Sélectionner une option") }}
       </option>
       <option
         v-for="option in options"

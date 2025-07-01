@@ -1,7 +1,7 @@
 <template>
   <div class="pb-14">
     <h2 class="!text-sm !mb-2.5">
-      {{ $t('Organization description') }}
+      {{ $t(`Description de l'organisation`) }}
     </h2>
     <MarkdownViewer
       :content="organization.description"

@@ -10,7 +10,7 @@
       v-if="thread.closed"
       class="border-l-2 pl-2.5 border-gray-default text-xs/loose"
     >
-      {{ $t('Discussion closed by ') }}
+      {{ $t('Discussion close par ') }}
       <span class="inline-flex items-center space-x-1 text-mention-grey">
         <Placeholder
           v-if="thread.closed_by_organization"
@@ -39,7 +39,7 @@
           {{ thread.closed_by.first_name }} {{ thread.closed_by.last_name }}
         </NuxtLink>
       </span>
-      {{ $t('the {date}', { date: formatDate(thread.closed) }) }}
+      {{ $t('le {date}', { date: formatDate(thread.closed) }) }}
     </div>
     <template v-if="!thread.closed || openDiscussionIfClosed">
       <template
@@ -77,8 +77,8 @@
         size="xs"
         @click="openDiscussionIfClosed = !openDiscussionIfClosed"
       >
-        <span v-if="openDiscussionIfClosed">{{ $t('Hide discussion') }}</span>
-        <span v-else>{{ $t('See discussion') }}</span>
+        <span v-if="openDiscussionIfClosed">{{ $t('Cacher la discussion') }}</span>
+        <span v-else>{{ $t('Voir la discussion') }}</span>
       </BrandedButton>
       <BrandedButton
         v-else-if="!showRespondForm"
@@ -86,7 +86,7 @@
         size="xs"
         @click="showRespondFormIfConnected"
       >
-        {{ $t('Respond') }}
+        {{ $t('Répondre') }}
       </BrandedButton>
     </footer>
   </div>

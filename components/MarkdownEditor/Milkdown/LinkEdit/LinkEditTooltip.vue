@@ -9,7 +9,7 @@
       v-model="updatedLink"
       class="flex-1"
       type="url"
-      :placeholder="t('Paste link…')"
+      :placeholder="t('Collez un lien…')"
       @keydown.enter.stop.prevent="onConfirmEdit"
       @keydown="onCancel"
     >
@@ -19,7 +19,7 @@
       :class="{ hidden: updatedLink.length === 0 }"
       @click.stop.prevent="onConfirmEdit"
     >
-      {{ t("Confirm ⏎") }}
+      {{ t("Confirmer ⏎") }}
     </button>
   </EditorTooltip>
 </template>

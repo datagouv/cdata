@@ -2,7 +2,7 @@ import { useI18n } from 'vue-i18n'
 
 export const filesize = (val: number) => {
   const { t } = useI18n()
-  const suffix = t('B')
+  const suffix = t('O')
   const units = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']
   for (const unit of units) {
     if (Math.abs(val) < 1024.0) {

@@ -5,7 +5,7 @@
   >
     <InputGroup
       v-model="form.name"
-      :label="$t('Name')"
+      :label="$t('Nom')"
       :required="true"
       :spellcheck="false"
     />
@@ -23,7 +23,7 @@
 
     <div class="flex justify-end">
       <BrandedButton type="submit">
-        {{ $t('Save') }}
+        {{ $t('Sauvegarder') }}
       </BrandedButton>
     </div>
   </form>
@@ -64,7 +64,7 @@ const save = async () => {
     })
 
     emit('refresh')
-    toast.success(t('Saved.'))
+    toast.success(t('Sauvegardé.'))
   }
 }
 </script>

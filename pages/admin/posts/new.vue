@@ -24,14 +24,14 @@
       v-if="currentStep === 1"
       :post="postForm"
       type="create"
-      :submit-label="t('Next')"
+      :submit-label="t('Suivant')"
       @submit="postNext"
     />
     <PostContentForm
       v-if="currentStep === 2"
       :post="postForm"
       type="create"
-      :submit-label="t('Save')"
+      :submit-label="t('Sauvegarder')"
       @submit="save"
     />
     <div class="h-64" />
@@ -53,8 +53,8 @@ const { $api, $fileApi } = useNuxtApp()
 const me = useMe()
 
 const steps = computed(() => [
-  t('Describe your post'),
-  t('Content'),
+  t('Décrivez votre article'),
+  t('Contenu'),
 ])
 
 const POST_FORM_STATE = 'post-form'

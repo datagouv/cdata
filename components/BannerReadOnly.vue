@@ -3,7 +3,7 @@
     v-if="config.public.readOnlyMode"
     type="warning"
   >
-    {{ $t('Due to security reasons, the creation of new content is currently disabled.') }}
+    {{ $t('Pour des raisons de sécurité, la création de nouveaux contenus est actuellement désactivée.') }}
   </BannerSticky>
 </template>
 

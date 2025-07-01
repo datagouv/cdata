@@ -6,12 +6,12 @@
     >
       <div class="w-full flex-none md:flex-1">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ $t('{n} reuses', pageData.total) }}
+          {{ $t('{n} réutilisations | {n} réutilisation | {n} réutilisations', pageData.total) }}
         </h2>
       </div>
       <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
         <ModalWithButton
-          :title="$t('Add reuses')"
+          :title="$t('Ajouter des réutilisations')"
           size="xl"
         >
           <template #button="{ attrs, listeners }">
@@ -21,7 +21,7 @@
               v-bind="attrs"
               v-on="listeners"
             >
-              {{ $t('Add reuses') }}
+              {{ $t('Ajouter des réutilisations') }}
             </BrandedButton>
           </template>
 
@@ -37,7 +37,7 @@
                 :disabled="!reuses.length"
                 @click="save(close)"
               >
-                {{ $t("Save") }}
+                {{ $t("Sauvegarder") }}
               </BrandedButton>
             </div>
           </template>
@@ -59,7 +59,7 @@
               size="xs"
               @click="removeReuse(reuse)"
             >
-              {{ $t('Remove reuse') }}
+              {{ $t('Supprimer la réutilisation') }}
             </BrandedButton>
           </template>
         </AdminReusesTable>
@@ -103,7 +103,7 @@ const save = async (close: () => void) => {
     body: reuses.value,
   })
 
-  toast.success(t('Saved.'))
+  toast.success(t('Sauvegardé.'))
   close()
   reuses.value = []
   await refresh()
@@ -111,7 +111,7 @@ const save = async (close: () => void) => {
 const removeReuse = async (reuse: Reuse) => {
   await $api(`/api/2/topics/${props.topic.id}/reuses/${reuse.id}/`, { method: 'DELETE' })
 
-  toast.success(t('Removed.'))
+  toast.success(t('Supprimé.'))
   await refresh()
 }
 </script>

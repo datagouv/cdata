@@ -7,7 +7,7 @@
           <p>{{ $t("The page you're looking for cannot be found.") }}</p>
         </template>
         <template v-else>
-          <h1>{{ $t('Error') }}</h1>
+          <h1>{{ $t('Erreur') }}</h1>
           <p>{{ $t('Something did not work as expected.') }}</p>
 
           <p v-if="error">
@@ -19,7 +19,7 @@
             class="fr-link fr-reset-link"
             href="/"
           >
-            {{ $t('Home') }}
+            {{ $t('Accueil') }}
           </a>
         </p>
       </div>
