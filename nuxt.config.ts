@@ -225,8 +225,10 @@ export default defineNuxtConfig({
       },
     ],
     lazy: true,
-    strategy: 'prefix',
+    detectBrowserLanguage: false,
+    strategy: 'no_prefix',
     trailingSlash: true,
+    defaultLocale: 'fr',
   },
   image: {
     screens: {
