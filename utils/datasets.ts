@@ -134,7 +134,8 @@ export function resourceToForm(resource: Resource | CommunityResource, schemas: 
 export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resource | CommunityResource {
   let schema = null as Schema | null
   if (form.schema) {
-    schema = form.schema
+    const latestVersion = form.schema.versions[form.schema.versions.length - 1]
+    schema = { name: form.schema.name, url: latestVersion.schema_url, version: latestVersion.version_name }
   }
   else if (form.schema_url) {
     schema = { name: null, url: form.schema_url, version: null }
