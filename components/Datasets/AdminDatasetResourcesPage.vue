@@ -158,7 +158,7 @@
               </AdminBadge>
             </td>
             <td>
-              {{ resource.type }}
+              {{ getResourceLabel(resource.type) }}
             </td>
             <td>
               {{ resource.format }}
@@ -193,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Pagination, useFormatDate, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
+import { getResourceLabel, BrandedButton, Pagination, useFormatDate, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { RiArrowDownLine, RiArrowUpLine, RiCheckLine, RiDraggable } from '@remixicon/vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
