@@ -137,7 +137,7 @@
                         >
                           <li>
                             <BrandedButton
-                              href="/login"
+                              :href="{ path: '/login', query: { next: route.fullPath } }"
                               color="primary-softer"
                               size="lg"
                               :icon="RiLockLine"
@@ -310,7 +310,7 @@
                 <li>
                   <BrandedButton
                     color="primary-softer"
-                    href="/login"
+                    :href="{ path: '/login', query: { next: route.fullPath } }"
                     :icon="RiLockLine"
                   >
                     {{ $t("Log in") }}
@@ -461,7 +461,7 @@ const localePath = useLocalePath()
 const me = useMaybeMe()
 const currentRoute = useRoute()
 const router = useRouter()
-const url = useRequestURL()
+const route = useRoute()
 
 const searchInputId = useId()
 

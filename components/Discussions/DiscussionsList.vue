@@ -66,7 +66,10 @@
       />
 
       <LoadingBlock :status>
-        <div v-if="pageData && pageData.total > 0" class="space-y-5">
+        <div
+          v-if="pageData && pageData.total > 0"
+          class="space-y-5"
+        >
           <div class="space-y-2.5">
             <DiscussionCard
               v-for="thread in pageData.data"
@@ -136,7 +139,7 @@ const showDiscussionForm = () => {
     newDiscussion.value = true
   }
   else {
-    navigateTo(localePath('/login'), { external: true })
+    navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true })
   }
 }
 

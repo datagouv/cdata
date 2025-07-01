@@ -6,6 +6,8 @@ export default defineNuxtPlugin({
     const token = useToken()
     const cookie = useRequestHeader('cookie')
     const localePath = useLocalePath()
+    const route = useRoute()
+
     const { toast } = useToast()
     const makeApi = (sendJson = true) => {
       return $fetch.create({
@@ -35,7 +37,7 @@ export default defineNuxtPlugin({
         },
         async onResponseError({ response }) {
           if (response.status === 401) {
-            await nuxtApp.runWithContext(() => navigateTo(localePath('/login'), { external: true }))
+            await nuxtApp.runWithContext(() => navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true }))
           }
 
           const t = (nuxtApp.$i18n as NuxtApp['$i18n']).t

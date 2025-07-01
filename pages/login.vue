@@ -129,12 +129,20 @@ const loading = ref(false)
 const errors = ref<FieldsErrors>({})
 const me = useMe()
 
+const route = useRoute()
+
+onMounted(() => {
+  if (route.query.next) {
+    sessionStorage.setItem('next', route.query.next as string)
+  }
+})
+
 const connect = async () => {
   loading.value = true
   errors.value = {}
 
   try {
-    await $api<{ response: { user: { authentication_token: string } } }>('/fr/login/', {
+    await $api('/fr/login/', {
       method: 'POST',
       body: {
         email: email.value,
@@ -145,7 +153,14 @@ const connect = async () => {
 
     toast.success(t('Vous êtes maintenant connecté.'))
     await loadMe(me)
-    await navigateTo(localePath('/'))
+
+    const next = sessionStorage.getItem('next')
+    if (next) {
+      navigateTo(next)
+    }
+    else {
+      await navigateTo(localePath('/'))
+    }
   }
   catch (e) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
