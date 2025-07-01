@@ -130,7 +130,7 @@
             <div class="relative">
               <input
                 :id="apiKeyId"
-                v-model="user.apikey"
+                :value="user.apikey"
                 type="password"
                 class="fr-input !pr-8"
                 disabled
@@ -235,6 +235,7 @@
           </div>
           <div class="fr-col-auto">
             <BrandedButton
+              v-if="config.public.changePasswordPage"
               color="secondary"
               size="xs"
               as="a"
@@ -243,6 +244,10 @@
             >
               {{ $t('Change password') }}
             </BrandedButton>
+            <ChangePasswordModal
+              v-else
+              :user
+            />
           </div>
         </div>
       </div>
@@ -266,6 +271,7 @@ import { BannerAction, BrandedButton, CopyButton } from '@datagouv/components-ne
 import { Avatar, type User } from '@datagouv/components-next'
 import { RiDeleteBin6Line, RiEditLine, RiEyeLine, RiRecycleLine, RiSaveLine } from '@remixicon/vue'
 import DeleteUserModal from './DeleteUserModal.vue'
+import ChangePasswordModal from './ChangePasswordModal.vue'
 import { uploadProfilePicture } from '~/api/users'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
