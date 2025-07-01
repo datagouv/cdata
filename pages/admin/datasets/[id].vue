@@ -35,7 +35,7 @@
         </div>
 
         <div class="text-sm text-mentionGrey space-y-1.5">
-          <div class="space-x-1">
+          <p class="space-x-1">
             <span>{{ $t('Statut') }}:</span>
             <AdminBadge
               size="xs"
@@ -43,8 +43,8 @@
             >
               {{ getDatasetStatus(dataset).label }}
             </AdminBadge>
-          </div>
-          <div class="space-x-1 flex items-center">
+          </p>
+          <p class="space-x-1 flex items-center">
             <RiPriceTag3Line class="inline size-3" />
             <span>{{ $t('Métadonnées:') }}</span>
             <Tooltip>
@@ -56,8 +56,8 @@
                 <DatasetQualityTooltipContent :quality="dataset.quality" />
               </template>
             </Tooltip>
-          </div>
-          <div class="space-x-1">
+          </p>
+          <p class="space-x-1">
             <RiBarChartBoxLine class="inline size-3" />
             <span>{{ $t('Statistiques:') }}</span>
             <span class="space-x-2">
@@ -98,7 +98,21 @@
                 </template>
               </Tooltip>
             </span>
-          </div>
+          </p>
+          <p class="space-x-1">
+            <RiCalendarLine class="inline size-3" />
+            <span>{{ $t('Dernière activité :') }}</span>
+            <span class="inline-flex items-center">
+              <AvatarWithName
+                class="fr-ml-1v"
+                :user="activities.data[0].actor"
+              />
+            </span>
+            &mdash;
+            <span>{{ getActivityTranslation(activities.data[0]) }}</span>
+            &mdash;
+            <span class="text-gray-medium">{{ formatDate(activities.data[0].created_at) }}</span>
+          </p>
         </div>
       </div>
 
@@ -121,17 +135,26 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, DatasetQualityTooltipContent, type DatasetV2, DatasetQualityScore, summarize } from '@datagouv/components-next'
-import { RiBarChartBoxLine, RiDownloadLine, RiEyeLine, RiLineChartLine, RiPriceTag3Line, RiStarLine } from '@remixicon/vue'
+import { BrandedButton, DatasetQualityTooltipContent, type DatasetV2, DatasetQualityScore, summarize, useFormatDate, AvatarWithName } from '@datagouv/components-next'
+import { RiBarChartBoxLine, RiCalendarLine, RiDownloadLine, RiEyeLine, RiLineChartLine, RiPriceTag3Line, RiStarLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
+import type { Activity } from '~/types/activity'
+import type { PaginatedArray } from '~/types/types'
 
 const { t } = useI18n()
 const me = useMe()
 
 const route = useRoute()
 const { getDatasetStatus } = useDatasetStatus()
+const { formatDate } = useFormatDate()
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset } = await useAPI<DatasetV2>(url)
+const { data: activities } = await useAPI<PaginatedArray<Activity>>('/api/1/activity/', {
+  params: {
+    related_to: route.params.id,
+    sort: '-created_at',
+  },
+})
 </script>

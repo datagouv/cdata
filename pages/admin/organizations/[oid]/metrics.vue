@@ -1,12 +1,22 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ $t('Statistiques') }}</BreadcrumbItem>
+      <BreadcrumbItem
+        :to="metricsUrl"
+      >
+        {{ $t('Statistiques') }}
+      </BreadcrumbItem>
     </AdminBreadcrumb>
 
     <h1 class="font-bold text-2xl mb-5">
       {{ $t("Statistiques") }}
     </h1>
+
+    <p class="text-sm text-gray-medium my-5">
+      {{ $t('Les statistiques sont comptabilisées à partir de juillet 2022.') }}<br>
+      <span v-if="new Date().getHours() > 7 - 1">{{ $t('Mises à jour ce matin') }}</span>
+      <span v-else>{{ $t('Mises à jour hier') }}</span>
+    </p>
 
     <TabLinks
       class="mb-5"
@@ -14,7 +24,7 @@
         { href: localPath(metricsUrl), label: $t('Organisation') },
         { href: localPath(`${metricsUrl}/datasets/`), label: $t('Jeux de données') },
         { href: localPath(`${metricsUrl}/dataservices/`), label: $t('API') },
-        { href: localPath(`${metricsUrl}/reuses/`), label: $t('Réutilisation') },
+        { href: localPath(`${metricsUrl}/reuses/`), label: $t('Réutilisations') },
       ]"
     />
 
@@ -27,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Organization } from '@datagouv/components-next'
+import { useFormatDate, type Organization } from '@datagouv/components-next'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
@@ -40,6 +50,7 @@ defineEmits<{
 }>()
 
 const localPath = useLocalePath()
+const { formatDate } = useFormatDate()
 
 const metricsUrl = computed(() => `/admin/organizations/${props.organization?.id}/metrics`)
 </script>
