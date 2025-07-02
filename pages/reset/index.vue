@@ -73,7 +73,7 @@ const { $api } = useNuxtApp()
 
 useSeoMeta({ title: t('Réinitialiser le mot de passe') })
 
-const email = ref('thibaud.dauce@data.gouv.fr')
+const email = ref('')
 const captchaUuid = ref('')
 const captchaCode = ref('')
 

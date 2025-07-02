@@ -61,7 +61,7 @@ const { t } = useI18n()
 
 useSeoMeta({ title: t('Renvoyer les instructions de confirmation') })
 
-const email = ref('thibaud.dauce@data.gouv.fr')
+const email = ref('')
 const loading = ref(false)
 const errors = ref<FieldsErrors>({})
 const success = ref(false)

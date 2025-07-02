@@ -122,8 +122,8 @@ const config = useRuntimeConfig()
 
 useSeoMeta({ title: t('Connexion') })
 
-const email = ref('thibaud.dauce@data.gouv.fr')
-const password = ref('password')
+const email = ref('')
+const password = ref('')
 const rememberMe = ref(false)
 const loading = ref(false)
 const errors = ref<FieldsErrors>({})

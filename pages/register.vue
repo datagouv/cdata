@@ -143,9 +143,9 @@ const { t } = useI18n()
 
 useSeoMeta({ title: t('S\'enregistrer') })
 
-const email = ref('thibaud.dauce@data.gouv.fr')
-const password = ref('password')
-const passwordConfirmation = ref('password')
+const email = ref('')
+const password = ref('')
+const passwordConfirmation = ref('')
 const firstname = ref('Thibaud')
 const lastname = ref('Ollagnier')
 const acceptConditions = ref(false)
