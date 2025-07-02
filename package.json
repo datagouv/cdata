@@ -44,6 +44,7 @@
     "@vueuse/integrations": "^12.0",
     "@vueuse/nuxt": "^12.0",
     "axios": "^1.8.2",
+    "clipboard": "^2.0.11",
     "crisp-api": "^9.9.0",
     "dayjs": "^1.11.13",
     "geopf-extensions-openlayers": "^1.0.0-beta.4",
@@ -75,6 +76,7 @@
     "vue": "^3.5",
     "vue-content-loader": "^2.0.1",
     "vue-router": "^4.4",
+    "vue3-json-viewer": "^2.4.1",
     "vue3-text-clamp": "^0.1.2",
     "zod": "^3.25.32"
   },

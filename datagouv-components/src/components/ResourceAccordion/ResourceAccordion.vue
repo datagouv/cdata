@@ -175,7 +175,37 @@
             class="px-4"
           >
             <div v-if="tab.key === 'data'">
-              <Preview :resource="resource" />
+              <!-- Show JSON viewer for JSON files -->
+              <div v-if="resource.format && resource.format.toLowerCase() === 'json'">
+                <div v-if="jsonData" class="fr-text--xs">
+                  <!-- Show truncation warning if needed -->
+                  <div v-if="jsonData._truncated" class="fr-alert fr-alert--warning fr-mb-2v">
+                    <p class="fr-alert__title">{{ $t('Aperçu tronqué') }}</p>
+                    <p>{{ $t('Le fichier JSON est trop volumineux ({size} caractères). Seuls les premiers {max} caractères sont affichés.', {
+                      size: jsonData._originalSize,
+                      max: MAX_JSON_SIZE
+                    }) }}</p>
+                  </div>
+
+                  <JsonViewer
+                    :value="jsonData._truncated ? jsonData.data : jsonData"
+                    boxed
+                    sort
+                    theme="light"
+                    :max-depth="3"
+                    :expand-depth="1"
+                    :indent-width="2"
+                  />
+                </div>
+                <div v-else-if="jsonLoading" class="fr-text--xs text-gray-medium">
+                  {{ $t('Chargement de l\'aperçu JSON...') }}
+                </div>
+                <div v-else class="fr-text--xs text-gray-medium">
+                  {{ $t('Erreur lors du chargement de l\'aperçu JSON.') }}
+                </div>
+              </div>
+              <!-- Show regular preview for other file types -->
+              <Preview v-else :resource="resource" />
             </div>
             <div v-if="tab.key === 'map'">
               <Pmtiles
@@ -308,9 +338,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent } from 'vue'
+import { ref, computed, defineAsyncComponent, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine } from '@remixicon/vue'
+import { JsonViewer } from 'vue3-json-viewer'
+import 'vue3-json-viewer/dist/vue3-json-viewer.css'
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
 import { filesize, summarize } from '../../functions/helpers'
 import { markdown } from '../../functions/markdown'
@@ -338,6 +370,7 @@ import Preview from './Preview.vue'
 import Pmtiles from './Pmtiles.vue'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles']
+const MAX_JSON_SIZE = 2000 // Maximum size of JSON to preview
 
 const props = withDefaults(defineProps<{
   dataset: Dataset | DatasetV2
@@ -360,6 +393,12 @@ const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
 
 const hasPreview = computed(() => {
+  // For JSON files, we can show preview without needing the tabular API parsing
+  if (props.resource.format && props.resource.format.toLowerCase() === 'json') {
+    return true
+  }
+
+  // For other files, use the existing tabular preview logic
   return config.tabularApiUrl
     && props.resource.extras['analysis:parsing:finished_at']
     && !props.resource.extras['analysis:parsing:error']
@@ -456,6 +495,57 @@ const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset,
 const resourceContentId = 'resource-' + props.resource.id
 const resourceHeaderId = 'resource-' + props.resource.id + '-header'
 const resourceTitleId = getResourceTitleId(props.resource)
+
+// Fetch JSON data for JSON preview
+const jsonData = ref(null)
+const jsonLoading = ref(false)
+const fetchJsonData = async () => {
+  if (props.resource.format && props.resource.format.toLowerCase() === 'json') {
+    jsonLoading.value = true
+    try {
+      const response = await fetch(props.resource.latest)
+      // const response = await fetch('/test-data.json') // For testing locally without CORS issues
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+
+      // Truncate large JSON objects to avoid performance issues
+      const jsonString = JSON.stringify(data, null, 2)
+      if (jsonString.length > MAX_JSON_SIZE) {
+        // Keep only the first part and add a truncation indicator
+        const truncated = jsonString.substring(0, MAX_JSON_SIZE)
+        try {
+          // Try to parse the truncated JSON, if it fails, use the original data
+          const parsedData = JSON.parse(truncated + '...')
+          jsonData.value = {
+            _truncated: true,
+            _originalSize: jsonString.length,
+            data: parsedData
+          }
+        } catch (parseError) {
+          // If parsing fails, just use the original data without truncation
+          console.warn('Failed to parse truncated JSON, using original data:', parseError)
+          jsonData.value = data
+        }
+      } else {
+        jsonData.value = data
+      }
+    } catch (error) {
+      console.error('Error loading JSON:', error)
+      jsonData.value = null
+    } finally {
+      jsonLoading.value = false
+    }
+  }
+}
+
+// Watch for when the accordion opens and fetch JSON if needed
+watchEffect(() => {
+  if (open.value && props.resource.format && props.resource.format.toLowerCase() === 'json') {
+    fetchJsonData()
+  }
+})
 </script>
 
 <style scoped>

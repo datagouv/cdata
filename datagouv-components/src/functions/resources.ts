@@ -92,7 +92,7 @@ export const getResourceLabel = (type: ResourceType) => {
   const { t } = useI18n()
   switch (type) {
     case 'main':
-      return t('Fichier principal')
+      return t('Fichier principal') // TODO: manage the plural case
     case 'documentation':
       return t('Documentation')
     case 'update':
