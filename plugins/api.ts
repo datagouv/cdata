@@ -25,10 +25,13 @@ export default defineNuxtPlugin({
           if (cookie) {
             options.headers.set('Cookie', cookie)
           }
-          if (!options.query) {
-            options.query = {}
+          const i18n = nuxtApp.$i18n as NuxtApp['$i18n']
+          if (i18n.locale.value) {
+            if (!options.query) {
+              options.query = {}
+            }
+            options.query['lang'] = i18n.locale.value
           }
-          options.query['lang'] = 'fr'
         },
         async onResponseError({ response }) {
           if (response.status === 401) {
