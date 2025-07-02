@@ -50,8 +50,8 @@
               <SearchableSelect
                 v-model="facets.organizationType"
                 :options="organizationTypes"
-                :label="t('Organization type')"
-                :placeholder="t('All types')"
+                :label="t(`Type d'organisation`)"
+                :placeholder="t('Tous les types')"
                 :get-option-id="(type) => type.type"
                 :display-value="(value) => value.label"
                 :multiple="false"
@@ -64,7 +64,7 @@
             <SearchableSelect
               v-model="facets.tag"
               :label="t('Mots clés')"
-              :placeholder="t('All tags')"
+              :placeholder="t('Tous les mots clés')"
               :get-option-id="(tag) => tag"
               :display-value="(value) => value"
               :suggest="suggestTags"
@@ -77,7 +77,7 @@
             <SearchableSelect
               v-model="facets.format"
               :label="t('Formats')"
-              :placeholder="t('All formats')"
+              :placeholder="t('Tous les formats')"
               :options="allowedFormats ? allowedFormats : []"
               :loading="allowedFormatsStatus === 'pending'"
               :get-option-id="(format) => format"
@@ -91,8 +91,8 @@
             <SearchableSelect
               v-model="facets.license"
               :label="t('Licences')"
-              :explanation="t('Licenses define reuse rules for published datasets. See page data.gouv.fr/licences')"
-              :placeholder="t('All licenses')"
+              :explanation="t('Les licences définissent les règles de réutilisation des jeux de données publiés. Voir la page data.gouv.fr/licences')"
+              :placeholder="t('Toutes les licences')"
               :display-value="(value) => value.title"
               :options="licenses ? licenses : []"
               :loading="licensesStatus === 'pending'"
@@ -104,11 +104,11 @@
             </SearchableSelect>
             <SearchableSelect
               v-model="facets.schema"
-              :label="t('Schema')"
-              :explanation="t('Data schemas describe data models: what are the fields, how are data shown, what are the available values, etc. See schema.data.gouv.fr')"
+              :label="t('Schéma')"
+              :explanation="t('Les schémas de données permettent de décrire des modèles de données : quels sont les différents champs, comment sont représentées les données, quelles sont les valeurs possibles etc. Voir schema.data.gouv.fr')"
               :display-value="(value) => value.name"
               :get-option-id="(option) => option.name"
-              :placeholder="t('All schemas')"
+              :placeholder="t('Tous les schémas')"
               :options="schemas ? schemas : []"
               :loading="schemasStatus === 'pending'"
               :multiple="false"
@@ -120,7 +120,7 @@
             <SearchableSelect
               v-model="facets.geozone"
               :label="t('Couverture spatiale')"
-              :placeholder="t('All coverages')"
+              :placeholder="t('Toutes les couvertures')"
               :suggest="suggestSpatialCoverages"
               :get-option-id="(coverage) => coverage.id"
               :display-value="(value) => value.name"
@@ -135,8 +135,8 @@
             </SearchableSelect>
             <SearchableSelect
               v-model="facets.granularity"
-              :label="t('Spatial granularity')"
-              :placeholder="t('All granularities')"
+              :label="t('Granularité spatiale')"
+              :placeholder="t('Toutes les granularités')"
               :get-option-id="(granularity) => granularity.id"
               :display-value="(value) => value.name"
               :multiple="false"
@@ -167,7 +167,7 @@
                 :external="true"
                 :icon="RiDownloadLine"
               >
-                {{ t('Download the list as CSV') }}
+                {{ t('Télécharger la liste en CSV') }}
               </BrandedButton>
             </div>
           </div>
@@ -265,13 +265,13 @@
       height="117"
     />
     <p class="mt-4 mb-5 font-bold text-lg">
-      {{ $t(`This organization hasn't published any datasets yet.`) }}
+      {{ $t(`Cette organisation n'a pas encore publié de jeux de données.`) }}
     </p>
     <BrandedButton
       color="secondary"
       :href="config.public.datasetPublishingGuideUrl"
     >
-      {{ $t(`What's a dataset ?`) }}
+      {{ $t(`Qu'est-ce qu'un jeu de données ?`) }}
     </BrandedButton>
   </div>
 </template>
@@ -504,8 +504,8 @@ const isFiltered = computed(() => {
 const sortOptions = [
   { label: t('Date de création'), value: '-created' },
   { label: t('Dernière mise à jour'), value: '-last_update' },
-  { label: t('Number of followers'), value: '-followers' },
-  { label: t('Number of reuses'), value: '-reuses' },
+  { label: t(`Nombre d'abonnés`), value: '-followers' },
+  { label: t('Nombre de réutilisations'), value: '-reuses' },
 ]
 
 // Update model params
