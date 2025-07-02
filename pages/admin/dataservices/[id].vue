@@ -67,7 +67,10 @@
             </Tooltip>
           </span>
         </p>
-        <p class="space-x-1">
+        <p
+          v-if="activities && activities.data.length"
+          class="space-x-1"
+        >
           <RiCalendarLine class="inline size-3" />
           <span>{{ $t('Dernière activité :') }}</span>
           <span class="inline-flex items-center">
