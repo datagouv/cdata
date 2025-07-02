@@ -430,7 +430,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, getUserAvatar } from '@datagouv/components-next'
-import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiGovernmentLine, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiGitPullRequestLine } from '@remixicon/vue'
+import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiGovernmentLine, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { NuxtImg, NuxtLinkLocale } from '#components'
 import SiteLogo from '~/components/SiteLogo.vue'
@@ -446,8 +446,7 @@ const localePath = useLocalePath()
 const me = useMaybeMe()
 const currentRoute = useRoute()
 const router = useRouter()
-
-const searchInputId = useId()
+const route = useRoute()
 
 const menu = [
   { label: t('Données'), link: '/datasets/' },
@@ -482,4 +481,19 @@ function getAriaCurrent(link: string) {
   const routesInPath = router.getRoutes().map(route => route.path).filter(path => currentRoute.path.startsWith(path))
   return routesInPath.includes(link)
 }
+
+const { toast } = useToast()
+onMounted(() => {
+  const FLASH_MESSAGES: Record<string, { type: 'success' | 'error', text: string }> = {
+    connected: { type: 'success', text: t('Vous êtes maintenant connecté.') },
+    change_email_confirmed: { type: 'success', text: t('Votre nouvelle adresse email est maintenant confirmée.') },
+    change_email_expired: { type: 'error', text: t('Le code de vérification de votre adresse email a expiré, un nouveau mail vous a été envoyé.') },
+    change_email_invalid: { type: 'error', text: t('Le code de vérification de votre adresse email est incorrect.') },
+  }
+
+  if (route.query.flash) {
+    const message = FLASH_MESSAGES[route.query.flash as string] || null
+    if (message) toast[message.type](message.text)
+  }
+})
 </script>
