@@ -9,6 +9,7 @@ export type User = {
   last_name: string
   about: string
   avatar?: string | null
+  website?: string
   page: string
   avatar_thumbnail?: string | null
   roles?: Array<string>
