@@ -11,7 +11,7 @@
     >
       <SearchInput
         v-model="queryString"
-        :placeholder="organization ? t('Search a dataset of the organization') : t('Ex : élection présidentielle 2022')"
+        :placeholder="organization ? t(`Rechercher un jeu de données de l'organisation`) : t('Ex : élection présidentielle 2022')"
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
