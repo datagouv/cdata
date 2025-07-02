@@ -102,6 +102,18 @@
                           </li>
                           <li>
                             <BrandedButton
+                              v-if="config.public.enableCdataSecurityViews"
+                              type="button"
+                              :icon="RiLogoutBoxRLine"
+                              color="primary-softer"
+                              class="w-full"
+                              size="lg"
+                              @click="logout"
+                            >
+                              {{ $t('Se déconnecter') }}
+                            </BrandedButton>
+                            <BrandedButton
+                              v-else
                               :href="`${config.public.apiBase}/logout`"
                               :icon="RiLogoutBoxRLine"
                               :external="true"
@@ -122,6 +134,7 @@
                               :href="{ path: '/login', query: { next: route.fullPath } }"
                               color="primary-softer"
                               size="lg"
+                              :external="true"
                               :icon="RiLockLine"
                               class="w-full"
                             >
@@ -133,6 +146,7 @@
                               color="primary-softer"
                               size="lg"
                               href="/register"
+                              :external="true"
                               class="w-full"
                               :icon="RiAccountCircleLine"
                             >
@@ -275,10 +289,19 @@
                   </li>
                   <li>
                     <BrandedButton
+                      v-if="config.public.enableCdataSecurityViews"
                       type="button"
                       color="primary-softer"
                       :icon="RiLogoutBoxRLine"
                       @click="logout"
+                    >
+                      {{ $t('Se déconnecter') }}
+                    </BrandedButton>
+                    <BrandedButton
+                      v-else
+                      :href="`${config.public.apiBase}/logout`"
+                      color="primary-softer"
+                      :icon="RiLogoutBoxRLine"
                     >
                       {{ $t('Se déconnecter') }}
                     </BrandedButton>
@@ -293,6 +316,7 @@
                   <BrandedButton
                     color="primary-softer"
                     :href="{ path: '/login', query: { next: route.fullPath } }"
+                    :external="true"
                     :icon="RiLockLine"
                   >
                     {{ $t("Se connecter") }}
@@ -302,6 +326,7 @@
                   <BrandedButton
                     color="primary-softer"
                     href="/register"
+                    :external="true"
                     :icon="RiAccountCircleLine"
                   >
                     {{ $t("S'enregistrer") }}
@@ -485,7 +510,6 @@ const { $api } = useNuxtApp()
 const token = useToken()
 const logout = async () => {
   token.value = null
-  console.log(token.value)
   refreshCookie('token')
 
   await $api('/fr/logout/', {
