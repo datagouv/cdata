@@ -11,7 +11,7 @@
           {{ $t("La prévisualisation de votre moissonneur est en cours.") }}
         </p>
         <p class="m-0 text-xs/5">
-          {{ $t('Cela peut prendre quelques instants, merci de votre patience !') }}
+          {{ $t('Cela peut prendre quelques instants, merci de votre patience !') }}
         </p>
       </div>
     </SimpleBanner>

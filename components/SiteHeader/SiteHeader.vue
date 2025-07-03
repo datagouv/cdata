@@ -476,9 +476,9 @@ const menu = [
   { label: t('Réutilisations'), link: '/reuses/' },
   { label: t('Organisations'), link: '/organizations/' },
   { label: t('Démarrer sur {site}', { site: config.public.title }), items: [
-    { label: t(`Qu'est-ce que {site} ?`, { site: config.public.title }), link: '/pages/about/a-propos_data-gouv/' },
-    { label: t('Comment publier des données ?'), link: '/pages/onboarding/producteurs/' },
-    { label: t('Comment utiliser des données ?'), link: '/pages/onboarding/reutilisateurs/' },
+    { label: t(`Qu'est-ce que {site} ?`, { site: config.public.title }), link: '/pages/about/a-propos_data-gouv/' },
+    { label: t('Comment publier des données ?'), link: '/pages/onboarding/producteurs/' },
+    { label: t('Comment utiliser des données ?'), link: '/pages/onboarding/reutilisateurs/' },
     { label: t('Les guides {site}', { site: config.public.title }), link: config.public.guidesUrl, external: true },
   ], external: true },
   { label: t('Nouveautés'), link: '/posts/' },

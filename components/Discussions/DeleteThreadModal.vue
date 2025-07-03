@@ -1,6 +1,6 @@
 <template>
   <ModalWithButton
-    :title="t('Êtes-vous sûr de vouloir supprimer cette discussion ?')"
+    :title="t('Êtes-vous sûr de vouloir supprimer cette discussion ?')"
     size="lg"
     form
     @submit.prevent="deleteThread"

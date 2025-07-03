@@ -23,7 +23,7 @@
 
           <div>
             <p class="mb-0">
-              {{ $t('{external} demande les droits suivants :', { external: data.client.name }) }}
+              {{ $t('{external} demande les droits suivants :', { external: data.client.name }) }}
             </p>
 
             <dl class="divide-y pl-0">

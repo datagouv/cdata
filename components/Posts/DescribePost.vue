@@ -59,7 +59,7 @@
           type="drop"
           accept="jpg,jpeg,png"
           :multiple="true"
-          :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
+          :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
           show-label
           required
           :has-error="!!getFirstError('image')"

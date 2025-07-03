@@ -107,7 +107,7 @@
           class="flex flex-col md:flex-row gap-2 justify-between items-center"
         >
           <p class=" text-sm mb-0">
-            {{ $t('Les fichiers du jeu de données suivent le schéma :') }}
+            {{ $t('Les fichiers du jeu de données suivent le schéma :') }}
             <Tag
               type="secondary"
               :icon="RiCheckboxCircleLine"
@@ -146,7 +146,7 @@
         <CopyButton
           :hide-label="true"
           :label="$t('Copier le code embarqué')"
-          :copied-label="$t('Code embarqué copié !')"
+          :copied-label="$t('Code embarqué copié !')"
           :text="getDatasetOEmbedHtml('dataset', dataset.id)"
         />
       </div>

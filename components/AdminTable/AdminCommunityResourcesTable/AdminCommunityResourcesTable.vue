@@ -159,6 +159,6 @@ const updateResource = async (communityResource: CommunityResource, closeModal: 
     loading.value = false
   }
 
-  toast.success(t('Ressource communautaire mise à jour !'))
+  toast.success(t('Ressource communautaire mise à jour !'))
 }
 </script>

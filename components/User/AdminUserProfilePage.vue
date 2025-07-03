@@ -73,7 +73,7 @@
         :label="$t('Image de profil')"
         type="drop"
         accept=".jpeg, .jpg, .png"
-        :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
+        :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
         :show-label="true"
         @change="setFiles"
       />
@@ -341,7 +341,7 @@ async function updateUser() {
         roles: isMeAdmin() ? form.value.roles : props.user.roles,
       },
     })
-    toast.success(t('Profil mis à jour !'))
+    toast.success(t('Profil mis à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
     emits('refresh')
   }

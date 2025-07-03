@@ -225,7 +225,7 @@
           </p>
         </Accordion>
         <Accordion
-          :title="`Vous cherchez l'API Tiers de prestations pour bénéficier du dispositif d'avance immédiate du crédit d'impôt « service à la personne » ?`"
+          :title="`Vous cherchez l'API Tiers de prestations pour bénéficier du dispositif d'avance immédiate du crédit d'impôt « service à la personne » ?`"
           heading="h4"
         >
           <p class="mb-0">

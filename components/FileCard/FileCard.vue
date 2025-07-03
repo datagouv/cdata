@@ -17,7 +17,7 @@
             class="flex items-center space-x-1 text-sm fr-m-0 overflow-wrap-anywhere text-overflow-ellipsis dash-after"
           >
             <RiInformationLine class="size-3 shrink-0" />
-            <span class="truncate">{{ $t('Schéma : {schema}', { schema: resourceForm.schema?.name }) }}</span>
+            <span class="truncate">{{ $t('Schéma : {schema}', { schema: resourceForm.schema?.name }) }}</span>
           </div>
           <p
             v-if="resourceForm.filetype === 'file' && resourceForm.file && resourceForm.file.raw.name != resourceForm.title"
@@ -47,7 +47,7 @@
           class="flex items-center space-x-1 text-gray-medium text-sm"
         >
           <RiMapPin2Line class="size-3 shrink-0" />
-          <span class="truncate">{{ $t('Emplacement : serveurs data.gouv.fr') }}</span>
+          <span class="truncate">{{ $t('Emplacement : serveurs data.gouv.fr') }}</span>
         </div>
         <div
           v-if="resourceForm.filetype === 'remote'"
@@ -61,7 +61,7 @@
           class="flex items-center space-x-1 text-gray-medium text-sm"
         >
           <RiCodeSSlashLine class="size-3 shrink-0" />
-          <span class="truncate">{{ $t('Somme de contrôle : {checksum}', { checksum: resourceForm.resource?.checksum.value }) }}</span>
+          <span class="truncate">{{ $t('Somme de contrôle : {checksum}', { checksum: resourceForm.resource?.checksum.value }) }}</span>
         </div>
       </div>
       <div

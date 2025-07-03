@@ -53,12 +53,12 @@
           </div>
           <div class="space-x-1">
             <RiCalendarEventLine class="inline size-3" />
-            <span>{{ $t('Planning :') }}</span>
+            <span>{{ $t('Planning :') }}</span>
             <span class="font-mono">{{ harvester.schedule || 'N/A' }}</span>
           </div>
           <div class="space-x-1">
             <RiCheckboxCircleLine class="inline size-3" />
-            <span>{{ $t('Statut :') }}</span>
+            <span>{{ $t('Statut :') }}</span>
             <HarvesterBadge :harvester />
           </div>
         </div>

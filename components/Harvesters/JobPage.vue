@@ -9,22 +9,22 @@
     <div class="text-sm text-mentionGrey space-y-1.5 mb-5">
       <div class="space-x-1">
         <RiCalendarEventLine class="inline size-3" />
-        <span>{{ $t('Débuté le :') }}</span>
+        <span>{{ $t('Débuté le :') }}</span>
         <span class="font-mono">{{ formatDate(job.started || job.created, { dateStyle: 'long', timeStyle: 'short' }) }}</span>
       </div>
       <div class="space-x-1">
         <RiCalendarEventLine class="inline size-3" />
-        <span>{{ $t('Terminé le :') }}</span>
+        <span>{{ $t('Terminé le :') }}</span>
         <span class="font-mono">{{ job.ended ? formatDate(job.ended, { dateStyle: 'long', timeStyle: 'short' }) : '—' }}</span>
       </div>
       <div class="space-x-1">
         <RiCheckboxCircleLine class="inline size-3" />
-        <span>{{ $t('Statut :') }}</span>
+        <span>{{ $t('Statut :') }}</span>
         <JobBadge :job />
       </div>
       <div class="space-x-1">
         <RiInformationLine class="inline size-3" />
-        <span>{{ $t('Éléments :') }}</span>
+        <span>{{ $t('Éléments :') }}</span>
         <span class="space-x-2">
           <Tooltip class="inline">
             <span class="space-x-0.5 text-sm">

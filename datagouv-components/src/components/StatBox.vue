@@ -65,7 +65,7 @@
       </p>
       <p class="mt-1 mb-0 text-xs text-success-darkest">
         <strong>
-          + {{ summarize(lastValue, 2) }}
+          + {{ summarize(lastValue, 2) }}
         </strong>
         {{ t(" en ") }}
         {{ formatDate(lastMonth, { dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }) }}
@@ -139,7 +139,7 @@
       class="mt-2 font-normal text-transform-none fr-badge fr-badge--no-icon fr-badge--success"
     >
       <strong class="mr-1">
-        + {{ summarize(lastValue, 2) }}
+        + {{ summarize(lastValue, 2) }}
       </strong>
       {{ t(" en ") }}
       {{ formatDate(lastMonth, { dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }) }}

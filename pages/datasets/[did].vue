@@ -224,7 +224,7 @@
                 type="primary-frame"
               >
                 <i18n-t
-                  keypath="Consulter ce jeu de données sur {link} pour bénéficier d'informations supplémentaires : validations, visualisations, etc."
+                  keypath="Consulter ce jeu de données sur {link} pour bénéficier d'informations supplémentaires : validations, visualisations, etc."
                   tag="p"
                   class="!m-0 text-sm"
                 >

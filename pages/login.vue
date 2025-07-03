@@ -70,12 +70,12 @@
         </form>
 
         <div class="text-center text-gray-plain text-sm">
-          {{ $t('Mot de passe oublié ?') }} <NuxtLinkLocale to="/reset">
+          {{ $t('Mot de passe oublié ?') }} <NuxtLinkLocale to="/reset">
             {{ $t('Récupérer votre mot de passe') }}
           </NuxtLinkLocale>
         </div>
         <div class="text-center text-gray-plain text-sm">
-          {{ $t('Instructions de confirmation non reçues ?') }} <NuxtLinkLocale to="/confirm">
+          {{ $t('Instructions de confirmation non reçues ?') }} <NuxtLinkLocale to="/confirm">
             {{ $t('Renvoyer les instructions') }}
           </NuxtLinkLocale>
         </div>
@@ -93,7 +93,7 @@
                 :href="config.public.proconnect.homepage"
                 target="_blank"
                 rel="noopener"
-              >{{ $t(`Qu'est-ce que ProConnect ?`) }}</NuxtLink>
+              >{{ $t(`Qu'est-ce que ProConnect ?`) }}</NuxtLink>
             </p>
           </div>
         </form>
@@ -101,7 +101,7 @@
     </div>
     <div class="container bg-white max-w-xl p-6 border border-gray-lower flex flex-col sm:items-center">
       <p class="font-bold text-sm text-center">
-        {{ $t('Vous n\'avez pas de compte ?') }}
+        {{ $t('Vous n\'avez pas de compte ?') }}
       </p>
       <BrandedButton href="/register">
         {{ $t('Créer un compte') }}

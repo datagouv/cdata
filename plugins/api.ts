@@ -43,12 +43,12 @@ export default defineNuxtPlugin({
           const t = (nuxtApp.$i18n as NuxtApp['$i18n']).t
 
           if (response.status === 429) {
-            toast.error(t('Erreur API 429 : trop de requêtes. Veuillez réessayer plus tard.'))
+            toast.error(t('Erreur API 429 : trop de requêtes. Veuillez réessayer plus tard.'))
             return
           }
 
           if (response.status === 403) {
-            toast.error(t('Erreur API 403 : accès interdit.'))
+            toast.error(t('Erreur API 403 : accès interdit.'))
             return
           }
 

@@ -1,7 +1,7 @@
 <template>
   <ActionCard
     actions-alignment="start"
-    :title="t(`Vous n'avez pas trouvé ce que vous cherchez ?`)"
+    :title="t(`Vous n'avez pas trouvé ce que vous cherchez ?`)"
     icon="/illustrations/magnifying_glass.svg"
     type="primary"
   >

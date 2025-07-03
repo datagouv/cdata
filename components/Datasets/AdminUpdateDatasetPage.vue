@@ -199,7 +199,7 @@ async function save() {
     })
 
     refresh()
-    toast.success(t('Jeu de données mis à jour !'))
+    toast.success(t('Jeu de données mis à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {

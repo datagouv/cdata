@@ -271,7 +271,7 @@
       color="secondary"
       :href="config.public.datasetPublishingGuideUrl"
     >
-      {{ $t(`Qu'est-ce qu'un jeu de données ?`) }}
+      {{ $t(`Qu'est-ce qu'un jeu de données ?`) }}
     </BrandedButton>
   </div>
 </template>

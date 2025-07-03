@@ -42,7 +42,7 @@ const submit = async () => {
     }),
   })
 
-  toast.success(t('Réutilisation mise à jour !'))
+  toast.success(t('Réutilisation mise à jour !'))
   window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
 }
 </script>

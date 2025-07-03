@@ -192,7 +192,7 @@
                     :title="config.public.commitId ? $t('Version {version}', { version: config.public.commitId }) : undefined"
                     class="fr-footer__top-link"
                   >
-                    {{ $t('Interface utilisateur de data.gouv.fr : cdata') }}
+                    {{ $t('Interface utilisateur de data.gouv.fr : cdata') }}
                   </a>
                 </li>
               </ul>
