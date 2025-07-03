@@ -175,7 +175,16 @@
             class="px-4"
           >
             <div v-if="tab.key === 'data'">
-              <Preview :resource="resource" />
+              <!-- Show PDF viewer for PDF files -->
+              <PdfPreview
+                v-if="resource.format && resource.format.toLowerCase() === 'pdf'"
+                :resource="resource"
+              />
+              <!-- Show regular preview for other file types -->
+              <Preview
+                v-else
+                :resource="resource"
+              />
             </div>
             <div v-if="tab.key === 'map'">
               <Pmtiles
@@ -308,7 +317,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent } from 'vue'
+import { ref, computed, defineAsyncComponent, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine } from '@remixicon/vue'
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
@@ -336,6 +345,7 @@ import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
 import Pmtiles from './Pmtiles.vue'
+import PdfPreview from './PdfPreview.vue'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles']
 
@@ -360,6 +370,20 @@ const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
 
 const hasPreview = computed(() => {
+  // For PDF files, always show preview (PDF viewer)
+  if (props.resource.format && props.resource.format.toLowerCase() === 'pdf') {
+    return true
+  }
+
+  // For remote URL resources, check if they point to PDFs
+  if (props.resource.filetype === 'remote' && props.resource.url) {
+    const url = props.resource.url.toLowerCase()
+    if (url.endsWith('.pdf') || url.includes('.pdf')) {
+      return true
+    }
+  }
+
+  // For other files, use the existing logic
   return config.tabularApiUrl
     && props.resource.extras['analysis:parsing:finished_at']
     && !props.resource.extras['analysis:parsing:error']
@@ -456,6 +480,8 @@ const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset,
 const resourceContentId = 'resource-' + props.resource.id
 const resourceHeaderId = 'resource-' + props.resource.id + '-header'
 const resourceTitleId = getResourceTitleId(props.resource)
+
+
 </script>
 
 <style scoped>
