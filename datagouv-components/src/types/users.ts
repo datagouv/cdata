@@ -2,6 +2,7 @@ import type { Organization } from './organizations'
 
 export type User = {
   id: string
+  apikey?: string
   slug?: string
   email?: string
   first_name: string

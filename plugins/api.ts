@@ -6,6 +6,8 @@ export default defineNuxtPlugin({
     const token = useToken()
     const cookie = useRequestHeader('cookie')
     const localePath = useLocalePath()
+    const route = useRoute()
+
     const { toast } = useToast()
     const makeApi = (sendJson = true) => {
       return $fetch.create({
@@ -35,7 +37,7 @@ export default defineNuxtPlugin({
         },
         async onResponseError({ response }) {
           if (response.status === 401) {
-            await nuxtApp.runWithContext(() => navigateTo(localePath('/login'), { external: true }))
+            await nuxtApp.runWithContext(() => navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true }))
           }
 
           const t = (nuxtApp.$i18n as NuxtApp['$i18n']).t
@@ -50,6 +52,11 @@ export default defineNuxtPlugin({
             return
           }
 
+          if (response.status === 400) {
+            toast.error(t('Le formulaire contient des erreurs.'))
+            return
+          }
+
           let message
           try {
             if ('error' in response._data) {
@@ -60,6 +67,9 @@ export default defineNuxtPlugin({
             }
             else if ('errors' in response._data && typeof response._data.errors === 'object') {
               message = Object.entries(response._data.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
+            }
+            else {
+              message = t('The API returned an unexpected error')
             }
           }
           catch (e) {

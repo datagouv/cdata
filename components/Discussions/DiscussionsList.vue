@@ -139,7 +139,7 @@ const showDiscussionForm = () => {
     newDiscussion.value = true
   }
   else {
-    navigateTo(localePath('/login'), { external: true })
+    navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true })
   }
 }
 

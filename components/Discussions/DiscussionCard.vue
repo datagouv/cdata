@@ -112,13 +112,14 @@ const showRespondForm = ref(false)
 const localePath = useLocalePath()
 const { formatDate } = useFormatDate()
 const me = useMaybeMe()
+const route = useRoute()
 
 const showRespondFormIfConnected = () => {
   if (me.value) {
     showRespondForm.value = true
   }
   else {
-    navigateTo(localePath('/login'), { external: true })
+    navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true })
   }
 }
 </script>
