@@ -19,12 +19,12 @@
       >
         <div>{{ as }} {{ color }} <span v-if="disabled">disabled</span> <span v-if="loading">loading</span></div>
         <div
-          v-for="({ icon, text }, index) in [
+          v-for="({ icon, text }, innerIndex) in [
             { icon: null, text: 'Explorer les données' },
             { icon: RiLightbulbFlashLine, text: 'Explorer les données' },
             { icon: RiLightbulbFlashLine, text: null },
           ]"
-          :key="index"
+          :key="innerIndex"
           class="space-y-2 flex flex-col items-start"
         >
           <div
