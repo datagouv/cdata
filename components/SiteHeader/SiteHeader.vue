@@ -102,6 +102,18 @@
                           </li>
                           <li>
                             <BrandedButton
+                              v-if="config.public.enableCdataSecurityViews"
+                              type="button"
+                              :icon="RiLogoutBoxRLine"
+                              color="primary-softer"
+                              class="w-full"
+                              size="lg"
+                              @click="logout"
+                            >
+                              {{ $t('Se déconnecter') }}
+                            </BrandedButton>
+                            <BrandedButton
+                              v-else
                               :href="`${config.public.apiBase}/logout`"
                               :icon="RiLogoutBoxRLine"
                               :external="true"
@@ -119,7 +131,7 @@
                         >
                           <li>
                             <BrandedButton
-                              href="/login"
+                              :href="{ path: '/login', query: { next: route.fullPath } }"
                               color="primary-softer"
                               size="lg"
                               :external="true"
@@ -277,6 +289,16 @@
                   </li>
                   <li>
                     <BrandedButton
+                      v-if="config.public.enableCdataSecurityViews"
+                      type="button"
+                      color="primary-softer"
+                      :icon="RiLogoutBoxRLine"
+                      @click="logout"
+                    >
+                      {{ $t('Se déconnecter') }}
+                    </BrandedButton>
+                    <BrandedButton
+                      v-else
                       :href="`${config.public.apiBase}/logout`"
                       color="primary-softer"
                       :icon="RiLogoutBoxRLine"
@@ -293,7 +315,7 @@
                 <li>
                   <BrandedButton
                     color="primary-softer"
-                    href="/login"
+                    :href="{ path: '/login', query: { next: route.fullPath } }"
                     :external="true"
                     :icon="RiLockLine"
                   >
@@ -480,6 +502,20 @@ function getAriaCurrent(link: string) {
   }
   const routesInPath = router.getRoutes().map(route => route.path).filter(path => currentRoute.path.startsWith(path))
   return routesInPath.includes(link)
+}
+
+const { $api } = useNuxtApp()
+const token = useToken()
+const logout = async () => {
+  token.value = null
+  refreshCookie('token')
+
+  await $api('/fr/logout/', {
+    method: 'POST',
+  })
+
+  me.value = null
+  await navigateTo('/')
 }
 
 const { toast } = useToast()
