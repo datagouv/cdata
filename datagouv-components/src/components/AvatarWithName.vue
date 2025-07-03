@@ -6,10 +6,13 @@
       :size
       :rounded="true"
     />
-    <span class="fr-text--bold">
+    <NuxtLinkLocale
+      :to="user.page"
+      class="fr-text--bold"
+    >
       {{ user.first_name }}
       {{ user.last_name }}
-    </span>
+    </NuxtLinkLocale>
   </span>
 </template>
 

@@ -215,15 +215,16 @@ import DeleteUserModal from '~/components/User/DeleteUserModal.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const me = useMaybeMe()
+
+const route = useRoute()
+const url = computed(() => `/api/1/users/${route.params.id}`)
+const { data: user } = await useAPI<User>(url)
+
 const title = computed(() => user.value ? `${user.value.first_name} ${user.value.last_name}` : null)
 useSeoMeta({
   robots: 'noindex, nofollow',
   title,
 })
-
-const route = useRoute()
-const url = computed(() => `/api/1/users/${route.params.id}`)
-const { data: user } = await useAPI<User>(url)
 
 const datasetsPage = ref(1)
 const datasetsParams = computed(() => {

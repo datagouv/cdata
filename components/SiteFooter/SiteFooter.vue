@@ -94,7 +94,7 @@
                   <NuxtLinkLocale
                     class="link !inline-flex after:!content-none mx-2 !p-2 min-h-10 mh-10 mw-10 !no-underline hover:!bg-gray-some"
                     :title="$t('RSS - nouvel onglet')"
-                    to="datasets/recent.atom"
+                    to="/datasets/recent.atom"
                     :external="true"
                     target="_blank"
                   >
