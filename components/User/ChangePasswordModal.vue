@@ -3,7 +3,7 @@
     :title="$t('Changer de mot de passe')"
     size="lg"
     form
-    @submit.prevent="($el, close) => submit(close)"
+    @submit.prevent="($el, _close) => submit(_close)"
   >
     <template #button="{ attrs, listeners }">
       <BrandedButton
@@ -18,7 +18,7 @@
       </BrandedButton>
     </template>
 
-    <template #default="{ close }">
+    <template #default>
       <SimpleBanner
         v-if="getAllErrorsInErrorFields(errors, '')"
         type="danger"
@@ -54,13 +54,13 @@
       </div>
     </template>
 
-    <template #footer="{ close }">
+    <template #footer="{ close: _close }">
       <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--right">
         <div class="fr-col-auto">
           <BrandedButton
             color="secondary"
             :disabled="loading"
-            @click="close"
+            @click="_close"
           >
             {{ $t("Cancel") }}
           </BrandedButton>

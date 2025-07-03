@@ -174,14 +174,14 @@
       >
         <div class="space-y-2">
           <div
-            v-for="(config, index) in form.configs"
+            v-for="(configItem, index) in form.configs"
             :key="index"
           >
             <label
               for=""
               class="fr-label whitespace-nowrap"
             >
-              {{ getConfigLabel(config.key) }}
+              {{ getConfigLabel(configItem.key) }}
             </label>
             <div class="flex items-center space-x-2.5">
               <InputGroup
@@ -203,13 +203,13 @@
 
           <div class="flex items-center space-x-10">
             <button
-              v-for="config in getMissingConfigs()"
-              :key="config.key"
+              v-for="missingConfig in getMissingConfigs()"
+              :key="missingConfig.key"
               class="flex items-center space-x-1 text-datagouv-dark"
-              @click="form.configs.push({ key: config.key, value: '' })"
+              @click="form.configs.push({ key: missingConfig.key, value: '' })"
             >
               <RiAddLine class="size-4" />
-              <span>{{ $t('Configurer {label}', { label: config.label }) }}</span>
+              <span>{{ $t('Configurer {label}', { label: missingConfig.label }) }}</span>
             </button>
           </div>
         </div>

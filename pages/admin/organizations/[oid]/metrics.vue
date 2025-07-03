@@ -50,7 +50,7 @@ defineEmits<{
 }>()
 
 const localPath = useLocalePath()
-const { formatDate } = useFormatDate()
+const { formatDate: _formatDate } = useFormatDate()
 
 const metricsUrl = computed(() => `/admin/organizations/${props.organization?.id}/metrics`)
 </script>

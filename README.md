@@ -161,13 +161,29 @@ The application will be available at `http://localhost:3000`.
 - Follow [linting and formatting](#linting-and-formatting) guidelines
 - Write clear commit messages using [conventional commits](https://www.conventionalcommits.org/)
 
-### Linting and Formatting
-The project uses [ESLint](https://eslint.org/) for code linting and [Prettier](https://prettier.io/) for code formatting to maintain consistent code style. **Running these commands is required before submitting contributions.**
+### 🧹 Code Linting and Formatting
+The project uses [ESLint](https://eslint.org/) for code linting and formatting to maintain consistent code style. **Running these commands is required before submitting contributions.**
 
 ```bash
 npm run lint          # Check for code style violations and potential issues
-npm run lint:fix      # Automatically fix ESLint issues and format code with Prettier
+npm run lint:fix      # Automatically fix ESLint issues and format code
 ```
+
+**Note:** Prettier is only used in the `datagouv-components` subdirectory. The main project relies on ESLint's built-in formatting capabilities.
+
+> **TODO:** Consider adding Prettier to the main project for more consistent code formatting across the entire codebase.
+
+#### Pre-commit Hooks
+
+The project uses [husky](https://typicode.github.io/husky/) and [lint-staged](https://github.com/okonet/lint-staged) to run linting before each commit:
+
+- **Automatic linting**: ESLint runs on all staged `.js`, `.ts`, `.vue`, `.jsx`, `.tsx` files
+- **Auto-fix**: Fixable issues are automatically corrected
+- **Commit blocking**: Unfixable errors prevent the commit until resolved
+
+The pre-commit setup is configured in:
+- `package.json`: lint-staged configuration
+- `.husky/pre-commit`: Git hook script
 
 ## 🧪 Testing
 
