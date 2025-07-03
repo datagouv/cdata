@@ -35,7 +35,7 @@
       </option>
       <option
         v-for="option in options"
-        :key="option.value"
+        :key="String(option.value ?? option.label)"
         :value="option.value"
         :disabled="option.disabled"
         :hidden="option.hidden"
@@ -83,6 +83,7 @@ export type SelectGroupProps = {
   isValid?: boolean
   label: string
   hideLabel?: boolean
+  modelValue?: string | boolean | null
   options: Array<Option>
   required?: boolean
   validText?: string

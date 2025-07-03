@@ -51,5 +51,5 @@
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
-import { RiDeleteBinLine, RiDraggable, RiLightbulbFlashLine } from '@remixicon/vue'
+import { RiLightbulbFlashLine } from '@remixicon/vue'
 </script>

@@ -60,7 +60,7 @@ export default defineComponent({
   components: {
     ContentLoader,
   },
-  setup(props) {
+  setup(_props) {
     const pageSize = config.resources_default_page_size
     const height = 88
     const getPosition = (i, y) => (i - 1) * height + y
