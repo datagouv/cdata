@@ -20,7 +20,7 @@ export async function useFetch<DataT, ErrorT = never>(
   const error: Ref<ErrorT | null> = ref(null)
   const status = ref<AsyncDataRequestStatus>('idle')
 
-  const execute = async (opts?: AsyncDataExecuteOptions) => {
+  const execute = async (_opts?: AsyncDataExecuteOptions) => {
     const urlValue = toValue(url)
     if (!urlValue) return
     status.value = 'pending'
@@ -82,7 +82,7 @@ export async function useFetch<DataT, ErrorT = never>(
 
   return {
     data,
-    refresh: async (opts?: AsyncDataExecuteOptions) => {
+    refresh: async (_opts?: AsyncDataExecuteOptions) => {
       execute()
     },
     execute,

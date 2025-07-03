@@ -1,5 +1,5 @@
 <template>
- <div class="py-6 mb-6 border-bottom border-gray-default">
+  <div class="py-6 mb-6 border-bottom border-gray-default">
     <h2 class="subtitle subtitle--uppercase">
       {{ $t('Informations') }}
     </h2>

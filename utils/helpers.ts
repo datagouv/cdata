@@ -1,4 +1,4 @@
-import type { FieldsErrors } from "~/types/form"
+import type { FieldsErrors } from '~/types/form'
 
 export function humanJoin(source: Array<string>): string {
   const array = [...source]
