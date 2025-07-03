@@ -8,13 +8,11 @@ Before setting up the project, make sure you have the following installed:
 
 - **Node.js** (version 18 or higher) - [Download here](https://nodejs.org/)
 - **npm** (comes with Node.js)
-- **Git** - [Download here](https://git-scm.com/)
 
 You can check your versions with:
 ```bash
 node --version
 npm --version
-git --version
 ```
 
 ## ⚙️ Setup
