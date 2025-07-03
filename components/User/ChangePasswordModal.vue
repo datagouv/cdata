@@ -18,7 +18,7 @@
       </BrandedButton>
     </template>
 
-    <template #default="{ close: _close }">
+    <template #default>
       <SimpleBanner
         v-if="getAllErrorsInErrorFields(errors, '')"
         type="danger"

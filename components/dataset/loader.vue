@@ -6,7 +6,10 @@
     primary-color="#f3f3f3"
     secondary-color="#ecebeb"
   >
-    <template v-for="i in pageSize">
+    <template
+      v-for="i in pageSize"
+      :key="`loader-${i}`"
+    >
       <rect
         x="20"
         :y="getPosition(i, 24)"

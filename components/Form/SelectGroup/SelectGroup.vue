@@ -90,7 +90,7 @@ export type SelectGroupProps = {
   hideNullOption?: boolean
 }
 
-const model = defineModel()
+const model = defineModel<string | boolean | null>()
 
 const props = withDefaults(defineProps<SelectGroupProps>(), {
   disabled: false,
