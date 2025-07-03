@@ -35,7 +35,7 @@ export default defineNuxtPlugin({
             options.query['lang'] = i18n.locale.value
           }
         },
-        async onResponseError({ response }) {
+        async onResponseError({ response, options }) {
           if (response.status === 401) {
             await nuxtApp.runWithContext(() => navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true }))
           }
@@ -52,7 +52,7 @@ export default defineNuxtPlugin({
             return
           }
 
-          if (response.status === 400) {
+          if (options?.method && ['POST', 'PUT', 'PATCH'].includes(options.method) && response.status === 400) {
             toast.error(t('Le formulaire contient des erreurs.'))
             return
           }
