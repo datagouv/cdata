@@ -26,35 +26,77 @@
       </h2>
       <div class="grid gap-5 md:grid-cols-2">
         <SupportCard
-          image="/img/forum.svg"
-          title="Forum"
-          description="Echangez avec la communauté, partagez vos retours sur la plateforme et demandez l'ouverture de données."
-        >
-          <template #link>
-            <BrandedButton
-              :href="config.public.forumUrl"
-              color="tertiary"
-              :icon="RiArrowRightLine"
-              :icon-right="true"
-            >
-              Voir le forum
-            </BrandedButton>
-          </template>
-        </SupportCard>
-        <SupportCard
           image="/img/guides.svg"
           title="Guides"
           description="Les guides vous accompagnent pas à pas pour publier, explorer et réutiliser les données ouvertes en toute simplicité."
         >
           <template #link>
-            <BrandedButton
-              :href="config.public.guidesUrl"
-              color="tertiary"
-              :icon="RiArrowRightLine"
-              :icon-right="true"
-            >
-              Voir les guides
-            </BrandedButton>
+            <div class="flex flex-col items-end mt-1 *:font-bold *:h-8">
+              <BrandedButton
+                href="https://guides.data.gouv.fr/guide-data.gouv.fr"
+                color="tertiary"
+                :icon="RiArrowRightLine"
+                :icon-right="true"
+                size="sm"
+              >
+                Voir la documentation de data.gouv.fr
+              </BrandedButton>
+              <BrandedButton
+                href="https://guides.data.gouv.fr/guides-open-data"
+                color="tertiary"
+                :icon="RiArrowRightLine"
+                :icon-right="true"
+                size="sm"
+              >
+                Voir les guides sur l'open data
+              </BrandedButton>
+              <BrandedButton
+                href="https://guides.data.gouv.fr/reutiliser-des-donnees"
+                color="tertiary"
+                :icon="RiArrowRightLine"
+                :icon-right="true"
+                size="sm"
+              >
+                Voir les guides sur l'utilisation des données
+              </BrandedButton>
+            </div>
+          </template>
+        </SupportCard>
+        <SupportCard
+          image="/img/forum.svg"
+          title="Forum"
+          description="Echangez avec la communauté, partagez vos retours sur la plateforme et demandez l'ouverture de données."
+        >
+          <template #link>
+            <div class="flex flex-col items-end mt-1 *:font-bold *:h-8">
+              <BrandedButton
+                href="https://forum.data.gouv.fr/c/recherche-et-ouverture-de-donnees/"
+                color="tertiary"
+                :icon="RiArrowRightLine"
+                :icon-right="true"
+                size="sm"
+              >
+                Voir les recherches des données
+              </BrandedButton>
+              <BrandedButton
+                href="https://forum.data.gouv.fr/c/retours-sur-la-plateforme-data-gouv-fr/"
+                color="tertiary"
+                :icon="RiArrowRightLine"
+                :icon-right="true"
+                size="sm"
+              >
+                Voir les retours sur la plateforme data.gouv.fr
+              </BrandedButton>
+              <BrandedButton
+                :href="config.public.forumUrl"
+                color="tertiary"
+                :icon="RiArrowRightLine"
+                :icon-right="true"
+                size="sm"
+              >
+                Voir les autres questions / réponses
+              </BrandedButton>
+            </div>
           </template>
         </SupportCard>
       </div>
