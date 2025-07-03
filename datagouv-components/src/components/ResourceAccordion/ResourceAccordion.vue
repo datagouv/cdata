@@ -183,7 +183,7 @@
                     <p class="fr-alert__title">{{ $t('Aperçu tronqué') }}</p>
                     <p>{{ $t('Le fichier JSON est trop volumineux ({size} caractères). Seuls les premiers {max} caractères sont affichés.', {
                       size: jsonData._originalSize,
-                      max: MAX_JSON_SIZE
+                      max: config.maxJsonPreviewSize || 10000
                     }) }}</p>
                   </div>
 
@@ -370,7 +370,6 @@ import Preview from './Preview.vue'
 import Pmtiles from './Pmtiles.vue'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles']
-const MAX_JSON_SIZE = 2000 // Maximum size of JSON to preview
 
 const props = withDefaults(defineProps<{
   dataset: Dataset | DatasetV2
@@ -512,9 +511,10 @@ const fetchJsonData = async () => {
 
       // Truncate large JSON objects to avoid performance issues
       const jsonString = JSON.stringify(data, null, 2)
-      if (jsonString.length > MAX_JSON_SIZE) {
+      const maxSize = config.maxJsonPreviewSize || 10000
+      if (jsonString.length > maxSize) {
         // Keep only the first part and add a truncation indicator
-        const truncated = jsonString.substring(0, MAX_JSON_SIZE)
+        const truncated = jsonString.substring(0, maxSize)
         try {
           // Try to parse the truncated JSON, if it fails, use the original data
           const parsedData = JSON.parse(truncated + '...')
