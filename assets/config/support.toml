@@ -59,7 +59,7 @@ title = "Votre question porte sur ?"
 
     [[choices.choices.choices]]
     label = "Cadastre"
-    id = "decoupage"
+    id = "cadastre"
     answer = "cadastre"
     button_link = "https://guides.data.gouv.fr/reutiliser-des-donnees/autour-du-cadastre/faq-cadastre"
     button_text = "Voir la foire aux questions dédiée"
