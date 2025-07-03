@@ -92,6 +92,17 @@ To work with [Nuxt](https://nuxt.com/), some components are doing HTTP requests 
 
 For general development guidelines and contributing, see the [contributing section](../README.md#-contributing) in the main README.
 
+### Code Linting and Formatting
+
+This component library uses both ESLint and Prettier for code quality and formatting:
+
+```bash
+npm run lint    # Lint and auto-fix ESLint issues
+npm run format  # Format code with Prettier
+```
+
+**Note:** Make sure to run both commands before submitting contributions to ensure consistent code style.
+
 ### Config
 
 You can use the config with the composable `useComponentsConfig()`.

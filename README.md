@@ -162,12 +162,16 @@ The application will be available at `http://localhost:3000`.
 - Write clear commit messages using [conventional commits](https://www.conventionalcommits.org/)
 
 ### 🧹 Code Linting and Formatting
-The project uses [ESLint](https://eslint.org/) for code linting and [Prettier](https://prettier.io/) for code formatting to maintain consistent code style. **Running these commands is required before submitting contributions.**
+The project uses [ESLint](https://eslint.org/) for code linting and formatting to maintain consistent code style. **Running these commands is required before submitting contributions.**
 
 ```bash
 npm run lint          # Check for code style violations and potential issues
-npm run lint:fix      # Automatically fix ESLint issues and format code with Prettier
+npm run lint:fix      # Automatically fix ESLint issues and format code
 ```
+
+**Note:** Prettier is only used in the `datagouv-components` subdirectory. The main project relies on ESLint's built-in formatting capabilities.
+
+> **TODO:** Consider adding Prettier to the main project for more consistent code formatting across the entire codebase.
 
 #### Pre-commit Hooks
 
