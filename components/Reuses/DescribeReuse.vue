@@ -20,7 +20,7 @@
           :state="accordionState('title')"
         >
           <p class="fr-m-0">
-            {{ t('Préférez un titre qui permet de comprendre l’usage qui est fait des données plutôt que le nom du site ou de l’application (« Moteur de recherche des accords d’entreprises » plutôt que « Accords-entreprise.fr » par exemple).') }}
+            {{ t('Préférez un titre qui permet de comprendre l’usage qui est fait des données plutôt que le nom du site ou de l’application (« Moteur de recherche des accords d’entreprises » plutôt que « Accords-entreprise.fr » par exemple).') }}
           </p>
         </Accordion>
         <Accordion
@@ -304,7 +304,7 @@
               :label="$t('Image de couverture')"
               type="drop"
               accept=".jpeg, .jpg, .png"
-              :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
+              :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
               :has-error="!!getFirstError('image')"
               :has-warning="!!getFirstWarning('image')"
               :error-text="getFirstError('image')"

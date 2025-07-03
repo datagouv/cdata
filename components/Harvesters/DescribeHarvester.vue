@@ -16,7 +16,7 @@
       />
       <div class="w-full">
         <p class="font-bold mb-1">
-          {{ $t('Qu’est-ce que le moissonnage ?') }}
+          {{ $t('Qu’est-ce que le moissonnage ?') }}
         </p>
         <p class="m-0 text-xs/5">
           {{ $t('Le moissonnage est un mécanisme permettant de collecter les métadonnées sur un catalogue distant et de les stocker sur une autre plateforme afin de proposer un second point d’accès aux données.') }}

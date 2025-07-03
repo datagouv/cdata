@@ -11,7 +11,7 @@
         </div>
         <div class="fr-col">
           <p class="fr-m-0 fr-text--bold">
-            {{ $t('Votre réutilisation est créée !') }}
+            {{ $t('Votre réutilisation est créée !') }}
           </p>
           <p class="fr-m-0 fr-text--xs">
             {{ $t('Vous pouvez maintenant le publier ou le sauvegarder en brouillon.') }}

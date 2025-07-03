@@ -5,7 +5,7 @@
         {{ $t('S\'enregistrer') }}
       </h1>
 
-      <p><a :href="config.public.guidesCreateAccount">{{ $t('Pourquoi créer un compte ?') }}</a></p>
+      <p><a :href="config.public.guidesCreateAccount">{{ $t('Pourquoi créer un compte ?') }}</a></p>
 
       <form
         class="space-y-6"

@@ -31,6 +31,7 @@ def detect_irregular_whitespace(file_path):
             '\u2008',  # PUNCTUATION SPACE
             '\u2009',  # THIN SPACE
             '\u200A',  # HAIR SPACE
+            '\u202F',  # NARROW NO-BREAK SPACE
             '\u205F',  # MEDIUM MATHEMATICAL SPACE
             '\u3000',  # IDEOGRAPHIC SPACE
         ]
@@ -87,6 +88,7 @@ def fix_irregular_whitespace(file_path):
             '\u2008',  # PUNCTUATION SPACE
             '\u2009',  # THIN SPACE
             '\u200A',  # HAIR SPACE
+            '\u202F',  # NARROW NO-BREAK SPACE
             '\u205F',  # MEDIUM MATHEMATICAL SPACE
             '\u3000',  # IDEOGRAPHIC SPACE
         ]
@@ -95,7 +97,7 @@ def fix_irregular_whitespace(file_path):
             content = content.replace(char, ' ')
         
         # Also fix any remaining irregular whitespace with regex
-        content = re.sub(r'[\u00A0\u200B\u200C\u200D\u2060\uFEFF\u2028\u2029\u1680\u180E\u2000-\u200A\u205F\u3000]', ' ', content)
+        content = re.sub(r'[\u00A0\u200B\u200C\u200D\u2060\uFEFF\u2028\u2029\u1680\u180E\u2000-\u200A\u202F\u205F\u3000]', ' ', content)
         
         # Only write if content changed
         if content != original_content:

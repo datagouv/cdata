@@ -54,7 +54,7 @@
       {{ $t("Attention, cette action ne peut pas être annulée.") }}
       <template #button>
         <ModalWithButton
-          :title="$t('Êtes-vous sûrs de vouloir supprimer ce moissonneur ?')"
+          :title="$t('Êtes-vous sûrs de vouloir supprimer ce moissonneur ?')"
           size="lg"
         >
           <template #button="{ attrs, listeners }">

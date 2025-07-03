@@ -110,7 +110,7 @@
         <CopyButton
           :hide-label="true"
           :label="$t(`Copier l'intégration`)"
-          :copied-label="$t('Intégration copiée !')"
+          :copied-label="$t('Intégration copiée !')"
           class="fr-my-1w fr-mr-1w"
           :text="getDatasetOEmbedHtml('dataset', dataset.id)"
         />

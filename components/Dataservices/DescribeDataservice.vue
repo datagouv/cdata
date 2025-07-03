@@ -102,7 +102,7 @@
           :state="accordionState('access_type')"
         >
           <p class="fr-m-0">
-            {{ $t("Choisissez le type d’accès (ouvert, ouvert avec compte ou restreint). Sélectionnez « ouvert » si les données sont en open data. Sélectionnez « ouvert avec compte » si l'accès aux données est soumis à la nécessité de posséder un compte. Si vous sélectionnez « restreint », précisez les types de publics éligibles à obtenir l'accès à cette API.") }}
+            {{ $t("Choisissez le type d’accès (ouvert, ouvert avec compte ou restreint). Sélectionnez « ouvert » si les données sont en open data. Sélectionnez « ouvert avec compte » si l'accès aux données est soumis à la nécessité de posséder un compte. Si vous sélectionnez « restreint », précisez les types de publics éligibles à obtenir l'accès à cette API.") }}
           </p>
         </Accordion>
         <Accordion

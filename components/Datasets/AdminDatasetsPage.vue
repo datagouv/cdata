@@ -84,7 +84,7 @@
           v-if="q"
           class="fr-text--bold fr-my-3v"
         >
-          {{ t(`Pas de résultats pour « {q} »`, { q }) }}
+          {{ t(`Pas de résultats pour « {q} »`, { q }) }}
         </p>
         <p
           v-else

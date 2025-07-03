@@ -1,6 +1,6 @@
 <template>
   <ModalWithButton
-    :title="t('Êtes-vous sûrs de vouloir supprimer ce message ?')"
+    :title="t('Êtes-vous sûrs de vouloir supprimer ce message ?')"
     size="lg"
     form
     @submit.prevent="deleteMessage"

@@ -56,7 +56,7 @@
               />
               <i18n-t
                 v-if="query"
-                keypath="Rechercher « {query} » dans les {type}"
+                keypath="Rechercher « {query} » dans les {type}"
                 class="flex-1"
                 tag="div"
                 scope="global"

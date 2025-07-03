@@ -37,7 +37,7 @@
         color="secondary"
         :href="config.public.reuseGuideUrl"
       >
-        {{ $t(`Qu'est-ce qu'une réutilisation ?`) }}
+        {{ $t(`Qu'est-ce qu'une réutilisation ?`) }}
       </BrandedButton>
     </div>
   </div>

@@ -20,21 +20,21 @@
         </div>
         <div class="p-3">
           <div v-if="validataStatus === 'ok'">
-            {{ t("Ce fichier est valide pour le schéma :") }} <component
+            {{ t("Ce fichier est valide pour le schéma :") }} <component
               :is="documentationUrl ? 'a' : 'span'"
               :href="documentationUrl"
               class="fr-link fr-text--sm"
             >{{ title }}</component>.
           </div>
           <div v-if="validataStatus === 'warnings'">
-            {{ t("Ce fichier est valide pour le schéma :") }} <component
+            {{ t("Ce fichier est valide pour le schéma :") }} <component
               :is="documentationUrl ? 'a' : 'span'"
               :href="documentationUrl"
               class="fr-link fr-text--sm"
             >{{ title }}</component>. {{ t("Mais sa conformité peut être améliorée.") }}
           </div>
           <div v-if="validataStatus === 'ko'">
-            {{ t("Ce fichier indique suivre le schéma :") }} <component
+            {{ t("Ce fichier indique suivre le schéma :") }} <component
               :is="documentationUrl ? 'a' : 'span'"
               :href="documentationUrl"
               class="fr-link fr-text--sm"

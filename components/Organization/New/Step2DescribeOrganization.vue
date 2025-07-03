@@ -147,7 +147,7 @@
         <UploadGroup
           :label="t('Logo')"
           :title="t('Logo')"
-          :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
+          :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
           accept=".jpeg, .jpg, .png"
           :is-valid="!!file"
           :valid-text="t('Votre fichier est valide')"

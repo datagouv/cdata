@@ -106,7 +106,7 @@
               color="primary-soft"
               class="w-full sm:w-auto"
             >
-              {{ $t('Comment publier des données ?') }}
+              {{ $t('Comment publier des données ?') }}
             </BrandedButton>
           </div>
         </div>
@@ -195,7 +195,7 @@
               color="primary-soft"
               class="w-full sm:w-auto"
             >
-              {{ $t('Comment réutiliser des données ?') }}
+              {{ $t('Comment réutiliser des données ?') }}
             </BrandedButton>
           </div>
         </div>

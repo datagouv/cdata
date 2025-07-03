@@ -6,7 +6,7 @@
       </h1>
 
       <p class="text-gray-plain text-sm">
-        {{ $t('Vous avez oublié votre mot de passe ? Saisissez votre adresse email ci-dessous et nous vous enverrons les instructions pour en définir un nouveau.') }}
+        {{ $t('Vous avez oublié votre mot de passe ? Saisissez votre adresse email ci-dessous et nous vous enverrons les instructions pour en définir un nouveau.') }}
       </p>
 
       <form

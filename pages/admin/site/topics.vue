@@ -80,7 +80,7 @@
       />
       <template v-if="q">
         <p class="fr-text--bold fr-my-3v">
-          {{ t(`Pas de résultats pour « {q} »`, { q }) }}
+          {{ t(`Pas de résultats pour « {q} »`, { q }) }}
         </p>
         <BrandedButton
           color="primary"
