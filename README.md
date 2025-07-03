@@ -59,6 +59,38 @@ You can try to :
 1. disable devtools
 2. add `overrides` to the package.json and lock `"chokidar": "^3.6.0"`
 
+## 🧹 Code Linting and Formatting
+
+This project uses ESLint for code linting and formatting. You can run these tools manually or they will run automatically before each commit.
+
+### Manual Linting and Formatting
+
+```bash
+# Check for issues
+npm run lint
+
+# Fix auto-fixable issues
+npm run lint:fix
+```
+
+### Pre-commit Hooks
+
+The project uses [husky](https://typicode.github.io/husky/) and [lint-staged](https://github.com/okonet/lint-staged) to run linting before each commit:
+
+- **Automatic linting**: ESLint runs on all staged `.js`, `.ts`, `.vue`, `.jsx`, `.tsx` files
+- **Auto-fix**: Fixable issues are automatically corrected
+- **Commit blocking**: Unfixable errors prevent the commit until resolved
+
+### Configuration
+
+The pre-commit setup is configured in:
+- `package.json`: lint-staged configuration
+- `.husky/pre-commit`: Git hook script
+
+## 🤝 Contributing
+
+Before contributing, please ensure your code follows our quality standards. See the [Linting and Formatting](#-linting-and-formatting) section above for details on running ESLint and the pre-commit hooks.
+
 ## Production
 
 Build the application for production:
