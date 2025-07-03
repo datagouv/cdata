@@ -72,6 +72,9 @@ npm run lint:fix     # Automatically fix ESLint issues and format code
 - `NUXT_PUBLIC_API_BASE`: Base URL for API calls
 - `NUXT_PUBLIC_DEV_API_KEY`: API key for development environment  
 - `NUXT_PUBLIC_COMMIT_ID`: Git commit ID (auto-generated in dev mode)
+- `NUXT_PUBLIC_SENTRY_DSN`: Sentry DSN for error tracking
+- `NUXT_TEMPLATE_CACHE_DURATION`: Duration for template caching
+- `NUXT_PUBLIC_I18N_BASE_URL`: Base URL for internationalization
 
 You can work on `cdata` without a local `udata` backend by pointing to https://demo.data.gouv.fr directly. Create a `.env` file at the root of the project:
 
@@ -177,6 +180,9 @@ The project includes some test data and test IDs for component testing, but form
 - [DSFR Documentation](https://www.systeme-de-design.gouv.fr/)
 - [data.gouv.fr API Documentation](https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/api/reference)
 - [data.gouv.fr Guides](https://guides.data.gouv.fr/)
+
+### 📦 Component Library
+- [@datagouv/components Documentation](./datagouv-components/README.md) - Documentation for the shared component library used by this project. This library provides reusable Vue components, utilities, and configurations that are shared across multiple data.gouv.fr applications. It includes components for datasets, organizations, resources, and other common UI elements used throughout the platform.
 
 ## 📄 License
 
