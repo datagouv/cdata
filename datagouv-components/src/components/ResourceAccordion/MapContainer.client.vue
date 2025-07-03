@@ -105,7 +105,7 @@ async function displayMap() {
   map.addControl(layerImport)
 
   // Wait for GetCapabilities to be called before trying to show layer
-  // TODO: use signal handling to know whether GetCapabilities failed or not 
+  // TODO: use signal handling to know whether GetCapabilities failed or not
   const waitTimeout = 500
   let retry = 20
   function showLayer() {
