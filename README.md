@@ -52,7 +52,8 @@ npm run dev
 npm run dev          # Start development server
 npm run build        # Build for production
 npm run preview      # Preview production build
-npm run type-check   # Check TypeScript types
+npm run lint         # Check for code style violations
+npm run lint:fix     # Automatically fix ESLint issues and format code
 ```
 
 ## 🛠️ Technology Stack
