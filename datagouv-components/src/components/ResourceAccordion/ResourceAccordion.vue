@@ -341,8 +341,6 @@
 import { ref, computed, defineAsyncComponent, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine } from '@remixicon/vue'
-import { JsonViewer } from 'vue3-json-viewer'
-import 'vue3-json-viewer/dist/vue3-json-viewer.css'
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
 import { filesize, summarize } from '../../functions/helpers'
 import { markdown } from '../../functions/markdown'
@@ -387,6 +385,10 @@ const config = useComponentsConfig()
 
 const Swagger = defineAsyncComponent(() => import('./Swagger.vue'))
 const MapContainer = defineAsyncComponent(() => import('./MapContainer.client.vue'))
+const JsonViewer = defineAsyncComponent(() => import('vue3-json-viewer').then(module => {
+  import('vue3-json-viewer/dist/vue3-json-viewer.css')
+  return { default: module.JsonViewer }
+}))
 
 const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
