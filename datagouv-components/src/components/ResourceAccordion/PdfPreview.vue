@@ -2,7 +2,7 @@
   <div class="text-xs">
     <div v-if="pdfData">
       <PDF
-        :src="resource.url"
+        :src="props.resource.url"
         :show-progress="true"
         progress-color="#0063cb"
         :show-page-tooltip="true"
@@ -45,7 +45,7 @@
       class="flex items-center space-x-2"
     >
       <RiErrorWarningLine class="shink-0 size-6" />
-      <span>{{ $t("Erreur lors du chargement de l'aperçu PDF.") }}</span>
+      <span>{{ $t("Erreur lors du chargement de l'aperçu PDF. Pour consulter le fichier, téléchargez-le depuis l'onglet Téléchargements.") }}</span>
     </SimpleBanner>
   </div>
 </template>
@@ -112,12 +112,18 @@ const loadPdf = async () => {
   error.value = false
 
   try {
-    // For PDF, we don't need to fetch the data, just set pdfData to true
-    // The PDF component will handle the loading
+    // Test if the PDF URL is accessible
+    const response = await fetch(props.resource.url, { method: 'HEAD' })
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    // If the URL is accessible, set pdfData to true
+    // The PDF component will handle the actual loading
     pdfData.value = true
   }
   catch (err) {
-    console.error('Error loading PDF:', err)
+    console.error('Error testing PDF URL:', err)
     error.value = true
     pdfData.value = false
   }
