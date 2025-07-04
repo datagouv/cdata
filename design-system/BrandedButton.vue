@@ -1,5 +1,5 @@
 <template>
-  <div class="flex space-x-5">
+  <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
     <div
       v-for="({ disabled, loading, as }, index) in [
         { disabled: false, loading: false, as: 'button' },
@@ -51,5 +51,5 @@
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
-import { RiDeleteBinLine, RiDraggable, RiLightbulbFlashLine } from '@remixicon/vue'
+import { RiLightbulbFlashLine } from '@remixicon/vue'
 </script>
