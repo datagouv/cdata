@@ -208,7 +208,7 @@
               v-if="tab.key === 'data-structure'"
             >
               <DataStructure
-                v-if="hasPreview"
+                v-if="hasTabularData"
                 :resource="resource"
               />
             </div>
@@ -305,7 +305,7 @@
             >
               <div>{{ t("Swagger généré automatiquement par {platform}. Ce swagger vous permet d'interroger les données par API en les filtrant par valeur de colonne.", { platform: config.name }) }}</div>
               <Swagger
-                v-if="hasPreview"
+                v-if="hasTabularData"
                 :url="`${config.tabularApiUrl}/api/resources/${props.resource.id}/swagger/`"
               />
             </div>
@@ -369,13 +369,25 @@ const MapContainer = defineAsyncComponent(() => import('./MapContainer.client.vu
 const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
 
-const hasPreview = computed(() => {
-  // For JSON files, we can show preview without needing the tabular API parsing
+const hasJsonPreview = computed(() => {
+  // Determines if we should show the "Données" tab for JSON files (for JSON viewer)
   if (props.resource.format && props.resource.format.toLowerCase() === 'json') {
     return true
   }
 
-  // For other files, use the existing tabular preview logic
+  // For remote URL resources, check if they point to JSON files
+  if (props.resource.filetype === 'remote' && props.resource.url) {
+    const url = props.resource.url.toLowerCase()
+    if (url.endsWith('.json') || url.includes('.json')) {
+      return true
+    }
+  }
+
+  return false
+})
+
+const hasTabularData = computed(() => {
+  // Determines if we should show the "Données" tab for tabular files AND the "Structure des données" tab (for tabular data structure)
   return config.tabularApiUrl
     && props.resource.extras['analysis:parsing:finished_at']
     && !props.resource.extras['analysis:parsing:error']
@@ -418,7 +430,7 @@ const toggle = () => {
 const tabsOptions = computed(() => {
   const options = []
 
-  if (hasPreview.value) {
+  if (hasTabularData.value || hasJsonPreview.value) {
     options.push({ key: 'data', label: t('Données') })
   }
 
@@ -430,14 +442,14 @@ const tabsOptions = computed(() => {
     options.push({ key: 'description', label: t('Description') })
   }
 
-  if (hasPreview.value) {
+  if (hasTabularData.value) {
     options.push({ key: 'data-structure', label: t('Structure des données') })
   }
 
   options.push({ key: 'metadata', label: t('Métadonnées') })
   options.push({ key: 'downloads', label: t('Téléchargements') })
 
-  if (hasPreview.value) {
+  if (hasTabularData.value) {
     options.push({ key: 'swagger', label: t('Swagger') })
   }
 
