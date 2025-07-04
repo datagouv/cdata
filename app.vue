@@ -30,6 +30,7 @@ app.vueApp.use(datagouv, {
   textClamp: TextClamp,
   appLink: NuxtLinkLocale,
   maxJsonPreviewSize: 10000, // Maximum size of JSON to preview in characters
+  maxPdfPreviewSize: 10000000, // Maximum size of PDF to preview in bytes (10 MB)
 })
 
 useHeadSafe({

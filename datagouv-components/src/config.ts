@@ -19,6 +19,7 @@ export type PluginConfig = {
   textClamp?: string | Component | null
   appLink?: Component | null
   maxJsonPreviewSize?: number // Maximum size of JSON to preview in characters
+  maxPdfPreviewSize?: number // Maximum size of PDF to preview in bytes
   i18n?: {
     global: {
       mergeLocaleMessage: (locale: string, messages: unknown) => void
