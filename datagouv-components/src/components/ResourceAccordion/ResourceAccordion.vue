@@ -337,7 +337,7 @@ import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
 import Pmtiles from './Pmtiles.vue'
 
-const GENERATED_FORMATS = ['parquet', 'pmtiles']
+const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 
 const props = withDefaults(defineProps<{
   dataset: Dataset | DatasetV2
