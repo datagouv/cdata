@@ -317,7 +317,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent, onMounted } from 'vue'
+import { ref, computed, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine } from '@remixicon/vue'
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
@@ -405,8 +405,8 @@ const generatedFormats = computed(() => {
   return GENERATED_FORMATS
     .filter(format => `analysis:parsing:${format}_url` in props.resource.extras)
     .map(format => ({
-      url: props.resource.extras[`analysis:parsing:${format}_url`],
-      size: props.resource.extras[`analysis:parsing:${format}_size`],
+      url: props.resource.extras[`analysis:parsing:${format}_url`] as string,
+      size: props.resource.extras[`analysis:parsing:${format}_size`] as number | undefined,
       format: format,
     }))
 })
@@ -480,8 +480,6 @@ const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset,
 const resourceContentId = 'resource-' + props.resource.id
 const resourceHeaderId = 'resource-' + props.resource.id + '-header'
 const resourceTitleId = getResourceTitleId(props.resource)
-
-
 </script>
 
 <style scoped>
