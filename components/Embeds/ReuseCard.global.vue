@@ -1,7 +1,7 @@
 <template>
   <LoadingBlock
     :status
-    class="bg-transparent"
+    class="bg-transparent overflow-hidden"
   >
     <ReuseCard
       v-if="data"
