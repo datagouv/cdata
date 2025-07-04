@@ -17,27 +17,34 @@
     >
       {{ $t('Chargement de l\'aperçu JSON...') }}
     </div>
-    <div
+    <SimpleBanner
       v-else-if="fileTooLarge"
-      class="text-gray-medium"
+      type="warning"
+      class="flex items-center space-x-2"
     >
-      {{ fileSizeBytes
+      <RiErrorWarningLine class="shink-0 size-6" />
+      <span>{{ fileSizeBytes
         ? $t('Fichier JSON trop volumineux pour l\'aperçu. Pour consulter le fichier complet, téléchargez-le depuis l\'onglet Téléchargements.')
         : $t('L\'aperçu n\'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le depuis l\'onglet Téléchargements.')
-      }}
-    </div>
-    <div
+      }}</span>
+    </SimpleBanner>
+    <SimpleBanner
       v-else-if="error"
-      class="text-gray-medium"
+      type="warning"
+      class="flex items-center space-x-2"
     >
-      {{ $t('Erreur lors du chargement de l\'aperçu JSON.') }}
-    </div>
+      <RiErrorWarningLine class="shink-0 size-6" />
+      <span>{{ $t('Erreur lors du chargement de l\'aperçu JSON.') }}</span>
+    </SimpleBanner>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, defineAsyncComponent, computed } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { RiErrorWarningLine } from '@remixicon/vue'
+
 import { useComponentsConfig } from '../../config'
+import SimpleBanner from '../SimpleBanner.vue'
 import type { Resource } from '../../types/resources'
 
 const JsonViewer = defineAsyncComponent(() =>
