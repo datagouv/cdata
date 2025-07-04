@@ -371,16 +371,16 @@ const { formatRelativeIfRecentDate } = useFormatDate()
 
 const hasJsonPreview = computed(() => {
   // Determines if we should show the "Données" tab for JSON files (for JSON viewer)
-  if (props.resource.format && props.resource.format.toLowerCase() === 'json') {
-    return true
+  // Only show JSON preview for local files, not remote ones
+  // TODO: Once CORS issues are fixed for remote JSONs, remove this check to allow remote JSON preview
+  if (props.resource.filetype === 'remote') {
+    console.log(`[JSON Preview] Skipping remote JSON file due to CORS: ${props.resource.url}`)
+    return false
   }
 
-  // For remote URL resources, check if they point to JSON files
-  if (props.resource.filetype === 'remote' && props.resource.url) {
-    const url = props.resource.url.toLowerCase()
-    if (url.endsWith('.json') || url.includes('.json')) {
-      return true
-    }
+  // For JSON files, show preview (JSON viewer)
+  if (props.resource.format && props.resource.format.toLowerCase() === 'json') {
+    return true
   }
 
   return false
