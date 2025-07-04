@@ -45,7 +45,7 @@
       class="flex items-center space-x-2"
     >
       <RiErrorWarningLine class="shink-0 size-6" />
-      <span>{{ $t('Erreur lors du chargement de l\'aperçu PDF.') }}</span>
+      <span>{{ $t("Erreur lors du chargement de l'aperçu PDF.") }}</span>
     </SimpleBanner>
   </div>
 </template>
