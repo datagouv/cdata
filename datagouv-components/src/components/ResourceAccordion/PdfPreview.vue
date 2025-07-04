@@ -26,7 +26,7 @@
       v-else-if="loading"
       class="text-gray-medium"
     >
-      {{ $t('Chargement de l\'aperçu PDF...') }}
+      {{ $t("Chargement de l'aperçu PDF...") }}
     </div>
     <SimpleBanner
       v-else-if="fileTooLarge"
