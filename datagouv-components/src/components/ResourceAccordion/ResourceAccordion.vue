@@ -175,6 +175,11 @@
             class="px-4"
           >
             <div v-if="tab.key === 'data'">
+              <!-- Show JSON viewer for JSON files -->
+              <JsonPreview
+                v-if="resource.format && resource.format.toLowerCase() === 'json'"
+                :resource="resource"
+              />
               <!-- Show PDF viewer for PDF files -->
               <PdfPreview
                 v-if="resource.format && resource.format.toLowerCase() === 'pdf'"
@@ -345,6 +350,7 @@ import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
 import Pmtiles from './Pmtiles.vue'
+import JsonPreview from './JsonPreview.vue'
 import PdfPreview from './PdfPreview.vue'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
@@ -369,21 +375,21 @@ const MapContainer = defineAsyncComponent(() => import('./MapContainer.client.vu
 const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
 
-const hasPdfPreview = computed(() => {
-  // Determines if we should show the "Données" tab for PDF files (for PDF viewer)
-  // Only show PDF preview for local files, not remote ones
-  // TODO: Once CORS issues are fixed for remote PDFs, remove this check to allow remote PDF preview
+const hasPreview = computed(() => {
+  // Determines if we should show the "Données" tab for previewable files (JSON, PDF)
+  // Only show preview for local files, not remote ones due to CORS issues
+  // TODO: Once CORS issues are fixed for remote files, remove this check to allow remote preview
   if (props.resource.filetype === 'remote') {
-    console.log(`[PDF Preview] Skipping remote PDF file due to CORS: ${props.resource.url}`)
+    const format = props.resource.format?.toLowerCase()
+    if (format === 'json' || format === 'pdf') {
+      console.log(`[${format.toUpperCase()} Preview] Skipping remote ${format} file due to CORS: ${props.resource.url}`)
+    }
     return false
   }
 
-  // For PDF files, show preview (PDF viewer)
-  if (props.resource.format && props.resource.format.toLowerCase() === 'pdf') {
-    return true
-  }
-
-  return false
+  // For JSON and PDF files, show preview
+  const format = props.resource.format?.toLowerCase()
+  return format === 'json' || format === 'pdf'
 })
 
 const hasTabularData = computed(() => {
@@ -430,7 +436,7 @@ const toggle = () => {
 const tabsOptions = computed(() => {
   const options = []
 
-  if (hasTabularData.value || hasPdfPreview.value) {
+  if (hasTabularData.value || hasPreview.value) {
     options.push({ key: 'data', label: t('Données') })
   }
 

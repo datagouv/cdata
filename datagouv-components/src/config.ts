@@ -8,16 +8,17 @@ export type PluginConfig = {
   devApiKey?: string | null
   staticUrl: string
   datasetQualityGuideUrl?: string
-  schemaValidataUrl: string
-  schemaDocumentationUrl: string
+  schemaValidataUrl?: string
+  schemaDocumentationUrl?: string
   tabularApiUrl?: string
   tabularApiPageSize?: number
   tabularAllowRemote?: boolean
   tabularApiDataserviceId?: string
-  pmtilesViewerBaseUrl: string // Base URL of a pmtiles viewer (ex: https://pmtiles.io/#url=)
+  pmtilesViewerBaseUrl?: string | null // Base URL of a pmtiles viewer (ex: https://pmtiles.io/#url=)
   customUseFetch?: UseFetchFunction | null
   textClamp?: string | Component | null
   appLink?: Component | null
+  maxJsonPreviewSize?: number // Maximum size of JSON to preview in characters
   maxPdfPreviewSize?: number // Maximum size of PDF to preview in bytes
   i18n?: {
     global: {
