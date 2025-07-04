@@ -36,7 +36,7 @@
       <RiErrorWarningLine class="shink-0 size-6" />
       <span>{{ fileSizeBytes
         ? $t('Fichier PDF trop volumineux pour l\'aperçu. Pour consulter le fichier complet, téléchargez-le depuis l\'onglet Téléchargements.')
-        : $t('L\'aperçu n\'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le depuis l\'onglet Téléchargements.')
+        : $t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le depuis l'onglet Téléchargements.")
       }}</span>
     </SimpleBanner>
     <SimpleBanner
