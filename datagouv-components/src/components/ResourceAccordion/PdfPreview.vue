@@ -1,5 +1,5 @@
 <template>
-  <div class="fr-text--xs">
+  <div class="text-xs">
     <div v-if="pdfData">
       <PDF
         :src="resource.url"
