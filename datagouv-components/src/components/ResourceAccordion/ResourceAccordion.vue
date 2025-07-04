@@ -175,7 +175,16 @@
             class="px-4"
           >
             <div v-if="tab.key === 'data'">
-              <Preview :resource="resource" />
+              <!-- Show PDF viewer for PDF files -->
+              <PdfPreview
+                v-if="resource.format && resource.format.toLowerCase() === 'pdf'"
+                :resource="resource"
+              />
+              <!-- Show regular preview for other file types -->
+              <Preview
+                v-else
+                :resource="resource"
+              />
             </div>
             <div v-if="tab.key === 'map'">
               <Pmtiles
@@ -199,7 +208,7 @@
               v-if="tab.key === 'data-structure'"
             >
               <DataStructure
-                v-if="hasPreview"
+                v-if="hasTabularData"
                 :resource="resource"
               />
             </div>
@@ -296,7 +305,7 @@
             >
               <div>{{ t("Swagger généré automatiquement par {platform}. Ce swagger vous permet d'interroger les données par API en les filtrant par valeur de colonne.", { platform: config.name }) }}</div>
               <Swagger
-                v-if="hasPreview"
+                v-if="hasTabularData"
                 :url="`${config.tabularApiUrl}/api/resources/${props.resource.id}/swagger/`"
               />
             </div>
@@ -336,6 +345,7 @@ import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
 import Pmtiles from './Pmtiles.vue'
+import PdfPreview from './PdfPreview.vue'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 
@@ -359,7 +369,25 @@ const MapContainer = defineAsyncComponent(() => import('./MapContainer.client.vu
 const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
 
-const hasPreview = computed(() => {
+const hasPdfPreview = computed(() => {
+  // Determines if we should show the "Données" tab for PDF files (for PDF viewer)
+  // Only show PDF preview for local files, not remote ones
+  // TODO: Once CORS issues are fixed for remote PDFs, remove this check to allow remote PDF preview
+  if (props.resource.filetype === 'remote') {
+    console.log(`[PDF Preview] Skipping remote PDF file due to CORS: ${props.resource.url}`)
+    return false
+  }
+
+  // For PDF files, show preview (PDF viewer)
+  if (props.resource.format && props.resource.format.toLowerCase() === 'pdf') {
+    return true
+  }
+
+  return false
+})
+
+const hasTabularData = computed(() => {
+  // Determines if we should show the "Données" tab for tabular files AND the "Structure des données" tab (for tabular data structure)
   return config.tabularApiUrl
     && props.resource.extras['analysis:parsing:finished_at']
     && !props.resource.extras['analysis:parsing:error']
@@ -381,8 +409,8 @@ const generatedFormats = computed(() => {
   return GENERATED_FORMATS
     .filter(format => `analysis:parsing:${format}_url` in props.resource.extras)
     .map(format => ({
-      url: props.resource.extras[`analysis:parsing:${format}_url`],
-      size: props.resource.extras[`analysis:parsing:${format}_size`],
+      url: props.resource.extras[`analysis:parsing:${format}_url`] as string,
+      size: props.resource.extras[`analysis:parsing:${format}_size`] as number | undefined,
       format: format,
     }))
 })
@@ -402,7 +430,7 @@ const toggle = () => {
 const tabsOptions = computed(() => {
   const options = []
 
-  if (hasPreview.value) {
+  if (hasTabularData.value || hasPdfPreview.value) {
     options.push({ key: 'data', label: t('Données') })
   }
 
@@ -414,14 +442,14 @@ const tabsOptions = computed(() => {
     options.push({ key: 'description', label: t('Description') })
   }
 
-  if (hasPreview.value) {
+  if (hasTabularData.value) {
     options.push({ key: 'data-structure', label: t('Structure des données') })
   }
 
   options.push({ key: 'metadata', label: t('Métadonnées') })
   options.push({ key: 'downloads', label: t('Téléchargements') })
 
-  if (hasPreview.value) {
+  if (hasTabularData.value) {
     options.push({ key: 'swagger', label: t('Swagger') })
   }
 

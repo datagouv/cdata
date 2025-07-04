@@ -18,6 +18,7 @@ export type PluginConfig = {
   customUseFetch?: UseFetchFunction | null
   textClamp?: string | Component | null
   appLink?: Component | null
+  maxPdfPreviewSize?: number // Maximum size of PDF to preview in bytes
   i18n?: {
     global: {
       mergeLocaleMessage: (locale: string, messages: unknown) => void
