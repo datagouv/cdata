@@ -174,6 +174,16 @@
             :key="tab.key"
             class="px-4"
           >
+            <div v-if="tab.key === 'map'">
+              <Pmtiles
+                v-if="hasPmtiles"
+                :resource="resource"
+              />
+              <MapContainer
+                v-if="ogcWms"
+                :resource="resource"
+              />
+            </div>
             <div v-if="tab.key === 'data'">
               <!-- Show JSON viewer for JSON files -->
               <JsonPreview
@@ -188,16 +198,6 @@
               <!-- Show regular preview for other file types -->
               <Preview
                 v-else
-                :resource="resource"
-              />
-            </div>
-            <div v-if="tab.key === 'map'">
-              <Pmtiles
-                v-if="hasPmtiles"
-                :resource="resource"
-              />
-              <MapContainer
-                v-if="ogcWms"
                 :resource="resource"
               />
             </div>
