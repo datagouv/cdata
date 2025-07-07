@@ -174,6 +174,16 @@
             :key="tab.key"
             class="px-4"
           >
+            <div v-if="tab.key === 'map'">
+              <Pmtiles
+                v-if="hasPmtiles"
+                :resource="resource"
+              />
+              <MapContainer
+                v-if="ogcWms"
+                :resource="resource"
+              />
+            </div>
             <div v-if="tab.key === 'data'">
               <!-- Show JSON viewer for JSON files -->
               <JsonPreview
@@ -188,16 +198,6 @@
               <!-- Show regular preview for other file types -->
               <Preview
                 v-else
-                :resource="resource"
-              />
-            </div>
-            <div v-if="tab.key === 'map'">
-              <Pmtiles
-                v-if="hasPmtiles"
-                :resource="resource"
-              />
-              <MapContainer
-                v-if="ogcWms"
                 :resource="resource"
               />
             </div>
@@ -389,10 +389,9 @@ const hasPreview = computed(() => {
 const hasTabularData = computed(() => {
   // Determines if we should show the "Données" tab for tabular files AND the "Structure des données" tab (for tabular data structure)
   return config.tabularApiUrl
-    && props.resource.extras['analysis:parsing:finished_at']
+    && props.resource.extras['analysis:parsing:parsing_table']
     && !props.resource.extras['analysis:parsing:error']
     && (config.tabularAllowRemote || props.resource.filetype === 'file')
-    && !props.resource.extras['analysis:parsing:pmtiles_url'] // TODO: have a dedicated extra for tabular parsing
 })
 
 const hasPmtiles = computed(() => {
@@ -430,12 +429,12 @@ const toggle = () => {
 const tabsOptions = computed(() => {
   const options = []
 
-  if (hasTabularData.value || hasPreview.value) {
-    options.push({ key: 'data', label: t('Données') })
-  }
-
   if (hasPmtiles.value || ogcWms.value) {
     options.push({ key: 'map', label: t('Carte') })
+  }
+
+  if (hasTabularData.value || hasPreview.value) {
+    options.push({ key: 'data', label: t('Données') })
   }
 
   if (props.resource.description) {
