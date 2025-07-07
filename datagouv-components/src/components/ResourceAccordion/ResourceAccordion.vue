@@ -185,6 +185,11 @@
                 v-else-if="resource.format && resource.format.toLowerCase() === 'pdf'"
                 :resource="resource"
               />
+              <!-- Show XML viewer for XML files -->
+              <XmlPreview
+                v-else-if="resource.format && resource.format.toLowerCase() === 'xml'"
+                :resource="resource"
+              />
               <!-- Show regular preview for other file types -->
               <Preview
                 v-else
@@ -352,6 +357,7 @@ import Preview from './Preview.vue'
 import Pmtiles from './Pmtiles.vue'
 import JsonPreview from './JsonPreview.vue'
 import PdfPreview from './PdfPreview.vue'
+import XmlPreview from './XmlPreview.vue'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 
@@ -376,14 +382,14 @@ const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
 
 const hasPreview = computed(() => {
-  // Determines if we should show the "Données" tab for previewable files (JSON, PDF)
+  // Determines if we should show the "Données" tab for previewable files (JSON, PDF, XML)
   // Only show preview for local files, not remote ones due to CORS issues
   // TODO: Once CORS issues are fixed for remote files, remove this check to allow remote preview
   if (props.resource.filetype === 'remote') return false
 
-  // For JSON and PDF files, show preview
+  // For JSON, PDF, and XML files, show preview
   const format = props.resource.format?.toLowerCase()
-  return format === 'json' || format === 'pdf'
+  return format === 'json' || format === 'pdf' || format === 'xml'
 })
 
 const hasTabularData = computed(() => {

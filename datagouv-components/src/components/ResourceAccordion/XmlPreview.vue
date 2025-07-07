@@ -1,0 +1,143 @@
+<template>
+  <div class="fr-text--xs">
+    <div v-if="xmlData">
+      <XmlViewer
+        :xml="xmlData"
+        theme="light"
+        :indent-width="2"
+        :show-line-numbers="true"
+        :show-attributes="true"
+        :show-comments="true"
+        :show-cdata="true"
+        :show-doctype="true"
+        :show-processing-instructions="true"
+        :show-text-nodes="true"
+        :show-whitespace="false"
+        :expand-all="false"
+        :max-depth="3"
+        :expand-depth="1"
+      />
+    </div>
+    <div
+      v-else-if="loading"
+      class="text-gray-medium"
+    >
+      {{ $t("Chargement de l'aperçu XML...") }}
+    </div>
+    <SimpleBanner
+      v-else-if="fileTooLarge"
+      type="warning"
+      class="flex items-center space-x-2"
+    >
+      <RiErrorWarningLine class="shink-0 size-6" />
+      <span>{{ fileSizeBytes
+        ? $t("Fichier XML trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le depuis l'onglet Téléchargements.")
+        : $t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le depuis l'onglet Téléchargements.")
+      }}</span>
+    </SimpleBanner>
+    <SimpleBanner
+      v-else-if="error"
+      type="warning"
+      class="flex items-center space-x-2"
+    >
+      <RiErrorWarningLine class="shink-0 size-6" />
+      <span>{{ $t("Erreur lors du chargement de l'aperçu XML.") }}</span>
+    </SimpleBanner>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { RiErrorWarningLine } from '@remixicon/vue'
+
+import { useComponentsConfig } from '../../config'
+import SimpleBanner from '../SimpleBanner.vue'
+import type { Resource } from '../../types/resources'
+
+const XmlViewer = defineAsyncComponent(() =>
+  import('vue3-xml-viewer').then((module) => {
+    return module.default || module.XmlViewer
+  }),
+)
+
+const props = defineProps<{
+  resource: Resource
+}>()
+
+const config = useComponentsConfig()
+
+const xmlData = ref<string | null>(null)
+const loading = ref(false)
+const error = ref(false)
+const fileTooLarge = ref(false)
+
+const fileSizeBytes = computed(() => {
+  // Check if resource has filesize
+  if (props.resource.filesize) {
+    return props.resource.filesize
+  }
+
+  // Check if resource has content-length in extras (from API metadata)
+  const contentLength = props.resource.extras?.['analysis:content-length']
+  if (contentLength && typeof contentLength === 'number') {
+    return contentLength
+  }
+
+  return null
+})
+
+const shouldLoadXml = computed(() => {
+  const size = fileSizeBytes.value
+  if (!size) {
+    // If we don't know the size, don't risk loading a potentially huge file
+    return false
+  }
+
+  // Check if maxXmlPreviewSize is configured
+  if (!config.maxXmlPreviewSize) {
+    // If no limit is set, don't load unknown files
+    return false
+  }
+
+  // Convert maxXmlPreviewSize from characters to bytes (rough estimate)
+  // Assuming average 1 byte per character for XML
+  const maxSizeBytes = config.maxXmlPreviewSize
+
+  return size <= maxSizeBytes
+})
+
+const fetchXmlData = async () => {
+  // Check if file is too large or size is unknown before making the request
+  if (!shouldLoadXml.value) {
+    fileTooLarge.value = true
+    return
+  }
+
+  loading.value = true
+  error.value = false
+
+  try {
+    const response = await fetch(props.resource.latest) // For production
+    // const response = await fetch('/test-data.xml') // For testing locally without CORS issues
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const data = await response.text()
+
+    // Use the XML data as string - let the XML viewer handle large files
+    xmlData.value = data
+  }
+  catch (err) {
+    console.error('Error loading XML:', err)
+    error.value = true
+    xmlData.value = null
+  }
+  finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchXmlData()
+})
+</script>
