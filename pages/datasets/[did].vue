@@ -287,6 +287,7 @@ const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
   headers: {
     'X-Get-Datasets-Full-Objects': 'True',
   },
+  redirectOn404: true,
 })
 
 const title = computed(() => dataset.value?.title)

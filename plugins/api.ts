@@ -46,7 +46,6 @@ export default defineNuxtPlugin({
             }
           }
 
-
           if (response.status === 401) {
             await nuxtApp.runWithContext(() => navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true }))
           }
@@ -96,9 +95,9 @@ export default defineNuxtPlugin({
     // Expose to useNuxtApp().$api
     return {
       provide: {
-        api: makeApi({ sendJson: true, redirectOn404: true }),
+        api: makeApi({ sendJson: true, redirectOn404: false }),
         fileApi: makeApi({ sendJson: false, redirectOn404: false }),
-        apiAllowing404: makeApi({ sendJson: true, redirectOn404: false }),
+        apiWith404: makeApi({ sendJson: true, redirectOn404: true }),
       },
     }
   },

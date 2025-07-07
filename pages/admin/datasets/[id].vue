@@ -153,7 +153,7 @@ const route = useRoute()
 const { getDatasetStatus } = useDatasetStatus()
 const { formatDate } = useFormatDate()
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
-const { data: dataset } = await useAPI<DatasetV2>(url)
+const { data: dataset } = await useAPI<DatasetV2>(url, { redirectOn404: true })
 const { data: activities } = await useAPI<PaginatedArray<Activity>>('/api/1/activity/', {
   params: {
     related_to: route.params.id,

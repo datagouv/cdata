@@ -125,7 +125,7 @@ const datasetUrlError = ref<string | null>(null)
 useSortable(sortableRootRef, selectedDatasetsSuggest)
 
 const { t } = useI18n()
-const { $api, $apiAllowing404 } = useNuxtApp()
+const { $api } = useNuxtApp()
 const config = useRuntimeConfig()
 
 const label = computed(() => props.label || t('Jeux de données associés'))
@@ -177,7 +177,7 @@ const loadDatasetByLink = async () => {
   }
   const id = matches[1]
   try {
-    const dataset = await $apiAllowing404<DatasetV2>(`/api/2/datasets/${id}/`)
+    const dataset = await $api<DatasetV2>(`/api/2/datasets/${id}/`)
     if (selectedDatasetsSuggest.value.find(suggest => suggest.id === dataset.id)) {
       datasetUrlError.value = t('Ce jeu de données est déjà présent dans la liste.')
       return

@@ -11,7 +11,7 @@ import type { Organization } from '@datagouv/components-next'
 const { setCurrentOrganization } = useCurrentOwned()
 
 const route = useRoute()
-const { data: organization, refresh } = await useAPI<Organization>(`api/1/organizations/${route.params.oid}/`, { lazy: true })
+const { data: organization, refresh } = await useAPI<Organization>(`api/1/organizations/${route.params.oid}/`, { redirectOn404: true })
 
 watchEffect(() => {
   if (organization.value) setCurrentOrganization(organization.value)
