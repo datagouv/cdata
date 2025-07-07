@@ -182,7 +182,7 @@
               />
               <!-- Show PDF viewer for PDF files -->
               <PdfPreview
-                v-if="resource.format && resource.format.toLowerCase() === 'pdf'"
+                v-else-if="resource.format && resource.format.toLowerCase() === 'pdf'"
                 :resource="resource"
               />
               <!-- Show regular preview for other file types -->
@@ -379,13 +379,7 @@ const hasPreview = computed(() => {
   // Determines if we should show the "Données" tab for previewable files (JSON, PDF)
   // Only show preview for local files, not remote ones due to CORS issues
   // TODO: Once CORS issues are fixed for remote files, remove this check to allow remote preview
-  if (props.resource.filetype === 'remote') {
-    const format = props.resource.format?.toLowerCase()
-    if (format === 'json' || format === 'pdf') {
-      console.log(`[${format.toUpperCase()} Preview] Skipping remote ${format} file due to CORS: ${props.resource.url}`)
-    }
-    return false
-  }
+  if (props.resource.filetype === 'remote') return false
 
   // For JSON and PDF files, show preview
   const format = props.resource.format?.toLowerCase()
