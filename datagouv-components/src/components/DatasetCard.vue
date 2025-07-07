@@ -76,7 +76,7 @@
             <div class="-mr-0.5 flex-initial truncate">
               <AppLink
                 v-if="organizationUrl"
-                class="link text-sm flex items-center relative z-[2] truncate"
+                class="link text-sm overflow-hidden flex items-center relative z-[2] truncate"
                 :to="organizationUrl"
               >
                 <OrganizationNameWithCertificate :organization="dataset.organization" />

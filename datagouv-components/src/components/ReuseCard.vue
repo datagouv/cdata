@@ -4,7 +4,7 @@
       <div class="order-1 flex flex-col px-4 py-1 h-full -mx-8">
         <h3 class="font-bold text-base mt-1 mb-0 truncate">
           <AppLink
-            class="text-gray-title"
+            class="text-gray-title overflow-hidden"
             :to="reuseUrl"
           >
             {{ reuse.title }}
@@ -18,7 +18,7 @@
             >
               <AppLink
                 v-if="organizationUrl"
-                class="fr-link block"
+                class="link overflow-hidden"
                 :to="organizationUrl"
               >
                 <OrganizationNameWithCertificate
