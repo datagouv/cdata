@@ -4,13 +4,13 @@
       class="-ml-2 mt-px"
       size="2xs"
     >
-      {{ $t('Metadata quality:') }}
+      {{ $t('Qualité des métadonnées:') }}
       <template #toggletip>
         <DatasetQualityTooltipContent :quality />
       </template>
     </Toggletip>
     <div class="text-sm text-gray-plain font-bold">
-      {{ $t('Metadata quality:') }}
+      {{ $t('Qualité des métadonnées:') }}
     </div>
   </div>
   <DatasetQualityScore
@@ -21,35 +21,35 @@
     <ul class="list-none pl-0">
       <DatasetQualityItemWarning
         :quality-item="quality.dataset_description_quality"
-        :message="$t('Data description empty')"
+        :message="$t('Description des données non renseignée')"
       />
       <DatasetQualityItemWarning
         :quality-item="quality.resources_documentation"
-        :message="$t('Files documentation missing')"
+        :message="$t('Documentation des fichiers manquante')"
       />
       <DatasetQualityItemWarning
         :quality-item="quality.license"
-        :message="$t('No license set')"
+        :message="$t('Licence non renseignée')"
       />
       <DatasetQualityItemWarning
         :quality-item="quality.update_frequency && quality.update_fulfilled_in_time"
-        :message="quality.update_frequency ? $t('Update frequency not followed') : $t('Update frequency not set')"
+        :message="quality.update_frequency ? $t('Fréquence de mise à jour non respectée') : $t('Fréquence de mise à jour non renseignée')"
       />
       <DatasetQualityItemWarning
         :quality-item="quality.has_open_format"
-        :message="$t('File formats are closed')"
+        :message="$t('Formats de fichiers non standards')"
       />
       <DatasetQualityItemWarning
         :quality-item="quality.temporal_coverage"
-        :message="$t('Temporal coverage not set')"
+        :message="$t('Couverture temporelle non renseignée')"
       />
       <DatasetQualityItemWarning
         :quality-item="quality.spatial"
-        :message="$t('Spatial coverage not set')"
+        :message="$t('Couverture spatiale non renseignée')"
       />
       <DatasetQualityItemWarning
         :quality-item="quality.all_resources_available"
-        :message="$t('Some files are unavailable')"
+        :message="$t('Certains fichiers ne sont pas disponibles')"
       />
     </ul>
   </template>

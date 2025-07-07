@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2 class="!text-sm !mb-2.5">
-      {{ $t('Organization reuses') }}
+      {{ $t(`Réutilisations de l'organisation`) }}
     </h2>
     <LoadingBlock
       v-if="organization.metrics.reuses"
@@ -31,13 +31,13 @@
         height="104"
       />
       <p class="mt-4 mb-5 font-bold text-lg">
-        {{ $t(`This organization hasn't published any reuses yet.`) }}
+        {{ $t(`Cette organisation n'a pas encore publié de réutilisations.`) }}
       </p>
       <BrandedButton
         color="secondary"
         :href="config.public.reuseGuideUrl"
       >
-        {{ $t(`What's a reuse ?`) }}
+        {{ $t(`Qu'est-ce qu'une réutilisation ?`) }}
       </BrandedButton>
     </div>
   </div>

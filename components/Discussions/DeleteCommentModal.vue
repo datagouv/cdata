@@ -1,6 +1,6 @@
 <template>
   <ModalWithButton
-    :title="t('Are you sure you want to delete this message?')"
+    :title="t('Êtes-vous sûrs de vouloir supprimer ce message ?')"
     size="lg"
     form
     @submit.prevent="deleteMessage"
@@ -15,7 +15,7 @@
         :loading
         v-on="listeners"
       >
-        {{ $t('Delete') }}
+        {{ $t('Supprimer') }}
       </BrandedButton>
     </template>
 
@@ -26,7 +26,7 @@
         :subject
       />
       <div class="mt-4 font-bold">
-        {{ $t('This action is irreversible.') }}
+        {{ $t('Cette action est irréversible.') }}
       </div>
     </template>
 
@@ -38,7 +38,7 @@
           :loading
           @click="close"
         >
-          {{ t("Cancel") }}
+          {{ t("Annuler") }}
         </BrandedButton>
         <BrandedButton
           type="submit"
@@ -46,7 +46,7 @@
           size="xs"
           :loading
         >
-          {{ t("Delete comment") }}
+          {{ t("Supprimer le commentaire") }}
         </BrandedButton>
       </div>
     </template>

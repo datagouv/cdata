@@ -5,7 +5,7 @@
       class="mb-5"
     >
       <h2 class="text-sm font-bold uppercase m-0 text-gray-title">
-        {{ $t('{n} datasets', pageData.total) }}
+        {{ $t('{n} jeux de données', pageData.total) }}
       </h2>
       <div
         class="grid gap-5 mt-2"
@@ -30,22 +30,22 @@
       </div>
     </section>
     <SectionCollapse
-      :title="$t('Technical information')"
-      :button-text="$t('See technical information')"
+      :title="$t('Informations techniques')"
+      :button-text="$t('Voir les informations techniques')"
     >
       <DescriptionList class="mb-2">
         <div>
-          <DescriptionListTerm>{{ $t('Latest update') }}</DescriptionListTerm>
+          <DescriptionListTerm>{{ $t('Dernière mise à jour') }}</DescriptionListTerm>
           <DescriptionListDetails>{{ formatDate(dataservice.metadata_modified_at) }}</DescriptionListDetails>
         </div>
         <div>
-          <DescriptionListTerm>{{ $t('ID') }}</DescriptionListTerm>
+          <DescriptionListTerm>{{ $t('Identifiant') }}</DescriptionListTerm>
           <DescriptionListDetails class="flex items-center gap-2">
             {{ dataservice.id }}
             <CopyButton
               class="!-mt-0.5"
-              :label="$t('Copy ID')"
-              :copied-label="$t('ID copied')"
+              :label="$t(`Copier l'identifiant`)"
+              :copied-label="$t('Identifiant copié !')"
               :text="dataservice.id"
               :hide-label="true"
             />
@@ -54,7 +54,7 @@
       </DescriptionList>
       <DescriptionList>
         <div>
-          <DescriptionListTerm>{{ $t('Creation date') }}</DescriptionListTerm>
+          <DescriptionListTerm>{{ $t('Date de création') }}</DescriptionListTerm>
           <DescriptionListDetails>{{ formatDate(dataservice.created_at) }}</DescriptionListDetails>
         </div>
       </DescriptionList>

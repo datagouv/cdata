@@ -27,7 +27,7 @@
         <div class="shrink-0">
           <BrandedButton
             color="primary-softer"
-            :title="t('Remove the reuse')"
+            :title="t('Supprimer la réutilisation')"
             :icon="RiDeleteBinLine"
             size="lg"
             keep-margins-even-without-borders
@@ -43,8 +43,8 @@
     >
       <SearchableSelect
         v-model="selectedReusesSuggest"
-        :label="$t('Look for a reuse')"
-        :placeholder="$t('Search a reuse…')"
+        :label="$t('Chercher une réutilisation')"
+        :placeholder="$t('Rechercher une réutilisation…')"
         class="mb-6"
         :suggest="suggestReuse"
         :multiple="true"
@@ -68,7 +68,7 @@
       >
         <InputGroup
           v-model="reuseUrl"
-          :label="t('Link to the reuse')"
+          :label="t('Lien vers la réutilisation')"
           :placeholder="'https://...'"
           :has-error="!!reuseUrlError"
           :error-text="reuseUrlError"
@@ -78,7 +78,7 @@
           type="submit"
           :icon="RiAddLine"
           size="sm"
-          :title="t('Add reuse')"
+          :title="t('Ajouter une réutilisation')"
         />
       </form>
     </div>
@@ -88,9 +88,8 @@
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
 import type { Reuse } from '@datagouv/components-next'
-import { RiAddLine, RiDeleteBinLine, RiDraggable } from '@remixicon/vue'
+import { RiAddLine, RiDeleteBinLine } from '@remixicon/vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
-import ReuseCard from './Reuses/ReuseCard.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
 import type { ReuseSuggest } from '~/types/types'
 
@@ -114,7 +113,7 @@ useSortable(sortableRootRef, selectedReusesSuggest)
 const { t } = useI18n()
 const { $api } = useNuxtApp()
 
-const label = computed(() => props.label || t('Associated reuses'))
+const label = computed(() => props.label || t('Réutilisations associées'))
 
 const suggestReuse = async (query: string): Promise<Array<ReuseSuggest>> => {
   return await $api<Array<ReuseSuggest>>('/api/1/reuses/suggest/', {
@@ -147,14 +146,14 @@ const selectedReuses = computed<Array<Reuse | ReuseSuggest>>(() => {
 const loadReuseByLink = async () => {
   const matches = /\/reuses\/(.+?)\/?$/.exec(reuseUrl.value)
   if (!matches) {
-    reuseUrlError.value = t(`The provided URL doesn't look like a reuses URL.`)
+    reuseUrlError.value = t(`L'URL fournie ne semble pas être une URL de réutilisation.`)
     return
   }
   const id = matches[1]
   try {
     const reuse = await $api<Reuse>(`/api/1/reuses/${id}/`)
     if (selectedReusesSuggest.value.find(suggest => suggest.id === reuse.id)) {
-      reuseUrlError.value = t('The reuse is already present in the list.')
+      reuseUrlError.value = t('La réutilisation est déjà présente dans la liste.')
       return
     }
 
@@ -164,7 +163,7 @@ const loadReuseByLink = async () => {
     reuseUrl.value = ''
   }
   catch {
-    reuseUrlError.value = t('Cannot find a reuse identified by {id}.', { id })
+    reuseUrlError.value = t('Impossible de trouver une réutilisation identifiée par {id}.', { id })
   }
 }
 

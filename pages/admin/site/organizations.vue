@@ -1,11 +1,11 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Organizations') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Organisations') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
     <h1 class="fr-h3 fr-mb-5v">
-      {{ t("Organizations") }}
+      {{ t("Organisations") }}
     </h1>
     <div
       v-if="pageData"
@@ -13,7 +13,7 @@
     >
       <div class="fr-col">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ t('{n} organizations', pageData.total) }}
+          {{ t('{n} organisations | {n} organisation | {n} organisations', pageData.total) }}
         </h2>
       </div>
       <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
@@ -21,7 +21,7 @@
           v-model="q"
           type="search"
           :icon="RiSearchLine"
-          :placeholder="$t('Search')"
+          :placeholder="$t('Recherche')"
         />
       </div>
     </div>
@@ -32,22 +32,22 @@
           <thead>
             <tr>
               <AdminTableTh scope="col">
-                {{ t("Name") }}
+                {{ t("Nom") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Created at") }}
+                {{ t("Créé le") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Datasets") }}
+                {{ t("Jeux de données") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Dataservices") }}
+                {{ t("API") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Reuses") }}
+                {{ t("Réutilisations") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Members") }}
+                {{ t("Membres") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
                 {{ t("Actions") }}
@@ -111,7 +111,7 @@
                   external
                   keep-margins-even-without-borders
                 >
-                  {{ $t('Show public page') }}
+                  {{ $t('Voir la page publique') }}
                 </BrandedButton>
                 <BrandedButton
                   size="xs"
@@ -121,7 +121,7 @@
                   icon-only
                   keep-margins-even-without-borders
                 >
-                  {{ $t('Edit') }}
+                  {{ $t('Modifier') }}
                 </BrandedButton>
               </td>
             </tr>
@@ -146,20 +146,20 @@
       />
       <template v-if="q">
         <p class="fr-text--bold fr-my-3v">
-          {{ t(`No results for "{q}"`, { q }) }}
+          {{ t(`Pas de résultats pour « {q} »`, { q }) }}
         </p>
         <BrandedButton
           color="primary"
           @click="q = qDebounced = ''"
         >
-          {{ $t('Reset filters') }}
+          {{ $t('Réinitialiser les filtres') }}
         </BrandedButton>
       </template>
       <p
         v-else
         class="fr-text--bold fr-my-3v"
       >
-        {{ t(`No organizations`) }}
+        {{ t(`Pas d'organizations`) }}
       </p>
     </div>
   </div>

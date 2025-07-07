@@ -28,7 +28,7 @@
             v-if="open"
             class="sr-only"
           >
-            {{ $t('Close details') }}
+            {{ $t('Fermer les détails') }}
           </span>
         </DisclosureButton>
       </div>

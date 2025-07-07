@@ -32,15 +32,15 @@
                 :is="config.textClamp"
                 v-if="config && config.textClamp"
                 :max-lines="1"
-                :text="resource.title || t('Nameless file')"
+                :text="resource.title || t('Fichier sans nom')"
               /></span>
 
               <span class="absolute inset-0 z-1" />
             </button>
           </h4>
           <CopyButton
-            :label="$t('Copy link')"
-            :copied-label="$t('Link copied!')"
+            :label="$t('Copier le lien')"
+            :copied-label="$t('Lien copié !')"
             :text="resourceExternalUrl"
             class="z-2"
           />
@@ -50,7 +50,7 @@
             :resource
             class="dash-after"
           />
-          <span class="fr-text--xs fr-mb-0 dash-after">{{ t('Updated {date}', { date: formatRelativeIfRecentDate(lastUpdate) }) }}</span>
+          <span class="fr-text--xs fr-mb-0 dash-after">{{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(lastUpdate) }) }}</span>
           <span
             v-if="resource.format"
             class="fr-text--xs fr-mb-0 dash-after"
@@ -61,17 +61,17 @@
           </span>
           <span
             class="inline-flex items-center fr-text--xs fr-mb-0"
-            :aria-label="t('{n} downloads', resource.metrics.views)"
+            :aria-label="t('{n} téléchargements', resource.metrics.views)"
           >
             <span class="fr-icon-download-line fr-icon--xs fr-mr-1v" />
-            <span>{{ summarize(resource.metrics.views) }} <span class="hidden show-on-small">{{ t("downloads") }}</span></span>
+            <span>{{ summarize(resource.metrics.views) }} <span class="hidden show-on-small">{{ t("téléchargements") }}</span></span>
           </span>
         </div>
         <p
           v-if="communityResource"
           class="fr-mb-0 fr-mt-1v fr-text--xs text-gray-medium"
         >
-          {{ t('From') }}
+          {{ t('Par') }}
           <a
             v-if="communityResource.organization"
             class="fr-link fr-text--xs"
@@ -91,13 +91,13 @@
         >
           <BrandedButton
             :href="resource.latest"
-            :title="t('File link - opens a new window')"
+            :title="t('Lien du fichier - ouvre une nouvelle fenêtre')"
             :aria-describedby="resourceTitleId"
             rel="ugc nofollow noopener"
             new-tab
             size="xs"
           >
-            {{ $t('Visit') }}
+            {{ $t('Visiter') }}
           </BrandedButton>
         </p>
         <p
@@ -112,7 +112,7 @@
             size="xs"
             :icon="RiFileCopyLine"
           >
-            {{ t('Copy link') }}
+            {{ t('Copier le lien') }}
           </BrandedButton>
         </p>
         <p
@@ -129,7 +129,7 @@
             size="xs"
             :aria-describedby="resourceTitleId"
           >
-            <span class="sr-only">{{ t('Download file as ') }}</span>{{ format }}
+            <span class="sr-only">{{ t('Télécharger la liste au format ') }}</span>{{ format }}
           </BrandedButton>
         </p>
         <p
@@ -175,10 +175,26 @@
             class="px-4"
           >
             <div v-if="tab.key === 'data'">
-              <Preview :resource="resource" />
+              <!-- Show PDF viewer for PDF files -->
+              <PdfPreview
+                v-if="resource.format && resource.format.toLowerCase() === 'pdf'"
+                :resource="resource"
+              />
+              <!-- Show regular preview for other file types -->
+              <Preview
+                v-else
+                :resource="resource"
+              />
             </div>
             <div v-if="tab.key === 'map'">
-              <Pmtiles :resource="resource" />
+              <Pmtiles
+                v-if="hasPmtiles"
+                :resource="resource"
+              />
+              <MapContainer
+                v-if="ogcWms"
+                :resource="resource"
+              />
             </div>
             <div
               v-if="tab.key === 'description'"
@@ -192,7 +208,7 @@
               v-if="tab.key === 'data-structure'"
             >
               <DataStructure
-                v-if="hasPreview"
+                v-if="hasTabularData"
                 :resource="resource"
               />
             </div>
@@ -209,13 +225,13 @@
                   v-if="resource.format === 'url'"
                   class="font-bold fr-text--sm fr-mb-0"
                 >
-                  {{ $t('Original URL') }}
+                  {{ $t("URL d'origine") }}
                 </dt>
                 <dt
                   v-else
                   class="font-bold fr-text--sm fr-mb-0"
                 >
-                  {{ $t('Original format') }}
+                  {{ $t('Format original') }}
                 </dt>
                 <dd class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
                   <span v-if="resource.format === 'url'">
@@ -249,15 +265,15 @@
                     </a>
                   </span>
                   <CopyButton
-                    :label="$t('Copy link')"
-                    :copied-label="$t('Link copied!')"
+                    :label="$t('Copier le lien')"
+                    :copied-label="$t('Lien copié !')"
                     :text="resource.latest"
                     class="relative"
                   />
                 </dd>
                 <template v-if="generatedFormats.length">
                   <dt class="font-bold fr-text--sm fr-mb-0">
-                    {{ $t('Auto-generated formats from {platform}', { platform: config.name }) }}
+                    {{ $t('Formats générés automatiquement par {platform}', { platform: config.name }) }}
                   </dt>
                   <dd
                     v-for="generatedFormat in generatedFormats"
@@ -275,8 +291,8 @@
                       </a>
                     </span>
                     <CopyButton
-                      :label="$t('Copy link')"
-                      :copied-label="$t('Link copied!')"
+                      :label="$t('Copier le lien')"
+                      :copied-label="$t('Lien copié !')"
                       :text="generatedFormat.url"
                       class="relative"
                     />
@@ -287,9 +303,9 @@
             <div
               v-if="tab.key === 'swagger'"
             >
-              <div>{{ t('Swagger automatically generated by data.gouv.fr. This swagger allows you to query data by API by filtering it by column value.') }}</div>
+              <div>{{ t("Swagger généré automatiquement par {platform}. Ce swagger vous permet d'interroger les données par API en les filtrant par valeur de colonne.", { platform: config.name }) }}</div>
               <Swagger
-                v-if="hasPreview"
+                v-if="hasTabularData"
                 :url="`${config.tabularApiUrl}/api/resources/${props.resource.id}/swagger/`"
               />
             </div>
@@ -319,7 +335,7 @@ import { trackEvent } from '../../functions/matomo'
 import CopyButton from '../CopyButton.vue'
 import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
-import { getResourceFormatIcon, getResourceTitleId } from '../../functions/resources'
+import { getResourceFormatIcon, getResourceTitleId, detectOgcService } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
 import { getResourceExternalUrl } from '../../functions/datasets'
 import Metadata from './Metadata.vue'
@@ -329,9 +345,9 @@ import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
 import Pmtiles from './Pmtiles.vue'
+import PdfPreview from './PdfPreview.vue'
 
-const OGC_SERVICES_FORMATS = ['ogc:wfs', 'ogc:wms', 'wfs', 'wms']
-const GENERATED_FORMATS = ['parquet', 'pmtiles']
+const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 
 const props = withDefaults(defineProps<{
   dataset: Dataset | DatasetV2
@@ -348,11 +364,30 @@ const props = withDefaults(defineProps<{
 const config = useComponentsConfig()
 
 const Swagger = defineAsyncComponent(() => import('./Swagger.vue'))
+const MapContainer = defineAsyncComponent(() => import('./MapContainer.client.vue'))
 
 const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
 
-const hasPreview = computed(() => {
+const hasPdfPreview = computed(() => {
+  // Determines if we should show the "Données" tab for PDF files (for PDF viewer)
+  // Only show PDF preview for local files, not remote ones
+  // TODO: Once CORS issues are fixed for remote PDFs, remove this check to allow remote PDF preview
+  if (props.resource.filetype === 'remote') {
+    console.log(`[PDF Preview] Skipping remote PDF file due to CORS: ${props.resource.url}`)
+    return false
+  }
+
+  // For PDF files, show preview (PDF viewer)
+  if (props.resource.format && props.resource.format.toLowerCase() === 'pdf') {
+    return true
+  }
+
+  return false
+})
+
+const hasTabularData = computed(() => {
+  // Determines if we should show the "Données" tab for tabular files AND the "Structure des données" tab (for tabular data structure)
   return config.tabularApiUrl
     && props.resource.extras['analysis:parsing:finished_at']
     && !props.resource.extras['analysis:parsing:error']
@@ -364,16 +399,18 @@ const hasPmtiles = computed(() => {
   return props.resource.extras['analysis:parsing:pmtiles_url']
 })
 
-const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('File'))
+const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('Fichier'))
 
-const ogcService = computed(() => OGC_SERVICES_FORMATS.includes(props.resource.format))
+const ogcService = computed(() => detectOgcService(props.resource))
+
+const ogcWms = computed(() => ogcService.value === 'wms')
 
 const generatedFormats = computed(() => {
   return GENERATED_FORMATS
     .filter(format => `analysis:parsing:${format}_url` in props.resource.extras)
     .map(format => ({
-      url: props.resource.extras[`analysis:parsing:${format}_url`],
-      size: props.resource.extras[`analysis:parsing:${format}_size`],
+      url: props.resource.extras[`analysis:parsing:${format}_url`] as string,
+      size: props.resource.extras[`analysis:parsing:${format}_size`] as number | undefined,
       format: format,
     }))
 })
@@ -393,26 +430,26 @@ const toggle = () => {
 const tabsOptions = computed(() => {
   const options = []
 
-  if (hasPreview.value) {
-    options.push({ key: 'data', label: t('Data') })
+  if (hasTabularData.value || hasPdfPreview.value) {
+    options.push({ key: 'data', label: t('Données') })
   }
 
-  if (hasPmtiles.value) {
-    options.push({ key: 'map', label: t('Map') })
+  if (hasPmtiles.value || ogcWms.value) {
+    options.push({ key: 'map', label: t('Carte') })
   }
 
   if (props.resource.description) {
     options.push({ key: 'description', label: t('Description') })
   }
 
-  if (hasPreview.value) {
-    options.push({ key: 'data-structure', label: t('Data structure') })
+  if (hasTabularData.value) {
+    options.push({ key: 'data-structure', label: t('Structure des données') })
   }
 
-  options.push({ key: 'metadata', label: t('Metadata') })
-  options.push({ key: 'downloads', label: t('Downloads') })
+  options.push({ key: 'metadata', label: t('Métadonnées') })
+  options.push({ key: 'downloads', label: t('Téléchargements') })
 
-  if (hasPreview.value) {
+  if (hasTabularData.value) {
     options.push({ key: 'swagger', label: t('Swagger') })
   }
 

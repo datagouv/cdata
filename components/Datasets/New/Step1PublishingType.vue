@@ -25,7 +25,7 @@
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-12 fr-col-md-6">
         <ActionCard
-          :title="$t('Publish a dataset')"
+          :title="$t('Publier un jeu de données')"
           :content="$t('Administration or public society, everybody can publish on {site} !', { site: config.public.title })"
           icon="/illustrations/dataset.svg"
           actions-alignment="end"
@@ -99,7 +99,7 @@
             class="fr-link"
             :href="config.public.supportUrl"
             target="_blank"
-          >{{ $t("Contact us") }}</a>
+          >{{ $t("Nous écrire") }}</a>
         </p>
       </div>
     </div>

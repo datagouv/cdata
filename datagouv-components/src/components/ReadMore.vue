@@ -23,10 +23,10 @@
         @click.stop="toggle"
       >
         <template v-if="expanded">
-          {{ $t("Read less") }}
+          {{ $t("Lire moins") }}
         </template>
         <template v-else>
-          {{ $t("Read more") }}
+          {{ $t("Lire plus") }}
         </template>
       </BrandedButton>
     </div>

@@ -16,7 +16,7 @@
       <ComboboxInput
         class="w-full border-none bg-gray-lower rounded-tl py-2 px-4 text-base text-gray-plain focus:outline-offset-2 focus:outline-2 focus:outline-blue-outline shadow-input-blue placeholder:italic placeholder:text-gray-medium"
         :display-value="() => ''"
-        :placeholder="$t('Search')"
+        :placeholder="$t('Recherche')"
         @change="query = $event.target.value"
       />
       <ComboboxButton
@@ -36,7 +36,7 @@
       @after-leave="query = ''"
     >
       <ComboboxOptions
-        class="text-left mt-1 max-h-60 overflow-auto rounded-md bg-white text-base shadow-lg focus:outline-none sm:text-sm"
+        class="list-none pl-0 text-left mt-1 mb-0 max-h-60 overflow-auto rounded-md bg-white text-base shadow-lg focus:outline-none sm:text-sm"
       >
         <ComboboxOption
           v-for="item in menu"
@@ -56,7 +56,7 @@
               />
               <i18n-t
                 v-if="query"
-                keypath="Search “{query}” in {type}"
+                keypath="Rechercher « {query} » dans les {type}"
                 class="flex-1"
                 tag="div"
                 scope="global"
@@ -70,7 +70,7 @@
               </i18n-t>
               <i18n-t
                 v-else
-                keypath="Start typing to search in {type}"
+                keypath="Commencer à taper pour rechercher parmi les {type}"
                 class="flex-1"
                 tag="div"
                 scope="global"
@@ -102,20 +102,25 @@ type Item = {
   external: boolean
 }
 
+const emit = defineEmits<{
+  selected: []
+}>()
+
 const { t } = useI18n()
 const localePath = useLocalePath()
 const query = ref('')
 const selectedItem = ref<null | Item>(null)
 
-watch(selectedItem, () => {
+watch(selectedItem, async () => {
   if (!selectedItem.value) return
-  navigateTo(selectedItem.value.to, { external: selectedItem.value.external })
+  await navigateTo(selectedItem.value.to, { external: selectedItem.value.external })
+  emit('selected')
 })
 const menu = computed(() => {
   return [
     {
       icon: RiDatabase2Line,
-      type: t('datasets'),
+      type: t('jeux de données'),
       to: localePath({
         path: '/datasets/',
         query: { q: query.value.trim() },
@@ -123,7 +128,7 @@ const menu = computed(() => {
     },
     {
       icon: RiRobot2Line,
-      type: t('dataservies'),
+      type: t('APIs'),
       to: localePath({
         path: '/dataservices/',
         query: { q: query.value.trim() },
@@ -131,7 +136,7 @@ const menu = computed(() => {
     },
     {
       icon: RiLineChartLine,
-      type: t('reuses'),
+      type: t('réutilisations'),
       to: localePath({
         path: '/reuses/',
         query: { q: query.value.trim() },
@@ -139,7 +144,7 @@ const menu = computed(() => {
     },
     {
       icon: RiGovernmentLine,
-      type: t('organizations'),
+      type: t('organisations'),
       to: localePath({
         path: '/organizations/',
         query: { q: query.value.trim() },

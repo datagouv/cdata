@@ -71,7 +71,7 @@ export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsR
 
 export function required<T, K extends KeysOfUnion<T>, V extends T[K]>(message: string | null = null): ValidationFunction<T, K, V> {
   return (value: T[keyof T], key: K, form: T, t) => {
-    if (!value || (Array.isArray(value) && !value.length)) return message || t('The field {property} is required.', { property: t(key.toString()) })
+    if (!value || (Array.isArray(value) && !value.length)) return message || t('Le champ {property} est requis.', { property: t(key.toString()) })
 
     return null
   }
@@ -80,7 +80,7 @@ export function required<T, K extends KeysOfUnion<T>, V extends T[K]>(message: s
 export function requiredIf<T, K extends KeysOfUnion<T>, V extends T[K]>(condition: Ref<boolean>, message: string | null = null): ValidationFunction<T, K, V> {
   return (value: T[keyof T], key: K, form: T, t) => {
     if (!condition.value) return null
-    if (!value || (Array.isArray(value) && !value.length)) return message || t('The field {property} is required.', { property: t(key.toString()) })
+    if (!value || (Array.isArray(value) && !value.length)) return message || t('Le champ {property} est requis.', { property: t(key.toString()) })
 
     return null
   }
@@ -88,7 +88,7 @@ export function requiredIf<T, K extends KeysOfUnion<T>, V extends T[K]>(conditio
 
 export function requiredIfFalsy<T, K extends KeysOfUnion<T>, V extends T[K]>(nonFalsyKey: keyof T, message: string | null = null): ValidationFunction<T, K, V> {
   return (value: T[typeof nonFalsyKey], key: K, form: T, t) => {
-    if ((!value || (Array.isArray(value) && !value.length)) && !form[nonFalsyKey]) return message || t('The field {property} is required.', { property: t(key.toString()) })
+    if ((!value || (Array.isArray(value) && !value.length)) && !form[nonFalsyKey]) return message || t('Le champ {property} est requis.', { property: t(key.toString()) })
 
     return null
   }
@@ -98,7 +98,7 @@ export function minLength<T, K extends KeysOfUnion<T>, V extends (string | undef
   return (value: V, key: K, form: T, t) => {
     if (value && value.length >= min) return null
 
-    return message || t('The field {property} should be of at least {min} characters', { property: t(key.toString()), min })
+    return message || t('Le champ {property} doit être de {min} caractères minimum', { property: t(key.toString()), min })
   }
 }
 
@@ -118,7 +118,7 @@ export function url<T, K extends KeysOfUnion<T>, V extends (string | undefined |
       return null
     }
     catch {
-      return message || t('The field {property} should be a valid URL', { property: t(key.toString()) })
+      return message || t('Le champ {property} doit être une URL valide', { property: t(key.toString()) })
     }
   }
 }
@@ -128,6 +128,6 @@ export function email<T, K extends KeysOfUnion<T>, V extends (string | undefined
     if (!value) return null
     if (/^\S+@\S+\.\S+$/.exec(value)) return null
 
-    return message || t('The field {property} should be a valid email', { property: t(key.toString()) })
+    return message || t('Le champ {property} doit être une adresse e-mail valide', { property: t(key.toString()) })
   }
 }

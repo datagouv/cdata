@@ -18,7 +18,7 @@
           class="fr-icon-lock-line fr-icon--sm"
           aria-hidden="true"
         />
-        {{ t('Restricted access') }}
+        {{ t('Accès restreint') }}
       </p>
       <p
         v-if="dataservice.private"
@@ -28,7 +28,7 @@
           class="fr-icon-lock-line fr-icon--sm"
           aria-hidden="true"
         />
-        {{ t('Draft') }}
+        {{ t('Brouillon') }}
       </p>
       <p
         v-if="dataservice.archived_at"
@@ -38,7 +38,7 @@
           class="fr-icon-lock-line fr-icon--sm"
           aria-hidden="true"
         />
-        {{ t('Archived') }}
+        {{ t('Archivé') }}
       </p>
     </div>
     <h4 class="fr-text--md fr-mb-0">
@@ -77,15 +77,15 @@
     </h4>
     <p
       v-if="dataservice.organization || dataservice.owner"
-      class="text-sm text-gray-medium inline-flex mt-1 mb-0"
+      class="text-sm text-gray-medium overflow-hidden flex gap-1 mt-1 mb-0"
     >
       <span
         v-if="dataservice.organization"
-        class="not-enlarged"
+        class="block not-enlarged overflow-hidden"
       >
         <AppLink
           v-if="organizationUrl"
-          class="fr-link fr-text--sm"
+          class="link text-sm overflow-hidden"
           :to="organizationUrl"
         >
           <OrganizationNameWithCertificate :organization="dataservice.organization" />
@@ -98,22 +98,23 @@
       <component
         :is="config.textClamp"
         v-else-if="config.textClamp"
-        class="not-enlarged fr-mr-1v"
+        class="not-enlarged mr-1"
         :auto-resize="true"
         :text="ownerName"
         :max-lines="1"
       />
-      <span class="dash-before whitespace-nowrap">{{ t('Updated {date}', { date: formatRelativeIfRecentDate(dataservice.metadata_modified_at, { dateStyle: 'medium' }) }) }}</span>
+      <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
+      <span class="block whitespace-nowrap">{{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataservice.metadata_modified_at, { dateStyle: 'medium' }) }) }}</span>
     </p>
     <p class="text-sm text-gray-medium mb-0 mt-1">
       <span class="fr-icon-information-line fr-icon--sm text-gray-medium" />
-      {{ t('Availability :') }}
+      {{ t('Disponibilité :') }}
       <span class="text-gray-plain">
         <template v-if="dataservice.availability">
           {{ t('{n}%', dataservice.availability) }}
         </template>
         <template v-else>
-          {{ t('unknown') }}
+          {{ t('inconnue') }}
         </template>
       </span>
     </p>
@@ -132,6 +133,7 @@
 import { computed, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
+import { RiSubtractLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../config'
 import { useFormatDate } from '../functions/dates'
 import { removeMarkdown } from '../functions/markdown'

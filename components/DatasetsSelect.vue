@@ -27,7 +27,7 @@
         >
           <BrandedButton
             color="primary-softer"
-            :title="t('Drag to move this content')"
+            :title="t('Faites glisser pour déplacer ce contenu')"
             :icon="RiDraggable"
             size="lg"
             keep-margins-even-without-borders
@@ -40,7 +40,7 @@
         <div class="shrink-0">
           <BrandedButton
             color="primary-softer"
-            :title="t('Remove the dataset')"
+            :title="t('Supprimer le jeu de données')"
             :icon="RiDeleteBinLine"
             size="lg"
             keep-margins-even-without-borders
@@ -56,8 +56,8 @@
     >
       <SearchableSelect
         v-model="selectedDatasetsSuggest"
-        :label="$t('Look for a dataset')"
-        :placeholder="$t('Search a dataset…')"
+        :label="$t('Rechercher un jeu de données')"
+        :placeholder="$t('Rechercher un jeu de données…')"
         class="mb-6"
         :suggest="suggestDataset"
         :multiple="true"
@@ -81,7 +81,7 @@
       >
         <InputGroup
           v-model="datasetUrl"
-          :label="t('Link to the dataset')"
+          :label="t('Lien vers le jeu de données')"
           :placeholder="'https://...'"
           :has-error="!!datasetUrlError"
           :error-text="datasetUrlError"
@@ -91,7 +91,7 @@
           type="submit"
           :icon="RiAddLine"
           size="sm"
-          :title="t('Add dataset')"
+          :title="t('Ajouter le dataset')"
         />
       </form>
     </div>
@@ -128,7 +128,7 @@ const { t } = useI18n()
 const { $api, $apiAllowing404 } = useNuxtApp()
 const config = useRuntimeConfig()
 
-const label = computed(() => props.label || t('Associated datasets'))
+const label = computed(() => props.label || t('Jeux de données associés'))
 
 const suggestDataset = async (query: string): Promise<Array<DatasetSuggest>> => {
   return await $api<Array<DatasetSuggest>>('/api/1/datasets/suggest/', {
@@ -189,7 +189,7 @@ const loadDatasetByLink = async () => {
     datasetUrl.value = ''
   }
   catch {
-    datasetUrlError.value = t('Impossible de trouver un jeu de données avec l\'identifiant {id}.', { id })
+    datasetUrlError.value = t(`Impossible de trouver un jeu de données avec l'identifiant {id}.`, { id })
   }
 }
 

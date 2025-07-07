@@ -43,7 +43,7 @@
                 :keep-margins-even-without-borders="isFullscreen"
                 @click="emit('close')"
               >
-                {{ $t('Close') }}
+                {{ $t('Fermer') }}
               </BrandedButton>
             </div>
             <div

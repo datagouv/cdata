@@ -11,14 +11,14 @@
     >
       <SearchInput
         v-model="queryString"
-        :placeholder="organization ? t('Search a dataset of the organization') : t('Ex. 2022 presidential election')"
+        :placeholder="organization ? t(`Rechercher un jeu de données de l'organisation`) : t('Ex : élection présidentielle 2022')"
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
       <div class="col-span-12 md:col-span-4 lg:col-span-3">
-        <Sidemenu :button-text="t('Filters')">
+        <Sidemenu :button-text="t('Filtres')">
           <template #title>
-            {{ t('Filters') }}
+            {{ t('Filtres') }}
           </template>
           <div class="space-y-4">
             <template v-if="!organization">
@@ -26,8 +26,8 @@
                 v-model="facets.organization"
                 :options="organizations ? organizations.data : []"
                 :suggest="suggestOrganizations"
-                :label="t('Organizations')"
-                :placeholder="t('All organizations')"
+                :label="t('Organisations')"
+                :placeholder="t('Toutes les organisations')"
                 :get-option-id="(option) => option.id"
                 :display-value="(option) => option.name"
                 :filter="(option, query) => (option.name).toLocaleLowerCase().includes(query.toLocaleLowerCase())"
@@ -50,8 +50,8 @@
               <SearchableSelect
                 v-model="facets.organizationType"
                 :options="organizationTypes"
-                :label="t('Organization type')"
-                :placeholder="t('All types')"
+                :label="t(`Type d'organisation`)"
+                :placeholder="t('Tous les types')"
                 :get-option-id="(type) => type.type"
                 :display-value="(value) => value.label"
                 :multiple="false"
@@ -63,8 +63,8 @@
             </template>
             <SearchableSelect
               v-model="facets.tag"
-              :label="t('Tags')"
-              :placeholder="t('All tags')"
+              :label="t('Mots clés')"
+              :placeholder="t('Tous les mots clés')"
               :get-option-id="(tag) => tag"
               :display-value="(value) => value"
               :suggest="suggestTags"
@@ -77,7 +77,7 @@
             <SearchableSelect
               v-model="facets.format"
               :label="t('Formats')"
-              :placeholder="t('All formats')"
+              :placeholder="t('Tous les formats')"
               :options="allowedFormats ? allowedFormats : []"
               :loading="allowedFormatsStatus === 'pending'"
               :get-option-id="(format) => format"
@@ -90,9 +90,9 @@
             </SearchableSelect>
             <SearchableSelect
               v-model="facets.license"
-              :label="t('Licenses')"
-              :explanation="t('Licenses define reuse rules for published datasets. See page data.gouv.fr/licences')"
-              :placeholder="t('All licenses')"
+              :label="t('Licences')"
+              :explanation="t('Les licences définissent les règles de réutilisation des jeux de données publiés. Voir la page data.gouv.fr/licences')"
+              :placeholder="t('Toutes les licences')"
               :display-value="(value) => value.title"
               :options="licenses ? licenses : []"
               :loading="licensesStatus === 'pending'"
@@ -104,11 +104,11 @@
             </SearchableSelect>
             <SearchableSelect
               v-model="facets.schema"
-              :label="t('Schema')"
-              :explanation="t('Data schemas describe data models: what are the fields, how are data shown, what are the available values, etc. See schema.data.gouv.fr')"
+              :label="t('Schéma')"
+              :explanation="t('Les schémas de données permettent de décrire des modèles de données : quels sont les différents champs, comment sont représentées les données, quelles sont les valeurs possibles etc. Voir schema.data.gouv.fr')"
               :display-value="(value) => value.name"
               :get-option-id="(option) => option.name"
-              :placeholder="t('All schemas')"
+              :placeholder="t('Tous les schémas')"
               :options="schemas ? schemas : []"
               :loading="schemasStatus === 'pending'"
               :multiple="false"
@@ -119,8 +119,8 @@
             </SearchableSelect>
             <SearchableSelect
               v-model="facets.geozone"
-              :label="t('Spatial coverage')"
-              :placeholder="t('All coverages')"
+              :label="t('Couverture spatiale')"
+              :placeholder="t('Toutes les couvertures')"
               :suggest="suggestSpatialCoverages"
               :get-option-id="(coverage) => coverage.id"
               :display-value="(value) => value.name"
@@ -135,8 +135,8 @@
             </SearchableSelect>
             <SearchableSelect
               v-model="facets.granularity"
-              :label="t('Spatial granularity')"
-              :placeholder="t('All granularities')"
+              :label="t('Granularité spatiale')"
+              :placeholder="t('Toutes les granularités')"
               :get-option-id="(granularity) => granularity.id"
               :display-value="(value) => value.name"
               :multiple="false"
@@ -158,7 +158,7 @@
                 class="w-full justify-center"
                 @click="resetFilters"
               >
-                {{ t('Reset filters') }}
+                {{ t('Réinitialiser les filtres') }}
               </BrandedButton>
               <BrandedButton
                 v-else-if="organization"
@@ -167,7 +167,7 @@
                 :external="true"
                 :icon="RiDownloadLine"
               >
-                {{ t('Download the list as CSV') }}
+                {{ t('Télécharger la liste en CSV') }}
               </BrandedButton>
             </div>
           </div>
@@ -186,14 +186,14 @@
             class="fr-col-auto my-0"
             role="status"
           >
-            {{ t("{count} results", searchResults.total) }}
+            {{ t("{count} résultats | {count} résultat | {count} résultats", searchResults.total) }}
           </p>
           <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
             <label
               for="sort-search"
               class="fr-col-auto text-sm m-0 mr-2"
             >
-              {{ t('Sort by:') }}
+              {{ t('Trier par :') }}
             </label>
             <div class="fr-col">
               <select
@@ -204,7 +204,7 @@
                 @change="currentPage = 1"
               >
                 <option value="">
-                  {{ t('Relevance') }}
+                  {{ t('Pertinence') }}
                 </option>
                 <option
                   v-for="{ value, label } in sortOptions"
@@ -265,13 +265,13 @@
       height="117"
     />
     <p class="mt-4 mb-5 font-bold text-lg">
-      {{ $t(`This organization hasn't published any datasets yet.`) }}
+      {{ $t(`Cette organisation n'a pas encore publié de jeux de données.`) }}
     </p>
     <BrandedButton
       color="secondary"
       :href="config.public.datasetPublishingGuideUrl"
     >
-      {{ $t(`What's a dataset ?`) }}
+      {{ $t(`Qu'est-ce qu'un jeu de données ?`) }}
     </BrandedButton>
   </div>
 </template>
@@ -502,10 +502,10 @@ const isFiltered = computed(() => {
 })
 
 const sortOptions = [
-  { label: t('Creation date'), value: '-created' },
-  { label: t('Last update'), value: '-last_update' },
-  { label: t('Number of followers'), value: '-followers' },
-  { label: t('Number of reuses'), value: '-reuses' },
+  { label: t('Date de création'), value: '-created' },
+  { label: t('Dernière mise à jour'), value: '-last_update' },
+  { label: t(`Nombre d'abonnés`), value: '-followers' },
+  { label: t('Nombre de réutilisations'), value: '-reuses' },
 ]
 
 // Update model params
@@ -530,7 +530,7 @@ watchEffect(() => {
 
 watch(searchResultsStatus, () => {
   if (searchResultsStatus.value === 'error') {
-    toast.error(t(`The search request failed`))
+    toast.error(t(`La recherche a échoué`))
   }
 })
 </script>

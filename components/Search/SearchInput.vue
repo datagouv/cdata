@@ -4,7 +4,7 @@
       class="sr-only"
       :for="id"
     >
-      {{ $t("Search") }}
+      {{ $t("Recherche") }}
     </label>
     <input
       :id="id"
@@ -13,8 +13,8 @@
       type="search"
       name="q"
       class="input max-h-12 m-0 rounded-tl shadow-input-blue"
-      :aria-label="placeholder || $t('Search...')"
-      :placeholder="placeholder || $t('Search...')"
+      :aria-label="placeholder || $t('Rechercher...')"
+      :placeholder="placeholder || $t('Rechercher...')"
     >
     <BrandedButton
       class="rounded-l-none rounded-br-none rounded-tr min-h-12"
@@ -23,7 +23,7 @@
       :icon="RiSearchLine"
       type="submit"
     >
-      {{ $t('Search') }}
+      {{ $t('Recherche') }}
     </BrandedButton>
   </section>
 </template>

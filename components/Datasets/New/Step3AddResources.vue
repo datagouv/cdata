@@ -2,7 +2,7 @@
   <div class="flex">
     <Sidemenu
       class="w-5/12 hidden lg:block"
-      :button-text="$t('Help')"
+      :button-text="$t('Aide')"
       :on-right="true"
       :fixed="true"
       :show-border="false"
@@ -12,7 +12,7 @@
           class="fr-icon--sm fr-icon-question-line"
           aria-hidden="true"
         />
-        {{ $t('Help') }}
+        {{ $t('Aide') }}
       </template>
       <AccordionGroup :with-icon="true">
         <Accordion
@@ -98,7 +98,7 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Files") }}
+              {{ $t("Fichiers") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -143,7 +143,7 @@
           class="fr-mt-n2w fr-mb-2w"
         >
           <template #title>
-            {{ $t("An error occured | Some errors occured", errors.length) }}
+            {{ $t("Une erreur est survenue | Des erreurs sont survenues", errors.length) }}
           </template>
           <ul v-if="errors.length > 1">
             <li
@@ -162,14 +162,14 @@
             color="secondary"
             @click="$emit('previous')"
           >
-            {{ $t("Previous") }}
+            {{ $t("Précédent") }}
           </BrandedButton>
           <BrandedButton
             :loading
             color="primary"
             @click="submit"
           >
-            {{ $t("Next") }}
+            {{ $t("Suivant") }}
           </BrandedButton>
         </div>
       </PaddedContainer>

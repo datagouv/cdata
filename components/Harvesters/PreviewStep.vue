@@ -15,13 +15,13 @@
         color="secondary"
         @click="$emit('previous')"
       >
-        {{ $t('Previous') }}
+        {{ $t('Précédent') }}
       </BrandedButton>
       <BrandedButton
         color="primary"
         @click="$emit('next')"
       >
-        {{ $t('Next') }}
+        {{ $t('Suivant') }}
       </BrandedButton>
     </div>
   </div>

@@ -12,14 +12,15 @@
         >
       </div>
       <p class="mb-0.5 font-bold">
-        <NuxtLinkLocale
+        <AppLink
           :to="`/organizations/${organization.slug}`"
+          class="overflow-hidden"
         >
           <OrganizationNameWithCertificate
             :show-type="false"
             :organization
           />
-        </NuxtLinkLocale>
+        </AppLink>
       </p>
       <div class="mb-2 flex flex-wrap items-center">
         <OwnerType
@@ -28,7 +29,10 @@
           :type
         />
         <div>
-          <div class="text-gray-medium flex items-center text-sm gap-0.5" v-if="organization.metrics">
+          <div
+            v-if="organization.metrics"
+            class="text-gray-medium flex items-center text-sm gap-0.5"
+          >
             <RiDatabase2Line class="size-4 -mt-1" /> {{ organization.metrics.datasets }}
             <RiTerminalLine class="size-4 -mt-1 ml-1" /> {{ organization.metrics.dataservices }}
             <RiLineChartLine class="size-4 -mt-1 ml-1" /> {{ organization.metrics.reuses }}
@@ -54,6 +58,7 @@ import { getOrganizationType } from '../functions/organizations'
 import type { Organization } from '../types/organizations'
 import OwnerType from './OwnerType.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
+import AppLink from './AppLink.vue'
 
 const props = defineProps<{
   organization: Organization

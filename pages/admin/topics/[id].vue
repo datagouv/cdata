@@ -2,7 +2,7 @@
   <div v-if="topic">
     <AdminBreadcrumb>
       <BreadcrumbItem to="/admin/site/topics">
-        {{ $t('Topics') }}
+        {{ $t('Thématiques') }}
       </BreadcrumbItem>
       <BreadcrumbItem v-if="topic">
         {{ topic.name }}
@@ -16,10 +16,10 @@
     <TabLinks
       class="mb-5"
       :links="[
-        { href: `/admin/topics/${topic.id}`, label: $t('Metadata') },
-        { href: `/admin/topics/${topic.id}/datasets`, label: $t('Datasets') },
-        { href: `/admin/topics/${topic.id}/reuses`, label: $t('Reuses') },
-        { href: `/admin/topics/${topic.id}/activities`, label: $t('Activities') },
+        { href: `/admin/topics/${topic.id}`, label: $t('Métadonnées') },
+        { href: `/admin/topics/${topic.id}/datasets`, label: $t('Jeux de données') },
+        { href: `/admin/topics/${topic.id}/reuses`, label: $t('Réutilisations') },
+        { href: `/admin/topics/${topic.id}/activities`, label: $t('Activités') },
       ]"
     />
 

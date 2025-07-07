@@ -20,7 +20,7 @@ export async function useFetch<DataT, ErrorT = never>(
   const error: Ref<ErrorT | null> = ref(null)
   const status = ref<AsyncDataRequestStatus>('idle')
 
-  const execute = async (opts?: AsyncDataExecuteOptions) => {
+  const execute = async (_opts?: AsyncDataExecuteOptions) => {
     const urlValue = toValue(url)
     if (!urlValue) return
     status.value = 'pending'
@@ -60,7 +60,7 @@ export async function useFetch<DataT, ErrorT = never>(
           catch (e) {
             console.error(e)
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            message = t('The API returned an unexpected error')
+            message = t(`L'API a retourné une erreur inattendue`)
           }
 
           // TODO Toast outside Nuxt
@@ -82,7 +82,7 @@ export async function useFetch<DataT, ErrorT = never>(
 
   return {
     data,
-    refresh: async (opts?: AsyncDataExecuteOptions) => {
+    refresh: async (_opts?: AsyncDataExecuteOptions) => {
       execute()
     },
     execute,

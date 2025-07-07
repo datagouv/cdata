@@ -6,6 +6,8 @@ export default defineNuxtPlugin({
     const token = useToken()
     const cookie = useRequestHeader('cookie')
     const localePath = useLocalePath()
+    const route = useRoute()
+
     const { toast } = useToast()
     const makeApi = (apiOptions: { sendJson: boolean, redirectOn404: boolean }) => {
       return $fetch.create({
@@ -33,7 +35,7 @@ export default defineNuxtPlugin({
             options.query['lang'] = i18n.locale.value
           }
         },
-        async onResponseError({ response }) {
+        async onResponseError({ response, options }) {
           if (response.status === 404) {
             if (apiOptions.redirectOn404) {
               showError({ statusCode: 404, statusMessage: 'Page Not Found' })
@@ -44,8 +46,9 @@ export default defineNuxtPlugin({
             }
           }
 
+
           if (response.status === 401) {
-            await nuxtApp.runWithContext(() => navigateTo(localePath('/login'), { external: true }))
+            await nuxtApp.runWithContext(() => navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true }))
           }
 
           const t = (nuxtApp.$i18n as NuxtApp['$i18n']).t
@@ -60,6 +63,11 @@ export default defineNuxtPlugin({
             return
           }
 
+          if (options?.method && ['POST', 'PUT', 'PATCH'].includes(options.method) && response.status === 400) {
+            toast.error(t('Le formulaire contient des erreurs.'))
+            return
+          }
+
           let message
           try {
             if ('error' in response._data) {
@@ -71,10 +79,13 @@ export default defineNuxtPlugin({
             else if ('errors' in response._data && typeof response._data.errors === 'object') {
               message = Object.entries(response._data.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
             }
+            else {
+              message = t('The API returned an unexpected error')
+            }
           }
           catch (e) {
             console.error(e)
-            message = t('The API returned an unexpected error')
+            message = t(`L'API a retourné une erreur inattendue`)
           }
 
           toast.error(message)

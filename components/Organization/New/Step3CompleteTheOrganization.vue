@@ -15,10 +15,10 @@
         </div>
         <div class="flex-1">
           <p class="m-0 font-bold">
-            {{ $t('Your organization is created !') }}
+            {{ $t('Votre organisation a été créée !') }}
           </p>
           <p class="m-0 text-xs">
-            {{ $t('You can now publish content or incite members to join your organization.') }}
+            {{ $t('Vous pouvez maintenant publier du contenu ou inviter des membres à rejoindre votre organisation.') }}
           </p>
         </div>
       </div>
@@ -65,19 +65,19 @@
         color="secondary"
         :href="`/admin/organizations/${organization.id}/profile`"
       >
-        {{ $t("Manage the organization") }}
+        {{ $t("Gérer l’organisation") }}
       </BrandedButton>
       <BrandedButton
         href="/admin/reuses/new"
         color="primary"
       >
-        {{ $t("Publish a reuse") }}
+        {{ $t("Publiez une réutilisation") }}
       </BrandedButton>
       <BrandedButton
         href="/admin/datasets/new"
         color="primary"
       >
-        {{ $t("Publish a dataset") }}
+        {{ $t("Publier un jeu de données") }}
       </BrandedButton>
     </div>
     <Alert
@@ -86,7 +86,7 @@
       class="fr-mt-2w fr-mb-2w"
     >
       <template #title>
-        {{ $t("An error occured | Some errors occured", errors.length) }}
+        {{ $t("Une erreur est survenue | Des erreurs sont survenues", errors.length) }}
       </template>
       <ul v-if="errors.length > 1">
         <li

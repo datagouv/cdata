@@ -110,14 +110,6 @@ const datagouv: Plugin<PluginConfig> = {
       options.textClamp = textClamp.default
     }
 
-    if (options.i18n) {
-      const frMessages = await import('../dist/locales/fr.js')
-      const enMessages = await import('../dist/locales/en.js')
-
-      options.i18n.global.mergeLocaleMessage('en', enMessages.default)
-      options.i18n.global.mergeLocaleMessage('fr', frMessages.default)
-    }
-
     app.provide(configKey, options)
   },
 }

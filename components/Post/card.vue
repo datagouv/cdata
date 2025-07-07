@@ -15,7 +15,7 @@
         v-if="post.published"
         class="mb-0 text-gray-medium"
       >
-        {{ $t('Published the {date}', { date: formatDate(post.published) }) }}
+        {{ $t('Publié le {date}', { date: formatDate(post.published) }) }}
       </p>
     </div>
   </div>

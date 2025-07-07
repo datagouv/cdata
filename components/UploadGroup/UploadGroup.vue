@@ -18,7 +18,7 @@
       class="flex flex-col items-center gap-2 border border-gray-default border-dashed text-mention-grey font-bold"
       :class="{ 'border-plain-error': hasError }"
     >
-      <div>{{ $t('Drag and drop files') }}</div>
+      <div>{{ $t('Glissez et déposez des fichiers') }}</div>
       <Divider color="bg-gray-200">
         {{ $t('or') }}
       </Divider>
@@ -36,11 +36,11 @@
       <BrandedButton
         color="secondary"
         :disabled="disabled"
-        :title="$t('Browse')"
+        :title="$t('Parcourir')"
         :aria-controls="id"
         @click.prevent.stop="open"
       >
-        {{ $t('Browse') }}
+        {{ $t('Parcourir') }}
       </BrandedButton>
     </PaddedContainer>
     <p
