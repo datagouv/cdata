@@ -73,10 +73,12 @@ export default defineNuxtPlugin({
             return
           }
 
-          if (!message) {
-            message = t(`L'API a retourné une erreur inattendue`)
+          if (message) {
+            toast.error(message)
           }
-          toast.error(message)
+          else {
+            toast.error(t(`L'API a retourné une erreur inattendue`))
+          }
         },
       })
     }
