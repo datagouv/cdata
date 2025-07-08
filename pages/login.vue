@@ -89,11 +89,13 @@
               <span class="fr-connect__brand">ProConnect</span>
             </button>
             <p>
-              <NuxtLink
+              <CdataLink
                 :href="config.public.proconnect.homepage"
                 target="_blank"
                 rel="noopener"
-              >{{ $t(`Qu'est-ce que ProConnect ?`) }}</NuxtLink>
+              >
+                {{ $t(`Qu'est-ce que ProConnect ?`) }}
+              </CdataLink>
             </p>
           </div>
         </form>

@@ -13,20 +13,20 @@
         :rounded="true"
         class="size-3"
       />
-      <NuxtLink
+      <CdataLink
         v-if="comment.posted_by_organization"
         class="link"
         :href="comment.posted_by_organization.page"
       >
         {{ comment.posted_by_organization.name }}
-      </NuxtLink>
-      <NuxtLink
+      </CdataLink>
+      <CdataLink
         v-else
         class="link"
         :href="comment.posted_by.page"
       >
         {{ comment.posted_by.first_name }} {{ comment.posted_by.last_name }}
-      </NuxtLink>
+      </CdataLink>
     </div>
     <div>—</div>
     <div v-if="comment.last_modified_at">

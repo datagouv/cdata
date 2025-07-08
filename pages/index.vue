@@ -282,14 +282,14 @@
                     {{ exploration.description }}
                   </p>
                   <div class="text-right">
-                    <NuxtLink
+                    <CdataLink
                       :to="exploration.url"
                       external
                       class="inline-flex items-center text-primary space-x-1"
                     >
                       <span>{{ $t('En savoir plus') }}</span>
                       <RiArrowRightLine class="size-3" />
-                    </NuxtLink>
+                    </CdataLink>
                   </div>
                 </div>
               </div>
@@ -325,14 +325,14 @@
                 class="relative bg-gray-disabled p-4 space-y-2 hover:bg-gray-plain"
               >
                 <h5 class="text-xl">
-                  <NuxtLink
+                  <CdataLink
                     :to="platform.url"
                     external
                     class="fr-raw-link"
                   >
                     <span class="font-spectral italic text-[1.4rem]">{{ platform.name }}</span><span class="font-bold">.data.gouv.</span><span class="font-spectral italic text-[1.4rem]">fr</span>
                     <div class="absolute inset-0" />
-                  </NuxtLink>
+                  </CdataLink>
                 </h5>
                 <i18n-t
                   v-if="platform.name === 'ecologie'"
