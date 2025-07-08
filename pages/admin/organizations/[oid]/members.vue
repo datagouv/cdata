@@ -161,12 +161,12 @@
           >
             <td>
               <p v-if="isMeAdmin()">
-                <NuxtLinkLocale
+                <CdataLink
                   :to="`/admin/users/${member.user.id}/profile`"
                   class="fr-text--bold fr-m-0"
                 >
                   {{ member.user.first_name }} {{ member.user.last_name }}
-                </NuxtLinkLocale>
+                </CdataLink>
               </p>
               <p
                 v-else

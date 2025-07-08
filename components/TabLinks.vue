@@ -5,7 +5,7 @@
         v-for="link in links"
         :key="link.label"
       >
-        <NuxtLinkLocale
+        <CdataLink
           v-if="show(link.href)"
           :to="link.href"
           class="group block rounded bg-none bg-transparent border border-transparent -m-px no-underline outline-none aria-current-page:border aria-current-page:border-primary aria-current-page:text-primary p-1"
@@ -14,7 +14,7 @@
           <span class="rounded px-2">
             {{ link.label }}
           </span>
-        </NuxtLinkLocale>
+        </CdataLink>
       </template>
     </nav>
   </div>

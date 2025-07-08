@@ -70,14 +70,14 @@
         </form>
 
         <div class="text-center text-gray-plain text-sm">
-          {{ $t('Mot de passe oublié ?') }} <NuxtLinkLocale to="/reset">
+          {{ $t('Mot de passe oublié ?') }} <CdataLink to="/reset">
             {{ $t('Récupérer votre mot de passe') }}
-          </NuxtLinkLocale>
+          </CdataLink>
         </div>
         <div class="text-center text-gray-plain text-sm">
-          {{ $t('Instructions de confirmation non reçues ?') }} <NuxtLinkLocale to="/confirm">
+          {{ $t('Instructions de confirmation non reçues ?') }} <CdataLink to="/confirm">
             {{ $t('Renvoyer les instructions') }}
-          </NuxtLinkLocale>
+          </CdataLink>
         </div>
 
         <Divider>{{ $t('ou') }}</Divider>

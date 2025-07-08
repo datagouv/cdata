@@ -38,7 +38,7 @@
       >
         <td>
           <AdminContentWithTooltip>
-            <NuxtLinkLocale
+            <CdataLink
               class="fr-link fr-reset-link"
               :href="getReuseAdminUrl(reuse)"
             >
@@ -47,7 +47,7 @@
                 :auto-resize="true"
                 :max-lines="2"
               />
-            </NuxtLinkLocale>
+            </CdataLink>
           </AdminContentWithTooltip>
         </td>
         <td>

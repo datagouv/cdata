@@ -10,14 +10,14 @@
     >
       <slot />
     </a>
-    <NuxtLinkLocale
+    <CdataLink
       v-else
       class="fr-breadcrumb__link"
       :to
       :external
     >
       <slot />
-    </NuxtLinkLocale>
+    </CdataLink>
   </li>
 </template>
 

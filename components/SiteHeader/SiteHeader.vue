@@ -166,7 +166,7 @@
                             :key="`${link.link}-${$route.path}`"
                             class="fr-nav__item"
                           >
-                            <NuxtLinkLocale
+                            <CdataLink
                               v-if="link.link"
                               class="fr-nav__link"
                               :to="link.link"
@@ -175,7 +175,7 @@
                               :aria-current="getAriaCurrent(localePath(link.link))"
                             >
                               {{ link.label }}
-                            </NuxtLinkLocale>
+                            </CdataLink>
                             <ClientOnly v-else-if="link.items">
                               <Disclosure>
                                 <DisclosureButton
@@ -192,7 +192,7 @@
                                       :key="item.label"
                                     >
                                       <DisclosureButton
-                                        :as="NuxtLinkLocale"
+                                        :as="CdataLink"
                                         class="fr-nav__link"
                                         :to="item.link"
                                         :external="true"
@@ -227,7 +227,7 @@
                                       v-for="item in filteredPublishMenu"
                                       :key="item.link"
                                     >
-                                      <NuxtLinkLocale
+                                      <CdataLink
                                         class="fr-nav__link flex items-center space-x-1"
                                         :to="item.link"
                                       >
@@ -236,7 +236,7 @@
                                           class="inline size-4"
                                         />
                                         <span>{{ item.label }}</span>
-                                      </NuxtLinkLocale>
+                                      </CdataLink>
                                     </li>
                                   </ul>
                                 </DisclosurePanel>
@@ -363,7 +363,7 @@
               :key="`${link.link}-${$route.path}`"
               class="fr-nav__item"
             >
-              <NuxtLinkLocale
+              <CdataLink
                 v-if="link.link"
                 class="fr-nav__link"
                 :to="link.link"
@@ -372,7 +372,7 @@
                 :aria-current="getAriaCurrent(localePath(link.link))"
               >
                 {{ link.label }}
-              </NuxtLinkLocale>
+              </CdataLink>
               <ClientOnly v-else-if="link.items">
                 <Disclosure>
                   <DisclosureButton
@@ -388,13 +388,13 @@
                         v-for="item in link.items"
                         :key="item.label"
                       >
-                        <NuxtLinkLocale
+                        <CdataLink
                           class="fr-nav__link"
                           :to="item.link"
                           :external="true"
                         >
                           {{ item.label }}
-                        </NuxtLinkLocale>
+                        </CdataLink>
                       </li>
                     </ul>
                   </DisclosurePanel>
@@ -426,7 +426,7 @@
                         v-for="item in filteredPublishMenu"
                         :key="item.link"
                       >
-                        <NuxtLinkLocale
+                        <CdataLink
                           class="fr-nav__link flex items-center space-x-1"
                           :to="item.link"
                           @click="close()"
@@ -436,7 +436,7 @@
                             class="size-4 -mt-1"
                           />
                           <span>{{ item.label }}</span>
-                        </NuxtLinkLocale>
+                        </CdataLink>
                       </li>
                     </ul>
                   </PopoverPanel>
@@ -454,7 +454,8 @@
 import { BrandedButton, getUserAvatar } from '@datagouv/components-next'
 import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiGovernmentLine, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
-import { NuxtImg, NuxtLinkLocale } from '#components'
+import CdataLink from '../CdataLink.vue'
+import { NuxtImg } from '#components'
 import SiteLogo from '~/components/SiteLogo.vue'
 import { useMaybeMe } from '~/utils/auth'
 

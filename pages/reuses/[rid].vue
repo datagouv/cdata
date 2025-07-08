@@ -92,14 +92,14 @@
                 :size="32"
                 class="bg-white p-1 rounded-xs border border-gray-default object-contain"
               />
-              <NuxtLinkLocale
+              <CdataLink
                 class="link block"
                 :to="`/organizations/${reuse.organization.slug}/`"
               >
                 <OrganizationNameWithCertificate
                   :organization="reuse.organization"
                 />
-              </NuxtLinkLocale>
+              </CdataLink>
             </div>
             <div
               v-else-if="reuse.owner"
@@ -110,13 +110,13 @@
                 :size="24"
                 :rounded="true"
               />
-              <NuxtLinkLocale
+              <CdataLink
                 class="link block"
                 :to="`/users/${reuse.owner.slug}/`"
                 :external="true"
               >
                 {{ reuse.owner.first_name }} {{ reuse.owner.last_name }}
-              </NuxtLinkLocale>
+              </CdataLink>
             </div>
             <h1 class="!text-2xl !font-extrabold !mb-1">
               {{ reuse.title }}

@@ -96,12 +96,12 @@
             >
               <td>
                 <AdminContentWithTooltip>
-                  <NuxtLinkLocale
+                  <CdataLink
                     class="fr-link fr-reset-link"
                     :href="getHarvesterJobAdminUrl(harvester, job)"
                   >
                     {{ job.id }}
-                  </NuxtLinkLocale>
+                  </CdataLink>
                 </AdminContentWithTooltip>
               </td>
               <td>

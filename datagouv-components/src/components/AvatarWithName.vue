@@ -6,13 +6,13 @@
       :size
       :rounded="true"
     />
-    <NuxtLinkLocale
+    <CdataLink
       :to="user.page"
       class="fr-text--bold"
     >
       {{ user.first_name }}
       {{ user.last_name }}
-    </NuxtLinkLocale>
+    </CdataLink>
   </span>
 </template>
 

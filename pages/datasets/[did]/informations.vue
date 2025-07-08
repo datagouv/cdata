@@ -8,7 +8,7 @@
         <div v-if="dataset.tags && dataset.tags.length">
           <DescriptionListTerm>{{ $t('Mots-clés') }}</DescriptionListTerm>
           <DescriptionListDetails class="flex flex-wrap gap-2 items-start">
-            <NuxtLinkLocale
+            <CdataLink
               v-for="tag in dataset.tags"
               :key="tag"
               class="fr-raw-link"
@@ -20,7 +20,7 @@
               >
                 {{ tag }}
               </Tag>
-            </NuxtLinkLocale>
+            </CdataLink>
           </DescriptionListDetails>
         </div>
         <div>
