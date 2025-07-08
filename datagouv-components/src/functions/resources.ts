@@ -75,6 +75,7 @@ export function getResourceFormatIcon(format: string): Component | null {
     case 'png':
     case 'jpg':
     case 'jpeg':
+    case 'svg':
       return Image
     default:
       return null
