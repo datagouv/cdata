@@ -121,7 +121,7 @@ const route = useRoute()
 const { getReuseStatus } = useReuseStatus()
 const { formatDate } = useFormatDate()
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
-const { data: reuse } = await useAPI<Reuse>(url, { lazy: true })
+const { data: reuse } = await useAPI<Reuse>(url, { redirectOn404: true })
 const { data: activities } = await useAPI<PaginatedArray<Activity>>('/api/1/activity/', {
   params: {
     related_to: route.params.id,
