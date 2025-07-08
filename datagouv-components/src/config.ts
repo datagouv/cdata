@@ -20,6 +20,7 @@ export type PluginConfig = {
   appLink?: Component | null
   maxJsonPreviewSize?: number // Maximum size of JSON to preview in characters
   maxPdfPreviewSize?: number // Maximum size of PDF to preview in bytes
+  maxXmlPreviewSize?: number // Maximum size of XML to preview in characters
   i18n?: {
     global: {
       mergeLocaleMessage: (locale: string, messages: unknown) => void
