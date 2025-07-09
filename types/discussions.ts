@@ -40,7 +40,6 @@ export type Thread = {
 }
 
 export type Comment = {
-  id: string
   content: string
   posted_by: User
   posted_on: string
