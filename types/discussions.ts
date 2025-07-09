@@ -4,7 +4,7 @@ import type { Post } from './posts'
 export type DiscussionSortedBy = 'title' | 'created' | 'closed'
 
 export type Spam = {
-  status?: string
+  status?: 'not_checked' | 'no_spam' | 'potential_spam'
 }
 
 export type Subject = {
@@ -40,6 +40,7 @@ export type Thread = {
 }
 
 export type Comment = {
+  id: string
   content: string
   posted_by: User
   posted_on: string

@@ -13,6 +13,14 @@
         class="mb-1"
       />
       <div class="space-x-2">
+        <BrandedButton
+          v-if="forDeleteInfo && comment.spam?.status === 'potential_spam'"
+          color="warning"
+          size="xs"
+          @click="markAsNoSpam(forDeleteInfo.index)"
+        >
+          {{ $t('Marquer comme non spam') }}
+        </BrandedButton>
         <EditCommentModal
           v-if="forEditInfo && comment.permissions.edit"
           :subject
@@ -42,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { ReadMore } from '@datagouv/components-next'
+import { BrandedButton, ReadMore } from '@datagouv/components-next'
 import ReportModal from '../Spam/ReportModal.vue'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
 import DeleteCommentModal from './DeleteCommentModal.vue'
@@ -63,9 +71,15 @@ const props = defineProps<{
     index: number
   }
 }>()
-defineEmits<{
+const emit = defineEmits<{
   change: []
 }>()
 
 const isProducer = computed(() => isProducerOfSubject(props.subject, props.comment))
+
+const { $api } = useNuxtApp()
+const markAsNoSpam = async (index: number) => {
+  await $api(`/api/1/discussions/${props.thread.id}/comments/${index}/spam`, { method: 'DELETE' })
+  emit('change')
+}
 </script>

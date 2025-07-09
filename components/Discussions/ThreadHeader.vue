@@ -17,6 +17,14 @@
         v-if="showActions"
         class="space-x-2"
       >
+        <BrandedButton
+          v-if="thread.spam?.status === 'potential_spam'"
+          color="warning"
+          size="xs"
+          @click="markAsNoSpam"
+        >
+          {{ $t('Marquer comme non spam') }}
+        </BrandedButton>
         <EditCommentModal
           v-if="firstComment.permissions.edit"
           :subject
@@ -47,7 +55,7 @@
 
 <script setup lang="ts">
 import { RiLockLine } from '@remixicon/vue'
-import { CopyButton } from '@datagouv/components-next'
+import { BrandedButton, CopyButton } from '@datagouv/components-next'
 import ReportModal from '../Spam/ReportModal.vue'
 import DeleteThreadModal from './DeleteThreadModal.vue'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
@@ -61,9 +69,15 @@ const props = withDefaults(defineProps<{
 }>(), {
   showActions: false,
 })
-defineEmits<{
+const emit = defineEmits<{
   change: []
 }>()
 
 const firstComment = computed(() => props.thread.discussion[0])
+
+const { $api } = useNuxtApp()
+const markAsNoSpam = async () => {
+  await $api(`/api/1/discussions/${props.thread.id}/spam`, { method: 'DELETE' })
+  emit('change')
+}
 </script>
