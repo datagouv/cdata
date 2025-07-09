@@ -2,10 +2,10 @@
   <div>
     <Breadcrumb>
       <BreadcrumbItem to="/design/">
-        {{ $t('Design System') }}
+        {{ $t('Système de design') }}
       </BreadcrumbItem>
       <BreadcrumbItem to="/design/organization-search">
-        {{ $t('Organization Search') }}
+        {{ $t('Recherche d\'organisations') }}
       </BreadcrumbItem>
     </Breadcrumb>
     <h1 class="mb-3">

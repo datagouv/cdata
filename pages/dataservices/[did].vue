@@ -204,7 +204,7 @@
               </div>
               <div>
                 <StatBox
-                  :title="$t('Views')"
+                  :title="$t('Vues')"
                   :data="metricsViews"
                   size="sm"
                   type="line"

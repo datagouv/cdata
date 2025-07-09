@@ -19,7 +19,7 @@
       v-if="site"
       class="block mb-3"
     >
-      {{ $t('Search among {count} dataservices on {site}', {
+      {{ $t('Rechercher parmi {count} services de données sur {site}', {
         count: site.metrics.dataservices,
         site: config.public.title,
       }) }}

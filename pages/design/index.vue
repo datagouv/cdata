@@ -2,7 +2,7 @@
   <div>
     <Breadcrumb>
       <BreadcrumbItem to="/design/">
-        {{ $t('Design System') }}
+        {{ $t('Système de design') }}
       </BreadcrumbItem>
     </Breadcrumb>
     <h1 class="!mb-3">
