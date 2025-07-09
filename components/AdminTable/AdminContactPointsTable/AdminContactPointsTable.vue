@@ -174,7 +174,7 @@ function getRoleLabel(contact: ContactPoint) {
 }
 
 async function updateContactPoint(closeModal: () => void) {
-  if (!validate()) {
+  if (!await validate()) {
     return
   }
   loading.value = true

@@ -98,8 +98,8 @@ function resetForm(close: () => void) {
   close()
 };
 
-function send(close: () => void) {
-  if (validate()) {
+async function send(close: () => void) {
+  if (await validate()) {
     emit('send', { ...form })
     resetForm(close)
   }
