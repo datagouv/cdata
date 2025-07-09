@@ -52,12 +52,7 @@ export default defineNuxtPlugin({
             return
           }
 
-          if (options?.method && ['POST', 'PUT', 'PATCH'].includes(options.method) && response.status === 400) {
-            toast.error(t('Le formulaire contient des erreurs.'))
-            return
-          }
-
-          let message
+          let message = ''
           try {
             if ('error' in response._data) {
               message = response._data.error
@@ -68,16 +63,22 @@ export default defineNuxtPlugin({
             else if ('errors' in response._data && typeof response._data.errors === 'object') {
               message = Object.entries(response._data.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
             }
-            else {
-              message = t('L\'API a retourné une erreur inattendue')
-            }
           }
           catch (e) {
             console.error(e)
-            message = t(`L'API a retourné une erreur inattendue`)
           }
 
-          toast.error(message)
+          if (options?.method && ['POST', 'PUT', 'PATCH'].includes(options.method) && response.status === 400) {
+            toast.error(t(`Le formulaire contient des erreurs. ${message}`))
+            return
+          }
+
+          if (message) {
+            toast.error(message)
+          }
+          else {
+            toast.error(t(`L'API a retourné une erreur inattendue`))
+          }
         },
       })
     }
