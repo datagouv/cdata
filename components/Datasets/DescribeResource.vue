@@ -124,59 +124,61 @@
       </FieldsetElement>
     </FormFieldset>
 
-    <BrandedButton
-      v-if="! showChecksum"
-      color="secondary-softer"
-      :icon="RiAddLine"
-      class="-mt-6 mb-6"
-      @click="addChecksum = true"
-    >
-      {{ $t('Ajouter une somme de contrôle') }}
-    </BrandedButton>
-    <FormFieldset
-      v-if="form.filetype === 'remote' && showChecksum"
-      :legend="$t('Somme de contrôle')"
-      class="w-full"
-    >
-      <template #legendAside>
-        <BrandedButton
-          color="secondary"
-          size="2xs"
-          @click="form.checksum_value = null; addChecksum = false"
-        >
-          {{ $t('Supprimer') }}
-        </BrandedButton>
-      </template>
-
-      <FieldsetElement form-key="checksum">
-        <SelectGroup
-          v-model="form.checksum_type"
-          :label="$t('Type de somme de contrôle')"
-          :has-error="!!getFirstError('checksum_type')"
-          :error-text="getFirstError('checksum_type')"
-          :options="[
-            { value: 'sha1', label: 'SHA1' },
-            { value: 'sha2', label: 'SHA2' },
-            { value: 'sha256', label: 'SHA256' },
-            { value: 'md5', label: 'MD5' },
-            { value: 'crc', label: 'CRC' },
-          ]"
-        />
-
-        <InputGroup
-          v-model="form.checksum_value"
-          :label="$t('Valeur de la somme de contrôle')"
-          :has-error="!!getFirstError('checksum_value')"
-          :error-text="getFirstError('checksum_value')"
-        />
-
-        <template #accordion>
-          <HelpAccordion :title="$t('Somme de contrôle')">
-            {{ $t("La somme de contrôle ou checksum permet à l'utilisateur de vérifier que les données téléchargées n'ont pas été corrompues ou altérées.") }}
-          </HelpAccordion>
+    <template v-if="form.filetype === 'remote'">
+      <BrandedButton
+        v-if="! showChecksum"
+        color="secondary-softer"
+        :icon="RiAddLine"
+        class="-mt-6 mb-6"
+        @click="addChecksum = true"
+      >
+        {{ $t('Ajouter une somme de contrôle') }}
+      </BrandedButton>
+      <FormFieldset
+        v-else
+        :legend="$t('Somme de contrôle')"
+        class="w-full"
+      >
+        <template #legendAside>
+          <BrandedButton
+            color="secondary"
+            size="2xs"
+            @click="form.checksum_value = null; addChecksum = false"
+          >
+            {{ $t('Supprimer') }}
+          </BrandedButton>
         </template>
-      </FieldsetElement>
-    </FormFieldset>
+
+        <FieldsetElement form-key="checksum">
+          <SelectGroup
+            v-model="form.checksum_type"
+            :label="$t('Type de somme de contrôle')"
+            :has-error="!!getFirstError('checksum_type')"
+            :error-text="getFirstError('checksum_type')"
+            :options="[
+              { value: 'sha1', label: 'SHA1' },
+              { value: 'sha2', label: 'SHA2' },
+              { value: 'sha256', label: 'SHA256' },
+              { value: 'md5', label: 'MD5' },
+              { value: 'crc', label: 'CRC' },
+            ]"
+          />
+
+          <InputGroup
+            v-model="form.checksum_value"
+            :label="$t('Valeur de la somme de contrôle')"
+            :has-error="!!getFirstError('checksum_value')"
+            :error-text="getFirstError('checksum_value')"
+          />
+
+          <template #accordion>
+            <HelpAccordion :title="$t('Somme de contrôle')">
+              {{ $t("La somme de contrôle ou checksum permet à l'utilisateur de vérifier que les données téléchargées n'ont pas été corrompues ou altérées.") }}
+            </HelpAccordion>
+          </template>
+        </FieldsetElement>
+      </FormFieldset>
+    </template>
 
     <FormFieldset :legend="$t('Description')">
       <FieldsetElement form-key="title">
