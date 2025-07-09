@@ -440,7 +440,7 @@ const tabsOptions = computed(() => {
   }
 
   if (hasTabularData.value || hasPreview.value) {
-    options.push({ key: 'data', label: t('Données') })
+    options.push({ key: 'data', label: t('Aperçu') })
   }
 
   if (props.resource.description) {
