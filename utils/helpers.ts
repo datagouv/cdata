@@ -23,9 +23,6 @@ export function useIsCurrentUrl() {
   const route = useRoute()
 
   return (url: string): boolean => {
-    console.log(url)
-    console.log(absoluteUrlToRelative(url))
-    console.log(route.fullPath)
     return absoluteUrlToRelative(url) === route.fullPath
   }
 }

@@ -27,8 +27,6 @@ const props = defineProps<{
   external?: boolean
 }>()
 
-const route = useRoute()
-const localePath = useLocalePath()
-
-const isCurrent = computed(() => !props.to || localePath(props.to) === route.fullPath)
+const isCurrentUrl = useIsCurrentUrl()
+const isCurrent = computed(() => !props.to || isCurrentUrl(props.to))
 </script>
