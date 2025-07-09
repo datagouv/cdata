@@ -32,7 +32,7 @@ const config = useComponentsConfig()
           {{ t('URL') }}
           <CopyButton
             :label="$t(`Copier l'URL`)"
-            :copied-label="$t('URL Copiée !')"
+            :copied-label="$t('URL copiée !')"
             :text="resource.url"
             :aria-describedby="resourceTitleId"
           />

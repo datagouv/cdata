@@ -20,7 +20,7 @@
           <thead>
             <tr>
               <AdminTableTh scope="col">
-                {{ $t("Job ID") }}
+                {{ $t("ID de tâche") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
                 {{ $t("Statut") }}

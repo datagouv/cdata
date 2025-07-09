@@ -1,7 +1,7 @@
 <template>
   <ModalWithButton
     v-model="open"
-    :title="t('File metadata')"
+    :title="t('Métadonnées du fichier')"
     size="fullscreen"
     @open="setQueryString"
     @close="removeQueryString"
@@ -66,12 +66,12 @@
           v-if="dataset && resource.resource"
           class="w-full mt-6"
           type="danger"
-          :title="$t('Delete the resource')"
+          :title="$t('Supprimer la ressource')"
         >
           {{ $t("Attention, cette action ne peut pas être annulée.") }}
           <template #button>
             <ModalWithButton
-              :title="$t('Are you sure you want to delete this resource?')"
+              :title="$t('Êtes-vous sûr de vouloir supprimer cette ressource ?')"
               size="lg"
             >
               <template #button="{ attrs, listeners }">
@@ -97,7 +97,7 @@
                     :loading="deleting"
                     @click="deleteResource(dataset, resource.resource, close)"
                   >
-                    {{ $t("Delete the resource") }}
+                    {{ $t("Supprimer la ressource") }}
                   </BrandedButton>
                 </div>
               </template>

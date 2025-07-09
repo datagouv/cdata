@@ -69,7 +69,7 @@ export default defineNuxtPlugin({
               message = Object.entries(response._data.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
             }
             else {
-              message = t('The API returned an unexpected error')
+              message = t('L\'API a retourné une erreur inattendue')
             }
           }
           catch (e) {

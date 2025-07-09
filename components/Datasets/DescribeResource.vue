@@ -18,10 +18,10 @@
       />
       <div class="w-full">
         <p class="font-bold mb-1">
-          {{ $t('What is a community resource?') }}
+          {{ $t('Qu\'est-ce qu\'une ressource communautaire ?') }}
         </p>
         <p class="m-0 text-xs/5">
-          {{ $t('A community resource is content added by a user, a cross-referencing of data for example, to enrich or complete a public community resource.') }}
+          {{ $t('Une ressource communautaire est un contenu ajouté par un utilisateur, un recoupement de données par exemple, pour enrichir ou compléter une ressource communautaire publique.') }}
         </p>
       </div>
     </SimpleBanner>
@@ -55,7 +55,7 @@
                 v-if="type === 'update'"
                 class="fr-label fr-mb-1w"
               >
-                {{ $t('The current file will be replaced by') }}
+                {{ $t('Le fichier actuel sera remplacé par') }}
               </label>
               <FileCard
                 v-if="newFile"
@@ -80,11 +80,11 @@
             <UploadGroup
               v-else
               :show-label="type === 'update'"
-              :label="type === 'update' ? $t('Replace file') : $t('New file')"
+              :label="type === 'update' ? $t('Remplacer le fichier') : $t('Nouveau fichier')"
               type="drop"
               :accept="extensions.join(',')"
               :multiple="false"
-              :hint-text="$t('Max size: 420 Mb.')"
+              :hint-text="$t('Taille max : 420 Mo.')"
               @change="setFiles"
             />
           </div>
@@ -92,7 +92,7 @@
       </FieldsetElement>
 
       <Divider v-if="!form.filetype">
-        {{ $t('or') }}
+        {{ $t('ou') }}
       </Divider>
 
       <FieldsetElement
@@ -117,8 +117,8 @@
         />
 
         <template #accordion>
-          <HelpAccordion :title="$t('Choose the correct link')">
-            {{ $t("It's advised to put the link to the file itself instead of a web page to allow {site} to parse it.") }}
+          <HelpAccordion :title="$t('Choisir le bon lien')">
+            {{ $t("Il est conseillé de mettre le lien vers le fichier lui-même plutôt qu'une page web pour permettre à {site} de l'analyser.") }}
           </HelpAccordion>
         </template>
       </FieldsetElement>
@@ -137,13 +137,13 @@
           <HelpAccordion :title="nameAFile">
             <div class="prose prose-neutral fr-m-0">
               <p class="fr-m-0 fr-mb-1w">
-                {{ $t("It is recommended to choose a title that can inform any user about the content of the file. Some practices to avoid:") }}
+                {{ $t("Il est recommandé de choisir un titre qui peut informer tout utilisateur sur le contenu du fichier. Quelques pratiques à éviter :") }}
               </p>
               <ul>
-                <li>{{ $t('giving a too generic title (e.g., "list.csv");') }}</li>
-                <li>{{ $t("giving a too long title that would make the file manipulation difficult;") }}</li>
-                <li>{{ $t("giving a title containing accents or special characters (file interoperability issues);") }}</li>
-                <li>{{ $t("giving a title that is too technical and derived from business nomenclatures.") }}</li>
+                <li>{{ $t('donner un titre trop générique (ex. : "liste.csv") ;') }}</li>
+                <li>{{ $t("donner un titre trop long qui rendrait la manipulation du fichier difficile ;") }}</li>
+                <li>{{ $t("donner un titre contenant des accents ou des caractères spéciaux (problèmes d'interopérabilité de fichier) ;") }}</li>
+                <li>{{ $t("donner un titre trop technique et dérivé de nomenclatures métier.") }}</li>
               </ul>
             </div>
           </HelpAccordion>
@@ -160,10 +160,10 @@
         />
 
         <template #accordion>
-          <HelpAccordion :title="$t('Publish the correct file types')">
+          <HelpAccordion :title="$t('Publier les bons types de fichiers')">
             <div class="prose prose-neutral fr-m-0">
               <p class="fr-m-0 fr-mb-1w">
-                {{ $t("You can choose from the following types:") }}
+                {{ $t("Vous pouvez choisir parmi les types suivants :") }}
               </p>
               <ul>
                 <li
@@ -185,18 +185,18 @@
         />
 
         <template #accordion>
-          <HelpAccordion :title="$t('Add documentation')">
+          <HelpAccordion :title="$t('Ajouter de la documentation')">
             <div class="prose prose-neutral fr-m-0">
               <p class="fr-m-0 fr-mb-1w">
-                {{ $t("The description of a file facilitates the reuse of data. It includes, among others:") }}
+                {{ $t("La description d'un fichier facilite la réutilisation des données. Elle comprend, entre autres :") }}
               </p>
               <ul>
-                <li>{{ $t("a general description of the dataset ;") }}</li>
-                <li>{{ $t("a description of the data production mode ;") }}</li>
-                <li>{{ $t("a description of the data model ;") }}</li>
-                <li>{{ $t("a description of the data schema ;") }}</li>
-                <li>{{ $t("a description of the metadata ;") }}</li>
-                <li>{{ $t("a description of major changes.") }}</li>
+                <li>{{ $t("une description générale du jeu de données ;") }}</li>
+                <li>{{ $t("une description du mode de production des données ;") }}</li>
+                <li>{{ $t("une description du modèle de données ;") }}</li>
+                <li>{{ $t("une description du schéma de données ;") }}</li>
+                <li>{{ $t("une description des métadonnées ;") }}</li>
+                <li>{{ $t("une description des changements majeurs.") }}</li>
               </ul>
             </div>
           </HelpAccordion>
@@ -209,8 +209,8 @@
       >
         <SearchableSelect
           v-model="form.mime"
-          :label="$t('Mime type')"
-          :placeholder="$t('Search a mime type…')"
+          :label="$t('Type mime')"
+          :placeholder="$t('Rechercher un type mime…')"
           :display-value="(option) => option.text"
           :get-option-id="(option) => option.text"
           :allow-new-option="(query) => ({ text: query })"
@@ -228,7 +228,7 @@
         <SearchableSelect
           v-model="form.format"
           :label="$t('Format')"
-          :placeholder="$t('Search a format…')"
+          :placeholder="$t('Rechercher un format…')"
           :display-value="(option) => option"
           :allow-new-option="(query) => query"
           :options="extensions"
@@ -241,15 +241,15 @@
         />
 
         <template #accordion>
-          <HelpAccordion :title="$t('Choose the right format')">
+          <HelpAccordion :title="$t('Choisir le bon format')">
             <div class="prose prose-neutral fr-m-0">
               <p class="fr-m-0 fr-mb-1w">
-                {{ $t("The formats must be:") }}
+                {{ $t("Les formats doivent être :") }}
               </p>
               <ul>
-                <li>{{ $t("open : an open format doesn't add technical specifications that restrict data use (i.e. using a paid software) ;") }}</li>
-                <li>{{ $t("easily reusable : a format easily reusable implies that anybody or server can reuse easily the dataset ;") }}</li>
-                <li>{{ $t("usable in an automated processing system : an automated processing system allows to make automatic operations, related to data exploitation (i.e. a CSV file is easily usable by an automated system unlike a PDF file).") }}</li>
+                <li>{{ $t("ouverts : un format ouvert n'ajoute pas de spécifications techniques qui restreignent l'utilisation des données (ex. : utilisation d'un logiciel payant) ;") }}</li>
+                <li>{{ $t("facilement réutilisables : un format facilement réutilisable implique que n'importe qui ou serveur peut réutiliser facilement le jeu de données ;") }}</li>
+                <li>{{ $t("utilisables dans un système de traitement automatisé : un système de traitement automatisé permet de faire des opérations automatiques, liées à l'exploitation des données (ex. : un fichier CSV est facilement utilisable par un système automatisé contrairement à un fichier PDF).") }}</li>
               </ul>
             </div>
           </HelpAccordion>
@@ -264,8 +264,8 @@
         <LoadingBlock :status="schemaStatus">
           <SearchableSelect
             v-model="form.schema"
-            :label="$t('Schema')"
-            :placeholder="$t('Search a schema referenced on {site}…', { site: config.public.schemasSite.name })"
+            :label="$t('Schéma')"
+            :placeholder="$t('Rechercher un schéma référencé sur {site}…', { site: config.public.schemasSite.name })"
             :display-value="(option) => option.name"
             :get-option-id="(option) => option.name"
             :options="schemas"
@@ -275,12 +275,12 @@
             :warning-text="getFirstWarning('schema')"
           />
           <Divider v-if="!form.schema">
-            {{ $t('or') }}
+            {{ $t('ou') }}
           </Divider>
           <InputGroup
             v-if="!form.schema"
             v-model="form.schema_url"
-            :label="t('Add a link to the schema')"
+            :label="t('Ajouter un lien vers le schéma')"
             :placeholder="'https://...'"
             :error-text="getFirstError('schema_url')"
             :warning-text="getFirstWarning('schema_url')"
@@ -288,9 +288,9 @@
           />
 
           <template #accordion>
-            <HelpAccordion :title="$t('Select a schema')">
+            <HelpAccordion :title="$t('Sélectionner un schéma')">
               <i18n-t
-                keypath="It is possible to identify an existing data schema by visiting the {schema} website, that references a list of existing data schema."
+                keypath="Il est possible d'identifier un schéma de données existant en visitant le site web {schema}, qui référence une liste de schémas de données existants."
                 tag="p"
                 class="fr-m-0 fr-mb-1w"
               >
@@ -307,7 +307,7 @@
     <DatasetsSelect
       v-if="type === 'create-community' && 'dataset' in form"
       v-model="datasets"
-      :label="$t('Associate a dataset')"
+      :label="$t('Associer un jeu de données')"
       class="w-full"
       single
     />
@@ -346,9 +346,9 @@ const datasets = ref([])
 const newFile = ref<File | null>(null)
 
 const isRemote = computed(() => resourceForm.value.filetype === 'remote')
-const nameAFile = computed(() => isRemote.value ? t('Name a link') : t('Name a file'))
+const nameAFile = computed(() => isRemote.value ? t('Nommer un lien') : t('Nommer un fichier'))
 const fileOrLinkLegend = computed(() => {
-  if (props.type === 'create-community') return t('File or link')
+  if (props.type === 'create-community') return t('Fichier ou lien')
 
   return isRemote.value ? t('Lien') : t('Fichier')
 })
@@ -379,7 +379,7 @@ const submit = () => {
     }
 
     if (props.type === 'create-community' && !datasets.value.length) {
-      toast.error(t('Please associate a dataset'))
+      toast.error(t('Veuillez associer un jeu de données'))
       return
     }
 
