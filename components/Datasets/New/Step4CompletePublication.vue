@@ -44,7 +44,7 @@
           color="primary"
           @click="submit(false)"
         >
-          {{ $t("Publish the dataset") }}
+          {{ $t("Publier le jeu de données") }}
         </BrandedButton>
       </div>
     </div>
