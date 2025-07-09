@@ -14,7 +14,7 @@
       />
       <div class="space-x-2">
         <BrandedButton
-          v-if="forDeleteInfo && comment.spam?.status === 'potential_spam'"
+          v-if="isMeAdmin() && forDeleteInfo && comment.spam?.status === 'potential_spam'"
           color="warning"
           size="xs"
           @click="markAsNoSpam(forDeleteInfo.index)"

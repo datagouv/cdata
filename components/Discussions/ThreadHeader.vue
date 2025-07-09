@@ -18,7 +18,7 @@
         class="space-x-2"
       >
         <BrandedButton
-          v-if="thread.spam?.status === 'potential_spam'"
+          v-if="isMeAdmin() && thread.spam?.status === 'potential_spam'"
           color="warning"
           size="xs"
           @click="markAsNoSpam"
