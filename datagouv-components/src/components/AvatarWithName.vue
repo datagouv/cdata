@@ -6,18 +6,19 @@
       :size
       :rounded="true"
     />
-    <CdataLink
+    <AppLink
       :to="user.page"
       class="fr-text--bold"
     >
       {{ user.first_name }}
       {{ user.last_name }}
-    </CdataLink>
+    </AppLink>
   </span>
 </template>
 
 <script setup lang="ts">
 import type { User } from '../types/users'
+import AppLink from './AppLink.vue'
 import Avatar from './Avatar.vue'
 
 withDefaults(defineProps<{

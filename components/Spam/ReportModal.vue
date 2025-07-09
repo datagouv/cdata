@@ -105,6 +105,7 @@
 import { RiFlagLine } from '@remixicon/vue'
 import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
+import CdataLink from '../CdataLink.vue'
 
 const props = defineProps<{
   subject: { id: string, class: string }
