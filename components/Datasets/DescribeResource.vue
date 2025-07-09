@@ -205,25 +205,7 @@
 
       <FieldsetElement
         v-if="form.filetype === 'remote'"
-        form-key="mime"
-      >
-        <SearchableSelect
-          v-model="form.mime"
-          :label="$t('Type mime')"
-          :placeholder="$t('Rechercher un type mime…')"
-          :display-value="(option) => option.text"
-          :get-option-id="(option) => option.text"
-          :allow-new-option="(query) => ({ text: query })"
-          :suggest="suggestMime"
-          :multiple="false"
-
-          :error-text="getFirstError('mime')"
-          :warning-text="getFirstWarning('mime')"
-        />
-      </FieldsetElement>
-      <FieldsetElement
-        v-if="form.filetype === 'remote'"
-        form-key="mime"
+        form-key="format"
       >
         <SearchableSelect
           v-model="form.format"
@@ -251,6 +233,34 @@
                 <li>{{ $t("facilement réutilisables : un format facilement réutilisable implique que n'importe qui ou serveur peut réutiliser facilement le jeu de données ;") }}</li>
                 <li>{{ $t("utilisables dans un système de traitement automatisé : un système de traitement automatisé permet de faire des opérations automatiques, liées à l'exploitation des données (ex. : un fichier CSV est facilement utilisable par un système automatisé contrairement à un fichier PDF).") }}</li>
               </ul>
+            </div>
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+      <FieldsetElement
+        v-if="form.filetype === 'remote'"
+        form-key="mime"
+      >
+        <SearchableSelect
+          v-model="form.mime"
+          :label="$t('Type mime')"
+          :placeholder="$t('Rechercher un type mime…')"
+          :display-value="(option) => option.text"
+          :get-option-id="(option) => option.text"
+          :allow-new-option="(query) => ({ text: query })"
+          :suggest="suggestMime"
+          :multiple="false"
+
+          :error-text="getFirstError('mime')"
+          :warning-text="getFirstWarning('mime')"
+        />
+
+        <template #accordion>
+          <HelpAccordion :title="$t('Choisir un type MIME')">
+            <div class="prose prose-neutral fr-m-0">
+              <p class="fr-m-0 fr-mb-1w">
+                {{ $t("Indiquez le type MIME correspondant au format de la ressource distante (ex. : application/pdf, text/csv). Utilisez un outil en ligne pour le détecter si besoin.") }}
+              </p>
             </div>
           </HelpAccordion>
         </template>
