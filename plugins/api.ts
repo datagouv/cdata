@@ -52,7 +52,7 @@ export default defineNuxtPlugin({
             return
           }
 
-          let message = null as string | null
+          let message = ''
           try {
             if ('error' in response._data) {
               message = response._data.error
