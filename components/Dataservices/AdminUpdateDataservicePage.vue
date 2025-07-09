@@ -147,7 +147,7 @@ const route = useRoute()
 const { start, finish, isLoading } = useLoadingIndicator()
 
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
-const { data: dataservice, refresh } = await useAPI<Dataservice>(url)
+const { data: dataservice, refresh } = await useAPI<Dataservice>(url, { redirectOn404: true })
 const dataserviceSubject = computed<Dataservice & LinkToSubject>(() => {
   return {
     ...dataservice.value,

@@ -178,7 +178,7 @@ import ReuseDetails from '~/datagouv-components/src/components/ReuseDetails.vue'
 const route = useRoute()
 
 const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
-const { data: reuse, status } = await useAPI<Reuse | null>(url)
+const { data: reuse, status } = await useAPI<Reuse>(url, { redirectOn404: true })
 
 const title = computed(() => reuse.value?.title)
 const robots = computed(() => reuse.value && !reuse.value.metrics.datasets && !reuse.value.metrics.datasets ? 'noindex, nofollow' : 'all')

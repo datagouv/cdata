@@ -177,7 +177,7 @@ const route = useRoute()
 const { formatDate } = useFormatDate()
 
 const sourceUrl = computed(() => `/api/1/harvest/source/${route.params.id}`)
-const { data: harvester } = await useAPI<HarvesterSource>(sourceUrl, { lazy: true })
+const { data: harvester } = await useAPI<HarvesterSource>(sourceUrl, { redirectOn404: true })
 
 const jobsUrl = computed(() => `/api/1/harvest/source/${route.params.id}/jobs`)
 const jobsParams = computed(() => {

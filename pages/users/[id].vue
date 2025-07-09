@@ -218,7 +218,7 @@ const me = useMaybeMe()
 
 const route = useRoute()
 const url = computed(() => `/api/1/users/${route.params.id}`)
-const { data: user } = await useAPI<User>(url)
+const { data: user } = await useAPI<User>(url, { redirectOn404: true })
 
 const title = computed(() => user.value ? `${user.value.first_name} ${user.value.last_name}` : null)
 useSeoMeta({

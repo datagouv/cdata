@@ -150,7 +150,7 @@ const route = useRoute()
 const { start, finish, isLoading } = useLoadingIndicator()
 
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
-const { data: reuse, refresh } = await useAPI<Reuse>(url, { lazy: true })
+const { data: reuse, refresh } = await useAPI<Reuse>(url, { redirectOn404: true })
 
 const { data: types } = await useAPI<Array<ReuseType>>('/api/1/reuses/types', { lazy: true })
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics', { lazy: true })

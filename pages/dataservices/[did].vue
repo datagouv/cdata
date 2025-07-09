@@ -298,7 +298,7 @@ const route = useRoute()
 const { formatDate } = useFormatDate()
 
 const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
-const { data: dataservice, status } = await useAPI<Dataservice>(url)
+const { data: dataservice, status } = await useAPI<Dataservice>(url, { redirectOn404: true })
 
 const title = computed(() => dataservice.value?.title)
 

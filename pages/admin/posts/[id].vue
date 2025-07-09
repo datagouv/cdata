@@ -49,5 +49,5 @@ const { t } = useI18n()
 
 const route = useRoute()
 const url = computed(() => `/api/1/posts/${route.params.id}`)
-const { data: post } = await useAPI<Post>(url, { lazy: true })
+const { data: post } = await useAPI<Post>(url, { redirectOn404: true })
 </script>

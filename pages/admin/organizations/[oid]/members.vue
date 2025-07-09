@@ -320,7 +320,7 @@ const url = computed(() => {
   return url.toString()
 })
 
-const { data: organization, status, refresh } = await useAPI<Organization>(url, { lazy: true })
+const { data: organization, status, refresh } = await useAPI<Organization>(url, { redirectOn404: true })
 const { data: membershipRequests, refresh: refreshMembershipRequests } = await useAPI<Array<PendingMembershipRequest>>(`/api/1/organizations/${currentOrganization.value?.id}/membership/`, {
   lazy: true,
   query: { status: 'pending' },
