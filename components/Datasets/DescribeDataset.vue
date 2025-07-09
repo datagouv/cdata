@@ -208,7 +208,7 @@
               v-model="form.title"
               class="mb-3"
               :aria-describedby="nameDatasetAccordionId"
-              :label="$t('Dataset name')"
+              :label="$t('Titre')"
               :required="true"
               :has-error="!!getFirstError('title')"
               :has-warning="!!getFirstWarning('title')"
@@ -279,8 +279,8 @@
             <SearchableSelect
               v-model="form.license"
               :options="licenses"
-              :label="t('License')"
-              :placeholder="t('Select a license')"
+              :label="t('Licence')"
+              :placeholder="t('Sélectionnez une licence')"
               :display-value="(option) => option.title"
               :multiple="false"
               :group-by="(option) => option.group"
@@ -315,7 +315,7 @@
                         :class="{ 'text-primary': !active }"
                         aria-hidden="true"
                       />
-                      <span>{{ t('Recommended') }}</span>
+                      <span>{{ t('Recommandée') }}</span>
                     </div>
                     <div v-if="option.description">
                       {{ option.description }}
@@ -342,7 +342,7 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-0">
-              {{ harvested ? t("Attributions et points de contacts") : t("Points de contact") }}
+              {{ harvested ? t("Attributions et points de contact") : t("Points de contact") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -373,7 +373,7 @@
               :icon="RiAddLine"
               @click="form.contact_points.push({ ...defaultContactForm })"
             >
-              {{ harvested ? t('New Attribution') : t('New Contact') }}
+              {{ harvested ? t('Nouvelle attribution') : t('Nouveau contact') }}
             </BrandedButton>
           </LinkedToAccordion>
         </fieldset>
@@ -456,7 +456,7 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Space") }}
+              {{ $t("Spatiale") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -661,15 +661,15 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
 }, {
   title: [testNotAllowed(config.public.demoServer?.name)],
   description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
-  tags: [required(t('Adding tags helps improve the SEO of your data.'))],
+  tags: [required(t('L\'ajout de mots-clés aide à améliorer le référencement de vos données.'))],
   license: [required()],
   frequency: [(f) => {
-    if (f && f.id === 'unknown') return t('The frequency must be different than unknown.')
+    if (f && f.id === 'unknown') return t('La fréquence doit être différente d\'inconnue.')
 
     return null
   }],
-  spatial_granularity: [required(t('You have not specified the spatial granularity.'))],
-  temporal_coverage: [required(t('You did not provide the temporal coverage.'))],
+  spatial_granularity: [required(t('Vous n\'avez pas spécifié la granularité spatiale.'))],
+  temporal_coverage: [required(t('Vous n\'avez pas fourni la couverture temporelle.'))],
 })
 
 onMounted(() => {
