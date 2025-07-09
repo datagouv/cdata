@@ -95,6 +95,9 @@ export function resourceToForm(resource: Resource | CommunityResource, schemas: 
     schema: registeredSchema,
     schema_url: (registeredSchema || !resource.schema || !resource.schema.url) ? null : resource.schema.url,
 
+    checksum_type: resource.checksum?.type || null,
+    checksum_value: resource.checksum?.value || null,
+
     resource,
   } as ResourceForm
 
@@ -146,8 +149,16 @@ export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resou
     title: form.title,
     type: form.type,
     description: form.description,
+
     schema,
   } as Resource
+
+  if (form.checksum_type && form.checksum_value) {
+    resource.checksum = {
+      type: form.checksum_type,
+      value: form.checksum_value,
+    }
+  }
 
   if (!form.filetype) {
     throw new Error('Cannot convert to API a ResourceForm without filetype information')
