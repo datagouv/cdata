@@ -38,13 +38,7 @@
             :id
             class="input shadow-input group-data-[input-color=blue]/form:shadow-input-blue !pr-10"
             :class="showClearButton ? '!pr-[4.5rem]' : '!pr-10'"
-            :display-value="(option: ModelType) => {
-              console.log('display value')
-              console.log(option)
-              console.log(option ? displayValue(option): null)
-              console.log('end display value')
-              return option ? displayValue(option): ''
-            }"
+            :display-value="(option: ModelType) => option ? displayValue(option): null"
             :placeholder
             @change="query = $event.target.value"
           />
@@ -232,15 +226,7 @@ const ariaDescribedBy = computed(() => {
   return ''
 })
 
-const showClearButton = computed(() => {
-  console.log('showClearButton')
-  console.log(props.required)
-  console.log(props.multiple)
-  console.log(model.value)
-  console.log('end showClearButton')
-
-  return !props.required && !props.multiple && model.value
-})
+const showClearButton = computed(() => !props.required && !props.multiple && model.value)
 
 const query = ref('')
 
