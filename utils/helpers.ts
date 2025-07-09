@@ -8,7 +8,7 @@ export function humanJoin(source: Array<string>): string {
   if (array.length === 1) return array[0]
 
   const last = array.pop()
-  return `${array.join(', ')} ${nuxtApp.$i18n.t('and')} ${last}`
+  return `${array.join(', ')} ${nuxtApp.$i18n.t('et')} ${last}`
 }
 
 export async function redirectLegacyHashes(instructions: Array<{ from: string, to: string, queryParam?: string }>): Promise<void> {

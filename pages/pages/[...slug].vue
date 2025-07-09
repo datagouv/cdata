@@ -31,8 +31,8 @@
         v-else
         class="py-9 prose"
       >
-        <h1>{{ $t('Error 404') }}</h1>
-        <p>{{ $t("The page you're looking for cannot be found.") }}</p>
+        <h1>{{ $t('Erreur 404') }}</h1>
+        <p>{{ $t("La page que vous recherchez est introuvable.") }}</p>
       </div>
     </LoadingBlock>
   </div>

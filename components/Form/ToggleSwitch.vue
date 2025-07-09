@@ -51,7 +51,7 @@ const props = defineProps<{
 const { t } = useI18n()
 
 const labelTrue = computed(() => props.labelTrue || t('Activé'))
-const labelFalse = computed(() => props.labelFalse || t('Disabled'))
+const labelFalse = computed(() => props.labelFalse || t('Désactivé'))
 
 const enabled = defineModel<boolean>({ required: true })
 </script>
