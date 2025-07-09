@@ -9,7 +9,8 @@
 <script setup lang="ts">
 import { datagouv } from '@datagouv/components-next'
 import type { UseFetchFunction } from '@datagouv/components-next'
-import { NuxtLinkLocale, TextClamp } from '#components'
+import CdataLink from './components/CdataLink.vue'
+import { TextClamp } from '#components'
 
 const app = useNuxtApp()
 
@@ -28,7 +29,7 @@ app.vueApp.use(datagouv, {
   datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
   customUseFetch: useAPI as UseFetchFunction, // Why this `as` is required?
   textClamp: TextClamp,
-  appLink: NuxtLinkLocale,
+  appLink: CdataLink,
   maxJsonPreviewSize: 100000, // Maximum size of JSON to preview in characters (~100KB)
   maxPdfPreviewSize: 10000000, // Maximum size of PDF to preview in bytes (10 MB)
   maxXmlPreviewSize: 100000, // Maximum size of XML to preview in characters (~100KB)

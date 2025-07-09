@@ -24,7 +24,8 @@ app.use(datagouv, {
 Nuxt is a special environment (both server and browser) and requires some special functions and components to work.
 
 ```ts
-import { NuxtLinkLocale, TextClamp } from '#components'
+import { TextClamp } from '#components'
+import CdataLink from './components/CdataLink.vue'
 import { datagouv, type UseFetchFunction } from '@datagouv/components-next'
 
 const runtimeConfig = useRuntimeConfig()
@@ -49,7 +50,7 @@ app.vueApp.use(datagouv, {
     // Provide the component to create links inside the application
     // This component will receive the raw link (without i18n prefix)
     // and needs to add it.
-    appLink: NuxtLinkLocale,
+    appLink: CdataLink,
 })
 ```
 
@@ -160,7 +161,7 @@ const config = useComponentsConfig()
 
 To do links in the application you can use the `<AppLink>` component. Not sure why it's required. Maybe we could always use a `<RouterLink>` from [`vue-router`](https://router.vuejs.org/) since every user is using `vue-router`? I think it's useful to add lang prefix to links but it's not done yet? Need testing.
 
-Maybe this component shouldn't be exposed too, because I don't know why a user should use this instead of their own component (`<RouterLink>` or `NuxtLinkLocale`…)
+Maybe this component shouldn't be exposed too, because I don't know why a user should use this instead of their own component (`<RouterLink>` or `<CdataLink>`…)
 
 ## 📄 License
 

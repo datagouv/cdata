@@ -1,5 +1,32 @@
 import type { FieldsErrors } from '~/types/form'
 
+export function useAbsoluteUrlToRelative() {
+  const currentUrl = useRequestURL()
+
+  return (url: string): string => {
+    try {
+      const baseUrl = `${currentUrl.protocol}//${currentUrl.host}`
+
+      if (!url.startsWith(baseUrl)) return url
+      return url.slice(baseUrl.length)
+    }
+    catch {
+      // This is not an absolute URL, return the raw one
+    }
+
+    return url
+  }
+}
+
+export function useIsCurrentUrl() {
+  const absoluteUrlToRelative = useAbsoluteUrlToRelative()
+  const route = useRoute()
+
+  return (url: string): boolean => {
+    return absoluteUrlToRelative(url) === route.fullPath
+  }
+}
+
 export function humanJoin(source: Array<string>): string {
   const array = [...source]
 

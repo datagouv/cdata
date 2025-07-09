@@ -54,12 +54,14 @@
             <h1 class="mb-0">
               {{ user.first_name }} {{ user.last_name }}
             </h1>
-            <NuxtLink
+            <CdataLink
               v-if="user.website"
               :href="user.website"
               external
               rel="ugc nofollow noopener"
-            >{{ user.website }}</NuxtLink>
+            >
+              {{ user.website }}
+            </CdataLink>
           </div>
         </div>
         <div class="flex flex-col items-end gap-2">

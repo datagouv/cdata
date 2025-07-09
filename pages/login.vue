@@ -70,14 +70,14 @@
         </form>
 
         <div class="text-center text-gray-plain text-sm">
-          {{ $t('Mot de passe oublié ?') }} <NuxtLinkLocale to="/reset">
+          {{ $t('Mot de passe oublié ?') }} <CdataLink to="/reset">
             {{ $t('Récupérer votre mot de passe') }}
-          </NuxtLinkLocale>
+          </CdataLink>
         </div>
         <div class="text-center text-gray-plain text-sm">
-          {{ $t('Instructions de confirmation non reçues ?') }} <NuxtLinkLocale to="/confirm">
+          {{ $t('Instructions de confirmation non reçues ?') }} <CdataLink to="/confirm">
             {{ $t('Renvoyer les instructions') }}
-          </NuxtLinkLocale>
+          </CdataLink>
         </div>
 
         <Divider>{{ $t('ou') }}</Divider>
@@ -89,11 +89,13 @@
               <span class="fr-connect__brand">ProConnect</span>
             </button>
             <p>
-              <NuxtLink
+              <CdataLink
                 :href="config.public.proconnect.homepage"
                 target="_blank"
                 rel="noopener"
-              >{{ $t(`Qu'est-ce que ProConnect ?`) }}</NuxtLink>
+              >
+                {{ $t(`Qu'est-ce que ProConnect ?`) }}
+              </CdataLink>
             </p>
           </div>
         </form>

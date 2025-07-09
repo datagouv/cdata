@@ -55,12 +55,12 @@
             >
               <td>
                 <p class="fr-text--bold fr-m-0">
-                  <NuxtLinkLocale
+                  <CdataLink
                     class="fr-link fr-reset-link"
                     :to="`/admin/users/${user.id}/profile`"
                   >
                     {{ user.first_name }} {{ user.last_name }}
-                  </NuxtLinkLocale>
+                  </CdataLink>
                 </p>
                 <AdminEmail :user />
               </td>

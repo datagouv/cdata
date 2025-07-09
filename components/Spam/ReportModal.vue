@@ -25,12 +25,12 @@
         {{ config.public.title }}
       </template>
       <template #terms>
-        <NuxtLinkLocale
+        <CdataLink
           to="/pages/legal/cgu/"
           external
         >
           {{ $t("nos modalités d'utilisation") }}
-        </NuxtLinkLocale>
+        </CdataLink>
       </template>
     </i18n-t>
     <div v-else>
@@ -39,12 +39,12 @@
         class="mb-5"
       >
         {{ $t("Merci de ne signaler qu’en cas d’inquiétude sérieuse.") }}
-        <NuxtLinkLocale
+        <CdataLink
           to="/pages/legal/cgu/"
           external
         >
           {{ $t("Voir nos modalités d'utilisation.") }}
-        </NuxtLinkLocale>
+        </CdataLink>
       </SimpleBanner>
 
       <SelectGroup
@@ -105,6 +105,7 @@
 import { RiFlagLine } from '@remixicon/vue'
 import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
+import CdataLink from '../CdataLink.vue'
 
 const props = defineProps<{
   subject: { id: string, class: string }

@@ -51,9 +51,9 @@
               :key="topic.id"
             >
               <td>
-                <NuxtLinkLocale :to="`/admin/topics/${topic.id}`">
+                <CdataLink :to="`/admin/topics/${topic.id}`">
                   {{ topic.name }}
-                </NuxtLinkLocale>
+                </CdataLink>
               </td>
               <td>{{ formatDate(topic.created_at) }}</td>
               <td>{{ topic.datasets.total }}</td>

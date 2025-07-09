@@ -8,7 +8,7 @@
         <div v-if="dataset.tags && dataset.tags.length">
           <DescriptionListTerm>{{ $t('Mots-clés') }}</DescriptionListTerm>
           <DescriptionListDetails class="flex flex-wrap gap-2 items-start">
-            <NuxtLinkLocale
+            <CdataLink
               v-for="tag in dataset.tags"
               :key="tag"
               class="fr-raw-link"
@@ -20,7 +20,7 @@
               >
                 {{ tag }}
               </Tag>
-            </NuxtLinkLocale>
+            </CdataLink>
           </DescriptionListDetails>
         </div>
         <div>
@@ -129,10 +129,12 @@
         <p class="text-sm">
           <i18n-t keypath="Les schémas de données permettent de décrire des modèles de données, découvrez comment les schémas améliorent la qualité des données et quels sont les cas d'usages possibles sur {link}">
             <template #link>
-              <NuxtLink
+              <CdataLink
                 :to="config.public.schemasSite.url"
                 external
-              >{{ config.public.schemasSite.name }}</NuxtLink>
+              >
+                {{ config.public.schemasSite.name }}
+              </CdataLink>
             </template>
           </i18n-t>
         </p>

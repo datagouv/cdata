@@ -97,7 +97,7 @@
               class="fr-m-0 fr-mb-1w"
             >
               <template #link>
-                <NuxtLinkLocale to="/pages/legal/cgu">{{ $t('les conditions générales d\'utilisation du service') }}</NuxtLinkLocale>
+                <CdataLink to="/pages/legal/cgu">{{ $t('les conditions générales d\'utilisation du service') }}</CdataLink>
               </template>
             </i18n-t>
           </label>

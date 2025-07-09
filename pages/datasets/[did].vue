@@ -210,14 +210,14 @@
                 class="text-sm"
               >
                 {{ $t("Ce jeu de données provient d'un portail externe.") }}
-                <NuxtLink
+                <CdataLink
                   :to="dataset.harvest.remote_url"
                   rel="ugc nofollow noopener"
                   target="_blank"
                   external
                 >
                   {{ $t("Voir la source originale.") }}
-                </NuxtLink>
+                </CdataLink>
               </SimpleBanner>
               <SimpleBanner
                 v-if="'transport:url' in dataset.extras && dataset.extras['transport:url']"
@@ -229,7 +229,9 @@
                   class="!m-0 text-sm"
                 >
                   <template #link>
-                    <NuxtLink :href="dataset.extras['transport:url']">{{ $t("le Point d'Accès National aux données de mobilités") }}</NuxtLink>
+                    <CdataLink :href="dataset.extras['transport:url']">
+                      {{ $t("le Point d'Accès National aux données de mobilités") }}
+                    </CdataLink>
                   </template>
                 </i18n-t>
               </SimpleBanner>
