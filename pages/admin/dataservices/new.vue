@@ -26,9 +26,10 @@
       type="create"
       @submit="dataserviceNext"
     >
-      <template #button>
+      <template #button="attrs">
         <BrandedButton
           type="submit"
+          v-bind="attrs"
           color="primary"
         >
           {{ $t("Suivant") }}

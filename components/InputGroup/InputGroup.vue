@@ -72,10 +72,19 @@
     >
       {{ errorText }}
     </p>
+    <p
+      v-else-if="props.hasWarning && warningText"
+      :id="warningTextId"
+      class="text-default-warning text-sm mt-2"
+    >
+      <RiErrorWarningLine class="inline size-4 -translate-y-0.5 mr-1" />
+      <span>{{ warningText }}</span>
+    </p>
   </div>
 </template>
 
 <script setup lang="ts" generic="T">
+import { RiErrorWarningLine } from '@remixicon/vue'
 import { computed, type InputTypeHTMLAttribute } from 'vue'
 import MarkdownEditor from '~/components/MarkdownEditor/MarkdownEditor.vue'
 import Required from '~/components/Required/Required.vue'
@@ -94,6 +103,7 @@ const props = withDefaults(defineProps<{
   autocomplete?: string
   disabled?: boolean
   errorText?: string | null
+  warningText?: string | null
   hasError?: boolean
   hasWarning?: boolean
   hintText?: string
@@ -136,6 +146,7 @@ const hasWarning = computed(() => (formKey && formInfo) ? formInfo.getFirstWarni
 const errorText = computed(() => (formKey && formInfo) ? formInfo.getFirstError(formKey) : props.errorText)
 
 const errorTextId = useId()
+const warningTextId = useId()
 const validTextId = useId()
 const ariaDescribedBy = computed(() => {
   let describedBy = props.ariaDescribedby ? props.ariaDescribedby + ' ' : ''
