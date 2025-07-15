@@ -603,6 +603,7 @@ function submit() {
   if (validate()) {
     if (dataserviceForm.value.machine_documentation_url || openConfirmModal.value) {
       emit('submit')
+      openConfirmModal.value = false
     }
     else {
       openConfirmModal.value = true
