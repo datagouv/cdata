@@ -59,9 +59,10 @@
           </template>
         </BannerAction>
       </template>
-      <template #button>
+      <template #button="attrs">
         <BrandedButton
           type="submit"
+          v-bind="attrs"
           :loading="isLoading"
         >
           {{ t("Sauvegarder") }}

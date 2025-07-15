@@ -56,7 +56,7 @@
           :state="accordionState('machine_documentation_url')"
         >
           <p class="fr-m-0">
-            {{ t("Idéalement, proposez un lien OpenAPI (swagger) qui permet aux développeurs d'explorer les endpoints, voir les méthodes disponibles, et tester des requêtes directement depuis la documentation. Dans le cas de services géographiques, vous pouvez renseigner un lien vers le service avec une requête GetCapabilities pour obtenir les métadonnées du service.") }}
+            {{ t("Idéalement, proposez un lien OpenAPI (Swagger) qui permet aux développeurs d'explorer les endpoints, voir les méthodes disponibles, et tester des requêtes directement depuis la documentation. Dans le cas de services géographiques, vous pouvez renseigner un lien vers le service avec une requête GetCapabilities pour obtenir les métadonnées du service.") }}
           </p>
         </Accordion>
         <Accordion
@@ -126,6 +126,7 @@
       </AccordionGroup>
     </Sidemenu>
     <form
+      :id="formId"
       class="w-full lg:w-7/12"
       @submit.prevent="submit"
     >
@@ -277,13 +278,14 @@
             <InputGroup
               v-model="form.machine_documentation_url"
               :aria-describedby="machineDocumentationUrlAccordionId"
-              :label="t(`Lien vers la documentation machine de l'API`)"
+              :label="t(`Lien vers la documentation machine de l'API (fichier OpenAPI ou Swagger)`)"
               type="url"
               placeholder="https://..."
               :required="false"
               :has-error="!!getFirstError('machine_documentation_url')"
               :has-warning="!!getFirstWarning('machine_documentation_url')"
               :error-text="getFirstError('machine_documentation_url')"
+              :warning-text="getFirstWarning('machine_documentation_url')"
             />
           </LinkedToAccordion>
           <LinkedToAccordion
@@ -465,7 +467,44 @@
           </LinkedToAccordion>
         </fieldset>
         <div class="fr-grid-row fr-grid-row--right">
-          <slot name="button" />
+          <ModalClient
+            :title="$t(`Êtes vous-sûr de vouloir publier cette API sans documentation OpenAPI/Swagger ?`)"
+            size="lg"
+            :opened="openConfirmModal"
+          >
+            <i18n-t
+              keypath="Une documentation OpenAPI/swagger est un standard attendu par les utilisateurs d'API. Ce format est facile à mettre en place, vous pouvez utiliser l'éditeur officiel : {editor}."
+              tag="p"
+            >
+              <template #editor>
+                <a
+                  href="https://editor.swagger.io/"
+                  class="whitespace-nowrap"
+                > https://editor.swagger.io/</a>
+              </template>
+            </i18n-t>
+
+            <p>{{ $t(`Si néanmoins vous souhaitez tout de même publier votre API sans ce standard, celle-ci sera moins mise en avant par le moteur de recherche de {site}.`, { site: config.public.title }) }}</p>
+
+            <template #footer>
+              <div class="w-full flex justify-end space-x-4">
+                <BrandedButton
+                  color="secondary"
+                  @click="openConfirmModal = false"
+                >
+                  {{ t('Revenir au formulaire') }}
+                </BrandedButton>
+                <slot
+                  name="button"
+                  :form="formId"
+                />
+              </div>
+            </template>
+          </ModalClient>
+          <slot
+            name="button"
+            :form="formId"
+          />
         </div>
         <slot />
       </div>
@@ -477,6 +516,7 @@
 import { BrandedButton, SimpleBanner, type DataserviceAccessAudienceCondition, type DataserviceAccessAudienceType } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import { computed } from 'vue'
+import ModalClient from '../Modal/Modal.client.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ContactPointSelect from '~/components/ContactPointSelect.vue'
@@ -495,6 +535,8 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+
+const formId = useId()
 
 const user = useMe()
 const config = useRuntimeConfig()
@@ -527,6 +569,9 @@ const accessAudienceConditionOptions = computed(() => accessAudienceConditions.m
   label: getAccessAudienceCondition(condition).label,
 })))
 
+const machineDocumentationUrlWarningMessage = t(`Il est fortement recommandé d'ajouter une documentation OpenAPI ou Swagger à votre API.`)
+const openConfirmModal = ref(false)
+
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(dataserviceForm, {
   owned: [required()],
   title: [required()],
@@ -540,6 +585,7 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
 }, {
   title: [testNotAllowed(config.public.demoServer?.name)],
   description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
+  machine_documentation_url: [required(machineDocumentationUrlWarningMessage)],
 })
 
 onMounted(() => {
@@ -555,7 +601,13 @@ const accordionState = (key: keyof typeof form.value) => {
 
 function submit() {
   if (validate()) {
-    emit('submit')
+    if (dataserviceForm.value.machine_documentation_url || openConfirmModal.value) {
+      emit('submit')
+      openConfirmModal.value = false
+    }
+    else {
+      openConfirmModal.value = true
+    }
   }
 }
 </script>
