@@ -190,8 +190,8 @@ useSeoMeta({
 
 onMounted(async () => {
   await redirectLegacyHashes([
-    { from: 'discussions', to: `/dataservices/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
-    { from: 'discussion', to: `/datasets/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+    { from: 'discussions', to: `/reuses/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+    { from: 'discussion', to: `/reuses/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
   ])
 })
 </script>
