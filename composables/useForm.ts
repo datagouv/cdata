@@ -91,12 +91,10 @@ export function required<T, K extends KeysOfUnion<T>, V extends T[K]>(message: s
   }
 }
 
-export function requiredIf<T, K extends KeysOfUnion<T>, V extends T[K]>(condition: Ref<boolean>, message: string | null = null): ValidationFunction<T, K, V> {
+export function ruleIf<T, K extends KeysOfUnion<T>, V extends T[K]>(condition: Ref<boolean>, rule: ValidationFunction<T, K, V>): ValidationFunction<T, K, V> {
   return (value: T[keyof T], key: K, form: T, t) => {
     if (!condition.value) return null
-    if (!value || (Array.isArray(value) && !value.length)) return message || t('Le champ est requis.')
-
-    return null
+    return rule(value, key, form, t)
   }
 }
 
