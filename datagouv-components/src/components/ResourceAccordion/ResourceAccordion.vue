@@ -420,7 +420,7 @@ const generatedFormats = computed(() => {
       }))
   if ('analysis:parsing:parsing_table' in props.resource.extras) {
     formats.push({
-      url: `https://${config.tabularApiUrl}/api/resources/${props.resource.id}/data/json/`,
+      url: `${config.tabularApiUrl}/api/resources/${props.resource.id}/data/json/`,
       size: undefined,
       format: "json",
     })
