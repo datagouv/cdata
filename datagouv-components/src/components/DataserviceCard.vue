@@ -21,6 +21,13 @@
         {{ t('Accès restreint') }}
       </p>
       <p
+        v-else-if="dataservice.access_type === 'open_with_account'"
+        class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
+      >
+        <RiPassValidLine class="size-4 mr-1" />
+        {{ t('Ouvert avec un compte') }}
+      </p>
+      <p
         v-if="dataservice.private"
         class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
       >
@@ -133,7 +140,7 @@
 import { computed, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
-import { RiSubtractLine } from '@remixicon/vue'
+import { RiPassValidLine, RiSubtractLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../config'
 import { useFormatDate } from '../functions/dates'
 import { removeMarkdown } from '../functions/markdown'
@@ -167,7 +174,7 @@ const props = withDefaults(defineProps<Props>(), {
 const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
 const ownerName = computed(() => getOwnerName(props.dataservice))
-const showBadge = computed(() => props.dataservice.access_type === 'restricted' || props.dataservice.private || props.dataservice.archived_at)
+const showBadge = computed(() => props.dataservice.access_type === 'restricted' || props.dataservice.access_type === 'open_with_account' || props.dataservice.private || props.dataservice.archived_at)
 
 const config = useComponentsConfig()
 const isTabularApi = computed(() => {
