@@ -16,5 +16,5 @@ const { data: organization, refresh } = await useAPI<Organization>(url, { redire
 
 watch(organization, () => {
   if (organization.value) setCurrentOrganization(organization.value)
-})
+}, { immediate: true })
 </script>
