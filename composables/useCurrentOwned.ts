@@ -53,5 +53,5 @@ export function useCurrentOwned() {
     users.value[user.id] = user
   }
 
-  return { users, organizations, currentOrganization, currentUser, setCurrentOrganization, setCurrentUser, currentOwnedId }
+  return { users, organizations, currentOrganization, currentUser, setCurrentOrganization, setCurrentUser }
 }

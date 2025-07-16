@@ -9,7 +9,7 @@
       />
     </div>
     <!-- :size=32 is the same as size-8, should remove the size prop to use Tailwind… -->
-    <NuxtLink
+    <CdataLink
       :to="organization.page"
       class="link flex-1 min-w-0"
     >
@@ -17,7 +17,7 @@
         class="w-full"
         :organization
       />
-    </NuxtLink>
+    </CdataLink>
   </div>
 </template>
 

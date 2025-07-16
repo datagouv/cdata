@@ -67,7 +67,7 @@
                     :size="20"
                   />
                   <AdminContentWithTooltip>
-                    <NuxtLinkLocale
+                    <CdataLink
                       class="fr-link fr-reset-link"
                       :to="`/admin/organizations/${organization.id}/profile`"
                     >
@@ -76,30 +76,30 @@
                         :auto-resize="true"
                         :max-lines="2"
                       />
-                    </NuxtLinkLocale>
+                    </CdataLink>
                   </AdminContentWithTooltip>
                 </div>
               </td>
               <td>{{ formatDate(organization.created_at) }}</td>
               <td>
-                <NuxtLinkLocale :to="`/admin/organizations/${organization.id}/datasets`">
+                <CdataLink :to="`/admin/organizations/${organization.id}/datasets`">
                   {{ organization.metrics.datasets || 0 }}
-                </NuxtLinkLocale>
+                </CdataLink>
               </td>
               <td>
-                <NuxtLinkLocale :to="`/admin/organizations/${organization.id}/dataservices`">
+                <CdataLink :to="`/admin/organizations/${organization.id}/dataservices`">
                   {{ organization.metrics.dataservices || 0 }}
-                </NuxtLinkLocale>
+                </CdataLink>
               </td>
               <td>
-                <NuxtLinkLocale :to="`/admin/organizations/${organization.id}/reuses`">
+                <CdataLink :to="`/admin/organizations/${organization.id}/reuses`">
                   {{ organization.metrics.reuses || 0 }}
-                </NuxtLinkLocale>
+                </CdataLink>
               </td>
               <td>
-                <NuxtLinkLocale :to="`/admin/organizations/${organization.id}/members`">
+                <CdataLink :to="`/admin/organizations/${organization.id}/members`">
                   {{ organization.metrics.members || 0 }}
-                </NuxtLinkLocale>
+                </CdataLink>
               </td>
               <td>
                 <BrandedButton

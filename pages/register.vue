@@ -97,7 +97,7 @@
               class="fr-m-0 fr-mb-1w"
             >
               <template #link>
-                <NuxtLinkLocale to="/pages/legal/cgu">{{ $t('les conditions générales d\'utilisation du service') }}</NuxtLinkLocale>
+                <CdataLink to="/pages/legal/cgu">{{ $t('les conditions générales d\'utilisation du service') }}</CdataLink>
               </template>
             </i18n-t>
           </label>
@@ -146,8 +146,8 @@ useSeoMeta({ title: t('S\'enregistrer') })
 const email = ref('')
 const password = ref('')
 const passwordConfirmation = ref('')
-const firstname = ref('Thibaud')
-const lastname = ref('Ollagnier')
+const firstname = ref('')
+const lastname = ref('')
 const acceptConditions = ref(false)
 const captchaCode = ref('')
 const captchaUuid = ref('')

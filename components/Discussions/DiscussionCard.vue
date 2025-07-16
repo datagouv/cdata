@@ -24,20 +24,20 @@
           :rounded="true"
           class="size-3"
         />
-        <NuxtLink
+        <CdataLink
           v-if="thread.closed_by_organization"
           class="link"
           :href="thread.closed_by_organization.page"
         >
           {{ thread.closed_by_organization.name }}
-        </NuxtLink>
-        <NuxtLink
+        </CdataLink>
+        <CdataLink
           v-else
           class="link"
           :href="thread.closed_by.page"
         >
           {{ thread.closed_by.first_name }} {{ thread.closed_by.last_name }}
-        </NuxtLink>
+        </CdataLink>
       </span>
       {{ $t('le {date}', { date: formatDate(thread.closed) }) }}
     </div>
