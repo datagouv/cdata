@@ -70,13 +70,14 @@ export type Dataset = BaseDataset & {
   quality: Quality
   metrics: {
     discussions: number
+    discussions_open: number
     followers: number
     resources_downloads: number
     reuses: number
     views: number
   }
   harvest: Harvest
-  extras: Record<string, any>
+  extras: Record<string, unknown>
   permissions: { edit: boolean, edit_resources: boolean, delete: boolean }
 
 }

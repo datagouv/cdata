@@ -43,6 +43,9 @@
       >
         <h2 class="text-sm font-bold uppercase m-0 text-gray-title">
           {{ t('{n} discussions | {n} discussion | {n} discussions', pageData.total) }}
+          <template v-if="closed">
+            {{ t('dont {n} clotûrées | dont {n} clotûrée | dont {n} clotûrées', closed) }}
+          </template>
         </h2>
 
         <div>
@@ -117,6 +120,7 @@ import type { DiscussionSortedBy, DiscussionSubject, DiscussionSubjectTypes, Thr
 const props = defineProps<{
   type: DiscussionSubject['class']
   subject: DiscussionSubjectTypes
+  closed?: number
 }>()
 
 const { t } = useI18n()
@@ -146,7 +150,6 @@ const showDiscussionForm = () => {
 const params = computed(() => {
   const query = {
     sort: sortDirection.value,
-
     page_size: pageSize.value,
     page: page.value,
   } as Record<string, string | number | null | boolean>
