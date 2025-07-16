@@ -1,22 +1,7 @@
 <template>
   <div class="fr-text--xs">
     <div v-if="xmlData">
-      <XmlViewer
-        :xml="xmlData"
-        theme="light"
-        :indent-width="2"
-        :show-line-numbers="true"
-        :show-attributes="true"
-        :show-comments="true"
-        :show-cdata="true"
-        :show-doctype="true"
-        :show-processing-instructions="true"
-        :show-text-nodes="true"
-        :show-whitespace="false"
-        :expand-all="false"
-        :max-depth="3"
-        :expand-depth="1"
-      />
+      <XmlViewer :xml="xmlData" />
     </div>
     <div
       v-else-if="loading"

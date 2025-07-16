@@ -3,22 +3,22 @@
     <section class="py-8 sm:py-[200px] bg-cover bg-[url(''),radial-gradient(rgba(255,255,255,0.8),rgba(217,217,217,0)),url('/nuxt_images/homepage/hero.png')]">
       <div class="max-w-[800px] mx-auto px-6 flex flex-col items-center space-y-8">
         <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-5 items-center">
-          <NuxtLinkLocale
+          <CdataLink
             v-if="lastPost"
             class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-primary border  border-primary rounded-lg bg-white"
             :to="`/posts/${lastPost.slug}`"
           >
             <RiBardLine class="size-4 shrink-0" />
             <span class="truncate"><span class="font-bold">{{ $t('Actualités') }}</span><span>&nbsp;: {{ lastPost.name }}</span></span>
-          </NuxtLinkLocale>
-          <NuxtLinkLocale
+          </CdataLink>
+          <CdataLink
             v-if="config.public.homepageRightNow"
             class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-primary border  border-primary rounded-lg bg-white"
             :to="config.public.homepageRightNow.url"
           >
             <RiBardLine class="size-4 shrink-0" />
             <span class="truncate"><span class="font-bold">{{ $t('En ce moment') }}</span><span>&nbsp;: {{ config.public.homepageRightNow.title }}</span></span>
-          </NuxtLinkLocale>
+          </CdataLink>
         </div>
         <div class="space-y-4">
           <h1 class="text-6xl font-extrabold text-primary text-center">
@@ -282,14 +282,14 @@
                     {{ exploration.description }}
                   </p>
                   <div class="text-right">
-                    <NuxtLink
+                    <CdataLink
                       :to="exploration.url"
                       external
                       class="inline-flex items-center text-primary space-x-1"
                     >
                       <span>{{ $t('En savoir plus') }}</span>
                       <RiArrowRightLine class="size-3" />
-                    </NuxtLink>
+                    </CdataLink>
                   </div>
                 </div>
               </div>
@@ -325,14 +325,14 @@
                 class="relative bg-gray-disabled p-4 space-y-2 hover:bg-gray-plain"
               >
                 <h5 class="text-xl">
-                  <NuxtLink
+                  <CdataLink
                     :to="platform.url"
                     external
                     class="fr-raw-link"
                   >
                     <span class="font-spectral italic text-[1.4rem]">{{ platform.name }}</span><span class="font-bold">.data.gouv.</span><span class="font-spectral italic text-[1.4rem]">fr</span>
                     <div class="absolute inset-0" />
-                  </NuxtLink>
+                  </CdataLink>
                 </h5>
                 <i18n-t
                   v-if="platform.name === 'ecologie'"

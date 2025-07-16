@@ -244,6 +244,9 @@ export type BaseResourceForm = {
   description: string
   schema: RegisteredSchema | null
   schema_url: string | null
+
+  checksum_type: string | null
+  checksum_value: string | null
 }
 
 export type ResourceFormRemote = BaseResourceForm & {

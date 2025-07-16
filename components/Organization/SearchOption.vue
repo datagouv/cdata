@@ -9,13 +9,13 @@
       :size="30"
       class="flex-none mx-2"
     />
-    <NuxtLinkLocale
+    <CdataLink
       class="flex-1"
       :to="link"
       :external="true"
     >
       <span class="font-bold">{{ name }}</span>
-    </NuxtLinkLocale>
+    </CdataLink>
   </div>
 </template>
 
