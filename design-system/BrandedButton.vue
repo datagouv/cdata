@@ -47,26 +47,28 @@
       </div>
     </div>
 
-    <div>
+    <div class="space-y-4">
       <BrandedButton
+        class="block"
         href="http://dev.local:3000/datasets"
       >
         To http://dev.local:3000/datasets
       </BrandedButton>
       <BrandedButton
+        class="block"
         href="http://dev.local:3000/datasets"
         external
       >
         To http://dev.local:3000/datasets as external
       </BrandedButton>
-    </div>
-    <div>
       <CdataLink
+        class="block"
         href="http://dev.local:3000/datasets"
       >
         To http://dev.local:3000/datasets
       </CdataLink>
       <CdataLink
+        class="block"
         href="http://dev.local:3000/datasets"
         external
       >
