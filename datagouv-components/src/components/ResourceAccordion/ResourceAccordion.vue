@@ -96,6 +96,7 @@
             rel="ugc nofollow noopener"
             new-tab
             size="xs"
+            external
           >
             {{ $t('Visiter') }}
           </BrandedButton>
@@ -128,6 +129,7 @@
             :icon="unavailable ? RiFileWarningLine : RiDownloadLine"
             size="xs"
             :aria-describedby="resourceTitleId"
+            external
           >
             <span class="sr-only">{{ t('Télécharger la liste au format ') }}</span>{{ format }}
           </BrandedButton>
