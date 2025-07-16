@@ -11,9 +11,10 @@ import type { Organization } from '@datagouv/components-next'
 const { setCurrentOrganization } = useCurrentOwned()
 
 const route = useRoute()
-const { data: organization, refresh } = await useAPI<Organization>(`api/1/organizations/${route.params.oid}/`, { redirectOn404: true })
+const url = computed(() => `api/1/organizations/${route.params.oid}/`)
+const { data: organization, refresh } = await useAPI<Organization>(url, { redirectOn404: true })
 
-watchEffect(() => {
+watch(organization, () => {
   if (organization.value) setCurrentOrganization(organization.value)
 })
 </script>
