@@ -338,7 +338,7 @@ const isOrgAdmin = computed(() => isMeAdmin() || (organization && organization.v
 const newRole = ref<MemberRole | null>(null)
 const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })
 const rolesOptions = computed(() => {
-  if (!roles) return []
+  if (!roles.value) return []
 
   return roles.value.map(role => ({
     label: role.label,
@@ -348,7 +348,7 @@ const rolesOptions = computed(() => {
 const loading = ref(false)
 
 function getStatus(role: MemberRole): string {
-  return roles.value.find(memberRole => memberRole.id === role)?.label ?? role
+  return (roles.value || []).find(memberRole => memberRole.id === role)?.label ?? role
 }
 
 function getStatusType(role: MemberRole): AdminBadgeType {
