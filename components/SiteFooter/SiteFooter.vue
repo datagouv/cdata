@@ -294,7 +294,7 @@ if (config.public.csvDatasetId) {
   openDataLinks.push({ label: t('Catalogue de données'), link: `/datasets/${config.public.csvDatasetId}` })
 }
 
-openDataLinks.push({ label: t(`Suivre l'ouverture des données`), link: 'https://ouverture.data.gouv.fr' })
+openDataLinks.push({ label: t('Suivre l'ouverture des données'), link: 'https://ouverture.data.gouv.fr' })
 openDataLinks.push({ label: t('Portail des données européennes'), link: 'https://data.europa.eu' })
 
 const platformLinks: Array<Link> = [
