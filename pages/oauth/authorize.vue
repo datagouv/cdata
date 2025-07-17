@@ -4,7 +4,10 @@
       <LoadingBlock
         :status
       >
-        <div class="space-y-8">
+        <div
+          v-if="data"
+          class="space-y-8"
+        >
           <h1 class="text-2xl font-normal">
             <i18n-t
               keypath="{external} voudrait accéder à votre compte {site}."
