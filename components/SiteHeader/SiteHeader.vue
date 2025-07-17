@@ -302,6 +302,7 @@
                       :href="`${config.public.apiBase}/logout`"
                       color="primary-softer"
                       :icon="RiLogoutBoxRLine"
+                      external
                     >
                       {{ $t('Se déconnecter') }}
                     </BrandedButton>
