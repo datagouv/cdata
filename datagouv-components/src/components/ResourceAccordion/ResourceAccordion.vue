@@ -397,7 +397,7 @@ const hasPreview = computed(() => {
 const hasTabularData = computed(() => {
   // Determines if we should show the "Données" tab for tabular files AND the "Structure des données" tab (for tabular data structure)
   return config.tabularApiUrl
-    && props.resource.extras['analysis:parsing:finished_at']
+    && props.resource.extras['analysis:parsing:parsing_table']
     && !props.resource.extras['analysis:parsing:error']
     && (config.tabularAllowRemote || props.resource.filetype === 'file')
 })
