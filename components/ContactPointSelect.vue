@@ -75,7 +75,7 @@
         class="mb-0"
         type="email"
         :label="t('E-mail')"
-        :placeholder="$t('contact@organisation.org')"
+        placeholder="contact@organisation.org"
         :has-error="!!getFirstError('email')"
         :has-warning="!!getFirstWarning('email')"
         :error-text="getFirstError('email')"

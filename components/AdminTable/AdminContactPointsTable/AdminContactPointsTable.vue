@@ -89,7 +89,7 @@
                 v-model="newContactForm.email"
                 type="email"
                 :label="t('E-mail')"
-                placeholder="contact@organization.org"
+                placeholder="contact@organisation.org"
                 :has-error="!!getFirstError('email')"
                 :error-text="getFirstError('email')"
                 @blur="touch('email')"
