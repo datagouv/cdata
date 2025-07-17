@@ -110,7 +110,7 @@ const fetchXmlData = async () => {
   error.value = null
 
   try {
-    const response = await fetch(props.resource.latest) // For production
+    const response = await fetch(props.resource.latest)
     // const response = await fetch('/test-data.xml') // For testing locally without CORS issues
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
