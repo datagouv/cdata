@@ -89,7 +89,7 @@ useSeoMeta({ title: t('Connexion') })
 
 const route = useRoute()
 
-const { data, status } = await useAPI<{ client: { name: string }, scopes: Array<string> }>('/fr/oauth/authorize', { query: route.query })
+const { data, status } = await useAPI<{ client: { name: string }, scopes: Array<string> }>('/fr/oauth/client_info', { query: route.query })
 
 const authorizeUrl = computed(() => {
   const queryString = new URLSearchParams(route.query).toString()
