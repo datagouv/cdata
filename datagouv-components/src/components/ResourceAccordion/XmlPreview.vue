@@ -21,6 +21,14 @@
       }}</span>
     </SimpleBanner>
     <SimpleBanner
+      v-else-if="error === 'cors'"
+      type="warning"
+      class="flex items-center space-x-2"
+    >
+      <RiErrorWarningLine class="shink-0 size-6" />
+      <span>{{ $t("Ce fichier XML ne peut pas être prévisualisé car il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le depuis l'onglet Téléchargements.") }}</span>
+    </SimpleBanner>
+    <SimpleBanner
       v-else-if="error"
       type="warning"
       class="flex items-center space-x-2"
@@ -53,7 +61,7 @@ const config = useComponentsConfig()
 
 const xmlData = ref<string | null>(null)
 const loading = ref(false)
-const error = ref(false)
+const error = ref<string | null>(null)
 const fileTooLarge = ref(false)
 
 const fileSizeBytes = computed(() => {
@@ -99,10 +107,10 @@ const fetchXmlData = async () => {
   }
 
   loading.value = true
-  error.value = false
+  error.value = null
 
   try {
-    const response = await fetch(props.resource.latest) // For production
+    const response = await fetch(props.resource.latest)
     // const response = await fetch('/test-data.xml') // For testing locally without CORS issues
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
@@ -114,7 +122,14 @@ const fetchXmlData = async () => {
   }
   catch (err) {
     console.error('Error loading XML:', err)
-    error.value = true
+
+    const isCorsError = err instanceof TypeError && err.message.includes('Failed to fetch')
+    if (isCorsError) {
+      error.value = 'cors'
+    } else {
+      error.value = 'generic'
+    }
+
     xmlData.value = null
   }
   finally {

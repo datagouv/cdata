@@ -384,12 +384,9 @@ const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
 
 const hasPreview = computed(() => {
-  // Determines if we should show the "Données" tab for previewable files (JSON, PDF, XML)
-  // Only show preview for local files, not remote ones due to CORS issues
-  // TODO: Once CORS issues are fixed for remote files, remove this check to allow remote preview
-  if (props.resource.filetype === 'remote') return false
-
-  // For JSON, PDF, and XML files, show preview
+  // For JSON, PDF, and XML files, show preview.
+  // We cannot check for CORS issues here because we cannot use an async component here.
+  // If there is a CORS issue when fetching the file for preview, it will be managed and displayed as an error banner by the preview component.
   const format = props.resource.format?.toLowerCase()
   return format === 'json' || format === 'pdf' || format === 'xml'
 })
