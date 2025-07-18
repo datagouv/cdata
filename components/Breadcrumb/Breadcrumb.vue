@@ -2,11 +2,11 @@
   <nav
     rol="navigation"
     :aria-label="$t(`Vous êtes ici :`)"
-    class="fr-breadcrumb mb-5"
+    class="fr-breadcrumb truncate mb-5"
   >
     <ol
       ref="rootRef"
-      class="fr-breadcrumb__list"
+      class="fr-breadcrumb__list truncate"
     >
       <slot />
     </ol>

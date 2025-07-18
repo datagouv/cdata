@@ -3,9 +3,9 @@
     <div class="container">
       <div
         v-if="dataset"
-        class="flex flex-wrap items-center justify-between"
+        class="flex gap-4 md:flex-nowrap items-center justify-between"
       >
-        <Breadcrumb>
+        <Breadcrumb class="md:mb-0 md:mt-0">
           <BreadcrumbItem
             to="/"
             :external="true"
@@ -19,7 +19,7 @@
             {{ dataset.title }}
           </BreadcrumbItem>
         </Breadcrumb>
-        <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
+        <div class="flex-none flex flex-wrap gap-2.5 md:max-w-6/12">
           <FollowButton
             v-if="dataset"
             :url="`/api/1/datasets/${dataset.id}/followers/`"
@@ -78,18 +78,18 @@
               {{ $t('Archivé') }}
             </AdminBadge>
           </div>
-          <h1 class="text-2xl text-gray-title font-extrabold mb-6">
-            {{ dataset.title }}
-
-            <span
-              v-if="dataset.acronym"
-              class="text-xs text-gray-title font-bold"
-            >
-              {{ dataset.acronym }}
-            </span>
-          </h1>
           <div class="flex flex-col md:space-x-10 md:flex-row">
             <div class="flex-1 overflow-x-hidden">
+              <h1 class="text-2xl text-gray-title font-extrabold mb-6">
+                {{ dataset.title }}
+
+                <span
+                  v-if="dataset.acronym"
+                  class="text-xs text-gray-title font-bold"
+                >
+                  {{ dataset.acronym }}
+                </span>
+              </h1>
               <div class="text-sm text-gray-plain font-bold mb-1 pb-0">
                 {{ $t('Description') }}
               </div>
