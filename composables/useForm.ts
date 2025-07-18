@@ -14,28 +14,26 @@ export type Validate = () => boolean
 export type FormInfo<T> = ReturnType<typeof useForm<T>>['formInfo']
 
 export type FormRegister = {
-  registerSubform: (id: string, validate: Validate) => void
-  unregisterSubform: (id: string) => void
+  registerSubform: (validate: Validate) => void
+  unregisterSubform: (validate: Validate) => void
 }
 
 export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsRules<T> = {}, warningsRules: ValidationsRules<T> = {}) {
   const { t } = useI18n()
 
   const form = toRef(initialValues)
-  const subformValidations: { [key: string]: Validate } = {}
-  type KeyofSubform = keyof typeof subformValidations
+  const subformValidations = new Set<Validate>()
   const errors = ref({} as ValidationsMessages<T>)
   const warnings = ref({} as ValidationsMessages<T>)
 
   const injectionKey = Symbol() as InjectionKey<FormRegister>
-  const registerSubform = (key: string, validate: Validate) => {
-    subformValidations[key] = validate
+  const registerSubform = (validate: Validate) => {
+    subformValidations.add(validate)
   }
 
-  const unregisterSubform = (key: KeyofSubform) => {
-    if (key in subformValidations) {
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete subformValidations[key]
+  const unregisterSubform = (validate: Validate) => {
+    if (subformValidations.has(validate)) {
+      subformValidations.delete(validate)
     }
   }
 
@@ -85,14 +83,12 @@ export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsR
       touch(key as KeysOfUnion<T>)
     }
     let subFormError = false
-    for (const key of Object.keys(subformValidations)) {
-      if (key in subformValidations) {
-        const fn = subformValidations[key as KeyofSubform]
-        if (fn) {
-          subFormError = subFormError || !fn()
-        }
+    for (const v of subformValidations) {
+      if (v) {
+        subFormError = subFormError || !v()
       }
     }
+    console.log(subformValidations.size)
     for (const key of Object.keys(form.value)) {
       if (getFirstError(key as KeysOfUnion<T>)) return false
     }

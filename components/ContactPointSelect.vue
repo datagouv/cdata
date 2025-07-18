@@ -162,10 +162,10 @@ watchEffect(() => {
   if (props.parentFormKey) {
     const { registerSubform, unregisterSubform } = inject(props.parentFormKey) as FormRegister
     if (showForm.value) {
-      registerSubform('contact_point', validate)
+      registerSubform(validate)
     }
     else {
-      unregisterSubform('contact_point')
+      unregisterSubform(validate)
     }
   }
 })
