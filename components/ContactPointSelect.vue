@@ -136,6 +136,7 @@ import type { ContactPoint, ContactPointInForm, NewContactPoint, PaginatedArray 
 const contact = defineModel<ContactPointInForm | null>()
 
 const props = defineProps<{
+  parentFormKey?: InjectionKey<FormRegister>
   organization: Organization
   showAttributions?: boolean
   errorText?: string | null
@@ -146,7 +147,7 @@ type ContactType = { id: string, label: string }
 
 const { t } = useI18n()
 
-const { form: newContactForm, getFirstError, getFirstWarning, touch } = useForm({
+const { form: newContactForm, getFirstError, getFirstWarning, touch, validate } = useForm({
   ...defaultContactForm,
 } as NewContactPoint, {
   name: [required()],
@@ -154,6 +155,13 @@ const { form: newContactForm, getFirstError, getFirstWarning, touch } = useForm(
   contact_form: [url()],
   role: [required()],
 }, {})
+
+if (props.parentFormKey) {
+  const { registerSubform, unregisterSubform } = inject(props.parentFormKey) as FormRegister
+  onMounted(() => registerSubform('contact_point', validate))
+
+  onBeforeUnmount(() => unregisterSubform('contact_point'))
+}
 
 watchEffect(() => {
   if (contact.value && !('id' in contact.value)) {
