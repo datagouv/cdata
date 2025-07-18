@@ -413,13 +413,21 @@ const ogcService = computed(() => detectOgcService(props.resource))
 const ogcWms = computed(() => ogcService.value === 'wms')
 
 const generatedFormats = computed(() => {
-  return GENERATED_FORMATS
-    .filter(format => `analysis:parsing:${format}_url` in props.resource.extras)
-    .map(format => ({
-      url: props.resource.extras[`analysis:parsing:${format}_url`] as string,
-      size: props.resource.extras[`analysis:parsing:${format}_size`] as number | undefined,
-      format: format,
-    }))
+  let formats = GENERATED_FORMATS
+      .filter(format => `analysis:parsing:${format}_url` in props.resource.extras)
+      .map(format => ({
+        url: props.resource.extras[`analysis:parsing:${format}_url`] as string,
+        size: props.resource.extras[`analysis:parsing:${format}_size`] as number | undefined,
+        format: format,
+      }))
+  if ('analysis:parsing:parsing_table' in props.resource.extras) {
+    formats.push({
+      url: `${config.tabularApiUrl}/api/resources/${props.resource.id}/data/json/`,
+      size: undefined,
+      format: "json",
+    })
+  }
+  return formats
 })
 
 const open = ref(props.expandedOnMount)
