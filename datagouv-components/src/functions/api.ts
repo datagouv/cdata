@@ -10,7 +10,7 @@ export async function useFetch<DataT, ErrorT = never>(
 ): Promise<AsyncData<DataT, ErrorT>> {
   const config = useComponentsConfig()
 
-  const { t, locale } = useI18n()
+  const { locale } = useI18n()
 
   if (config.customUseFetch) {
     return await config.customUseFetch(url, options)
@@ -42,26 +42,26 @@ export async function useFetch<DataT, ErrorT = never>(
             options.params['lang'] = locale.value
           }
         },
-        async onResponseError({ response }) {
+        async onResponseError() {
           // TODO redirect to login outside Nuxt?
           // if (response.status === 401) {
           //   await nuxtApp.runWithContext(() => navigateTo(localePath('/login')))
           // }
 
-          let message
-          try {
-            if ('error' in response._data) {
-              message = response._data.error
-            }
-            else if ('message' in response._data) {
-              message = response._data.message
-            }
-          }
-          catch (e) {
-            console.error(e)
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            message = t(`L'API a retourné une erreur inattendue`)
-          }
+          // let message
+          // try {
+          //   if ('error' in response._data) {
+          //     message = response._data.error
+          //   }
+          //   else if ('message' in response._data) {
+          //     message = response._data.message
+          //   }
+          // }
+          // catch (e) {
+          //   console.error(e)
+          //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          //   message = t(`L'API a retourné une erreur inattendue`)
+          // }
 
           // TODO Toast outside Nuxt
           // toast.error(message)

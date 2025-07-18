@@ -63,19 +63,21 @@ export default defineNuxtPlugin({
           }
 
           let message = ''
-          try {
-            if ('error' in response._data) {
-              message = response._data.error
+          if (response._data) {
+            try {
+              if ('error' in response._data) {
+                message = response._data.error
+              }
+              else if ('message' in response._data) {
+                message = response._data.message
+              }
+              else if ('errors' in response._data && typeof response._data.errors === 'object') {
+                message = Object.entries(response._data.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
+              }
             }
-            else if ('message' in response._data) {
-              message = response._data.message
+            catch (e) {
+              console.error(e)
             }
-            else if ('errors' in response._data && typeof response._data.errors === 'object') {
-              message = Object.entries(response._data.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
-            }
-          }
-          catch (e) {
-            console.error(e)
           }
 
           if (options?.method && ['POST', 'PUT', 'PATCH'].includes(options.method) && response.status === 400) {
