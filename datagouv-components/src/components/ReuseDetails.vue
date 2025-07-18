@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-wrap items-center gap-0.5">
+  <div class="flex flex-wrap items-center gap-1">
     <p class="text-sm mb-0">
       {{ reuseType }}
     </p>

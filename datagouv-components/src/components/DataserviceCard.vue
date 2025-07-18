@@ -84,7 +84,7 @@
     </h4>
     <p
       v-if="dataservice.organization || dataservice.owner"
-      class="text-sm text-gray-medium overflow-hidden flex gap-1 mt-1 mb-0"
+      class="text-sm text-gray-medium overflow-hidden flex items-center gap-1 mt-1 mb-0"
     >
       <span
         v-if="dataservice.organization"
@@ -113,18 +113,38 @@
       <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
       <span class="block whitespace-nowrap">{{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataservice.metadata_modified_at, { dateStyle: 'medium' }) }) }}</span>
     </p>
-    <p class="text-sm text-gray-medium mb-0 mt-1">
-      <span class="fr-icon-information-line fr-icon--sm text-gray-medium" />
-      {{ t('Disponibilité :') }}
-      <span class="text-gray-plain">
-        <template v-if="dataservice.availability">
-          {{ t('{n}%', dataservice.availability) }}
-        </template>
-        <template v-else>
-          {{ t('inconnue') }}
-        </template>
-      </span>
-    </p>
+    <div class="flex flex-wrap items-center gap-1 mt-1 text-gray-medium">
+      <p class="text-sm mb-0">
+        {{ t('Disponibilité :') }}
+        <span class="text-gray-plain">
+          <template v-if="dataservice.availability">
+            {{ t('{n}%', dataservice.availability) }}
+          </template>
+          <template v-else>
+            {{ t('inconnue') }}
+          </template>
+        </span>
+      </p>
+      <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
+      <p
+        class="text-sm mb-0 flex items-center gap-0.5"
+        :aria-label="t('{n} vues | {n} vue | {n} vues', dataservice.metrics.views)"
+      >
+        <RiEyeLine
+          aria-hidden="true"
+          class="size-3.5"
+        />{{ summarize(dataservice.metrics.views) }}
+      </p>
+      <p
+        class="text-sm mb-0 flex items-center gap-0.5"
+        :aria-label="t('{n} abonnés | {n} abonné | {n} abonnés', dataservice.metrics.followers)"
+      >
+        <RiStarLine
+          aria-hidden="true"
+          class="size-3.5"
+        />{{ summarize(dataservice.metrics.followers) }}
+      </p>
+    </div>
     <component
       :is="config.textClamp"
       v-if="config.textClamp && description && showDescription"
@@ -140,9 +160,10 @@
 import { computed, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
-import { RiPassValidLine, RiSubtractLine } from '@remixicon/vue'
+import { RiEyeLine, RiPassValidLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../config'
 import { useFormatDate } from '../functions/dates'
+import { summarize } from '../functions/helpers'
 import { removeMarkdown } from '../functions/markdown'
 import { getOwnerName } from '../functions/owned'
 import type { Dataservice } from '../types/dataservices'
