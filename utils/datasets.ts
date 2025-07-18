@@ -159,6 +159,9 @@ export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resou
       value: form.checksum_value,
     }
   }
+  else {
+    resource.checksum = null
+  }
 
   if (!form.filetype) {
     throw new Error('Cannot convert to API a ResourceForm without filetype information')
