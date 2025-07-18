@@ -1,6 +1,11 @@
+![cdata](banner.png)
+
 # cdata
 
-**cdata** is the frontend application for [data.gouv.fr](https://www.data.gouv.fr), France's open data platform.
+[![GitHub Actions](https://img.shields.io/github/actions/workflow/status/datagouv/cdata/create-deploy-release.yml?branch=main)](https://github.com/datagouv/cdata/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+**cdata** is the frontend application for [data.gouv.fr](https://www.data.gouv.fr), France's Open Data platform.
 
 ## 📋 Prerequisites
 
