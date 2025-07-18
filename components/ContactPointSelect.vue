@@ -43,7 +43,7 @@
       </SearchableSelect>
     </div>
     <div
-      v-if="contact && !('id' in contact)"
+      v-if="showForm"
       class="fr-fieldset__element grid grid-cols-2 gap-3 mt-2"
     >
       <SelectGroup
@@ -156,15 +156,22 @@ const { form: newContactForm, getFirstError, getFirstWarning, touch, validate } 
   role: [required()],
 }, {})
 
-if (props.parentFormKey) {
-  const { registerSubform, unregisterSubform } = inject(props.parentFormKey) as FormRegister
-  onMounted(() => registerSubform('contact_point', validate))
-
-  onBeforeUnmount(() => unregisterSubform('contact_point'))
-}
+const showForm = computed(() => contact.value && !('id' in contact.value))
 
 watchEffect(() => {
-  if (contact.value && !('id' in contact.value)) {
+  if (props.parentFormKey) {
+    const { registerSubform, unregisterSubform } = inject(props.parentFormKey) as FormRegister
+    if (showForm.value) {
+      registerSubform('contact_point', validate)
+    }
+    else {
+      unregisterSubform('contact_point')
+    }
+  }
+})
+
+watchEffect(() => {
+  if (showForm.value) {
     contact.value = newContactForm.value
   }
 })
