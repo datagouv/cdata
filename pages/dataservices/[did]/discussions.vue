@@ -2,6 +2,7 @@
   <DiscussionsList
     :subject="dataservice"
     type="Dataservice"
+    :closed
   />
 </template>
 
@@ -9,5 +10,8 @@
 import type { Dataservice } from '@datagouv/components-next'
 import DiscussionsList from '~/components/Discussions/DiscussionsList.vue'
 
-defineProps<{ dataservice: Dataservice }>()
+const props = defineProps<{ dataservice: Dataservice }>()
+const closed = computed(() => props.dataservice.metrics.discussions - props.dataservice.metrics.discussions_open)
+
+useSeoMeta({ robots: 'noindex' })
 </script>
