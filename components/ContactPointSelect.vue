@@ -43,7 +43,7 @@
       </SearchableSelect>
     </div>
     <div
-      v-if="contact && !('id' in contact)"
+      v-if="showForm"
       class="fr-fieldset__element grid grid-cols-2 gap-3 mt-2"
     >
       <SelectGroup
@@ -75,7 +75,7 @@
         class="mb-0"
         type="email"
         :label="t('E-mail')"
-        :placeholder="$t('contact@organisation.org')"
+        placeholder="contact@organisation.org"
         :has-error="!!getFirstError('email')"
         :has-warning="!!getFirstWarning('email')"
         :error-text="getFirstError('email')"
@@ -136,6 +136,7 @@ import type { ContactPoint, ContactPointInForm, NewContactPoint, PaginatedArray 
 const contact = defineModel<ContactPointInForm | null>()
 
 const props = defineProps<{
+  parentFormKey?: InjectionKey<FormRegister>
   organization: Organization
   showAttributions?: boolean
   errorText?: string | null
@@ -146,7 +147,7 @@ type ContactType = { id: string, label: string }
 
 const { t } = useI18n()
 
-const { form: newContactForm, getFirstError, getFirstWarning, touch } = useForm({
+const { form: newContactForm, getFirstError, getFirstWarning, touch, validate } = useForm({
   ...defaultContactForm,
 } as NewContactPoint, {
   name: [required()],
@@ -155,8 +156,22 @@ const { form: newContactForm, getFirstError, getFirstWarning, touch } = useForm(
   role: [required()],
 }, {})
 
+const showForm = computed(() => contact.value && !('id' in contact.value))
+
 watchEffect(() => {
-  if (contact.value && !('id' in contact.value)) {
+  if (props.parentFormKey) {
+    const { registerSubform, unregisterSubform } = inject(props.parentFormKey) as FormRegister
+    if (showForm.value) {
+      registerSubform(validate)
+    }
+    else {
+      unregisterSubform(validate)
+    }
+  }
+})
+
+watchEffect(() => {
+  if (showForm.value) {
     contact.value = newContactForm.value
   }
 })
