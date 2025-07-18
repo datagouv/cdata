@@ -239,7 +239,7 @@ import InputGroup from '~/components/InputGroup/InputGroup.vue'
 import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplanation.vue'
 import UploadGroup from '~/components/UploadGroup/UploadGroup.vue'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   type: 'create' | 'update'
   errors: Array<string>
   submitLabel: string
@@ -277,13 +277,13 @@ const checkOrga = ref({
   exists: null as boolean | null,
 })
 
-function checkBusinessId<T, K extends KeysOfUnion<T>, V extends (string | undefined) & T[K]>(check: MaybeRefOrGetter<{ exists: boolean }>, message: string | null = null): ValidationFunction<T, K, V> {
+function checkBusinessId<T, K extends KeysOfUnion<T>, V extends (string | null) & T[K]>(): ValidationFunction<T, K, V> {
   return (value: V, key: K, form: T, t) => {
     const clean = cleanSiret(value)
     if (!clean) return null
 
-    if (/^\d{9}$/.test(clean)) return message || t('Veuillez renseigner un SIRET (14 chiffres) et non pas un SIREN (9 chiffres).')
-    if (!/^\d{14}$/.test(clean)) return message || t('Un numéro SIRET doit contenir 14 chiffres.')
+    if (/^\d{9}$/.test(clean)) return t('Veuillez renseigner un SIRET (14 chiffres) et non pas un SIREN (9 chiffres).')
+    if (!/^\d{14}$/.test(clean)) return t('Un numéro SIRET doit contenir 14 chiffres.')
 
     // Algorithme de Luhn
     let sum = 0
@@ -297,22 +297,24 @@ function checkBusinessId<T, K extends KeysOfUnion<T>, V extends (string | undefi
     }
 
     if (sum % 10 === 0) return null
-    return message || t('Ce numéro SIRET est invalide.')
+    return t('Ce numéro SIRET est invalide.')
   }
 }
 
+const isCreation = computed(() => props.type === 'create')
+
 const { form, formInfo, getFirstError, getFirstWarning, touch, validate } = useForm(organization, {
-  business_number_id: [checkBusinessId(checkOrga)],
+  business_number_id: [checkBusinessId(), ruleIf(isCreation, unique(siret => `/api/1/organizations/?business_number_id=${cleanSiret(siret)}`, t('Une organisation avec ce SIRET existe déjà sur {site}', { site: config.public.title })))],
   description: [required()],
-  name: [required()],
+  name: [required(), ruleIf(isCreation, unique(name => `/api/1/organizations/?name=${name}`, t('Une organisation portant ce nom existe déjà. Veuillez choisir un autre nom ou vérifier si votre organisation existe déjà.')))],
   url: [url()],
 }, {
   description: [minLength(config.public.qualityDescriptionLength)],
   name: [testNotAllowed(config.public.demoServer?.name)],
 })
 
-function submit() {
-  if (validate()) {
+async function submit() {
+  if (await validate()) {
     emit('submit', file.value, newBadges.value)
   }
 }
@@ -340,36 +342,33 @@ function getOrganizationType(complements: SearchAdditionalData): OrganizationTyp
   return COMPANY
 }
 
-watchEffect(() => {
+watchEffect(async () => {
   const siret = form.value.business_number_id?.replace(/\s/g, '')
   if (config.public.searchSirenUrl && siret?.length === 14) {
-      type SearchSirenResponse = {
-        total_results: number
-        results: Array<{
-          nom_complet: string
-          siren: string
-          complements: SearchAdditionalData
-        }>
-      }
-      useFetch<SearchSirenResponse>(config.public.searchSirenUrl, {
-        params: {
-          q: siret,
-          mtm_campaign: 'datagouv/frontend',
-        },
-      })
-        .then(res => res.data)
-        .then((result) => {
-          if (!result.value || result.value.total_results === 0) {
-            checkOrga.value.exists = false
-            checkOrga.value.type = 'other'
-          }
-          else {
-            checkOrga.value.name = result.value.results[0].nom_complet
-            checkOrga.value.siren = result.value.results[0].siren
-            checkOrga.value.type = getOrganizationType(result.value.results[0].complements)
-            checkOrga.value.exists = true
-          }
-        })
+    const { data } = await useFetch<{
+      total_results: number
+      results: Array<{
+        nom_complet: string
+        siren: string
+        complements: SearchAdditionalData
+      }>
+    }>(config.public.searchSirenUrl, {
+      params: {
+        q: siret,
+        mtm_campaign: 'datagouv/cdata',
+      },
+    })
+
+    if (!data.value || data.value.total_results === 0) {
+      checkOrga.value.exists = false
+      checkOrga.value.type = 'other'
+    }
+    else {
+      checkOrga.value.name = data.value.results[0].nom_complet
+      checkOrga.value.siren = data.value.results[0].siren
+      checkOrga.value.type = getOrganizationType(data.value.results[0].complements)
+      checkOrga.value.exists = true
+    }
   }
   else {
     checkOrga.value.exists = null

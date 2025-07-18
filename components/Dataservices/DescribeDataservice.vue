@@ -599,8 +599,8 @@ const accordionState = (key: keyof typeof form.value) => {
   return 'default'
 }
 
-function submit() {
-  if (validate()) {
+async function submit() {
+  if (await validate()) {
     if (dataserviceForm.value.machine_documentation_url || openConfirmModal.value) {
       emit('submit')
       openConfirmModal.value = false

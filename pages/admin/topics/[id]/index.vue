@@ -53,7 +53,7 @@ const { toast } = useToast()
 const { t } = useI18n()
 
 const save = async () => {
-  if (validate()) {
+  if (await validate()) {
     await $api(`/api/1/topics/${props.topic.id}/`, {
       method: 'PUT',
       body: {

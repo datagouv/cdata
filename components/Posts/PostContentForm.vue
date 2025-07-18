@@ -52,8 +52,8 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm({
 }, {
 })
 
-function submit() {
-  if (validate()) {
+async function submit() {
+  if (await validate()) {
     emit('submit', form.value)
   }
 };

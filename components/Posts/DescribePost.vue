@@ -131,8 +131,8 @@ const imagePreview = computed(() => {
   return URL.createObjectURL(form.value.image)
 })
 
-function submit() {
-  if (validate()) {
+async function submit() {
+  if (await validate()) {
     emit('submit', form.value)
   }
 };

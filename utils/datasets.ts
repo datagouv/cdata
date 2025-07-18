@@ -12,8 +12,8 @@ export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceF
   return useForm(file, {
     title: [required()],
     type: [required()],
-    url: [requiredIf(isRemote)],
-    format: [requiredIf(isRemote)],
+    url: [ruleIf(isRemote, required())],
+    format: [ruleIf(isRemote, required())],
   }, {
     description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
     title: [testNotAllowed(config.public.demoServer?.name)],
