@@ -151,6 +151,7 @@ export default defineNuxtConfig({
       },
 
       enableCdataSecurityViews: false,
+      requireEmailConfirmation: true,
       changeEmailPage: 'change-email',
       changePasswordPage: 'change',
 

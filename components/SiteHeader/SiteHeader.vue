@@ -145,7 +145,7 @@
                             <BrandedButton
                               color="primary-softer"
                               size="lg"
-                              href="/register"
+                              :href="{ path: '/register', query: { next: route.fullPath } }"
                               :external="true"
                               class="w-full"
                               :icon="RiAccountCircleLine"
@@ -326,7 +326,7 @@
                 <li>
                   <BrandedButton
                     color="primary-softer"
-                    href="/register"
+                    :href="{ path: '/register', query: { next: route.fullPath } }"
                     :external="true"
                     :icon="RiAccountCircleLine"
                   >

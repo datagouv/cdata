@@ -79,6 +79,7 @@ import type { FieldsErrors } from '~/types/form'
 const { $api } = useNuxtApp()
 const { toast } = useToast()
 const { t } = useI18n()
+const config = useRuntimeConfig()
 
 const loading = ref(false)
 const errors = ref<FieldsErrors>({})
@@ -103,7 +104,12 @@ const submit = async (close: () => void) => {
       },
     })
 
-    toast.success(t('Adresse email modifiée, veuillez valider le changement via le mail reçu.'))
+    if (config.public.requireEmailConfirmation) {
+      toast.success(t('Adresse email modifiée, veuillez valider le changement via le mail reçu.'))
+    }
+    else {
+      toast.success(t('Adresse email modifiée.'))
+    }
     close()
   }
   catch (e) {

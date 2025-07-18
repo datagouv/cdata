@@ -74,7 +74,10 @@
             {{ $t('Récupérer votre mot de passe') }}
           </CdataLink>
         </div>
-        <div class="text-center text-gray-plain text-sm">
+        <div
+          v-if="config.public.requireEmailConfirmation"
+          class="text-center text-gray-plain text-sm"
+        >
           {{ $t('Instructions de confirmation non reçues ?') }} <CdataLink to="/confirm">
             {{ $t('Renvoyer les instructions') }}
           </CdataLink>
