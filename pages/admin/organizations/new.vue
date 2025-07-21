@@ -28,7 +28,7 @@
       v-if="currentStep === 2"
       v-model="organizationForm"
       type="create"
-      :submit-label="$t('Suivant')"
+      :submit-label="$t(`Créer l'organisation`)"
       :errors="errors"
       :loading
       @previous="moveToStep(1)"
