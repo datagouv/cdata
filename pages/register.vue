@@ -140,6 +140,7 @@ import type { FieldsErrors } from '~/types/form'
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
 const { t } = useI18n()
+const route = useRoute()
 
 useSeoMeta({ title: t('S\'enregistrer') })
 
@@ -154,6 +155,12 @@ const captchaUuid = ref('')
 const loading = ref(false)
 const errors = ref<FieldsErrors>({})
 const success = ref(false)
+
+onMounted(() => {
+  if (route.query.next) {
+    sessionStorage.setItem('next', route.query.next as string)
+  }
+})
 
 const connect = async () => {
   if (success.value) return
@@ -175,7 +182,18 @@ const connect = async () => {
       },
     })
 
-    success.value = true
+    if (config.public.requireEmailConfirmation) {
+      success.value = true
+    }
+    else {
+      const next = sessionStorage.getItem('next')
+      if (next) {
+        navigateTo(next)
+      }
+      else {
+        await navigateTo('/')
+      }
+    }
   }
   catch (e) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
