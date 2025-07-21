@@ -70,7 +70,7 @@
         </h4>
         <div
           v-if="dataset.organization || dataset.owner"
-          class="text-sm m-0 flex truncate"
+          class="text-sm m-0 flex items-center truncate"
         >
           <template v-if="dataset.organization">
             <div class="-mr-0.5 flex-initial truncate">
@@ -93,44 +93,54 @@
           >
             {{ ownerName }}
           </div>
-          <div class="text-gray-medium dash-before-sm whitespace-nowrap">
+          <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
+          <div class="text-gray-medium whitespace-nowrap">
             {{ $t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataset.last_update, { dateStyle: 'medium' }) }) }}
           </div>
         </div>
         <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium">
-          <div class="fr-hidden flex-sm dash-after-sm text-gray-500 -ml-2.5">
+          <div class="fr-hidden flex-sm dash-after-sm text-gray-medium -ml-2.5">
             <DatasetQualityInline
               :quality="dataset.quality"
               :teleport-id="id"
             />
           </div>
-          <div class="fr-grid-row fr-grid-row--middle fr-mr-1v">
+          <div class="flex flex-wrap items-center gap-1">
             <p
-              class="fr-text--sm fr-my-0"
+              class="text-sm mb-0 flex items-center gap-0.5"
+              :aria-label="t('{n} vues | {n} vue | {n} vues', dataset.metrics.views)"
+            >
+              <RiEyeLine
+                aria-hidden="true"
+                class="size-3.5"
+              />{{ summarize(dataset.metrics.views) }}
+            </p>
+            <p
+              class="text-sm mb-0 flex items-center gap-0.5"
               :aria-label="t('{n} téléchargements des ressources | {n} téléchargement des ressources | {n} téléchargements des ressources', dataset.metrics.resources_downloads)"
             >
-              <span
-                class="fr-icon-download-line fr-icon--sm fr-px-1v"
+              <RiDownloadLine
                 aria-hidden="true"
+                class="size-3.5"
               />{{ summarize(dataset.metrics.resources_downloads) }}
             </p>
             <p
-              class="fr-text--sm fr-my-0"
-              :aria-label="t('{n} abonnés | {n} abonné | {n} abonnés', dataset.metrics.followers)"
-            >
-              <span
-                class="fr-icon-star-line fr-icon--sm fr-px-1v"
-                aria-hidden="true"
-              />{{ summarize(dataset.metrics.followers) }}
-            </p>
-            <p
-              class="fr-text--sm fr-my-0"
+              class="text-sm mb-0 flex items-center gap-0.5"
               :aria-label="t('{n} réutilisations | {n} réutilisation | {n} réutilisations', dataset.metrics.reuses)"
             >
-              <span
-                class="fr-icon-line-chart-line fr-icon--sm fr-px-1v"
+              <RiLineChartLine
                 aria-hidden="true"
+                class="size-3.5"
               />{{ summarize(dataset.metrics.reuses) }}
+            </p>
+            <p
+              class="text-sm mb-0 flex items-center gap-0.5"
+              :aria-label="t('{n} abonnés | {n} abonné | {n} abonnés', dataset.metrics.followers)"
+            >
+              <RiStarLine
+                aria-hidden="true"
+                class="size-3.5"
+              />{{ summarize(dataset.metrics.followers) }}
             </p>
           </div>
         </div>
@@ -151,6 +161,7 @@
 import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
 import { computed, ref, useId, watchEffect } from 'vue'
+import { RiDownloadLine, RiEyeLine, RiLineChartLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import { summarize } from '../functions/helpers'
 import { useFormatDate } from '../functions/dates'
