@@ -170,8 +170,8 @@ const { form: newContactForm, getFirstError, getFirstWarning, touch, validate } 
   ...defaultContactForm,
 } as NewContactPoint, {
   name: [required()],
-  email: [email()],
-  contact_form: [url()],
+  email: [email(), requiredIfFalsy('contact_form', t(`Une adresse e-mail est requise si un lien n'est pas fourni`))],
+  contact_form: [url(), requiredIfFalsy('email', t(`Un lien est requis si une adresse e-mail n'est pas fournie`))],
   role: [required()],
 }, {})
 
