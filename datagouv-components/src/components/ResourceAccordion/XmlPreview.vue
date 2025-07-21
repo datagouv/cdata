@@ -21,12 +21,12 @@
       }}</span>
     </SimpleBanner>
     <SimpleBanner
-      v-else-if="error === 'cors'"
+      v-else-if="error === 'network'"
       type="warning"
       class="flex items-center space-x-2"
     >
       <RiErrorWarningLine class="shink-0 size-6" />
-      <span>{{ $t("Ce fichier XML ne peut pas être prévisualisé car il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le depuis l'onglet Téléchargements.") }}</span>
+      <span>{{ $t("Ce fichier XML ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le depuis l'onglet Téléchargements.") }}</span>
     </SimpleBanner>
     <SimpleBanner
       v-else-if="error"
@@ -123,9 +123,8 @@ const fetchXmlData = async () => {
   catch (err) {
     console.error('Error loading XML:', err)
 
-    const isCorsError = err instanceof TypeError && err.message.includes('Failed to fetch')
-    if (isCorsError) {
-      error.value = 'cors'
+    if (err instanceof TypeError) {
+      error.value = 'network'
     } else {
       error.value = 'generic'
     }
