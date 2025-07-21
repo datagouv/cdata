@@ -2,8 +2,10 @@
   <div>
     <div>
       <SearchableSelect
+        ref="contactSelect"
         v-model="contact"
         :options="contactsWithNewOption"
+        :suggest="suggestContactPoint"
         :label="showAttributions ? t(`Choisissez l'attribution avec laquelle vous voulez publier`) : t('Choisissez un point de contact')"
         :placeholder="showAttributions ? t('Choisissez une attribution') : t('Sélectionner un contact')"
         :display-value="(option) => 'id' in option ? (option.name || option.email || $t('Inconnu')) : (showAttributions ? t('Nouvelle attribution') : t('Nouveau point de contact'))"
@@ -44,7 +46,7 @@
     </div>
     <div
       v-if="showForm"
-      class="fr-fieldset__element grid grid-cols-2 gap-3 mt-2"
+      class="p-3 bg-gray-some grid grid-cols-2 gap-3 mt-2"
     >
       <SelectGroup
         v-if="showAttributions"
@@ -92,6 +94,19 @@
         :error-text="getFirstError('contact_form')"
         @blur="touch('contact_form')"
       />
+      <div>
+        <BrandedButton
+          class="mt-3"
+          type="button"
+          color="primary"
+          size="xs"
+          :icon="RiSaveLine"
+          :loading="isLoading"
+          @click="save"
+        >
+          {{ t('Enregistrer') }}
+        </BrandedButton>
+      </div>
     </div>
     <div
       v-else
@@ -128,7 +143,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { Organization } from '@datagouv/components-next'
+import { BrandedButton, type Organization } from '@datagouv/components-next'
+import { RiSaveLine } from '@remixicon/vue'
 import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
 import type { ContactPoint, ContactPointInForm, NewContactPoint, PaginatedArray } from '~/types/types'
@@ -136,7 +152,6 @@ import type { ContactPoint, ContactPointInForm, NewContactPoint, PaginatedArray 
 const contact = defineModel<ContactPointInForm | null>()
 
 const props = defineProps<{
-  parentFormKey?: InjectionKey<FormRegister>
   organization: Organization
   showAttributions?: boolean
   errorText?: string | null
@@ -146,6 +161,10 @@ const props = defineProps<{
 type ContactType = { id: string, label: string }
 
 const { t } = useI18n()
+const { $api } = useNuxtApp()
+const { isLoading, start, finish } = useLoadingIndicator()
+
+const contactSelectRef = useTemplateRef('contactSelect')
 
 const { form: newContactForm, getFirstError, getFirstWarning, touch, validate } = useForm({
   ...defaultContactForm,
@@ -157,18 +176,6 @@ const { form: newContactForm, getFirstError, getFirstWarning, touch, validate } 
 }, {})
 
 const showForm = computed(() => contact.value && !('id' in contact.value))
-
-watchEffect(() => {
-  if (props.parentFormKey) {
-    const { registerSubform, unregisterSubform } = inject(props.parentFormKey) as FormRegister
-    if (showForm.value) {
-      registerSubform(validate)
-    }
-    else {
-      unregisterSubform(validate)
-    }
-  }
-})
 
 watchEffect(() => {
   if (showForm.value) {
@@ -187,7 +194,7 @@ const { data: rolesList, status: rolesStatus } = await useAPI<Array<ContactType>
   key: roleKey,
   getCachedData: getDataFromSSRPayload,
 })
-const loading = computed(() => status.value === 'pending' || rolesStatus.value === 'pending')
+const loading = computed(() => isLoading.value || status.value === 'pending' || rolesStatus.value === 'pending')
 
 const options = computed(() => rolesList.value?.map(r => ({
   label: r.label,
@@ -202,4 +209,28 @@ const contactsWithNewOption = computed<Array<ContactPointInForm>>(() => {
   const attributions = [...contacts.value?.data ?? [], newContactForm.value]
   return props.showAttributions ? attributions : attributions.filter(c => c.role === 'contact')
 })
+
+async function suggestContactPoint(query: string): Promise<Array<ContactPoint>> {
+  return await $api<Array<ContactPoint>>(`/api/1/organizations/${props.organization.id}/contacts/suggest/`, {
+    query: {
+      q: query,
+      size: 10,
+    },
+  })
+}
+
+async function save() {
+  if (!validate()) return
+  start()
+  try {
+    const newContact = await newContactPoint($api, props.organization, contact.value)
+    if (contactSelectRef.value) {
+      await contactSelectRef.value.fetchSuggestsQuery(newContact.name)
+      contact.value = newContact
+    }
+  }
+  finally {
+    finish()
+  }
+}
 </script>

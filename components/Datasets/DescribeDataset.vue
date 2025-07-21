@@ -333,7 +333,7 @@
           </LinkedToAccordion>
         </fieldset>
         <fieldset
-          v-if="form.owned?.organization && injectionKey"
+          v-if="form.owned?.organization"
           class="fr-fieldset"
           aria-labelledby="description-legend"
         >
@@ -355,7 +355,6 @@
               v-model="form.contact_points[index]"
               class="pt-3"
               :organization="form.owned?.organization"
-              :parent-form-key="injectionKey"
               :show-attributions="harvested"
             />
             <ContactPointSelect
@@ -363,11 +362,10 @@
               v-model="form.contact_points[0]"
               class="pt-3"
               :organization="form.owned?.organization"
-              :parent-form-key="injectionKey"
               :show-attributions="harvested"
             />
             <BrandedButton
-              class="mt-3"
+              class="mt-4"
               type="button"
               color="primary-soft"
               size="xs"
@@ -653,7 +651,7 @@ const removeZone = (zone: SpatialZone) => {
   form.value.spatial_zones = form.value.spatial_zones.filter(otherZone => otherZone.id !== zone.id)
 }
 
-const { form, touch, getFirstError, getFirstWarning, injectionKey, validate } = useForm(datasetForm, {
+const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datasetForm, {
   owned: [required()],
   title: [required()],
   description: [required()],

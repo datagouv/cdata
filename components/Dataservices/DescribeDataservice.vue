@@ -339,7 +339,7 @@
           </LinkedToAccordion>
         </fieldset>
         <fieldset
-          v-if="form.owned?.organization && injectionKey"
+          v-if="form.owned?.organization"
           class="fr-fieldset"
           aria-labelledby="description-legend"
         >
@@ -363,7 +363,6 @@
               class="pt-3"
               :organization="form.owned?.organization"
               :show-attributions="harvested"
-              :parent-form-key="injectionKey"
             />
             <ContactPointSelect
               v-if="form.contact_points.length === 0"
@@ -371,7 +370,6 @@
               class="pt-3"
               :organization="form.owned?.organization"
               :show-attributions="harvested"
-              :parent-form-key="injectionKey"
             />
             <BrandedButton
               class="mt-3"
@@ -574,7 +572,7 @@ const accessAudienceConditionOptions = computed(() => accessAudienceConditions.m
 const machineDocumentationUrlWarningMessage = t(`Il est fortement recommandé d'ajouter une documentation OpenAPI ou Swagger à votre API.`)
 const openConfirmModal = ref(false)
 
-const { form, touch, getFirstError, getFirstWarning, injectionKey, validate } = useForm(dataserviceForm, {
+const { form, touch, getFirstError, getFirstWarning, validate } = useForm(dataserviceForm, {
   owned: [required()],
   title: [required()],
   description: [required()],

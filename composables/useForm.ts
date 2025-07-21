@@ -13,34 +13,12 @@ export type Validate = () => boolean
 
 export type FormInfo<T> = ReturnType<typeof useForm<T>>['formInfo']
 
-export type FormRegister = {
-  registerSubform: (validate: Validate) => void
-  unregisterSubform: (validate: Validate) => void
-}
-
 export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsRules<T> = {}, warningsRules: ValidationsRules<T> = {}) {
   const { t } = useI18n()
 
   const form = toRef(initialValues)
-  const subformValidations = new Set<Validate>()
   const errors = ref({} as ValidationsMessages<T>)
   const warnings = ref({} as ValidationsMessages<T>)
-
-  const injectionKey = Symbol() as InjectionKey<FormRegister>
-  const registerSubform = (validate: Validate) => {
-    subformValidations.add(validate)
-  }
-
-  const unregisterSubform = (validate: Validate) => {
-    if (subformValidations.has(validate)) {
-      subformValidations.delete(validate)
-    }
-  }
-
-  provide(injectionKey, {
-    registerSubform,
-    unregisterSubform,
-  })
 
   const removeErrorsAndWarnings = () => {
     errors.value = {}
@@ -82,22 +60,15 @@ export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsR
     for (const key of Object.keys(form.value)) {
       touch(key as KeysOfUnion<T>)
     }
-    let subFormError = false
-    for (const v of subformValidations) {
-      if (v) {
-        subFormError = subFormError || !v()
-      }
-    }
-    console.log(subformValidations.size)
     for (const key of Object.keys(form.value)) {
       if (getFirstError(key as KeysOfUnion<T>)) return false
     }
 
-    return !subFormError
+    return true
   }
 
   const formInfo = { errors, warnings, touch, getFirstError, getFirstWarning, validate, removeErrorsAndWarnings, warningsAsList, errorsAsList }
-  return { form, formInfo, injectionKey, ...formInfo }
+  return { form, formInfo, ...formInfo }
 }
 
 export function required<T, K extends KeysOfUnion<T>, V extends T[K]>(message: string | null = null): ValidationFunction<T, K, V> {
