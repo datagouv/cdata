@@ -223,8 +223,8 @@ const removeFile = (position: number) => {
   touch('resources')
 }
 
-const submit = () => {
-  if (validate()) {
+const submit = async () => {
+  if (await validate()) {
     emit('next', form.value.resources)
   }
 }
