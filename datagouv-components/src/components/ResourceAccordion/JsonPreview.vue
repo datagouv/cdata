@@ -24,9 +24,17 @@
     >
       <RiErrorWarningLine class="shink-0 size-6" />
       <span>{{ fileSizeBytes
-        ? $t("Fichier JSON trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le depuis l'onglet Téléchargements.")
-        : $t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le depuis l'onglet Téléchargements.")
+        ? $t("Fichier JSON trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
+        : $t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
       }}</span>
+    </SimpleBanner>
+    <SimpleBanner
+      v-else-if="error === 'network'"
+      type="warning"
+      class="flex items-center space-x-2"
+    >
+      <RiErrorWarningLine class="shink-0 size-6" />
+      <span>{{ $t("Ce fichier JSON ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
     </SimpleBanner>
     <SimpleBanner
       v-else-if="error"
@@ -63,7 +71,7 @@ const config = useComponentsConfig()
 
 const jsonData = ref<unknown>(null)
 const loading = ref(false)
-const error = ref(false)
+const error = ref<string | null>(null)
 const fileTooLarge = ref(false)
 
 const fileSizeBytes = computed(() => {
@@ -109,7 +117,7 @@ const fetchJsonData = async () => {
   }
 
   loading.value = true
-  error.value = false
+  error.value = null
 
   try {
     const response = await fetch(props.resource.latest)
@@ -124,7 +132,13 @@ const fetchJsonData = async () => {
   }
   catch (err) {
     console.error('Error loading JSON:', err)
-    error.value = true
+
+    if (err instanceof TypeError) {
+      error.value = 'network'
+    } else {
+      error.value = 'generic'
+    }
+
     jsonData.value = null
   }
   finally {
