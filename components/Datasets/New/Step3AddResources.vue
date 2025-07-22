@@ -205,8 +205,8 @@ const { form, getFirstError, getFirstWarning, touch, validate, errorsAsList: err
 }, {
   resources: [required(t('At least one file is required.'))],
 }, {
-  resources: [resources => resources.find(resource => !isClosedFormat(resource, extensions.value)) ? null : t('You did not add a file with an open format.')],
-  hasDocumentation: [hasDocumentation => !hasDocumentation ? t('You have not added a documentation file or described your files.') : null],
+  resources: [resources => resources.find(resource => !isClosedFormat(resource, extensions.value)) ? null : t('Vous n\'avez pas ajouté de fichier dans un format ouvert.')],
+  hasDocumentation: [hasDocumentation => !hasDocumentation ? t('Vous n\'avez pas ajouté de fichier de documentation ni décrit vos fichiers.') : null],
 })
 
 watchEffect(() => {
@@ -223,8 +223,8 @@ const removeFile = (position: number) => {
   touch('resources')
 }
 
-const submit = () => {
-  if (validate()) {
+const submit = async () => {
+  if (await validate()) {
     emit('next', form.value.resources)
   }
 }

@@ -434,8 +434,8 @@ const { data: schemas, status: schemaStatus } = await useAPI<SchemaResponseData>
 
 const { toast } = useToast()
 
-const submit = () => {
-  if (validate()) {
+const submit = async () => {
+  if (await validate()) {
     if (newFile.value) {
       if (form.value.filetype !== 'file') throw new Error('Cannot update file of not local file')
 

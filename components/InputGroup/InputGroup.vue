@@ -2,6 +2,7 @@
   <div
     class="fr-input-group"
     :class="inputGroupClass"
+    @focusout="$emit('blur')"
   >
     <label
       v-if="!hideLabel"
@@ -94,6 +95,7 @@ export type InputValue = string | undefined | null
 export type AllowedInputType = 'markdown' | 'textarea' | InputTypeHTMLAttribute
 
 const emit = defineEmits<{
+  'blur': []
   'change': [value: InputValue]
   'update:modelValue': [value: InputValue]
 }>()

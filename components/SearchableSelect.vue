@@ -241,6 +241,15 @@ const fetchSuggests = async () => {
   }
 }
 
+async function fetchSuggestsQuery(q: string) {
+  query.value = q
+  return fetchSuggests()
+}
+
+defineExpose({
+  fetchSuggestsQuery,
+})
+
 onMounted(async () => {
   await fetchSuggests()
 })
