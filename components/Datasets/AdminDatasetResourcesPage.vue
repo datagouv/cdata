@@ -270,7 +270,7 @@ const updateResource = async (closeModal: () => void, resourceForm: ResourceForm
     loading.value = false
   }
 
-  toast.success(t('Resource mise à jour !'))
+  toast.success(t('Fichier mis à jour !'))
 }
 
 const config = useRuntimeConfig()
