@@ -275,7 +275,7 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
     const notificationMessage = $i18n.t('Échec du téléchargement du fichier {title}', { title: resourceForm.title })
     let formError = notificationMessage
     const fetchError = e as unknown as FetchError
-    if ('data' in fetchError && 'message' in fetchError.data) {
+    if ('data' in fetchError && fetchError.data && 'message' in fetchError.data) {
       formError = fetchError.data.message
     }
     fileInfo.state = { status: 'failed', message: formError }
