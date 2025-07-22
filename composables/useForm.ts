@@ -11,8 +11,6 @@ export type ValidationsMessages<Type> = {
   [Property in KeysOfUnion<Type>]?: Array<string>;
 }
 
-export type Validate = () => boolean
-
 export type FormInfo<T> = ReturnType<typeof useForm<T>>['formInfo']
 
 export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsRules<T> = {}, warningsRules: ValidationsRules<T> = {}) {
@@ -58,7 +56,7 @@ export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsR
     return Object.keys(errors.value).flatMap(key => errors.value[key] || [])
   })
 
-  const validate: Validate = async () => {
+  const validate = async () => {
     for (const key of Object.keys(form.value)) {
       await touch(key as KeysOfUnion<T>)
     }
