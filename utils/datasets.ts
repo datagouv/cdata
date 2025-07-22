@@ -12,8 +12,8 @@ export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceF
   return useForm(file, {
     title: [required()],
     type: [required()],
-    url: [requiredIf(isRemote)],
-    format: [requiredIf(isRemote)],
+    url: [ruleIf(isRemote, required())],
+    format: [ruleIf(isRemote, required())],
   }, {
     description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
     title: [testNotAllowed(config.public.demoServer?.name)],
@@ -159,6 +159,9 @@ export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resou
       value: form.checksum_value,
     }
   }
+  else {
+    resource.checksum = null
+  }
 
   if (!form.filetype) {
     throw new Error('Cannot convert to API a ResourceForm without filetype information')
@@ -272,7 +275,7 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
     const notificationMessage = $i18n.t('Échec du téléchargement du fichier {title}', { title: resourceForm.title })
     let formError = notificationMessage
     const fetchError = e as unknown as FetchError
-    if ('data' in fetchError && 'message' in fetchError.data) {
+    if ('data' in fetchError && fetchError.data && 'message' in fetchError.data) {
       formError = fetchError.data.message
     }
     fileInfo.state = { status: 'failed', message: formError }

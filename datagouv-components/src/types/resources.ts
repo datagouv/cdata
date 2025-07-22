@@ -28,7 +28,7 @@ export type Resource = {
   mime: string
   internal: Record<string, unknown>
   last_modified: string
-  latest: string
+  latest: string // permalien stable
   preview_url: string
   schema: Schema | null
   url: string

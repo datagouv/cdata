@@ -1,6 +1,8 @@
+import type { PaginatedArray } from '~/types/types'
+
 export type KeysOfUnion<T> = T extends T ? keyof T : never
 
-export type ValidationFunction<T, K extends KeysOfUnion<T>, V extends T[K]> = (value: V, key: K, form: T, t: (key: string, values?: Record<string, unknown>) => string) => string | null
+export type ValidationFunction<T, K extends KeysOfUnion<T>, V extends T[K]> = (value: V, key: K, form: T, t: (key: string, values?: Record<string, unknown>) => string) => string | null | Promise<string | null>
 
 export type ValidationsRules<Type> = {
   [Property in KeysOfUnion<Type>]?: Array<ValidationFunction<Type, Property, Type[Property]>>;
@@ -25,17 +27,17 @@ export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsR
     warnings.value = {}
   }
 
-  const touch = (key: KeysOfUnion<T>) => {
+  const touch = async (key: KeysOfUnion<T>) => {
     errors.value[key] = []
 
     for (const rule of errorsRules[key] || []) {
-      const result = rule(form.value[key], key, form.value, t)
+      const result = await rule(form.value[key], key, form.value, t)
       if (result) errors.value[key].push(result)
     }
 
     warnings.value[key] = []
     for (const rule of warningsRules[key] || []) {
-      const result = rule(form.value[key], key, form.value, t)
+      const result = await rule(form.value[key], key, form.value, t)
       if (result) warnings.value[key].push(result)
     }
   }
@@ -56,9 +58,9 @@ export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsR
     return Object.keys(errors.value).flatMap(key => errors.value[key] || [])
   })
 
-  const validate: Validate = () => {
+  const validate: Validate = async () => {
     for (const key of Object.keys(form.value)) {
-      touch(key as KeysOfUnion<T>)
+      await touch(key as KeysOfUnion<T>)
     }
     for (const key of Object.keys(form.value)) {
       if (getFirstError(key as KeysOfUnion<T>)) return false
@@ -71,6 +73,18 @@ export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsR
   return { form, formInfo, ...formInfo }
 }
 
+export function unique<Something, T, K extends KeysOfUnion<T>, V extends (string | null) & T[K]>(apiUrl: (value: V) => string, message: string | null = null): ValidationFunction<T, K, V> {
+  return async (value: V, key: K, form: T, t) => {
+    if (!value) return null
+
+    const response = await useAPI<PaginatedArray<Something>>(apiUrl(value))
+    if (!response.data.value) return null
+    if (!response.data.value.total) return null
+
+    return message || t('\'{value}\' existe déjà')
+  }
+}
+
 export function required<T, K extends KeysOfUnion<T>, V extends T[K]>(message: string | null = null): ValidationFunction<T, K, V> {
   return (value: T[keyof T], key: K, form: T, t) => {
     if (!value || (Array.isArray(value) && !value.length)) return message || t('Le champ est requis.')
@@ -79,12 +93,10 @@ export function required<T, K extends KeysOfUnion<T>, V extends T[K]>(message: s
   }
 }
 
-export function requiredIf<T, K extends KeysOfUnion<T>, V extends T[K]>(condition: Ref<boolean>, message: string | null = null): ValidationFunction<T, K, V> {
+export function ruleIf<T, K extends KeysOfUnion<T>, V extends T[K]>(condition: Ref<boolean>, rule: ValidationFunction<T, K, V>): ValidationFunction<T, K, V> {
   return (value: T[keyof T], key: K, form: T, t) => {
     if (!condition.value) return null
-    if (!value || (Array.isArray(value) && !value.length)) return message || t('Le champ est requis.')
-
-    return null
+    return rule(value, key, form, t)
   }
 }
 
