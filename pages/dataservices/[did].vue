@@ -3,9 +3,9 @@
     <div class="container">
       <div
         v-if="dataservice"
-        class="flex flex-wrap items-center justify-between"
+        class="mt-4 flex gap-4 md:flex-nowrap items-center justify-between"
       >
-        <Breadcrumb>
+        <Breadcrumb class="md:mb-0 md:mt-0">
           <BreadcrumbItem
             to="/"
             :external="true"
@@ -19,7 +19,7 @@
             {{ dataservice.title }}
           </BreadcrumbItem>
         </Breadcrumb>
-        <div class="flex gap-3 items-center">
+        <div class="flex-none flex gap-3 items-center">
           <EditButton
             v-if="dataservice.permissions.edit"
             :id="dataservice.id"
@@ -38,37 +38,37 @@
     >
       <div class="space-y-8">
         <div class="container pt-3 min-h-32">
-          <div class="flex gap-3 mb-2">
-            <AdminBadge
-              v-if="dataservice.deleted_at"
-              :icon="RiDeleteBinLine"
-              size="sm"
-              type="secondary"
-            >
-              {{ $t('Supprimé') }}
-            </AdminBadge>
-            <AdminBadge
-              v-if="dataservice.private"
-              :icon="RiLockLine"
-              size="sm"
-              type="secondary"
-            >
-              {{ $t('Brouillon') }}
-            </AdminBadge>
-            <AdminBadge
-              v-if="dataservice.archived_at"
-              :icon="RiLockLine"
-              size="sm"
-              type="secondary"
-            >
-              {{ $t('Archivé') }}
-            </AdminBadge>
-          </div>
-          <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
-            {{ dataservice.title }}
-          </h1>
           <div class="flex flex-col md:space-x-10 md:flex-row">
             <div class="flex-1 overflow-x-hidden">
+              <div class="flex gap-3 mb-2">
+                <AdminBadge
+                  v-if="dataservice.deleted_at"
+                  :icon="RiDeleteBinLine"
+                  size="sm"
+                  type="secondary"
+                >
+                  {{ $t('Supprimé') }}
+                </AdminBadge>
+                <AdminBadge
+                  v-if="dataservice.private"
+                  :icon="RiLockLine"
+                  size="sm"
+                  type="secondary"
+                >
+                  {{ $t('Brouillon') }}
+                </AdminBadge>
+                <AdminBadge
+                  v-if="dataservice.archived_at"
+                  :icon="RiLockLine"
+                  size="sm"
+                  type="secondary"
+                >
+                  {{ $t('Archivé') }}
+                </AdminBadge>
+              </div>
+              <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
+                {{ dataservice.title }}
+              </h1>
               <ReadMore class="">
                 <MarkdownViewer
                   size="md"

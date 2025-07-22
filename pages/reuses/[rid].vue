@@ -4,9 +4,9 @@
     <div class="container">
       <div
         v-if="reuse"
-        class="flex flex-wrap items-center justify-between"
+        class="mt-4 flex flex-wrap items-center justify-between"
       >
-        <Breadcrumb>
+        <Breadcrumb class="md:mb-0 md:mt-0">
           <BreadcrumbItem
             to="/"
             :external="true"

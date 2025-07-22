@@ -3,7 +3,7 @@
     <div class="container">
       <div
         v-if="dataset"
-        class="flex gap-4 md:flex-nowrap items-center justify-between"
+        class="mt-4 flex gap-4 md:flex-nowrap items-center justify-between"
       >
         <Breadcrumb class="md:mb-0 md:mt-0">
           <BreadcrumbItem
@@ -52,34 +52,34 @@
     >
       <div class="space-y-8">
         <div class="container pt-3 min-h-32">
-          <div class="flex gap-3 mb-2">
-            <AdminBadge
-              v-if="dataset.deleted"
-              :icon="RiDeleteBinLine"
-              size="sm"
-              type="secondary"
-            >
-              {{ $t('Supprimé') }}
-            </AdminBadge>
-            <AdminBadge
-              v-if="dataset.private"
-              :icon="RiLockLine"
-              size="sm"
-              type="secondary"
-            >
-              {{ $t('Brouillon') }}
-            </AdminBadge>
-            <AdminBadge
-              v-if="dataset.archived"
-              :icon="RiLockLine"
-              size="sm"
-              type="secondary"
-            >
-              {{ $t('Archivé') }}
-            </AdminBadge>
-          </div>
           <div class="flex flex-col md:space-x-10 md:flex-row">
             <div class="flex-1 overflow-x-hidden">
+              <div class="flex gap-3 mb-2">
+                <AdminBadge
+                  v-if="dataset.deleted"
+                  :icon="RiDeleteBinLine"
+                  size="sm"
+                  type="secondary"
+                >
+                  {{ $t('Supprimé') }}
+                </AdminBadge>
+                <AdminBadge
+                  v-if="dataset.private"
+                  :icon="RiLockLine"
+                  size="sm"
+                  type="secondary"
+                >
+                  {{ $t('Brouillon') }}
+                </AdminBadge>
+                <AdminBadge
+                  v-if="dataset.archived"
+                  :icon="RiLockLine"
+                  size="sm"
+                  type="secondary"
+                >
+                  {{ $t('Archivé') }}
+                </AdminBadge>
+              </div>
               <h1 class="text-2xl text-gray-title font-extrabold mb-6">
                 {{ dataset.title }}
 
