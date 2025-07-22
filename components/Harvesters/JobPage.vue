@@ -130,7 +130,7 @@
               <Tooltip class="ml-auto">
                 <RiAlertLine class="size-3.5" />
                 <template #tooltip>
-                  {{ $t('Erreurs & Logs') }}
+                  {{ $t('Erreurs et logs') }}
                 </template>
               </Tooltip>
             </AdminTableTh>
@@ -191,7 +191,7 @@
     </div>
 
     <Modal
-      :title="t('Erreurs & Logs')"
+      :title="t('Erreurs et logs')"
       :opened="showItemErrors"
       size="lg"
       @close="showItemErrors = false"

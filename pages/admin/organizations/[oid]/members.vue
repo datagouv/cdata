@@ -161,12 +161,12 @@
           >
             <td>
               <p v-if="isMeAdmin()">
-                <NuxtLinkLocale
+                <CdataLink
                   :to="`/admin/users/${member.user.id}/profile`"
                   class="fr-text--bold fr-m-0"
                 >
                   {{ member.user.first_name }} {{ member.user.last_name }}
-                </NuxtLinkLocale>
+                </CdataLink>
               </p>
               <p
                 v-else
@@ -320,7 +320,7 @@ const url = computed(() => {
   return url.toString()
 })
 
-const { data: organization, status, refresh } = await useAPI<Organization>(url, { lazy: true })
+const { data: organization, status, refresh } = await useAPI<Organization>(url, { redirectOn404: true })
 const { data: membershipRequests, refresh: refreshMembershipRequests } = await useAPI<Array<PendingMembershipRequest>>(`/api/1/organizations/${currentOrganization.value?.id}/membership/`, {
   lazy: true,
   query: { status: 'pending' },
@@ -338,7 +338,7 @@ const isOrgAdmin = computed(() => isMeAdmin() || (organization && organization.v
 const newRole = ref<MemberRole | null>(null)
 const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })
 const rolesOptions = computed(() => {
-  if (!roles) return []
+  if (!roles.value) return []
 
   return roles.value.map(role => ({
     label: role.label,
@@ -348,7 +348,7 @@ const rolesOptions = computed(() => {
 const loading = ref(false)
 
 function getStatus(role: MemberRole): string {
-  return roles.value.find(memberRole => memberRole.id === role)?.label ?? role
+  return (roles.value || []).find(memberRole => memberRole.id === role)?.label ?? role
 }
 
 function getStatusType(role: MemberRole): AdminBadgeType {

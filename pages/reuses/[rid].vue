@@ -92,14 +92,14 @@
                 :size="32"
                 class="bg-white p-1 rounded-xs border border-gray-default object-contain"
               />
-              <NuxtLinkLocale
+              <CdataLink
                 class="link block"
                 :to="`/organizations/${reuse.organization.slug}/`"
               >
                 <OrganizationNameWithCertificate
                   :organization="reuse.organization"
                 />
-              </NuxtLinkLocale>
+              </CdataLink>
             </div>
             <div
               v-else-if="reuse.owner"
@@ -110,13 +110,13 @@
                 :size="24"
                 :rounded="true"
               />
-              <NuxtLinkLocale
+              <CdataLink
                 class="link block"
                 :to="`/users/${reuse.owner.slug}/`"
                 :external="true"
               >
                 {{ reuse.owner.first_name }} {{ reuse.owner.last_name }}
-              </NuxtLinkLocale>
+              </CdataLink>
             </div>
             <h1 class="!text-2xl !font-extrabold !mb-1">
               {{ reuse.title }}
@@ -178,7 +178,7 @@ import ReuseDetails from '~/datagouv-components/src/components/ReuseDetails.vue'
 const route = useRoute()
 
 const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
-const { data: reuse, status } = await useAPI<Reuse | null>(url)
+const { data: reuse, status } = await useAPI<Reuse>(url, { redirectOn404: true })
 
 const title = computed(() => reuse.value?.title)
 const robots = computed(() => reuse.value && !reuse.value.metrics.datasets && !reuse.value.metrics.datasets ? 'noindex, nofollow' : 'all')
@@ -190,8 +190,8 @@ useSeoMeta({
 
 onMounted(async () => {
   await redirectLegacyHashes([
-    { from: 'discussions', to: `/dataservices/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
-    { from: 'discussion', to: `/datasets/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+    { from: 'discussions', to: `/reuses/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+    { from: 'discussion', to: `/reuses/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
   ])
 })
 </script>

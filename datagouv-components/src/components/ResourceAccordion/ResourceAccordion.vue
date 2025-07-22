@@ -96,6 +96,7 @@
             rel="ugc nofollow noopener"
             new-tab
             size="xs"
+            external
           >
             {{ $t('Visiter') }}
           </BrandedButton>
@@ -128,6 +129,7 @@
             :icon="unavailable ? RiFileWarningLine : RiDownloadLine"
             size="xs"
             :aria-describedby="resourceTitleId"
+            external
           >
             <span class="sr-only">{{ t('Télécharger la liste au format ') }}</span>{{ format }}
           </BrandedButton>
@@ -174,9 +176,6 @@
             :key="tab.key"
             class="px-4"
           >
-            <div v-if="tab.key === 'data'">
-              <Preview :resource="resource" />
-            </div>
             <div v-if="tab.key === 'map'">
               <Pmtiles
                 v-if="hasPmtiles"
@@ -184,6 +183,28 @@
               />
               <MapContainer
                 v-if="ogcWms"
+                :resource="resource"
+              />
+            </div>
+            <div v-if="tab.key === 'data'">
+              <!-- Show JSON viewer for JSON files -->
+              <JsonPreview
+                v-if="resource.format && resource.format.toLowerCase() === 'json'"
+                :resource="resource"
+              />
+              <!-- Show PDF viewer for PDF files -->
+              <PdfPreview
+                v-else-if="resource.format && resource.format.toLowerCase() === 'pdf'"
+                :resource="resource"
+              />
+              <!-- Show XML viewer for XML files -->
+              <XmlPreview
+                v-else-if="resource.format && resource.format.toLowerCase() === 'xml'"
+                :resource="resource"
+              />
+              <!-- Show regular preview for other file types -->
+              <Preview
+                v-else
                 :resource="resource"
               />
             </div>
@@ -199,7 +220,7 @@
               v-if="tab.key === 'data-structure'"
             >
               <DataStructure
-                v-if="hasPreview"
+                v-if="hasTabularData"
                 :resource="resource"
               />
             </div>
@@ -296,7 +317,7 @@
             >
               <div>{{ t("Swagger généré automatiquement par {platform}. Ce swagger vous permet d'interroger les données par API en les filtrant par valeur de colonne.", { platform: config.name }) }}</div>
               <Swagger
-                v-if="hasPreview"
+                v-if="hasTabularData"
                 :url="`${config.tabularApiUrl}/api/resources/${props.resource.id}/swagger/`"
               />
             </div>
@@ -336,8 +357,11 @@ import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
 import Pmtiles from './Pmtiles.vue'
+import JsonPreview from './JsonPreview.vue'
+import PdfPreview from './PdfPreview.vue'
+import XmlPreview from './XmlPreview.vue'
 
-const GENERATED_FORMATS = ['parquet', 'pmtiles']
+const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 
 const props = withDefaults(defineProps<{
   dataset: Dataset | DatasetV2
@@ -360,11 +384,22 @@ const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
 
 const hasPreview = computed(() => {
+  // Determines if we should show the "Données" tab for previewable files (JSON, PDF, XML)
+  // Only show preview for local files, not remote ones due to CORS issues
+  // TODO: Once CORS issues are fixed for remote files, remove this check to allow remote preview
+  if (props.resource.filetype === 'remote') return false
+
+  // For JSON, PDF, and XML files, show preview
+  const format = props.resource.format?.toLowerCase()
+  return format === 'json' || format === 'pdf' || format === 'xml'
+})
+
+const hasTabularData = computed(() => {
+  // Determines if we should show the "Données" tab for tabular files AND the "Structure des données" tab (for tabular data structure)
   return config.tabularApiUrl
-    && props.resource.extras['analysis:parsing:finished_at']
+    && props.resource.extras['analysis:parsing:parsing_table']
     && !props.resource.extras['analysis:parsing:error']
     && (config.tabularAllowRemote || props.resource.filetype === 'file')
-    && !props.resource.extras['analysis:parsing:pmtiles_url'] // TODO: have a dedicated extra for tabular parsing
 })
 
 const hasPmtiles = computed(() => {
@@ -381,8 +416,8 @@ const generatedFormats = computed(() => {
   return GENERATED_FORMATS
     .filter(format => `analysis:parsing:${format}_url` in props.resource.extras)
     .map(format => ({
-      url: props.resource.extras[`analysis:parsing:${format}_url`],
-      size: props.resource.extras[`analysis:parsing:${format}_size`],
+      url: props.resource.extras[`analysis:parsing:${format}_url`] as string,
+      size: props.resource.extras[`analysis:parsing:${format}_size`] as number | undefined,
       format: format,
     }))
 })
@@ -402,26 +437,26 @@ const toggle = () => {
 const tabsOptions = computed(() => {
   const options = []
 
-  if (hasPreview.value) {
-    options.push({ key: 'data', label: t('Données') })
-  }
-
   if (hasPmtiles.value || ogcWms.value) {
     options.push({ key: 'map', label: t('Carte') })
+  }
+
+  if (hasTabularData.value || hasPreview.value) {
+    options.push({ key: 'data', label: t('Aperçu') })
   }
 
   if (props.resource.description) {
     options.push({ key: 'description', label: t('Description') })
   }
 
-  if (hasPreview.value) {
+  if (hasTabularData.value) {
     options.push({ key: 'data-structure', label: t('Structure des données') })
   }
 
   options.push({ key: 'metadata', label: t('Métadonnées') })
   options.push({ key: 'downloads', label: t('Téléchargements') })
 
-  if (hasPreview.value) {
+  if (hasTabularData.value) {
     options.push({ key: 'swagger', label: t('Swagger') })
   }
 

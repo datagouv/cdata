@@ -43,7 +43,7 @@ const { toast } = useToast()
 
 const route = useRoute()
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
-const { data: post, refresh } = await useAPI<Post>(url, { lazy: true })
+const { data: post, refresh } = await useAPI<Post>(url, { redirectOn404: true })
 const postForm = computed(() => postToForm(post.value))
 
 const loading = ref(false)

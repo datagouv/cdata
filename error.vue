@@ -3,12 +3,12 @@
     <div class="fr-container fr-py-9v">
       <div class="prose">
         <template v-if="error && error.statusCode === 404">
-          <h1>{{ $t('Error 404') }}</h1>
-          <p>{{ $t("The page you're looking for cannot be found.") }}</p>
+          <h1>{{ $t('Erreur 404') }}</h1>
+          <p>{{ $t("La page que vous recherchez est introuvable.") }}</p>
         </template>
         <template v-else>
           <h1>{{ $t('Erreur') }}</h1>
-          <p>{{ $t('Something did not work as expected.') }}</p>
+          <p>{{ $t('Quelque chose ne s\'est pas déroulé comme prévu.') }}</p>
 
           <p v-if="error">
             <strong>{{ error.message }}</strong>
@@ -30,7 +30,8 @@
 <script setup lang="ts">
 import { datagouv } from '@datagouv/components-next'
 import type { UseFetchFunction } from '@datagouv/components-next'
-import { NuxtLinkLocale, TextClamp } from '#components'
+import CdataLink from './components/CdataLink.vue'
+import { TextClamp } from '#components'
 
 const error = useError()
 
@@ -50,7 +51,7 @@ app.vueApp.use(datagouv, {
   datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
   customUseFetch: useAPI as UseFetchFunction, // Why this `as` is required?
   textClamp: TextClamp,
-  appLink: NuxtLinkLocale,
+  appLink: CdataLink,
 })
 
 useHeadSafe({

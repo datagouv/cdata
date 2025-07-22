@@ -166,7 +166,7 @@ const { currentOrganization } = useCurrentOwned()
 
 const route = useRoute()
 const url = computed(() => `/api/1/harvest/source/${route.params.id}`)
-const { data: harvester, refresh } = await useAPI<HarvesterSource>(url, { lazy: true })
+const { data: harvester, refresh } = await useAPI<HarvesterSource>(url, { redirectOn404: true })
 const job = ref<HarvesterJob | null>(null)
 watchEffect(async () => {
   if (!harvester.value) return

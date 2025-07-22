@@ -345,7 +345,7 @@ watchEffect(() => {
     params.organization = facets.value.organization?.id ?? undefined
   }
   params.is_restricted = facets.value.isRestricted
-  if (currentPage.value > 1) params.page = currentPage.value.toString()
+  if (currentPage.value >= 1) params.page = currentPage.value.toString()
   params.q = deboucedQuery.value ?? undefined
   params.sort = searchSort.value ?? null
   return params

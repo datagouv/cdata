@@ -75,6 +75,7 @@ export function getResourceFormatIcon(format: string): Component | null {
     case 'png':
     case 'jpg':
     case 'jpeg':
+    case 'svg':
       return Image
     default:
       return null
@@ -92,7 +93,7 @@ export const getResourceLabel = (type: ResourceType) => {
   const { t } = useI18n()
   switch (type) {
     case 'main':
-      return t('Fichier principal')
+      return t('Fichier principal') // TODO: manage the plural case
     case 'documentation':
       return t('Documentation')
     case 'update':

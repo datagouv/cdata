@@ -54,7 +54,7 @@ const { t } = useI18n()
 const config = useRuntimeConfig()
 const route = useRoute()
 const { $api } = useNuxtApp()
-const { organizations, currentOwnedId } = useCurrentOwned()
+const { organizations, setCurrentOrganization } = useCurrentOwned()
 const me = useMe()
 
 const steps = computed(() => ([
@@ -105,7 +105,7 @@ async function createOrganizationAndMoveToNextStep(logo_file: File | null) {
       }),
     })
     organizations.value[newOrganization.value.id] = newOrganization.value
-    currentOwnedId.value = { organization: newOrganization.value.id }
+    setCurrentOrganization(newOrganization.value)
     moveToNextStep = true
   }
   catch (e) {

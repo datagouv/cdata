@@ -95,6 +95,9 @@ export function resourceToForm(resource: Resource | CommunityResource, schemas: 
     schema: registeredSchema,
     schema_url: (registeredSchema || !resource.schema || !resource.schema.url) ? null : resource.schema.url,
 
+    checksum_type: resource.checksum?.type || null,
+    checksum_value: resource.checksum?.value || null,
+
     resource,
   } as ResourceForm
 
@@ -134,7 +137,8 @@ export function resourceToForm(resource: Resource | CommunityResource, schemas: 
 export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resource | CommunityResource {
   let schema = null as Schema | null
   if (form.schema) {
-    schema = form.schema
+    const latestVersion = form.schema.versions[form.schema.versions.length - 1]
+    schema = { name: form.schema.name, url: latestVersion.schema_url, version: latestVersion.version_name }
   }
   else if (form.schema_url) {
     schema = { name: null, url: form.schema_url, version: null }
@@ -145,8 +149,16 @@ export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resou
     title: form.title,
     type: form.type,
     description: form.description,
+
     schema,
   } as Resource
+
+  if (form.checksum_type && form.checksum_value) {
+    resource.checksum = {
+      type: form.checksum_type,
+      value: form.checksum_value,
+    }
+  }
 
   if (!form.filetype) {
     throw new Error('Cannot convert to API a ResourceForm without filetype information')
@@ -257,7 +269,7 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
     return resource
   }
   catch (e) {
-    const notificationMessage = $i18n.t('Failed to upload file {title}', { title: resourceForm.title })
+    const notificationMessage = $i18n.t('Échec du téléchargement du fichier {title}', { title: resourceForm.title })
     let formError = notificationMessage
     const fetchError = e as unknown as FetchError
     if ('data' in fetchError && 'message' in fetchError.data) {

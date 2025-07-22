@@ -90,7 +90,7 @@
           v-else
           class="fr-text--bold fr-my-3v"
         >
-          {{ t('No results') }}
+          {{ t('Pas de résultats') }}
         </p>
         <BrandedButton
           color="primary"
@@ -101,7 +101,7 @@
       </template>
       <template v-else>
         <p class="fr-text--bold fr-my-3v">
-          {{ t(`You haven't published a dataset yet`) }}
+          {{ t(`Vous n'avez pas encore publié de jeu de données`) }}
         </p>
         <AdminPublishButton type="dataset" />
       </template>
@@ -118,7 +118,6 @@ import { RiDownloadLine, RiSearchLine } from '@remixicon/vue'
 import TransferRequestList from '../TransferRequestList.vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
-import DatasetsMetrics from './DatasetsMetrics.vue'
 import AdminDatasetsTable from '~/components/AdminTable/AdminDatasetsTable/AdminDatasetsTable.vue'
 import type { DatasetSortedBy, PaginatedArray, SortDirection } from '~/types/types'
 import type { Activity } from '~/types/activity'

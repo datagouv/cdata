@@ -55,7 +55,7 @@ import { bannerActionTypeKey } from './BannerAction.vue'
 type ColorType = 'primary' | 'primary-soft' | 'primary-softer' | 'secondary' | 'secondary-softer' | 'warning' | 'danger' | 'tertiary'
 
 const props = withDefaults(defineProps<{
-  size?: '2xs' | 'xs' | 'sm' | 'lg'
+  size?: '2xs' | 'xs' | 'sm' | 'lg' | 'xl'
   color?: ColorType
   disabled?: boolean
   loading?: boolean
@@ -123,6 +123,7 @@ const colors = computed(() => {
 
 const sizes = computed(() => {
   return {
+    'xl': `text-xl h-16 ${hasText.value ? 'px-4 space-x-2' : 'w-16 px-3'}`,
     'lg': `text-lg h-12 ${hasText.value ? 'px-4 space-x-2' : 'w-12 px-3'}`,
     'sm': `text-sm h-10 leading-none ${hasText.value ? 'px-4 space-x-1' : 'w-10 px-2.5'}`,
     'xs': `text-xs h-8 leading-[0.875rem] ${hasText.value ? 'px-4 space-x-1' : 'w-8 px-2'}`,
@@ -139,7 +140,8 @@ const removePaddingsIfNoBorders = computed(() => {
   if (props.keepMarginsEvenWithoutBorders) return ''
 
   return {
-    'lg': hasText.value ? '-mx-6' : '-mx-3',
+    'xl': hasText.value ? '-mx-4' : '-mx-3',
+    'lg': hasText.value ? '-mx-4' : '-mx-3',
     'sm': hasText.value ? '-mx-4' : '-mx-2.5',
     'xs': hasText.value ? '-mx-4' : '-mx-2',
     '2xs': '-m-1',
@@ -148,6 +150,7 @@ const removePaddingsIfNoBorders = computed(() => {
 
 const iconSize = computed(() => {
   return {
+    'xl': (hasBorders.value || hasText.value) ? 'size-8' : 'size-10',
     'lg': (hasBorders.value || hasText.value) ? 'size-6' : 'size-8',
     'sm': (hasBorders.value || hasText.value) ? 'size-4' : 'size-6',
     'xs': (hasBorders.value || hasText.value) ? 'size-3' : 'size-5',

@@ -204,7 +204,7 @@
               </div>
               <div>
                 <StatBox
-                  :title="$t('Views')"
+                  :title="$t('Vues')"
                   :data="metricsViews"
                   size="sm"
                   type="line"
@@ -298,7 +298,7 @@ const route = useRoute()
 const { formatDate } = useFormatDate()
 
 const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
-const { data: dataservice, status } = await useAPI<Dataservice>(url)
+const { data: dataservice, status } = await useAPI<Dataservice>(url, { redirectOn404: true })
 
 const title = computed(() => dataservice.value?.title)
 
@@ -341,7 +341,7 @@ watchEffect(async () => {
 onMounted(async () => {
   await redirectLegacyHashes([
     { from: 'discussions', to: `/dataservices/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
-    { from: 'discussion', to: `/datasets/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+    { from: 'discussion', to: `/dataservices/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
   ])
 })
 </script>

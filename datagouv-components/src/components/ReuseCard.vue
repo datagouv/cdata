@@ -4,7 +4,7 @@
       <div class="order-1 flex flex-col px-4 py-1 h-full -mx-8">
         <h3 class="font-bold text-base mt-1 mb-0 truncate">
           <AppLink
-            class="text-gray-title"
+            class="text-gray-title overflow-hidden"
             :to="reuseUrl"
           >
             {{ reuse.title }}
@@ -18,7 +18,7 @@
             >
               <AppLink
                 v-if="organizationUrl"
-                class="fr-link block"
+                class="link overflow-hidden"
                 :to="organizationUrl"
               >
                 <OrganizationNameWithCertificate
@@ -91,7 +91,7 @@ const props = defineProps<{
   * The reuseUrl is a route location object to allow Vue Router to navigate to the details of a reuse.
   * It is used as a separate prop to allow other sites using the package to define their own reuse pages.
   */
-  reuseUrl: RouteLocationRaw
+  reuseUrl?: RouteLocationRaw
 
   /**
   * The organizationUrl is an optional route location object to allow Vue Router to navigate to the details of the organization linked to tha reuse.
@@ -104,4 +104,6 @@ const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
 
 const ownerName = computed(() => getOwnerName(props.reuse))
+
+const reuseUrl = computed(() => props.reuseUrl || props.reuse.page)
 </script>

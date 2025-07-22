@@ -102,6 +102,18 @@
                           </li>
                           <li>
                             <BrandedButton
+                              v-if="config.public.enableCdataSecurityViews"
+                              type="button"
+                              :icon="RiLogoutBoxRLine"
+                              color="primary-softer"
+                              class="w-full"
+                              size="lg"
+                              @click="logout"
+                            >
+                              {{ $t('Se déconnecter') }}
+                            </BrandedButton>
+                            <BrandedButton
+                              v-else
                               :href="`${config.public.apiBase}/logout`"
                               :icon="RiLogoutBoxRLine"
                               :external="true"
@@ -119,7 +131,7 @@
                         >
                           <li>
                             <BrandedButton
-                              href="/login"
+                              :href="{ path: '/login', query: { next: route.fullPath } }"
                               color="primary-softer"
                               size="lg"
                               :external="true"
@@ -154,7 +166,7 @@
                             :key="`${link.link}-${$route.path}`"
                             class="fr-nav__item"
                           >
-                            <NuxtLinkLocale
+                            <CdataLink
                               v-if="link.link"
                               class="fr-nav__link"
                               :to="link.link"
@@ -163,7 +175,7 @@
                               :aria-current="getAriaCurrent(localePath(link.link))"
                             >
                               {{ link.label }}
-                            </NuxtLinkLocale>
+                            </CdataLink>
                             <ClientOnly v-else-if="link.items">
                               <Disclosure>
                                 <DisclosureButton
@@ -180,7 +192,7 @@
                                       :key="item.label"
                                     >
                                       <DisclosureButton
-                                        :as="NuxtLinkLocale"
+                                        :as="CdataLink"
                                         class="fr-nav__link"
                                         :to="item.link"
                                         :external="true"
@@ -215,7 +227,7 @@
                                       v-for="item in filteredPublishMenu"
                                       :key="item.link"
                                     >
-                                      <NuxtLinkLocale
+                                      <CdataLink
                                         class="fr-nav__link flex items-center space-x-1"
                                         :to="item.link"
                                       >
@@ -224,7 +236,7 @@
                                           class="inline size-4"
                                         />
                                         <span>{{ item.label }}</span>
-                                      </NuxtLinkLocale>
+                                      </CdataLink>
                                     </li>
                                   </ul>
                                 </DisclosurePanel>
@@ -277,9 +289,20 @@
                   </li>
                   <li>
                     <BrandedButton
+                      v-if="config.public.enableCdataSecurityViews"
+                      type="button"
+                      color="primary-softer"
+                      :icon="RiLogoutBoxRLine"
+                      @click="logout"
+                    >
+                      {{ $t('Se déconnecter') }}
+                    </BrandedButton>
+                    <BrandedButton
+                      v-else
                       :href="`${config.public.apiBase}/logout`"
                       color="primary-softer"
                       :icon="RiLogoutBoxRLine"
+                      external
                     >
                       {{ $t('Se déconnecter') }}
                     </BrandedButton>
@@ -293,7 +316,7 @@
                 <li>
                   <BrandedButton
                     color="primary-softer"
-                    href="/login"
+                    :href="{ path: '/login', query: { next: route.fullPath } }"
                     :external="true"
                     :icon="RiLockLine"
                   >
@@ -341,7 +364,7 @@
               :key="`${link.link}-${$route.path}`"
               class="fr-nav__item"
             >
-              <NuxtLinkLocale
+              <CdataLink
                 v-if="link.link"
                 class="fr-nav__link"
                 :to="link.link"
@@ -350,7 +373,7 @@
                 :aria-current="getAriaCurrent(localePath(link.link))"
               >
                 {{ link.label }}
-              </NuxtLinkLocale>
+              </CdataLink>
               <ClientOnly v-else-if="link.items">
                 <Disclosure>
                   <DisclosureButton
@@ -366,13 +389,13 @@
                         v-for="item in link.items"
                         :key="item.label"
                       >
-                        <NuxtLinkLocale
+                        <CdataLink
                           class="fr-nav__link"
                           :to="item.link"
                           :external="true"
                         >
                           {{ item.label }}
-                        </NuxtLinkLocale>
+                        </CdataLink>
                       </li>
                     </ul>
                   </DisclosurePanel>
@@ -404,7 +427,7 @@
                         v-for="item in filteredPublishMenu"
                         :key="item.link"
                       >
-                        <NuxtLinkLocale
+                        <CdataLink
                           class="fr-nav__link flex items-center space-x-1"
                           :to="item.link"
                           @click="close()"
@@ -414,7 +437,7 @@
                             class="size-4 -mt-1"
                           />
                           <span>{{ item.label }}</span>
-                        </NuxtLinkLocale>
+                        </CdataLink>
                       </li>
                     </ul>
                   </PopoverPanel>
@@ -430,9 +453,10 @@
 
 <script setup lang="ts">
 import { BrandedButton, getUserAvatar } from '@datagouv/components-next'
-import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiGovernmentLine, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiGitPullRequestLine } from '@remixicon/vue'
+import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiGovernmentLine, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
-import { NuxtImg, NuxtLinkLocale } from '#components'
+import CdataLink from '../CdataLink.vue'
+import { NuxtImg } from '#components'
 import SiteLogo from '~/components/SiteLogo.vue'
 import { useMaybeMe } from '~/utils/auth'
 
@@ -446,8 +470,7 @@ const localePath = useLocalePath()
 const me = useMaybeMe()
 const currentRoute = useRoute()
 const router = useRouter()
-
-const searchInputId = useId()
+const route = useRoute()
 
 const menu = [
   { label: t('Données'), link: '/datasets/' },
@@ -482,4 +505,33 @@ function getAriaCurrent(link: string) {
   const routesInPath = router.getRoutes().map(route => route.path).filter(path => currentRoute.path.startsWith(path))
   return routesInPath.includes(link)
 }
+
+const { $api } = useNuxtApp()
+const token = useToken()
+const logout = async () => {
+  token.value = null
+  refreshCookie('token')
+
+  await $api('/fr/logout/', {
+    method: 'POST',
+  })
+
+  me.value = null
+  await navigateTo('/')
+}
+
+const { toast } = useToast()
+onMounted(() => {
+  const FLASH_MESSAGES: Record<string, { type: 'success' | 'error', text: string }> = {
+    connected: { type: 'success', text: t('Vous êtes maintenant connecté.') },
+    change_email_confirmed: { type: 'success', text: t('Votre nouvelle adresse email est maintenant confirmée.') },
+    change_email_expired: { type: 'error', text: t('Le code de vérification de votre adresse email a expiré, un nouveau mail vous a été envoyé.') },
+    change_email_invalid: { type: 'error', text: t('Le code de vérification de votre adresse email est incorrect.') },
+  }
+
+  if (route.query.flash) {
+    const message = FLASH_MESSAGES[route.query.flash as string] || null
+    if (message) toast[message.type](message.text)
+  }
+})
 </script>

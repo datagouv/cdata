@@ -91,15 +91,15 @@
                   </a>
                 </li>
                 <li>
-                  <NuxtLinkLocale
+                  <CdataLink
                     class="link !inline-flex after:!content-none mx-2 !p-2 min-h-10 mh-10 mw-10 !no-underline hover:!bg-gray-some"
                     :title="$t('RSS - nouvel onglet')"
-                    to="datasets/recent.atom"
+                    to="/datasets/recent.atom"
                     :external="true"
                     target="_blank"
                   >
                     <RiRssLine />
-                  </NuxtLinkLocale>
+                  </CdataLink>
                 </li>
               </ul>
             </div>
@@ -139,13 +139,13 @@
                   v-for="item in platformLinks"
                   :key="item.label"
                 >
-                  <NuxtLinkLocale
+                  <CdataLink
                     class="fr-footer__top-link"
                     :to="item.link"
                     :external="item.external"
                   >
                     {{ item.label }}
-                  </NuxtLinkLocale>
+                  </CdataLink>
                 </li>
               </ul>
             </div>
@@ -245,13 +245,13 @@
               :key="item.label"
               class="fr-footer__bottom-item"
             >
-              <NuxtLinkLocale
+              <CdataLink
                 :to="item.link"
                 :external="item.external ?? false"
                 class="fr-footer__bottom-link"
               >
                 {{ item.label }}
-              </NuxtLinkLocale>
+              </CdataLink>
             </li>
           </ul>
           <div class="fr-footer__bottom-copy">
@@ -294,7 +294,7 @@ if (config.public.csvDatasetId) {
   openDataLinks.push({ label: t('Catalogue de données'), link: `/datasets/${config.public.csvDatasetId}` })
 }
 
-openDataLinks.push({ label: t(`'Suivre l'ouverture des données`), link: 'https://ouverture.data.gouv.fr' })
+openDataLinks.push({ label: t(`Suivre l'ouverture des données`), link: 'https://ouverture.data.gouv.fr' })
 openDataLinks.push({ label: t('Portail des données européennes'), link: 'https://data.europa.eu' })
 
 const platformLinks: Array<Link> = [

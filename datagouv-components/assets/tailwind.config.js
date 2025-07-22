@@ -12,7 +12,7 @@ export default {
   ],
   theme: {
     extend: {
-      typography: (theme) => ({
+      typography: theme => ({
         neutral: {
           css: {
             '--tw-prose-bullets': theme('colors.neutral[800]'),

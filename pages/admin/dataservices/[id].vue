@@ -34,7 +34,7 @@
       </div>
 
       <div class="text-sm text-mentionGrey space-y-1.5 mb-5">
-        <div class="space-x-1">
+        <p class="space-x-1">
           <span>{{ $t('Statut') }}:</span>
           <AdminBadge
             size="xs"
@@ -42,8 +42,8 @@
           >
             {{ getDataserviceStatus(dataservice).label }}
           </AdminBadge>
-        </div>
-        <div class="space-x-1">
+        </p>
+        <p class="space-x-1">
           <RiBarChartBoxLine class="inline size-3" />
           <span>{{ $t('Statistiques:') }}</span>
           <span class="space-x-2">
@@ -66,7 +66,24 @@
               </template>
             </Tooltip>
           </span>
-        </div>
+        </p>
+        <p
+          v-if="activities && activities.data.length"
+          class="space-x-1"
+        >
+          <RiCalendarLine class="inline size-3" />
+          <span>{{ $t('Dernière activité :') }}</span>
+          <span class="inline-flex items-center">
+            <AvatarWithName
+              class="fr-ml-1v"
+              :user="activities.data[0].actor"
+            />
+          </span>
+          &mdash;
+          <span>{{ getActivityTranslation(activities.data[0]) }}</span>
+          &mdash;
+          <span class="text-gray-medium">{{ formatDate(activities.data[0].created_at) }}</span>
+        </p>
       </div>
 
       <TabLinks
@@ -88,18 +105,27 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, summarize } from '@datagouv/components-next'
+import { AvatarWithName, BrandedButton, summarize, useFormatDate } from '@datagouv/components-next'
 import type { Dataservice } from '@datagouv/components-next'
-import { RiBarChartBoxLine, RiEyeLine, RiStarLine } from '@remixicon/vue'
+import { RiBarChartBoxLine, RiCalendarLine, RiEyeLine, RiStarLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
+import type { Activity } from '~/types/activity'
+import type { PaginatedArray } from '~/types/types'
 
 const { t } = useI18n()
 
 const route = useRoute()
 const { getDataserviceStatus } = useDataserviceStatus()
+const { formatDate } = useFormatDate()
 const me = useMe()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
-const { data: dataservice } = await useAPI<Dataservice>(url, { lazy: true })
+const { data: dataservice } = await useAPI<Dataservice>(url, { redirectOn404: true })
+const { data: activities } = await useAPI<PaginatedArray<Activity>>('/api/1/activity/', {
+  params: {
+    related_to: route.params.id,
+    sort: '-created_at',
+  },
+})
 </script>

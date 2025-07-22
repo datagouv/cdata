@@ -49,7 +49,6 @@ export default defineNuxtConfig({
     public: {
       i18n: {
         baseUrl: 'https://www.data.gouv.fr/', // NUXT_PUBLIC_I18N_BASE_URL
-        defaultLocale: 'en', // NUXT_PUBLIC_I18N_DEFAULT_LOCALE
       },
 
       commitId: undefined,
@@ -84,6 +83,7 @@ export default defineNuxtConfig({
       },
       apiDocExternalLink: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/api/reference',
       guidesUrl: 'https://guides.data.gouv.fr/',
+      guidesCreateAccount: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/creer-un-compte-utilisateur-et-rejoindre-une-organisation',
       guidesHarvestingUrl: 'https://guides.data.gouv.fr/guide-data.gouv.fr/moissonnage',
       guidesCommunityResources: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/ressource-communautaire',
       supportUrl: 'https://support.data.gouv.fr/',
@@ -96,6 +96,10 @@ export default defineNuxtConfig({
       homepageRightNow: {
         title: 'Données relatives aux Énergies',
         url: '/pages/donnees-energie',
+      },
+
+      proconnect: {
+        homepage: 'https://agentconnect.gouv.fr/',
       },
 
       datasetPublishingGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
@@ -120,6 +124,10 @@ export default defineNuxtConfig({
       resourceFileUploadChunk: 2 * 1000 * 1000,
       maxSortableFiles: 50,
 
+      captcheta: {
+        style: 'captchaFR',
+      },
+
       licenses: {
         'Autorités administratives': [
           { value: 'lov2', recommended: true, code: 'etalab-2.0' },
@@ -142,6 +150,7 @@ export default defineNuxtConfig({
         ],
       },
 
+      enableCdataSecurityViews: false,
       changeEmailPage: 'change-email',
       changePasswordPage: 'change',
 
@@ -212,6 +221,10 @@ export default defineNuxtConfig({
     baseUrl: '',
     locales: [
       {
+        code: 'fr',
+        language: 'fr',
+      },
+      {
         code: 'en',
         language: 'en',
       },
@@ -219,14 +232,12 @@ export default defineNuxtConfig({
         code: 'es',
         language: 'es',
       },
-      {
-        code: 'fr',
-        language: 'fr',
-      },
     ],
     lazy: true,
-    strategy: 'prefix',
+    detectBrowserLanguage: false,
+    strategy: 'no_prefix',
     trailingSlash: true,
+    defaultLocale: 'fr',
   },
   image: {
     screens: {

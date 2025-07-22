@@ -20,7 +20,7 @@
           <thead>
             <tr>
               <AdminTableTh scope="col">
-                {{ $t("Job ID") }}
+                {{ $t("ID de tâche") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
                 {{ $t("Statut") }}
@@ -96,12 +96,12 @@
             >
               <td>
                 <AdminContentWithTooltip>
-                  <NuxtLinkLocale
+                  <CdataLink
                     class="fr-link fr-reset-link"
                     :href="getHarvesterJobAdminUrl(harvester, job)"
                   >
                     {{ job.id }}
-                  </NuxtLinkLocale>
+                  </CdataLink>
                 </AdminContentWithTooltip>
               </td>
               <td>
@@ -177,7 +177,7 @@ const route = useRoute()
 const { formatDate } = useFormatDate()
 
 const sourceUrl = computed(() => `/api/1/harvest/source/${route.params.id}`)
-const { data: harvester } = await useAPI<HarvesterSource>(sourceUrl, { lazy: true })
+const { data: harvester } = await useAPI<HarvesterSource>(sourceUrl, { redirectOn404: true })
 
 const jobsUrl = computed(() => `/api/1/harvest/source/${route.params.id}/jobs`)
 const jobsParams = computed(() => {

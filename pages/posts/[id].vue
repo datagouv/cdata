@@ -87,7 +87,7 @@ const route = useRoute()
 const { formatDate } = useFormatDate()
 
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
-const { data: post } = await useAPI<Post>(url)
+const { data: post } = await useAPI<Post>(url, { redirectOn404: true })
 
 const name = computed(() => post.value?.name)
 const robots = computed(() => !post.value?.published ? 'noindex, nofollow' : 'all')

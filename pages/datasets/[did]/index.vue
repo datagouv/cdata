@@ -99,6 +99,14 @@ const pageSize = ref(10)
 const pageByResourceType: Array<Ref<number>> = RESOURCE_TYPE.map(() => ref(1))
 const searchByResourceType: Array<Ref<string>> = RESOURCE_TYPE.map(() => ref(''))
 
+watch(searchByResourceType, (newQueries, oldQueries) => {
+  for (const index in newQueries) {
+    if (newQueries[index] != oldQueries[index]) {
+      pageByResourceType[index].value = 1
+    }
+  }
+})
+
 const queryParamsByResourceType = RESOURCE_TYPE.map((type, index) => {
   return computed(() => ({
     type,

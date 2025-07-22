@@ -28,6 +28,7 @@
       :by="compareTwoOptions"
       :aria-describedby="ariaDescribedBy"
       :disabled="loading"
+      nullable
     >
       <div class="relative mt-1">
         <div

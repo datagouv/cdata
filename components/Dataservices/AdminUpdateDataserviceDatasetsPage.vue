@@ -26,7 +26,7 @@ const { toast } = useToast()
 
 const route = useRoute()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
-const { data: dataservice } = await useAPI<Dataservice>(url)
+const { data: dataservice } = await useAPI<Dataservice>(url, { redirectOn404: true })
 const datasets = ref<Array<Dataset | DatasetV2 | DatasetSuggest>>([])
 const datasetsPage = ref<PaginatedArray<DatasetV2> | null>(null)
 watchEffect(async () => {

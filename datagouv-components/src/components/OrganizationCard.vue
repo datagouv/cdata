@@ -12,14 +12,15 @@
         >
       </div>
       <p class="mb-0.5 font-bold">
-        <NuxtLinkLocale
+        <AppLink
           :to="`/organizations/${organization.slug}`"
+          class="overflow-hidden"
         >
           <OrganizationNameWithCertificate
             :show-type="false"
             :organization
           />
-        </NuxtLinkLocale>
+        </AppLink>
       </p>
       <div class="mb-2 flex flex-wrap items-center">
         <OwnerType
@@ -57,6 +58,7 @@ import { getOrganizationType } from '../functions/organizations'
 import type { Organization } from '../types/organizations'
 import OwnerType from './OwnerType.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
+import AppLink from './AppLink.vue'
 
 const props = defineProps<{
   organization: Organization

@@ -18,8 +18,7 @@ export default defineSitemapEventHandler(async () => {
         p => p.type === 'blob' && p.path.startsWith('pages/') && (p.path.endsWith('.html') || p.path.endsWith('.md')),
       )
       .map(p => ({
-        // TODO: remove i18n defaultLocale when nore more used as prefix
-        loc: `/${config.public.i18n.defaultLocale}/${p.path.slice(0, p.path.lastIndexOf('.'))}/`,
+        loc: `/${p.path.slice(0, p.path.lastIndexOf('.'))}/`,
         _sitemap: 'pages',
       } satisfies SitemapUrl))
   })
