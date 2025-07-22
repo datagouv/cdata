@@ -206,6 +206,7 @@
               as="a"
               :href="`${config.public.apiBase}/${config.public.changeEmailPage}`"
               :icon="RiEditLine"
+              external
             >
               {{ $t(`Changer d'adresse email`) }}
             </BrandedButton>
@@ -243,6 +244,7 @@
               as="a"
               :href="`${config.public.apiBase}/${config.public.changePasswordPage}`"
               :icon="RiEditLine"
+              external
             >
               {{ $t('Changer de mot de passe') }}
             </BrandedButton>

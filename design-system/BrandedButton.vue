@@ -46,10 +46,40 @@
         </div>
       </div>
     </div>
+
+    <div class="space-y-4">
+      <BrandedButton
+        class="block"
+        href="http://dev.local:3000/datasets"
+      >
+        To http://dev.local:3000/datasets
+      </BrandedButton>
+      <BrandedButton
+        class="block"
+        href="http://dev.local:3000/datasets"
+        external
+      >
+        To http://dev.local:3000/datasets as external
+      </BrandedButton>
+      <CdataLink
+        class="block"
+        href="http://dev.local:3000/datasets"
+      >
+        To http://dev.local:3000/datasets
+      </CdataLink>
+      <CdataLink
+        class="block"
+        href="http://dev.local:3000/datasets"
+        external
+      >
+        To http://dev.local:3000/datasets as external
+      </CdataLink>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
 import { RiLightbulbFlashLine } from '@remixicon/vue'
+import CdataLink from '~/components/CdataLink.vue'
 </script>

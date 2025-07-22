@@ -16,9 +16,17 @@
     >
       <RiErrorWarningLine class="shink-0 size-6" />
       <span>{{ fileSizeBytes
-        ? $t("Fichier XML trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le depuis l'onglet Téléchargements.")
-        : $t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le depuis l'onglet Téléchargements.")
+        ? $t("Fichier XML trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
+        : $t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
       }}</span>
+    </SimpleBanner>
+    <SimpleBanner
+      v-else-if="error === 'network'"
+      type="warning"
+      class="flex items-center space-x-2"
+    >
+      <RiErrorWarningLine class="shink-0 size-6" />
+      <span>{{ $t("Ce fichier XML ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
     </SimpleBanner>
     <SimpleBanner
       v-else-if="error"
@@ -53,7 +61,7 @@ const config = useComponentsConfig()
 
 const xmlData = ref<string | null>(null)
 const loading = ref(false)
-const error = ref(false)
+const error = ref<string | null>(null)
 const fileTooLarge = ref(false)
 
 const fileSizeBytes = computed(() => {
@@ -99,10 +107,10 @@ const fetchXmlData = async () => {
   }
 
   loading.value = true
-  error.value = false
+  error.value = null
 
   try {
-    const response = await fetch(props.resource.latest) // For production
+    const response = await fetch(props.resource.latest)
     // const response = await fetch('/test-data.xml') // For testing locally without CORS issues
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
@@ -114,7 +122,13 @@ const fetchXmlData = async () => {
   }
   catch (err) {
     console.error('Error loading XML:', err)
-    error.value = true
+
+    if (err instanceof TypeError) {
+      error.value = 'network'
+    } else {
+      error.value = 'generic'
+    }
+
     xmlData.value = null
   }
   finally {
