@@ -147,7 +147,7 @@ function selectActiveChoice(e: Event) {
 }
 
 async function submit(question: QuestionWithSegment) {
-  if (!validate()) {
+  if (!await validate()) {
     return
   }
   loading.value = true

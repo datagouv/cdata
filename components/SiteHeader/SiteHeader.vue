@@ -145,7 +145,7 @@
                             <BrandedButton
                               color="primary-softer"
                               size="lg"
-                              href="/register"
+                              :href="{ path: '/register', query: { next: route.fullPath } }"
                               :external="true"
                               class="w-full"
                               :icon="RiAccountCircleLine"
@@ -302,6 +302,7 @@
                       :href="`${config.public.apiBase}/logout`"
                       color="primary-softer"
                       :icon="RiLogoutBoxRLine"
+                      external
                     >
                       {{ $t('Se déconnecter') }}
                     </BrandedButton>
@@ -325,7 +326,7 @@
                 <li>
                   <BrandedButton
                     color="primary-softer"
-                    href="/register"
+                    :href="{ path: '/register', query: { next: route.fullPath } }"
                     :external="true"
                     :icon="RiAccountCircleLine"
                   >

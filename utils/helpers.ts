@@ -18,12 +18,16 @@ export function useAbsoluteUrlToRelative() {
   }
 }
 
+function trimEndSlash(url: string): string {
+  return url.endsWith('/') ? url.slice(0, -1) : url
+}
+
 export function useIsCurrentUrl() {
   const absoluteUrlToRelative = useAbsoluteUrlToRelative()
   const route = useRoute()
 
   return (url: string): boolean => {
-    return absoluteUrlToRelative(url) === route.fullPath
+    return trimEndSlash(absoluteUrlToRelative(url)) === trimEndSlash(route.fullPath)
   }
 }
 

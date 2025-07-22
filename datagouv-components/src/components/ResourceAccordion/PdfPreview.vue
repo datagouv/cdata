@@ -2,7 +2,7 @@
   <div class="text-xs">
     <div v-if="pdfData">
       <PDF
-        :src="props.resource.url"
+        :src="props.resource.latest"
         :show-progress="true"
         progress-color="#0063cb"
         :show-page-tooltip="true"
@@ -35,9 +35,17 @@
     >
       <RiErrorWarningLine class="shink-0 size-6" />
       <span>{{ fileSizeBytes
-        ? $t("Fichier PDF trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le depuis l'onglet Téléchargements.")
-        : $t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le depuis l'onglet Téléchargements.")
+        ? $t("Fichier PDF trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
+        : $t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
       }}</span>
+    </SimpleBanner>
+    <SimpleBanner
+      v-else-if="error === 'network'"
+      type="warning"
+      class="flex items-center space-x-2"
+    >
+      <RiErrorWarningLine class="shink-0 size-6" />
+      <span>{{ $t("Ce fichier PDF ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
     </SimpleBanner>
     <SimpleBanner
       v-else-if="error"
@@ -71,7 +79,7 @@ const config = useComponentsConfig()
 
 const pdfData = ref<boolean>(false)
 const loading = ref(false)
-const error = ref(false)
+const error = ref<string | null>(null)
 const fileTooLarge = ref(false)
 
 const fileSizeBytes = computed(() => {
@@ -109,11 +117,12 @@ const loadPdf = async () => {
   }
 
   loading.value = true
-  error.value = false
+  error.value = null
 
   try {
     // Test if the PDF URL is accessible
-    const response = await fetch(props.resource.url, { method: 'HEAD' })
+    const response = await fetch(props.resource.latest, { method: 'HEAD' })
+    // const response = await fetch('/test-data.pdf') // For testing locally without CORS issues
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -124,7 +133,14 @@ const loadPdf = async () => {
   }
   catch (err) {
     console.error('Error testing PDF URL:', err)
-    error.value = true
+
+    if (err instanceof TypeError) {
+      error.value = 'network'
+    }
+    else {
+      error.value = 'generic'
+    }
+
     pdfData.value = false
   }
   finally {
@@ -151,7 +167,14 @@ const handlePdfInit = (pdf: unknown) => {
 
 const handleError = (err: unknown) => {
   console.error('PDF loading error:', err)
-  error.value = true
+
+  if (err instanceof TypeError) {
+    error.value = 'network'
+  }
+  else {
+    error.value = 'generic'
+  }
+
   pdfData.value = false
 }
 

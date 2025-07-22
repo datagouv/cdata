@@ -329,8 +329,8 @@ watchEffect(() => {
   form.value.filters = form.value.filters.filter(({ key }) => !backendInfo.value || backendInfo.value.filters.find(filter => filter.key === key))
 })
 
-function submit() {
-  if (validate()) {
+async function submit() {
+  if (await validate()) {
     emit('submit')
   }
 };
