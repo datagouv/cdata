@@ -125,7 +125,8 @@ const fetchXmlData = async () => {
 
     if (err instanceof TypeError) {
       error.value = 'network'
-    } else {
+    }
+    else {
       error.value = 'generic'
     }
 

@@ -348,7 +348,6 @@
           <LinkedToAccordion
             class="fr-fieldset__element"
             :accordion="contactPointAccordionId"
-            @blur="touch('contact_points')"
           >
             <ContactPointSelect
               v-for="(contact_point, index) in form.contact_points"
@@ -366,7 +365,7 @@
               :show-attributions="harvested"
             />
             <BrandedButton
-              class="mt-3"
+              class="mt-4"
               type="button"
               color="primary-soft"
               size="xs"

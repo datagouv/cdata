@@ -2,8 +2,10 @@
   <div>
     <div>
       <SearchableSelect
+        ref="contactSelect"
         v-model="contact"
         :options="contactsWithNewOption"
+        :suggest="suggestContactPoint"
         :label="showAttributions ? t(`Choisissez l'attribution avec laquelle vous voulez publier`) : t('Choisissez un point de contact')"
         :placeholder="showAttributions ? t('Choisissez une attribution') : t('Sélectionner un contact')"
         :display-value="(option) => 'id' in option ? (option.name || option.email || $t('Inconnu')) : (showAttributions ? t('Nouvelle attribution') : t('Nouveau point de contact'))"
@@ -43,8 +45,8 @@
       </SearchableSelect>
     </div>
     <div
-      v-if="contact && !('id' in contact)"
-      class="fr-fieldset__element grid grid-cols-2 gap-3 mt-2"
+      v-if="showForm"
+      class="p-3 bg-gray-some grid grid-cols-2 gap-3 mt-2"
     >
       <SelectGroup
         v-if="showAttributions"
@@ -75,11 +77,11 @@
         class="mb-0"
         type="email"
         :label="t('E-mail')"
-        :placeholder="$t('contact@organisation.org')"
+        placeholder="contact@organisation.org"
         :has-error="!!getFirstError('email')"
         :has-warning="!!getFirstWarning('email')"
         :error-text="getFirstError('email')"
-        @blur="touch('email')"
+        @blur="touchEmailAndForm"
       />
       <InputGroup
         v-model="newContactForm.contact_form"
@@ -90,8 +92,21 @@
         :has-error="!!getFirstError('contact_form')"
         :has-warning="!!getFirstWarning('contact_form')"
         :error-text="getFirstError('contact_form')"
-        @blur="touch('contact_form')"
+        @blur="touchEmailAndForm"
       />
+      <div>
+        <BrandedButton
+          class="mt-3"
+          type="button"
+          color="primary"
+          size="xs"
+          :icon="RiSaveLine"
+          :loading="isLoading"
+          @click="save"
+        >
+          {{ t('Enregistrer') }}
+        </BrandedButton>
+      </div>
     </div>
     <div
       v-else
@@ -128,7 +143,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { Organization } from '@datagouv/components-next'
+import { BrandedButton, type Organization } from '@datagouv/components-next'
+import { RiSaveLine } from '@remixicon/vue'
 import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
 import type { ContactPoint, ContactPointInForm, NewContactPoint, PaginatedArray } from '~/types/types'
@@ -145,18 +161,24 @@ const props = defineProps<{
 type ContactType = { id: string, label: string }
 
 const { t } = useI18n()
+const { $api } = useNuxtApp()
+const { isLoading, start, finish } = useLoadingIndicator()
 
-const { form: newContactForm, getFirstError, getFirstWarning, touch } = useForm({
+const contactSelectRef = useTemplateRef('contactSelect')
+
+const { form: newContactForm, getFirstError, getFirstWarning, touch, validate } = useForm({
   ...defaultContactForm,
 } as NewContactPoint, {
   name: [required()],
-  email: [email()],
-  contact_form: [url()],
+  email: [email(), requiredIfFalsy('contact_form', t(`Une adresse e-mail est requise si un lien n'est pas fourni`))],
+  contact_form: [url(), requiredIfFalsy('email', t(`Un lien est requis si une adresse e-mail n'est pas fournie`))],
   role: [required()],
 }, {})
 
+const showForm = computed(() => contact.value && !('id' in contact.value))
+
 watchEffect(() => {
-  if (contact.value && !('id' in contact.value)) {
+  if (showForm.value) {
     contact.value = newContactForm.value
   }
 })
@@ -172,7 +194,7 @@ const { data: rolesList, status: rolesStatus } = await useAPI<Array<ContactType>
   key: roleKey,
   getCachedData: getDataFromSSRPayload,
 })
-const loading = computed(() => status.value === 'pending' || rolesStatus.value === 'pending')
+const loading = computed(() => isLoading.value || status.value === 'pending' || rolesStatus.value === 'pending')
 
 const options = computed(() => rolesList.value?.map(r => ({
   label: r.label,
@@ -187,4 +209,33 @@ const contactsWithNewOption = computed<Array<ContactPointInForm>>(() => {
   const attributions = [...contacts.value?.data ?? [], newContactForm.value]
   return props.showAttributions ? attributions : attributions.filter(c => c.role === 'contact')
 })
+
+async function suggestContactPoint(query: string): Promise<Array<ContactPoint>> {
+  return await $api<Array<ContactPoint>>(`/api/1/organizations/${props.organization.id}/contacts/suggest/`, {
+    query: {
+      q: query,
+      size: 10,
+    },
+  })
+}
+
+function touchEmailAndForm() {
+  touch('email')
+  touch('contact_form')
+}
+
+async function save() {
+  if (!validate()) return
+  start()
+  try {
+    const newContact = await newContactPoint($api, props.organization, contact.value)
+    if (contactSelectRef.value) {
+      await contactSelectRef.value.fetchSuggestsQuery(newContact.name)
+      contact.value = newContact
+    }
+  }
+  finally {
+    finish()
+  }
+}
 </script>
