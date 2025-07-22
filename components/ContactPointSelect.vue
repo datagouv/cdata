@@ -81,7 +81,7 @@
         :has-error="!!getFirstError('email')"
         :has-warning="!!getFirstWarning('email')"
         :error-text="getFirstError('email')"
-        @blur="touch('email')"
+        @blur="touchEmailAndForm"
       />
       <InputGroup
         v-model="newContactForm.contact_form"
@@ -92,7 +92,7 @@
         :has-error="!!getFirstError('contact_form')"
         :has-warning="!!getFirstWarning('contact_form')"
         :error-text="getFirstError('contact_form')"
-        @blur="touch('contact_form')"
+        @blur="touchEmailAndForm"
       />
       <div>
         <BrandedButton
@@ -217,6 +217,11 @@ async function suggestContactPoint(query: string): Promise<Array<ContactPoint>> 
       size: 10,
     },
   })
+}
+
+function touchEmailAndForm() {
+  touch('email')
+  touch('contact_form')
 }
 
 async function save() {
