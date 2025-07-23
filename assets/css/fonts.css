@@ -9,6 +9,15 @@
 
 @font-face {
   font-weight: 600;
+  font-family: "MarianneLight";
+  src: url("../fonts/Marianne-Light.woff2") format("woff2"),
+    url("../fonts/Marianne-Light.woff") format("woff");
+
+  font-display: swap;
+}
+
+@font-face {
+  font-weight: 600;
   font-family: Spectral;
   font-style: italic;
   src: url("../fonts/Spectral-Italic.woff2") format("woff2"),
