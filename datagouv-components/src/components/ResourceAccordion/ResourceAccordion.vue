@@ -285,7 +285,7 @@
                 </dd>
                 <template v-if="generatedFormats.length">
                   <dt class="font-bold fr-text--sm fr-mb-0">
-                    {{ $t('Formats générés automatiquement par {platform}', { platform: config.name }) }}
+                    {{ $t('Formats générés automatiquement par {platform} (dernière mise à jour le : {date})', { platform: config.name, date: conversionsLastUpdate }) }}
                   </dt>
                   <dd
                     v-for="generatedFormat in generatedFormats"
@@ -486,6 +486,7 @@ const communityResource = computed<CommunityResource | null>(() => {
 const owner = computed(() => communityResource.value ? getOwnerName(communityResource.value) : null)
 
 const lastUpdate = props.resource.last_modified
+const conversionsLastUpdate = computed(() => formatRelativeIfRecentDate(props.resource.extras['analysis:parsing:finished_at']))
 const availabilityChecked = props.resource.extras && 'check:available' in props.resource.extras
 
 const unavailable = availabilityChecked && props.resource.extras['check:available'] === false
