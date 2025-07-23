@@ -45,6 +45,40 @@
           </div>
         </div>
       </div>
+      <div
+        v-if="faq.length"
+        class="fr-mt-10w"
+      >
+        <h1 class="title-section">
+          Foire aux questions
+        </h1>
+        <AccordionGroup>
+          <Accordion
+            v-for="item in faq"
+            :key="item.id"
+            :title="item.question"
+          >
+            <div
+              class="fr-mb-2w"
+              v-html="item.answer"
+            />
+            <div
+              v-if="item.ctaLabel && item.ctaUrl"
+              class="flex justify-center"
+            >
+              <a
+                class="fr-btn fr-btn--primary mt-4"
+                :href="item.ctaUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {{ item.ctaLabel }}
+              </a>
+            </div>
+          </Accordion>
+        </AccordionGroup>
+      </div>
+      <br>
     </div>
   </div>
 </template>
@@ -53,6 +87,8 @@
 import { ref, onMounted } from 'vue'
 import BrandBanner from '~/components/Brand/BrandBanner.vue'
 import BrandCard from '~/components/Brand/BrandCard.vue'
+import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
+import Accordion from '~/components/Accordion/Accordion.global.vue'
 
 interface Banner {
   title: string
@@ -81,10 +117,19 @@ interface Event {
   ctaLabel?: string
 }
 
+interface FaqItem {
+  id: number
+  question: string
+  answer: string
+  ctaLabel?: string | null
+  ctaUrl?: string | null
+}
+
 const banner = ref<Banner | null>(null)
 const sections = ref<Section[]>([])
 const eventsBySection = ref<Record<string, Event[]>>({})
 const loading = ref(true)
+const faq = ref<FaqItem[]>([])
 
 onMounted(async () => {
   const resBanner = await fetch('https://grist.numerique.gouv.fr/api/docs/vPC8NpR9HWux/tables/Banner/records')
@@ -116,6 +161,16 @@ onMounted(async () => {
       ctaUrl: r.fields.ctaUrl,
       ctaLabel: r.fields.ctaLabel,
     }))
+  }))
+
+  const resFaq = await fetch('https://grist.numerique.gouv.fr/api/docs/vPC8NpR9HWux/tables/Faq/records')
+  const dataFaq = await resFaq.json()
+  faq.value = dataFaq.records.map((r: { id: number, fields: { question: string, answer: string, ctaLabel?: string | null, ctaUrl?: string | null } }) => ({
+    id: r.id,
+    question: r.fields.question,
+    answer: r.fields.answer,
+    ctaLabel: r.fields.ctaLabel,
+    ctaUrl: r.fields.ctaUrl,
   }))
   loading.value = false
 })
