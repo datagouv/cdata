@@ -1,34 +1,48 @@
 <template>
-  <BrandBanner
-    v-if="banner"
-    :backgroundImage="banner.url_banner"
-    :title="banner.title"
-    :subtitle="banner.subtitle"
-    :ctaLabel="banner.ctaLabel"
-    :ctaUrl="banner.ctaLink"
-    :rightImage="banner.url_img"
-  />
-  <div class="fr-container" v-if="!loading">
-    <br /><br />
-    <div v-for="section in sections" :key="section.id" class="section-block">
-      <h1 class="title-section">{{ section.title }}</h1>
-      <div v-html="section.content" class="section-content" />
-      <div class="brandcards-list">
-        <div class="grid md:grid-cols-6 gap-12">
-        <BrandCard
-          v-for="event in eventsBySection[section.title] || []"
-          :key="event.id"
-          :tagline="event.titre"
-          :theme="event.format"
-          :image-src="event.url_img"
-          size="medium"
-          :border="true"
-          :class="event.class"
-          actions-alignment="start"
-          :use-static-image="true"
-          :ctaUrl="event.ctaUrl"
-          :ctaLabel="event.ctaLabel"
+  <div>
+    <BrandBanner
+      v-if="banner"
+      :background-image="banner.url_banner"
+      :title="banner.title"
+      :subtitle="banner.subtitle"
+      :cta-label="banner.ctaLabel"
+      :cta-url="banner.ctaLink"
+      :right-image="banner.url_img"
+    />
+    <div
+      v-if="!loading"
+      class="fr-container"
+    >
+      <br><br>
+      <div
+        v-for="section in sections"
+        :key="section.id"
+        class="section-block"
+      >
+        <h1 class="title-section">
+          {{ section.title }}
+        </h1>
+        <div
+          class="section-content"
+          v-html="section.content"
         />
+        <div class="brandcards-list">
+          <div class="grid md:grid-cols-6 gap-12">
+            <BrandCard
+              v-for="event in eventsBySection[section.title] || []"
+              :key="event.id"
+              :tagline="event.titre"
+              :theme="event.format"
+              :image-src="event.url_img"
+              size="medium"
+              :border="true"
+              :class="event.class"
+              actions-alignment="start"
+              :use-static-image="true"
+              :cta-url="event.ctaUrl"
+              :cta-label="event.ctaLabel"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -37,8 +51,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import BrandBanner from '~/components/BrandCard/BrandBanner.vue'
-import BrandCard from '~/components/BrandCard/BrandCard.vue'
+import BrandBanner from '~/components/Brand/BrandBanner.vue'
+import BrandCard from '~/components/Brand/BrandCard.vue'
 
 interface Banner {
   title: string
@@ -50,7 +64,6 @@ interface Banner {
   card: string
   class: string
   ctaUrl: string
-  ctaLabel: string
 }
 interface Section {
   id: number
@@ -65,10 +78,10 @@ interface Event {
   card: string
   class: string
   ctaUrl: string
-  ctaLabel: string
+  ctaLabel?: string
 }
 
-const banner = ref<Banner|null>(null)
+const banner = ref<Banner | null>(null)
 const sections = ref<Section[]>([])
 const eventsBySection = ref<Record<string, Event[]>>({})
 const loading = ref(true)
@@ -82,7 +95,7 @@ onMounted(async () => {
 
   const resSections = await fetch('https://grist.numerique.gouv.fr/api/docs/vPC8NpR9HWux/tables/Sections/records?&sort=ordre')
   const dataSections = await resSections.json()
-  sections.value = dataSections.records.map((r: any) => ({
+  sections.value = dataSections.records.map((r: { id: number, fields: { title: string, content: string } }) => ({
     id: r.id,
     title: r.fields.title,
     content: r.fields.content,
@@ -93,7 +106,7 @@ onMounted(async () => {
     const url = `https://grist.numerique.gouv.fr/api/docs/vPC8NpR9HWux/tables/Evenements/records?filter=${filter}&sort=Date_debut`
     const resEvents = await fetch(url)
     const dataEvents = await resEvents.json()
-    eventsBySection.value[section.title] = (dataEvents.records || []).map((r: any) => ({
+    eventsBySection.value[section.title] = (dataEvents.records || []).map((r: { id: number, fields: { Titre: string, format_online: string, url_img: string, card: string, cssClass: string, ctaUrl: string, ctaLabel: string } }) => ({
       id: r.id,
       titre: r.fields.Titre,
       format: r.fields.format_online,
@@ -120,4 +133,4 @@ onMounted(async () => {
     font-weight: 800;
     margin-bottom: 1.5rem;
 }
-</style> 
+</style>

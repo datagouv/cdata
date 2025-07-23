@@ -1,13 +1,34 @@
 <template>
-  <section class="brand-banner" :style="{ backgroundImage: `url(${backgroundImage})` }">
+  <section
+    class="brand-banner"
+    :style="{ backgroundImage: `url(${props.backgroundImage})` }"
+  >
     <div class="brand-banner__content">
       <div class="brand-banner__left">
-        <h1 class="brand-banner__title" v-html="title" />
-        <p class="brand-banner__subtitle" v-if="subtitle" v-html="subtitle" />
-        <a v-if="ctaLabel && ctaUrl" :href="ctaUrl" class="brand-banner__cta">{{ ctaLabel }}</a>
+        <h1
+          class="brand-banner__title"
+          v-html="props.title"
+        />
+        <p
+          v-if="props.subtitle"
+          class="brand-banner__subtitle"
+          v-html="props.subtitle"
+        />
+        <a
+          v-if="props.ctaLabel && props.ctaUrl"
+          :href="props.ctaUrl"
+          class="brand-banner__cta"
+        >{{ props.ctaLabel }}</a>
       </div>
-      <div class="brand-banner__right" v-if="rightImage">
-        <img :src="rightImage" alt="" class="brand-banner__right-img" />
+      <div
+        v-if="props.rightImage"
+        class="brand-banner__right"
+      >
+        <img
+          :src="props.rightImage"
+          alt=""
+          class="brand-banner__right-img"
+        >
       </div>
     </div>
   </section>

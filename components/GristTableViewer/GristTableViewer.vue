@@ -1,20 +1,34 @@
 <template>
   <div class="grist-table-viewer">
-    <div v-if="loading" class="fr-p-4w text-center">
+    <div
+      v-if="loading"
+      class="fr-p-4w text-center"
+    >
       <AdminLoader />
     </div>
-    
-    <div v-else-if="error" class="fr-alert fr-alert--error fr-mb-4w">
-      <p class="fr-alert__title">Erreur lors du chargement des données</p>
+
+    <div
+      v-else-if="error"
+      class="fr-alert fr-alert--error fr-mb-4w"
+    >
+      <p class="fr-alert__title">
+        Erreur lors du chargement des données
+      </p>
       <p>{{ error }}</p>
     </div>
-    
-    <div v-else-if="data && data.length > 0 && columns" class="fr-table fr-mb-2w">
-      <table class="lg:!table" style="table-layout: fixed; width: 100%;">
+
+    <div
+      v-else-if="data && data.length > 0 && columns"
+      class="fr-table fr-mb-2w"
+    >
+      <table
+        class="lg:!table"
+        style="table-layout: fixed; width: 100%;"
+      >
         <thead>
           <tr>
-            <th 
-              v-for="column in columns" 
+            <th
+              v-for="column in columns"
               :key="column"
               scope="col"
               class="font-bold fixed-col-width"
@@ -26,12 +40,12 @@
           </tr>
         </thead>
         <tbody>
-          <tr 
-            v-for="(record, index) in data" 
+          <tr
+            v-for="(record, index) in data"
             :key="record.id || index"
           >
-            <td 
-              v-for="column in columns" 
+            <td
+              v-for="column in columns"
               :key="column"
               class="cell-padding fixed-col-width"
             >
@@ -42,14 +56,20 @@
               </div>
             </td>
           </tr>
-          <tr v-if="total !== null" class="total-row">
-            <td 
-              v-for="column in columns" 
+          <tr
+            v-if="total !== null"
+            class="total-row"
+          >
+            <td
+              v-for="column in columns"
               :key="column"
             >
               <div class="fr-grid-row fr-grid-row--middle fr-text--xs w-100 style-cell">
                 <div class="fr-my-auto">
-                  <span v-if="column === props.unitColumn" class="font-bold">
+                  <span
+                    v-if="column === props.unitColumn"
+                    class="font-bold"
+                  >
                     {{ formatNumber(total) }} {{ unit }}
                   </span>
                   <span v-else-if="column === columns[0]">
@@ -63,9 +83,14 @@
         </tbody>
       </table>
     </div>
-    
-    <div v-else class="fr-alert fr-alert--info fr-mb-4w">
-      <p class="fr-alert__title">Aucune donnée disponible</p>
+
+    <div
+      v-else
+      class="fr-alert fr-alert--info fr-mb-4w"
+    >
+      <p class="fr-alert__title">
+        Aucune donnée disponible
+      </p>
     </div>
   </div>
 </template>
@@ -76,7 +101,7 @@ import AdminLoader from '../AdminLoader/AdminLoader.vue'
 
 interface GristRecord {
   id: number
-  fields: Record<string, any>
+  fields: Record<string, string | number | boolean | null>
 }
 
 interface GristResponse {
@@ -87,7 +112,7 @@ interface Props {
   url: string | undefined
   columns: string[] | undefined
   totalColumn?: string | undefined
-  unit?: any | undefined
+  unit?: string | number | undefined
   unitColumn?: string | undefined
 }
 
@@ -101,26 +126,26 @@ const total = computed(() => {
   if (!props.totalColumn || !data.value.length) {
     return null
   }
-  
+
   const sum = data.value.reduce((acc, record) => {
     const value = record.fields[props.totalColumn!]
     const num = Number(value)
     return acc + (isNaN(num) ? 0 : num)
   }, 0)
-  
+
   return sum
 })
 
-function formatNumber(value: any): string {
+function formatNumber(value: string | number | boolean | null | undefined): string {
   if (value === null || value === undefined) {
     return '-'
   }
-  
+
   const num = Number(value)
   if (isNaN(num)) {
     return String(value)
   }
-  
+
   return num.toLocaleString('fr-FR')
 }
 
@@ -138,28 +163,30 @@ async function fetchData() {
     loading.value = false
     return
   }
-  
+
   loading.value = true
   error.value = null
-  
+
   try {
     const response = await fetch(props.url)
-    
+
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status} ${response.statusText}`)
     }
-    
+
     const result: GristResponse = await response.json()
-    
+
     if (!result.records) {
       throw new Error('Format de réponse invalide: propriété "records" manquante')
     }
-    
+
     data.value = result.records
-  } catch (err) {
+  }
+  catch (err) {
     console.error('Erreur lors de la récupération des données Grist:', err)
     error.value = err instanceof Error ? err.message : 'Erreur inconnue'
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
@@ -211,7 +238,7 @@ onMounted(() => {
 }
 
 .fr-table table :deep(td) {
-  padding: 0.8rem 0.3rem !important;
+  padding: 0.8rem 0.4rem !important;
   border-right: none;
   border-left: none;
   border-top: none;
@@ -232,8 +259,6 @@ onMounted(() => {
 }
 
 .style-cell {
-  height: 3rem;
-  overflow-y: auto;
   font-size: 0.85em;
 }
 
