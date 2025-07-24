@@ -3,7 +3,7 @@
     <div class="container">
       <div
         v-if="dataservice"
-        class="mt-4 flex gap-4 md:flex-nowrap items-center justify-between"
+        class="mt-4 flex gap-4 flex-wrap md:flex-nowrap items-center justify-between"
       >
         <Breadcrumb class="md:mb-0 md:mt-0">
           <BreadcrumbItem
@@ -19,7 +19,7 @@
             {{ dataservice.title }}
           </BreadcrumbItem>
         </Breadcrumb>
-        <div class="flex-none flex gap-3 items-center">
+        <div class="flex-none flex gap-2.5 items-center">
           <EditButton
             v-if="dataservice.permissions.edit"
             :id="dataservice.id"
