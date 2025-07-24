@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'flex flex-col justify-between h-full',
+      'flex flex-col h-full',
       props.size === 'large' ? 'sm:flex-row sm:items-stretch flex-col' : 'flex-col',
       props.border ? 'border border-gray-default relative overflow-hidden' : '',
     ]"
@@ -31,7 +31,7 @@
     <div
       :class="[
         'bg-white',
-        props.size === 'large' ? 'sm:p-16 p-0 sm:w-1/2 w-full flex-shrink-0' : 'p-4 w-full',
+        props.size === 'large' ? 'sm:p-16 p-0 sm:w-1/2 w-full flex-shrink-0' : 'p-4 w-full h-full',
         props.size === 'large' ? 'mt-6 sm:mt-0' : '',
       ]"
     >
