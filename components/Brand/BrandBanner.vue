@@ -49,7 +49,7 @@ const props = defineProps({
 
 <style scoped>
 .brand-banner {
-  width: 100vw;
+  width: 100%;
   min-height: 380px;
   background-size: cover;
   background-position: center;
@@ -59,8 +59,8 @@ const props = defineProps({
   position: relative;
   left: 50%;
   right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
+  margin-left: -50%;
+  margin-right: -50%;
 }
 
 .brand-banner__content {
