@@ -1,5 +1,11 @@
 <template>
   <div>
+    <InputGroup
+      v-model="bloc.paragraph"
+      :label="$t('Text libre')"
+      type="textarea"
+    />
+
     <div
       ref="sortableRoot"
       class="divide-y"

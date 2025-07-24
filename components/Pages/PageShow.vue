@@ -48,22 +48,31 @@
       </div>
       <div
         v-if="bloc.type === 'links_list'"
-        class="space-y-8"
+        class="flex flex-col sm:flex-row gap-8 sm:gap-16"
       >
-        <div
-          v-for="link in bloc.links"
-          :key="link.title"
+        <p
+          v-if="bloc.paragraph"
+          class="mb-0 w-full font-light text-2xl"
         >
-          <CdataLink
-            class="inline-block relative text-7xl font-extrabold text-[var(--link-color)] no-underline hover:underline fr-raw-link"
-            :style="{
-              '--link-color': link.color,
-            }"
-            :href="link.url"
+          {{ bloc.paragraph }}
+        </p>
+        <div class="space-y-8 w-full">
+          <div
+            v-for="link in bloc.links"
+            :key="link.title"
           >
-            {{ link.title }}
-            <RiArrowRightUpLine class="absolute top-0 -right-9 size-9" />
-          </CdataLink>
+            <CdataLink
+              class="inline-block relative font-extrabold text-[var(--link-color)] no-underline hover:underline fr-raw-link"
+              :class="[bloc.paragraph ? 'text-6xl' : 'text-7xl']"
+              :style="{
+                '--link-color': link.color,
+              }"
+              :href="link.url"
+            >
+              {{ link.title }}
+              <RiArrowRightUpLine class="absolute top-0 -right-9 size-9" />
+            </CdataLink>
+          </div>
         </div>
       </div>
     </div>
