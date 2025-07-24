@@ -178,7 +178,7 @@
             <AdminSidebarLink
               :icon="RiAwardLine"
               :label="$t('Édito')"
-              to="/admin/site/edito"
+              to="/admin/site/edito/datasets"
             />
           </template>
         </ul>

@@ -1,89 +1,43 @@
 <template>
-  <div class="container mb-16">
-    <Breadcrumb>
-      <BreadcrumbItem
-        to="/"
-        :external="true"
-      >
-        {{ $t('Accueil') }}
-      </BreadcrumbItem>
-      <BreadcrumbItem>
-        {{ $t('Réutilisations') }}
-      </BreadcrumbItem>
-    </Breadcrumb>
-    <ListPage
-      :link="getLink"
-      :reuses
-      :initial-q="q"
-      :sort
-      :status
-      :topic
-      :topics
-      :total-reuses="site.metrics.reuses"
-      @change="change"
+  <div>
+    <EditoHeader
+      color="green"
+      :title="$t('Réutilisations')"
+      :subtitle="$t('Rechercher parmi les {count} réutilisations sur {site}', {
+        count: site.metrics.reuses,
+        site: config.public.title,
+      })"
+      :placeholder="$t('Rechercher une réutilisation de données')"
+      search-url="/reuses/search"
+      :link-label="$t(`Qu'est-ce qu'une réutilisation ?`)"
+      :link-url="config.public.guideReuses"
+    />
+    <PageShow
+      v-if="page"
+      :page
+    />
+    <EditoFooter
+      color="green"
+      search-url="/reuses/search"
+      :search-label="$t(`Voir toutes les réutilisations`)"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Reuse, ReuseTopic, Site } from '@datagouv/components-next'
-import type { LocationQueryValue } from 'vue-router'
-import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import ListPage from '~/components/Reuses/ListPage.vue'
-import type { PaginatedArray } from '~/types/types'
+import type { Site } from '@datagouv/components-next'
+import EditoFooter from '~/components/Pages/EditoFooter.vue'
+import EditoHeader from '~/components/Pages/EditoHeader.vue'
+import PageShow from '~/components/Pages/PageShow.vue'
+import type { Page } from '~/types/pages'
 
 const { t } = useI18n()
-
 useSeoMeta({
   title: t('Réutilisations'),
 })
 
-const route = useRoute()
-const q = ref('')
-watchEffect(() => {
-  if (Array.isArray(route.query.q)) return
-  if (!route.query.q) return
-  q.value = route.query.q
-})
-const sort = ref((route.query.sort as string | null) || undefined)
-const tag = ref((route.query.tag as string | null) || undefined)
-const topic = ref((route.query.topic as string | null) || undefined)
-const page = ref(parseInt(route.query.page as LocationQueryValue ?? '1', 10))
-const pageSize = 21
-
-function change(newQs: string, newTopic: string | undefined, newSort: string | undefined, newPage: number) {
-  q.value = newQs
-  sort.value = newSort
-  page.value = newPage
-  topic.value = newTopic
-  return navigateTo({
-    ...route,
-    query: {
-      ...route.query,
-      q: q.value,
-      page: page.value,
-      sort: sort.value,
-      tag: tag.value,
-      topic: topic.value,
-    },
-  })
-}
+const config = useRuntimeConfig()
 
 const { data: site } = await useAPI<Site>('/api/1/site')
-
-const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
-
-const { data: reuses, status } = await useAPI<PaginatedArray<Reuse>>(`/api/2/reuses/search/`, {
-  headers: {
-    'X-Fields': reusesXFields,
-  },
-  params: {
-    q,
-    page,
-    page_size: pageSize,
-    sort,
-    tag,
-    topic,
-  },
-})
+const { data: page } = await useAPI<Page>(`/api/1/pages/${site.value.reuses_page_id}`)
 </script>

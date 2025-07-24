@@ -1,6 +1,15 @@
 <template>
   <div class="space-y-5">
     <div class="flex justify-end gap-4">
+      <BrandedButton
+        v-if="publicPage"
+        :href="publicPage"
+        color="secondary"
+        size="xs"
+        :icon="RiEyeLine"
+      >
+        {{ t("Voir la page publique") }}
+      </BrandedButton>
       <ModalWithButton
         :title="$t('Prévisualiser')"
         size="fullscreen"
@@ -31,7 +40,10 @@
 
     <form @submit.prevent="$emit('submit')">
       <PaddedContainer>
-        <div class="flex items-center justify-center group">
+        <div
+          v-if="page.blocs.length"
+          class="flex items-center justify-center group"
+        >
           <AddBlocDropdown @new-bloc="page.blocs.splice(0, 0, $event)">
             <BrandedButton
               color="secondary-softer"
@@ -236,6 +248,7 @@ const { t } = useI18n()
 
 defineProps<{
   loading: boolean
+  publicPage?: string
 }>()
 const page = defineModel<Page>({ required: true })
 defineEmits<{
