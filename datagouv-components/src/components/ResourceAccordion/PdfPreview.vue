@@ -1,6 +1,11 @@
 <template>
   <div class="text-xs">
     <div v-if="pdfData">
+      <!--
+      We use props.resource.url instead of props.resource.latest
+      because the PDF component raises an error otherwise.
+      See https://github.com/datagouv/cdata/pull/611
+      -->
       <PDF
         :src="props.resource.url"
         :show-progress="true"
