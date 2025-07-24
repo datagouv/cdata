@@ -60,7 +60,7 @@
           >
             <div
               class="fr-mb-2w"
-              v-html="item.answer"
+              v-html="formatMarkdown(item.answer, 3)"
             />
             <div
               v-if="item.ctaLabel && item.ctaUrl"
