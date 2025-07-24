@@ -74,7 +74,7 @@
           </div>
         </template>
       </SearchableSelect>
-      <Divider>{{ $t('or') }}</Divider>
+      <Divider>{{ $t('ou') }}</Divider>
       <form
         class="flex items-end space-x-4"
         @submit.prevent="loadDatasetByLink"

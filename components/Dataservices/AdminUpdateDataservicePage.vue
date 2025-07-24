@@ -202,10 +202,10 @@ async function archiveDataservice() {
     })
     refresh()
     if (dataservice.value.archived_at) {
-      toast.success(t('API désarchivée!'))
+      toast.success(t('API désarchivée !'))
     }
     else {
-      toast.success(t('API archivée!'))
+      toast.success(t('API archivée !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
@@ -225,10 +225,10 @@ async function switchDataservicePrivate() {
     })
     refresh()
     if (dataservice.value.private) {
-      toast.success(t('API publiée!'))
+      toast.success(t('API publiée !'))
     }
     else {
-      toast.success(t('API passée en brouillon!'))
+      toast.success(t('API passée en brouillon !'))
     }
   }
   finally {
@@ -245,7 +245,7 @@ async function restoreDataservice() {
       body: JSON.stringify(dataserviceToApi(dataserviceForm.value, { deleted_at: null })),
     })
     refresh()
-    toast.success(t('API restaurée!'))
+    toast.success(t('API restaurée !'))
   }
   finally {
     finish()
@@ -259,7 +259,7 @@ async function deleteDataservice() {
       method: 'DELETE',
     })
     refresh()
-    toast.success(t('API supprimée!'))
+    toast.success(t('API supprimée !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {

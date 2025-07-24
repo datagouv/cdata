@@ -203,7 +203,7 @@ const { form, getFirstError, getFirstWarning, touch, validate, errorsAsList: err
   resources: props.resources,
   hasDocumentation: false,
 }, {
-  resources: [required(t('At least one file is required.'))],
+  resources: [required(t('Au moins un fichier est requis.'))],
 }, {
   resources: [resources => resources.find(resource => !isClosedFormat(resource, extensions.value)) ? null : t('Vous n\'avez pas ajouté de fichier dans un format ouvert.')],
   hasDocumentation: [hasDocumentation => !hasDocumentation ? t('Vous n\'avez pas ajouté de fichier de documentation ni décrit vos fichiers.') : null],

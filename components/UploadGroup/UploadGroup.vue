@@ -20,7 +20,7 @@
     >
       <div>{{ $t('Glissez et déposez des fichiers') }}</div>
       <Divider color="bg-gray-200">
-        {{ $t('or') }}
+        {{ $t('ou') }}
       </Divider>
       <input
         :id="id"

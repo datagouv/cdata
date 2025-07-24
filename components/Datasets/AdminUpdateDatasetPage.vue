@@ -214,7 +214,7 @@ async function deleteDataset() {
       method: 'DELETE',
     })
     refresh()
-    toast.success(t('Jeu de données supprimé!'))
+    toast.success(t('Jeu de données supprimé !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
@@ -232,10 +232,10 @@ async function switchDatasetPrivate() {
     })
     refresh()
     if (datasetForm.value.private) {
-      toast.success(t('Jeu de données publié!'))
+      toast.success(t('Jeu de données publié !'))
     }
     else {
-      toast.success(t('Jeu de données passé en brouillon!'))
+      toast.success(t('Jeu de données passé en brouillon !'))
     }
   }
   finally {
@@ -252,7 +252,7 @@ async function restoreDataset() {
       body: JSON.stringify(datasetToApi(datasetForm.value, { deleted: null })),
     })
     refresh()
-    toast.success(t('Jeu de données restauré!'))
+    toast.success(t('Jeu de données restauré !'))
   }
   finally {
     finish()
@@ -269,10 +269,10 @@ async function archiveDataset() {
     })
     refresh()
     if (dataset.value.archived) {
-      toast.success(t('Jeu de données désarchivé!'))
+      toast.success(t('Jeu de données désarchivé !'))
     }
     else {
-      toast.success(t('Jeu de données archivé!'))
+      toast.success(t('Jeu de données archivé !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
