@@ -70,7 +70,7 @@
                     class="size-4 -mt-1"
                   />
                   <div class="font-bold">
-                    {{ bloc.title }} {{ bloc.id }}
+                    {{ bloc.title }}
                   </div>
                 </div>
                 <div class="max-w-full text-gray-title truncate">
