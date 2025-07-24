@@ -70,7 +70,7 @@
           >
             <div class="flex items-center space-x-2">
               <NuxtImg
-                v-if="objectImageUrl"
+                v-if="objectImageUrl && objectImageUrl(option)"
                 :src="objectImageUrl(option)"
                 alt=""
                 loading="lazy"

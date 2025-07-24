@@ -158,6 +158,12 @@
                     v-if="bloc.type === 'dataservices_list'"
                     v-model="bloc.dataservices"
                   />
+                  <LinksListForm
+                    v-if="bloc.type === 'links_list'"
+                    class="border-t"
+                    :model-value="bloc"
+                    @update:model-value="page.blocs[index] = $event"
+                  />
 
                   <template #footer="{ close }">
                     <div class="flex-1 flex justify-end">
@@ -223,6 +229,7 @@ import { useSortable } from '@vueuse/integrations/useSortable'
 import ReusesSelect from '../ReusesSelect.vue'
 import PageShow from './PageShow.vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
+import LinksListForm from './LinksListForm.vue'
 import type { Page } from '~/types/pages'
 
 const { t } = useI18n()

@@ -2,10 +2,10 @@
   <div
     v-for="(bloc, index) in page.blocs"
     :key="index"
-    class="py-24"
+    class="py-24 odd:bg-gray-some"
   >
     <div class="container space-y-6">
-      <div>
+      <div class="space-y-2.5">
         <div class="text-gray-title text-3xl font-extrabold">
           {{ bloc.title }}
         </div>
@@ -46,12 +46,34 @@
           :reuse
         />
       </div>
+      <div
+        v-if="bloc.type === 'links_list'"
+        class="space-y-8"
+      >
+        <div
+          v-for="link in bloc.links"
+          :key="link.title"
+        >
+          <CdataLink
+            class="inline-block relative text-7xl font-extrabold text-[var(--link-color)] no-underline hover:underline fr-raw-link"
+            :style="{
+              '--link-color': link.color,
+            }"
+            :href="link.url"
+          >
+            {{ link.title }}
+            <RiArrowRightUpLine class="absolute top-0 -right-9 size-9" />
+          </CdataLink>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { DataserviceCard, ReuseCard } from '@datagouv/components-next'
+import { RiArrowRightUpLine } from '@remixicon/vue'
+import CdataLink from '../CdataLink.vue'
 import type { Page } from '~/types/pages'
 
 defineProps<{
