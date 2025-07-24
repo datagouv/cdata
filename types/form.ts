@@ -44,4 +44,13 @@ export type DataserviceSearchParams = {
   page_size?: string
 }
 
+export type ReuseSearchParams = {
+  q?: string
+  sort?: string
+  tag?: string
+  topic?: string
+  page?: string
+  page_size?: string
+}
+
 export type FieldsErrors = Record<string, Array<string>>

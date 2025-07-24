@@ -196,20 +196,21 @@ type Facets = {
 
 const { $api } = useNuxtApp()
 
-const url = useRequestURL()
+const route = useRoute()
 const { t } = useI18n()
 const config = useRuntimeConfig()
 const { toast } = useToast()
 
 const params = useUrlSearchParams<DataserviceSearchParams>('history', {
-  initialValue: Object.fromEntries(url.searchParams.entries()),
+  initialValue: route.query,
   removeNullishValues: true,
+  removeFalsyValues: true,
 })
 
 const nonFalsyParams = computed(() => {
   const filteredParams = Object.entries(toValue(params)).filter(([_k, v]) => v !== undefined && v !== '')
   const propsParams = props.organization ? { organization: props.organization.id } : {}
-  return { ...propsParams, ...Object.fromEntries(filteredParams) }
+  return { ...propsParams, ...Object.fromEntries(filteredParams), page_size: pageSize }
 })
 
 const { data: searchResults, status: searchResultsStatus } = await useAPI<PaginatedArray<Dataservice>>('/api/2/dataservices/search/', {
@@ -231,7 +232,6 @@ async function suggestOrganizations(q: string) {
 /**
  * Search query
  */
-const route = useRoute()
 const queryString = ref('')
 watchEffect(() => {
   // We use route.query here instead of params because params doesn't change when Nuxt
@@ -340,12 +340,11 @@ watchEffect(() => {
 
 // Update model params
 watchEffect(() => {
-  params.page_size = pageSize.toFixed()
   if (!props.organization) {
     params.organization = facets.value.organization?.id ?? undefined
   }
   params.is_restricted = facets.value.isRestricted
-  if (currentPage.value >= 1) params.page = currentPage.value.toString()
+  if (currentPage.value > 1 || params.page) params.page = currentPage.value.toString()
   params.q = deboucedQuery.value ?? undefined
   params.sort = searchSort.value ?? null
   return params
