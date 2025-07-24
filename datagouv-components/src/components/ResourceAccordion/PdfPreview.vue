@@ -2,7 +2,7 @@
   <div class="text-xs">
     <div v-if="pdfData">
       <PDF
-        :src="props.resource.latest"
+        :src="props.resource.url"
         :show-progress="true"
         progress-color="#0063cb"
         :show-page-tooltip="true"
@@ -121,7 +121,7 @@ const loadPdf = async () => {
 
   try {
     // Test if the PDF URL is accessible
-    const response = await fetch(props.resource.latest, { method: 'HEAD' })
+    const response = await fetch(props.resource.url, { method: 'HEAD' })
     // const response = await fetch('/test-data.pdf') // For testing locally without CORS issues
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)

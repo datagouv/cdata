@@ -120,7 +120,7 @@ const fetchJsonData = async () => {
   error.value = null
 
   try {
-    const response = await fetch(props.resource.latest)
+    const response = await fetch(props.resource.url)
     // const response = await fetch('/test-data.json') // For testing locally without CORS issues
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
