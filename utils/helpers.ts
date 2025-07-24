@@ -66,6 +66,11 @@ export async function redirectLegacyHashes(instructions: Array<{ from: string, t
   }
 }
 
+export function capitalizeFirstLetter(str: string): string {
+  if (!str) return ''
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
 export async function useJsonLd(type: 'dataset' | 'dataservice' | 'organization', id: string) {
   /**
    * First we included the full JSON-LD inline in a script tag for Google but it adds

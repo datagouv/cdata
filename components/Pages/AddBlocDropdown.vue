@@ -67,6 +67,6 @@ const { t } = useI18n()
 const blocsTypes = useBlocsTypes()
 
 const newBlocsTypes: Array<{ name: string, blocsTypes: Array<keyof typeof blocsTypes> }> = [
-  { name: t('Contenus à la une'), blocsTypes: ['datasets_list'] },
+  { name: t('Contenus à la une'), blocsTypes: ['datasets_list', 'reuses_list', 'dataservices_list', 'links_list'] },
 ]
 </script>

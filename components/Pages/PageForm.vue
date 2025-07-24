@@ -73,12 +73,48 @@
                     {{ bloc.title }}
                   </div>
                 </div>
-                <div class="max-w-full text-gray-title truncate">
+                <div
+                  v-if="bloc.type === 'datasets_list'"
+                  class="max-w-full text-gray-title truncate"
+                >
                   <template v-if="bloc.datasets.length">
                     {{ humanJoin(bloc.datasets.map(d => d.title)) }}
                   </template>
                   <template v-else>
                     {{ $t('Pas de jeux de données sélectionnés') }}
+                  </template>
+                </div>
+                <div
+                  v-if="bloc.type === 'reuses_list'"
+                  class="max-w-full text-gray-title truncate"
+                >
+                  <template v-if="bloc.reuses.length">
+                    {{ humanJoin(bloc.reuses.map(d => d.title)) }}
+                  </template>
+                  <template v-else>
+                    {{ $t('Pas de réutilisations sélectionnées') }}
+                  </template>
+                </div>
+                <div
+                  v-if="bloc.type === 'dataservices_list'"
+                  class="max-w-full text-gray-title truncate"
+                >
+                  <template v-if="bloc.dataservices.length">
+                    {{ humanJoin(bloc.dataservices.map(d => d.title)) }}
+                  </template>
+                  <template v-else>
+                    {{ $t(`Pas d'APIs sélectionnées`) }}
+                  </template>
+                </div>
+                <div
+                  v-if="bloc.type === 'links_list'"
+                  class="max-w-full text-gray-title truncate"
+                >
+                  <template v-if="bloc.links.length">
+                    {{ humanJoin(bloc.links.map(d => d.title)) }}
+                  </template>
+                  <template v-else>
+                    {{ $t('Pas encore de liens') }}
                   </template>
                 </div>
               </div>
@@ -110,7 +146,18 @@
                     :label="$t('Sous-titre')"
                   />
 
-                  <DatasetsSelect v-model="bloc.datasets" />
+                  <DatasetsSelect
+                    v-if="bloc.type === 'datasets_list'"
+                    v-model="bloc.datasets"
+                  />
+                  <ReusesSelect
+                    v-if="bloc.type === 'reuses_list'"
+                    v-model="bloc.reuses"
+                  />
+                  <DataservicesSelect
+                    v-if="bloc.type === 'dataservices_list'"
+                    v-model="bloc.dataservices"
+                  />
 
                   <template #footer="{ close }">
                     <div class="flex-1 flex justify-end">
@@ -173,6 +220,7 @@
 import { BrandedButton } from '@datagouv/components-next'
 import { RiAddLine, RiDeleteBinLine, RiDraggable, RiEditLine, RiEyeLine } from '@remixicon/vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
+import ReusesSelect from '../ReusesSelect.vue'
 import PageShow from './PageShow.vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
 import type { Page } from '~/types/pages'
