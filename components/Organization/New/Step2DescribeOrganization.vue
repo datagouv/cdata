@@ -304,11 +304,12 @@ function checkBusinessId<T, K extends KeysOfUnion<T>, V extends (string | null) 
 const isCreation = computed(() => props.type === 'create')
 
 const { form, formInfo, getFirstError, getFirstWarning, touch, validate } = useForm(organization, {
-  business_number_id: [checkBusinessId(), ruleIf(isCreation, unique(siret => `/api/1/organizations/?business_number_id=${cleanSiret(siret)}`, t('Une organisation avec ce SIRET existe déjà sur {site}', { site: config.public.title })))],
+  business_number_id: [checkBusinessId()],
   description: [required()],
   name: [required(), ruleIf(isCreation, unique(name => `/api/1/organizations/?name=${name}`, t('Une organisation portant ce nom existe déjà. Veuillez choisir un autre nom ou vérifier si votre organisation existe déjà.')))],
   url: [url()],
 }, {
+  business_number_id: [ruleIf(isCreation, unique(siret => `/api/1/organizations/?business_number_id=${cleanSiret(siret)}`, t('Une organisation avec ce SIRET existe déjà sur {site}', { site: config.public.title })))],
   description: [minLength(config.public.qualityDescriptionLength)],
   name: [testNotAllowed(config.public.demoServer?.name)],
 })
