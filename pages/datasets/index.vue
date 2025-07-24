@@ -30,7 +30,7 @@
             :placeholder="$t('ex. élections présidentielles')"
           >
           <button class="shrink-0 size-20 bg-white flex items-center justify-center">
-            <RiSearch2Line class="size-10 text-primary" />
+            <RiSearchLine class="size-10 text-primary" />
           </button>
         </form>
       </div>
@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, type Site } from '@datagouv/components-next'
-import { RiInformation2Line, RiSearch2Line } from '@remixicon/vue'
+import { RiInformation2Line, RiSearchLine } from '@remixicon/vue'
 import PageShow from '~/components/Pages/PageShow.vue'
 import type { Page } from '~/types/pages'
 
