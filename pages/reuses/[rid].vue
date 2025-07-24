@@ -4,9 +4,9 @@
     <div class="container">
       <div
         v-if="reuse"
-        class="flex flex-wrap items-center justify-between"
+        class="mt-4 flex gap-4 flex-wrap md:flex-nowrap items-center justify-between"
       >
-        <Breadcrumb>
+        <Breadcrumb class="md:mb-0 md:mt-0">
           <BreadcrumbItem
             to="/"
             :external="true"
@@ -20,7 +20,7 @@
             {{ reuse.title }}
           </BreadcrumbItem>
         </Breadcrumb>
-        <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
+        <div class="flex-none flex gap-2.5 flex-wrap md:max-w-6/12">
           <FollowButton
             v-if="reuse"
             :url="`/api/1/reuses/${reuse.id}/followers/`"
@@ -34,17 +34,15 @@
               {{ $t('Voir la réutilisation') }}
             </BrandedButton>
           </div>
-          <div class="flex gap-3 items-center">
-            <EditButton
-              v-if="reuse.permissions.edit"
-              :id="reuse.id"
-              type="reuses"
-            />
-            <ReportModal
-              v-if="!isOrganizationCertified(reuse.organization)"
-              :subject="{ id: reuse.id, class: 'Reuse' }"
-            />
-          </div>
+          <EditButton
+            v-if="reuse.permissions.edit"
+            :id="reuse.id"
+            type="reuses"
+          />
+          <ReportModal
+            v-if="!isOrganizationCertified(reuse.organization)"
+            :subject="{ id: reuse.id, class: 'Reuse' }"
+          />
         </div>
       </div>
     </div>
