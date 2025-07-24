@@ -187,6 +187,6 @@ async function updateContactPoint(closeModal: () => void) {
     loading.value = false
   }
 
-  toast.success(t('Point de contact mis à jour!'))
+  toast.success(t('Point de contact mis à jour !'))
 }
 </script>

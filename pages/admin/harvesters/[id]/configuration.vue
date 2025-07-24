@@ -134,7 +134,7 @@ const save = async () => {
       }
     }
 
-    toast.success(t('Harvester updated!'))
+    toast.success(t('Moissonneur mis à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {

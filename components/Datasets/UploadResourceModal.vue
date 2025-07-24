@@ -45,7 +45,7 @@
           :extensions
           @delete="removeFile(index)"
         />
-        <Divider>{{ $t('or') }}</Divider>
+        <Divider>{{ $t('ou') }}</Divider>
         <h2 class="text-sm font-bold uppercase mb-2">
           {{ $t('Ajouter un lien') }}
         </h2>

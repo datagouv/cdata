@@ -16,7 +16,7 @@
             <div class="fr-col-12 fr-col-lg-4 ml-auto">
               <div class="flex items-center md:flex-wrap">
                 <p class="flex-1 text-center ml-3v m-0">
-                  {{ t('or') }}
+                  {{ t('ou') }}
                 </p>
                 <div class="flex-1 ml-3v m-0">
                   <BrandedButton
