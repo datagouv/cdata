@@ -11,4 +11,4 @@ export type DatasetsListBloc = {
   subtitle: string | null
   datasets: Array<Dataset>
 }
-export type PageBloc = DatasetsListBloc
+export type PageBloc = DatasetsListBloc & { id: string }
