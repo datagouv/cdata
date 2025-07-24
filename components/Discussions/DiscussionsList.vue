@@ -112,7 +112,7 @@
             color="primary"
             @click="resetFilters"
           >
-            {{ $t('Réinitialiser les filtres') }}
+            {{ $t('Réinitialiser la recherche') }}
           </BrandedButton>
         </template>
         <template v-else>
