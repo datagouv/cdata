@@ -4,7 +4,7 @@
       <BreadcrumbItem>{{ t('Jeux de données') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="font-bold text-2xl mb-5">
+    <h1 class="font-bold text-2xl text-gray-title mb-5">
       {{ t("Jeux de données") }}
     </h1>
 

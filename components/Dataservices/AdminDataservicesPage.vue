@@ -4,7 +4,7 @@
       <BreadcrumbItem>{{ t('API') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="font-bold text-2xl mb-5">
+    <h1 class="font-bold text-2xl text-gray-title mb-5">
       {{ t("API") }}
     </h1>
     <TransferRequestList

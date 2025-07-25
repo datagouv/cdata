@@ -51,7 +51,7 @@
             :size="80"
           />
           <div>
-            <h1 class="mb-0">
+            <h1 class="text-2xl text-gray-title font-bold mb-0">
               {{ user.first_name }} {{ user.last_name }}
             </h1>
             <CdataLink

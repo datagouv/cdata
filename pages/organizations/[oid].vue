@@ -52,7 +52,7 @@
           :size="80"
           class="bg-white p-1 rounded-sm border border-gray-default object-contain mb-2.5"
         />
-        <h1 class="!text-2xl !font-extrabold !mb-2.5">
+        <h1 class="text-2xl font-extrabold text-gray-title mb-2.5">
           <OrganizationNameWithCertificate
             :certifier="config.public.title"
             :organization

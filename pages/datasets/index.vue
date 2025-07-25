@@ -12,7 +12,7 @@
       </BreadcrumbItem>
     </Breadcrumb>
 
-    <h1 class="!mb-2">
+    <h1 class="text-gray-title font-bold text-2xl mb-2">
       {{ $t('Jeux de données') }}
     </h1>
     <p

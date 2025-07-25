@@ -1,5 +1,5 @@
 <template>
-  <h1 class="!mb-2">
+  <h1 class="text-gray-title text-2xl font-bold !mb-2">
     {{ $t('Organisations') }}
   </h1>
   <label
