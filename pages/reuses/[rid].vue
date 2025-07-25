@@ -116,7 +116,7 @@
                 {{ reuse.owner.first_name }} {{ reuse.owner.last_name }}
               </CdataLink>
             </div>
-            <h1 class="!text-2xl !font-extrabold !mb-1">
+            <h1 class="text-2xl font-extrabold text-gray-title mb-1">
               {{ reuse.title }}
             </h1>
             <ReuseDetails

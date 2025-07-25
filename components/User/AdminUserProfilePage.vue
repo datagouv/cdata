@@ -4,7 +4,7 @@
       <BreadcrumbItem>{{ $t('Profil') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="fr-h3 !mb-5">
+    <h1 class="text-2xl font-extrabold text-gray-title mb-5">
       {{ $t("Profil") }}
     </h1>
     <PaddedContainer class="!p-5">
@@ -17,7 +17,7 @@
           />
         </div>
         <div class="w-full flex-none md:flex-1">
-          <h2 class="!mb-0 fr-h3">
+          <h2 class="!mb-0 text-2xl font-bold">
             {{ user.first_name }} {{ user.last_name }}
           </h2>
           <AdminEmail :user />

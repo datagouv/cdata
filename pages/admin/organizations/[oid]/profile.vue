@@ -4,7 +4,7 @@
       <BreadcrumbItem>{{ t('Profil') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="fr-h3 fr-mb-5v">
+    <h1 class="text-2xl font-extrabold text-gray-title mb-5">
       {{ t("Profil") }}
     </h1>
     <PaddedContainer
@@ -19,7 +19,7 @@
             :size="80"
             class="rounded border"
           />
-          <div class="fr-col fr-ml-3v fr-my-0 fr-h3">
+          <div class="fr-col fr-ml-3v fr-my-0 text-2xl font-bold">
             {{ organization.name }}
             <span
               v-if="isOrganizationCertified(organization)"

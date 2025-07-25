@@ -1,7 +1,7 @@
 <template>
   <div class="bg-gray-some py-6 space-y-6">
     <div class="container bg-white max-w-xl p-6 border border-gray-lower">
-      <h1 class="text-center text-2xl">
+      <h1 class="text-center text-gray-title font-extrabold text-2xl">
         {{ $t('Se connecter') }}
       </h1>
 

@@ -19,9 +19,9 @@
         :key="section.id"
         class="section-block"
       >
-        <h1 class="title-section">
+        <h2 class="title-section">
           {{ section.title }}
-        </h1>
+        </h2>
         <div
           class="section-content"
           v-html="section.content"
@@ -49,9 +49,9 @@
         v-if="faq.length"
         class="fr-mt-10w"
       >
-        <h1 class="title-section">
+        <h2 class="title-section">
           Foire aux questions
-        </h1>
+        </h2>
         <AccordionGroup>
           <Accordion
             v-for="item in faq"
