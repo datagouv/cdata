@@ -44,6 +44,13 @@ export type DataserviceSearchParams = {
   page_size?: string
 }
 
+export type OrganizationSearchParams = {
+  q?: string
+  sort?: string
+  page?: string
+  page_size?: string
+}
+
 export type ReuseSearchParams = {
   q?: string
   sort?: string
