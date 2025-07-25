@@ -285,7 +285,7 @@
                 </dd>
                 <template v-if="generatedFormats.length">
                   <dt class="font-bold fr-text--sm fr-mb-0">
-                    {{ $t('Formats générés automatiquement par {platform} (dernière mise à jour le : {date})', { platform: config.name, date: conversionsLastUpdate }) }}
+                    {{ $t('Formats générés automatiquement par {platform} (dernière mise à jour {date})', { platform: config.name, date: conversionsLastUpdate }) }}
                   </dt>
                   <dd
                     v-for="generatedFormat in generatedFormats"
