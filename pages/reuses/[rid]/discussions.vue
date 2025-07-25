@@ -1,14 +1,19 @@
 <template>
   <DiscussionsList
-    type="Reuse"
     :subject="reuse"
+    type="Reuse"
+    :closed
   />
 </template>
 
 <script setup lang="ts">
 import type { Reuse } from '@datagouv/components-next'
 
-defineProps<{
+const props = defineProps<{
   reuse: Reuse
 }>()
+const closed = computed(() => props.reuse.metrics.discussions - props.reuse.metrics.discussions_open)
+console.log(closed)
+
+useSeoMeta({ robots: 'noindex' })
 </script>

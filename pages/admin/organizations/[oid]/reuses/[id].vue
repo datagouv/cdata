@@ -8,7 +8,7 @@
 
     <div v-if="reuse">
       <div class="flex items-center justify-between mb-5">
-        <h1 class="fr-h3 !mb-0">
+        <h1 class="text-2xl font-extrabold text-gray-title !mb-0">
           {{ reuse.title }}
         </h1>
         <BrandedButton

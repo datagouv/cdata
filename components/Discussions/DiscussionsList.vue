@@ -37,15 +37,24 @@
       />
     </div>
     <div v-else>
-      <div
-        v-if="status === 'success'"
-        class="flex flex-wrap justify-between items-center mb-5"
-      >
-        <h2 class="text-sm font-bold uppercase m-0 text-gray-title">
+      <div class="flex flex-wrap justify-between items-center mb-5">
+        <h2
+          v-if="pageData"
+          class="text-sm font-bold uppercase m-0 text-gray-title"
+        >
           {{ t('{n} discussions | {n} discussion | {n} discussions', pageData.total) }}
+          <template v-if="closed">
+            {{ t('dont {n} clotûrées | dont {n} clotûrée | dont {n} clotûrées', closed) }}
+          </template>
         </h2>
 
-        <div>
+        <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
+          <AdminInput
+            v-model="q"
+            type="search"
+            :icon="RiSearchLine"
+            :placeholder="$t('Recherche')"
+          />
           <BrandedButton
             color="secondary"
             size="xs"
@@ -90,16 +99,30 @@
       </LoadingBlock>
 
       <div
-        v-if="pageData && !pageData.total"
-        class="flex flex-col items-center"
+        v-if="status != 'pending' && pageData && !pageData.total"
+        class="flex flex-col items-center fr-my-3v"
       >
         <nuxt-img
           src="/illustrations/discussion.svg"
           class="h-20"
         />
-        <p class="fr-text--bold fr-my-3v">
-          {{ t(`Il n'y a pas encore de discussion`) }}
-        </p>
+
+        <template v-if="q">
+          <p class="fr-text--bold fr-my-3v">
+            {{ t(`Pas de résultats pour « {q} »`, { q }) }}
+          </p>
+          <BrandedButton
+            color="primary"
+            @click="resetFilters"
+          >
+            {{ $t('Réinitialiser la recherche') }}
+          </BrandedButton>
+        </template>
+        <template v-else>
+          <p class="fr-text--bold fr-my-3v">
+            {{ t(`Il n'y a pas encore de discussion`) }}
+          </p>
+        </template>
       </div>
     </div>
   </div>
@@ -108,7 +131,8 @@
 <script setup lang="ts">
 import { BrandedButton, Pagination, SimpleBanner } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
-import { RiAddLine, RiCloseCircleLine } from '@remixicon/vue'
+import { RiAddLine, RiCloseCircleLine, RiSearchLine } from '@remixicon/vue'
+import { refDebounced } from '@vueuse/core'
 import NewDiscussionForm from './NewDiscussionForm.vue'
 import DiscussionCard from './DiscussionCard.vue'
 import type { PaginatedArray, SortDirection } from '~/types/types'
@@ -117,6 +141,7 @@ import type { DiscussionSortedBy, DiscussionSubject, DiscussionSubjectTypes, Thr
 const props = defineProps<{
   type: DiscussionSubject['class']
   subject: DiscussionSubjectTypes
+  closed?: number
 }>()
 
 const { t } = useI18n()
@@ -128,11 +153,18 @@ const pageSize = ref(20)
 const sortedBy = ref<DiscussionSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
+const q = ref('')
+const qDebounced = refDebounced(q, 500) // TODO add 500 in config
 
 const me = useMaybeMe()
 const localePath = useLocalePath()
 
 const newDiscussion = ref(false)
+
+const resetFilters = () => {
+  q.value = ''
+  qDebounced.value = ''
+}
 
 const showDiscussionForm = () => {
   if (me.value) {
@@ -146,9 +178,10 @@ const showDiscussionForm = () => {
 const params = computed(() => {
   const query = {
     sort: sortDirection.value,
-
     page_size: pageSize.value,
     page: page.value,
+
+    q: qDebounced.value,
   } as Record<string, string | number | null | boolean>
 
   if (isClosed.value !== null) {

@@ -4,7 +4,7 @@
       <BreadcrumbItem>{{ t('Utilisateurs') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="fr-h3 fr-mb-5v">
+    <h1 class="text-2xl font-extrabold text-gray-title mb-5">
       {{ t("Utilisateurs") }}
     </h1>
     <div
