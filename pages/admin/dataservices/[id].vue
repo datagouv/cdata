@@ -20,7 +20,7 @@
 
     <div v-if="dataservice">
       <div class="flex flex-wrap items-center justify-between mb-3 gap-x-4 gap-y-2">
-        <h1 class="flex-none w-full md:flex-1 font-bold text-gray-title text-2xl !mb-0">
+        <h1 class="flex-none w-full md:flex-1 text-gray-title font-extrabold text-2xl !mb-0">
           {{ dataservice.title }}
         </h1>
         <BrandedButton

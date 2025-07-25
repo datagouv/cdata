@@ -4,7 +4,7 @@
       <BreadcrumbItem>{{ t('Articles') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="text-2xl font-bold text-gray-title mb-5">
+    <h1 class="text-2xl font-extrabold text-gray-title mb-5">
       {{ t("Articles") }}
     </h1>
     <div
