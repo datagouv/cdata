@@ -27,52 +27,54 @@
         />
       </div>
     </div>
-    <h1 class="!text-4.5xl !font-extrabold !mb-0">
-      {{ post.name }}
-    </h1>
-    <template v-if="post.published || isMeAdmin()">
-      <p
-        v-if="post.published"
-        class="text-xs mb-0"
-      >
-        {{ $t('Publié le {date}', { date: formatDate(post.published) }) }}
-      </p>
-      <p
-        v-else
-        class="text-xs mb-0"
-      >
-        {{ $t('Pas encore publié') }}
-      </p>
-      <p class="mt-4 mb-6">
-        {{ post.headline }}
-      </p>
-      <img
-        v-if="post.image"
-        :src="post.image"
-        class="w-full h-auto"
-      >
-      <MarkdownViewer
-        v-if="post.body_type === 'markdown'"
-        :content="post.content"
-        :min-heading="2"
-        size="md"
-      />
-      <div
-        v-else
-        :class="markdownClasses"
-        v-html="post.content"
-      />
+    <div class="max-w-4xl mx-auto">
+      <h1 class="!text-4.5xl !font-extrabold !mb-0">
+        {{ post.name }}
+      </h1>
+      <template v-if="post.published || isMeAdmin()">
+        <p
+          v-if="post.published"
+          class="text-xs mb-0"
+        >
+          {{ $t('Publié le {date}', { date: formatDate(post.published) }) }}
+        </p>
+        <p
+          v-else
+          class="text-xs mb-0"
+        >
+          {{ $t('Pas encore publié') }}
+        </p>
+        <p class="mt-4 mb-6">
+          {{ post.headline }}
+        </p>
+        <img
+          v-if="post.image"
+          :src="post.image"
+          class="w-full h-auto"
+        >
+        <MarkdownViewer
+          v-if="post.body_type === 'markdown'"
+          :content="post.content"
+          :min-heading="2"
+          size="md"
+        />
+        <div
+          v-else
+          :class="markdownClasses"
+          v-html="post.content"
+        />
 
-      <DiscussionsList
-        v-if="config.public.allowDiscussionsInPosts"
-        class="mt-16"
-        type="Post"
-        :subject="post"
-      />
-    </template>
-    <template v-else>
-      {{ $t(`Cet article n'est pas encore publié`) }}
-    </template>
+        <DiscussionsList
+          v-if="config.public.allowDiscussionsInPosts"
+          class="mt-16"
+          type="Post"
+          :subject="post"
+        />
+      </template>
+      <template v-else>
+        {{ $t(`Cet article n'est pas encore publié`) }}
+      </template>
+    </div>
   </div>
 </template>
 
