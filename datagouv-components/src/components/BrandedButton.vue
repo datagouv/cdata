@@ -52,7 +52,7 @@ import type { RouteLocation } from 'vue-router'
 import AppLink from './AppLink.vue'
 import { bannerActionTypeKey } from './BannerAction.vue'
 
-type ColorType = 'primary' | 'primary-soft' | 'primary-softer' | 'secondary' | 'secondary-softer' | 'warning' | 'danger' | 'tertiary'
+type ColorType = 'primary' | 'primary-soft' | 'primary-softer' | 'secondary' | 'secondary-softer' | 'warning' | 'danger' | 'tertiary' | 'purple-flat'
 
 const props = withDefaults(defineProps<{
   size?: '2xs' | 'xs' | 'sm' | 'lg' | 'xl'
@@ -118,6 +118,8 @@ const colors = computed(() => {
     'warning': `text-warning-dark bg-white !border-warning-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'danger': `!text-danger-dark bg-white !border-danger-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'tertiary': `!border-none bg-transparent text-datagouv-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'purple-flat': `!border-none bg-purple-dataservice text-white ${!isDisabled.value ? '[&&]:hover:!bg-purple-dataservice/90' : ''}`,
+    'white-flat': `!border-none bg-white text-primary ${!isDisabled.value ? '[&&]:hover:!bg-purple-dataservice/90' : ''}`,
   }[color.value]
 })
 

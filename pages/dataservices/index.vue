@@ -18,17 +18,26 @@
     />
     <div class="container flex flex-col sm:flex-row items-center">
       <div class="w-full">
-        <div class="font-extrabold text-3xl">
-          {{ $t('Administrations, ') }}
-        </div>
-        <div class="text-3xl">
-          {{ $t('simplifiez les démarches administratives grâce aux APIs') }}
-        </div>
-        <div class="mt-2">
-          {{ $t('Retrouvez ici des exemples d’outils et d’accompagnement qui sont à votre disposition afin de simplifier, avec de la donnée, les démarches des citoyens.') }}
+        <div class="max-w-md">
+          <div class="font-extrabold text-3xl">
+            {{ $t('Administrations, ') }}
+          </div>
+          <div class="text-3xl">
+            {{ $t('simplifiez les démarches administratives grâce aux APIs') }}
+          </div>
+          <div class="mt-2">
+            {{ $t('Retrouvez ici des exemples d’outils et d’accompagnement qui sont à votre disposition afin de simplifier, avec de la donnée, les démarches des citoyens.') }}
+          </div>
+
+          <BrandedButton
+            color="purple-flat"
+            class="mt-8"
+          >
+            {{ $t('En savoir plus') }}
+          </BrandedButton>
         </div>
       </div>
-      <div class="w-full py-16 px-11 grid grid-cols-2 gap-4">
+      <div class="w-full py-16 grid grid-cols-2 gap-4">
         <div class="bg-gray-lowest-2 flex flex-col items-center p-8 space-y-4">
           <svg
             width="81"
@@ -208,7 +217,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Site } from '@datagouv/components-next'
+import { BrandedButton, type Site } from '@datagouv/components-next'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
 import PageShow from '~/components/Pages/PageShow.vue'
