@@ -86,7 +86,7 @@
                   </div>
                 </div>
                 <div
-                  v-if="bloc.type === 'datasets_list'"
+                  v-if="bloc.type === 'DatasetsListBloc'"
                   class="max-w-full text-gray-title truncate"
                 >
                   <template v-if="bloc.datasets.length">
@@ -97,7 +97,7 @@
                   </template>
                 </div>
                 <div
-                  v-if="bloc.type === 'reuses_list'"
+                  v-if="bloc.type === 'ReusesListBloc'"
                   class="max-w-full text-gray-title truncate"
                 >
                   <template v-if="bloc.reuses.length">
@@ -108,7 +108,7 @@
                   </template>
                 </div>
                 <div
-                  v-if="bloc.type === 'dataservices_list'"
+                  v-if="bloc.type === 'DataservicesListBloc'"
                   class="max-w-full text-gray-title truncate"
                 >
                   <template v-if="bloc.dataservices.length">
@@ -119,7 +119,7 @@
                   </template>
                 </div>
                 <div
-                  v-if="bloc.type === 'links_list'"
+                  v-if="bloc.type === 'LinksListBloc'"
                   class="max-w-full text-gray-title truncate"
                 >
                   <template v-if="bloc.links.length">
@@ -159,19 +159,19 @@
                   />
 
                   <DatasetsSelect
-                    v-if="bloc.type === 'datasets_list'"
+                    v-if="bloc.type === 'DatasetsListBloc'"
                     v-model="bloc.datasets"
                   />
                   <ReusesSelect
-                    v-if="bloc.type === 'reuses_list'"
+                    v-if="bloc.type === 'ReusesListBloc'"
                     v-model="bloc.reuses"
                   />
                   <DataservicesSelect
-                    v-if="bloc.type === 'dataservices_list'"
+                    v-if="bloc.type === 'DataservicesListBloc'"
                     v-model="bloc.dataservices"
                   />
                   <LinksListForm
-                    v-if="bloc.type === 'links_list'"
+                    v-if="bloc.type === 'LinksListBloc'"
                     class="border-t"
                     :model-value="bloc"
                     @update:model-value="page.blocs[index] = $event"

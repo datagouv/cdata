@@ -11,15 +11,15 @@ export type BlocWithTitle = {
 }
 
 export type DatasetsListBloc = {
-  type: 'datasets_list'
+  type: 'DatasetsListBloc'
   datasets: Array<DatasetV2>
 } & BlocWithTitle & { id: string }
 export type DataservicesListBloc = {
-  type: 'dataservices_list'
+  type: 'DataservicesListBloc'
   dataservices: Array<Dataservice>
 } & BlocWithTitle & { id: string }
 export type ReusesListBloc = {
-  type: 'reuses_list'
+  type: 'ReusesListBloc'
   reuses: Array<Reuse>
 } & BlocWithTitle & { id: string }
 
@@ -30,7 +30,7 @@ export type LinkInBloc = {
 }
 
 export type LinksListBloc = {
-  type: 'links_list'
+  type: 'LinksListBloc'
   paragraph: string | null
   main_link_title: string | null
   main_link_url: string | null

@@ -5,29 +5,29 @@ export function useBlocsTypes() {
   const { t } = useI18n()
 
   return {
-    datasets_list: {
+    DatasetsListBloc: {
       icon: RiDatabase2Line,
       name: t('Données à la une'),
       description: t('Mettre en avant jusqu\'à 4 jeux de données'),
-      default: (): Omit<DatasetsListBloc, 'id'> => ({ type: 'datasets_list', title: 'Mes jeux de données', subtitle: '', datasets: [] }),
+      default: (): Omit<DatasetsListBloc, 'id'> => ({ type: 'DatasetsListBloc', title: 'Mes jeux de données', subtitle: '', datasets: [] }),
     },
-    dataservices_list: {
+    DataservicesListBloc: {
       icon: RiRobot2Line,
       name: t('APIs à la une'),
       description: t('Mettre en avant jusqu\'à 4 APIs'),
-      default: (): Omit<DataservicesListBloc, 'id'> => ({ type: 'dataservices_list', title: 'Mes APIs', subtitle: '', dataservices: [] }),
+      default: (): Omit<DataservicesListBloc, 'id'> => ({ type: 'DataservicesListBloc', title: 'Mes APIs', subtitle: '', dataservices: [] }),
     },
-    reuses_list: {
+    ReusesListBloc: {
       icon: RiLineChartLine,
       name: t('Réutilisations à la une'),
       description: t('Mettre en avant jusqu\'à 4 réutilisations'),
-      default: (): Omit<ReusesListBloc, 'id'> => ({ type: 'reuses_list', title: 'Mes réutilisations', subtitle: '', reuses: [] }),
+      default: (): Omit<ReusesListBloc, 'id'> => ({ type: 'ReusesListBloc', title: 'Mes réutilisations', subtitle: '', reuses: [] }),
     },
-    links_list: {
+    LinksListBloc: {
       icon: RiLink,
       name: t('Liens à la une'),
       description: t('Mettre en avant jusqu\'à 4 liens'),
-      default: (): Omit<LinksListBloc, 'id'> => ({ type: 'links_list', title: 'Mes liens', subtitle: '', paragraph: '', main_link_title: '', main_link_url: '', links: [] }),
+      default: (): Omit<LinksListBloc, 'id'> => ({ type: 'LinksListBloc', title: 'Mes liens', subtitle: '', paragraph: '', main_link_title: '', main_link_url: '', links: [] }),
     },
   }
 }

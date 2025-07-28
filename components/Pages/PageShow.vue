@@ -17,7 +17,7 @@
         </div>
       </div>
       <div
-        v-if="bloc.type === 'datasets_list'"
+        v-if="bloc.type === 'DatasetsListBloc'"
         class="grid sm:grid-cols-2 gap-5"
       >
         <DatasetCardLg
@@ -27,7 +27,7 @@
         />
       </div>
       <div
-        v-if="bloc.type === 'dataservices_list'"
+        v-if="bloc.type === 'DataservicesListBloc'"
         class="grid sm:grid-cols-2 gap-5"
       >
         <DataserviceCard
@@ -37,7 +37,7 @@
         />
       </div>
       <div
-        v-if="bloc.type === 'reuses_list'"
+        v-if="bloc.type === 'ReusesListBloc'"
         class="grid sm:grid-cols-3 gap-5"
       >
         <ReuseCard
@@ -47,7 +47,7 @@
         />
       </div>
       <div
-        v-if="bloc.type === 'links_list'"
+        v-if="bloc.type === 'LinksListBloc'"
         class="flex flex-col sm:flex-row gap-8 sm:gap-16"
       >
         <p
