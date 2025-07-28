@@ -3,8 +3,8 @@
     <div class="bg-white py-6 md:py-8 border-t border-t-gray-default">
       <div class="fr-container">
         <div class="flex flex-wrap divide-y md:divide-y-0 md:divide-x divide-gray-default">
-          <div class="w-full md:pr-[6%] md:w-2/3 flex flex-wrap">
-            <div class="flex-none flex items-center fr-mr-5v">
+          <div class="w-full pb-6 md:pb-0 md:pr-[6%] md:w-2/3 flex flex-wrap">
+            <div class="flex-none flex items-center mr-5">
               <NuxtImg
                 src="/img/newspaper.svg"
                 loading="lazy"
