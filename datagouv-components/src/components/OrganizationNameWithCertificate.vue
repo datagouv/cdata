@@ -1,5 +1,5 @@
 <template>
-  <div class="flex gap-1 items-center">
+  <div class="min-w-0 flex gap-1 items-center">
     <OwnerTypeIcon
       v-if="showType"
       :type="getOrganizationType(organization)"
