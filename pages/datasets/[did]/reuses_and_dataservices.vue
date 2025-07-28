@@ -35,6 +35,7 @@
           <ReuseCard
             v-for="reuse in reuses.data"
             :key="reuse.id"
+            class="truncate"
             :reuse-url="reuse.page"
             :reuse
           />

@@ -1,13 +1,14 @@
 <template>
   <header class="space-y-1">
-    <div class="flex sm:items-center sm:justify-between flex-col sm:flex-row">
+    <div class="flex gap-3 sm:items-center sm:justify-between flex-col sm:flex-row">
       <h3 class="m-0 text-base/normal text-gray-title flex items-center space-x-1">
         <RiLockLine
           v-if="thread.closed"
           class="size-4"
         />
-        <span>{{ thread.title }}</span>
+        <span class="flex-1">{{ thread.title }}</span>
         <CopyButton
+          class="max-w-6/12"
           :label="$t('Copier le lien vers cette discussion')"
           :copied-label="$t('Lien copié')"
           :text="getDiscussionUrl(thread.id, subject)"

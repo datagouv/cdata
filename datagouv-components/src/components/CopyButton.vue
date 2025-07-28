@@ -1,33 +1,33 @@
 <template>
   <button
     type="button"
-    class="text-sm mb-0 whitespace-nowrap relative p-1 text-gray-medium leading-none"
+    class="text-sm mb-0 md:whitespace-nowrap relative p-1 text-gray-medium leading-none text-left"
     :class="{ 'border bg-white rounded-sm text-gray-title': hideLabel }"
     @click="copy"
   >
     <span
       v-if="copied"
-      class="flex items-center"
+      class="flex items-center gap-1"
       :class="{ 'flex-row-reverse': reverse }"
       style="color: #3558a2;"
     >
-      <RiCheckLine class="size-4 inline" />
+      <RiCheckLine class="flex-none size-4 inline" />
       <span
-        class="fr-ml-1v copy-label"
+        class="copy-label"
         :class="{ 'fr-sr-only': hideLabel }"
       >{{ copiedLabel }}</span>
     </span>
     <span
       v-if="!copied"
-      class="flex items-center"
+      class="flex items-center gap-1"
       :class="{ 'flex-row-reverse': reverse }"
     >
       <component
         :is="hideLabel ? RiClipboardLine : RiFileCopyLine"
-        class="size-4 inline"
+        class="size-4 flex-none inline"
       />
       <span
-        class="fr-ml-1v copy-link copy-label"
+        class="copy-link copy-label"
         :class="{ 'fr-sr-only': hideLabel }"
       >{{ label }}</span>
     </span>

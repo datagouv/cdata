@@ -4,7 +4,7 @@
     class="mb-4 md:mb-0"
   >
     <nav
-      class="fr-sidemenu"
+      class="fr-sidemenu mx-0"
       :class="{ 'fr-sidemenu--right': onRight, 'fr-sidemenu--no-border': !showBorder, 'fr-sidemenu--sticky': fixed, 'fr-sidemenu--sticky-full-height': stickyFullHeight }"
       :aria-labelledby="titleId"
     >
