@@ -237,6 +237,7 @@ export default defineNuxtConfig({
     lazy: true,
     detectBrowserLanguage: false,
     strategy: 'no_prefix',
+    trailingSlash: true,
     defaultLocale: 'fr',
   },
   image: {
