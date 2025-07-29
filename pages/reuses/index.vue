@@ -30,7 +30,7 @@
             color="green-flat"
             class="mt-8"
           >
-            {{ $t('En savoir plus') }}
+            {{ $t(`Voir les cas d'usage`) }}
           </BrandedButton>
         </div>
       </div>
