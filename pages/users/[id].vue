@@ -41,8 +41,8 @@
         />
       </div>
     </div>
-    <div class="space-y-12">
-      <div class="flex justify-between items-center">
+    <div class="mt-4 space-y-12">
+      <div class="flex justify-between items-center gap-2">
         <div class="flex items-center space-x-8">
           <Avatar
             rounded
@@ -65,7 +65,7 @@
           </div>
         </div>
         <div class="flex flex-col items-end gap-2">
-          <div class="flex gap-2">
+          <div class="flex flex-wrap gap-2">
             <AdminBadge
               size="xs"
               type="secondary"
@@ -86,7 +86,7 @@
             </AdminBadge>
           </div>
 
-          <div class="flex gap-2">
+          <div class="flex flex-wrap gap-2">
             <AdminBadge
               size="xs"
               type="secondary"
@@ -112,6 +112,7 @@
           <OrganizationCard
             v-for="organization in user.organizations"
             :key="organization.id"
+            class="min-w-0"
             :organization
           />
         </div>
@@ -141,6 +142,7 @@
           <DatasetCardLg
             v-for="dataset in datasets.data"
             :key="dataset.id"
+            class="min-w-0"
             :dataset
           />
         </div>
@@ -166,6 +168,7 @@
           <ReuseCard
             v-for="reuse in reuses.data"
             :key="reuse.id"
+            class="min-w-0"
             :reuse
           />
         </div>
@@ -191,6 +194,7 @@
           <DatasetCardLg
             v-for="dataset in followedDatasets.data"
             :key="dataset.id"
+            class="min-w-0"
             :dataset
           />
         </div>
