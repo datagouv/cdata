@@ -15,6 +15,7 @@
     <PageShow
       v-if="page"
       :page
+      main-color="purple-flat"
     />
     <div class="container flex flex-col sm:flex-row items-center">
       <div class="w-full">
@@ -30,6 +31,7 @@
           </div>
 
           <BrandedButton
+            v-if="false"
             color="purple-flat"
             class="mt-8"
           >

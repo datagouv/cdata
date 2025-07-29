@@ -92,6 +92,7 @@ export default defineNuxtConfig({
       guideDatasets: 'https://guides.data.gouv.fr/guide-data.gouv.fr/jeux-de-donnees',
       guideReuses: 'https://guides.data.gouv.fr/guide-data.gouv.fr/reutilisations',
       guideDataservices: 'https://guides.data.gouv.fr/guide-data.gouv.fr/api',
+      reusesOnboardingUsecases: 'https://www.data.gouv.fr/pages/onboarding/liste_cas_usage/',
 
       homepagePublishDatasetOnboarding: '/pages/onboarding/producteurs',
       homepagePublishReuseOnboarding: '/pages/onboarding/reutilisateurs',

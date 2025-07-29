@@ -50,12 +50,23 @@
         v-if="bloc.class === 'LinksListBloc'"
         class="flex flex-col sm:flex-row gap-8 sm:gap-16"
       >
-        <p
+        <div
           v-if="bloc.paragraph"
-          class="mb-0 w-full font-light text-2xl"
+          class="w-full"
         >
-          {{ bloc.paragraph }}
-        </p>
+          <p class="mb-0 font-light text-2xl">
+            {{ bloc.paragraph }}
+          </p>
+
+          <BrandedButton
+            v-if="bloc.main_link_title && bloc.main_link_url"
+            :href="bloc.main_link_url"
+            class="mt-12"
+            :color="mainColor"
+          >
+            {{ bloc.main_link_title }}
+          </BrandedButton>
+        </div>
         <div class="space-y-8 w-full">
           <div
             v-for="link in bloc.links"
@@ -73,6 +84,14 @@
               <RiArrowRightUpLine class="absolute top-0 -right-9 size-9" />
             </CdataLink>
           </div>
+          <BrandedButton
+            v-if="! bloc.paragraph && bloc.main_link_title && bloc.main_link_url"
+            :href="bloc.main_link_url"
+            class="mt-12"
+            :color="mainColor"
+          >
+            {{ bloc.main_link_title }}
+          </BrandedButton>
         </div>
       </div>
     </div>
@@ -80,12 +99,15 @@
 </template>
 
 <script setup lang="ts">
-import { DataserviceCard, ReuseCard } from '@datagouv/components-next'
+import { BrandedButton, DataserviceCard, ReuseCard } from '@datagouv/components-next'
 import { RiArrowRightUpLine } from '@remixicon/vue'
 import CdataLink from '../CdataLink.vue'
 import type { Page } from '~/types/pages'
 
-defineProps<{
+withDefaults(defineProps<{
   page: Page
-}>()
+  mainColor?: string
+}>(), {
+  mainColor: 'primary',
+})
 </script>

@@ -52,7 +52,7 @@ import type { RouteLocation } from 'vue-router'
 import AppLink from './AppLink.vue'
 import { bannerActionTypeKey } from './BannerAction.vue'
 
-type ColorType = 'primary' | 'primary-soft' | 'primary-softer' | 'secondary' | 'secondary-softer' | 'warning' | 'danger' | 'tertiary' | 'purple-flat' | 'green-flat' | 'white-flat'
+export type ColorType = 'primary' | 'primary-soft' | 'primary-softer' | 'secondary' | 'secondary-softer' | 'warning' | 'danger' | 'tertiary' | 'purple-flat' | 'green-flat' | 'white-flat'
 
 const props = withDefaults(defineProps<{
   size?: '2xs' | 'xs' | 'sm' | 'lg' | 'xl'

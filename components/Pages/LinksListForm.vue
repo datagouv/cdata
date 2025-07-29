@@ -2,8 +2,18 @@
   <div>
     <InputGroup
       v-model="bloc.paragraph"
-      :label="$t('Text libre')"
+      :label="$t('Texte libre')"
       type="textarea"
+    />
+
+    <InputGroup
+      v-model="bloc.main_link_title"
+      :label="$t('Titre du bouton principal')"
+    />
+    <InputGroup
+      v-model="bloc.main_link_url"
+      class="w-full mb-0"
+      :label="$t('Lien pour le bouton principal')"
     />
 
     <div

@@ -43,6 +43,7 @@
           <BrandedButton
             color="green-flat"
             class="mt-8"
+            :href="config.public.reusesOnboardingUsecases"
           >
             {{ $t(`Voir les cas d'usage`) }}
           </BrandedButton>
