@@ -40,7 +40,7 @@
       <div class="w-full py-16 grid grid-cols-2 gap-4">
         <div class="bg-gray-lowest-2 flex flex-col items-center p-8 space-y-4">
           <nuxt-img
-            src="/illustrations/book-down.svg"
+            src="/illustrations/book-2.svg"
             class="h-20"
           />
 
@@ -53,7 +53,7 @@
         </div>
         <div class="bg-gray-lowest-2 flex flex-col items-center p-8 space-y-4">
           <nuxt-img
-            src="/illustrations/newspaper-with-id.svg"
+            src="/illustrations/newspapper.svg"
             class="h-20"
           />
 
@@ -79,7 +79,7 @@
         </div>
         <div class="bg-gray-lowest-2 flex flex-col items-center p-8 space-y-4">
           <nuxt-img
-            src="/illustrations/presentation-by-human.svg"
+            src="/illustrations/show.svg"
             class="h-20"
           />
 

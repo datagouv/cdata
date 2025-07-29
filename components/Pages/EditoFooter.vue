@@ -8,9 +8,10 @@
         {{ $t(`Vous n'avez pas trouvé ce que vous cherchez ?`) }}
       </p>
       <BrandedButton
-        color="secondary"
+        color="white-flat"
         size="lg"
         :href="searchUrl"
+        :class="textColor"
       >
         {{ searchLabel }}
       </BrandedButton>
@@ -31,5 +32,11 @@ const bgColor = computed(() => ({
   primary: 'bg-primary',
   green: 'bg-green-reuse',
   purple: 'bg-purple-dataservice',
+}[props.color]))
+
+const textColor = computed(() => ({
+  primary: 'text-primary',
+  green: 'text-green-reuse',
+  purple: 'text-purple-dataservice',
 }[props.color]))
 </script>
