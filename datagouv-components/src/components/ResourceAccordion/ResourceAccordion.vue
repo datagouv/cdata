@@ -356,10 +356,6 @@ import ResourceIcon from './ResourceIcon.vue'
 import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
-import Pmtiles from './Pmtiles.vue'
-import JsonPreview from './JsonPreview.vue'
-import PdfPreview from './PdfPreview.vue'
-import XmlPreview from './XmlPreview.vue'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 
@@ -377,8 +373,12 @@ const props = withDefaults(defineProps<{
 
 const config = useComponentsConfig()
 
-const Swagger = defineAsyncComponent(() => import('./Swagger.vue'))
+const Swagger = defineAsyncComponent(() => import('./Swagger.client.vue'))
 const MapContainer = defineAsyncComponent(() => import('./MapContainer.client.vue'))
+const Pmtiles = defineAsyncComponent(() => import('./Pmtiles.client.vue'))
+const JsonPreview = defineAsyncComponent(() => import('./JsonPreview.client.vue'))
+const PdfPreview = defineAsyncComponent(() => import('./PdfPreview.client.vue'))
+const XmlPreview = defineAsyncComponent(() => import('./XmlPreview.client.vue'))
 
 const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
