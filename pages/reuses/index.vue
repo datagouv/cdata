@@ -11,7 +11,21 @@
       search-url="/reuses/search"
       :link-label="$t(`Qu'est-ce qu'une réutilisation ?`)"
       :link-url="config.public.guideReuses"
-    />
+    >
+      <ul class="flex flex-wrap gap-3 list-none pl-0">
+        <li
+          v-for="topic in topics"
+          :key="topic.id"
+        >
+          <CdataLink
+            class="bg-white/10 text-white rounded-md px-2 py-1 text-lg fr-raw-link"
+            :href="`/reuses/search?topic=${topic.id}`"
+          >
+            {{ topic.label }}
+          </CdataLink>
+        </li>
+      </ul>
+    </EditoHeader>
     <PageShow
       v-if="page"
       :page
@@ -129,7 +143,8 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type Site } from '@datagouv/components-next'
+import { BrandedButton, type ReuseTopic, type Site } from '@datagouv/components-next'
+import CdataLink from '~/components/CdataLink.vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
 import PageShow from '~/components/Pages/PageShow.vue'
@@ -141,6 +156,8 @@ useSeoMeta({
 })
 
 const config = useRuntimeConfig()
+
+const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
 
 const { data: site } = await useAPI<Site>('/api/1/site')
 const { data: page } = await useAPI<Page>(`/api/1/pages/${site.value.reuses_page_id}`)
