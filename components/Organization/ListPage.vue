@@ -64,7 +64,7 @@
       <OrganizationCard
         v-for="organization in organizations.data"
         :key="organization.id"
-        class="col-span-1"
+        class="min-w-0"
         :organization
       />
     </div>
