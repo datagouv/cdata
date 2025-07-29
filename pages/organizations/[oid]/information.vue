@@ -176,7 +176,7 @@
                 type="secondary"
                 size="sm"
               >
-                {{ member.role }}
+                {{ member.label }}
               </AdminBadge>
             </p>
           </div>

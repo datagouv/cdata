@@ -27,7 +27,7 @@
         />
       </div>
     </div>
-    <h1 class="!text-4.5xl !font-extrabold !mb-0">
+    <h1 class="text-4.5xl font-extrabold text-gray-title mb-0">
       {{ post.name }}
     </h1>
     <template v-if="post.published || isMeAdmin()">

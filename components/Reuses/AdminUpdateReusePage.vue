@@ -180,7 +180,7 @@ async function save() {
       })
     }
 
-    toast.success(t('Réutilisation mise à jour!'))
+    toast.success(t('Réutilisation mise à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
@@ -195,7 +195,7 @@ async function deleteReuse() {
       method: 'DELETE',
     })
     refresh()
-    toast.success(t('Réutilisation supprimée!'))
+    toast.success(t('Réutilisation supprimée !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
@@ -216,10 +216,10 @@ async function archiveReuse() {
 
     refresh()
     if (reuse.value.archived) {
-      toast.success(t('Réutilisation désarchivée!'))
+      toast.success(t('Réutilisation désarchivée !'))
     }
     else {
-      toast.success(t('Réutilisation archivée!'))
+      toast.success(t('Réutilisation archivée !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
@@ -241,10 +241,10 @@ async function switchReusePrivate() {
 
     refresh()
     if (reuse.value.private) {
-      toast.success(t('Réutilisation publiée!'))
+      toast.success(t('Réutilisation publiée !'))
     }
     else {
-      toast.success(t('Réutilisation passée en brouillon!'))
+      toast.success(t('Réutilisation passée en brouillon !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
@@ -265,7 +265,7 @@ async function restoreReuse() {
     })
 
     refresh()
-    toast.success(t('Réutilisation restaurée!'))
+    toast.success(t('Réutilisation restaurée !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {

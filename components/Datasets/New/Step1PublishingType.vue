@@ -13,7 +13,7 @@
         aria-hidden="true"
       />
       <i18n-t
-        keypath="If you want to do tests, use {demo_server}."
+        keypath="Si vous souhaitez faire des tests, utilisez plutôt {demo_server}."
         scope="global"
       >
         <template #demo_server>

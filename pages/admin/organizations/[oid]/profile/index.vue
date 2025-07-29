@@ -163,7 +163,7 @@ async function updateCurrentOrganization(logo_file: File | null, newBadges: Arra
     if (logo_file && props.organization) {
       await uploadLogo(props.organization.id, logo_file)
     }
-    toast.success(t('Organization updated !'))
+    toast.success(t('Organisation mise à jour !'))
     emit('refresh')
 
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })

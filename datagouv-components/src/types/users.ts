@@ -14,6 +14,7 @@ export type User = {
   avatar_thumbnail?: string | null
   roles?: Array<string>
   organizations: Array<Organization>
+  last_login_at: string | null
   metrics: {
     datasets: number
     dataservices: number

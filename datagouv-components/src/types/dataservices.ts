@@ -56,7 +56,7 @@ export type Dataservice = Owned & {
   machine_documentation_url: string | null
   technical_documentation_url: string | null
   business_documentation_url: string | null
-  extras: Record<string, any>
+  extras: Record<string, unknown>
   format: string
   harvest: Harvest
   id: string
@@ -64,7 +64,13 @@ export type Dataservice = Owned & {
   access_audiences: Array<DataserviceAccessAudience>
   license: string | null
   metadata_modified_at: string
-  metrics: { discussions: number, followers: number, reuses: number, views: number }
+  metrics: {
+    discussions: number
+    discussions_open: number
+    followers: number
+    reuses: number
+    views: number
+  }
   permissions: { edit: boolean, delete: boolean }
   private: boolean
   rate_limiting: string

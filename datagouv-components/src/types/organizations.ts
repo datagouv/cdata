@@ -5,7 +5,9 @@ export type MemberRole = 'admin' | 'editor'
 
 export type Member = {
   role: MemberRole
+  label: string
   user: User
+  since: string | null
 }
 
 export type NewOrganization = {
@@ -23,6 +25,7 @@ export type Organization = NewOrganization & {
   last_modified: string
   last_update: string
   deleted: string | null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   extras: Record<string, any>
   logo_thumbnail: string
   members: Array<Member>

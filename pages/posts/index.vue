@@ -15,7 +15,7 @@
     </div>
     <div class="border-b border-gray-lowest">
       <div class="container">
-        <h1 class="text-4.5xl font-extrabold pt-10 pb-[3.75rem] !mb-0">
+        <h1 class="text-4.5xl font-extrabold text-gray-title pt-10 pb-[3.75rem] !mb-0">
           {{ $t('Articles') }}
         </h1>
       </div>

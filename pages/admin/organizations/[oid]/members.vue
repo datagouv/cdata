@@ -4,7 +4,7 @@
       <BreadcrumbItem>{{ t('Membres') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="font-bold text-2xl mb-5">
+    <h1 class="font-extrabold text-gray-title text-2xl mb-5">
       {{ t("Membres") }}
     </h1>
 
@@ -181,7 +181,7 @@
                 size="xs"
                 :type="getStatusType(member.role)"
               >
-                {{ getStatus(member.role) }}
+                {{ member.label }}
               </AdminBadge>
             </td>
             <td>{{ formatDate(member.since) }}</td>
@@ -346,10 +346,6 @@ const rolesOptions = computed(() => {
   }))
 })
 const loading = ref(false)
-
-function getStatus(role: MemberRole): string {
-  return (roles.value || []).find(memberRole => memberRole.id === role)?.label ?? role
-}
 
 function getStatusType(role: MemberRole): AdminBadgeType {
   return role === 'admin' ? 'primary' : 'secondary'
