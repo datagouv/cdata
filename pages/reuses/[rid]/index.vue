@@ -93,7 +93,7 @@
           :key="dataset.id"
           :dataset="dataset"
           :show-description="datasets.total === 1"
-          class="m-0"
+          class="m-0 min-w-0"
         />
       </div>
       <Pagination

@@ -69,7 +69,7 @@ function change(newQs: string, newTopic: string | undefined, newSort: string | u
   })
 }
 
-const { data: site } = await useAPI<Site>('/api/1/site')
+const { data: site } = await useAPI<Site>('/api/1/site/')
 
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
 
