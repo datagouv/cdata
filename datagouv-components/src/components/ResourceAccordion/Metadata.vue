@@ -26,7 +26,7 @@ const config = useComponentsConfig()
 
 <template>
   <div>
-    <div class="flex gap-3rem flex-col-on-small">
+    <div class="flex flex-wrap gap-12 flex-col md:flex-row">
       <DescriptionList class="flex-1">
         <DescriptionTerm>
           {{ t('URL') }}

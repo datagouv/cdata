@@ -16,6 +16,7 @@
         <DatasetCardLg
           v-for="dataset in pageData.data"
           :key="dataset.id"
+          class="min-w-0"
           :dataset
           :show-description="pageData.total == 1"
         />

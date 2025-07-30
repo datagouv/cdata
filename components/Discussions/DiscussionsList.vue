@@ -37,7 +37,7 @@
       />
     </div>
     <div v-else>
-      <div class="flex flex-wrap justify-between items-center mb-5">
+      <div class="flex flex-wrap justify-between items-center mb-5 gap-2">
         <h2
           v-if="pageData"
           class="text-sm font-bold uppercase m-0 text-gray-title"
@@ -48,21 +48,23 @@
           </template>
         </h2>
 
-        <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
+        <div class="flex flex-wrap items-center md:gap-x-6 gap-2">
           <AdminInput
             v-model="q"
             type="search"
             :icon="RiSearchLine"
             :placeholder="$t('Recherche')"
           />
-          <BrandedButton
-            color="secondary"
-            size="xs"
-            :icon="RiAddLine"
-            @click="showDiscussionForm"
-          >
-            {{ t("Démarrer une nouvelle discussion") }}
-          </BrandedButton>
+          <div>
+            <BrandedButton
+              color="secondary"
+              size="xs"
+              :icon="RiAddLine"
+              @click="showDiscussionForm"
+            >
+              {{ t("Démarrer une nouvelle discussion") }}
+            </BrandedButton>
+          </div>
         </div>
       </div>
 

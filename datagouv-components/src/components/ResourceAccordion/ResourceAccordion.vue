@@ -5,7 +5,7 @@
   >
     <header
       :id="resourceHeaderId"
-      class="fr-p-4v flex items-center justify-between relative"
+      class="fr-p-4v flex flex-wrap gap-4 items-center justify-between relative"
     >
       <div>
         <div class="flex items-center fr-mb-1v">
@@ -84,7 +84,7 @@
           </template>
         </p>
       </div>
-      <div class="flex items-center fr-ml-4v buttons">
+      <div class="flex items-center buttons">
         <p
           v-if="resource.format === 'url'"
           class="fr-col-auto fr-ml-3v fr-m-0 z-2"

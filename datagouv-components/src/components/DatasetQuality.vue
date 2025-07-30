@@ -15,7 +15,7 @@
   </div>
   <DatasetQualityScore
     :score="quality.score"
-    class="w-100"
+    class="w-full"
   />
   <template v-if="!hideWarnings">
     <ul class="list-none pl-0">
