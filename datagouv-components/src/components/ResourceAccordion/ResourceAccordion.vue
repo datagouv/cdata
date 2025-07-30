@@ -31,7 +31,8 @@
               ><component
                 :is="config.textClamp"
                 v-if="config && config.textClamp"
-                :max-lines="1"
+                :max-lines="open ? 2 : 1"
+                :auto-resize="true"
                 :text="resource.title || t('Fichier sans nom')"
               /></span>
 
