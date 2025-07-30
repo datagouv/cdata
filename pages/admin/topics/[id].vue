@@ -9,7 +9,7 @@
       </BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="fr-h3 !mb-5">
+    <h1 class="text-2xl font-extrabold text-gray-title !mb-5">
       {{ topic.name }}
     </h1>
 

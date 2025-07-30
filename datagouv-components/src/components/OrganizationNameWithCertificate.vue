@@ -1,5 +1,5 @@
 <template>
-  <div class="flex gap-1 items-center truncate">
+  <div class="flex gap-1 items-center">
     <OwnerTypeIcon
       v-if="showType"
       :type="getOrganizationType(organization)"
@@ -10,16 +10,22 @@
     >
       {{ organization.name }}
     </div>
-    <RiCheckboxCircleLine
-      v-if="isOrganizationCertified(organization)"
-      class="flex-none"
-      :class="{
-        'size-4': size === 'sm',
-        'size-5': size === 'base',
-      }"
-      :title="t(`L'identité de ce service public est certifiée par {certifier}`, { certifier: config.name })"
-      aria-hidden="true"
-    />
+    <Tooltip v-if="isOrganizationCertified(organization)">
+      <RiCheckboxCircleLine
+        class="flex-none"
+        :class="{
+          'size-4': size === 'sm',
+          'size-5': size === 'base',
+        }"
+        :aria-label="t(`L'identité de ce service public est certifiée par {certifier}`, { certifier: config.name })"
+        aria-hidden="true"
+      />
+      <template #tooltip>
+        <p class="text-sm font-normal mb-0">
+          {{ t(`L'identité de ce service public est certifiée par {certifier}`, { certifier: config.name }) }}
+        </p>
+      </template>
+    </Tooltip>
   </div>
 </template>
 

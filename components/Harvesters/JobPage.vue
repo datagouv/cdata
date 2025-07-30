@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="flex items-center justify-between mb-3">
-      <h1 class="fr-h3 !mb-0">
+      <h1 class="text-2xl font-extrabold text-gray-title !mb-0">
         {{ job.id }}
       </h1>
     </div>
