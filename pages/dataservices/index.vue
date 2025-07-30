@@ -31,9 +31,9 @@
           </div>
 
           <BrandedButton
-            v-if="false"
             color="purple-flat"
             class="mt-8"
+            :href="config.public.dataservicesOnboarding"
           >
             {{ $t('En savoir plus') }}
           </BrandedButton>
