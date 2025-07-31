@@ -114,6 +114,14 @@ export function minLength<T, K extends KeysOfUnion<T>, V extends (string | undef
   }
 }
 
+export function maxLength<T, K extends KeysOfUnion<T>, V extends (string | undefined) & T[K]>(max: number, message: string | null = null): ValidationFunction<T, K, V> {
+  return (value: V, key: K, form: T, t) => {
+    if (!value || value.length <= max) return null
+
+    return message || t('Le champ doit être de {max} caractères maximum', { max })
+  }
+}
+
 export function testNotAllowed<T, K extends KeysOfUnion<T>, V extends (string | undefined) & T[K]>(demoServer: string | undefined, message: string | null = null): ValidationFunction<T, K, V> {
   return (value: V, key: K, form: T, t) => {
     if (demoServer && value && value.toLowerCase().split(' ').includes('test')) return message || t('Si vous voulez faire des tests, utilisez « {demoServer} ».', { demoServer })

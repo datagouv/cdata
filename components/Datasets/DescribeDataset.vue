@@ -254,6 +254,28 @@
             </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
+            class="fr-fieldset__element min-width-0"
+            :accordion="writeAGoodDescriptionAccordionId"
+          >
+            <InputGroup
+              v-model="form.description_short"
+              class="mb-3"
+              :label="$t('Description courte (optionnelle, 200 caractères max)')"
+              :required="false"
+              type="markdown"
+              :has-error="!!getFirstError('description_short')"
+              :has-warning="!!getFirstWarning('description_short')"
+              :error-text="getFirstError('description_short')"
+              @change="touch('description_short')"
+            />
+            <SimpleBanner
+              v-if="getFirstWarning('description_short')"
+              type="warning"
+            >
+              {{ getFirstWarning("description_short") }}
+            </SimpleBanner>
+          </LinkedToAccordion>
+          <LinkedToAccordion
             class="fr-fieldset__element"
             :accordion="useTagsAccordionId"
             @blur="touch('tags')"
@@ -655,16 +677,17 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
   owned: [required()],
   title: [required()],
   description: [required()],
+  description_short: [],
   frequency: [required()],
   private: [],
 }, {
   title: [testNotAllowed(config.public.demoServer?.name)],
   description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
+  description_short: [maxLength(200, t(`La {property} ne doit pas dépasser {max} caractères.`, { property: t('description courte'), max: 200 }))],
   tags: [required(t('L\'ajout de mots-clés aide à améliorer le référencement de vos données.'))],
   license: [required()],
   frequency: [(f) => {
     if (f && f.id === 'unknown') return t('La fréquence doit être différente d\'inconnue.')
-
     return null
   }],
   spatial_granularity: [required(t('Vous n\'avez pas spécifié la granularité spatiale.'))],
