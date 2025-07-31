@@ -20,7 +20,7 @@
             {{ reuse.title }}
           </BreadcrumbItem>
         </Breadcrumb>
-        <div class="flex-none flex gap-2.5 flex-wrap md:max-w-6/12">
+        <div class="max-w-full flex-none flex gap-2.5 flex-wrap md:max-w-6/12">
           <FollowButton
             v-if="reuse"
             :url="`/api/1/reuses/${reuse.id}/followers/`"
@@ -51,8 +51,8 @@
       :status
     >
       <div class="container py-10 min-h-32">
-        <div class="flex flex-wrap">
-          <div class="w-full md:w-5/12 flex flex-col justify-center">
+        <div class="grid md:grid-cols-12 md:gap-4">
+          <div class="md:col-span-5 flex flex-col justify-center">
             <div class="flex gap-3 mb-2">
               <AdminBadge
                 v-if="reuse.deleted"
@@ -136,7 +136,7 @@
               </BrandedButton>
             </div>
           </div>
-          <div class="w-7/12">
+          <div class="w-7/12 md:w-full md:col-span-7">
             <NuxtImg
               class="w-full object-contain max-h-[400px]"
               :src="reuse.image ?? undefined"
