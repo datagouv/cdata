@@ -56,6 +56,7 @@
           <OrganizationNameWithCertificate
             :certifier="config.public.title"
             :organization
+            :show-acronym="true"
             :show-type="false"
           />
         </h1>
