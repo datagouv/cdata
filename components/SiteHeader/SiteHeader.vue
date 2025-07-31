@@ -7,9 +7,10 @@
       v-if="config.public.banner"
       class="bg-primary text-white py-4"
     >
-      <div class="fr-container">
-        {{ config.public.banner }}
-      </div>
+      <div
+        class="fr-container"
+        v-html="config.public.banner"
+      />
     </div>
     <div class="fr-header__body">
       <div
