@@ -91,12 +91,12 @@
                 </span>
               </h1>
               <div
-                v-if="dataset.description_short" class="mb-4"
+                v-if="displayShortDescription" class="mb-4"
               >
                 <ReadMore class="">
                   <MarkdownViewer
                     size="sm"
-                    :content="dataset.description_short"
+                    :content="displayShortDescription"
                     :min-heading="3"
                   />
                 </ReadMore>
@@ -286,6 +286,7 @@ import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
+import { useDatasetShortDescription } from '~/composables/useDatasetShortDescription'
 
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -316,8 +317,14 @@ const hideWarnings = computed(() => {
   return config.public.harvestBackendsForHidingQuality.includes(dataset.value.harvest.backend)
 })
 
+const { getShortDescription } = useDatasetShortDescription()
+
 const hasContactPointsWithSpecificRole = computed(() => {
   return dataset.value.contact_points.some(contactPoint => contactPoint.role !== 'contact')
+})
+
+const displayShortDescription = computed(() => {
+  return getShortDescription(dataset.value?.description, dataset.value?.description_short)
 })
 
 await useJsonLd('dataset', route.params.did)

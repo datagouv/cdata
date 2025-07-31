@@ -167,6 +167,7 @@ import { summarize } from '../functions/helpers'
 import { useFormatDate } from '../functions/dates'
 import { getOwnerName } from '../functions/owned'
 import { removeMarkdown } from '../functions/markdown'
+import { getShortDescription } from '../functions/datasets'
 import { useComponentsConfig } from '../config'
 import DatasetQualityInline from './DatasetQualityInline.vue'
 import Avatar from './Avatar.vue'
@@ -205,6 +206,7 @@ const config = useComponentsConfig()
 const shortDescription = ref('')
 watchEffect(async () => {
   if (!props.showShortDescription) return
-  shortDescription.value = await removeMarkdown(props.dataset.description_short)
+  const displayShort = getShortDescription(props.dataset.description, props.dataset.description_short)
+  shortDescription.value = await removeMarkdown(displayShort)
 })
 </script>

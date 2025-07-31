@@ -63,17 +63,6 @@ export function datasetToForm(dataset: Dataset | DatasetV2, licenses: Array<Lice
 export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, private?: boolean, archived?: string | null } = {}): NewDatasetForApi {
   const contactPoints = form.contact_points?.filter(cp => cp !== null && 'id' in cp).map(cp => cp.id) ?? []
   
-  // Auto-remplir description_short si vide
-  let descriptionShort = form.description_short
-  if (!descriptionShort && form.description) {
-    // Prendre les 200 premiers caractères de la description
-    if (form.description.length > DESCRIPTION_SHORT_MAX_LENGTH) {
-      descriptionShort = form.description.substring(0, DESCRIPTION_SHORT_MAX_LENGTH - 3) + "..."
-    } else {
-      descriptionShort = form.description
-    }
-  }
-  
   return {
     organization: form.owned?.organization?.id,
     owner: form.owned?.owner?.id,
@@ -82,7 +71,7 @@ export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, pri
     archived: overrides.archived,
     deleted: overrides.deleted,
     description: form.description,
-    description_short: descriptionShort,
+    description_short: form.description_short || undefined,
     acronym: form.acronym,
     tags: form.tags.map(t => t.text),
     license: form.license?.id || '',

@@ -22,3 +22,26 @@ export function isCommunityResource(resource: Resource | CommunityResource): boo
 export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource | CommunityResource): string {
   return `${dataset.page}#/${isCommunityResource(resource) ? 'community-resources' : 'resources'}/${resource.id}`
 }
+
+/**
+ * Returns the short description to display.
+ * If description_short is provided, it is used.
+ * Otherwise, the first 200 characters of description are used.
+ */
+export function getShortDescription(
+  description: string | null | undefined,
+  descriptionShort: string | null | undefined
+): string {
+  if (descriptionShort?.trim()) {
+    return descriptionShort
+  }
+  if (description?.trim()) {
+    //  description field is a markdown field that may contain HTML tags, so we should trim it
+    const plainText = description.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+    if (plainText.length > 200) {
+      return `${plainText.substring(0, 197)}...`
+    }
+    return plainText
+  }
+  return ''
+}
