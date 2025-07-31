@@ -6,7 +6,7 @@
       </h2>
       <div class="grid md:grid-cols-12 gap-4">
         <MarkdownViewer
-          class="w-full md:col-span-9"
+          class="w-full min-w-0 md:col-span-9"
           :content="reuse.description"
           :min-heading="3"
         />
