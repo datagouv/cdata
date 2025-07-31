@@ -25,17 +25,22 @@
                 class="size-3.5 mr-1"
               />
               <span
-                :class="{
-                  'font-bold': open,
-                }"
+                v-if="open"
+                class="font-bold text-left"
               ><component
                 :is="config.textClamp"
                 v-if="config && config.textClamp"
-                :max-lines="open ? 2 : 1"
-                :auto-resize="true"
+                :max-lines="2"
                 :text="resource.title || t('Fichier sans nom')"
               /></span>
-
+              <span
+                v-else
+              ><component
+                :is="config.textClamp"
+                v-if="config && config.textClamp"
+                :max-lines="1"
+                :text="resource.title || t('Fichier sans nom')"
+              /></span>
               <span class="absolute inset-0 z-1" />
             </button>
           </h4>
