@@ -88,6 +88,7 @@ export default defineNuxtConfig({
       guidesCommunityResources: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/ressource-communautaire',
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
+      schemaValidataUrl: 'https://validata.fr',
 
       homepagePublishDatasetOnboarding: '/pages/onboarding/producteurs',
       homepagePublishReuseOnboarding: '/pages/onboarding/reutilisateurs',
