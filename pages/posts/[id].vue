@@ -34,7 +34,7 @@
       <template v-if="post.published || isMeAdmin()">
         <p
           v-if="post.published"
-          class="text-xs mb-0"
+          class="text-xs mt-2 mb-0"
         >
           {{ $t('Publié le {date}', { date: formatDate(post.published) }) }}
         </p>
@@ -50,7 +50,7 @@
         <img
           v-if="post.image"
           :src="post.image"
-          class="w-full h-auto"
+          class="w-full h-auto mb-2"
         >
         <MarkdownViewer
           v-if="post.body_type === 'markdown'"
