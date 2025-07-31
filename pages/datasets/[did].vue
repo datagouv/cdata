@@ -90,6 +90,17 @@
                   {{ dataset.acronym }}
                 </span>
               </h1>
+              <div
+                v-if="dataset.description_short" class="mb-4"
+              >
+                <ReadMore class="">
+                  <MarkdownViewer
+                    size="sm"
+                    :content="dataset.description_short"
+                    :min-heading="3"
+                  />
+                </ReadMore>
+              </div>
               <div class="text-sm text-gray-plain font-bold mb-1 pb-0">
                 {{ $t('Description') }}
               </div>
