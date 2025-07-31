@@ -4,6 +4,10 @@ import { v4 as uuidv4 } from 'uuid'
 
 import type { CommunityResourceForm, DatasetForm, DatasetSuggest, FileInfo, NewDatasetForApi, ResourceForm, SpatialGranularity, SpatialZone } from '~/types/types'
 
+// Constantes pour les limites de caractères
+export const DESCRIPTION_MIN_LENGTH = 200
+export const DESCRIPTION_SHORT_MAX_LENGTH = 200
+
 export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceForm>) {
   const isRemote = computed(() => toValue(file).filetype === 'remote')
   const { t } = useI18n()
@@ -15,7 +19,7 @@ export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceF
     url: [ruleIf(isRemote, required())],
     format: [ruleIf(isRemote, required())],
   }, {
-    description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
+    description: [minLength(DESCRIPTION_MIN_LENGTH, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: DESCRIPTION_MIN_LENGTH }))],
     title: [testNotAllowed(config.public.demoServer?.name)],
   })
 }
@@ -63,8 +67,8 @@ export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, pri
   let descriptionShort = form.description_short
   if (!descriptionShort && form.description) {
     // Prendre les 200 premiers caractères de la description
-    if (form.description.length > 200) {
-      descriptionShort = form.description.substring(0, 197) + "..."
+    if (form.description.length > DESCRIPTION_SHORT_MAX_LENGTH) {
+      descriptionShort = form.description.substring(0, DESCRIPTION_SHORT_MAX_LENGTH - 3) + "..."
     } else {
       descriptionShort = form.description
     }

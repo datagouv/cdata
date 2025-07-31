@@ -260,7 +260,7 @@
             <InputGroup
               v-model="form.description_short"
               class="mb-3"
-              :label="$t('Description courte (optionnelle, 200 caractères max)')"
+              :label="$t(`Description courte (optionnelle, ${DESCRIPTION_SHORT_MAX_LENGTH} caractères max)`)"
               :required="false"
               type="markdown"
               :has-error="!!getFirstError('description_short')"
@@ -601,6 +601,7 @@ import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone } from '~/types/types'
+import { DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '~/utils/datasets'
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 
@@ -682,8 +683,8 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
   private: [],
 }, {
   title: [testNotAllowed(config.public.demoServer?.name)],
-  description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
-  description_short: [maxLength(200, t(`La {property} ne doit pas dépasser {max} caractères.`, { property: t('description courte'), max: 200 }))],
+  description: [minLength(DESCRIPTION_MIN_LENGTH, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: DESCRIPTION_MIN_LENGTH }))],
+  description_short: [maxLength(DESCRIPTION_SHORT_MAX_LENGTH, t(`La {property} ne doit pas dépasser {max} caractères.`, { property: t('description courte'), max: DESCRIPTION_SHORT_MAX_LENGTH }))],
   tags: [required(t('L\'ajout de mots-clés aide à améliorer le référencement de vos données.'))],
   license: [required()],
   frequency: [(f) => {
