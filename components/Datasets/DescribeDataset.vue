@@ -236,6 +236,30 @@
             :accordion="writeAGoodDescriptionAccordionId"
           >
             <InputGroup
+              v-model="form.description_short"
+              class="mb-3 [&_textarea]:text-sm"
+              :label="$t(`Courte description`)"
+              :hint-text="$t('Si ce champ est laissé vide, les 200 premiers caractères de votre description seront utilisés.')"
+              :required="false"
+              type="textarea"
+              :rows="3"
+              :has-error="!!getFirstError('description_short')"
+              :has-warning="!!getFirstWarning('description_short')"
+              :error-text="getFirstError('description_short')"
+              @change="touch('description_short')"
+            />
+            <SimpleBanner
+              v-if="getFirstWarning('description_short')"
+              type="warning"
+            >
+              {{ getFirstWarning("description_short") }}
+            </SimpleBanner>
+          </LinkedToAccordion>
+          <LinkedToAccordion
+            class="fr-fieldset__element min-width-0"
+            :accordion="writeAGoodDescriptionAccordionId"
+          >
+            <InputGroup
               v-model="form.description"
               class="mb-3"
               :label="$t('Description')"
@@ -251,28 +275,6 @@
               type="warning"
             >
               {{ getFirstWarning("description") }}
-            </SimpleBanner>
-          </LinkedToAccordion>
-          <LinkedToAccordion
-            class="fr-fieldset__element min-width-0"
-            :accordion="writeAGoodDescriptionAccordionId"
-          >
-            <InputGroup
-              v-model="form.description_short"
-              class="mb-3"
-              :label="$t(`Description courte (optionnelle, ${DESCRIPTION_SHORT_MAX_LENGTH} caractères max)`)"
-              :required="false"
-              type="markdown"
-              :has-error="!!getFirstError('description_short')"
-              :has-warning="!!getFirstWarning('description_short')"
-              :error-text="getFirstError('description_short')"
-              @change="touch('description_short')"
-            />
-            <SimpleBanner
-              v-if="getFirstWarning('description_short')"
-              type="warning"
-            >
-              {{ getFirstWarning("description_short") }}
             </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
