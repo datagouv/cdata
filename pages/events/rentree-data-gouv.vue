@@ -22,9 +22,10 @@
         <h2 class="title-section">
           {{ section.title }}
         </h2>
-        <div
-          class="section-content"
-          v-html="section.content"
+        <MarkdownViewer
+          size="md"
+          :content="section.section_content"
+          :min-heading="3"
         />
         <div class="brandcards-list">
           <div class="grid md:grid-cols-6 gap-12">
@@ -58,9 +59,10 @@
             :key="item.id"
             :title="item.question"
           >
-            <div
-              class="fr-mb-2w"
-              v-html="formatMarkdown(item.answer, 3)"
+            <MarkdownViewer
+              size="md"
+              :content="item.answer"
+              :min-heading="3"
             />
             <div
               v-if="item.ctaLabel && item.ctaUrl"
@@ -104,7 +106,7 @@ interface Banner {
 interface Section {
   id: number
   title: string
-  content: string
+  section_content: string
 }
 interface Event {
   id: number
@@ -140,10 +142,10 @@ onMounted(async () => {
 
   const resSections = await fetch('https://grist.numerique.gouv.fr/api/docs/vPC8NpR9HWux/tables/Sections/records?&sort=ordre')
   const dataSections = await resSections.json()
-  sections.value = dataSections.records.map((r: { id: number, fields: { title: string, content: string } }) => ({
+  sections.value = dataSections.records.map((r: { id: number, fields: { title: string, section_content: string } }) => ({
     id: r.id,
     title: r.fields.title,
-    content: r.fields.content,
+    section_content: r.fields.section_content,
   }))
 
   await Promise.all(sections.value.map(async (section) => {

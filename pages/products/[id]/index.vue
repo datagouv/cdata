@@ -30,13 +30,14 @@
         :show-title-logo="true"
         :border="false"
         :use-static-image="true"
-        :image-src="`/nuxt_images/products/${card.slug}.png`"
+        :image-src="card.image_url"
         :image-alt="card.product"
         :title="card.product"
       />
       <div class="mt-8">
         <TabGroup
           size="md"
+          :default-index="defaultTabIndex"
           @change="switchTab"
         >
           <div>
@@ -68,6 +69,34 @@
                           <rect
                             width="16"
                             height="16"
+                            fill="white"
+                          />
+                        </clipPath>
+                      </defs>
+                    </svg>
+                  </span>
+                  <span
+                    v-if="tab.key == 'presentation' && card?.presentation"
+                    class="tab-icon"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g clip-path="url(#clip0_776_46072)">
+                        <path
+                          d="M11 21V19.93C9.33387 19.6891 7.81031 18.856 6.7084 17.5833C5.60648 16.3106 4.99998 14.6835 5 13V8C5 7.08075 5.18106 6.1705 5.53284 5.32122C5.88463 4.47194 6.40024 3.70026 7.05025 3.05025C7.70026 2.40024 8.47194 1.88463 9.32122 1.53284C10.1705 1.18106 11.0807 1 12 1C12.9193 1 13.8295 1.18106 14.6788 1.53284C15.5281 1.88463 16.2997 2.40024 16.9497 3.05025C17.5998 3.70026 18.1154 4.47194 18.4672 5.32122C18.8189 6.1705 19 7.08075 19 8V13C19 14.6835 18.3935 16.3106 17.2916 17.5833C16.1897 18.856 14.6661 19.6891 13 19.93V21H17V23H7V21H11ZM12 3C10.6739 3 9.40215 3.52678 8.46447 4.46447C7.52678 5.40215 7 6.67392 7 8V13C7 14.3261 7.52678 15.5979 8.46447 16.5355C9.40215 17.4732 10.6739 18 12 18C13.3261 18 14.5979 17.4732 15.5355 16.5355C16.4732 15.5979 17 14.3261 17 13V8C17 6.67392 16.4732 5.40215 15.5355 4.46447C14.5979 3.52678 13.3261 3 12 3ZM12 9C12.2652 9 12.5196 8.89464 12.7071 8.70711C12.8946 8.51957 13 8.26522 13 8C13 7.73478 12.8946 7.48043 12.7071 7.29289C12.5196 7.10536 12.2652 7 12 7C11.7348 7 11.4804 7.10536 11.2929 7.29289C11.1054 7.48043 11 7.73478 11 8C11 8.26522 11.1054 8.51957 11.2929 8.70711C11.4804 8.89464 11.7348 9 12 9ZM12 11C11.2044 11 10.4413 10.6839 9.87868 10.1213C9.31607 9.55871 9 8.79565 9 8C9 7.20435 9.31607 6.44129 9.87868 5.87868C10.4413 5.31607 11.2044 5 12 5C12.7956 5 13.5587 5.31607 14.1213 5.87868C14.6839 6.44129 15 7.20435 15 8C15 8.79565 14.6839 9.55871 14.1213 10.1213C13.5587 10.6839 12.7956 11 12 11Z"
+                          :fill="selectedTabIndex === index ? '#3558A2' : '#161616'"
+                        />
+                      </g>
+                      <defs>
+                        <clipPath id="clip0_776_46072">
+                          <rect
+                            width="24"
+                            height="24"
                             fill="white"
                           />
                         </clipPath>
@@ -137,6 +166,19 @@
               v-for="tab in tabsOptions"
               :key="tab.key"
             >
+              <div
+                v-if="tab.key === 'presentation' && card.presentation"
+                class="fr-mt-4v presentation-tab"
+              >
+                <h3 class="fr-h4">
+                  Présentation
+                </h3>
+                <MarkdownViewer
+                  size="md"
+                  :content="card.presentation"
+                  :min-heading="3"
+                />
+              </div>
               <div
                 v-if="tab.key === 'equipe'"
                 class="fr-mt-4v"
@@ -239,7 +281,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -258,6 +300,7 @@ interface ProductCard {
   slug: string
   product: string
   description?: string
+  image_url?: string
   tagline?: string
   site?: string
   code?: string
@@ -271,6 +314,7 @@ interface ProductCard {
   budget_column_total?: string
   budget_unit?: string
   team?: string[]
+  presentation?: string
 }
 
 interface TeamMember {
@@ -285,7 +329,7 @@ const loading = ref(true)
 const team = ref<TeamMember[]>([])
 
 onMounted(async () => {
-  const res = await fetch('https://grist.numerique.gouv.fr/api/docs/pJuuC9r8GvA1/tables/Produits/records')
+  const res = await fetch('https://grist.numerique.gouv.fr/api/docs/pJuuC9r8GvA1/tables/Productsv2/records')
   const data = await res.json()
   cards.value = data.records.map((r: { fields: ProductCard }) => ({
     ...r.fields,
@@ -308,6 +352,7 @@ const teamForProduct = computed(() => {
 const tabsOptions = computed(() => {
   if (!card.value) return []
   const allTabs = [
+    { key: 'presentation', label: 'Présentation', hasData: () => !!card.value!.presentation },
     { key: 'roadmap', label: 'Roadmap', hasData: () => !!card.value!.roadmap_url },
     { key: 'budget', label: 'Budget', hasData: () => !!card.value!.budget_url },
     { key: 'impact', label: 'Impact', hasData: () => !!card.value!.impact_dataset },
@@ -316,12 +361,36 @@ const tabsOptions = computed(() => {
   return allTabs.filter(tab => tab.hasData())
 })
 
+const defaultTabIndex = computed(() => {
+  if (!tabsOptions.value.length) return 0
+
+  const tabFromUrl = route.query.tab as string
+
+  let targetTabKey = tabFromUrl
+  if (!targetTabKey && tabsOptions.value.length > 0) {
+    targetTabKey = tabsOptions.value[0].key
+  }
+
+  const defaultIndex = tabsOptions.value.findIndex(tab => tab.key === targetTabKey)
+
+  return defaultIndex >= 0 ? defaultIndex : 0
+})
+
 const selectedTabIndex = ref(0)
+
+watch(defaultTabIndex, (newIndex) => {
+  selectedTabIndex.value = newIndex
+}, { immediate: true })
 
 const switchTab = (index: number) => {
   selectedTabIndex.value = index
   const option = tabsOptions.value[index]
-  console.log('Switched to tab:', option.key)
+
+  if (option) {
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', option.key)
+    window.history.replaceState({}, '', url.toString())
+  }
 }
 
 const { t } = useI18n()
@@ -396,5 +465,9 @@ useSeoMeta({ title: card.value ? ' Produit ' + card.value.product : t('Produit')
 .impact-dataset-card {
   max-width: 100%;
   margin-bottom: 1rem;
+}
+
+.presentation-tab {
+  margin-bottom: 5rem;
 }
 </style>
