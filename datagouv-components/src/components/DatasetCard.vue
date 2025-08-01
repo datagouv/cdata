@@ -206,7 +206,6 @@ const config = useComponentsConfig()
 const shortDescription = ref('')
 watchEffect(async () => {
   if (!props.showShortDescription) return
-  const displayShort = getShortDescription(props.dataset.description, props.dataset.description_short)
-  shortDescription.value = await removeMarkdown(displayShort)
+  shortDescription.value = await getShortDescription(props.dataset.description, props.dataset.description_short)
 })
 </script>

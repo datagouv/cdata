@@ -1,6 +1,7 @@
 import { useComponentsConfig } from '../config'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import type { CommunityResource, Resource } from '../types/resources'
+import { removeMarkdown } from './markdown'
 
 // Maximum length for short descriptions
 export const DESCRIPTION_SHORT_MAX_LENGTH = 200
@@ -31,16 +32,16 @@ export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Datas
  * If description_short is provided, it is used.
  * Otherwise, the first DESCRIPTION_SHORT_MAX_LENGTH characters of description are used.
  */
-export function getShortDescription(
+export async function getShortDescription(
   description: string | null | undefined,
   descriptionShort: string | null | undefined
-): string {
+): Promise<string> {
   if (descriptionShort?.trim()) {
     return descriptionShort
   }
   if (description?.trim()) {
     // description field is a markdown field that may contain HTML tags, so we should trim it
-    const plainText = description.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+    const plainText = await removeMarkdown(description)
     if (plainText.length > DESCRIPTION_SHORT_MAX_LENGTH) {
       return `${plainText.substring(0, DESCRIPTION_SHORT_MAX_LENGTH - 1)}…`
     }

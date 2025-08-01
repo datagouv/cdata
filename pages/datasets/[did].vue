@@ -323,8 +323,12 @@ const hasContactPointsWithSpecificRole = computed(() => {
   return dataset.value.contact_points.some(contactPoint => contactPoint.role !== 'contact')
 })
 
-const displayShortDescription = computed(() => {
-  return getShortDescription(dataset.value?.description, dataset.value?.description_short)
+const displayShortDescription = ref('')
+
+watchEffect(async () => {
+  if (dataset.value) {
+    displayShortDescription.value = await getShortDescription(dataset.value.description, dataset.value.description_short)
+  }
 })
 
 await useJsonLd('dataset', route.params.did)
