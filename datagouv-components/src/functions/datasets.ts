@@ -42,7 +42,7 @@ export async function getShortDescription(
   }
   if (description?.trim()) {
     // description field is a markdown field that may contain HTML tags, so we should trim it
-    const plainText = await removeMarkdown(description)
+    const plainText = (await removeMarkdown(description)).trim()
     if (plainText.length > DESCRIPTION_SHORT_MAX_LENGTH) {
       return `${plainText.substring(0, DESCRIPTION_SHORT_MAX_LENGTH - 1)}…`
     }
