@@ -10,7 +10,6 @@ import { useFormatDate } from '../../functions/dates'
 import { filesize } from '../../functions/helpers'
 import ExtraAccordion from '../ExtraAccordion.vue'
 import { getResourceTitleId, getResourceLabel } from '../../functions/resources'
-import { useComponentsConfig } from '../../config'
 
 const props = defineProps<{
   resource: Resource
@@ -21,13 +20,12 @@ const resourceTitleId = computed(() => getResourceTitleId(props.resource))
 
 const { t } = useI18n()
 const { formatDate } = useFormatDate()
-const config = useComponentsConfig()
 </script>
 
 <template>
   <div>
-    <div class="flex flex-wrap gap-12 flex-col md:flex-row">
-      <DescriptionList class="flex-1">
+    <div class="flex flex-wrap gap-12 flex-col md:flex-row overflow-hidden">
+      <DescriptionList class="flex-1 max-w-full">
         <DescriptionTerm>
           {{ t('URL') }}
           <CopyButton
@@ -38,14 +36,10 @@ const config = useComponentsConfig()
           />
         </DescriptionTerm>
         <DescriptionDetails :with-ellipsis="false">
-          <code class="code">
-            <a :href="resource.url"><component
-              :is="config.textClamp"
-              v-if="config && config.textClamp"
-              :max-lines="1"
-              :autoresize="true"
-              :text="resource.url"
-            /></a>
+          <code class="code truncate p-1">
+            <a :href="resource.url">
+              {{ resource.url }}
+            </a>
           </code>
         </DescriptionDetails>
         <DescriptionTerm>
@@ -58,14 +52,10 @@ const config = useComponentsConfig()
           />
         </DescriptionTerm>
         <DescriptionDetails :with-ellipsis="false">
-          <code class="code">
-            <a :href="resource.latest"><component
-              :is="config.textClamp"
-              v-if="config && config.textClamp"
-              :max-lines="1"
-              :autoresize="true"
-              :text="resource.latest"
-            /></a>
+          <code class="code truncate p-1">
+            <a :href="resource.latest">
+              {{ resource.latest }}
+            </a>
           </code>
         </DescriptionDetails>
         <DescriptionTerm>
@@ -78,14 +68,8 @@ const config = useComponentsConfig()
           />
         </DescriptionTerm>
         <DescriptionDetails :with-ellipsis="false">
-          <code class="code">
-            <component
-              :is="config.textClamp"
-              v-if="config && config.textClamp"
-              :max-lines="1"
-              :autoresize="true"
-              :text="resource.id"
-            />
+          <code class="code truncate p-1">
+            {{ resource.id }}
           </code>
         </DescriptionDetails>
         <template v-if="resource.checksum">
@@ -99,14 +83,8 @@ const config = useComponentsConfig()
             />
           </DescriptionTerm>
           <DescriptionDetails :with-ellipsis="false">
-            <code class="code">
-              <component
-                :is="config.textClamp"
-                v-if="config && config.textClamp"
-                :max-lines="1"
-                :autoresize="true"
-                :text="resource.checksum.value"
-              />
+            <code class="code truncate p-1">
+              {{ resource.checksum.value }}
             </code>
           </DescriptionDetails>
         </template>
@@ -137,7 +115,7 @@ const config = useComponentsConfig()
         <template v-if="resource.mime">
           <DescriptionTerm>{{ t('Type MIME') }}</DescriptionTerm>
           <DescriptionDetails>
-            <code class="code text-overflow-ellipsis">{{ resource.mime }}</code>
+            <code class="code truncate">{{ resource.mime }}</code>
           </DescriptionDetails>
         </template>
       </DescriptionList>

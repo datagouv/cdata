@@ -5,7 +5,7 @@
       :href="link"
       rel="ugc nofollow noopener"
       :target="link ? '_blank' : undefined"
-      class="text-grey-title text-overflow-ellipsis overflow-hidden"
+      class="text-grey-title truncate overflow-hidden"
     >
       {{ label }}
     </component>
