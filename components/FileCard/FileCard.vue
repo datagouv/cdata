@@ -7,21 +7,21 @@
             :resource="resourceForm"
             class="size-4 mr-1"
           />
-          <h4 class="fr-m-0 text-base/6 overflow-wrap-anywhere text-overflow-ellipsis">
+          <h4 class="fr-m-0 text-base/6 overflow-wrap-anywhere truncate">
             {{ resourceForm.title || $t('Fichier sans nom') }}
           </h4>
         </div>
         <div class="fr-my-0 text-gray-medium fr-grid-row fr-grid-row--middle">
           <div
             v-if="resourceForm.schema?.name"
-            class="flex items-center space-x-1 text-sm fr-m-0 overflow-wrap-anywhere text-overflow-ellipsis dash-after"
+            class="flex items-center space-x-1 text-sm fr-m-0 overflow-wrap-anywhere truncate dash-after"
           >
             <RiInformationLine class="size-3 shrink-0" />
             <span class="truncate">{{ $t('Schéma : {schema}', { schema: resourceForm.schema?.name }) }}</span>
           </div>
           <p
             v-if="resourceForm.filetype === 'file' && resourceForm.file && resourceForm.file.raw.name != resourceForm.title"
-            class="text-sm fr-m-0 overflow-wrap-anywhere text-overflow-ellipsis dash-after"
+            class="text-sm fr-m-0 overflow-wrap-anywhere truncate dash-after"
           >
             {{ resourceForm.file.raw.name }}
           </p>
