@@ -603,8 +603,7 @@ import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone } from '~/types/types'
-import { DESCRIPTION_SHORT_MAX_LENGTH } from '@datagouv/components-next'
-import { DESCRIPTION_MIN_LENGTH } from '~/utils/datasets'
+import { DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 

@@ -3,8 +3,9 @@ import type { Dataset, DatasetV2 } from '../types/datasets'
 import type { CommunityResource, Resource } from '../types/resources'
 import { removeMarkdown } from './markdown'
 
-// Maximum length for short descriptions
+// Dataset description constants
 export const DESCRIPTION_SHORT_MAX_LENGTH = 200
+export const DESCRIPTION_MIN_LENGTH = 200
 
 function constructUrl(baseUrl: string, path: string): string {
   const url = new URL(baseUrl)
