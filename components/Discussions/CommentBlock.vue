@@ -6,7 +6,7 @@
       'border-gray-default': !isProducer,
     }"
   >
-    <div class="flex justify-between items-center">
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center">
       <DiscussionCommentHeader
         :comment
         :subject

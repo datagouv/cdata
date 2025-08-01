@@ -4,13 +4,13 @@
       <h2 class="uppercase text-sm mb-2.5">
         {{ $t('Description') }}
       </h2>
-      <div class="flex flex-wrap">
+      <div class="grid md:grid-cols-12 gap-4">
         <MarkdownViewer
-          class="w-full md:w-9/12"
+          class="w-full min-w-0 md:col-span-9"
           :content="reuse.description"
           :min-heading="3"
         />
-        <div class="w-full md:w-3/12">
+        <div class="w-full md:col-span-3">
           <dl class="p-0 space-y-5">
             <div>
               <dt class="font-bold text-sm pb-1">
@@ -93,7 +93,7 @@
           :key="dataset.id"
           :dataset="dataset"
           :show-description="datasets.total === 1"
-          class="m-0"
+          class="m-0 min-w-0"
         />
       </div>
       <Pagination
@@ -119,6 +119,7 @@
           <ReuseCard
             v-for="related in relatedReuses"
             :key="related.id"
+            class="min-w-0"
             :reuse="related"
           />
         </div>

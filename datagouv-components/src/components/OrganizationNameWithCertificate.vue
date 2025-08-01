@@ -1,5 +1,5 @@
 <template>
-  <div class="flex gap-1 items-center">
+  <div class="min-w-0 flex gap-1 items-center">
     <OwnerTypeIcon
       v-if="showType"
       :type="getOrganizationType(organization)"
@@ -9,6 +9,12 @@
       :class="{ 'text-sm': size === 'sm' }"
     >
       {{ organization.name }}
+      <small
+        v-if="organization.acronym && showAcronym"
+        class="text-xs text-gray-title font-extrabold align-super"
+      >
+        {{ organization.acronym }}
+      </small>
     </div>
     <Tooltip v-if="isOrganizationCertified(organization)">
       <RiCheckboxCircleLine
@@ -42,9 +48,11 @@ const config = useComponentsConfig()
 const { t } = useI18n()
 withDefaults(defineProps<{
   organization: Organization
+  showAcronym?: boolean
   showType?: boolean
   size?: 'base' | 'sm'
 }>(), {
+  showAcronym: false,
   showType: true,
   size: 'base',
 })

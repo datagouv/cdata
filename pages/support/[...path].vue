@@ -15,7 +15,7 @@
     </div>
     <div class="border-b border-gray-lowest">
       <div class="container">
-        <h1 class="text-4.5xl font-extrabold pt-10 pb-[3.75rem] !mb-0 w-2xl text-gray-title">
+        <h1 class="text-4.5xl font-extrabold pt-10 pb-[3.75rem] !mb-0 max-w-2xl text-gray-title">
           Bienvenue sur le support de la plateforme data.gouv.fr
         </h1>
       </div>

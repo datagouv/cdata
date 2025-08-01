@@ -76,7 +76,7 @@
                 :key="colIndex"
                 class="cell-padding"
               >
-                <div class="fr-grid-row fr-grid-row--middle fr-text--xs w-100 style-cell">
+                <div class="fr-grid-row fr-grid-row--middle fr-text--xs w-full style-cell">
                   <div class="fr-my-auto">
                     {{ row[col] }}
                   </div>

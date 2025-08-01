@@ -64,7 +64,7 @@
               v-for="column in columns"
               :key="column"
             >
-              <div class="fr-grid-row fr-grid-row--middle fr-text--xs w-100 style-cell">
+              <div class="fr-grid-row fr-grid-row--middle fr-text--xs w-full style-cell">
                 <div class="fr-my-auto">
                   <span
                     v-if="column === props.unitColumn"

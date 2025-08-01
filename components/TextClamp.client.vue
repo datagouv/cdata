@@ -1,6 +1,7 @@
 <template>
   <TextClamp
     v-bind="props"
+    class="py-0.5"
     @clamp-change="(data: boolean) => $emit('clamp-change', data)"
     @update:expanded="(data: boolean) => $emit('update:expanded', data)"
   />

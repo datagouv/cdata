@@ -157,6 +157,39 @@ useSeoMeta({
 })
 
 const config = useRuntimeConfig()
+const route = useRoute()
+const params = useUrlSearchParams<ReuseSearchParams>('history', {
+  initialValue: route.query,
+  removeNullishValues: true,
+  removeFalsyValues: true,
+})
+
+const q = ref('')
+watchEffect(() => {
+  if (Array.isArray(route.query.q)) return
+  if (!route.query.q) return
+  q.value = route.query.q
+})
+
+const sort = ref((route.query.sort as string | null) || undefined)
+const tag = ref((route.query.tag as string | null) || undefined)
+const topic = ref((route.query.topic as string | null) || undefined)
+const page = ref(parseInt(route.query.page as LocationQueryValue ?? '1', 10))
+const pageSize = 21
+
+const nonFalsyParams = computed(() => {
+  const filteredParams = Object.entries(toValue(params)).filter(([_k, v]) => v)
+  return { ...Object.fromEntries(filteredParams), page_size: pageSize }
+})
+
+function change(newQs: string, newTopic: string | undefined, newSort: string | undefined, newPage: number) {
+  q.value = newQs
+  sort.value = newSort
+  page.value = newPage
+  topic.value = newTopic
+}
+
+const { data: site } = await useAPI<Site>('/api/1/site/')
 
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
 

@@ -88,6 +88,7 @@ export default defineNuxtConfig({
       guidesCommunityResources: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/ressource-communautaire',
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
+      schemaValidataUrl: 'https://validata.fr',
 
       guideDatasets: 'https://guides.data.gouv.fr/guide-data.gouv.fr/jeux-de-donnees',
       guideReuses: 'https://guides.data.gouv.fr/guide-data.gouv.fr/reutilisations',
