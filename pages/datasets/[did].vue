@@ -286,7 +286,7 @@ import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
-import { useDatasetShortDescription } from '~/composables/useDatasetShortDescription'
+import { getShortDescription } from '@datagouv/components-next'
 
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -316,8 +316,6 @@ const hideWarnings = computed(() => {
 
   return config.public.harvestBackendsForHidingQuality.includes(dataset.value.harvest.backend)
 })
-
-const { getShortDescription } = useDatasetShortDescription()
 
 const hasContactPointsWithSpecificRole = computed(() => {
   return dataset.value.contact_points.some(contactPoint => contactPoint.role !== 'contact')
