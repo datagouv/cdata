@@ -237,7 +237,7 @@
           >
             <InputGroup
               v-model="form.description_short"
-              class="mb-3 [&_textarea]:text-sm"
+              class="mb-3"
               :label="$t(`Courte description`)"
               :hint-text="$t(`Si ce champ est laissé vide, les ${DESCRIPTION_SHORT_MAX_LENGTH} premiers caractères de votre description seront utilisés.`)"
               :required="false"
