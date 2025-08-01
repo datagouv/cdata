@@ -681,13 +681,12 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
   owned: [required()],
   title: [required()],
   description: [required()],
-  description_short: [],
+  description_short: [maxLength(DESCRIPTION_SHORT_MAX_LENGTH, t(`La {property} ne doit pas dépasser {max} caractères.`, { property: t('description courte'), max: DESCRIPTION_SHORT_MAX_LENGTH }))],
   frequency: [required()],
   private: [],
 }, {
   title: [testNotAllowed(config.public.demoServer?.name)],
   description: [minLength(DESCRIPTION_MIN_LENGTH, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: DESCRIPTION_MIN_LENGTH }))],
-  description_short: [maxLength(DESCRIPTION_SHORT_MAX_LENGTH, t(`La {property} ne doit pas dépasser {max} caractères.`, { property: t('description courte'), max: DESCRIPTION_SHORT_MAX_LENGTH }))],
   tags: [required(t('L\'ajout de mots-clés aide à améliorer le référencement de vos données.'))],
   license: [required()],
   frequency: [(f) => {
