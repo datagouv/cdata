@@ -4,9 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import type { CommunityResourceForm, DatasetForm, DatasetSuggest, FileInfo, NewDatasetForApi, ResourceForm, SpatialGranularity, SpatialZone } from '~/types/types'
 
-// Constantes pour les limites de caractères
 export const DESCRIPTION_MIN_LENGTH = 200
-export const DESCRIPTION_SHORT_MAX_LENGTH = 200
 
 export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceForm>) {
   const isRemote = computed(() => toValue(file).filetype === 'remote')

@@ -2,6 +2,9 @@ import { useComponentsConfig } from '../config'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import type { CommunityResource, Resource } from '../types/resources'
 
+// Maximum length for short descriptions
+export const DESCRIPTION_SHORT_MAX_LENGTH = 200
+
 function constructUrl(baseUrl: string, path: string): string {
   const url = new URL(baseUrl)
   url.pathname = `${url.pathname}${path}`
@@ -26,7 +29,7 @@ export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Datas
 /**
  * Returns the short description to display.
  * If description_short is provided, it is used.
- * Otherwise, the first 200 characters of description are used.
+ * Otherwise, the first DESCRIPTION_SHORT_MAX_LENGTH characters of description are used.
  */
 export function getShortDescription(
   description: string | null | undefined,
@@ -36,10 +39,10 @@ export function getShortDescription(
     return descriptionShort
   }
   if (description?.trim()) {
-    //  description field is a markdown field that may contain HTML tags, so we should trim it
+    // description field is a markdown field that may contain HTML tags, so we should trim it
     const plainText = description.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
-    if (plainText.length > 200) {
-      return `${plainText.substring(0, 197)}...`
+    if (plainText.length > DESCRIPTION_SHORT_MAX_LENGTH) {
+      return `${plainText.substring(0, DESCRIPTION_SHORT_MAX_LENGTH - 1)}…`
     }
     return plainText
   }
