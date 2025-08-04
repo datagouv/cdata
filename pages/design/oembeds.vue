@@ -17,8 +17,19 @@
     <div data-udata-reuse="geozones" />
     <div data-udata-organization="sante-publique-france" />
     <div
-      data-udata-search-dataset="ministere-des-solidarites-et-de-la-sante"
+      data-udata-search-dataset="data-gouv-fr"
       data-height="1500"
+      data-width="1200"
+    />
+    <div
+      data-udata-search-dataservice="data-gouv-fr"
+      data-height="1500"
+      data-width="1200"
+    />
+    <div
+      data-udata-list-reuse="data-gouv-fr"
+      data-height="1500"
+      data-width="1200"
     />
   </div>
 </template>

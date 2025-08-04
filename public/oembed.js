@@ -11,7 +11,9 @@
  *      <div data-udata-dataset="slug-or-id"></div>
  *      <div data-udata-reuse="slug-or-id"></div>
  *      <div data-udata-organization="slug-or-id"></div>      
- *      <div data-udata-search-dataset="slug-or-id" data-height="600"></div>
+ *      <div data-udata-search-dataset="slug-or-id" data-height="600" data-width="1200"></div>
+ *      <div data-udata-search-dataservice="slug-or-id" data-height="600" data-width="1200"></div>
+ *      <div data-udata-list-reuse="slug-or-id" data-height="600" data-width="1200"></div>
  */
 
 /**
@@ -30,13 +32,18 @@ function getSize(attr, div) {
     'dataset': { maxheight: 180 },
     'organization': { maxwidth: 440, maxheight: 220 },
     'reuse': { maxwidth: 440, maxheight: 400 },
-    'search-dataset': { },
+    'search-dataset': { maxheight: 1500 },
+    'search-dataservices': { maxheight: 1500 },
   }[attr] || {}
   
-  if (attr === 'search-dataset') {
+  if (attr.includes("search") || attr.includes("list")) {
     const customHeight = div.dataset.height
+    const customWidth = div.dataset.width
     if (customHeight) {
       baseSize.maxheight = parseInt(customHeight)
+    }
+    if (customWidth) {
+      baseSize.maxwidth = parseInt(customWidth)
     }
   }
   
@@ -48,7 +55,7 @@ const BASE_URL = getBaseUrl();
 // OEmbed endpoint URL
 const OEMBED_URL = `${BASE_URL}/nuxt-api/oembed`;
 // Supported attributes
-const ATTRS = ['dataservice', 'dataset', 'organization', 'reuse', 'search-dataset'];
+const ATTRS = ['dataservice', 'dataset', 'organization', 'reuse', 'search-dataset', 'search-dataservice', 'list-reuse'];
 
 
 /**
