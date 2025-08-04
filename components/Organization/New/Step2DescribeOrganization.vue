@@ -262,7 +262,7 @@ const emit = defineEmits<{
 const config = useRuntimeConfig()
 const { t } = useI18n()
 
-const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges')
+const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges/')
 const badges = computed(() => Object.keys(badgesLabels.value || {}).map(key => ({ kind: key })))
 
 const newBadges = ref('badges' in organization.value ? organization.value.badges : [])
