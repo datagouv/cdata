@@ -10,7 +10,8 @@
  * Ex:
  *      <div data-udata-dataset="slug-or-id"></div>
  *      <div data-udata-reuse="slug-or-id"></div>
- *      <div data-udata-organization="slug-or-id"></div>
+ *      <div data-udata-organization="slug-or-id"></div>      
+ *      <div data-udata-search-dataset="slug-or-id" data-height="600"></div>
  */
 
 /**
@@ -23,13 +24,23 @@ function getBaseUrl() {
     return `${parser.protocol}//${parser.host}`;
 }
 
-function getSize(attr) {
-  return {
+function getSize(attr, div) {
+  const baseSize = {
     'dataservice': { maxheight: 180 },
     'dataset': { maxheight: 180 },
     'organization': { maxwidth: 440, maxheight: 220 },
     'reuse': { maxwidth: 440, maxheight: 400 },
-  }[attr]
+    'search-dataset': { },
+  }[attr] || {}
+  
+  if (attr === 'search-dataset') {
+    const customHeight = div.dataset.height
+    if (customHeight) {
+      baseSize.maxheight = parseInt(customHeight)
+    }
+  }
+  
+  return baseSize
 }
 
 // Base udata instance URL
@@ -37,7 +48,7 @@ const BASE_URL = getBaseUrl();
 // OEmbed endpoint URL
 const OEMBED_URL = `${BASE_URL}/nuxt-api/oembed`;
 // Supported attributes
-const ATTRS = ['dataservice', 'dataset', 'organization', 'reuse',];
+const ATTRS = ['dataservice', 'dataset', 'organization', 'reuse', 'search-dataset'];
 
 
 /**
@@ -57,11 +68,11 @@ function checkStatus(response) {
  * Return a promisified JSON response from an API URL
  * if status code is correct.
  */
-function fetchOEmbed(url, attr) {
+function fetchOEmbed(url, attr, div) {
     const request = new URL(OEMBED_URL)
     const params = new URLSearchParams({
       url,
-      ...getSize(attr),
+      ...getSize(attr, div),
     })
     request.search = '?' + params.toString()
     return fetch(request.toString())
@@ -73,7 +84,9 @@ function fetchOEmbed(url, attr) {
  * Transform a string to title case
  */
 function toTitle(txt) {
-    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    return txt.split('-').map(word => 
+        word.charAt(0).toUpperCase() + word.substr(1).toLowerCase()
+    ).join('');
 }
 
 (function() {
@@ -82,8 +95,11 @@ function toTitle(txt) {
         [].forEach.call(document.querySelectorAll(`[data-udata-${attr}]`), function(div) {
             div.innerHTML = `
             <svg width="24" height="24" style="color: #3558a2; animation: spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+            let url;
             const id = div.dataset[`udata${toTitle(attr)}`];
-            fetchOEmbed(`${BASE_URL}/${attr}s/${id}/`, attr)
+            url = `${BASE_URL}/${attr}s/${id}/`;
+            
+            fetchOEmbed(url, attr, div)
                 .then(oembed => {
                     div.innerHTML = oembed.html;
                 });
