@@ -45,7 +45,6 @@ const recommendation = computed(() => {
   const recommendation = recommendations[0]
 
   const locale = shortLocale.value in recommendation.messages ? shortLocale.value : 'fr'
-
   return {
     id: recommendation.id,
     title: recommendation.messages[locale].title,

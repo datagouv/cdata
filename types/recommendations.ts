@@ -1,9 +1,9 @@
 export type Recommendation = {
   id: string
   score: number
-  source: string
+  source: 'matomo' | 'edito' | 'schema' | 'local'
   reason: string
-  type: 'external' | 'dataset' | 'reuse'
+  type?: 'external' | 'dataset' | 'reuse'
 }
 
 export type ExternalRecommendation = Recommendation & {
