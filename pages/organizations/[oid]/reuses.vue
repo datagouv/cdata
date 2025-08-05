@@ -7,7 +7,7 @@
       v-if="organization.metrics.reuses"
       :status
     >
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
         <Card
           v-for="reuse in reuses.data"
           :key="reuse.id"
@@ -19,6 +19,7 @@
         :page="reuses.page"
         :page-size="reuses.page_size"
         :link="getLink"
+        @change="(p: number) => params.page = p.toString()"
       />
     </LoadingBlock>
     <div
@@ -46,7 +47,9 @@
 <script setup lang="ts">
 import { BrandedButton, Pagination } from '@datagouv/components-next'
 import type { Organization, Reuse } from '@datagouv/components-next'
+import { useUrlSearchParams } from '@vueuse/core'
 import Card from '~/components/Reuses/ReuseCard.vue'
+import type { ReuseSearchParams } from '~/types/form'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{
@@ -55,7 +58,22 @@ const props = defineProps<{
 
 const config = useRuntimeConfig()
 
+const route = useRoute()
+const params = useUrlSearchParams<ReuseSearchParams>('history', {
+  initialValue: route.query,
+  removeNullishValues: true,
+  removeFalsyValues: true,
+})
+
+const nonFalsyParams = computed(() => {
+  const filteredParams = Object.entries(toValue(params)).filter(([_k, v]) => v)
+  return { ...Object.fromEntries(filteredParams), organization: props.organization.id, page_size: 15 }
+})
+
 const { data: reuses, status } = await useAPI<PaginatedArray<Reuse>>('/api/2/reuses/search/', {
-  params: { organization: props.organization.id, page_size: 15 },
+  headers: {
+    'X-Fields': reusesXFields,
+  },
+  params: nonFalsyParams,
 })
 </script>
