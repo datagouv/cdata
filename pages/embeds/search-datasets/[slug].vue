@@ -1,5 +1,5 @@
 <template>
-  <div class="padding-search-dataset">
+  <div class="p-2.5">
     <EmbedsSearchDataset :slug="($route.params.slug as string)" />
   </div>
 </template>
