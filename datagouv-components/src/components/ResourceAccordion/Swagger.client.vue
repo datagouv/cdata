@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import SwaggerUiDist from 'swagger-ui-dist'
+import * as SwaggerUiDist from 'swagger-ui-dist'
 import 'swagger-ui-dist/swagger-ui.css'
 import '../../../assets/swagger-themes/newspaper.css'
 
