@@ -219,7 +219,7 @@
             >
               <div
                 class="fr-mt-0 markdown fr-text--sm text-mention-grey"
-                v-html="markdown(resource.description || '')"
+                v-html="formatMarkdown(resource.description || '')"
               />
             </div>
             <div
@@ -340,7 +340,7 @@ import { useI18n } from 'vue-i18n'
 import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine } from '@remixicon/vue'
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
 import { filesize, summarize } from '../../functions/helpers'
-import { markdown } from '../../functions/markdown'
+import { formatMarkdown } from '../../functions/markdown'
 import { useFormatDate } from '../../functions/dates'
 import type { CommunityResource, Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
