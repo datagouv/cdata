@@ -81,7 +81,7 @@
       >
         <div
           v-if="searchResults?.total"
-          class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle justify-between pb-2"
+          class="flex flex-wrap gap-4 items-center justify-between pb-2"
         >
           <p
             class="fr-col-auto my-0"
