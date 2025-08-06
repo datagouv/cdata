@@ -4,6 +4,7 @@ import remarkBreaks from 'remark-breaks'
 import rehypeHighlight from 'rehype-highlight'
 import remarkParse from 'remark-parse'
 import remarkRehype from 'remark-rehype'
+import remarkStringify from 'remark-stringify'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
@@ -63,8 +64,11 @@ export function formatMarkdown(md: string, minDepth = 3) {
 
 export async function removeMarkdown(text: string) {
   const file = await unified()
+    // Take Markdown as input and turn it into MD syntax tree
+    .use(remarkParse, { fragment: true })
     .use(remarkGfm)
     .use(strip)
+    .use(remarkStringify)
     .process(text)
   return String(file)
 }

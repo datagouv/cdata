@@ -45,7 +45,7 @@
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
     "strip-markdown": "^6.0.0",
-    "swagger-ui": "^5.20.1",
+    "swagger-ui-dist": "^5.27.1",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.0.0",
     "vue": "^3.5.13",
@@ -78,6 +78,9 @@
     "vite": "^6.0.11",
     "vite-plugin-vue-devtools": "^7.7.1",
     "vue-tsc": "^2.2.0"
+  },
+  "scarfSettings": {
+    "enabled": false
   },
   "author": {
     "name": "DINUM"

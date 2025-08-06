@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import SwaggerUI from 'swagger-ui'
+import { SwaggerUIBundle } from 'swagger-ui-dist'
 import 'swagger-ui/dist/swagger-ui.css'
 import '../../../assets/swagger-themes/newspaper.css'
 
@@ -13,7 +13,7 @@ const props = defineProps<{
 }>()
 
 onMounted(async () => {
-  SwaggerUI({
+  SwaggerUIBundle({
     dom_id: '#swagger-ui',
     url: props.url,
   })
