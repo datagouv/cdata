@@ -4,7 +4,7 @@
   >
     <div
       v-if="withEllipsis"
-      class="text-overflow-ellipsis"
+      class="truncate"
     >
       <slot />
     </div>
