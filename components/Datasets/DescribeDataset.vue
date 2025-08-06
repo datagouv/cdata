@@ -254,6 +254,15 @@
             >
               {{ getFirstWarning("description_short") }}
             </SimpleBanner>
+            <BrandedButton
+              class="mt-2"
+              type="button"
+              color="primary-soft"
+              size="xs"
+              @click="handleAutoCompleteShortDescription(form.description)"
+            >
+              {{ $t('Auto-compléter') }}
+            </BrandedButton>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element min-width-0"
@@ -711,5 +720,11 @@ async function submit() {
   if (await validate()) {
     emit('submit')
   }
-};
+}
+
+async function handleAutoCompleteShortDescription(description: string) {
+  // TODO: Implement API call to auto-complete the short description
+  // This will be implemented later
+  console.log('Auto-complete short description clicked with description:', description)
+}
 </script>
