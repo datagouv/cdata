@@ -9,9 +9,3 @@ definePageMeta({
   layout: false,
 })
 </script>
-
-<style>
-.padding-search-dataservice {
-    padding: 10px;
-}
-</style>

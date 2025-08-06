@@ -1,5 +1,5 @@
 <template>
-  <div class="padding-list-reuse">
+  <div class="p-2.5">
     <EmbedsListReuse :slug="($route.params.slug as string)" />
   </div>
 </template>
@@ -9,9 +9,3 @@ definePageMeta({
   layout: false,
 })
 </script>
-
-  <style>
-  .padding-list-reuse {
-      padding: 10px;
-  }
-  </style>
