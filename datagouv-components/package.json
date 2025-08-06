@@ -1,6 +1,6 @@
 {
   "name": "@datagouv/components-next",
-  "version": "0.0.13",
+  "version": "0.0.12",
   "private": false,
   "type": "module",
   "main": "./src/main.ts",
@@ -63,7 +63,6 @@
     "@tsconfig/node22": "^22.0.0",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^22.13.1",
-    "@types/swagger-ui": "^3.52.4",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.3.0",

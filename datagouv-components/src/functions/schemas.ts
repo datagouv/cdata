@@ -1,4 +1,3 @@
-import type { AxiosResponse } from 'axios'
 import { ofetch } from 'ofetch'
 import type { Resource } from '../types/resources'
 import { useComponentsConfig } from '../config'
@@ -43,7 +42,6 @@ export interface ValidataError {
   tags: Array<string>
 }
 export type SchemaResponseData = Array<RegisteredSchema>
-export type SchemaResponse = AxiosResponse<SchemaResponseData>
 
 type SchemaPath = { schema_name: string } | { schema_url: string }
 
