@@ -726,7 +726,12 @@ async function submit() {
 
 async function handleAutoCompleteShortDescription(description: string) {
   try {
-    const shortDescription = await generateShortDescription(description)
+    const runtimeConfig = useRuntimeConfig()
+    const shortDescription = await generateShortDescription(
+      description,
+      runtimeConfig.public.albertApiBaseUrl as string,
+      runtimeConfig.public.albertApiKey as string | undefined
+    )
     form.value.description_short = shortDescription
   } catch (error) {
     console.error('Failed to generate short description:', error)

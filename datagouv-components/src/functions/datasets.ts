@@ -54,10 +54,12 @@ export async function getShortDescription(
 
 /** Generate a short description from a full description using Albert LLM API */
 export async function generateShortDescription(
-  description: string
+  description: string,
+  albertApiBaseUrl: string,
+  albertApiKey?: string
 ): Promise<string> {
   try {
-    const albertClient: AlbertAPI | null = new AlbertAPI()
+    const albertClient = new AlbertAPI(albertApiBaseUrl, albertApiKey)
     const messages: ChatMessage[] = [
       {
         role: 'system',
