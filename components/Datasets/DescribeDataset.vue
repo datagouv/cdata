@@ -614,6 +614,7 @@ import ProducerSelect from '~/components/ProducerSelect.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone } from '~/types/types'
 import { DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
+import { generateShortDescription } from '~/datagouv-components/src/functions/datasets'
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 
@@ -724,8 +725,11 @@ async function submit() {
 }
 
 async function handleAutoCompleteShortDescription(description: string) {
-  // TODO: Implement API call to auto-complete the short description
-  // This will be implemented later
-  console.log('Auto-complete short description clicked with description:', description)
+  try {
+    const shortDescription = await generateShortDescription(description)
+    form.value.description_short = shortDescription
+  } catch (error) {
+    console.error('Failed to generate short description:', error)
+  }
 }
 </script>

@@ -2,6 +2,7 @@ import { useComponentsConfig } from '../config'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import type { CommunityResource, Resource } from '../types/resources'
 import { removeMarkdown } from './markdown'
+import { AlbertAPI, type ChatMessage } from '../../../utils/albert-api'
 
 // Dataset description constants
 export const DESCRIPTION_SHORT_MAX_LENGTH = 200
@@ -49,4 +50,38 @@ export async function getShortDescription(
     return plainText
   }
   return ''
+}
+
+/** Generate a short description from a full description using Albert LLM API */
+export async function generateShortDescription(
+  description: string
+): Promise<string> {
+  try {
+    const albertClient: AlbertAPI | null = new AlbertAPI()
+    const messages: ChatMessage[] = [
+      {
+        role: 'system',
+        content: `Tu es un assistant spécialisé dans la création de descriptions courtes et percutantes. Tu dois créer une description courte (maximum ${DESCRIPTION_SHORT_MAX_LENGTH} caractères) qui résume efficacement le contenu principal.`
+      },
+      {
+        role: 'user',
+        content: `Crée une description courte (max ${DESCRIPTION_SHORT_MAX_LENGTH} caractères) basée sur cette description complète :\n\n${description}`
+      }
+    ]
+    // As of 2025/08, models available for text generation:
+    // - albert-small
+    // - AgentPublic/albert-spp-8b
+    // - albert-code-beta
+    // - albert-ministral
+    const response = await albertClient.chat_completions(messages, "albert-small")
+    const generatedShortDescription = response.choices?.[0]?.message?.content || ''
+
+    // Ensure the description doesn't exceed maxChars
+    return generatedShortDescription.length > DESCRIPTION_SHORT_MAX_LENGTH
+      ? `${generatedShortDescription.substring(0, DESCRIPTION_SHORT_MAX_LENGTH - 1)}…`
+      : generatedShortDescription
+  } catch (error) {
+    console.error('Error calling Albert API for short description:', error)
+    throw error
+  }
 }
