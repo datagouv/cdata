@@ -254,6 +254,22 @@
             >
               {{ getFirstWarning("description_short") }}
             </SimpleBanner>
+            <BrandedButton
+              class="mt-2"
+              type="button"
+              color="primary-soft"
+              size="xs"
+              :disabled="isGeneratingShortDescription"
+              @click="handleAutoCompleteShortDescription(form.description)"
+            >
+              <div class="flex items-center space-x-2">
+                <span>{{ $t('Remplir ce champ automatiquement') }}</span>
+                <RiLoader5Line
+                  v-if="isGeneratingShortDescription"
+                  class="size-4 animate-spin text-primary"
+                />
+              </div>
+            </BrandedButton>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element min-width-0"
@@ -595,7 +611,7 @@
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
 import { SimpleBanner, type Frequency, type License } from '@datagouv/components-next'
-import { RiAddLine, RiStarFill } from '@remixicon/vue'
+import { RiAddLine, RiStarFill, RiLoader5Line } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
@@ -633,6 +649,8 @@ const contactPointAccordionId = useId()
 const chooseFrequencyAccordionId = useId()
 const addTemporalCoverageAccordionId = useId()
 const addSpatialInformationAccordionId = useId()
+
+const isGeneratingShortDescription = ref(false)
 
 const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies', { lazy: true })
 
@@ -711,5 +729,28 @@ async function submit() {
   if (await validate()) {
     emit('submit')
   }
-};
+}
+
+async function handleAutoCompleteShortDescription(description: string) {
+  try {
+    isGeneratingShortDescription.value = true
+    
+    // We call our server-side API route instead of Albert API directly to avoid CORS issues.
+    // The Albert API doesn't allow direct requests from browser-side JavaScript.
+    // Our server acts as a proxy, keeping the API key secure on the server side.
+    const response = await fetch('/api/albert/generate-short-description', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ description })
+    }).then(res => res.json())
+
+    form.value.description_short = response.shortDescription || ''
+  } catch (error) {
+    console.error('Failed to generate short description:', error)
+  } finally {
+    isGeneratingShortDescription.value = false
+  }
+}
 </script>

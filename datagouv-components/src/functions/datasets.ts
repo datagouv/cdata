@@ -3,6 +3,7 @@ import type { Dataset, DatasetV2 } from '../types/datasets'
 import type { CommunityResource, Resource } from '../types/resources'
 import { removeMarkdown } from './markdown'
 
+
 // Dataset description constants
 export const DESCRIPTION_SHORT_MAX_LENGTH = 200
 export const DESCRIPTION_MIN_LENGTH = 200

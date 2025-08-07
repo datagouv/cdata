@@ -89,6 +89,8 @@ export default defineNuxtConfig({
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
       schemaValidataUrl: 'https://validata.fr',
+      albertApiBaseUrl: 'https://albert.api.etalab.gouv.fr/',
+      albertApiKey: process.env.NUXT_PUBLIC_ALBERT_API_KEY,
 
       homepagePublishDatasetOnboarding: '/pages/onboarding/producteurs',
       homepagePublishReuseOnboarding: '/pages/onboarding/reutilisateurs',
