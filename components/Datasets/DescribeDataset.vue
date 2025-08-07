@@ -261,7 +261,7 @@
               size="xs"
               @click="handleAutoCompleteShortDescription(form.description)"
             >
-              {{ $t('Auto-compléter') }}
+              {{ $t('Remplir ce champ automatiquement') }}
             </BrandedButton>
           </LinkedToAccordion>
           <LinkedToAccordion
