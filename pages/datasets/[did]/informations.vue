@@ -193,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, CopyButton, useFormatDate, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
+import { BrandedButton, CopyButton, DateRangeDetails, useFormatDate, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
 import { RiBook2Line, RiCheckboxCircleLine, RiServerLine } from '@remixicon/vue'
 import LeafletMapClient from '~/components/LeafletMap.client.vue'
 import ExtraAccordion from '~/datagouv-components/src/components/ExtraAccordion.vue'

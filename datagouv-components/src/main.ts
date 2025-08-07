@@ -22,6 +22,7 @@ import BrandedButton from './components/BrandedButton.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
 import DatasetCard from './components/DatasetCard.vue'
+import DateRangeDetails from './components/DateRangeDetails.vue'
 import DatasetInformationPanel from './components/DatasetInformationPanel.vue'
 import DatasetQuality from './components/DatasetQuality.vue'
 import DatasetQualityInline from './components/DatasetQualityInline.vue'
@@ -130,6 +131,7 @@ export {
   DatasetQualityItem,
   DatasetQualityScore,
   DatasetQualityTooltipContent,
+  DateRangeDetails,
   OrganizationCard,
   OrganizationNameWithCertificate,
   OwnerType,
