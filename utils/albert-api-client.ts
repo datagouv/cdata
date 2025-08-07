@@ -15,32 +15,12 @@ import FormData from 'form-data'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 
-/**
- * Message interface for chat completions
- */
 export interface ChatMessage {
   role: string
   content: string
 }
 
-/**
- * Albert API Client
- * 
- * A comprehensive client for interacting with the Albert API, providing access to:
- * - Chat completions
- * - Embeddings
- * - Document processing and search
- * - Audio transcription
- * - OCR and parsing
- * - Collections and documents management
- * - Usage tracking
- * - Token management
- * 
- * Documentation:
- * - API Documentation: https://albert.api.etalab.gouv.fr/documentation
- * - Swagger UI: https://albert.api.etalab.gouv.fr/swagger
- */
-export class AlbertAPI {
+export class AlbertAPIClient {
   private baseUrl: string
   private apiKey?: string
   private timeout: number
