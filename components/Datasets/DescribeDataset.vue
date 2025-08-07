@@ -614,7 +614,6 @@ import ProducerSelect from '~/components/ProducerSelect.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone } from '~/types/types'
 import { DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
-import { generateShortDescription } from '~/datagouv-components/src/functions/datasets'
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 
@@ -726,13 +725,18 @@ async function submit() {
 
 async function handleAutoCompleteShortDescription(description: string) {
   try {
-    const runtimeConfig = useRuntimeConfig()
-    const shortDescription = await generateShortDescription(
-      description,
-      runtimeConfig.public.albertApiBaseUrl as string,
-      runtimeConfig.public.albertApiKey as string | undefined
-    )
-    form.value.description_short = shortDescription
+    // We call our server-side API route instead of Albert API directly to avoid CORS issues.
+    // The Albert API doesn't allow direct requests from browser-side JavaScript.
+    // Our server acts as a proxy, keeping the API key secure on the server side.
+    const response = await fetch('/api/albert/generate-short-description', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ description })
+    }).then(res => res.json())
+
+    form.value.description_short = response.shortDescription || ''
   } catch (error) {
     console.error('Failed to generate short description:', error)
   }
