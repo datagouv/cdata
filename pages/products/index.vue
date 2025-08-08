@@ -33,6 +33,7 @@
           :background-type="card.backgroundType || 'sky'"
           size="medium"
           :rounded="false"
+          :theme="card.phase"
           :description="card.description"
           :cta-url="`/products/${card.slug}`"
           cta-label="Voir le produit"
@@ -41,7 +42,7 @@
           type="brand"
           :border="true"
           :use-static-image="true"
-          :image-src="`/nuxt_images/products/${card.slug}.png`"
+          :image-src="card.imageUrl"
           :image-alt="card.product"
           :title="card.product"
         />
@@ -64,13 +65,15 @@ interface Card {
   description?: string
   tagline?: string
   title?: string
+  image_url?: string
+  phase?: string
 }
 
 const cards = ref<Card[]>([])
 const loading = ref(true)
 
 onMounted(async () => {
-  const res = await fetch('https://grist.numerique.gouv.fr/api/docs/pJuuC9r8GvA1/tables/Produits/records')
+  const res = await fetch('https://grist.numerique.gouv.fr/api/docs/pJuuC9r8GvA1/tables/Productsv2/records')
   const data = await res.json()
   cards.value = data.records.map((r: { fields: Card }) => ({
     id: r.fields.slug,
@@ -80,6 +83,8 @@ onMounted(async () => {
     description: r.fields.description,
     tagline: r.fields.tagline,
     title: r.fields.product,
+    imageUrl: r.fields.image_url,
+    phase: r.fields.phase,
   }))
   loading.value = false
 })
