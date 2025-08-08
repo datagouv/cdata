@@ -7,7 +7,7 @@
     <BannerReadOnly />
     <slot />
     <div class="brand-layout">
-        <div class="brand-background"></div>
+      <div class="brand-background" />
     </div>
     <SiteFooter />
   </div>

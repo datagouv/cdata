@@ -1,6 +1,9 @@
 export type Site = {
   id: string
   title: string
+  datasets_page_id: string | null
+  reuses_page_id: string | null
+  dataservices_page_id: string | null
   metrics: {
     'dataservices': number
     'datasets': number

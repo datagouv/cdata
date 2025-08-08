@@ -19,9 +19,13 @@
   --text-4\.5xl: 2.75rem;
 
   --color-primary: #3558a2;
+  --color-ocher: #A6481C;
+  --color-green-reuse: #2B6972;
+  --color-purple-dataservice: #5E5DAE;
   --color-mention-grey: #666; /* Copy from --text-mention-grey */
   --color-gray-title: #161616;
   --color-gray-medium: #666666;
+  --color-gray-lowest-2: #fafafa;
   --color-gray-low: #929292;
   --color-gray-lower-hover: #d2d2d2;
   --color-gray-lower-active: #c1c1c1;
