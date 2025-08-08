@@ -109,9 +109,9 @@ const shouldLoadPdf = computed(() => {
     return false
   }
 
-  // Use maxPdfPreviewSize from config, fallback to 10 MB if not set
-  const maxSizeBytes = config.maxPdfPreviewSize ?? 10_000_000
-  return size <= maxSizeBytes
+  // Use maxPdfPreviewByteSize from config, fallback to 10 MB if not set
+  const maxByteSize = config.maxPdfPreviewByteSize ?? 10_000_000
+  return size <= maxByteSize
 })
 
 const loadPdf = async () => {
