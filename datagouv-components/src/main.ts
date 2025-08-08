@@ -15,6 +15,7 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User } from './types/users'
 
+import AppLink from './components/AppLink.vue'
 import Avatar from './components/Avatar.vue'
 import AvatarWithName from './components/AvatarWithName.vue'
 import BannerAction from './components/BannerAction.vue'
@@ -106,18 +107,18 @@ export type {
 // Vue Plugin
 const datagouv: Plugin<PluginConfig> = {
   async install(app: App, options) {
+    app.provide(configKey, options)
     if (!options.textClamp) {
       const textClamp = await import('vue3-text-clamp')
       options.textClamp = textClamp.default
     }
-
-    app.provide(configKey, options)
   },
 }
 
 export {
   datagouv,
   useComponentsConfig,
+  AppLink,
   Avatar,
   AvatarWithName,
   BannerAction,
