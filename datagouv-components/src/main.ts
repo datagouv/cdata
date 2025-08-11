@@ -56,6 +56,7 @@ export * from './functions/datasets'
 export * from './functions/owned'
 export * from './functions/helpers'
 export * from './functions/matomo'
+export * from './functions/never'
 export * from './functions/schemas'
 export * from './functions/markdown'
 

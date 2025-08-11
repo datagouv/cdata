@@ -8,7 +8,7 @@
   </component>
   <a
     v-else-if="isExternal"
-    :href="to"
+    :href="(to as string)"
   >
     <slot />
   </a>

@@ -492,7 +492,7 @@ const communityResource = computed<CommunityResource | null>(() => {
 const owner = computed(() => communityResource.value ? getOwnerName(communityResource.value) : null)
 
 const lastUpdate = props.resource.last_modified
-const conversionsLastUpdate = computed(() => formatRelativeIfRecentDate(props.resource.extras['analysis:parsing:finished_at']))
+const conversionsLastUpdate = computed(() => formatRelativeIfRecentDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined))
 const availabilityChecked = props.resource.extras && 'check:available' in props.resource.extras
 
 const unavailable = availabilityChecked && props.resource.extras['check:available'] === false
