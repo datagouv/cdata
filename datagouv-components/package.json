@@ -1,6 +1,6 @@
 {
   "name": "@datagouv/components-next",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "private": false,
   "type": "module",
   "main": "./src/main.ts",
@@ -22,6 +22,7 @@
     "publish-stable": "npm publish --access public"
   },
   "dependencies": {
+    "@floating-ui/vue": "^1.1.8",
     "@headlessui/vue": "^1.7.23",
     "@remixicon/vue": "^4.5.0",
     "@vueuse/core": "^13.1.0",
