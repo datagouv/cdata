@@ -47,7 +47,7 @@ app.vueApp.use(datagouv, {
   devApiKey: runtimeConfig.public.devApiKey,
   staticUrl: runtimeConfig.public.staticUrl,
   tabularApiUrl: runtimeConfig.public.tabularApiUrl,
-  tabularApiAllowRemote: true,
+  tabularAllowRemote: true,
   datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
   customUseFetch: useAPI as UseFetchFunction, // Why this `as` is required?
   textClamp: TextClamp,
