@@ -1,6 +1,6 @@
-import type { Organization } from '@datagouv/components-next'
+import type { ContactPoint, Organization } from '@datagouv/components-next'
 import type { $Fetch } from 'ofetch'
-import type { ContactPoint, NewContactPoint } from '~/types/types'
+import type { NewContactPoint } from '~/types/types'
 
 export const defaultContactForm = {
   name: '',

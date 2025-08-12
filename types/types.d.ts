@@ -1,4 +1,4 @@
-import type { Dataset, CommunityResource, Dataservice, DataserviceAccessAudience, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, DataserviceAccessAudienceType, DataserviceAccessAudienceCondition } from '@datagouv/components-next'
+import type { Dataset, CommunityResource, Dataservice, DataserviceAccessAudience, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, DataserviceAccessAudienceType, DataserviceAccessAudienceCondition, ContactPoint } from '@datagouv/components-next'
 
 export type AxisAlignment = 'start' | 'center' | 'end'
 
@@ -287,14 +287,6 @@ export type NewOrganization = {
   description: string
   url: string | null
   logo: string
-}
-
-export type ContactPoint = {
-  id: string
-  name: string
-  contact_form?: string
-  email?: string
-  role: string
 }
 
 export type NewContactPoint = Omit<ContactPoint, 'id'>

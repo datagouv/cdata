@@ -123,13 +123,12 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type Organization } from '@datagouv/components-next'
+import { BrandedButton, type ContactPoint, type Organization } from '@datagouv/components-next'
 import { RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
-import type { ContactPoint } from '~/types/types'
 
 const props = defineProps<{
   contactPoints: Array<ContactPoint>
