@@ -143,7 +143,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BrandedButton, type ContactPoint, type Organization } from '@datagouv/components-next'
+import { BrandedButton } from '@datagouv/components-next'
+import type { ContactPoint, ContactType, Organization } from '@datagouv/components-next'
 import { RiSaveLine } from '@remixicon/vue'
 import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
@@ -157,8 +158,6 @@ const props = defineProps<{
   errorText?: string | null
   warningText?: string | null
 }>()
-
-type ContactType = { id: string, label: string }
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()

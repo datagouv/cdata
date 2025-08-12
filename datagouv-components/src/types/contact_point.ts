@@ -1,3 +1,5 @@
+export type ContactType = { id: string, label: string }
+
 export type ContactPoint = {
   id: string
   name: string

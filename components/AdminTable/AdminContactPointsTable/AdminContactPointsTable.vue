@@ -123,7 +123,8 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type ContactPoint, type Organization } from '@datagouv/components-next'
+import { BrandedButton } from '@datagouv/components-next'
+import type { ContactPoint, ContactType, Organization } from '@datagouv/components-next'
 import { RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'

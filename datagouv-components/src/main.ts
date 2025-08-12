@@ -1,5 +1,5 @@
 import type { App, Plugin } from 'vue'
-import type { ContactPoint } from './types/contact_point.js'
+import type { ContactPoint, ContactType } from './types/contact_point.js'
 import type { Badge, Badges } from './types/badges'
 import type { Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
 import type { NewDataservice, Dataservice, DataserviceAccessAudience, DataserviceAccessAudienceCondition, DataserviceAccessAudienceType } from './types/dataservices'
@@ -68,6 +68,7 @@ export type {
   Badges,
   CommunityResource,
   ContactPoint,
+  ContactType,
   Dataset,
   DatasetV2,
   DatasetV2WithFullObject,

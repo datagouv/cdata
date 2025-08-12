@@ -9,8 +9,6 @@ export const defaultContactForm = {
   role: 'contact',
 }
 
-export type ContactType = { id: string, label: string }
-
 export async function newContactPoint(api: $Fetch, organization: Organization, contactPoint: NewContactPoint): Promise<ContactPoint> {
   return await api<ContactPoint>('/api/1/contacts/', {
     method: 'POST',
