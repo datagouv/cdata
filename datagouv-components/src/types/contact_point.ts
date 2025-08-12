@@ -1,4 +1,4 @@
-export type ContactType = { id: string, label: string }
+export type ContactPointRole = { id: string, label: string }
 
 export type ContactPoint = {
   id: string

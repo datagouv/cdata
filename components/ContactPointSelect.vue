@@ -144,7 +144,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BrandedButton } from '@datagouv/components-next'
-import type { ContactPoint, ContactType, Organization } from '@datagouv/components-next'
+import type { ContactPoint, ContactPointRole, Organization } from '@datagouv/components-next'
 import { RiSaveLine } from '@remixicon/vue'
 import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
@@ -189,7 +189,7 @@ const { data: contacts, status } = await useAPI<PaginatedArray<ContactPoint>>(co
 })
 
 const roleKey = '/api/1/contacts/roles/'
-const { data: rolesList, status: rolesStatus } = await useAPI<Array<ContactType>>(roleKey, {
+const { data: rolesList, status: rolesStatus } = await useAPI<Array<ContactPointRole>>(roleKey, {
   key: roleKey,
   getCachedData: getDataFromSSRPayload,
 })

@@ -124,7 +124,7 @@
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
-import type { ContactPoint, ContactType, Organization } from '@datagouv/components-next'
+import type { ContactPoint, ContactPointRole, Organization } from '@datagouv/components-next'
 import { RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
@@ -159,7 +159,7 @@ const { form: newContactForm, getFirstError, touch, validate } = useForm({
 const loading = ref(false)
 
 const roleKey = '/api/1/contacts/roles/'
-const { data: rolesList } = await useAPI<Array<ContactType>>(roleKey, {
+const { data: rolesList } = await useAPI<Array<ContactPointRole>>(roleKey, {
   key: roleKey,
   getCachedData: getDataFromSSRPayload,
 })
