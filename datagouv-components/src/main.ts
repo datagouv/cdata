@@ -16,6 +16,7 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User } from './types/users'
 
+import AnimatedLoader from './components/AnimatedLoader.vue'
 import AppLink from './components/AppLink.vue'
 import Avatar from './components/Avatar.vue'
 import AvatarWithName from './components/AvatarWithName.vue'
@@ -123,6 +124,7 @@ const datagouv: Plugin<PluginConfig> = {
 export {
   datagouv,
   useComponentsConfig,
+  AnimatedLoader,
   AppLink,
   Avatar,
   AvatarWithName,
