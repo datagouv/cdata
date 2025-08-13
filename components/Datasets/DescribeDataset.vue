@@ -236,6 +236,28 @@
             :accordion="writeAGoodDescriptionAccordionId"
           >
             <InputGroup
+              v-model="form.description"
+              class="mb-3"
+              :label="$t('Description')"
+              :required="true"
+              type="markdown"
+              :has-error="!!getFirstError('description')"
+              :has-warning="!!getFirstWarning('description')"
+              :error-text="getFirstError('description')"
+              @change="touch('description')"
+            />
+            <SimpleBanner
+              v-if="getFirstWarning('description')"
+              type="warning"
+            >
+              {{ getFirstWarning("description") }}
+            </SimpleBanner>
+          </LinkedToAccordion>
+          <LinkedToAccordion
+            class="fr-fieldset__element min-width-0"
+            :accordion="writeAGoodDescriptionAccordionId"
+          >
+            <InputGroup
               v-model="form.description_short"
               class="mb-3"
               :label="$t(`Courte description`)"
@@ -271,28 +293,6 @@
                 />
               </div>
             </BrandedButton>
-          </LinkedToAccordion>
-          <LinkedToAccordion
-            class="fr-fieldset__element min-width-0"
-            :accordion="writeAGoodDescriptionAccordionId"
-          >
-            <InputGroup
-              v-model="form.description"
-              class="mb-3"
-              :label="$t('Description')"
-              :required="true"
-              type="markdown"
-              :has-error="!!getFirstError('description')"
-              :has-warning="!!getFirstWarning('description')"
-              :error-text="getFirstError('description')"
-              @change="touch('description')"
-            />
-            <SimpleBanner
-              v-if="getFirstWarning('description')"
-              type="warning"
-            >
-              {{ getFirstWarning("description") }}
-            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
