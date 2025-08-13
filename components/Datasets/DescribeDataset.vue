@@ -247,6 +247,7 @@
               :has-warning="!!getFirstWarning('description_short')"
               :error-text="getFirstError('description_short')"
               @change="touch('description_short')"
+              @blur="touch('description_short')"
             />
             <SimpleBanner
               v-if="getFirstWarning('description_short')"
