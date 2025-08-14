@@ -15,7 +15,6 @@ app.use(datagouv, {
     name: 'data.gouv.fr', // Name of the site in some texts
     baseUrl: 'https://www.data.gouv.fr', // Used for redirects
     apiBase: 'https://www.data.gouv.fr', // Used for API calls (could default to `baseUrl`?)
-    staticUrl: 'https://static.data.gouv.fr', // Used for static files
 })
 ```
 
@@ -36,7 +35,6 @@ app.vueApp.use(datagouv, {
     baseUrl: runtimeConfig.public.i18n.baseUrl,
     apiBase: runtimeConfig.public.apiBase,
     devApiKey: runtimeConfig.public.devApiKey,
-    staticUrl: runtimeConfig.public.staticUrl,
 
     // ----------------------------------------
     // --- Special functions and components ---

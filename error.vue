@@ -45,7 +45,6 @@ app.vueApp.use(datagouv, {
   baseUrl: runtimeConfig.public.i18n.baseUrl, // Maybe do not use i18n config here?
   apiBase: runtimeConfig.public.apiBase,
   devApiKey: runtimeConfig.public.devApiKey,
-  staticUrl: runtimeConfig.public.staticUrl,
   tabularApiUrl: runtimeConfig.public.tabularApiUrl,
   tabularAllowRemote: true,
   datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,

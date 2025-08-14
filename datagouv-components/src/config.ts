@@ -6,7 +6,6 @@ export type PluginConfig = {
   baseUrl: string
   apiBase: string
   devApiKey?: string | null
-  staticUrl: string
   datasetQualityGuideUrl?: string
   schemaValidataUrl?: string
   schemaDocumentationUrl?: string
