@@ -57,12 +57,16 @@
           >
             <AppLink
               :to="datasetUrl"
-              class="text-gray-title text-base bg-none flex truncate"
+              class="text-gray-title text-base bg-none flex w-full truncate"
+              :target="datasetUrlInNewTab ? '_blank' : undefined"
             >
-              <span class="block flex-initial truncate">{{ dataset.title }}</span>
+              <span
+                class="block truncate"
+                :class="dataset.acronym ? 'flex-initial' : 'flex-1'"
+              >{{ dataset.title }}</span>
               <small
                 v-if="dataset.acronym"
-                class="flex-none ml-2"
+                class="flex-1 ml-2"
               >{{ dataset.acronym }}</small>
               <span class="absolute inset-0" />
             </AppLink>
@@ -182,6 +186,7 @@ import AppLink from './AppLink.vue'
      * It is used as a separate prop to allow other sites using the package to define their own dataset pages.
      */
     datasetUrl: RouteLocationRaw
+    datasetUrlInNewTab?: boolean
 
     /**
      * The organizationUrl is an optional route location object to allow Vue Router to navigate to the details of the organization linked to tha dataset.
