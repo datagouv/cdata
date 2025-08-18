@@ -9,11 +9,12 @@
  * - Swagger UI: https://albert.api.etalab.gouv.fr/swagger
  */
 
-import axios from 'axios'
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
-import FormData from 'form-data'
+// TypeScript declaration for $fetch (globally available in Nuxt context)
+declare const $fetch: any
+
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import * as FormData from 'form-data'
 
 export interface ChatMessage {
   role: string
@@ -24,7 +25,6 @@ export class AlbertAPIClient {
   private baseUrl: string
   private apiKey?: string
   private timeout: number
-  private client: AxiosInstance
 
   /**
    * Initialize the Albert API client.
@@ -46,15 +46,6 @@ export class AlbertAPIClient {
         "API key is required. Set albertApiKey parameter or NUXT_PUBLIC_ALBERT_API_KEY environment variable."
       )
     }
-
-    this.client = axios.create({
-      baseURL: this.baseUrl,
-      timeout: this.timeout * 1000, // Convert to milliseconds
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-      }
-    })
   }
 
   /**
@@ -69,23 +60,41 @@ export class AlbertAPIClient {
   private async _make_request(
     method: string,
     endpoint: string,
-    config: AxiosRequestConfig = {}
+    config: any = {}
   ): Promise<any> {
     const url = `${this.baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`
 
     try {
-      const response: AxiosResponse = await this.client.request({
+      const options: any = {
         method,
-        url,
-        ...config
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+          ...config.headers
+        }
+      }
+      options.body = config.body ?? config.data
+
+      // Remove Content-Type header for FormData requests
+      if (options.body instanceof FormData) {
+        delete options.headers['Content-Type']
+      }
+
+      // Add other config options (like params for GET requests)
+      Object.keys(config).forEach(key => {
+        if (key !== 'body' && key !== 'data' && key !== 'headers') {
+          options[key] = config[key]
+        }
       })
 
+      const response = await $fetch(url, options)
+
       // Handle empty responses
-      if (response.status === 204) {
+      if (response === null || response === undefined) {
         return {}
       }
 
-      return response.data
+      return response
     } catch (error: any) {
       if (error.response) {
         throw new Error(`API request failed: ${error.response.status} - ${error.response.statusText}`)
@@ -151,7 +160,7 @@ export class AlbertAPIClient {
     kwargs: any = {}
   ): Promise<any> {
     const data = { messages, model, ...kwargs }
-    return this._make_request('POST', '/v1/chat/completions', { data })
+    return this._make_request('POST', '/v1/chat/completions', { body: data })
   }
 
   /**
@@ -168,7 +177,7 @@ export class AlbertAPIClient {
     kwargs: any = {}
   ): Promise<any> {
     const data = { messages, model, ...kwargs }
-    return this._make_request('POST', '/v1/agents/completions', { data })
+    return this._make_request('POST', '/v1/agents/completions', { body: data })
   }
 
   /**
@@ -198,7 +207,7 @@ export class AlbertAPIClient {
     kwargs: any = {}
   ): Promise<any> {
     const data = { input: input_text, model, ...kwargs }
-    return this._make_request('POST', '/v1/embeddings', { data })
+    return this._make_request('POST', '/v1/embeddings', { body: data })
   }
 
   // ============================================================================
@@ -234,10 +243,7 @@ export class AlbertAPIClient {
     })
 
     return this._make_request('POST', '/v1/audio/transcriptions', {
-      data: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      }
+      body: formData
     })
   }
 
@@ -271,10 +277,7 @@ export class AlbertAPIClient {
     })
 
     return this._make_request('POST', '/v1/parse-beta', {
-      data: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      }
+      body: formData
     })
   }
 
@@ -307,10 +310,7 @@ export class AlbertAPIClient {
     });
 
     return this._make_request('POST', '/v1/ocr-beta', {
-      data: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      }
+      body: formData
     })
   }
 
@@ -332,7 +332,7 @@ export class AlbertAPIClient {
     visibility: string = 'private'
   ): Promise<any> {
     const data = { name, description, visibility }
-    return this._make_request('POST', '/v1/collections', { data })
+    return this._make_request('POST', '/v1/collections', { body: data })
   }
 
   /**
@@ -370,7 +370,7 @@ export class AlbertAPIClient {
     collection_id: number,
     kwargs: any = {}
   ): Promise<void> {
-    await this._make_request('PATCH', `/v1/collections/${collection_id}`, { data: kwargs })
+    await this._make_request('PATCH', `/v1/collections/${collection_id}`, { body: kwargs })
   }
 
   /**
@@ -411,10 +411,7 @@ export class AlbertAPIClient {
     })
 
     return this._make_request('POST', '/v1/documents', {
-      data: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      }
+      body: formData
     })
   }
 
@@ -508,7 +505,7 @@ export class AlbertAPIClient {
     kwargs: any = {}
   ): Promise<any> {
     const data = { prompt, collections: collections || [], ...kwargs }
-    return this._make_request('POST', '/v1/search', { data })
+    return this._make_request('POST', '/v1/search', { body: data })
   }
 
   // ============================================================================
@@ -529,7 +526,7 @@ export class AlbertAPIClient {
     model: string
   ): Promise<any> {
     const data = { prompt, input: input_texts, model }
-    return this._make_request('POST', '/v1/rerank', { data })
+    return this._make_request('POST', '/v1/rerank', { body: data })
   }
 
   // ============================================================================
@@ -578,7 +575,7 @@ export class AlbertAPIClient {
       data.expires_at = expires_at
     }
 
-    return this._make_request('POST', '/tokens', { data })
+    return this._make_request('POST', '/tokens', { body: data })
   }
 
   /**

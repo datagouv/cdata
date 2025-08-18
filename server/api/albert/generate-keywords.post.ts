@@ -1,4 +1,4 @@
-import { AlbertAPIClient } from '~/utils/albert-api-client'
+import { AlbertAPIClient } from '~/server/utils/albert-api-client'
 
 export default defineEventHandler(async (event) => {
   try {

@@ -1,5 +1,5 @@
 import { DESCRIPTION_SHORT_MAX_LENGTH } from '~/datagouv-components/src/functions/datasets'
-import { AlbertAPIClient } from '~/utils/albert-api-client'
+import { AlbertAPIClient } from '~/server/utils/albert-api-client'
 
 
 export default defineEventHandler(async (event) => {
