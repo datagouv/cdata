@@ -23,19 +23,19 @@ app.vueApp.use(datagouv, {
   apiBase: runtimeConfig.public.apiBase,
   devApiKey: runtimeConfig.public.devApiKey,
   staticUrl: runtimeConfig.public.staticUrl,
+  albertApiBaseUrl: runtimeConfig.public.albertApiBaseUrl,
+  albertApiKey: runtimeConfig.public.albertApiKey,
   datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
+  maxJsonPreviewCharSize: runtimeConfig.public.maxJsonPreviewCharSize,
+  maxPdfPreviewByteSize: runtimeConfig.public.maxPdfPreviewByteSize,
+  maxXmlPreviewCharSize: runtimeConfig.public.maxXmlPreviewCharSize,
+  pmtilesViewerBaseUrl: null,
   schemaValidataUrl: runtimeConfig.public.schemaValidataUrl,
   tabularApiUrl: runtimeConfig.public.tabularApiUrl,
   tabularAllowRemote: true,
-  pmtilesViewerBaseUrl: null,
   customUseFetch: useAPI as UseFetchFunction, // Why this `as` is required?
   textClamp: TextClamp,
   appLink: CdataLink,
-  maxJsonPreviewSize: 1000000, // Maximum size of JSON to preview in characters (~1MB). JSON preview module is partly collapsed by default so we can have a preview for large files.
-  maxPdfPreviewSize: 10000000, // Maximum size of PDF to preview in bytes (10 MB)
-  maxXmlPreviewSize: 100000, // Maximum size of XML to preview in characters (~100KB). XML preview module can NOT be collapsed by default so we should not have a preview for large files.
-  albertApiBaseUrl: runtimeConfig.public.albertApiBaseUrl,
-  albertApiKey: runtimeConfig.public.albertApiKey,
 })
 
 useHeadSafe({
