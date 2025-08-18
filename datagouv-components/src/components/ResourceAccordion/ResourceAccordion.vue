@@ -1,6 +1,6 @@
 <template>
   <div
-    class="border border-gray-default"
+    class="border border-gray-default overflow-auto"
     :class="{ 'fr-pb-4v': open }"
   >
     <header
