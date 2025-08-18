@@ -69,7 +69,7 @@ export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, pri
     archived: overrides.archived,
     deleted: overrides.deleted,
     description: form.description,
-    description_short: form.description_short === '' ? undefined : form.description_short || undefined, // Convert empty strings to undefined, preserve actual content
+    description_short: form.description_short,
     acronym: form.acronym,
     tags: form.tags.map(t => t.text),
     license: form.license?.id || '',
