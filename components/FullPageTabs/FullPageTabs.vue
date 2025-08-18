@@ -1,7 +1,7 @@
 <template>
   <div class="border-b border-gray-default">
     <div class="container">
-      <div class="inline-flex flex-wrap gap-2">
+      <div class="flex gap-2 overflow-auto">
         <CdataLink
           v-for="link in links"
           :key="link.label"
