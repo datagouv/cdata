@@ -96,17 +96,17 @@ const shouldLoadJson = computed(() => {
     return false
   }
 
-  // Check if maxJsonPreviewSize is configured
-  if (!config.maxJsonPreviewSize) {
+  // Check if maxJsonPreviewCharSize is configured
+  if (!config.maxJsonPreviewCharSize) {
     // If no limit is set, don't load unknown files
     return false
   }
 
-  // Convert maxJsonPreviewSize from characters to bytes (rough estimate)
+  // Convert maxJsonPreviewCharSize from characters to bytes (rough estimate)
   // Assuming average 1 byte per character for JSON
-  const maxSizeBytes = config.maxJsonPreviewSize
+  const maxByteSize = config.maxJsonPreviewCharSize
 
-  return size <= maxSizeBytes
+  return size <= maxByteSize
 })
 
 const fetchJsonData = async () => {
