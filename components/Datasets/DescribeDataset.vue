@@ -739,7 +739,7 @@ async function handleAutoCompleteShortDescription(description: string) {
     // We call our server-side API route instead of Albert API directly to avoid CORS issues.
     // The Albert API doesn't allow direct requests from browser-side JavaScript.
     // Our server acts as a proxy, keeping the API key secure on the server side.
-    const response = await fetch('/api/albert/generate-short-description', {
+    const response = await fetch('/nuxt-api/albert/generate-short-description', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
