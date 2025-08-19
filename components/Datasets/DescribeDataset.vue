@@ -270,6 +270,20 @@
             >
               {{ getFirstWarning("tags") }}
             </SimpleBanner>
+            <BrandedButton
+              class="mt-2"
+              type="button"
+              color="primary-soft"
+              size="xs"
+              :disabled="isGeneratingTags || !form.description || form.description.trim().length === 0"
+              @click="handleAutoCompleteTags(form.description)"
+            >
+              <span v-if="isGeneratingTags" class="flex items-center space-x-2">
+                <span class="animate-spin">⏳</span>
+                <span>{{ $t('Génération en cours...') }}</span>
+              </span>
+              <span v-else>{{ $t('Générer des mots-clés avec l\'IA') }}</span>
+            </BrandedButton>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -645,6 +659,8 @@ const getGranularityName = (zone: SpatialZone): string | undefined => {
   return granularities.value.find(granularity => granularity.id === zone.level)?.name
 }
 
+const isGeneratingTags = ref(false)
+
 const { $api } = useNuxtApp()
 
 const removeZone = (zone: SpatialZone) => {
@@ -686,5 +702,42 @@ async function submit() {
   if (await validate()) {
     emit('submit')
   }
-};
+}
+
+async function handleAutoCompleteTags(description: string) {
+  try {
+    isGeneratingTags.value = true
+    
+    // We call our server-side API route instead of Albert API directly to avoid CORS issues.
+    // The Albert API doesn't allow direct requests from browser-side JavaScript.
+    // Our server acts as a proxy, keeping the API key secure on the server side.
+    const response = await $fetch<{ tags: string[] }>('/nuxt-api/albert/generate-tags', {
+      method: 'POST',
+      body: { description }
+    })
+
+    // Convert the array of tags to the expected tags format
+    if (response.tags && response.tags.length > 0) {
+      const newTags = response.tags.map(tag => ({ text: tag }))
+      
+      // Get existing tags to avoid duplicates
+      const existingTags = form.value.tags || []
+      const existingTexts = existingTags.map(tag => 'text' in tag ? tag.text : tag)
+      
+      // Filter out duplicates and add new tags
+      const uniqueNewTags = newTags.filter(newTag => 
+        !existingTexts.includes(newTag.text)
+      )
+      
+      if (uniqueNewTags.length > 0) {
+        form.value.tags = [...existingTags, ...uniqueNewTags]
+      }
+    }
+  } catch (error) {
+    console.error('Failed to generate tags:', error)
+  } finally {
+    isGeneratingTags.value = false
+  }
+}
+
 </script>
