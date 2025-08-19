@@ -47,7 +47,7 @@ const { t } = useI18n()
 
 const loading = ref(false)
 const page = ref<Page | null>(null)
-const { data: site } = await useAPI<Site>('/api/1/site')
+const { data: site, refresh } = await useAPI<Site>('/api/1/site')
 
 watchEffect(async () => {
   if (page.value) return
@@ -83,6 +83,7 @@ const savePage = async () => {
     const body = {} as Record<string, string>
     body[props.siteKey] = page.value.id
     await $api(`/api/1/site/`, { method: 'PATCH', body })
+    await refresh()
     toast.success(t('Page sauvegardée'))
   }
   finally {
