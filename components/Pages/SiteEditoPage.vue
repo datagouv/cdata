@@ -78,12 +78,11 @@ const savePage = async () => {
         method: 'POST',
         body: page.value,
       })
+      const body = {} as Record<string, string>
+      body[props.siteKey] = page.value.id
+      await $api(`/api/1/site/`, { method: 'PATCH', body })
+      await refresh()
     }
-
-    const body = {} as Record<string, string>
-    body[props.siteKey] = page.value.id
-    await $api(`/api/1/site/`, { method: 'PATCH', body })
-    await refresh()
     toast.success(t('Page sauvegardée'))
   }
   finally {
