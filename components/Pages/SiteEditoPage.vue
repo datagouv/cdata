@@ -54,7 +54,7 @@ watchEffect(async () => {
   if (!site.value) return
 
   if (site.value && site.value[props.siteKey]) {
-    page.value = await $api(`/api/1/pages/${site.value[props.siteKey]}`)
+    page.value = await $api(`/api/1/pages/${site.value[props.siteKey]}/`)
   }
   else {
     page.value = { id: '', blocs: [] }
