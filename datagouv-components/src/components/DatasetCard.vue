@@ -28,23 +28,23 @@
     </div>
     <div class="flex flex-wrap md:flex-nowrap gap-4 items-start">
       <div class="flex-none">
-        <div class="flex justify-center items-center p-3 border border-gray-lower bg-[#fff]">
+        <div class="flex justify-center items-center p-2 border border-gray-lower bg-[#fff]">
           <Placeholder
             v-if="dataset.organization"
             type="dataset"
             :src="dataset.organization.logo_thumbnail"
             alt=""
-            :size="40"
+            :size="48"
           />
           <Avatar
             v-else-if="dataset.owner"
             :user="dataset.owner"
-            :size="40"
+            :size="48"
           />
           <Placeholder
             v-else
             type="dataset"
-            :size="40"
+            :size="48"
           />
         </div>
       </div>
