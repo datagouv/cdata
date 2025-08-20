@@ -5,7 +5,7 @@
   >
     <header
       :id="resourceHeaderId"
-      class="fr-p-4v flex flex-wrap gap-4 items-center justify-between relative"
+      class="fr-p-4v flex flex-wrap md:flex-nowrap gap-4 items-center justify-between relative"
     >
       <div>
         <div class="flex items-center fr-mb-1v">
@@ -15,7 +15,7 @@
           >
             <button
               type="button"
-              class="fr-p-0 flex items-baseline text-base leading-none font-normal"
+              class="fr-p-0 flex items-baseline text-base text-left leading-tight font-normal"
               data-testid="expand-button"
               :aria-expanded="open"
               @click="toggle"
@@ -39,7 +39,7 @@
                 :is="config.textClamp"
                 v-if="config && config.textClamp"
                 :max-lines="1"
-                :text="resource.title || t('Fichier sans nom')"
+                :text="'Sirene : Fichier GeolocalisationEtablissement_Sirene_pour_etudes_statistiques du 21 Juillet 2025 (format parquet)' || t('Fichier sans nom')"
               /></span>
               <span class="absolute inset-0 z-1" />
             </button>
