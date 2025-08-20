@@ -65,6 +65,7 @@ export default defineNuxtConfig({
       maxXmlPreviewCharSize: 100000, // (~100KB)
       schemaValidataUrl: 'https://validata.fr',
       tabularApiUrl: 'https://tabular-api.data.gouv.fr',
+      tabularApiDataserviceId: undefined,
 
       qualityDescriptionLength: 100,
       searchAutocompleteDebounce: 200,
