@@ -98,7 +98,9 @@
             type="warning"
           >
             <div class="flex items-center gap-1">
-              <RiAlertLine class="size-4" /> <span>{{ getFirstWarning('business_number_id') }}</span>
+              <RiAlertLine class="size-4" /> <span>{{
+                t('Une organisation avec ce SIRET existe déjà sur {site} | {n} organisations avec ce SIRET existe déjà sur {site}', { site: config.public.title, n: organizationsWithSameSiret.total })
+              }}</span>
             </div>
             <ul class="text-sm list-none p-0">
               <li
@@ -347,7 +349,7 @@ const { form, formInfo, getFirstError, getFirstWarning, touch, validate } = useF
   name: [required(), ruleIf(isCreation, unique(name => `/api/1/organizations/?name=${name}`, t('Une organisation portant ce nom existe déjà. Veuillez choisir un autre nom ou vérifier si votre organisation existe déjà.')))],
   url: [url()],
 }, {
-  business_number_id: [ruleIf(isCreation, unique(siret => `/api/1/organizations/?business_number_id=${cleanSiret(siret)}`, t('Une organisation avec ce SIRET existe déjà sur {site}', { site: config.public.title })))],
+  business_number_id: [ruleIf(isCreation, unique(siret => `/api/1/organizations/?business_number_id=${cleanSiret(siret)}`))],
   description: [minLength(config.public.qualityDescriptionLength)],
   name: [testNotAllowed(config.public.demoServer?.name)],
 })
