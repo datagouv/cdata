@@ -40,7 +40,7 @@
         {{ t('Archivé') }}
       </p>
     </div>
-    <h4 class="text-base mb-0 inline-flex items-center gap-1">
+    <h4 class="text-base mb-0 flex items-center gap-1">
       <slot
         name="dataserviceUrl"
         :dataservice="dataservice"
@@ -48,11 +48,11 @@
       >
         <RiSparklingLine
           v-if="isTabularApi"
-          class="size-4"
+          class="size-4 flex-none"
         />
         <RiTerminalLine
           v-else
-          class="size-4"
+          class="size-4 flex-none"
         />
         <AppLink
           class="truncate"
