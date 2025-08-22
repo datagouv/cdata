@@ -6,8 +6,8 @@
       class="space-y-1"
     >
       <div class="uppercase text-gray-plain text-sm font-bold">
-        {{ $t('1 jeu de données recommandé ') }}
-        {{ getRecommendationReason(recommendations[0]) }}
+        {{ $t('1 jeu de données recommandé  | {n} jeux de données recommandés ', { n: recommendations.length }) }}
+        {{ getRecommendationReason(recommendations[0], recommendations.length) }}
       </div>
       <ul class="space-y-4 mt-2 p-0 border-t border-gray-default relative z-2 list-none">
         <li
