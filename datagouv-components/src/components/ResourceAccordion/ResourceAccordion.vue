@@ -5,7 +5,7 @@
   >
     <header
       :id="resourceHeaderId"
-      class="fr-p-4v flex flex-wrap gap-4 items-center justify-between relative"
+      class="fr-p-4v flex flex-wrap md:flex-nowrap gap-4 items-center justify-between relative"
     >
       <div>
         <div class="flex items-center fr-mb-1v">
@@ -15,7 +15,7 @@
           >
             <button
               type="button"
-              class="fr-p-0 flex items-baseline text-base leading-none font-normal"
+              class="fr-p-0 flex items-baseline text-base text-left leading-tight font-normal"
               data-testid="expand-button"
               :aria-expanded="open"
               @click="toggle"

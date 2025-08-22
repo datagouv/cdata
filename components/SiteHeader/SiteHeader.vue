@@ -66,8 +66,8 @@
                     </button>
                   </template>
                   <template #default>
-                    <div class="fr-container">
-                      <div class="fr-header__menu-links">
+                    <div>
+                      <div class="fr-container fr-header__menu-links">
                         <ul
                           v-if="me"
                           class="list-none"
@@ -76,8 +76,6 @@
                             <BrandedButton
                               :href="me.page"
                               color="primary-softer"
-                              class="w-full"
-                              size="lg"
                               :icon="NuxtImg"
                               :icon-attrs="{
                                 src: getUserAvatar(me, 24),
@@ -95,8 +93,6 @@
                               :external="true"
                               color="primary-softer"
                               :icon="RiSettings3Line"
-                              class="w-full"
-                              size="lg"
                             >
                               {{ $t("Administration") }}
                             </BrandedButton>
@@ -107,8 +103,6 @@
                               type="button"
                               :icon="RiLogoutBoxRLine"
                               color="primary-softer"
-                              class="w-full"
-                              size="lg"
                               @click="logout"
                             >
                               {{ $t('Se déconnecter') }}
@@ -119,8 +113,6 @@
                               :icon="RiLogoutBoxRLine"
                               :external="true"
                               color="primary-softer"
-                              class="w-full"
-                              size="lg"
                             >
                               {{ $t('Se déconnecter') }}
                             </BrandedButton>
@@ -157,7 +149,7 @@
                         </ul>
                       </div>
                       <nav
-                        class="fr-nav"
+                        class="fr-container fr-nav border-t border-gray-default"
                         role="navigation"
                         :aria-label="$t('Menu principal')"
                       >
