@@ -39,7 +39,7 @@
                 :is="config.textClamp"
                 v-if="config && config.textClamp"
                 :max-lines="1"
-                :text="'Sirene : Fichier GeolocalisationEtablissement_Sirene_pour_etudes_statistiques du 21 Juillet 2025 (format parquet)' || t('Fichier sans nom')"
+                :text="resource.title || t('Fichier sans nom')"
               /></span>
               <span class="absolute inset-0 z-1" />
             </button>
