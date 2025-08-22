@@ -1,7 +1,7 @@
 export type Recommendation = {
   id: string
   score: number
-  source: 'matomo' | 'edito' | 'schema' | 'local'
+  source: 'edito' | 'schemas'
   reason: string
   type?: 'external' | 'dataset' | 'reuse'
 }
