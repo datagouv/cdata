@@ -30,6 +30,7 @@ app.vueApp.use(datagouv, {
   pmtilesViewerBaseUrl: null,
   schemaValidataUrl: runtimeConfig.public.schemaValidataUrl,
   tabularApiUrl: runtimeConfig.public.tabularApiUrl,
+  tabularApiDataserviceId: runtimeConfig.public.tabularApiDataserviceId,
   tabularAllowRemote: true,
   customUseFetch: useAPI as UseFetchFunction, // Why this `as` is required?
   textClamp: TextClamp,
