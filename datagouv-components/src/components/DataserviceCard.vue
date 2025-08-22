@@ -146,7 +146,7 @@ import AppLink from './AppLink.vue'
      * The dataserviceUrl is a route location object to allow Vue Router to navigate to the details of a dataservice.
      * It is used as a separate prop to allow other sites using the package to define their own dataservice pages.
      */
-    dataserviceUrl: RouteLocationRaw
+    dataserviceUrl?: RouteLocationRaw
 
     /**
      * The organizationUrl is an optional route location object to allow Vue Router to navigate to the details of the organization linked to tha dataservice.
@@ -160,6 +160,8 @@ const props = withDefaults(defineProps<Props>(), {
   style: () => ({}),
   showDescription: true,
 })
+
+const dataserviceUrl = computed(() => props.dataserviceUrl || props.dataservice.self_web_url)
 
 const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
