@@ -1,7 +1,7 @@
 <template>
   <SiteEditoPage
     :label="$t('Jeux de données')"
-    site-key="datasets_page_id"
+    site-key="datasets_page"
     public-page="/datasets"
   />
 </template>

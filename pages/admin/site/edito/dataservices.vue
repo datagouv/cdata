@@ -1,7 +1,7 @@
 <template>
   <SiteEditoPage
     :label="$t('APIs')"
-    site-key="dataservices_page_id"
+    site-key="dataservices_page"
     public-page="/dataservices"
   />
 </template>

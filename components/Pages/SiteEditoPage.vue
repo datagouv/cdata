@@ -38,7 +38,7 @@ import type { Page } from '~/types/pages'
 const props = defineProps<{
   label: string
   publicPage: string
-  siteKey: 'datasets_page_id' | 'reuses_page_id' | 'dataservices_page_id'
+  siteKey: 'datasets_page' | 'reuses_page' | 'dataservices_page'
 }>()
 
 const { $api } = useNuxtApp()

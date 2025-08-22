@@ -1,7 +1,7 @@
 <template>
   <SiteEditoPage
     :label="$t('Réutilisations')"
-    site-key="reuses_page_id"
+    site-key="reuses_page"
     public-page="/reuses"
   />
 </template>

@@ -117,5 +117,5 @@ useSeoMeta({
 const config = useRuntimeConfig()
 
 const { data: site } = await useAPI<Site>('/api/1/site')
-const { data: page } = await useAPI<Page>(`/api/1/pages/${site.value.dataservices_page_id}`)
+const { data: page } = await useAPI<Page>(`/api/1/pages/${site.value.dataservices_page}`)
 </script>

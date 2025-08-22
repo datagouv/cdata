@@ -161,5 +161,5 @@ const config = useRuntimeConfig()
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
 
 const { data: site } = await useAPI<Site>('/api/1/site')
-const { data: page } = await useAPI<Page>(`/api/1/pages/${site.value.reuses_page_id}`)
+const { data: page } = await useAPI<Page>(`/api/1/pages/${site.value.reuses_page}`)
 </script>
