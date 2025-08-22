@@ -454,7 +454,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, getUserAvatar } from '@datagouv/components-next'
-import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiGovernmentLine, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine } from '@remixicon/vue'
+import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
 import { NuxtImg } from '#components'
@@ -493,7 +493,7 @@ const publishMenu = [
   { label: t('Une API'), icon: RiRobot2Line, link: '/admin/dataservices/new/' },
   { label: t('Une réutilisation'), icon: RiLineChartLine, link: '/admin/reuses/new/' },
   { label: t('Un moissonneur'), icon: RiServerLine, link: '/admin/harvesters/new/' },
-  { label: t('Une organisation'), icon: RiGovernmentLine, link: '/admin/organizations/new/' },
+  { label: t('Une organisation'), icon: RiBuilding2Line, link: '/admin/organizations/new/' },
   { label: t('Un article'), icon: RiArticleLine, link: '/admin/posts/new/', show: isMeAdmin() },
 ]
 
