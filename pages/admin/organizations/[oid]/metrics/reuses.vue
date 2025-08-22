@@ -148,7 +148,7 @@
 
 <script setup lang="ts">
 import { RiDownloadLine, RiStarSLine } from '@remixicon/vue'
-import { BrandedButton, Pagination, summarize, type Organization, type Reuse } from '@datagouv/components-next'
+import { BrandedButton, Pagination, summarize, Tooltip, type Organization, type Reuse } from '@datagouv/components-next'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import type { PaginatedArray, ReuseSortedBy, SortDirection } from '~/types/types'
