@@ -91,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { RiArrowRightSLine, RiDatabase2Line, RiGovernmentLine, RiLineChartLine, RiRobot2Line, RiSearchLine } from '@remixicon/vue'
+import { RiArrowRightSLine, RiDatabase2Line, RiBuilding2Line, RiLineChartLine, RiRobot2Line, RiSearchLine } from '@remixicon/vue'
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions, TransitionRoot } from '@headlessui/vue'
 import type { Component } from 'vue'
 
@@ -143,7 +143,7 @@ const menu = computed(() => {
       }),
     },
     {
-      icon: RiGovernmentLine,
+      icon: RiBuilding2Line,
       type: t('organisations'),
       to: localePath({
         path: '/organizations/',
