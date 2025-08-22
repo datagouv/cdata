@@ -36,11 +36,11 @@
       class="space-y-1"
     >
       <div class="uppercase text-gray-plain text-sm font-bold">
-        {{ $t('{n} {label}', { n: data.value.total, label: getResourceLabel(RESOURCE_TYPE[index]) }) }}
+        {{ $t('{n} {label}', { n: data.value?.total, label: getResourceLabel(RESOURCE_TYPE[index]) }) }}
       </div>
       <div class="space-y-2.5">
         <SearchInput
-          v-if="data.value.total > data.value.page_size || searchByResourceType[index].value"
+          v-if="data.value?.total > data.value.page_size || searchByResourceType[index].value"
           v-model="searchByResourceType[index].value"
           :placeholder="$t('Rechercher')"
         />
