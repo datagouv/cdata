@@ -30,6 +30,7 @@
       :placeholder
       :required
       :spellcheck
+      :rows="rows"
       @change="change"
     />
     <MarkdownEditor
@@ -119,6 +120,7 @@ const props = withDefaults(defineProps<{
   spellcheck?: boolean
   type?: AllowedInputType
   validText?: string
+  rows?: number
 }>(), {
   ariaDescribedby: '',
   autocomplete: undefined,
