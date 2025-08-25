@@ -7,7 +7,7 @@ export type PluginConfig = {
   apiBase: string
   devApiKey?: string | null
   datasetQualityGuideUrl?: string
-  maxJsonPreviewCharSize?: number  // Maximum size of JSON to preview in characters. JSON preview module is partly collapsed by default so we can have a preview for large files.
+  maxJsonPreviewCharSize?: number // Maximum size of JSON to preview in characters. JSON preview module is partly collapsed by default so we can have a preview for large files.
   maxPdfPreviewByteSize?: number // Maximum size of PDF to preview in bytes
   maxXmlPreviewCharSize?: number // Maximum size of XML to preview in characters. XML preview module can NOT be collapsed by default so we should not have a preview for large files.
   pmtilesViewerBaseUrl?: string | null // Base URL of a pmtiles viewer (ex: https://pmtiles.io/#url=)
@@ -20,9 +20,6 @@ export type PluginConfig = {
   customUseFetch?: UseFetchFunction | null
   textClamp?: string | Component | null
   appLink?: Component | null
-  maxJsonPreviewSize?: number // Maximum size of JSON to preview in characters
-  maxPdfPreviewSize?: number // Maximum size of PDF to preview in bytes
-  maxXmlPreviewSize?: number // Maximum size of XML to preview in characters
 }
 
 export const configKey = Symbol() as InjectionKey<PluginConfig>
