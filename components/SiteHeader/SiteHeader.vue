@@ -515,6 +515,8 @@ const logout = async () => {
 
 const { toast } = useToast()
 onMounted(() => {
+  // TODO: remove this logic when we don't rely on udata flash messages
+  // following https://github.com/opendatateam/udata/pull/3348
   const FLASH_MESSAGES: Record<string, { type: 'success' | 'error', text: string }> = {
     connected: { type: 'success', text: t('Vous êtes maintenant connecté.') },
     change_email: { type: 'success', text: t('Merci. Les instructions de confirmation pour changer votre adresse email ont été envoyées à l\'adresse mail cible.') },
