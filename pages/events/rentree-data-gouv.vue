@@ -84,6 +84,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatMarkdown } from '@datagouv/components-next'
 import { ref, onMounted } from 'vue'
 import BrandBanner from '~/components/Brand/BrandBanner.vue'
 import BrandCard from '~/components/Brand/BrandCard.vue'

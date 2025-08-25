@@ -1,4 +1,6 @@
 import type { App, Plugin } from 'vue'
+import { createI18n, useI18n } from 'vue-i18n'
+import type { ContactPoint, ContactPointRole } from './types/contact_point.js'
 import type { Badge, Badges } from './types/badges'
 import type { Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
 import type { NewDataservice, Dataservice, DataserviceAccessAudience, DataserviceAccessAudienceCondition, DataserviceAccessAudienceType } from './types/dataservices'
@@ -15,6 +17,8 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User } from './types/users'
 
+import AnimatedLoader from './components/AnimatedLoader.vue'
+import AppLink from './components/AppLink.vue'
 import Avatar from './components/Avatar.vue'
 import AvatarWithName from './components/AvatarWithName.vue'
 import BannerAction from './components/BannerAction.vue'
@@ -22,6 +26,7 @@ import BrandedButton from './components/BrandedButton.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
 import DatasetCard from './components/DatasetCard.vue'
+import DateRangeDetails from './components/DateRangeDetails.vue'
 import DatasetInformationPanel from './components/DatasetInformationPanel.vue'
 import DatasetQuality from './components/DatasetQuality.vue'
 import DatasetQualityInline from './components/DatasetQualityInline.vue'
@@ -41,6 +46,7 @@ import Swagger from './components/ResourceAccordion/Swagger.client.vue'
 import ReuseCard from './components/ReuseCard.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
 import StatBox from './components/StatBox.vue'
+import Tooltip from './components/Tooltip.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
@@ -54,6 +60,7 @@ export * from './functions/datasets'
 export * from './functions/owned'
 export * from './functions/helpers'
 export * from './functions/matomo'
+export * from './functions/never'
 export * from './functions/schemas'
 export * from './functions/markdown'
 
@@ -62,6 +69,8 @@ export type {
   Badge,
   Badges,
   CommunityResource,
+  ContactPoint,
+  ContactPointRole,
   Dataset,
   DatasetV2,
   DatasetV2WithFullObject,
@@ -105,18 +114,36 @@ export type {
 // Vue Plugin
 const datagouv: Plugin<PluginConfig> = {
   async install(app: App, options) {
+    app.provide(configKey, options)
     if (!options.textClamp) {
       const textClamp = await import('vue3-text-clamp')
       options.textClamp = textClamp.default
     }
-
-    app.provide(configKey, options)
+    try {
+      // There is no condition to check if vue-i18n is instancied, only an error...
+      useI18n()
+    }
+    catch {
+      const i18n = createI18n({
+        legacy: false,
+        globalInjection: true,
+        locale: 'fr',
+        messages: {},
+        formatFallbackMessages: true,
+        missingWarn: false,
+        fallbackFormat: true,
+        fallbackWarn: false,
+      })
+      app.use(i18n)
+    }
   },
 }
 
 export {
   datagouv,
   useComponentsConfig,
+  AnimatedLoader,
+  AppLink,
   Avatar,
   AvatarWithName,
   BannerAction,
@@ -130,6 +157,7 @@ export {
   DatasetQualityItem,
   DatasetQualityScore,
   DatasetQualityTooltipContent,
+  DateRangeDetails,
   OrganizationCard,
   OrganizationNameWithCertificate,
   OwnerType,
@@ -143,4 +171,5 @@ export {
   SimpleBanner,
   StatBox,
   Swagger,
+  Tooltip,
 }

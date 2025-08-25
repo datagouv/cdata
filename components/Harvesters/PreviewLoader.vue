@@ -4,7 +4,7 @@
       type="primary"
       class="mb-4 flex items-center space-x-5"
     >
-      <AdminLoader class="size-14" />
+      <AnimatedLoader class="size-14" />
 
       <div class="w-full">
         <p class="font-bold mb-1">
@@ -65,8 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { SimpleBanner } from '@datagouv/components-next'
-import AdminLoader from '../AdminLoader/AdminLoader.vue'
+import { AnimatedLoader, SimpleBanner } from '@datagouv/components-next'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 </script>

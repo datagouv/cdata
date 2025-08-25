@@ -42,7 +42,7 @@
             :placeholder
             @change="query = $event.target.value"
           />
-          <AdminLoader
+          <AnimatedLoader
             v-if="loading"
             class="absolute text-lg top-2 right-3 flex items-center justify-end hover:!bg-transparent"
           />
@@ -146,7 +146,7 @@
 
 <script setup lang="ts" generic="T extends string | number | object, Multiple extends true | false">
 import { ref, computed } from 'vue'
-import { RiArrowDownSLine, RiCheckLine, RiDeleteBinLine } from '@remixicon/vue'
+import { AnimatedLoader } from '@datagouv/components-next'
 import {
   Combobox,
   ComboboxInput,
@@ -155,6 +155,7 @@ import {
   ComboboxOption,
   TransitionRoot,
 } from '@headlessui/vue'
+import { RiArrowDownSLine, RiCheckLine, RiDeleteBinLine } from '@remixicon/vue'
 import { watchDebounced } from '@vueuse/core'
 
 type ModelType = Multiple extends false ? T : Array<T>

@@ -42,6 +42,7 @@ import { getOrganizationType, isOrganizationCertified } from '../functions/organ
 import type { Organization } from '../types/organizations'
 import { useComponentsConfig } from '../config'
 import OwnerTypeIcon from './OwnerTypeIcon.vue'
+import Tooltip from './Tooltip.vue'
 
 const config = useComponentsConfig()
 

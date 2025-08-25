@@ -121,7 +121,7 @@ const title = computed(() => {
   return props.resource.schema.name || props.resource.schema.url
 })
 
-const validataErrors = computed<Array<ValidataError>>(() => props.resource.extras['validation-report:errors'] || [])
+const validataErrors = computed<Array<ValidataError>>(() => props.resource.extras['validation-report:errors'] as Array<ValidataError> || [])
 const validataWarnings = computed(() => validataErrors.value.filter(error => [''].includes(error.code)))
 const validataBodyErrors = computed(() => validataErrors.value.filter(error => ['#body', '#cell', '#content', '#row', '#table'].some(tag => error.tags.includes(tag))))
 const validataStructureErrors = computed(() => validataErrors.value.filter(error => ['#head', '#structure', '#header'].some(tag => error.tags.includes(tag))))

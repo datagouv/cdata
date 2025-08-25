@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ContactPoint } from '~/types/types'
+import type { ContactPoint } from '@datagouv/components-next'
 
 const props = defineProps<{
   contact: ContactPoint

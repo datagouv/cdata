@@ -238,7 +238,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, useFormatDate } from '@datagouv/components-next'
+import { Pagination, Tooltip, useFormatDate } from '@datagouv/components-next'
 import { RiAlertLine, RiArchiveLine, RiCalendarEventLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiEyeOffLine, RiInformationLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'

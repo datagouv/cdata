@@ -7,13 +7,13 @@
       v-if="loading"
       class="container fr-p-4w text-align-center"
     >
-      <AdminLoader />
+      <AnimatedLoader />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import AdminLoader from '../../AdminLoader/AdminLoader.vue'
+import { AnimatedLoader } from '@datagouv/components-next'
 
 withDefaults(defineProps<{
   loading?: boolean
