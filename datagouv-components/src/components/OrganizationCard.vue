@@ -22,12 +22,14 @@
           />
         </AppLink>
       </p>
-      <div class="mb-2 flex flex-wrap items-center">
-        <OwnerType
-          v-if="type !== 'other'"
-          class="mb-0 text-sm after:content-['—'] after:ml-1"
-          :type
-        />
+      <div class="mb-2 flex flex-wrap gap-1 items-center">
+        <template v-if="type !== 'other'">
+          <OwnerType
+            class="mb-0 text-sm"
+            :type
+          />
+          <RiSubtractLine class="size-4 fill-gray-medium" />
+        </template>
         <div>
           <div
             v-if="organization.metrics"
@@ -51,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { RiLineChartLine, RiDatabase2Line, RiTerminalLine } from '@remixicon/vue'
+import { RiLineChartLine, RiDatabase2Line, RiTerminalLine, RiSubtractLine } from '@remixicon/vue'
 import { computed, ref, watchEffect } from 'vue'
 import { removeMarkdown } from '../functions/markdown'
 import { getOrganizationType } from '../functions/organizations'
