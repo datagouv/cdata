@@ -67,10 +67,10 @@ const hasColumnInfo = ref(false)
 
 onMounted(async () => {
   try {
-    const { data } = await getProfile(props.resource.id) // Assurez-vous que cette fonction retourne bien les données attendues
-    if ('profile' in data && data.profile) {
-      columns.value = Object.keys(data.profile.columns)
-      columnsInfo.value = data.profile.columns
+    const response = await getProfile(props.resource.id) // Assurez-vous que cette fonction retourne bien les données attendues
+    if ('profile' in response && response.profile) {
+      columns.value = Object.keys(response.profile.columns)
+      columnsInfo.value = response.profile.columns
       hasColumnInfo.value = true
       loading.value = false
     }

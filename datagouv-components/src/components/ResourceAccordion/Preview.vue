@@ -144,12 +144,12 @@ function isSortedBy(col: string) {
 async function getTableInfos(page: number, sortConfig?: SortConfig) {
   try {
     // Check that this function return wanted data
-    const { data } = await getData(config, props.resource.id, page, sortConfig)
-    if ('data' in data && data.data && data.data.length > 0) {
+    const response = await getData(config, props.resource.id, page, sortConfig)
+    if ('data' in response && response.data && response.data.length > 0) {
       // Update existing rows
-      rows.value = data.data
-      columns.value = Object.keys(data.data[0]).filter(item => item !== '__id')
-      rowCount.value = data.meta.total
+      rows.value = response.data
+      columns.value = Object.keys(response.data[0]).filter(item => item !== '__id')
+      rowCount.value = response.meta.total
       currentPage.value = page
       loading.value = false
     }
