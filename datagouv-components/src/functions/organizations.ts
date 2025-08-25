@@ -1,6 +1,7 @@
 import { useI18n } from 'vue-i18n'
 import type { Component } from 'vue'
 import { RiBankLine, RiBuilding2Line, RiCommunityLine, RiGovernmentLine, RiUserLine } from '@remixicon/vue'
+import { useComponentsConfig } from '../config'
 import type { Organization } from '../types/organizations'
 
 export const CERTIFIED = 'certified'
@@ -14,6 +15,12 @@ export const USER = 'user'
 export type OrganizationTypes = typeof PUBLIC_SERVICE | typeof ASSOCIATION | typeof COMPANY | typeof LOCAL_AUTHORITY | typeof OTHER
 
 export type UserType = typeof USER
+
+function constructUrl(baseUrl: string, path: string): string {
+  const url = new URL(baseUrl)
+  url.pathname = `${url.pathname}${path}`
+  return url.toString()
+}
 
 export function isType(organization: Organization, type: OrganizationTypes) {
   return hasBadge(organization, type)
@@ -82,4 +89,11 @@ export function getOrganizationType(organization: Organization): OrganizationTyp
 export function isOrganizationCertified(organization: Organization | null): boolean {
   if (!organization) return false
   return hasBadge(organization, CERTIFIED) && (isType(organization, PUBLIC_SERVICE) || isType(organization, LOCAL_AUTHORITY))
+}
+
+export default function getOrganizationOEmbedHtml(type: string, id: string): string {
+  const config = useComponentsConfig()
+
+  const staticUrl = constructUrl(config.staticUrl, 'oembed.js')
+  return `<div data-udata-${type}="${id}" data-height="1500" data-width="1200"></div><script data-udata="${config.baseUrl}" src="${staticUrl}" async defer></script>`
 }

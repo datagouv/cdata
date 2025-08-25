@@ -213,6 +213,65 @@
         </div>
       </DescriptionList>
     </SectionCollapse>
+    <SectionCollapse
+      :title="$t('Intégrer sur votre site')"
+      :button-text="$t('Voir les oembeds')"
+    >
+      <h3 class="subtitle fr-mb-1v">
+        {{ $t('La recherche de jeux de données de l\'organisation') }}
+        <CopyButton
+          :hide-label="true"
+          :label="$t(`Copier l'intégration`)"
+          :copied-label="$t('Intégration copiée !')"
+          class="fr-my-1w fr-mr-1w"
+          :text="getOrganizationOEmbedHtml('search-dataset', organization.id)"
+        />
+      </h3>
+      <div class="embed-wrapper">
+        <textarea
+          ref="textAreaRef1"
+          :value="getOrganizationOEmbedHtml('search-dataset', organization.id)"
+          readonly="true"
+          rows="1"
+        />
+      </div>
+      <h3 class="subtitle fr-mb-1v">
+        {{ $t('La recherche des API de l\'organisation') }}
+        <CopyButton
+          :hide-label="true"
+          :label="$t(`Copier l'intégration`)"
+          :copied-label="$t('Intégration copiée !')"
+          class="fr-my-1w fr-mr-1w"
+          :text="getOrganizationOEmbedHtml('search-dataservice', organization.id)"
+        />
+      </h3>
+      <div class="embed-wrapper">
+        <textarea
+          ref="textAreaRef2"
+          :value="getOrganizationOEmbedHtml('search-dataservice', organization.id)"
+          readonly="true"
+          rows="1"
+        />
+      </div>
+      <h3 class="subtitle fr-mb-1v">
+        {{ $t('La liste des réutilisations de l\'organisation') }}
+        <CopyButton
+          :hide-label="true"
+          :label="$t(`Copier l'intégration`)"
+          :copied-label="$t('Intégration copiée !')"
+          class="fr-my-1w fr-mr-1w"
+          :text="getOrganizationOEmbedHtml('list-reuse', organization.id)"
+        />
+      </h3>
+      <div class="embed-wrapper">
+        <textarea
+          ref="textAreaRef3"
+          :value="getOrganizationOEmbedHtml('list-reuse', organization.id)"
+          readonly="true"
+          rows="1"
+        />
+      </div>
+    </SectionCollapse>
   </div>
 </template>
 
@@ -221,6 +280,7 @@ import { Avatar, BrandedButton, CopyButton, OrganizationNameWithCertificate, Sta
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
+import getOrganizationOEmbedHtml from '~/datagouv-components/src/functions/organizations'
 
 const props = defineProps<{
   organization: Organization

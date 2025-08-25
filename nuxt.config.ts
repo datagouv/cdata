@@ -54,19 +54,23 @@ export default defineNuxtConfig({
       commitId: undefined,
       banner: undefined,
 
+      title: 'data.gouv.fr',
       apiBase: 'http://dev.local:7000',
       frontBase: 'http://dev.local:3000',
       devApiKey: undefined,
-
       metricsApi: 'https://metric-api.data.gouv.fr',
+      devApiKey: undefined,
+      maxJsonPreviewCharSize: 1000000, // (~1MB)
+      maxPdfPreviewByteSize: 10000000, // (10 MB)
+      maxXmlPreviewCharSize: 100000, // (~100KB)
+      schemaValidataUrl: 'https://validata.fr',
       tabularApiUrl: 'https://tabular-api.data.gouv.fr',
+      tabularApiDataserviceId: undefined,
 
       qualityDescriptionLength: 100,
       searchAutocompleteDebounce: 200,
       searchSirenUrl: 'https://recherche-entreprises.api.gouv.fr/search',
       csvDatasetId: undefined,
-
-      title: 'data.gouv.fr',
 
       // Without www/demo/dev
       baseDomain: 'data.gouv.fr',
@@ -87,7 +91,6 @@ export default defineNuxtConfig({
       guidesCommunityResources: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/ressource-communautaire',
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
-      schemaValidataUrl: 'https://validata.fr',
 
       homepagePublishDatasetOnboarding: '/pages/onboarding/producteurs',
       homepagePublishReuseOnboarding: '/pages/onboarding/reutilisateurs',

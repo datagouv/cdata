@@ -87,17 +87,17 @@ const shouldLoadXml = computed(() => {
     return false
   }
 
-  // Check if maxXmlPreviewSize is configured
-  if (!config.maxXmlPreviewSize) {
+  // Check if maxXmlPreviewCharSize is configured
+  if (!config.maxXmlPreviewCharSize) {
     // If no limit is set, don't load unknown files
     return false
   }
 
-  // Convert maxXmlPreviewSize from characters to bytes (rough estimate)
+  // Convert maxXmlPreviewCharSize from characters to bytes (rough estimate)
   // Assuming average 1 byte per character for XML
-  const maxSizeBytes = config.maxXmlPreviewSize
+  const maxByteSize = config.maxXmlPreviewCharSize
 
-  return size <= maxSizeBytes
+  return size <= maxByteSize
 })
 
 const fetchXmlData = async () => {

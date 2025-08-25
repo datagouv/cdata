@@ -66,8 +66,8 @@
                     </button>
                   </template>
                   <template #default>
-                    <div class="fr-container">
-                      <div class="fr-header__menu-links">
+                    <div>
+                      <div class="fr-container fr-header__menu-links">
                         <ul
                           v-if="me"
                           class="list-none"
@@ -76,8 +76,6 @@
                             <BrandedButton
                               :href="me.page"
                               color="primary-softer"
-                              class="w-full"
-                              size="lg"
                               :icon="NuxtImg"
                               :icon-attrs="{
                                 src: getUserAvatar(me, 24),
@@ -95,8 +93,6 @@
                               :external="true"
                               color="primary-softer"
                               :icon="RiSettings3Line"
-                              class="w-full"
-                              size="lg"
                             >
                               {{ $t("Administration") }}
                             </BrandedButton>
@@ -107,8 +103,6 @@
                               type="button"
                               :icon="RiLogoutBoxRLine"
                               color="primary-softer"
-                              class="w-full"
-                              size="lg"
                               @click="logout"
                             >
                               {{ $t('Se déconnecter') }}
@@ -119,8 +113,6 @@
                               :icon="RiLogoutBoxRLine"
                               :external="true"
                               color="primary-softer"
-                              class="w-full"
-                              size="lg"
                             >
                               {{ $t('Se déconnecter') }}
                             </BrandedButton>
@@ -157,7 +149,7 @@
                         </ul>
                       </div>
                       <nav
-                        class="fr-nav"
+                        class="fr-container fr-nav border-t border-gray-default"
                         role="navigation"
                         :aria-label="$t('Menu principal')"
                       >
@@ -454,7 +446,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, getUserAvatar } from '@datagouv/components-next'
-import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiGovernmentLine, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine } from '@remixicon/vue'
+import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
 import { NuxtImg } from '#components'
@@ -493,7 +485,7 @@ const publishMenu = [
   { label: t('Une API'), icon: RiRobot2Line, link: '/admin/dataservices/new/' },
   { label: t('Une réutilisation'), icon: RiLineChartLine, link: '/admin/reuses/new/' },
   { label: t('Un moissonneur'), icon: RiServerLine, link: '/admin/harvesters/new/' },
-  { label: t('Une organisation'), icon: RiGovernmentLine, link: '/admin/organizations/new/' },
+  { label: t('Une organisation'), icon: RiBuilding2Line, link: '/admin/organizations/new/' },
   { label: t('Un article'), icon: RiArticleLine, link: '/admin/posts/new/', show: isMeAdmin() },
 ]
 
@@ -523,8 +515,11 @@ const logout = async () => {
 
 const { toast } = useToast()
 onMounted(() => {
+  // TODO: remove this logic when we don't rely on udata flash messages
+  // following https://github.com/opendatateam/udata/pull/3348
   const FLASH_MESSAGES: Record<string, { type: 'success' | 'error', text: string }> = {
     connected: { type: 'success', text: t('Vous êtes maintenant connecté.') },
+    change_email: { type: 'success', text: t('Merci. Les instructions de confirmation pour changer votre adresse email ont été envoyées à l\'adresse mail cible.') },
     change_email_confirmed: { type: 'success', text: t('Votre nouvelle adresse email est maintenant confirmée.') },
     change_email_expired: { type: 'error', text: t('Le code de vérification de votre adresse email a expiré, un nouveau mail vous a été envoyé.') },
     change_email_invalid: { type: 'error', text: t('Le code de vérification de votre adresse email est incorrect.') },
