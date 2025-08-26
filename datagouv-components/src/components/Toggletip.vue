@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
-import { nextTick, onMounted, onUpdated, ref, useTemplateRef } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useTemplateRef } from 'vue'
 import { RiInformationLine } from '@remixicon/vue'
 import BrandedButton from './BrandedButton.vue'
 
@@ -76,6 +76,14 @@ const calculatePanelPosition = () => {
   })
 }
 
-onMounted(() => calculatePanelPosition())
+onMounted(() => {
+  calculatePanelPosition()
+  window.addEventListener('resize', calculatePanelPosition)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', calculatePanelPosition)
+})
+
 onUpdated(() => calculatePanelPosition())
 </script>

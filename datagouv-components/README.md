@@ -18,6 +18,10 @@ app.use(datagouv, {
 })
 ```
 
+### Layout
+
+To use the `Toggletip` component you should add a `<div id="tooltips" />` in your layout.
+
 ### Special functions and components (only for Nuxt)
 
 Nuxt is a special environment (both server and browser) and requires some special functions and components to work.

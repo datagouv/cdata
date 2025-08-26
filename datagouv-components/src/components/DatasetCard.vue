@@ -1,6 +1,5 @@
 <template>
   <div class="p-4 border bg-white border-gray-default relative hover:bg-gray-some">
-    <div :id />
     <div
       v-if="dataset.private || dataset.archived"
       class="absolute top-0 fr-grid-row fr-grid-row--middle fr-mt-n3v fr-ml-n1v"
@@ -104,10 +103,7 @@
         </div>
         <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium">
           <div class="fr-hidden flex-sm dash-after-sm text-gray-medium -ml-2.5">
-            <DatasetQualityInline
-              :quality="dataset.quality"
-              :teleport-id="id"
-            />
+            <DatasetQualityInline :quality="dataset.quality" />
           </div>
           <div class="flex flex-wrap items-center gap-1">
             <p
@@ -164,7 +160,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
-import { computed, ref, useId, watchEffect } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import { RiDownloadLine, RiEyeLine, RiLineChartLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import { summarize } from '../functions/helpers'
@@ -203,7 +199,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()
-const id = useId()
 const ownerName = computed(() => getOwnerName(props.dataset))
 const config = useComponentsConfig()
 
