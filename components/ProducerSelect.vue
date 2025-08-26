@@ -36,8 +36,10 @@
 </template>
 
 <script setup lang="ts">
-import { getUserAvatar, type Organization, type User } from '@datagouv/components-next'
+import { useGetUserAvatar, type Organization, type User } from '@datagouv/components-next'
 import type { Owned } from '~/types/types'
+
+const getUserAvatar = useGetUserAvatar()
 
 const props = withDefaults(defineProps<{
   label: string

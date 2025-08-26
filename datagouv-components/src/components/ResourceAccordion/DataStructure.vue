@@ -48,10 +48,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import type { Resource } from '../../types/resources'
-import { getProfile } from '../../functions/tabularApi'
+import { useGetProfile } from '../../functions/tabularApi'
 import PreviewLoader from './PreviewLoader.vue'
 
 const props = defineProps<{ resource: Resource }>()
+const getProfile = useGetProfile()
 
 type ColumnInfo = {
   score: number

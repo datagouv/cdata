@@ -20,8 +20,7 @@ export async function getData(config: PluginConfig, id: string, page: number, so
 /**
  * Call Tabular-api to get table profile
  */
-export async function getProfile(id: string) {
+export function useGetProfile() {
   const config = useComponentsConfig()
-
-  return await ofetch(`${config.tabularApiUrl}/api/resources/${id}/profile/`)
+  return (id: string) => ofetch(`${config.tabularApiUrl}/api/resources/${id}/profile/`)
 }

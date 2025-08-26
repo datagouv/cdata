@@ -99,13 +99,16 @@ import { useI18n } from 'vue-i18n'
 import type { Resource } from '../../types/resources'
 import Toggletip from '../Toggletip.vue'
 import type { RegisteredSchema, ValidataError } from '../../functions/schemas'
-import { findSchemaInCatalog, getCatalog, getSchemaDocumentation, getSchemaValidationUrl } from '../../functions/schemas'
+import { findSchemaInCatalog, useGetCatalog, useGetSchemaDocumentation, useGetSchemaValidationUrl } from '../../functions/schemas'
 
 const props = defineProps<{
   resource: Resource
 }>()
 
 const { t } = useI18n()
+const getSchemaValidationUrl = useGetSchemaValidationUrl()
+const getSchemaDocumentation = useGetSchemaDocumentation()
+const getCatalog = useGetCatalog()
 
 const catalog = ref<Array<RegisteredSchema> | null>(null)
 onMounted(async () => {
