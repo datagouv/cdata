@@ -11,7 +11,7 @@
 import { datagouv } from '@datagouv/components-next'
 import type { UseFetchFunction } from '@datagouv/components-next'
 import CdataLink from './components/CdataLink.vue'
-import { TextClamp } from '#components'
+import { ClientOnly, TextClamp } from '#components'
 
 const app = useNuxtApp()
 
@@ -35,6 +35,7 @@ app.vueApp.use(datagouv, {
   customUseFetch: useAPI as UseFetchFunction, // Why this `as` is required?
   textClamp: TextClamp,
   appLink: CdataLink,
+  clientOnly: ClientOnly,
 })
 
 useHeadSafe({

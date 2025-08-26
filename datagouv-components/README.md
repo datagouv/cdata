@@ -49,10 +49,11 @@ app.vueApp.use(datagouv, {
     // Nuxt doesn't like `TextClamp` in the server, provides the client only `TextClamp`
     textClamp: TextClamp,
 
-    // Provide the component to create links inside the application
-    // This component will receive the raw link (without i18n prefix)
+    // Provide the components specific to Nuxt.
+    // This `appLink` component will receive the raw link (without i18n prefix)
     // and needs to add it.
     appLink: CdataLink,
+    clientOnly: ClientOnly,
 })
 ```
 

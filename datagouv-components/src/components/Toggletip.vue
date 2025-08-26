@@ -16,22 +16,24 @@
       </BrandedButton>
     </PopoverButton>
 
-    <Teleport to="#tooltips">
-      <PopoverPanel
-        v-show="open"
-        class="toggletip absolute z-10"
-        :class="{
-          'p-0': noMargin,
-        }"
-        :style="panelStyle"
-        static
-      >
-        <slot
-          name="toggletip"
-          :close
-        />
-      </PopoverPanel>
-    </Teleport>
+    <ClientOnly>
+      <Teleport to="#tooltips">
+        <PopoverPanel
+          v-show="open"
+          class="toggletip absolute z-10"
+          :class="{
+            'p-0': noMargin,
+          }"
+          :style="panelStyle"
+          static
+        >
+          <slot
+            name="toggletip"
+            :close
+          />
+        </PopoverPanel>
+      </Teleport>
+    </ClientOnly>
   </Popover>
 </template>
 
@@ -40,12 +42,12 @@ import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useTemplateRef } from 'vue'
 import { RiInformationLine } from '@remixicon/vue'
 import BrandedButton from './BrandedButton.vue'
+import ClientOnly from './ClientOnly.vue'
 
 defineProps<{
   buttonProps?: object
   noMargin?: boolean
 }>()
-defineOptions({ inheritAttrs: false })
 
 const buttonRef = useTemplateRef('button')
 const panelStyle = ref({})

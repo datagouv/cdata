@@ -20,6 +20,7 @@ export type PluginConfig = {
   customUseFetch?: UseFetchFunction | null
   textClamp?: string | Component | null
   appLink?: Component | null
+  clientOnly?: Component | null
 }
 
 export const configKey = Symbol() as InjectionKey<PluginConfig>
