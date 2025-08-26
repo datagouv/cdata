@@ -58,20 +58,20 @@ const calculatePanelPosition = () => {
     const button = buttonRef.value?.$el || buttonRef.value
     const tooltips = document.getElementById('tooltips')
 
-    if (button && tooltips) {
-      const buttonRect = button.getBoundingClientRect()
-      const tooltipsRect = tooltips.getBoundingClientRect()
-
-      const relativeX = buttonRect.left - tooltipsRect.left
-      const relativeY = buttonRect.bottom - tooltipsRect.top
-
-      panelStyle.value = {
-        left: `${relativeX}px`,
-        top: `${relativeY}px`,
-      }
+    if (!button || !tooltips) {
+      console.warn('Cannot find the button or the tooltips\' teleport target (maybe you forget to add <div id="tooltips" /> in your layout.)')
+      return
     }
-    else {
-      console.warn('Cannot find button or tooltips')
+
+    const buttonRect = button.getBoundingClientRect()
+    const tooltipsRect = tooltips.getBoundingClientRect()
+
+    const relativeX = buttonRect.left - tooltipsRect.left
+    const relativeY = buttonRect.bottom - tooltipsRect.top
+
+    panelStyle.value = {
+      left: `${relativeX}px`,
+      top: `${relativeY}px`,
     }
   })
 }
