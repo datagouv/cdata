@@ -5,7 +5,9 @@
     :icon="RiInformationLine"
     size="xs"
     keep-margins-even-without-borders
-  />
+  >
+    <slot />
+  </BrandedButton>
 </template>
 
 <script setup lang="ts">

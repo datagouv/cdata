@@ -4,9 +4,8 @@
     class="inline-flex mb-0 items-baseline text-xs"
   >
     <Toggletip
-      position="right"
+      :button-props="{ class: 'relative z-2 -ml-3 top-1 -my-3' }"
       no-margin
-      class="relative z-2 -ml-3 top-1 -my-3"
     >
       <template #toggletip="{ close }">
         <div class="flex justify-between border-bottom">

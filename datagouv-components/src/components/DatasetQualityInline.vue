@@ -2,8 +2,7 @@
   <div class="m-0 flex flex-wrap items-center text-sm text-gray-medium">
     <div class="fr-grid-row fr-grid-row--middle">
       <Toggletip
-        class="relative z-2"
-        :teleport-id
+        :button-props="{ class: 'relative z-2' }"
       >
         <template #toggletip>
           <DatasetQualityTooltipContent :quality />
