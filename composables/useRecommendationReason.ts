@@ -8,7 +8,7 @@ export function useRecommendationReason() {
       case 'edito':
         return t(`par l'équipe de {site}`, { site: config.public.title })
       case 'schemas':
-        return t('car conforme au schéma {schéma} | car conformes au schéma {schéma}', { schema: recommendation.reason, count })
+        return t('car conforme au schéma de données | car conformes aux schémas de données', { count })
       default:
         throwOnNever(recommendation.source, 'Unknown source')
     }
