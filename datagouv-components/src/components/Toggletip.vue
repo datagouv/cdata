@@ -3,6 +3,14 @@
     v-slot="{ open, close }"
     class="relative"
   >
+    <!--
+      Little trick to watch for v-slot changes because HeadlessUI doesn't raise an event on open… :-(
+      Need to recompute on show because sometimes, the positions where incorrect because after first render, some div load and change the relative position of the button…
+    -->
+    <ValueWatcher
+      :value="open"
+      @changed="calculatePanelPosition"
+    />
     <PopoverButton ref="button">
       <BrandedButton
         color="secondary-softer"
@@ -43,6 +51,7 @@ import { nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useTemplateRef } 
 import { RiInformationLine } from '@remixicon/vue'
 import BrandedButton from './BrandedButton.vue'
 import ClientOnly from './ClientOnly.vue'
+import ValueWatcher from './ValueWatcher.vue'
 
 defineProps<{
   buttonProps?: object
