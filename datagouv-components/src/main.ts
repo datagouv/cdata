@@ -47,6 +47,7 @@ import ReuseCard from './components/ReuseCard.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
 import StatBox from './components/StatBox.vue'
 import Tooltip from './components/Tooltip.vue'
+import Toggletip from './components/Toggletip.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
@@ -172,4 +173,5 @@ export {
   StatBox,
   Swagger,
   Tooltip,
+  Toggletip,
 }

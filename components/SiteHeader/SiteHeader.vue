@@ -445,7 +445,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getUserAvatar } from '@datagouv/components-next'
+import { BrandedButton, useGetUserAvatar } from '@datagouv/components-next'
 import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
@@ -457,6 +457,7 @@ defineProps<{
   fluid?: boolean
 }>()
 
+const getUserAvatar = useGetUserAvatar()
 const { t } = useI18n()
 const config = useRuntimeConfig()
 const localePath = useLocalePath()

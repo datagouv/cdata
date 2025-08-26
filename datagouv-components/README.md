@@ -18,6 +18,10 @@ app.use(datagouv, {
 })
 ```
 
+### Layout
+
+To use the `Toggletip` component you should add a `<div id="tooltips" />` in your layout.
+
 ### Special functions and components (only for Nuxt)
 
 Nuxt is a special environment (both server and browser) and requires some special functions and components to work.
@@ -45,10 +49,14 @@ app.vueApp.use(datagouv, {
     // Nuxt doesn't like `TextClamp` in the server, provides the client only `TextClamp`
     textClamp: TextClamp,
 
-    // Provide the component to create links inside the application
-    // This component will receive the raw link (without i18n prefix)
+    // The following properties allow to provide components specific to Nuxt.
+
+    // This `appLink` component will receive the raw link (without i18n prefix)
     // and needs to add it.
     appLink: CdataLink,
+    
+    // The ClientOnly allow to disable SSR for some components.
+    clientOnly: ClientOnly,
 })
 ```
 

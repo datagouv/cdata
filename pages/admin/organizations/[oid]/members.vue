@@ -288,7 +288,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BannerAction, getUserAvatar, useFormatDate, type Member, type Organization } from '@datagouv/components-next'
+import { Avatar, BannerAction, useFormatDate, useGetUserAvatar, type Member, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RiAddLine, RiEyeLine, RiLogoutBoxRLine, RiPencilLine } from '@remixicon/vue'
@@ -307,7 +307,7 @@ const config = useRuntimeConfig()
 const { t } = useI18n()
 const { formatDate, formatFromNow } = useFormatDate()
 const { $api } = useNuxtApp()
-
+const getUserAvatar = useGetUserAvatar()
 const me = useMe()
 
 const { currentOrganization } = useCurrentOwned()
