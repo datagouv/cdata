@@ -26,6 +26,5 @@ import Toggletip from './Toggletip.vue'
 
 defineProps<{
   quality: Quality
-  teleportId?: string
 }>()
 </script>
