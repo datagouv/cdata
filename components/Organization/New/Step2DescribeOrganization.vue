@@ -99,7 +99,7 @@
           >
             <div class="flex items-center gap-1">
               <RiAlertLine class="size-4" /> <span>{{
-                t('Une organisation avec ce SIRET existe déjà sur {site} | {n} organisations avec ce SIRET existe déjà sur {site}', { site: config.public.title, n: organizationsWithSameSiret.total })
+                t('Une organisation avec ce SIRET existe déjà sur {site} | {n} organisations avec ce SIRET existent déjà sur {site}', { site: config.public.title, n: organizationsWithSameSiret.total })
               }}</span>
             </div>
             <ul class="text-sm list-none p-0">
