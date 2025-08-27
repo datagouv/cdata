@@ -273,7 +273,12 @@
               @click="handleAutoCompleteTags(form.description)"
             >
               <span v-if="isGeneratingTags" class="flex items-center space-x-2">
-                <span class="animate-spin">⏳</span>
+                <img 
+                  src="/assets/gif/magic-wand-32px.gif" 
+                  alt="" 
+                  class="size-4"
+                  aria-hidden="true"
+                />
                 <span>{{ $t('Suggestion en cours...') }}</span>
               </span>
               <span v-else>{{ $t('Suggérer des mots clés avec l\'IA') }}</span>

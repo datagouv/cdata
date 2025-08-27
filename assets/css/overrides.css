@@ -33,3 +33,18 @@
 .input {
   @apply block w-full rounded-t text-base leading-6 py-2 px-4 text-gray-plain bg-gray-lower placeholder:opacity-100 placeholder:italic placeholder:text-gray-medium;
 }
+
+.animated-magic-wand {
+  animation: magic-wand-pulse 2s ease-in-out infinite;
+}
+
+@keyframes magic-wand-pulse {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.1) rotate(5deg);
+    filter: brightness(1.2);
+  }
+}
