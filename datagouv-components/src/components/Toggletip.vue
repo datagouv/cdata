@@ -67,22 +67,17 @@ const panelStyle = ref({})
 const calculatePanelPosition = () => {
   nextTick(() => {
     const button = buttonRef.value?.$el || buttonRef.value
-    const tooltips = document.getElementById('tooltips')
 
-    if (!button || !tooltips) {
-      console.warn('Cannot find the button or the tooltips\' teleport target (maybe you forget to add <div id="tooltips" /> in your layout.)')
+    if (!button) {
+      console.error('Cannot find the button of the Toggletip.)')
       return
     }
 
     const buttonRect = button.getBoundingClientRect()
-    const tooltipsRect = tooltips.getBoundingClientRect()
-
-    const relativeX = buttonRect.left - tooltipsRect.left
-    const relativeY = buttonRect.bottom - tooltipsRect.top
 
     panelStyle.value = {
-      left: `${relativeX}px`,
-      top: `${relativeY}px`,
+      left: `${buttonRect.left}px`,
+      top: `${buttonRect.bottom}px`,
     }
   })
 }
