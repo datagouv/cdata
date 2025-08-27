@@ -286,7 +286,8 @@
               @click="handleAutoCompleteShortDescription(form.description)"
             >
               <div class="flex items-center space-x-2">
-                <span>{{ $t('Remplir ce champ automatiquement') }}</span>
+                <span v-if="isGeneratingShortDescription">{{ $t('Suggestion en cours...') }}</span>
+                <span v-else>{{ $t('Suggérer avec l\'IA') }}</span>
                 <RiLoader5Line
                   v-if="isGeneratingShortDescription"
                   class="size-4 animate-spin text-primary"
