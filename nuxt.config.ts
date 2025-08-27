@@ -22,10 +22,7 @@ export default defineNuxtConfig({
         class: 'datagouv-components',
       },
       link: [
-        // Cannot use `/public/favicon.png` because the reverse proxy is calling udata-front for `/`
-        // When the migration is over we can remove this static path.
-        // :AfterMigration
-        { rel: 'shortcut icon', href: 'https://static.data.gouv.fr/_themes/gouvfr/img/favicon.png' },
+        { rel: 'shortcut icon', href: '/nuxt_images/favicon.png' },
       ],
     },
   },

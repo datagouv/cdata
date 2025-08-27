@@ -215,7 +215,7 @@
               href="/"
               :title="$t(`Retourner à l'accueil du site - data.gouv.fr - République Française`)"
             >
-              <SiteLogo class="text-gray-logo text-xl tracking-wide" />
+              <LogoImage class="h-12" />
             </a>
           </div>
           <div class="fr-footer__content">
