@@ -22,6 +22,7 @@ export function dataserviceToForm(dataservice: Dataservice): DataserviceForm {
     rate_limiting: dataservice.rate_limiting,
     availability: dataservice.availability?.toString() || '',
     private: dataservice.private,
+    featured: dataservice.featured,
   }
 }
 

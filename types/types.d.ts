@@ -190,6 +190,7 @@ export type NewReuseForApi = {
 }
 
 export type DataserviceForm = {
+  featured: boolean
   owned: Owned | null
   title: string
   acronym: string
