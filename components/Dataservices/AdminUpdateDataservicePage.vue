@@ -5,6 +5,7 @@
       v-model="dataserviceForm"
       :harvested="harvested"
       type="update"
+      @feature="feature"
       @submit="save"
     >
       <template #top>
@@ -261,6 +262,29 @@ async function deleteDataservice() {
     refresh()
     toast.success(t('API supprimée !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+  }
+  finally {
+    finish()
+  }
+}
+
+async function feature() {
+  const method = dataservice.value.featured ? 'DELETE' : 'POST'
+  try {
+    start()
+    await $api(`/api/1/dataservices/${route.params.id}/featured`, {
+      method,
+    })
+    await refresh()
+    if (method === 'DELETE') {
+      toast.success(t('Réutilisation retirée de la mise en avant !'))
+    }
+    else {
+      toast.success(t('Réutilisation mise en avant !'))
+    }
+  }
+  catch {
+    toast.error(t('Impossible de mettre en avant cette réutilisation'))
   }
   finally {
     finish()
