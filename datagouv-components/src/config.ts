@@ -7,6 +7,8 @@ export type PluginConfig = {
   apiBase: string
   devApiKey?: string | null
   staticUrl: string
+  albertApiBaseUrl: string
+  albertApiKey?: string
   datasetQualityGuideUrl?: string
   maxJsonPreviewCharSize?: number  // Maximum size of JSON to preview in characters. JSON preview module is partly collapsed by default so we can have a preview for large files.
   maxPdfPreviewByteSize?: number // Maximum size of PDF to preview in bytes

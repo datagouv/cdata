@@ -23,6 +23,8 @@ app.vueApp.use(datagouv, {
   apiBase: runtimeConfig.public.apiBase,
   devApiKey: runtimeConfig.public.devApiKey,
   staticUrl: runtimeConfig.public.staticUrl,
+  albertApiBaseUrl: runtimeConfig.public.albertApiBaseUrl,
+  albertApiKey: runtimeConfig.public.albertApiKey,
   datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
   maxJsonPreviewCharSize: runtimeConfig.public.maxJsonPreviewCharSize,
   maxPdfPreviewByteSize: runtimeConfig.public.maxPdfPreviewByteSize,
