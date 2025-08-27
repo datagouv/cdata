@@ -276,7 +276,7 @@
                 <span class="animate-spin">⏳</span>
                 <span>{{ $t('Suggestion en cours...') }}</span>
               </span>
-              <span v-else>{{ $t('Suggérer des mots-clés avec l\'IA') }}</span>
+              <span v-else>{{ $t('Suggérer des mots clés avec l\'IA') }}</span>
             </BrandedButton>
             <SimpleBanner
               v-if="getFirstWarning('tags')"
