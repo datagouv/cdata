@@ -30,11 +30,11 @@ export default defineEventHandler(async (event) => {
     const messages = [
       {
         role: 'system',
-        content: `Tu es un assistant spécialisé dans l'extraction de mots-clés pertinents à partir de descriptions de jeux de données. Tu dois extraire entre ${minTagsNb} et ${maxTagsNb} mots-clés qui caractérisent le mieux le contenu. IMPORTANT: Retourne UNIQUEMENT la liste des mots-clés séparés par des virgules, sans numérotation, sans guillemets, sans ponctuation supplémentaire. Format attendu: mot1, mot2, mot3`
+        content: `Tu es un assistant spécialisé dans l'extraction de mots-clés pertinents à partir de descriptions de jeux de données. Tu dois extraire entre ${minTagsNb} et ${maxTagsNb} mots-clés qui caractérisent le mieux le contenu. IMPORTANT: Retourne UNIQUEMENT la liste des mots-clés séparés par des virgules, sans numérotation, sans guillemets, sans ponctuation supplémentaire. Format attendu: mot1, mot2, mot3, mot composé 4, mot composé 5, etc.`
       },
       {
         role: 'user',
-        content: `Extrais entre ${minTagsNb} et ${maxTagsNb} mots-clés pertinents à partir de cette description de jeu de données. N'intègre pas les mots-clés "transparence" ou "open data", car ils sont trop généraux. Retourne uniquement la liste séparée par des virgules :\n\n${description}`
+        content: `Extrais entre ${minTagsNb} et ${maxTagsNb} mots-clés pertinents à partir de cette description de jeu de données. N'intègre pas les mots-clés trop généraux comme "données", "data", "données ouvertes", "transparence" ou "open data". S'il s'agit d'un mot composé sans tiret, tu peux l'intégrer tel quel. Ne mets pas de majuscule au mot-clé sauf si c'est un acronyme. Retourne uniquement la liste séparée par des virgules :\n\n${description}`
       }
     ]
   
