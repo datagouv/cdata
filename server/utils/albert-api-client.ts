@@ -12,7 +12,8 @@
 // TypeScript declaration for $fetch (globally available in Nuxt context)
 declare const $fetch: any
 
-
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 
 export interface ChatMessage {
   role: string
@@ -73,7 +74,10 @@ export class AlbertAPIClient {
       }
       options.body = config.body ?? config.data
 
-      // Note: FormData functionality is not available in this environment
+      // Remove Content-Type header for FormData requests
+      if (options.body instanceof FormData) {
+        delete options.headers['Content-Type']
+      }
 
       // Add other config options (like params for GET requests)
       Object.keys(config).forEach(key => {
@@ -222,7 +226,25 @@ export class AlbertAPIClient {
     model: string,
     kwargs: any = {}
   ): Promise<any> {
-    throw new Error('Audio transcription not implemented - FormData not available')
+    const fullPath = path.resolve(file_path)
+
+    if (!fs.existsSync(fullPath)) {
+      throw new Error(`Audio file not found: ${file_path}`)
+    }
+
+    const formData = new FormData()
+    const fileBuffer = fs.readFileSync(fullPath)
+    formData.append('file', new Blob([fileBuffer]))
+    formData.append('model', model)
+
+    // Add additional parameters
+    Object.entries(kwargs).forEach(([key, value]) => {
+      formData.append(key, String(value))
+    })
+
+    return this._make_request('POST', '/v1/audio/transcriptions', {
+      body: formData
+    })
   }
 
   // ============================================================================
@@ -240,7 +262,24 @@ export class AlbertAPIClient {
     file_path: string,
     kwargs: any = {}
   ): Promise<any> {
-    throw new Error('Document parsing not implemented - FormData not available')
+    const fullPath = path.resolve(file_path)
+
+    if (!fs.existsSync(fullPath)) {
+      throw new Error(`Document file not found: ${file_path}`)
+    }
+
+    const formData = new FormData()
+    const fileBuffer = fs.readFileSync(fullPath)
+    formData.append('file', new Blob([fileBuffer]))
+
+    // Add additional parameters
+    Object.entries(kwargs).forEach(([key, value]) => {
+      formData.append(key, String(value))
+    })
+
+    return this._make_request('POST', '/v1/parse-beta', {
+      body: formData
+    })
   }
 
   /**
@@ -256,7 +295,25 @@ export class AlbertAPIClient {
     model: string,
     kwargs: any = {}
   ): Promise<any> {
-    throw new Error('OCR document not implemented - FormData not available')
+    const fullPath = path.resolve(file_path)
+
+    if (!fs.existsSync(fullPath)) {
+      throw new Error(`PDF file not found: ${file_path}`)
+    }
+
+    const formData = new FormData()
+    const fileBuffer = fs.readFileSync(fullPath)
+    formData.append('file', new Blob([fileBuffer]))
+    formData.append('model', model)
+
+    // Add additional parameters
+    Object.entries(kwargs).forEach(([key, value]) => {
+      formData.append(key, String(value))
+    });
+
+    return this._make_request('POST', '/v1/ocr-beta', {
+      body: formData
+    })
   }
 
   // ============================================================================
@@ -340,7 +397,25 @@ export class AlbertAPIClient {
     collection_id: number,
     kwargs: any = {}
   ): Promise<any> {
-    throw new Error('Document creation not implemented - FormData not available')
+    const fullPath = path.resolve(file_path)
+
+    if (!fs.existsSync(fullPath)) {
+      throw new Error(`Document file not found: ${file_path}`)
+    }
+
+    const formData = new FormData()
+    const fileBuffer = fs.readFileSync(fullPath)
+    formData.append('file', new Blob([fileBuffer]))
+    formData.append('collection', String(collection_id))
+
+    // Add additional parameters
+    Object.entries(kwargs).forEach(([key, value]) => {
+      formData.append(key, String(value))
+    })
+
+    return this._make_request('POST', '/v1/documents', {
+      body: formData
+    })
   }
 
   /**
