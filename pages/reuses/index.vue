@@ -30,7 +30,7 @@
       v-if="page"
       :page
     />
-    <div class="overflow-hidden container flex flex-col sm:flex-row items-center">
+    <div class="overflow-hidden container flex flex-col md:flex-row items-center py-16 md:py-0">
       <div class="w-full">
         <div class="max-w-md">
           <div class="font-extrabold text-3xl">
@@ -42,14 +42,14 @@
 
           <BrandedButton
             color="green-flat"
-            class="mt-8"
+            class="mt-8 w-full md:w-auto"
             :href="config.public.reusesOnboardingUsecases"
           >
             {{ $t(`Voir les cas d'usage`) }}
           </BrandedButton>
         </div>
       </div>
-      <div class="w-full grid grid-cols-3 gap-x-2.5 -my-10">
+      <div class="w-full grid grid-cols-3 gap-x-2.5 md:-my-10">
         <div class="flex flex-col space-y-3 justify-center">
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
