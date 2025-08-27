@@ -264,14 +264,8 @@
               :error-text="getFirstError('tags')"
               :warning-text="getFirstWarning('tags')"
             />
-            <SimpleBanner
-              v-if="getFirstWarning('tags')"
-              type="warning"
-            >
-              {{ getFirstWarning("tags") }}
-            </SimpleBanner>
             <BrandedButton
-              class="mt-2"
+              class="mt-2 mb-3"
               type="button"
               color="primary-soft"
               size="xs"
@@ -280,10 +274,16 @@
             >
               <span v-if="isGeneratingTags" class="flex items-center space-x-2">
                 <span class="animate-spin">⏳</span>
-                <span>{{ $t('Génération en cours...') }}</span>
+                <span>{{ $t('Suggestion en cours...') }}</span>
               </span>
-              <span v-else>{{ $t('Générer des mots-clés avec l\'IA') }}</span>
+              <span v-else>{{ $t('Suggérer des mots-clés avec l\'IA') }}</span>
             </BrandedButton>
+            <SimpleBanner
+              v-if="getFirstWarning('tags')"
+              type="warning"
+            >
+              {{ getFirstWarning("tags") }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
