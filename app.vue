@@ -1,8 +1,8 @@
 <template>
-  <div id="tooltips" />
   <NuxtLoadingIndicator color="var(--blue-cumulus-main-526)" />
   <NuxtRouteAnnouncer />
   <NuxtLayout>
+    <div id="tooltips" />
     <NuxtPage />
   </NuxtLayout>
 </template>
