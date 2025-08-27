@@ -17,7 +17,10 @@
       :page
       main-color="purple-flat"
     />
-    <div class="container flex flex-col sm:flex-row items-center">
+    <div
+      v-if="false"
+      class="container flex flex-col sm:flex-row items-center"
+    >
       <div class="w-full">
         <div class="max-w-md">
           <div class="font-extrabold text-3xl">
