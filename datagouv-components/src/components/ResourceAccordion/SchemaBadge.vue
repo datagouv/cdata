@@ -4,9 +4,8 @@
     class="inline-flex mb-0 items-baseline text-xs"
   >
     <Toggletip
-      position="right"
+      :button-props="{ class: 'relative z-2 -ml-3 top-1 -my-3' }"
       no-margin
-      class="relative z-2 -ml-3 top-1 -my-3"
     >
       <template #toggletip="{ close }">
         <div class="flex justify-between border-bottom">
@@ -100,13 +99,16 @@ import { useI18n } from 'vue-i18n'
 import type { Resource } from '../../types/resources'
 import Toggletip from '../Toggletip.vue'
 import type { RegisteredSchema, ValidataError } from '../../functions/schemas'
-import { findSchemaInCatalog, getCatalog, getSchemaDocumentation, getSchemaValidationUrl } from '../../functions/schemas'
+import { findSchemaInCatalog, useGetCatalog, useGetSchemaDocumentation, useGetSchemaValidationUrl } from '../../functions/schemas'
 
 const props = defineProps<{
   resource: Resource
 }>()
 
 const { t } = useI18n()
+const getSchemaValidationUrl = useGetSchemaValidationUrl()
+const getSchemaDocumentation = useGetSchemaDocumentation()
+const getCatalog = useGetCatalog()
 
 const catalog = ref<Array<RegisteredSchema> | null>(null)
 onMounted(async () => {
@@ -121,7 +123,7 @@ const title = computed(() => {
   return props.resource.schema.name || props.resource.schema.url
 })
 
-const validataErrors = computed<Array<ValidataError>>(() => props.resource.extras['validation-report:errors'] || [])
+const validataErrors = computed<Array<ValidataError>>(() => props.resource.extras['validation-report:errors'] as Array<ValidataError> || [])
 const validataWarnings = computed(() => validataErrors.value.filter(error => [''].includes(error.code)))
 const validataBodyErrors = computed(() => validataErrors.value.filter(error => ['#body', '#cell', '#content', '#row', '#table'].some(tag => error.tags.includes(tag))))
 const validataStructureErrors = computed(() => validataErrors.value.filter(error => ['#head', '#structure', '#header'].some(tag => error.tags.includes(tag))))

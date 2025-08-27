@@ -94,6 +94,6 @@ export function isOrganizationCertified(organization: Organization | null): bool
 export default function getOrganizationOEmbedHtml(type: string, id: string): string {
   const config = useComponentsConfig()
 
-  const staticUrl = constructUrl(config.staticUrl, 'oembed.js')
+  const staticUrl = constructUrl(config.baseUrl, 'oembed.js')
   return `<div data-udata-${type}="${id}" data-height="1500" data-width="1200"></div><script data-udata="${config.baseUrl}" src="${staticUrl}" async defer></script>`
 }

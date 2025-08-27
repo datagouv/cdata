@@ -31,7 +31,7 @@
 import { datagouv } from '@datagouv/components-next'
 import type { UseFetchFunction } from '@datagouv/components-next'
 import CdataLink from './components/CdataLink.vue'
-import { TextClamp } from '#components'
+import { ClientOnly, TextClamp } from '#components'
 
 const error = useError()
 
@@ -45,13 +45,14 @@ app.vueApp.use(datagouv, {
   baseUrl: runtimeConfig.public.i18n.baseUrl, // Maybe do not use i18n config here?
   apiBase: runtimeConfig.public.apiBase,
   devApiKey: runtimeConfig.public.devApiKey,
-  staticUrl: runtimeConfig.public.staticUrl,
   tabularApiUrl: runtimeConfig.public.tabularApiUrl,
-  tabularApiAllowRemote: true,
+  tabularApiDataserviceId: runtimeConfig.public.tabularApiDataserviceId,
+  tabularAllowRemote: true,
   datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
   customUseFetch: useAPI as UseFetchFunction, // Why this `as` is required?
   textClamp: TextClamp,
   appLink: CdataLink,
+  clientOnly: ClientOnly,
 })
 
 useHeadSafe({

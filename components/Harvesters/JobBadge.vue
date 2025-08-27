@@ -8,6 +8,7 @@
 </template>
 
 <script setup lang="ts">
+import { throwOnNever } from '@datagouv/components-next'
 import type { HarvesterJob } from '~/types/harvesters'
 import type { AdminBadgeType } from '~/types/types'
 

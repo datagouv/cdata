@@ -11,7 +11,7 @@
     :target="newTab ? '_blank' : undefined"
     :type
   >
-    <AdminLoader
+    <AnimatedLoader
       v-if="loading"
       size="16"
       :color="color === 'primary' ? 'white' : 'primary'"
@@ -51,6 +51,7 @@ import { RiExternalLinkLine } from '@remixicon/vue'
 import type { RouteLocation } from 'vue-router'
 import AppLink from './AppLink.vue'
 import { bannerActionTypeKey } from './BannerAction.vue'
+import AnimatedLoader from './AnimatedLoader.vue'
 
 export type ColorType = 'primary' | 'primary-soft' | 'primary-softer' | 'secondary' | 'secondary-softer' | 'warning' | 'danger' | 'tertiary' | 'purple-flat' | 'green-flat' | 'white-flat'
 

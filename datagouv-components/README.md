@@ -15,9 +15,12 @@ app.use(datagouv, {
     name: 'data.gouv.fr', // Name of the site in some texts
     baseUrl: 'https://www.data.gouv.fr', // Used for redirects
     apiBase: 'https://www.data.gouv.fr', // Used for API calls (could default to `baseUrl`?)
-    staticUrl: 'https://static.data.gouv.fr', // Used for static files
 })
 ```
+
+### Layout
+
+To use the `Toggletip` component you should add a `<div id="tooltips" />` in your layout.
 
 ### Special functions and components (only for Nuxt)
 
@@ -36,7 +39,6 @@ app.vueApp.use(datagouv, {
     baseUrl: runtimeConfig.public.i18n.baseUrl,
     apiBase: runtimeConfig.public.apiBase,
     devApiKey: runtimeConfig.public.devApiKey,
-    staticUrl: runtimeConfig.public.staticUrl,
 
     // ----------------------------------------
     // --- Special functions and components ---
@@ -47,10 +49,14 @@ app.vueApp.use(datagouv, {
     // Nuxt doesn't like `TextClamp` in the server, provides the client only `TextClamp`
     textClamp: TextClamp,
 
-    // Provide the component to create links inside the application
-    // This component will receive the raw link (without i18n prefix)
+    // The following properties allow to provide components specific to Nuxt.
+
+    // This `appLink` component will receive the raw link (without i18n prefix)
     // and needs to add it.
     appLink: CdataLink,
+    
+    // The ClientOnly allow to disable SSR for some components.
+    clientOnly: ClientOnly,
 })
 ```
 

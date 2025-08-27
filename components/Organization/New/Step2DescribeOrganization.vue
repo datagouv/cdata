@@ -91,6 +91,35 @@
             </div>
           </div>
         </ClientOnly>
+        <template #warning>
+          <SimpleBanner
+            v-if="organizationsWithSameSiret?.total"
+            class="p-4 mt-3 text-warning-dark"
+            type="warning"
+          >
+            <div class="flex items-center gap-1">
+              <RiAlertLine class="size-4" /> <span>{{
+                t('Une organisation avec ce SIRET existe déjà sur {site} | {n} organisations avec ce SIRET existent déjà sur {site}', { site: config.public.title, n: organizationsWithSameSiret.total })
+              }}</span>
+            </div>
+            <ul class="text-sm list-none p-0">
+              <li
+                v-for="org in organizationsWithSameSiret.data"
+                :key="org.id"
+              >
+                <CdataLink
+                  :href="org.page"
+                  class="link text-gray-plain"
+                >
+                  <OrganizationNameWithCertificate
+                    :show-type="false"
+                    :organization="org"
+                  />
+                </CdataLink>
+              </li>
+            </ul>
+          </SimpleBanner>
+        </template>
         <template #accordion>
           <HelpAccordion :title="$t('Pourquoi fournir un numéro SIRET ?')">
             <p class="fr-m-0">
@@ -227,8 +256,10 @@
 </template>
 
 <script setup lang="ts">
-import { ASSOCIATION, COMPANY, LOCAL_AUTHORITY, PUBLIC_SERVICE, BrandedButton, OwnerType, SimpleBanner } from '@datagouv/components-next'
+import { ASSOCIATION, COMPANY, LOCAL_AUTHORITY, PUBLIC_SERVICE, BrandedButton, OwnerType, SimpleBanner, OrganizationNameWithCertificate } from '@datagouv/components-next'
 import type { Badge, NewOrganization, Organization, OrganizationTypes } from '@datagouv/components-next'
+import { RiAlertLine } from '@remixicon/vue'
+import { asyncComputed } from '@vueuse/core'
 import { computed, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Alert from '~/components/Alert/Alert.vue'
@@ -238,6 +269,7 @@ import HelpAccordion from '~/components/Form/HelpAccordion.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
 import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplanation.vue'
 import UploadGroup from '~/components/UploadGroup/UploadGroup.vue'
+import type { PaginatedArray } from '~/types/types'
 
 const props = withDefaults(defineProps<{
   type: 'create' | 'update'
@@ -261,9 +293,17 @@ const emit = defineEmits<{
 
 const config = useRuntimeConfig()
 const { t } = useI18n()
+const { $api } = useNuxtApp()
 
-const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges')
+const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges/')
 const badges = computed(() => Object.keys(badgesLabels.value || {}).map(key => ({ kind: key })))
+const defaultValue = { data: [], total: 0 }
+const organizationsWithSameSiret = asyncComputed(async () => {
+  if (!form.value.business_number_id || !getFirstWarning('business_number_id')) {
+    return defaultValue
+  }
+  return await $api<PaginatedArray<Organization>>(`/api/1/organizations/?business_number_id=${cleanSiret(form.value.business_number_id)}`)
+}, defaultValue, { lazy: true })
 
 const newBadges = ref('badges' in organization.value ? organization.value.badges : [])
 
@@ -309,7 +349,7 @@ const { form, formInfo, getFirstError, getFirstWarning, touch, validate } = useF
   name: [required(), ruleIf(isCreation, unique(name => `/api/1/organizations/?name=${name}`, t('Une organisation portant ce nom existe déjà. Veuillez choisir un autre nom ou vérifier si votre organisation existe déjà.')))],
   url: [url()],
 }, {
-  business_number_id: [ruleIf(isCreation, unique(siret => `/api/1/organizations/?business_number_id=${cleanSiret(siret)}`, t('Une organisation avec ce SIRET existe déjà sur {site}', { site: config.public.title })))],
+  business_number_id: [ruleIf(isCreation, unique(siret => `/api/1/organizations/?business_number_id=${cleanSiret(siret)}`))],
   description: [minLength(config.public.qualityDescriptionLength)],
   name: [testNotAllowed(config.public.demoServer?.name)],
 })

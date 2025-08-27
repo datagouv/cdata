@@ -1,5 +1,8 @@
 <template>
-  <Tooltip tooltip-class="xl:hidden">
+  <Tooltip
+    ref="content"
+    tooltip-class="xl:hidden"
+  >
     <slot />
     <template #tooltip>
       {{ tooltipText }}
@@ -9,6 +12,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { Tooltip } from '@datagouv/components-next'
 
 defineOptions({
   inheritAttrs: false,
@@ -19,7 +23,7 @@ const tooltipText = ref('')
 
 onMounted(() => {
   if (contentRef.value) {
-    tooltipText.value = contentRef.value.textContent || ''
+    tooltipText.value = contentRef.value.$el.textContent || ''
   }
 })
 </script>

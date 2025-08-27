@@ -175,7 +175,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Pagination, summarize, type DatasetV2, type Organization } from '@datagouv/components-next'
+import { BrandedButton, Pagination, summarize, Tooltip, type DatasetV2, type Organization } from '@datagouv/components-next'
 import { RiDownloadLine, RiEyeLine, RiLineChartLine, RiStarSLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'

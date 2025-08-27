@@ -1,8 +1,7 @@
 <template>
   <div class="flex items-center">
     <Toggletip
-      class="-ml-2 mt-px"
-      size="2xs"
+      :button-props="{ size: '2xs', class: '-ml-2 mt-px' }"
     >
       {{ $t('Qualité des métadonnées:') }}
       <template #toggletip>

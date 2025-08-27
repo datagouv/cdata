@@ -11,7 +11,7 @@ function constructUrl(baseUrl: string, path: string): string {
 export default function getDatasetOEmbedHtml(type: string, id: string): string {
   const config = useComponentsConfig()
 
-  const staticUrl = constructUrl(config.staticUrl, 'oembed.js')
+  const staticUrl = constructUrl(config.baseUrl, 'oembed.js')
   return `<div data-udata-${type}="${id}"></div><script data-udata="${config.baseUrl}" src="${staticUrl}" async defer></script>`
 }
 
