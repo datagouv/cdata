@@ -29,6 +29,7 @@ app.vueApp.use(datagouv, {
   maxXmlPreviewCharSize: runtimeConfig.public.maxXmlPreviewCharSize,
   pmtilesViewerBaseUrl: null,
   schemaValidataUrl: runtimeConfig.public.schemaValidataUrl,
+  schemaDocumentationUrl: runtimeConfig.public.schemasSite.url,
   tabularApiUrl: runtimeConfig.public.tabularApiUrl,
   tabularApiDataserviceId: runtimeConfig.public.tabularApiDataserviceId,
   tabularAllowRemote: true,
