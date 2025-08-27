@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
       },
       {
         role: 'user',
-        content: `Extrais entre ${minTagsNb} et ${maxTagsNb} mots-clés pertinents à partir de cette description de jeu de données. Retourne uniquement la liste séparée par des virgules :\n\n${description}`
+        content: `Extrais entre ${minTagsNb} et ${maxTagsNb} mots-clés pertinents à partir de cette description de jeu de données. N'intègre pas les mots-clés "transparence" ou "open data", car ils sont trop généraux. Retourne uniquement la liste séparée par des virgules :\n\n${description}`
       }
     ]
   
