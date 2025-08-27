@@ -277,14 +277,14 @@ async function feature() {
     })
     await refresh()
     if (method === 'DELETE') {
-      toast.success(t('Réutilisation retirée de la mise en avant !'))
+      toast.success(t('API retirée de la mise en avant !'))
     }
     else {
-      toast.success(t('Réutilisation mise en avant !'))
+      toast.success(t('API mise en avant !'))
     }
   }
   catch {
-    toast.error(t('Impossible de mettre en avant cette réutilisation'))
+    toast.error(t('Impossible de mettre en avant cette API'))
   }
   finally {
     finish()
