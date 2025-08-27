@@ -74,10 +74,9 @@ const calculatePanelPosition = () => {
     }
 
     const buttonRect = button.getBoundingClientRect()
-
     panelStyle.value = {
-      left: `${buttonRect.left}px`,
-      top: `${buttonRect.bottom}px`,
+      left: `${buttonRect.left + window.scrollX}px`,
+      top: `${buttonRect.bottom + window.scrollY}px`,
     }
   })
 }
