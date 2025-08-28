@@ -69,7 +69,6 @@ import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 
 const { t } = useI18n()
-const { $api } = useNuxtApp()
 
 useSeoMeta({ title: t('Réinitialiser le mot de passe') })
 
@@ -81,6 +80,7 @@ const loading = ref(false)
 const success = ref(false)
 const errors = ref<FieldsErrors>({})
 
+const postApiWithCsrf = usePostApiWithCsrf()
 const reset = async () => {
   if (success.value) return
 
@@ -88,13 +88,10 @@ const reset = async () => {
   errors.value = {}
 
   try {
-    await $api('/fr/reset/', {
-      method: 'POST',
-      body: {
-        email: email.value,
-        captcha_uuid: captchaUuid.value,
-        captcha_code: captchaCode.value,
-      },
+    await postApiWithCsrf('/fr/reset/', {
+      email: email.value,
+      captcha_uuid: captchaUuid.value,
+      captcha_code: captchaCode.value,
     })
 
     success.value = true

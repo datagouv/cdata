@@ -48,3 +48,20 @@ export function getUserBasedKey(route: string) {
 export function getDataFromSSRPayload(key: string, nuxtApp: NuxtApp) {
   return nuxtApp.payload.data[key] ? nuxtApp.payload.data[key] : undefined
 }
+
+export function usePostApiWithCsrf() {
+  const { $api } = useNuxtApp()
+
+  return async (url: string, body: object) => {
+    const { response: { csrf_token } } = await $api<{ response: { csrf_token: string } }>(url)
+
+    return await $api(url, {
+      method: 'POST',
+      // Some endpoints do not support CSRFToken inside headers (for exemple /fr/change/), so send it in the body too.
+      body: { csrf_token, ...body },
+      headers: {
+        'X-CSRFToken': csrf_token,
+      },
+    })
+  }
+}

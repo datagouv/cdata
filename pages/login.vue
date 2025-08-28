@@ -119,7 +119,6 @@
 import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 
-const { $api } = useNuxtApp()
 const { t } = useI18n()
 const { toast } = useToast()
 const localePath = useLocalePath()
@@ -142,18 +141,16 @@ onMounted(() => {
   }
 })
 
+const postApiWithCsrf = usePostApiWithCsrf()
 const connect = async () => {
   loading.value = true
   errors.value = {}
 
   try {
-    await $api('/fr/login/', {
-      method: 'POST',
-      body: {
-        email: email.value,
-        password: password.value,
-        remember: rememberMe.value,
-      },
+    await postApiWithCsrf('/fr/login/', {
+      email: email.value,
+      password: password.value,
+      remember: rememberMe.value,
     })
 
     toast.success(t('Vous êtes maintenant connecté.'))

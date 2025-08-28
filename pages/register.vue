@@ -138,7 +138,6 @@ import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 
 const config = useRuntimeConfig()
-const { $api } = useNuxtApp()
 const { t } = useI18n()
 const route = useRoute()
 
@@ -162,6 +161,7 @@ onMounted(() => {
   }
 })
 
+const postApiWithCsrf = usePostApiWithCsrf()
 const connect = async () => {
   if (success.value) return
 
@@ -169,17 +169,14 @@ const connect = async () => {
   errors.value = {}
 
   try {
-    await $api('/fr/register/', {
-      method: 'POST',
-      body: {
-        email: email.value,
-        password: password.value,
-        password_confirm: passwordConfirmation.value,
-        first_name: firstname.value,
-        last_name: lastname.value,
-        captcha_uuid: captchaUuid.value,
-        captcha_code: captchaCode.value,
-      },
+    await postApiWithCsrf('/fr/register/', {
+      email: email.value,
+      password: password.value,
+      password_confirm: passwordConfirmation.value,
+      first_name: firstname.value,
+      last_name: lastname.value,
+      captcha_uuid: captchaUuid.value,
+      captcha_code: captchaCode.value,
     })
 
     if (config.public.requireEmailConfirmation) {

@@ -501,15 +501,13 @@ function getAriaCurrent(link: string) {
   return routesInPath.includes(link)
 }
 
-const { $api } = useNuxtApp()
+const postApiWithCsrf = usePostApiWithCsrf()
 const token = useToken()
 const logout = async () => {
   token.value = null
   refreshCookie('token')
 
-  await $api('/fr/logout/', {
-    method: 'POST',
-  })
+  await postApiWithCsrf('/fr/logout/', {})
 
   me.value = null
   await navigateTo('/')
