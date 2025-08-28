@@ -20,6 +20,10 @@
           </BreadcrumbItem>
         </Breadcrumb>
         <div class="flex-none flex gap-2.5 items-center">
+          <FollowButton
+            v-if="dataservice"
+            :url="`/api/1/dataservices/${dataservice.id}/followers/`"
+          />
           <EditButton
             v-if="dataservice.permissions.edit"
             :id="dataservice.id"
