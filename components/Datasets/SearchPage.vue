@@ -3,6 +3,7 @@
     v-if="!organization || organization.metrics.datasets"
     class="group/form"
     data-input-color="blue"
+    @submit.prevent
   >
     <div
       ref="search"
