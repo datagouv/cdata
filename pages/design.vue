@@ -20,6 +20,11 @@
             to="/design/"
           />
           <AdminSidebarLink
+            :icon="LogoOnly"
+            :label="$t('Logos')"
+            to="/design/logos/"
+          />
+          <AdminSidebarLink
             :icon="RiRadioButtonLine"
             :label="$t('Boutons')"
             to="/design/buttons/"
@@ -66,6 +71,7 @@
 <script setup lang="ts">
 import { RiExternalLinkLine, RiFileSearchLine, RiIdCardLine, RiListView, RiRadioButtonLine, RiSearch2Line, RiSearchEyeLine, RiUserSearchLine } from '@remixicon/vue'
 import AdminSidebarLink from '~/components/AdminSidebar/AdminSidebarLink/AdminSidebarLink.vue'
+import LogoOnly from '~/components/LogoOnly.vue'
 import Sidemenu from '~/components/Sidemenu/Sidemenu.global.vue'
 
 definePageMeta({

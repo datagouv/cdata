@@ -209,7 +209,7 @@
                                   <RiAddLine class="size-4 mr-1" />
                                   <span>
                                     {{ $t('Publier sur') }}
-                                    <SiteLogo />
+                                    <LogoAsText />
                                   </span>
                                 </DisclosureButton>
                                 <DisclosurePanel
@@ -248,7 +248,7 @@
                 href="/"
                 :title="$t(`Retourner à l'accueil de data.gouv.fr`)"
               >
-                <SiteLogo class="text-gray-logo text-xl tracking-wide" />
+                <LogoImage class="h-12" />
               </a>
             </div>
           </div>
@@ -406,7 +406,7 @@
                     <RiAddLine class="inline size-4 mr-1" />
                     <span>
                       {{ $t('Publier sur') }}
-                      <SiteLogo />
+                      <LogoAsText />
                     </span>
                   </PopoverButton>
                   <PopoverPanel
@@ -449,8 +449,9 @@ import { BrandedButton, useGetUserAvatar } from '@datagouv/components-next'
 import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
+import LogoAsText from '../LogoAsText.vue'
+import LogoImage from '../LogoImage.vue'
 import { NuxtImg } from '#components'
-import SiteLogo from '~/components/SiteLogo.vue'
 import { useMaybeMe } from '~/utils/auth'
 
 defineProps<{
