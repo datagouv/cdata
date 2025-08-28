@@ -122,7 +122,7 @@ const menu = computed(() => {
       icon: RiDatabase2Line,
       type: t('jeux de données'),
       to: localePath({
-        path: '/datasets/',
+        path: '/datasets/search/',
         query: { q: query.value.trim() },
       }),
     },
@@ -130,7 +130,7 @@ const menu = computed(() => {
       icon: RiRobot2Line,
       type: t('APIs'),
       to: localePath({
-        path: '/dataservices/',
+        path: '/dataservices/search/',
         query: { q: query.value.trim() },
       }),
     },
@@ -138,7 +138,7 @@ const menu = computed(() => {
       icon: RiLineChartLine,
       type: t('réutilisations'),
       to: localePath({
-        path: '/reuses/',
+        path: '/reuses/search/',
         query: { q: query.value.trim() },
       }),
     },
