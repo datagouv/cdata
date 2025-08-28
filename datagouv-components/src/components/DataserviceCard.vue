@@ -89,6 +89,7 @@
         {{ ownerName }}
       </p>
       <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
+      <!-- This comment is only here to fix this issue https://github.com/datagouv/cdata/issues/653, it could be empty… -->
       <p class="text-sm whitespace-nowrap mb-0">
         {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataservice.metadata_modified_at, { dateStyle: 'medium' }) }) }}
       </p>
