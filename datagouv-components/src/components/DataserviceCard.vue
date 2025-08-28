@@ -90,11 +90,11 @@
       </p>
       <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
       <!-- This comment is only here to fix this issue https://github.com/datagouv/cdata/issues/653, it could be empty… -->
-      <p class="text-sm whitespace-nowrap mb-0 toto">
+      <p class="text-sm whitespace-nowrap mb-0">
         {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataservice.metadata_modified_at, { dateStyle: 'medium' }) }) }}
       </p>
       <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
-      <div class="flex flex-1 shrink-0 items-center gap-1">
+      <div class="flex items-center gap-1">
         <p
           class="text-sm mb-0 flex items-center gap-0.5"
           :aria-label="t('{n} vues | {n} vue | {n} vues', dataservice.metrics.views)"
