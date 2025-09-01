@@ -239,7 +239,7 @@
           heading="h4"
         >
           <p>
-            Les données cadastrales diffusées sur ce site sont disponibles sous<a
+            Les données cadastrales diffusées sur ce site sont disponibles sous <a
               href="https://www.etalab.gouv.fr/wp-content/uploads/2017/04/ETALAB-Licence-Ouverte-v2.0.pdf"
               target="_blank"
             >Licence Ouverte 2.0
