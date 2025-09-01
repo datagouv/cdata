@@ -89,6 +89,7 @@
         {{ ownerName }}
       </p>
       <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
+      <!-- This comment is only here to fix this issue https://github.com/datagouv/cdata/issues/653, it could be empty… -->
       <p class="text-sm whitespace-nowrap mb-0">
         {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataservice.metadata_modified_at, { dateStyle: 'medium' }) }) }}
       </p>
@@ -146,7 +147,7 @@ import AppLink from './AppLink.vue'
      * The dataserviceUrl is a route location object to allow Vue Router to navigate to the details of a dataservice.
      * It is used as a separate prop to allow other sites using the package to define their own dataservice pages.
      */
-    dataserviceUrl: RouteLocationRaw
+    dataserviceUrl?: RouteLocationRaw
 
     /**
      * The organizationUrl is an optional route location object to allow Vue Router to navigate to the details of the organization linked to tha dataservice.
@@ -160,6 +161,8 @@ const props = withDefaults(defineProps<Props>(), {
   style: () => ({}),
   showDescription: true,
 })
+
+const dataserviceUrl = computed(() => props.dataserviceUrl || props.dataservice.self_web_url)
 
 const { t } = useI18n()
 const { formatRelativeIfRecentDate } = useFormatDate()

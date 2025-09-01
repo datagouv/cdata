@@ -223,6 +223,37 @@
           </p>
         </Accordion>
         <Accordion
+          title="Je constate une erreur dans le plan cadastral, comment la faire corriger ?"
+          heading="h4"
+        >
+          <p class="mb-0">
+            Ce type de correction doit être demandé au Centre des impôts fonciers de votre département,
+            dont vous trouverez les coordonnées sur <a
+              href="https://www.service-public.fr/particuliers/recherche?keyword=centre%20des%20impots%20fonciers&rubricFilter=annuaire"
+              target="_blank"
+            >service-public.fr</a>.
+          </p>
+        </Accordion>
+        <Accordion
+          title="Que puis-je faire avec les données ?"
+          heading="h4"
+        >
+          <p>
+            Les données cadastrales diffusées sur ce site sont disponibles sous <a
+              href="https://www.etalab.gouv.fr/wp-content/uploads/2017/04/ETALAB-Licence-Ouverte-v2.0.pdf"
+              target="_blank"
+            >Licence Ouverte 2.0
+            </a>.
+          </p>
+          <p>
+            Elles peuvent être utilisées librement, y compris exploitées commercialement, tant que
+            la source et la date de mise à jour sont citées.
+          </p>
+          <p class="mb-0">
+            N’hésitez pas à vous référer au texte de la Licence Ouverte 2.0 pour plus de précision.
+          </p>
+        </Accordion>
+        <Accordion
           title="Vous avez une question sur la base adresse nationale ? Une adresse est incorrecte ?"
           heading="h4"
         >

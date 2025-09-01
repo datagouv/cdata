@@ -169,6 +169,37 @@ To do links in the application you can use the `<AppLink>` component. Not sure w
 
 Maybe this component shouldn't be exposed too, because I don't know why a user should use this instead of their own component (`<RouterLink>` or `<CdataLink>`…)
 
+## Release
+
+This package is available as `@datagouv/components-next` on [npm](https://www.npmjs.com/package/@datagouv/components-next).
+
+It follows the [semantic versioning specification](https://semver.org/).
+
+To make a new release, you have to :
+1. update the version
+2. publish to npm
+3. Commit and push the version change
+
+### Update the version
+
+Use the dedicated npm command, with the correct parameter :
+
+```
+npm version VERSION
+```
+
+Where VERSION is :
+- `major` when you make incompatible API changes
+- `minor` when you add functionality in a backward compatible manner
+- `patch` version when you make backward compatible bug fixes
+Additional labels for pre-release and build metadata are available as extensions to the MAJOR.MINOR.PATCH format.
+
+### Publish to NPM
+
+```
+npm run publish-stable
+```
+
 ## 📄 License
 
 This component library is licensed under the **MIT License**, which is the same as the main project. This allows for permissive usage of the components in other projects.
