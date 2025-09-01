@@ -2,7 +2,10 @@
   <NuxtLoadingIndicator color="var(--blue-cumulus-main-526)" />
   <NuxtRouteAnnouncer />
   <NuxtLayout>
-    <div id="tooltips" />
+    <div
+      id="tooltips"
+      class="h-0"
+    />
     <NuxtPage />
   </NuxtLayout>
 </template>
