@@ -100,7 +100,7 @@ const submit = async (close: () => void) => {
   errors.value = {}
 
   try {
-    await postApiWithCsrf('/fr/change/', {
+    await postApiWithCsrf('/change/', {
       password: oldPassword.value,
       new_password: newPassword.value,
       new_password_confirm: confirmNewPassword.value,

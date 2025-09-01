@@ -92,7 +92,7 @@ const submit = async (close: () => void) => {
   errors.value = {}
 
   try {
-    await postApiWithCsrf('/fr/change-email', {
+    await postApiWithCsrf('/change-email', {
       new_email: newEmail.value,
       new_email_confirm: confirmNewEmail.value,
     })

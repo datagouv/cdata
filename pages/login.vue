@@ -147,7 +147,7 @@ const connect = async () => {
   errors.value = {}
 
   try {
-    await postApiWithCsrf('/fr/login/', {
+    await postApiWithCsrf('/login/', {
       email: email.value,
       password: password.value,
       remember: rememberMe.value,

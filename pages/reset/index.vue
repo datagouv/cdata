@@ -88,7 +88,7 @@ const reset = async () => {
   errors.value = {}
 
   try {
-    await postApiWithCsrf('/fr/reset/', {
+    await postApiWithCsrf('/reset/', {
       email: email.value,
       captcha_uuid: captchaUuid.value,
       captcha_code: captchaCode.value,

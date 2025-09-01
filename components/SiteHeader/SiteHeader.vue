@@ -507,7 +507,7 @@ const logout = async () => {
   token.value = null
   refreshCookie('token')
 
-  await postApiWithCsrf('/fr/logout/', {})
+  await postApiWithCsrf('/logout/', {})
 
   me.value = null
   await navigateTo('/')

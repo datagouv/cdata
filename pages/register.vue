@@ -169,7 +169,7 @@ const connect = async () => {
   errors.value = {}
 
   try {
-    await postApiWithCsrf('/fr/register/', {
+    await postApiWithCsrf('/register/', {
       email: email.value,
       password: password.value,
       password_confirm: passwordConfirmation.value,
