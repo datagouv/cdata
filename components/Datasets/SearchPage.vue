@@ -3,7 +3,7 @@
     v-if="!organization || organization.metrics.datasets"
     class="group/form"
     data-input-color="blue"
-    @submit.prevent
+    @submit.prevent="() => refresh()"
   >
     <div
       ref="search"
@@ -321,7 +321,7 @@ const nonFalsyParams = computed(() => {
   return { ...propsParams, ...Object.fromEntries(filteredParams), page_size: pageSize }
 })
 
-const { data: searchResults, status: searchResultsStatus } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/search/', {
+const { data: searchResults, status: searchResultsStatus, refresh } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/search/', {
   params: nonFalsyParams,
   lazy: true,
 })
