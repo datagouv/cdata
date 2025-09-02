@@ -62,8 +62,6 @@ jobs:
       - name: Configure udata
         working-directory: udata
         run: |
-          pwd
-          ls .
           cat << 'EOF' > udata.cfg
           from udata.settings import Defaults
 
@@ -83,24 +81,12 @@ jobs:
 
           SESSION_COOKIE_SECURE = False
           EOF
-          ls .
-          cat udata.cfg
 
       - name: Initialize udata
         working-directory: udata
         env:
           UDATA_SETTINGS: /home/runner/work/cdata/udata/udata.cfg
         run: |
-          # Debug: show current directory structure
-          echo "Current directory: $(pwd)"
-          echo "Files in current directory:"
-          ls -la
-          echo "Files in parent directory:"
-          ls -la ..
-
-          # Move config file to the correct location
-          mv udata.cfg ../udata.cfg || cp udata.cfg ../udata.cfg
-
           # Create fs directory
           mkdir -p fs
 
