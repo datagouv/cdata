@@ -76,7 +76,8 @@
 </template>
 
 <script setup lang="ts">
-import type { DatasetV2, TopicV2, Pagination } from '@datagouv/components-next'
+import type { DatasetV2, TopicV2 } from '@datagouv/components-next'
+import { Pagination } from '@datagouv/components-next'
 import AdminDatasetsTable from '~/components/AdminTable/AdminDatasetsTable/AdminDatasetsTable.vue'
 import type { PaginatedArray } from '~/types/types'
 

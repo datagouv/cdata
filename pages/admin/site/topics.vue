@@ -100,12 +100,12 @@
 </template>
 
 <script setup lang="ts">
-import { useFormatDate, Pagination, type TopicV2, type TopicElement, type TopicElementClass } from '@datagouv/components-next'
+import type { TopicV2, TopicElement, TopicElementClass } from '@datagouv/components-next'
+import { useFormatDate, Pagination, BrandedButton } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RiSearchLine } from '@remixicon/vue'
-import { BrandedButton } from '@datagouv/components-next'
 import type { DiscussionSortedBy } from '~/types/discussions'
 import type { PaginatedArray, SortDirection } from '~/types/types'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
