@@ -2,7 +2,7 @@
   <div class="fr-grid-row">
     <Sidemenu
       class="fr-col-12 fr-col-md-5"
-      :button-text="$t('Help')"
+      :button-text="$t('Aide')"
       :on-right="true"
       :fixed="true"
     >
@@ -11,72 +11,72 @@
           class="fr-icon--sm fr-icon-question-line"
           aria-hidden="true"
         />
-        {{ $t('Help') }}
+        {{ $t('Aide') }}
       </template>
       <AccordionGroup :with-icon="true">
         <Accordion
           :id="nameReuseAccordionId"
-          :title="t('Naming your reuse')"
+          :title="t('Nommer votre réutilisation')"
           :state="accordionState('title')"
         >
           <p class="fr-m-0">
-            {{ t('Prefer a title that allows understanding of the use made of the data rather than the name of the website or application ("Search Engine for Company Agreements" rather than "Accords-entreprise.fr" for example).') }}
+            {{ t('Préférez un titre qui permet de comprendre l’usage qui est fait des données plutôt que le nom du site ou de l’application (« Moteur de recherche des accords d’entreprises » plutôt que « Accords-entreprise.fr » par exemple).') }}
           </p>
         </Accordion>
         <Accordion
           :id="addLinkAccordionId"
-          :title="t('What link to provide')"
+          :title="t('Quel lien renseigner')"
           :state="accordionState('url')"
         >
           <p class="fr-m-0">
-            {{ t("Enter the link of the page on which the reuse is visible. Point directly to the reuse itself rather than a homepage. Make sure the link is stable over time.") }}
+            {{ t("Saisissez le lien de la page sur laquelle la réutilisation est visible. Pointer plutôt vers la réutilisation en elle-même que sur une page d'accueil. Assurez-vous que le lien soit stable dans le temps.") }}
           </p>
         </Accordion>
         <Accordion
           :id="addTypeAccordionId"
-          :title="t('Choose a type')"
+          :title="t('Choisissez un type')"
           :state="accordionState('type')"
         >
           <div class="prose prose-neutral fr-m-0">
             <p class="fr-m-0">
-              {{ t('Please indicate the type under which to categorize the reuse (API, application, news article, visualization, etc.).') }}
+              {{ t('Indiquez le type dans lequel ranger la réutilisation (API, application, article de presse, visualisation, etc.).') }}
             </p>
           </div>
         </Accordion>
         <Accordion
           :id="addTopicAccordionId"
-          :title="t('Choose a theme')"
+          :title="t('Choisir une thématique')"
           :state="accordionState('topic')"
         >
           <p class="fr-m-0">
-            {{ t("Choose the theme associated with your reuse.") }}
+            {{ t("Choisissez la thématique associée à votre réutilisation.") }}
           </p>
         </Accordion>
         <Accordion
           :id="addDescriptionAccordionId"
-          :title="t('Describe your reuse')"
+          :title="t('Décrivez votre réutilisation')"
           :state="accordionState('description')"
         >
           <p class="fr-m-0">
-            {{ t("You can provide information about the method of creating the reuse, what the reuse allows to do or show, or tell more about yourself and the context of this reuse. It is preferable to maintain a neutral tone: if the reuse resembles too much like a promotional message, we may delete it.") }}
+            {{ t("Vous pouvez renseigner notamment la méthode de création de la réutilisation, ce que la réutilisation permet de faire ou de montrer ou encore en dire plus sur vous et sur le contexte de cette réutilisation.\nIl est préférable de garder un ton neutre : si la réutilisation ressemble trop à un message promotionnel il est possible que nous la supprimions.") }}
           </p>
         </Accordion>
         <Accordion
           :id="addTagsAccordionId"
-          :title="t('Add keywords')"
+          :title="t('Ajouter des mots-clés')"
           :state="accordionState('tags')"
         >
           <p class="fr-m-0">
-            {{ t("Keywords appear on the presentation page and improve search engine optimization when a user is searching. From each keyword, you can obtain a list of reuses for which the keyword has also been assigned.") }}
+            {{ t("Les mots clés apparaissent sur la page de présentation et apportent un meilleur référencement lors d’une recherche utilisateur.\nÀ partir de chaque mot clé, vous pouvez obtenir la liste des réutilisations pour lesquelles le mot clé a également été assigné.") }}
           </p>
         </Accordion>
         <Accordion
           :id="addImageAccordionId"
-          :title="t('Choose an image')"
+          :title="t('Choisir une image')"
           :state="accordionState('image')"
         >
           <p class="fr-m-0">
-            {{ t(`If your reuse takes the form of a graphical representation, you can provide a preview to other users through an image or screenshot. This image will appear in the "Reuses" section of the associated dataset page. When relevant, screenshots are more effective in conveying what the reuse is about, so they are preferable to logos or illustrations, for example.`) }}
+            {{ t(`Si votre réutilisation prend la forme d’une représentation graphique, vous pouvez en donner un aperçu aux autres utilisateurs au moyen d’une image ou d’une capture d’écran. Cette image figurera dans la partie Réutilisations de la page du jeu de données associé.\nLorsque c’est pertinent, les captures d’écrans permettent de mieux rendre compte de ce qu’est la réutilisation, elles sont donc préférables aux logos ou aux illustrations par exemple.`) }}
           </p>
         </Accordion>
       </AccordionGroup>
@@ -99,13 +99,16 @@
           />
           <div class="w-full">
             <p class="font-bold mb-1">
-              {{ t('What is a reuse?') }}
+              {{ t(`Qu'est-ce qu'une réutilisation ?`) }}
             </p>
             <p class="m-0 text-xs/5">
-              {{ t("A reuse is an exemple of public data's usage.") }} {{ t('Publishing a reuse can allow you to gain visibility and start start a dialogue with the dataset producer.') }}
+              {{ t("Une réutilisation est un exemple d'utilisation de données publiques.") }} {{ t('Publier une réutilisation peut vous permettre de gagner en visibilité et de démarrer un dialogue avec le producteur du jeu de données.') }}
             </p>
           </div>
         </SimpleBanner>
+
+        <slot name="top" />
+
         <RequiredExplanation />
         <fieldset
           v-if="isMeAdmin() && type === 'update'"
@@ -116,12 +119,12 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Featured") }}
+              {{ $t("Mis en avant") }}
             </h2>
           </legend>
           <ToggleSwitch
             v-model="form.featured"
-            :label="$t('Feature')"
+            :label="$t('Mettre en avant')"
             @update:model-value="$emit('feature')"
           />
         </fieldset>
@@ -135,13 +138,13 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Producer") }}
+              {{ $t("Producteur") }}
             </h2>
           </legend>
           <div class="fr-fieldset__element">
             <ProducerSelect
               v-model="form.owned"
-              :label="t('Check the identity with which you want to publish')"
+              :label="t(`Vérifiez l'identité avec laquelle vous souhaitez publier`)"
               :options="ownedOptions"
               :required="true"
               :error-text="getFirstError('owned')"
@@ -172,7 +175,7 @@
               v-model="reuseForm.title"
               class="mb-3"
               :aria-describedby="nameReuseAccordionId"
-              :label="t('Reuse name')"
+              :label="t('Nom de la réutilisation')"
               :required="true"
               :has-error="!!getFirstError('title')"
               :has-warning="!!getFirstWarning('title')"
@@ -193,7 +196,7 @@
             <InputGroup
               v-model="reuseForm.url"
               :aria-describedby="addLinkAccordionId"
-              :label="t('Link')"
+              :label="t('Lien')"
               type="url"
               placeholder="https://..."
               :required="true"
@@ -211,7 +214,7 @@
               v-model="reuseForm.type"
               class="mb-3"
               :label="$t('Type')"
-              :placeholder="$t('Search a type…')"
+              :placeholder="$t('Rechercher un type…')"
               :get-option-id="(type) => type.label"
               :display-value="(type) => type.label"
               :options="types"
@@ -235,8 +238,8 @@
             <SearchableSelect
               v-model="reuseForm.topic"
               class="mb-3"
-              :label="$t('Theme')"
-              :placeholder="$t('Search a theme…')"
+              :label="$t('Thématique')"
+              :placeholder="$t('Rechercher une thématique…')"
               :get-option-id="(topic) => topic.label"
               :display-value="(topic) => topic.label"
               :options="topics"
@@ -298,10 +301,10 @@
             @blur="touch('image')"
           >
             <UploadGroup
-              :label="$t('Cover picture')"
+              :label="$t('Image de couverture')"
               type="drop"
               accept=".jpeg, .jpg, .png"
-              :hint-text="$t('Max size: 4Mo. Accepted formats: JPG, JPEG, PNG')"
+              :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
               :has-error="!!getFirstError('image')"
               :has-warning="!!getFirstWarning('image')"
               :error-text="getFirstError('image')"
@@ -328,40 +331,6 @@
               {{ getFirstWarning("image") }}
             </SimpleBanner>
           </LinkedToAccordion>
-          <fieldset
-            v-if="type === 'update'"
-            class="fr-fieldset__element"
-          >
-            <fieldset
-              id="checkboxes-hint-el-sm"
-              class="fr-fieldset"
-              aria-labelledby="checkboxes-hint-el-sm-legend checkboxes-hint-el-sm-messages"
-            >
-              <div class="fr-fieldset__element">
-                <div class="fr-checkbox-group fr-checkbox-group--sm">
-                  <input
-                    id="checkboxes-hint-el-sm-1"
-                    v-model="reuseForm.private"
-                    name="checkboxes-hint-el-sm-1"
-                    type="checkbox"
-                    aria-describedby="checkboxes-hint-el-sm-1-messages"
-                  >
-                  <label
-                    class="fr-label"
-                    for="checkboxes-hint-el-sm-1"
-                  >
-                    {{ t('Switch to draft mode') }}
-                    <span class="fr-hint-text">{{ t('The reuse will only be visible to members of your organization.') }}</span>
-                  </label>
-                  <div
-                    id="checkboxes-hint-el-sm-1-messages"
-                    class="fr-messages-group"
-                    aria-live="assertive"
-                  />
-                </div>
-              </div>
-            </fieldset>
-          </fieldset>
         </fieldset>
         <div class="fr-grid-row fr-grid-row--right">
           <slot name="button" />
@@ -423,7 +392,7 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(reuseF
   private: [],
 }, {
   title: [testNotAllowed(config.public.demoServer?.name)],
-  description: [minLength(200, t(`It's advised to have a {property} of at least {min} characters.`, { property: t('description'), min: 200 }))],
+  description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
 })
 
 onMounted(() => {
@@ -446,8 +415,8 @@ const imagePreview = computed(() => {
   return URL.createObjectURL(reuseForm.value.image)
 })
 
-function submit() {
-  if (validate()) {
+async function submit() {
+  if (await validate()) {
     emit('submit')
   }
 }

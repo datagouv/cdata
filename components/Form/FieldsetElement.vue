@@ -5,13 +5,16 @@
     @focusout="focusOut"
   >
     <slot />
-    <SimpleBanner
-      v-if="warning"
-      class="mt-3"
-      type="warning"
-    >
-      {{ warning }}
-    </SimpleBanner>
+
+    <slot name="warning">
+      <SimpleBanner
+        v-if="warning"
+        class="mt-3"
+        type="warning"
+      >
+        {{ warning }}
+      </SimpleBanner>
+    </slot>
 
     <ClientOnly>
       <Teleport

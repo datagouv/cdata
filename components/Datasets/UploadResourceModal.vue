@@ -1,6 +1,6 @@
 <template>
   <ModalWithButton
-    :title="$t('Add a file')"
+    :title="$t('Ajouter un fichier')"
     size="lg"
   >
     <template #button="{ attrs, listeners }">
@@ -12,7 +12,7 @@
           v-bind="attrs"
           v-on="listeners"
         >
-          {{ $t('Add files') }}
+          {{ $t('Ajoutez des fichiers') }}
         </BrandedButton>
         <p
           v-if="errorText"
@@ -29,11 +29,11 @@
         @submit.prevent="submit(close)"
       >
         <UploadGroup
-          :label="$t('Upload files')"
+          :label="$t('Ajouter des fichiers')"
           type="drop"
           :accept="extensions.join(',')"
           :multiple="true"
-          :hint-text="$t('Max size: 420 Mb. Multiple files allowed.')"
+          :hint-text="$t('Taille maximale : 420 Mo. Plusieurs fichiers possibles.')"
           @change="setFiles"
         />
         <FileCard
@@ -45,14 +45,14 @@
           :extensions
           @delete="removeFile(index)"
         />
-        <Divider>{{ $t('or') }}</Divider>
+        <Divider>{{ $t('ou') }}</Divider>
         <h2 class="text-sm font-bold uppercase mb-2">
-          {{ $t('Add a link') }}
+          {{ $t('Ajouter un lien') }}
         </h2>
         <InputGroup
           v-model="url"
-          :label="$t('Exact link to the file')"
-          :hint-text="$t('Type a valid url, starting with https://')"
+          :label="$t('Lien exact vers le fichier')"
+          :hint-text="$t('Saisissez une url valide, commençant par https://')"
           placeholder="https://"
           type="url"
         />
@@ -69,7 +69,7 @@
             color="secondary"
             @click="close"
           >
-            {{ t("Cancel") }}
+            {{ t("Annuler") }}
           </BrandedButton>
         </div>
         <div class="fr-col-auto">
@@ -78,7 +78,7 @@
             type="submit"
             :form="formId"
           >
-            {{ t("Send") }}
+            {{ t("Envoyer") }}
           </BrandedButton>
         </div>
       </div>

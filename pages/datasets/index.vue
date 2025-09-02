@@ -1,37 +1,35 @@
 <template>
-  <div class="container mb-16">
-    <Breadcrumb>
-      <BreadcrumbItem
-        to="/"
-        :external="true"
-      >
-        {{ $t('Accueil') }}
-      </BreadcrumbItem>
-      <BreadcrumbItem>
-        {{ $t('Jeux de données') }}
-      </BreadcrumbItem>
-    </Breadcrumb>
-
-    <h1 class="!mb-2">
-      {{ $t('Jeux de données') }}
-    </h1>
-    <p
-      v-if="site"
-      class="block mb-3"
-    >
-      {{ $t('Rechercher parmi les {count} jeux de données sur {site}', {
+  <div>
+    <EditoHeader
+      color="primary"
+      :title="$t('Jeux de données')"
+      :subtitle="$t('Rechercher parmi les {count} jeux de données sur {site}', {
         count: site.metrics.datasets,
         site: config.public.title,
-      }) }}
-    </p>
-
-    <DatasetsSearchPage />
+      })"
+      :placeholder="$t('ex. élections présidentielles')"
+      search-url="/datasets/search"
+      :link-label="$t(`Qu'est-ce qu'un jeu de données ?`)"
+      :link-url="config.public.guideDatasets"
+    />
+    <PageShow
+      v-if="page"
+      :page
+    />
+    <EditoFooter
+      color="primary"
+      search-url="/datasets/search"
+      :search-label="$t(`Voir tous les jeux de données`)"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Site } from '@datagouv/components-next'
-import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import EditoFooter from '~/components/Pages/EditoFooter.vue'
+import EditoHeader from '~/components/Pages/EditoHeader.vue'
+import PageShow from '~/components/Pages/PageShow.vue'
+import type { Page } from '~/types/pages'
 
 const { t } = useI18n()
 useSeoMeta({
@@ -41,4 +39,5 @@ useSeoMeta({
 const config = useRuntimeConfig()
 
 const { data: site } = await useAPI<Site>('/api/1/site')
+const { data: page } = await useAPI<Page>(`/api/1/pages/${site.value.datasets_page}`)
 </script>

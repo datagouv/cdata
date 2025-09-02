@@ -6,13 +6,13 @@
     >
       <div class="w-full flex-none md:flex-1">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ $t('{n} datasets', pageData.total) }}
+          {{ $t('{n} jeux de données', pageData.total) }}
         </h2>
       </div>
       <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
         <!-- TODO: re-enable when elements are properly handled -->
         <!-- <ModalWithButton
-          :title="$t('Add datasets')"
+          :title="$t('Ajouter des jeux de données')"
           size="xl"
         >
           <template #button="{ attrs, listeners }">
@@ -22,7 +22,7 @@
               v-bind="attrs"
               v-on="listeners"
             >
-              {{ $t('Add datasets') }}
+              {{ $t('Ajouter des jeux de données') }}
             </BrandedButton>
           </template>
 
@@ -38,7 +38,7 @@
                 :disabled="!datasets.length"
                 @click="save(close)"
               >
-                {{ $t("Save") }}
+                {{ $t("Sauvegarder") }}
               </BrandedButton>
             </div>
           </template>
@@ -61,7 +61,7 @@
               size="xs"
               @click="removeDataset(dataset)"
             >
-              {{ $t('Remove dataset') }}
+              {{ $t('Supprimer le jeu de données') }}
             </BrandedButton>
           </template> -->
         </AdminDatasetsTable>
@@ -76,9 +76,8 @@
 </template>
 
 <script setup lang="ts">
-import type { DatasetV2, TopicV2 } from '@datagouv/components-next'
+import type { DatasetV2, TopicV2, Pagination } from '@datagouv/components-next'
 import AdminDatasetsTable from '~/components/AdminTable/AdminDatasetsTable/AdminDatasetsTable.vue'
-import Pagination from '~/datagouv-components/src/components/Pagination.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{

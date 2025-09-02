@@ -1,30 +1,18 @@
 <template>
   <div>
     <Breadcrumb>
-      <li>
-        <NuxtLinkLocale
-          class="fr-breadcrumb__link"
-          to="/"
-        >
-          {{ t("Home") }}
-        </NuxtLinkLocale>
-      </li>
-      <li>
-        <NuxtLinkLocale
-          class="fr-breadcrumb__link"
-          to="/reuses"
-        >
-          {{ t("Reuses") }}
-        </NuxtLinkLocale>
-      </li>
-      <li>
-        <a
-          class="fr-breadcrumb__link"
-          aria-current="page"
-        >
-          {{ t("Publishing form") }}
-        </a>
-      </li>
+      <BreadcrumbItem
+        to="/"
+        external
+      >
+        {{ $t('Accueil') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem to="/reuses">
+        {{ $t('Réutilisations') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem>
+        {{ $t('Formulaire de publication') }}
+      </BreadcrumbItem>
     </Breadcrumb>
 
     <Stepper
@@ -43,7 +31,7 @@
           type="submit"
           color="primary"
         >
-          {{ $t("Next") }}
+          {{ $t("Suivant") }}
         </BrandedButton>
       </template>
     </DescribeReuse>
@@ -69,6 +57,7 @@
 import { BrandedButton } from '@datagouv/components-next'
 import type { Dataset, DatasetV2, Reuse } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
 import Step2AddDatasets from '~/components/Reuses/New/Step2AddDatasets.vue'
 import Step3CompletePublication from '~/components/Reuses/New/Step3CompletePublication.vue'
@@ -77,16 +66,15 @@ import type {
   DatasetSuggest,
   ReuseForm,
 } from '~/types/types'
-import { toApi } from '~/utils/reuses'
 
 const { t } = useI18n()
 const route = useRoute()
 const { $api, $fileApi } = useNuxtApp()
 
 const steps = computed(() => [
-  t('Describe your reuse'),
-  t('Link datasets'),
-  t('Complete your publishing'),
+  t('Décrivez votre réutilisation'),
+  t('Lier des jeux de données'),
+  t('Finalisez la publication'),
 ])
 
 const REUSE_FORM_STATE = 'reuse-form'
@@ -155,7 +143,7 @@ async function save() {
     loading.value = true
     newReuse.value = await $api<Reuse>('/api/1/reuses/', {
       method: 'POST',
-      body: JSON.stringify(toApi(reuseForm.value, { private: true, datasets: datasets.value })),
+      body: JSON.stringify(reuseToApi(reuseForm.value, { private: true, datasets: datasets.value })),
     })
 
     if (reuseForm.value.image && typeof reuseForm.value.image !== 'string') {
@@ -194,7 +182,7 @@ async function updateReuse(asPrivate: boolean) {
     }
   }
 
-  await navigateTo(newReuse.value.page, { external: true })
+  await navigateTo(`/reuses/${newReuse.value.slug}`)
 }
 
 watchEffect(() => {

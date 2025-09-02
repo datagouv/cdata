@@ -5,13 +5,15 @@ import type { NuxtApp, UseFetchOptions } from 'nuxt/app'
 */
 export function useAPI<T, U = T>(
   url: MaybeRefOrGetter<string>,
-  options?: UseFetchOptions<T, U>,
+  options?: UseFetchOptions<T, U> & { redirectOn404?: boolean },
 ) {
   const { setCurrentOrganization, setCurrentUser } = useCurrentOwned()
   const isAdmin = isMeAdmin()
+
+  const redirectOn404 = options && 'redirectOn404' in options && options.redirectOn404
   return useFetch(url, {
     ...options,
-    $fetch: useNuxtApp().$api,
+    $fetch: redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api,
   })
     .then((response) => {
       if (isAdmin) {

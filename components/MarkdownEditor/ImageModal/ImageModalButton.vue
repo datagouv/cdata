@@ -1,6 +1,6 @@
 <template>
   <ModalWithButton
-    :title="t('Add an image')"
+    :title="t('Ajouter une image')"
     size="lg"
   >
     <template #button="{ attrs, listeners }">
@@ -16,12 +16,12 @@
     <template #iconTitle>
       <RiImageLine class="size-7" />
     </template>
-    <p>{{ t("Paste a link of your image to add it to your description. It is recommended to also provide a textual alternative for an informative image and a title.") }}</p>
+    <p>{{ t("Collez un lien de votre image pour l'ajouter à votre description. Il est recommandé de fournir également une alternative textuelle pour une image informative et un titre.") }}</p>
     <RequiredExplanation />
     <InputGroup
       v-model="form.src"
-      :label="t('Image link')"
-      :placeholder="t('Paste your link…')"
+      :label="t(`Lien de l'image`)"
+      :placeholder="t('Collez votre lien…')"
       :required="true"
       type="url"
       :has-error="!!getFirstError('src')"
@@ -29,16 +29,16 @@
     />
     <details>
       <summary data-testid="summary">
-        {{ t("Customize accessibility options") }}
+        {{ t("Personnaliser les options d'accessibilité") }}
       </summary>
       <div class="my-2">
         <InputGroup
           v-model="form.alt"
-          :label="t('Image alternative text')"
+          :label="t(`Texte alternatif de l'image`)"
         />
         <InputGroup
           v-model="form.title"
-          :label="t('Image title')"
+          :label="t(`Titre de l'image`)"
         />
       </div>
     </details>
@@ -49,7 +49,7 @@
           data-testid="add-image-button"
           @click="send(close)"
         >
-          {{ t('Add image') }}
+          {{ t('Ajouter une image') }}
         </BrandedButton>
       </div>
     </template>
@@ -98,8 +98,8 @@ function resetForm(close: () => void) {
   close()
 };
 
-function send(close: () => void) {
-  if (validate()) {
+async function send(close: () => void) {
+  if (await validate()) {
     emit('send', { ...form })
     resetForm(close)
   }

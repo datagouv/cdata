@@ -5,7 +5,7 @@
   >
     <InputGroup
       v-model="form.name"
-      :label="$t('Name')"
+      :label="$t('Nom')"
       :required="true"
       :spellcheck="false"
     />
@@ -23,7 +23,7 @@
 
     <div class="flex justify-end">
       <BrandedButton type="submit">
-        {{ $t('Save') }}
+        {{ $t('Sauvegarder') }}
       </BrandedButton>
     </div>
   </form>
@@ -53,7 +53,7 @@ const { toast } = useToast()
 const { t } = useI18n()
 
 const save = async () => {
-  if (validate()) {
+  if (await validate()) {
     await $api(`/api/1/topics/${props.topic.id}/`, {
       method: 'PUT',
       body: {
@@ -64,7 +64,7 @@ const save = async () => {
     })
 
     emit('refresh')
-    toast.success(t('Saved.'))
+    toast.success(t('Sauvegardé.'))
   }
 }
 </script>

@@ -5,7 +5,7 @@
         v-if="resourcesPage"
         class="text-sm font-bold uppercase m-0"
       >
-        {{ t('{n} files', resourcesPage.total) }}
+        {{ t('{n} fichiers | {n} fichier | {n} fichiers', resourcesPage.total) }}
       </h2>
       <div class="flex items-center space-x-3">
         <component :is="resourcesPage && resourcesPage.total > config.public.maxSortableFiles ? Tooltip : 'div' ">
@@ -18,11 +18,11 @@
             :disabled="!!resourcesPage && resourcesPage.total > config.public.maxSortableFiles"
             @click="startReorder()"
           >
-            {{ $t('Reorder files') }}
+            {{ $t('Réordonner les fichiers') }}
           </BrandedButton>
 
           <template #tooltip>
-            {{ $t(`Cannot reorder dataset's files when there is more than {max} files`, { max: config.public.maxSortableFiles }) }}
+            {{ $t(`Impossible de réordonner les fichiers quand il y a plus de {max} fichiers`, { max: config.public.maxSortableFiles }) }}
           </template>
         </component>
         <BrandedButton
@@ -34,7 +34,7 @@
           :loading="loadingForOrdering"
           @click="saveReorder()"
         >
-          {{ $t('Save new order') }}
+          {{ $t('Sauvegarder le nouvel ordre') }}
         </BrandedButton>
         <BrandedButton
           v-if="reorder"
@@ -44,7 +44,7 @@
           :loading="loadingForOrdering"
           @click="cancelReorder()"
         >
-          {{ $t('Cancel reorder') }}
+          {{ $t("Annuler le changement d'ordre") }}
         </BrandedButton>
         <UploadResourceModal
           v-if="! reorder"
@@ -84,10 +84,10 @@
             <AdminTableTh
               scope="col"
             >
-              {{ t('File name') }}
+              {{ t('Nom du fichier') }}
             </AdminTableTh>
             <AdminTableTh scope="col">
-              {{ t("Status") }}
+              {{ t("Statut") }}
             </AdminTableTh>
             <AdminTableTh scope="col">
               {{ t("Type") }}
@@ -98,12 +98,12 @@
             <AdminTableTh
               scope="col"
             >
-              {{ t('Created at') }}
+              {{ t('Créé le') }}
             </AdminTableTh>
             <AdminTableTh
               scope="col"
             >
-              {{ t('Updated at') }}
+              {{ t('Mis à jour le') }}
             </AdminTableTh>
             <AdminTableTh
               scope="col"
@@ -127,7 +127,7 @@
                   icon-only
                   @click="moveFile(index, index - 1)"
                 >
-                  {{ $t('Move up') }}
+                  {{ $t('Déplacer vers le haut') }}
                 </BrandedButton>
                 <RiDraggable class="handle" />
                 <BrandedButton
@@ -138,7 +138,7 @@
                   icon-only
                   @click="moveFile(index, index + 1)"
                 >
-                  {{ $t('Move down') }}
+                  {{ $t('Déplacer vers le bas') }}
                 </BrandedButton>
               </div>
             </td>
@@ -158,7 +158,7 @@
               </AdminBadge>
             </td>
             <td>
-              {{ resource.type }}
+              {{ getResourceLabel(resource.type) }}
             </td>
             <td>
               {{ resource.format }}
@@ -193,14 +193,13 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, formatDate, Pagination, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
+import { getResourceLabel, BrandedButton, Pagination, Tooltip, useFormatDate, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { RiArrowDownLine, RiArrowUpLine, RiCheckLine, RiDraggable } from '@remixicon/vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { useTemplateRef } from 'vue'
 import AdminTable from '../AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../AdminTable/Table/AdminTableTh.vue'
-import Tooltip from '../Tooltip/Tooltip.vue'
 import UploadResourceModal from './UploadResourceModal.vue'
 import FileEditModal from './FileEditModal.vue'
 import FileEditModalFromQueryStringClient from './FileEditModalFromQueryString.client.vue'
@@ -209,12 +208,13 @@ import type { AdminBadgeType, CommunityResourceForm, PaginatedArray, ResourceFor
 const route = useRoute()
 const { toast } = useToast()
 const { $api } = useNuxtApp()
+const { formatDate } = useFormatDate()
 
 const { data: schemas } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/')
 const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extensions/')
 
 const datasetUrl = computed(() => `/api/2/datasets/${route.params.id}/`)
-const { data: dataset, status } = await useAPI<DatasetV2>(datasetUrl)
+const { data: dataset, status } = await useAPI<DatasetV2>(datasetUrl, { redirectOn404: true })
 const resourcesPage = ref<PaginatedArray<Resource> | null>(null)
 const page = ref(1)
 const pageSize = ref(20)
@@ -269,7 +269,7 @@ const updateResource = async (closeModal: () => void, resourceForm: ResourceForm
     loading.value = false
   }
 
-  toast.success(t('Resource updated!'))
+  toast.success(t('Fichier mis à jour !'))
 }
 
 const config = useRuntimeConfig()
@@ -340,20 +340,20 @@ const saveReorder = async () => {
 function getStatus(resource: Resource): { label: string, type: AdminBadgeType } {
   if (resource.extras['check:available'] === true) {
     return {
-      label: t('Available'),
+      label: t('Disponible'),
       type: 'primary',
     }
   }
 
   if (resource.extras['check:available'] === false) {
     return {
-      label: t('Unavailable'),
+      label: t('Indisponible'),
       type: 'danger',
     }
   }
 
   return {
-    label: t('Unknown'),
+    label: t('Inconnu'),
     type: 'warning',
   }
 }

@@ -14,7 +14,7 @@ export default defineNuxtConfig({
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
   ],
-  devtools: { enabled: true, componentInspector: false },
+  devtools: { enabled: false, componentInspector: false },
 
   app: {
     head: {
@@ -22,10 +22,7 @@ export default defineNuxtConfig({
         class: 'datagouv-components',
       },
       link: [
-        // Cannot use `/public/favicon.png` because the reverse proxy is calling udata-front for `/`
-        // When the migration is over we can remove this static path.
-        // :AfterMigration
-        { rel: 'shortcut icon', href: 'https://static.data.gouv.fr/_themes/gouvfr/img/favicon.png' },
+        { rel: 'shortcut icon', href: '/nuxt_images/favicon.png' },
       ],
     },
   },
@@ -49,18 +46,31 @@ export default defineNuxtConfig({
     public: {
       i18n: {
         baseUrl: 'https://www.data.gouv.fr/', // NUXT_PUBLIC_I18N_BASE_URL
-        defaultLocale: 'en', // NUXT_PUBLIC_I18N_DEFAULT_LOCALE
       },
 
+      commitId: undefined,
+      banner: undefined,
+
+      title: 'data.gouv.fr',
       apiBase: 'http://dev.local:7000',
-      staticUrl: 'https://static.data.gouv.fr/static/',
+      frontBase: 'http://dev.local:3000',
+      metricsApi: 'https://metric-api.data.gouv.fr',
       devApiKey: undefined,
+      maxJsonPreviewCharSize: 1000000, // (~1MB)
+      maxPdfPreviewByteSize: 10000000, // (10 MB)
+      maxXmlPreviewCharSize: 100000, // (~100KB)
+      schemaValidataUrl: 'https://validata.fr',
+      tabularApiUrl: 'https://tabular-api.data.gouv.fr',
+      tabularApiDataserviceId: undefined,
 
       qualityDescriptionLength: 100,
       searchAutocompleteDebounce: 200,
       searchSirenUrl: 'https://recherche-entreprises.api.gouv.fr/search',
       csvDatasetId: undefined,
-      title: 'data.gouv.fr',
+
+      // Without www/demo/dev
+      baseDomain: 'data.gouv.fr',
+
       demoServer: {
         url: 'https://demo.data.gouv.fr',
         name: 'demo.data.gouv.fr',
@@ -72,13 +82,33 @@ export default defineNuxtConfig({
       },
       apiDocExternalLink: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/api/reference',
       guidesUrl: 'https://guides.data.gouv.fr/',
+      guidesCreateAccount: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/creer-un-compte-utilisateur-et-rejoindre-une-organisation',
       guidesHarvestingUrl: 'https://guides.data.gouv.fr/guide-data.gouv.fr/moissonnage',
       guidesCommunityResources: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/ressource-communautaire',
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
 
+      guideDatasets: 'https://guides.data.gouv.fr/guide-data.gouv.fr/jeux-de-donnees',
+      guideReuses: 'https://guides.data.gouv.fr/guide-data.gouv.fr/reutilisations',
+      guideDataservices: 'https://guides.data.gouv.fr/guide-data.gouv.fr/api',
+      reusesOnboardingUsecases: 'https://www.data.gouv.fr/pages/onboarding/liste_cas_usage/',
+      dataservicesOnboarding: 'https://guides.data.gouv.fr/guide-data.gouv.fr/api/outils-pour-les-administrations',
+
+      homepagePublishDatasetOnboarding: '/pages/onboarding/producteurs',
+      homepagePublishReuseOnboarding: '/pages/onboarding/reutilisateurs',
+      homepageAboutUs: '/pages/about/a-propos_data-gouv',
+      homepageExplore: 'https://explore.data.gouv.fr',
+      homepageRightNow: {
+        title: 'Données relatives aux Énergies',
+        url: '/pages/donnees-energie',
+      },
+
+      proconnect: {
+        homepage: 'https://agentconnect.gouv.fr/',
+      },
+
       datasetPublishingGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
-      datasetQualityGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/jeux-de-donnees/publier-un-jeu-de-donnees',
+      datasetQualityGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
       dataSearchFeedbackFormUrl: 'https://tally.so/r/mDKv1N',
       forumUrl: 'https://forum.data.gouv.fr/',
       feedbackFormUrl: 'https://tally.so/r/mOld5R',
@@ -90,17 +120,24 @@ export default defineNuxtConfig({
       reuseGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/reutilisations',
       harvesterRequestValidationUrl: 'https://support.data.gouv.fr/help/datagouv/moissonnage#support-tree',
       harvesterPreviewMaxItems: 20, // SHould be the same as `HARVEST_PREVIEW_MAX_ITEMS` in udata
+      harvestEnableManualRun: false,
+      harvestBackendsForHidingQuality: ['CSW-ISO-19139'],
 
       newsletterSubscriptionUrl: 'https://qvo970cr.sibpages.com/',
 
+      maxNumberOfResourcesToUploadInParallel: 3,
       resourceFileUploadChunk: 2 * 1000 * 1000,
       maxSortableFiles: 50,
+
+      captcheta: {
+        style: 'captchaFR',
+      },
 
       licenses: {
         'Autorités administratives': [
           { value: 'lov2', recommended: true, code: 'etalab-2.0' },
           { value: 'odc-odbl', description: 'License avec obligation de partage à l’identique', code: 'ODbL-1.0' },
-          { value: 'notspecified', description: 'Le Code des relations entre le public et l’administration ne s’applique pas' },
+          { value: 'notspecified', description: 'Le Code des relations entre le public et l’administration s’applique' },
         ],
         'Tous producteurs': [
           { value: 'lov2', recommended: true },
@@ -118,6 +155,8 @@ export default defineNuxtConfig({
         ],
       },
 
+      enableCdataSecurityViews: false,
+      requireEmailConfirmation: true,
       changeEmailPage: 'change-email',
       changePasswordPage: 'change',
 
@@ -188,24 +227,23 @@ export default defineNuxtConfig({
     baseUrl: '',
     locales: [
       {
+        code: 'fr',
+        language: 'fr',
+      },
+      {
         code: 'en',
         language: 'en',
-        file: 'en-US.json',
       },
       {
         code: 'es',
         language: 'es',
-        file: 'es-ES.json',
-      },
-      {
-        code: 'fr',
-        language: 'fr',
-        files: ['fr-FR.json', '../../node_modules/@datagouv/components-next/src/locales/fr.json'],
       },
     ],
     lazy: true,
-    strategy: 'prefix',
+    detectBrowserLanguage: false,
+    strategy: 'no_prefix',
     trailingSlash: true,
+    defaultLocale: 'fr',
   },
   image: {
     screens: {

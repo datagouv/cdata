@@ -1,11 +1,11 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Topics') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Thématiques') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="fr-h3 fr-mb-5v">
-      {{ t("Topics") }}
+    <h1 class="text-2xl font-extrabold text-gray-title mb-5">
+      {{ t("Thématiques") }}
     </h1>
     <div
       v-if="pageData"
@@ -13,7 +13,7 @@
     >
       <div class="fr-col">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ t('{n} topics', pageData.total) }}
+          {{ t('{n} thématiques', pageData.total) }}
         </h2>
       </div>
       <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
@@ -21,7 +21,7 @@
           v-model="q"
           type="search"
           :icon="RiSearchLine"
-          :placeholder="$t('Search')"
+          :placeholder="$t('Recherche')"
         />
       </div>
     </div>
@@ -32,16 +32,16 @@
           <thead>
             <tr>
               <AdminTableTh scope="col">
-                {{ t("Name") }}
+                {{ t("Nom") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Created at") }}
+                {{ t("Créé le") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Datasets") }}
+                {{ t("Jeux de données") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Reuses") }}
+                {{ t("Réutilisations") }}
               </AdminTableTh>
             </tr>
           </thead>
@@ -51,9 +51,9 @@
               :key="topic.id"
             >
               <td>
-                <NuxtLinkLocale :to="`/admin/topics/${topic.id}`">
+                <CdataLink :to="`/admin/topics/${topic.id}`">
                   {{ topic.name }}
-                </NuxtLinkLocale>
+                </CdataLink>
               </td>
               <td>{{ formatDate(topic.created_at) }}</td>
               <td>{{ elementsCounts[topic.id]?.['Dataset'] ?? "..." }}</td>
@@ -80,27 +80,27 @@
       />
       <template v-if="q">
         <p class="fr-text--bold fr-my-3v">
-          {{ t(`No results for "{q}"`, { q }) }}
+          {{ t(`Pas de résultats pour « {q} »`, { q }) }}
         </p>
         <BrandedButton
           color="primary"
           @click="q = qDebounced = ''"
         >
-          {{ $t('Reset filters') }}
+          {{ $t('Réinitialiser les filtres') }}
         </BrandedButton>
       </template>
       <p
         v-else
         class="fr-text--bold fr-my-3v"
       >
-        {{ t(`No topics`) }}
+        {{ t(`Aucune thématique`) }}
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { formatDate, Pagination, type TopicV2, type TopicElement, type TopicElementClass } from '@datagouv/components-next'
+import { useFormatDate, Pagination, type TopicV2, type TopicElement, type TopicElementClass } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -115,6 +115,7 @@ import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import AdminInput from '~/components/AdminInput.vue'
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 const page = ref(1)
 const pageSize = ref(20)

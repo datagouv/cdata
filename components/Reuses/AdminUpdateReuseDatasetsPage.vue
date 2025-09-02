@@ -10,7 +10,7 @@
         :disabled="!datasets.length"
         @click="submit"
       >
-        {{ t("Save") }}
+        {{ t("Sauvegarder") }}
       </BrandedButton>
     </div>
   </div>
@@ -27,7 +27,7 @@ const { toast } = useToast()
 
 const route = useRoute()
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
-const { data: reuse } = await useAPI<Reuse>(url, { lazy: true })
+const { data: reuse } = await useAPI<Reuse>(url, { redirectOn404: true })
 const datasets = ref<Array<Dataset | DatasetV2 | DatasetSuggest>>([])
 watchEffect(async () => {
   if (!reuse.value) return
@@ -42,7 +42,7 @@ const submit = async () => {
     }),
   })
 
-  toast.success(t('Reuse updated!'))
+  toast.success(t('Réutilisation mise à jour !'))
   window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
 }
 </script>

@@ -23,6 +23,7 @@ export async function updateOrganization(organization: MaybeRefOrGetter<Organiza
     method: 'PUT',
     body: {
       ...organizationValue,
+      business_number_id: cleanSiret(organizationValue.business_number_id),
     },
   })
   return resp

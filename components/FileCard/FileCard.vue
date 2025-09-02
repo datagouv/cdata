@@ -7,21 +7,21 @@
             :resource="resourceForm"
             class="size-4 mr-1"
           />
-          <h4 class="fr-m-0 text-base/6 overflow-wrap-anywhere text-overflow-ellipsis">
-            {{ resourceForm.title || $t('Nameless resource') }}
+          <h4 class="fr-m-0 text-base/6 overflow-wrap-anywhere truncate">
+            {{ resourceForm.title || $t('Fichier sans nom') }}
           </h4>
         </div>
         <div class="fr-my-0 text-gray-medium fr-grid-row fr-grid-row--middle">
           <div
             v-if="resourceForm.schema?.name"
-            class="flex items-center space-x-1 text-sm fr-m-0 overflow-wrap-anywhere text-overflow-ellipsis dash-after"
+            class="flex items-center space-x-1 text-sm fr-m-0 overflow-wrap-anywhere truncate dash-after"
           >
             <RiInformationLine class="size-3 shrink-0" />
-            <span class="truncate">{{ $t('Schema: {schema}', { schema: resourceForm.schema?.name }) }}</span>
+            <span class="truncate">{{ $t('Schéma : {schema}', { schema: resourceForm.schema?.name }) }}</span>
           </div>
           <p
             v-if="resourceForm.filetype === 'file' && resourceForm.file && resourceForm.file.raw.name != resourceForm.title"
-            class="text-sm fr-m-0 overflow-wrap-anywhere text-overflow-ellipsis dash-after"
+            class="text-sm fr-m-0 overflow-wrap-anywhere truncate dash-after"
           >
             {{ resourceForm.file.raw.name }}
           </p>
@@ -30,7 +30,7 @@
             class="text-sm fr-m-0 dash-after"
           >
             <!-- Not sure if this date is useful, since it's about modification on a ressource  -->
-            {{ $t('Updated {date}', { date: formatRelativeIfRecentDate(resourceForm.resource.last_modified) }) }}
+            {{ $t('Mis à jour {date}', { date: formatRelativeIfRecentDate(resourceForm.resource.last_modified) }) }}
           </p>
           <p
             v-if="guessFormat(resourceForm, extensions)"
@@ -47,7 +47,7 @@
           class="flex items-center space-x-1 text-gray-medium text-sm"
         >
           <RiMapPin2Line class="size-3 shrink-0" />
-          <span class="truncate">{{ $t('Location: data.gouv.fr servers') }}</span>
+          <span class="truncate">{{ $t('Emplacement : serveurs data.gouv.fr') }}</span>
         </div>
         <div
           v-if="resourceForm.filetype === 'remote'"
@@ -61,7 +61,7 @@
           class="flex items-center space-x-1 text-gray-medium text-sm"
         >
           <RiCodeSSlashLine class="size-3 shrink-0" />
-          <span class="truncate">{{ $t('Checksum: {checksum}', { checksum: resourceForm.resource?.checksum.value }) }}</span>
+          <span class="truncate">{{ $t('Somme de contrôle : {checksum}', { checksum: resourceForm.resource?.checksum.value }) }}</span>
         </div>
       </div>
       <div
@@ -92,7 +92,7 @@
               size="sm"
               @click="$emit('delete')"
             >
-              {{ $t("Remove file") }}
+              {{ $t("Supprimer le fichier") }}
             </BrandedButton>
           </p>
         </div>
@@ -147,7 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, filesize as formatFilesize, formatRelativeIfRecentDate, ResourceIcon } from '@datagouv/components-next'
+import { BrandedButton, filesize as formatFilesize, useFormatDate, ResourceIcon } from '@datagouv/components-next'
 import { computed } from 'vue'
 import { RiCodeSSlashLine, RiDeleteBinLine, RiInformationLine, RiLink, RiMapPin2Line } from '@remixicon/vue'
 import FileEditModal from '../Datasets/FileEditModal.vue'
@@ -168,6 +168,8 @@ withDefaults(defineProps<{
 defineEmits<{
   (e: 'delete' | 'edit'): void
 }>()
+
+const { formatRelativeIfRecentDate } = useFormatDate()
 
 const save = (close: () => void, form: ResourceForm | CommunityResourceForm) => {
   // We don't want to link the `form` inside the modal to the

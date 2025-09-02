@@ -5,7 +5,7 @@
       :href="link"
       rel="ugc nofollow noopener"
       :target="link ? '_blank' : undefined"
-      class="text-grey-title text-overflow-ellipsis overflow-hidden"
+      class="text-grey-title truncate overflow-hidden"
     >
       {{ label }}
     </component>
@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ContactPoint } from '~/types/types'
+import type { ContactPoint } from '@datagouv/components-next'
 
 const props = defineProps<{
   contact: ContactPoint
@@ -41,8 +41,8 @@ const label = computed(() => {
 const role = computed(() => {
   return {
     contact: t('Contact'),
-    creator: t('Creator'),
-    publisher: t('Publisher'),
+    creator: t('Créateur'),
+    publisher: t('Éditeur'),
   }[props.contact.role]
 })
 </script>

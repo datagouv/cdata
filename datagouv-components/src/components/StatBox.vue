@@ -1,13 +1,87 @@
 <template>
+  <div v-if="size === 'sm'">
+    <h3 class="text-sm font-bold m-0">
+      {{ title }}
+    </h3>
+    <div class="flex flex-wrap items-center">
+      <ContentLoader
+        v-if="summary === null"
+        :width="39"
+        :height="24"
+        :speed="2"
+        primary-color="#f3f3f3"
+        secondary-color="#ecebeb"
+      >
+        <rect
+          x="0"
+          y="0"
+          rx="3"
+          ry="3"
+          width="39"
+          height="24"
+        />
+      </ContentLoader>
+      <p
+        v-else
+        class="font-extrabold leading-none m-0"
+      >
+        {{ summarize(summary, 2) }}
+      </p>
+      <ContentLoader
+        v-if="data === null"
+        :width="77"
+        :height="19"
+        :speed="2"
+        primary-color="#f3f3f3"
+        secondary-color="#ecebeb"
+        class="ml-2"
+      >
+        <rect
+          x="0"
+          y="0"
+          rx="3"
+          ry="3"
+          width="77"
+          height="19"
+        />
+      </ContentLoader>
+      <div
+        v-else-if="changesThisYear"
+        class="ml-2"
+      >
+        <SmallChart
+          :type
+          :data
+          :last-with-low-emphasis="true"
+          :show-axis-label="false"
+          :height="19"
+          :width="77"
+        />
+      </div>
+    </div>
+    <template v-if="lastValue && lastMonth">
+      <p class="mt-1 mb-0 text-xs">
+        {{ $t('depuis juillet 2022') }}
+      </p>
+      <p class="mt-1 mb-0 text-xs text-success-darkest">
+        <strong>
+          + {{ summarize(lastValue, 2) }}
+        </strong>
+        {{ t(" en ") }}
+        {{ formatDate(lastMonth, { dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }) }}
+      </p>
+    </template>
+  </div>
   <div
+    v-else
     :class="{
       'text-gray-medium': !changesThisYear && !summary,
     }"
   >
-    <h3 class="fr-text--sm fr-m-0">
+    <h3 class="text-sm m-0">
       {{ title }}
     </h3>
-    <div class="fr-grid-row fr-grid-row--middle">
+    <div class="flex flex-wrap items-center">
       <ContentLoader
         v-if="summary === null"
         :width="92"
@@ -27,7 +101,7 @@
       </ContentLoader>
       <p
         v-else
-        class="h1 line-height-1 fr-m-0"
+        class="font-extrabold text-[2rem] leading-none m-0"
       >
         {{ summarize(summary, 2) }}
       </p>
@@ -38,7 +112,7 @@
         :speed="2"
         primary-color="#f3f3f3"
         secondary-color="#ecebeb"
-        class="fr-ml-1w"
+        class="ml-2"
       >
         <rect
           x="0"
@@ -51,7 +125,7 @@
       </ContentLoader>
       <div
         v-else-if="changesThisYear"
-        class="fr-ml-1w"
+        class="ml-2"
       >
         <SmallChart
           :type
@@ -62,12 +136,12 @@
     </div>
     <p
       v-if="lastValue && lastMonth"
-      class="fr-mt-1w fr-text--regular text-transform-none fr-badge fr-badge--no-icon fr-badge--success"
+      class="mt-2 font-normal text-transform-none fr-badge fr-badge--no-icon fr-badge--success"
     >
-      <strong class="fr-mr-1v">
+      <strong class="mr-1">
         + {{ summarize(lastValue, 2) }}
       </strong>
-      {{ t(" in ") }}
+      {{ t(" en ") }}
       {{ formatDate(lastMonth, { dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }) }}
     </p>
   </div>
@@ -77,7 +151,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ContentLoader } from 'vue-content-loader'
-import { formatDate } from '../functions/dates'
+import { useFormatDate } from '../functions/dates'
 import { summarize } from '../functions/helpers'
 import SmallChart from './SmallChart.vue'
 
@@ -85,10 +159,12 @@ const props = defineProps<{
   title: string
   data: Record<string, number> | null
   type: 'line' | 'bar'
-  summary: number | null
+  size?: 'sm'
+  summary?: number | null
 }>()
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 const months = computed(() => props.data ? Object.keys(props.data) : [])
 const values = computed(() => props.data ? Object.values(props.data) : [])
@@ -97,4 +173,10 @@ const lastMonthIndex = computed(() => lastMonth.value ? months.value.indexOf(las
 const lastValue = computed(() => lastMonthIndex.value !== null ? values.value[lastMonthIndex.value] : null)
 
 const changesThisYear = computed(() => Math.max(...values.value) > 0)
+const summary = computed(() => {
+  if (props.summary !== undefined) return props.summary
+  if (!props.data) return null
+
+  return Object.values(props.data).reduce((a, b) => a + b, 0)
+})
 </script>

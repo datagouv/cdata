@@ -1,5 +1,5 @@
 <template>
-  <div class="relative fr-enlarge-link shadow-[0_8px_16px_0_rgba(0,0,0,0.1),0_16px_16px_-16px_rgba(0,0,0,0.32)]">
+  <div class="shadow-[0_8px_16px_0_rgba(0,0,0,0.1),0_16px_16px_-16px_rgba(0,0,0,0.32)]">
     <div class="relative bg-gray-lower h-96 p-[12%] flex items-center">
       <div class="bg-black opacity-[2%]" />
       <NuxtImg :src="image" />

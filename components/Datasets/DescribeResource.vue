@@ -18,10 +18,10 @@
       />
       <div class="w-full">
         <p class="font-bold mb-1">
-          {{ $t('What is a community resource?') }}
+          {{ $t('Qu\'est-ce qu\'une ressource communautaire ?') }}
         </p>
         <p class="m-0 text-xs/5">
-          {{ $t('A community resource is content added by a user, a cross-referencing of data for example, to enrich or complete a public community resource.') }}
+          {{ $t('Une ressource communautaire est un contenu ajouté par un utilisateur, un recoupement de données par exemple, pour enrichir ou compléter une ressource communautaire publique.') }}
         </p>
       </div>
     </SimpleBanner>
@@ -30,12 +30,12 @@
 
     <FormFieldset
       v-if="type === 'create-community' && 'owned' in form"
-      :legend="$t('Producer')"
+      :legend="$t('Producteur')"
     >
       <FieldsetElement form-key="owned">
         <ProducerSelect
           v-model="form.owned"
-          :label="t('Check the identity with which you want to publish')"
+          :label="t(`Vérifiez l'identité avec laquelle vous souhaitez publier`)"
           :required="true"
           :error-text="getFirstError('owned')"
           :warning-text="getFirstWarning('owned')"
@@ -49,48 +49,50 @@
         form-key="file"
       >
         <LoadingBlock :status>
-          <div v-if="newFile">
-            <label
-              v-if="type === 'update'"
-              class="fr-label fr-mb-1w"
-            >
-              {{ $t('The current file will be replaced by') }}
-            </label>
-            <FileCard
-              v-if="newFile"
-              :model-value="{
-                filetype: 'file',
-                title: newFile.name,
-                type: 'main',
-                description: '',
-                schema: null,
-                file: {
-                  raw: newFile,
-                  state: { status: 'waiting' },
-                },
-                resource: null,
-              }"
-              class="fr-mb-3v"
-              :show-edit-and-warning="false"
-              :extensions
-              @delete="newFile = null; form.filetype = null"
+          <div v-if="extensions">
+            <div v-if="newFile">
+              <label
+                v-if="type === 'update'"
+                class="fr-label fr-mb-1w"
+              >
+                {{ $t('Le fichier actuel sera remplacé par') }}
+              </label>
+              <FileCard
+                v-if="newFile"
+                :model-value="{
+                  filetype: 'file',
+                  title: newFile.name,
+                  type: 'main',
+                  description: '',
+                  schema: null,
+                  file: {
+                    raw: newFile,
+                    state: { status: 'waiting' },
+                  },
+                  resource: null,
+                }"
+                class="fr-mb-3v"
+                :show-edit-and-warning="false"
+                :extensions
+                @delete="newFile = null; form.filetype = null"
+              />
+            </div>
+            <UploadGroup
+              v-else
+              :show-label="type === 'update'"
+              :label="type === 'update' ? $t('Remplacer le fichier') : $t('Nouveau fichier')"
+              type="drop"
+              :accept="extensions.join(',')"
+              :multiple="false"
+              :hint-text="$t('Taille max : 420 Mo.')"
+              @change="setFiles"
             />
           </div>
-          <UploadGroup
-            v-else
-            :show-label="type === 'update'"
-            :label="type === 'update' ? $t('Replace file') : $t('New file')"
-            type="drop"
-            :accept="extensions.join(',')"
-            :multiple="false"
-            :hint-text="$t('Max size: 420 Mb.')"
-            @change="setFiles"
-          />
         </LoadingBlock>
       </FieldsetElement>
 
       <Divider v-if="!form.filetype">
-        {{ $t('or') }}
+        {{ $t('ou') }}
       </Divider>
 
       <FieldsetElement
@@ -99,7 +101,7 @@
       >
         <InputGroup
           v-model="form.url"
-          :label="$t('Exact link to the file')"
+          :label="$t('Lien exact vers le fichier')"
           :required="true"
           :has-error="!!getFirstError('url')"
           :error-text="getFirstError('url')"
@@ -115,19 +117,75 @@
         />
 
         <template #accordion>
-          <HelpAccordion :title="$t('Choose the correct link')">
-            {{ $t("It's advised to put the link to the file itself instead of a web page to allow {site} to parse it.") }}
+          <HelpAccordion :title="$t('Choisir le bon lien')">
+            {{ $t("Il est conseillé de mettre le lien vers le fichier lui-même plutôt qu'une page web pour permettre à {site} de l'analyser.") }}
           </HelpAccordion>
         </template>
       </FieldsetElement>
     </FormFieldset>
+
+    <template v-if="form.filetype === 'remote'">
+      <BrandedButton
+        v-if="! showChecksum"
+        color="secondary-softer"
+        :icon="RiAddLine"
+        class="-mt-6 mb-6"
+        @click="addChecksum = true"
+      >
+        {{ $t('Ajouter une somme de contrôle') }}
+      </BrandedButton>
+      <FormFieldset
+        v-else
+        :legend="$t('Somme de contrôle')"
+        class="w-full"
+      >
+        <template #legendAside>
+          <BrandedButton
+            color="secondary"
+            size="2xs"
+            @click="form.checksum_value = null; addChecksum = false"
+          >
+            {{ $t('Supprimer') }}
+          </BrandedButton>
+        </template>
+
+        <FieldsetElement form-key="checksum">
+          <SelectGroup
+            v-model="form.checksum_type"
+            :label="$t('Type de somme de contrôle')"
+            :has-error="!!getFirstError('checksum_type')"
+            :error-text="getFirstError('checksum_type')"
+            :options="[
+              { value: 'sha1', label: 'SHA1' },
+              { value: 'sha2', label: 'SHA2' },
+              { value: 'sha256', label: 'SHA256' },
+              { value: 'md5', label: 'MD5' },
+              { value: 'crc', label: 'CRC' },
+            ]"
+          />
+
+          <InputGroup
+            v-model="form.checksum_value"
+            :label="$t('Valeur de la somme de contrôle')"
+            :has-error="!!getFirstError('checksum_value')"
+            :error-text="getFirstError('checksum_value')"
+          />
+
+          <template #accordion>
+            <HelpAccordion :title="$t('Somme de contrôle')">
+              {{ $t("La somme de contrôle ou checksum permet à l'utilisateur de vérifier que les données téléchargées n'ont pas été corrompues ou altérées.") }}
+            </HelpAccordion>
+          </template>
+        </FieldsetElement>
+      </FormFieldset>
+    </template>
 
     <FormFieldset :legend="$t('Description')">
       <FieldsetElement form-key="title">
         <InputGroup
           v-model="form.title"
           class="mb-3"
-          :label="$t('Title')"
+          :label="$t('Titre')"
           :required="true"
         />
 
@@ -135,13 +193,13 @@
           <HelpAccordion :title="nameAFile">
             <div class="prose prose-neutral fr-m-0">
               <p class="fr-m-0 fr-mb-1w">
-                {{ $t("It is recommended to choose a title that can inform any user about the content of the file. Some practices to avoid:") }}
+                {{ $t("Il est recommandé de choisir un titre qui peut informer tout utilisateur sur le contenu du fichier. Quelques pratiques à éviter :") }}
               </p>
               <ul>
-                <li>{{ $t('giving a too generic title (e.g., "list.csv");') }}</li>
-                <li>{{ $t("giving a too long title that would make the file manipulation difficult;") }}</li>
-                <li>{{ $t("giving a title containing accents or special characters (file interoperability issues);") }}</li>
-                <li>{{ $t("giving a title that is too technical and derived from business nomenclatures.") }}</li>
+                <li>{{ $t('donner un titre trop générique (ex. : "liste.csv") ;') }}</li>
+                <li>{{ $t("donner un titre trop long qui rendrait la manipulation du fichier difficile ;") }}</li>
+                <li>{{ $t("donner un titre contenant des accents ou des caractères spéciaux (problèmes d'interopérabilité de fichier) ;") }}</li>
+                <li>{{ $t("donner un titre trop technique et dérivé de nomenclatures métier.") }}</li>
               </ul>
             </div>
           </HelpAccordion>
@@ -158,10 +216,10 @@
         />
 
         <template #accordion>
-          <HelpAccordion :title="$t('Publish the correct file types')">
+          <HelpAccordion :title="$t('Publier les bons types de fichiers')">
             <div class="prose prose-neutral fr-m-0">
               <p class="fr-m-0 fr-mb-1w">
-                {{ $t("You can choose from the following types:") }}
+                {{ $t("Vous pouvez choisir parmi les types suivants :") }}
               </p>
               <ul>
                 <li
@@ -183,18 +241,18 @@
         />
 
         <template #accordion>
-          <HelpAccordion :title="$t('Add documentation')">
+          <HelpAccordion :title="$t('Ajouter de la documentation')">
             <div class="prose prose-neutral fr-m-0">
               <p class="fr-m-0 fr-mb-1w">
-                {{ $t("The description of a file facilitates the reuse of data. It includes, among others:") }}
+                {{ $t("La description d'un fichier facilite la réutilisation des données. Elle comprend, entre autres :") }}
               </p>
               <ul>
-                <li>{{ $t("a general description of the dataset ;") }}</li>
-                <li>{{ $t("a description of the data production mode ;") }}</li>
-                <li>{{ $t("a description of the data model ;") }}</li>
-                <li>{{ $t("a description of the data schema ;") }}</li>
-                <li>{{ $t("a description of the metadata ;") }}</li>
-                <li>{{ $t("a description of major changes.") }}</li>
+                <li>{{ $t("une description générale du jeu de données ;") }}</li>
+                <li>{{ $t("une description du mode de production des données ;") }}</li>
+                <li>{{ $t("une description du modèle de données ;") }}</li>
+                <li>{{ $t("une description du schéma de données ;") }}</li>
+                <li>{{ $t("une description des métadonnées ;") }}</li>
+                <li>{{ $t("une description des changements majeurs.") }}</li>
               </ul>
             </div>
           </HelpAccordion>
@@ -203,30 +261,12 @@
 
       <FieldsetElement
         v-if="form.filetype === 'remote'"
-        form-key="mime"
-      >
-        <SearchableSelect
-          v-model="form.mime"
-          :label="$t('Mime type')"
-          :placeholder="$t('Search a mime type…')"
-          :display-value="(option) => option.text"
-          :get-option-id="(option) => option.text"
-          :allow-new-option="(query) => ({ text: query })"
-          :suggest="suggestMime"
-          :multiple="false"
-
-          :error-text="getFirstError('mime')"
-          :warning-text="getFirstWarning('mime')"
-        />
-      </FieldsetElement>
-      <FieldsetElement
-        v-if="form.filetype === 'remote'"
-        form-key="mime"
+        form-key="format"
       >
         <SearchableSelect
           v-model="form.format"
           :label="$t('Format')"
-          :placeholder="$t('Search a format…')"
+          :placeholder="$t('Rechercher un format…')"
           :display-value="(option) => option"
           :allow-new-option="(query) => query"
           :options="extensions"
@@ -239,22 +279,50 @@
         />
 
         <template #accordion>
-          <HelpAccordion :title="$t('Choose the right format')">
+          <HelpAccordion :title="$t('Choisir le bon format')">
             <div class="prose prose-neutral fr-m-0">
               <p class="fr-m-0 fr-mb-1w">
-                {{ $t("The formats must be:") }}
+                {{ $t("Les formats doivent être :") }}
               </p>
               <ul>
-                <li>{{ $t("open : an open format doesn't add technical specifications that restrict data use (i.e. using a paid software) ;") }}</li>
-                <li>{{ $t("easily reusable : a format easily reusable implies that anybody or server can reuse easily the dataset ;") }}</li>
-                <li>{{ $t("usable in an automated processing system : an automated processing system allows to make automatic operations, related to data exploitation (i.e. a CSV file is easily usable by an automated system unlike a PDF file).") }}</li>
+                <li>{{ $t("ouverts : un format ouvert n'ajoute pas de spécifications techniques qui restreignent l'utilisation des données (ex. : utilisation d'un logiciel payant) ;") }}</li>
+                <li>{{ $t("facilement réutilisables : un format facilement réutilisable implique que n'importe qui ou serveur peut réutiliser facilement le jeu de données ;") }}</li>
+                <li>{{ $t("utilisables dans un système de traitement automatisé : un système de traitement automatisé permet de faire des opérations automatiques, liées à l'exploitation des données (ex. : un fichier CSV est facilement utilisable par un système automatisé contrairement à un fichier PDF).") }}</li>
               </ul>
             </div>
           </HelpAccordion>
         </template>
       </FieldsetElement>
+      <FieldsetElement
+        v-if="form.filetype === 'remote'"
+        form-key="mime"
+      >
+        <SearchableSelect
+          v-model="form.mime"
+          :label="$t('Type mime')"
+          :placeholder="$t('Rechercher un type mime…')"
+          :display-value="(option) => option.text"
+          :get-option-id="(option) => option.text"
+          :allow-new-option="(query) => ({ text: query })"
+          :suggest="suggestMime"
+          :multiple="false"
+
+          :error-text="getFirstError('mime')"
+          :warning-text="getFirstWarning('mime')"
+        />
+
+        <template #accordion>
+          <HelpAccordion :title="$t('Choisir un type MIME')">
+            <div class="prose prose-neutral fr-m-0">
+              <p class="fr-m-0 fr-mb-1w">
+                {{ $t("Indiquez le type MIME correspondant au format de la ressource distante (ex. : application/pdf, text/csv). Utilisez un outil en ligne pour le détecter si besoin.") }}
+              </p>
+            </div>
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
     </FormFieldset>
-    <FormFieldset :legend="$t('Data schema')">
+    <FormFieldset :legend="$t('Schéma de données')">
       <FieldsetElement
         form-key="schema"
         class="space-y-2"
@@ -262,8 +330,8 @@
         <LoadingBlock :status="schemaStatus">
           <SearchableSelect
             v-model="form.schema"
-            :label="$t('Schema')"
-            :placeholder="$t('Search a schema referenced on {site}…', { site: config.public.schemasSite.name })"
+            :label="$t('Schéma')"
+            :placeholder="$t('Rechercher un schéma référencé sur {site}…', { site: config.public.schemasSite.name })"
             :display-value="(option) => option.name"
             :get-option-id="(option) => option.name"
             :options="schemas"
@@ -273,12 +341,12 @@
             :warning-text="getFirstWarning('schema')"
           />
           <Divider v-if="!form.schema">
-            {{ $t('or') }}
+            {{ $t('ou') }}
           </Divider>
           <InputGroup
             v-if="!form.schema"
             v-model="form.schema_url"
-            :label="t('Add a link to the schema')"
+            :label="t('Ajouter un lien vers le schéma')"
             :placeholder="'https://...'"
             :error-text="getFirstError('schema_url')"
             :warning-text="getFirstWarning('schema_url')"
@@ -286,9 +354,9 @@
           />
 
           <template #accordion>
-            <HelpAccordion :title="$t('Select a schema')">
+            <HelpAccordion :title="$t('Sélectionner un schéma')">
               <i18n-t
-                keypath="It is possible to identify an existing data schema by visiting the {schema} website, that references a list of existing data schema."
+                keypath="Il est possible d'identifier un schéma de données existant en visitant le site web {schema}, qui référence une liste de schémas de données existants."
                 tag="p"
                 class="fr-m-0 fr-mb-1w"
               >
@@ -305,7 +373,7 @@
     <DatasetsSelect
       v-if="type === 'create-community' && 'dataset' in form"
       v-model="datasets"
-      :label="$t('Associate a dataset')"
+      :label="$t('Associer un jeu de données')"
       class="w-full"
       single
     />
@@ -315,8 +383,9 @@
 </template>
 
 <script setup lang="ts">
-import { getResourceLabel, RESOURCE_TYPE, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, getResourceLabel, RESOURCE_TYPE, SimpleBanner } from '@datagouv/components-next'
 import type { SchemaResponseData } from '@datagouv/components-next'
+import { RiAddLine } from '@remixicon/vue'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 import FieldsetElement from '../Form/FieldsetElement.vue'
 import HelpAccordion from '../Form/HelpAccordion.vue'
@@ -344,11 +413,11 @@ const datasets = ref([])
 const newFile = ref<File | null>(null)
 
 const isRemote = computed(() => resourceForm.value.filetype === 'remote')
-const nameAFile = computed(() => isRemote.value ? t('Name a link') : t('Name a file'))
+const nameAFile = computed(() => isRemote.value ? t('Nommer un lien') : t('Nommer un fichier'))
 const fileOrLinkLegend = computed(() => {
-  if (props.type === 'create-community') return t('File or link')
+  if (props.type === 'create-community') return t('Fichier ou lien')
 
-  return isRemote.value ? t('Link') : t('File')
+  return isRemote.value ? t('Lien') : t('Fichier')
 })
 const fileTypes = RESOURCE_TYPE.map(type => ({ label: getResourceLabel(type), value: type }))
 
@@ -365,8 +434,8 @@ const { data: schemas, status: schemaStatus } = await useAPI<SchemaResponseData>
 
 const { toast } = useToast()
 
-const submit = () => {
-  if (validate()) {
+const submit = async () => {
+  if (await validate()) {
     if (newFile.value) {
       if (form.value.filetype !== 'file') throw new Error('Cannot update file of not local file')
 
@@ -377,7 +446,7 @@ const submit = () => {
     }
 
     if (props.type === 'create-community' && !datasets.value.length) {
-      toast.error(t('Please associate a dataset'))
+      toast.error(t('Veuillez associer un jeu de données'))
       return
     }
 
@@ -397,4 +466,9 @@ const suggestMime = async (query: string) => {
     },
   })
 }
+
+const addChecksum = ref(false)
+const showChecksum = computed(() => {
+  return addChecksum.value || form.value.checksum_value
+})
 </script>

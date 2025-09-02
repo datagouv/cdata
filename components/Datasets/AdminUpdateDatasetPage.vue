@@ -9,6 +9,58 @@
       @feature="feature"
       @submit="save"
     >
+      <template #top>
+        <BannerAction
+          v-if="!dataset.deleted && !dataset.archived"
+          class="mb-4"
+          type="primary"
+          :title="$t('Modifier la visibilité du jeu de données')"
+        >
+          <i18n-t
+            v-if="dataset.private"
+            keypath="Ce jeu de données est actuellement {status}. Seul vous ou les membres de votre organisation pouvez le voir et y contribuer."
+          >
+            <template #status>
+              <strong>{{ $t('privé') }}</strong>
+            </template>
+          </i18n-t>
+          <i18n-t
+            v-else
+            keypath="Ce jeu de données est actuellement {status}. N'importe qui sur Internet peut voir ce jeu de données."
+          >
+            <template #status>
+              <strong>{{ $t('public') }}</strong>
+            </template>
+          </i18n-t>
+
+          <template #button>
+            <BrandedButton
+              :loading="isLoading"
+              @click="switchDatasetPrivate"
+            >
+              {{ dataset.private ? $t('Publier le jeu de données') : $t('Passer en brouillon') }}
+            </BrandedButton>
+          </template>
+        </BannerAction>
+        <BannerAction
+          v-if="dataset.deleted"
+          class="mb-4"
+          type="warning"
+          :title="$t('Restaurer ce jeu de données')"
+        >
+          {{ $t("Sans restauration le jeu de données sera définitivement supprimé dans la nuit.") }}
+
+          <template #button>
+            <BrandedButton
+              :icon="RiArrowGoBackLine"
+              :disabled="isLoading"
+              @click="restoreDataset"
+            >
+              {{ $t('Restaurer') }}
+            </BrandedButton>
+          </template>
+        </BannerAction>
+      </template>
       <div class="mt-5 space-y-5">
         <TransferBanner
           type="Dataset"
@@ -24,7 +76,7 @@
           <template #button>
             <BrandedButton
               :icon="RiArchiveLine"
-              :disabled="isLoading"
+              :loading="isLoading"
               @click="archiveDataset"
             >
               {{ dataset.archived ? $t('Désarchiver') : $t('Archiver') }}
@@ -32,6 +84,7 @@
           </template>
         </BannerAction>
         <BannerAction
+          v-if="!dataset.deleted"
           type="danger"
           :title="$t('Supprimer le jeu de données')"
         >
@@ -45,7 +98,7 @@
               <template #button="{ attrs, listeners }">
                 <BrandedButton
                   :icon="RiDeleteBin6Line"
-                  :disabled="isLoading"
+                  :loading="isLoading"
                   v-bind="attrs"
                   v-on="listeners"
                 >
@@ -59,7 +112,7 @@
                 <div class="flex-1 flex justify-end">
                   <BrandedButton
                     color="danger"
-                    :disabled="isLoading"
+                    :loading="isLoading"
                     @click="deleteDataset"
                   >
                     {{ $t("Supprimer le jeu de données") }}
@@ -77,10 +130,9 @@
 <script setup lang="ts">
 import type { DatasetV2, Frequency, License } from '@datagouv/components-next'
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
-import { RiArchiveLine, RiDeleteBin6Line } from '@remixicon/vue'
+import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity } from '~/types/types'
-import { toForm, toApi } from '~/utils/datasets'
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()
@@ -88,8 +140,6 @@ const config = useRuntimeConfig()
 
 const route = useRoute()
 const { start, finish, isLoading } = useLoadingIndicator()
-
-const localePath = useLocalePath()
 
 const { toast } = useToast()
 
@@ -116,13 +166,13 @@ const licenses = computed(() => {
 const { data: granularities } = await useAPI<Array<SpatialGranularity>>('/api/1/spatial/granularities/', { lazy: true })
 
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
-const { data: dataset, refresh } = await useAPI<DatasetV2>(url)
+const { data: dataset, refresh } = await useAPI<DatasetV2>(url, { redirectOn404: true })
 
 const datasetForm = ref<DatasetForm | null>(null)
 const harvested = ref(false)
 watchEffect(() => {
   if (dataset.value && licenses.value && frequencies.value && granularities.value) {
-    datasetForm.value = toForm(dataset.value, licenses.value, frequencies.value, [], granularities.value)
+    datasetForm.value = datasetToForm(dataset.value, licenses.value, frequencies.value, [], granularities.value)
     harvested.value = isHarvested(dataset.value)
   }
 })
@@ -145,9 +195,10 @@ async function save() {
 
     await $api(`/api/1/datasets/${dataset.value.id}/`, {
       method: 'PUT',
-      body: JSON.stringify(toApi(datasetForm.value, { private: datasetForm.value.private })),
+      body: JSON.stringify(datasetToApi(datasetForm.value, { private: datasetForm.value.private })),
     })
 
+    refresh()
     toast.success(t('Jeu de données mis à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
@@ -162,12 +213,46 @@ async function deleteDataset() {
     await $api(`/api/1/datasets/${route.params.id}`, {
       method: 'DELETE',
     })
-    if (dataset.value.organization) {
-      await navigateTo(localePath(`/admin/organizations/${dataset.value.organization.id}/datasets`), { replace: true })
+    refresh()
+    toast.success(t('Jeu de données supprimé !'))
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+  }
+  finally {
+    finish()
+  }
+}
+
+async function switchDatasetPrivate() {
+  if (!datasetForm.value) throw new Error('No dataset form')
+  start()
+  try {
+    await $api(`/api/1/datasets/${dataset.value.id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(datasetToApi(datasetForm.value, { private: !datasetForm.value.private })),
+    })
+    refresh()
+    if (datasetForm.value.private) {
+      toast.success(t('Jeu de données publié !'))
     }
     else {
-      await navigateTo(localePath('/admin/me/datasets'), { replace: true })
+      toast.success(t('Jeu de données passé en brouillon !'))
     }
+  }
+  finally {
+    finish()
+  }
+}
+
+async function restoreDataset() {
+  if (!datasetForm.value) throw new Error('No dataset form')
+  start()
+  try {
+    await $api(`/api/1/datasets/${dataset.value.id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(datasetToApi(datasetForm.value, { deleted: null })),
+    })
+    refresh()
+    toast.success(t('Jeu de données restauré !'))
   }
   finally {
     finish()
@@ -180,15 +265,16 @@ async function archiveDataset() {
   try {
     await $api(`/api/1/datasets/${dataset.value.id}/`, {
       method: 'PUT',
-      body: JSON.stringify(toApi(datasetForm.value, { archived: dataset.value.archived ? null : new Date().toISOString() })),
+      body: JSON.stringify(datasetToApi(datasetForm.value, { archived: dataset.value.archived ? null : new Date().toISOString() })),
     })
     refresh()
     if (dataset.value.archived) {
-      toast.success(t('Jeu de données désarchivé!'))
+      toast.success(t('Jeu de données désarchivé !'))
     }
     else {
-      toast.success(t('Jeu de données archivé!'))
+      toast.success(t('Jeu de données archivé !'))
     }
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
     finish()

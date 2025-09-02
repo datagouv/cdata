@@ -3,6 +3,15 @@
     role="banner"
     class="fr-header"
   >
+    <div
+      v-if="config.public.banner"
+      class="bg-primary text-white py-4"
+    >
+      <div
+        class="fr-container"
+        v-html="config.public.banner"
+      />
+    </div>
     <div class="fr-header__body">
       <div
         class="fr-container"
@@ -18,42 +27,24 @@
               </div>
               <div class="lg:!hidden flex flex-row items-start justify-end p-1 -mr-1 mt-1 order-3 flex-1 self-stretch z-[1000] gap-3">
                 <ModalWithButton
-                  :title="$t('Search')"
+                  :title="$t('Recherche')"
                   :show-title="false"
                   size="fullscreen"
                 >
                   <template #button="{ attrs, listeners }">
                     <button
                       class="flex-none w-10 h-10 text-primary inline-flex items-center justify-center"
-                      :title="$t('Search')"
+                      :title="$t('Recherche')"
                       v-bind="attrs"
                       v-on="listeners"
                     >
                       <RiSearchLine class="size-6" />
                     </button>
                   </template>
-                  <template #default>
+                  <template #default="{ close }">
                     <div class="w-full fr-container fr-container-lg--fluid">
-                      <div
-                        class="fr-search-bar"
-                        role="search"
-                      >
-                        <label
-                          class="fr-label"
-                          :for="searchInputId"
-                        > {{ $t('Search') }} </label> <input
-                          :id="searchInputId"
-                          class="fr-input"
-                          :placeholder="$t('Search')"
-                          type="search"
-                        > <BrandedButton
-                          type="submit"
-                          color="primary"
-                          class="rounded-l-none rounded-br-none rounded-tr-[0.25rem]"
-                          :title="$t('Search')"
-                        >
-                          {{ $t('Search') }}
-                        </BrandedButton>
+                      <div class="fr-header__search">
+                        <MenuSearch @selected="close" />
                       </div>
                     </div>
                   </template>
@@ -75,8 +66,8 @@
                     </button>
                   </template>
                   <template #default>
-                    <div class="fr-container">
-                      <div class="fr-header__menu-links">
+                    <div>
+                      <div class="fr-container fr-header__menu-links">
                         <ul
                           v-if="me"
                           class="list-none"
@@ -85,8 +76,6 @@
                             <BrandedButton
                               :href="me.page"
                               color="primary-softer"
-                              class="w-full"
-                              size="lg"
                               :icon="NuxtImg"
                               :icon-attrs="{
                                 src: getUserAvatar(me, 24),
@@ -104,22 +93,28 @@
                               :external="true"
                               color="primary-softer"
                               :icon="RiSettings3Line"
-                              class="w-full"
-                              size="lg"
                             >
                               {{ $t("Administration") }}
                             </BrandedButton>
                           </li>
                           <li>
                             <BrandedButton
+                              v-if="config.public.enableCdataSecurityViews"
+                              type="button"
+                              :icon="RiLogoutBoxRLine"
+                              color="primary-softer"
+                              @click="logout"
+                            >
+                              {{ $t('Se déconnecter') }}
+                            </BrandedButton>
+                            <BrandedButton
+                              v-else
                               :href="`${config.public.apiBase}/logout`"
                               :icon="RiLogoutBoxRLine"
                               :external="true"
                               color="primary-softer"
-                              class="w-full"
-                              size="lg"
                             >
-                              {{ $t('Logout') }}
+                              {{ $t('Se déconnecter') }}
                             </BrandedButton>
                           </li>
                         </ul>
@@ -129,34 +124,34 @@
                         >
                           <li>
                             <BrandedButton
-                              href="/login"
+                              :href="{ path: '/login', query: { next: route.fullPath } }"
                               color="primary-softer"
                               size="lg"
                               :external="true"
                               :icon="RiLockLine"
                               class="w-full"
                             >
-                              {{ $t("Log in") }}
+                              {{ $t("Se connecter") }}
                             </BrandedButton>
                           </li>
                           <li>
                             <BrandedButton
                               color="primary-softer"
                               size="lg"
-                              href="/register"
+                              :href="{ path: '/register', query: { next: route.fullPath } }"
                               :external="true"
                               class="w-full"
                               :icon="RiAccountCircleLine"
                             >
-                              {{ $t("Register") }}
+                              {{ $t("S'enregistrer") }}
                             </BrandedButton>
                           </li>
                         </ul>
                       </div>
                       <nav
-                        class="fr-nav"
+                        class="fr-container fr-nav border-t border-gray-default"
                         role="navigation"
-                        :aria-label="$t('Main menu')"
+                        :aria-label="$t('Menu principal')"
                       >
                         <ul class="fr-nav__list">
                           <li
@@ -164,7 +159,7 @@
                             :key="`${link.link}-${$route.path}`"
                             class="fr-nav__item"
                           >
-                            <NuxtLinkLocale
+                            <CdataLink
                               v-if="link.link"
                               class="fr-nav__link"
                               :to="link.link"
@@ -173,7 +168,7 @@
                               :aria-current="getAriaCurrent(localePath(link.link))"
                             >
                               {{ link.label }}
-                            </NuxtLinkLocale>
+                            </CdataLink>
                             <ClientOnly v-else-if="link.items">
                               <Disclosure>
                                 <DisclosureButton
@@ -190,7 +185,7 @@
                                       :key="item.label"
                                     >
                                       <DisclosureButton
-                                        :as="NuxtLinkLocale"
+                                        :as="CdataLink"
                                         class="fr-nav__link"
                                         :to="item.link"
                                         :external="true"
@@ -213,8 +208,8 @@
                                 >
                                   <RiAddLine class="size-4 mr-1" />
                                   <span>
-                                    {{ $t('Publish on') }}
-                                    <SiteLogo />
+                                    {{ $t('Publier sur') }}
+                                    <LogoAsText />
                                   </span>
                                 </DisclosureButton>
                                 <DisclosurePanel
@@ -225,7 +220,7 @@
                                       v-for="item in filteredPublishMenu"
                                       :key="item.link"
                                     >
-                                      <NuxtLinkLocale
+                                      <CdataLink
                                         class="fr-nav__link flex items-center space-x-1"
                                         :to="item.link"
                                       >
@@ -234,7 +229,7 @@
                                           class="inline size-4"
                                         />
                                         <span>{{ item.label }}</span>
-                                      </NuxtLinkLocale>
+                                      </CdataLink>
                                     </li>
                                   </ul>
                                 </DisclosurePanel>
@@ -251,9 +246,9 @@
             <div class="fr-header__service">
               <a
                 href="/"
-                title="Retourner à l'accueil de data.gouv.fr"
+                :title="$t(`Retourner à l'accueil de data.gouv.fr`)"
               >
-                <SiteLogo class="text-gray-logo text-xl tracking-wide" />
+                <LogoImage class="h-12" />
               </a>
             </div>
           </div>
@@ -287,11 +282,22 @@
                   </li>
                   <li>
                     <BrandedButton
+                      v-if="config.public.enableCdataSecurityViews"
+                      type="button"
+                      color="primary-softer"
+                      :icon="RiLogoutBoxRLine"
+                      @click="logout"
+                    >
+                      {{ $t('Se déconnecter') }}
+                    </BrandedButton>
+                    <BrandedButton
+                      v-else
                       :href="`${config.public.apiBase}/logout`"
                       color="primary-softer"
                       :icon="RiLogoutBoxRLine"
+                      external
                     >
-                      {{ $t('Logout') }}
+                      {{ $t('Se déconnecter') }}
                     </BrandedButton>
                   </li>
                 </ul>
@@ -303,21 +309,21 @@
                 <li>
                   <BrandedButton
                     color="primary-softer"
-                    href="/login"
+                    :href="{ path: '/login', query: { next: route.fullPath } }"
                     :external="true"
                     :icon="RiLockLine"
                   >
-                    {{ $t("Log in") }}
+                    {{ $t("Se connecter") }}
                   </BrandedButton>
                 </li>
                 <li>
                   <BrandedButton
                     color="primary-softer"
-                    href="/register"
+                    :href="{ path: '/register', query: { next: route.fullPath } }"
                     :external="true"
                     :icon="RiAccountCircleLine"
                   >
-                    {{ $t("Register") }}
+                    {{ $t("S'enregistrer") }}
                   </BrandedButton>
                 </li>
               </ul>
@@ -343,7 +349,7 @@
         <nav
           class="fr-nav"
           role="navigation"
-          :aria-label="$t('Main menu')"
+          :aria-label="$t('Menu principal')"
         >
           <ul class="fr-nav__list">
             <li
@@ -351,7 +357,7 @@
               :key="`${link.link}-${$route.path}`"
               class="fr-nav__item"
             >
-              <NuxtLinkLocale
+              <CdataLink
                 v-if="link.link"
                 class="fr-nav__link"
                 :to="link.link"
@@ -360,7 +366,7 @@
                 :aria-current="getAriaCurrent(localePath(link.link))"
               >
                 {{ link.label }}
-              </NuxtLinkLocale>
+              </CdataLink>
               <ClientOnly v-else-if="link.items">
                 <Disclosure>
                   <DisclosureButton
@@ -376,13 +382,13 @@
                         v-for="item in link.items"
                         :key="item.label"
                       >
-                        <NuxtLinkLocale
+                        <CdataLink
                           class="fr-nav__link"
                           :to="item.link"
                           :external="true"
                         >
                           {{ item.label }}
-                        </NuxtLinkLocale>
+                        </CdataLink>
                       </li>
                     </ul>
                   </DisclosurePanel>
@@ -399,8 +405,8 @@
                   >
                     <RiAddLine class="inline size-4 mr-1" />
                     <span>
-                      {{ $t('Publish on') }}
-                      <SiteLogo />
+                      {{ $t('Publier sur') }}
+                      <LogoAsText />
                     </span>
                   </PopoverButton>
                   <PopoverPanel
@@ -414,7 +420,7 @@
                         v-for="item in filteredPublishMenu"
                         :key="item.link"
                       >
-                        <NuxtLinkLocale
+                        <CdataLink
                           class="fr-nav__link flex items-center space-x-1"
                           :to="item.link"
                           @click="close()"
@@ -424,7 +430,7 @@
                             class="size-4 -mt-1"
                           />
                           <span>{{ item.label }}</span>
-                        </NuxtLinkLocale>
+                        </CdataLink>
                       </li>
                     </ul>
                   </PopoverPanel>
@@ -439,48 +445,50 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getUserAvatar } from '@datagouv/components-next'
-import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiGovernmentLine, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiGitPullRequestLine } from '@remixicon/vue'
+import { BrandedButton, useGetUserAvatar } from '@datagouv/components-next'
+import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
-import { NuxtImg, NuxtLinkLocale } from '#components'
-import SiteLogo from '~/components/SiteLogo.vue'
+import CdataLink from '../CdataLink.vue'
+import LogoAsText from '../LogoAsText.vue'
+import LogoImage from '../LogoImage.vue'
+import { NuxtImg } from '#components'
 import { useMaybeMe } from '~/utils/auth'
 
 defineProps<{
   fluid?: boolean
 }>()
 
+const getUserAvatar = useGetUserAvatar()
 const { t } = useI18n()
 const config = useRuntimeConfig()
 const localePath = useLocalePath()
 const me = useMaybeMe()
 const currentRoute = useRoute()
 const router = useRouter()
-
-const searchInputId = useId()
+const route = useRoute()
 
 const menu = [
-  { label: t('Data'), link: '/datasets/', external: true },
+  { label: t('Données'), link: '/datasets/' },
   { label: t('API'), link: '/dataservices/' },
-  { label: t('Reuses'), link: '/reuses/' },
-  { label: t('Organizations'), link: '/organizations/' },
-  { label: t('Getting started on {site}', { site: config.public.title }), items: [
-    { label: t('What is {site}?', { site: config.public.title }), link: '/pages/about/a-propos_data-gouv/' },
-    { label: t('How to publish data?'), link: '/pages/onboarding/producteurs/' },
-    { label: t('How to use data?'), link: '/pages/onboarding/reutilisateurs/' },
-    { label: t('{site} guides', { site: config.public.title }), link: config.public.guidesUrl, external: true },
+  { label: t('Réutilisations'), link: '/reuses/' },
+  { label: t('Organisations'), link: '/organizations/' },
+  { label: t('Démarrer sur {site}', { site: config.public.title }), items: [
+    { label: t(`Qu'est-ce que {site} ?`, { site: config.public.title }), link: '/pages/about/a-propos_data-gouv/' },
+    { label: t('Comment publier des données ?'), link: '/pages/onboarding/producteurs/' },
+    { label: t('Comment utiliser des données ?'), link: '/pages/onboarding/reutilisateurs/' },
+    { label: t('Les guides {site}', { site: config.public.title }), link: config.public.guidesUrl, external: true },
   ], external: true },
-  { label: t('News'), link: '/posts/' },
-  { label: t('Contact us'), link: '/support/' },
+  { label: t('Nouveautés'), link: '/posts/' },
+  { label: t('Nous écrire'), link: '/support/' },
 ]
 
 const publishMenu = [
-  { label: t('A dataset'), icon: RiDatabase2Line, link: '/admin/datasets/new/' },
-  { label: t('A dataservice'), icon: RiRobot2Line, link: '/admin/dataservices/new/' },
-  { label: t('A reuse'), icon: RiLineChartLine, link: '/admin/reuses/new/' },
-  { label: t('A harverster'), icon: RiServerLine, link: '/admin/harvesters/new/' },
-  { label: t('An organization'), icon: RiGovernmentLine, link: '/admin/organizations/new/' },
-  { label: t('A post'), icon: RiArticleLine, link: '/admin/posts/new/', show: isMeAdmin() },
+  { label: t('Un jeu de données'), icon: RiDatabase2Line, link: '/admin/datasets/new/' },
+  { label: t('Une API'), icon: RiRobot2Line, link: '/admin/dataservices/new/' },
+  { label: t('Une réutilisation'), icon: RiLineChartLine, link: '/admin/reuses/new/' },
+  { label: t('Un moissonneur'), icon: RiServerLine, link: '/admin/harvesters/new/' },
+  { label: t('Une organisation'), icon: RiBuilding2Line, link: '/admin/organizations/new/' },
+  { label: t('Un article'), icon: RiArticleLine, link: '/admin/posts/new/', show: isMeAdmin() },
 ]
 
 const filteredPublishMenu = computed(() => publishMenu.filter(item => !('show' in item) || item.show))
@@ -492,4 +500,36 @@ function getAriaCurrent(link: string) {
   const routesInPath = router.getRoutes().map(route => route.path).filter(path => currentRoute.path.startsWith(path))
   return routesInPath.includes(link)
 }
+
+const { $api } = useNuxtApp()
+const token = useToken()
+const logout = async () => {
+  token.value = null
+  refreshCookie('token')
+
+  await $api('/fr/logout/', {
+    method: 'POST',
+  })
+
+  me.value = null
+  await navigateTo('/')
+}
+
+const { toast } = useToast()
+onMounted(() => {
+  // TODO: remove this logic when we don't rely on udata flash messages
+  // following https://github.com/opendatateam/udata/pull/3348
+  const FLASH_MESSAGES: Record<string, { type: 'success' | 'error', text: string }> = {
+    connected: { type: 'success', text: t('Vous êtes maintenant connecté.') },
+    change_email: { type: 'success', text: t('Merci. Les instructions de confirmation pour changer votre adresse email ont été envoyées à l\'adresse mail cible.') },
+    change_email_confirmed: { type: 'success', text: t('Votre nouvelle adresse email est maintenant confirmée.') },
+    change_email_expired: { type: 'error', text: t('Le code de vérification de votre adresse email a expiré, un nouveau mail vous a été envoyé.') },
+    change_email_invalid: { type: 'error', text: t('Le code de vérification de votre adresse email est incorrect.') },
+  }
+
+  if (route.query.flash) {
+    const message = FLASH_MESSAGES[route.query.flash as string] || null
+    if (message) toast[message.type](message.text)
+  }
+})
 </script>

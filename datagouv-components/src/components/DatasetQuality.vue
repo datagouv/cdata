@@ -1,52 +1,54 @@
 <template>
-  <div class="flex items-center text-gray-plain font-bold pb-0">
-    <Toggletip class="-ml-3">
-      {{ $t('Metadata quality:') }}
+  <div class="flex items-center">
+    <Toggletip
+      :button-props="{ size: '2xs', class: '-ml-2 mt-px' }"
+    >
+      {{ $t('Qualité des métadonnées:') }}
       <template #toggletip>
         <DatasetQualityTooltipContent :quality />
       </template>
     </Toggletip>
-    <p class="fr-m-0 fr-mr-1v">
-      {{ $t('Metadata quality:') }}
-    </p>
+    <div class="text-sm text-gray-plain font-bold">
+      {{ $t('Qualité des métadonnées:') }}
+    </div>
   </div>
   <DatasetQualityScore
     :score="quality.score"
-    class="w-100"
+    class="w-full"
   />
-  <template v-if="showItemWarnings">
+  <template v-if="!hideWarnings">
     <ul class="list-none pl-0">
       <DatasetQualityItemWarning
         :quality-item="quality.dataset_description_quality"
-        :message="$t('Data description empty')"
+        :message="$t('Description des données non renseignée')"
       />
       <DatasetQualityItemWarning
         :quality-item="quality.resources_documentation"
-        :message="$t('Files documentation missing')"
+        :message="$t('Documentation des fichiers manquante')"
       />
       <DatasetQualityItemWarning
         :quality-item="quality.license"
-        :message="$t('No license set')"
+        :message="$t('Licence non renseignée')"
       />
       <DatasetQualityItemWarning
         :quality-item="quality.update_frequency && quality.update_fulfilled_in_time"
-        :message="quality.update_frequency ? $t('Update frequency not followed') : $t('Update frequency not set')"
+        :message="quality.update_frequency ? $t('Fréquence de mise à jour non respectée') : $t('Fréquence de mise à jour non renseignée')"
       />
       <DatasetQualityItemWarning
         :quality-item="quality.has_open_format"
-        :message="$t('File formats are closed')"
+        :message="$t('Formats de fichiers non standards')"
       />
       <DatasetQualityItemWarning
         :quality-item="quality.temporal_coverage"
-        :message="$t('Temporal coverage not set')"
+        :message="$t('Couverture temporelle non renseignée')"
       />
       <DatasetQualityItemWarning
         :quality-item="quality.spatial"
-        :message="$t('Spatial coverage not set')"
+        :message="$t('Couverture spatiale non renseignée')"
       />
       <DatasetQualityItemWarning
         :quality-item="quality.all_resources_available"
-        :message="$t('Some files are unavailable')"
+        :message="$t('Certains fichiers ne sont pas disponibles')"
       />
     </ul>
   </template>
@@ -61,8 +63,8 @@ import DatasetQualityTooltipContent from './DatasetQualityTooltipContent.vue'
 
 withDefaults(defineProps<{
   quality: Quality
-  showItemWarnings?: boolean
+  hideWarnings?: boolean
 }>(), {
-  showItemWarnings: true,
+  hideWarnings: true,
 })
 </script>

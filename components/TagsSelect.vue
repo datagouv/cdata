@@ -2,10 +2,10 @@
   <div>
     <SearchableSelect
       v-model="tags"
-      :label="t('Tags')"
-      :placeholder="t('Search a tag…')"
+      :label="t('Mots clés')"
+      :placeholder="t('Chercher un mot clé…')"
       :get-option-id="(tag) => tag.text"
-      :allow-new-option="(query) => ({ text: query })"
+      :allow-new-option="toTag"
       :suggest="suggestTags"
       :multiple="true"
       class="!mb-0"
@@ -46,7 +46,7 @@ const tags = defineModel<Array<Tag>>({ required: true })
 const { t } = useI18n()
 const { $api } = useNuxtApp()
 
-const suggestTags = async (query: string) => {
+async function suggestTags(query: string) {
   return await $api<Array<Tag>>('/api/1/tags/suggest/', {
     query: {
       q: query,
@@ -54,7 +54,13 @@ const suggestTags = async (query: string) => {
     },
   })
 }
-const removeTag = (tag: Tag) => {
+function removeTag(tag: Tag) {
   tags.value = tags.value.filter(otherTag => otherTag.text !== tag.text)
+}
+
+function toTag(query: string): Tag {
+  return {
+    text: query.toLocaleLowerCase().replace(/ /g, '-'),
+  }
 }
 </script>

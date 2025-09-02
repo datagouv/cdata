@@ -6,13 +6,13 @@
     >
       <div class="w-full flex-none md:flex-1">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ $t('{n} reuses', pageData.total) }}
+          {{ $t('{n} réutilisations | {n} réutilisation | {n} réutilisations', pageData.total) }}
         </h2>
       </div>
       <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
         <!-- TODO: re-enable when elements are properly handled -->
         <!-- <ModalWithButton
-          :title="$t('Add reuses')"
+          :title="$t('Ajouter des réutilisations')"
           size="xl"
         >
           <template #button="{ attrs, listeners }">
@@ -22,7 +22,7 @@
               v-bind="attrs"
               v-on="listeners"
             >
-              {{ $t('Add reuses') }}
+              {{ $t('Ajouter des réutilisations') }}
             </BrandedButton>
           </template>
 
@@ -38,7 +38,7 @@
                 :disabled="!reuses.length"
                 @click="save(close)"
               >
-                {{ $t("Save") }}
+                {{ $t("Sauvegarder") }}
               </BrandedButton>
             </div>
           </template>
@@ -61,7 +61,7 @@
               size="xs"
               @click="removeReuse(reuse)"
             >
-              {{ $t('Remove reuse') }}
+              {{ $t('Supprimer la réutilisation') }}
             </BrandedButton>
           </template> -->
         </AdminReusesTable>
@@ -77,8 +77,8 @@
 
 <script setup lang="ts">
 import type { Reuse, TopicV2, TopicElement } from '@datagouv/components-next'
+import { Pagination } from '@datagouv/components-next'
 import AdminReusesTable from '~/components/AdminTable/AdminReusesTable/AdminReusesTable.vue'
-import Pagination from '~/datagouv-components/src/components/Pagination.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{

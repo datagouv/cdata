@@ -1,11 +1,11 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Users') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Utilisateurs') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="fr-h3 fr-mb-5v">
-      {{ t("Users") }}
+    <h1 class="text-2xl font-extrabold text-gray-title mb-5">
+      {{ t("Utilisateurs") }}
     </h1>
     <div
       v-if="pageData"
@@ -13,7 +13,7 @@
     >
       <div class="fr-col">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ t('{n} users', pageData.total) }}
+          {{ t('{n} utilisateurs | {n} utilisateur | {n} utilisateurs', pageData.total) }}
         </h2>
       </div>
       <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
@@ -21,7 +21,7 @@
           v-model="q"
           type="search"
           :icon="RiSearchLine"
-          :placeholder="$t('Search')"
+          :placeholder="$t('Recherche')"
         />
       </div>
     </div>
@@ -32,16 +32,16 @@
           <thead>
             <tr>
               <AdminTableTh scope="col">
-                {{ t("Name") }}
+                {{ t("Nom") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Created at") }}
+                {{ t("Créé le") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Datasets") }}
+                {{ t("Jeux de données") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Reuses") }}
+                {{ t("Réutilisations") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
                 {{ t("Actions") }}
@@ -55,12 +55,12 @@
             >
               <td>
                 <p class="fr-text--bold fr-m-0">
-                  <NuxtLinkLocale
+                  <CdataLink
                     class="fr-link fr-reset-link"
                     :to="`/admin/users/${user.id}/profile`"
                   >
                     {{ user.first_name }} {{ user.last_name }}
-                  </NuxtLinkLocale>
+                  </CdataLink>
                 </p>
                 <AdminEmail :user />
               </td>
@@ -77,7 +77,7 @@
                   external
                   keep-margins-even-without-borders
                 >
-                  {{ $t('Show public page') }}
+                  {{ $t('Voir la page publique') }}
                 </BrandedButton>
                 <BrandedButton
                   size="xs"
@@ -87,7 +87,7 @@
                   icon-only
                   keep-margins-even-without-borders
                 >
-                  {{ $t('Edit') }}
+                  {{ $t('Modifier') }}
                 </BrandedButton>
               </td>
             </tr>
@@ -112,27 +112,27 @@
       />
       <template v-if="q">
         <p class="fr-text--bold fr-my-3v">
-          {{ t(`No results for "{q}"`, { q }) }}
+          {{ t(`Pas de résultats pour « {q} »`, { q }) }}
         </p>
         <BrandedButton
           color="primary"
           @click="q = qDebounced = ''"
         >
-          {{ $t('Reset filters') }}
+          {{ $t('Réinitialiser les filtres') }}
         </BrandedButton>
       </template>
       <p
         v-else
         class="fr-text--bold fr-my-3v"
       >
-        {{ t(`No users`) }}
+        {{ t(`Pas d'utilisateurs`) }}
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { formatDate, Pagination, type User } from '@datagouv/components-next'
+import { Pagination, useFormatDate, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -148,6 +148,7 @@ import AdminInput from '~/components/AdminInput.vue'
 
 const { t } = useI18n()
 const config = useRuntimeConfig()
+const { formatDate } = useFormatDate()
 
 const page = ref(1)
 const pageSize = ref(20)

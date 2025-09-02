@@ -1,7 +1,7 @@
 <template>
   <ModalWithButton
     v-model="open"
-    :title="t('File metadata')"
+    :title="t('Métadonnées du fichier')"
     size="fullscreen"
     @open="setQueryString"
     @close="removeQueryString"
@@ -19,7 +19,7 @@
         keep-margins-even-without-borders
         v-on="listeners"
       >
-        {{ $t("Edit file") }}
+        {{ $t("Éditer le fichier") }}
       </BrandedButton>
     </template>
 
@@ -51,14 +51,14 @@
             :form="formId"
             :loading
           >
-            {{ t('Validate') }}
+            {{ t('Valider') }}
           </BrandedButton>
           <BrandedButton
             color="secondary"
             :disabled="loading"
             @click="cancel(close)"
           >
-            {{ t('Cancel') }}
+            {{ t('Annuler') }}
           </BrandedButton>
         </div>
 
@@ -66,12 +66,12 @@
           v-if="dataset && resource.resource"
           class="w-full mt-6"
           type="danger"
-          :title="$t('Delete the resource')"
+          :title="$t('Supprimer la ressource')"
         >
-          {{ $t("Be careful, this action can't be reverse.") }}
+          {{ $t("Attention, cette action ne peut pas être annulée.") }}
           <template #button>
             <ModalWithButton
-              :title="$t('Are you sure you want to delete this resource?')"
+              :title="$t('Êtes-vous sûr de vouloir supprimer cette ressource ?')"
               size="lg"
             >
               <template #button="{ attrs, listeners }">
@@ -82,11 +82,11 @@
                   v-bind="attrs"
                   v-on="listeners"
                 >
-                  {{ $t('Delete') }}
+                  {{ $t('Supprimer') }}
                 </BrandedButton>
               </template>
               <p class="fr-text--bold">
-                {{ $t("This action can't be reverse.") }}
+                {{ $t("Cette action est irréversible.") }}
               </p>
               <template #footer>
                 <div
@@ -97,7 +97,7 @@
                     :loading="deleting"
                     @click="deleteResource(dataset, resource.resource, close)"
                   >
-                    {{ $t("Delete the resource") }}
+                    {{ $t("Supprimer la ressource") }}
                   </BrandedButton>
                 </div>
               </template>

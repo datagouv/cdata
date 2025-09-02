@@ -1,7 +1,8 @@
 <template>
+  <!-- 46 42 32 -->
   <component
     :is="href ? AppLink: 'button'"
-    class="inline-flex items-center rounded-full font-medium border !bg-none !no-underline after:content-none"
+    class="inline-flex items-center justify-center rounded-full font-medium border !bg-none !no-underline after:content-none"
     :class="[colors, sizes, removePaddingsIfNoBorders, isDisabled ? '!opacity-50' : '', iconRight && !newTab ? 'flex-row-reverse space-x-reverse' : '']"
     :disabled="isDisabled"
     :aria-disabled="isDisabled"
@@ -10,7 +11,7 @@
     :target="newTab ? '_blank' : undefined"
     :type
   >
-    <AdminLoader
+    <AnimatedLoader
       v-if="loading"
       size="16"
       :color="color === 'primary' ? 'white' : 'primary'"
@@ -50,11 +51,12 @@ import { RiExternalLinkLine } from '@remixicon/vue'
 import type { RouteLocation } from 'vue-router'
 import AppLink from './AppLink.vue'
 import { bannerActionTypeKey } from './BannerAction.vue'
+import AnimatedLoader from './AnimatedLoader.vue'
 
-type ColorType = 'primary' | 'primary-soft' | 'primary-softer' | 'secondary' | 'secondary-softer' | 'warning' | 'danger' | 'tertiary'
+export type ColorType = 'primary' | 'primary-soft' | 'primary-softer' | 'secondary' | 'secondary-softer' | 'warning' | 'danger' | 'tertiary' | 'purple-flat' | 'green-flat' | 'white-flat'
 
 const props = withDefaults(defineProps<{
-  size?: '2xs' | 'xs' | 'sm' | 'lg'
+  size?: '2xs' | 'xs' | 'sm' | 'lg' | 'xl'
   color?: ColorType
   disabled?: boolean
   loading?: boolean
@@ -110,21 +112,25 @@ const isDisabled = computed(() => props.disabled || props.loading)
 const colors = computed(() => {
   return {
     'primary': `text-white bg-datagouv-dark !border-datagouv-dark ${!isDisabled.value ? 'hover:!bg-datagouv-hover hover:!border-datagouv-hover' : ''}`,
-    'primary-soft': `text-datagouv-dark bg-transparent !border-datagouv-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'primary-soft': `text-datagouv-dark bg-white !border-datagouv-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'primary-softer': `text-datagouv-dark bg-transparent !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'secondary': `text-gray-plain bg-white !border-gray-plain ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'secondary-softer': `text-gray-plain !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'warning': `text-warning-dark bg-white !border-warning-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'danger': `!text-danger-dark bg-white !border-danger-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'tertiary': `!border-none bg-transparent text-datagouv-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'purple-flat': `!border-none bg-purple-dataservice text-white ${!isDisabled.value ? '[&&]:hover:!bg-purple-dataservice/90' : ''}`,
+    'green-flat': `!border-none bg-green-reuse text-white ${!isDisabled.value ? '[&&]:hover:!bg-green-reuse/90' : ''}`,
+    'white-flat': `!border-none bg-white ${!isDisabled.value ? '[&&]:hover:!bg-white/90' : ''}`,
   }[color.value]
 })
 
 const sizes = computed(() => {
   return {
-    'lg': `text-lg ${hasText.value ? 'px-4 py-2 space-x-2' : 'p-3'}`,
-    'sm': `text-sm leading-none ${hasText.value ? 'px-4 py-3 space-x-1' : 'p-2.5'}`,
-    'xs': `text-xs leading-[0.875rem] ${hasText.value ? 'px-4 py-2 space-x-1' : 'p-2'}`,
+    'xl': `text-xl h-16 ${hasText.value ? 'px-4 space-x-2' : 'w-16 px-3'}`,
+    'lg': `text-lg h-12 ${hasText.value ? 'px-4 space-x-2' : 'w-12 px-3'}`,
+    'sm': `text-sm h-10 leading-none ${hasText.value ? 'px-4 space-x-1' : 'w-10 px-2.5'}`,
+    'xs': `text-xs h-8 leading-[0.875rem] ${hasText.value ? 'px-4 space-x-1' : 'w-8 px-2'}`,
     '2xs': `text-xs leading-[0.875rem] p-1 space-x-1`,
   }[size.value]
 })
@@ -138,7 +144,8 @@ const removePaddingsIfNoBorders = computed(() => {
   if (props.keepMarginsEvenWithoutBorders) return ''
 
   return {
-    'lg': hasText.value ? '-mx-6' : '-mx-3',
+    'xl': hasText.value ? '-mx-4' : '-mx-3',
+    'lg': hasText.value ? '-mx-4' : '-mx-3',
     'sm': hasText.value ? '-mx-4' : '-mx-2.5',
     'xs': hasText.value ? '-mx-4' : '-mx-2',
     '2xs': '-m-1',
@@ -147,6 +154,7 @@ const removePaddingsIfNoBorders = computed(() => {
 
 const iconSize = computed(() => {
   return {
+    'xl': (hasBorders.value || hasText.value) ? 'size-8' : 'size-10',
     'lg': (hasBorders.value || hasText.value) ? 'size-6' : 'size-8',
     'sm': (hasBorders.value || hasText.value) ? 'size-4' : 'size-6',
     'xs': (hasBorders.value || hasText.value) ? 'size-3' : 'size-5',

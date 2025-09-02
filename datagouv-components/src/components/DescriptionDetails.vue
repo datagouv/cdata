@@ -1,10 +1,10 @@
 <template>
   <dd
-    class="text-sm ml-0 mt-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center"
+    class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center"
   >
     <div
       v-if="withEllipsis"
-      class="text-overflow-ellipsis"
+      class="truncate"
     >
       <slot />
     </div>

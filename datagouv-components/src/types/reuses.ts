@@ -21,7 +21,7 @@ export type Reuse = BaseReuse & {
   datasets: Array<Dataset>
   archived: string | null
   deleted: string | null
-  extras: Record<string, any>
+  extras: Record<string, unknown>
   featured: boolean
   id: string
   image: string | null
@@ -30,12 +30,14 @@ export type Reuse = BaseReuse & {
   metrics: {
     datasets: number
     discussions: number
+    discussions_open: number
     followers: number
     views: number
   }
   slug: string
   page: string
   uri: string
+  permissions: { edit: boolean, delete: boolean }
 }
 
 export type ReuseType = {

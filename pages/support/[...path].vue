@@ -15,7 +15,7 @@
     </div>
     <div class="border-b border-gray-lowest">
       <div class="container">
-        <h1 class="text-4.5xl font-extrabold pt-10 pb-[3.75rem] !mb-0 w-2xl text-gray-title">
+        <h1 class="text-4.5xl font-extrabold pt-10 pb-[3.75rem] !mb-0 max-w-2xl text-gray-title">
           Bienvenue sur le support de la plateforme data.gouv.fr
         </h1>
       </div>
@@ -26,35 +26,77 @@
       </h2>
       <div class="grid gap-5 md:grid-cols-2">
         <SupportCard
-          image="/img/forum.svg"
-          title="Forum"
-          description="Echangez avec la communauté, partagez vos retours sur la plateforme et demandez l'ouverture de données."
-        >
-          <template #link>
-            <BrandedButton
-              :href="config.public.forumUrl"
-              color="tertiary"
-              :icon="RiArrowRightLine"
-              :icon-right="true"
-            >
-              Voir le forum
-            </BrandedButton>
-          </template>
-        </SupportCard>
-        <SupportCard
           image="/img/guides.svg"
           title="Guides"
           description="Les guides vous accompagnent pas à pas pour publier, explorer et réutiliser les données ouvertes en toute simplicité."
         >
           <template #link>
-            <BrandedButton
-              :href="config.public.guidesUrl"
-              color="tertiary"
-              :icon="RiArrowRightLine"
-              :icon-right="true"
-            >
-              Voir les guides
-            </BrandedButton>
+            <div class="flex flex-col items-end mt-1 *:font-bold *:h-8">
+              <BrandedButton
+                href="https://guides.data.gouv.fr/guide-data.gouv.fr"
+                color="tertiary"
+                :icon="RiArrowRightLine"
+                :icon-right="true"
+                size="sm"
+              >
+                Voir la documentation de data.gouv.fr
+              </BrandedButton>
+              <BrandedButton
+                href="https://guides.data.gouv.fr/guides-open-data"
+                color="tertiary"
+                :icon="RiArrowRightLine"
+                :icon-right="true"
+                size="sm"
+              >
+                Voir les guides sur l'open data
+              </BrandedButton>
+              <BrandedButton
+                href="https://guides.data.gouv.fr/reutiliser-des-donnees"
+                color="tertiary"
+                :icon="RiArrowRightLine"
+                :icon-right="true"
+                size="sm"
+              >
+                Voir les guides sur l'utilisation des données
+              </BrandedButton>
+            </div>
+          </template>
+        </SupportCard>
+        <SupportCard
+          image="/img/forum.svg"
+          title="Forum"
+          description="Echangez avec la communauté, partagez vos retours sur la plateforme et demandez l'ouverture de données."
+        >
+          <template #link>
+            <div class="flex flex-col items-end mt-1 *:font-bold *:h-8">
+              <BrandedButton
+                href="https://forum.data.gouv.fr/c/recherche-et-ouverture-de-donnees/"
+                color="tertiary"
+                :icon="RiArrowRightLine"
+                :icon-right="true"
+                size="sm"
+              >
+                Voir les recherches des données
+              </BrandedButton>
+              <BrandedButton
+                href="https://forum.data.gouv.fr/c/retours-sur-la-plateforme-data-gouv-fr/"
+                color="tertiary"
+                :icon="RiArrowRightLine"
+                :icon-right="true"
+                size="sm"
+              >
+                Voir les retours sur la plateforme data.gouv.fr
+              </BrandedButton>
+              <BrandedButton
+                :href="config.public.forumUrl"
+                color="tertiary"
+                :icon="RiArrowRightLine"
+                :icon-right="true"
+                size="sm"
+              >
+                Voir les autres questions / réponses
+              </BrandedButton>
+            </div>
           </template>
         </SupportCard>
       </div>
@@ -178,6 +220,37 @@
               href="https://guides.data.gouv.fr/reutiliser-des-donnees/autour-du-cadastre"
               target="_blank"
             >le guide dédié</a>.
+          </p>
+        </Accordion>
+        <Accordion
+          title="Je constate une erreur dans le plan cadastral, comment la faire corriger ?"
+          heading="h4"
+        >
+          <p class="mb-0">
+            Ce type de correction doit être demandé au Centre des impôts fonciers de votre département,
+            dont vous trouverez les coordonnées sur <a
+              href="https://www.service-public.fr/particuliers/recherche?keyword=centre%20des%20impots%20fonciers&rubricFilter=annuaire"
+              target="_blank"
+            >service-public.fr</a>.
+          </p>
+        </Accordion>
+        <Accordion
+          title="Que puis-je faire avec les données ?"
+          heading="h4"
+        >
+          <p>
+            Les données cadastrales diffusées sur ce site sont disponibles sous <a
+              href="https://www.etalab.gouv.fr/wp-content/uploads/2017/04/ETALAB-Licence-Ouverte-v2.0.pdf"
+              target="_blank"
+            >Licence Ouverte 2.0
+            </a>.
+          </p>
+          <p>
+            Elles peuvent être utilisées librement, y compris exploitées commercialement, tant que
+            la source et la date de mise à jour sont citées.
+          </p>
+          <p class="mb-0">
+            N’hésitez pas à vous référer au texte de la Licence Ouverte 2.0 pour plus de précision.
           </p>
         </Accordion>
         <Accordion

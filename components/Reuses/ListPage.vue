@@ -1,12 +1,12 @@
 <template>
-  <h1 class="!mb-2">
-    {{ $t('Reuses') }}
+  <h1 class="text-gray-title text-2xl font-extrabold mb-2">
+    {{ $t('Réutilisations') }}
   </h1>
   <label
     :for="inputId"
     class="block mb-3"
   >
-    {{ $t('Search among {count} reuses on {site}', {
+    {{ $t('Rechercher parmi les {count} réutilisations sur {site}', {
       count: totalReuses,
       site: config.public.title,
     }) }}
@@ -17,14 +17,14 @@
       v-model.trim="q"
       class="flex-1 px-4 py-2 bg-gray-lower rounded-tl-sm shadow-input-blue"
       type="search"
-      :placeholder="$t('Search...')"
+      :placeholder="$t('Rechercher...')"
     >
     <BrandedButton
       class="rounded-none rounded-tr"
       :icon="RiSearch2Line"
       size="lg"
     >
-      {{ $t('Search') }}
+      {{ $t('Recherche') }}
     </BrandedButton>
   </div>
   <div class="fr-grid-row fr-mb-1v fr-displayed-lg">
@@ -36,7 +36,7 @@
           :aria-pressed="!topic"
           @click="topic = undefined"
         >
-          {{ $t('All') }}
+          {{ $t('Tout') }}
         </button>
       </li>
       <li
@@ -55,32 +55,29 @@
   </div>
   <div class="flex justify-between items-center mb-6">
     <p class="mb-0">
-      {{ $t('{count} results', { count: reuses.total }) }}
+      {{ $t('{count} résultats | {count} résultat | {count} résultats', { count: reuses.total }) }}
     </p>
     <div class="flex items-center gap-1">
       <label
         :for="selectId"
         class="flex-none text-sm"
-      >{{ $t('Sort by:') }}</label>
+      >{{ $t('Trier par :') }}</label>
       <select
         :id="selectId"
         v-model="sort"
         class="fr-select !shadow-input-blue"
       >
         <option value="">
-          {{ $t('Relevance') }}
+          {{ $t('Pertinence') }}
         </option>
         <option value="-created">
-          {{ $t('Newest') }}
+          {{ $t('Les plus récents') }}
         </option>
         <option value="created">
-          {{ $t('Oldest') }}
+          {{ $t('Les plus anciens') }}
         </option>
         <option value="-followers">
-          {{ $t('Followers') }}
-        </option>
-        <option value="-reuses">
-          {{ $t('Reuses') }}
+          {{ $t('Abonnés') }}
         </option>
       </select>
     </div>

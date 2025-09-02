@@ -7,7 +7,7 @@ export function getReuseAdminUrl(reuse: Reuse): string {
   return `/admin/reuses/${reuse.id}`
 }
 
-export function toForm(reuse: Reuse, types: Array<ReuseType>, topics: Array<ReuseTopic>): ReuseForm {
+export function reuseToForm(reuse: Reuse, types: Array<ReuseType>, topics: Array<ReuseTopic>): ReuseForm {
   return {
     owned: reuse.organization ? { organization: reuse.organization, owner: null } : { owner: reuse.owner, organization: null },
     title: reuse.title,
@@ -18,17 +18,20 @@ export function toForm(reuse: Reuse, types: Array<ReuseType>, topics: Array<Reus
     tags: reuse.tags?.map(text => ({ text })) || [],
     image: reuse.image,
     private: reuse.private,
+    archived: reuse.archived,
     featured: reuse.featured,
   }
 }
 
-export function toApi(form: ReuseForm, overrides: { datasets?: Array<Dataset | DatasetV2 | DatasetSuggest>, private?: boolean } = {}): NewReuseForApi {
+export function reuseToApi(form: ReuseForm, overrides: { datasets?: Array<Dataset | DatasetV2 | DatasetSuggest>, private?: boolean, archived?: string | null, deleted?: null } = {}): NewReuseForApi {
   return {
     organization: form.owned?.organization?.id,
     owner: form.owned?.owner?.id,
     title: form.title,
     url: form.url,
     private: overrides.private,
+    archived: overrides.archived,
+    deleted: overrides.deleted,
     description: form.description,
     datasets: overrides.datasets ? overrides.datasets.map(({ id }) => id) : undefined,
     type: form.type?.id || '',
@@ -38,8 +41,10 @@ export function toApi(form: ReuseForm, overrides: { datasets?: Array<Dataset | D
 }
 
 export async function getReuseMetrics(rid: string) {
+  const config = useRuntimeConfig()
+
   // Fetching last 12 months
-  const response = await fetch(`https://metric-api.data.gouv.fr/api/reuses/data/?reuse_id__exact=${rid}&metric_month__sort=desc&page_size=12`)
+  const response = await fetch(`${config.public.metricsApi}/api/reuses/data/?reuse_id__exact=${rid}&metric_month__sort=desc&page_size=12`)
   const page = await response.json()
 
   const reuseViews: Record<string, number> = {}
@@ -48,7 +53,7 @@ export async function getReuseMetrics(rid: string) {
     reuseViews[metric_month] = monthly_visit
   }
   // Fetching totals
-  const totalResponse = await fetch(`https://metric-api.data.gouv.fr/api/reuses_total/data/?reuse_id__exact=${rid}`)
+  const totalResponse = await fetch(`${config.public.metricsApi}/api/reuses_total/data/?reuse_id__exact=${rid}`)
   const totalPage = await totalResponse.json()
 
   let reuseViewsTotal = 0
@@ -59,14 +64,4 @@ export async function getReuseMetrics(rid: string) {
     reuseViews,
     reuseViewsTotal,
   }
-}
-
-export function createReuseMetricsUrl(reuseViews: Record<string, number>) {
-  let data = 'month,visit\n'
-
-  for (const month in reuseViews) {
-    data += `${month},${reuseViews[month]}\n`
-  }
-
-  return URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
 }

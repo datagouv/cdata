@@ -1,30 +1,18 @@
 <template>
   <div>
     <Breadcrumb>
-      <li>
-        <NuxtLinkLocale
-          class="fr-breadcrumb__link"
-          to="/"
-        >
-          {{ t("Home") }}
-        </NuxtLinkLocale>
-      </li>
-      <li>
-        <NuxtLinkLocale
-          class="fr-breadcrumb__link"
-          to="/posts"
-        >
-          {{ t("Posts") }}
-        </NuxtLinkLocale>
-      </li>
-      <li>
-        <a
-          class="fr-breadcrumb__link"
-          aria-current="page"
-        >
-          {{ t("Publishing form") }}
-        </a>
-      </li>
+      <BreadcrumbItem
+        to="/"
+        external
+      >
+        {{ $t('Accueil') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem to="/posts">
+        {{ $t('Articles') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem>
+        {{ $t('Formulaire de publication') }}
+      </BreadcrumbItem>
     </Breadcrumb>
 
     <Stepper
@@ -36,14 +24,14 @@
       v-if="currentStep === 1"
       :post="postForm"
       type="create"
-      :submit-label="t('Next')"
+      :submit-label="t('Suivant')"
       @submit="postNext"
     />
     <PostContentForm
       v-if="currentStep === 2"
       :post="postForm"
       type="create"
-      :submit-label="t('Save')"
+      :submit-label="t('Sauvegarder')"
       @submit="save"
     />
     <div class="h-64" />
@@ -52,11 +40,11 @@
 
 <script setup lang="ts">
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import DescribePost from '~/components/Posts/DescribePost.vue'
 import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { Post, PostForm } from '~/types/posts'
-import { toApi } from '~/utils/posts'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -65,8 +53,8 @@ const { $api, $fileApi } = useNuxtApp()
 const me = useMe()
 
 const steps = computed(() => [
-  t('Describe your post'),
-  t('Content'),
+  t('Décrivez votre article'),
+  t('Contenu'),
 ])
 
 const POST_FORM_STATE = 'post-form'
@@ -120,7 +108,7 @@ async function save(form: { content: string }) {
     postForm.value.content = form.content
     newPost.value = await $api<Post>('/api/1/posts/', {
       method: 'POST',
-      body: JSON.stringify(toApi(postForm.value)),
+      body: JSON.stringify(postToApi(postForm.value)),
     })
 
     if (postForm.value.image && typeof postForm.value.image !== 'string') {

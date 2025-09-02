@@ -1,12 +1,12 @@
 <template>
-  <h1 class="!mb-2">
-    {{ $t('Organizations') }}
+  <h1 class="text-gray-title text-2xl font-extrabold !mb-2">
+    {{ $t('Organisations') }}
   </h1>
   <label
     :for="inputId"
     class="block mb-3"
   >
-    {{ $t('Search among {count} organizations on {site}', {
+    {{ $t('Rechercher parmi les {count} organisations sur {site}', {
       count: organizations.total,
       site: config.public.title,
     }) }}
@@ -17,44 +17,44 @@
       v-model.trim="q"
       class="flex-1 px-4 py-2 bg-gray-lower rounded-tl-sm shadow-input-blue"
       type="search"
-      :placeholder="$t('Search...')"
+      :placeholder="$t('Rechercher...')"
     >
     <BrandedButton
       class="rounded-none rounded-tr"
       :icon="RiSearch2Line"
       size="lg"
     >
-      {{ $t('Search') }}
+      {{ $t('Rechercher') }}
     </BrandedButton>
   </div>
   <div class="flex justify-between items-center mb-6">
     <p class="mb-0">
-      {{ $t('{count} results', { count: organizations.total }) }}
+      {{ $t('{count} résultats | {count} résultat | {count} résultats', { count: organizations.total }) }}
     </p>
     <div class="flex items-center gap-1">
       <label
         :for="selectId"
         class="flex-none text-sm"
-      >{{ $t('Sort by:') }}</label>
+      >{{ $t('Trier par :') }}</label>
       <select
         :id="selectId"
         v-model="sort"
         class="fr-select !shadow-input-blue"
       >
         <option value="">
-          {{ $t('Relevance') }}
+          {{ $t('Pertinence') }}
         </option>
         <option value="-created">
-          {{ $t('Newest') }}
+          {{ $t('Les plus récents') }}
         </option>
         <option value="created">
-          {{ $t('Oldest') }}
+          {{ $t('Les plus anciens') }}
         </option>
         <option value="-followers">
-          {{ $t('Followers') }}
+          {{ $t('Abonnés') }}
         </option>
         <option value="-reuses">
-          {{ $t('Reuses') }}
+          {{ $t('Réutilisations') }}
         </option>
       </select>
     </div>
@@ -64,7 +64,7 @@
       <OrganizationCard
         v-for="organization in organizations.data"
         :key="organization.id"
-        class="col-span-1"
+        class="min-w-0"
         :organization
       />
     </div>

@@ -1,4 +1,4 @@
-import type { Dataset, DatasetV2, Frequency, License, RegisteredSchema, Resource, CommunityResource, Schema } from '@datagouv/components-next'
+import { type Dataset, type DatasetV2, type Frequency, type License, type RegisteredSchema, type Resource, type CommunityResource, type Schema, throwOnNever } from '@datagouv/components-next'
 import type { FetchError } from 'ofetch'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -12,10 +12,10 @@ export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceF
   return useForm(file, {
     title: [required()],
     type: [required()],
-    url: [requiredIf(isRemote)],
-    format: [requiredIf(isRemote)],
+    url: [ruleIf(isRemote, required())],
+    format: [ruleIf(isRemote, required())],
   }, {
-    description: [minLength(200, t(`It's advised to have a {property} of at least {min} characters.`, { property: t('description'), min: 200 }))],
+    description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
     title: [testNotAllowed(config.public.demoServer?.name)],
   })
 }
@@ -37,7 +37,7 @@ export function getDatasetAdminUrl(dataset: Dataset | DatasetV2): string {
   return `/admin/datasets/${dataset.id}`
 }
 
-export function toForm(dataset: Dataset | DatasetV2, licenses: Array<License>, frequencies: Array<Frequency>, zones: Array<SpatialZone>, granularities: Array<SpatialGranularity>): DatasetForm {
+export function datasetToForm(dataset: Dataset | DatasetV2, licenses: Array<License>, frequencies: Array<Frequency>, zones: Array<SpatialZone>, granularities: Array<SpatialGranularity>): DatasetForm {
   return {
     owned: dataset.organization ? { organization: dataset.organization, owner: null } : { owner: dataset.owner, organization: null },
     title: dataset.title,
@@ -55,7 +55,7 @@ export function toForm(dataset: Dataset | DatasetV2, licenses: Array<License>, f
   }
 }
 
-export function toApi(form: DatasetForm, overrides: { private?: boolean, archived?: string | null } = {}): NewDatasetForApi {
+export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, private?: boolean, archived?: string | null } = {}): NewDatasetForApi {
   const contactPoints = form.contact_points?.filter(cp => cp !== null && 'id' in cp).map(cp => cp.id) ?? []
   return {
     organization: form.owned?.organization?.id,
@@ -63,6 +63,7 @@ export function toApi(form: DatasetForm, overrides: { private?: boolean, archive
     title: form.title,
     private: overrides.private,
     archived: overrides.archived,
+    deleted: overrides.deleted,
     description: form.description,
     acronym: form.acronym,
     tags: form.tags.map(t => t.text),
@@ -93,6 +94,9 @@ export function resourceToForm(resource: Resource | CommunityResource, schemas: 
     description: resource.description || '',
     schema: registeredSchema,
     schema_url: (registeredSchema || !resource.schema || !resource.schema.url) ? null : resource.schema.url,
+
+    checksum_type: resource.checksum?.type || null,
+    checksum_value: resource.checksum?.value || null,
 
     resource,
   } as ResourceForm
@@ -133,7 +137,8 @@ export function resourceToForm(resource: Resource | CommunityResource, schemas: 
 export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resource | CommunityResource {
   let schema = null as Schema | null
   if (form.schema) {
-    schema = form.schema
+    const latestVersion = form.schema.versions[form.schema.versions.length - 1]
+    schema = { name: form.schema.name, url: latestVersion.schema_url, version: latestVersion.version_name }
   }
   else if (form.schema_url) {
     schema = { name: null, url: form.schema_url, version: null }
@@ -144,8 +149,19 @@ export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resou
     title: form.title,
     type: form.type,
     description: form.description,
+
     schema,
   } as Resource
+
+  if (form.checksum_type && form.checksum_value) {
+    resource.checksum = {
+      type: form.checksum_type,
+      value: form.checksum_value,
+    }
+  }
+  else {
+    resource.checksum = null
+  }
 
   if (!form.filetype) {
     throw new Error('Cannot convert to API a ResourceForm without filetype information')
@@ -256,10 +272,10 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
     return resource
   }
   catch (e) {
-    const notificationMessage = $i18n.t('Failed to upload file {title}', { title: resourceForm.title })
+    const notificationMessage = $i18n.t('Échec du téléchargement du fichier {title}', { title: resourceForm.title })
     let formError = notificationMessage
     const fetchError = e as unknown as FetchError
-    if ('data' in fetchError && 'message' in fetchError.data) {
+    if ('data' in fetchError && fetchError.data && 'message' in fetchError.data) {
       formError = fetchError.data.message
     }
     fileInfo.state = { status: 'failed', message: formError }

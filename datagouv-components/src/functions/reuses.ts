@@ -4,17 +4,20 @@ import { useComponentsConfig } from '../config'
 import type { ReuseTopic, ReuseType } from '../types/reuses'
 
 let reuseTypesRequest: Promise<Array<ReuseType>> | null = null
+export function useFetchReuseTypes() {
+  const config = useComponentsConfig()
+  const { locale } = useI18n()
 
-export async function fetchReuseTypes() {
-  if (!reuseTypesRequest) {
-    const config = useComponentsConfig()
-    const { locale } = useI18n()
-    reuseTypesRequest = ofetch<Array<ReuseType>>('api/1/reuses/types/', {
+  return async (): Promise<Array<ReuseType>> => {
+    if (reuseTypesRequest) {
+      return reuseTypesRequest
+    }
+
+    return await (reuseTypesRequest = ofetch<Array<ReuseType>>('api/1/reuses/types/', {
       baseURL: config.apiBase,
       query: { lang: locale.value },
-    })
+    }))
   }
-  return await reuseTypesRequest
 }
 
 export function getType(types: Array<ReuseType>, id: string): string {

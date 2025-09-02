@@ -5,16 +5,16 @@
         v-for="link in links"
         :key="link.label"
       >
-        <NuxtLinkLocale
+        <CdataLink
           v-if="show(link.href)"
           :to="link.href"
           class="group block rounded bg-none bg-transparent border border-transparent -m-px no-underline outline-none aria-current-page:border aria-current-page:border-primary aria-current-page:text-primary p-1"
-          :aria-current="isCurrent(link.href) ? 'page': false"
+          :aria-current="isCurrentUrl(link.href) ? 'page': false"
         >
           <span class="rounded px-2">
             {{ link.label }}
           </span>
-        </NuxtLinkLocale>
+        </CdataLink>
       </template>
     </nav>
   </div>
@@ -25,16 +25,11 @@ defineProps<{
   links: Array<{ href: string, label: string }>
 }>()
 
-const route = useRoute()
-const localePath = useLocalePath()
-
-function isCurrent(href: string) {
-  return localePath(href) === route.fullPath
-}
+const isCurrentUrl = useIsCurrentUrl()
 
 function show(href: string) {
   const router = useRouter()
-  const route = router.resolve(localePath(href))
+  const route = router.resolve(href)
   const me = useMaybeMe()
   if (route.meta.requiredRole) {
     return me.value?.roles?.includes(route.meta.requiredRole as string) ?? false

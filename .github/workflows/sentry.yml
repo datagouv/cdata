@@ -7,13 +7,19 @@ on:
 jobs:
   sentry-release:
     runs-on: ubuntu-latest
-    env:
-      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-      SENTRY_URL: ${{ secrets.SENTRY_URL }}
-      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup environment variables
+        shell: bash
+        run: |
+          # Set RELEASE_VERSION
+          echo "RELEASE_VERSION=${GITHUB_SHA:0:8}" >> $GITHUB_ENV
+
+          # Set ENV based on branch name
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            echo "ENV=dev" >> $GITHUB_ENV
+          fi
 
       - name: Use Node.js
         uses: actions/setup-node@v4
@@ -25,7 +31,7 @@ jobs:
         working-directory: ./datagouv-components
       
       - name: Run datagouv-components scripts
-        run: npm run css && npm run i18n
+        run: npm run css
         working-directory: ./datagouv-components
 
       - name: Install dependencies
@@ -34,13 +40,15 @@ jobs:
       - run: npm run build
 
       - name: Create Sentry release
-        uses: getsentry/action-release@v1
+        uses: getsentry/action-release@v3
         env:
-          SENTRY_AUTH_TOKEN: ${{ env.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ env.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ env.SENTRY_PROJECT }}
-          SENTRY_URL: ${{ env.SENTRY_URL }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_URL: ${{ secrets.SENTRY_URL }}
         with:
           inject: true
           sourcemaps: ".nuxt/dist"
           ignore_missing: true
+          environment: ${{ env.ENV }}
+          release: ${{ env.RELEASE_VERSION }}

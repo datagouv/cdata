@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="flex items-center justify-between mb-3">
-      <h1 class="fr-h3 !mb-0">
+      <h1 class="text-2xl font-extrabold text-gray-title !mb-0">
         {{ job.id }}
       </h1>
     </div>
@@ -9,22 +9,22 @@
     <div class="text-sm text-mentionGrey space-y-1.5 mb-5">
       <div class="space-x-1">
         <RiCalendarEventLine class="inline size-3" />
-        <span>{{ $t('Started at:') }}</span>
+        <span>{{ $t('Débuté le :') }}</span>
         <span class="font-mono">{{ formatDate(job.started || job.created, { dateStyle: 'long', timeStyle: 'short' }) }}</span>
       </div>
       <div class="space-x-1">
         <RiCalendarEventLine class="inline size-3" />
-        <span>{{ $t('Ended at:') }}</span>
+        <span>{{ $t('Terminé le :') }}</span>
         <span class="font-mono">{{ job.ended ? formatDate(job.ended, { dateStyle: 'long', timeStyle: 'short' }) : '—' }}</span>
       </div>
       <div class="space-x-1">
         <RiCheckboxCircleLine class="inline size-3" />
-        <span>{{ $t('Status:') }}</span>
+        <span>{{ $t('Statut :') }}</span>
         <JobBadge :job />
       </div>
       <div class="space-x-1">
         <RiInformationLine class="inline size-3" />
-        <span>{{ $t('Items:') }}</span>
+        <span>{{ $t('Éléments :') }}</span>
         <span class="space-x-2">
           <Tooltip class="inline">
             <span class="space-x-0.5 text-sm">
@@ -32,7 +32,7 @@
               <span>{{ job.items.filter((i) => i.status === 'done').length }}</span>
             </span>
             <template #tooltip>
-              {{ $t('Done items') }}
+              {{ $t('Éléments finis') }}
             </template>
           </Tooltip>
           <Tooltip class="inline">
@@ -41,7 +41,7 @@
               <span>{{ job.items.filter((i) => i.status === 'skipped').length }}</span>
             </span>
             <template #tooltip>
-              {{ $t('Skipped items') }}
+              {{ $t('Éléments ignorés') }}
             </template>
           </Tooltip>
           <Tooltip class="inline">
@@ -50,7 +50,7 @@
               <span>{{ job.items.filter((i) => i.status === 'archived').length }}</span>
             </span>
             <template #tooltip>
-              {{ $t('Archived items') }}
+              {{ $t('Éléments archivés') }}
             </template>
           </Tooltip>
           <Tooltip class="inline">
@@ -59,10 +59,10 @@
               <span>{{ job.items.filter((i) => i.status === 'failed').length }}</span>
             </span>
             <template #tooltip>
-              {{ $t('Failed items') }}
+              {{ $t('Éléments en échec') }}
             </template>
           </Tooltip>
-          <span>{{ $t('({count} in total)', { count: job.items.length }) }}</span>
+          <span>{{ $t('({count} au total)', { count: job.items.length }) }}</span>
         </span>
       </div>
     </div>
@@ -72,7 +72,7 @@
       class="mb-4"
     >
       <h2 class="text-sm font-bold uppercase mb-2.5">
-        {{ $t('Errors') }}
+        {{ $t('Erreurs') }}
       </h2>
 
       <div class="bg-white p-2">
@@ -86,7 +86,7 @@
               type="danger"
               size="sm"
             >
-              {{ $t('Error') }}
+              {{ $t('Erreur') }}
             </AdminBadge>
             {{ error.message }}
           </div>
@@ -103,12 +103,12 @@
     <div>
       <div class="mb-2.5">
         <h2 class="inline text-sm font-bold uppercase mb-0">
-          {{ $t('{n} items', job.items.length) }}
+          {{ $t('{n} éléments | {n} élément | {n} éléments', job.items.length) }}
         </h2>
         <span
           v-if="preview && job.items.length >= config.public.harvesterPreviewMaxItems"
           class="ml-3 text-gray-medium"
-        >{{ $t('Only the first {n} items are displayed in the preview.', config.public.harvesterPreviewMaxItems) }}</span>
+        >{{ $t('Seuls les {n} premiers éléments sont affichés dans la prévisualisation.', config.public.harvesterPreviewMaxItems) }}</span>
       </div>
       <AdminTable
         v-if="job.items.length"
@@ -120,17 +120,17 @@
               {{ $t("ID") }}
             </AdminTableTh>
             <AdminTableTh scope="col">
-              {{ $t("Status") }}
+              {{ $t("Statut") }}
             </AdminTableTh>
             <AdminTableTh scope="col">
-              <span v-if="preview">{{ $t("Name") }}</span>
-              <span v-else>{{ $t("Link") }}</span>
+              <span v-if="preview">{{ $t("Nom") }}</span>
+              <span v-else>{{ $t("Lien") }}</span>
             </AdminTableTh>
             <AdminTableTh scope="col">
               <Tooltip class="ml-auto">
                 <RiAlertLine class="size-3.5" />
                 <template #tooltip>
-                  {{ $t('Errors & Logs') }}
+                  {{ $t('Erreurs et logs') }}
                 </template>
               </Tooltip>
             </AdminTableTh>
@@ -191,7 +191,7 @@
     </div>
 
     <Modal
-      :title="t('Errors & Logs')"
+      :title="t('Erreurs et logs')"
       :opened="showItemErrors"
       size="lg"
       @close="showItemErrors = false"
@@ -207,7 +207,7 @@
               type="danger"
               size="sm"
             >
-              {{ $t('Error') }}
+              {{ $t('Erreur') }}
             </AdminBadge>
             {{ error.message }}
           </div>
@@ -238,7 +238,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatDate, Pagination } from '@datagouv/components-next'
+import { Pagination, Tooltip, useFormatDate } from '@datagouv/components-next'
 import { RiAlertLine, RiArchiveLine, RiCalendarEventLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiEyeOffLine, RiInformationLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
@@ -248,6 +248,7 @@ import type { AdminBadgeType } from '~/types/types'
 
 const config = useRuntimeConfig()
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 const props = withDefaults(defineProps<{
   job: HarvesterJob
@@ -265,12 +266,12 @@ const paginatedItems = computed(() => {
 
 function getStatus(item: HarvestItem): { label: string, type: AdminBadgeType } {
   return {
-    pending: { label: t('Pending'), type: 'secondary' as AdminBadgeType },
+    pending: { label: t('En attente'), type: 'secondary' as AdminBadgeType },
     started: { label: t('Started'), type: 'primary' as AdminBadgeType },
-    done: { label: t('Done'), type: 'success' as AdminBadgeType },
-    failed: { label: t('Failed'), type: 'danger' as AdminBadgeType },
-    skipped: { label: t('Skipped'), type: 'secondary' as AdminBadgeType },
-    archived: { label: t('Archived'), type: 'secondary' as AdminBadgeType },
+    done: { label: t('Terminé'), type: 'success' as AdminBadgeType },
+    failed: { label: t('Échoué'), type: 'danger' as AdminBadgeType },
+    skipped: { label: t('Ignoré'), type: 'secondary' as AdminBadgeType },
+    archived: { label: t('Archivé'), type: 'secondary' as AdminBadgeType },
   }[item.status]
 }
 

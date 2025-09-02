@@ -2,14 +2,18 @@
   <div>
     <canvas
       ref="canvasRef"
-      width="120"
-      height="30"
+      :width="width*2"
+      :height="height*2"
+      :style="{ width: width + 'px', height: height + 'px' }"
     />
-    <div class="fr-grid-row justify-between">
-      <p class="text-xxs fr-m-0 text-mention-grey">
+    <div
+      v-if="showAxisLabel"
+      class="flex flex-wrap justify-between"
+    >
+      <p class="text-[0.625rem] m-0 text-gray-medium">
         {{ startDate }}
       </p>
-      <p class="text-xxs fr-m-0 text-mention-grey">
+      <p class="text-[0.625rem] m-0 text-gray-medium">
         {{ endDate }}
       </p>
     </div>
@@ -17,7 +21,8 @@
 </template>
 
 <script setup lang="ts">
-import { Chart, type ChartOptions } from 'chart.js/auto'
+import type { ChartOptions, ScriptableLineSegmentContext } from 'chart.js'
+import Chart from 'chart.js/auto'
 import { computed, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
 
 const LIGHT_COLOR = '#B6CFFB'
@@ -27,13 +32,19 @@ const LIGHT_COLOR_WITH_OPACITY = 'rgba(182, 207, 251, 0.7)'
 
 const props = withDefaults(defineProps<{
   data: Record<string, number>
-  type: 'line' | 'bar'
+  height?: number
   lastWithLowEmphasis?: boolean
+  showAxisLabel?: boolean
+  type: 'line' | 'bar'
+  width?: number
 }>(), {
+  height: 30,
   lastWithLowEmphasis: false,
+  showAxisLabel: true,
+  width: 120,
 })
 
-const last = (ctx, value) => {
+const last = (ctx: ScriptableLineSegmentContext, value: unknown) => {
   return ctx.p1DataIndex === months.value.length - 1 ? value : null
 }
 
@@ -53,27 +64,45 @@ const data = computed(() => {
 const months = computed(() => Object.keys(data.value))
 const values = computed(() => Object.values(data.value))
 
-const additionalDatasetConfig = computed(() => {
-  if (props.type === 'bar') {
-    return {
-      barPercentage: 1,
-      categoryPercentage: 0.9,
-      // Change the color of the last bar only
-      backgroundColor: months.value.map((_value, index) => index === months.value.length - 1 ? (props.lastWithLowEmphasis ? LIGHT_COLOR_WITH_OPACITY : COLOR) : LIGHT_COLOR),
-    }
+const additionalDatasetConfig = computed<{
+  type: 'bar'
+  barPercentage: number
+  categoryPercentage: number
+  backgroundColor: Array<string>
+} | {
+  type: 'line'
+  segment?: {
+    borderColor: (ctx: ScriptableLineSegmentContext) => string
+    borderDash: (ctx: ScriptableLineSegmentContext) => Array<number>
   }
+} | object>(() => {
+        if (props.type === 'bar') {
+          return {
+            type: 'bar',
+            barPercentage: 1,
+            categoryPercentage: 0.9,
+            // Change the color of the last bar only
+            backgroundColor: months.value.map((_value, index) => index === months.value.length - 1 ? (props.lastWithLowEmphasis ? LIGHT_COLOR_WITH_OPACITY : COLOR) : LIGHT_COLOR),
+          }
+        }
 
-  if (props.type === 'line' && props.lastWithLowEmphasis) {
-    return {
-      segment: {
-        borderColor: ctx => last(ctx, COLOR_WITH_OPACITY) || COLOR,
-        borderDash: ctx => last(ctx, [3, 3]) || [6, 0],
-      },
-    }
-  }
+        if (props.type === 'line') {
+          if (props.lastWithLowEmphasis) {
+            return {
+              type: 'line',
+              segment: {
+                borderColor: (ctx: ScriptableLineSegmentContext) => last(ctx, COLOR_WITH_OPACITY) || COLOR,
+                borderDash: (ctx: ScriptableLineSegmentContext) => last(ctx, [3, 3]) || [6, 0],
+              },
+            }
+          }
+          return {
+            type: 'line',
+          }
+        }
 
-  return {}
-})
+        return {}
+      })
 
 const getMonthYear = (dateAsString: string): string => {
   const date = new Date(dateAsString)
@@ -85,8 +114,11 @@ const startDate = computed(() => months.value.length ? getMonthYear(months.value
 const endDate = computed(() => months.value.length ? getMonthYear(months.value[months.value.length - 1]) : null)
 
 const OPTIONS = {
-  animation: false,
-  responsive: true,
+  // @ts-expect-error animation can be `true` but the typing is not expecting it
+  animation: true,
+  devicePixelRatio: 1,
+  responsive: false,
+  clip: false,
   plugins: {
     legend: {
       display: false,
@@ -105,6 +137,7 @@ const OPTIONS = {
       backgroundColor: COLOR,
       borderColor: COLOR,
       borderJoinStyle: 'round',
+      borderWidth: 3,
       tension: 0.35,
     },
     point: {
@@ -125,7 +158,8 @@ const OPTIONS = {
   },
   layout: {
     padding: {
-      top: 1.5, // half border width
+      top: 2, // half border width
+      bottom: 2,
     },
   },
 } satisfies ChartOptions
@@ -141,8 +175,9 @@ watchEffect(() => {
   chart.value = new Chart(context.value, {
     data: {
       labels: months.value,
-      datasets: [{ data: values.value, type: props.type, ...additionalDatasetConfig.value }],
+      datasets: [{ data: values.value, ...additionalDatasetConfig.value }],
     },
+    // @ts-expect-error animation type should allow `true`
     options: OPTIONS,
   })
 })

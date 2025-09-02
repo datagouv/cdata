@@ -1,9 +1,6 @@
 <template>
-  <div class="fr-p-3w bg-white">
-    <SimpleBanner
-      type="primary"
-      class="mb-6"
-    >
+  <div class="fr-p-3w bg-white space-y-6">
+    <SimpleBanner type="primary">
       <div class="fr-grid-row">
         <div class="fr-col-auto fr-mr-3v">
           <NuxtImg
@@ -14,10 +11,10 @@
         </div>
         <div class="fr-col">
           <p class="fr-m-0 fr-text--bold">
-            {{ $t("Your community resource is created!") }}
+            {{ $t("Votre ressource communautaire a été créée !") }}
           </p>
           <p class="fr-m-0 fr-text--xs">
-            {{ $t("You can now see it in the public page.") }}
+            {{ $t("Voir sur la page publique.") }}
           </p>
         </div>
       </div>
@@ -29,13 +26,13 @@
       :extensions
     />
 
-    <div class="mt-6 flex justify-end">
+    <div class="flex justify-end">
       <BrandedButton
         color="primary"
         :href="getResourceExternalUrl(resource.dataset, resource)"
         external
       >
-        {{ $t("Go to public page") }}
+        {{ $t("Voir la page publique") }}
       </BrandedButton>
     </div>
   </div>

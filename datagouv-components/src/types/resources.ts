@@ -28,10 +28,10 @@ export type Resource = {
   mime: string
   internal: Record<string, unknown>
   last_modified: string
-  latest: string
+  latest: string // permalien stable
   preview_url: string
   schema: Schema | null
   url: string
 }
 
-export type CommunityResource = Owned & Resource & { dataset: Omit<Dataset, 'resources' | 'community_resources'> }
+export type CommunityResource = Owned & Resource & { dataset: Omit<Dataset, 'resources' | 'community_resources'>, permissions: { edit: boolean, delete: boolean } }

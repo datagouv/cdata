@@ -5,15 +5,16 @@
     color="primary"
     :external="type === 'harvester'"
   >
-    <span v-if="type === 'harvester'">{{ t("Create an harvester on") }}</span>
-    <span v-else>{{ t("Publish on") }}</span>&nbsp;<SiteLogo />
+    <span v-if="type === 'harvester'">{{ t("Créer un moissoneur sur") }}</span>
+    <span v-else>{{ t("Publier sur") }}</span>&nbsp;<LogoAsText />
   </BrandedButton>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, throwOnNever } from '@datagouv/components-next'
 import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
+import LogoAsText from '../LogoAsText.vue'
 
 const props = defineProps<{
   type: 'dataset' | 'harvester' | 'reuse' | 'dataservice'

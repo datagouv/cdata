@@ -1,11 +1,11 @@
 <template>
   <div
-    class="border border-gray-default"
+    class="border border-gray-default overflow-auto"
     :class="{ 'fr-pb-4v': open }"
   >
     <header
       :id="resourceHeaderId"
-      class="fr-p-4v flex items-center justify-between relative"
+      class="fr-p-4v flex flex-wrap md:flex-nowrap gap-4 items-center justify-between relative"
     >
       <div>
         <div class="flex items-center fr-mb-1v">
@@ -15,7 +15,7 @@
           >
             <button
               type="button"
-              class="fr-p-0 flex items-baseline text-base leading-none font-normal"
+              class="fr-p-0 flex items-baseline text-base text-left leading-tight font-normal"
               data-testid="expand-button"
               :aria-expanded="open"
               @click="toggle"
@@ -25,22 +25,28 @@
                 class="size-3.5 mr-1"
               />
               <span
-                :class="{
-                  'font-bold': open,
-                }"
+                v-if="open"
+                class="font-bold text-left"
+              ><component
+                :is="config.textClamp"
+                v-if="config && config.textClamp"
+                :max-lines="2"
+                :text="resource.title || t('Fichier sans nom')"
+              /></span>
+              <span
+                v-else
               ><component
                 :is="config.textClamp"
                 v-if="config && config.textClamp"
                 :max-lines="1"
-                :text="resource.title || t('Nameless file')"
+                :text="resource.title || t('Fichier sans nom')"
               /></span>
-
               <span class="absolute inset-0 z-1" />
             </button>
           </h4>
           <CopyButton
-            :label="$t('Copy link')"
-            :copied-label="$t('Link copied!')"
+            :label="$t('Copier le lien')"
+            :copied-label="$t('Lien copié !')"
             :text="resourceExternalUrl"
             class="z-2"
           />
@@ -50,7 +56,7 @@
             :resource
             class="dash-after"
           />
-          <span class="fr-text--xs fr-mb-0 dash-after">{{ t('Updated {date}', { date: formatRelativeIfRecentDate(lastUpdate) }) }}</span>
+          <span class="fr-text--xs fr-mb-0 dash-after">{{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(lastUpdate) }) }}</span>
           <span
             v-if="resource.format"
             class="fr-text--xs fr-mb-0 dash-after"
@@ -61,17 +67,17 @@
           </span>
           <span
             class="inline-flex items-center fr-text--xs fr-mb-0"
-            :aria-label="t('{n} downloads', resource.metrics.views)"
+            :aria-label="t('{n} téléchargements', resource.metrics.views)"
           >
             <span class="fr-icon-download-line fr-icon--xs fr-mr-1v" />
-            <span>{{ summarize(resource.metrics.views) }} <span class="hidden show-on-small">{{ t("downloads") }}</span></span>
+            <span>{{ summarize(resource.metrics.views) }} <span class="hidden show-on-small">{{ t("téléchargements") }}</span></span>
           </span>
         </div>
         <p
           v-if="communityResource"
           class="fr-mb-0 fr-mt-1v fr-text--xs text-gray-medium"
         >
-          {{ t('From') }}
+          {{ t('Par') }}
           <a
             v-if="communityResource.organization"
             class="fr-link fr-text--xs"
@@ -84,20 +90,21 @@
           </template>
         </p>
       </div>
-      <div class="flex items-center fr-ml-4v buttons">
+      <div class="flex items-center buttons">
         <p
           v-if="resource.format === 'url'"
           class="fr-col-auto fr-ml-3v fr-m-0 z-2"
         >
           <BrandedButton
             :href="resource.latest"
-            :title="t('File link - opens a new window')"
+            :title="t('Lien du fichier - ouvre une nouvelle fenêtre')"
             :aria-describedby="resourceTitleId"
             rel="ugc nofollow noopener"
             new-tab
             size="xs"
+            external
           >
-            {{ $t('Visit') }}
+            {{ $t('Visiter') }}
           </BrandedButton>
         </p>
         <p
@@ -112,7 +119,7 @@
             size="xs"
             :icon="RiFileCopyLine"
           >
-            {{ t('Copy link') }}
+            {{ t('Copier le lien') }}
           </BrandedButton>
         </p>
         <p
@@ -128,8 +135,9 @@
             :icon="unavailable ? RiFileWarningLine : RiDownloadLine"
             size="xs"
             :aria-describedby="resourceTitleId"
+            external
           >
-            <span class="sr-only">{{ t('Download file as ') }}</span>{{ format }}
+            <span class="sr-only">{{ t('Télécharger la liste au format ') }}</span>{{ format }}
           </BrandedButton>
         </p>
         <p
@@ -140,6 +148,7 @@
             :dataset-id="dataset.id"
             :resource-id="resource.id"
             :is-community-resource="isCommunityResource"
+            size="xs"
           />
         </p>
         <div
@@ -171,55 +180,78 @@
           <TabPanel
             v-for="tab in tabsOptions"
             :key="tab.key"
+            class="px-4"
           >
-            <div v-if="tab.key === 'data'">
-              <Preview :resource="resource" />
-            </div>
             <div v-if="tab.key === 'map'">
-              <Pmtiles :resource="resource" />
+              <Pmtiles
+                v-if="hasPmtiles"
+                :resource="resource"
+              />
+              <MapContainer
+                v-if="ogcWms"
+                :resource="resource"
+              />
+            </div>
+            <div v-if="tab.key === 'data'">
+              <!-- Show JSON viewer for JSON files -->
+              <JsonPreview
+                v-if="resource.format && resource.format.toLowerCase() === 'json'"
+                :resource="resource"
+              />
+              <!-- Show PDF viewer for PDF files -->
+              <PdfPreview
+                v-else-if="resource.format && resource.format.toLowerCase() === 'pdf'"
+                :resource="resource"
+              />
+              <!-- Show XML viewer for XML files -->
+              <XmlPreview
+                v-else-if="resource.format && resource.format.toLowerCase() === 'xml'"
+                :resource="resource"
+              />
+              <!-- Show regular preview for other file types -->
+              <Preview
+                v-else
+                :resource="resource"
+              />
             </div>
             <div
               v-if="tab.key === 'description'"
-              class="fr-pl-4v fr-pr-4v"
             >
               <div
                 class="fr-mt-0 markdown fr-text--sm text-mention-grey"
-                v-html="markdown(resource.description || '')"
+                v-html="formatMarkdown(resource.description || '')"
               />
             </div>
             <div
               v-if="tab.key === 'data-structure'"
-              class="fr-pl-4v fr-pr-4v"
             >
               <DataStructure
-                v-if="hasPreview"
+                v-if="hasTabularData"
                 :resource="resource"
               />
             </div>
             <div
               v-if="tab.key === 'metadata'"
-              class="fr-pl-4v fr-pr-4v"
             >
               <Metadata :resource />
             </div>
             <div
               v-if="tab.key === 'downloads'"
-              class="fr-pl-4v fr-pr-4v"
             >
               <dl class="fr-pl-0">
                 <dt
                   v-if="resource.format === 'url'"
                   class="font-bold fr-text--sm fr-mb-0"
                 >
-                  {{ $t('Original URL') }}
+                  {{ $t("URL d'origine") }}
                 </dt>
                 <dt
                   v-else
                   class="font-bold fr-text--sm fr-mb-0"
                 >
-                  {{ $t('Original format') }}
+                  {{ $t('Format original') }}
                 </dt>
-                <dd class="text-sm ml-0 mt-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
+                <dd class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
                   <span v-if="resource.format === 'url'">
                     <a
                       :href="resource.latest"
@@ -251,20 +283,21 @@
                     </a>
                   </span>
                   <CopyButton
-                    :label="$t('Copy link')"
-                    :copied-label="$t('Link copied!')"
+                    :label="$t('Copier le lien')"
+                    :copied-label="$t('Lien copié !')"
                     :text="resource.latest"
                     class="relative"
                   />
                 </dd>
-                <template v-if="generatedFormats">
+                <template v-if="generatedFormats.length">
                   <dt class="font-bold fr-text--sm fr-mb-0">
-                    {{ $t('Auto-generated formats from {platform}', { platform: config.name }) }}
+                    {{ $t('Formats générés automatiquement par {platform} (dernière mise à jour {date})', { platform: config.name, date: conversionsLastUpdate }) }}
                   </dt>
                   <dd
                     v-for="generatedFormat in generatedFormats"
                     :key="generatedFormat.format"
-                    class="text-sm ml-0 mt-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
+                    class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center"
+                  >
                     <span>
                       <span class="text-datagouv fr-icon-download-line fr-icon--sm fr-mr-1v fr-mt-1v" />
                       <a
@@ -276,8 +309,8 @@
                       </a>
                     </span>
                     <CopyButton
-                      :label="$t('Copy link')"
-                      :copied-label="$t('Link copied!')"
+                      :label="$t('Copier le lien')"
+                      :copied-label="$t('Lien copié !')"
                       :text="generatedFormat.url"
                       class="relative"
                     />
@@ -287,11 +320,10 @@
             </div>
             <div
               v-if="tab.key === 'swagger'"
-              class="fr-pl-4v fr-pr-4v"
             >
-              <div>{{ t('Swagger automatically generated by data.gouv.fr. This swagger allows you to query data by API by filtering it by column value.') }}</div>
+              <div>{{ t("Swagger généré automatiquement par {platform}. Ce swagger vous permet d'interroger les données par API en les filtrant par valeur de colonne.", { platform: config.name }) }}</div>
               <Swagger
-                v-if="hasPreview"
+                v-if="hasTabularData"
                 :url="`${config.tabularApiUrl}/api/resources/${props.resource.id}/swagger/`"
               />
             </div>
@@ -308,8 +340,8 @@ import { useI18n } from 'vue-i18n'
 import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine } from '@remixicon/vue'
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
 import { filesize, summarize } from '../../functions/helpers'
-import { markdown } from '../../functions/markdown'
-import { formatRelativeIfRecentDate } from '../../functions/dates'
+import { formatMarkdown } from '../../functions/markdown'
+import { useFormatDate } from '../../functions/dates'
 import type { CommunityResource, Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 import TabGroup from '../Tabs/TabGroup.vue'
@@ -321,7 +353,7 @@ import { trackEvent } from '../../functions/matomo'
 import CopyButton from '../CopyButton.vue'
 import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
-import { getResourceFormatIcon, getResourceTitleId } from '../../functions/resources'
+import { getResourceFormatIcon, getResourceTitleId, detectOgcService } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
 import { getResourceExternalUrl } from '../../functions/datasets'
 import Metadata from './Metadata.vue'
@@ -330,10 +362,8 @@ import ResourceIcon from './ResourceIcon.vue'
 import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
-import Pmtiles from './Pmtiles.vue'
 
-const OGC_SERVICES_FORMATS = ['ogc:wfs', 'ogc:wms', 'wfs', 'wms']
-const GENERATED_FORMATS = ['parquet', 'pmtiles']
+const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 
 const props = withDefaults(defineProps<{
   dataset: Dataset | DatasetV2
@@ -349,34 +379,58 @@ const props = withDefaults(defineProps<{
 
 const config = useComponentsConfig()
 
-const Swagger = defineAsyncComponent(() => import('./Swagger.vue'))
+const Swagger = defineAsyncComponent(() => import('./Swagger.client.vue'))
+const MapContainer = defineAsyncComponent(() => import('./MapContainer.client.vue'))
+const Pmtiles = defineAsyncComponent(() => import('./Pmtiles.client.vue'))
+const JsonPreview = defineAsyncComponent(() => import('./JsonPreview.client.vue'))
+const PdfPreview = defineAsyncComponent(() => import('./PdfPreview.client.vue'))
+const XmlPreview = defineAsyncComponent(() => import('./XmlPreview.client.vue'))
 
 const { t } = useI18n()
+const { formatRelativeIfRecentDate } = useFormatDate()
 
 const hasPreview = computed(() => {
+  // For JSON, PDF, and XML files, show preview.
+  // We cannot check for CORS issues here because we cannot use an async component here.
+  // If there is a CORS issue when fetching the file for preview, it will be managed and displayed as an error banner by the preview component.
+  const format = props.resource.format?.toLowerCase()
+  return format === 'json' || format === 'pdf' || format === 'xml'
+})
+
+const hasTabularData = computed(() => {
+  // Determines if we should show the "Données" tab for tabular files AND the "Structure des données" tab (for tabular data structure)
   return config.tabularApiUrl
-    && props.resource.extras['analysis:parsing:finished_at']
+    && props.resource.extras['analysis:parsing:parsing_table']
     && !props.resource.extras['analysis:parsing:error']
     && (config.tabularAllowRemote || props.resource.filetype === 'file')
-    && !props.resource.extras['analysis:parsing:pmtiles_url'] // TODO: have a dedicated extra for tabular parsing
 })
 
 const hasPmtiles = computed(() => {
   return props.resource.extras['analysis:parsing:pmtiles_url']
 })
 
-const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('File'))
+const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('Fichier'))
 
-const ogcService = computed(() => OGC_SERVICES_FORMATS.includes(props.resource.format))
+const ogcService = computed(() => detectOgcService(props.resource))
+
+const ogcWms = computed(() => ogcService.value === 'wms')
 
 const generatedFormats = computed(() => {
-  return GENERATED_FORMATS
+  const formats = GENERATED_FORMATS
     .filter(format => `analysis:parsing:${format}_url` in props.resource.extras)
     .map(format => ({
-      url: props.resource.extras[`analysis:parsing:${format}_url`],
-      size: props.resource.extras[`analysis:parsing:${format}_size`],
+      url: props.resource.extras[`analysis:parsing:${format}_url`] as string,
+      size: props.resource.extras[`analysis:parsing:${format}_size`] as number | undefined,
       format: format,
     }))
+  if ('analysis:parsing:parsing_table' in props.resource.extras) {
+    formats.push({
+      url: `${config.tabularApiUrl}/api/resources/${props.resource.id}/data/json/`,
+      size: undefined,
+      format: 'json',
+    })
+  }
+  return formats
 })
 
 const open = ref(props.expandedOnMount)
@@ -394,26 +448,26 @@ const toggle = () => {
 const tabsOptions = computed(() => {
   const options = []
 
-  if (hasPreview.value) {
-    options.push({ key: 'data', label: t('Data') })
+  if (hasPmtiles.value || ogcWms.value) {
+    options.push({ key: 'map', label: t('Carte') })
   }
 
-  if (hasPmtiles.value) {
-    options.push({ key: 'map', label: t('Map') })
+  if (hasTabularData.value || hasPreview.value) {
+    options.push({ key: 'data', label: t('Aperçu') })
   }
 
   if (props.resource.description) {
     options.push({ key: 'description', label: t('Description') })
   }
 
-  if (hasPreview.value) {
-    options.push({ key: 'data-structure', label: t('Data structure') })
+  if (hasTabularData.value) {
+    options.push({ key: 'data-structure', label: t('Structure des données') })
   }
 
-  options.push({ key: 'metadata', label: t('Metadata') })
-  options.push({ key: 'downloads', label: t('Downloads') })
+  options.push({ key: 'metadata', label: t('Métadonnées') })
+  options.push({ key: 'downloads', label: t('Téléchargements') })
 
-  if (hasPreview.value) {
+  if (hasTabularData.value) {
     options.push({ key: 'swagger', label: t('Swagger') })
   }
 
@@ -438,6 +492,7 @@ const communityResource = computed<CommunityResource | null>(() => {
 const owner = computed(() => communityResource.value ? getOwnerName(communityResource.value) : null)
 
 const lastUpdate = props.resource.last_modified
+const conversionsLastUpdate = computed(() => formatRelativeIfRecentDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined))
 const availabilityChecked = props.resource.extras && 'check:available' in props.resource.extras
 
 const unavailable = availabilityChecked && props.resource.extras['check:available'] === false

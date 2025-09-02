@@ -28,6 +28,7 @@
       :by="compareTwoOptions"
       :aria-describedby="ariaDescribedBy"
       :disabled="loading"
+      nullable
     >
       <div class="relative mt-1">
         <div
@@ -41,7 +42,7 @@
             :placeholder
             @change="query = $event.target.value"
           />
-          <AdminLoader
+          <AnimatedLoader
             v-if="loading"
             class="absolute text-lg top-2 right-3 flex items-center justify-end hover:!bg-transparent"
           />
@@ -84,7 +85,7 @@
               v-if="!filteredAndGroupedOptions && query !== ''"
               class="relative cursor-default select-none px-4 py-2 text-gray-700"
             >
-              Nothing found.
+              {{ $t('Aucun résultat') }}
             </div>
 
             <div
@@ -145,7 +146,7 @@
 
 <script setup lang="ts" generic="T extends string | number | object, Multiple extends true | false">
 import { ref, computed } from 'vue'
-import { RiArrowDownSLine, RiCheckLine, RiDeleteBinLine } from '@remixicon/vue'
+import { AnimatedLoader } from '@datagouv/components-next'
 import {
   Combobox,
   ComboboxInput,
@@ -154,6 +155,7 @@ import {
   ComboboxOption,
   TransitionRoot,
 } from '@headlessui/vue'
+import { RiArrowDownSLine, RiCheckLine, RiDeleteBinLine } from '@remixicon/vue'
 import { watchDebounced } from '@vueuse/core'
 
 type ModelType = Multiple extends false ? T : Array<T>
@@ -239,6 +241,15 @@ const fetchSuggests = async () => {
     suggestedOptions.value = options
   }
 }
+
+async function fetchSuggestsQuery(q: string) {
+  query.value = q
+  return fetchSuggests()
+}
+
+defineExpose({
+  fetchSuggestsQuery,
+})
 
 onMounted(async () => {
   await fetchSuggests()

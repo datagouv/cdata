@@ -4,17 +4,17 @@
       <h2 class="uppercase text-sm mb-2.5">
         {{ $t('Description') }}
       </h2>
-      <div class="flex flex-wrap">
+      <div class="grid md:grid-cols-12 gap-4">
         <MarkdownViewer
-          class="w-full md:w-9/12"
+          class="w-full min-w-0 md:col-span-9"
           :content="reuse.description"
           :min-heading="3"
         />
-        <div class="w-full md:w-3/12">
+        <div class="w-full md:col-span-3">
           <dl class="p-0 space-y-5">
             <div>
               <dt class="font-bold text-sm pb-1">
-                {{ $t('Topic') }}
+                {{ $t('Thématique') }}
               </dt>
               <dd class="p-0 text-sm text-mention-grey">
                 {{ topic }}
@@ -30,7 +30,7 @@
             </div>
             <div>
               <dt class="font-bold text-sm pb-1">
-                {{ $t('Tags') }}
+                {{ $t('Mots clés') }}
               </dt>
               <dd class="flex flex-wrap gap-0.5 p-0 text-sm">
                 <span
@@ -44,13 +44,13 @@
                   v-if="!reuse.tags?.length"
                   class="text-mention-grey"
                 >
-                  {{ $t('No tags set') }}
+                  {{ $t('Aucun mot clé') }}
                 </span>
               </dd>
             </div>
             <div>
               <dt class="font-bold text-sm pb-1">
-                {{ $t('Last update') }}
+                {{ $t('Dernière mise à jour') }}
               </dt>
               <dd class="p-0 text-sm text-mention-grey">
                 {{ formatDate(reuse.last_modified) }}
@@ -58,11 +58,21 @@
             </div>
             <div>
               <dt class="font-bold text-sm pb-1">
-                {{ $t('Creation date') }}
+                {{ $t('Date de création') }}
               </dt>
               <dd class="p-0 text-sm text-mention-grey">
                 {{ formatDate(reuse.created_at) }}
               </dd>
+            </div>
+            <div>
+              <StatBox
+                :title="$t('Vues')"
+                :data="metricsViews"
+                size="sm"
+                type="line"
+                :summary="metricsViewsTotal"
+                class="mb-8 md:mb-0"
+              />
             </div>
           </dl>
         </div>
@@ -70,7 +80,7 @@
     </section>
     <section v-if="datasets">
       <h2 class="uppercase text-sm mb-2.5">
-        {{ $t('{n} associated datasets', { n: datasets.total }) }}
+        {{ $t('aucun jeu de données associé | {n} jeu de données associé | {n} jeux de données associés', { n: datasets.total }) }}
       </h2>
       <div
         class="grid gap-5"
@@ -83,7 +93,7 @@
           :key="dataset.id"
           :dataset="dataset"
           :show-description="datasets.total === 1"
-          class="m-0"
+          class="m-0 min-w-0"
         />
       </div>
       <Pagination
@@ -95,48 +105,12 @@
       />
     </section>
     <section>
-      <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
-        <div>
-          <h2 class="uppercase text-sm mb-0">
-            {{ $t('Statistics for the last 12 months') }}
-          </h2>
-          <div class="text-gray-medium font-normal text-sm/6">
-            <span v-if="new Date().getHours() > 7 - 1">{{ $t('Updated this morning') }}</span>
-            <span v-else>{{ $t('Updated yesterday') }}</span>
-          </div>
-        </div>
-        <div>
-          <BrandedButton
-            :disabled="!downloadStatsUrl"
-            :href="downloadStatsUrl || ''"
-            rel="ugc nofollow noopener"
-            download="stats.csv"
-            :icon="RiDownloadLine"
-            color="secondary"
-            size="xs"
-            class="relative z-2"
-          >
-            {{ $t('Download the statistics as CSV') }}
-          </BrandedButton>
-        </div>
-      </div>
-      <div class="grid md:grid-cols-3">
-        <StatBox
-          :title="$t('Views')"
-          :data="metricsViews"
-          type="line"
-          :summary="metricsViewsTotal"
-          class="mb-8 md:mb-0"
-        />
-      </div>
-    </section>
-    <section>
       <LoadingBlock
         :status
         class="min-h-32"
       >
         <h2 class="uppercase text-sm mb-2.5">
-          {{ $t('{n} reuses from the same creator', { n: relatedReuses.length }) }}
+          {{ $t('{n} réutilisations du même créateur | {n} réutilisation du même créateur | {n} réutilisations du même créateur', { n: relatedReuses.length }) }}
         </h2>
         <div
           v-if="relatedReuses.length"
@@ -145,6 +119,7 @@
           <ReuseCard
             v-for="related in relatedReuses"
             :key="related.id"
+            class="min-w-0"
             :reuse="related"
           />
         </div>
@@ -158,7 +133,7 @@
             height="104"
           />
           <p class="mt-4 mb-5 font-bold text-lg">
-            {{ $t('There are no other reuses from this creator.') }}
+            {{ $t(`Il n'y a pas d'autres réutilisations du même créateur.`) }}
           </p>
         </div>
       </LoadingBlock>
@@ -167,15 +142,15 @@
 </template>
 
 <script setup lang="ts">
-import { useReuseType, BrandedButton, StatBox, type Reuse, type ReuseTopic, type DatasetV2, Pagination, formatDate } from '@datagouv/components-next'
-import { RiDownloadLine } from '@remixicon/vue'
+import { getTopic, useReuseType, StatBox, type Reuse, type ReuseTopic, type DatasetV2, Pagination, useFormatDate } from '@datagouv/components-next'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
-import { getTopic } from '~/datagouv-components/src/functions/reuses'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{
   reuse: Reuse
 }>()
+
+const { formatDate } = useFormatDate()
 
 const { label } = useReuseType(props.reuse.type)
 
@@ -217,13 +192,5 @@ watchEffect(async () => {
   const metrics = await getReuseMetrics(props.reuse.id)
   metricsViews.value = metrics.reuseViews
   metricsViewsTotal.value = metrics.reuseViewsTotal
-})
-
-const downloadStatsUrl = computed(() => {
-  if (!metricsViews.value) {
-    return null
-  }
-
-  return createReuseMetricsUrl(metricsViews.value)
 })
 </script>

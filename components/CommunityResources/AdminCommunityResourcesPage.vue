@@ -1,17 +1,17 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Community Resources') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Ressources communautaires') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="font-bold text-2xl mb-5">
-      {{ t("Community Resources") }}
+    <h1 class="font-extrabold text-2xl text-gray-title mb-5">
+      {{ t("Ressources communautaires") }}
     </h1>
     <h2
       v-if="pageData && pageData.total"
       class="text-sm font-bold uppercase m-0"
     >
-      {{ t('{n} community resources', pageData.total) }}
+      {{ t('{n} ressources communautaires', pageData.total) }}
     </h2>
 
     <LoadingBlock :status>
@@ -41,7 +41,7 @@
         class="h-20"
       />
       <p class="fr-text--bold fr-my-3v">
-        {{ t(`You haven't published a community resource yet`) }}
+        {{ t(`Vous n'avez pas encore publié de ressource communautaire`) }}
       </p>
     </div>
   </div>

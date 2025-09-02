@@ -1,19 +1,18 @@
 <template>
   <div>
-    <div
+    <SimpleBanner
       v-if="hasError"
-      class="bg-warning-lightest text-warning-dark p-3 mt-8 mx-8 mb-3"
+      type="warning"
+      class="flex items-center space-x-2"
     >
-      <p class="fr-grid-row fr-m-0">
-        <span
-          class="fr-icon-warning-line"
-          aria-hidden="true"
-        />
-        {{ t("The preview of this file failed to load.") }}
-      </p>
-    </div>
+      <RiErrorWarningLine class="shink-0 size-6" />
+      <span>{{ t("L'aperçu de ce fichier n'a pas pu être chargé.") }}</span>
+    </SimpleBanner>
     <PreviewLoader v-else-if="loading" />
-    <template v-else>
+    <div
+      v-else
+      class="-mx-4"
+    >
       <div class="bg-blue-100 text-datagouv fr-hidden fr-unhidden-md p-4">
         <div class="fr-grid-row fr-grid-row--middle fr-grid-row--gutters">
           <div
@@ -22,10 +21,10 @@
           />
           <div class="fr-col">
             <p class="fr-text--bold fr-m-0">
-              {{ t("Explore data in detail") }}
+              {{ t("Explorer les données en détail") }}
             </p>
             <p class="fr-text--sm fr-m-0 f-italic">
-              {{ t("Use our tool to get an overview of data, learn about different columns or perform filters and sorts.") }}
+              {{ t("Utiliser notre outil pour obtenir un aperçu des données, en savoir plus sur les différentes colonnes ou réaliser des filtres et des tris.") }}
             </p>
           </div>
           <p class="fr-col-auto fr-my-0">
@@ -34,15 +33,15 @@
               :icon="RiExternalLinkFill"
               icon-right
             >
-              {{ t("Explore data") }}
+              {{ t("Explorer les données") }}
             </BrandedButton>
           </p>
         </div>
       </div>
-      <div class="fr-table fr-table--no-background fr-p-0 fr-pt-0-5v fr-m-0">
+      <div class="fr-table fr-table--no-background fr-p-0 fr-m-0">
         <table class="fr-mb-3w">
-          <caption class="fr-sr-only">
-            {{ t('Preview of {name}', { name: resource.title }) }}
+          <caption class="sr-only">
+            {{ t('Prévisualisation de {name}', { name: resource.title }) }}
           </caption>
           <thead>
             <tr>
@@ -51,18 +50,19 @@
                 :key="index"
                 scope="col"
               >
-                <div class="fr-grid-row fr-grid-row--middle col-width">
-                  <BrandedButton
-                    color="secondary-softer"
-                    :icon="isSortedBy(col) && sortConfig && sortConfig.type == 'asc' ? RiArrowUpLine : RiArrowDownLine"
-                    icon-right
-                    size="xs"
-                    @click="sortByField(col)"
-                  >
+                <BrandedButton
+                  color="secondary-softer"
+                  :icon="isSortedBy(col) && sortConfig && sortConfig.type == 'asc' ? RiArrowUpLine : RiArrowDownLine"
+                  icon-right
+                  size="xs"
+                  @click="sortByField(col)"
+                >
+                  <!-- There is a weird bug with `sr-only`, I needed to add a relative parent to avoid full page x scrolling into the void…  -->
+                  <span class="relative">
                     {{ col }}
-                    <span class="sr-only">{{ sortConfig && sortConfig.type == 'desc' ? t("Sort ascending") : t("Sort descending") }}</span>
-                  </BrandedButton>
-                </div>
+                    <span class="sr-only">{{ sortConfig && sortConfig.type == 'desc' ? t("Trier par ordre croissant") : t("Trier par ordre décroissant") }}</span>
+                  </span>
+                </BrandedButton>
               </th>
             </tr>
           </thead>
@@ -76,7 +76,7 @@
                 :key="colIndex"
                 class="cell-padding"
               >
-                <div class="fr-grid-row fr-grid-row--middle fr-text--xs w-100 style-cell">
+                <div class="fr-grid-row fr-grid-row--middle fr-text--xs w-full style-cell">
                   <div class="fr-my-auto">
                     {{ row[col] }}
                   </div>
@@ -94,30 +94,32 @@
         @change="changePage"
       />
       <div class="fr-px-5v">
-        {{ t("Preview updated on {date}", { date: lastUpdate }) }} —
-        {{ t('{count} columns', columns.length) }} —
-        {{ t('{count} rows', rowCount) }}
+        {{ t("Dernière mise à jour de la prévisualisation : {date}", { date: lastUpdate }) }} —
+        {{ t('{count} colonnes', columns.length) }} —
+        {{ t('Lignes {count}', rowCount) }}
       </div>
-    </template>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RiArrowDownLine, RiArrowUpLine, RiExternalLinkFill } from '@remixicon/vue'
+import { RiArrowDownLine, RiArrowUpLine, RiErrorWarningLine, RiExternalLinkFill } from '@remixicon/vue'
 import Pagination from '../Pagination.vue'
 import { getData, type SortConfig } from '../../functions/tabularApi'
-import { formatDate } from '../../functions/dates'
+import { useFormatDate } from '../../functions/dates'
 import type { Resource } from '../../types/resources'
 import { useComponentsConfig } from '../../config'
 import BrandedButton from '../BrandedButton.vue'
+import SimpleBanner from '../SimpleBanner.vue'
 import franceSvg from './france.svg?raw'
 import PreviewLoader from './PreviewLoader.vue'
 
 const props = defineProps<{ resource: Resource }>()
 
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 const rows = ref<Array<Record<string, unknown>>>([])
 const columns = ref<Array<string>>([])
@@ -126,7 +128,7 @@ const hasError = ref(false)
 const sortConfig = ref<SortConfig>(null)
 const rowCount = ref(0)
 const config = useComponentsConfig()
-const pageSize = computed(() => config.tabularApiPageSize || 20)
+const pageSize = computed(() => config.tabularApiPageSize || 15)
 const currentPage = ref(1)
 
 /**
@@ -142,12 +144,12 @@ function isSortedBy(col: string) {
 async function getTableInfos(page: number, sortConfig?: SortConfig) {
   try {
     // Check that this function return wanted data
-    const { data } = await getData(config, props.resource.id, page, sortConfig)
-    if ('data' in data && data.data && data.data.length > 0) {
+    const response = await getData(config, props.resource.id, page, sortConfig)
+    if ('data' in response && response.data && response.data.length > 0) {
       // Update existing rows
-      rows.value = data.data
-      columns.value = Object.keys(data.data[0]).filter(item => item !== '__id')
-      rowCount.value = data.meta.total
+      rows.value = response.data
+      columns.value = Object.keys(response.data[0]).filter(item => item !== '__id')
+      rowCount.value = response.meta.total
       currentPage.value = page
       loading.value = false
     }
@@ -197,7 +199,7 @@ function sortByField(col: string) {
   getTableInfos(currentPage.value, sortConfig.value)
 };
 
-const lastUpdate = computed(() => formatDate(props.resource.extras['analysis:parsing:finished_at']))
+const lastUpdate = computed(() => formatDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined))
 
 onMounted(() => {
   getTableInfos(currentPage.value)

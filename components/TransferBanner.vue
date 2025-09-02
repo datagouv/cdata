@@ -3,7 +3,7 @@
     type="primary"
     :title="label"
   >
-    {{ $t("Be careful, this action can't be reverse.") }}
+    {{ $t("Attention, cette action ne peut pas être annulée.") }}
 
     <template #button>
       <ModalWithButton
@@ -17,14 +17,14 @@
             v-bind="attrs"
             v-on="listeners"
           >
-            {{ $t('Transfer') }}
+            {{ $t('Transférer') }}
           </BrandedButton>
         </template>
         <div
           v-if="!existingTransfers"
           class="flex items-center justify-center"
         >
-          <AdminLoader class="size-20" />
+          <AnimatedLoader class="size-20" />
         </div>
         <div
           v-else-if="existingTransfers.length"
@@ -34,12 +34,12 @@
             v-for="existingTransfer in existingTransfers"
             :key="existingTransfer.id"
           >
-            {{ $t('Transfer to {recipient} already requested the {date}', {
+            {{ $t('Transfert vers {recipient} déjà demandé le {date}', {
               recipient: existingTransfer.recipient.class === 'Organization'
                 ? existingTransfer.recipient.name : `${existingTransfer.recipient.first_name} ${existingTransfer.recipient.last_name}`,
               date: formatDate(existingTransfer.created),
             }) }}
-            <span v-if="existingTransfer.user">{{ $t('by {user}', { user: `${existingTransfer.user.first_name} ${existingTransfer.user.last_name}` }) }}</span>
+            <span v-if="existingTransfer.user">{{ $t('par {user}', { user: `${existingTransfer.user.first_name} ${existingTransfer.user.last_name}` }) }}</span>
           </div>
         </div>
         <div
@@ -51,18 +51,18 @@
             :subject
           />
           <p>
-            <span class="font-bold">{{ $t("This action can't be reverse.") }}</span>
-            <span>{{ $t("You will no longer have access to manage this dataset.") }}</span>
+            <span class="font-bold">{{ $t("Cette action est irréversible.") }}</span>
+            <span>{{ $t("Vous n’aurez plus accès à la gestion de ce jeu de données.") }}</span>
           </p>
           <ProducerSelect
             v-model="to"
-            :label="$t('Search an organization or a user')"
+            :label="$t('Rechercher une organisation ou un utilisateur')"
             all
           />
           <InputGroup
             v-model="comment"
             type="textarea"
-            :label="$t('Comment')"
+            :label="$t('Commentaire')"
           />
         </div>
         <template #footer="{ close }">
@@ -89,7 +89,7 @@
 <script setup lang="ts">
 import type { Dataservice, Dataset, DatasetV2, Reuse, Owned } from '@datagouv/components-next'
 import { RiSendPlaneLine } from '@remixicon/vue'
-import { BannerAction, BrandedButton, formatDate } from '@datagouv/components-next'
+import { AnimatedLoader, BannerAction, BrandedButton, useFormatDate } from '@datagouv/components-next'
 import type { LinkToSubject, TransferRequest } from '~/types/types'
 
 const props = defineProps<{
@@ -101,6 +101,7 @@ const props = defineProps<{
 const { $api } = useNuxtApp()
 const { toast } = useToast()
 const { t } = useI18n()
+const { formatDate } = useFormatDate()
 
 const loading = ref(false)
 const to = ref<Owned | null>(null)
@@ -150,7 +151,7 @@ async function requestTransfer(close: () => void) {
     existingTransfers.value = [transfer]
 
     close()
-    toast.success(t('Transfer requested. A notification has been sent to the recipient.'))
+    toast.success(t('Transfert demandé. Une notification a été envoyé au destinataire.'))
   }
   finally {
     loading.value = false

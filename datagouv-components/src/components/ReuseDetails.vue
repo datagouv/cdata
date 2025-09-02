@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-wrap items-center gap-0.5">
+  <div class="flex flex-wrap items-center gap-1">
     <p class="text-sm mb-0">
       {{ reuseType }}
     </p>
@@ -9,7 +9,7 @@
     />
     <p
       class="text-sm mb-0 flex items-center gap-0.5"
-      :aria-label="t('{n} views', reuse.metrics.views)"
+      :aria-label="t('{n} vues | {n} vue | {n} vues', reuse.metrics.views)"
     >
       <RiEyeLine
         aria-hidden="true"
@@ -18,7 +18,7 @@
     </p>
     <p
       class="text-sm mb-0 flex items-center gap-0.5"
-      :aria-label="t('{n} followers', reuse.metrics.followers)"
+      :aria-label="t('{n} abonnés | {n} abonné | {n} abonnés', reuse.metrics.followers)"
     >
       <RiStarLine
         aria-hidden="true"

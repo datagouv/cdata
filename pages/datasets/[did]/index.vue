@@ -26,20 +26,22 @@
         :dataset
         :resource="selectedResource"
         expanded-on-mount
+        :can-edit="dataset.permissions.edit_resources"
       />
     </div>
+
     <div
-      v-else
       v-for="{ data, status }, index in resourcesByTypes"
+      v-else
       :key="RESOURCE_TYPE[index]"
       class="space-y-1"
     >
       <div class="uppercase text-gray-plain text-sm font-bold">
-        {{ $t('{n} {label}', { n: data.value.total, label: getResourceLabel(RESOURCE_TYPE[index]) }) }}
+        {{ $t('{n} {label}', { n: data.value?.total, label: getResourceLabel(RESOURCE_TYPE[index]) }) }}
       </div>
       <div class="space-y-2.5">
         <SearchInput
-          v-if="data.value.total > data.value.page_size || searchByResourceType[index].value"
+          v-if="data.value?.total > data.value.page_size || searchByResourceType[index].value"
           v-model="searchByResourceType[index].value"
           :placeholder="$t('Rechercher')"
         />
@@ -49,6 +51,7 @@
             :key="resource.id"
             :dataset
             :resource
+            :can-edit="dataset.permissions.edit_resources"
           />
           <Pagination
             :total-results="data.value.total"
@@ -67,13 +70,13 @@
               class="h-20"
             />
             <p class="fr-text--bold fr-my-3v">
-              {{ $t(`No results for "{q}"`, { q: searchByResourceType[index].value }) }}
+              {{ $t(`Pas de résultats pour « {q} »`, { q: searchByResourceType[index].value }) }}
             </p>
             <BrandedButton
               color="primary"
               @click="searchByResourceType[index].value = ''"
             >
-              {{ $t('Reset filters') }}
+              {{ $t('Réinitialiser les filtres') }}
             </BrandedButton>
           </div>
         </div>
@@ -85,7 +88,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, getResourceLabel, Pagination, RESOURCE_TYPE, ResourceAccordion, SimpleBanner, type DatasetV2, type Resource } from '@datagouv/components-next'
-import { RiCloseCircleLine } from '@remixicon/vue';
+import { RiCloseCircleLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{ dataset: DatasetV2 }>()
@@ -96,6 +99,14 @@ const pageSize = ref(10)
 
 const pageByResourceType: Array<Ref<number>> = RESOURCE_TYPE.map(() => ref(1))
 const searchByResourceType: Array<Ref<string>> = RESOURCE_TYPE.map(() => ref(''))
+
+watch(searchByResourceType, (newQueries, oldQueries) => {
+  for (const index in newQueries) {
+    if (newQueries[index] != oldQueries[index]) {
+      pageByResourceType[index].value = 1
+    }
+  }
+})
 
 const queryParamsByResourceType = RESOURCE_TYPE.map((type, index) => {
   return computed(() => ({
@@ -113,7 +124,7 @@ const rawResourcesByTypes = await Promise.all(
 const resourcesByTypes = computed(() => {
   const result = {} as Record<number, typeof rawResourcesByTypes[number]>
   for (const index in rawResourcesByTypes) {
-    if (rawResourcesByTypes[index].data.value.total > 0 || searchByResourceType[index].value) {
+    if (rawResourcesByTypes[index].data.value?.total > 0 || searchByResourceType[index].value) {
       result[index] = rawResourcesByTypes[index]
     }
   }

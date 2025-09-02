@@ -3,12 +3,12 @@
     <div class="fr-container fr-py-9v">
       <div class="prose">
         <template v-if="error && error.statusCode === 404">
-          <h1>{{ $t('Error 404') }}</h1>
-          <p>{{ $t("The page you're looking for cannot be found.") }}</p>
+          <h1>{{ $t('Erreur 404') }}</h1>
+          <p>{{ $t("La page que vous recherchez est introuvable.") }}</p>
         </template>
         <template v-else>
-          <h1>{{ $t('Error') }}</h1>
-          <p>{{ $t('Something did not work as expected.') }}</p>
+          <h1>{{ $t('Erreur') }}</h1>
+          <p>{{ $t('Quelque chose ne s\'est pas déroulé comme prévu.') }}</p>
 
           <p v-if="error">
             <strong>{{ error.message }}</strong>
@@ -19,7 +19,7 @@
             class="fr-link fr-reset-link"
             href="/"
           >
-            {{ $t('Home') }}
+            {{ $t('Accueil') }}
           </a>
         </p>
       </div>
@@ -30,7 +30,8 @@
 <script setup lang="ts">
 import { datagouv } from '@datagouv/components-next'
 import type { UseFetchFunction } from '@datagouv/components-next'
-import { NuxtLinkLocale, TextClamp } from '#components'
+import CdataLink from './components/CdataLink.vue'
+import { ClientOnly, TextClamp } from '#components'
 
 const error = useError()
 
@@ -44,13 +45,14 @@ app.vueApp.use(datagouv, {
   baseUrl: runtimeConfig.public.i18n.baseUrl, // Maybe do not use i18n config here?
   apiBase: runtimeConfig.public.apiBase,
   devApiKey: runtimeConfig.public.devApiKey,
-  staticUrl: runtimeConfig.public.staticUrl,
-  tabularApiUrl: 'https://tabular-api.data.gouv.fr',
-  tabularApiAllowRemote: true,
+  tabularApiUrl: runtimeConfig.public.tabularApiUrl,
+  tabularApiDataserviceId: runtimeConfig.public.tabularApiDataserviceId,
+  tabularAllowRemote: true,
   datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
   customUseFetch: useAPI as UseFetchFunction, // Why this `as` is required?
   textClamp: TextClamp,
-  appLink: NuxtLinkLocale,
+  appLink: CdataLink,
+  clientOnly: ClientOnly,
 })
 
 useHeadSafe({

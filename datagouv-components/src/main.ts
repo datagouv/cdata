@@ -1,7 +1,9 @@
 import type { App, Plugin } from 'vue'
+import { createI18n, useI18n } from 'vue-i18n'
+import type { ContactPoint, ContactPointRole } from './types/contact_point.js'
 import type { Badge, Badges } from './types/badges'
 import type { Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
-import type { NewDataservice, Dataservice } from './types/dataservices'
+import type { NewDataservice, Dataservice, DataserviceAccessAudience, DataserviceAccessAudienceCondition, DataserviceAccessAudienceType } from './types/dataservices'
 import type { Frequency, Frequencies } from './types/frequency'
 import type { Granularity, Granularities, SpatialZone } from './types/granularity'
 import type { Harvest } from './types/harvest'
@@ -15,6 +17,8 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User } from './types/users'
 
+import AnimatedLoader from './components/AnimatedLoader.vue'
+import AppLink from './components/AppLink.vue'
 import Avatar from './components/Avatar.vue'
 import AvatarWithName from './components/AvatarWithName.vue'
 import BannerAction from './components/BannerAction.vue'
@@ -22,12 +26,14 @@ import BrandedButton from './components/BrandedButton.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
 import DatasetCard from './components/DatasetCard.vue'
+import DateRangeDetails from './components/DateRangeDetails.vue'
 import DatasetInformationPanel from './components/DatasetInformationPanel.vue'
 import DatasetQuality from './components/DatasetQuality.vue'
 import DatasetQualityInline from './components/DatasetQualityInline.vue'
 import DatasetQualityItem from './components/DatasetQualityItem.vue'
 import DatasetQualityScore from './components/DatasetQualityScore.vue'
 import DatasetQualityTooltipContent from './components/DatasetQualityTooltipContent.vue'
+import ExtraAccordion from './components/ExtraAccordion.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
@@ -37,35 +43,51 @@ import Placeholder from './components/Placeholder.vue'
 import ReadMore from './components/ReadMore.vue'
 import ResourceAccordion from './components/ResourceAccordion/ResourceAccordion.vue'
 import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
-import Swagger from './components/ResourceAccordion/Swagger.vue'
+import Swagger from './components/ResourceAccordion/Swagger.client.vue'
 import ReuseCard from './components/ReuseCard.vue'
+import ReuseDetails from './components/ReuseDetails.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
 import StatBox from './components/StatBox.vue'
+import Tab from './components/Tabs/Tab.vue'
+import TabGroup from './components/Tabs/TabGroup.vue'
+import TabList from './components/Tabs/TabList.vue'
+import TabPanel from './components/Tabs/TabPanel.vue'
+import TabPanels from './components/Tabs/TabPanels.vue'
+import Tooltip from './components/Tooltip.vue'
+import Toggletip from './components/Toggletip.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
+export * from './composables/useActiveDescendant'
 export * from './composables/useReuseType'
 
-export * from './functions/dates'
-export * from './functions/organizations'
-export * from './functions/resources'
-export * from './functions/users'
 export * from './functions/datasets'
-export * from './functions/owned'
+export * from './functions/dates'
 export * from './functions/helpers'
-export * from './functions/matomo'
-export * from './functions/schemas'
 export * from './functions/markdown'
+export * from './functions/matomo'
+export * from './functions/never'
+export * from './functions/organizations'
+export * from './functions/owned'
+export * from './functions/resources'
+export * from './functions/reuses'
+export * from './functions/schemas'
+export * from './functions/users'
 
 export type {
   UseFetchFunction,
   Badge,
   Badges,
   CommunityResource,
+  ContactPoint,
+  ContactPointRole,
   Dataset,
   DatasetV2,
   DatasetV2WithFullObject,
   Dataservice,
+  DataserviceAccessAudience,
+  DataserviceAccessAudienceCondition,
+  DataserviceAccessAudienceType,
   NewDataservice,
   FileResourceFileType,
   Frequency,
@@ -105,26 +127,36 @@ export type {
 // Vue Plugin
 const datagouv: Plugin<PluginConfig> = {
   async install(app: App, options) {
+    app.provide(configKey, options)
     if (!options.textClamp) {
       const textClamp = await import('vue3-text-clamp')
       options.textClamp = textClamp.default
     }
-
-    if (options.i18n) {
-      const frMessages = await import('../dist/locales/fr.js')
-      const enMessages = await import('../dist/locales/en.js')
-
-      options.i18n.global.mergeLocaleMessage('en', enMessages.default)
-      options.i18n.global.mergeLocaleMessage('fr', frMessages.default)
+    try {
+      // There is no condition to check if vue-i18n is instancied, only an error...
+      useI18n()
     }
-
-    app.provide(configKey, options)
+    catch {
+      const i18n = createI18n({
+        legacy: false,
+        globalInjection: true,
+        locale: 'fr',
+        messages: {},
+        formatFallbackMessages: true,
+        missingWarn: false,
+        fallbackFormat: true,
+        fallbackWarn: false,
+      })
+      app.use(i18n)
+    }
   },
 }
 
 export {
   datagouv,
   useComponentsConfig,
+  AnimatedLoader,
+  AppLink,
   Avatar,
   AvatarWithName,
   BannerAction,
@@ -138,6 +170,8 @@ export {
   DatasetQualityItem,
   DatasetQualityScore,
   DatasetQualityTooltipContent,
+  DateRangeDetails,
+  ExtraAccordion,
   OrganizationCard,
   OrganizationNameWithCertificate,
   OwnerType,
@@ -148,7 +182,15 @@ export {
   ResourceAccordion,
   ResourceIcon,
   ReuseCard,
+  ReuseDetails,
   SimpleBanner,
   StatBox,
   Swagger,
+  Tab,
+  TabGroup,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tooltip,
+  Toggletip,
 }

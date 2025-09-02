@@ -4,7 +4,7 @@
     class="space-y-1"
   >
     <div class="uppercase text-gray-plain text-sm font-bold">
-      {{ $t('{n} réutilisations recommandées', { n: reusesIds.length }) }}
+      {{ $t('{n} réutilisations recommandées | {n} réutilisation recommandée | {n} réutilisations recommandées', { n: reusesIds.length }) }}
     </div>
     <div class="space-y-2.5">
       <div class="grid sm:grid-cols-3 gap-2.5">

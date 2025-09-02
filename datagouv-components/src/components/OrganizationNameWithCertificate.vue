@@ -1,5 +1,5 @@
 <template>
-  <div class="flex gap-1 items-center truncate">
+  <div class="min-w-0 flex gap-1 items-center">
     <OwnerTypeIcon
       v-if="showType"
       :type="getOrganizationType(organization)"
@@ -9,17 +9,29 @@
       :class="{ 'text-sm': size === 'sm' }"
     >
       {{ organization.name }}
+      <small
+        v-if="organization.acronym && showAcronym"
+        class="text-xs text-gray-title font-extrabold align-super"
+      >
+        {{ organization.acronym }}
+      </small>
     </div>
-    <RiCheckboxCircleLine
-      v-if="isOrganizationCertified(organization)"
-      class="flex-none"
-      :class="{
-        'size-4': size === 'sm',
-        'size-5': size === 'base',
-      }"
-      :title="t('The identity of this public service is certified by {certifier}', { certifier: config.name })"
-      aria-hidden="true"
-    />
+    <Tooltip v-if="isOrganizationCertified(organization)">
+      <RiCheckboxCircleLine
+        class="flex-none"
+        :class="{
+          'size-4': size === 'sm',
+          'size-5': size === 'base',
+        }"
+        :aria-label="t(`L'identité de ce service public est certifiée par {certifier}`, { certifier: config.name })"
+        aria-hidden="true"
+      />
+      <template #tooltip>
+        <p class="text-sm font-normal mb-0">
+          {{ t(`L'identité de ce service public est certifiée par {certifier}`, { certifier: config.name }) }}
+        </p>
+      </template>
+    </Tooltip>
   </div>
 </template>
 
@@ -30,15 +42,18 @@ import { getOrganizationType, isOrganizationCertified } from '../functions/organ
 import type { Organization } from '../types/organizations'
 import { useComponentsConfig } from '../config'
 import OwnerTypeIcon from './OwnerTypeIcon.vue'
+import Tooltip from './Tooltip.vue'
 
 const config = useComponentsConfig()
 
 const { t } = useI18n()
 withDefaults(defineProps<{
   organization: Organization
+  showAcronym?: boolean
   showType?: boolean
   size?: 'base' | 'sm'
 }>(), {
+  showAcronym: false,
   showType: true,
   size: 'base',
 })

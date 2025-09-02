@@ -8,7 +8,7 @@
         <div v-if="dataset.tags && dataset.tags.length">
           <DescriptionListTerm>{{ $t('Mots-clés') }}</DescriptionListTerm>
           <DescriptionListDetails class="flex flex-wrap gap-2 items-start">
-            <NuxtLinkLocale
+            <CdataLink
               v-for="tag in dataset.tags"
               :key="tag"
               class="fr-raw-link"
@@ -20,17 +20,17 @@
               >
                 {{ tag }}
               </Tag>
-            </NuxtLinkLocale>
+            </CdataLink>
           </DescriptionListDetails>
         </div>
         <div>
-          <DescriptionListTerm>{{ $t('ID') }}</DescriptionListTerm>
+          <DescriptionListTerm>{{ $t('Identifiant') }}</DescriptionListTerm>
           <DescriptionListDetails class="flex items-center gap-2">
             {{ dataset.id }}
             <CopyButton
               class="!-mt-0.5"
-              :label="$t('Copy ID')"
-              :copied-label="$t('ID copied')"
+              :label="$t(`Copier l'identifiant`)"
+              :copied-label="$t('Identifiant copié !')"
               :text="dataset.id"
               :hide-label="true"
             />
@@ -129,10 +129,12 @@
         <p class="text-sm">
           <i18n-t keypath="Les schémas de données permettent de décrire des modèles de données, découvrez comment les schémas améliorent la qualité des données et quels sont les cas d'usages possibles sur {link}">
             <template #link>
-              <NuxtLink
+              <CdataLink
                 :to="config.public.schemasSite.url"
                 external
-              >{{ config.public.schemasSite.name }}</NuxtLink>
+              >
+                {{ config.public.schemasSite.name }}
+              </CdataLink>
             </template>
           </i18n-t>
         </p>
@@ -186,91 +188,21 @@
           </BrandedButton>
         </template>
       </ExtraAccordion>
-      <section class="pt-6">
-        <div class="flex items-center justify-between space-x-2 mb-1">
-          <h3 class="mb-0 uppercase text-gray-plain text-sm font-bold ">
-            {{ $t('Statistiques des 12 derniers mois') }}
-          </h3>
-          <BrandedButton
-            color="secondary"
-            size="xs"
-            :icon="RiDownloadLine"
-            :href="downloadStatsUrl"
-          >
-            {{ $t('Télécharger les statistiques de trafic au format CSV') }}
-          </BrandedButton>
-        </div>
-
-        <div class="flex flex-col md:flex-row">
-          <ClientOnly>
-            <StatBox
-              :title="$t('Views')"
-              :data="datasetVisits"
-              type="line"
-              :summary="datasetVisitsTotal"
-              class="md:w-1/3 mb-8 md:mb-0"
-            />
-            <StatBox
-              :title="$t('Downloads')"
-              :data="datasetDownloadsResources"
-              type="line"
-              :summary="datasetDownloadsResourcesTotal"
-              class="md:w-1/3 mb-8 md:mb-0"
-            />
-          </ClientOnly>
-        </div>
-      </section>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, CopyButton, formatDate, StatBox, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
-import { RiBook2Line, RiCheckboxCircleLine, RiDownloadLine, RiServerLine } from '@remixicon/vue'
+import { BrandedButton, CopyButton, DateRangeDetails, ExtraAccordion, getDatasetOEmbedHtml, useFormatDate, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
+import { RiBook2Line, RiCheckboxCircleLine, RiServerLine } from '@remixicon/vue'
 import LeafletMapClient from '~/components/LeafletMap.client.vue'
-import ExtraAccordion from '~/datagouv-components/src/components/ExtraAccordion.vue'
-import getDatasetOEmbedHtml from '~/datagouv-components/src/functions/datasets'
 
 const props = defineProps<{ dataset: DatasetV2WithFullObject }>()
 
 useSeoMeta({ robots: 'noindex' })
 
 const config = useRuntimeConfig()
+const { formatDate } = useFormatDate()
 
 const { data: schemas } = await useAPI<Array<Schema>>(`/api/2/datasets/${props.dataset.id}/schemas/`)
-
-const datasetVisits = ref<Record<string, number>>({})
-const datasetDownloadsResources = ref<Record<string, number>>({})
-
-const datasetVisitsTotal = ref(0)
-const datasetDownloadsResourcesTotal = ref(0)
-
-watchEffect(async () => {
-  // Fetching last 12 months
-  const response = await fetch(`https://metric-api.data.gouv.fr/api/datasets/data/?dataset_id__exact=${props.dataset.id}&metric_month__sort=desc&page_size=12`)
-  const page = await response.json()
-
-  for (const { metric_month, monthly_visit, monthly_download_resource } of page.data) {
-    datasetVisits.value[metric_month] = monthly_visit
-    datasetDownloadsResources.value[metric_month] = monthly_download_resource
-  }
-  // Fetching totals
-  if (page.data[0]) {
-    const totalResponse = await fetch(`https://metric-api.data.gouv.fr/api/datasets_total/data/?dataset_id__exact=${props.dataset.id}`)
-    const totalPage = await totalResponse.json()
-
-    datasetVisitsTotal.value = totalPage.data[0].visit
-    datasetDownloadsResourcesTotal.value = totalPage.data[0].download_resource
-  }
-})
-
-const downloadStatsUrl = computed(() => {
-  let data = 'month,visit,download_resource\n'
-
-  for (const month in datasetVisits.value) {
-    data += `${month},${datasetVisits.value[month]},${datasetDownloadsResources.value[month]}\n`
-  }
-
-  return URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
-})
 </script>

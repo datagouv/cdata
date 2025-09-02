@@ -13,27 +13,27 @@
         :rounded="true"
         class="size-3"
       />
-      <NuxtLink
+      <CdataLink
         v-if="comment.posted_by_organization"
         class="link"
         :href="comment.posted_by_organization.page"
       >
         {{ comment.posted_by_organization.name }}
-      </NuxtLink>
-      <NuxtLink
+      </CdataLink>
+      <CdataLink
         v-else
         class="link"
         :href="comment.posted_by.page"
       >
         {{ comment.posted_by.first_name }} {{ comment.posted_by.last_name }}
-      </NuxtLink>
+      </CdataLink>
     </div>
     <div>—</div>
     <div v-if="comment.last_modified_at">
-      {{ $t('Updated the {date}', { date: formatDate(comment.last_modified_at) }) }}
+      {{ $t('Mis à jour le {date}', { date: formatDate(comment.last_modified_at) }) }}
     </div>
     <div v-else>
-      {{ $t('Posted the {date}', { date: formatDate(comment.posted_on) }) }}
+      {{ $t('Posté le {date}', { date: formatDate(comment.posted_on) }) }}
     </div>
     <div v-if="isProducer">
       —
@@ -43,13 +43,13 @@
       size="xs"
       type="primary"
     >
-      {{ $t('Producer') }}
+      {{ $t('Producteur') }}
     </AdminBadge>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Avatar, formatDate } from '@datagouv/components-next'
+import { Avatar, useFormatDate } from '@datagouv/components-next'
 import type { Comment, DiscussionSubjectTypes } from '~/types/discussions'
 import { isProducerOfSubject } from '~/utils/discussions'
 
@@ -57,6 +57,8 @@ const props = defineProps<{
   comment: Comment
   subject?: DiscussionSubjectTypes
 }>()
+
+const { formatDate } = useFormatDate()
 
 const isProducer = computed(() => props.subject && isProducerOfSubject(props.subject, props.comment))
 </script>

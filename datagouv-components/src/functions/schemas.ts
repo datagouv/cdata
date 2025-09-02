@@ -1,4 +1,3 @@
-import type { AxiosResponse } from 'axios'
 import { ofetch } from 'ofetch'
 import type { Resource } from '../types/resources'
 import { useComponentsConfig } from '../config'
@@ -43,24 +42,22 @@ export interface ValidataError {
   tags: Array<string>
 }
 export type SchemaResponseData = Array<RegisteredSchema>
-export type SchemaResponse = AxiosResponse<SchemaResponseData>
 
 type SchemaPath = { schema_name: string } | { schema_url: string }
 
-const catalogRequest: Promise<Array<RegisteredSchema>> | null = null
-
-/**
- * Get Schema Catalog
- */
-export async function getCatalog(): Promise<SchemaResponseData> {
+let catalogRequest: Promise<Array<RegisteredSchema>> | null = null
+export function useGetCatalog() {
   const config = useComponentsConfig()
-  if (catalogRequest) {
-    return catalogRequest
-  }
 
-  return await ofetch('api/1/datasets/schemas/', {
-    baseURL: config.apiBase,
-  })
+  return async (): Promise<SchemaResponseData> => {
+    if (catalogRequest) {
+      return catalogRequest
+    }
+
+    return await (catalogRequest = ofetch('api/1/datasets/schemas/', {
+      baseURL: config.apiBase,
+    }))
+  }
 }
 
 export function findSchemaInCatalog(catalog: Array<RegisteredSchema>, schema: Schema | null): RegisteredSchema | null {
@@ -68,30 +65,32 @@ export function findSchemaInCatalog(catalog: Array<RegisteredSchema>, schema: Sc
   return catalog.find(registeredSchema => schema.name === registeredSchema.name) || null
 }
 
-export function getSchemaDocumentation(name: string): string {
+export function useGetSchemaDocumentation() {
   const config = useComponentsConfig()
-  return `${config.schemaDocumentationUrl}${name}/`
+  return (name: string) => `${config.schemaDocumentationUrl}${name}/`
 }
 
-export function getSchemaValidationUrl(resource: Resource, registeredSchema: RegisteredSchema): string | null {
+export function useGetSchemaValidationUrl() {
   const config = useComponentsConfig()
-  if (!resource.schema || !resource.schema.name) {
-    return null
-  }
-
-  let schemaPath: SchemaPath = { schema_name: `schema-datagouvfr.${resource.schema.name}` }
-  if (resource.schema && resource.schema.version) {
-    const schemaVersion = resource.schema.version
-    const versionUrl = registeredSchema.versions.find(version => version.version_name === schemaVersion)?.schema_url
-    if (versionUrl) {
-      schemaPath = { schema_url: versionUrl }
+  return (resource: Resource, registeredSchema: RegisteredSchema) => {
+    if (!resource.schema || !resource.schema.name) {
+      return null
     }
+
+    let schemaPath: SchemaPath = { schema_name: `schema-datagouvfr.${resource.schema.name}` }
+    if (resource.schema && resource.schema.version) {
+      const schemaVersion = resource.schema.version
+      const versionUrl = registeredSchema.versions.find(version => version.version_name === schemaVersion)?.schema_url
+      if (versionUrl) {
+        schemaPath = { schema_url: versionUrl }
+      }
+    }
+    const query = new URLSearchParams({
+      'input': 'url',
+      'url': resource.url,
+      'header-case': 'on',
+      ...schemaPath,
+    }).toString()
+    return `${config.schemaValidataUrl}/table-schema?${query}`
   }
-  const query = new URLSearchParams({
-    'input': 'url',
-    'url': resource.url,
-    'header-case': 'on',
-    ...schemaPath,
-  }).toString()
-  return `${config.schemaValidataUrl}/table-schema?${query}`
 }

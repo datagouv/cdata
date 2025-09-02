@@ -2,7 +2,7 @@
   <div class="fr-stepper fr-mb-3w">
     <h2 class="fr-stepper__title fr-mb-3v">
       {{ currentStepName }}
-      <span class="fr-stepper__state text-default-grey">{{ $t("Step {n} of {count}", { n: currentStep, count: steps.length }) }}</span>
+      <span class="fr-stepper__state text-default-grey">{{ $t("Étape {n} sur {count}", { n: currentStep, count: steps.length }) }}</span>
     </h2>
     <div
       class="fr-stepper__steps"
@@ -13,7 +13,7 @@
       v-if="nextStep"
       class="fr-stepper__details"
     >
-      <span class="fr-text--bold">{{ $t("Next Step:") }}</span> {{ nextStep }}
+      <span class="fr-text--bold">{{ $t("Étape suivante :") }}</span> {{ nextStep }}
     </p>
   </div>
 </template>

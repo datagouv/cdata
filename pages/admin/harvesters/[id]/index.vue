@@ -6,7 +6,7 @@
           v-if="pageData && pageData.total"
           class="text-sm font-bold uppercase m-0"
         >
-          {{ $t('{n} jobs', pageData.total) }}
+          {{ $t('{n} jobs | {n} job | {n} jobs', pageData.total) }}
         </h2>
       </div>
       <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
@@ -20,22 +20,22 @@
           <thead>
             <tr>
               <AdminTableTh scope="col">
-                {{ $t("Job ID") }}
+                {{ $t("ID de tâche") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ $t("Status") }}
+                {{ $t("Statut") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ $t("Started at") }}
+                {{ $t("Débuté le") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ $t("Ended at") }}
+                {{ $t("Terminé le") }}
               </AdminTableTh>
               <AdminTableTh
                 scope="col"
                 class="w-12"
               >
-                {{ $t("Datasets") }}
+                {{ $t("Jeux de données") }}
               </AdminTableTh>
               <AdminTableTh
                 scope="col"
@@ -50,7 +50,7 @@
                 <Tooltip class="ml-auto">
                   <RiCheckLine class="size-3.5" />
                   <template #tooltip>
-                    {{ $t('Done items') }}
+                    {{ $t('Éléments finis') }}
                   </template>
                 </Tooltip>
               </AdminTableTh>
@@ -61,7 +61,7 @@
                 <Tooltip class="ml-auto">
                   <RiEyeOffLine class="size-3.5" />
                   <template #tooltip>
-                    {{ $t('Skipped items') }}
+                    {{ $t('Éléments ignorés') }}
                   </template>
                 </Tooltip>
               </AdminTableTh>
@@ -72,7 +72,7 @@
                 <Tooltip class="ml-auto">
                   <RiArchiveLine class="size-3.5" />
                   <template #tooltip>
-                    {{ $t('Archived items') }}
+                    {{ $t('Éléments archivés') }}
                   </template>
                 </Tooltip>
               </AdminTableTh>
@@ -83,7 +83,7 @@
                 <Tooltip class="ml-auto">
                   <RiCloseLine class="size-3.5" />
                   <template #tooltip>
-                    {{ $t('Failed items') }}
+                    {{ $t('Éléments en échec') }}
                   </template>
                 </Tooltip>
               </AdminTableTh>
@@ -96,12 +96,12 @@
             >
               <td>
                 <AdminContentWithTooltip>
-                  <NuxtLinkLocale
+                  <CdataLink
                     class="fr-link fr-reset-link"
                     :href="getHarvesterJobAdminUrl(harvester, job)"
                   >
                     {{ job.id }}
-                  </NuxtLinkLocale>
+                  </CdataLink>
                 </AdminContentWithTooltip>
               </td>
               <td>
@@ -148,21 +148,21 @@
         class="h-20"
       />
       <p class="fr-text--bold fr-my-3v">
-        {{ $t(`No job yet.`) }}
+        {{ $t(`Aucun job pour l'instant.`) }}
       </p>
       <BrandedButton
         color="primary"
         size="xs"
         :href="`/admin/harvesters/${harvester.id}/configuration`"
       >
-        {{ $t('Go to configuration') }}
+        {{ $t('Aller à la configuration') }}
       </BrandedButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Pagination, BrandedButton, formatDate } from '@datagouv/components-next'
+import { Pagination, BrandedButton, useFormatDate, Tooltip } from '@datagouv/components-next'
 import { RiArchiveLine, RiCheckLine, RiCloseLine, RiEyeOffLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
@@ -174,8 +174,10 @@ const page = ref(1)
 const pageSize = ref(20)
 
 const route = useRoute()
+const { formatDate } = useFormatDate()
+
 const sourceUrl = computed(() => `/api/1/harvest/source/${route.params.id}`)
-const { data: harvester } = await useAPI<HarvesterSource>(sourceUrl, { lazy: true })
+const { data: harvester } = await useAPI<HarvesterSource>(sourceUrl, { redirectOn404: true })
 
 const jobsUrl = computed(() => `/api/1/harvest/source/${route.params.id}/jobs`)
 const jobsParams = computed(() => {

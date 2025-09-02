@@ -28,15 +28,12 @@
             v-if="open"
             class="sr-only"
           >
-            {{ $t('Close details') }}
+            {{ $t('Fermer les détails') }}
           </span>
         </DisclosureButton>
       </div>
     </header>
-    <DisclosurePanel
-      :id="accordionId"
-      class="accordion-content"
-    >
+    <DisclosurePanel :id="accordionId">
       <div class="pb-6 mb-6 border-bottom border-gray-default">
         <div
           class="fr-grid-row fr-grid-row--gutters fr-text--sm fr-m-0"

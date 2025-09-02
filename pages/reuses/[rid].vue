@@ -4,47 +4,45 @@
     <div class="container">
       <div
         v-if="reuse"
-        class="flex flex-wrap items-center justify-between"
+        class="mt-4 flex gap-4 flex-wrap md:flex-nowrap items-center justify-between"
       >
-        <Breadcrumb>
+        <Breadcrumb class="md:mb-0 md:mt-0">
           <BreadcrumbItem
             to="/"
             :external="true"
           >
-            {{ $t('Home') }}
+            {{ $t('Accueil') }}
           </BreadcrumbItem>
           <BreadcrumbItem to="/reuses">
-            {{ $t('Reuses') }}
+            {{ $t('Réutilisations') }}
           </BreadcrumbItem>
           <BreadcrumbItem>
             {{ reuse.title }}
           </BreadcrumbItem>
         </Breadcrumb>
-        <div class="flex flex-wrap gap-2.5 md:max-w-6/12">
+        <div class="max-w-full flex-none flex gap-2.5 flex-wrap md:max-w-6/12">
           <FollowButton
             v-if="reuse"
             :url="`/api/1/reuses/${reuse.id}/followers/`"
           />
-          <div>
+          <div v-if="!reuse.archived">
             <BrandedButton
               :href="reuse.url"
               :new-tab="true"
               size="xs"
             >
-              {{ $t('See the reuse') }}
+              {{ $t('Voir la réutilisation') }}
             </BrandedButton>
           </div>
-          <div class="flex gap-3 items-center">
-            <EditButton
-              v-if="isMeAdmin()"
-              :id="reuse.id"
-              type="reuses"
-            />
-            <ReportModal
-              v-if="!isOrganizationCertified(reuse.organization)"
-              :subject="{ id: reuse.id, class: 'Reuse' }"
-            />
-          </div>
+          <EditButton
+            v-if="reuse.permissions.edit"
+            :id="reuse.id"
+            type="reuses"
+          />
+          <ReportModal
+            v-if="!isOrganizationCertified(reuse.organization)"
+            :subject="{ id: reuse.id, class: 'Reuse' }"
+          />
         </div>
       </div>
     </div>
@@ -53,8 +51,8 @@
       :status
     >
       <div class="container py-10 min-h-32">
-        <div class="flex flex-wrap">
-          <div class="w-full md:w-5/12 flex flex-col justify-center">
+        <div class="grid md:grid-cols-12 md:gap-4">
+          <div class="md:col-span-5 flex flex-col justify-center">
             <div class="flex gap-3 mb-2">
               <AdminBadge
                 v-if="reuse.deleted"
@@ -62,7 +60,7 @@
                 size="sm"
                 type="secondary"
               >
-                {{ $t('Deleted') }}
+                {{ $t('Supprimé') }}
               </AdminBadge>
               <AdminBadge
                 v-if="reuse.private"
@@ -70,7 +68,7 @@
                 size="sm"
                 type="secondary"
               >
-                {{ $t('Draft') }}
+                {{ $t('Brouillon') }}
               </AdminBadge>
               <AdminBadge
                 v-if="reuse.archived"
@@ -78,7 +76,7 @@
                 size="sm"
                 type="secondary"
               >
-                {{ $t('Archived') }}
+                {{ $t('Archivé') }}
               </AdminBadge>
             </div>
             <div
@@ -92,14 +90,14 @@
                 :size="32"
                 class="bg-white p-1 rounded-xs border border-gray-default object-contain"
               />
-              <NuxtLinkLocale
+              <CdataLink
                 class="link block"
                 :to="`/organizations/${reuse.organization.slug}/`"
               >
                 <OrganizationNameWithCertificate
                   :organization="reuse.organization"
                 />
-              </NuxtLinkLocale>
+              </CdataLink>
             </div>
             <div
               v-else-if="reuse.owner"
@@ -110,32 +108,35 @@
                 :size="24"
                 :rounded="true"
               />
-              <NuxtLinkLocale
+              <CdataLink
                 class="link block"
                 :to="`/users/${reuse.owner.slug}/`"
                 :external="true"
               >
                 {{ reuse.owner.first_name }} {{ reuse.owner.last_name }}
-              </NuxtLinkLocale>
+              </CdataLink>
             </div>
-            <h1 class="!text-2xl !font-extrabold !mb-1">
+            <h1 class="text-2xl font-extrabold text-gray-title mb-1">
               {{ reuse.title }}
             </h1>
             <ReuseDetails
               :reuse
               class="mt-1 mb-0"
             />
-            <div class="mt-6">
+            <div
+              v-if="!reuse.archived"
+              class="mt-6"
+            >
               <BrandedButton
                 size="xs"
                 :href="reuse.url"
                 :new-tab="true"
               >
-                {{ $t('See reuse') }}
+                {{ $t('Voir la réutilisation') }}
               </BrandedButton>
             </div>
           </div>
-          <div class="w-7/12">
+          <div class="w-7/12 md:w-full md:col-span-7">
             <NuxtImg
               class="w-full object-contain max-h-[400px]"
               :src="reuse.image ?? undefined"
@@ -164,18 +165,17 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, Avatar, BrandedButton, OrganizationNameWithCertificate, type Reuse } from '@datagouv/components-next'
+import { isOrganizationCertified, Avatar, BrandedButton, OrganizationNameWithCertificate, ReuseDetails, type Reuse } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
-import ReuseDetails from '~/datagouv-components/src/components/ReuseDetails.vue'
 
 const route = useRoute()
 
 const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
-const { data: reuse, status } = await useAPI<Reuse | null>(url)
+const { data: reuse, status } = await useAPI<Reuse>(url, { redirectOn404: true })
 
 const title = computed(() => reuse.value?.title)
 const robots = computed(() => reuse.value && !reuse.value.metrics.datasets && !reuse.value.metrics.datasets ? 'noindex, nofollow' : 'all')
@@ -183,5 +183,12 @@ const robots = computed(() => reuse.value && !reuse.value.metrics.datasets && !r
 useSeoMeta({
   title,
   robots,
+})
+
+onMounted(async () => {
+  await redirectLegacyHashes([
+    { from: 'discussions', to: `/reuses/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+    { from: 'discussion', to: `/reuses/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+  ])
 })
 </script>

@@ -9,7 +9,7 @@
         color="primary"
         @click="submit"
       >
-        {{ t("Save") }}
+        {{ t("Sauvegarder") }}
       </BrandedButton>
     </div>
   </div>
@@ -26,12 +26,12 @@ const { toast } = useToast()
 
 const route = useRoute()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
-const { data: dataservice } = await useAPI<Dataservice>(url)
+const { data: dataservice } = await useAPI<Dataservice>(url, { redirectOn404: true })
 const datasets = ref<Array<Dataset | DatasetV2 | DatasetSuggest>>([])
 const datasetsPage = ref<PaginatedArray<DatasetV2> | null>(null)
 watchEffect(async () => {
   if (!dataservice.value) return
-  datasetsPage.value = await $api<PaginatedArray<DatasetV2>>(`/api/2/datasets/?dataservice=${dataservice.value.id}/`)
+  datasetsPage.value = await $api<PaginatedArray<DatasetV2>>(`/api/2/datasets/?dataservice=${dataservice.value.id}`)
   // TODO use page data to see if there is others datasets linked and add a warning message?
   datasets.value = datasetsPage.value.data
 })
@@ -44,7 +44,7 @@ const submit = async () => {
     }),
   })
 
-  toast.success(t('Dataservice updated!'))
+  toast.success(t('Fiche API mise à jour !'))
   window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
 }
 </script>

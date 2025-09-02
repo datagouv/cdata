@@ -18,10 +18,10 @@
         icon-only
         :icon="sorted === 'desc' ? RiArrowUpLine : RiArrowDownLine"
         :class="sorted ? '' : 'opacity-50'"
-        :title="t('Sort')"
+        :title="t('Trier')"
         @click="toggleSort"
       >
-        {{ t("Sort") }}
+        {{ t("Trier") }}
       </BrandedButton>
     </div>
   </th>

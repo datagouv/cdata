@@ -16,13 +16,15 @@
       />
       <div class="w-full">
         <p class="font-bold mb-1">
-          {{ t('What is an organization?') }}
+          {{ t(`Qu'est-ce qu'une organisation ?`) }}
         </p>
         <p class="m-0 text-xs/5">
-          {{ t('An organization is an entity in which many users can collaborate. The datasets published under the organization can be edited by its members.') }}
+          {{ t(`Une organisation est une entité dans laquelle de nombreux utilisateurs peuvent collaborer. Les jeux de données publiés sous l'organisation peuvent être édités par ses membres.`) }}
         </p>
       </div>
     </SimpleBanner>
+
+    <slot name="top" />
 
     <RequiredExplanation />
     <FormFieldset :legend="$t('Description')">
@@ -89,6 +91,35 @@
             </div>
           </div>
         </ClientOnly>
+        <template #warning>
+          <SimpleBanner
+            v-if="organizationsWithSameSiret?.total"
+            class="p-4 mt-3 text-warning-dark"
+            type="warning"
+          >
+            <div class="flex items-center gap-1">
+              <RiAlertLine class="size-4" /> <span>{{
+                t('Une organisation avec ce SIRET existe déjà sur {site} | {n} organisations avec ce SIRET existent déjà sur {site}', { site: config.public.title, n: organizationsWithSameSiret.total })
+              }}</span>
+            </div>
+            <ul class="text-sm list-none p-0">
+              <li
+                v-for="org in organizationsWithSameSiret.data"
+                :key="org.id"
+              >
+                <CdataLink
+                  :href="org.page"
+                  class="link text-gray-plain"
+                >
+                  <OrganizationNameWithCertificate
+                    :show-type="false"
+                    :organization="org"
+                  />
+                </CdataLink>
+              </li>
+            </ul>
+          </SimpleBanner>
+        </template>
         <template #accordion>
           <HelpAccordion :title="$t('Pourquoi fournir un numéro SIRET ?')">
             <p class="fr-m-0">
@@ -125,7 +156,7 @@
       <FieldsetElement form-key="url">
         <InputGroup
           v-model="organization.url"
-          :label="t('Website')"
+          :label="t('Site Internet')"
           type="url"
           :has-error="!!getFirstError('url')"
           :has-warning="!!getFirstWarning('url')"
@@ -145,10 +176,10 @@
         <UploadGroup
           :label="t('Logo')"
           :title="t('Logo')"
-          hint-text="Max size: 4Mo. Accepted formats: JPG, JPEG, PNG"
+          :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
           accept=".jpeg, .jpg, .png"
           :is-valid="!!file"
-          :valid-text="t('Your file is valid')"
+          :valid-text="t('Votre fichier est valide')"
           @change="addFiles"
         />
         <div
@@ -175,7 +206,7 @@
       v-if="isMeAdmin() && 'badges' in organization"
       v-model="newBadges"
       :label="$t('Badges')"
-      :placeholder="$t('Associate badges to the organization…')"
+      :placeholder="$t(`Associer des badges à l'organisation…`)"
       class="mb-6"
       :options="badges"
       :get-option-id="(badge) => badgesLabels[badge.kind]"
@@ -188,7 +219,7 @@
       class="fr-mt-n2w fr-mb-2w"
     >
       <template #title>
-        {{ t("An error occured | Some errors occured", errors.length) }}
+        {{ t("Une erreur est survenue | Des erreurs sont survenues", errors.length) }}
       </template>
       <ul v-if="errors.length > 1">
         <li
@@ -211,7 +242,7 @@
         color="secondary"
         @click="$emit('previous')"
       >
-        {{ $t('Previous') }}
+        {{ $t('Précédent') }}
       </BrandedButton>
       <BrandedButton
         type="submit"
@@ -225,8 +256,10 @@
 </template>
 
 <script setup lang="ts">
-import { ASSOCIATION, COMPANY, LOCAL_AUTHORITY, PUBLIC_SERVICE, BrandedButton, OwnerType, SimpleBanner } from '@datagouv/components-next'
+import { ASSOCIATION, COMPANY, LOCAL_AUTHORITY, PUBLIC_SERVICE, BrandedButton, OwnerType, SimpleBanner, OrganizationNameWithCertificate } from '@datagouv/components-next'
 import type { Badge, NewOrganization, Organization, OrganizationTypes } from '@datagouv/components-next'
+import { RiAlertLine } from '@remixicon/vue'
+import { asyncComputed } from '@vueuse/core'
 import { computed, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Alert from '~/components/Alert/Alert.vue'
@@ -236,8 +269,9 @@ import HelpAccordion from '~/components/Form/HelpAccordion.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
 import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplanation.vue'
 import UploadGroup from '~/components/UploadGroup/UploadGroup.vue'
+import type { PaginatedArray } from '~/types/types'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   type: 'create' | 'update'
   errors: Array<string>
   submitLabel: string
@@ -259,9 +293,17 @@ const emit = defineEmits<{
 
 const config = useRuntimeConfig()
 const { t } = useI18n()
+const { $api } = useNuxtApp()
 
-const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges')
+const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges/')
 const badges = computed(() => Object.keys(badgesLabels.value || {}).map(key => ({ kind: key })))
+const defaultValue = { data: [], total: 0 }
+const organizationsWithSameSiret = asyncComputed(async () => {
+  if (!form.value.business_number_id || !getFirstWarning('business_number_id')) {
+    return defaultValue
+  }
+  return await $api<PaginatedArray<Organization>>(`/api/1/organizations/?business_number_id=${cleanSiret(form.value.business_number_id)}`)
+}, defaultValue, { lazy: true })
 
 const newBadges = ref('badges' in organization.value ? organization.value.badges : [])
 
@@ -275,32 +317,45 @@ const checkOrga = ref({
   exists: null as boolean | null,
 })
 
-function checkBusinessId<T, K extends KeysOfUnion<T>, V extends (string | undefined) & T[K]>(check: MaybeRefOrGetter<{ exists: boolean }>, message: string | null = null): ValidationFunction<T, K, V> {
+function checkBusinessId<T, K extends KeysOfUnion<T>, V extends (string | null) & T[K]>(): ValidationFunction<T, K, V> {
   return (value: V, key: K, form: T, t) => {
-    if (!value || value.length == 0) {
-      return null
+    const clean = cleanSiret(value)
+    if (!clean) return null
+
+    if (/^\d{9}$/.test(clean)) return t('Veuillez renseigner un SIRET (14 chiffres) et non pas un SIREN (9 chiffres).')
+    if (!/^\d{14}$/.test(clean)) return t('Un numéro SIRET doit contenir 14 chiffres.')
+
+    // Algorithme de Luhn
+    let sum = 0
+    for (let i = 0; i < 14; i++) {
+      let digit = parseInt(clean.charAt(i), 10)
+      if (i % 2 === 0) {
+        digit *= 2
+        if (digit > 9) digit -= 9
+      }
+      sum += digit
     }
-    else if (value.length === 14 && toValue(check).exists) {
-      return null
-    }
-    else {
-      return message || t('Ce numéro SIRET est invalide.')
-    }
+
+    if (sum % 10 === 0) return null
+    return t('Ce numéro SIRET est invalide.')
   }
 }
 
+const isCreation = computed(() => props.type === 'create')
+
 const { form, formInfo, getFirstError, getFirstWarning, touch, validate } = useForm(organization, {
-  business_number_id: [checkBusinessId(checkOrga)],
+  business_number_id: [checkBusinessId()],
   description: [required()],
-  name: [required()],
+  name: [required(), ruleIf(isCreation, unique(name => `/api/1/organizations/?name=${name}`, t('Une organisation portant ce nom existe déjà. Veuillez choisir un autre nom ou vérifier si votre organisation existe déjà.')))],
   url: [url()],
 }, {
+  business_number_id: [ruleIf(isCreation, unique(siret => `/api/1/organizations/?business_number_id=${cleanSiret(siret)}`))],
   description: [minLength(config.public.qualityDescriptionLength)],
   name: [testNotAllowed(config.public.demoServer?.name)],
 })
 
-function submit() {
-  if (validate()) {
+async function submit() {
+  if (await validate()) {
     emit('submit', file.value, newBadges.value)
   }
 }
@@ -328,36 +383,33 @@ function getOrganizationType(complements: SearchAdditionalData): OrganizationTyp
   return COMPANY
 }
 
-watchEffect(() => {
+watchEffect(async () => {
   const siret = form.value.business_number_id?.replace(/\s/g, '')
   if (config.public.searchSirenUrl && siret?.length === 14) {
-      type SearchSirenResponse = {
-        total_results: number
-        results: Array<{
-          nom_complet: string
-          siren: string
-          complements: SearchAdditionalData
-        }>
-      }
-      useFetch<SearchSirenResponse>(config.public.searchSirenUrl, {
-        params: {
-          q: siret,
-          mtm_campaign: 'datagouv/frontend',
-        },
-      })
-        .then(res => res.data)
-        .then((result) => {
-          if (!result.value || result.value.total_results === 0) {
-            checkOrga.value.exists = false
-            checkOrga.value.type = 'other'
-          }
-          else {
-            checkOrga.value.name = result.value.results[0].nom_complet
-            checkOrga.value.siren = result.value.results[0].siren
-            checkOrga.value.type = getOrganizationType(result.value.results[0].complements)
-            checkOrga.value.exists = true
-          }
-        })
+    const { data } = await useFetch<{
+      total_results: number
+      results: Array<{
+        nom_complet: string
+        siren: string
+        complements: SearchAdditionalData
+      }>
+    }>(config.public.searchSirenUrl, {
+      params: {
+        q: siret,
+        mtm_campaign: 'datagouv/cdata',
+      },
+    })
+
+    if (!data.value || data.value.total_results === 0) {
+      checkOrga.value.exists = false
+      checkOrga.value.type = 'other'
+    }
+    else {
+      checkOrga.value.name = data.value.results[0].nom_complet
+      checkOrga.value.siren = data.value.results[0].siren
+      checkOrga.value.type = getOrganizationType(data.value.results[0].complements)
+      checkOrga.value.exists = true
+    }
   }
   else {
     checkOrga.value.exists = null

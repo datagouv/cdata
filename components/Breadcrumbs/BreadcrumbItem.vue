@@ -1,5 +1,8 @@
 <template>
-  <li>
+  <li
+    data-breadcrumb-item
+    :data-breadcrumb-to="to"
+  >
     <a
       v-if="isCurrent"
       class="fr-breadcrumb__link"
@@ -7,14 +10,14 @@
     >
       <slot />
     </a>
-    <NuxtLinkLocale
+    <CdataLink
       v-else
       class="fr-breadcrumb__link"
       :to
       :external
     >
       <slot />
-    </NuxtLinkLocale>
+    </CdataLink>
   </li>
 </template>
 
@@ -24,8 +27,6 @@ const props = defineProps<{
   external?: boolean
 }>()
 
-const route = useRoute()
-const localePath = useLocalePath()
-
-const isCurrent = computed(() => !props.to || localePath(props.to) === route.fullPath)
+const isCurrentUrl = useIsCurrentUrl()
+const isCurrent = computed(() => !props.to || isCurrentUrl(props.to))
 </script>

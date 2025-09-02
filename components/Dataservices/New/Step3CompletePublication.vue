@@ -1,9 +1,6 @@
 <template>
-  <div class="fr-p-3w bg-white">
-    <SimpleBanner
-      type="primary"
-      class="mb-6"
-    >
+  <div class="fr-p-3w bg-white space-y-6">
+    <SimpleBanner type="primary">
       <div class="fr-grid-row">
         <div class="fr-col-auto fr-mr-3v">
           <NuxtImg
@@ -14,10 +11,10 @@
         </div>
         <div class="fr-col">
           <p class="fr-m-0 fr-text--bold">
-            {{ $t('Your dataservice is created!') }}
+            {{ $t('Votre API a été créée !') }}
           </p>
           <p class="fr-m-0 fr-text--xs">
-            {{ $t('You can now publish it or save it as a draft.') }}
+            {{ $t('Vous pouvez maintenant le publier ou le sauvegarder en brouillon.') }}
           </p>
         </div>
       </div>
@@ -31,7 +28,7 @@
         color="secondary-softer"
         new-tab
       >
-        {{ $t('Give us your feedback on the publishing form') }}
+        {{ $t('Donnez-nous votre avis sur le parcours de publication') }}
       </BrandedButton>
       <div class="fr-grid-row fr-grid-row--right">
         <BrandedButton
@@ -39,14 +36,14 @@
           color="secondary"
           @click="submit(true)"
         >
-          {{ $t("Save as draft") }}
+          {{ $t("Sauvegarder le brouillon") }}
         </BrandedButton>
         <BrandedButton
           color="primary"
           :loading
           @click="submit(false)"
         >
-          {{ $t("Publish the dataservice") }}
+          {{ $t("Publier l'API") }}
         </BrandedButton>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import type { Dataset, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource } from '@datagouv/components-next'
+import type { Dataset, CommunityResource, Dataservice, DataserviceAccessAudience, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, DataserviceAccessAudienceType, DataserviceAccessAudienceCondition, ContactPoint } from '@datagouv/components-next'
 
 export type AxisAlignment = 'start' | 'center' | 'end'
 
@@ -142,6 +142,7 @@ export type NewDatasetForApi = {
   title: string
   private?: boolean
   archived?: string | null
+  deleted?: null
   acronym?: string
   description: string
   organization?: string
@@ -170,6 +171,7 @@ export type ReuseForm = {
   tags: Array<Tag>
   image: File | string | null
   private: boolean
+  archived: string | null
 }
 
 export type NewReuseForApi = {
@@ -177,6 +179,8 @@ export type NewReuseForApi = {
   owner?: string
   title: string
   private?: boolean
+  archived?: string | null
+  deleted?: null
   description: string
   datasets: Array<string> | undefined
   url: string
@@ -186,6 +190,7 @@ export type NewReuseForApi = {
 }
 
 export type DataserviceForm = {
+  featured: boolean
   owned: Owned | null
   title: string
   acronym: string
@@ -197,6 +202,7 @@ export type DataserviceForm = {
   technical_documentation_url: string | null
   business_documentation_url: string | null
   access_type: 'open' | 'restricted' | 'open_with_account'
+  access_audiences: Record<DataserviceAccessAudienceType, DataserviceAccessAudienceCondition>
   rate_limiting: string
   availability: string
   private: boolean
@@ -207,12 +213,14 @@ export type NewDataserviceForApi = {
   owner?: string
   title: string
   archived_at?: string | null
+  deleted_at?: null
   private?: boolean
   acronym?: string
   description: string
   datasets?: Array<string>
   contact_points?: Array<string> | null
   access_type: 'open' | 'open_with_account' | 'restricted'
+  access_audiences: Array<DataserviceAccessAudience>
   base_api_url: string | null
   authorization_request_url: string | null
   machine_documentation_url: string | null
@@ -237,6 +245,9 @@ export type BaseResourceForm = {
   description: string
   schema: RegisteredSchema | null
   schema_url: string | null
+
+  checksum_type: string | null
+  checksum_value: string | null
 }
 
 export type ResourceFormRemote = BaseResourceForm & {
@@ -277,14 +288,6 @@ export type NewOrganization = {
   description: string
   url: string | null
   logo: string
-}
-
-export type ContactPoint = {
-  id: string
-  name: string
-  contact_form?: string
-  email?: string
-  role: string
 }
 
 export type NewContactPoint = Omit<ContactPoint, 'id'>

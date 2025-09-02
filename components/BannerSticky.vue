@@ -23,6 +23,7 @@
 
 <script setup lang="ts">
 import { RiAlertLine, RiCheckDoubleLine, RiInformationLine, RiSpamLine } from '@remixicon/vue'
+import { throwOnNever } from '@datagouv/components-next'
 
 const props = defineProps<{
   type: 'info' | 'error' | 'warning' | 'success'

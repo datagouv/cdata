@@ -1,9 +1,13 @@
 export type Site = {
   id: string
   title: string
+  datasets_page: string | null
+  reuses_page: string | null
+  dataservices_page: string | null
   metrics: {
     'dataservices': number
     'datasets': number
+    'datasets_visits_by_months': Record<string, number>
     'discussions': number
     'followers': number
     'harvesters': number
@@ -17,7 +21,14 @@ export type Site = {
     'organizations': number
     'public-service': number
     'resources': number
+    'resources_downloads_by_months': Record<string, number>
     'reuses': number
     'users': number
+    'users_by_months': Record<string, number>
+    'datasets_by_months': Record<string, number>
+    'harvesters_by_months': Record<string, number>
+    'reuses_by_months': Record<string, number>
+    'organizations_by_months': Record<string, number>
+    'discussions_by_months': Record<string, number>
   }
 }

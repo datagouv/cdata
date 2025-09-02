@@ -35,7 +35,7 @@
               :class="{ 'pl-0 pr-0': isFullscreen }"
             >
               <BrandedButton
-                :title="$t('Close the modal window')"
+                :title="$t('Fermer la fenêtre modale')"
                 color="primary-softer"
                 :aria-controls="modalId"
                 :icon="RiCloseLine"
@@ -43,7 +43,7 @@
                 :keep-margins-even-without-borders="isFullscreen"
                 @click="emit('close')"
               >
-                {{ $t('Close') }}
+                {{ $t('Fermer') }}
               </BrandedButton>
             </div>
             <div

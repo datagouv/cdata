@@ -8,7 +8,7 @@
     </SimpleBanner>
     <div class="space-y-1">
       <div class="uppercase text-gray-plain text-sm font-bold">
-        {{ $t('{n} community resources', { n: resources.total }) }}
+        {{ $t('{n} ressources communautaires', { n: resources.total }) }}
       </div>
       <div class="space-y-2.5">
         <ResourceAccordion
@@ -16,6 +16,8 @@
           :key="resource.id"
           :dataset
           :resource
+          :can-edit="resource.permissions.edit"
+          is-community-resource
         />
         <Pagination
           :total-results="resources.total"

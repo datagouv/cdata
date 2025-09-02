@@ -19,9 +19,13 @@
   --text-4\.5xl: 2.75rem;
 
   --color-primary: #3558a2;
+  --color-ocher: #A6481C;
+  --color-green-reuse: #2B6972;
+  --color-purple-dataservice: #5E5DAE;
   --color-mention-grey: #666; /* Copy from --text-mention-grey */
   --color-gray-title: #161616;
   --color-gray-medium: #666666;
+  --color-gray-lowest-2: #fafafa;
   --color-gray-low: #929292;
   --color-gray-lower-hover: #d2d2d2;
   --color-gray-lower-active: #c1c1c1;
@@ -32,6 +36,8 @@
   --color-gray-plain: #3a3a3a;
   --color-gray-some: #f6f6f6;
   --color-gray-logo: #373c42;
+  --color-gray-dark: #242424;
+  --color-gray-disabled: #2A2A2A;
   --color-default-warning: #b32000;
   --color-blue-action-low: #dae6fd;
   --color-blue-action-low-hover: #a9c8fb;

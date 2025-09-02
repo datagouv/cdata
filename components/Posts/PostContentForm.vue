@@ -3,7 +3,7 @@
     <InputGroup
       v-model="form.content"
       type="markdown"
-      :label="$t('Content')"
+      :label="$t('Contenu')"
       :required="true"
       :has-error="!!getFirstError('content')"
       :has-warning="!!getFirstWarning('content')"
@@ -19,7 +19,7 @@
         color="secondary"
         @click="$emit('previous')"
       >
-        {{ $t('Previous') }}
+        {{ $t('Précédent') }}
       </BrandedButton>
       <BrandedButton
         color="primary"
@@ -52,8 +52,8 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm({
 }, {
 })
 
-function submit() {
-  if (validate()) {
+async function submit() {
+  if (await validate()) {
     emit('submit', form.value)
   }
 };

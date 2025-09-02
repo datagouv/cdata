@@ -15,13 +15,13 @@
         color="secondary"
         @click="$emit('previous')"
       >
-        {{ $t('Previous') }}
+        {{ $t('Précédent') }}
       </BrandedButton>
       <BrandedButton
         color="primary"
         @click="$emit('next')"
       >
-        {{ $t('Next') }}
+        {{ $t('Suivant') }}
       </BrandedButton>
     </div>
   </div>
@@ -32,7 +32,6 @@ import { BrandedButton } from '@datagouv/components-next'
 import JobPage from './JobPage.vue'
 import PreviewLoader from './PreviewLoader.vue'
 import type { HarvesterForm, HarvesterJob } from '~/types/harvesters'
-import { toApi } from '~/utils/harvesters'
 
 const props = defineProps<{
   harvesterForm: HarvesterForm
@@ -54,7 +53,7 @@ onMounted(async () => {
   try {
     job.value = await $api<HarvesterJob>('/api/1/harvest/source/preview', {
       method: 'POST',
-      body: toApi(props.harvesterForm),
+      body: harvesterToApi(props.harvesterForm),
     })
   }
   finally {

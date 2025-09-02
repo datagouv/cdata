@@ -1,7 +1,7 @@
 <template>
   <ModalWithButton
     v-if="!thread.closed"
-    :title="$t('Respond')"
+    :title="$t('Répondre')"
     size="lg"
   >
     <template #button="{ attrs, listeners }">
@@ -14,7 +14,7 @@
         v-bind="attrs"
         v-on="listeners"
       >
-        {{ $t('Respond to the discussion') }}
+        {{ $t('Répondre à la discussion') }}
       </BrandedButton>
     </template>
     <template #default="{ close }">

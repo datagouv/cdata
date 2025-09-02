@@ -1,9 +1,6 @@
 <template>
-  <div class="fr-p-3w bg-white">
-    <SimpleBanner
-      type="primary"
-      class="mb-6"
-    >
+  <div class="fr-p-3w bg-white space-y-6">
+    <SimpleBanner type="primary">
       <div class="fr-grid-row">
         <div class="fr-col-auto fr-mr-3v">
           <NuxtImg
@@ -14,10 +11,10 @@
         </div>
         <div class="fr-col">
           <p class="fr-m-0 fr-text--bold">
-            {{ $t("Your harvester is created, it's waiting the validation from the administration team.") }}
+            {{ $t("Votre moissonneur a été créé, il est en attente de validation par l’équipe d’administration.") }}
           </p>
           <p class="fr-m-0 fr-text--xs">
-            {{ $t("Please notify us via the contact form below if you want this harvester validated. You'll be notify when approved (or refused)") }}
+            {{ $t("Merci de nous informer via le formulaire de contact suivant si vous souhaitez que nous validions votre moissonneur. Vous serez notifié à l’approbation (ou au refus).") }}
           </p>
         </div>
       </div>
@@ -30,7 +27,7 @@
         :icon="RiLightbulbLine"
         new-tab
       >
-        {{ $t('Give us your feedback on the publishing form') }}
+        {{ $t('Donnez-nous votre avis sur le parcours de publication') }}
       </BrandedButton>
       <div class="fr-grid-row fr-grid-row--right">
         <BrandedButton
@@ -38,14 +35,14 @@
           color="secondary"
           :href="getHarvesterAdminUrl(harvester)"
         >
-          {{ $t("Go to admin") }}
+          {{ $t("Se rendre sur l'administration") }}
         </BrandedButton>
         <BrandedButton
           color="primary"
           :href="config.public.harvesterRequestValidationUrl"
           new-tab
         >
-          {{ $t("Request validation") }}
+          {{ $t("Demander la validation") }}
         </BrandedButton>
       </div>
     </div>

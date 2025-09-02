@@ -12,10 +12,10 @@
       @click.prevent="toggleFollow"
     >
       <template v-if="following">
-        {{ $t("Remove from favourites") }}
+        {{ $t("Retirer des favoris") }}
       </template>
       <template v-else>
-        {{ $t("Add to favourites") }}
+        {{ $t("Ajouter aux favoris") }}
       </template>
     </BrandedButton>
   </LoadingBlock>
@@ -35,6 +35,7 @@ const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
 
 const me = useMaybeMe()
+const route = useRoute()
 
 const { data: follower, status: followStatus } = await useAPI<PaginatedArray<{
   id: string
@@ -63,7 +64,7 @@ async function toggleFollow() {
   const me = useMaybeMe()
   if (!me.value) {
     const localePath = useLocalePath()
-    return navigateTo(localePath('/login'), { external: true })
+    navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true })
   }
   loading.value = true
   try {

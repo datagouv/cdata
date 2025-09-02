@@ -1,12 +1,12 @@
 <template>
   <nav
     rol="navigation"
-    :aria-label="$t(`You're here:`)"
-    class="fr-breadcrumb mb-5"
+    :aria-label="$t(`Vous êtes ici :`)"
+    class="fr-breadcrumb truncate mb-5"
   >
     <ol
       ref="rootRef"
-      class="fr-breadcrumb__list"
+      class="fr-breadcrumb__list truncate"
     >
       <slot />
     </ol>
@@ -17,7 +17,6 @@
 const root = useTemplateRef('rootRef')
 const breadcrumbs = useBreadcrumbs()
 const route = useRoute()
-const updating = ref(false)
 
 //
 // :BreadcrumbInSidebar
@@ -33,15 +32,15 @@ const updating = ref(false)
 const updateBreadcrumbs = () => {
   if (!root.value) return
   breadcrumbs.value = [...root.value.children].map((child) => {
-    const component = '__vueParentComponent' in child ? child.__vueParentComponent as { props?: { to?: string } } : null
-    if (!component || !component.props) {
-      console.error('Child of `Breadcrumb` is not a vue component')
+    const isBreadcrumbItem = 'breadcrumbItem' in (child as HTMLElement).dataset
+    if (!isBreadcrumbItem) {
+      console.error('Child of `Breadcrumb` is not a `BreadcrumbItem`')
       return null
     }
 
-    return component.props.to as string
+    return (child as HTMLElement).dataset.breadcrumbTo || null
   })
-  breadcrumbs.value.push(route.fullPath)
+  breadcrumbs.value.push(removeLangPrefix(route.fullPath))
 }
 
 const observer = ref<MutationObserver | null>(null)
