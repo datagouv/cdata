@@ -6,10 +6,7 @@ Ce document explique comment les tests E2E sont configurés pour tester l'intég
 
 ### GitHub Actions
 
-Deux workflows ont été créés :
-
-1. **e2e-tests.yml** - Workflow complet qui installe tout manuellement
-2. **e2e-simple.yml** - Workflow simplifié qui utilise Docker Compose
+Voir **e2e.yml**.
 
 ### Architecture des tests
 
@@ -50,40 +47,13 @@ Les tests E2E simulent un environnement complet avec :
 Pour tester localement :
 
 1. **Démarrer udata** :
-```bash
-cd ../udata
-docker-compose up -d
-pip install -e .
-udata init
-inv serve --port 5000
-```
-
-2. **Démarrer cdata** :
-```bash
-cd cdata
-NUXT_PUBLIC_API_BASE=http://localhost:5000/api/1/ npm run dev
-```
-
-3. **Lancer les tests** :
+2. **Lancer les tests** :
 ```bash
 npm run test:e2e
 ```
-
-## Variables d'environnement
-
-- `BASE_URL` : URL de base pour cdata (défaut: http://localhost:3000)
-- `NUXT_PUBLIC_API_BASE` : URL de l'API udata (défaut: http://localhost:5000/api/1/)
 
 ## Scripts disponibles
 
 - `npm run test:e2e` : Lance les tests E2E en mode headless
 - `npm run test:e2e:ui` : Lance les tests avec l'interface Playwright
 - `npm run test:e2e:headed` : Lance les tests en mode visible
-
-## Gestion des erreurs
-
-Le workflow inclut :
-- Timeouts appropriés pour le démarrage des services
-- Cleanup automatique des processus
-- Upload des artefacts en cas d'échec
-- Gestion robuste des processus en arrière-plan
