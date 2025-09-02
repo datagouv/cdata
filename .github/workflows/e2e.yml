@@ -89,7 +89,7 @@ jobs:
       - name: Initialize udata
         working-directory: udata
         env:
-          UDATA_SETTINGS: udata.cfg
+          UDATA_SETTINGS: ./udata.cfg
         run: |
           # Create fs directory
           mkdir -p fs
