@@ -105,6 +105,7 @@
 
         <div>
           <Captchetat
+            v-if="config.public.captcheta.enabled"
             v-model:uuid="captchaUuid"
             v-model:code="captchaCode"
             :errors="getAllErrorsInErrorFields(errors, 'captcha_code')"
