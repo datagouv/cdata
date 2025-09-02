@@ -69,6 +69,7 @@ export type Dataset = BaseDataset & {
   slug: string
   quality: Quality
   metrics: {
+    dataservices: number
     discussions: number
     discussions_open: number
     followers: number
