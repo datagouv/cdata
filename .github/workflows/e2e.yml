@@ -14,8 +14,6 @@ jobs:
     steps:
       - name: Checkout cdata
         uses: actions/checkout@v4
-        with:
-          path: cdata
 
       - name: Checkout udata
         uses: actions/checkout@v4
@@ -29,14 +27,12 @@ jobs:
         with:
           node-version: "24"
           cache: "npm"
-          cache-dependency-path: cdata/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install Node.js dependencies for cdata
-        working-directory: cdata
         run: npm ci
 
       - name: Install Playwright browsers
-        working-directory: cdata
         run: npx playwright install --with-deps chromium firefox
 
       - name: Start udata with Docker Compose
@@ -93,7 +89,7 @@ jobs:
       - name: Initialize udata
         working-directory: udata
         env:
-          UDATA_SETTINGS: ../udata.cfg
+          UDATA_SETTINGS: /home/runner/work/cdata/udata/udata.cfg
         run: |
           # Debug: show current directory structure
           echo "Current directory: $(pwd)"
@@ -119,7 +115,6 @@ jobs:
           echo "udata server is ready"
 
       - name: Build and start cdata
-        working-directory: cdata
         env:
           NUXT_PUBLIC_API_BASE: http://localhost:5000/api/1/
         run: |
@@ -134,7 +129,6 @@ jobs:
           echo "cdata server is ready"
 
       - name: Run E2E tests
-        working-directory: cdata
         env:
           BASE_URL: http://localhost:3000
           CI: true
@@ -145,5 +139,5 @@ jobs:
         if: always()
         with:
           name: playwright-report
-          path: cdata/playwright-report/
+          path: playwright-report/
           retention-days: 7
