@@ -33,6 +33,7 @@ import DatasetQualityInline from './components/DatasetQualityInline.vue'
 import DatasetQualityItem from './components/DatasetQualityItem.vue'
 import DatasetQualityScore from './components/DatasetQualityScore.vue'
 import DatasetQualityTooltipContent from './components/DatasetQualityTooltipContent.vue'
+import ExtraAccordion from './components/ExtraAccordion.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
@@ -44,26 +45,34 @@ import ResourceAccordion from './components/ResourceAccordion/ResourceAccordion.
 import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
 import Swagger from './components/ResourceAccordion/Swagger.client.vue'
 import ReuseCard from './components/ReuseCard.vue'
+import ReuseDetails from './components/ReuseDetails.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
 import StatBox from './components/StatBox.vue'
+import Tab from './components/Tabs/Tab.vue'
+import TabGroup from './components/Tabs/TabGroup.vue'
+import TabList from './components/Tabs/TabList.vue'
+import TabPanel from './components/Tabs/TabPanel.vue'
+import TabPanels from './components/Tabs/TabPanels.vue'
 import Tooltip from './components/Tooltip.vue'
 import Toggletip from './components/Toggletip.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
+export * from './composables/useActiveDescendant'
 export * from './composables/useReuseType'
 
-export * from './functions/dates'
-export * from './functions/organizations'
-export * from './functions/resources'
-export * from './functions/users'
 export * from './functions/datasets'
-export * from './functions/owned'
+export * from './functions/dates'
 export * from './functions/helpers'
+export * from './functions/markdown'
 export * from './functions/matomo'
 export * from './functions/never'
+export * from './functions/organizations'
+export * from './functions/owned'
+export * from './functions/resources'
+export * from './functions/reuses'
 export * from './functions/schemas'
-export * from './functions/markdown'
+export * from './functions/users'
 
 export type {
   UseFetchFunction,
@@ -159,6 +168,7 @@ export {
   DatasetQualityScore,
   DatasetQualityTooltipContent,
   DateRangeDetails,
+  ExtraAccordion,
   OrganizationCard,
   OrganizationNameWithCertificate,
   OwnerType,
@@ -169,9 +179,15 @@ export {
   ResourceAccordion,
   ResourceIcon,
   ReuseCard,
+  ReuseDetails,
   SimpleBanner,
   StatBox,
   Swagger,
+  Tab,
+  TabGroup,
+  TabList,
+  TabPanel,
+  TabPanels,
   Tooltip,
   Toggletip,
 }

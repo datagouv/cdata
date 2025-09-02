@@ -165,13 +165,12 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, Avatar, BrandedButton, OrganizationNameWithCertificate, type Reuse } from '@datagouv/components-next'
+import { isOrganizationCertified, Avatar, BrandedButton, OrganizationNameWithCertificate, ReuseDetails, type Reuse } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
-import ReuseDetails from '~/datagouv-components/src/components/ReuseDetails.vue'
 
 const route = useRoute()
 

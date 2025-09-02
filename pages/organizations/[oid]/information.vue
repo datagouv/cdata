@@ -276,11 +276,10 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, CopyButton, OrganizationNameWithCertificate, StatBox, useFormatDate, type Organization } from '@datagouv/components-next'
+import { Avatar, BrandedButton, CopyButton, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, useFormatDate, type Organization } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
-import getOrganizationOEmbedHtml from '~/datagouv-components/src/functions/organizations'
 
 const props = defineProps<{
   organization: Organization

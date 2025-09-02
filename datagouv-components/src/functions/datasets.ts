@@ -8,7 +8,7 @@ function constructUrl(baseUrl: string, path: string): string {
   return url.toString()
 }
 
-export default function getDatasetOEmbedHtml(type: string, id: string): string {
+export function getDatasetOEmbedHtml(type: string, id: string): string {
   const config = useComponentsConfig()
 
   const staticUrl = constructUrl(config.baseUrl, 'oembed.js')
