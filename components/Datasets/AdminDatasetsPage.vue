@@ -201,7 +201,7 @@ const { data: pageData, status, refresh } = await useAPI<PaginatedArray<DatasetV
 
 watchEffect(async () => {
   if (pageData.value) {
-    const activities = await getActitiesForObjects($api, pageData.value.data)
+    const activities = await getLatestActivitiesForObjects($api, pageData.value.data)
     datasetActivities.value = { ...datasetActivities.value, ...activities }
   }
 })
