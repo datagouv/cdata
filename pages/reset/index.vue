@@ -70,6 +70,7 @@ import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 
 const { t } = useI18n()
+const config = useRuntimeConfig()
 
 useSeoMeta({ title: t('Réinitialiser le mot de passe') })
 
