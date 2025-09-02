@@ -66,34 +66,48 @@ jobs:
       - name: Configure udata
         working-directory: udata
         run: |
+          pwd
+          ls .
           cat << 'EOF' > udata.cfg
           from udata.settings import Defaults
-          
+
           DEBUG = True
           TESTING = True
           SECRET_KEY = 'test-secret-key-for-ci'
           SEND_MAIL = False
           SERVER_NAME = 'localhost:5000'
           CACHE_TYPE = 'flask_caching.backends.null'
-          
+
           URLS_ALLOW_PRIVATE = True
           URLS_ALLOW_LOCAL = True
           URLS_ALLOWED_TLDS = Defaults.URLS_ALLOWED_TLDS | set(['local'])
-          
+
           PLUGINS = []
           FS_ROOT = 'fs'
-          
+
           SESSION_COOKIE_SECURE = False
           EOF
+          ls .
+          cat udata.cfg
 
       - name: Initialize udata
         working-directory: udata
         env:
-          UDATA_SETTINGS: ./udata.cfg
+          UDATA_SETTINGS: ../udata.cfg
         run: |
+          # Debug: show current directory structure
+          echo "Current directory: $(pwd)"
+          echo "Files in current directory:"
+          ls -la
+          echo "Files in parent directory:"
+          ls -la ..
+
+          # Move config file to the correct location
+          mv udata.cfg ../udata.cfg || cp udata.cfg ../udata.cfg
+
           # Create fs directory
           mkdir -p fs
-          
+
           # Initialize udata
           udata init
 
@@ -133,4 +147,3 @@ jobs:
           name: playwright-report
           path: cdata/playwright-report/
           retention-days: 7
-
