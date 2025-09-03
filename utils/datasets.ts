@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid'
 
 import type { CommunityResourceForm, DatasetForm, DatasetSuggest, FileInfo, NewDatasetForApi, ResourceForm, SpatialGranularity, SpatialZone } from '~/types/types'
 
+export { DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
+
 export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceForm>) {
   const isRemote = computed(() => toValue(file).filetype === 'remote')
   const { t } = useI18n()
@@ -15,7 +17,7 @@ export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceF
     url: [ruleIf(isRemote, required())],
     format: [ruleIf(isRemote, required())],
   }, {
-    description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
+    description: [minLength(DESCRIPTION_MIN_LENGTH, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: DESCRIPTION_MIN_LENGTH }))],
     title: [testNotAllowed(config.public.demoServer?.name)],
   })
 }
@@ -42,6 +44,7 @@ export function datasetToForm(dataset: Dataset | DatasetV2, licenses: Array<Lice
     owned: dataset.organization ? { organization: dataset.organization, owner: null } : { owner: dataset.owner, organization: null },
     title: dataset.title,
     description: dataset.description,
+    description_short: dataset.description_short,
     acronym: dataset.acronym,
     tags: dataset.tags?.map(text => ({ text })) || [],
     license: licenses.find(l => l.id === dataset.license) || null,
@@ -57,6 +60,7 @@ export function datasetToForm(dataset: Dataset | DatasetV2, licenses: Array<Lice
 
 export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, private?: boolean, archived?: string | null } = {}): NewDatasetForApi {
   const contactPoints = form.contact_points?.filter(cp => cp !== null && 'id' in cp).map(cp => cp.id) ?? []
+  
   return {
     organization: form.owned?.organization?.id,
     owner: form.owned?.owner?.id,
@@ -65,6 +69,7 @@ export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, pri
     archived: overrides.archived,
     deleted: overrides.deleted,
     description: form.description,
+    description_short: form.description_short,
     acronym: form.acronym,
     tags: form.tags.map(t => t.text),
     license: form.license?.id || '',
