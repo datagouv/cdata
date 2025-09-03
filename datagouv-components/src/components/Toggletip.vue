@@ -13,15 +13,12 @@
       @changed="calculatePanelPosition"
     />
     <PopoverButton
-      color="secondary-softer"
-      :as="BrandedButton"
-      icon-only
-      :icon="RiInformationLine"
-      size="xs"
-      keep-margins-even-without-borders
       v-bind="buttonProps"
+      class="w-8 h-8 rounded-full -outline-offset-2 inline-flex items-center justify-center bg-transparent border-transparent hover:!bg-gray-some"
     >
-      <slot />
+      <slot>
+        <RiInformationLine class="size-5" />
+      </slot>
     </PopoverButton>
 
     <ClientOnly>
@@ -49,7 +46,6 @@
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useTemplateRef } from 'vue'
 import { RiInformationLine } from '@remixicon/vue'
-import BrandedButton from './BrandedButton.vue'
 import ClientOnly from './ClientOnly.vue'
 import ValueWatcher from './ValueWatcher.vue'
 
