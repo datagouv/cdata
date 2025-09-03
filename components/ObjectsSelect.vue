@@ -148,7 +148,7 @@ const suggest = async (query: string): Promise<Array<TSuggest>> => {
   })
 }
 
-watchEffect(async () => {
+watch(selectedSuggest.value, async () => {
   for (const object of selectedSuggest.value) {
     if (object.id in objectsByIds.value) continue
 
@@ -160,7 +160,7 @@ watchEffect(async () => {
       objectsByIds.value[object.id] = await props.fetch(object.id)
     }
   }
-})
+}, { immediate: true })
 
 const selected = computed<Array<T | TSuggest>>(() => {
   return selectedSuggest.value.map((datasetSuggest) => {
