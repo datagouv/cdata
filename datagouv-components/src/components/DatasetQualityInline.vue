@@ -2,8 +2,9 @@
   <div class="m-0 flex flex-wrap items-center text-sm text-gray-medium">
     <div class="fr-grid-row fr-grid-row--middle">
       <Toggletip
-        :button-props="{ class: 'relative z-2' }"
+        :button-props="{ class: 'relative z-2 ml-0.5', title: $t('Qualité des métadonnées') }"
       >
+        <RiInformationLine class="size-4" />
         <template #toggletip>
           <DatasetQualityTooltipContent :quality />
         </template>
@@ -19,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+import { RiInformationLine } from '@remixicon/vue'
 import type { Quality } from '../types/datasets'
 import DatasetQualityScore from './DatasetQualityScore.vue'
 import DatasetQualityTooltipContent from './DatasetQualityTooltipContent.vue'
