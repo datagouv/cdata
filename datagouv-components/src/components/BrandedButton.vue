@@ -2,7 +2,6 @@
   <!-- 46 42 32 -->
   <component
     :is="href ? AppLink: 'button'"
-    ref="buttonRef"
     class="inline-flex items-center justify-center rounded-full font-medium border !bg-none !no-underline after:content-none"
     :class="[colors, sizes, removePaddingsIfNoBorders, isDisabled ? '!opacity-50' : '', iconRight && !newTab ? 'flex-row-reverse space-x-reverse' : '']"
     :disabled="isDisabled"
@@ -47,7 +46,6 @@ import {
   inject,
   Text,
   useSlots,
-  useTemplateRef,
 } from 'vue'
 import { RiExternalLinkLine } from '@remixicon/vue'
 import type { RouteLocation } from 'vue-router'
@@ -78,7 +76,6 @@ const props = withDefaults(defineProps<{
 })
 
 const slots = useSlots()
-const ref = useTemplateRef<HTMLAnchorElement | HTMLButtonElement>('buttonRef')
 
 const type = computed(() => {
   if (props.type) return props.type
@@ -179,12 +176,4 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
     )
   })
 }
-
-function focus() {
-  if (ref.value) {
-    ref.value.focus()
-  }
-}
-
-defineExpose({ focus })
 </script>
