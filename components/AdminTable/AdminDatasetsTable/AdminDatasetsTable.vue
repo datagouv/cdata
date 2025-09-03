@@ -29,7 +29,7 @@
           scope="col"
           @sort="(direction: SortDirection) => updateSort('last_update', direction)"
         >
-          {{ t('Mis à jour le') }}
+          {{ t('Dernière activité sur {site} le', { site: config.public.title }) }}
         </AdminTableTh>
         <AdminTableTh
           class="w-16"
@@ -167,6 +167,8 @@ const props = withDefaults(defineProps<{
 const { t } = useI18n()
 const { formatDate } = useFormatDate()
 const { getDatasetStatus } = useDatasetStatus()
+
+const config = useRuntimeConfig()
 
 function updateSort(column: DatasetSortedBy, direction: SortDirection) {
   emit('sort', column, direction)
