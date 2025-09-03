@@ -91,7 +91,7 @@ export function isOrganizationCertified(organization: Organization | null): bool
   return hasBadge(organization, CERTIFIED) && (isType(organization, PUBLIC_SERVICE) || isType(organization, LOCAL_AUTHORITY))
 }
 
-export default function getOrganizationOEmbedHtml(type: string, id: string): string {
+export function getOrganizationOEmbedHtml(type: string, id: string): string {
   const config = useComponentsConfig()
 
   const staticUrl = constructUrl(config.baseUrl, 'oembed.js')

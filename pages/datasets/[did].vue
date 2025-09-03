@@ -309,7 +309,7 @@ const hasContactPointsWithSpecificRole = computed(() => {
   return dataset.value.contact_points.some(contactPoint => contactPoint.role !== 'contact')
 })
 
-await useJsonLd('dataset', route.params.did)
+await useJsonLd('dataset', route.params.did as string)
 
 onMounted(async () => {
   await redirectLegacyHashes([

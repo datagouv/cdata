@@ -75,11 +75,10 @@
 
 <script setup lang="ts">
 import type { Reuse, TopicV2 } from '@datagouv/components-next'
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, Pagination } from '@datagouv/components-next'
 import { RiAddLine, RiDeleteBinLine } from '@remixicon/vue'
 import AdminReusesTable from '~/components/AdminTable/AdminReusesTable/AdminReusesTable.vue'
 import ReusesSelect from '~/components/ReusesSelect.vue'
-import Pagination from '~/datagouv-components/src/components/Pagination.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{

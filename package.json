@@ -11,7 +11,10 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed"
   },
   "lint-staged": {
     "*.{js,ts,vue,jsx,tsx}": "eslint --fix"
@@ -68,6 +71,7 @@
     "@iconify-json/ri": "^1.2.1",
     "@nuxt/eslint": "^0.7",
     "@parcel/watcher": "^2.5.1",
+    "@playwright/test": "^1.55.0",
     "@tailwindcss/oxide": "^4.0.15",
     "@tailwindcss/typography": "^0.5.15",
     "@types/geojson": "^7946.0.16",
