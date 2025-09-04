@@ -30,7 +30,7 @@
       </BrandedButton>
       <ModalWithButton
         v-if="showActions"
-        :title="t(`Refuser la demande d'adhésion`)"
+        :title="t(`Refuser la demande de rattachement`)"
         size="lg"
         @open="refuseComment = ''"
       >
