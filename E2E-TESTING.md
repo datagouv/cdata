@@ -52,6 +52,8 @@ Pour tester localement :
 npm run test:e2e
 ```
 
+It is better to run `npm run build && node .output/server/index.mjs` to prevent reloading in the middle of the tests for optimizing dependencies, see https://github.com/nuxt/nuxt/discussions/27700
+
 ## Scripts disponibles
 
 - `npm run test:e2e` : Lance les tests E2E en mode headless

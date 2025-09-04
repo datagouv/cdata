@@ -507,10 +507,17 @@ const logout = async () => {
   token.value = null
   refreshCookie('token')
 
-  await postApiWithCsrf('/logout/', {})
+  const response = await postApiWithCsrf<{ proconnect_logout_url: string | null }>('/logout/', {})
+  console.log(response)
 
   me.value = null
-  await navigateTo('/')
+  if (response.proconnect_logout_url) {
+    await navigateTo(response.proconnect_logout_url, { external: true })
+  }
+  else {
+    await navigateTo('/')
+  }
+  toast.success(t('Vous avez été déconnecté.'))
 }
 
 const { toast } = useToast()
@@ -518,6 +525,7 @@ onMounted(() => {
   // TODO: remove this logic when we don't rely on udata flash messages
   // following https://github.com/opendatateam/udata/pull/3348
   const FLASH_MESSAGES: Record<string, { type: 'success' | 'error', text: string }> = {
+    logout: { type: 'success', text: t('Vous êtes maintenant déconnecté.') },
     connected: { type: 'success', text: t('Vous êtes maintenant connecté.') },
     change_email: { type: 'success', text: t('Merci. Les instructions de confirmation pour changer votre adresse email ont été envoyées à l\'adresse mail cible.') },
     change_email_confirmed: { type: 'success', text: t('Votre nouvelle adresse email est maintenant confirmée.') },

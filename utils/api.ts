@@ -52,7 +52,7 @@ export function getDataFromSSRPayload(key: string, nuxtApp: NuxtApp) {
 export function usePostApiWithCsrf() {
   const { $api } = useNuxtApp()
 
-  return async (url: string, body: object) => {
+  return async <T>(url: string, body: object): Promise<T> => {
     // See the `get_csrf()` method in `udata`.
     // In Flask, we can get the form with an Accept:application/json to get
     // a valid CSRF token. It's not working in our implementation because for
@@ -63,7 +63,7 @@ export function usePostApiWithCsrf() {
     // system by switching to API endpoint without CSRF for security endpoints.
     const { response: { csrf_token } } = await $api<{ response: { csrf_token: string } }>('/get-csrf')
 
-    return await $api(url, {
+    return await $api<T>(url, {
       method: 'POST',
       // Some endpoints do not support CSRFToken inside headers (for exemple /fr/change/), so send it in the body too.
       body: { csrf_token, ...body },
