@@ -2,7 +2,7 @@
   <BannerNotif
     type="primary"
     :icon="RiUserAddLine"
-    :badge="$t(`Demande d'adhésion`)"
+    :badge="$t(`Demande de rattachement`)"
     :user="request.user"
     :date="new Date(request.created)"
   >
