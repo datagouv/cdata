@@ -154,7 +154,7 @@ import type { Granularity } from '../types/granularity'
 import type { Frequency } from '../types/frequency'
 import type { License } from '../types/licenses'
 import { useFetch } from '../functions/api'
-import getDatasetOEmbedHtml from '../functions/datasets'
+import { getDatasetOEmbedHtml } from '../functions/datasets'
 import ExtraAccordion from './ExtraAccordion.vue'
 import CopyButton from './CopyButton.vue'
 

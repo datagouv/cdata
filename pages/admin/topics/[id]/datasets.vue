@@ -75,10 +75,9 @@
 
 <script setup lang="ts">
 import type { Dataset, DatasetV2, TopicV2 } from '@datagouv/components-next'
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, Pagination } from '@datagouv/components-next'
 import { RiAddLine, RiDeleteBinLine } from '@remixicon/vue'
 import AdminDatasetsTable from '~/components/AdminTable/AdminDatasetsTable/AdminDatasetsTable.vue'
-import Pagination from '~/datagouv-components/src/components/Pagination.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{

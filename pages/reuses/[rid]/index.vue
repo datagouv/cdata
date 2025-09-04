@@ -142,9 +142,8 @@
 </template>
 
 <script setup lang="ts">
-import { useReuseType, StatBox, type Reuse, type ReuseTopic, type DatasetV2, Pagination, useFormatDate } from '@datagouv/components-next'
+import { getTopic, useReuseType, StatBox, type Reuse, type ReuseTopic, type DatasetV2, Pagination, useFormatDate } from '@datagouv/components-next'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
-import { getTopic } from '~/datagouv-components/src/functions/reuses'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{
