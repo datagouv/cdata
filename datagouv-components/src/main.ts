@@ -1,7 +1,7 @@
 import type { App, Plugin } from 'vue'
 import { createI18n, useI18n } from 'vue-i18n'
 import type { ContactPoint, ContactPointRole } from './types/contact_point.js'
-import type { Badge, Badges } from './types/badges'
+import type { Badge, Badges, TranslatedBadge } from './types/badges'
 import type { Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
 import type { NewDataservice, Dataservice, DataserviceAccessAudience, DataserviceAccessAudienceCondition, DataserviceAccessAudienceType } from './types/dataservices'
 import type { Frequency, Frequencies } from './types/frequency'
@@ -34,6 +34,7 @@ import DatasetQualityItem from './components/DatasetQualityItem.vue'
 import DatasetQualityScore from './components/DatasetQualityScore.vue'
 import DatasetQualityTooltipContent from './components/DatasetQualityTooltipContent.vue'
 import ExtraAccordion from './components/ExtraAccordion.vue'
+import LabelBadge from './components/LabelBadge.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
@@ -115,6 +116,7 @@ export type {
   ReuseType,
   Site,
   SpatialZone,
+  TranslatedBadge,
   TopicV2,
   User,
   Weight,
@@ -169,6 +171,7 @@ export {
   DatasetQualityTooltipContent,
   DateRangeDetails,
   ExtraAccordion,
+  LabelBadge,
   OrganizationCard,
   OrganizationNameWithCertificate,
   OwnerType,

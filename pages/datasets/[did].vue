@@ -233,7 +233,11 @@
                   {{ $t('Label') }}
                 </dt>
                 <dd class="p-0 text-sm">
-                  {{ dataset.badges.map(b => b.kind).join(', ') }}
+                  <LabelBadge
+                    v-for="badge in badges"
+                    :key="badge.kind"
+                    :badge
+                  />
                 </dd>
               </div>
 
@@ -308,7 +312,7 @@
 </template>
 
 <script setup lang="ts">
-import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, type Resource, BrandedButton, useFormatDate, StatBox, Toggletip } from '@datagouv/components-next'
+import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, type Resource, BrandedButton, useFormatDate, StatBox, Toggletip, type TranslatedBadge, LabelBadge } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiExternalLinkFill, RiLockLine } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -376,6 +380,9 @@ const exploreUrl = computed(() => {
 
 const datasetVisits = ref<Record<string, number>>({})
 const datasetDownloadsResources = ref<Record<string, number>>({})
+const { data: badgeTranslations } = await useAPI<Record<string, string>>('/api/1/datasets/badges')
+
+const badges = computed(() => dataset.value.badges.map<TranslatedBadge>(b => ({ ...b, label: badgeTranslations.value[b.kind] })))
 
 const datasetVisitsTotal = ref(0)
 const datasetDownloadsResourcesTotal = ref(0)
