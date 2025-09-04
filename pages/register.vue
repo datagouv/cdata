@@ -163,6 +163,7 @@ onMounted(() => {
 })
 
 const postApiWithCsrf = usePostApiWithCsrf()
+const { toast } = useToast()
 const connect = async () => {
   if (success.value) return
 
@@ -184,6 +185,7 @@ const connect = async () => {
       success.value = true
     }
     else {
+      toast.success(t('Votre compte a bien été créé.'))
       const next = sessionStorage.getItem('next')
       if (next) {
         navigateTo(next)
