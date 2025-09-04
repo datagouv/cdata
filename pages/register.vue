@@ -105,6 +105,7 @@
 
         <div>
           <Captchetat
+            v-if="config.public.captcheta.enabled"
             v-model:uuid="captchaUuid"
             v-model:code="captchaCode"
             :errors="getAllErrorsInErrorFields(errors, 'captcha_code')"
@@ -138,7 +139,6 @@ import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 
 const config = useRuntimeConfig()
-const { $api } = useNuxtApp()
 const { t } = useI18n()
 const route = useRoute()
 
@@ -162,6 +162,8 @@ onMounted(() => {
   }
 })
 
+const postApiWithCsrf = usePostApiWithCsrf()
+const { toast } = useToast()
 const connect = async () => {
   if (success.value) return
 
@@ -169,23 +171,21 @@ const connect = async () => {
   errors.value = {}
 
   try {
-    await $api('/fr/register/', {
-      method: 'POST',
-      body: {
-        email: email.value,
-        password: password.value,
-        password_confirm: passwordConfirmation.value,
-        first_name: firstname.value,
-        last_name: lastname.value,
-        captcha_uuid: captchaUuid.value,
-        captcha_code: captchaCode.value,
-      },
+    await postApiWithCsrf('/register/', {
+      email: email.value,
+      password: password.value,
+      password_confirm: passwordConfirmation.value,
+      first_name: firstname.value,
+      last_name: lastname.value,
+      captcha_uuid: captchaUuid.value,
+      captcha_code: captchaCode.value,
     })
 
     if (config.public.requireEmailConfirmation) {
       success.value = true
     }
     else {
+      toast.success(t('Votre compte a bien été créé.'))
       const next = sessionStorage.getItem('next')
       if (next) {
         navigateTo(next)
