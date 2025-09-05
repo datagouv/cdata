@@ -27,7 +27,7 @@ async function placeholderUrl() {
   const name = Object.keys(placeholders).find(p => p.includes(props.type)) as string
   const module = placeholders[name]
   const placeholder = await module()
-  return props.src ? props.src : placeholder
+  return props.src ? props.src : placeholder as string
 }
 
 const alternativeTextForDefinedImageOnly = computed(() => props.src ? props.alt : '')
