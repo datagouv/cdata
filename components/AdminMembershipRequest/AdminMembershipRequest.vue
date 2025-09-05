@@ -2,7 +2,7 @@
   <BannerNotif
     type="primary"
     :icon="RiUserAddLine"
-    :badge="$t(`Demande d'adhésion`)"
+    :badge="$t(`Demande de rattachement`)"
     :user="request.user"
     :date="new Date(request.created)"
   >
@@ -30,7 +30,7 @@
       </BrandedButton>
       <ModalWithButton
         v-if="showActions"
-        :title="t(`Refuser la demande d'adhésion`)"
+        :title="t(`Refuser la demande de rattachement`)"
         size="lg"
         @open="refuseComment = ''"
       >
