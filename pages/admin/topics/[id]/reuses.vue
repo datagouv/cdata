@@ -10,7 +10,8 @@
         </h2>
       </div>
       <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
-        <ModalWithButton
+        <!-- TODO: re-enable when elements are properly handled -->
+        <!-- <ModalWithButton
           :title="$t('Ajouter des réutilisations')"
           size="xl"
         >
@@ -41,16 +42,17 @@
               </BrandedButton>
             </div>
           </template>
-        </ModalWithButton>
+        </ModalWithButton> -->
       </div>
     </div>
 
     <LoadingBlock :status>
       <div v-if="pageData && pageData.total > 0">
         <AdminReusesTable
-          :reuses="pageData ? pageData.data : []"
+          :reuses="reuses"
         >
-          <template #actions="{ reuse }">
+          <!-- TODO: re-enable when elements are properly handled -->
+          <!-- <template #actions="{ reuse }">
             <BrandedButton
               icon-only
               color="secondary-softer"
@@ -61,7 +63,7 @@
             >
               {{ $t('Supprimer la réutilisation') }}
             </BrandedButton>
-          </template>
+          </template> -->
         </AdminReusesTable>
         <Pagination
           :page="page"
@@ -74,11 +76,9 @@
 </template>
 
 <script setup lang="ts">
-import type { Reuse, TopicV2 } from '@datagouv/components-next'
-import { BrandedButton, Pagination } from '@datagouv/components-next'
-import { RiAddLine, RiDeleteBinLine } from '@remixicon/vue'
+import type { Reuse, TopicV2, TopicElement } from '@datagouv/components-next'
+import { Pagination } from '@datagouv/components-next'
 import AdminReusesTable from '~/components/AdminTable/AdminReusesTable/AdminReusesTable.vue'
-import ReusesSelect from '~/components/ReusesSelect.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{
@@ -89,28 +89,15 @@ const reuses = ref<Array<Reuse>>([])
 
 const page = ref(1)
 const params = computed(() => {
-  return { page: page.value }
+  return { page: page.value, class: 'Reuse' }
 })
-const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Reuse>>(`/api/2/topics/${props.topic.id}/reuses/`, { lazy: true, query: params })
+const { data: pageData, status } = await useAPI<PaginatedArray<TopicElement>>(`/api/2/topics/${props.topic.id}/elements/`, { lazy: true, query: params })
 
 const { $api } = useNuxtApp()
-const { toast } = useToast()
-const { t } = useI18n()
-const save = async (close: () => void) => {
-  await $api(`/api/2/topics/${props.topic.id}/reuses/`, {
-    method: 'POST',
-    body: reuses.value,
-  })
 
-  toast.success(t('Sauvegardé.'))
-  close()
-  reuses.value = []
-  await refresh()
-}
-const removeReuse = async (reuse: Reuse) => {
-  await $api(`/api/2/topics/${props.topic.id}/reuses/${reuse.id}/`, { method: 'DELETE' })
-
-  toast.success(t('Supprimé.'))
-  await refresh()
-}
+watch(pageData, async (_pageData) => {
+  reuses.value = await Promise.all(_pageData.data.map(async (element) => {
+    return await $api(`/api/1/reuses/${element.element.id}/`)
+  }))
+}, { immediate: true })
 </script>
