@@ -74,7 +74,7 @@
           </div>
 
           <div class="space-y-2.5">
-            <p class="uppercase font-bold text-gray-low">
+            <p class="uppercase font-bold text-gray-medium">
               {{ $t('Ils publient des données sur {name}', { name: config.public.title }) }}
             </p>
             <div class="grid grid-cols-2 sm:grid-cols-4 justify-between">
@@ -113,7 +113,7 @@
       </div>
       <div class="hidden sm:flex px-6 justify-center pt-8 sm:pt-10 overflow-hidden bg-gray-some">
         <figure class="w-full max-w-lg flex flex-col items-center">
-          <figcaption class="uppercase font-bold text-gray-low mb-6">
+          <figcaption class="uppercase font-bold text-gray-medium mb-6">
             {{ $t('Jeux de données') }}
           </figcaption>
           <nuxt-img
@@ -125,7 +125,7 @@
       </div>
       <div class="hidden sm:flex px-6 justify-center py-8 sm:pt-10 sm:pb-20 bg-gray-some">
         <figure class="w-full max-w-lg flex flex-col items-center">
-          <figcaption class="uppercase font-bold text-gray-low mb-6">
+          <figcaption class="uppercase font-bold text-gray-medium mb-6">
             {{ $t('Réutilisations') }}
           </figcaption>
           <nuxt-img
@@ -163,7 +163,7 @@
           </div>
 
           <div class="space-y-2.5">
-            <p class="uppercase font-bold text-gray-low">
+            <p class="uppercase font-bold text-gray-medium">
               {{ $t('Ils réutilisent les données de {name}', { name: config.public.title }) }}
             </p>
             <div class="grid grid-cols-2 sm:grid-cols-4 justify-between">
@@ -220,7 +220,7 @@
           </p>
         </div>
         <div>
-          <h4 class="text-base uppercase font-bold text-gray-low">
+          <h4 class="text-base uppercase font-bold text-gray-silver">
             {{ $t('Nos objectifs') }}
           </h4>
           <div class="grid grid-cols-1 sm:grid-cols-3 space-y-6 sm:space-y-0">
@@ -257,7 +257,7 @@
             {{ $t('Produire de l’information à partir des données') }}
           </h3>
           <div>
-            <h4 class="text-base uppercase font-bold text-gray-low">
+            <h4 class="text-base uppercase font-bold text-gray-silver">
               {{ $t('Nos explorations de données') }}
             </h4>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -275,7 +275,7 @@
                   class="w-full h-[300px] object-cover"
                 />
                 <div class="p-4 space-y-2.5">
-                  <p class="text-sm uppercase font-bold text-gray-low">
+                  <p class="text-sm uppercase font-bold text-gray-medium">
                     {{ exploration.title }}
                   </p>
                   <p class="text-base text-gray-title font-bold">
@@ -311,7 +311,7 @@
             {{ $t('Fédérer un écosystème') }}
           </h3>
           <div>
-            <h4 class="text-base uppercase font-bold text-gray-low">
+            <h4 class="text-base uppercase font-bold text-gray-silver">
               {{ $t('Nos plateformes thématiques') }}
             </h4>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
@@ -375,7 +375,7 @@
     </section>
     <section v-if="lastPost">
       <div class="max-w-7xl mx-auto px-6 py-16 space-y-8">
-        <h2 class="text-base uppercase font-bold text-gray-low mb-6">
+        <h2 class="text-base uppercase font-bold text-gray-medium mb-6">
           {{ $t("L'actualité {name}", { name: config.public.title }) }}
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-8">
