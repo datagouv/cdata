@@ -120,12 +120,14 @@ import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip
 import type { Activity } from '~/types/activity'
 import type { ReuseSortedBy, SortDirection } from '~/types/types'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   activities: Record<string, Activity>
   reuses: Array<Reuse>
   sortedBy: ReuseSortedBy
   sortDirection: SortDirection
-}>()
+}>(), {
+  activities: () => ({}),
+})
 
 defineEmits<{
   (event: 'sort', column: ReuseSortedBy, direction: SortDirection): void
