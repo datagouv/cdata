@@ -164,6 +164,8 @@ onMounted(() => {
 
 const postApiWithCsrf = usePostApiWithCsrf()
 const { toast } = useToast()
+const me = useMe()
+
 const connect = async () => {
   if (success.value) return
 
@@ -185,7 +187,8 @@ const connect = async () => {
       success.value = true
     }
     else {
-      toast.success(t('Votre compte a bien été créé.'))
+      toast.success(t('Votre compte a bien été créé. Vous êtes maintenant connecté.'))
+      await loadMe(me)
       const next = sessionStorage.getItem('next')
       if (next) {
         navigateTo(next)
