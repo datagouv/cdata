@@ -55,6 +55,11 @@
           >
             <input
               type="hidden"
+              name="csrf_token"
+              :value="csrf_response.csrf_token"
+            >
+            <input
+              type="hidden"
               name="scope"
               :value="data.scopes.join(' ')"
             >
@@ -93,6 +98,8 @@ useSeoMeta({ title: t('Connexion') })
 const route = useRoute()
 
 const { data, status } = await useAPI<{ client: { name: string }, scopes: Array<string> }>('/oauth/client_info', { query: route.query })
+
+const { data: csrf_response } = await useAPI<{ csrf_token: string }>('/get-csrf')
 
 const authorizeUrl = computed(() => {
   const queryString = new URLSearchParams(route.query).toString()
