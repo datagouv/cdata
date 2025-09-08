@@ -56,7 +56,7 @@
             <input
               type="hidden"
               name="csrf_token"
-              :value="csrf_response.csrf_token"
+              :value="csrf_response.response.csrf_token"
             >
             <input
               type="hidden"
@@ -99,7 +99,7 @@ const route = useRoute()
 
 const { data, status } = await useAPI<{ client: { name: string }, scopes: Array<string> }>('/oauth/client_info', { query: route.query })
 
-const { data: csrf_response } = await useAPI<{ csrf_token: string }>('/get-csrf')
+const { data: csrf_response } = await useAPI<{ response: { csrf_token: string } }>('/get-csrf')
 
 const authorizeUrl = computed(() => {
   const queryString = new URLSearchParams(route.query).toString()
