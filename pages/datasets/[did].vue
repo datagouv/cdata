@@ -232,7 +232,7 @@
                   </Toggletip>
                   {{ $t('Label') }}
                 </dt>
-                <dd class="p-0 text-sm">
+                <dd class="p-0 text-sm flex flex-wrap gap-1">
                   <LabelBadge
                     v-for="badge in badges"
                     :key="badge.kind"

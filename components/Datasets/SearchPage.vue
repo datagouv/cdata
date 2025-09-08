@@ -148,6 +148,20 @@
                 {{ granularity.name }}
               </template>
             </SearchableSelect>
+            <SearchableSelect
+              v-model="facets.badge"
+              :label="t('Label de données')"
+              :placeholder="t('Tous les badges')"
+              :get-option-id="(badge) => badge.kind"
+              :display-value="(value) => value.label"
+              :multiple="false"
+              :options="badges ? badges : []"
+              :loading="badgeStatus === 'pending'"
+            >
+              <template #option="{ option: badge }">
+                {{ badge.label }}
+              </template>
+            </SearchableSelect>
             <div
               v-if="isFiltered || organization"
               class="pb-6 text-center"
@@ -278,8 +292,8 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { getOrganizationTypes, Pagination, OTHER, USER, type DatasetV2, type License, type Organization, type OrganizationTypes, type RegisteredSchema } from '@datagouv/components-next'
+import { BrandedButton, getOrganizationTypes, Pagination, OTHER, USER } from '@datagouv/components-next'
+import type { DatasetV2, License, Organization, OrganizationTypes, RegisteredSchema, TranslatedBadge } from '@datagouv/components-next'
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RiCloseCircleLine, RiDownloadLine } from '@remixicon/vue'
@@ -294,13 +308,14 @@ const props = defineProps<{
 
 type Facets = {
   organization?: { id: string } | null
-  organizationType?: { type: OrganizationTypes }
-  tag?: string
+  organizationType?: { type: OrganizationTypes } | null
+  tag?: string | null
   license?: License | null
   format?: string | null
-  geozone?: SpatialZone
+  geozone?: SpatialZone | null
   granularity?: SpatialGranularity | null
   schema?: RegisteredSchema | null
+  badge?: TranslatedBadge | null
 }
 
 const { $api } = useNuxtApp()
@@ -335,6 +350,10 @@ const { data: schemas, status: schemasStatus } = await useAPI<Array<RegisteredSc
 const { data: licenses, status: licensesStatus } = await useAPI<Array<License>>('api/1/datasets/licenses/', { lazy: true })
 
 const { data: organizations, status: organizationsStatus } = await useAPI<PaginatedArray<Organization>>('/api/1/organizations/?sort=-followers', { lazy: true })
+
+const { data: badgeRecord, status: badgeStatus } = await useAPI<Record<string, string>>('/api/1/datasets/badges/', { lazy: true })
+
+const badges = computed(() => Object.entries(badgeRecord.value).map(([kind, label]: Array<string>) => ({ kind, label })))
 
 const organizationTypes = getOrganizationTypes()
   .filter(type => type.type !== OTHER && type.type !== USER)
@@ -514,13 +533,14 @@ watchEffect(() => {
     params.organization = facets.value.organization?.id ?? undefined
     params.organization_badge = facets.value.organizationType?.type ?? undefined
   }
-  params.tag = facets.value.tag
+  params.tag = facets.value.tag ?? undefined
   params.format = facets.value.format ?? undefined
   params.organization_badge = facets.value.organizationType?.type ?? undefined
   params.license = facets.value.license?.id ?? undefined
   params.schema = facets.value.schema?.name ?? undefined
   params.geozone = facets.value.geozone?.id ?? undefined
   params.granularity = facets.value.granularity?.id ?? undefined
+  params.badge = facets.value.badge?.kind ?? undefined
   if (currentPage.value > 1 || params.page) params.page = currentPage.value.toString()
   params.q = deboucedQuery.value ?? undefined
   params.sort = searchSort.value ?? null
