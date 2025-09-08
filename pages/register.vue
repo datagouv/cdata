@@ -81,15 +81,15 @@
 
         <div class="fr-checkbox-group fr-checkbox-group--sm">
           <input
-            id="checkboxes-hint-el-sm-1"
+            :id="acceptConditionsId"
             v-model="acceptConditions"
-            name="checkboxes-hint-el-sm-1"
             type="checkbox"
-            aria-describedby="checkboxes-hint-el-sm-1-messages"
+            :aria-describedby="getAllErrorsInErrorFields(errors, 'accept_conditions') ? acceptConditionsErrorId : undefined"
+            required
           >
           <label
             class="fr-label"
-            for="checkboxes-hint-el-sm-1"
+            :for="acceptConditionsId"
           >
             <i18n-t
               keypath="J'ai lu et j'accepte {link}"
@@ -101,6 +101,13 @@
               </template>
             </i18n-t>
           </label>
+          <p
+            v-if="getAllErrorsInErrorFields(errors, 'accept_conditions')"
+            :id="acceptConditionsErrorId"
+            class="fr-error-text"
+          >
+            {{ getAllErrorsInErrorFields(errors, 'accept_conditions') }}
+          </p>
         </div>
 
         <div>
@@ -150,6 +157,8 @@ const passwordConfirmation = ref('')
 const firstname = ref('')
 const lastname = ref('')
 const acceptConditions = ref(false)
+const acceptConditionsId = useId()
+const acceptConditionsErrorId = useId()
 const captchaCode = ref('')
 const captchaUuid = ref('')
 const loading = ref(false)
@@ -181,6 +190,7 @@ const connect = async () => {
       last_name: lastname.value,
       captcha_uuid: captchaUuid.value,
       captcha_code: captchaCode.value,
+      accept_conditions: acceptConditions.value,
     })
 
     if (config.public.requireEmailConfirmation) {
