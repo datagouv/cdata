@@ -76,7 +76,7 @@
           v-if="config.public.requireEmailConfirmation"
           class="text-center text-gray-plain text-sm"
         >
-          {{ $t('Instructions de confirmation non reçues ?') }} <CdataLink to="/confirm">
+          {{ $t('Instructions de confirmation non reçues ?') }} <CdataLink to="/resend-confirm-email">
             {{ $t('Renvoyer les instructions') }}
           </CdataLink>
         </div>
