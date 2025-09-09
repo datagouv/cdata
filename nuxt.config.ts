@@ -156,7 +156,7 @@ export default defineNuxtConfig({
         ],
       },
 
-      dataset_badges: ['spd', 'inspire', 'hvd', 'sl', 'sr', 'impact'],
+      dataset_badges: ['spd', 'inspire', 'hvd', 'sl', 'sr'],
 
       enableCdataSecurityViews: false,
       requireEmailConfirmation: true,
