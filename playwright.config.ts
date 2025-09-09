@@ -48,8 +48,9 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run build && node .output/server/index.mjs',
+    command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: true,
+    stdout: 'pipe',
   },
 })
