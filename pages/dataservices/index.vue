@@ -131,11 +131,16 @@ const config = useRuntimeConfig()
 const route = useRoute()
 
 onMounted(async () => {
+  console.log('on mounted')
   const hasFacets = Object.keys(route.query).some(key =>
     ['q', 'sort', 'is_restricted', 'organization', 'page'].includes(key),
   )
 
+  console.log('after facets')
+  console.log(hasFacets)
+
   if (hasFacets) {
+    console.log('navigating')
     await navigateTo({ path: '/dataservices/search', query: route.query })
   }
 })

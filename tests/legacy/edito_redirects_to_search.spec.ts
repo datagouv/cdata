@@ -16,6 +16,8 @@ const noRedirectionCases = [
 test.describe('Search redirections', () => {
   redirectionCases.forEach(({ from, to }) => {
     test(`${from} → ${to}`, async ({ page }) => {
+      // Listen for all console logs
+      page.on('console', msg => console.log(msg.text()))
       await page.goto(from)
       await expect(page).toHaveURL(to)
     })
