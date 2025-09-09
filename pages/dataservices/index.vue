@@ -130,13 +130,13 @@ useSeoMeta({
 const config = useRuntimeConfig()
 const route = useRoute()
 
-onMounted(() => {
+onMounted(async () => {
   const hasFacets = Object.keys(route.query).some(key =>
     ['q', 'sort', 'is_restricted', 'organization', 'page'].includes(key),
   )
 
   if (hasFacets) {
-    navigateTo({ path: '/dataservices/search', query: route.query })
+    await navigateTo({ path: '/dataservices/search', query: route.query })
   }
 })
 
