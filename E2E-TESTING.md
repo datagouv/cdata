@@ -52,6 +52,11 @@ Pour tester localement :
 npm run test:e2e
 ```
 
+Set in `.env` to avoid randomness:
+```
+NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES=["hero_15.png"]
+```
+
 ## Scripts disponibles
 
 - `npm run test:e2e` : Lance les tests E2E en mode headless
