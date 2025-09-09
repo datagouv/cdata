@@ -93,8 +93,8 @@ jobs:
           # Initialize udata
           udata init
 
-          # Start udata server in background
-          inv serve --port=5000 &
+          # Start udata server in background with logs
+          inv serve --port=5000 > ../udata.log 2>&1 &
 
           # Wait for udata to be ready
           timeout 90 bash -c 'until curl -f http://localhost:5000/api/1/site/; do sleep 2; done'
@@ -121,9 +121,12 @@ jobs:
           CI: true
         run: npm run test:e2e
 
-      - name: Show cdata server logs
+      - name: Show server logs
         if: always()
         run: |
+          echo "=== UDATA SERVER LOGS ==="
+          cat udata.log || echo "No udata logs found"
+          echo ""
           echo "=== CDATA SERVER LOGS ==="
           cat cdata.log || echo "No cdata logs found"
 
