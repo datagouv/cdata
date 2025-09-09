@@ -353,7 +353,9 @@ const { data: organizations, status: organizationsStatus } = await useAPI<Pagina
 
 const { data: badgeRecord, status: badgeStatus } = await useAPI<Record<string, string>>('/api/1/datasets/badges/', { lazy: true })
 
-const badges = computed(() => Object.entries(badgeRecord.value).map(([kind, label]: Array<string>) => ({ kind, label })))
+const badges = computed(() => Object.entries(badgeRecord.value)
+  .map(([kind, label]: Array<string>) => ({ kind, label }))
+  .filter(({ kind }) => config.public.datasetBadges.includes(kind)))
 
 const organizationTypes = getOrganizationTypes()
   .filter(type => type.type !== OTHER && type.type !== USER)
