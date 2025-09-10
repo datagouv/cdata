@@ -90,10 +90,6 @@ jobs:
       - name: Initialize udata
         working-directory: udata
         run: |
-          pwd
-          ls
-          cat udata.cfg
-
           # Create fs directory
           mkdir -p fs
 
