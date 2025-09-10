@@ -14,3 +14,7 @@ test('search launch without params', async ({ page }) => {
   const url = new URL(page.url())
   await expect(url.searchParams.size).toBe(0)
 })
+
+test('search launch with label', async ({ page }) => {
+  await page.goto('/datasets/search/')
+})
