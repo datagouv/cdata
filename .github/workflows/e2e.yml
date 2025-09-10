@@ -103,7 +103,7 @@ jobs:
           udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
 
           # Start udata server in background
-          inv serve --port=5000 &
+          inv serve --port=5000 > udata.log 2>&1 &
 
           # Wait for udata to be ready
           timeout 90 bash -c 'until curl -f http://localhost:5000/api/1/site/; do sleep 2; done'
@@ -111,14 +111,14 @@ jobs:
 
       - name: Build and start cdata
         env:
-          NUXT_PUBLIC_API_BASE: http://localhost:5000/api/1/
+          NUXT_PUBLIC_API_BASE: http://localhost:5000
           NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "['hero_15.png']"
         run: |
           # Build cdata
           npm run build
 
           # Start cdata server in background
-          PORT=3000 npm run preview &
+          PORT=3000 npm run preview > cdata.log 2>&1 &
 
           # Wait for cdata to be ready
           timeout 90 bash -c 'until curl -f http://localhost:3000; do sleep 2; done'
@@ -129,6 +129,15 @@ jobs:
           BASE_URL: http://localhost:3000
           CI: true
         run: npm run test:e2e
+
+      - name: Show server logs
+        if: always()
+        run: |
+          echo "=== UDATA SERVER LOGS ==="
+          cat udata/udata.log || echo "No udata logs found"
+          echo ""
+          echo "=== CDATA SERVER LOGS ==="
+          cat cdata.log || echo "No cdata logs found"
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
