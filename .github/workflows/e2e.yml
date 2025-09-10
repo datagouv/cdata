@@ -117,7 +117,7 @@ jobs:
           # Build cdata
           npm run build
 
-          # Start cdata server in background with logs
+          # Start cdata server in background
           PORT=3000 npm run preview > cdata.log 2>&1 &
 
           # Wait for cdata to be ready
