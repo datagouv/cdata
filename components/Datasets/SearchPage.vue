@@ -157,6 +157,7 @@
               :multiple="false"
               :options="badges ? badges : []"
               :loading="badgeStatus === 'pending'"
+              data-testid="dataset-label-filter"
             >
               <template #option="{ option: badge }">
                 {{ badge.label }}

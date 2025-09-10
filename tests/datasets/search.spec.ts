@@ -17,4 +17,16 @@ test('search launch without params', async ({ page }) => {
 
 test('search launch with label', async ({ page }) => {
   await page.goto('/datasets/search/')
+
+  const filter = page.getByTestId('dataset-label-filter')
+
+  // open filter
+  await filter.locator('button').first().click()
+
+  // click on first result
+  await filter.locator('li').first().click()
+
+  const url = new URL(page.url())
+  await expect(url.searchParams.size).toBe(1)
+  await expect(url.searchParams.has('badge')).toBeTruthy()
 })
