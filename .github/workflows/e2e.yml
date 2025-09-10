@@ -20,7 +20,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: udata
-          ref: improve_init_command_for_ci
+          ref: master
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
