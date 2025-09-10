@@ -20,7 +20,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: udata
-          ref: master
+          ref: improve_init_command_for_ci
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -80,6 +80,10 @@ jobs:
           FS_ROOT = 'fs'
 
           SESSION_COOKIE_SECURE = False
+
+          SECURITY_EMAIL_VALIDATOR_ARGS = {
+              "check_deliverability": False
+          }
           EOF
 
       - name: Initialize udata
@@ -92,6 +96,10 @@ jobs:
 
           # Initialize udata
           udata init
+
+          udata import-fixtures
+
+          udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
 
           # Start udata server in background
           inv serve --port=5000 &
