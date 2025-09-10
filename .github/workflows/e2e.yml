@@ -71,6 +71,7 @@ jobs:
           SEND_MAIL = False
           SERVER_NAME = 'localhost:5000'
           CACHE_TYPE = 'flask_caching.backends.null'
+          DEFAULT_LANGUAGE = 'fr'
 
           URLS_ALLOW_PRIVATE = True
           URLS_ALLOW_LOCAL = True
@@ -80,18 +81,26 @@ jobs:
           FS_ROOT = 'fs'
 
           SESSION_COOKIE_SECURE = False
+
+          SECURITY_EMAIL_VALIDATOR_ARGS = {
+              "check_deliverability": False
+          }
           EOF
 
       - name: Initialize udata
         working-directory: udata
-        env:
-          UDATA_SETTINGS: /home/runner/work/cdata/udata/udata.cfg
         run: |
           # Create fs directory
           mkdir -p fs
 
           # Initialize udata
           udata init
+
+          udata licenses
+          udata spatial load
+          udata import-fixtures
+
+          udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
 
           # Start udata server in background
           inv serve --port=5000 &
