@@ -97,6 +97,8 @@ jobs:
           # Initialize udata
           udata init
 
+          udata licenses
+          udata spatial load
           udata import-fixtures
 
           udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
