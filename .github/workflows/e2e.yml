@@ -134,7 +134,7 @@ jobs:
         if: always()
         run: |
           echo "=== UDATA SERVER LOGS ==="
-          cat udata.log || echo "No udata logs found"
+          cat udata/udata.log || echo "No udata logs found"
           echo ""
           echo "=== CDATA SERVER LOGS ==="
           cat cdata.log || echo "No cdata logs found"
