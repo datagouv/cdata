@@ -89,12 +89,9 @@ jobs:
 
       - name: Initialize udata
         working-directory: udata
-        env:
-          UDATA_SETTINGS: /home/runner/work/cdata/udata/udata.cfg
         run: |
           pwd
           ls
-          cat /home/runner/work/cdata/udata/udata.cfg
           cat udata.cfg
 
           # Create fs directory
