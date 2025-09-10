@@ -71,6 +71,7 @@ jobs:
           SEND_MAIL = False
           SERVER_NAME = 'localhost:5000'
           CACHE_TYPE = 'flask_caching.backends.null'
+          DEFAULT_LANGUAGE = 'fr'
 
           URLS_ALLOW_PRIVATE = True
           URLS_ALLOW_LOCAL = True
@@ -91,6 +92,11 @@ jobs:
         env:
           UDATA_SETTINGS: /home/runner/work/cdata/udata/udata.cfg
         run: |
+          pwd
+          ls
+          cat /home/runner/work/cdata/udata/udata.cfg
+          cat udata.cfg
+
           # Create fs directory
           mkdir -p fs
 
