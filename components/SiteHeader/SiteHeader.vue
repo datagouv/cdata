@@ -65,7 +65,7 @@
                       <RiMenuLine class="size-6" />
                     </button>
                   </template>
-                  <template #default>
+                  <template #default="{ close }">
                     <div>
                       <div class="fr-container fr-header__menu-links">
                         <ul
@@ -83,6 +83,7 @@
                                 alt: '',
                                 class: 'rounded-full',
                               }"
+                              @click="close"
                             >
                               {{ me.first_name }} {{ me.last_name }}
                             </BrandedButton>
@@ -93,6 +94,7 @@
                               :external="true"
                               color="primary-softer"
                               :icon="RiSettings3Line"
+                              @click="close"
                             >
                               {{ $t("Administration") }}
                             </BrandedButton>
@@ -103,7 +105,7 @@
                               type="button"
                               :icon="RiLogoutBoxRLine"
                               color="primary-softer"
-                              @click="logout"
+                              @click="async () => { (await logout()); close() }"
                             >
                               {{ $t('Se déconnecter') }}
                             </BrandedButton>
@@ -113,6 +115,7 @@
                               :icon="RiLogoutBoxRLine"
                               :external="true"
                               color="primary-softer"
+                              @click="close"
                             >
                               {{ $t('Se déconnecter') }}
                             </BrandedButton>
@@ -130,6 +133,7 @@
                               :external="true"
                               :icon="RiLockLine"
                               class="w-full"
+                              @click="close"
                             >
                               {{ $t("Se connecter") }}
                             </BrandedButton>
@@ -142,6 +146,7 @@
                               :external="true"
                               class="w-full"
                               :icon="RiAccountCircleLine"
+                              @click="close"
                             >
                               {{ $t("S'enregistrer") }}
                             </BrandedButton>
@@ -166,6 +171,7 @@
                               target="_self"
                               :external="link.external"
                               :aria-current="getAriaCurrent(localePath(link.link))"
+                              @click="close"
                             >
                               {{ link.label }}
                             </CdataLink>
@@ -189,6 +195,7 @@
                                         class="fr-nav__link"
                                         :to="item.link"
                                         :external="true"
+                                        @click="close"
                                       >
                                         {{ item.label }}
                                       </DisclosureButton>

@@ -32,7 +32,7 @@ export function getActivityTranslation(activity: Activity) {
   }[activity.key] ?? activity.label
 }
 
-export async function getActitiesForObjects(api: $Fetch, auditables: Array<{ id: string }> | undefined, sort: '-created_at' | 'created_at' = '-created_at') {
+export async function getLatestActivitiesForObjects(api: $Fetch, auditables: Array<{ id: string }> | undefined, sort: '-created_at' | 'created_at' = '-created_at', page_size: number = 1) {
   const activityPromises: Record<string, Promise<PaginatedArray<Activity>>> = {}
   if (!auditables) {
     return Promise.resolve({})
@@ -45,6 +45,7 @@ export async function getActitiesForObjects(api: $Fetch, auditables: Array<{ id:
       params: {
         related_to: auditable.id,
         sort,
+        page_size,
       },
     })
   }

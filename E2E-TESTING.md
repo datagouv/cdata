@@ -52,7 +52,10 @@ Pour tester localement :
 npm run test:e2e
 ```
 
-It is better to run `npm run build && node .output/server/index.mjs` to prevent reloading in the middle of the tests for optimizing dependencies, see https://github.com/nuxt/nuxt/discussions/27700
+Set in `.env` to avoid randomness:
+```
+NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES=["hero_15.png"]
+```
 
 ## Scripts disponibles
 
