@@ -8,62 +8,85 @@
             src="/assets/svg/errors/404.svg"
             alt="Erreur 404"
             class="w-full h-full object-contain"
-          />
+          >
           <img
             v-else-if="statusCode === 403"
             src="/assets/svg/errors/403.svg"
             alt="Erreur 403"
             class="w-full h-full object-contain"
-          />
+          >
           <img
             v-else-if="statusCode === 410"
             src="/assets/svg/errors/410.svg"
             alt="Erreur 410"
             class="w-full h-full object-contain"
-          />
+          >
           <img
             v-else-if="statusCode >= 500"
             src="/assets/svg/errors/500.svg"
             alt="Erreur serveur"
             class="w-full h-full object-contain"
-          />
+          >
           <img
             v-else
             src="/assets/svg/errors/500.svg"
             alt="Erreur"
             class="w-full h-full object-contain"
-          />
+          >
         </div>
-        
+
         <h1 class="text-6xl font-extrabold leading-none text-gray-title m-0 md:text-5xl">
-          <template v-if="statusCode">{{ statusCode }}</template>
-          <template v-else>Erreur</template>
+          <template v-if="statusCode">
+            {{ statusCode }}
+          </template>
+          <template v-else>
+            {{ $t('Erreur') }}
+          </template>
         </h1>
-        
+
         <h2 class="text-2xl font-extrabold leading-9 text-gray-title m-0 md:text-xl md:leading-8">
-          <template v-if="statusCode === 404">{{ $t('Page non trouvée') }}</template>
-          <template v-else-if="statusCode === 403">{{ $t('Accès interdit') }}</template>
-          <template v-else-if="statusCode === 410">{{ $t('Contenu supprimé') }}</template>
-          <template v-else-if="statusCode >= 500">{{ $t('Erreur interne du serveur') }}</template>
-          <template v-else>{{ $t('Erreur inattendue') }}</template>
+          <template v-if="statusCode === 404">
+            {{ $t('Page non trouvée') }}
+          </template>
+          <template v-else-if="statusCode === 403">
+            {{ $t('Accès interdit') }}
+          </template>
+          <template v-else-if="statusCode === 410">
+            {{ $t('Contenu supprimé') }}
+          </template>
+          <template v-else-if="statusCode >= 500">
+            {{ $t('Erreur interne du serveur') }}
+          </template>
+          <template v-else>
+            {{ $t('Erreur inattendue') }}
+          </template>
         </h2>
-        
+
         <p class="text-base font-normal leading-6 text-gray-title m-0 text-center md:text-sm md:leading-5">
           <template v-if="statusCode === 404">
             {{ $t("Désolé, nous n'avons pas trouvé la page que vous recherchez. Il se peut que le lien soit incorrect ou que la page ait été déplacée ou supprimée. Si cela vous semble une erreur n'hésitez pas à") }}
-            <NuxtLink to="/support" class="text-datagouv-dark">
+            <NuxtLink
+              to="/support"
+              class="text-datagouv-dark"
+            >
               {{ $t('nous écrire') }}
             </NuxtLink>.
           </template>
           <template v-else-if="statusCode === 403">
             {{ $t("Vous n'avez pas la permission d'accéder à cette page. Cela peut être dû à des restrictions de droits ou à une authentification manquante. Si cela vous semble une erreur n'hésitez pas à") }}
-            <NuxtLink to="/support" class="text-datagouv-dark">
+            <NuxtLink
+              to="/support"
+              class="text-datagouv-dark"
+            >
               {{ $t('nous écrire') }}
             </NuxtLink>.
           </template>
           <template v-else-if="statusCode === 410">
             {{ $t("Ce contenu a été volontairement retiré. Il n'est plus accessible, car il a été supprimé définitivement par son producteur. Si cela vous semble une erreur n'hésitez pas à") }}
-            <NuxtLink to="/support" class="text-datagouv-dark">
+            <NuxtLink
+              to="/support"
+              class="text-datagouv-dark"
+            >
               {{ $t('nous écrire') }}
             </NuxtLink>.
           </template>
@@ -72,15 +95,24 @@
           </template>
           <template v-else>
             {{ $t("Une erreur inattendue s'est produite. Veuillez nous excuser pour la gêne occasionnée. Si le problème persiste, merci de") }}
-            <NuxtLink to="/support" class="text-datagouv-dark">
+            <NuxtLink
+              to="/support"
+              class="text-datagouv-dark"
+            >
               {{ $t('nous écrire') }}
             </NuxtLink>
             {{ $t("avec les détails de l'erreur pour que nous puissions y remédier rapidement.") }}
-            <span v-if="errorMessage" class="fr-mt-2w fr-text--sm fr-text--bold">{{ errorMessage }}</span>
+            <span
+              v-if="errorMessage"
+              class="fr-mt-2w fr-text--sm fr-text--bold"
+            >{{ errorMessage }}</span>
           </template>
         </p>
 
-        <div v-if="statusCode >= 500" class="fr-mt-4w fr-p-2w">
+        <div
+          v-if="statusCode >= 500"
+          class="fr-mt-4w fr-p-2w"
+        >
           <p class="fr-text--sm">
             <span class="fr-text--bold">{{ $t('Code erreur') }} :</span> {{ errorMessage }}
           </p>
@@ -123,7 +155,7 @@ const i18nHead = useLocaleHead()
 const runtimeConfig = useRuntimeConfig()
 
 // Computed properties to avoid repeating error checks
-const statusCode = computed(() => error.value?.statusCode)
+const statusCode = computed(() => error.value?.statusCode as number)
 const errorMessage = computed(() => error.value?.message)
 
 app.vueApp.use(datagouv, {
@@ -151,4 +183,5 @@ useHeadSafe({
     return titleChunk ? `${titleChunk} - data.gouv.fr` : 'data.gouv.fr'
   },
 })
+useSeoMeta({ robots: 'noindex' })
 </script>
