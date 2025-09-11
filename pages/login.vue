@@ -116,6 +116,7 @@
 <script setup lang="ts">
 import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
+import { usePostApiWithCsrf } from '~/utils/api'
 
 const { t } = useI18n()
 const { toast } = useToast()

@@ -459,7 +459,7 @@ import CdataLink from '../CdataLink.vue'
 import LogoAsText from '../LogoAsText.vue'
 import LogoImage from '../LogoImage.vue'
 import { NuxtImg } from '#components'
-import { useMaybeMe } from '~/utils/auth'
+import { useLogout, useMaybeMe } from '~/utils/auth'
 
 defineProps<{
   fluid?: boolean
@@ -508,21 +508,9 @@ function getAriaCurrent(link: string) {
   return routesInPath.includes(link)
 }
 
-const postApiWithCsrf = usePostApiWithCsrf()
-const token = useToken()
+const doLogout = useLogout()
 const logout = async () => {
-  token.value = null
-  refreshCookie('token')
-
-  const response = await postApiWithCsrf<{ proconnect_logout_url: string | null }>('/logout/', {})
-
-  me.value = null
-  if (response.proconnect_logout_url) {
-    await navigateTo(response.proconnect_logout_url, { external: true })
-  }
-  else {
-    await navigateTo('/')
-  }
+  doLogout()
   toast.success(t('Vous avez été déconnecté.'))
 }
 

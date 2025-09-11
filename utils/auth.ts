@@ -1,4 +1,5 @@
 import type { Organization, User } from '@datagouv/components-next'
+import { usePostApiWithCsrf } from './api'
 
 export type Me = User & {
   about: string | null
@@ -75,5 +76,27 @@ export const loadMe = async (meState: Ref<Me | null | undefined>) => {
   }
   catch {
     meState.value = null
+  }
+}
+
+export function useLogout() {
+  const postApiWithCsrf = usePostApiWithCsrf()
+  const token = useToken()
+  const me = useMe()
+
+  return async () => {
+    token.value = null
+    refreshCookie('token')
+
+    const response = await postApiWithCsrf<{ proconnect_logout_url: string | null }>('/logout/', {})
+
+    await loadMe(me)
+
+    if (response.proconnect_logout_url) {
+      await navigateTo(response.proconnect_logout_url, { external: true })
+    }
+    else {
+      await navigateTo('/')
+    }
   }
 }
