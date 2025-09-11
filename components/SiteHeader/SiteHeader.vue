@@ -515,7 +515,6 @@ const logout = async () => {
   refreshCookie('token')
 
   const response = await postApiWithCsrf<{ proconnect_logout_url: string | null }>('/logout/', {})
-  console.log(response)
 
   me.value = null
   if (response.proconnect_logout_url) {
