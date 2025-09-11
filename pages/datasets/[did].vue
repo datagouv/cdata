@@ -233,10 +233,11 @@
                   {{ $t('Label') }}
                 </dt>
                 <dd class="p-0 text-sm flex flex-wrap gap-1">
-                  <LabelBadge
+                  <LabelTag
                     v-for="badge in badges"
                     :key="badge.kind"
                     :badge
+                    :url="`/datasets/search?badge=${badge.kind}`"
                   />
                 </dd>
               </div>
@@ -312,7 +313,7 @@
 </template>
 
 <script setup lang="ts">
-import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, type Resource, BrandedButton, useFormatDate, StatBox, Toggletip, type TranslatedBadge, LabelBadge } from '@datagouv/components-next'
+import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, type Resource, BrandedButton, useFormatDate, StatBox, Toggletip, type TranslatedBadge, LabelTag } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiExternalLinkFill, RiLockLine } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'

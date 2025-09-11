@@ -34,7 +34,7 @@ import DatasetQualityItem from './components/DatasetQualityItem.vue'
 import DatasetQualityScore from './components/DatasetQualityScore.vue'
 import DatasetQualityTooltipContent from './components/DatasetQualityTooltipContent.vue'
 import ExtraAccordion from './components/ExtraAccordion.vue'
-import LabelBadge from './components/DatasetLabelBadge.vue'
+import LabelTag from './components/DatasetLabelTag.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
@@ -171,7 +171,7 @@ export {
   DatasetQualityTooltipContent,
   DateRangeDetails,
   ExtraAccordion,
-  LabelBadge,
+  LabelTag,
   OrganizationCard,
   OrganizationNameWithCertificate,
   OwnerType,

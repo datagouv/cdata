@@ -1,20 +1,32 @@
 <template>
-  <span class="bg-gray-lower text-xs leading-5 px-2 py-0.5 rounded-full uppercase inline-flex gap-0.5 items-center">
+  <component
+    :is="url ? AppLink : 'span'"
+    :to="url"
+    class="text-xs leading-5 px-2 py-0.5 rounded-full uppercase inline-flex items-center"
+    :class="{
+      'bg-none bg-datagouv hover:bg-datagouv-dark text-white gap-1': url,
+      'bg-gray-lower gap-0.5': !url,
+    }"
+  >
     <img
       v-if="img"
       :src="img"
       alt=""
+      :class="{ 'bg-white rounded-full': url }"
     >
     {{ badge.label }}
-  </span>
+  </component>
 </template>
 
 <script setup lang="ts">
 import { computedAsync } from '@vueuse/core'
+import type { RouteLocationRaw } from 'vue-router'
+import AppLink from './AppLink.vue'
 import type { TranslatedBadge } from '@/types/badges'
 
 const props = defineProps<{
   badge: TranslatedBadge
+  url?: string | RouteLocationRaw
 }>()
 
 const img = computedAsync(async () => {
