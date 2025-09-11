@@ -54,6 +54,7 @@
             method="POST"
           >
             <input
+              v-if="csrf_response"
               type="hidden"
               name="csrf_token"
               :value="csrf_response.response.csrf_token"
