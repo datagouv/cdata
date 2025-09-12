@@ -93,7 +93,7 @@
               <div class="text-sm text-gray-plain font-bold mb-1 pb-0">
                 {{ $t('Description') }}
               </div>
-              <ReadMore class="">
+              <ReadMore>
                 <MarkdownViewer
                   size="sm"
                   :content="dataset.description"
@@ -196,6 +196,52 @@
                 />
               </div>
 
+              <div>
+                <dt class="text-sm text-gray-plain font-bold flex items-center pb-0">
+                  <Toggletip
+                    :button-props="{ class: '-ml-2 mt-px px-2', title: $t('Label') }"
+                    no-margin
+                  >
+                    <template #toggletip="{ close }">
+                      <div class="flex justify-between border-bottom">
+                        <h5 class="fr-text--sm fr-my-0 fr-p-2v">
+                          {{ $t("Label") }}
+                        </h5>
+                        <button
+                          type="button"
+                          :title="$t('Fermer')"
+                          class="border-l border-gray-default w-10 text-[1.2rem] flex items-center justify-center"
+                          @click="close"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                      <div class="py-2 px-4">
+                        {{ $t('Certains jeux de données bénéficient d’un ou plusieurs labels reconnus au niveau national, européen ou international.') }}
+                        <br>
+                        {{ $t('Ces labels peuvent signaler une valeur réglementaire ou une importance stratégique.') }}
+                      </div>
+                      <div
+                        v-if="config.public.guidesLabelsUrl"
+                        class="w-full text-right py-2 px-4"
+                        target="_blank"
+                      >
+                        <a :href="config.public.guidesLabelsUrl">{{ $t('Voir les labels de données') }}</a>
+                      </div>
+                    </template>
+                  </Toggletip>
+                  {{ $t('Label') }}
+                </dt>
+                <dd class="p-0 text-sm flex flex-wrap gap-1">
+                  <LabelTag
+                    v-for="badge in badges"
+                    :key="badge.kind"
+                    :badge
+                    :url="`/datasets/search?badge=${badge.kind}`"
+                  />
+                </dd>
+              </div>
+
               <SimpleBanner
                 v-if="hideWarnings"
                 type="primary-frame"
@@ -267,7 +313,7 @@
 </template>
 
 <script setup lang="ts">
-import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, type Resource, BrandedButton, useFormatDate, StatBox } from '@datagouv/components-next'
+import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, type Resource, BrandedButton, useFormatDate, StatBox, Toggletip, type TranslatedBadge, LabelTag } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiExternalLinkFill, RiLockLine } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -335,6 +381,9 @@ const exploreUrl = computed(() => {
 
 const datasetVisits = ref<Record<string, number>>({})
 const datasetDownloadsResources = ref<Record<string, number>>({})
+const { data: badgeTranslations } = await useAPI<Record<string, string>>('/api/1/datasets/badges')
+
+const badges = computed(() => dataset.value.badges.map<TranslatedBadge>(b => ({ ...b, label: badgeTranslations.value[b.kind] })))
 
 const datasetVisitsTotal = ref(0)
 const datasetDownloadsResourcesTotal = ref(0)
