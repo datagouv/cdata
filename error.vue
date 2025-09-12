@@ -114,7 +114,14 @@
           class="fr-mt-4w fr-p-2w"
         >
           <p class="fr-text--sm">
-            <span class="fr-text--bold">{{ $t('Code erreur') }} :</span> {{ errorMessage }}
+            <span class="fr-text--bold">{{ $t('Code erreur') }} :&nbsp;</span> 
+            <span class="font-mono">{{ errorMessage }}</span>
+            <CopyButton
+              :label="$t('Copier le code erreur')"
+              :copied-label="$t('Code erreur copié !')"
+              :text="errorMessage || ''"
+              class="ml-2"
+            />
           </p>
         </div>
 
@@ -142,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { datagouv, BrandedButton } from '@datagouv/components-next'
+import { datagouv, BrandedButton, CopyButton } from '@datagouv/components-next'
 import type { UseFetchFunction } from '@datagouv/components-next'
 import CdataLink from './components/CdataLink.vue'
 import { ClientOnly, TextClamp } from '#components'
