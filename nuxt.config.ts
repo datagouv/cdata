@@ -103,6 +103,11 @@ export default defineNuxtConfig({
         title: 'Données relatives aux Énergies',
         url: '/pages/donnees-energie',
       },
+      homepageHeroImages: [
+        'hero_1.png', 'hero_2.png', 'hero_3.png', 'hero_4.png', 'hero_5.png',
+        'hero_6.png', 'hero_7.png', 'hero_8.png', 'hero_9.png', 'hero_10.png',
+        'hero_11.png', 'hero_12.png', 'hero_13.png', 'hero_14.png', 'hero_15.png',
+      ],
 
       proconnect: {
         homepage: 'https://agentconnect.gouv.fr/',

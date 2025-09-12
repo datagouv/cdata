@@ -128,6 +128,17 @@ useSeoMeta({
 })
 
 const config = useRuntimeConfig()
+const route = useRoute()
+
+onMounted(async () => {
+  const hasFacets = Object.keys(route.query).some(key =>
+    ['q', 'sort', 'is_restricted', 'organization', 'page'].includes(key),
+  )
+
+  if (hasFacets) {
+    await navigateTo({ path: '/dataservices/search', query: route.query })
+  }
+})
 
 const { data: site } = await useAPI<Site>('/api/1/site')
 const { data: page } = await useAPI<Page>(`/api/1/pages/${site.value.dataservices_page}`)

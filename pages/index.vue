@@ -1,7 +1,11 @@
 <template>
   <div>
-    <section class="py-8 sm:py-[200px] bg-cover bg-[url(''),radial-gradient(rgba(255,255,255,0.8),rgba(217,217,217,0)),url('/nuxt_images/homepage/hero.png')]">
-      <div class="max-w-[800px] mx-auto px-6 flex flex-col items-center space-y-8">
+    <section
+      class="relative py-8 sm:py-[200px] bg-cover bg-center"
+      :style="`background-image: url(''), radial-gradient(rgba(255,255,255,1.0), rgba(255,255,255,0.7), rgba(217,217,217,0)), url('/nuxt_images/homepage/${randomHeroImage}')`"
+    >
+      <div class="absolute inset-0 backdrop-blur-[2px]" />
+      <div class="relative max-w-[800px] mx-auto px-6 flex flex-col items-center space-y-8">
         <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-5 items-center">
           <CdataLink
             v-if="lastPost"
@@ -74,7 +78,7 @@
           </div>
 
           <div class="space-y-2.5">
-            <p class="uppercase font-bold text-gray-low">
+            <p class="uppercase font-bold text-gray-medium">
               {{ $t('Ils publient des données sur {name}', { name: config.public.title }) }}
             </p>
             <div class="grid grid-cols-2 sm:grid-cols-4 justify-between">
@@ -113,7 +117,7 @@
       </div>
       <div class="hidden sm:flex px-6 justify-center pt-8 sm:pt-10 overflow-hidden bg-gray-some">
         <figure class="w-full max-w-lg flex flex-col items-center">
-          <figcaption class="uppercase font-bold text-gray-low mb-6">
+          <figcaption class="uppercase font-bold text-gray-medium mb-6">
             {{ $t('Jeux de données') }}
           </figcaption>
           <nuxt-img
@@ -125,7 +129,7 @@
       </div>
       <div class="hidden sm:flex px-6 justify-center py-8 sm:pt-10 sm:pb-20 bg-gray-some">
         <figure class="w-full max-w-lg flex flex-col items-center">
-          <figcaption class="uppercase font-bold text-gray-low mb-6">
+          <figcaption class="uppercase font-bold text-gray-medium mb-6">
             {{ $t('Réutilisations') }}
           </figcaption>
           <nuxt-img
@@ -163,7 +167,7 @@
           </div>
 
           <div class="space-y-2.5">
-            <p class="uppercase font-bold text-gray-low">
+            <p class="uppercase font-bold text-gray-medium">
               {{ $t('Ils réutilisent les données de {name}', { name: config.public.title }) }}
             </p>
             <div class="grid grid-cols-2 sm:grid-cols-4 justify-between">
@@ -220,7 +224,7 @@
           </p>
         </div>
         <div>
-          <h4 class="text-base uppercase font-bold text-gray-low">
+          <h4 class="text-base uppercase font-bold text-gray-silver">
             {{ $t('Nos objectifs') }}
           </h4>
           <div class="grid grid-cols-1 sm:grid-cols-3 space-y-6 sm:space-y-0">
@@ -257,7 +261,7 @@
             {{ $t('Produire de l’information à partir des données') }}
           </h3>
           <div>
-            <h4 class="text-base uppercase font-bold text-gray-low">
+            <h4 class="text-base uppercase font-bold text-gray-silver">
               {{ $t('Nos explorations de données') }}
             </h4>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -275,7 +279,7 @@
                   class="w-full h-[300px] object-cover"
                 />
                 <div class="p-4 space-y-2.5">
-                  <p class="text-sm uppercase font-bold text-gray-low">
+                  <p class="text-sm uppercase font-bold text-gray-medium">
                     {{ exploration.title }}
                   </p>
                   <p class="text-base text-gray-title font-bold">
@@ -311,7 +315,7 @@
             {{ $t('Fédérer un écosystème') }}
           </h3>
           <div>
-            <h4 class="text-base uppercase font-bold text-gray-low">
+            <h4 class="text-base uppercase font-bold text-gray-silver">
               {{ $t('Nos plateformes thématiques') }}
             </h4>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
@@ -375,7 +379,7 @@
     </section>
     <section v-if="lastPost">
       <div class="max-w-7xl mx-auto px-6 py-16 space-y-8">
-        <h2 class="text-base uppercase font-bold text-gray-low mb-6">
+        <h2 class="text-base uppercase font-bold text-gray-medium mb-6">
           {{ $t("L'actualité {name}", { name: config.public.title }) }}
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-8">
@@ -453,4 +457,7 @@ const reusesMetrics = computed(() => {
     { label: t('Discussions'), value: site.value ? site.value.metrics.discussions : 0 },
   ]
 })
+
+const heroImages = config.public.homepageHeroImages
+const randomHeroImage = heroImages[Math.floor(Math.random() * heroImages.length)]
 </script>

@@ -37,6 +37,18 @@ useSeoMeta({
 })
 
 const config = useRuntimeConfig()
+const route = useRoute()
+
+onMounted(async () => {
+  const hasFacets = Object.keys(route.query).some(key =>
+    ['q', 'tag', 'format', 'license', 'organization', 'organization_badge',
+      'geozone', 'granularity', 'schema', 'sort', 'page'].includes(key),
+  )
+
+  if (hasFacets) {
+    await navigateTo({ path: '/datasets/search', query: route.query })
+  }
+})
 
 const { data: site } = await useAPI<Site>('/api/1/site')
 const { data: page } = await useAPI<Page>(`/api/1/pages/${site.value.datasets_page}`)

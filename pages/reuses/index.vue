@@ -157,6 +157,17 @@ useSeoMeta({
 })
 
 const config = useRuntimeConfig()
+const route = useRoute()
+
+onMounted(async () => {
+  const hasFacets = Object.keys(route.query).some(key =>
+    ['q', 'sort', 'tag', 'topic', 'page'].includes(key),
+  )
+
+  if (hasFacets) {
+    await navigateTo({ path: '/reuses/search', query: route.query })
+  }
+})
 
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
 

@@ -130,7 +130,7 @@ const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Reuse>>(
 
 watchEffect(async () => {
   if (pageData.value) {
-    const activities = await getActitiesForObjects($api, pageData.value.data, 'created_at')
+    const activities = await getLatestActivitiesForObjects($api, pageData.value.data, 'created_at')
     reuseActivities.value = { ...reuseActivities.value, ...activities }
   }
 })
