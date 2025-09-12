@@ -68,7 +68,6 @@ const calculatePanelPosition = () => {
       console.error('Cannot find the popover of the Toggletip.)')
       return
     }
-    console.log(popover)
     const popoverRect = popover.getBoundingClientRect()
     panelStyle.value = {
       left: `${popoverRect.left + window.scrollX}px`,

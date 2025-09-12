@@ -148,7 +148,7 @@ const suggest = async (query: string): Promise<Array<TSuggest>> => {
   })
 }
 
-watch(selectedSuggest.value, async () => {
+watch(selectedSuggest, async () => {
   for (const object of selectedSuggest.value) {
     if (object.id in objectsByIds.value) continue
 
