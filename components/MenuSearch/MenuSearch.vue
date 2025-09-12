@@ -22,6 +22,7 @@
       <ComboboxButton
         class="absolute right-0 p-2 bg-datagouv rounded-tr hover:!bg-datagouv-hover"
       >
+        <span class="sr-only">{{ $t('Rechercher') }}</span>
         <RiSearchLine
           class="h-6 w-6 text-white"
           aria-hidden="true"

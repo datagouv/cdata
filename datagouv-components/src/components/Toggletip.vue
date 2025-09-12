@@ -1,6 +1,7 @@
 <template>
   <Popover
     v-slot="{ open, close }"
+    ref="popover"
     class="relative"
   >
     <!--
@@ -11,17 +12,13 @@
       :value="open"
       @changed="calculatePanelPosition"
     />
-    <PopoverButton ref="button">
-      <BrandedButton
-        color="secondary-softer"
-        icon-only
-        :icon="RiInformationLine"
-        size="xs"
-        keep-margins-even-without-borders
-        v-bind="buttonProps"
-      >
-        <slot />
-      </BrandedButton>
+    <PopoverButton
+      v-bind="buttonProps"
+      class="w-8 h-8 rounded-full -outline-offset-2 inline-flex items-center justify-center bg-transparent border-transparent hover:!bg-gray-some"
+    >
+      <slot>
+        <RiInformationLine class="size-5" />
+      </slot>
     </PopoverButton>
 
     <ClientOnly>
@@ -49,7 +46,6 @@
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useTemplateRef } from 'vue'
 import { RiInformationLine } from '@remixicon/vue'
-import BrandedButton from './BrandedButton.vue'
 import ClientOnly from './ClientOnly.vue'
 import ValueWatcher from './ValueWatcher.vue'
 
@@ -58,7 +54,7 @@ defineProps<{
   noMargin?: boolean
 }>()
 
-const buttonRef = useTemplateRef('button')
+const popoverRef = useTemplateRef('popover')
 const panelStyle = ref({})
 
 // Since the parent of the component can have an overflow-hidden
@@ -66,17 +62,17 @@ const panelStyle = ref({})
 // We need to compute the correct position of the tooltip.
 const calculatePanelPosition = () => {
   nextTick(() => {
-    const button = buttonRef.value?.$el || buttonRef.value
+    const popover = popoverRef.value?.$el
 
-    if (!button) {
-      console.error('Cannot find the button of the Toggletip.)')
+    if (!popover) {
+      console.error('Cannot find the popover of the Toggletip.)')
       return
     }
-
-    const buttonRect = button.getBoundingClientRect()
+    console.log(popover)
+    const popoverRect = popover.getBoundingClientRect()
     panelStyle.value = {
-      left: `${buttonRect.left + window.scrollX}px`,
-      top: `${buttonRect.bottom + window.scrollY}px`,
+      left: `${popoverRect.left + window.scrollX}px`,
+      top: `${popoverRect.bottom + window.scrollY}px`,
     }
   })
 }

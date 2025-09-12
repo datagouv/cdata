@@ -23,6 +23,7 @@
         <DatasetCardLg
           v-for="dataset in bloc.datasets"
           :key="dataset.id"
+          class="min-w-0"
           :dataset
         />
       </div>
@@ -33,6 +34,7 @@
         <DataserviceCard
           v-for="dataservice in bloc.dataservices"
           :key="dataservice.id"
+          class="min-w-0"
           :dataservice
         />
       </div>
@@ -43,6 +45,7 @@
         <ReuseCard
           v-for="reuse in bloc.reuses"
           :key="reuse.id"
+          class="min-w-0"
           :reuse
         />
       </div>
