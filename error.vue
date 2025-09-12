@@ -1,8 +1,8 @@
 <template>
-  <NuxtLayout name="error">
-    <div class="min-h-screen bg-white flex items-center justify-center py-30 px-8 md:py-15 md:px-4">
+  <NuxtLayout>
+    <div class="min-h-screen bg-white flex items-center justify-center px-8 md:px-4">
       <div class="flex flex-col items-center text-center max-w-2xl w-full gap-6">
-        <div class="w-37 h-35 aspect-[141/134] flex items-center justify-center md:w-25 md:h-24">
+        <div class="w-37 h-35 flex items-center justify-center md:w-25 md:h-24">
           <img
             v-if="statusCode === 404"
             src="/assets/svg/errors/404.svg"
@@ -114,7 +114,14 @@
           class="fr-mt-4w fr-p-2w"
         >
           <p class="fr-text--sm">
-            <span class="fr-text--bold">{{ $t('Code erreur') }} :</span> {{ errorMessage }}
+            <span class="fr-text--bold">{{ $t('Code erreur') }} :&nbsp;</span> 
+            <span class="font-mono">{{ errorMessage }}</span>
+            <CopyButton
+              :label="$t('Copier le code erreur')"
+              :copied-label="$t('Code erreur copié !')"
+              :text="errorMessage || ''"
+              class="ml-2"
+            />
           </p>
         </div>
 
@@ -142,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { datagouv, BrandedButton } from '@datagouv/components-next'
+import { datagouv, BrandedButton, CopyButton } from '@datagouv/components-next'
 import type { UseFetchFunction } from '@datagouv/components-next'
 import CdataLink from './components/CdataLink.vue'
 import { ClientOnly, TextClamp } from '#components'
