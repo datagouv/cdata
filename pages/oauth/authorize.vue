@@ -54,6 +54,12 @@
             method="POST"
           >
             <input
+              v-if="csrf_response"
+              type="hidden"
+              name="csrf_token"
+              :value="csrf_response.response.csrf_token"
+            >
+            <input
               type="hidden"
               name="scope"
               :value="data.scopes.join(' ')"
@@ -92,10 +98,12 @@ useSeoMeta({ title: t('Connexion') })
 
 const route = useRoute()
 
-const { data, status } = await useAPI<{ client: { name: string }, scopes: Array<string> }>('/fr/oauth/client_info', { query: route.query })
+const { data, status } = await useAPI<{ client: { name: string }, scopes: Array<string> }>('/oauth/client_info', { query: route.query })
+
+const { data: csrf_response } = await useAPI<{ response: { csrf_token: string } }>('/get-csrf', { lazy: true, server: false })
 
 const authorizeUrl = computed(() => {
   const queryString = new URLSearchParams(route.query).toString()
-  return `${config.public.apiBase}/fr/oauth/authorize?${queryString}`
+  return `${config.public.apiBase}/oauth/authorize?${queryString}`
 })
 </script>
