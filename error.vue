@@ -1,5 +1,5 @@
 <template>
-  <NuxtLayout name="error">
+  <NuxtLayout>
     <div class="min-h-screen bg-white flex items-center justify-center py-30 px-8 md:py-15 md:px-4">
       <div class="flex flex-col items-center text-center max-w-2xl w-full gap-6">
         <div class="w-37 h-35 aspect-[141/134] flex items-center justify-center md:w-25 md:h-24">
