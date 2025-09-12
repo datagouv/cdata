@@ -416,6 +416,8 @@ const licenseFromParams = computed(() => licenses.value?.find(license => license
 
 const schemaFromParams = computed(() => schemas.value?.find(schema => schema.name === params.schema) ?? null)
 
+const badgeFromParams = computed(() => badges.value?.find(badge => badge.kind === params.badge) ?? null)
+
 let spatialCoverageFromSuggest: SpatialZone | undefined
 if (params.geozone) {
   const suggested = await suggestSpatialCoverages(params.geozone)
@@ -435,6 +437,7 @@ const facets = ref<Facets>({
   schema: null,
   geozone: spatialCoverageFromSuggest,
   granularity: null,
+  badge: null,
 })
 
 watchEffect(() => {
@@ -442,6 +445,7 @@ watchEffect(() => {
   facets.value.license = licenseFromParams.value
   facets.value.schema = schemaFromParams.value
   facets.value.granularity = granularityFromParams.value
+  facets.value.badge = badgeFromParams.value
 })
 
 /**
