@@ -459,7 +459,7 @@ import CdataLink from '../CdataLink.vue'
 import LogoAsText from '../LogoAsText.vue'
 import LogoImage from '../LogoImage.vue'
 import { NuxtImg } from '#components'
-import { useMaybeMe } from '~/utils/auth'
+import { useLogout, useMaybeMe } from '~/utils/auth'
 
 defineProps<{
   fluid?: boolean
@@ -508,18 +508,10 @@ function getAriaCurrent(link: string) {
   return routesInPath.includes(link)
 }
 
-const { $api } = useNuxtApp()
-const token = useToken()
+const doLogout = useLogout()
 const logout = async () => {
-  token.value = null
-  refreshCookie('token')
-
-  await $api('/fr/logout/', {
-    method: 'POST',
-  })
-
-  me.value = null
-  await navigateTo('/')
+  doLogout()
+  toast.success(t('Vous avez été déconnecté.'))
 }
 
 const { toast } = useToast()
@@ -527,8 +519,10 @@ onMounted(() => {
   // TODO: remove this logic when we don't rely on udata flash messages
   // following https://github.com/opendatateam/udata/pull/3348
   const FLASH_MESSAGES: Record<string, { type: 'success' | 'error', text: string }> = {
+    logout: { type: 'success', text: t('Vous êtes maintenant déconnecté.') },
     connected: { type: 'success', text: t('Vous êtes maintenant connecté.') },
     change_email: { type: 'success', text: t('Merci. Les instructions de confirmation pour changer votre adresse email ont été envoyées à l\'adresse mail cible.') },
+    post_confirm: { type: 'success', text: t('Votre adresse email est maintenant confirmée. Vous êtes maintenant connecté.') },
     change_email_confirmed: { type: 'success', text: t('Votre nouvelle adresse email est maintenant confirmée.') },
     change_email_expired: { type: 'error', text: t('Le code de vérification de votre adresse email a expiré, un nouveau mail vous a été envoyé.') },
     change_email_invalid: { type: 'error', text: t('Le code de vérification de votre adresse email est incorrect.') },

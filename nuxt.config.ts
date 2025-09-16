@@ -136,6 +136,7 @@ export default defineNuxtConfig({
       maxSortableFiles: 50,
 
       captcheta: {
+        enabled: true,
         style: 'captchaFR',
       },
 

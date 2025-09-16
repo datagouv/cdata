@@ -48,3 +48,28 @@ export function getUserBasedKey(route: string) {
 export function getDataFromSSRPayload(key: string, nuxtApp: NuxtApp) {
   return nuxtApp.payload.data[key] ? nuxtApp.payload.data[key] : undefined
 }
+
+export function usePostApiWithCsrf() {
+  const { $api } = useNuxtApp()
+
+  return async <T>(url: string, body: object): Promise<T> => {
+    // See the `get_csrf()` method in `udata`.
+    // In Flask, we can get the form with an Accept:application/json to get
+    // a valid CSRF token. It's not working in our implementation because for
+    // example `GET /login` is routed to `cdata` and not `udata`. Only `POST /login` go
+    // to the API. So we've add a new special endpoint to fetch a CSRF token with an URL
+    // that is different from cdata URLs.
+    // Maybe this endoint could be in `/api/xxx`? Or maybe we need to switch to a better
+    // system by switching to API endpoint without CSRF for security endpoints.
+    const { response: { csrf_token } } = await $api<{ response: { csrf_token: string } }>('/get-csrf')
+
+    return await $api<T>(url, {
+      method: 'POST',
+      // Some endpoints do not support CSRFToken inside headers (for exemple /fr/change/), so send it in the body too.
+      body: { csrf_token, ...body },
+      headers: {
+        'X-CSRFToken': csrf_token,
+      },
+    })
+  }
+}
