@@ -15,14 +15,14 @@ export interface MatomoTracker {
 export default defineNuxtPlugin({
   async setup(nuxtApp) {
     const _paq = (window._paq = window._paq || [])
-    let u = nuxtApp.$config.public.matomoHost
-    const debug = nuxtApp.$config.public.matomoDebug
-    const dryRun = nuxtApp.$config.public.matomoDryRun
+    let u = nuxtApp.$config.public.matomo.host
+    const debug = nuxtApp.$config.public.matomo.debug
+    const dryRun = nuxtApp.$config.public.matomo.dryRun
     if (u) {
       u = u.endsWith('/') ? u : u + '/'
       /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
       _paq.push(['setTrackerUrl', u + 'matomo.php'])
-      _paq.push(['setSiteId', nuxtApp.$config.public.matomoSiteId])
+      _paq.push(['setSiteId', nuxtApp.$config.public.matomo.siteId])
       _paq.push(['enableLinkTracking'])
       await loadScript(u + 'matomo.js')
       const matomo = getMatomo()
