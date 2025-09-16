@@ -84,7 +84,6 @@ import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import { RiEditLine } from '@remixicon/vue'
 import type { FieldsErrors } from '~/types/form'
 
-const { $api } = useNuxtApp()
 const { toast } = useToast()
 const { t } = useI18n()
 
@@ -95,23 +94,16 @@ const oldPassword = ref('')
 const newPassword = ref('')
 const confirmNewPassword = ref('')
 
+const postApiWithCsrf = usePostApiWithCsrf()
 const submit = async (close: () => void) => {
   loading.value = true
   errors.value = {}
 
   try {
-    const { response: { csrf_token } } = await $api<{ response: { csrf_token: string } }>('/fr/change/')
-
-    await $api('/fr/change/', {
-      method: 'POST',
-      body: {
-        password: oldPassword.value,
-        new_password: newPassword.value,
-        new_password_confirm: confirmNewPassword.value,
-      },
-      headers: {
-        'X-CSRFToken': csrf_token,
-      },
+    await postApiWithCsrf('/change/', {
+      password: oldPassword.value,
+      new_password: newPassword.value,
+      new_password_confirm: confirmNewPassword.value,
     })
 
     toast.success(t('Mot de passe modifié.'))
