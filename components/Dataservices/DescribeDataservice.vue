@@ -435,19 +435,10 @@
             >
               {{ getFirstWarning("access_type") }}
             </SimpleBanner>
-            <div
+            <SelectAudiencesTypes
               v-if="form.access_type === 'restricted'"
-              class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 items-end"
-            >
-              <SelectGroup
-                v-for="accessAudienceType in accessAudienceTypes"
-                :key="accessAudienceType"
-                v-model="form.access_audiences[accessAudienceType]"
-                class="mb-0"
-                :label="getAccessAudienceType(accessAudienceType)"
-                :options="accessAudienceConditionOptions"
-              />
-            </div>
+              v-model="form.access_audiences"
+            />
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -531,7 +522,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, type DataserviceAccessAudienceCondition, type DataserviceAccessAudienceType } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import ModalClient from '../Modal/Modal.client.vue'
@@ -541,7 +532,6 @@ import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ContactPointSelect from '~/components/ContactPointSelect.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import type { DataserviceForm, Owned } from '~/types/types'
-import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 
 const props = defineProps<{
   harvested?: boolean
@@ -573,20 +563,9 @@ const rateLimitingDataserviceAccordionId = useId()
 const availabilityDataserviceAccordionId = useId()
 const contactPointAccordionId = useId()
 
-const { getAccessAudienceCondition, getAccessAudienceType } = useAccessAudience()
-
 const ownedOptions = computed<Array<Owned>>(() => {
   return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: user.value, organization: null }]
 })
-
-const accessAudienceConditions: Array<DataserviceAccessAudienceCondition> = ['yes', 'no', 'under_condition']
-
-const accessAudienceTypes: Array<DataserviceAccessAudienceType> = ['local_authority_and_administration', 'company_and_association', 'private']
-
-const accessAudienceConditionOptions = computed(() => accessAudienceConditions.map(condition => ({
-  value: condition,
-  label: getAccessAudienceCondition(condition).label,
-})))
 
 const machineDocumentationUrlWarningMessage = t(`Il est fortement recommandé d'ajouter une documentation OpenAPI ou Swagger à votre API.`)
 const openConfirmModal = ref(false)

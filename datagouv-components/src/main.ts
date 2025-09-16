@@ -3,7 +3,8 @@ import { createI18n, useI18n } from 'vue-i18n'
 import type { ContactPoint, ContactPointRole } from './types/contact_point.js'
 import type { Badge, Badges } from './types/badges'
 import type { Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
-import type { NewDataservice, Dataservice, DataserviceAccessAudience, DataserviceAccessAudienceCondition, DataserviceAccessAudienceType } from './types/dataservices'
+import type { NewDataservice, Dataservice } from './types/dataservices'
+import type { AccessType, AccessAudience, AccessAudienceCondition, AccessAudienceType } from './types/access_types'
 import type { Frequency, Frequencies } from './types/frequency'
 import type { Granularity, Granularities, SpatialZone } from './types/granularity'
 import type { Harvest } from './types/harvest'
@@ -76,6 +77,10 @@ export * from './functions/users'
 
 export type {
   UseFetchFunction,
+  AccessType,
+  AccessAudience,
+  AccessAudienceCondition,
+  AccessAudienceType,
   Badge,
   Badges,
   CommunityResource,
@@ -85,9 +90,6 @@ export type {
   DatasetV2,
   DatasetV2WithFullObject,
   Dataservice,
-  DataserviceAccessAudience,
-  DataserviceAccessAudienceCondition,
-  DataserviceAccessAudienceType,
   NewDataservice,
   FileResourceFileType,
   Frequency,
