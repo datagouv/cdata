@@ -178,6 +178,9 @@ export default defineNuxtConfig({
 
       // Matomo ID of your site. Check the Matomo backend for it
       matomoSiteId: 1,
+
+      matomoDebug: false,
+      matomoDryRun: false,
     },
   },
 
