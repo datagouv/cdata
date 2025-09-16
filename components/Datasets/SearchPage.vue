@@ -402,9 +402,11 @@ const organizationFromParams = computed(() => organizations.value?.data.find(org
 
 const organizationFromSuggest = computedAsync<OrganizationOrSuggest | null>(async () => {
   if (!props.organization && !organizationFromParams.value && params.organization) {
-    const suggested = await suggestOrganizations(params.organization)
-    if (suggested && suggested.length > 0) {
-      return suggested[0]
+    try {
+      return await $api<Organization>(`/api/1/organizations/${params.organization}/`)
+    }
+    catch {
+      return null
     }
   }
   return null
@@ -541,24 +543,24 @@ const sortOptions = [
 ]
 
 // Update model params
-watchEffect(() => {
+watch([facets, deboucedQuery, searchSort], ([newFacets, q, sort]) => {
   if (!props.organization) {
-    params.organization = facets.value.organization?.id ?? undefined
-    params.organization_badge = facets.value.organizationType?.type ?? undefined
+    params.organization = newFacets.organization?.id ?? undefined
+    params.organization_badge = newFacets.organizationType?.type ?? undefined
   }
-  params.tag = facets.value.tag ?? undefined
-  params.format = facets.value.format ?? undefined
-  params.organization_badge = facets.value.organizationType?.type ?? undefined
-  params.license = facets.value.license?.id ?? undefined
-  params.schema = facets.value.schema?.name ?? undefined
-  params.geozone = facets.value.geozone?.id ?? undefined
-  params.granularity = facets.value.granularity?.id ?? undefined
-  params.badge = facets.value.badge?.kind ?? undefined
+  params.tag = newFacets.tag
+  params.format = newFacets.format ?? undefined
+  params.organization_badge = newFacets.organizationType?.type ?? undefined
+  params.license = newFacets.license?.id ?? undefined
+  params.schema = newFacets.schema?.name ?? undefined
+  params.geozone = newFacets.geozone?.id ?? undefined
+  params.granularity = newFacets.granularity?.id ?? undefined
+  params.badge = newFacets.badge?.kind ?? undefined
   if (currentPage.value > 1 || params.page) params.page = currentPage.value.toString()
-  params.q = deboucedQuery.value ?? undefined
-  params.sort = searchSort.value ?? null
+  params.q = q ?? undefined
+  params.sort = sort ?? null
   return params
-})
+}, { deep: true })
 
 watch(searchResultsStatus, () => {
   if (searchResultsStatus.value === 'error') {

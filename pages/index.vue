@@ -4,7 +4,7 @@
       class="relative py-8 sm:py-[200px] bg-cover bg-center"
       :style="`background-image: url(''), radial-gradient(rgba(255,255,255,1.0), rgba(255,255,255,0.7), rgba(217,217,217,0)), url('/nuxt_images/homepage/${randomHeroImage}')`"
     >
-      <div class="absolute inset-0 backdrop-blur-[2px]" />
+      <div class="absolute inset-0 backdrop-blur-[1px]" />
       <div class="relative max-w-[800px] mx-auto px-6 flex flex-col items-center space-y-8">
         <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-5 items-center">
           <CdataLink
