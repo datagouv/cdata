@@ -129,6 +129,10 @@ export type DatasetForm = {
   description: string
   tags: Array<Tag>
   license: License | null
+  access_type: AccessType
+  access_audiences: Record<AccessAudienceType, AccessAudienceCondition>
+  access_type_reason: string | null
+  authorization_request_url: string | null
   contact_points: Array<NewContactPoint | ContactPoint | null>
   temporal_coverage: { start: null | string, end: null | string }
   frequency: Frequency | null
@@ -149,6 +153,10 @@ export type NewDatasetForApi = {
   owner?: string
   tags: Array<string>
   license?: string
+  access_type: AccessType
+  access_audiences: Array<AccessAudience>
+  access_type_reason: string | null
+  authorization_request_url: string | null
   contact_points?: Array<string> | null
   temporal_coverage?: { start: string, end: string | null }
   frequency?: string
@@ -203,6 +211,7 @@ export type DataserviceForm = {
   business_documentation_url: string | null
   access_type: AccessType
   access_audiences: Record<AccessAudienceType, AccessAudienceCondition>
+  access_type_reason: string | null
   rate_limiting: string
   availability: string
   private: boolean
@@ -221,6 +230,7 @@ export type NewDataserviceForApi = {
   contact_points?: Array<string> | null
   access_type: AccessType
   access_audiences: Array<AccessAudience>
+  access_type_reason: string | null
   base_api_url: string | null
   authorization_request_url: string | null
   machine_documentation_url: string | null

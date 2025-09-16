@@ -1,4 +1,4 @@
-import { type Dataset, type DatasetV2, type Frequency, type License, type RegisteredSchema, type Resource, type CommunityResource, type Schema, throwOnNever } from '@datagouv/components-next'
+import { type Dataset, type DatasetV2, type Frequency, type License, type RegisteredSchema, type Resource, type CommunityResource, type Schema, throwOnNever, type AccessAudienceType, type AccessAudienceCondition } from '@datagouv/components-next'
 import type { FetchError } from 'ofetch'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -45,6 +45,11 @@ export function datasetToForm(dataset: Dataset | DatasetV2, licenses: Array<Lice
     acronym: dataset.acronym,
     tags: dataset.tags?.map(text => ({ text })) || [],
     license: licenses.find(l => l.id === dataset.license) || null,
+    access_type: dataset.access_type,
+    access_audiences: Object.fromEntries(dataset.access_audiences.map(a => [a.role, a.condition])) as { [K in AccessAudienceType]: AccessAudienceCondition },
+    access_type_reason: dataset.access_type_reason || '',
+    authorization_request_url: dataset.authorization_request_url || '',
+
     contact_points: dataset.contact_points ?? [],
     frequency: frequencies.find(f => f.id === dataset.frequency) || null,
     temporal_coverage: dataset.temporal_coverage ? { start: dataset.temporal_coverage.start, end: dataset.temporal_coverage.end } : { start: null, end: null }, // TODO fix this type, the API returns an object not a string
@@ -68,6 +73,10 @@ export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, pri
     acronym: form.acronym,
     tags: form.tags.map(t => t.text),
     license: form.license?.id || '',
+    access_type: form.access_type,
+    access_audiences: (Object.entries(form.access_audiences) as Array<[AccessAudienceType, AccessAudienceCondition]>).map(([role, condition]) => ({ role, condition })),
+    authorization_request_url: form.authorization_request_url || null,
+    access_type_reason: form.access_type_reason || null,
     contact_points: form.contact_points ? (contactPoints.length ? contactPoints : null) : undefined, // The udata API doesn't delete the last contact point if sending an empty array, we need to send `null` to remove all contact points (see :RemoveAllContactPoints in udata)
     frequency: form.frequency?.id || '',
     temporal_coverage: form.temporal_coverage.start

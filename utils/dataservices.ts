@@ -14,6 +14,7 @@ export function dataserviceToForm(dataservice: Dataservice): DataserviceForm {
     contact_points: (dataservice.contact_points ?? []) as Array<ContactPoint>, // TODO the API returns a ContactPoint object.
     access_type: dataservice.access_type,
     access_audiences: Object.fromEntries(dataservice.access_audiences.map(a => [a.role, a.condition])) as { [K in AccessAudienceType]: AccessAudienceCondition },
+    access_type_reason: dataservice.access_type_reason || '',
     base_api_url: dataservice.base_api_url || '',
     authorization_request_url: dataservice.authorization_request_url || '',
     machine_documentation_url: dataservice.machine_documentation_url || '',
@@ -41,6 +42,7 @@ export function dataserviceToApi(form: DataserviceForm, overrides: { archived_at
     contact_points: form.contact_points ? contactPoints : undefined,
     access_type: form.access_type,
     access_audiences: (Object.entries(form.access_audiences) as Array<[AccessAudienceType, AccessAudienceCondition]>).map(([role, condition]) => ({ role, condition })),
+    access_type_reason: form.access_type_reason || null,
     base_api_url: form.base_api_url || null,
     authorization_request_url: form.authorization_request_url || null,
     technical_documentation_url: form.technical_documentation_url || null,
