@@ -56,6 +56,7 @@
 <script setup lang="ts">
 import { RiDeleteBin6Line } from '@remixicon/vue'
 import { BrandedButton, type User } from '@datagouv/components-next'
+import { useLogout } from '~/utils/auth'
 
 const props = defineProps<{
   user: User
@@ -70,6 +71,8 @@ const { t } = useI18n()
 
 const loading = ref(false)
 
+const logout = useLogout()
+
 async function deleteUser({ spam = false }) {
   loading.value = true
   try {
@@ -81,7 +84,13 @@ async function deleteUser({ spam = false }) {
       method: 'DELETE',
     })
     if (props.user.id === me.value.id) {
-      navigateTo(`${config.public.apiBase}/en/logout`, { external: true })
+      toast.success(t('Votre compte a bien été supprimé. Vous êtes maintenant déconnecté.'))
+      if (config.public.enableCdataSecurityViews) {
+        await logout()
+      }
+      else {
+        await navigateTo(`${config.public.apiBase}/logout`, { external: true })
+      }
     }
     else {
       toast.success(t('Utilisateur supprimé !'))
