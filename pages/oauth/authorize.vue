@@ -91,6 +91,10 @@
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
 
+definePageMeta({
+  matomoIgnore: true,
+})
+
 const { t } = useI18n()
 const config = useRuntimeConfig()
 

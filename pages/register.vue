@@ -145,6 +145,10 @@
 import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 
+definePageMeta({
+  matomoIgnore: true,
+})
+
 const config = useRuntimeConfig()
 const { t } = useI18n()
 const route = useRoute()

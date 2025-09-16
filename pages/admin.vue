@@ -79,6 +79,7 @@ import AdminSidebarMenu from '~/components/AdminSidebar/AdminSidebarMenu/AdminSi
 definePageMeta({
   layout: 'fluid',
   middleware: ['auth'],
+  matomoIgnore: true,
 })
 
 const { t } = useI18n()
