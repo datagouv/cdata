@@ -287,7 +287,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, type DataserviceAccessAudienceType, type DataserviceAccessAudience, StatBox } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, type AccessAudienceType, type AccessAudience, StatBox } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import DataserviceAccessTypeBadge from '~/components/AdminTable/AdminDataservicesTable/DataserviceAccessTypeBadge.vue'
@@ -313,9 +313,9 @@ await useJsonLd('dataservice', route.params.did)
 
 const openSwagger = ref(false)
 
-const accessAudiences = computed(() => (['local_authority_and_administration', 'company_and_association', 'private'] as Array<DataserviceAccessAudienceType>)
+const accessAudiences = computed(() => (['local_authority_and_administration', 'company_and_association', 'private'] as Array<AccessAudienceType>)
   .map(type => dataservice.value.access_audiences.find(a => a.role === type))
-  .filter(Boolean) as Array<DataserviceAccessAudience>)
+  .filter(Boolean) as Array<AccessAudience>)
 
 const metricsViews = ref<null | Record<string, number>>(null)
 const metricsViewsTotal = ref<null | number>(null)
