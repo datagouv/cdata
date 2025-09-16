@@ -69,6 +69,10 @@
 import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 
+definePageMeta({
+  matomoIgnore: true,
+})
+
 const { t } = useI18n()
 const config = useRuntimeConfig()
 

@@ -110,6 +110,16 @@ If you encounter `EBADF` errors, you may be affected by [this chokidar issue](ht
    }
    ```
 
+### Analytics
+
+cdata uses Matomo to track page visits. It can be disable on a per-page basis with the meta `matomoIgnore`.
+
+```ts
+definePageMeta({
+  matomoIgnore: true,
+})
+```
+
 ## 🏭 Production
 
 Build the application for production:

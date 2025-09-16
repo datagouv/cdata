@@ -174,11 +174,14 @@ export default defineNuxtConfig({
         dsn: '',
       },
 
-      // URL of your matomo host.
-      matomoHost: undefined,
-
-      // Matomo ID of your site. Check the Matomo backend for it
-      matomoSiteId: 1,
+      matomo: {
+        // URL of your matomo host.
+        host: undefined,
+        // Matomo ID of your site. Check the Matomo backend for it
+        siteId: 1,
+        debug: false,
+        dryRun: false,
+      },
     },
   },
 

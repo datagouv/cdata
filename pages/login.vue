@@ -118,6 +118,10 @@ import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 import { usePostApiWithCsrf } from '~/utils/api'
 
+definePageMeta({
+  matomoIgnore: true,
+})
+
 const { t } = useI18n()
 const { toast } = useToast()
 const localePath = useLocalePath()
