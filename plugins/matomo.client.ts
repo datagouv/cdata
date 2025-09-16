@@ -47,6 +47,7 @@ export default defineNuxtPlugin({
   },
 })
 
+// inspired by https://github.com/AmazingDreams/vue-matomo/blob/master/src/index.js
 function getMatomo() {
   return window?.Matomo?.getTracker() as MatomoTracker | undefined
 }
@@ -71,6 +72,7 @@ function trackPageView(to: RouteLocationNormalizedGeneric, from: RouteLocationNo
   matomo.trackPageView((to.meta.title as string | undefined) || to.fullPath)
 }
 
+// from https://github.com/AmazingDreams/vue-matomo/blob/master/src/utils.js#L5
 function loadScript(trackerScript: string, crossOrigin = undefined) {
   return new Promise((resolve, reject) => {
     const script = document.createElement('script')
