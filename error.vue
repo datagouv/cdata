@@ -110,16 +110,16 @@
         </p>
 
         <div
-          v-if="statusCode >= 500"
+          v-if="statusCode >= 500 && errorMessage"
           class="fr-mt-4w fr-p-2w"
         >
           <p class="fr-text--sm">
-            <span class="fr-text--bold">{{ $t('Code erreur') }} :&nbsp;</span> 
+            <span class="fr-text--bold">{{ $t('Code erreur') }} :&nbsp;</span>
             <span class="font-mono">{{ errorMessage }}</span>
             <CopyButton
               :label="$t('Copier le code erreur')"
               :copied-label="$t('Code erreur copié !')"
-              :text="errorMessage || ''"
+              :text="errorMessage"
               class="ml-2"
             />
           </p>
