@@ -33,7 +33,7 @@ import type { Page } from '~/types/pages'
 
 const { t } = useI18n()
 useSeoMeta({
-  title: t('Jeux de données'),
+  title: t('Jeux de données - data.gouv.fr'),
 })
 
 const config = useRuntimeConfig()
