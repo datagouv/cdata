@@ -211,7 +211,7 @@
                     :button-props="{
                       'class': '-ml-2 mt-px px-2',
                       'title': $t('Label'),
-                      'data-testid': 'labelToggletipButton',
+                      'data-testid': 'label-toggletip-button',
                     }"
                     no-margin
                   >
@@ -224,7 +224,7 @@
                           type="button"
                           :title="$t('Fermer')"
                           class="border-l border-gray-default w-10 text-[1.2rem] flex items-center justify-center"
-                          data-testid="labelToggletipCloseButton"
+                          data-testid="label-toggletip-close-button"
                           @click="close"
                         >
                           &times;
@@ -232,7 +232,7 @@
                       </div>
                       <div
                         class="py-2 px-4"
-                        data-testid="labelToggletipContent"
+                        data-testid="label-toggletip-content"
                       >
                         {{
                           $t(

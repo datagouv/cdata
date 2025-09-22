@@ -24,16 +24,14 @@ test('dataset label filter is available and functional', async ({ page }) => {
   await expect(filter).toBeVisible()
 
   // Check that filter has placeholder text
-  await expect(filter.locator('button').first()).toContainText(
-    'Tous les badges',
-  )
+  await expect(filter.getByPlaceholder('Tous les badges')).toBeVisible()
 
   // Open filter dropdown
   await filter.locator('button').first().click()
 
   // Check that options are available
   const options = filter.locator('li')
-  await expect(options).toHaveCount.toBeGreaterThan(0)
+  await expect(options).not.toHaveCount(0)
 
   // Get first option text for later verification
   const firstOptionText = await options.first().textContent()
@@ -47,7 +45,7 @@ test('dataset label filter is available and functional', async ({ page }) => {
   expect(url.searchParams.has('badge')).toBeTruthy()
 
   // Verify filter shows selected value
-  await expect(filter.locator('button').first()).toContainText(
+  await expect(filter.locator('input').first()).toHaveValue(
     firstOptionText!,
   )
 })
@@ -68,7 +66,7 @@ test('search results update when badge filter is applied', async ({ page }) => {
   await filter.locator('li').first().click()
 
   // Wait for results to update
-  await page.waitForTimeout(1000) // Allow for API call and re-render
+  await page.waitForTimeout(3000) // Allow for API call and re-render
 
   // Get updated results count
   const filteredResultCount = await page
@@ -82,21 +80,23 @@ test('search results update when badge filter is applied', async ({ page }) => {
 
 test('badge filter can be cleared', async ({ page }) => {
   // Start with a badge filter applied
-  await page.goto('/datasets/search/?badge=spd')
+  await page.goto('/datasets/search/?badge=hvd')
 
   const filter = page.getByTestId('dataset-label-filter')
+  const filterInput = filter.locator('input').first()
+
+  // Wait for results to update
+  await page.waitForTimeout(3000) // Allow for API call and re-render
 
   // Verify badge is selected
-  const filterButton = filter.locator('button').first()
-  const selectedText = await filterButton.textContent()
-  expect(selectedText).not.toBe('Tous les badges')
+  await expect(filterInput).toHaveValue('High value datasets')
 
   // Open dropdown and select "Tous les badges" (first option is usually "clear")
-  await filterButton.click()
-  await filter.locator('li').first().click()
+  await filter.locator('button').first().click()
+  await filter.getByTitle('Clear').first().click()
 
   // Verify filter is cleared
-  await expect(filterButton).toContainText('Tous les badges')
+  await expect(filterInput).toHaveValue('')
 
   // Verify URL parameter is removed
   const url = new URL(page.url())
@@ -118,11 +118,11 @@ test('badge filter persists on page reload', async ({ page }) => {
   await page.reload()
 
   // Verify the filter is still applied
-  const filterButton = page
+  const filterInput = page
     .getByTestId('dataset-label-filter')
-    .locator('button')
+    .locator('input')
     .first()
-  await expect(filterButton).toContainText(optionText!)
+  await expect(filterInput).toHaveValue(optionText!)
 
   // Verify URL still has the badge parameter
   const url = new URL(page.url())
