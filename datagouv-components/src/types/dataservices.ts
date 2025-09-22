@@ -1,11 +1,10 @@
 import type { Harvest } from './harvest'
 import type { Owned, OwnedWithId } from './owned'
 import type { ContactPoint } from './contact_point'
-import type { AccessAudience, AccessType } from './access_types'
+import type { WithAccessType } from './access_types'
 
-export type BaseDataservice = Owned & {
+export type BaseDataservice = Owned & WithAccessType & {
   acronym: string
-  authorization_request_url: string | null
   availability: number | null
   base_api_url: string | null
   datasets: Array<{
@@ -20,7 +19,6 @@ export type BaseDataservice = Owned & {
   machine_documentation_url: string | null
   technical_documentation_url: string | null
   business_documentation_url: string | null
-  access_type: AccessType
   license: string | null
   private: boolean
   rate_limiting: string
@@ -30,10 +28,9 @@ export type BaseDataservice = Owned & {
 
 export type NewDataservice = Omit<BaseDataservice, keyof OwnedWithId> & OwnedWithId
 
-export type Dataservice = Owned & {
+export type Dataservice = Owned & WithAccessType & {
   acronym: string
   archived_at: string | null
-  authorization_request_url: string | null
   availability: number | null
   base_api_url: string | null
   contact_points: Array<ContactPoint>
@@ -56,9 +53,6 @@ export type Dataservice = Owned & {
   format: string
   harvest: Harvest
   id: string
-  access_type: AccessType
-  access_audiences: Array<AccessAudience>
-  access_type_reason: string
   license: string | null
   metadata_modified_at: string
   metrics: {

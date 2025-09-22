@@ -154,7 +154,7 @@
               </div>
 
               <div
-                v-if="dataset.license"
+                v-if="dataset.license && dataset.access_type === 'open'"
                 class="space-y-1"
               >
                 <dt class="text-sm text-gray-plain font-bold pb-0">
@@ -173,6 +173,12 @@
                   {{ formatDate(dataset.last_update) }}
                 </dd>
               </div>
+
+              <AccessTypePanel
+                v-if="dataset.access_type !== 'open'"
+                :object="dataset"
+              />
+
               <div class="grid gap-4 xl:grid-cols-2">
                 <StatBox
                   :title="$t('Vues')"
@@ -182,6 +188,7 @@
                   :summary="datasetVisitsTotal"
                 />
                 <StatBox
+                  v-if="dataset.access_type === 'open'"
                   :title="$t('Téléchargements')"
                   :data="datasetDownloadsResources"
                   size="sm"
@@ -189,7 +196,8 @@
                   :summary="datasetDownloadsResourcesTotal"
                 />
               </div>
-              <div>
+
+              <div v-if="dataset.access_type === 'open'">
                 <DatasetQuality
                   :quality="dataset.quality"
                   :hide-warnings
@@ -275,6 +283,7 @@ import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
+import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 
 const config = useRuntimeConfig()
 const route = useRoute()
