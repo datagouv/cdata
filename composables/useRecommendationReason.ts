@@ -10,7 +10,7 @@ export function useRecommendationReason() {
       case 'schemas':
         return t('car conforme au schéma de données | car conformes aux schémas de données', { count })
       default:
-        throwOnNever(recommendation.source, 'Unknown source')
+        return t('')
     }
   }
   return { getRecommendationReason }
