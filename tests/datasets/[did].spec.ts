@@ -35,25 +35,10 @@ test('dataset labels have proper tooltips and information', async ({
     '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
   )
 
-  // Check if there's a label section with tooltip
-  const labelTooltip = page.getByTestId('label-toggletip-button')
-
-  // Click tooltip to open it
-  await labelTooltip.click()
-
-  // Check that tooltip content is displayed
-  const tooltipContent = page.getByTestId('label-toggletip-content')
-  await expect(tooltipContent).toBeVisible()
-
-  // Check for close button
-  const closeButton = page.getByTestId('label-toggletip-close-button')
-  await expect(closeButton).toBeVisible()
-
-  // Close tooltip
-  await closeButton.click()
-
-  // Verify tooltip is closed
-  await expect(tooltipContent).not.toBeVisible()
+  await page.getByTestId('label-toggletip-button').click()
+  await expect(page.getByTestId('label-toggletip-content')).toBeVisible()
+  await page.getByTestId('label-toggletip-close-button').click()
+  await expect(page.getByTestId('label-toggletip-content')).not.toBeVisible()
 })
 
 test('clicking dataset label navigates to filtered search', async ({
@@ -76,6 +61,8 @@ test('clicking dataset label navigates to filtered search', async ({
 
   // Click the label
   await firstLabel.click()
+
+  await page.waitForURL('**/datasets/search*')
 
   // Should navigate to search page with badge filter
   expect(page.url()).toContain('/datasets/search?badge=spd')
