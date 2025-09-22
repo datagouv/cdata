@@ -29,7 +29,7 @@ export type AccordionState = DSFRFormDefaultState | AccordionFunctionalState | D
 
 export type AdminBadgeState = DSFRFormDefaultState | FormFunctionalState | DSFRInfoState
 
-export type AdminBadgeType = 'primary' | 'secondary' | 'warning' | 'danger' | 'success' | 'default'
+export type AdminBadgeType = 'primary' | 'secondary' | 'warning' | 'danger' | 'success' | 'default' | 'pink'
 
 export type PaginatedArray<T> = {
   data: Array<T>

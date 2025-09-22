@@ -32,6 +32,7 @@ const colors = computed(() => {
     warning: 'text-warning2-dark bg-warning2-lightest',
     danger: 'text-danger-dark bg-danger-lightest',
     default: 'text-gray-plain bg-gray-lower',
+    pink: 'text-pink bg-pink-soft',
   }[props.type]
 })
 

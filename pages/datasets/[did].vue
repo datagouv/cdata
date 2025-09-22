@@ -252,10 +252,59 @@
           :dataset
         />
 
+        <div
+          v-if="dataset.access_type === 'restricted'"
+          class="container"
+        >
+          <SimpleBanner
+            type="pink"
+            class="p-4 flex justify-between items-center"
+          >
+            <div class="space-y-3.5">
+              <div>
+                <AdminBadge
+                  :icon="RiLockLine"
+                  size="xs"
+                  type="pink"
+                >
+                  {{ $t('Accès restreint') }}
+                </AdminBadge>
+              </div>
+              <p class="font-bold text-xl">
+                {{ $t('Ces données ne sont accessibles que sur habilitation') }}
+              </p>
+              <p
+                v-if="dataset.access_type_reason"
+                class="text-sm"
+              >
+                {{ dataset.access_type_reason }}
+              </p>
+              <p class="mb-0">
+                <AppLink
+                  :to="config.public.datasetRestrictedGuideUrl"
+                  external
+                >
+                  En savoir plus
+                </AppLink>
+              </p>
+            </div>
+            <div v-if="dataset.authorization_request_url">
+              <BrandedButton
+                color="secondary"
+                :icon="RiExternalLinkLine"
+                icon-right
+                :href="dataset.authorization_request_url"
+              >
+                {{ $t('Faire une demande d\'habilitation') }}
+              </BrandedButton>
+            </div>
+          </SimpleBanner>
+        </div>
+
         <FullPageTabs
           class="mt-12"
           :links="[
-            { label: $t('Fichiers'), href: `/datasets/${route.params.did}/`, count: dataset.resources.total },
+            { label: dataset.access_type === 'open' ? $t('Fichiers') : $t('Fichiers publics'), href: `/datasets/${route.params.did}/`, count: dataset.resources.total },
             { label: $t('Réutilisations et API'), href: `/datasets/${route.params.did}/reuses_and_dataservices`, count: (dataset.metrics.dataservices || 0) + (dataset.metrics.reuses || 0) },
             { label: $t('Discussions'), href: `/datasets/${route.params.did}/discussions`, count: dataset.metrics.discussions ?? 0 },
             { label: $t('Ressources communautaires'), href: `/datasets/${route.params.did}/community-resources` },
@@ -275,8 +324,8 @@
 </template>
 
 <script setup lang="ts">
-import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, type Resource, BrandedButton, useFormatDate, StatBox } from '@datagouv/components-next'
-import { RiDeleteBinLine, RiExternalLinkFill, RiLockLine } from '@remixicon/vue'
+import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, type Resource, BrandedButton, useFormatDate, StatBox, AppLink } from '@datagouv/components-next'
+import { RiDeleteBinLine, RiExternalLinkFill, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'

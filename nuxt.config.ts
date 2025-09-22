@@ -114,6 +114,7 @@ export default defineNuxtConfig({
 
       datasetPublishingGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
       datasetQualityGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
+      datasetRestrictedGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-juridique/producteurs-de-donnees/quelles-sont-les-obligations',
       dataSearchFeedbackFormUrl: 'https://tally.so/r/mDKv1N',
       forumUrl: 'https://forum.data.gouv.fr/',
       feedbackFormUrl: 'https://tally.so/r/mOld5R',
