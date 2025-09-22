@@ -7,6 +7,7 @@ import type { ContactPoint } from './contact_point'
 import type { License } from './licenses'
 import type { Frequency } from './frequency'
 import type { Granularity, SpatialZone } from './granularity'
+import type { AccessAudience, AccessType } from './access_types'
 
 export type Quality = {
   all_resources_available: boolean
@@ -29,6 +30,10 @@ export type BaseDataset = Owned & {
   description: string
   tags: Array<string> | null
   license: string
+  access_type: AccessType
+  access_type_reason: string
+  authorization_request_url: string | null
+  access_audiences: Array<AccessAudience>
   frequency: string
   temporal_coverage: {
     start: string

@@ -58,6 +58,7 @@ export type Dataservice = Owned & {
   id: string
   access_type: AccessType
   access_audiences: Array<AccessAudience>
+  access_type_reason: string
   license: string | null
   metadata_modified_at: string
   metrics: {

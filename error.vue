@@ -114,7 +114,7 @@
           class="fr-mt-4w fr-p-2w"
         >
           <p class="fr-text--sm">
-            <span class="fr-text--bold">{{ $t('Code erreur') }} :&nbsp;</span> 
+            <span class="fr-text--bold">{{ $t('Code erreur') }} :&nbsp;</span>
             <span class="font-mono">{{ errorMessage }}</span>
             <CopyButton
               :label="$t('Copier le code erreur')"
@@ -122,6 +122,12 @@
               :text="errorMessage || ''"
               class="ml-2"
             />
+            <pre
+              v-if="error && error.stack"
+              class="text-left"
+            >
+              {{ error.stack }}
+            </pre>
           </p>
         </div>
 
