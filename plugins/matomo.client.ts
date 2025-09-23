@@ -15,15 +15,21 @@ export interface MatomoTracker {
 export default defineNuxtPlugin({
   async setup(nuxtApp) {
     const _paq = (window._paq = window._paq || [])
+    if (!_paq) return {}
+
     let u = nuxtApp.$config.public.matomo.host
     const debug = nuxtApp.$config.public.matomo.debug
     const dryRun = nuxtApp.$config.public.matomo.dryRun
-    if (u) {
-      u = u.endsWith('/') ? u : u + '/'
-      /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-      _paq.push(['setTrackerUrl', u + 'matomo.php'])
-      _paq.push(['setSiteId', nuxtApp.$config.public.matomo.siteId])
-      _paq.push(['enableLinkTracking'])
+    if (!u) return {}
+
+    u = u.endsWith('/') ? u : u + '/'
+    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+    _paq.push(['setTrackerUrl', u + 'matomo.php'])
+    _paq.push(['setSiteId', nuxtApp.$config.public.matomo.siteId])
+    _paq.push(['enableLinkTracking'])
+
+    try {
+      // loadScript could crash on AdBloc.
       await loadScript(u + 'matomo.js')
       const matomo = getMatomo()
       if (debug) {
@@ -36,13 +42,16 @@ export default defineNuxtPlugin({
           matomo.enableLinkTracking(true)
         })
       }
-    }
-    return {
-      provide: {
-        matomo: {
-          trackPageView: (to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => trackPageView(to, from, debug, dryRun),
+      return {
+        provide: {
+          matomo: {
+            trackPageView: (to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => trackPageView(to, from, debug, dryRun),
+          },
         },
-      },
+      }
+    }
+    catch {
+      return {}
     }
   },
 })
