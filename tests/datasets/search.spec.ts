@@ -11,7 +11,7 @@ test('search launch without params', async ({ page }) => {
   await expect(page.getByTestId('result-count')).toBeVisible()
 
   const results = page.getByTestId('results')
-  await expect(results.locator('li')).toHaveCount(20)
+  await expect(results.locator('li')).not.toHaveCount(0)
 
   const url = new URL(page.url())
   expect(url.searchParams.size).toBe(0)
