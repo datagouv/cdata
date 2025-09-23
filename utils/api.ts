@@ -24,7 +24,7 @@ export async function useAPI<T, U = T>(
     const newParams = { ...route.params }
     newParams[redirectOnSlug] = data.slug as string
 
-    await navigateTo({ name: route.name, params: newParams, query: route.query, hash: route.hash }, { redirectCode: 308 })
+    await navigateTo({ name: route.name, params: newParams, query: route.query, hash: route.hash }, { redirectCode: 301 })
   }
 
   if (isAdmin) {
