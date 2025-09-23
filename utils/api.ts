@@ -5,26 +5,34 @@ import type { NuxtApp, UseFetchOptions } from 'nuxt/app'
 */
 export function useAPI<T, U = T>(
   url: MaybeRefOrGetter<string>,
-  options?: UseFetchOptions<T, U> & { redirectOn404?: boolean },
+  options?: UseFetchOptions<T, U> & { redirectOn404?: boolean, redirectOnSlug?: string },
 ) {
   const { setCurrentOrganization, setCurrentUser } = useCurrentOwned()
   const isAdmin = isMeAdmin()
+  const route = useRoute()
 
   const redirectOn404 = options && 'redirectOn404' in options && options.redirectOn404
+  const redirectOnSlug = options && 'redirectOnSlug' in options && options.redirectOnSlug
   return useFetch(url, {
     ...options,
     $fetch: redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api,
   })
     .then((response) => {
+      const data = toValue(response.data) || {}
+
+      if (redirectOnSlug && redirectOnSlug in route.params && 'slug' in data && route.params[redirectOnSlug] !== data.slug) {
+        route.params[redirectOnSlug] = data.slug as string
+        navigateTo(route, { redirectCode: 308 })
+      }
+
       if (isAdmin) {
         // Check the response to see if an `organization` or an `owner` is present
         // to add this organization/user to the menu.
-        const data = toValue(response.data)
-        if (data && typeof data === 'object' && 'organization' in data && data.organization) {
+        if ('organization' in data && data.organization) {
           setCurrentOrganization(data.organization as Organization)
         }
 
-        if (data && typeof data === 'object' && 'owner' in data && data.owner) {
+        if ('owner' in data && data.owner) {
           setCurrentUser(data.owner as User)
         }
       }
