@@ -19,7 +19,7 @@
         keep-margins-even-without-borders
         v-on="listeners"
       >
-        {{ $t("Éditer le fichier") }}
+        {{ $t('Éditer le fichier') }}
       </BrandedButton>
     </template>
 
@@ -68,7 +68,7 @@
           type="danger"
           :title="$t('Supprimer la ressource')"
         >
-          {{ $t("Attention, cette action ne peut pas être annulée.") }}
+          {{ $t('Attention, cette action ne peut pas être annulée.') }}
           <template #button>
             <ModalWithButton
               :title="$t('Êtes-vous sûr de vouloir supprimer cette ressource ?')"
@@ -86,8 +86,32 @@
                 </BrandedButton>
               </template>
               <p class="fr-text--bold">
-                {{ $t("Cette action est irréversible.") }}
+                {{ $t('Cette action est irréversible.') }}
               </p>
+                <div class="fr-mt-4w">
+                  <p>
+                    {{ $t('Attention : cette ressource est exposée via une') }} 
+                    <a 
+                      href="https://www.data.gouv.fr/dataservices/api-tabulaire-data-gouv-fr-beta/"
+                      target="_blank"
+                      class="fr-link"
+                    >
+                      {{ $t('API automatique') }}
+                    </a>
+                    {{ $t('fournie par data.gouv.fr.') }}
+                  </p>
+                  <p>
+                    {{ $t('Si vous supprimez la ressource,') }} 
+                    <a 
+                      :href="`https://tabular-api.data.gouv.fr/api/resources/${resource.resource?.id}/`"
+                      target="_blank"
+                      class="fr-link"
+                    >
+                      {{ $t('l\'API') }}
+                    </a>
+                    {{ $t('sera également supprimée et pourra cesser de fonctionner pour les réutilisateurs.') }}
+                  </p>
+                </div>
               <template #footer>
                 <div
                   class="flex-1 flex justify-end"
@@ -97,7 +121,7 @@
                     :loading="deleting"
                     @click="deleteResource(dataset, resource.resource, close)"
                   >
-                    {{ $t("Supprimer la ressource") }}
+                    {{ $t('Supprimer la ressource') }}
                   </BrandedButton>
                 </div>
               </template>
