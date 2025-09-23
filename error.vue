@@ -1,6 +1,9 @@
 <template>
   <NuxtLayout>
-    <div class="min-h-screen bg-white flex items-center justify-center px-8 md:px-4">
+    <div
+      v-if="error"
+      class="min-h-screen bg-white flex items-center justify-center px-8 md:px-4"
+    >
       <div class="flex flex-col items-center text-center max-w-2xl w-full gap-6">
         <div class="w-37 h-35 flex items-center justify-center md:w-25 md:h-24">
           <img
@@ -119,9 +122,15 @@
             <CopyButton
               :label="$t('Copier le code erreur')"
               :copied-label="$t('Code erreur copié !')"
-              :text="errorMessage"
+              :text="errorMessage || ''"
               class="ml-2"
             />
+            <pre
+              v-if="error.stack"
+              class="text-left"
+            >
+              {{ error.stack }}
+            </pre>
           </p>
         </div>
 
