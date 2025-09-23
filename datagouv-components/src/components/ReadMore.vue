@@ -34,8 +34,8 @@
 </template>
 
 <script setup lang="ts">
-import { templateRef, useElementSize } from '@vueuse/core'
-import { ref, watch } from 'vue'
+import { useElementSize } from '@vueuse/core'
+import { ref, useTemplateRef, watch } from 'vue'
 import { easing, tween, styler } from 'popmotion'
 import BrandedButton from './BrandedButton.vue'
 
@@ -48,8 +48,8 @@ const props = withDefaults(defineProps<{
 const DEFAULT_HEIGHT = 284
 const expanded = ref(false)
 const readMoreRequired = ref(false)
-const containerRef = templateRef<HTMLElement | null>('containerRef')
-const readMoreRef = templateRef<HTMLElement | null>('readMoreRef')
+const containerRef = useTemplateRef<HTMLElement | null>('containerRef')
+const readMoreRef = useTemplateRef<HTMLElement | null>('readMoreRef')
 const { height } = useElementSize(containerRef)
 const containerHeight = ref(DEFAULT_HEIGHT)
 const getHeight = (elt: Element) => {
