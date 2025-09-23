@@ -84,6 +84,7 @@ export default defineNuxtConfig({
       guidesUrl: 'https://guides.data.gouv.fr/',
       guidesCreateAccount: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/creer-un-compte-utilisateur-et-rejoindre-une-organisation',
       guidesHarvestingUrl: 'https://guides.data.gouv.fr/guide-data.gouv.fr/moissonnage',
+      guidesLabelsUrl: undefined, // TODO: add guide when created
       guidesCommunityResources: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/ressource-communautaire',
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
@@ -124,7 +125,7 @@ export default defineNuxtConfig({
       publishingHarvesterFeedbackUrl: 'https://tally.so/r/3NMLOQ',
       reuseGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/reutilisations',
       harvesterRequestValidationUrl: 'https://support.data.gouv.fr/help/datagouv/moissonnage#support-tree',
-      harvesterPreviewMaxItems: 20, // SHould be the same as `HARVEST_PREVIEW_MAX_ITEMS` in udata
+      harvesterPreviewMaxItems: 20, // Should be the same as `HARVEST_PREVIEW_MAX_ITEMS` in udata
       harvestEnableManualRun: false,
       harvestBackendsForHidingQuality: ['CSW-ISO-19139'],
 
@@ -160,6 +161,9 @@ export default defineNuxtConfig({
           { value: 'notspecified' },
         ],
       },
+
+      // A corresponding SVG at `datagouv-components/assets/labels` will be shown before the badge label
+      datasetBadges: ['spd', 'inspire', 'hvd', 'sl', 'sr'],
 
       enableCdataSecurityViews: false,
       requireEmailConfirmation: true,
