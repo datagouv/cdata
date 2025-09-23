@@ -321,7 +321,12 @@
             <div
               v-if="tab.key === 'swagger'"
             >
-              <div>{{ t("Swagger généré automatiquement par {platform}. Ce swagger vous permet d'interroger les données par API en les filtrant par valeur de colonne.", { platform: config.name }) }}</div>
+              <div class="fr-mb-4w">
+                <p>{{ t("Cette API est générée automatiquement par {platform} à partir du fichier.", { platform: config.name }) }}</p>
+                <p>{{ t("- Si le fichier est modifié, l'API sera mise à jour et sa structure pourra changer.") }}</p>
+                <p>{{ t("- Si le fichier est supprimé, l'API sera également supprimée.") }}</p>
+                <p>{{ t("Pour des usages pérennes, prévoyez que cette API dépend directement du fichier source.") }}</p>
+              </div>
               <Swagger
                 v-if="hasTabularData"
                 :url="`${config.tabularApiUrl}/api/resources/${props.resource.id}/swagger/`"
