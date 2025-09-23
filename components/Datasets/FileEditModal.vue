@@ -45,14 +45,52 @@
     <template #footer="{ close }">
       <div class="w-full">
         <div class="w-full flex gap-4">
-          <BrandedButton
-            color="primary"
-            type="submit"
-            :form="formId"
-            :loading
+          <ModalWithButton
+            :title="$t('Êtes-vous sûr de vouloir modifier cette ressource ?')"
+            size="lg"
           >
-            {{ t('Valider') }}
-          </BrandedButton>
+            <template #button="{ attrs, listeners }">
+              <BrandedButton
+                color="primary"
+                :form="formId"
+                :loading
+                v-bind="attrs"
+                v-on="listeners"
+              >
+                {{ t('Valider') }}
+              </BrandedButton>
+            </template>
+            <div class="fr-mt-4w">
+              <p>
+                {{ $t('Attention : l\'') }} 
+                <a 
+                  :href="`https://tabular-api.data.gouv.fr/api/resources/${resource.resource?.id}/`"
+                  target="_blank"
+                  class="fr-link"
+                >
+                  {{ $t('API automatique') }}
+                </a>
+                {{ $t('fournie par data.gouv.fr est directement liée à la structure du fichier.') }}
+              </p>
+              <p>
+                {{ $t('Une modification (par exemple ajout, suppression ou renommage de colonnes) peut casser des réutilisations.') }}
+              </p>
+              <p>
+                {{ $t('Si possible, conservez la même structure pour limiter les impacts.') }}
+              </p>
+            </div>
+            <template #footer>
+              <div class="flex-1 flex justify-end">
+                <BrandedButton
+                  color="primary"
+                  :loading="loading"
+                  @click="confirmSubmit(close)"
+                >
+                  {{ $t('Confirmer la modification') }}
+                </BrandedButton>
+              </div>
+            </template>
+          </ModalWithButton>
           <BrandedButton
             color="secondary"
             :disabled="loading"
@@ -182,6 +220,10 @@ const removeQueryString = () => {
 }
 
 const submit = (close: () => void) => {
+  emit('submit', close, resourceForm.value)
+}
+
+const confirmSubmit = (close: () => void) => {
   emit('submit', close, resourceForm.value)
 }
 const cancel = (close: () => void) => {
