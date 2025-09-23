@@ -122,6 +122,12 @@
               :text="errorMessage"
               class="ml-2"
             />
+            <pre
+              v-if="error && error.stack"
+              class="text-left"
+            >
+              {{ error.stack }}
+            </pre>
           </p>
         </div>
 

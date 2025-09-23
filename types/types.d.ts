@@ -1,4 +1,4 @@
-import type { Dataset, CommunityResource, Dataservice, DataserviceAccessAudience, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, DataserviceAccessAudienceType, DataserviceAccessAudienceCondition, ContactPoint } from '@datagouv/components-next'
+import type { Dataset, CommunityResource, Dataservice, AccessAudience, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, AccessType, AccessAudienceType, AccessAudienceCondition, ContactPoint } from '@datagouv/components-next'
 
 export type AxisAlignment = 'start' | 'center' | 'end'
 
@@ -29,7 +29,7 @@ export type AccordionState = DSFRFormDefaultState | AccordionFunctionalState | D
 
 export type AdminBadgeState = DSFRFormDefaultState | FormFunctionalState | DSFRInfoState
 
-export type AdminBadgeType = 'primary' | 'secondary' | 'warning' | 'danger' | 'success' | 'default'
+export type AdminBadgeType = 'primary' | 'secondary' | 'warning' | 'danger' | 'success' | 'default' | 'pink'
 
 export type PaginatedArray<T> = {
   data: Array<T>
@@ -129,6 +129,10 @@ export type DatasetForm = {
   description: string
   tags: Array<Tag>
   license: License | null
+  access_type: AccessType
+  access_audiences: Record<AccessAudienceType, AccessAudienceCondition>
+  access_type_reason: string | null
+  authorization_request_url: string | null
   contact_points: Array<NewContactPoint | ContactPoint | null>
   temporal_coverage: { start: null | string, end: null | string }
   frequency: Frequency | null
@@ -149,6 +153,10 @@ export type NewDatasetForApi = {
   owner?: string
   tags: Array<string>
   license?: string
+  access_type: AccessType
+  access_audiences: Array<AccessAudience>
+  access_type_reason: string | null
+  authorization_request_url: string | null
   contact_points?: Array<string> | null
   temporal_coverage?: { start: string, end: string | null }
   frequency?: string
@@ -201,8 +209,9 @@ export type DataserviceForm = {
   machine_documentation_url: string | null
   technical_documentation_url: string | null
   business_documentation_url: string | null
-  access_type: 'open' | 'restricted' | 'open_with_account'
-  access_audiences: Record<DataserviceAccessAudienceType, DataserviceAccessAudienceCondition>
+  access_type: AccessType
+  access_audiences: Record<AccessAudienceType, AccessAudienceCondition>
+  access_type_reason: string | null
   rate_limiting: string
   availability: string
   private: boolean
@@ -219,8 +228,9 @@ export type NewDataserviceForApi = {
   description: string
   datasets?: Array<string>
   contact_points?: Array<string> | null
-  access_type: 'open' | 'open_with_account' | 'restricted'
-  access_audiences: Array<DataserviceAccessAudience>
+  access_type: AccessType
+  access_audiences: Array<AccessAudience>
+  access_type_reason: string | null
   base_api_url: string | null
   authorization_request_url: string | null
   machine_documentation_url: string | null

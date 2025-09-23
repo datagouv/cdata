@@ -14,11 +14,11 @@
 </template>
 
 <script setup lang="ts">
-import type { DataserviceAccessAudienceCondition, DataserviceAccessAudienceType } from '@datagouv/components-next'
+import type { AccessAudienceCondition, AccessAudienceType } from '@datagouv/components-next'
 
 const props = defineProps<{
-  audience: DataserviceAccessAudienceType
-  condition: DataserviceAccessAudienceCondition
+  audience: AccessAudienceType
+  condition: AccessAudienceCondition
 }>()
 
 const { getAccessAudienceCondition, getAccessAudienceType } = useAccessAudience()
