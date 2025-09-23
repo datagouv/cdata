@@ -63,7 +63,7 @@ test('search results update when badge filter is applied', async ({ page }) => {
   await filter.locator('button').first().click()
 
   // Select a badge filter
-  await filter.locator('li').first().click()
+  await filter.locator('li').nth(3).click()
 
   // Wait for results to update
   await page.waitForTimeout(3000) // Allow for API call and re-render
