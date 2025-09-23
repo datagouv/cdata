@@ -110,7 +110,7 @@
         </p>
 
         <div
-          v-if="statusCode >= 500"
+          v-if="statusCode >= 500 && errorMessage"
           class="fr-mt-4w fr-p-2w"
         >
           <p class="fr-text--sm">
@@ -119,7 +119,7 @@
             <CopyButton
               :label="$t('Copier le code erreur')"
               :copied-label="$t('Code erreur copié !')"
-              :text="errorMessage || ''"
+              :text="errorMessage"
               class="ml-2"
             />
           </p>
