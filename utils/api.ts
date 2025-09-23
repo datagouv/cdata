@@ -3,7 +3,7 @@ import type { NuxtApp, UseFetchOptions } from 'nuxt/app'
 /*
   Example : const { data: datasets } = await useAPI<PaginatedArray<Dataset>>('/api/1/datasets')
 */
-export function useAPI<T, U = T>(
+export async function useAPI<T, U = T>(
   url: MaybeRefOrGetter<string>,
   options?: UseFetchOptions<T, U> & { redirectOn404?: boolean, redirectOnSlug?: string },
 ) {
@@ -13,39 +13,40 @@ export function useAPI<T, U = T>(
 
   const redirectOn404 = options && 'redirectOn404' in options && options.redirectOn404
   const redirectOnSlug = options && 'redirectOnSlug' in options && options.redirectOnSlug
-  return useFetch(url, {
+  const response = await useFetch(url, {
     ...options,
     $fetch: redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api,
   })
-    .then((response) => {
-      const data = toValue(response.data) || {}
 
-      if (redirectOnSlug && redirectOnSlug in route.params && 'slug' in data && route.params[redirectOnSlug] !== data.slug) {
-        route.params[redirectOnSlug] = data.slug as string
-        navigateTo(route, { redirectCode: 308 })
-      }
+  const data = toValue(response.data) || {}
 
-      if (isAdmin) {
-        // Check the response to see if an `organization` or an `owner` is present
-        // to add this organization/user to the menu.
-        if ('organization' in data && data.organization) {
-          setCurrentOrganization(data.organization as Organization)
-        }
+  if (redirectOnSlug && redirectOnSlug in route.params && 'slug' in data && route.params[redirectOnSlug] !== data.slug) {
+    const newParams = { ...route.params }
+    newParams[redirectOnSlug] = data.slug as string
 
-        if ('owner' in data && data.owner) {
-          setCurrentUser(data.owner as User)
-        }
-      }
+    await navigateTo({ name: route.name, params: newParams, query: route.query, hash: route.hash }, { redirectCode: 308 })
+  }
 
-      // This allow to remove the `null` variant from `useFetch`
-      // response. I think the `null` variant is here for `DELETE`
-      // responses (without body) but in our case this helper is intended
-      // to be used only for `GET` requests. We need to use $fetch for
-      // the others HTTP methods.
-      // TODO: add a check at the beginning of this function to prevent
-      // miss-use of this function (calling it with other methods)
-      return { ...response, data: response.data as Ref<T> }
-    })
+  if (isAdmin) {
+    // Check the response to see if an `organization` or an `owner` is present
+    // to add this organization/user to the menu.
+    if ('organization' in data && data.organization) {
+      setCurrentOrganization(data.organization as Organization)
+    }
+
+    if ('owner' in data && data.owner) {
+      setCurrentUser(data.owner as User)
+    }
+  }
+
+  // This allow to remove the `null` variant from `useFetch`
+  // response. I think the `null` variant is here for `DELETE`
+  // responses (without body) but in our case this helper is intended
+  // to be used only for `GET` requests. We need to use $fetch for
+  // the others HTTP methods.
+  // TODO: add a check at the beginning of this function to prevent
+  // miss-use of this function (calling it with other methods)
+  return { ...response, data: response.data as Ref<T> }
 }
 
 export function getUserBasedKey(route: string) {
