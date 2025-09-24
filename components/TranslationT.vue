@@ -35,10 +35,8 @@ const slots = useSlots()
 const { t } = useTranslation()
 
 const parts = computed(() => {
-  // Extraire les options de traduction
   const { keypath, tag, n, count, ...interpolations } = props
 
-  // Construire les options pour la traduction
   const options: Record<string, string | number> = {
     ...interpolations,
   }
@@ -46,10 +44,8 @@ const parts = computed(() => {
   if (n !== undefined) options.n = n
   if (count !== undefined) options.count = count
 
-  // Obtenir la traduction
   const translated = t(keypath, options)
 
-  // Utiliser la fonction mutualisée pour parser le texte
   return parseTextWithPlaceholders(translated)
 })
 </script>

@@ -6,7 +6,6 @@ function interpolate(text: string, values: Record<string, string | number>): str
   })
 }
 
-// Extrait les placeholders {key} d'un texte
 export function extractPlaceholders(text: string): string[] {
   const regex = /\{(\w+)\}/g
   const placeholders: string[] = []
@@ -19,7 +18,6 @@ export function extractPlaceholders(text: string): string[] {
   return placeholders
 }
 
-// Parse un texte en parties pour le composant TranslationT
 export function parseTextWithPlaceholders(text: string): Array<{ text?: string, placeholder?: string }> {
   const result: Array<{ text?: string, placeholder?: string }> = []
   const regex = /\{(\w+)\}/g
@@ -27,18 +25,15 @@ export function parseTextWithPlaceholders(text: string): Array<{ text?: string, 
   let match
 
   while ((match = regex.exec(text)) !== null) {
-    // Ajouter le texte avant le placeholder
     if (match.index > lastIndex) {
       result.push({ text: text.slice(lastIndex, match.index) })
     }
 
-    // Ajouter le placeholder
     result.push({ placeholder: match[1] })
 
     lastIndex = regex.lastIndex
   }
 
-  // Ajouter le reste du texte
   if (lastIndex < text.length) {
     result.push({ text: text.slice(lastIndex) })
   }
@@ -47,22 +42,18 @@ export function parseTextWithPlaceholders(text: string): Array<{ text?: string, 
 }
 
 function handlePluralization(key: string, count: number): string {
-  // Séparer les formes avec |
   const parts = key.split('|').map(part => part.trim())
 
   if (parts.length === 1) {
-    // Pas de pluralisation
     return parts[0]
   }
 
   if (parts.length === 2) {
-    // Syntaxe simple : singulier | pluriel
-    // Logique française : 0 ou 1 = singulier, > 1 = pluriel
+    // French pluralization rule: 0 or 1 = singular, > 1 = plural
     return count <= 1 ? parts[0] : parts[1]
   }
 
   if (parts.length >= 3) {
-    // Syntaxe complète : zero | one | many
     if (count === 0) {
       return parts[0]
     }
@@ -81,13 +72,11 @@ export const useTranslation = () => {
   const t = (key: string, options?: TranslationOptions): string => {
     let result = key
 
-    // Gérer la pluralisation si 'n' ou 'count' est présent
     const count = options?.n ?? options?.count
     if (count !== undefined) {
       result = handlePluralization(result, Number(count))
     }
 
-    // Gérer l'interpolation
     if (options && Object.keys(options).length > 0) {
       result = interpolate(result, options)
     }
@@ -100,7 +89,6 @@ export const useTranslation = () => {
   }
 }
 
-// Export direct de la fonction pour usage hors composants
 export const t = (key: string, options?: TranslationOptions): string => {
   const { t: translate } = useTranslation()
   return translate(key, options)
