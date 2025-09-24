@@ -145,7 +145,7 @@
                       target="_blank"
                       class="fr-link"
                     >
-                      {{ $t('l\'API') }}
+                      {{ $t(`l'API`) }}
                     </a>
                     {{ $t('sera également supprimée et pourra cesser de fonctionner pour les réutilisateurs.') }}
                   </p>
