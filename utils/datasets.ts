@@ -197,7 +197,8 @@ export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resou
 }
 
 export async function sendFile(url: string, resourceForm: ResourceForm | CommunityResourceForm, fileInfo: FileInfo): Promise<Resource | CommunityResource> {
-  const { $fileApi, $i18n } = useNuxtApp()
+  const { $fileApi } = useNuxtApp()
+  const { t } = useTranslation()
   const config = useRuntimeConfig()
 
   if (resourceForm.filetype !== 'file') {
@@ -272,7 +273,7 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
     return resource
   }
   catch (e) {
-    const notificationMessage = $i18n.t('Échec du téléchargement du fichier {title}', { title: resourceForm.title })
+    const notificationMessage = t('Échec du téléchargement du fichier {title}', { title: resourceForm.title })
     let formError = notificationMessage
     const fetchError = e as unknown as FetchError
     if ('data' in fetchError && fetchError.data && 'message' in fetchError.data) {

@@ -35,11 +35,11 @@ export async function useFetch<DataT, ErrorT = never>(
             options.headers.set('X-API-KEY', config.devApiKey)
           }
 
-          if (locale.value) {
+          if (locale) {
             if (!options.params) {
               options.params = {}
             }
-            options.params['lang'] = locale.value
+            options.params['lang'] = locale
           }
         },
         async onResponseError() {

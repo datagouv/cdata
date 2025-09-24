@@ -57,9 +57,9 @@
     <TabLinks
       class="mb-5"
       :links="[
-        { href: localPath(organizationUrl), label: t('Profil') },
-        { href: localPath(`${organizationUrl}/contacts/`), label: t('Points de contact') },
-        { href: localPath(`${organizationUrl}/activities/`), label: t('Activités') },
+        { href: organizationUrl, label: t('Profil') },
+        { href: `${organizationUrl}/contacts/`, label: t('Points de contact') },
+        { href: `${organizationUrl}/activities/`, label: t('Activités') },
       ]"
     />
 
@@ -85,7 +85,6 @@ defineEmits<{
   refresh: []
 }>()
 
-const localPath = useLocalePath()
 const { t } = useTranslation()
 
 const organizationUrl = computed(() => `/admin/organizations/${props.organization?.id}/profile`)

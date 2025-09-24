@@ -1,5 +1,4 @@
 import type { App, Plugin } from 'vue'
-import { createI18n, useI18n } from 'vue-i18n'
 import type { ContactPoint, ContactPointRole } from './types/contact_point.js'
 import type { Badge, Badges, TranslatedBadge } from './types/badges'
 import type { Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
@@ -135,23 +134,6 @@ const datagouv: Plugin<PluginConfig> = {
     if (!options.textClamp) {
       const textClamp = await import('vue3-text-clamp')
       options.textClamp = textClamp.default
-    }
-    try {
-      // There is no condition to check if vue-i18n is instancied, only an error...
-      useI18n()
-    }
-    catch {
-      const i18n = createI18n({
-        legacy: false,
-        globalInjection: true,
-        locale: 'fr',
-        messages: {},
-        formatFallbackMessages: true,
-        missingWarn: false,
-        fallbackFormat: true,
-        fallbackWarn: false,
-      })
-      app.use(i18n)
     }
   },
 }

@@ -107,7 +107,6 @@ const { t } = useTranslation()
 const { toast } = useToast()
 const { $api } = useNuxtApp()
 const { start, finish, isLoading } = useLoadingIndicator()
-const localPath = useLocalePath()
 
 const form = ref<InstanceType<typeof DescribeOrganizationFrom> | null>(null)
 
@@ -128,7 +127,7 @@ async function deleteCurrentOrganization() {
     }
     else {
       reloadNuxtApp({
-        path: localPath('/admin/me/profile'),
+        path: '/admin/me/profile',
       })
     }
   }

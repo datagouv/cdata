@@ -158,7 +158,6 @@ const q = ref('')
 const qDebounced = refDebounced(q, 500) // TODO add 500 in config
 
 const me = useMaybeMe()
-const localePath = useLocalePath()
 
 const newDiscussion = ref(false)
 
@@ -172,7 +171,7 @@ const showDiscussionForm = () => {
     newDiscussion.value = true
   }
   else {
-    navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true })
+    navigateTo({ path: '/login', query: { next: route.fullPath } }, { external: true })
   }
 }
 

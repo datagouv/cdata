@@ -65,7 +65,6 @@ definePageMeta({
 const { toast } = useToast()
 const { t } = useTranslation()
 const route = useRoute()
-const localePath = useLocalePath()
 const me = useMaybeMe()
 
 useSeoMeta({ title: t('Réinitialiser le mot de passe') })
@@ -73,7 +72,7 @@ useSeoMeta({ title: t('Réinitialiser le mot de passe') })
 watchEffect(async () => {
   if (me.value) {
     toast.success(t('Vous êtes déjà connecté.'))
-    await navigateTo(localePath('/'))
+    await navigateTo('/')
   }
 })
 
@@ -96,7 +95,7 @@ const reset = async () => {
 
     toast.success(t('Votre mot de passe a bien été réinitialisé. Vous êtes maintenant connecté.'))
     await loadMe(me)
-    await navigateTo(localePath('/'))
+    await navigateTo('/')
   }
   catch (e) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

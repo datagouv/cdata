@@ -124,7 +124,6 @@ definePageMeta({
 
 const { t } = useTranslation()
 const { toast } = useToast()
-const localePath = useLocalePath()
 const config = useRuntimeConfig()
 
 useSeoMeta({ title: t('Connexion') })
@@ -165,7 +164,7 @@ const connect = async () => {
       navigateTo(next)
     }
     else {
-      await navigateTo(localePath('/'))
+      await navigateTo('/')
     }
   }
   catch (e) {

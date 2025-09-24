@@ -34,12 +34,12 @@ export function useIsCurrentUrl() {
 export function humanJoin(source: Array<string>): string {
   const array = [...source]
 
-  const nuxtApp = useNuxtApp()
+  const { t } = useTranslation()
   if (!array.length) return ''
   if (array.length === 1) return array[0]
 
   const last = array.pop()
-  return `${array.join(', ')} ${nuxtApp.$i18n.t('et')} ${last}`
+  return `${array.join(', ')} ${t('et')} ${last}`
 }
 
 export async function redirectLegacyHashes(instructions: Array<{ from: string, to: string, queryParam?: string }>): Promise<void> {

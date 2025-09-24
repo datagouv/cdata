@@ -170,7 +170,7 @@
                               :to="link.link"
                               target="_self"
                               :external="link.external"
-                              :aria-current="getAriaCurrent(localePath(link.link))"
+                              :aria-current="getAriaCurrent(link.link)"
                               @click="close"
                             >
                               {{ link.label }}
@@ -370,7 +370,7 @@
                 :to="link.link"
                 target="_self"
                 :external="link.external"
-                :aria-current="getAriaCurrent(localePath(link.link))"
+                :aria-current="getAriaCurrent(link.link)"
               >
                 {{ link.label }}
               </CdataLink>
@@ -468,7 +468,6 @@ defineProps<{
 const getUserAvatar = useGetUserAvatar()
 const { t } = useTranslation()
 const config = useRuntimeConfig()
-const localePath = useLocalePath()
 const me = useMaybeMe()
 const currentRoute = useRoute()
 const router = useRouter()

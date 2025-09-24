@@ -15,7 +15,7 @@ export function useFetchReuseTypes() {
 
     return await (reuseTypesRequest = ofetch<Array<ReuseType>>('api/1/reuses/types/', {
       baseURL: config.apiBase,
-      query: { lang: locale.value },
+      query: { lang: locale },
     }))
   }
 }

@@ -107,7 +107,6 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useTranslation()
-const localePath = useLocalePath()
 const query = ref('')
 const selectedItem = ref<null | Item>(null)
 
@@ -121,34 +120,34 @@ const menu = computed(() => {
     {
       icon: RiDatabase2Line,
       type: t('jeux de données'),
-      to: localePath({
+      to: {
         path: '/datasets/search/',
         query: { q: query.value.trim() },
-      }),
+      },
     },
     {
       icon: RiRobot2Line,
       type: t('APIs'),
-      to: localePath({
+      to: {
         path: '/dataservices/search/',
         query: { q: query.value.trim() },
-      }),
+      },
     },
     {
       icon: RiLineChartLine,
       type: t('réutilisations'),
-      to: localePath({
+      to: {
         path: '/reuses/search/',
         query: { q: query.value.trim() },
-      }),
+      },
     },
     {
       icon: RiBuilding2Line,
       type: t('organisations'),
-      to: localePath({
+      to: {
         path: '/organizations/',
         query: { q: query.value.trim() },
-      }),
+      },
     },
   ]
 })

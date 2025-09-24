@@ -48,7 +48,6 @@ import type { Post, PostForm } from '~/types/posts'
 
 const { t } = useTranslation()
 const route = useRoute()
-const localePath = useLocalePath()
 const { $api, $fileApi } = useNuxtApp()
 const me = useMe()
 
@@ -119,7 +118,7 @@ async function save(form: { content: string }) {
         body: formData,
       })
     }
-    await navigateTo(localePath(`/admin/posts/${newPost.value.id}`))
+    await navigateTo(`/admin/posts/${newPost.value.id}`)
   }
   finally {
     clearNuxtState(POST_LOADING_STATE)

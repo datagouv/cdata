@@ -36,7 +36,7 @@ const runtimeConfig = useRuntimeConfig()
 app.vueApp.use(datagouv, {
     // These are the same as above…
     name: runtimeConfig.public.title,
-    baseUrl: runtimeConfig.public.i18n.baseUrl,
+    baseUrl: runtimeConfig.public.baseUrl,
     apiBase: runtimeConfig.public.apiBase,
     devApiKey: runtimeConfig.public.devApiKey,
 
@@ -69,7 +69,7 @@ app.vueApp.use(datagouv, {
 
 ### I18n
 
-`@datagouv/components` is using [`vue-i18n`](https://vue-i18n.intlify.dev/) to provide internationalisation. As always, there are two modes:
+`@datagouv/components` is using a few custom functions to provide internationalisation.
 
 1. If the user is using Nuxt, it can simply add the locales files in the `nuxt.config.ts`
 

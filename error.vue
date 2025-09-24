@@ -167,7 +167,7 @@ const error = useError()
 
 const app = useNuxtApp()
 
-const i18nHead = useLocaleHead()
+const { locale } = useTranslation()
 const runtimeConfig = useRuntimeConfig()
 
 // Computed properties to avoid repeating error checks
@@ -176,7 +176,7 @@ const errorMessage = computed(() => error.value?.message)
 
 app.vueApp.use(datagouv, {
   name: runtimeConfig.public.title,
-  baseUrl: runtimeConfig.public.i18n.baseUrl, // Maybe do not use i18n config here?
+  baseUrl: runtimeConfig.public.baseUrl,
   apiBase: runtimeConfig.public.apiBase,
   devApiKey: runtimeConfig.public.devApiKey,
   tabularApiUrl: runtimeConfig.public.tabularApiUrl,
@@ -191,10 +191,8 @@ app.vueApp.use(datagouv, {
 
 useHeadSafe({
   htmlAttrs: {
-    lang: i18nHead.value.htmlAttrs?.lang,
+    lang: locale,
   },
-  link: [...(i18nHead.value.link || [])],
-  meta: [...(i18nHead.value.meta || [])],
   titleTemplate: (titleChunk) => {
     return titleChunk ? `${titleChunk} - data.gouv.fr` : 'data.gouv.fr'
   },
