@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('Système de traduction', () => {
-  test('Le système de traduction complet fonctionne', async ({ page }) => {
+test.describe('French translation system', () => {
+  test('Should show french translations', async ({ page }) => {
     await page.goto('/design/translations')
 
     // Vérifier que la page s'affiche correctement
@@ -82,12 +82,12 @@ test.describe('Système de traduction', () => {
     await expect(page.locator('p').filter({ hasText: 'Test TranslationT avec pluralisation :' }))
       .toContainText('10 résultats trouvés')
   })
+})
+
+test.describe('English translation system', () => {
+  test.use({ locale: 'en-US' })
 
   test('Should translate to English when Accept-Language is en', async ({ page }) => {
-    await page.setExtraHTTPHeaders({
-      'Accept-Language': 'en',
-    })
-
     await page.goto('/design/translations')
 
     // Verify basic translation via $t

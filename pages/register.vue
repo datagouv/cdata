@@ -142,8 +142,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
-import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
+import { BrandedButton, SimpleBanner, TranslationT } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 
 definePageMeta({

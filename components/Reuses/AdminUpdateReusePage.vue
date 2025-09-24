@@ -136,10 +136,9 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, TranslationT } from '@datagouv/components-next'
 import type { Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
-import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
 import type { ReuseForm } from '~/types/types'
 

@@ -94,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
+import { TranslationT } from '@datagouv/components-next'
 
 const { t } = useTranslation()
 

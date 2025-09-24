@@ -422,7 +422,7 @@
 <script setup lang="ts">
 import { BrandedButton, summarize, useFormatDate, type Site } from '@datagouv/components-next'
 import { RiArrowRightLine, RiBardLine, RiLineChartLine, RiSearchLine, RiVipDiamondLine } from '@remixicon/vue'
-import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
+import { TranslationT } from '@datagouv/components-next'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 

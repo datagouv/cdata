@@ -195,7 +195,7 @@
 <script setup lang="ts">
 import { BrandedButton, CopyButton, DateRangeDetails, ExtraAccordion, getDatasetOEmbedHtml, useFormatDate, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
 import { RiBook2Line, RiCheckboxCircleLine, RiServerLine } from '@remixicon/vue'
-import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
+import { TranslationT } from '@datagouv/components-next'
 import LeafletMapClient from '~/components/LeafletMap.client.vue'
 
 const props = defineProps<{ dataset: DatasetV2WithFullObject }>()

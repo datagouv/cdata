@@ -129,9 +129,8 @@
 
 <script setup lang="ts">
 import type { DatasetV2, Frequency, License } from '@datagouv/components-next'
-import { BannerAction, BrandedButton } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, TranslationT } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
-import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity } from '~/types/types'
 

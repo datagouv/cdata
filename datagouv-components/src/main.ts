@@ -56,6 +56,7 @@ import TabPanel from './components/Tabs/TabPanel.vue'
 import TabPanels from './components/Tabs/TabPanels.vue'
 import Tooltip from './components/Tooltip.vue'
 import Toggletip from './components/Toggletip.vue'
+import TranslationT from './components/TranslationT.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
@@ -197,4 +198,5 @@ export {
   TabPanels,
   Tooltip,
   Toggletip,
+  TranslationT,
 }

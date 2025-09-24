@@ -93,7 +93,7 @@
 import { RiArrowRightSLine, RiDatabase2Line, RiBuilding2Line, RiLineChartLine, RiRobot2Line, RiSearchLine } from '@remixicon/vue'
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions, TransitionRoot } from '@headlessui/vue'
 import type { Component } from 'vue'
-import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
+import { TranslationT } from '@datagouv/components-next'
 
 type Item = {
   icon: Component

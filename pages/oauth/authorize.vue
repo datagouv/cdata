@@ -88,8 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
+import { BrandedButton, TranslationT } from '@datagouv/components-next'
 
 definePageMeta({
   matomoIgnore: true,
