@@ -67,12 +67,13 @@
 <script setup lang="ts">
 import type { Quality } from '../types/datasets'
 import { useComponentsConfig } from '../config'
+import { useTranslation } from '../composables/useTranslation'
 import DatasetQualityItem from './DatasetQualityItem.vue'
 
 defineProps<{
   quality: Quality
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const config = useComponentsConfig()
 </script>

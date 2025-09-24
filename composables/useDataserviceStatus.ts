@@ -2,7 +2,7 @@ import type { Dataservice } from '@datagouv/components-next'
 import type { AdminBadgeType } from '~/types/types'
 
 export function useDataserviceStatus() {
-  const { t } = await useTranslation()
+  const { t } = useTranslation()
   const getDataserviceStatus = (dataservice: Dataservice): { label: string, type: AdminBadgeType } => {
     if (dataservice.deleted_at) {
       return {

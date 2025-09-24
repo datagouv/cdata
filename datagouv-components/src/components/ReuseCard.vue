@@ -79,6 +79,7 @@ import type { RouteLocationRaw } from 'vue-router'
 import { useFormatDate } from '../functions/dates'
 import { getOwnerName } from '../functions/owned'
 import type { Reuse } from '../types/reuses'
+import { useTranslation } from '../composables/useTranslation'
 import AppLink from './AppLink.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import ReuseDetails from './ReuseDetails.vue'
@@ -99,7 +100,7 @@ const props = defineProps<{
   organizationUrl?: RouteLocationRaw
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
 
 const ownerName = computed(() => getOwnerName(props.reuse))

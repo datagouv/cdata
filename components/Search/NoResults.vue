@@ -34,7 +34,7 @@
 import { BrandedButton } from '@datagouv/components-next'
 import { RiLightbulbLine } from '@remixicon/vue'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 defineProps<{
   forumUrl: string

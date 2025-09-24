@@ -63,7 +63,7 @@ definePageMeta({
 })
 
 const { toast } = useToast()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const route = useRoute()
 const localePath = useLocalePath()
 const me = useMaybeMe()

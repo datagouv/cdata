@@ -19,7 +19,7 @@
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const { currentOrganization } = useCurrentOwned()
 </script>

@@ -36,10 +36,11 @@ import {
 
 import SimpleBanner from '../SimpleBanner.vue'
 import type { Resource } from '../../types/resources'
+import { useTranslation } from '../../composables/useTranslation'
 
 const props = defineProps<{ resource: Resource }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 let map = null
 const mapRef = useTemplateRef('mapRef')

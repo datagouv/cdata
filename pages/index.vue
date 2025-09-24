@@ -422,14 +422,14 @@
 <script setup lang="ts">
 import { BrandedButton, summarize, useFormatDate, type Site } from '@datagouv/components-next'
 import { RiArrowRightLine, RiBardLine, RiLineChartLine, RiSearchLine, RiVipDiamondLine } from '@remixicon/vue'
-import TranslationT from '~/components/TranslationT.vue'
+import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 
 useSeoMeta({ title: 'Accueil — data.gouv.fr' })
 
 const config = useRuntimeConfig()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts')

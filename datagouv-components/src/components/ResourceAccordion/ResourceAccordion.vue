@@ -355,6 +355,7 @@ import { getOwnerName } from '../../functions/owned'
 import { getResourceFormatIcon, getResourceTitleId, detectOgcService } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
 import { getResourceExternalUrl } from '../../functions/datasets'
+import { useTranslation } from '../../composables/useTranslation'
 import Metadata from './Metadata.vue'
 import SchemaBadge from './SchemaBadge.vue'
 import ResourceIcon from './ResourceIcon.vue'
@@ -385,7 +386,7 @@ const JsonPreview = defineAsyncComponent(() => import('./JsonPreview.client.vue'
 const PdfPreview = defineAsyncComponent(() => import('./PdfPreview.client.vue'))
 const XmlPreview = defineAsyncComponent(() => import('./XmlPreview.client.vue'))
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
 
 const hasPreview = computed(() => {

@@ -82,7 +82,7 @@ definePageMeta({
   matomoIgnore: true,
 })
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const route = useRoute()
 const localePath = useLocalePath()
 const localeRoute = useLocaleRoute()

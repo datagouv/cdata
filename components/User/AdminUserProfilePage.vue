@@ -290,7 +290,7 @@ const emits = defineEmits<{
 const me = useMe()
 const config = useNuxtApp().$config
 const { toast } = useToast()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const apiKeyId = useId()

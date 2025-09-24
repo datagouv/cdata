@@ -466,7 +466,7 @@ defineProps<{
 }>()
 
 const getUserAvatar = useGetUserAvatar()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const localePath = useLocalePath()
 const me = useMaybeMe()

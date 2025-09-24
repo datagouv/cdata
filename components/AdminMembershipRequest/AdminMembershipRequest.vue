@@ -110,7 +110,7 @@ const emits = defineEmits<{
   (e: 'refresh'): void
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const loading = ref(false)
 

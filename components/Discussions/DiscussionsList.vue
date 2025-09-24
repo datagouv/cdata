@@ -145,7 +145,7 @@ const props = defineProps<{
   closed?: number
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const isClosed = ref(null as null | true | false)
 

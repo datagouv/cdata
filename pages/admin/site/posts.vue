@@ -152,7 +152,7 @@ import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import type { Post } from '~/types/posts'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const page = ref(1)

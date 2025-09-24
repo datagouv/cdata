@@ -46,7 +46,7 @@ const emit = defineEmits<{
   (event: 'sort', direction: SortDirection): void
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const sortable = computed(() => props.sorted !== undefined)
 

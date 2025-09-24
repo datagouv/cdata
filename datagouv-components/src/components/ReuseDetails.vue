@@ -33,12 +33,13 @@ import { RiEyeLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
 import { useReuseType } from '../composables/useReuseType'
 import { summarize } from '../functions/helpers'
 import type { Reuse } from '../types/reuses'
+import { useTranslation } from '../composables/useTranslation'
 
 const props = defineProps<{
   reuse: Reuse
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const { label: reuseType } = useReuseType(() => props.reuse.type)
 </script>

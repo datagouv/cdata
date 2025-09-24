@@ -43,7 +43,7 @@ const props = defineProps<{
   organization: Organization
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const page = ref(1)
 const pageSize = ref(20)

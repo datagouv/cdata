@@ -9,6 +9,7 @@ import { useFormatDate } from '../../functions/dates'
 import { filesize } from '../../functions/helpers'
 import ExtraAccordion from '../ExtraAccordion.vue'
 import { getResourceTitleId, getResourceLabel } from '../../functions/resources'
+import { useTranslation } from '../../composables/useTranslation'
 
 const props = defineProps<{
   resource: Resource
@@ -17,7 +18,7 @@ const props = defineProps<{
 const hasExtras = computed(() => Object.keys(props.resource.extras).length)
 const resourceTitleId = computed(() => getResourceTitleId(props.resource))
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 </script>
 

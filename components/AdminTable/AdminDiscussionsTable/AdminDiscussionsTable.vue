@@ -159,7 +159,7 @@ defineEmits<{
   (event: 'refresh'): void
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const { $api } = useNuxtApp()
 

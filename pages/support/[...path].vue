@@ -488,7 +488,7 @@ const firstQuestion: Question = { id, title, choices }
 const questions = ref<Array<Question>>([firstQuestion])
 const answers = ref<Array<string>>([])
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 useSeoMeta({
   title: t('Support'),

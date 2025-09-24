@@ -20,7 +20,7 @@ import { BrandedButton } from '@datagouv/components-next'
 import type { Dataservice, DatasetV2 } from '@datagouv/components-next'
 import type { DatasetSuggest, PaginatedArray } from '~/types/types'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const { toast } = useToast()
 

@@ -94,9 +94,9 @@
 </template>
 
 <script setup lang="ts">
-import TranslationT from '~/components/TranslationT.vue'
+import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const messageFromComposable = computed(() => t('Message depuis le composable'))
 </script>

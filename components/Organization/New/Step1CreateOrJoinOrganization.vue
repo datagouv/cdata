@@ -38,7 +38,7 @@
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 defineEmits<{
   (event: 'start'): void

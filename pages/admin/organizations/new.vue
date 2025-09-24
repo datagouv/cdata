@@ -50,7 +50,7 @@ import { loadMe } from '~/utils/auth'
 import type { NewOrganization } from '~/types/types'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const localePath = useLocalePath()
 const config = useRuntimeConfig()
 const route = useRoute()

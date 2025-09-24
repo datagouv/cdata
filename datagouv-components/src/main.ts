@@ -61,6 +61,7 @@ import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
 export * from './composables/useActiveDescendant'
 export * from './composables/useReuseType'
+export * from './composables/useTranslation'
 
 export * from './functions/datasets'
 export * from './functions/dates'

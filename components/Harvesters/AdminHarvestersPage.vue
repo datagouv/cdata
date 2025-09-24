@@ -188,7 +188,7 @@ import { getHarvesterAdminUrl } from '~/utils/harvesters'
 const props = defineProps<{
   organization?: Organization | null
 }>()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()

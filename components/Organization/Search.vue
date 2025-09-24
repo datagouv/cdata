@@ -54,7 +54,7 @@ import { watchDebounced } from '@vueuse/core'
 import { RiSearch2Line } from '@remixicon/vue'
 import { Combobox, ComboboxInput, ComboboxLabel, ComboboxOption, ComboboxOptions } from '@headlessui/vue'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { toast } = useToast()
 const config = useRuntimeConfig()
 const q = ref('')

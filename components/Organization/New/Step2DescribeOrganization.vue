@@ -291,7 +291,7 @@ const emit = defineEmits<{
 }>()
 
 const config = useRuntimeConfig()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges/')

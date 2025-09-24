@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { computed, useSlots } from 'vue'
-import { useTranslation, parseTextWithPlaceholders } from '~/composables/useTranslation'
+import { parseTextWithPlaceholders, useTranslation } from '../composables/useTranslation'
 
 const props = withDefaults(defineProps<{
   keypath: string
@@ -32,10 +32,10 @@ const props = withDefaults(defineProps<{
 })
 
 const slots = useSlots()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const parts = computed(() => {
-  const { keypath, tag, n, count, ...interpolations } = props
+  const { keypath, n, count, ...interpolations } = props
 
   const options: Record<string, string | number> = {
     ...interpolations,

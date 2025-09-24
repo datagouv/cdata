@@ -50,7 +50,7 @@ import { insertLink } from '~/components/MarkdownEditor/Milkdown/LinkEdit/insert
 import { useLinkPreview } from '~/components/MarkdownEditor/Milkdown/LinkPreview/useLinkPreview'
 import { linkPreviewTooltipCtx } from '~/components/MarkdownEditor/Milkdown/LinkPreview/linkPreviewTooltipCtx'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const toolTipRef = ref<InstanceType<typeof EditorTooltip> | null>(null)
 const { tooltipProvider } = makeTooltipProvider(linkPreviewTooltipCtx.key, toolTipRef)
 const { view } = usePluginViewContext()

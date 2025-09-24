@@ -35,7 +35,7 @@ import { useLinkPreview } from '~/components/MarkdownEditor/Milkdown/LinkPreview
 import EditorTooltip from '~/components/MarkdownEditor/Milkdown/Tooltip/EditorTooltip.vue'
 import { linkEditTooltipCtx, linkTooltipState } from '~/components/MarkdownEditor/Milkdown/LinkEdit/linkEditTooltipCtx'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const toolTipRef = useTemplateRef<InstanceType<typeof EditorTooltip>>('toolTip')
 const { link, updateLink } = useLinkPreview()

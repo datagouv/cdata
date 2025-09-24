@@ -20,7 +20,7 @@ const props = defineProps<{
   contact: ContactPoint
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const link = computed(() => {
   if (props.contact.email) {

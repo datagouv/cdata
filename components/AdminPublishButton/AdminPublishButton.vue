@@ -19,7 +19,7 @@ const props = defineProps<{
   type: 'dataset' | 'harvester' | 'reuse' | 'dataservice'
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const config = useRuntimeConfig()
 

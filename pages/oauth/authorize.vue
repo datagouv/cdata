@@ -89,13 +89,13 @@
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
-import TranslationT from '~/components/TranslationT.vue'
+import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
 
 definePageMeta({
   matomoIgnore: true,
 })
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 
 useSeoMeta({ title: t('Connexion') })

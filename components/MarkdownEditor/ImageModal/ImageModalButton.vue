@@ -75,7 +75,7 @@ const emit = defineEmits<{
   (event: 'send', form: ImageModalForm): void
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const initialState = {
   src: '',

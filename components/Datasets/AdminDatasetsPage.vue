@@ -125,7 +125,7 @@ const props = defineProps<{
   organization?: Organization | null
   user?: User | null
 }>()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()

@@ -158,7 +158,7 @@ const props = defineProps<{
   warningText?: string | null
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const { isLoading, start, finish } = useLoadingIndicator()
 

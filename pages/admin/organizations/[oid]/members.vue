@@ -303,7 +303,7 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const config = useRuntimeConfig()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatDate, formatFromNow } = useFormatDate()
 const { $api } = useNuxtApp()
 const getUserAvatar = useGetUserAvatar()

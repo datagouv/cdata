@@ -93,7 +93,7 @@
 import { RiArrowRightSLine, RiDatabase2Line, RiBuilding2Line, RiLineChartLine, RiRobot2Line, RiSearchLine } from '@remixicon/vue'
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions, TransitionRoot } from '@headlessui/vue'
 import type { Component } from 'vue'
-import TranslationT from '../TranslationT.vue'
+import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
 
 type Item = {
   icon: Component
@@ -106,7 +106,7 @@ const emit = defineEmits<{
   selected: []
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const localePath = useLocalePath()
 const query = ref('')
 const selectedItem = ref<null | Item>(null)

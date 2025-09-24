@@ -1,11 +1,12 @@
 import { ofetch } from 'ofetch'
 import { useComponentsConfig } from '../config'
 import type { ReuseTopic, ReuseType } from '../types/reuses'
+import { useTranslation } from '../composables/useTranslation'
 
 let reuseTypesRequest: Promise<Array<ReuseType>> | null = null
 export function useFetchReuseTypes() {
   const config = useComponentsConfig()
-  const { locale } = useI18n()
+  const { locale } = useTranslation()
 
   return async (): Promise<Array<ReuseType>> => {
     if (reuseTypesRequest) {

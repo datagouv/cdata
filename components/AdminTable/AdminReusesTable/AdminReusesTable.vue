@@ -132,7 +132,7 @@ defineEmits<{
   (event: 'sort', column: ReuseSortedBy, direction: SortDirection): void
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const { getReuseStatus } = useReuseStatus()
 

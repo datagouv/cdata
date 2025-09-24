@@ -70,7 +70,7 @@ const props = defineProps<{
   subject?: DiscussionSubjectTypes
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const isClosed = ref(null as null | true | false)
 

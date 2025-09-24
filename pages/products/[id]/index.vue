@@ -389,7 +389,7 @@ const switchTab = (index: number) => {
   }
 }
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 useSeoMeta({ title: card.value ? ' Produit ' + card.value.product : t('Produit') })
 </script>
 

@@ -167,6 +167,7 @@ import { useFormatDate } from '../functions/dates'
 import { getOwnerName } from '../functions/owned'
 import { removeMarkdown } from '../functions/markdown'
 import { useComponentsConfig } from '../config'
+import { useTranslation } from '../composables/useTranslation'
 import DatasetQualityInline from './DatasetQualityInline.vue'
 import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
@@ -196,7 +197,7 @@ const props = withDefaults(defineProps<Props>(), {
   showDescription: true,
 })
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
 const ownerName = computed(() => getOwnerName(props.dataset))
 const config = useComponentsConfig()

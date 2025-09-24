@@ -143,7 +143,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
-import TranslationT from '~/components/TranslationT.vue'
+import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
 import type { FieldsErrors } from '~/types/form'
 
 definePageMeta({
@@ -151,7 +151,7 @@ definePageMeta({
 })
 
 const config = useRuntimeConfig()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const route = useRoute()
 
 useSeoMeta({ title: t('S\'enregistrer') })

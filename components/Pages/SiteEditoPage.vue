@@ -43,7 +43,7 @@ const props = defineProps<{
 
 const { $api } = useNuxtApp()
 const { toast } = useToast()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const loading = ref(false)
 const page = ref<Page | null>(null)

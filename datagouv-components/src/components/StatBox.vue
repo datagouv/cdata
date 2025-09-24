@@ -152,6 +152,7 @@ import { computed } from 'vue'
 import { ContentLoader } from 'vue-content-loader'
 import { useFormatDate } from '../functions/dates'
 import { summarize } from '../functions/helpers'
+import { useTranslation } from '../composables/useTranslation'
 import SmallChart from './SmallChart.vue'
 
 const props = defineProps<{
@@ -162,7 +163,7 @@ const props = defineProps<{
   summary?: number | null
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const months = computed(() => props.data ? Object.keys(props.data) : [])

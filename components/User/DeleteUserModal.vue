@@ -67,7 +67,7 @@ const me = useMe()
 const { $api } = useNuxtApp()
 const config = useRuntimeConfig()
 const { toast } = useToast()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const loading = ref(false)
 

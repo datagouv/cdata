@@ -93,7 +93,7 @@ import ModalWithButton from '../Modal/ModalWithButton.vue'
 import UploadGroup from '../UploadGroup/UploadGroup.vue'
 import type { ResourceForm } from '~/types/types'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const formId = useId()
 
 defineProps<{

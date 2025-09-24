@@ -14,6 +14,7 @@
 import { RiPencilLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import BrandedButton from '../BrandedButton.vue'
+import { useTranslation } from '../../composables/useTranslation'
 
 type Props = {
   datasetId: string
@@ -25,7 +26,7 @@ const props = withDefaults(defineProps<Props>(), {
   isCommunityResource: false,
 })
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const adminUrl = computed(() => {
   if (props.isCommunityResource) {

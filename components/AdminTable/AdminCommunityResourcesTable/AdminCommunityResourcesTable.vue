@@ -110,7 +110,7 @@ const emit = defineEmits<{
   (event: 'refresh'): void
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const { toast } = useToast()
 

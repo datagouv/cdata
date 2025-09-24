@@ -60,7 +60,7 @@ import type { DatasetForm, EnrichedLicense, ResourceForm, SpatialGranularity, Sp
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const route = useRoute()
 const { $api } = useNuxtApp()

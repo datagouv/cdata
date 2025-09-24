@@ -118,7 +118,7 @@ import ModalWithButton from '../Modal/ModalWithButton.vue'
 import DescribeResource from './DescribeResource.vue'
 import type { CommunityResourceForm, ResourceForm } from '~/types/types'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const formId = useId()
 

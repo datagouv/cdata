@@ -139,11 +139,11 @@
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import type { Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
-import TranslationT from '../TranslationT.vue'
+import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
 import type { ReuseForm } from '~/types/types'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { $api, $fileApi } = useNuxtApp()
 const { toast } = useToast()
 

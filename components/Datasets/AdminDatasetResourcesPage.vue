@@ -231,7 +231,7 @@ const refreshResources = async () => {
 }
 watchEffect(async () => await refreshResources())
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const resourceForms = ref<Array<ResourceForm>>([])
 const loading = ref(false)

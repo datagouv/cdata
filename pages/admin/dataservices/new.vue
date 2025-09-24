@@ -68,7 +68,7 @@ import type {
   DatasetSuggest,
 } from '~/types/types'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const route = useRoute()
 const { $api } = useNuxtApp()
 

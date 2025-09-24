@@ -112,12 +112,13 @@ import type { Resource } from '../../types/resources'
 import { useComponentsConfig } from '../../config'
 import BrandedButton from '../BrandedButton.vue'
 import SimpleBanner from '../SimpleBanner.vue'
+import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
 import PreviewLoader from './PreviewLoader.vue'
 
 const props = defineProps<{ resource: Resource }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const rows = ref<Array<Record<string, unknown>>>([])

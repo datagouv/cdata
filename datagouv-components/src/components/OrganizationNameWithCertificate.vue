@@ -40,12 +40,13 @@ import { RiCheckboxCircleLine } from '@remixicon/vue'
 import { getOrganizationType, isOrganizationCertified } from '../functions/organizations'
 import type { Organization } from '../types/organizations'
 import { useComponentsConfig } from '../config'
+import { useTranslation } from '../composables/useTranslation'
 import OwnerTypeIcon from './OwnerTypeIcon.vue'
 import Tooltip from './Tooltip.vue'
 
 const config = useComponentsConfig()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 withDefaults(defineProps<{
   organization: Organization
   showAcronym?: boolean

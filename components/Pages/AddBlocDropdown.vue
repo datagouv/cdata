@@ -63,7 +63,7 @@ import type { PageBloc } from '~/types/pages'
 defineEmits<{
   newBloc: [PageBloc]
 }>()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const blocsTypes = useBlocsTypes()
 
 const newBlocsTypes: Array<{ name: string, blocsTypes: Array<keyof typeof blocsTypes> }> = [

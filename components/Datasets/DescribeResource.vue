@@ -386,13 +386,13 @@
 import { BrandedButton, getResourceLabel, RESOURCE_TYPE, SimpleBanner } from '@datagouv/components-next'
 import type { SchemaResponseData } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
+import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 import FieldsetElement from '../Form/FieldsetElement.vue'
 import HelpAccordion from '../Form/HelpAccordion.vue'
-import TranslationT from '../TranslationT.vue'
 import type { CommunityResourceForm, ResourceForm } from '~/types/types'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
 

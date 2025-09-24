@@ -142,7 +142,7 @@ const emit = defineEmits<{
 
 const { $api } = useNuxtApp()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { toast } = useToast()
 
 const { form: newContactForm, getFirstError, touch, validate } = useForm({

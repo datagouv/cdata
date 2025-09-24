@@ -1,6 +1,7 @@
 import { ref, toValue, watchEffect, type ComputedRef, type Ref } from 'vue'
 import { ofetch } from 'ofetch'
 import { useComponentsConfig } from '../config'
+import { useTranslation } from '../composables/useTranslation'
 import type { AsyncData, AsyncDataExecuteOptions, AsyncDataRequestStatus, UseFetchOptions } from './api.types'
 
 export async function useFetch<DataT, ErrorT = never>(
@@ -9,7 +10,7 @@ export async function useFetch<DataT, ErrorT = never>(
 ): Promise<AsyncData<DataT, ErrorT>> {
   const config = useComponentsConfig()
 
-  const { locale } = useI18n()
+  const { locale } = useTranslation()
 
   if (config.customUseFetch) {
     return await config.customUseFetch(url, options)

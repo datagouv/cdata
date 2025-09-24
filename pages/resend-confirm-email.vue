@@ -60,7 +60,7 @@ definePageMeta({
   matomoIgnore: true,
 })
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 useSeoMeta({ title: t('Renvoyer les instructions de confirmation') })
 

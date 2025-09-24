@@ -163,7 +163,7 @@ const props = withDefaults(defineProps<{
   activities: () => ({}),
 })
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const { getDatasetStatus } = useDatasetStatus()
 

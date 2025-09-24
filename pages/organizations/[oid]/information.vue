@@ -285,7 +285,7 @@ const props = defineProps<{
   organization: Organization
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const config = useRuntimeConfig()

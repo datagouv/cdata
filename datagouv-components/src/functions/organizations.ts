@@ -2,6 +2,7 @@ import type { Component } from 'vue'
 import { RiBankLine, RiBuilding2Line, RiCommunityLine, RiGovernmentLine, RiUserLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../config'
 import type { Organization } from '../types/organizations'
+import { useTranslation } from '../composables/useTranslation'
 
 export const CERTIFIED = 'certified'
 export const PUBLIC_SERVICE = 'public-service'
@@ -30,7 +31,7 @@ export function hasBadge(organization: Organization, kind: string) {
 }
 
 export function getOrganizationTypes(): Array<{ type: OrganizationTypes | UserType, label: string, icon: Component | null }> {
-  const { t } = await useTranslation()
+  const { t } = useTranslation()
   return [{
     type: PUBLIC_SERVICE,
     label: t('Service public'),

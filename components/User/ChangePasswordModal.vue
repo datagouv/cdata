@@ -85,7 +85,7 @@ import { RiEditLine } from '@remixicon/vue'
 import type { FieldsErrors } from '~/types/form'
 
 const { toast } = useToast()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const loading = ref(false)
 const errors = ref<FieldsErrors>({})

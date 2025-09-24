@@ -133,7 +133,7 @@ import { makeTooltipProvider } from '~/components/MarkdownEditor/Milkdown/Toolti
 import { tableTooltipCtx } from '~/components/MarkdownEditor/Milkdown/TableTooltip/tableTooltipCtx'
 import TooltipButton from '~/components/MarkdownEditor/Milkdown/TableTooltip/TooltipButton.vue'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const toolTipRef = ref<HTMLDivElement | null>(null)
 const { view } = usePluginViewContext()
 

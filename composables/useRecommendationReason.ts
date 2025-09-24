@@ -1,7 +1,7 @@
 import type { Recommendation } from '~/types/recommendations'
 
 export function useRecommendationReason() {
-  const { t } = await useTranslation()
+  const { t } = useTranslation()
   const config = useRuntimeConfig()
   const getRecommendationReason = (recommendation: Recommendation, count: number) => {
     switch (recommendation.source) {

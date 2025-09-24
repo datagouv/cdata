@@ -138,11 +138,11 @@
 import type { Dataservice } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
-import TranslationT from '../TranslationT.vue'
+import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'
 import type { DataserviceForm, LinkToSubject } from '~/types/types'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const { toast } = useToast()
 

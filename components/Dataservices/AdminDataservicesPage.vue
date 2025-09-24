@@ -101,7 +101,7 @@ import AdminDataservicesTable from '~/components/AdminTable/AdminDataservicesTab
 import type { DataserviceSortedBy, PaginatedArray, SortDirection } from '~/types/types'
 import type { Activity } from '~/types/activity'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const config = useRuntimeConfig()

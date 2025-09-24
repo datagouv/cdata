@@ -8,6 +8,7 @@ import Image from '../components/Icons/Image.vue'
 import Link from '../components/Icons/Link.vue'
 import Table from '../components/Icons/Table.vue'
 import type { Resource } from '../types/resources'
+import { useTranslation } from '../composables/useTranslation'
 
 export function getResourceFormatIcon(format: string): Component | null {
   switch (format?.trim()?.toLowerCase()) {
@@ -89,7 +90,7 @@ export const RESOURCE_TYPE = readonly(['main', 'documentation', 'update', 'api',
 export type ResourceType = typeof RESOURCE_TYPE[number]
 
 export const getResourceLabel = (type: ResourceType) => {
-  const { t } = await useTranslation()
+  const { t } = useTranslation()
   switch (type) {
     case 'main':
       return t('Fichier principal') // TODO: manage the plural case

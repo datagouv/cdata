@@ -18,7 +18,7 @@ const props = defineProps<{
   id: string
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const link = computed(() => {
   const base = `/admin/${props.type}/${props.id}/`

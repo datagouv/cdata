@@ -14,7 +14,7 @@ export type ValidationsMessages<Type> = {
 export type FormInfo<T> = ReturnType<typeof useForm<T>>['formInfo']
 
 export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsRules<T> = {}, warningsRules: ValidationsRules<T> = {}) {
-  const { t } = await useTranslation()
+  const { t } = useTranslation()
 
   const form = toRef(initialValues)
   const errors = ref({} as ValidationsMessages<T>)

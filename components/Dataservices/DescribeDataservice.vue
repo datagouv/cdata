@@ -534,8 +534,8 @@
 import { BrandedButton, SimpleBanner, type DataserviceAccessAudienceCondition, type DataserviceAccessAudienceType } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import { computed } from 'vue'
+import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
 import ModalClient from '../Modal/Modal.client.vue'
-import TranslationT from '../TranslationT.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
@@ -554,7 +554,7 @@ const emit = defineEmits<{
   (event: 'feature' | 'submit'): void
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const formId = useId()
 

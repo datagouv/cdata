@@ -114,7 +114,7 @@ import TabLinks from '~/components/TabLinks.vue'
 import type { Activity } from '~/types/activity'
 import type { PaginatedArray } from '~/types/types'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const route = useRoute()
 const { getDataserviceStatus } = useDataserviceStatus()

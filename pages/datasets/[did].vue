@@ -392,12 +392,12 @@ import {
   RiExternalLinkFill,
   RiLockLine,
 } from '@remixicon/vue'
+import TranslationT from '@datagouv/components-next/src/components/TranslationT.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
-import TranslationT from '~/components/TranslationT.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const config = useRuntimeConfig()

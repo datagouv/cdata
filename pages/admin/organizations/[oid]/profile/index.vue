@@ -103,7 +103,7 @@ const emit = defineEmits<{
   refresh: []
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { toast } = useToast()
 const { $api } = useNuxtApp()
 const { start, finish, isLoading } = useLoadingIndicator()

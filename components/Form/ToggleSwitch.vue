@@ -48,7 +48,7 @@ const props = defineProps<{
   labelFalse?: string
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const labelTrue = computed(() => props.labelTrue || t('Activé'))
 const labelFalse = computed(() => props.labelFalse || t('Désactivé'))

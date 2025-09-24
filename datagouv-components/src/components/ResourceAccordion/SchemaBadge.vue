@@ -106,7 +106,7 @@ const props = defineProps<{
   resource: Resource
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const getSchemaValidationUrl = useGetSchemaValidationUrl()
 const getSchemaDocumentation = useGetSchemaDocumentation()
 const getCatalog = useGetCatalog()

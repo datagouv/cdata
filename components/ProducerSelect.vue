@@ -51,7 +51,7 @@ const props = withDefaults(defineProps<{
 })
 const model = defineModel<Owned | null>({ required: true })
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const user = useMe()
 const { $api } = useNuxtApp()
 

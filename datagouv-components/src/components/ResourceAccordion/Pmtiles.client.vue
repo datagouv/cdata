@@ -64,11 +64,12 @@ import type { Resource } from '../../types/resources'
 import BrandedButton from '../BrandedButton.vue'
 import styleVector from '../../../assets/json/vector.json'
 import SimpleBanner from '../SimpleBanner.vue'
+import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
 
 const props = defineProps<{ resource: Resource }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const config = useComponentsConfig()

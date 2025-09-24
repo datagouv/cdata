@@ -180,7 +180,7 @@ import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import Placeholder from '~/components/Placeholder/Placeholder.vue'
 import AdminInput from '~/components/AdminInput.vue'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
 

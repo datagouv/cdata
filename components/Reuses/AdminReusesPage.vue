@@ -90,7 +90,7 @@ import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
 import type { PaginatedArray, ReuseSortedBy, SortDirection } from '~/types/types'
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const props = defineProps<{
   organization?: Organization | null

@@ -172,7 +172,7 @@ const emit = defineEmits<{
 const raw = ref(false)
 const onChange = useDebounceFn((markdown: string) => emit('change', markdown), 300)
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const pluginViewFactory = usePluginViewFactory()
 const widgetViewFactory = useWidgetViewFactory()

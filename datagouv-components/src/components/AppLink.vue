@@ -23,9 +23,10 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import type { RouteLocationRaw } from 'vue-router'
 import { useComponentsConfig } from '../config'
+import { useTranslation } from '../composables/useTranslation'
 
 const config = useComponentsConfig()
-const { locale } = useI18n()
+const { locale } = useTranslation()
 
 const props = defineProps<{
   to: string | RouteLocationRaw
@@ -43,7 +44,7 @@ const to = computed(() => {
   if (isExternal.value) return props.to
 
   // TODO harden this for path not starting with "/"x
-  if (typeof props.to === 'string') return `/${locale.value}${props.to}`
+  if (typeof props.to === 'string') return `/${locale}${props.to}`
 
   return props.to
 })

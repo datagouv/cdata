@@ -323,7 +323,7 @@ type Facets = {
 }
 
 const { $api } = useNuxtApp()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const { toast } = useToast()
 

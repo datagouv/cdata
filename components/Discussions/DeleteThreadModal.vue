@@ -71,7 +71,7 @@ const emit = defineEmits<{
   deleted: []
 }>()
 
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const loading = ref(false)

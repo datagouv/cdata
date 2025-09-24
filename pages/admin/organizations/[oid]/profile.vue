@@ -86,7 +86,7 @@ defineEmits<{
 }>()
 
 const localPath = useLocalePath()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 
 const organizationUrl = computed(() => `/admin/organizations/${props.organization?.id}/profile`)
 </script>

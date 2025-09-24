@@ -160,7 +160,7 @@ import CopyButton from './CopyButton.vue'
 const props = defineProps<{
   dataset: DatasetV2 | Dataset
 }>()
-const { t } = await useTranslation()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 // const embedText = useOEmbed('dataset', props.dataset.id)
 const textAreaRef = ref<HTMLTextAreaElement | null>(null)
