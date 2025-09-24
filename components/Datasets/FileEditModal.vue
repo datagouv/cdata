@@ -33,6 +33,7 @@
           :style="{ width: `${resourceForm.file.state.percentage_between_0_and_1 * 100}%` }"
         />
       </div>
+
       <DescribeResource
         v-model="resourceForm"
         type="update"
@@ -45,7 +46,9 @@
     <template #footer="{ close }">
       <div class="w-full">
         <div class="w-full flex gap-4">
+          <!-- Confirmation modal only if file has changed -->
           <ModalWithButton
+            v-if="hasFileChanged"
             :title="$t('Êtes-vous sûr de vouloir modifier cette ressource ?')"
             size="lg"
           >
@@ -91,6 +94,18 @@
               </div>
             </template>
           </ModalWithButton>
+          
+          <!-- Simple validation button if file hasn't changed -->
+          <BrandedButton
+            v-else
+            color="primary"
+            :form="formId"
+            :loading
+            @click="confirmSubmit(close)"
+          >
+            {{ t('Valider') }}
+          </BrandedButton>
+          
           <BrandedButton
             color="secondary"
             :disabled="loading"
@@ -206,17 +221,65 @@ const route = useRoute()
 
 const resourceForm = ref(cloneDeep(props.resource))
 const open = ref(false)
+const hasFileChanged = ref(false)
+
+// Watch for file changes
+watch(() => {
+  if (resourceForm.value.filetype === 'file' && 'file' in resourceForm.value) {
+    return resourceForm.value.file?.raw
+  }
+  return null
+}, (newFile) => {
+  // console.log('[FileEditModal] File changed:', newFile ? `${newFile.name} (${newFile.size} bytes)` : 'null')
+  if (newFile) {
+    checkFileChange()
+  } else {
+    hasFileChanged.value = false
+  }
+})
+
+// Function to check if file has changed based on metadata
+const checkFileChange = () => {
+  if (resourceForm.value.filetype !== 'file' || !resourceForm.value.file?.raw || !props.resource.resource) {
+    hasFileChanged.value = false
+    return
+  }
+  
+  const newFile = resourceForm.value.file.raw
+  const original = props.resource.resource
+
+  // Compare file metadata
+  const sizeChanged = newFile.size !== original.filesize
+  const nameChanged = newFile.name !== original.title
+  const typeChanged = newFile.type !== original.mime
+  
+  hasFileChanged.value = sizeChanged || nameChanged || typeChanged
+  
+  // console.log('[FileEditModal] File change detection:', {
+  //   newFile: { name: newFile.name, size: newFile.size, type: newFile.type },
+  //   original: { title: original.title, filesize: original.filesize, mime: original.mime },
+  //   changes: { sizeChanged, nameChanged, typeChanged },
+  //   hasFileChanged: hasFileChanged.value
+  // })
+}
 
 onMounted(() => {
   if (props.openOnMounted) open.value = true
 })
+
 const setQueryString = () => {
   if (!props.resource.resource) return
   window.history.replaceState(null, '', `${route.path}?resource_id=${props.resource.resource.id}`)
 }
+
 const removeQueryString = () => {
   if (!props.resource.resource) return
   window.history.replaceState(null, '', `${route.path}`)
+  
+  // Reset the form when closing the modal to avoid false positives on next open
+  resourceForm.value = cloneDeep(props.resource)
+  hasFileChanged.value = false
+  // console.log('[FileEditModal] Modal closed - form and hasFileChanged reset')
 }
 
 const submit = (close: () => void) => {
@@ -226,6 +289,7 @@ const submit = (close: () => void) => {
 const confirmSubmit = (close: () => void) => {
   emit('submit', close, resourceForm.value)
 }
+
 const cancel = (close: () => void) => {
   resourceForm.value = cloneDeep(props.resource)
   close()
