@@ -1,14 +1,16 @@
 export type TranslationOptions = Record<string, string | number>
 
+const PLACEHOLDER_REGEX = /\{(\w+)\}/g
+
 function interpolate(text: string, values: Record<string, string | number>): string {
-  return text.replace(/\{(\w+)\}/g, (match, key) => {
+  return text.replace(PLACEHOLDER_REGEX, (match, key) => {
     return values[key] !== undefined ? String(values[key]) : match
   })
 }
 
 export function extractPlaceholders(text: string): string[] {
-  const regex = /\{(\w+)\}/g
   const placeholders: string[] = []
+  const regex = new RegExp(PLACEHOLDER_REGEX.source, PLACEHOLDER_REGEX.flags)
   let match
 
   while ((match = regex.exec(text)) !== null) {
@@ -20,7 +22,7 @@ export function extractPlaceholders(text: string): string[] {
 
 export function parseTextWithPlaceholders(text: string): Array<{ text?: string, placeholder?: string }> {
   const result: Array<{ text?: string, placeholder?: string }> = []
-  const regex = /\{(\w+)\}/g
+  const regex = new RegExp(PLACEHOLDER_REGEX.source, PLACEHOLDER_REGEX.flags)
   let lastIndex = 0
   let match
 
