@@ -135,7 +135,7 @@ export const useTranslation = () => {
     let result = key
 
     if (typeof options == 'number') {
-      options = { count: options }
+      options = { count: options, n: options }
     }
 
     // Try to get translation from loaded translations first
