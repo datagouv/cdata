@@ -33,6 +33,20 @@
           :style="{ width: `${resourceForm.file.state.percentage_between_0_and_1 * 100}%` }"
         />
       </div>
+
+      <!-- File change alert -->
+      <div 
+        v-if="hasFileChanged"
+        class="fr-alert fr-alert--info fr-mb-2w"
+      >
+        <p class="fr-alert__title">
+          {{ $t('Fichier modifié détecté') }}
+        </p>
+        <p>
+          {{ $t('Ce fichier est différent de celui actuellement stocké.') }}
+        </p>
+      </div>
+
       <DescribeResource
         v-model="resourceForm"
         type="update"
@@ -45,7 +59,9 @@
     <template #footer="{ close }">
       <div class="w-full">
         <div class="w-full flex gap-4">
+          <!-- Confirmation modal only if file has changed -->
           <ModalWithButton
+            v-if="hasFileChanged"
             :title="$t('Êtes-vous sûr de vouloir modifier cette ressource ?')"
             size="lg"
           >
@@ -91,6 +107,18 @@
               </div>
             </template>
           </ModalWithButton>
+          
+          <!-- Simple validation button if file hasn't changed -->
+          <BrandedButton
+            v-else
+            color="primary"
+            :form="formId"
+            :loading
+            @click="confirmSubmit(close)"
+          >
+            {{ t('Valider') }}
+          </BrandedButton>
+          
           <BrandedButton
             color="secondary"
             :disabled="loading"
@@ -206,9 +234,73 @@ const route = useRoute()
 
 const resourceForm = ref(cloneDeep(props.resource))
 const open = ref(false)
+const hasFileChanged = ref(false)
 
 onMounted(() => {
   if (props.openOnMounted) open.value = true
+  
+  // Debug: Log current resource file information
+  console.log('FileEditModal - Current resource file info:', {
+    resourceForm: resourceForm.value,
+    originalResource: props.resource.resource,
+    filetype: resourceForm.value.filetype,
+    hasFile: !!resourceForm.value.file,
+    fileInfo: resourceForm.value.file,
+    checksum: props.resource.resource?.checksum,
+    filesize: props.resource.resource?.filesize,
+    title: props.resource.resource?.title
+  })
+  
+  // Debug: Log the complete originalResource structure
+  console.log('FileEditModal - Complete originalResource:', props.resource.resource)
+  console.log('FileEditModal - originalResource JSON:', JSON.stringify(props.resource.resource, null, 2))
+  
+  // Function to check if file has changed based on metadata
+  const checkFileChange = () => {
+    if (!resourceForm.value.file?.raw || !props.resource.resource) {
+      hasFileChanged.value = false
+      console.log('File change check skipped - no file or original resource')
+      return
+    }
+    
+    const newFile = resourceForm.value.file.raw
+    const original = props.resource.resource
+    
+    // Compare file metadata
+    const sizeChanged = newFile.size !== original.filesize
+    const nameChanged = newFile.name !== original.title
+    const typeChanged = newFile.type !== original.mime
+    
+    hasFileChanged.value = sizeChanged || nameChanged || typeChanged
+    
+    console.log('File change detection:', {
+      newFile: {
+        name: newFile.name,
+        size: newFile.size,
+        type: newFile.type
+      },
+      original: {
+        title: original.title,
+        filesize: original.filesize,
+        mime: original.mime
+      },
+      changes: {
+        sizeChanged,
+        nameChanged,
+        typeChanged
+      },
+      hasFileChanged: hasFileChanged.value
+    })
+  }
+  
+  // Watch for file changes
+  watch(() => resourceForm.value.file?.raw, (newFile) => {
+    if (newFile) {
+      checkFileChange()
+    } else {
+      hasFileChanged.value = false
+    }
+  })
 })
 const setQueryString = () => {
   if (!props.resource.resource) return
