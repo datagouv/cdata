@@ -44,7 +44,7 @@
             <a
               href="#"
               class="text-blue-600 underline"
-            >ce lien</a>
+            >{{ $t('ce lien') }}</a>
           </template>
         </TranslationT>
       </p>
@@ -96,7 +96,7 @@
 <script setup lang="ts">
 import TranslationT from '~/components/TranslationT.vue'
 
-const { t } = useTranslation()
+const { t } = await useTranslation()
 
 const messageFromComposable = computed(() => t('Message depuis le composable'))
 </script>

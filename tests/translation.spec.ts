@@ -82,4 +82,26 @@ test.describe('Système de traduction', () => {
     await expect(page.locator('p').filter({ hasText: 'Test TranslationT avec pluralisation :' }))
       .toContainText('10 résultats trouvés')
   })
+
+  test('Should translate to English when Accept-Language is en', async ({ page }) => {
+    await page.setExtraHTTPHeaders({
+      'Accept-Language': 'en',
+    })
+
+    await page.goto('/design/translations')
+
+    // Verify basic translation via $t
+    await expect(page.locator('p').filter({ hasText: 'Test dans le template avec $t' }))
+      .toContainText('Hello world')
+
+    // Verify translation via composable
+    await expect(page.locator('p').filter({ hasText: 'Test depuis le composable' }))
+      .toContainText('Message from composable')
+
+    // Verify TranslationT component
+    await expect(page.locator('p').filter({ hasText: 'Test TranslationT avec slot' }))
+      .toContainText('Click on')
+    await expect(page.locator('p').filter({ hasText: 'Test TranslationT avec slot' }).locator('a'))
+      .toHaveText('this link')
+  })
 })

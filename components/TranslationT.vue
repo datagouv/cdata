@@ -32,7 +32,7 @@ const props = withDefaults(defineProps<{
 })
 
 const slots = useSlots()
-const { t } = useTranslation()
+const { t } = await useTranslation()
 
 const parts = computed(() => {
   const { keypath, tag, n, count, ...interpolations } = props
