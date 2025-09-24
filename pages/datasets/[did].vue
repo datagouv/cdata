@@ -503,7 +503,7 @@ const datasetVisitsTotal = ref(0)
 const datasetDownloadsResourcesTotal = ref(0)
 
 watchEffect(async () => {
-  if (!dataset.value.id) return
+  if (!dataset.value || !dataset.value.id) return
   // Fetching last 12 months
   const response = await fetch(
     `${config.public.metricsApi}/api/datasets/data/?dataset_id__exact=${dataset.value.id}&metric_month__sort=desc&page_size=12`,
