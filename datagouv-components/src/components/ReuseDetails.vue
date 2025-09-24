@@ -30,7 +30,6 @@
 
 <script setup lang="ts">
 import { RiEyeLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
-import { useI18n } from 'vue-i18n'
 import { useReuseType } from '../composables/useReuseType'
 import { summarize } from '../functions/helpers'
 import type { Reuse } from '../types/reuses'
@@ -39,7 +38,7 @@ const props = defineProps<{
   reuse: Reuse
 }>()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 const { label: reuseType } = useReuseType(() => props.reuse.type)
 </script>

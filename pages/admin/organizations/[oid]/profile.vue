@@ -74,7 +74,6 @@
 <script setup lang="ts">
 import { BrandedButton, isOrganizationCertified, type Organization } from '@datagouv/components-next'
 import { RiEyeLine } from '@remixicon/vue'
-import { useI18n } from 'vue-i18n'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import PaddedContainer from '~/components/PaddedContainer/PaddedContainer.vue'
@@ -87,7 +86,7 @@ defineEmits<{
 }>()
 
 const localPath = useLocalePath()
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 const organizationUrl = computed(() => `/admin/organizations/${props.organization?.id}/profile`)
 </script>

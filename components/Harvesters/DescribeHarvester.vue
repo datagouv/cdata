@@ -280,7 +280,7 @@ const emit = defineEmits<{
 }>()
 
 const model = defineModel<HarvesterForm>({ required: true })
-const { t } = useI18n()
+const { t } = await useTranslation()
 const config = useRuntimeConfig()
 
 onMounted(() => {

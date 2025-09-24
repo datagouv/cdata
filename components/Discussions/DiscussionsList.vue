@@ -132,7 +132,6 @@
 
 <script setup lang="ts">
 import { BrandedButton, Pagination, SimpleBanner } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
 import { RiAddLine, RiCloseCircleLine, RiSearchLine } from '@remixicon/vue'
 import { refDebounced } from '@vueuse/core'
 import NewDiscussionForm from './NewDiscussionForm.vue'
@@ -146,7 +145,7 @@ const props = defineProps<{
   closed?: number
 }>()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 const isClosed = ref(null as null | true | false)
 

@@ -360,7 +360,7 @@ const emit = defineEmits<{
   (event: 'feature' | 'submit'): void
 }>()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 const user = useMe()
 const config = useRuntimeConfig()

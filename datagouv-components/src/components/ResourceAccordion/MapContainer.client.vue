@@ -16,7 +16,6 @@
 
 <script setup lang = "ts">
 import { onMounted, ref, useTemplateRef } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiErrorWarningLine } from '@remixicon/vue'
 
 import View from 'ol/View'
@@ -40,7 +39,7 @@ import type { Resource } from '../../types/resources'
 
 const props = defineProps<{ resource: Resource }>()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 let map = null
 const mapRef = useTemplateRef('mapRef')

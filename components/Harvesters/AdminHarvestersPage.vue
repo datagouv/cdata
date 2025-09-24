@@ -175,7 +175,6 @@
 import { Pagination, BrandedButton, type Organization, useFormatDate } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiPencilLine, RiSearchLine } from '@remixicon/vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
@@ -189,7 +188,7 @@ import { getHarvesterAdminUrl } from '~/utils/harvesters'
 const props = defineProps<{
   organization?: Organization | null
 }>()
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()

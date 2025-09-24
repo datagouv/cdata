@@ -16,22 +16,22 @@
           type="primary"
           :title="$t('Modifier la visibilité du jeu de données')"
         >
-          <i18n-t
+          <TranslationT
             v-if="dataset.private"
             keypath="Ce jeu de données est actuellement {status}. Seul vous ou les membres de votre organisation pouvez le voir et y contribuer."
           >
             <template #status>
               <strong>{{ $t('privé') }}</strong>
             </template>
-          </i18n-t>
-          <i18n-t
+          </TranslationT>
+          <TranslationT
             v-else
             keypath="Ce jeu de données est actuellement {status}. N'importe qui sur Internet peut voir ce jeu de données."
           >
             <template #status>
               <strong>{{ $t('public') }}</strong>
             </template>
-          </i18n-t>
+          </TranslationT>
 
           <template #button>
             <BrandedButton
@@ -132,9 +132,10 @@ import type { DatasetV2, Frequency, License } from '@datagouv/components-next'
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
+import TranslationT from '~/components/TranslationT.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { $api } = useNuxtApp()
 const config = useRuntimeConfig()
 

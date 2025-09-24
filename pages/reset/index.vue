@@ -73,7 +73,7 @@ definePageMeta({
   matomoIgnore: true,
 })
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const config = useRuntimeConfig()
 
 useSeoMeta({ title: t('Réinitialiser le mot de passe') })

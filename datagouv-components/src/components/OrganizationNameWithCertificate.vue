@@ -37,7 +37,6 @@
 
 <script setup lang="ts">
 import { RiCheckboxCircleLine } from '@remixicon/vue'
-import { useI18n } from 'vue-i18n'
 import { getOrganizationType, isOrganizationCertified } from '../functions/organizations'
 import type { Organization } from '../types/organizations'
 import { useComponentsConfig } from '../config'
@@ -46,7 +45,7 @@ import Tooltip from './Tooltip.vue'
 
 const config = useComponentsConfig()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 withDefaults(defineProps<{
   organization: Organization
   showAcronym?: boolean

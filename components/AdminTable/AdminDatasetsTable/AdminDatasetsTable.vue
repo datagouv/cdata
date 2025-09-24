@@ -142,7 +142,6 @@
 <script setup lang="ts">
 import { DatasetQualityScore, DatasetQualityTooltipContent, BrandedButton, AvatarWithName, Tooltip, useFormatDate } from '@datagouv/components-next'
 import type { Dataset, DatasetV2 } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '../../AdminBadge/AdminBadge.vue'
 import AdminContentWithTooltip from '../../AdminContentWithTooltip/AdminContentWithTooltip.vue'
@@ -164,7 +163,7 @@ const props = withDefaults(defineProps<{
   activities: () => ({}),
 })
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { formatDate } = useFormatDate()
 const { getDatasetStatus } = useDatasetStatus()
 

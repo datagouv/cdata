@@ -53,7 +53,6 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, useTemplateRef } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiErrorWarningLine, RiExternalLinkFill } from '@remixicon/vue'
 import { Protocol, PMTiles } from 'pmtiles'
 import maplibregl from 'maplibre-gl'
@@ -69,7 +68,7 @@ import franceSvg from './france.svg?raw'
 
 const props = defineProps<{ resource: Resource }>()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { formatDate } = useFormatDate()
 
 const config = useComponentsConfig()

@@ -46,7 +46,7 @@ import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { Post, PostForm } from '~/types/posts'
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const route = useRoute()
 const localePath = useLocalePath()
 const { $api, $fileApi } = useNuxtApp()

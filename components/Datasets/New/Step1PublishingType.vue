@@ -12,14 +12,13 @@
         class="fr-icon-info-line fr-mr-1w"
         aria-hidden="true"
       />
-      <i18n-t
+      <TranslationT
         keypath="Si vous souhaitez faire des tests, utilisez plutôt {demo_server}."
-        scope="global"
       >
         <template #demo_server>
           <a :href="config.public.demoServer.url">{{ config.public.demoServer.name }}</a>
         </template>
-      </i18n-t>
+      </TranslationT>
     </SimpleBanner>
 
     <div class="fr-grid-row fr-grid-row--gutters">
@@ -129,6 +128,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import TranslationT from '../TranslationT.vue'
 import ActionCard from '~/components/ActionCard/ActionCard.vue'
 
 defineEmits<{

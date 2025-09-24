@@ -300,7 +300,6 @@
 import { BrandedButton, getOrganizationTypes, Pagination, OTHER, USER } from '@datagouv/components-next'
 import type { DatasetV2, License, Organization, OrganizationTypes, RegisteredSchema, TranslatedBadge } from '@datagouv/components-next'
 import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiCloseCircleLine, RiDownloadLine } from '@remixicon/vue'
 import { computedAsync, debouncedRef, useUrlSearchParams } from '@vueuse/core'
 import SearchInput from '~/components/Search/SearchInput.vue'
@@ -324,7 +323,7 @@ type Facets = {
 }
 
 const { $api } = useNuxtApp()
-const { t } = useI18n()
+const { t } = await useTranslation()
 const config = useRuntimeConfig()
 const { toast } = useToast()
 

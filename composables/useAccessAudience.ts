@@ -2,7 +2,7 @@ import type { DataserviceAccessAudienceCondition, DataserviceAccessAudienceType 
 import { RiCheckDoubleLine, RiCheckLine, RiCloseLine } from '@remixicon/vue'
 
 export function useAccessAudience() {
-  const { t } = useI18n()
+  const { t } = await useTranslation()
 
   const getAccessAudienceCondition = (condition: DataserviceAccessAudienceCondition) => {
     return {

@@ -128,7 +128,6 @@
 
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
 import { RiEyeLine, RiLockLine, RiPassValidLine, RiSparklingLine, RiStarLine, RiSubtractLine, RiTerminalLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../config'
@@ -164,7 +163,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const dataserviceUrl = computed(() => props.dataserviceUrl || props.dataservice.self_web_url)
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
 const ownerName = computed(() => getOwnerName(props.dataservice))
 const showBadge = computed(() => props.dataservice.access_type === 'restricted' || props.dataservice.access_type === 'open_with_account' || props.dataservice.private || props.dataservice.archived_at)

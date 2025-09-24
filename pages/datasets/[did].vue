@@ -306,7 +306,7 @@
                 "
                 type="primary-frame"
               >
-                <i18n-t
+                <TranslationT
                   keypath="Consulter ce jeu de données sur {link} pour bénéficier d'informations supplémentaires : validations, visualisations, etc."
                   tag="p"
                   class="!m-0 text-sm"
@@ -318,7 +318,7 @@
                       }}
                     </CdataLink>
                   </template>
-                </i18n-t>
+                </TranslationT>
               </SimpleBanner>
             </dl>
           </div>
@@ -397,6 +397,7 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
+import TranslationT from '~/components/TranslationT.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const config = useRuntimeConfig()

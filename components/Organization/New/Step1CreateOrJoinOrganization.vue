@@ -37,9 +37,8 @@
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 defineEmits<{
   (event: 'start'): void

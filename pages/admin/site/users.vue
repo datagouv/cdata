@@ -135,7 +135,6 @@
 import { Pagination, useFormatDate, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import type { DiscussionSortedBy } from '~/types/discussions'
@@ -146,7 +145,7 @@ import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import AdminInput from '~/components/AdminInput.vue'
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const config = useRuntimeConfig()
 const { formatDate } = useFormatDate()
 

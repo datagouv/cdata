@@ -3,7 +3,7 @@ import type { Activity } from '~/types/activity'
 import type { PaginatedArray } from '~/types/types'
 
 export function getActivityTranslation(activity: Activity) {
-  const { t } = useI18n()
+  const { t } = await useTranslation()
   return {
     'dataset:created': t('Création du jeu de données'),
     'dataset:updated': t('Mise à jour du jeu de données'),

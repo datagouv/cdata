@@ -61,7 +61,7 @@ import PreviewStep from '~/components/Harvesters/PreviewStep.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { HarvesterForm, HarvesterSource } from '~/types/harvesters'
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const route = useRoute()
 const { $api } = useNuxtApp()
 

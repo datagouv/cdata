@@ -1,4 +1,3 @@
-import { useI18n } from 'vue-i18n'
 import type { Component } from 'vue'
 import { RiBankLine, RiBuilding2Line, RiCommunityLine, RiGovernmentLine, RiUserLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../config'
@@ -31,7 +30,7 @@ export function hasBadge(organization: Organization, kind: string) {
 }
 
 export function getOrganizationTypes(): Array<{ type: OrganizationTypes | UserType, label: string, icon: Component | null }> {
-  const { t } = useI18n()
+  const { t } = await useTranslation()
   return [{
     type: PUBLIC_SERVICE,
     label: t('Service public'),

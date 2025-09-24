@@ -338,39 +338,36 @@
                     <div class="absolute inset-0" />
                   </CdataLink>
                 </h5>
-                <i18n-t
+                <TranslationT
                   v-if="platform.name === 'ecologie'"
                   tag="p"
                   class="mb-0 text-gray-silver"
                   keypath="Les données de la transition écologique portées par le {name}."
-                  scope="global"
                 >
                   <template #name>
                     <strong>Ministère de la Transition écologique et de la Cohésion des territoires</strong>
                   </template>
-                </i18n-t>
-                <i18n-t
+                </TranslationT>
+                <TranslationT
                   v-if="platform.name === 'transport'"
                   tag="p"
                   class="mb-0 text-gray-silver"
                   keypath="Les données de mobilité en partenariat avec la {name}."
-                  scope="global"
                 >
                   <template #name>
                     <strong>Direction Générale des Infrastructures, des Transports et des Mobilités</strong>
                   </template>
-                </i18n-t>
-                <i18n-t
+                </TranslationT>
+                <TranslationT
                   v-if="platform.name === 'météo'"
                   tag="p"
                   class="mb-0 text-gray-silver"
                   keypath="Les données publiques relatives à la météorologie et à la climatologie produites par {name}."
-                  scope="global"
                 >
                   <template #name>
                     <strong>Météo-France</strong>
                   </template>
-                </i18n-t>
+                </TranslationT>
               </div>
             </div>
           </div>
@@ -425,13 +422,14 @@
 <script setup lang="ts">
 import { BrandedButton, summarize, useFormatDate, type Site } from '@datagouv/components-next'
 import { RiArrowRightLine, RiBardLine, RiLineChartLine, RiSearchLine, RiVipDiamondLine } from '@remixicon/vue'
+import TranslationT from '~/components/TranslationT.vue'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 
 useSeoMeta({ title: 'Accueil — data.gouv.fr' })
 
 const config = useRuntimeConfig()
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { formatDate } = useFormatDate()
 
 const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts')

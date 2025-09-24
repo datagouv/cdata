@@ -194,7 +194,7 @@ const emit = defineEmits<{
 
 const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extensions/')
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 const publishFileAccordionId = useId()
 const addDescriptionAccordionId = useId()

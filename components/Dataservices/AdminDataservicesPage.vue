@@ -93,7 +93,6 @@ import { BrandedButton } from '@datagouv/components-next'
 import { Pagination, type Dataservice, type Organization, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiDownloadLine, RiSearchLine } from '@remixicon/vue'
 import AdminInput from '../AdminInput.vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
@@ -102,7 +101,7 @@ import AdminDataservicesTable from '~/components/AdminTable/AdminDataservicesTab
 import type { DataserviceSortedBy, PaginatedArray, SortDirection } from '~/types/types'
 import type { Activity } from '~/types/activity'
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { $api } = useNuxtApp()
 
 const config = useRuntimeConfig()

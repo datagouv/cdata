@@ -98,7 +98,7 @@ import type { HarvesterForm, HarvesterJob, HarvesterSource } from '~/types/harve
 
 const route = useRoute()
 const { $api } = useNuxtApp()
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { toast } = useToast()
 
 const sourceUrl = computed(() => `/api/1/harvest/source/${route.params.id}`)

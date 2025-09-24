@@ -4,13 +4,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
   range: { start: string, end: string | null }
 }>()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 const start = computed(() => new Date(props.range.start))
 const end = computed(() => props.range.end ? new Date(props.range.end) : null)

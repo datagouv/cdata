@@ -83,7 +83,6 @@
 import { Pagination, type Organization, type Reuse, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiSearchLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import AdminReusesTable from '../AdminTable/AdminReusesTable/AdminReusesTable.vue'
@@ -91,7 +90,7 @@ import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
 import type { PaginatedArray, ReuseSortedBy, SortDirection } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 const props = defineProps<{
   organization?: Organization | null

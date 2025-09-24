@@ -1,6 +1,5 @@
 import { readonly, type Component } from 'vue'
 
-import { useI18n } from 'vue-i18n'
 import { RiEarthLine, RiMap2Line } from '@remixicon/vue'
 import Archive from '../components/Icons/Archive.vue'
 import Code from '../components/Icons/Code.vue'
@@ -90,7 +89,7 @@ export const RESOURCE_TYPE = readonly(['main', 'documentation', 'update', 'api',
 export type ResourceType = typeof RESOURCE_TYPE[number]
 
 export const getResourceLabel = (type: ResourceType) => {
-  const { t } = useI18n()
+  const { t } = await useTranslation()
   switch (type) {
     case 'main':
       return t('Fichier principal') // TODO: manage the plural case

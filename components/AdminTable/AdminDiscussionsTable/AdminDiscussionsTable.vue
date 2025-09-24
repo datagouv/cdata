@@ -140,7 +140,6 @@
 
 <script setup lang="ts">
 import { AvatarWithName, BrandedButton, useFormatDate } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
 import { RiEyeLine } from '@remixicon/vue'
 import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
@@ -160,7 +159,7 @@ defineEmits<{
   (event: 'refresh'): void
 }>()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { formatDate } = useFormatDate()
 const { $api } = useNuxtApp()
 

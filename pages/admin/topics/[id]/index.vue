@@ -50,7 +50,7 @@ const { form, validate, getFirstError, getFirstWarning } = useForm({
 
 const { $api } = useNuxtApp()
 const { toast } = useToast()
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 const save = async () => {
   if (await validate()) {

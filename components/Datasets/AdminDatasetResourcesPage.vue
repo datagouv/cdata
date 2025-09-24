@@ -194,7 +194,6 @@
 
 <script setup lang="ts">
 import { getResourceLabel, BrandedButton, Pagination, Tooltip, useFormatDate, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
 import { RiArrowDownLine, RiArrowUpLine, RiCheckLine, RiDraggable } from '@remixicon/vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { useTemplateRef } from 'vue'
@@ -232,7 +231,7 @@ const refreshResources = async () => {
 }
 watchEffect(async () => await refreshResources())
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 const resourceForms = ref<Array<ResourceForm>>([])
 const loading = ref(false)

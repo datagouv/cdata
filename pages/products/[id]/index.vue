@@ -389,7 +389,7 @@ const switchTab = (index: number) => {
   }
 }
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 useSeoMeta({ title: card.value ? ' Produit ' + card.value.product : t('Produit') })
 </script>
 

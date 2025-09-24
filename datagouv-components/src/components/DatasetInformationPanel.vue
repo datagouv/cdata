@@ -146,7 +146,6 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useFormatDate } from '../functions/dates'
 // import useOEmbed from '../../composables/useOEmbed'
 import type { Dataset, DatasetV2 } from '../types/datasets'
@@ -161,7 +160,7 @@ import CopyButton from './CopyButton.vue'
 const props = defineProps<{
   dataset: DatasetV2 | Dataset
 }>()
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { formatDate } = useFormatDate()
 // const embedText = useOEmbed('dataset', props.dataset.id)
 const textAreaRef = ref<HTMLTextAreaElement | null>(null)

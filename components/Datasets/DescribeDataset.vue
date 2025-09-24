@@ -593,7 +593,7 @@ const emit = defineEmits<{
   submit: []
 }>()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const config = useRuntimeConfig()
 
 const user = useMe()

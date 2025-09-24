@@ -91,7 +91,7 @@
             class="fr-label"
             :for="acceptConditionsId"
           >
-            <i18n-t
+            <TranslationT
               keypath="J'ai lu et j'accepte {link}"
               tag="p"
               class="fr-m-0 fr-mb-1w"
@@ -99,7 +99,7 @@
               <template #link>
                 <CdataLink to="/pages/legal/cgu">{{ $t('les conditions générales d\'utilisation du service') }}</CdataLink>
               </template>
-            </i18n-t>
+            </TranslationT>
           </label>
           <p
             v-if="getAllErrorsInErrorFields(errors, 'accept_conditions')"
@@ -143,6 +143,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import TranslationT from '~/components/TranslationT.vue'
 import type { FieldsErrors } from '~/types/form'
 
 definePageMeta({
@@ -150,7 +151,7 @@ definePageMeta({
 })
 
 const config = useRuntimeConfig()
-const { t } = useI18n()
+const { t } = await useTranslation()
 const route = useRoute()
 
 useSeoMeta({ title: t('S\'enregistrer') })

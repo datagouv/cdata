@@ -490,7 +490,7 @@
             size="lg"
             :opened="openConfirmModal"
           >
-            <i18n-t
+            <TranslationT
               keypath="Une documentation OpenAPI/swagger est un standard attendu par les utilisateurs d'API. Ce format est facile à mettre en place, vous pouvez utiliser l'éditeur officiel : {editor}."
               tag="p"
             >
@@ -500,7 +500,7 @@
                   class="whitespace-nowrap"
                 > https://editor.swagger.io/</a>
               </template>
-            </i18n-t>
+            </TranslationT>
 
             <p>{{ $t(`Si néanmoins vous souhaitez tout de même publier votre API sans ce standard, celle-ci sera moins mise en avant par le moteur de recherche de {site}.`, { site: config.public.title }) }}</p>
 
@@ -535,6 +535,7 @@ import { BrandedButton, SimpleBanner, type DataserviceAccessAudienceCondition, t
 import { RiAddLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import ModalClient from '../Modal/Modal.client.vue'
+import TranslationT from '../TranslationT.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
@@ -553,7 +554,7 @@ const emit = defineEmits<{
   (event: 'feature' | 'submit'): void
 }>()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 const formId = useId()
 

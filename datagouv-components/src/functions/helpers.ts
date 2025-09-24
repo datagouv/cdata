@@ -1,5 +1,3 @@
-import { useI18n } from 'vue-i18n'
-
 export const filesize = (val: number) => {
   const { t, locale } = useI18n()
   const suffix = t('o')

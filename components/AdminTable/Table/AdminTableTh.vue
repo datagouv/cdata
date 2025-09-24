@@ -31,7 +31,6 @@
 import { BrandedButton } from '@datagouv/components-next'
 import { RiArrowDownLine, RiArrowUpLine } from '@remixicon/vue'
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type { SortDirection } from '~/types/types'
 </script>
 
@@ -47,7 +46,7 @@ const emit = defineEmits<{
   (event: 'sort', direction: SortDirection): void
 }>()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 const sortable = computed(() => props.sorted !== undefined)
 

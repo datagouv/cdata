@@ -37,7 +37,7 @@ import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import DescribePost from '~/components/Posts/DescribePost.vue'
 import type { Post, PostForm } from '~/types/posts'
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { $api, $fileApi } = useNuxtApp()
 const { toast } = useToast()
 

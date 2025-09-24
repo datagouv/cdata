@@ -31,7 +31,7 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import type { OrganizationSearchParams } from '~/types/form'
 import type { PaginatedArray } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 useSeoMeta({
   title: t('Organisations'),

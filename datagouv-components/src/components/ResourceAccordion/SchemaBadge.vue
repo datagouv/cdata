@@ -97,7 +97,6 @@
 <script setup lang="ts">
 import { RiInformationLine } from '@remixicon/vue'
 import { computed, onMounted, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type { Resource } from '../../types/resources'
 import Toggletip from '../Toggletip.vue'
 import type { RegisteredSchema, ValidataError } from '../../functions/schemas'
@@ -107,7 +106,7 @@ const props = defineProps<{
   resource: Resource
 }>()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const getSchemaValidationUrl = useGetSchemaValidationUrl()
 const getSchemaDocumentation = useGetSchemaDocumentation()
 const getCatalog = useGetCatalog()

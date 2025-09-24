@@ -90,7 +90,6 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import { AnimatedLoader, BannerAction, BrandedButton } from '@datagouv/components-next'
 import type { Organization, Badge } from '@datagouv/components-next'
@@ -104,7 +103,7 @@ const emit = defineEmits<{
   refresh: []
 }>()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { toast } = useToast()
 const { $api } = useNuxtApp()
 const { start, finish, isLoading } = useLoadingIndicator()

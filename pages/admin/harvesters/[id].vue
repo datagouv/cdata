@@ -158,7 +158,7 @@ import TabLinks from '~/components/TabLinks.vue'
 import type { HarvesterJob, HarvesterSource } from '~/types/harvesters'
 
 const config = useRuntimeConfig()
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { $api } = useNuxtApp()
 const { toast } = useToast()
 

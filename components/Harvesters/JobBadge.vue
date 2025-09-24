@@ -16,7 +16,7 @@ const props = defineProps<{
   job: HarvesterJob
 }>()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 const status = computed<{ label: string, type: AdminBadgeType }>(() => {
   switch (props.job.status) {

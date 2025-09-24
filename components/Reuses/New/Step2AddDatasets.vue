@@ -54,5 +54,5 @@ defineEmits<{
 
 const datasets = defineModel<Array<Dataset | DatasetV2 | DatasetSuggest>>({ required: true })
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 </script>

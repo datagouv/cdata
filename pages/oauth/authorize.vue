@@ -9,9 +9,8 @@
           class="space-y-8"
         >
           <h1 class="text-2xl font-normal">
-            <i18n-t
+            <TranslationT
               keypath="{external} voudrait accéder à votre compte {site}."
-              scope="global"
             >
               <template #external>
                 <strong class="font-bold">{{ data.client.name }}</strong>
@@ -19,7 +18,7 @@
               <template #site>
                 <strong class="font-bold">{{ config.public.title }}</strong>
               </template>
-            </i18n-t>
+            </TranslationT>
           </h1>
 
           <hr>
@@ -90,12 +89,13 @@
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
+import TranslationT from '~/components/TranslationT.vue'
 
 definePageMeta({
   matomoIgnore: true,
 })
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const config = useRuntimeConfig()
 
 useSeoMeta({ title: t('Connexion') })

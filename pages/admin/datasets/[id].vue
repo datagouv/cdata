@@ -146,7 +146,7 @@ import TabLinks from '~/components/TabLinks.vue'
 import type { Activity } from '~/types/activity'
 import type { PaginatedArray } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const me = useMe()
 
 const route = useRoute()

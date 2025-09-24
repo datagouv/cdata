@@ -158,7 +158,6 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
 import { computed, ref, watchEffect } from 'vue'
 import { RiDownloadLine, RiEyeLine, RiLineChartLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
@@ -197,7 +196,7 @@ const props = withDefaults(defineProps<Props>(), {
   showDescription: true,
 })
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
 const ownerName = computed(() => getOwnerName(props.dataset))
 const config = useComponentsConfig()

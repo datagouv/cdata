@@ -151,7 +151,7 @@ import EditoHeader from '~/components/Pages/EditoHeader.vue'
 import PageShow from '~/components/Pages/PageShow.vue'
 import type { Page } from '~/types/pages'
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 useSeoMeta({
   title: t('Réutilisations'),
 })

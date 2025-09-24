@@ -277,7 +277,7 @@ import { RiBlueskyLine, RiGithubLine, RiLinkedinBoxLine, RiMastodonLine, RiRssLi
 
 const config = useRuntimeConfig()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 
 type Link = {
   label: string

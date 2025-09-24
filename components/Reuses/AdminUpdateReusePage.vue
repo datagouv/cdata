@@ -14,22 +14,22 @@
           type="primary"
           :title="$t('Modifier la visibilité de la réutilisation')"
         >
-          <i18n-t
+          <TranslationT
             v-if="reuse.private"
             keypath="Cette réutilisation est actuellement {status}. Seul vous ou les membres de votre organisation pouvez la voir et y contribuer."
           >
             <template #status>
               <strong>{{ $t('privée') }}</strong>
             </template>
-          </i18n-t>
-          <i18n-t
+          </TranslationT>
+          <TranslationT
             v-else
             keypath="Cette réutilisation est actuellement {status}. N'importe qui sur Internet peut voir cette réutilisation."
           >
             <template #status>
               <strong>{{ $t('publique') }}</strong>
             </template>
-          </i18n-t>
+          </TranslationT>
 
           <template #button>
             <BrandedButton
@@ -139,10 +139,11 @@
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import type { Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
+import TranslationT from '../TranslationT.vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
 import type { ReuseForm } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { $api, $fileApi } = useNuxtApp()
 const { toast } = useToast()
 

@@ -43,7 +43,7 @@ defineProps<{
 }>()
 const tags = defineModel<Array<Tag>>({ required: true })
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const { $api } = useNuxtApp()
 
 async function suggestTags(query: string) {

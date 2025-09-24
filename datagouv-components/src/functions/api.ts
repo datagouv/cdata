@@ -1,6 +1,5 @@
 import { ref, toValue, watchEffect, type ComputedRef, type Ref } from 'vue'
 import { ofetch } from 'ofetch'
-import { useI18n } from 'vue-i18n'
 import { useComponentsConfig } from '../config'
 import type { AsyncData, AsyncDataExecuteOptions, AsyncDataRequestStatus, UseFetchOptions } from './api.types'
 

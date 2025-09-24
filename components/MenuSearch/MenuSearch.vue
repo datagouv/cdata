@@ -55,12 +55,11 @@
                 :is="item.icon"
                 class="h-4 w-4"
               />
-              <i18n-t
+              <TranslationT
                 v-if="query"
                 keypath="Rechercher « {query} » dans les {type}"
                 class="flex-1"
                 tag="div"
-                scope="global"
               >
                 <template #query>
                   <em>{{ query }}</em>
@@ -68,18 +67,17 @@
                 <template #type>
                   <strong>{{ item.type }}</strong>
                 </template>
-              </i18n-t>
-              <i18n-t
+              </TranslationT>
+              <TranslationT
                 v-else
                 keypath="Commencer à taper pour rechercher parmi les {type}"
                 class="flex-1"
                 tag="div"
-                scope="global"
               >
                 <template #type>
                   <strong>{{ item.type }}</strong>
                 </template>
-              </i18n-t>
+              </TranslationT>
               <div aria-hidden="true">
                 <RiArrowRightSLine class="h-4 w-4" />
               </div>
@@ -95,6 +93,7 @@
 import { RiArrowRightSLine, RiDatabase2Line, RiBuilding2Line, RiLineChartLine, RiRobot2Line, RiSearchLine } from '@remixicon/vue'
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions, TransitionRoot } from '@headlessui/vue'
 import type { Component } from 'vue'
+import TranslationT from '../TranslationT.vue'
 
 type Item = {
   icon: Component
@@ -107,7 +106,7 @@ const emit = defineEmits<{
   selected: []
 }>()
 
-const { t } = useI18n()
+const { t } = await useTranslation()
 const localePath = useLocalePath()
 const query = ref('')
 const selectedItem = ref<null | Item>(null)
