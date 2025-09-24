@@ -5,19 +5,22 @@
       :key="index"
     >
       <component
-        :is="part.slot"
-        v-if="part.slot"
+        :is="slots[part.placeholder]"
+        v-if="part.placeholder && slots[part.placeholder]"
       />
-      <template v-else>
+      <template v-else-if="part.text">
         {{ part.text }}
+      </template>
+      <template v-else-if="part.placeholder">
+        {{ '{' + part.placeholder + '}' }}
       </template>
     </template>
   </component>
 </template>
 
 <script setup lang="ts">
-import { computed, useSlots, type Slot } from 'vue'
-import { useTranslation } from '~/composables/useTranslation'
+import { computed, useSlots } from 'vue'
+import { useTranslation, parseTextWithPlaceholders } from '~/composables/useTranslation'
 
 const props = withDefaults(defineProps<{
   keypath: string
@@ -46,36 +49,7 @@ const parts = computed(() => {
   // Obtenir la traduction
   const translated = t(keypath, options)
 
-  // Parser la traduction pour identifier les slots
-  const result: Array<{ text?: string, slot?: Slot }> = []
-  const regex = /\{(\w+)\}/g
-  let lastIndex = 0
-  let match
-
-  while ((match = regex.exec(translated)) !== null) {
-    // Ajouter le texte avant le placeholder
-    if (match.index > lastIndex) {
-      result.push({ text: translated.slice(lastIndex, match.index) })
-    }
-
-    // Vérifier si c'est un slot ou une valeur interpolée
-    const slotName = match[1]
-    if (slots[slotName]) {
-      result.push({ slot: slots[slotName] })
-    }
-    else {
-      // Si ce n'est pas un slot, garder le texte interpolé
-      result.push({ text: match[0] })
-    }
-
-    lastIndex = regex.lastIndex
-  }
-
-  // Ajouter le reste du texte
-  if (lastIndex < translated.length) {
-    result.push({ text: translated.slice(lastIndex) })
-  }
-
-  return result
+  // Utiliser la fonction mutualisée pour parser le texte
+  return parseTextWithPlaceholders(translated)
 })
 </script>

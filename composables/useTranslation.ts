@@ -6,6 +6,46 @@ function interpolate(text: string, values: Record<string, string | number>): str
   })
 }
 
+// Extrait les placeholders {key} d'un texte
+export function extractPlaceholders(text: string): string[] {
+  const regex = /\{(\w+)\}/g
+  const placeholders: string[] = []
+  let match
+
+  while ((match = regex.exec(text)) !== null) {
+    placeholders.push(match[1])
+  }
+
+  return placeholders
+}
+
+// Parse un texte en parties pour le composant TranslationT
+export function parseTextWithPlaceholders(text: string): Array<{ text?: string, placeholder?: string }> {
+  const result: Array<{ text?: string, placeholder?: string }> = []
+  const regex = /\{(\w+)\}/g
+  let lastIndex = 0
+  let match
+
+  while ((match = regex.exec(text)) !== null) {
+    // Ajouter le texte avant le placeholder
+    if (match.index > lastIndex) {
+      result.push({ text: text.slice(lastIndex, match.index) })
+    }
+
+    // Ajouter le placeholder
+    result.push({ placeholder: match[1] })
+
+    lastIndex = regex.lastIndex
+  }
+
+  // Ajouter le reste du texte
+  if (lastIndex < text.length) {
+    result.push({ text: text.slice(lastIndex) })
+  }
+
+  return result
+}
+
 function handlePluralization(key: string, count: number): string {
   // Séparer les formes avec |
   const parts = key.split('|').map(part => part.trim())
