@@ -62,7 +62,7 @@
             </template>
             <div class="fr-mt-4w">
               <p>
-                {{ $t('Attention : l\'') }} 
+                {{ $t(`Attention : l'`) }} 
                 <a 
                   :href="`https://tabular-api.data.gouv.fr/api/resources/${resource.resource?.id}/`"
                   target="_blank"
