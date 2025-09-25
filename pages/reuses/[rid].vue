@@ -175,7 +175,7 @@ import ReportModal from '~/components/Spam/ReportModal.vue'
 const route = useRoute()
 
 const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
-const { data: reuse, status } = await useAPI<Reuse>(url, { redirectOn404: true })
+const { data: reuse, status } = await useAPI<Reuse>(url, { redirectOn404: true, redirectOnSlug: 'rid' })
 
 const title = computed(() => reuse.value?.title)
 const robots = computed(() => reuse.value && !reuse.value.metrics.datasets && !reuse.value.metrics.datasets ? 'noindex, nofollow' : 'all')
