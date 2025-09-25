@@ -16,6 +16,7 @@
         </h1>
         <BrandedButton
           :href="post.page"
+          new-tab
           :icon="RiEyeLine"
           size="xs"
           color="secondary"
