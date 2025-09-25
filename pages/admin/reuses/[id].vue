@@ -25,6 +25,7 @@
         </h1>
         <BrandedButton
           :href="reuse.page"
+          new-tab
           color="secondary"
           size="xs"
           :icon="RiEyeLine"
