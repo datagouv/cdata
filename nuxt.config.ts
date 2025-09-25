@@ -10,7 +10,6 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/icon',
     '@nuxt/image',
-    '@nuxtjs/i18n',
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
   ],
@@ -44,10 +43,7 @@ export default defineNuxtConfig({
     pagesGhRepoName: 'datagouv/datagouvfr-pages',
     pagesGhRepoBranch: 'master',
     public: {
-      i18n: {
-        baseUrl: 'https://www.data.gouv.fr/', // NUXT_PUBLIC_I18N_BASE_URL
-      },
-
+      baseUrl: 'https://www.data.gouv.fr/',
       commitId: undefined,
       banner: undefined,
 
@@ -235,28 +231,6 @@ export default defineNuxtConfig({
     config: {
       stylistic: true,
     },
-  },
-  i18n: {
-    baseUrl: '',
-    locales: [
-      {
-        code: 'fr',
-        language: 'fr',
-      },
-      {
-        code: 'en',
-        language: 'en',
-      },
-      {
-        code: 'es',
-        language: 'es',
-      },
-    ],
-    lazy: true,
-    detectBrowserLanguage: false,
-    strategy: 'no_prefix',
-    trailingSlash: true,
-    defaultLocale: 'fr',
   },
   image: {
     screens: {

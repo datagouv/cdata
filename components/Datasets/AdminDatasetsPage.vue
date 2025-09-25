@@ -113,7 +113,6 @@
 import { BrandedButton, type DatasetV2, Pagination, type Organization, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiDownloadLine, RiSearchLine } from '@remixicon/vue'
 import TransferRequestList from '../TransferRequestList.vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
@@ -126,7 +125,7 @@ const props = defineProps<{
   organization?: Organization | null
   user?: User | null
 }>()
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()

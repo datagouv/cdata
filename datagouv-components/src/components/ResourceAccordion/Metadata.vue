@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
 import type { Resource } from '../../types/resources'
 import CopyButton from '../CopyButton.vue'
@@ -10,6 +9,7 @@ import { useFormatDate } from '../../functions/dates'
 import { filesize } from '../../functions/helpers'
 import ExtraAccordion from '../ExtraAccordion.vue'
 import { getResourceTitleId, getResourceLabel } from '../../functions/resources'
+import { useTranslation } from '../../composables/useTranslation'
 
 const props = defineProps<{
   resource: Resource
@@ -18,7 +18,7 @@ const props = defineProps<{
 const hasExtras = computed(() => Object.keys(props.resource.extras).length)
 const resourceTitleId = computed(() => getResourceTitleId(props.resource))
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 </script>
 

@@ -355,7 +355,7 @@
 
           <template #accordion>
             <HelpAccordion :title="$t('Sélectionner un schéma')">
-              <i18n-t
+              <TranslationT
                 keypath="Il est possible d'identifier un schéma de données existant en visitant le site web {schema}, qui référence une liste de schémas de données existants."
                 tag="p"
                 class="fr-m-0 fr-mb-1w"
@@ -363,7 +363,7 @@
                 <template #schema>
                   <a :href="config.public.schemasSite.url">{{ config.public.schemasSite.name }}</a>
                 </template>
-              </i18n-t>
+              </TranslationT>
             </HelpAccordion>
           </template>
         </LoadingBlock>
@@ -383,7 +383,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getResourceLabel, RESOURCE_TYPE, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, getResourceLabel, RESOURCE_TYPE, SimpleBanner, TranslationT } from '@datagouv/components-next'
 import type { SchemaResponseData } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
@@ -391,7 +391,7 @@ import FieldsetElement from '../Form/FieldsetElement.vue'
 import HelpAccordion from '../Form/HelpAccordion.vue'
 import type { CommunityResourceForm, ResourceForm } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
 

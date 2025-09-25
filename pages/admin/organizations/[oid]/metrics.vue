@@ -21,10 +21,10 @@
     <TabLinks
       class="mb-5"
       :links="[
-        { href: localPath(metricsUrl), label: $t('Organisation') },
-        { href: localPath(`${metricsUrl}/datasets/`), label: $t('Jeux de données') },
-        { href: localPath(`${metricsUrl}/dataservices/`), label: $t('API') },
-        { href: localPath(`${metricsUrl}/reuses/`), label: $t('Réutilisations') },
+        { href: metricsUrl, label: $t('Organisation') },
+        { href: `${metricsUrl}/datasets/`, label: $t('Jeux de données') },
+        { href: `${metricsUrl}/dataservices/`, label: $t('API') },
+        { href: `${metricsUrl}/reuses/`, label: $t('Réutilisations') },
       ]"
     />
 
@@ -49,7 +49,6 @@ defineEmits<{
   refresh: []
 }>()
 
-const localPath = useLocalePath()
 const { formatDate: _formatDate } = useFormatDate()
 
 const metricsUrl = computed(() => `/admin/organizations/${props.organization?.id}/metrics`)

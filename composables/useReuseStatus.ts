@@ -2,7 +2,7 @@ import type { Reuse } from '@datagouv/components-next'
 import type { AdminBadgeType } from '~/types/types'
 
 export function useReuseStatus() {
-  const { t } = useI18n()
+  const { t } = useTranslation()
 
   const getReuseStatus = (reuse: Reuse): { label: string, type: AdminBadgeType } => {
     if (reuse.deleted) {

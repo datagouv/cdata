@@ -13,7 +13,7 @@ import type { AdminBadgeType } from '~/types/types'
 
 const props = defineProps<{ dataservice: Dataservice }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const label = computed(() => {
   return {

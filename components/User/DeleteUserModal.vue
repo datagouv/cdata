@@ -62,12 +62,11 @@ const props = defineProps<{
   user: User
 }>()
 
-const localePath = useLocalePath()
 const me = useMe()
 const { $api } = useNuxtApp()
 const config = useRuntimeConfig()
 const { toast } = useToast()
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const loading = ref(false)
 
@@ -94,7 +93,7 @@ async function deleteUser({ spam = false }) {
     }
     else {
       toast.success(t('Utilisateur supprimé !'))
-      await navigateTo(localePath(`/admin/site/users`), { replace: true })
+      await navigateTo(`/admin/site/users`, { replace: true })
     }
   }
   finally {

@@ -306,7 +306,7 @@
                 "
                 type="primary-frame"
               >
-                <i18n-t
+                <TranslationT
                   keypath="Consulter ce jeu de données sur {link} pour bénéficier d'informations supplémentaires : validations, visualisations, etc."
                   tag="p"
                   class="!m-0 text-sm"
@@ -318,7 +318,7 @@
                       }}
                     </CdataLink>
                   </template>
-                </i18n-t>
+                </TranslationT>
               </SimpleBanner>
             </dl>
           </div>
@@ -392,6 +392,7 @@ import {
   RiExternalLinkFill,
   RiLockLine,
 } from '@remixicon/vue'
+import { TranslationT } from '@datagouv/components-next'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'

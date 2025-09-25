@@ -138,7 +138,7 @@ const datasetUrl = ref('')
 const urlError = ref<string | null>(null)
 useSortable(sortableRootRef, selectedSuggest)
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 
 const suggest = async (query: string): Promise<Array<TSuggest>> => {

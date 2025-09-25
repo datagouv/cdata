@@ -158,7 +158,6 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
 import { computed, ref, watchEffect } from 'vue'
 import { RiDownloadLine, RiEyeLine, RiLineChartLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
@@ -168,6 +167,7 @@ import { useFormatDate } from '../functions/dates'
 import { getOwnerName } from '../functions/owned'
 import { removeMarkdown } from '../functions/markdown'
 import { useComponentsConfig } from '../config'
+import { useTranslation } from '../composables/useTranslation'
 import DatasetQualityInline from './DatasetQualityInline.vue'
 import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
@@ -197,7 +197,7 @@ const props = withDefaults(defineProps<Props>(), {
   showDescription: true,
 })
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
 const ownerName = computed(() => getOwnerName(props.dataset))
 const config = useComponentsConfig()

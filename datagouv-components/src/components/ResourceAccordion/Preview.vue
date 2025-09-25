@@ -104,7 +104,6 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiArrowDownLine, RiArrowUpLine, RiErrorWarningLine, RiExternalLinkFill } from '@remixicon/vue'
 import Pagination from '../Pagination.vue'
 import { getData, type SortConfig } from '../../functions/tabularApi'
@@ -113,12 +112,13 @@ import type { Resource } from '../../types/resources'
 import { useComponentsConfig } from '../../config'
 import BrandedButton from '../BrandedButton.vue'
 import SimpleBanner from '../SimpleBanner.vue'
+import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
 import PreviewLoader from './PreviewLoader.vue'
 
 const props = defineProps<{ resource: Resource }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const rows = ref<Array<Record<string, unknown>>>([])

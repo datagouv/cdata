@@ -132,7 +132,6 @@
 
 <script setup lang="ts">
 import { BrandedButton, Pagination, SimpleBanner } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
 import { RiAddLine, RiCloseCircleLine, RiSearchLine } from '@remixicon/vue'
 import { refDebounced } from '@vueuse/core'
 import NewDiscussionForm from './NewDiscussionForm.vue'
@@ -146,7 +145,7 @@ const props = defineProps<{
   closed?: number
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const isClosed = ref(null as null | true | false)
 
@@ -159,7 +158,6 @@ const q = ref('')
 const qDebounced = refDebounced(q, 500) // TODO add 500 in config
 
 const me = useMaybeMe()
-const localePath = useLocalePath()
 
 const newDiscussion = ref(false)
 
@@ -173,7 +171,7 @@ const showDiscussionForm = () => {
     newDiscussion.value = true
   }
   else {
-    navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true })
+    navigateTo({ path: '/login', query: { next: route.fullPath } }, { external: true })
   }
 }
 

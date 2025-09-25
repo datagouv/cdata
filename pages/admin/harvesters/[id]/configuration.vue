@@ -98,7 +98,7 @@ import type { HarvesterForm, HarvesterJob, HarvesterSource } from '~/types/harve
 
 const route = useRoute()
 const { $api } = useNuxtApp()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { toast } = useToast()
 
 const sourceUrl = computed(() => `/api/1/harvest/source/${route.params.id}`)
@@ -152,7 +152,6 @@ const preview = async () => {
   })
 }
 
-const localePath = useLocalePath()
 const deleteHarvester = async () => {
   loading.value = true
   try {
@@ -161,10 +160,10 @@ const deleteHarvester = async () => {
     })
 
     if (harvester.value.organization) {
-      await navigateTo(localePath(`/admin/organizations/${harvester.value.organization.id}/harvesters`), { replace: true })
+      await navigateTo(`/admin/organizations/${harvester.value.organization.id}/harvesters`, { replace: true })
     }
     else {
-      await navigateTo(localePath(`/admin/me/datasets`), { replace: true })
+      await navigateTo(`/admin/me/datasets`, { replace: true })
     }
   }
   finally {

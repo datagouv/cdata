@@ -54,7 +54,6 @@ npm run lint:fix     # Automatically fix ESLint issues and format code
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) + [DSFR](https://www.systeme-de-design.gouv.fr/)
 - **State Management**: Vue 3 Composition API
-- **Internationalization**: [@nuxtjs/i18n](https://i18n.nuxtjs.org/)
 - **Build Tool**: [Vite](https://vitejs.dev/)
 - **Linting**: [ESLint](https://eslint.org/) + [Prettier](https://prettier.io/)
 
@@ -66,7 +65,7 @@ npm run lint:fix     # Automatically fix ESLint issues and format code
 - `NUXT_PUBLIC_COMMIT_ID`: Git commit ID (auto-generated in dev mode)
 - `NUXT_PUBLIC_SENTRY_DSN`: Sentry DSN for error tracking
 - `NUXT_TEMPLATE_CACHE_DURATION`: Duration for template caching
-- `NUXT_PUBLIC_I18N_BASE_URL`: Base URL for internationalization
+- `NUXT_PUBLIC_BASE_URL`: Base URL
 
 You can work on `cdata` without a local `udata` backend by pointing to https://demo.data.gouv.fr directly. Create a `.env` file at the root of the project:
 

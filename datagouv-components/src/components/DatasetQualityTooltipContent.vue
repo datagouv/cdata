@@ -65,15 +65,15 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import type { Quality } from '../types/datasets'
 import { useComponentsConfig } from '../config'
+import { useTranslation } from '../composables/useTranslation'
 import DatasetQualityItem from './DatasetQualityItem.vue'
 
 defineProps<{
   quality: Quality
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useComponentsConfig()
 </script>

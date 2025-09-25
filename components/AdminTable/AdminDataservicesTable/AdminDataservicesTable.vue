@@ -113,7 +113,6 @@
 
 <script setup lang="ts">
 import { AvatarWithName, BrandedButton, useFormatDate, type Dataservice } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
@@ -136,7 +135,7 @@ defineEmits<{
   (event: 'sort', column: DataserviceSortedBy, direction: SortDirection): void
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const { getDataserviceStatus } = useDataserviceStatus()
 
