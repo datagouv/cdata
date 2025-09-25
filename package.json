@@ -26,7 +26,6 @@
     "@datagouv/vue-toaster": "^2.4.5",
     "@gouvfr/dsfr": "^1.11.1",
     "@headlessui/vue": "^1.7.23",
-    "@iconify/vue": "^4.1.2",
     "@milkdown/core": "^7.5.0",
     "@milkdown/ctx": "^7.5.0",
     "@milkdown/plugin-clipboard": "^7.10.5",
@@ -38,7 +37,6 @@
     "@milkdown/prose": "^7.5.0",
     "@milkdown/transformer": "^7.5.0",
     "@milkdown/vue": "^7.5.0",
-    "@nuxt/icon": "^1.5.1",
     "@nuxt/image": "^1.8.0",
     "@nuxtjs/sitemap": "^7.2.10",
     "@prosemirror-adapter/vue": "^0.4.0",
@@ -68,7 +66,6 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
-    "@iconify-json/ri": "^1.2.1",
     "@nuxt/eslint": "^0.7",
     "@parcel/watcher": "^2.5.1",
     "@playwright/test": "^1.55.0",
