@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { datagouv, useTranslation } from '@datagouv/components-next'
+import { datagouv } from '@datagouv/components-next'
 import type { UseFetchFunction } from '@datagouv/components-next'
 import CdataLink from './components/CdataLink.vue'
 import { ClientOnly, TextClamp } from '#components'
