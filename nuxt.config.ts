@@ -8,7 +8,6 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxt/eslint',
-    '@nuxt/icon',
     '@nuxt/image',
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
