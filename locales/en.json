@@ -1,0 +1,29 @@
+{
+  "WARNING WARNING WARNING": "",
+  "-----------------------": "",
+  "This is an example of a traduction file.": "",
+  "It's only used in tests.": "",
+
+
+  "Test du système de traduction": "Translation system test",
+  "Bonjour le monde": "Hello world",
+  "Ceci est un test de traduction": "This is a translation test", 
+  "Message depuis le composable": "Message from composable",
+  "Tests de pluralisation": "Pluralization tests",
+  "1 jeu de données recommandé": "1 recommended dataset",
+  "{n} jeux de données recommandés": "{n} recommended datasets",
+  "Vous n'avez pas de message": "You have no messages",
+  "Vous avez un message": "You have one message", 
+  "Vous avez {n} messages": "You have {n} messages",
+  "Tests d'interpolation": "Interpolation tests",
+  "Bonjour {name}, bienvenue sur {site}": "Hello {name}, welcome to {site}",
+  "Vous avez {count} message(s)": "You have {count} message(s)",
+  "Tests du composant TranslationT avec HTML": "TranslationT component tests with HTML",
+  "Cliquez sur {link} pour continuer": "Click on {link} to continue",
+  "ce lien": "this link",
+  "Bienvenue {user}, vous n'avez pas de nouveau message": "Welcome {user}, you have no new messages",
+  "Bienvenue {user}, vous avez un nouveau message": "Welcome {user}, you have one new message",
+  "Bienvenue {user}, vous avez {n} nouveaux messages": "Welcome {user}, you have {n} new messages",
+  "{n} résultat(s) trouvé(s)": "{n} result(s) found",
+  "{n} résultats trouvés": "{n} results found"
+}

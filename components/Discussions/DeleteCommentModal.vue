@@ -69,7 +69,7 @@ const emit = defineEmits<{
   deleted: []
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const loading = ref(false)

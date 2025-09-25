@@ -142,7 +142,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { BrandedButton } from '@datagouv/components-next'
 import type { ContactPoint, ContactPointRole, Organization } from '@datagouv/components-next'
 import { RiSaveLine } from '@remixicon/vue'
@@ -159,7 +158,7 @@ const props = defineProps<{
   warningText?: string | null
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const { isLoading, start, finish } = useLoadingIndicator()
 

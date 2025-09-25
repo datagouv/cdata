@@ -77,7 +77,7 @@ import { RiEditLine } from '@remixicon/vue'
 import type { FieldsErrors } from '~/types/form'
 
 const { toast } = useToast()
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 
 const loading = ref(false)

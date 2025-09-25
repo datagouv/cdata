@@ -10,6 +10,10 @@ export async function useAPI<T, U = T>(
   const { setCurrentOrganization, setCurrentUser } = useCurrentOwned()
   const isAdmin = isMeAdmin()
   const route = useRoute()
+  // Use below to navigateTo, don't know why navigateTo crash when called outside context.
+  // I read something about calling stuff use* after an await in setup (and we have an await
+  // for the useFetch())…
+  const nuxtApp = useNuxtApp()
 
   const redirectOn404 = options && 'redirectOn404' in options && options.redirectOn404
   const redirectOnSlug = options && 'redirectOnSlug' in options && options.redirectOnSlug
@@ -24,7 +28,7 @@ export async function useAPI<T, U = T>(
     const newParams = { ...route.params }
     newParams[redirectOnSlug] = data.slug as string
 
-    await navigateTo({ name: route.name, params: newParams, query: route.query, hash: route.hash }, { redirectCode: 301 })
+    await nuxtApp.runWithContext(() => navigateTo({ name: route.name, params: newParams, query: route.query, hash: route.hash }, { redirectCode: 301 }))
   }
 
   if (isAdmin) {

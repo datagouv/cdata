@@ -75,11 +75,11 @@
 <script setup lang="ts">
 import { RiLockLine, RiSubtractLine } from '@remixicon/vue'
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
 import { useFormatDate } from '../functions/dates'
 import { getOwnerName } from '../functions/owned'
 import type { Reuse } from '../types/reuses'
+import { useTranslation } from '../composables/useTranslation'
 import AppLink from './AppLink.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import ReuseDetails from './ReuseDetails.vue'
@@ -100,7 +100,7 @@ const props = defineProps<{
   organizationUrl?: RouteLocationRaw
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
 
 const ownerName = computed(() => getOwnerName(props.reuse))

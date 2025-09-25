@@ -45,7 +45,7 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const route = useRoute()
 const url = computed(() => `/api/1/reuses/${route.params.id}`)

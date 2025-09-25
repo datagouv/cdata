@@ -14,7 +14,7 @@
 import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import type { Post } from '~/types/posts'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const { toast } = useToast()
 

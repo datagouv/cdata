@@ -34,7 +34,7 @@ import ListPage from '~/components/Reuses/ListPage.vue'
 import type { ReuseSearchParams } from '~/types/form'
 import type { PaginatedArray } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 useSeoMeta({
   title: t('Réutilisations'),

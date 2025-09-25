@@ -2,7 +2,7 @@ import { RiDatabase2Line, RiLineChartLine, RiLink, RiRobot2Line } from '@remixic
 import type { DataservicesListBloc, DatasetsListBloc, LinksListBloc, ReusesListBloc } from '~/types/pages'
 
 export function useBlocsTypes() {
-  const { t } = useI18n()
+  const { t } = useTranslation()
 
   return {
     DatasetsListBloc: {
