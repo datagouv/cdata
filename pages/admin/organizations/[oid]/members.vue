@@ -290,7 +290,6 @@
 <script setup lang="ts">
 import { Avatar, BannerAction, useFormatDate, useGetUserAvatar, type Member, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiAddLine, RiEyeLine, RiLogoutBoxRLine, RiPencilLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import type { AdminBadgeType, MemberRole, PendingMembershipRequest, UserSuggest } from '~/types/types'
@@ -304,7 +303,7 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const config = useRuntimeConfig()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate, formatFromNow } = useFormatDate()
 const { $api } = useNuxtApp()
 const getUserAvatar = useGetUserAvatar()

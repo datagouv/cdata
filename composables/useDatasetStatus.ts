@@ -2,7 +2,7 @@ import type { Dataset, DatasetV2 } from '@datagouv/components-next'
 import type { AdminBadgeType } from '~/types/types'
 
 export function useDatasetStatus() {
-  const { t } = useI18n()
+  const { t } = useTranslation()
   const getDatasetStatus = (dataset: Dataset | DatasetV2): { label: string, type: AdminBadgeType } => {
     if (dataset.deleted) {
       return {

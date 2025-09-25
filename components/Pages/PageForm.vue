@@ -244,7 +244,7 @@ import AddBlocDropdown from './AddBlocDropdown.vue'
 import LinksListForm from './LinksListForm.vue'
 import type { Page } from '~/types/pages'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 defineProps<{
   loading: boolean

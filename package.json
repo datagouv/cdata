@@ -40,7 +40,6 @@
     "@milkdown/vue": "^7.5.0",
     "@nuxt/icon": "^1.5.1",
     "@nuxt/image": "^1.8.0",
-    "@nuxtjs/i18n": "^9.3.0",
     "@nuxtjs/sitemap": "^7.2.10",
     "@prosemirror-adapter/vue": "^0.4.0",
     "@remixicon/vue": "^4.5.0",

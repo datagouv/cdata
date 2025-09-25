@@ -128,13 +128,12 @@ import {
   usePluginViewContext,
 } from '@prosemirror-adapter/vue'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiAlignCenter, RiAlignLeft, RiAlignRight, RiArrowDownLine, RiArrowLeftLine, RiArrowRightLine, RiArrowUpLine, RiDeleteBinLine } from '@remixicon/vue'
 import { makeTooltipProvider } from '~/components/MarkdownEditor/Milkdown/Tooltip/useTooltipProvider'
 import { tableTooltipCtx } from '~/components/MarkdownEditor/Milkdown/TableTooltip/tableTooltipCtx'
 import TooltipButton from '~/components/MarkdownEditor/Milkdown/TableTooltip/TooltipButton.vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const toolTipRef = ref<HTMLDivElement | null>(null)
 const { view } = usePluginViewContext()
 
