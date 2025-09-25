@@ -69,21 +69,11 @@ app.vueApp.use(datagouv, {
 
 ### I18n
 
-`@datagouv/components` is using a few custom functions to provide internationalisation.
+`@datagouv/components` is using a few custom functions to provide internationalisation:
+- `$t()` inside templates
+- `const { t } = useTranslation()` inside JS
+- `<TranslationT keypath="xxx"></TranslationT>` for putting HTML inside text
 
-1. If the user is using Nuxt, it can simply add the locales files in the `nuxt.config.ts`
-
-```ts
-{
-    code: 'fr',
-    language: 'fr',
-    files: ['fr-FR.json', '../../node_modules/@datagouv/components-next/src/locales/fr.json'],
-},
-```
-
-Nuxt is responsible for building the JSON file to the correct `vue-i18n` JS format.
-
-2. If the user is not using Nuxt, it should provide the i18n object to the `datagouv` Vue plugin. The plugin will then merge the already built messages's files.
 
 ### `Suspense`
 
