@@ -46,7 +46,7 @@
         />
       </ContentLoader>
       <div
-        v-else-if="changesThisYear"
+        v-else-if="data && changesThisYear"
         class="ml-2"
       >
         <SmallChart
@@ -124,7 +124,7 @@
         />
       </ContentLoader>
       <div
-        v-else-if="changesThisYear"
+        v-else-if="data && changesThisYear"
         class="ml-2"
       >
         <SmallChart
@@ -157,7 +157,7 @@ import SmallChart from './SmallChart.vue'
 
 const props = defineProps<{
   title: string
-  data: Record<string, number> | null
+  data?: Record<string, number> | null
   type: 'line' | 'bar'
   size?: 'sm'
   summary?: number | null
