@@ -128,7 +128,7 @@
 </template>
 
 <script setup lang="ts">
-import type { DatasetV2, Frequency, License } from '@datagouv/components-next'
+import type { DatasetV2, Frequency, License, SpatialZone } from '@datagouv/components-next'
 import { BannerAction, BrandedButton, TranslationT } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
@@ -170,9 +170,11 @@ const { data: dataset, refresh } = await useAPI<DatasetV2>(url, { redirectOn404:
 
 const datasetForm = ref<DatasetForm | null>(null)
 const harvested = ref(false)
-watchEffect(() => {
+watchEffect(async () => {
   if (dataset.value && licenses.value && frequencies.value && granularities.value) {
-    datasetForm.value = datasetToForm(dataset.value, licenses.value, frequencies.value, [], granularities.value)
+    const promises = dataset.value.spatial?.zones?.map(z => getZone($api, z)) ?? []
+    const zones: Array<SpatialZone> = (await Promise.all(promises)).filter(z => z !== null)
+    datasetForm.value = datasetToForm(dataset.value, licenses.value, frequencies.value, zones, granularities.value)
     harvested.value = isHarvested(dataset.value)
   }
 })
