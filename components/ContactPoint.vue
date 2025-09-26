@@ -1,15 +1,21 @@
 <template>
-  <div class="text-sm space-x-2">
-    <component
-      :is="link ? 'a' : 'span'"
-      :href="link"
-      rel="ugc nofollow noopener"
-      :target="link ? '_blank' : undefined"
-      class="text-grey-title truncate overflow-hidden"
+  <div>
+    <div
+      class="text-sm space-x-2"
+      :class="{ inline: !link, flex: link }"
     >
-      {{ label }}
-    </component>
-    <small class="text-grey-medium italic">({{ role }})</small>
+      <component
+        :is="link ? 'a' : 'span'"
+        :href="link"
+        :rel="link ? 'ugc nofollow noopener' : undefined"
+        :target="link ? '_blank' : undefined"
+        class="text-grey-title"
+        :class="{ truncate: link }"
+      >
+        {{ label }}
+      </component>
+      <small class="text-grey-medium italic">({{ role }})</small>
+    </div>
   </div>
 </template>
 
