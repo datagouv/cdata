@@ -25,6 +25,7 @@
         </h1>
         <BrandedButton
           :href="dataservice.self_web_url"
+          new-tab
           color="secondary"
           size="xs"
           :icon="RiEyeLine"

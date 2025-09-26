@@ -44,6 +44,7 @@
         <div class="fr-col-auto">
           <BrandedButton
             :href="organization.page"
+            new-tab
             color="secondary"
             :icon="RiEyeLine"
             size="xs"
