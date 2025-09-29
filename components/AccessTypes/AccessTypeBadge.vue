@@ -13,7 +13,7 @@ import type { AdminBadgeType } from '~/types/types'
 
 const props = defineProps<{ accessType: AccessType }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const label = computed(() => {
   return {

@@ -51,7 +51,6 @@
 import { Pagination, type CommunityResource, type Organization, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import AdminCommunityResourcesTable from '../AdminTable/AdminCommunityResourcesTable/AdminCommunityResourcesTable.vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
@@ -61,7 +60,7 @@ const props = defineProps<{
   organization?: Organization | null
   user?: User | null
 }>()
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 
 const page = ref(1)

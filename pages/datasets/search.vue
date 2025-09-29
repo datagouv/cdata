@@ -33,9 +33,9 @@
 import type { Site } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 useSeoMeta({
-  title: t('Jeux de données'),
+  title: t('Recherche des jeux de données — data.gouv.fr'),
 })
 
 const config = useRuntimeConfig()

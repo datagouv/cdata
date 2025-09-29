@@ -1,7 +1,6 @@
 import type { App, Plugin } from 'vue'
-import { createI18n, useI18n } from 'vue-i18n'
 import type { ContactPoint, ContactPointRole } from './types/contact_point.js'
-import type { Badge, Badges } from './types/badges'
+import type { Badge, Badges, TranslatedBadge } from './types/badges'
 import type { Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
 import type { NewDataservice, Dataservice } from './types/dataservices'
 import type { AccessType, AccessAudience, AccessAudienceCondition, AccessAudienceType, WithAccessType } from './types/access_types'
@@ -35,6 +34,7 @@ import DatasetQualityItem from './components/DatasetQualityItem.vue'
 import DatasetQualityScore from './components/DatasetQualityScore.vue'
 import DatasetQualityTooltipContent from './components/DatasetQualityTooltipContent.vue'
 import ExtraAccordion from './components/ExtraAccordion.vue'
+import LabelTag from './components/DatasetLabelTag.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
@@ -56,11 +56,13 @@ import TabPanel from './components/Tabs/TabPanel.vue'
 import TabPanels from './components/Tabs/TabPanels.vue'
 import Tooltip from './components/Tooltip.vue'
 import Toggletip from './components/Toggletip.vue'
+import TranslationT from './components/TranslationT.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
 export * from './composables/useActiveDescendant'
 export * from './composables/useReuseType'
+export * from './composables/useTranslation'
 
 export * from './functions/datasets'
 export * from './functions/dates'
@@ -118,6 +120,7 @@ export type {
   ReuseType,
   Site,
   SpatialZone,
+  TranslatedBadge,
   TopicV2,
   TopicElement,
   TopicElementClass,
@@ -134,23 +137,6 @@ const datagouv: Plugin<PluginConfig> = {
     if (!options.textClamp) {
       const textClamp = await import('vue3-text-clamp')
       options.textClamp = textClamp.default
-    }
-    try {
-      // There is no condition to check if vue-i18n is instancied, only an error...
-      useI18n()
-    }
-    catch {
-      const i18n = createI18n({
-        legacy: false,
-        globalInjection: true,
-        locale: 'fr',
-        messages: {},
-        formatFallbackMessages: true,
-        missingWarn: false,
-        fallbackFormat: true,
-        fallbackWarn: false,
-      })
-      app.use(i18n)
     }
   },
 }
@@ -175,6 +161,7 @@ export {
   DatasetQualityTooltipContent,
   DateRangeDetails,
   ExtraAccordion,
+  LabelTag,
   OrganizationCard,
   OrganizationNameWithCertificate,
   OwnerType,
@@ -196,4 +183,5 @@ export {
   TabPanels,
   Tooltip,
   Toggletip,
+  TranslationT,
 }

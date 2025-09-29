@@ -62,6 +62,7 @@
               v-if="showClearButton"
               type="button"
               class="p-2"
+              :title="$t('Clear')"
               @click.prevent="model = null"
             >
               <RiDeleteBinLine class="size-4 text-gray-800" />

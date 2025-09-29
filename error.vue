@@ -1,6 +1,9 @@
 <template>
   <NuxtLayout>
-    <div class="min-h-screen bg-white flex items-center justify-center px-8 md:px-4">
+    <div
+      v-if="error"
+      class="min-h-screen bg-white flex items-center justify-center px-8 md:px-4"
+    >
       <div class="flex flex-col items-center text-center max-w-2xl w-full gap-6">
         <div class="w-37 h-35 flex items-center justify-center md:w-25 md:h-24">
           <img
@@ -110,7 +113,7 @@
         </p>
 
         <div
-          v-if="statusCode >= 500"
+          v-if="statusCode >= 500 && errorMessage"
           class="fr-mt-4w fr-p-2w"
         >
           <p class="fr-text--sm">
@@ -123,7 +126,7 @@
               class="ml-2"
             />
             <pre
-              v-if="error && error.stack"
+              v-if="error.stack"
               class="text-left"
             >
               {{ error.stack }}
@@ -164,7 +167,7 @@ const error = useError()
 
 const app = useNuxtApp()
 
-const i18nHead = useLocaleHead()
+const { locale } = useTranslation()
 const runtimeConfig = useRuntimeConfig()
 
 // Computed properties to avoid repeating error checks
@@ -173,7 +176,7 @@ const errorMessage = computed(() => error.value?.message)
 
 app.vueApp.use(datagouv, {
   name: runtimeConfig.public.title,
-  baseUrl: runtimeConfig.public.i18n.baseUrl, // Maybe do not use i18n config here?
+  baseUrl: runtimeConfig.public.baseUrl,
   apiBase: runtimeConfig.public.apiBase,
   devApiKey: runtimeConfig.public.devApiKey,
   tabularApiUrl: runtimeConfig.public.tabularApiUrl,
@@ -188,10 +191,8 @@ app.vueApp.use(datagouv, {
 
 useHeadSafe({
   htmlAttrs: {
-    lang: i18nHead.value.htmlAttrs?.lang,
+    lang: locale,
   },
-  link: [...(i18nHead.value.link || [])],
-  meta: [...(i18nHead.value.meta || [])],
   titleTemplate: (titleChunk) => {
     return titleChunk ? `${titleChunk} - data.gouv.fr` : 'data.gouv.fr'
   },

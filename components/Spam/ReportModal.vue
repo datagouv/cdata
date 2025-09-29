@@ -16,7 +16,7 @@
       </BrandedButton>
     </template>
 
-    <i18n-t
+    <TranslationT
       v-if="reported"
       keypath="L’équipe de {site} examinera le contenu pour déterminer si celui-ci enfreint {terms}. Merci pour votre aide."
       tag="p"
@@ -32,7 +32,7 @@
           {{ $t("nos modalités d'utilisation") }}
         </CdataLink>
       </template>
-    </i18n-t>
+    </TranslationT>
     <div v-else>
       <SimpleBanner
         type="warning"
@@ -103,7 +103,7 @@
 
 <script setup lang="ts">
 import { RiFlagLine } from '@remixicon/vue'
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, TranslationT } from '@datagouv/components-next'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 import CdataLink from '../CdataLink.vue'
 

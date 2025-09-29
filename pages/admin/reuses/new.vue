@@ -67,7 +67,7 @@ import type {
   ReuseForm,
 } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const route = useRoute()
 const { $api, $fileApi } = useNuxtApp()
 

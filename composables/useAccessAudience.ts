@@ -2,7 +2,7 @@ import type { AccessAudienceCondition, AccessAudienceType } from '@datagouv/comp
 import { RiCheckDoubleLine, RiCheckLine, RiCloseLine } from '@remixicon/vue'
 
 export function useAccessAudience() {
-  const { t } = useI18n()
+  const { t } = useTranslation()
 
   const getAccessAudienceCondition = (condition: AccessAudienceCondition) => {
     return {

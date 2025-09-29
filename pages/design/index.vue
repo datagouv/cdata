@@ -162,6 +162,6 @@ import BannerSticky from '~/design-system/BannerSticky.vue'
 import OrganizationNameWithCertificate from '~/design-system/OrganizationNameWithCertificate.vue'
 import SearchInput from '~/design-system/SearchInput.vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { data: dataset } = await useAPI<Dataset>('/api/2/datasets/repertoire-national-des-elus-1/')
 </script>

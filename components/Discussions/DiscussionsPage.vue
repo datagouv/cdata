@@ -60,7 +60,6 @@
 
 <script setup lang="ts">
 import { Pagination, type Organization } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
 import AdminDiscussionsTable from '../AdminTable/AdminDiscussionsTable/AdminDiscussionsTable.vue'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 import type { PaginatedArray, SortDirection } from '~/types/types'
@@ -71,7 +70,7 @@ const props = defineProps<{
   subject?: DiscussionSubjectTypes
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const isClosed = ref(null as null | true | false)
 

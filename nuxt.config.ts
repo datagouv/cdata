@@ -10,7 +10,6 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/icon',
     '@nuxt/image',
-    '@nuxtjs/i18n',
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
   ],
@@ -44,10 +43,7 @@ export default defineNuxtConfig({
     pagesGhRepoName: 'datagouv/datagouvfr-pages',
     pagesGhRepoBranch: 'master',
     public: {
-      i18n: {
-        baseUrl: 'https://www.data.gouv.fr/', // NUXT_PUBLIC_I18N_BASE_URL
-      },
-
+      baseUrl: 'https://www.data.gouv.fr/',
       commitId: undefined,
       banner: undefined,
 
@@ -84,6 +80,7 @@ export default defineNuxtConfig({
       guidesUrl: 'https://guides.data.gouv.fr/',
       guidesCreateAccount: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/creer-un-compte-utilisateur-et-rejoindre-une-organisation',
       guidesHarvestingUrl: 'https://guides.data.gouv.fr/guide-data.gouv.fr/moissonnage',
+      guidesLabelsUrl: undefined, // TODO: add guide when created
       guidesCommunityResources: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/ressource-communautaire',
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
@@ -125,7 +122,7 @@ export default defineNuxtConfig({
       publishingHarvesterFeedbackUrl: 'https://tally.so/r/3NMLOQ',
       reuseGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/reutilisations',
       harvesterRequestValidationUrl: 'https://support.data.gouv.fr/help/datagouv/moissonnage#support-tree',
-      harvesterPreviewMaxItems: 20, // SHould be the same as `HARVEST_PREVIEW_MAX_ITEMS` in udata
+      harvesterPreviewMaxItems: 20, // Should be the same as `HARVEST_PREVIEW_MAX_ITEMS` in udata
       harvestEnableManualRun: false,
       harvestBackendsForHidingQuality: ['CSW-ISO-19139'],
 
@@ -136,6 +133,7 @@ export default defineNuxtConfig({
       maxSortableFiles: 50,
 
       captcheta: {
+        enabled: true,
         style: 'captchaFR',
       },
 
@@ -161,6 +159,9 @@ export default defineNuxtConfig({
         ],
       },
 
+      // A corresponding SVG at `datagouv-components/assets/labels` will be shown before the badge label
+      datasetBadges: ['spd', 'inspire', 'hvd', 'sl', 'sr'],
+
       enableCdataSecurityViews: false,
       requireEmailConfirmation: true,
       changeEmailPage: 'change-email',
@@ -174,11 +175,14 @@ export default defineNuxtConfig({
         dsn: '',
       },
 
-      // URL of your matomo host.
-      matomoHost: undefined,
-
-      // Matomo ID of your site. Check the Matomo backend for it
-      matomoSiteId: 1,
+      matomo: {
+        // URL of your matomo host.
+        host: undefined,
+        // Matomo ID of your site. Check the Matomo backend for it
+        siteId: 1,
+        debug: false,
+        dryRun: false,
+      },
     },
   },
 
@@ -228,28 +232,6 @@ export default defineNuxtConfig({
     config: {
       stylistic: true,
     },
-  },
-  i18n: {
-    baseUrl: '',
-    locales: [
-      {
-        code: 'fr',
-        language: 'fr',
-      },
-      {
-        code: 'en',
-        language: 'en',
-      },
-      {
-        code: 'es',
-        language: 'es',
-      },
-    ],
-    lazy: true,
-    detectBrowserLanguage: false,
-    strategy: 'no_prefix',
-    trailingSlash: true,
-    defaultLocale: 'fr',
   },
   image: {
     screens: {

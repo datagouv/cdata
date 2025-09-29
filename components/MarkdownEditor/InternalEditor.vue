@@ -142,7 +142,6 @@ import { RiArrowGoBackLine, RiArrowGoForwardLine, RiBold, RiCodeSSlashLine, RiDo
 import { Milkdown, useEditor } from '@milkdown/vue'
 import { usePluginViewFactory, useWidgetViewFactory } from '@prosemirror-adapter/vue'
 import { useDebounceFn } from '@vueuse/core'
-import { useI18n } from 'vue-i18n'
 import { clipboard } from '@milkdown/kit/plugin/clipboard'
 import type { ImageModalForm } from '~/components/MarkdownEditor/ImageModal/ImageModalButton.vue'
 import ImageModalButton from '~/components/MarkdownEditor/ImageModal/ImageModalButton.vue'
@@ -173,7 +172,7 @@ const emit = defineEmits<{
 const raw = ref(false)
 const onChange = useDebounceFn((markdown: string) => emit('change', markdown), 300)
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const pluginViewFactory = usePluginViewFactory()
 const widgetViewFactory = useWidgetViewFactory()

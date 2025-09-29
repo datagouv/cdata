@@ -33,7 +33,7 @@
 import type { Site } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 useSeoMeta({
   title: t('API'),
 })

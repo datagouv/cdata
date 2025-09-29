@@ -1,12 +1,12 @@
 import { ofetch } from 'ofetch'
-import { useI18n } from 'vue-i18n'
 import { useComponentsConfig } from '../config'
 import type { ReuseTopic, ReuseType } from '../types/reuses'
+import { useTranslation } from '../composables/useTranslation'
 
 let reuseTypesRequest: Promise<Array<ReuseType>> | null = null
 export function useFetchReuseTypes() {
   const config = useComponentsConfig()
-  const { locale } = useI18n()
+  const { locale } = useTranslation()
 
   return async (): Promise<Array<ReuseType>> => {
     if (reuseTypesRequest) {
@@ -15,7 +15,7 @@ export function useFetchReuseTypes() {
 
     return await (reuseTypesRequest = ofetch<Array<ReuseType>>('api/1/reuses/types/', {
       baseURL: config.apiBase,
-      query: { lang: locale.value },
+      query: { lang: locale },
     }))
   }
 }

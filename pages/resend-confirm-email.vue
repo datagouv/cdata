@@ -56,8 +56,11 @@
 import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 
-const { $api } = useNuxtApp()
-const { t } = useI18n()
+definePageMeta({
+  matomoIgnore: true,
+})
+
+const { t } = useTranslation()
 
 useSeoMeta({ title: t('Renvoyer les instructions de confirmation') })
 
@@ -66,17 +69,15 @@ const loading = ref(false)
 const errors = ref<FieldsErrors>({})
 const success = ref(false)
 
+const postApiWithCsrf = usePostApiWithCsrf()
 const connect = async () => {
   if (success.value) return
   loading.value = true
   errors.value = {}
 
   try {
-    await $api('/fr/confirm/', {
-      method: 'POST',
-      body: {
-        email: email.value,
-      },
+    await postApiWithCsrf('/confirm/', {
+      email: email.value,
     })
 
     success.value = true
