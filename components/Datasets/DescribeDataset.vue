@@ -673,7 +673,6 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
 
 onMounted(() => {
   if (props.type === 'update') validate()
-  console.log(form.value.spatial_zones)
 })
 
 const accordionState = (key: keyof typeof form.value) => {

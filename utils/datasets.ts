@@ -1,8 +1,9 @@
-import { type Dataset, type DatasetV2, type Frequency, type License, type RegisteredSchema, type Resource, type CommunityResource, type Schema, throwOnNever } from '@datagouv/components-next'
+import type { Dataset, DatasetV2, RegisteredSchema, Resource, CommunityResource, Schema, DatasetV2WithFullObject } from '@datagouv/components-next'
+import { throwOnNever } from '@datagouv/components-next'
 import type { FetchError } from 'ofetch'
 import { v4 as uuidv4 } from 'uuid'
 
-import type { CommunityResourceForm, DatasetForm, DatasetSuggest, FileInfo, NewDatasetForApi, ResourceForm, SpatialGranularity, SpatialZone } from '~/types/types'
+import type { CommunityResourceForm, DatasetForm, DatasetSuggest, FileInfo, NewDatasetForApi, ResourceForm } from '~/types/types'
 
 export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceForm>) {
   const isRemote = computed(() => toValue(file).filetype === 'remote')
@@ -37,19 +38,19 @@ export function getDatasetAdminUrl(dataset: Dataset | DatasetV2): string {
   return `/admin/datasets/${dataset.id}`
 }
 
-export function datasetToForm(dataset: Dataset | DatasetV2, licenses: Array<License>, frequencies: Array<Frequency>, zones: Array<SpatialZone>, granularities: Array<SpatialGranularity>): DatasetForm {
+export function datasetToForm(dataset: DatasetV2WithFullObject): DatasetForm {
   return {
     owned: dataset.organization ? { organization: dataset.organization, owner: null } : { owner: dataset.owner, organization: null },
     title: dataset.title,
     description: dataset.description,
     acronym: dataset.acronym,
     tags: dataset.tags?.map(text => ({ text })) || [],
-    license: licenses.find(l => l.id === dataset.license) || null,
+    license: dataset.license || null,
     contact_points: dataset.contact_points ?? [],
-    frequency: frequencies.find(f => f.id === dataset.frequency) || null,
+    frequency: dataset.frequency || null,
     temporal_coverage: dataset.temporal_coverage ? { start: dataset.temporal_coverage.start, end: dataset.temporal_coverage.end } : { start: null, end: null }, // TODO fix this type, the API returns an object not a string
-    spatial_zones: dataset.spatial?.zones?.map(id => zones.find(z => z.id === id)).filter(z => z !== undefined) || [],
-    spatial_granularity: granularities.find(g => g.id === dataset.spatial?.granularity) || null,
+    spatial_zones: dataset.spatial?.zones || [],
+    spatial_granularity: dataset.spatial?.granularity || null,
     private: dataset.private,
     featured: dataset.featured,
   }

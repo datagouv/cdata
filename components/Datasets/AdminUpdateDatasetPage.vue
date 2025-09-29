@@ -128,53 +128,33 @@
 </template>
 
 <script setup lang="ts">
-import type { DatasetV2, Frequency, License, SpatialZone } from '@datagouv/components-next'
+import type { DatasetV2WithFullObject } from '@datagouv/components-next'
 import { BannerAction, BrandedButton, TranslationT } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
-import type { DatasetForm, EnrichedLicense, SpatialGranularity } from '~/types/types'
+import type { DatasetForm } from '~/types/types'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const config = useRuntimeConfig()
 
 const route = useRoute()
 const { start, finish, isLoading } = useLoadingIndicator()
 
 const { toast } = useToast()
 
-const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies', { lazy: true })
-
-const { data: allLicenses } = await useAPI<Array<License>>('/api/1/datasets/licenses', { lazy: true })
-
-// Merge some information between database (all licenses) and config (selectable license, some recommanded, codes…)
-// Maybe all these information could be better stored in database too…
-const licenses = computed(() => {
-  if (!allLicenses.value) return []
-
-  const licenses = [] as Array<EnrichedLicense>
-  const licensesChoices = config.public.licenses as unknown as Record<string, Array<{ value: string, recommended?: boolean, code?: string, description?: string }>>
-  for (const [group, licensesInGroup] of Object.entries(licensesChoices)) {
-    for (const license of licensesInGroup) {
-      const found = allLicenses.value.find(({ id }) => license.value === id)
-      if (!found) continue
-      licenses.push({ ...found, ...license, group })
-    }
-  }
-  return licenses
-})
-const { data: granularities } = await useAPI<Array<SpatialGranularity>>('/api/1/spatial/granularities/', { lazy: true })
-
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
-const { data: dataset, refresh } = await useAPI<DatasetV2>(url, { redirectOn404: true })
+const { data: dataset, refresh } = await useAPI<DatasetV2WithFullObject>(url, {
+  headers: {
+    'X-Get-Datasets-Full-Objects': 'True',
+  },
+  redirectOn404: true,
+})
 
 const datasetForm = ref<DatasetForm | null>(null)
 const harvested = ref(false)
 watchEffect(async () => {
-  if (dataset.value && licenses.value && frequencies.value && granularities.value) {
-    const promises = dataset.value.spatial?.zones?.map(z => getZone($api, z)) ?? []
-    const zones: Array<SpatialZone> = (await Promise.all(promises)).filter(z => z !== null)
-    datasetForm.value = datasetToForm(dataset.value, licenses.value, frequencies.value, zones, granularities.value)
+  if (dataset.value) {
+    datasetForm.value = datasetToForm(dataset.value)
     harvested.value = isHarvested(dataset.value)
   }
 })
