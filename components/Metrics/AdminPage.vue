@@ -21,10 +21,10 @@
     <TabLinks
       class="mb-5"
       :links="[
-        { href: localPath(metricsUrl), label: organization ? $t('Organisation') : $t('Utilisateur') },
-        { href: localPath(`${metricsUrl}/datasets/`), label: $t('Jeux de données') },
-        { href: localPath(`${metricsUrl}/dataservices/`), label: $t('API') },
-        { href: localPath(`${metricsUrl}/reuses/`), label: $t('Réutilisations') },
+        { href: metricsUrl, label: organization ? $t('Organisation') : $t('Utilisateur') },
+        { href: `${metricsUrl}/datasets/`, label: $t('Jeux de données') },
+        { href: `${metricsUrl}/dataservices/`, label: $t('API') },
+        { href: `${metricsUrl}/reuses/`, label: $t('Réutilisations') },
       ]"
     />
 
@@ -50,7 +50,6 @@ defineEmits<{
   refresh: []
 }>()
 
-const localPath = useLocalePath()
 const me = useMe()
 
 const metricsUrl = computed(() => {
