@@ -1,6 +1,6 @@
 <template>
   <article
-    class="my-4 p-4 bg-white border fr-enlarge-link"
+    class="my-4 p-4 bg-white hover:bg-gray-some border fr-enlarge-link"
     :class="{
       'border-tabular-api': isTabularApi,
       'border-gray-default': !isTabularApi,
