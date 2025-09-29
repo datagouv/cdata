@@ -1,6 +1,9 @@
 <template>
   <div>
-    <div class="flex justify-end -mt-14 pt-0.5 mb-5">
+    <div
+      v-if="downloadStatsUrl"
+      class="flex justify-end -mt-14 pt-0.5 mb-5"
+    >
       <BrandedButton
         color="secondary"
         :disabled="!downloadStatsUrl"
