@@ -38,7 +38,7 @@
     "@milkdown/vue": "^7.5.0",
     "@nuxt/image": "^1.8.0",
     "@nuxtjs/sitemap": "^7.2.10",
-    "@prosemirror-adapter/vue": "^0.4.0",
+    "@prosemirror-adapter/vue": "0.4.0",
     "@remixicon/vue": "^4.5.0",
     "@rollup/pluginutils": "^5.1.4",
     "@sentry/nuxt": "^8.38.0",
