@@ -418,26 +418,10 @@
             :accordion="accessTypeAccordionId"
             @blur="touch('access_type')"
           >
-            <RadioButtons
-              v-model="form.access_type"
-              class="!mb-0"
-              :label="t(`Type d'accès`)"
-              :options="[
-                { value: 'open', label: t('Ouvert') },
-                { value: 'open_with_account', label: t('Ouvert avec compte') },
-                { value: 'restricted', label: t('Restreint') },
-              ]"
-            />
-            <SimpleBanner
-              v-if="getFirstWarning('access_type')"
-              class="mt-2"
-              type="warning"
-            >
-              {{ getFirstWarning("access_type") }}
-            </SimpleBanner>
-            <SelectAudiencesTypes
-              v-if="form.access_type === 'restricted'"
-              v-model="form.access_audiences"
+            <AccessTypeForm
+              :model="form"
+              :get-first-warning
+              :get-first-error
             />
           </LinkedToAccordion>
           <LinkedToAccordion

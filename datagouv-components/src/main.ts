@@ -3,7 +3,7 @@ import type { ContactPoint, ContactPointRole } from './types/contact_point.js'
 import type { Badge, Badges, TranslatedBadge } from './types/badges'
 import type { Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
 import type { NewDataservice, Dataservice } from './types/dataservices'
-import type { AccessType, AccessAudience, AccessAudienceCondition, AccessAudienceType, WithAccessType } from './types/access_types'
+import type { AccessType, AccessAudience, AccessAudienceCondition, AccessAudienceType, WithAccessType, AccessTypeForm } from './types/access_types'
 import type { Frequency, Frequencies } from './types/frequency'
 import type { Granularity, Granularities, SpatialZone } from './types/granularity'
 import type { Harvest } from './types/harvest'
@@ -76,6 +76,7 @@ export * from './functions/resources'
 export * from './functions/reuses'
 export * from './functions/schemas'
 export * from './functions/users'
+export * from './types/access_types'
 
 export type {
   UseFetchFunction,
@@ -84,6 +85,7 @@ export type {
   AccessAudienceCondition,
   AccessAudienceType,
   WithAccessType,
+  AccessTypeForm,
   Badge,
   Badges,
   CommunityResource,

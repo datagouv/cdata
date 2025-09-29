@@ -1,4 +1,5 @@
-import type { Dataset, CommunityResource, Dataservice, AccessAudience, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, AccessType, AccessAudienceType, AccessAudienceCondition, ContactPoint } from '@datagouv/components-next'
+import type { Dataset, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, ContactPoint } from '@datagouv/components-next'
+import type { AccessTypeForm, WithAccessType } from '~/datagouv-components/src/types/access_types'
 
 export type AxisAlignment = 'start' | 'center' | 'end'
 
@@ -129,10 +130,6 @@ export type DatasetForm = {
   description: string
   tags: Array<Tag>
   license: License | null
-  access_type: AccessType
-  access_audiences: Record<AccessAudienceType, AccessAudienceCondition>
-  access_type_reason: string | null
-  authorization_request_url: string | null
   contact_points: Array<NewContactPoint | ContactPoint | null>
   temporal_coverage: { start: null | string, end: null | string }
   frequency: Frequency | null
@@ -140,7 +137,7 @@ export type DatasetForm = {
   spatial_granularity: SpatialGranularity | null
   private: boolean
   featured: boolean
-}
+} & AccessTypeForm
 
 export type NewDatasetForApi = {
   title: string
@@ -153,10 +150,6 @@ export type NewDatasetForApi = {
   owner?: string
   tags: Array<string>
   license?: string
-  access_type: AccessType
-  access_audiences: Array<AccessAudience>
-  access_type_reason: string | null
-  authorization_request_url: string | null
   contact_points?: Array<string> | null
   temporal_coverage?: { start: string, end: string | null }
   frequency?: string
@@ -164,7 +157,7 @@ export type NewDatasetForApi = {
     granularity?: string
     zones?: Array<string>
   }
-}
+} & WithAccessType
 
 type ReuseSuggest = Pick<Reuse, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
 
@@ -205,17 +198,13 @@ export type DataserviceForm = {
   description: string
   contact_points: Array<NewContactPoint | ContactPoint | null>
   base_api_url: string
-  authorization_request_url: string
   machine_documentation_url: string | null
   technical_documentation_url: string | null
   business_documentation_url: string | null
-  access_type: AccessType
-  access_audiences: Record<AccessAudienceType, AccessAudienceCondition>
-  access_type_reason: string | null
   rate_limiting: string
   availability: string
   private: boolean
-}
+} & AccessTypeForm
 
 export type NewDataserviceForApi = {
   organization?: string
@@ -228,17 +217,13 @@ export type NewDataserviceForApi = {
   description: string
   datasets?: Array<string>
   contact_points?: Array<string> | null
-  access_type: AccessType
-  access_audiences: Array<AccessAudience>
-  access_type_reason: string | null
   base_api_url: string | null
-  authorization_request_url: string | null
   machine_documentation_url: string | null
   technical_documentation_url: string | null
   business_documentation_url: string | null
   rate_limiting: string
   availability: number | null
-}
+} & WithAccessType
 
 type EnrichedLicense = License & { group: string, recommended?: boolean, code?: string, description?: string }
 

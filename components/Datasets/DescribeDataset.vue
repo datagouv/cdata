@@ -290,25 +290,11 @@
             :accordion="accessTypeAccordionId"
             @blur="touch('access_type')"
           >
-            <RadioButtons
-              v-model="form.access_type"
-              class="!mb-0"
-              :label="t(`Type d'accès`)"
-              :options="[
-                { value: 'open', label: t('Ouvert') },
-                { value: 'restricted', label: t('Restreint') },
-              ]"
-            />
-            <SimpleBanner
-              v-if="getFirstWarning('access_type')"
-              class="mt-2"
-              type="warning"
-            >
-              {{ getFirstWarning("access_type") }}
-            </SimpleBanner>
-            <SelectAudiencesTypes
-              v-if="form.access_type === 'restricted'"
-              v-model="form.access_audiences"
+            <AccessTypeForm
+              v-model="form"
+              :get-first-warning
+              :get-first-error
+              disallow-open-with-account
             />
           </LinkedToAccordion>
 
@@ -615,7 +601,6 @@ import { BrandedButton } from '@datagouv/components-next'
 import { SimpleBanner, type Frequency, type License } from '@datagouv/components-next'
 import { RiAddLine, RiStarFill } from '@remixicon/vue'
 import { computed } from 'vue'
-import SelectAudiencesTypes from '../SelectAudiencesTypes.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
