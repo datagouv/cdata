@@ -163,6 +163,7 @@ const downloadStatsUrl = computed(() => props.organization ? `/api/1/organizatio
 const params = computed(() => {
   return {
     organization: props.organization?.id,
+    user: props.user?.id,
 
     sort: sortDirection.value,
     page_size: pageSize.value,
