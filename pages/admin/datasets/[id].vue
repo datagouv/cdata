@@ -26,6 +26,7 @@
           </h1>
           <BrandedButton
             :href="dataset.page"
+            new-tab
             color="secondary"
             size="xs"
             :icon="RiEyeLine"
