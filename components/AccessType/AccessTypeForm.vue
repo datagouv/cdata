@@ -65,4 +65,10 @@ const { data: categories } = await useAPI<Array<{ value: string, label: string }
 const categoriesWithOthers = computed(() => {
   return [...(categories.value || []), { value: 'other', label: t('Autre') }]
 })
+
+watch(() => form.value.access_type_reason_category, (newValue, oldValue) => {
+  if (oldValue === 'other' && newValue !== 'other') {
+    form.value.access_type_reason = ''
+  }
+})
 </script>
