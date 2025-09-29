@@ -22,7 +22,6 @@
   "dependencies": {
     "@datagouv/components": "^2.0.5",
     "@datagouv/components-next": "file:datagouv-components",
-    "@datagouv/vue-toaster": "^2.4.5",
     "@gouvfr/dsfr": "^1.11.1",
     "@headlessui/vue": "^1.7.23",
     "@milkdown/core": "^7.5.0",
@@ -53,10 +52,7 @@
     "mitt": "^3.0.1",
     "nuxt": "^3.16.1",
     "ofetch": "^1.4.1",
-    "popmotion": "^11.0",
     "smol-toml": "^1.3.1",
-    "sortablejs": "^1.15.3",
-    "stylefire": "^7.0.3",
     "uuid": "^13.0.0",
     "vue": "^3.5",
     "vue-content-loader": "^2.0.1",
