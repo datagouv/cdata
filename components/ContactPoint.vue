@@ -9,6 +9,7 @@
         :href="link"
         :rel="link ? 'ugc nofollow noopener' : undefined"
         :target="link ? '_blank' : undefined"
+        :title="label"
         class="text-grey-title"
         :class="{ truncate: link }"
       >
