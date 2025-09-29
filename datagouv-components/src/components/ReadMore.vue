@@ -36,7 +36,7 @@
 <script setup lang="ts">
 import { useElementSize } from '@vueuse/core'
 import { ref, useTemplateRef, watch } from 'vue'
-import { easing, tween } from 'popmotion'
+import { animate } from 'popmotion'
 import styler from 'stylefire'
 import BrandedButton from './BrandedButton.vue'
 
@@ -81,25 +81,21 @@ const toggle = () => {
   }
   const divStyler = styler(readMoreRef.value)
   if (expanded.value) {
-    tween({
+    animate({
       from: { height: readMoreRef.value.scrollHeight },
       to: { height: getDefaultHeight() },
       duration: 300,
-      ease: easing.anticipate,
-    }).start({
-      update: divStyler.set,
-      complete: () => readMoreRef.value?.scrollIntoView({ behavior: 'smooth' }),
+      onComplete: () => readMoreRef.value?.scrollIntoView({ behavior: 'smooth' }),
+      onUpdate: divStyler.set,
     })
   }
   else {
-    tween({
+    animate({
       from: { height: getDefaultHeight() },
       to: { height: readMoreRef.value.scrollHeight },
       duration: 300,
-      ease: easing.anticipate,
-    }).start({
-      update: divStyler.set,
-      complete: () => divStyler.set({ height: 'auto' }),
+      onUpdate: divStyler.set,
+      onComplete: () => divStyler.set({ height: 'auto' }),
     })
   }
   expanded.value = !expanded.value
