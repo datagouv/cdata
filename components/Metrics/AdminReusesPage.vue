@@ -174,7 +174,7 @@ const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${s
 const params = computed(() => {
   return {
     organization: props.organization?.id,
-    user: props.user?.id,
+    owner: props.user?.id,
 
     sort: sortDirection.value,
     page_size: pageSize.value,
