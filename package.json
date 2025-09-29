@@ -64,7 +64,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
-    "@nuxt/eslint": "^0.7",
+    "@nuxt/eslint": "^1.9",
     "@parcel/watcher": "^2.5.1",
     "@playwright/test": "^1.55.0",
     "@tailwindcss/oxide": "^4.0.15",
