@@ -152,7 +152,7 @@ const { data: dataset, refresh } = await useAPI<DatasetV2WithFullObject>(url, {
 
 const datasetForm = ref<DatasetForm | null>(null)
 const harvested = ref(false)
-watchEffect(async () => {
+watchEffect(() => {
   if (dataset.value) {
     datasetForm.value = datasetToForm(dataset.value)
     harvested.value = isHarvested(dataset.value)
