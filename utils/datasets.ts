@@ -79,7 +79,7 @@ export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, pri
       : undefined,
     spatial: (form.spatial_granularity || form.spatial_zones)
       ? {
-          zones: form.spatial_zones.length ? form.spatial_zones.map(z => z.id) : undefined,
+          zones: form.spatial_zones.length ? form.spatial_zones.map(z => z.id) : Array.isArray(form.spatial_zones) ? null : undefined,
           granularity: form.spatial_granularity ? form.spatial_granularity.id : undefined,
         }
       : undefined,
