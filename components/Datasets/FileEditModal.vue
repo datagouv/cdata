@@ -63,7 +63,7 @@
                 {{ t('Valider') }}
               </BrandedButton>
             </template>
-            <div class="fr-mt-4w">
+            <div v-if="hasTabularApi" class="fr-mt-4w">
               <p>
                 {{ $t(`Attention : l'`) }} 
                 <a 
@@ -141,30 +141,30 @@
               <p class="fr-text--bold">
                 {{ $t('Cette action est irréversible.') }}
               </p>
-                <div class="fr-mt-4w">
-                  <p>
-                    {{ $t('Attention : cette ressource est exposée via une') }} 
-                    <a 
-                      href="https://www.data.gouv.fr/dataservices/api-tabulaire-data-gouv-fr-beta/"
-                      target="_blank"
-                      class="fr-link"
-                    >
-                      {{ $t('API automatique') }}
-                    </a>
-                    {{ $t('fournie par data.gouv.fr.') }}
-                  </p>
-                  <p>
-                    {{ $t('Si vous supprimez la ressource,') }} 
-                    <a 
-                      :href="`https://tabular-api.data.gouv.fr/api/resources/${resource.resource?.id}/`"
-                      target="_blank"
-                      class="fr-link"
-                    >
-                      {{ $t(`l'API`) }}
-                    </a>
-                    {{ $t('sera également supprimée et pourra cesser de fonctionner pour les réutilisateurs.') }}
-                  </p>
-                </div>
+              <div v-if="hasTabularApi" class="fr-mt-4w">
+                <p>
+                  {{ $t('Attention : cette ressource est exposée via une') }} 
+                  <a 
+                    href="https://www.data.gouv.fr/dataservices/api-tabulaire-data-gouv-fr-beta/"
+                    target="_blank"
+                    class="fr-link"
+                  >
+                    {{ $t('API automatique') }}
+                  </a>
+                  {{ $t('fournie par data.gouv.fr.') }}
+                </p>
+                <p>
+                  {{ $t('Si vous supprimez la ressource,') }} 
+                  <a 
+                    :href="`https://tabular-api.data.gouv.fr/api/resources/${resource.resource?.id}/`"
+                    target="_blank"
+                    class="fr-link"
+                  >
+                    {{ $t(`l'API`) }}
+                  </a>
+                  {{ $t('sera également supprimée et pourra cesser de fonctionner pour les réutilisateurs.') }}
+                </p>
+              </div>
               <template #footer>
                 <div
                   class="flex-1 flex justify-end"
@@ -222,6 +222,12 @@ const route = useRoute()
 const resourceForm = ref(cloneDeep(props.resource))
 const open = ref(false)
 const hasFileChanged = ref(false)
+
+// Check if resource has tabular API
+const hasTabularApi = computed(() => {
+  return props.resource.resource?.extras?.['analysis:parsing:parsing_table'] 
+    && !props.resource.resource?.extras?.['analysis:parsing:error']
+})
 
 // Watch for file changes
 watch(() => {
