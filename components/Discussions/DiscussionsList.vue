@@ -37,6 +37,26 @@
       />
     </div>
     <div v-else>
+      <SimpleBanner
+        type="primary"
+        class="flex items-center gap-1 mb-5"
+      >
+        <RiInformationLine class="size-4" />
+        <TranslationT
+          keypath="Votre question porte sur autre chose que {type} ? {link}"
+          tag="span"
+        >
+          <template #type>
+            {{ translatedType }}
+          </template>
+          <template #link>
+            <a
+              target="_blank"
+              :href="config.public.forumUrl"
+            >Visiter notre forum</a>
+          </template>
+        </TranslationT>
+      </SimpleBanner>
       <div class="flex flex-wrap justify-between items-center mb-5 gap-2">
         <h2
           v-if="pageData"
@@ -131,8 +151,8 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Pagination, SimpleBanner } from '@datagouv/components-next'
-import { RiAddLine, RiCloseCircleLine, RiSearchLine } from '@remixicon/vue'
+import { BrandedButton, Pagination, SimpleBanner, TranslationT } from '@datagouv/components-next'
+import { RiAddLine, RiCloseCircleLine, RiInformationLine, RiSearchLine } from '@remixicon/vue'
 import { refDebounced } from '@vueuse/core'
 import NewDiscussionForm from './NewDiscussionForm.vue'
 import DiscussionCard from './DiscussionCard.vue'
@@ -146,6 +166,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useTranslation()
+const config = useRuntimeConfig()
 
 const isClosed = ref(null as null | true | false)
 
@@ -161,12 +182,12 @@ const me = useMaybeMe()
 
 const newDiscussion = ref(false)
 
-const resetFilters = () => {
+function resetFilters() {
   q.value = ''
   qDebounced.value = ''
 }
 
-const showDiscussionForm = () => {
+function showDiscussionForm() {
   if (me.value) {
     newDiscussion.value = true
   }
@@ -174,6 +195,25 @@ const showDiscussionForm = () => {
     navigateTo({ path: '/login', query: { next: route.fullPath } }, { external: true })
   }
 }
+
+const translatedType = computed(() => {
+  switch (props.type) {
+    case 'Dataservice':
+      return t('cette api')
+    case 'Dataset':
+      return t('ce jeu de données')
+    case 'Reuse':
+      return t('cette réutilisation')
+    case 'Post':
+      return t('cet article')
+    case 'Topic':
+      return t('cette thématique')
+    case 'Organization':
+      return t('cette organisation')
+    default:
+      return ''
+  }
+})
 
 const params = computed(() => {
   const query = {
