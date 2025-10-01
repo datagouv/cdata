@@ -437,7 +437,6 @@ const { data: schemas, status: schemaStatus } = await useAPI<SchemaResponseData>
 
 const { toast } = useToast()
 
-// Watch newFile and update form.file immediately
 watch(newFile, (file) => {
   // console.log('[DescribeResource] newFile changed:', file ? file.name : 'null')
   if (file && form.value.filetype === 'file') {
