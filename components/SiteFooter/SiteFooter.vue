@@ -36,7 +36,7 @@
                 <BrandedButton
                   color="secondary"
                   :title="$t(`Abonnez-vous à notre lettre d'information`)"
-                  href="/pages/webinaires/"
+                  href="events/rentree-data-gouv/"
                 >
                   {{ $t("Voir nos prochains évènements") }}
                 </BrandedButton>
@@ -49,7 +49,7 @@
                 {{ $t("Suivez-nous") }}
                 <br> {{ $t("sur les réseaux sociaux") }}
               </p>
-              <ul class="flex justify-between list-none m-0 p-0 *:p-0 -ml-4">
+              <ul class="flex flex-wrap list-none m-0 p-0 *:p-0 -ml-4">
                 <li>
                   <a
                     class="link !inline-flex after:!content-none mx-2 !p-2 min-h-10 mh-10 mw-10 !no-underline hover:!bg-gray-some"
@@ -78,6 +78,16 @@
                     target="_blank"
                   >
                     <RiBlueskyLine />
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="link !inline-flex after:!content-none mx-2 !p-2 min-h-10 mh-10 mw-10 !no-underline hover:!bg-gray-some"
+                    :title="$t('Youtube - nouvel onglet')"
+                    href="https://www.youtube.com/@data-gouv-fr"
+                    target="_blank"
+                  >
+                    <RiYoutubeLine />
                   </a>
                 </li>
                 <li>
@@ -273,7 +283,7 @@
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
-import { RiBlueskyLine, RiGithubLine, RiLinkedinBoxLine, RiMastodonLine, RiRssLine } from '@remixicon/vue'
+import { RiBlueskyLine, RiGithubLine, RiLinkedinBoxLine, RiMastodonLine, RiRssLine, RiYoutubeLine } from '@remixicon/vue'
 
 const config = useRuntimeConfig()
 
@@ -301,7 +311,7 @@ const platformLinks: Array<Link> = [
   { label: t('Guides'), link: config.public.guidesUrl, external: true },
   { label: t('Feuille de route et nouveautés'), link: '/pages/roadmap' },
   { label: t('Nous écrire'), link: '/support' },
-  { label: t('Donnez votre avis'), link: config.public.feedbackFormUrl, external: true },
+  { label: t('Échangez avec la communauté'), link: config.public.forumUrl, external: true },
   { label: t('Statistiques'), link: '/dashboard' },
 ]
 
