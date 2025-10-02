@@ -3,7 +3,6 @@
     v-if="!organization || organization.metrics.dataservices"
     class="group/form"
     data-input-color="blue"
-    @submit.prevent="() => refresh()"
   >
     <div
       ref="search"
@@ -24,7 +23,7 @@
           <div class="space-y-4">
             <SearchableSelect
               v-if="!organization"
-              v-model="facets.organization"
+              v-model="selectedOrganization"
               :options="organizations ? organizations.data : []"
               :suggest="suggestOrganizations"
               :label="t('Organisations')"
@@ -207,16 +206,74 @@ const params = useUrlSearchParams<DataserviceSearchParams>('history', {
   removeFalsyValues: true,
 })
 
-const nonFalsyParams = computed(() => {
-  const filteredParams = Object.entries(toValue(params)).filter(([_k, v]) => v !== undefined && v !== '')
-  const propsParams = props.organization ? { organization: props.organization.id } : {}
-  return { ...propsParams, ...Object.fromEntries(filteredParams), page_size: pageSize }
+const useQueryParam = <Full, Default = null>(key: string, options: { default?: Default, getFull?: (raw: string) => Promise<Full>, getRaw?: (full: Full) => string } = {}) => {
+  const route = useRoute()
+
+  const defaultValue = (options.default || null) as Default
+  const getFull = options.getFull || (raw => raw as Full)
+  const getRaw = options.getRaw || (full => full as string)
+
+  const full = ref<Default | Full>(defaultValue)
+
+  const isDefault = computed(() => full.value === defaultValue)
+
+  const raw = computed(() => {
+    console.log('computing raw')
+    if (!isDefault.value) return getRaw(full.value)
+
+    const raw = route.query[key]
+    if (typeof raw === 'string') return raw
+
+    return defaultValue
+  })
+
+  onMounted(async () => {
+    const raw = route.query[key]
+    if (typeof raw !== 'string') return
+    full.value = await getFull(raw)
+  })
+
+  watch(full, () => {
+    console.log('watching full change')
+    // let newQuery = { ...route.query }
+
+    // if (isDefault.value) {
+    //   newQuery[key] = null
+    // }
+    // else {
+    //   const raw = getRaw(full.value)
+    //   if (route.query[key] === raw) return
+    // }
+
+    // newQuery = Object.fromEntries(Object.entries(newQuery).filter(([_, v]) => v))
+
+    // await navigateTo({ name: route.name, params: route.params, query: newQuery, hash: route.hash })
+  })
+
+  return { raw, full }
+}
+
+const { full: selectedOrganization } = useQueryParam<Organization | OrganizationSuggest>('organization', {
+  getFull: async (id: string) => {
+    console.log('getting full')
+    return await $api<Organization>(`/api/1/organizations/${id}/`)
+  },
+  getRaw: o => o.id,
 })
 
-const { data: searchResults, status: searchResultsStatus, refresh } = await useAPI<PaginatedArray<Dataservice>>('/api/2/dataservices/search/', {
-  params: nonFalsyParams,
-  lazy: true,
+const selectedOrganizationId = computed(() => {
+  console.log('compute selectedOrganizationId')
+  if (selectedOrganization.value) return selectedOrganization.value.id
+
+  const raw = route.query.organization
+  if (typeof raw === 'string') return raw
+
+  return null
 })
+
+const { data: searchResults, status: searchResultsStatus, refresh, error } = await useAPI<PaginatedArray<Dataservice>>('/api/2/dataservices/search/', { params: {
+  organization: selectedOrganizationId,
+} })
 
 const { data: organizations, status: organizationsStatus } = await useAPI<PaginatedArray<Organization>>('/api/1/organizations/?sort=-followers', { lazy: true })
 
@@ -233,14 +290,14 @@ async function suggestOrganizations(q: string) {
  * Search query
  */
 const queryString = ref('')
-watchEffect(() => {
-  // We use route.query here instead of params because params doesn't change when Nuxt
-  // navigates between page (for exemple when we use the search menu to search for a dataservice
-  // while in the dataservice search page)
-  if (Array.isArray(route.query.q)) return
-  if (!route.query.q) return
-  queryString.value = route.query.q
-})
+// watchEffect(() => {
+//   // We use route.query here instead of params because params doesn't change when Nuxt
+//   // navigates between page (for exemple when we use the search menu to search for a dataservice
+//   // while in the dataservice search page)
+//   if (Array.isArray(route.query.q)) return
+//   if (!route.query.q) return
+//   queryString.value = route.query.q
+// })
 
 const deboucedQuery = debouncedRef(queryString, config.public.searchAutocompleteDebounce)
 
@@ -285,9 +342,9 @@ const searchRef = useTemplateRef('search')
 /**
  * Called when user type in search field
  */
-watch([deboucedQuery, facets], () => {
-  currentPage.value = 1
-}, { deep: true })
+// watch([deboucedQuery, facets], () => {
+//   currentPage.value = 1
+// }, { deep: true })
 
 /**
  * Change current page
@@ -334,24 +391,25 @@ const sortOptions = [
   { label: t('Date de création'), value: '-created' },
 ]
 
-watchEffect(() => {
-  facets.value.organization = props.organization ?? organizationFromParams.value ?? organizationFromSuggest.value
-})
+// watchEffect(() => {
+//   facets.value.organization = props.organization ?? organizationFromParams.value ?? organizationFromSuggest.value
+// })
 
 // Update model params
-watchEffect(() => {
-  if (!props.organization) {
-    params.organization = facets.value.organization?.id ?? undefined
-  }
-  params.is_restricted = facets.value.isRestricted
-  if (currentPage.value > 1 || params.page) params.page = currentPage.value.toString()
-  params.q = deboucedQuery.value ?? undefined
-  params.sort = searchSort.value ?? null
-  return params
-})
+// watchEffect(() => {
+//   if (!props.organization) {
+//     params.organization = facets.value.organization?.id ?? undefined
+//   }
+//   params.is_restricted = facets.value.isRestricted
+//   if (currentPage.value > 1 || params.page) params.page = currentPage.value.toString()
+//   params.q = deboucedQuery.value ?? undefined
+//   params.sort = searchSort.value ?? null
+//   return params
+// })
 
 watch(searchResultsStatus, () => {
   if (searchResultsStatus.value === 'error') {
+    console.log(error.value)
     toast.error(t(`La recherche a échoué`))
   }
 })
