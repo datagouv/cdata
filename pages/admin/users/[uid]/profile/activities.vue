@@ -3,8 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '@datagouv/components-next'
-import ActivityList from '~/components/ActivityList.vue'
+import { ActivityList, type User } from '@datagouv/components-next'
 
 defineProps<{ user: User }>()
 </script>
