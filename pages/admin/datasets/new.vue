@@ -35,6 +35,7 @@
     <Step3AddResources
       v-if="currentStep === 3"
       :resources
+      :dataset-form
       :loading
       @previous="moveToStep(2)"
       @next="filesNext"
