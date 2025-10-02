@@ -72,6 +72,12 @@
               :label="$t('Profil')"
               :to="me.id === user.id ? `/admin/me/profile` : `/admin/users/${user.id}/profile`"
             />
+            <AdminSidebarLink
+              :icon="RiBarChartBoxLine"
+              :label="$t('Statistiques')"
+              :to="me.id === user.id ? `/admin/me/metrics` : `/admin/users/${user.id}/metrics`"
+              @click="$emit('click')"
+            />
           </template>
           <template v-else-if="organization">
             <AdminSidebarLink

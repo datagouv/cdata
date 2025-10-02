@@ -8,7 +8,6 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxt/eslint',
-    '@nuxt/icon',
     '@nuxt/image',
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
@@ -114,8 +113,6 @@ export default defineNuxtConfig({
       datasetRestrictedGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-juridique/producteurs-de-donnees/quelles-sont-les-obligations',
       dataSearchFeedbackFormUrl: 'https://tally.so/r/mDKv1N',
       forumUrl: 'https://forum.data.gouv.fr/',
-      feedbackFormUrl: 'https://tally.so/r/mOld5R',
-      betaAdminFeedbackUrl: 'https://tally.so/r/nP25OB',
       publishingDatasetFeedbackUrl: 'https://tally.so/r/nGo0yO',
       publishingDataserviceFeedbackUrl: 'https://tally.so/r/w2J7lL',
       publishingReuseFeedbackUrl: 'https://tally.so/r/mV98y6',

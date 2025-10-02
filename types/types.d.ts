@@ -155,7 +155,7 @@ export type NewDatasetForApi = {
   frequency?: string
   spatial?: {
     granularity?: string
-    zones?: Array<string>
+    zones?: Array<string> | null
   }
 } & WithAccessType
 

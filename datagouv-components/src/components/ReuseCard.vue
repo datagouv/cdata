@@ -1,5 +1,5 @@
 <template>
-  <article class="fr-enlarge-link group/reuse-card bg-white border border-gray-default flex flex-col relative">
+  <article class="fr-enlarge-link group/reuse-card bg-white border border-gray-default hover:bg-gray-some flex flex-col relative">
     <div class="flex flex-col h-full flex-1 order-2 px-8">
       <div class="order-1 flex flex-col px-4 py-1 h-full -mx-8">
         <h3 class="font-bold text-base mt-1 mb-0 truncate">
