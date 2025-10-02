@@ -8,10 +8,10 @@
 </template>
 
 <script setup lang="ts">
-import type { Dataservice } from '@datagouv/components-next'
+import type { AccessType } from '@datagouv/components-next'
 import type { AdminBadgeType } from '~/types/types'
 
-const props = defineProps<{ dataservice: Dataservice }>()
+const props = defineProps<{ accessType: AccessType }>()
 
 const { t } = useTranslation()
 
@@ -20,7 +20,7 @@ const label = computed(() => {
     open: t('Ouvert'),
     open_with_account: t('Ouvert avec compte'),
     restricted: t('Restreint'),
-  }[props.dataservice.access_type]
+  }[props.accessType]
 })
 
 const type = computed(() => {
@@ -28,6 +28,6 @@ const type = computed(() => {
     open: 'success' as AdminBadgeType,
     open_with_account: 'warning' as AdminBadgeType,
     restricted: 'warning' as AdminBadgeType,
-  }[props.dataservice.access_type]
+  }[props.accessType]
 })
 </script>

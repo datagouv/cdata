@@ -1,4 +1,5 @@
-import type { Dataset, CommunityResource, Dataservice, DataserviceAccessAudience, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, DataserviceAccessAudienceType, DataserviceAccessAudienceCondition, ContactPoint } from '@datagouv/components-next'
+import type { Dataset, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, ContactPoint } from '@datagouv/components-next'
+import type { AccessTypeForm, WithAccessType } from '~/datagouv-components/src/types/access_types'
 
 export type AxisAlignment = 'start' | 'center' | 'end'
 
@@ -29,7 +30,7 @@ export type AccordionState = DSFRFormDefaultState | AccordionFunctionalState | D
 
 export type AdminBadgeState = DSFRFormDefaultState | FormFunctionalState | DSFRInfoState
 
-export type AdminBadgeType = 'primary' | 'secondary' | 'warning' | 'danger' | 'success' | 'default'
+export type AdminBadgeType = 'primary' | 'secondary' | 'warning' | 'danger' | 'success' | 'default' | 'pink'
 
 export type PaginatedArray<T> = {
   data: Array<T>
@@ -136,7 +137,7 @@ export type DatasetForm = {
   spatial_granularity: SpatialGranularity | null
   private: boolean
   featured: boolean
-}
+} & AccessTypeForm
 
 export type NewDatasetForApi = {
   title: string
@@ -156,7 +157,7 @@ export type NewDatasetForApi = {
     granularity?: string
     zones?: Array<string> | null
   }
-}
+} & WithAccessType
 
 type ReuseSuggest = Pick<Reuse, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
 
@@ -197,16 +198,13 @@ export type DataserviceForm = {
   description: string
   contact_points: Array<NewContactPoint | ContactPoint | null>
   base_api_url: string
-  authorization_request_url: string
   machine_documentation_url: string | null
   technical_documentation_url: string | null
   business_documentation_url: string | null
-  access_type: 'open' | 'restricted' | 'open_with_account'
-  access_audiences: Record<DataserviceAccessAudienceType, DataserviceAccessAudienceCondition>
   rate_limiting: string
   availability: string
   private: boolean
-}
+} & AccessTypeForm
 
 export type NewDataserviceForApi = {
   organization?: string
@@ -219,16 +217,13 @@ export type NewDataserviceForApi = {
   description: string
   datasets?: Array<string>
   contact_points?: Array<string> | null
-  access_type: 'open' | 'open_with_account' | 'restricted'
-  access_audiences: Array<DataserviceAccessAudience>
   base_api_url: string | null
-  authorization_request_url: string | null
   machine_documentation_url: string | null
   technical_documentation_url: string | null
   business_documentation_url: string | null
   rate_limiting: string
   availability: number | null
-}
+} & WithAccessType
 
 type EnrichedLicense = License & { group: string, recommended?: boolean, code?: string, description?: string }
 
