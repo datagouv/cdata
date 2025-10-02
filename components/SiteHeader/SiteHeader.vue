@@ -483,6 +483,7 @@ const menu = [
     { label: t('Comment publier des données ?'), link: '/pages/onboarding/producteurs/' },
     { label: t('Comment utiliser des données ?'), link: '/pages/onboarding/reutilisateurs/' },
     { label: t('Les guides {site}', { site: config.public.title }), link: config.public.guidesUrl, external: true },
+    { label: t('Nos produits'), link: '/products/' },
   ], external: true },
   { label: t('Nouveautés'), link: '/posts/' },
   { label: t('Nous écrire'), link: '/support/' },

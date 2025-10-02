@@ -103,7 +103,8 @@ import type { Activity } from '~/types/activity'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{
-  id: string
+  id?: string
+  user?: string
 }>()
 
 const route = useRoute()
@@ -113,7 +114,8 @@ const page = ref(parseInt(route.query.page as string | undefined ?? '1', 10))
 
 const { data: activities, status } = await useAPI<PaginatedArray<Activity>>('/api/1/activity/', {
   query: {
-    related_to: props.id,
+    related_to: props.id ?? undefined,
+    user: props.user ?? undefined,
     page,
   },
 })
