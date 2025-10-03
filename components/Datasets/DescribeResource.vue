@@ -65,6 +65,9 @@
                   type: 'main',
                   description: '',
                   schema: null,
+                  schema_url: null,
+                  checksum_type: null,
+                  checksum_value: null,
                   file: {
                     raw: newFile,
                     state: { status: 'waiting' },
@@ -433,6 +436,16 @@ const { data: extensions, status } = await useAPI<Array<string>>('/api/1/dataset
 const { data: schemas, status: schemaStatus } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/', { lazy: true })
 
 const { toast } = useToast()
+
+watch(newFile, (file) => {
+  // console.log('[DescribeResource] newFile changed:', file ? file.name : 'null')
+  if (file && form.value.filetype === 'file') {
+    form.value.file = {
+      raw: file,
+      state: { status: 'waiting' },
+    }
+  }
+})
 
 const submit = async () => {
   if (await validate()) {
