@@ -136,18 +136,17 @@ import type { DatasetForm } from '~/types/types'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-
+const config = useRuntimeConfig()
 const route = useRoute()
 const { start, finish, isLoading } = useLoadingIndicator()
 
 const { toast } = useToast()
 
-const url = computed(() => `/api/2/datasets/${route.params.id}/`)
-const { data: dataset, refresh } = await useAPI<DatasetV2WithFullObject>(url, {
+const url = computed(() => `${config.public.apiBase}/api/2/datasets/${route.params.id}/`)
+const { data: dataset, refresh } = await useAPI<DatasetV2WithFullObject>(url.value, {
   headers: {
     'X-Get-Datasets-Full-Objects': 'True',
   },
-  redirectOn404: true,
 })
 
 const datasetForm = ref<DatasetForm | null>(null)
