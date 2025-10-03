@@ -45,6 +45,7 @@ export default defineNuxtConfig({
       baseUrl: 'https://www.data.gouv.fr/',
       commitId: undefined,
       banner: undefined,
+      isFrenchGovernment: false,
 
       title: 'data.gouv.fr',
       apiBase: 'http://dev.local:7000',

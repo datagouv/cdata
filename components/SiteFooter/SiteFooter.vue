@@ -214,11 +214,15 @@
         <div class="fr-footer__body">
           <div class="fr-footer__brand fr-enlarge-link">
             <p
+              v-if="config.public.isFrenchGovernment"
               class="fr-logo"
               title="république française"
             >
               république
               <br>française
+            </p>
+            <p v-else>
+              Add Your logo
             </p>
             <a
               class="fr-footer__brand-link"

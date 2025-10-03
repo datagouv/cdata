@@ -21,8 +21,14 @@
           <div class="fr-header__brand fr-enlarge-link">
             <div class="fr-header__brand-top">
               <div class="fr-header__logo">
-                <p class="fr-logo">
+                <p
+                  v-if="config.public.isFrenchGovernment"
+                  class="fr-logo"
+                >
                   République <br>Française
+                </p>
+                <p v-else>
+                  Add Your logo
                 </p>
               </div>
               <div class="lg:!hidden flex flex-row items-start justify-end p-1 -mr-1 mt-1 order-3 flex-1 self-stretch z-[1000] gap-3">
