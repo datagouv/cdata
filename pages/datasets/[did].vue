@@ -408,7 +408,7 @@ definePageMeta({
   keepScroll: true,
 })
 
-const url = computed(() => `/api/2/datasets/${route.params.did}/`)
+const url = computed(() => `${config.public.apiBase}/api/2/datasets/${route.params.id}/`)
 const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
   headers: {
     'X-Get-Datasets-Full-Objects': 'True',
