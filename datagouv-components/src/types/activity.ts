@@ -18,6 +18,6 @@ export type Activity = {
   label: string
   key: ActivityKey
   icon: string
-  extras: Record<string, any>
+  extras: Record<string, unknown>
   changes?: Array<string>
 }

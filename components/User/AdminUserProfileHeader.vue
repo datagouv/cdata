@@ -39,11 +39,10 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, type User } from '@datagouv/components-next'
+import { Avatar, BrandedButton, PaddedContainer, type User } from '@datagouv/components-next'
 import { RiEyeLine } from '@remixicon/vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
-import PaddedContainer from '../PaddedContainer/PaddedContainer.vue'
 import AdminEmail from '../AdminEmail.vue'
 
 defineProps<{
