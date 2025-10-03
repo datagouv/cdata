@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
 import type { Dataservice, DatasetV2 } from '@datagouv/components-next'
-import type { DatasetSuggest, PaginatedArray } from '~/types/types'
+import type { DatasetSuggest } from '~/types/types'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
@@ -28,13 +28,10 @@ const route = useRoute()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
 const { data: dataservice } = await useAPI<Dataservice>(url, { redirectOn404: true })
 const datasets = ref<Array<DatasetV2 | DatasetSuggest>>([])
-const datasetsPage = ref<PaginatedArray<DatasetV2> | null>(null)
-watchEffect(async () => {
+watch(dataservice, async () => {
   if (!dataservice.value) return
-  datasetsPage.value = await $api<PaginatedArray<DatasetV2>>(`/api/2/datasets/?dataservice=${dataservice.value.id}`)
-  // TODO use page data to see if there is others datasets linked and add a warning message?
-  datasets.value = datasetsPage.value.data
-})
+  datasets.value = await apiFetchAll<DatasetV2>($api, `/api/2/datasets/?dataservice=${dataservice.value.id}`)
+}, { immediate: true })
 
 const submit = async () => {
   await $api(`/api/1/dataservices/${dataservice.value.id}/`, {

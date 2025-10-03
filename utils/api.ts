@@ -1,5 +1,7 @@
 import type { Organization, User } from '@datagouv/components-next'
 import type { NuxtApp, UseFetchOptions } from 'nuxt/app'
+import type { $Fetch } from 'ofetch'
+import type { PaginatedArray } from '~/types/types'
 /*
   Example : const { data: datasets } = await useAPI<PaginatedArray<Dataset>>('/api/1/datasets')
 */
@@ -85,4 +87,30 @@ export function usePostApiWithCsrf() {
       },
     })
   }
+}
+
+export async function apiFetchAll<T>(
+  api: $Fetch,
+  baseUrl: string,
+) {
+  /**
+     * Wrapper to fetch all paginated data
+     */
+
+  const results: T[] = []
+  let nextPage: string | null = null
+
+  // First query
+  const response = await api<PaginatedArray<T>>(baseUrl)
+  results.push(...response.data)
+  nextPage = response.next_page
+
+  // Pagination
+  while (nextPage) {
+    const newResponse = await api<PaginatedArray<T>>(nextPage)
+    results.push(...newResponse.data)
+    nextPage = newResponse.next_page
+  }
+
+  return results
 }
