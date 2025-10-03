@@ -187,6 +187,7 @@
                   size="sm"
                   type="line"
                   :summary="datasetVisitsTotal"
+                  :since="metricsSince"
                 />
                 <StatBox
                   :title="$t('Téléchargements')"
@@ -194,6 +195,7 @@
                   size="sm"
                   type="line"
                   :summary="datasetDownloadsResourcesTotal"
+                  :since="metricsSince"
                 />
               </div>
               <div>
@@ -503,6 +505,11 @@ const badges = computed(() =>
 
 const datasetVisitsTotal = ref(0)
 const datasetDownloadsResourcesTotal = ref(0)
+
+const metricsSince = computed(() => {
+  // max of the start of metrics computing and the creation of the dataset on the platform
+  return [dataset.value.internal.created_at_internal, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
+})
 
 watchEffect(async () => {
   if (!dataset.value || !dataset.value.id) return
