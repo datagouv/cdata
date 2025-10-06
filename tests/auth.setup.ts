@@ -9,7 +9,7 @@ setup('authenticate', async ({ page }) => {
   await page.getByLabel('Adresse email').fill('admin@example.com')
   await page.getByLabel('Mot de passe').fill('@1337Password42')
   await page.screenshot({ path: 'screenshot.png', fullPage: true })
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Sign in' }).click() // I don't know why the button is in english and the input labels in french.
   await page.waitForURL('http://localhost:7000/')
 
   // End of authentication steps.
