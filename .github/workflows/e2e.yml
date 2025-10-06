@@ -34,6 +34,15 @@ jobs:
           path: udata
           ref: master
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies for udata
+        working-directory: udata
+        run: uv sync --frozen --extra dev
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -47,15 +56,6 @@ jobs:
 
       - name: Install Node.js dependencies for cdata
         run: pnpm install --frozen-lockfile
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install Python dependencies for udata
-        working-directory: udata
-        run: uv sync --frozen --extra dev
 
       - name: Configure udata
         working-directory: udata
