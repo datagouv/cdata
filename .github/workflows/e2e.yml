@@ -68,7 +68,7 @@ jobs:
           TESTING = True
           SECRET_KEY = 'test-secret-key-for-ci'
           SEND_MAIL = False
-          SERVER_NAME = 'localhost:5000'
+          SERVER_NAME = 'localhost:7000'
           CACHE_TYPE = 'flask_caching.backends.null'
           DEFAULT_LANGUAGE = 'fr'
 
@@ -102,15 +102,15 @@ jobs:
           udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
 
           # Start udata server in background
-          inv serve --port=5000 > udata.log 2>&1 &
+          inv serve --port=7000 > udata.log 2>&1 &
 
           # Wait for udata to be ready
-          timeout 90 bash -c 'until curl -f http://localhost:5000/api/1/site/; do sleep 2; done'
+          timeout 90 bash -c 'until curl -f http://localhost:7000/api/1/site/; do sleep 2; done'
           echo "udata server is ready"
 
       - name: Build and start cdata
         env:
-          NUXT_PUBLIC_API_BASE: http://localhost:5000
+          NUXT_PUBLIC_API_BASE: http://localhost:7000
           NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "['hero_15.png']"
         run: |
           # Build cdata
