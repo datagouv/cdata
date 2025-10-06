@@ -17,7 +17,6 @@ export async function useAPI<T, U = T>(
 
   const redirectOn404 = options && 'redirectOn404' in options && options.redirectOn404
   const redirectOnSlug = options && 'redirectOnSlug' in options && options.redirectOnSlug
-  console.log(options?.headers)
   const response = await useFetch(url, {
     ...options,
     $fetch: redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api,
