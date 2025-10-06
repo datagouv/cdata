@@ -4,12 +4,22 @@ on:
   push:
     branches: [main, develop]
   pull_request:
-    branches: [main, develop]
+    branches: []
 
 jobs:
   e2e-tests:
     timeout-minutes: 30
     runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:6.0.4
+        ports:
+          - 27017:27017
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
 
     steps:
       - name: Checkout cdata
@@ -34,18 +44,6 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox
-
-      - name: Start udata with Docker Compose
-        working-directory: udata
-        run: |
-          # Start MongoDB and Redis
-          docker compose up -d db broker
-
-          # Wait for services to be ready
-          timeout 60 bash -c 'until docker compose exec -T db mongosh --eval "db.runCommand({ping: 1})" ; do sleep 2; done'
-          timeout 30 bash -c 'until docker compose exec -T broker redis-cli ping ; do sleep 1; done'
-
-          echo "Database services are ready"
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -84,6 +82,10 @@ jobs:
           SECURITY_EMAIL_VALIDATOR_ARGS = {
               "check_deliverability": False
           }
+
+          MONGODB_HOST = 'mongodb://localhost:27017/udata'
+          CELERY_BROKER_URL = 'redis://localhost:6379'
+          CELERY_RESULT_BACKEND = 'redis://localhost:6379'
           EOF
 
       - name: Initialize udata
