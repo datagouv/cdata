@@ -23,7 +23,7 @@
     float: right;
     width: 50vw;
     height: 50vh;
-    background-image: url('@/assets/svg/brand/background.svg');
+    background-image: url('/nuxt_images/background.svg');
     background-size: cover;
     background-position: bottom;
     background-repeat: no-repeat;

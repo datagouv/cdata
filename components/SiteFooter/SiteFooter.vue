@@ -6,7 +6,7 @@
           <div class="w-full pb-6 md:pb-0 md:pr-[6%] md:w-2/3 flex flex-wrap">
             <div class="flex-none flex items-center mr-5">
               <NuxtImg
-                src="/img/newspaper.svg"
+                src="/illustrations/newspaper-black.svg"
                 loading="lazy"
                 width="71"
                 height="55"
