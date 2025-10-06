@@ -1,7 +1,7 @@
 <template>
   <!-- We translate to center the SVG which is asymetric. -->
   <nuxt-img
-    v-if="config.public.isFrenchGovernment"
+    v-if="appConfig.isFrenchGovernment"
     src="/nuxt_images/logo_text.svg"
     class="inline -translate-y-[15%]"
   />
@@ -14,5 +14,5 @@
 </template>
 
 <script setup lang="ts">
-const config = useRuntimeConfig()
+const appConfig = useAppConfig()
 </script>

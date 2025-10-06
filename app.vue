@@ -20,8 +20,9 @@ const app = useNuxtApp()
 
 const { locale } = useTranslation()
 const runtimeConfig = useRuntimeConfig()
+const appConfig = useAppConfig()
 
-if (runtimeConfig.public.isFrenchGovernment) {
+if (appConfig.isFrenchGovernment) {
   import('./assets/css/fonts.css')
 }
 else {

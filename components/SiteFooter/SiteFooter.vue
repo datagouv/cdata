@@ -214,7 +214,7 @@
         <div class="fr-footer__body">
           <div class="fr-footer__brand fr-enlarge-link">
             <p
-              v-if="config.public.isFrenchGovernment"
+              v-if="appConfig.isFrenchGovernment"
               class="fr-logo"
               title="république française"
             >
@@ -290,6 +290,7 @@ import { BrandedButton } from '@datagouv/components-next'
 import { RiBlueskyLine, RiGithubLine, RiLinkedinBoxLine, RiMastodonLine, RiRssLine, RiYoutubeLine } from '@remixicon/vue'
 
 const config = useRuntimeConfig()
+const appConfig = useAppConfig()
 
 const { t } = useTranslation()
 

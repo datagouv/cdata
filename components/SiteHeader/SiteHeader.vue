@@ -22,7 +22,7 @@
             <div class="fr-header__brand-top">
               <div class="fr-header__logo">
                 <p
-                  v-if="config.public.isFrenchGovernment"
+                  v-if="appConfig.isFrenchGovernment"
                   class="fr-logo"
                 >
                   République <br>Française
@@ -474,6 +474,7 @@ defineProps<{
 const getUserAvatar = useGetUserAvatar()
 const { t } = useTranslation()
 const config = useRuntimeConfig()
+const appConfig = useAppConfig()
 const me = useMaybeMe()
 const currentRoute = useRoute()
 const router = useRouter()
