@@ -42,7 +42,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "pnpm"
 
       - name: Install Node.js dependencies for cdata
@@ -56,12 +56,6 @@ jobs:
       - name: Install Python dependencies for udata
         working-directory: udata
         run: uv sync --frozen --extra dev
-
-      - name: Build cdata in parallel with udata setup
-        env:
-          NUXT_PUBLIC_API_BASE: http://localhost:5000
-          NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "['hero_15.png']"
-        run: pnpm run build &
 
       - name: Configure udata
         working-directory: udata
@@ -117,10 +111,13 @@ jobs:
           timeout 90 bash -c 'until curl -f http://localhost:5000/api/1/site/; do sleep 2; done'
           echo "udata server is ready"
 
-      - name: Wait for cdata build and start server
+      - name: Build and start cdata
+        env:
+          NUXT_PUBLIC_API_BASE: http://localhost:5000
+          NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "['hero_15.png']"
         run: |
-          # Wait for build to complete
-          wait
+          # Build cdata
+          pnpm run build
 
           # Start cdata server in background
           PORT=3000 pnpm run preview > cdata.log 2>&1 &
