@@ -44,16 +44,14 @@ jobs:
       - name: Install Node.js dependencies for cdata
         run: npm ci
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.11"
 
       - name: Install Python dependencies for udata
         working-directory: udata
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[test,dev]"
+        run: uv sync --frozen --extra dev
 
       - name: Configure udata
         working-directory: udata
@@ -90,16 +88,16 @@ jobs:
           mkdir -p fs
 
           # Initialize udata
-          udata init
+          uv run udata init
 
-          udata licenses
-          udata spatial load
-          udata import-fixtures
+          uv run udata licenses
+          uv run udata spatial load
+          uv run udata import-fixtures
 
-          udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
+          uv run udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
 
           # Start udata server in background
-          inv serve --port=5000 > udata.log 2>&1 &
+          uv run inv serve --port=5000 > udata.log 2>&1 &
 
           # Wait for udata to be ready
           timeout 90 bash -c 'until curl -f http://localhost:5000/api/1/site/; do sleep 2; done'
