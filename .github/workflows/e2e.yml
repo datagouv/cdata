@@ -138,6 +138,14 @@ jobs:
           echo "=== CDATA SERVER LOGS ==="
           cat cdata.log || echo "No cdata logs found"
 
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-screenshots
+          path: screenshot.png
+          retention-days: 7
+
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: always()

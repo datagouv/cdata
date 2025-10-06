@@ -8,6 +8,7 @@ setup('authenticate', async ({ page }) => {
   await page.goto('http://localhost:7000/login/')
   await page.getByLabel('Adresse email').fill('admin@example.com')
   await page.getByLabel('Mot de passe').fill('@1337Password42')
+  await page.screenshot({ path: 'screenshot.png', fullPage: true })
   await page.getByRole('button', { name: 'Se connecter' }).click()
   await page.waitForURL('http://localhost:7000/')
 
