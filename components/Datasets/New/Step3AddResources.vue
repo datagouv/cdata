@@ -178,7 +178,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, PaddedContainer, SimpleBanner } from '@datagouv/components-next'
 import UploadResourceModal from '../UploadResourceModal.vue'
 import type { ResourceForm } from '~/types/types'
 

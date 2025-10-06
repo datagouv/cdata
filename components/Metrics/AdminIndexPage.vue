@@ -99,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, StatBox, type Organization, type User } from '@datagouv/components-next'
+import { BrandedButton, PaddedContainer, StatBox, type Organization, type User } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 
 const props = defineProps<{

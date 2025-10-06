@@ -77,7 +77,7 @@
           :page-size="activities.page_size"
           :page="activities.page"
           :link="getLink"
-          @change="(newPage) => page = newPage"
+          @change="(newPage: string) => page = newPage"
         />
       </template>
       <div
@@ -97,10 +97,15 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, Pagination, useFormatDate } from '@datagouv/components-next'
-import PaddedContainer from '~/components/PaddedContainer/PaddedContainer.vue'
-import type { Activity } from '~/types/activity'
-import type { PaginatedArray } from '~/types/types'
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { useFetch } from '../functions/api'
+import { useFormatDate } from '../functions/dates'
+import type { PaginatedArray } from '../types/api'
+import type { Activity } from '../types/activity'
+import Avatar from './Avatar.vue'
+import Pagination from './Pagination.vue'
+import PaddedContainer from './PaddedContainer.vue'
 
 const props = defineProps<{
   id?: string
@@ -112,7 +117,7 @@ const { formatDate } = useFormatDate()
 
 const page = ref(parseInt(route.query.page as string | undefined ?? '1', 10))
 
-const { data: activities, status } = await useAPI<PaginatedArray<Activity>>('/api/1/activity/', {
+const { data: activities, status } = await useFetch<PaginatedArray<Activity>>('/api/1/activity/', {
   query: {
     related_to: props.id ?? undefined,
     user: props.user ?? undefined,
@@ -120,7 +125,7 @@ const { data: activities, status } = await useAPI<PaginatedArray<Activity>>('/ap
   },
 })
 
-const groupedActivities = computed(() => activities?.value.data.reduce((grouped, activity) => {
+const groupedActivities = computed(() => activities.value?.data.reduce((grouped, activity) => {
   const activityMonth = formatDate(activity.created_at, {
     dateStyle: undefined,
     day: undefined,
