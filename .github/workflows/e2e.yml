@@ -79,6 +79,10 @@ jobs:
           SECURITY_EMAIL_VALIDATOR_ARGS = {
               "check_deliverability": False
           }
+
+          MONGODB_HOST = 'mongodb'
+          CELERY_BROKER_URL = 'redis://redis:6379'
+          CELERY_RESULT_BACKEND = 'redis://redis:6379'
           EOF
 
       - name: Initialize udata
