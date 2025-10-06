@@ -36,7 +36,7 @@ export default defineNuxtConfig({
   },
 
   appConfig: {
-    isFrenchGovernment: false,
+    isFrenchGovernment: true,
   },
 
   runtimeConfig: {

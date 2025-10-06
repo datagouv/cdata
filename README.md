@@ -21,6 +21,7 @@ cdata includes its own set of private illustrations and images. They aren't avai
 They are located in the `public` directory.
 
 If you want to fork cdata, you must :
+- set `isFrenchGovernment` in `nuxt.config.ts` to false
 - replace the illustration and images used in your fork
 - use a different color scheme of the one used by data.gouv.fr
 - remove all reference to French public services 
