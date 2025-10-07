@@ -192,6 +192,7 @@
                   <a
                     href="https://github.com/opendatateam/udata/"
                     class="fr-footer__top-link"
+                    :title="site && site.version ? $t('Version {version}', { version: site.version }) : undefined"
                   >
                     {{ $t('Moteur open source : udata') }}
                   </a>
@@ -282,7 +283,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, type Site } from '@datagouv/components-next'
 import { RiBlueskyLine, RiGithubLine, RiLinkedinBoxLine, RiMastodonLine, RiRssLine, RiYoutubeLine } from '@remixicon/vue'
 
 const config = useRuntimeConfig()
@@ -336,4 +337,6 @@ const networkLinks: Array<Link> = [
   { label: 'info.gouv.fr', link: 'https://www.info.gouv.fr' },
   { label: 'service-public.fr', link: 'https://www.service-public.fr' },
 ]
+
+const { data: site } = await useAPI<Site>('/api/1/site')
 </script>

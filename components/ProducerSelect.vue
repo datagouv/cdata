@@ -26,6 +26,7 @@
           v-else
           class="rounded-full border border-gray-default size-5"
           :src="getUserAvatar(option.owner, 24)"
+          data-testid="user-avatar"
           alt=""
         />
         <span v-if="option.organization">{{ option.organization.name }}</span>
