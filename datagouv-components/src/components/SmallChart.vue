@@ -57,7 +57,10 @@ const data = computed(() => {
   months.sort()
   const orderedData: Record<string, number> = {}
   for (const month of months) {
-    orderedData[month] = props.data[month]
+    orderedData[month] = 0
+    if (props.data[month]) {
+      orderedData[month] = props.data[month]
+    }
   }
   return orderedData
 })
@@ -76,33 +79,33 @@ const additionalDatasetConfig = computed<{
     borderDash: (ctx: ScriptableLineSegmentContext) => Array<number>
   }
 } | object>(() => {
-        if (props.type === 'bar') {
-          return {
-            type: 'bar',
-            barPercentage: 1,
-            categoryPercentage: 0.9,
-            // Change the color of the last bar only
-            backgroundColor: months.value.map((_value, index) => index === months.value.length - 1 ? (props.lastWithLowEmphasis ? LIGHT_COLOR_WITH_OPACITY : COLOR) : LIGHT_COLOR),
-          }
-        }
+  if (props.type === 'bar') {
+    return {
+      type: 'bar',
+      barPercentage: 1,
+      categoryPercentage: 0.9,
+      // Change the color of the last bar only
+      backgroundColor: months.value.map((_value, index) => index === months.value.length - 1 ? (props.lastWithLowEmphasis ? LIGHT_COLOR_WITH_OPACITY : COLOR) : LIGHT_COLOR),
+    }
+  }
 
-        if (props.type === 'line') {
-          if (props.lastWithLowEmphasis) {
-            return {
-              type: 'line',
-              segment: {
-                borderColor: (ctx: ScriptableLineSegmentContext) => last(ctx, COLOR_WITH_OPACITY) || COLOR,
-                borderDash: (ctx: ScriptableLineSegmentContext) => last(ctx, [3, 3]) || [6, 0],
-              },
-            }
-          }
-          return {
-            type: 'line',
-          }
-        }
+  if (props.type === 'line') {
+    if (props.lastWithLowEmphasis) {
+      return {
+        type: 'line',
+        segment: {
+          borderColor: (ctx: ScriptableLineSegmentContext) => last(ctx, COLOR_WITH_OPACITY) || COLOR,
+          borderDash: (ctx: ScriptableLineSegmentContext) => last(ctx, [3, 3]) || [6, 0],
+        },
+      }
+    }
+    return {
+      type: 'line',
+    }
+  }
 
-        return {}
-      })
+  return {}
+})
 
 const getMonthYear = (dateAsString: string): string => {
   const date = new Date(dateAsString)
@@ -110,8 +113,8 @@ const getMonthYear = (dateAsString: string): string => {
   return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)}`
 }
 
-const startDate = computed(() => months.value.length ? getMonthYear(months.value[0]) : null)
-const endDate = computed(() => months.value.length ? getMonthYear(months.value[months.value.length - 1]) : null)
+const startDate = computed(() => months.value.length ? getMonthYear(months.value[0]!) : null)
+const endDate = computed(() => months.value.length ? getMonthYear(months.value[months.value.length - 1]!) : null)
 
 const OPTIONS = {
   // @ts-expect-error animation can be `true` but the typing is not expecting it

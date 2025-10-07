@@ -56,7 +56,11 @@ const display = computed(() => {
     }
   }
 
-  const addPronoun = (value: string | number | null) => {
+  // Function overloads to express that non-null input -> non-null output
+  function addPronoun(value: null): null
+  function addPronoun(value: string | number): string | number
+  function addPronoun(value: string | number | null): string | number | null
+  function addPronoun(value: string | number | null): string | number | null {
     if (!value) return null
     if (!hasPronoun) return value
     return t('le ') + value

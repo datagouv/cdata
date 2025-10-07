@@ -77,7 +77,7 @@
           :page-size="activities.page_size"
           :page="activities.page"
           :link="getLink"
-          @change="(newPage: string) => page = newPage"
+          @change="(newPage: number) => page = newPage"
         />
       </template>
       <div
