@@ -88,7 +88,7 @@
       >
         <InputGroup
           v-model="datasetUrl"
-          :label="t('Lien vers {objectType}', { objecType: theLabel })"
+          :label="t('Lien vers {objectType}', { objectType: theLabel })"
           :placeholder="'https://...'"
           :has-error="!!urlError"
           :error-text="urlError"

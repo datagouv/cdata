@@ -1,5 +1,5 @@
 import type { $Fetch } from 'nitropack'
-import type { Activity } from '~/types/activity'
+import type { Activity } from '@datagouv/components-next'
 import type { PaginatedArray } from '~/types/types'
 
 export function getActivityTranslation(activity: Activity) {
