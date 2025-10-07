@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Dataset, Frequency, Owned, Resource } from '@datagouv/components-next'
+import { defaultAccessTypeForm, type Dataset, type Frequency, type Owned, type Resource } from '@datagouv/components-next'
 import Step1PublishingType from '~/components/Datasets/New/Step1PublishingType.vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import Step3AddResources from '~/components/Datasets/New/Step3AddResources.vue'
@@ -92,6 +92,8 @@ const datasetForm = useState(DATASET_FORM_STATE, () => ({
   spatial_granularity: null as SpatialGranularity | null,
   contact_points: [],
   private: true,
+  featured: false,
+  ...defaultAccessTypeForm(),
 } as DatasetForm))
 const resources = useState<Array<ResourceForm>>(DATASET_FILES_STATE, () => [])
 const newDataset = useState<Dataset | null>('new-dataset', () => null)

@@ -32,6 +32,16 @@ export function accessTypeToApi(form: AccessTypeForm): WithAccessType {
   }
 }
 
+export function defaultAccessTypeForm(): AccessTypeForm {
+  return {
+    access_type: 'open',
+    access_audiences: {} as Record<AccessAudienceType, AccessAudienceCondition>,
+    access_type_reason_category: null,
+    access_type_reason: '',
+    authorization_request_url: '',
+  } satisfies AccessTypeForm
+}
+
 export function accessTypeToForm(accessType: WithAccessType): AccessTypeForm {
   return {
     access_type: accessType.access_type,
