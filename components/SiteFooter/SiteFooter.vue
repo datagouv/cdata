@@ -6,7 +6,7 @@
           <div class="w-full pb-6 md:pb-0 md:pr-[6%] md:w-2/3 flex flex-wrap">
             <div class="flex-none flex items-center mr-5">
               <NuxtImg
-                src="/img/newspaper.svg"
+                src="/illustrations/newspaper-black.svg"
                 loading="lazy"
                 width="71"
                 height="55"
@@ -215,11 +215,15 @@
         <div class="fr-footer__body">
           <div class="fr-footer__brand fr-enlarge-link">
             <p
+              v-if="appConfig.isFrenchGovernment"
               class="fr-logo"
               title="république française"
             >
               république
               <br>française
+            </p>
+            <p v-else>
+              Add Your logo
             </p>
             <a
               class="fr-footer__brand-link"
@@ -287,6 +291,7 @@ import { BrandedButton, type Site } from '@datagouv/components-next'
 import { RiBlueskyLine, RiGithubLine, RiLinkedinBoxLine, RiMastodonLine, RiRssLine, RiYoutubeLine } from '@remixicon/vue'
 
 const config = useRuntimeConfig()
+const appConfig = useAppConfig()
 
 const { t } = useTranslation()
 

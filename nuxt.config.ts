@@ -35,6 +35,10 @@ export default defineNuxtConfig({
     name: 'data.gouv.fr',
   },
 
+  appConfig: {
+    isFrenchGovernment: true,
+  },
+
   runtimeConfig: {
     crispIdentifier: '',
     crispKey: '',
