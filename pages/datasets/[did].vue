@@ -93,7 +93,7 @@
               <div
                 v-if="displayShortDescription" class="mb-4"
               >
-                <ReadMore class="">
+                <ReadMore>
                   <MarkdownViewer
                     size="sm"
                     :content="displayShortDescription"
