@@ -28,7 +28,6 @@
 import { linkSchema } from '@milkdown/preset-commonmark'
 import { usePluginViewContext } from '@prosemirror-adapter/vue'
 import { ref, toRaw, watchEffect } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useInstance } from '@milkdown/vue'
 import { makeTooltipProvider } from '../Tooltip/useTooltipProvider'
 import { addLink } from '~/components/MarkdownEditor/ProseMirror/handleLink'
@@ -36,7 +35,7 @@ import { useLinkPreview } from '~/components/MarkdownEditor/Milkdown/LinkPreview
 import EditorTooltip from '~/components/MarkdownEditor/Milkdown/Tooltip/EditorTooltip.vue'
 import { linkEditTooltipCtx, linkTooltipState } from '~/components/MarkdownEditor/Milkdown/LinkEdit/linkEditTooltipCtx'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const toolTipRef = useTemplateRef<InstanceType<typeof EditorTooltip>>('toolTip')
 const { link, updateLink } = useLinkPreview()

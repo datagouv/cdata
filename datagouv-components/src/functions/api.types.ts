@@ -3,15 +3,15 @@ import type { ComputedRef, Ref, WatchSource } from 'vue'
 export type UseFetchOptions<DataT> = {
   key?: string
   method?: string
-  query?: SearchParams
-  params?: SearchParams
-  body?: RequestInit['body'] | Record<string, any>
+  query?: Record<string, unknown>
+  params?: Record<string, unknown>
+  body?: RequestInit['body'] | Record<string, unknown>
   headers?: Record<string, string> | [key: string, value: string][] | Headers
   baseURL?: string
   server?: boolean
   lazy?: boolean
   immediate?: boolean
-  getCachedData?: (key: string, nuxtApp: any) => DataT
+  getCachedData?: (key: string, nuxtApp: unknown) => DataT
   deep?: boolean
   dedupe?: 'cancel' | 'defer'
   default?: () => DataT

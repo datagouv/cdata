@@ -29,22 +29,22 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type DatasetV2WithFullObject } from '@datagouv/components-next'
+import { BrandedButton, useTranslation, type DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiExternalLinkFill } from '@remixicon/vue'
+import type { ExternalRecommendation } from '~/types/recommendations'
 
 const props = defineProps<{ dataset: DatasetV2WithFullObject }>()
 
-const { locale } = useI18n()
-const shortLocale = computed(() => locale.value.split('-')[0])
+const { locale } = useTranslation()
+const shortLocale = computed(() => locale.split('-')[0])
 
 const recommendation = computed(() => {
-  const recommendations = props.dataset.extras['recommendations-externals'] || null
+  const recommendations = props.dataset.extras['recommendations-externals'] as Array<ExternalRecommendation> || null
   if (!recommendations || !recommendations.length) return
 
   const recommendation = recommendations[0]
 
   const locale = shortLocale.value in recommendation.messages ? shortLocale.value : 'fr'
-
   return {
     id: recommendation.id,
     title: recommendation.messages[locale].title,

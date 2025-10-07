@@ -24,7 +24,7 @@
           v-if="!existingTransfers"
           class="flex items-center justify-center"
         >
-          <AdminLoader class="size-20" />
+          <AnimatedLoader class="size-20" />
         </div>
         <div
           v-else-if="existingTransfers.length"
@@ -89,7 +89,7 @@
 <script setup lang="ts">
 import type { Dataservice, Dataset, DatasetV2, Reuse, Owned } from '@datagouv/components-next'
 import { RiSendPlaneLine } from '@remixicon/vue'
-import { BannerAction, BrandedButton, useFormatDate } from '@datagouv/components-next'
+import { AnimatedLoader, BannerAction, BrandedButton, useFormatDate } from '@datagouv/components-next'
 import type { LinkToSubject, TransferRequest } from '~/types/types'
 
 const props = defineProps<{
@@ -100,7 +100,7 @@ const props = defineProps<{
 
 const { $api } = useNuxtApp()
 const { toast } = useToast()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const loading = ref(false)

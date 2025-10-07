@@ -146,7 +146,6 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useFormatDate } from '../functions/dates'
 // import useOEmbed from '../../composables/useOEmbed'
 import type { Dataset, DatasetV2 } from '../types/datasets'
@@ -154,14 +153,15 @@ import type { Granularity } from '../types/granularity'
 import type { Frequency } from '../types/frequency'
 import type { License } from '../types/licenses'
 import { useFetch } from '../functions/api'
-import getDatasetOEmbedHtml from '../functions/datasets'
+import { getDatasetOEmbedHtml } from '../functions/datasets'
+import { useTranslation } from '../composables/useTranslation'
 import ExtraAccordion from './ExtraAccordion.vue'
 import CopyButton from './CopyButton.vue'
 
 const props = defineProps<{
   dataset: DatasetV2 | Dataset
 }>()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 // const embedText = useOEmbed('dataset', props.dataset.id)
 const textAreaRef = ref<HTMLTextAreaElement | null>(null)

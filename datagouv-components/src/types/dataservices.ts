@@ -53,6 +53,7 @@ export type Dataservice = Owned & {
   }>
   deleted_at: string | null
   description: string
+  featured: boolean
   machine_documentation_url: string | null
   technical_documentation_url: string | null
   business_documentation_url: string | null

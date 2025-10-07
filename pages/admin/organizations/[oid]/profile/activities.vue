@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Organization } from '@datagouv/components-next'
+import { ActivityList, type Organization } from '@datagouv/components-next'
 
 definePageMeta({
   requiredRole: 'admin',

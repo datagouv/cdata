@@ -1,6 +1,5 @@
 <template>
   <div class="p-4 border bg-white border-gray-default relative hover:bg-gray-some">
-    <div :id />
     <div
       v-if="dataset.private || dataset.archived"
       class="absolute top-0 fr-grid-row fr-grid-row--middle fr-mt-n3v fr-ml-n1v"
@@ -28,23 +27,23 @@
     </div>
     <div class="flex flex-wrap md:flex-nowrap gap-4 items-start">
       <div class="flex-none">
-        <div class="flex justify-center items-center p-3 border border-gray-lower bg-[#fff]">
+        <div class="flex justify-center items-center p-2 border border-gray-lower bg-[#fff]">
           <Placeholder
             v-if="dataset.organization"
             type="dataset"
             :src="dataset.organization.logo_thumbnail"
             alt=""
-            :size="40"
+            :size="48"
           />
           <Avatar
             v-else-if="dataset.owner"
             :user="dataset.owner"
-            :size="40"
+            :size="48"
           />
           <Placeholder
             v-else
             type="dataset"
-            :size="40"
+            :size="48"
           />
         </div>
       </div>
@@ -57,12 +56,16 @@
           >
             <AppLink
               :to="datasetUrl"
-              class="text-gray-title text-base bg-none flex truncate"
+              class="text-gray-title text-base bg-none flex w-full truncate"
+              :target="datasetUrlInNewTab ? '_blank' : undefined"
             >
-              <span class="block flex-initial truncate">{{ dataset.title }}</span>
+              <span
+                class="block truncate"
+                :class="dataset.acronym ? 'flex-initial' : 'flex-1'"
+              >{{ dataset.title }}</span>
               <small
                 v-if="dataset.acronym"
-                class="flex-none ml-2"
+                class="flex-1 ml-2"
               >{{ dataset.acronym }}</small>
               <span class="absolute inset-0" />
             </AppLink>
@@ -100,10 +103,7 @@
         </div>
         <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium">
           <div class="fr-hidden flex-sm dash-after-sm text-gray-medium -ml-2.5">
-            <DatasetQualityInline
-              :quality="dataset.quality"
-              :teleport-id="id"
-            />
+            <DatasetQualityInline :quality="dataset.quality" />
           </div>
           <div class="flex flex-wrap items-center gap-1">
             <p
@@ -158,9 +158,8 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
-import { computed, ref, useId, watchEffect } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import { RiDownloadLine, RiEyeLine, RiLineChartLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import { summarize } from '../functions/helpers'
@@ -169,6 +168,7 @@ import { getOwnerName } from '../functions/owned'
 import { removeMarkdown } from '../functions/markdown'
 import { getShortDescription } from '../functions/datasets'
 import { useComponentsConfig } from '../config'
+import { useTranslation } from '../composables/useTranslation'
 import DatasetQualityInline from './DatasetQualityInline.vue'
 import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
@@ -183,6 +183,7 @@ import AppLink from './AppLink.vue'
      * It is used as a separate prop to allow other sites using the package to define their own dataset pages.
      */
     datasetUrl: RouteLocationRaw
+    datasetUrlInNewTab?: boolean
 
     /**
      * The organizationUrl is an optional route location object to allow Vue Router to navigate to the details of the organization linked to tha dataset.
@@ -197,9 +198,8 @@ const props = withDefaults(defineProps<Props>(), {
   showShortDescription: true,
 })
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
-const id = useId()
 const ownerName = computed(() => getOwnerName(props.dataset))
 const config = useComponentsConfig()
 

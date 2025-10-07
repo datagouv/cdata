@@ -45,15 +45,13 @@
 
           <div class="fr-checkbox-group fr-checkbox-group--sm">
             <input
-              id="checkboxes-hint-el-sm-1"
+              :id="rememberMeId"
               v-model="rememberMe"
-              name="checkboxes-hint-el-sm-1"
               type="checkbox"
-              aria-describedby="checkboxes-hint-el-sm-1-messages"
             >
             <label
               class="fr-label"
-              for="checkboxes-hint-el-sm-1"
+              :for="rememberMeId"
             >
               {{ $t('Se souvenir de moi') }}
             </label>
@@ -78,7 +76,7 @@
           v-if="config.public.requireEmailConfirmation"
           class="text-center text-gray-plain text-sm"
         >
-          {{ $t('Instructions de confirmation non reçues ?') }} <CdataLink to="/confirm">
+          {{ $t('Instructions de confirmation non reçues ?') }} <CdataLink to="/resend-confirm-email">
             {{ $t('Renvoyer les instructions') }}
           </CdataLink>
         </div>
@@ -118,11 +116,14 @@
 <script setup lang="ts">
 import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
+import { usePostApiWithCsrf } from '~/utils/api'
 
-const { $api } = useNuxtApp()
-const { t } = useI18n()
+definePageMeta({
+  matomoIgnore: true,
+})
+
+const { t } = useTranslation()
 const { toast } = useToast()
-const localePath = useLocalePath()
 const config = useRuntimeConfig()
 
 useSeoMeta({ title: t('Connexion') })
@@ -130,6 +131,7 @@ useSeoMeta({ title: t('Connexion') })
 const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
+const rememberMeId = useId()
 const loading = ref(false)
 const errors = ref<FieldsErrors>({})
 const me = useMe()
@@ -142,18 +144,16 @@ onMounted(() => {
   }
 })
 
+const postApiWithCsrf = usePostApiWithCsrf()
 const connect = async () => {
   loading.value = true
   errors.value = {}
 
   try {
-    await $api('/fr/login/', {
-      method: 'POST',
-      body: {
-        email: email.value,
-        password: password.value,
-        remember: rememberMe.value,
-      },
+    await postApiWithCsrf('/login/', {
+      email: email.value,
+      password: password.value,
+      remember: rememberMe.value,
     })
 
     toast.success(t('Vous êtes maintenant connecté.'))
@@ -164,7 +164,7 @@ const connect = async () => {
       navigateTo(next)
     }
     else {
-      await navigateTo(localePath('/'))
+      await navigateTo('/')
     }
   }
   catch (e) {

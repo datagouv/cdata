@@ -5,6 +5,7 @@
       v-model="dataserviceForm"
       :harvested="harvested"
       type="update"
+      @feature="feature"
       @submit="save"
     >
       <template #top>
@@ -14,22 +15,22 @@
           type="primary"
           :title="$t(`Modifier la visibilité de l'API`)"
         >
-          <i18n-t
+          <TranslationT
             v-if="dataservice.private"
             keypath="Cette API est actuellement {status}. Seul vous ou les membres de votre organisation pouvez la voir et y contribuer."
           >
             <template #status>
               <strong>{{ $t('privée') }}</strong>
             </template>
-          </i18n-t>
-          <i18n-t
+          </TranslationT>
+          <TranslationT
             v-else
             keypath="Cette API est actuellement {status}. N'importe qui sur Internet peut voir cette API."
           >
             <template #status>
               <strong>{{ $t('publique') }}</strong>
             </template>
-          </i18n-t>
+          </TranslationT>
 
           <template #button>
             <BrandedButton
@@ -136,11 +137,11 @@
 <script setup lang="ts">
 import type { Dataservice } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
-import { BannerAction, BrandedButton } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, TranslationT } from '@datagouv/components-next'
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'
 import type { DataserviceForm, LinkToSubject } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const { toast } = useToast()
 
@@ -261,6 +262,29 @@ async function deleteDataservice() {
     refresh()
     toast.success(t('API supprimée !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+  }
+  finally {
+    finish()
+  }
+}
+
+async function feature() {
+  const method = dataservice.value.featured ? 'DELETE' : 'POST'
+  try {
+    start()
+    await $api(`/api/1/dataservices/${route.params.id}/featured`, {
+      method,
+    })
+    await refresh()
+    if (method === 'DELETE') {
+      toast.success(t('API retirée de la mise en avant !'))
+    }
+    else {
+      toast.success(t('API mise en avant !'))
+    }
+  }
+  catch {
+    toast.error(t('Impossible de mettre en avant cette API'))
   }
   finally {
     finish()

@@ -88,7 +88,7 @@ const props = defineProps<{
   organization: Organization
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const metricsOpen = ref(false)
 const metricsTitleId = useId()

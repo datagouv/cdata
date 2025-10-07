@@ -144,7 +144,6 @@
 import { Pagination, BrandedButton, useFormatDate } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiAddLine, RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
 import type { AdminBadgeType, PaginatedArray } from '~/types/types'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
@@ -153,7 +152,7 @@ import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import type { Post } from '~/types/posts'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const page = ref(1)

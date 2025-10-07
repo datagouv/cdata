@@ -15,8 +15,7 @@
 </template>
 
 <script setup lang = "ts">
-import { onMounted, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { onMounted, ref, useTemplateRef } from 'vue'
 import { RiErrorWarningLine } from '@remixicon/vue'
 
 import View from 'ol/View'
@@ -32,17 +31,19 @@ import {
   GeoportalZoom,
   LayerImport,
   LayerSwitcher,
+  // @ts-expect-error no types provided
 } from 'geopf-extensions-openlayers'
 
 import SimpleBanner from '../SimpleBanner.vue'
 import type { Resource } from '../../types/resources'
+import { useTranslation } from '../../composables/useTranslation'
 
 const props = defineProps<{ resource: Resource }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 let map = null
-const mapRef = ref(0)
+const mapRef = useTemplateRef('mapRef')
 const hasError = ref(false)
 
 async function displayMap() {
@@ -53,6 +54,7 @@ async function displayMap() {
 
   CRS.load()
   map = new Map({
+    // @ts-expect-error null is not happening during onMount
     target: mapRef.value,
     layers: [
       new TileLayer({
@@ -117,6 +119,7 @@ async function displayMap() {
         hasError.value = true
     }
     else {
+      // @ts-expect-error no typing from library
       const layerInfo = layerImport._getCapResponseWMSLayers.filter(layer => layer.Name == props.resource.title)[0]
       layerImport._addGetCapWMSLayer(layerInfo)
     }

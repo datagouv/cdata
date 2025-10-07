@@ -56,8 +56,8 @@
                 </CdataLink>
               </td>
               <td>{{ formatDate(topic.created_at) }}</td>
-              <td>{{ topic.datasets.total }}</td>
-              <td>{{ topic.reuses.total }}</td>
+              <td>{{ elementsCounts[topic.id]?.['Dataset'] ?? "..." }}</td>
+              <td>{{ elementsCounts[topic.id]?.['Reuse'] ?? "..." }}</td>
             </tr>
           </tbody>
         </AdminTable>
@@ -100,12 +100,11 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, useFormatDate, type TopicV2 } from '@datagouv/components-next'
+import type { TopicV2, TopicElement, TopicElementClass } from '@datagouv/components-next'
+import { useFormatDate, Pagination, BrandedButton } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiSearchLine } from '@remixicon/vue'
-import { BrandedButton } from '@datagouv/components-next'
 import type { DiscussionSortedBy } from '~/types/discussions'
 import type { PaginatedArray, SortDirection } from '~/types/types'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
@@ -114,7 +113,7 @@ import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import AdminInput from '~/components/AdminInput.vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const page = ref(1)
@@ -124,6 +123,7 @@ const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 const q = ref('')
 const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const elementsCounts = ref<Record<string, Record<TopicElementClass, number>>>({})
 
 const query = computed(() => {
   return {
@@ -136,4 +136,21 @@ const query = computed(() => {
 })
 
 const { data: pageData, status } = await useAPI<PaginatedArray<TopicV2>>('/api/2/topics/', { query, lazy: true })
+
+const countElements = async (topic: TopicV2, _class: 'Dataset' | 'Reuse') => {
+  const data = await $fetch<PaginatedArray<TopicElement>>(topic.elements.href, {
+    query: { page_size: 1, class: _class },
+  })
+  return data.total
+}
+
+watch(pageData, async (data) => {
+  if (!data) return
+  for (const topic of data.data) {
+    elementsCounts.value[topic.id] = {
+      Dataset: await countElements(topic, 'Dataset'),
+      Reuse: await countElements(topic, 'Reuse'),
+    }
+  }
+}, { immediate: true })
 </script>

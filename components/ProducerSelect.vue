@@ -26,6 +26,7 @@
           v-else
           class="rounded-full border border-gray-default size-5"
           :src="getUserAvatar(option.owner, 24)"
+          data-testid="user-avatar"
           alt=""
         />
         <span v-if="option.organization">{{ option.organization.name }}</span>
@@ -36,8 +37,10 @@
 </template>
 
 <script setup lang="ts">
-import { getUserAvatar, type Organization, type User } from '@datagouv/components-next'
+import { useGetUserAvatar, type Organization, type User } from '@datagouv/components-next'
 import type { Owned } from '~/types/types'
+
+const getUserAvatar = useGetUserAvatar()
 
 const props = withDefaults(defineProps<{
   label: string
@@ -49,7 +52,7 @@ const props = withDefaults(defineProps<{
 })
 const model = defineModel<Owned | null>({ required: true })
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const user = useMe()
 const { $api } = useNuxtApp()
 

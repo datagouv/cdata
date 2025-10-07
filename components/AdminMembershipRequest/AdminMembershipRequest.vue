@@ -2,7 +2,7 @@
   <BannerNotif
     type="primary"
     :icon="RiUserAddLine"
-    :badge="$t(`Demande d'adhésion`)"
+    :badge="$t(`Demande de rattachement`)"
     :user="request.user"
     :date="new Date(request.created)"
   >
@@ -30,7 +30,7 @@
       </BrandedButton>
       <ModalWithButton
         v-if="showActions"
-        :title="t(`Refuser la demande d'adhésion`)"
+        :title="t(`Refuser la demande de rattachement`)"
         size="lg"
         @open="refuseComment = ''"
       >
@@ -96,7 +96,6 @@
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
 import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiCheckLine, RiUserAddLine } from '@remixicon/vue'
 import InputGroup from '../InputGroup/InputGroup.vue'
 import ModalWithButton from '../Modal/ModalWithButton.vue'
@@ -111,7 +110,7 @@ const emits = defineEmits<{
   (e: 'refresh'): void
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const loading = ref(false)
 

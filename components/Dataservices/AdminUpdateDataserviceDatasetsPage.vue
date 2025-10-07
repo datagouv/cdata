@@ -17,17 +17,17 @@
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
-import type { Dataservice, Dataset, DatasetV2 } from '@datagouv/components-next'
+import type { Dataservice, DatasetV2 } from '@datagouv/components-next'
 import type { DatasetSuggest, PaginatedArray } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const { toast } = useToast()
 
 const route = useRoute()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
 const { data: dataservice } = await useAPI<Dataservice>(url, { redirectOn404: true })
-const datasets = ref<Array<Dataset | DatasetV2 | DatasetSuggest>>([])
+const datasets = ref<Array<DatasetV2 | DatasetSuggest>>([])
 const datasetsPage = ref<PaginatedArray<DatasetV2> | null>(null)
 watchEffect(async () => {
   if (!dataservice.value) return

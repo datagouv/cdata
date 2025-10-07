@@ -48,7 +48,7 @@ import DescribeResource from '~/components/Datasets/DescribeResource.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { CommunityResourceForm } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const route = useRoute()
 
 const steps = computed(() => [
