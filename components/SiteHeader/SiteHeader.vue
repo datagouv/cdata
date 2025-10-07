@@ -78,10 +78,11 @@
                               color="primary-softer"
                               :icon="NuxtImg"
                               :icon-attrs="{
-                                src: getUserAvatar(me, 24),
-                                loading: 'lazy',
-                                alt: '',
-                                class: 'rounded-full',
+                                'src': getUserAvatar(me, 24),
+                                'loading': 'lazy',
+                                'alt': '',
+                                'class': 'rounded-full',
+                                'data-testid': 'user-avatar',
                               }"
                               @click="close"
                             >
@@ -269,10 +270,11 @@
                       color="primary-softer"
                       :icon="NuxtImg"
                       :icon-attrs="{
-                        src: getUserAvatar(me, 24),
-                        loading: 'lazy',
-                        alt: '',
-                        class: 'rounded-full',
+                        'src': getUserAvatar(me, 24),
+                        'loading': 'lazy',
+                        'alt': '',
+                        'class': 'rounded-full',
+                        'data-testid': 'user-avatar',
                       }"
                     >
                       {{ me.first_name }} {{ me.last_name }}
