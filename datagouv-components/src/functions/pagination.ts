@@ -1,3 +1,5 @@
+import { useRoute } from 'vue-router'
+
 export function getLink(page: number): string {
   const route = useRoute()
   const routePath = route.path

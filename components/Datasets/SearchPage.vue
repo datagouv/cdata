@@ -297,7 +297,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getOrganizationTypes, Pagination, OTHER, USER } from '@datagouv/components-next'
+import { BrandedButton, getLink, getOrganizationTypes, Pagination, OTHER, USER } from '@datagouv/components-next'
 import type { DatasetV2, License, Organization, OrganizationTypes, RegisteredSchema, TranslatedBadge } from '@datagouv/components-next'
 import { ref, computed } from 'vue'
 import { RiCloseCircleLine, RiDownloadLine } from '@remixicon/vue'
