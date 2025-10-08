@@ -8,7 +8,9 @@ export type TranslationOptions = Record<string, string | number>
 const PLACEHOLDER_REGEX = /\{(\w+)\}/g
 
 // Pre-register all available translation files at build time
-const translationModules = import.meta.glob<Record<string, string>>('../../../locales/*.json')
+const translationModules = import.meta.glob<Record<string, string>>('../../../locales/*.json', {
+  import: 'default',
+})
 
 function detectLanguage(): string {
   // Server-side (Nuxt)
@@ -41,7 +43,9 @@ async function loadTranslationFile(lang: string): Promise<Record<string, string>
   }
 
   try {
-    return await moduleLoader()
+    const module = await moduleLoader()
+    console.log(module)
+    return module
   }
   catch {
     return {}
