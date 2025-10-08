@@ -44,7 +44,6 @@ async function loadTranslationFile(lang: string): Promise<Record<string, string>
 
   try {
     const module = await moduleLoader()
-    console.log(module)
     return module
   }
   catch {
