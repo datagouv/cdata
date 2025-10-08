@@ -45,8 +45,8 @@
             </button>
           </h4>
           <CopyButton
-            :label="$t('Copier le lien')"
-            :copied-label="$t('Lien copié !')"
+            :label="t('Copier le lien')"
+            :copied-label="t('Lien copié !')"
             :text="resourceExternalUrl"
             class="z-2"
           />
@@ -104,7 +104,7 @@
             size="xs"
             external
           >
-            {{ $t('Visiter') }}
+            {{ t('Visiter') }}
           </BrandedButton>
         </p>
         <p
@@ -243,13 +243,13 @@
                   v-if="resource.format === 'url'"
                   class="font-bold fr-text--sm fr-mb-0"
                 >
-                  {{ $t("URL d'origine") }}
+                  {{ t("URL d'origine") }}
                 </dt>
                 <dt
                   v-else
                   class="font-bold fr-text--sm fr-mb-0"
                 >
-                  {{ $t('Format original') }}
+                  {{ t('Format original') }}
                 </dt>
                 <dd class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
                   <span v-if="resource.format === 'url'">
@@ -279,19 +279,19 @@
                       class="fr-link"
                       rel="ugc nofollow noopener"
                     >
-                      <span>{{ $t('Format {format}', { format: resource.format }) }}<span v-if="resource.filesize"> - {{ filesize(resource.filesize) }}</span></span>
+                      <span>{{ t('Format {format}', { format: resource.format }) }}<span v-if="resource.filesize"> - {{ filesize(resource.filesize) }}</span></span>
                     </a>
                   </span>
                   <CopyButton
-                    :label="$t('Copier le lien')"
-                    :copied-label="$t('Lien copié !')"
+                    :label="t('Copier le lien')"
+                    :copied-label="t('Lien copié !')"
                     :text="resource.latest"
                     class="relative"
                   />
                 </dd>
                 <template v-if="generatedFormats.length">
                   <dt class="font-bold fr-text--sm fr-mb-0">
-                    {{ $t('Formats générés automatiquement par {platform} (dernière mise à jour {date})', { platform: config.name, date: conversionsLastUpdate }) }}
+                    {{ t('Formats générés automatiquement par {platform} (dernière mise à jour {date})', { platform: config.name, date: conversionsLastUpdate }) }}
                   </dt>
                   <dd
                     v-for="generatedFormat in generatedFormats"
@@ -305,12 +305,12 @@
                         class="fr-link"
                         rel="ugc nofollow noopener"
                       >
-                        <span>{{ $t('Format {format}', { format: generatedFormat.format }) }}<span v-if="generatedFormat.size"> - {{ filesize(generatedFormat.size) }}</span></span>
+                        <span>{{ t('Format {format}', { format: generatedFormat.format }) }}<span v-if="generatedFormat.size"> - {{ filesize(generatedFormat.size) }}</span></span>
                       </a>
                     </span>
                     <CopyButton
-                      :label="$t('Copier le lien')"
-                      :copied-label="$t('Lien copié !')"
+                      :label="t('Copier le lien')"
+                      :copied-label="t('Lien copié !')"
                       :text="generatedFormat.url"
                       class="relative"
                     />
@@ -475,6 +475,9 @@ const tabsOptions = computed(() => {
 })
 const switchTab = (index: number) => {
   const option = tabsOptions.value[index]
+  if (!option) {
+    return
+  }
   trackEvent(['View resource tab', props.resource.id, option.label])
 
   if (option.key === 'data') {

@@ -61,7 +61,7 @@
     </div>
     <template v-if="lastValue && lastMonth">
       <p class="mt-1 mb-0 text-xs">
-        {{ $t('depuis juillet 2022') }}
+        {{ t('depuis juillet 2022') }}
       </p>
       <p class="mt-1 mb-0 text-xs text-success-darkest">
         <strong>

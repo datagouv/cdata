@@ -212,7 +212,8 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, OrganizationCard, Pagination, ReuseCard, type DatasetV2, type Reuse, type User } from '@datagouv/components-next'
+import { Avatar, BrandedButton, OrganizationCard, Pagination, ReuseCard, getLink } from '@datagouv/components-next'
+import type { DatasetV2, Reuse, User } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 import { DatasetCardLg } from '#components'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'

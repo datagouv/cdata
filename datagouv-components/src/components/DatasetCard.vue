@@ -98,7 +98,7 @@
           </div>
           <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
           <div class="text-gray-medium whitespace-nowrap">
-            {{ $t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataset.last_update, { dateStyle: 'medium' }) }) }}
+            {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataset.last_update, { dateStyle: 'medium' }) }) }}
           </div>
         </div>
         <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium">
@@ -174,23 +174,23 @@ import Placeholder from './Placeholder.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import AppLink from './AppLink.vue'
 
-  type Props = {
-    dataset: Dataset | DatasetV2
+type Props = {
+  dataset: Dataset | DatasetV2
 
-    /**
+  /**
      * The datasetUrl is a route location object to allow Vue Router to navigate to the details of a dataset.
      * It is used as a separate prop to allow other sites using the package to define their own dataset pages.
      */
-    datasetUrl: RouteLocationRaw
-    datasetUrlInNewTab?: boolean
+  datasetUrl: RouteLocationRaw
+  datasetUrlInNewTab?: boolean
 
-    /**
+  /**
      * The organizationUrl is an optional route location object to allow Vue Router to navigate to the details of the organization linked to tha dataset.
      * It is used as a separate prop to allow other sites using the package to define their own organization pages.
      */
-    organizationUrl?: RouteLocationRaw
-    showDescription?: boolean
-  }
+  organizationUrl?: RouteLocationRaw
+  showDescription?: boolean
+}
 
 const props = withDefaults(defineProps<Props>(), {
   style: () => ({}),

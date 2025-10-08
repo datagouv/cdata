@@ -139,7 +139,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, DatasetQualityTooltipContent, DatasetQualityScore, summarize, useFormatDate, AvatarWithName, Tooltip } from '@datagouv/components-next'
+import { BrandedButton, DatasetQualityTooltipContent, DatasetQualityScore, summarize, useFormatDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
 import type { Activity, DatasetV2 } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiDownloadLine, RiEyeLine, RiLineChartLine, RiPriceTag3Line, RiStarLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
