@@ -70,6 +70,8 @@ jobs:
           CACHE_TYPE = 'null'
           DEFAULT_LANGUAGE = 'fr'
 
+          SCHEMA_CATALOG_URL='https://schema.data.gouv.fr/schemas/schemas.json'
+
           URLS_ALLOW_PRIVATE = True
           URLS_ALLOW_LOCAL = True
           URLS_ALLOWED_TLDS = Defaults.URLS_ALLOWED_TLDS | set(['local'])
