@@ -1,7 +1,16 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 import * as path from 'path'
 
 const __dirname = import.meta.dirname
+
+const clickOutside = async (page: Page) => {
+  // When clicking "Suivant" we execute the validation of the frequency input
+  // because we blur outside the select. This validation create a warning (because
+  // "Inconnu" is not recommanded), and the warning make the "Suivant" button
+  // move a little bit down so the click is miss. We want to fix this one day!
+  // (it also happens in a regular browser with a human, so it's really not ideal)
+  await page.mouse.click(1, 1)
+}
 
 test('can create a minimal dataset', async ({ page }) => {
   await page.goto('/')
@@ -20,14 +29,7 @@ test('can create a minimal dataset', async ({ page }) => {
   await page.getByTestId('select-frequency').click()
   await page.screenshot({ path: 'screenshot.png' })
   await page.getByRole('option', { name: 'Inconnu' }).click()
-
-  // When clicking "Suivant" we execute the validation of the frequency input
-  // because we blur outside the select. This validation create a warning (because
-  // "Inconnu" is not recommanded), and the warning make the "Suivant" button
-  // move a little bit down so the click is miss. Chromium doesn't seems to have this
-  // problem (only Firefox). We want to fix this one day!
-  await page.getByText('Qu’est-ce qu’un jeu de données ?').click()
-
+  await clickOutside(page)
   await page.getByRole('button', { name: 'Suivant' }).click()
   await page.getByRole('button', { name: 'Ajoutez des fichiers' }).click()
   // Start waiting for file chooser before clicking. Note no await.
@@ -66,21 +68,13 @@ The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for t
   await page.getByRole('option', { name: 'test' }).click()
   await page.getByPlaceholder('Chercher un mot clé…').fill('toto')
   await page.getByRole('option', { name: 'toto' }).click()
-  await page.getByTestId('searchable-select-licence').click()
+  await clickOutside(page)
   await page.getByTestId('searchable-select-licence').click()
   await page.getByText('Other (Public Domain)').click()
-  await page.getByTestId('searchable-select-frquencedemisejour').click()
+  await clickOutside(page)
   await page.getByTestId('searchable-select-frquencedemisejour').click()
   await page.getByRole('option', { name: 'Ponctuelle' }).click()
-  await page.getByRole('textbox', { name: 'début' }).click()
   await page.getByRole('textbox', { name: 'début' }).fill('1994-04-14')
-  await page.getByRole('textbox', { name: 'début' }).press('Tab')
-  await page.getByRole('textbox', { name: 'début' }).press('Tab')
-  await page.getByRole('textbox', { name: 'début' }).press('Tab')
-  await page.getByRole('textbox', { name: 'début' }).press('Tab')
-  await page.getByRole('textbox', { name: 'début' }).press('Tab')
-  await page.getByRole('textbox', { name: 'début' }).press('Tab')
-  await page.getByRole('textbox', { name: 'début' }).press('Tab')
   await page.getByRole('textbox', { name: 'fin' }).fill('2025-10-01')
   await page.getByTestId('searchable-select-couverturespatiale').click()
   await page.getByPlaceholder('Rechercher une couverture').fill('france')
@@ -98,10 +92,10 @@ The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for t
   await page.getByLabel('Type *').selectOption('documentation')
   await page.getByTestId('markdown-editor').click()
   await page.getByTestId('markdown-editor').fill('C\'est Google!')
-  await page.getByTestId('searchable-select-format').click()
+  await clickOutside(page)
   await page.getByTestId('searchable-select-format').click()
   await page.getByRole('option', { name: 'pdf' }).click()
-  await page.getByTestId('searchable-select-typemime').click()
+  await clickOutside(page)
   await page.getByTestId('searchable-select-typemime').click()
   await page.getByRole('option', { name: 'application/pdf' }).click()
   await page.getByTestId('searchable-select-schma').click()
