@@ -43,8 +43,7 @@ async function loadTranslationFile(lang: string): Promise<Record<string, string>
   }
 
   try {
-    const module = await moduleLoader()
-    return module
+    return await moduleLoader()
   }
   catch {
     return {}
