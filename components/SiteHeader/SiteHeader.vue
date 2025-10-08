@@ -21,8 +21,14 @@
           <div class="fr-header__brand fr-enlarge-link">
             <div class="fr-header__brand-top">
               <div class="fr-header__logo">
-                <p class="fr-logo">
+                <p
+                  v-if="appConfig.isFrenchGovernment"
+                  class="fr-logo"
+                >
                   République <br>Française
+                </p>
+                <p v-else>
+                  Add Your logo
                 </p>
               </div>
               <div class="lg:!hidden flex flex-row items-start justify-end p-1 -mr-1 mt-1 order-3 flex-1 self-stretch z-[1000] gap-3">
@@ -78,10 +84,11 @@
                               color="primary-softer"
                               :icon="NuxtImg"
                               :icon-attrs="{
-                                src: getUserAvatar(me, 24),
-                                loading: 'lazy',
-                                alt: '',
-                                class: 'rounded-full',
+                                'src': getUserAvatar(me, 24),
+                                'loading': 'lazy',
+                                'alt': '',
+                                'class': 'rounded-full',
+                                'data-testid': 'user-avatar',
                               }"
                               @click="close"
                             >
@@ -269,10 +276,11 @@
                       color="primary-softer"
                       :icon="NuxtImg"
                       :icon-attrs="{
-                        src: getUserAvatar(me, 24),
-                        loading: 'lazy',
-                        alt: '',
-                        class: 'rounded-full',
+                        'src': getUserAvatar(me, 24),
+                        'loading': 'lazy',
+                        'alt': '',
+                        'class': 'rounded-full',
+                        'data-testid': 'user-avatar',
                       }"
                     >
                       {{ me.first_name }} {{ me.last_name }}
@@ -468,6 +476,7 @@ defineProps<{
 const getUserAvatar = useGetUserAvatar()
 const { t } = useTranslation()
 const config = useRuntimeConfig()
+const appConfig = useAppConfig()
 const me = useMaybeMe()
 const currentRoute = useRoute()
 const router = useRouter()

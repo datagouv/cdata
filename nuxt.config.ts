@@ -35,6 +35,10 @@ export default defineNuxtConfig({
     name: 'data.gouv.fr',
   },
 
+  appConfig: {
+    isFrenchGovernment: true,
+  },
+
   runtimeConfig: {
     crispIdentifier: '',
     crispKey: '',
@@ -127,6 +131,8 @@ export default defineNuxtConfig({
       maxNumberOfResourcesToUploadInParallel: 3,
       resourceFileUploadChunk: 2 * 1000 * 1000,
       maxSortableFiles: 50,
+
+      maxNumberOfDatasetsForDataserviceUpdate: 200,
 
       captcheta: {
         enabled: true,

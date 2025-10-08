@@ -6,7 +6,7 @@
           <div class="w-full pb-6 md:pb-0 md:pr-[6%] md:w-2/3 flex flex-wrap">
             <div class="flex-none flex items-center mr-5">
               <NuxtImg
-                src="/img/newspaper.svg"
+                src="/illustrations/newspaper-black.svg"
                 loading="lazy"
                 width="71"
                 height="55"
@@ -192,6 +192,7 @@
                   <a
                     href="https://github.com/opendatateam/udata/"
                     class="fr-footer__top-link"
+                    :title="site && site.version ? $t('Version {version}', { version: site.version }) : undefined"
                   >
                     {{ $t('Moteur open source : udata') }}
                   </a>
@@ -214,11 +215,15 @@
         <div class="fr-footer__body">
           <div class="fr-footer__brand fr-enlarge-link">
             <p
+              v-if="appConfig.isFrenchGovernment"
               class="fr-logo"
               title="république française"
             >
               république
               <br>française
+            </p>
+            <p v-else>
+              Add Your logo
             </p>
             <a
               class="fr-footer__brand-link"
@@ -282,10 +287,11 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, type Site } from '@datagouv/components-next'
 import { RiBlueskyLine, RiGithubLine, RiLinkedinBoxLine, RiMastodonLine, RiRssLine, RiYoutubeLine } from '@remixicon/vue'
 
 const config = useRuntimeConfig()
+const appConfig = useAppConfig()
 
 const { t } = useTranslation()
 
@@ -336,4 +342,6 @@ const networkLinks: Array<Link> = [
   { label: 'info.gouv.fr', link: 'https://www.info.gouv.fr' },
   { label: 'service-public.fr', link: 'https://www.service-public.fr' },
 ]
+
+const { data: site } = await useAPI<Site>('/api/1/site')
 </script>
