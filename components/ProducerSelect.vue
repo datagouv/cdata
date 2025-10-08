@@ -12,6 +12,7 @@
 
     :error-text
     :warning-text
+    data-testid="producer-select"
   >
     <template #option="{ option }">
       <div class="flex items-center space-x-2">
