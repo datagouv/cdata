@@ -4,13 +4,13 @@
     class="inline-flex mb-0 items-baseline text-xs"
   >
     <Toggletip
-      :button-props="{ class: 'relative z-2 -ml-3 top-1 -my-3', title: $t('Schéma de données') }"
+      :button-props="{ class: 'relative z-2 -ml-3 top-1 -my-3', title: t('Schéma de données') }"
       no-margin
     >
       <RiInformationLine class="size-4" />
       <template #toggletip="{ close }">
         <div class="flex justify-between border-bottom">
-          <h5 class="fr-text--sm fr-my-0 fr-p-2v">{{ $t("Schéma de données") }}</h5>
+          <h5 class="fr-text--sm fr-my-0 fr-p-2v">{{ t("Schéma de données") }}</h5>
           <button
             type="button"
             :title="t('Fermer')"
@@ -101,6 +101,7 @@ import type { Resource } from '../../types/resources'
 import Toggletip from '../Toggletip.vue'
 import type { RegisteredSchema, ValidataError } from '../../functions/schemas'
 import { findSchemaInCatalog, useGetCatalog, useGetSchemaDocumentation, useGetSchemaValidationUrl } from '../../functions/schemas'
+import { useTranslation } from '../../composables/useTranslation'
 
 const props = defineProps<{
   resource: Resource

@@ -24,6 +24,7 @@
 </template>
 
 <script setup lang="ts">
+import { getLink } from '@datagouv/components-next'
 import type { Organization } from '@datagouv/components-next'
 import { useUrlSearchParams } from '@vueuse/core'
 import type { LocationQueryValue } from 'vue-router'

@@ -31,7 +31,7 @@
       v-else-if="loading"
       class="text-gray-medium"
     >
-      {{ $t("Chargement de l'aperçu PDF...") }}
+      {{ t("Chargement de l'aperçu PDF...") }}
     </div>
     <SimpleBanner
       v-else-if="fileTooLarge"
@@ -40,8 +40,8 @@
     >
       <RiErrorWarningLine class="shink-0 size-6" />
       <span>{{ fileSizeBytes
-        ? $t("Fichier PDF trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
-        : $t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
+        ? t("Fichier PDF trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
+        : t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
       }}</span>
     </SimpleBanner>
     <SimpleBanner
@@ -50,7 +50,7 @@
       class="flex items-center space-x-2"
     >
       <RiErrorWarningLine class="shink-0 size-6" />
-      <span>{{ $t("Ce fichier PDF ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
+      <span>{{ t("Ce fichier PDF ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
     </SimpleBanner>
     <SimpleBanner
       v-else-if="error"
@@ -58,7 +58,7 @@
       class="flex items-center space-x-2"
     >
       <RiErrorWarningLine class="shink-0 size-6" />
-      <span>{{ $t("Erreur lors du chargement de l'aperçu PDF. Pour consulter le fichier, téléchargez-le depuis l'onglet Téléchargements.") }}</span>
+      <span>{{ t("Erreur lors du chargement de l'aperçu PDF. Pour consulter le fichier, téléchargez-le depuis l'onglet Téléchargements.") }}</span>
     </SimpleBanner>
   </div>
 </template>
@@ -69,6 +69,7 @@ import { RiErrorWarningLine } from '@remixicon/vue'
 import SimpleBanner from '../SimpleBanner.vue'
 import { useComponentsConfig } from '../../config'
 import type { Resource } from '../../types/resources'
+import { useTranslation } from '../../composables/useTranslation'
 
 const PDF = defineAsyncComponent(() =>
   import('pdf-vue3').then((module) => {
@@ -81,6 +82,7 @@ const props = defineProps<{
 }>()
 
 const config = useComponentsConfig()
+const { t } = useTranslation()
 
 const pdfData = ref<boolean>(false)
 const loading = ref(false)

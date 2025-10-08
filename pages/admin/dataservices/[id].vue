@@ -106,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import { AvatarWithName, BrandedButton, summarize, Tooltip, useFormatDate } from '@datagouv/components-next'
+import { AvatarWithName, BrandedButton, summarize, Tooltip, useFormatDate, getActivityTranslation } from '@datagouv/components-next'
 import type { Activity, Dataservice } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiEyeLine, RiStarLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'

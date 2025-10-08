@@ -35,6 +35,6 @@ const img = computedAsync(async () => {
     import: 'default',
   })
   const src = Object.keys(labelImages).find(path => path.includes(props.badge.kind))
-  return src ? await labelImages[src]() as string : undefined
+  return src && labelImages[src] ? await labelImages[src]() as string : undefined
 })
 </script>

@@ -1,7 +1,7 @@
 <template>
   <div class="py-6 mb-6 border-bottom border-gray-default">
     <h2 class="subtitle subtitle--uppercase">
-      {{ $t('Informations') }}
+      {{ t('Informations') }}
     </h2>
     <div class="fr-text--sm fr-m-0">
       <dl class="fr-grid-row fr-grid-row--gutters">
@@ -10,7 +10,7 @@
           class="fr-col-12 fr-col-sm-6 fr-col-md-4"
         >
           <dt class="subtitle fr-mb-0">
-            {{ $t('Licence') }}
+            {{ t('Licence') }}
           </dt>
           <dd class="text-sm m-0 text-gray-medium p-0">
             <code class="bg-grey-some px-1 text-gray-medium">
@@ -22,7 +22,7 @@
         </div>
         <div class="fr-col-12 fr-col-sm-6 fr-col-md-4">
           <dt class="subtitle fr-mb-0">
-            {{ $t('Identifiant') }}
+            {{ t('Identifiant') }}
           </dt>
           <dd class="text-sm m-0 text-gray-medium p-0">
             {{ dataset.id }}
@@ -33,13 +33,13 @@
   </div>
   <div class="pb-6 mb-6 border-bottom border-gray-default">
     <h2 class="subtitle subtitle--uppercase">
-      {{ $t('Temporalité') }}
+      {{ t('Temporalité') }}
     </h2>
     <div class="fr-text--sm fr-m-0">
       <dl class="fr-grid-row fr-grid-row--gutters">
         <div class="fr-col-12 fr-col-sm-6 fr-col-md-4">
           <dt class="subtitle fr-mb-0">
-            {{ $t('Création') }}
+            {{ t('Création') }}
           </dt>
           <dd class="text-sm m-0 text-gray-medium p-0">
             {{ formatDate(dataset.created_at) }}
@@ -50,7 +50,7 @@
           class="fr-col-12 fr-col-sm-6 fr-col-md-4"
         >
           <dt class="subtitle fr-mb-0">
-            {{ $t('Fréquence') }}
+            {{ t('Fréquence') }}
           </dt>
           <dd class="text-sm m-0 text-gray-medium p-0">
             {{ frequency.label }}
@@ -60,7 +60,7 @@
       <dl class="fr-grid-row fr-grid-row--gutters">
         <div class="fr-col-12 fr-col-sm-6 fr-col-md-4">
           <dt class="subtitle fr-mb-0">
-            {{ $t('Dernière mise à jour') }}
+            {{ t('Dernière mise à jour') }}
           </dt>
           <dd class="text-sm m-0 text-gray-medium p-0">
             {{ formatDate(props.dataset.last_update) }}
@@ -71,7 +71,7 @@
   </div>
   <div class="pb-6 mb-6 border-bottom border-gray-default">
     <h2 class="subtitle subtitle--uppercase">
-      {{ $t('Couverture spatiale') }}
+      {{ t('Couverture spatiale') }}
     </h2>
     <div class="fr-text--sm fr-m-0">
       <dl class="fr-grid-row fr-grid-row--gutters">
@@ -80,7 +80,7 @@
           class="fr-col-12 fr-col-sm-6 fr-col-md-4"
         >
           <dt class="subtitle fr-mb-0">
-            {{ $t('Couverture territoriale') }}
+            {{ t('Couverture territoriale') }}
           </dt>
           <dd class="text-sm m-0 text-gray-medium p-0">
             {{ zonesLabels.join(', ') }}
@@ -91,7 +91,7 @@
           class="fr-col-12 fr-col-sm-6 fr-col-md-4"
         >
           <dt class="subtitle fr-mb-0">
-            {{ $t('Granularité de la couverture territoriale') }}
+            {{ t('Granularité de la couverture territoriale') }}
           </dt>
           <dd class="text-sm m-0 text-gray-medium p-0">
             {{ granularity.name }}
@@ -102,15 +102,15 @@
   </div>
   <div class="pb-6 mb-6 border-bottom border-gray-default">
     <h2 class="subtitle subtitle--uppercase">
-      {{ $t('Actions') }}
+      {{ t('Actions') }}
     </h2>
     <div class="fr-text--sm fr-m-0">
       <h3 class="subtitle fr-mb-1v">
-        {{ $t('Intégrer sur votre site') }}
+        {{ t('Intégrer sur votre site') }}
         <CopyButton
           :hide-label="true"
-          :label="$t(`Copier l'intégration`)"
-          :copied-label="$t('Intégration copiée !')"
+          :label="t(`Copier l'intégration`)"
+          :copied-label="t('Intégration copiée !')"
           class="fr-my-1w fr-mr-1w"
           :text="getDatasetOEmbedHtml('dataset', dataset.id)"
         />

@@ -1,7 +1,7 @@
 <template>
   <PaddedContainer class="p-4 pr-7">
     <LoadingBlock :status>
-      <template v-if="activities.total">
+      <template v-if="activities && activities.total">
         <div
           v-for="(monthlyActivities, month) in groupedActivities"
           :key="month"
@@ -45,7 +45,7 @@
                     {{ getActivityTranslation(activity) }}
                   </summary>
                   <p class="m-2 text-xs">
-                    {{ $t('Aucun Champs mis à jour : | 1 Champ mis à jour : | {n} Champs mis à jour :', { n: activity.changes?.length }) }}
+                    {{ t('Aucun Champs mis à jour : | 1 Champ mis à jour : | {n} Champs mis à jour :', { n: activity.changes?.length ?? 0 }) }}
                   </p>
                   <div class="font-mono text-xs rounded-sm bg-gray-some p-4 m-2">
                     <ul class="list-['-'] pl-2 m-0">
@@ -66,7 +66,7 @@
                   {{ getActivityTranslation(activity) }}
                 </p>
                 <p class="m-0 text-xs text-gray-medium">
-                  {{ $t('le {date}', { date: formatDate(activity.created_at) }) }}
+                  {{ t('le {date}', { date: formatDate(activity.created_at) }) }}
                 </p>
               </div>
             </li>
@@ -77,7 +77,7 @@
           :page-size="activities.page_size"
           :page="activities.page"
           :link="getLink"
-          @change="(newPage: string) => page = newPage"
+          @change="(newPage: number) => page = newPage"
         />
       </template>
       <div
@@ -89,7 +89,7 @@
           class="h-32"
         />
         <p class="fr-text--bold fr-my-3v">
-          {{ $t(`Il n'y a pas encore d'activité`) }}
+          {{ t(`Il n'y a pas encore d'activité`) }}
         </p>
       </div>
     </LoadingBlock>
@@ -99,8 +99,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { useTranslation } from '../composables/useTranslation'
+import { getActivityTranslation } from '../functions/activities'
 import { useFetch } from '../functions/api'
 import { useFormatDate } from '../functions/dates'
+import { getLink } from '../functions/pagination'
 import type { PaginatedArray } from '../types/api'
 import type { Activity } from '../types/activity'
 import Avatar from './Avatar.vue'
@@ -114,6 +117,7 @@ const props = defineProps<{
 
 const route = useRoute()
 const { formatDate } = useFormatDate()
+const { t } = useTranslation()
 
 const page = ref(parseInt(route.query.page as string | undefined ?? '1', 10))
 
