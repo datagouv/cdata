@@ -18,7 +18,8 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User } from './types/users'
 
-import ActivityList from './components/ActivityList.vue'
+import ActivityList from './components/ActivityList/ActivityList.vue'
+import UserActivityList from './components/ActivityList/UserActivityList.vue'
 import AnimatedLoader from './components/AnimatedLoader.vue'
 import AppLink from './components/AppLink.vue'
 import Avatar from './components/Avatar.vue'
@@ -192,4 +193,5 @@ export {
   Tooltip,
   Toggletip,
   TranslationT,
+  UserActivityList,
 }
