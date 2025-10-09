@@ -44,7 +44,7 @@
                   <summary class="m-0 text-xs text-gray-title">
                     <slot
                       name="activity"
-                      v-bind="activity"
+                      v-bind="{ class: 'px-3.5', activity }"
                     >
                       {{ getActivityTranslation(activity) }}
                     </slot>
@@ -70,7 +70,7 @@
                 >
                   <slot
                     name="activity"
-                    v-bind="activity"
+                    v-bind="{ class: '', activity }"
                   >
                     {{ getActivityTranslation(activity) }}
                   </slot>

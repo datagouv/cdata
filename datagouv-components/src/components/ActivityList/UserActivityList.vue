@@ -1,17 +1,19 @@
 <template>
   <ActivityList :user>
-    <template #activity="activity">
+    <template #activity="{ class: cls, activity }">
       {{ getActivityTranslation(activity) }}
       <slot :activity>
-        <AppLink
-          :to="activity.related_to_url"
-          class="link flex w-full truncate"
-          target="_blank"
-        >
-          <span
-            class="truncate"
-          >{{ activity.related_to }}</span>
-        </AppLink>
+        <div :class="cls">
+          <AppLink
+            :to="activity.related_to_url"
+            class="link flex truncate"
+            target="_blank"
+          >
+            <span
+              class="truncate"
+            >{{ activity.related_to }}</span>
+          </AppLink>
+        </div>
       </slot>
     </template>
   </ActivityList>
