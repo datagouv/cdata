@@ -1,4 +1,5 @@
-import type { Organization, User } from '@datagouv/components-next'
+import type { Organization } from './organizations'
+import type { User } from './users'
 
 export type ActivityKey = 'dataset:created' | 'dataset:updated' | 'dataset:deleted' | 'dataset:discussed' | 'dataset:followed'
   | 'dataset:resource:added' | 'dataset:resource:updated' | 'dataset:resource:deleted'
