@@ -1,5 +1,5 @@
-name: Create a new Sentry release with source map
-run-name: new sentry release ${{ github.sha }}
+name: Type check datagouv-components
+run-name: check datagouv-components types
 on:
   push:
     branches: [main, develop]
