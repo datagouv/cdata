@@ -146,10 +146,10 @@
         </div>
         <component
           :is="config.textClamp"
-          v-if="showDescription && config && config.textClamp && description"
+          v-if="showShortDescription && config && config.textClamp && shortDescription"
           class="fr-text--sm fr-mt-1w fr-mb-0 overflow-wrap-anywhere"
           :auto-resize="true"
-          :text="description"
+          :text="shortDescription"
           :max-lines="2"
         />
       </div>
@@ -166,6 +166,7 @@ import { summarize } from '../functions/helpers'
 import { useFormatDate } from '../functions/dates'
 import { getOwnerName } from '../functions/owned'
 import { removeMarkdown } from '../functions/markdown'
+import { getShortDescription } from '../functions/datasets'
 import { useComponentsConfig } from '../config'
 import { useTranslation } from '../composables/useTranslation'
 import DatasetQualityInline from './DatasetQualityInline.vue'
@@ -189,12 +190,12 @@ type Props = {
      * It is used as a separate prop to allow other sites using the package to define their own organization pages.
      */
   organizationUrl?: RouteLocationRaw
-  showDescription?: boolean
+  showShortDescription?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   style: () => ({}),
-  showDescription: true,
+  showShortDescription: true,
 })
 
 const { t } = useTranslation()
@@ -202,9 +203,9 @@ const { formatRelativeIfRecentDate } = useFormatDate()
 const ownerName = computed(() => getOwnerName(props.dataset))
 const config = useComponentsConfig()
 
-const description = ref('')
+const shortDescription = ref('')
 watchEffect(async () => {
-  if (!props.showDescription) return
-  description.value = await removeMarkdown(props.dataset.description)
+  if (!props.showShortDescription) return
+  shortDescription.value = await getShortDescription(props.dataset.description, props.dataset.description_short)
 })
 </script>

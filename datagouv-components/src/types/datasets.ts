@@ -27,6 +27,7 @@ export type BaseDataset = Owned & {
   acronym: string
   archived: boolean
   description: string
+  description_short: string
   tags: Array<string> | null
   license: string
   frequency: string

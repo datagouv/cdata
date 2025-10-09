@@ -2,6 +2,7 @@
   <div
     class="fr-input-group"
     :class="inputGroupClass"
+    @focusin="$emit('focusin')"
     @focusout="$emit('blur')"
   >
     <label
@@ -30,6 +31,7 @@
       :placeholder
       :required
       :spellcheck
+      :rows="rows"
       @change="change"
     />
     <MarkdownEditor
@@ -95,6 +97,7 @@ export type InputValue = string | undefined | null
 export type AllowedInputType = 'markdown' | 'textarea' | InputTypeHTMLAttribute
 
 const emit = defineEmits<{
+  'focusin': []
   'blur': []
   'change': [value: InputValue]
   'update:modelValue': [value: InputValue]
@@ -119,6 +122,7 @@ const props = withDefaults(defineProps<{
   spellcheck?: boolean
   type?: AllowedInputType
   validText?: string
+  rows?: number
 }>(), {
   ariaDescribedby: '',
   autocomplete: undefined,
