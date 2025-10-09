@@ -49,13 +49,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type { Organization } from '@datagouv/components-next'
 import { watchDebounced } from '@vueuse/core'
 import { RiSearch2Line } from '@remixicon/vue'
 import { Combobox, ComboboxInput, ComboboxLabel, ComboboxOption, ComboboxOptions } from '@headlessui/vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { toast } = useToast()
 const config = useRuntimeConfig()
 const q = ref('')

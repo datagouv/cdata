@@ -2,9 +2,8 @@ import * as Sentry from '@sentry/nuxt'
 
 Sentry.init({
   dsn: useRuntimeConfig().public.sentry.dsn,
+  release: useRuntimeConfig().public.commitId,
   environment: useRuntimeConfig().public.apiBase.replace(/https?:\/\//, ''),
-
-  // We recommend adjusting this value in production, or using tracesSampler
-  // for finer control
-  tracesSampleRate: 0.1,
+  tracesSampleRate: 0.1, // Adjust this value in production or use tracesSampler for finer control
+  profilesSampleRate: 0.1, // Adjust this value in production
 })

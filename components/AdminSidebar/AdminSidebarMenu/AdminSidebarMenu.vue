@@ -72,6 +72,12 @@
               :label="$t('Profil')"
               :to="me.id === user.id ? `/admin/me/profile` : `/admin/users/${user.id}/profile`"
             />
+            <AdminSidebarLink
+              :icon="RiBarChartBoxLine"
+              :label="$t('Statistiques')"
+              :to="me.id === user.id ? `/admin/me/metrics` : `/admin/users/${user.id}/metrics`"
+              @click="$emit('click')"
+            />
           </template>
           <template v-else-if="organization">
             <AdminSidebarLink
@@ -175,6 +181,11 @@
               :label="$t('Articles')"
               to="/admin/site/posts"
             />
+            <AdminSidebarLink
+              :icon="RiAwardLine"
+              :label="$t('Édito')"
+              to="/admin/site/edito/datasets"
+            />
           </template>
         </ul>
       </DisclosurePanel>
@@ -186,7 +197,7 @@
 import { Avatar } from '@datagouv/components-next'
 import type { Organization, User } from '@datagouv/components-next'
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
-import { RiArticleLine, RiBarChartBoxLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiGitPullRequestLine, RiGroup3Line, RiLineChartLine, RiParentLine, RiPlanetLine, RiRobot2Line, RiServerLine, RiUserLine } from '@remixicon/vue'
+import { RiArticleLine, RiAwardLine, RiBarChartBoxLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiGitPullRequestLine, RiGroup3Line, RiLineChartLine, RiParentLine, RiPlanetLine, RiRobot2Line, RiServerLine, RiUserLine } from '@remixicon/vue'
 import { key, type AccordionRegister } from '~/components/Accordion/injectionKey'
 import AdminSidebarLink from '~/components/AdminSidebar/AdminSidebarLink/AdminSidebarLink.vue'
 

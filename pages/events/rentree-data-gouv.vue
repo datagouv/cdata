@@ -22,9 +22,10 @@
         <h2 class="title-section">
           {{ section.title }}
         </h2>
-        <div
-          class="section-content"
-          v-html="section.content"
+        <MarkdownViewer
+          size="md"
+          :content="section.section_content"
+          :min-heading="3"
         />
         <div class="brandcards-list">
           <div class="grid md:grid-cols-6 gap-12">
@@ -58,9 +59,10 @@
             :key="item.id"
             :title="item.question"
           >
-            <div
-              class="fr-mb-2w"
-              v-html="formatMarkdown(item.answer, 3)"
+            <MarkdownViewer
+              size="md"
+              :content="item.answer"
+              :min-heading="3"
             />
             <div
               v-if="item.ctaLabel && item.ctaUrl"
@@ -104,7 +106,7 @@ interface Banner {
 interface Section {
   id: number
   title: string
-  content: string
+  section_content: string
 }
 interface Event {
   id: number
@@ -132,46 +134,84 @@ const loading = ref(true)
 const faq = ref<FaqItem[]>([])
 
 onMounted(async () => {
-  const resBanner = await fetch('https://grist.numerique.gouv.fr/api/docs/vPC8NpR9HWux/tables/Banner/records')
+  const resBanner = await fetch(
+    'https://grist.numerique.gouv.fr/api/docs/vPC8NpR9HWux/tables/Banner/records',
+  )
   const dataBanner = await resBanner.json()
   if (dataBanner.records && dataBanner.records.length > 0) {
     banner.value = dataBanner.records[0].fields
   }
 
-  const resSections = await fetch('https://grist.numerique.gouv.fr/api/docs/vPC8NpR9HWux/tables/Sections/records?&sort=ordre')
+  const resSections = await fetch(
+    'https://grist.numerique.gouv.fr/api/docs/vPC8NpR9HWux/tables/Sections/records?&sort=ordre',
+  )
   const dataSections = await resSections.json()
-  sections.value = dataSections.records.map((r: { id: number, fields: { title: string, content: string } }) => ({
-    id: r.id,
-    title: r.fields.title,
-    content: r.fields.content,
-  }))
-
-  await Promise.all(sections.value.map(async (section) => {
-    const filter = encodeURIComponent(JSON.stringify({ display: [true], Theme: [section.title] }))
-    const url = `https://grist.numerique.gouv.fr/api/docs/vPC8NpR9HWux/tables/Evenements/records?filter=${filter}&sort=Date_debut`
-    const resEvents = await fetch(url)
-    const dataEvents = await resEvents.json()
-    eventsBySection.value[section.title] = (dataEvents.records || []).map((r: { id: number, fields: { Titre: string, format_online: string, url_img: string, card: string, cssClass: string, ctaUrl: string, ctaLabel: string } }) => ({
+  sections.value = dataSections.records.map(
+    (r: {
+      id: number
+      fields: { title: string, section_content: string }
+    }) => ({
       id: r.id,
-      titre: r.fields.Titre,
-      format: r.fields.format_online,
-      url_img: r.fields.url_img,
-      card: r.fields.card,
-      class: r.fields.cssClass,
-      ctaUrl: r.fields.ctaUrl,
-      ctaLabel: r.fields.ctaLabel,
-    }))
-  }))
+      title: r.fields.title,
+      section_content: r.fields.section_content,
+    }),
+  )
 
-  const resFaq = await fetch('https://grist.numerique.gouv.fr/api/docs/vPC8NpR9HWux/tables/Faq/records')
+  await Promise.all(
+    sections.value.map(async (section) => {
+      const filter = encodeURIComponent(
+        JSON.stringify({ display: [true], Theme: [section.title] }),
+      )
+      const url = `https://grist.numerique.gouv.fr/api/docs/vPC8NpR9HWux/tables/Evenements/records?filter=${filter}&sort=Date_debut`
+      const resEvents = await fetch(url)
+      const dataEvents = await resEvents.json()
+      eventsBySection.value[section.title] = (dataEvents.records || []).map(
+        (r: {
+          id: number
+          fields: {
+            Titre: string
+            format_online: string
+            url_img: string
+            card: string
+            cssClass: string
+            ctaUrl: string
+            ctaLabel: string
+          }
+        }) => ({
+          id: r.id,
+          titre: r.fields.Titre,
+          format: r.fields.format_online,
+          url_img: r.fields.url_img,
+          card: r.fields.card,
+          class: r.fields.cssClass,
+          ctaUrl: r.fields.ctaUrl,
+          ctaLabel: r.fields.ctaLabel,
+        }),
+      )
+    }),
+  )
+
+  const resFaq = await fetch(
+    'https://grist.numerique.gouv.fr/api/docs/vPC8NpR9HWux/tables/Faq/records',
+  )
   const dataFaq = await resFaq.json()
-  faq.value = dataFaq.records.map((r: { id: number, fields: { question: string, answer: string, ctaLabel?: string | null, ctaUrl?: string | null } }) => ({
-    id: r.id,
-    question: r.fields.question,
-    answer: r.fields.answer,
-    ctaLabel: r.fields.ctaLabel,
-    ctaUrl: r.fields.ctaUrl,
-  }))
+  faq.value = dataFaq.records.map(
+    (r: {
+      id: number
+      fields: {
+        question: string
+        answer: string
+        ctaLabel?: string | null
+        ctaUrl?: string | null
+      }
+    }) => ({
+      id: r.id,
+      question: r.fields.question,
+      answer: r.fields.answer,
+      ctaLabel: r.fields.ctaLabel,
+      ctaUrl: r.fields.ctaUrl,
+    }),
+  )
   loading.value = false
 })
 </script>
@@ -185,7 +225,7 @@ onMounted(async () => {
   font-size: 1.15rem;
 }
 .title-section {
-    font-weight: 800;
-    margin-bottom: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
 }
 </style>

@@ -44,13 +44,13 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination } from '@datagouv/components-next'
+import { Pagination, getLink } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 useSeoMeta({
   title: t('Articles'),

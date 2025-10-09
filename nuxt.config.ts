@@ -8,9 +8,7 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxt/eslint',
-    '@nuxt/icon',
     '@nuxt/image',
-    '@nuxtjs/i18n',
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
   ],
@@ -22,10 +20,7 @@ export default defineNuxtConfig({
         class: 'datagouv-components',
       },
       link: [
-        // Cannot use `/public/favicon.png` because the reverse proxy is calling udata-front for `/`
-        // When the migration is over we can remove this static path.
-        // :AfterMigration
-        { rel: 'shortcut icon', href: 'https://static.data.gouv.fr/_themes/gouvfr/img/favicon.png' },
+        { rel: 'shortcut icon', href: '/nuxt_images/favicon.png' },
       ],
     },
   },
@@ -40,6 +35,10 @@ export default defineNuxtConfig({
     name: 'data.gouv.fr',
   },
 
+  appConfig: {
+    isFrenchGovernment: true,
+  },
+
   runtimeConfig: {
     crispIdentifier: '',
     crispKey: '',
@@ -47,10 +46,7 @@ export default defineNuxtConfig({
     pagesGhRepoName: 'datagouv/datagouvfr-pages',
     pagesGhRepoBranch: 'master',
     public: {
-      i18n: {
-        baseUrl: 'https://www.data.gouv.fr/', // NUXT_PUBLIC_I18N_BASE_URL
-      },
-
+      baseUrl: 'https://www.data.gouv.fr/',
       commitId: undefined,
       banner: undefined,
 
@@ -67,6 +63,7 @@ export default defineNuxtConfig({
       maxXmlPreviewCharSize: 100000, // (~100KB)
       schemaValidataUrl: 'https://validata.fr',
       tabularApiUrl: 'https://tabular-api.data.gouv.fr',
+      tabularApiDataserviceId: undefined,
 
       qualityDescriptionLength: 100,
       searchAutocompleteDebounce: 200,
@@ -89,9 +86,16 @@ export default defineNuxtConfig({
       guidesUrl: 'https://guides.data.gouv.fr/',
       guidesCreateAccount: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/creer-un-compte-utilisateur-et-rejoindre-une-organisation',
       guidesHarvestingUrl: 'https://guides.data.gouv.fr/guide-data.gouv.fr/moissonnage',
+      guidesLabelsUrl: undefined, // TODO: add guide when created
       guidesCommunityResources: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/ressource-communautaire',
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
+
+      guideDatasets: 'https://guides.data.gouv.fr/guide-data.gouv.fr/jeux-de-donnees',
+      guideReuses: 'https://guides.data.gouv.fr/guide-data.gouv.fr/reutilisations',
+      guideDataservices: 'https://guides.data.gouv.fr/guide-data.gouv.fr/api',
+      reusesOnboardingUsecases: 'https://www.data.gouv.fr/pages/onboarding/liste_cas_usage/',
+      dataservicesOnboarding: 'https://guides.data.gouv.fr/guide-data.gouv.fr/api/outils-pour-les-administrations',
 
       homepagePublishDatasetOnboarding: '/pages/onboarding/producteurs',
       homepagePublishReuseOnboarding: '/pages/onboarding/reutilisateurs',
@@ -101,6 +105,11 @@ export default defineNuxtConfig({
         title: 'Données relatives aux Énergies',
         url: '/pages/donnees-energie',
       },
+      homepageHeroImages: [
+        'hero_1.png', 'hero_2.png', 'hero_3.png', 'hero_4.png', 'hero_5.png',
+        'hero_6.png', 'hero_7.png', 'hero_8.png', 'hero_9.png', 'hero_10.png',
+        'hero_11.png', 'hero_12.png', 'hero_13.png', 'hero_14.png', 'hero_15.png',
+      ],
 
       proconnect: {
         homepage: 'https://agentconnect.gouv.fr/',
@@ -110,15 +119,13 @@ export default defineNuxtConfig({
       datasetQualityGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
       dataSearchFeedbackFormUrl: 'https://tally.so/r/mDKv1N',
       forumUrl: 'https://forum.data.gouv.fr/',
-      feedbackFormUrl: 'https://tally.so/r/mOld5R',
-      betaAdminFeedbackUrl: 'https://tally.so/r/nP25OB',
       publishingDatasetFeedbackUrl: 'https://tally.so/r/nGo0yO',
       publishingDataserviceFeedbackUrl: 'https://tally.so/r/w2J7lL',
       publishingReuseFeedbackUrl: 'https://tally.so/r/mV98y6',
       publishingHarvesterFeedbackUrl: 'https://tally.so/r/3NMLOQ',
       reuseGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/reutilisations',
       harvesterRequestValidationUrl: 'https://support.data.gouv.fr/help/datagouv/moissonnage#support-tree',
-      harvesterPreviewMaxItems: 20, // SHould be the same as `HARVEST_PREVIEW_MAX_ITEMS` in udata
+      harvesterPreviewMaxItems: 20, // Should be the same as `HARVEST_PREVIEW_MAX_ITEMS` in udata
       harvestEnableManualRun: false,
       harvestBackendsForHidingQuality: ['CSW-ISO-19139'],
 
@@ -128,7 +135,10 @@ export default defineNuxtConfig({
       resourceFileUploadChunk: 2 * 1000 * 1000,
       maxSortableFiles: 50,
 
+      maxNumberOfDatasetsForDataserviceUpdate: 200,
+
       captcheta: {
+        enabled: true,
         style: 'captchaFR',
       },
 
@@ -154,6 +164,9 @@ export default defineNuxtConfig({
         ],
       },
 
+      // A corresponding SVG at `datagouv-components/assets/labels` will be shown before the badge label
+      datasetBadges: ['spd', 'inspire', 'hvd', 'sl', 'sr'],
+
       enableCdataSecurityViews: false,
       requireEmailConfirmation: true,
       changeEmailPage: 'change-email',
@@ -167,11 +180,14 @@ export default defineNuxtConfig({
         dsn: '',
       },
 
-      // URL of your matomo host.
-      matomoHost: undefined,
-
-      // Matomo ID of your site. Check the Matomo backend for it
-      matomoSiteId: 1,
+      matomo: {
+        // URL of your matomo host.
+        host: undefined,
+        // Matomo ID of your site. Check the Matomo backend for it
+        siteId: 1,
+        debug: false,
+        dryRun: false,
+      },
     },
   },
 
@@ -221,28 +237,6 @@ export default defineNuxtConfig({
     config: {
       stylistic: true,
     },
-  },
-  i18n: {
-    baseUrl: '',
-    locales: [
-      {
-        code: 'fr',
-        language: 'fr',
-      },
-      {
-        code: 'en',
-        language: 'en',
-      },
-      {
-        code: 'es',
-        language: 'es',
-      },
-    ],
-    lazy: true,
-    detectBrowserLanguage: false,
-    strategy: 'no_prefix',
-    trailingSlash: true,
-    defaultLocale: 'fr',
   },
   image: {
     screens: {

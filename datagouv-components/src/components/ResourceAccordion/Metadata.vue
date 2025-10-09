@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
 import type { Resource } from '../../types/resources'
 import CopyButton from '../CopyButton.vue'
@@ -10,6 +9,7 @@ import { useFormatDate } from '../../functions/dates'
 import { filesize } from '../../functions/helpers'
 import ExtraAccordion from '../ExtraAccordion.vue'
 import { getResourceTitleId, getResourceLabel } from '../../functions/resources'
+import { useTranslation } from '../../composables/useTranslation'
 
 const props = defineProps<{
   resource: Resource
@@ -18,7 +18,7 @@ const props = defineProps<{
 const hasExtras = computed(() => Object.keys(props.resource.extras).length)
 const resourceTitleId = computed(() => getResourceTitleId(props.resource))
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 </script>
 
@@ -29,8 +29,8 @@ const { formatDate } = useFormatDate()
         <DescriptionTerm>
           {{ t('URL') }}
           <CopyButton
-            :label="$t(`Copier l'URL`)"
-            :copied-label="$t('URL copiée !')"
+            :label="t(`Copier l'URL`)"
+            :copied-label="t('URL copiée !')"
             :text="resource.url"
             :aria-describedby="resourceTitleId"
           />
@@ -45,8 +45,8 @@ const { formatDate } = useFormatDate()
         <DescriptionTerm>
           {{ t('URL stable') }}
           <CopyButton
-            :label="$t(`Copier l'URL stable`)"
-            :copied-label="$t('URL stable copiée !')"
+            :label="t(`Copier l'URL stable`)"
+            :copied-label="t('URL stable copiée !')"
             :text="resource.latest"
             :aria-describedby="resourceTitleId"
           />
@@ -61,8 +61,8 @@ const { formatDate } = useFormatDate()
         <DescriptionTerm>
           {{ t('Identifiant') }}
           <CopyButton
-            :label="$t(`Copier l'identifiant`)"
-            :copied-label="$t('ID copié !')"
+            :label="t(`Copier l'identifiant`)"
+            :copied-label="t('ID copié !')"
             :text="resource.id"
             :aria-describedby="resourceTitleId"
           />
@@ -76,8 +76,8 @@ const { formatDate } = useFormatDate()
           <DescriptionTerm>
             {{ resource.checksum.type }}
             <CopyButton
-              :label="$t('Copier la somme de contrôle')"
-              :copied-label="$t('Somme de contrôle copiée !')"
+              :label="t('Copier la somme de contrôle')"
+              :copied-label="t('Somme de contrôle copiée !')"
               :text="resource.checksum.value"
               :aria-describedby="resourceTitleId"
             />

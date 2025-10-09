@@ -16,6 +16,9 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/main.ts'),
       formats: ['es'],
     },
+    rollupOptions: {
+      external: ['vue'],
+    },
   },
   resolve: {
     alias: {

@@ -4,16 +4,18 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import SwaggerUI from 'swagger-ui'
-import 'swagger-ui/dist/swagger-ui.css'
+// @ts-expect-error no types for `swagger-ui-dist`
+import * as SwaggerUiDist from 'swagger-ui-dist'
+import 'swagger-ui-dist/swagger-ui.css'
 import '../../../assets/swagger-themes/newspaper.css'
 
+const { SwaggerUIBundle } = SwaggerUiDist
 const props = defineProps<{
   url: string
 }>()
 
 onMounted(async () => {
-  SwaggerUI({
+  SwaggerUIBundle({
     dom_id: '#swagger-ui',
     url: props.url,
   })

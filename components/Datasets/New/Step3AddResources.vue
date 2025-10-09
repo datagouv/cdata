@@ -178,7 +178,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, PaddedContainer, SimpleBanner } from '@datagouv/components-next'
 import UploadResourceModal from '../UploadResourceModal.vue'
 import type { ResourceForm } from '~/types/types'
 
@@ -194,7 +194,7 @@ const emit = defineEmits<{
 
 const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extensions/')
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const publishFileAccordionId = useId()
 const addDescriptionAccordionId = useId()

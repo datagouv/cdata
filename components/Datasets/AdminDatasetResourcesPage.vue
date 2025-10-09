@@ -193,14 +193,12 @@
 </template>
 
 <script setup lang="ts">
-import { getResourceLabel, BrandedButton, Pagination, useFormatDate, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
+import { getResourceLabel, BrandedButton, Pagination, Tooltip, useFormatDate, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
 import { RiArrowDownLine, RiArrowUpLine, RiCheckLine, RiDraggable } from '@remixicon/vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { useTemplateRef } from 'vue'
 import AdminTable from '../AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../AdminTable/Table/AdminTableTh.vue'
-import Tooltip from '../Tooltip/Tooltip.vue'
 import UploadResourceModal from './UploadResourceModal.vue'
 import FileEditModal from './FileEditModal.vue'
 import FileEditModalFromQueryStringClient from './FileEditModalFromQueryString.client.vue'
@@ -233,7 +231,7 @@ const refreshResources = async () => {
 }
 watchEffect(async () => await refreshResources())
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const resourceForms = ref<Array<ResourceForm>>([])
 const loading = ref(false)

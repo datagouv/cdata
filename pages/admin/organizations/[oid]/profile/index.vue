@@ -6,7 +6,7 @@
     >
       {{ t("Éditer le profil") }}
     </h2>
-    <AdminLoader v-if="isLoading && !organization" />
+    <AnimatedLoader v-if="isLoading && !organization" />
     <DescribeOrganizationFrom
       v-if="organization"
       ref="form"
@@ -90,11 +90,9 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
-import { BannerAction, BrandedButton } from '@datagouv/components-next'
+import { AnimatedLoader, BannerAction, BrandedButton } from '@datagouv/components-next'
 import type { Organization, Badge } from '@datagouv/components-next'
-import AdminLoader from '~/components/AdminLoader/AdminLoader.vue'
 import DescribeOrganizationFrom from '~/components/Organization/New/Step2DescribeOrganization.vue'
 import { updateOrganization, updateOrganizationBadges, uploadLogo } from '~/api/organizations'
 
@@ -105,11 +103,10 @@ const emit = defineEmits<{
   refresh: []
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { toast } = useToast()
 const { $api } = useNuxtApp()
 const { start, finish, isLoading } = useLoadingIndicator()
-const localPath = useLocalePath()
 
 const form = ref<InstanceType<typeof DescribeOrganizationFrom> | null>(null)
 
@@ -130,7 +127,7 @@ async function deleteCurrentOrganization() {
     }
     else {
       reloadNuxtApp({
-        path: localPath('/admin/me/profile'),
+        path: '/admin/me/profile',
       })
     }
   }

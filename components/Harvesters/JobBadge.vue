@@ -8,6 +8,7 @@
 </template>
 
 <script setup lang="ts">
+import { throwOnNever } from '@datagouv/components-next'
 import type { HarvesterJob } from '~/types/harvesters'
 import type { AdminBadgeType } from '~/types/types'
 
@@ -15,7 +16,7 @@ const props = defineProps<{
   job: HarvesterJob
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const status = computed<{ label: string, type: AdminBadgeType }>(() => {
   switch (props.job.status) {

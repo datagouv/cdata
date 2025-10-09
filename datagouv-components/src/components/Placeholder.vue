@@ -19,9 +19,15 @@ const props = defineProps<{
   alt?: string
   size: number
 }>()
-const placeholderUrl = async () => {
-  const module = await import(`../../assets/placeholders/${props.type}.png`)
-  return props.src ? props.src : module.default
+async function placeholderUrl() {
+  const placeholders = import.meta.glob(`../../assets/placeholders/*.png`, {
+    query: '?url',
+    import: 'default',
+  })
+  const name = Object.keys(placeholders).find(p => p.includes(props.type)) as string
+  const module = placeholders[name] as () => Promise<unknown>
+  const placeholder = await module()
+  return props.src ? props.src : placeholder as string
 }
 
 const alternativeTextForDefinedImageOnly = computed(() => props.src ? props.alt : '')

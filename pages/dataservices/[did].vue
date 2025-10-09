@@ -20,6 +20,10 @@
           </BreadcrumbItem>
         </Breadcrumb>
         <div class="flex-none flex gap-2.5 items-center">
+          <FollowButton
+            v-if="dataservice"
+            :url="`/api/1/dataservices/${dataservice.id}/followers/`"
+          />
           <EditButton
             v-if="dataservice.permissions.edit"
             :id="dataservice.id"
@@ -298,7 +302,7 @@ const route = useRoute()
 const { formatDate } = useFormatDate()
 
 const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
-const { data: dataservice, status } = await useAPI<Dataservice>(url, { redirectOn404: true })
+const { data: dataservice, status } = await useAPI<Dataservice>(url, { redirectOn404: true, redirectOnSlug: 'did' })
 
 const title = computed(() => dataservice.value?.title)
 

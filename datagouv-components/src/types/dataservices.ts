@@ -43,16 +43,15 @@ export type Dataservice = Owned & {
   base_api_url: string | null
   contact_points: Array<ContactPoint>
   created_at: string
-  datasets: Array<{
-    class: string
-    id: string
-    acronym: string
-    page: string
-    title: string
-    uri: string
-  }>
+  datasets: {
+    href: string
+    rel: 'subsection'
+    total: number
+    type: 'GET'
+  }
   deleted_at: string | null
   description: string
+  featured: boolean
   machine_documentation_url: string | null
   technical_documentation_url: string | null
   business_documentation_url: string | null
