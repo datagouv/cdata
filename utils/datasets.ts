@@ -7,8 +7,6 @@ import type { CommunityResourceForm, DatasetForm, DatasetSuggest, FileInfo, NewD
 
 export { DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
 
-export { DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
-
 export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceForm>) {
   const isRemote = computed(() => toValue(file).filetype === 'remote')
   const { t } = useTranslation()
