@@ -67,8 +67,10 @@ jobs:
           SECRET_KEY = 'test-secret-key-for-ci'
           SEND_MAIL = False
           SERVER_NAME = 'localhost:7000'
-          CACHE_TYPE = 'flask_caching.backends.null'
+          CACHE_TYPE = 'null'
           DEFAULT_LANGUAGE = 'fr'
+
+          SCHEMA_CATALOG_URL='https://schema.data.gouv.fr/schemas/schemas.json'
 
           URLS_ALLOW_PRIVATE = True
           URLS_ALLOW_LOCAL = True
@@ -102,6 +104,8 @@ jobs:
           udata import-fixtures
 
           udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
+
+          inv i18nc
 
           # Start udata server in background
           inv serve --port=7000 > udata.log 2>&1 &
