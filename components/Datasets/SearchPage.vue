@@ -542,7 +542,7 @@ const sortOptions = [
 ]
 
 // Update model params
-watch([facets, deboucedQuery, searchSort], ([newFacets, q, sort]) => {
+watch([currentPage, facets, deboucedQuery, searchSort], ([newPage, newFacets, q, sort]) => {
   if (!props.organization) {
     params.organization = newFacets.organization?.id ?? undefined
     params.organization_badge = newFacets.organizationType?.type ?? undefined
@@ -555,7 +555,7 @@ watch([facets, deboucedQuery, searchSort], ([newFacets, q, sort]) => {
   params.geozone = newFacets.geozone?.id ?? undefined
   params.granularity = newFacets.granularity?.id ?? undefined
   params.badge = newFacets.badge?.kind ?? undefined
-  if (currentPage.value > 1 || params.page) params.page = currentPage.value.toString()
+  if (newPage > 1 || params.page) params.page = newPage.toString()
   params.q = q ?? undefined
   params.sort = sort ?? null
   return params
