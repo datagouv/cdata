@@ -32,6 +32,12 @@ jobs:
           path: udata
           ref: master
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.11"
+          working-directory: udata
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -45,16 +51,10 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-
       - name: Install Python dependencies for udata
         working-directory: udata
         run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[test,dev]"
+          uv sync --frozen --extra dev
 
       - name: Configure udata
         working-directory: udata
@@ -67,8 +67,10 @@ jobs:
           SECRET_KEY = 'test-secret-key-for-ci'
           SEND_MAIL = False
           SERVER_NAME = 'localhost:7000'
-          CACHE_TYPE = 'flask_caching.backends.null'
+          CACHE_TYPE = 'null'
           DEFAULT_LANGUAGE = 'fr'
+
+          SCHEMA_CATALOG_URL='https://schema.data.gouv.fr/schemas/schemas.json'
 
           URLS_ALLOW_PRIVATE = True
           URLS_ALLOW_LOCAL = True
@@ -95,16 +97,18 @@ jobs:
           mkdir -p fs
 
           # Initialize udata
-          udata init
+          uv run udata init
 
-          udata licenses
-          udata spatial load
-          udata import-fixtures
+          uv run udata licenses
+          uv run udata spatial load
+          uv run udata import-fixtures
 
-          udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
+          uv run udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
+
+          inv i18nc
 
           # Start udata server in background
-          inv serve --port=7000 > udata.log 2>&1 &
+          uv run inv serve --port=7000 > udata.log 2>&1 &
 
           # Wait for udata to be ready
           timeout 90 bash -c 'until curl -f http://localhost:7000/api/1/site/; do sleep 2; done'
@@ -130,6 +134,13 @@ jobs:
           BASE_URL: http://localhost:3000
           CI: true
         run: npm run test:e2e
+
+      - name: Kill udata server
+        if: always()
+        working-directory: udata
+        run: |
+          # Kill udata server to release the lock so that post setup-uv can prune the cache
+          pkill -f "uv run inv serve" || true
 
       - name: Show server logs
         if: always()

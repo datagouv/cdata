@@ -430,6 +430,7 @@
               :required="true"
               :error-text="getFirstError('frequency')"
               :warning-text="getFirstWarning('frequency')"
+              data-testid="select-frequency"
             />
             <SimpleBanner
               v-if="getFirstWarning('frequency')"
@@ -635,7 +636,7 @@ const chooseFrequencyAccordionId = useId()
 const addTemporalCoverageAccordionId = useId()
 const addSpatialInformationAccordionId = useId()
 
-const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies', { lazy: true })
+const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies/', { lazy: true })
 
 const { data: allLicenses } = await useAPI<Array<License>>('/api/1/datasets/licenses', { lazy: true })
 
