@@ -11,10 +11,7 @@ setup('authenticate', async ({ page, baseURL }) => {
   await page.goto(`${loginURL}/login/`)
   await page.getByLabel('Adresse email').fill('admin@example.com')
   await page.getByLabel('Mot de passe').fill('@1337Password42')
-
-  // I don't know why the button is in english and the input labels in french.
-  // In local, it's "Se connecter", in CI "Sign in"
-  await page.getByRole('button', { name: /(Sign in|Se connecter)/ }).click()
+  await page.getByRole('button', { name: 'Se connecter' }).click()
   await page.waitForURL(`${loginURL}/`)
 
   // End of authentication steps.
