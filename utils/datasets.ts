@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import type { CommunityResourceForm, DatasetForm, DatasetSuggest, FileInfo, NewDatasetForApi, ResourceForm } from '~/types/types'
 
-export { DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
+export { DESCRIPTION_MIN_LENGTH, DESCRIPTION_SHORT_MAX_LENGTH } from '@datagouv/components-next'
 
 export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceForm>) {
   const isRemote = computed(() => toValue(file).filetype === 'remote')

@@ -146,10 +146,10 @@
         </div>
         <component
           :is="config.textClamp"
-          v-if="showShortDescription && config && config.textClamp && shortDescription"
+          v-if="showDescriptionShort && config && config.textClamp && descriptionShort"
           class="fr-text--sm fr-mt-1w fr-mb-0 overflow-wrap-anywhere"
           :auto-resize="true"
-          :text="shortDescription"
+          :text="descriptionShort"
           :max-lines="2"
         />
       </div>
@@ -165,7 +165,7 @@ import type { Dataset, DatasetV2 } from '../types/datasets'
 import { summarize } from '../functions/helpers'
 import { useFormatDate } from '../functions/dates'
 import { getOwnerName } from '../functions/owned'
-import { getShortDescription } from '../functions/datasets'
+import { getDescriptionShort } from '../functions/datasets'
 import { useComponentsConfig } from '../config'
 import { useTranslation } from '../composables/useTranslation'
 import DatasetQualityInline from './DatasetQualityInline.vue'
@@ -189,12 +189,12 @@ type Props = {
      * It is used as a separate prop to allow other sites using the package to define their own organization pages.
      */
   organizationUrl?: RouteLocationRaw
-  showShortDescription?: boolean
+  showDescriptionShort?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   style: () => ({}),
-  showShortDescription: true,
+  showDescriptionShort: true,
 })
 
 const { t } = useTranslation()
@@ -202,9 +202,9 @@ const { formatRelativeIfRecentDate } = useFormatDate()
 const ownerName = computed(() => getOwnerName(props.dataset))
 const config = useComponentsConfig()
 
-const shortDescription = ref('')
+const descriptionShort = ref('')
 watchEffect(async () => {
-  if (!props.showShortDescription) return
-  shortDescription.value = await getShortDescription(props.dataset.description, props.dataset.description_short)
+  if (!props.showDescriptionShort) return
+  descriptionShort.value = await getDescriptionShort(props.dataset.description, props.dataset.description_short)
 })
 </script>

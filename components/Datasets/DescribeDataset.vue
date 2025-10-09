@@ -293,14 +293,14 @@ Elle aide les utilisateurs à comprendre rapidement ce qu’il contient et amél
               type="button"
               color="primary-soft"
               size="xs"
-              :disabled="isGeneratingShortDescription"
-              @click="handleAutoCompleteShortDescription(form.description)"
+              :disabled="isGeneratingDescriptionShort"
+              @click="handleAutoCompleteDescriptionShort(form.description)"
             >
               <div class="flex items-center space-x-2">
-                <span v-if="isGeneratingShortDescription">{{ $t('Suggestion en cours...') }}</span>
+                <span v-if="isGeneratingDescriptionShort">{{ $t('Suggestion en cours...') }}</span>
                 <span v-else>{{ $t('Suggérer avec l\'IA') }}</span>
                 <RiLoader5Line
-                  v-if="isGeneratingShortDescription"
+                  v-if="isGeneratingDescriptionShort"
                   class="size-4 animate-spin text-primary"
                 />
               </div>
@@ -665,7 +665,7 @@ const chooseFrequencyAccordionId = useId()
 const addTemporalCoverageAccordionId = useId()
 const addSpatialInformationAccordionId = useId()
 
-const isGeneratingShortDescription = ref(false)
+const isGeneratingDescriptionShort = ref(false)
 
 const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies', { lazy: true })
 
@@ -746,23 +746,23 @@ async function submit() {
   }
 }
 
-async function handleAutoCompleteShortDescription(description: string) {
+async function handleAutoCompleteDescriptionShort(description: string) {
   try {
-    isGeneratingShortDescription.value = true
+    isGeneratingDescriptionShort.value = true
     
     // We call our server-side API route instead of Albert API directly to avoid CORS issues.
     // The Albert API doesn't allow direct requests from browser-side JavaScript.
     // Our server acts as a proxy, keeping the API key secure on the server side.
-    const response = await $fetch<{ shortDescription?: string }>('/nuxt-api/albert/generate-short-description', {
+    const response = await $fetch<{ descriptionShort?: string }>('/nuxt-api/albert/generate-short-description', {
       method: 'POST',
       body: { description }
     })
 
-    form.value.description_short = response.shortDescription || ''
+    form.value.description_short = response.descriptionShort || ''
   } catch (error) {
     console.error('Failed to generate short description:', error)
   } finally {
-    isGeneratingShortDescription.value = false
+    isGeneratingDescriptionShort.value = false
   }
 }
 </script>

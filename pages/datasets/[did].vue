@@ -91,12 +91,12 @@
                 </span>
               </h1>
               <div
-                v-if="displayShortDescription" class="mb-4"
+                v-if="displayDescriptionShort" class="mb-4"
               >
                 <ReadMore>
                   <MarkdownViewer
                     size="sm"
-                    :content="displayShortDescription"
+                    :content="displayDescriptionShort"
                     :min-heading="3"
                   />
                 </ReadMore>
@@ -410,7 +410,7 @@ import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
-import { getShortDescription } from '@datagouv/components-next'
+import { getDescriptionShort } from '@datagouv/components-next'
 
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -450,11 +450,11 @@ const hasContactPointsWithSpecificRole = computed(() => {
   )
 })
 
-const displayShortDescription = ref('')
+const displayDescriptionShort = ref('')
 
 watchEffect(async () => {
   if (dataset.value) {
-    displayShortDescription.value = await getShortDescription(dataset.value.description, dataset.value.description_short)
+    displayDescriptionShort.value = await getDescriptionShort(dataset.value.description, dataset.value.description_short)
   }
 })
 

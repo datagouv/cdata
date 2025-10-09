@@ -38,14 +38,14 @@ export default defineEventHandler(async (event) => {
     // - albert-code-beta
     // - albert-ministral
     const response = await albertClient.chat_completions(messages, 'albert-small')
-    const generatedShortDescription = response.choices?.[0]?.message?.content || ''
+    const generatedDescriptionShort = response.choices?.[0]?.message?.content || ''
 
     // Ensure the description doesn't exceed maxChars
-    const finalDescription = generatedShortDescription.length > DESCRIPTION_SHORT_MAX_LENGTH
-      ? `${generatedShortDescription.substring(0, DESCRIPTION_SHORT_MAX_LENGTH - 1)}…`
-      : generatedShortDescription
+    const finalDescriptionShort = generatedDescriptionShort.length > DESCRIPTION_SHORT_MAX_LENGTH
+      ? `${generatedDescriptionShort.substring(0, DESCRIPTION_SHORT_MAX_LENGTH - 1)}…`
+      : generatedDescriptionShort
     
-    return { shortDescription: finalDescription }
+    return { descriptionShort: finalDescriptionShort }
   } catch (error: any) {
     console.error('Albert API error:', error)
     throw createError({
