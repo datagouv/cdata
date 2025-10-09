@@ -2,6 +2,7 @@
   <div
     class="fr-input-group"
     :class="inputGroupClass"
+    @focusin="$emit('focusin')"
     @focusout="$emit('blur')"
   >
     <label
@@ -96,6 +97,7 @@ export type InputValue = string | undefined | null
 export type AllowedInputType = 'markdown' | 'textarea' | InputTypeHTMLAttribute
 
 const emit = defineEmits<{
+  'focusin': []
   'blur': []
   'change': [value: InputValue]
   'update:modelValue': [value: InputValue]

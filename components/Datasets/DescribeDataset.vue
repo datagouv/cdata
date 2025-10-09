@@ -60,6 +60,18 @@
           </div>
         </Accordion>
         <Accordion
+          :id="writeAGoodDescriptionShortAccordionId"
+          :title="$t('Ecrire une description courte')"
+          :state="accordionState('description_short')"
+        >
+          <div class="prose prose-neutral m-0">
+            <p class="fr-m-0">
+              {{ $t(`La description courte présente votre jeu de données en une ou deux phrases.
+Elle aide les utilisateurs à comprendre rapidement ce qu’il contient et améliore sa visibilité dans les recherches.`) }}
+            </p>
+          </div>
+        </Accordion>
+        <Accordion
           :id="useTagsAccordionId"
           :title="$t('Mettre des mots-clés')"
           :state="accordionState('tags')"
@@ -236,31 +248,6 @@
             :accordion="writeAGoodDescriptionAccordionId"
           >
             <InputGroup
-              v-model="form.description_short"
-              class="mb-3"
-              :label="$t(`Description courte`)"
-              :hint-text="$t(`Si ce champ est laissé vide, les ${DESCRIPTION_SHORT_MAX_LENGTH} premiers caractères de votre description seront utilisés.`)"
-              :required="false"
-              type="textarea"
-              :rows="3"
-              :has-error="!!getFirstError('description_short')"
-              :has-warning="!!getFirstWarning('description_short')"
-              :error-text="getFirstError('description_short')"
-              @change="touch('description_short')"
-              @blur="touch('description_short')"
-            />
-            <SimpleBanner
-              v-if="getFirstWarning('description_short')"
-              type="warning"
-            >
-              {{ getFirstWarning("description_short") }}
-            </SimpleBanner>
-          </LinkedToAccordion>
-          <LinkedToAccordion
-            class="fr-fieldset__element min-width-0"
-            :accordion="writeAGoodDescriptionAccordionId"
-          >
-            <InputGroup
               v-model="form.description"
               class="mb-3"
               :label="$t('Description')"
@@ -276,6 +263,30 @@
               type="warning"
             >
               {{ getFirstWarning("description") }}
+            </SimpleBanner>
+          </LinkedToAccordion>
+          <LinkedToAccordion
+            class="fr-fieldset__element min-width-0"
+            :accordion="writeAGoodDescriptionShortAccordionId"
+          >
+            <InputGroup
+              v-model="form.description_short"
+              class="mb-3"
+              :label="$t(`Description courte`)"
+              :hint-text="$t(`Si ce champ est laissé vide, les ${DESCRIPTION_SHORT_MAX_LENGTH} premiers caractères de votre description seront utilisés.`)"
+              :required="false"
+              type="textarea"
+              :rows="3"
+              :has-error="!!getFirstError('description_short')"
+              :has-warning="!!getFirstWarning('description_short')"
+              :error-text="getFirstError('description_short')"
+              @blur="touch('description_short')"
+            />
+            <SimpleBanner
+              v-if="getFirstWarning('description_short')"
+              type="warning"
+            >
+              {{ getFirstWarning("description_short") }}
             </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
@@ -629,6 +640,7 @@ const isGlobalAdmin = computed(() => isAdmin(user.value))
 const nameDatasetAccordionId = useId()
 const addAcronymAccordionId = useId()
 const writeAGoodDescriptionAccordionId = useId()
+const writeAGoodDescriptionShortAccordionId = useId()
 const useTagsAccordionId = useId()
 const selectLicenseAccordionId = useId()
 const contactPointAccordionId = useId()
