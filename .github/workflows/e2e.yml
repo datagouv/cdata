@@ -105,7 +105,7 @@ jobs:
 
           uv run udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
 
-          inv i18nc
+          uv run inv i18nc
 
           # Start udata server in background
           uv run inv serve --port=7000 > udata.log 2>&1 &
