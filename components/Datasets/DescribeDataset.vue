@@ -67,7 +67,7 @@
           <div class="prose prose-neutral m-0">
             <p class="fr-m-0">
               {{ $t(`La description courte présente votre jeu de données en une ou deux phrases.
-Elle aide les utilisateurs à comprendre rapidement ce qu’il contient et améliore sa visibilité dans les recherches.`) }}
+Elle aide les utilisateurs à comprendre rapidement ce qu’il contient et améliore sa visibilité dans les recherches. Vous pouvez demander une suggestion par intelligence artificielle de vous proposer une première version, puis la modifier à votre convenance. L’IA se base uniquement sur les informations que vous avez fournies et peut parfois se tromper : relisez toujours la proposition avant de valider.`) }}
             </p>
           </div>
         </Accordion>
