@@ -790,7 +790,11 @@ async function handleAutoCompleteDescriptionShort(description: string) {
     // Our server acts as a proxy, keeping the API key secure on the server side.
     const response = await $fetch<{ descriptionShort?: string }>('/nuxt-api/albert/generate-short-description', {
       method: 'POST',
-      body: { description }
+      body: {
+        title: form.value.title,
+        description,
+        organization: form.value.owned?.organization?.name
+      }
     })
 
     form.value.description_short = response.descriptionShort || ''
