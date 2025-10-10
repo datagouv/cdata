@@ -90,16 +90,12 @@
                   {{ dataset.acronym }}
                 </span>
               </h1>
-              <div
-                v-if="displayDescriptionShort" class="mb-4"
-              >
-                <ReadMore>
-                  <MarkdownViewer
-                    size="sm"
-                    :content="displayDescriptionShort"
-                    :min-heading="3"
-                  />
-                </ReadMore>
+              <div v-if="displayDescriptionShort" class="mb-4">
+                <MarkdownViewer
+                  size="sm"
+                  :content="displayDescriptionShort"
+                  :min-heading="3"
+                />
               </div>
               <div class="text-sm text-gray-plain font-bold mb-1 pb-0">
                 {{ $t("Description") }}
