@@ -289,7 +289,24 @@
             >
               {{ getFirstWarning("description_short") }}
             </SimpleBanner>
+            <Tooltip v-if="!canGenerateDescriptionShort">
+              <BrandedButton
+                class="mt-2"
+                type="button"
+                color="primary-soft"
+                size="xs"
+                :disabled="true"
+              >
+                <div class="flex items-center space-x-2">
+                  <span>✨ {{ $t('Suggérer un description courte') }}</span>
+                </div>
+              </BrandedButton>
+              <template #tooltip>
+                {{ $t('Remplissez le titre et une description d\'au moins {min} caractères pour utiliser cette fonctionnalité.', { min: DESCRIPTION_MIN_LENGTH }) }}
+              </template>
+            </Tooltip>
             <BrandedButton
+              v-else
               class="mt-2"
               type="button"
               color="primary-soft"
@@ -299,7 +316,7 @@
             >
               <div class="flex items-center space-x-2">
                 <span v-if="isGeneratingDescriptionShort">{{ $t('Suggestion en cours...') }}</span>
-                <span v-else>{{ $t('Suggérer avec l\'IA') }}</span>
+                <span v-else>✨ {{ $t('Suggérer un description courte') }}</span>
                 <RiLoader5Line
                   v-if="isGeneratingDescriptionShort"
                   class="size-4 animate-spin text-primary"
@@ -624,7 +641,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, Tooltip } from '@datagouv/components-next'
 import { SimpleBanner, type Frequency, type License } from '@datagouv/components-next'
 import { RiAddLine, RiStarFill, RiLoader5Line } from '@remixicon/vue'
 import { computed } from 'vue'
@@ -741,11 +758,11 @@ const accordionState = (key: keyof typeof form.value) => {
   return 'default'
 }
 
-async function submit() {
-  if (await validate()) {
-    emit('submit')
-  }
-}
+const canGenerateDescriptionShort = computed(() => {
+  const hasTitle = form.value.title && form.value.title.trim().length > 0
+  const hasEnoughDescription = form.value.description && form.value.description.length >= DESCRIPTION_MIN_LENGTH
+  return hasTitle && hasEnoughDescription
+})
 
 async function handleAutoCompleteDescriptionShort(description: string) {
   try {
@@ -766,4 +783,12 @@ async function handleAutoCompleteDescriptionShort(description: string) {
     isGeneratingDescriptionShort.value = false
   }
 }
+
+
+async function submit() {
+  if (await validate()) {
+    emit('submit')
+  }
+}
+
 </script>
