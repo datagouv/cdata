@@ -48,7 +48,7 @@
         <div class="w-full flex gap-4">
           <!-- Confirmation modal only if file has changed -->
           <ModalWithButton
-            v-if="hasFileChanged"
+            v-if="hasTabularApi && hasFileChanged"
             :title="$t('Êtes-vous sûr de vouloir modifier cette ressource ?')"
             size="lg"
           >
