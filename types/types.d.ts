@@ -123,6 +123,7 @@ export type DatasetForm = {
   title: string
   acronym: string
   description: string
+  description_short?: string
   tags: Array<Tag>
   license: License | null
   contact_points: Array<NewContactPoint | ContactPoint | null>
@@ -141,6 +142,7 @@ export type NewDatasetForApi = {
   deleted?: null
   acronym?: string
   description: string
+  description_short?: string
   organization?: string
   owner?: string
   tags: Array<string>

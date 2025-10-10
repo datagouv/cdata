@@ -90,6 +90,17 @@
                   {{ dataset.acronym }}
                 </span>
               </h1>
+              <div
+                v-if="displayShortDescription" class="mb-4"
+              >
+                <ReadMore>
+                  <MarkdownViewer
+                    size="sm"
+                    :content="displayShortDescription"
+                    :min-heading="3"
+                  />
+                </ReadMore>
+              </div>
               <div class="text-sm text-gray-plain font-bold mb-1 pb-0">
                 {{ $t("Description") }}
               </div>
@@ -399,6 +410,7 @@ import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
+import { getShortDescription } from '@datagouv/components-next'
 
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -436,6 +448,14 @@ const hasContactPointsWithSpecificRole = computed(() => {
   return dataset.value.contact_points.some(
     contactPoint => contactPoint.role !== 'contact',
   )
+})
+
+const displayShortDescription = ref('')
+
+watchEffect(async () => {
+  if (dataset.value) {
+    displayShortDescription.value = await getShortDescription(dataset.value.description, dataset.value.description_short)
+  }
 })
 
 await useJsonLd('dataset', route.params.did as string)
