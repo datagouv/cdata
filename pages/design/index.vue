@@ -124,7 +124,7 @@
       </h2>
       <div class="grid md:grid-cols-2">
         <SupportCard
-          image="/img/forum.svg"
+          image="/nuxt_images/forum.svg"
           title="Forum"
           description="Echangez avec la communauté, partagez vos retours sur la plateforme et demandez l'ouverture de données."
         >

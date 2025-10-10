@@ -1,11 +1,9 @@
 import type { Dataset, DatasetV2, RegisteredSchema, Resource, CommunityResource, Schema, DatasetV2WithFullObject } from '@datagouv/components-next'
-import { throwOnNever } from '@datagouv/components-next'
+import { throwOnNever, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
 import type { FetchError } from 'ofetch'
 import { v4 as uuidv4 } from 'uuid'
 
 import type { CommunityResourceForm, DatasetForm, DatasetSuggest, FileInfo, NewDatasetForApi, ResourceForm } from '~/types/types'
-
-export { DESCRIPTION_MIN_LENGTH, DESCRIPTION_SHORT_MAX_LENGTH } from '@datagouv/components-next'
 
 export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceForm>) {
   const isRemote = computed(() => toValue(file).filetype === 'remote')
@@ -61,7 +59,7 @@ export function datasetToForm(dataset: DatasetV2WithFullObject): DatasetForm {
 
 export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, private?: boolean, archived?: string | null } = {}): NewDatasetForApi {
   const contactPoints = form.contact_points?.filter(cp => cp !== null && 'id' in cp).map(cp => cp.id) ?? []
-  
+
   return {
     organization: form.owned?.organization?.id,
     owner: form.owned?.owner?.id,

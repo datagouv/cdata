@@ -10,6 +10,9 @@ jobs:
   e2e-tests:
     timeout-minutes: 30
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.1-noble
+      options: --user 1001
 
     services:
       mongodb:
@@ -48,9 +51,6 @@ jobs:
       - name: Install Node.js dependencies for cdata
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium firefox
-
       - name: Install Python dependencies for udata
         working-directory: udata
         run: |
@@ -85,9 +85,9 @@ jobs:
               "check_deliverability": False
           }
 
-          MONGODB_HOST = 'mongodb://localhost:27017/udata'
-          CELERY_BROKER_URL = 'redis://localhost:6379'
-          CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+          MONGODB_HOST = 'mongodb://mongodb:27017/udata'
+          CELERY_BROKER_URL = 'redis://redis:6379'
+          CELERY_RESULT_BACKEND = 'redis://redis:6379'
           EOF
 
       - name: Initialize udata
