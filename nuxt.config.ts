@@ -57,7 +57,7 @@ export default defineNuxtConfig({
       devApiKey: undefined,
       staticUrl: 'https://static.data.gouv.fr/static/',
       albertApiBaseUrl: 'https://albert.api.etalab.gouv.fr/',
-      albertApiKey: process.env.NUXT_PUBLIC_ALBERT_API_KEY,
+      albertApiKey: '',
       maxJsonPreviewCharSize: 1000000, // (~1MB)
       maxPdfPreviewByteSize: 10000000, // (10 MB)
       maxXmlPreviewCharSize: 100000, // (~100KB)
