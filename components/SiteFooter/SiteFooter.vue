@@ -6,7 +6,7 @@
           <div class="w-full pb-6 md:pb-0 md:pr-[6%] md:w-2/3 flex flex-wrap">
             <div class="flex-none flex items-center mr-5">
               <NuxtImg
-                src="/img/newspaper.svg"
+                src="/illustrations/newspaper-black.svg"
                 loading="lazy"
                 width="71"
                 height="55"
@@ -36,7 +36,7 @@
                 <BrandedButton
                   color="secondary"
                   :title="$t(`Abonnez-vous à notre lettre d'information`)"
-                  href="/pages/webinaires/"
+                  href="/events/rentree-data-gouv/"
                 >
                   {{ $t("Voir nos prochains évènements") }}
                 </BrandedButton>
@@ -49,7 +49,7 @@
                 {{ $t("Suivez-nous") }}
                 <br> {{ $t("sur les réseaux sociaux") }}
               </p>
-              <ul class="flex justify-between list-none m-0 p-0 *:p-0 -ml-4">
+              <ul class="flex flex-wrap list-none m-0 p-0 *:p-0 -ml-4">
                 <li>
                   <a
                     class="link !inline-flex after:!content-none mx-2 !p-2 min-h-10 mh-10 mw-10 !no-underline hover:!bg-gray-some"
@@ -78,6 +78,16 @@
                     target="_blank"
                   >
                     <RiBlueskyLine />
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="link !inline-flex after:!content-none mx-2 !p-2 min-h-10 mh-10 mw-10 !no-underline hover:!bg-gray-some"
+                    :title="$t('Youtube - nouvel onglet')"
+                    href="https://www.youtube.com/@data-gouv-fr"
+                    target="_blank"
+                  >
+                    <RiYoutubeLine />
                   </a>
                 </li>
                 <li>
@@ -182,6 +192,7 @@
                   <a
                     href="https://github.com/opendatateam/udata/"
                     class="fr-footer__top-link"
+                    :title="site && site.version ? $t('Version {version}', { version: site.version }) : undefined"
                   >
                     {{ $t('Moteur open source : udata') }}
                   </a>
@@ -204,11 +215,15 @@
         <div class="fr-footer__body">
           <div class="fr-footer__brand fr-enlarge-link">
             <p
+              v-if="appConfig.isFrenchGovernment"
               class="fr-logo"
               title="république française"
             >
               république
               <br>française
+            </p>
+            <p v-else>
+              Add Your logo
             </p>
             <a
               class="fr-footer__brand-link"
@@ -272,12 +287,13 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { RiBlueskyLine, RiGithubLine, RiLinkedinBoxLine, RiMastodonLine, RiRssLine } from '@remixicon/vue'
+import { BrandedButton, type Site } from '@datagouv/components-next'
+import { RiBlueskyLine, RiGithubLine, RiLinkedinBoxLine, RiMastodonLine, RiRssLine, RiYoutubeLine } from '@remixicon/vue'
 
 const config = useRuntimeConfig()
+const appConfig = useAppConfig()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 type Link = {
   label: string
@@ -301,7 +317,7 @@ const platformLinks: Array<Link> = [
   { label: t('Guides'), link: config.public.guidesUrl, external: true },
   { label: t('Feuille de route et nouveautés'), link: '/pages/roadmap' },
   { label: t('Nous écrire'), link: '/support' },
-  { label: t('Donnez votre avis'), link: config.public.feedbackFormUrl, external: true },
+  { label: t('Échangez avec la communauté'), link: config.public.forumUrl, external: true },
   { label: t('Statistiques'), link: '/dashboard' },
 ]
 
@@ -326,4 +342,6 @@ const networkLinks: Array<Link> = [
   { label: 'info.gouv.fr', link: 'https://www.info.gouv.fr' },
   { label: 'service-public.fr', link: 'https://www.service-public.fr' },
 ]
+
+const { data: site } = await useAPI<Site>('/api/1/site')
 </script>

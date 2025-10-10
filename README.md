@@ -7,6 +7,25 @@
 
 **cdata** is the frontend application for [data.gouv.fr](https://www.data.gouv.fr), France's Open Data platform.
 
+## Legal
+
+cdata uses the Official french government's design system ([DSFR](https://github.com/GouvernementFR/dsfr)). Some of its content is only available for French public services.
+If you aren't a French public service, you must not use :
+- the marianne font, it isn't an open-source font
+- the identity elements provided by the DSFR, colors, logos, etc.
+You can find more details in the [DSFR README](https://github.com/GouvernementFR/dsfr/tree/main?tab=readme-ov-file#licence-et-droit-dutilisation).
+
+These elements are removed from cdata when the global configuration `isFrenchGovernment` is `false`.
+
+cdata includes its own set of private illustrations and images. They aren't available with the MIT license and shouldn't be used by other entities.
+They are located in the `public` directory.
+
+If you want to fork cdata, you must :
+- set `isFrenchGovernment` in `nuxt.config.ts` to false
+- replace the illustration and images used in your fork
+- use a different color scheme of the one used by data.gouv.fr
+- remove all reference to French public services 
+
 ## 📋 Prerequisites
 
 Before setting up the project, make sure you have the following installed:
@@ -54,7 +73,6 @@ npm run lint:fix     # Automatically fix ESLint issues and format code
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) + [DSFR](https://www.systeme-de-design.gouv.fr/)
 - **State Management**: Vue 3 Composition API
-- **Internationalization**: [@nuxtjs/i18n](https://i18n.nuxtjs.org/)
 - **Build Tool**: [Vite](https://vitejs.dev/)
 - **Linting**: [ESLint](https://eslint.org/) + [Prettier](https://prettier.io/)
 
@@ -66,7 +84,7 @@ npm run lint:fix     # Automatically fix ESLint issues and format code
 - `NUXT_PUBLIC_COMMIT_ID`: Git commit ID (auto-generated in dev mode)
 - `NUXT_PUBLIC_SENTRY_DSN`: Sentry DSN for error tracking
 - `NUXT_TEMPLATE_CACHE_DURATION`: Duration for template caching
-- `NUXT_PUBLIC_I18N_BASE_URL`: Base URL for internationalization
+- `NUXT_PUBLIC_BASE_URL`: Base URL
 
 You can work on `cdata` without a local `udata` backend by pointing to https://demo.data.gouv.fr directly. Create a `.env` file at the root of the project:
 

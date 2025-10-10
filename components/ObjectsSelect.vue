@@ -88,7 +88,7 @@
       >
         <InputGroup
           v-model="datasetUrl"
-          :label="t('Lien vers {objectType}', { objecType: theLabel })"
+          :label="t('Lien vers {objectType}', { objectType: theLabel })"
           :placeholder="'https://...'"
           :has-error="!!urlError"
           :error-text="urlError"
@@ -138,7 +138,7 @@ const datasetUrl = ref('')
 const urlError = ref<string | null>(null)
 useSortable(sortableRootRef, selectedSuggest)
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 
 const suggest = async (query: string): Promise<Array<TSuggest>> => {

@@ -31,9 +31,9 @@ import EditoHeader from '~/components/Pages/EditoHeader.vue'
 import PageShow from '~/components/Pages/PageShow.vue'
 import type { Page } from '~/types/pages'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 useSeoMeta({
-  title: t('Jeux de données'),
+  title: t('Jeux de données - data.gouv.fr'),
 })
 
 const config = useRuntimeConfig()

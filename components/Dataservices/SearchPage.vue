@@ -176,9 +176,8 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Pagination } from '@datagouv/components-next'
+import { BrandedButton, Pagination, getLink } from '@datagouv/components-next'
 import type { Dataservice, Organization } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
 import { RiCloseCircleLine } from '@remixicon/vue'
 import { computedAsync, debouncedRef, useUrlSearchParams } from '@vueuse/core'
 import SearchInput from '~/components/Search/SearchInput.vue'
@@ -198,7 +197,7 @@ type Facets = {
 const { $api } = useNuxtApp()
 
 const route = useRoute()
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const { toast } = useToast()
 

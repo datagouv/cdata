@@ -43,26 +43,6 @@
       </nav>
     </div>
     <div class="fr-col-12 fr-col-md-8 fr-col-lg-9 fr-col-xl-10 md:h-full !px-4 sm:!px-10 pb-8 md:pb-16 lg:pb-64">
-      <SimpleBanner
-        type="primary"
-        class="mt-6"
-      >
-        <div class="flex flex-wrap space-x-8">
-          <div class="w-full flex-none md:flex-1 flex items-center space-x-2">
-            <RiInformationLine class="size-6 -mt-0.5" />
-            <div>{{ t("Vous êtes sur la nouvelle interface d’administration.") }}</div>
-          </div>
-          <div class="space-x-4">
-            <a
-              class="fr-link fr-link--external"
-              :href="config.public.betaAdminFeedbackUrl"
-              target="_blank"
-            >
-              {{ $t('Donnez votre avis') }}
-            </a>
-          </div>
-        </div>
-      </SimpleBanner>
       <NuxtPage
         :page-key="route => route.fullPath"
       />
@@ -71,9 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { SimpleBanner } from '@datagouv/components-next'
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
-import { RiInformationLine } from '@remixicon/vue'
 import AdminSidebarMenu from '~/components/AdminSidebar/AdminSidebarMenu/AdminSidebarMenu.vue'
 
 definePageMeta({
@@ -82,24 +60,22 @@ definePageMeta({
   matomoIgnore: true,
 })
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const route = useRoute()
-const localePath = useLocalePath()
-const localeRoute = useLocaleRoute()
+const { resolve } = useRouter()
 const me = useMe()
-const config = useRuntimeConfig()
 
 useSeoMeta({ title: 'Admin' })
 
 const { organizations, users } = useCurrentOwned()
 const isSiteAdmin = computed(() => me.value.roles?.includes('admin') || false)
 
-if (route.name === localeRoute('/admin/')?.name) {
+if (route.name === resolve('/admin/')?.name) {
   if (me.value.organizations.length > 0) {
-    await navigateTo(localePath(`/admin/organizations/${me.value.organizations[0].id}/datasets`), { replace: true })
+    await navigateTo(`/admin/organizations/${me.value.organizations[0].id}/datasets`, { replace: true })
   }
   else {
-    await navigateTo(localePath('/admin/me/datasets'), { replace: true })
+    await navigateTo('/admin/me/datasets', { replace: true })
   }
 }
 </script>

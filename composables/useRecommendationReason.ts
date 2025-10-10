@@ -1,7 +1,7 @@
 import type { Recommendation } from '~/types/recommendations'
 
 export function useRecommendationReason() {
-  const { t } = useI18n()
+  const { t } = useTranslation()
   const config = useRuntimeConfig()
   const getRecommendationReason = (recommendation: Recommendation, count: number) => {
     switch (recommendation.source) {
@@ -10,7 +10,7 @@ export function useRecommendationReason() {
       case 'schemas':
         return t('car conforme au schéma de données | car conformes aux schémas de données', { count })
       default:
-        throwOnNever(recommendation.source, 'Unknown source')
+        return t('')
     }
   }
   return { getRecommendationReason }

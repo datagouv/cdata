@@ -101,7 +101,7 @@
 
 <script setup lang="ts">
 import { computed, useTemplateRef } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { useTranslation } from '../composables/useTranslation'
 
 type Props = {
   /**
@@ -173,7 +173,7 @@ function getVisiblePages(currentPage: number, pageCount: number) {
   return pagination
 }
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const pageCount = computed(() => Math.ceil(props.totalResults / props.pageSize))
 const visiblePages = computed(() => getVisiblePages(props.page, pageCount.value))
 

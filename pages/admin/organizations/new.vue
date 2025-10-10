@@ -50,8 +50,7 @@ import { loadMe } from '~/utils/auth'
 import type { NewOrganization } from '~/types/types'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
-const { t } = useI18n()
-const localePath = useLocalePath()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const route = useRoute()
 const { $api } = useNuxtApp()
@@ -153,7 +152,7 @@ watch(currentStep, (step) => {
     && !moveToNextStep.value
     && !loading.value
     && step < 3) {
-    navigateTo(localePath(`/admin/organizations/${newOrganization.value.id}/profile`), { replace: true })
+    navigateTo(`/admin/organizations/${newOrganization.value.id}/profile`, { replace: true })
   }
 }, { immediate: true })
 </script>

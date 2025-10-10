@@ -247,7 +247,7 @@ import type { HarvesterJob, HarvestItem } from '~/types/harvesters'
 import type { AdminBadgeType } from '~/types/types'
 
 const config = useRuntimeConfig()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const props = withDefaults(defineProps<{

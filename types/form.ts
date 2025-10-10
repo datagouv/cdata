@@ -27,6 +27,7 @@ export type DatasetSearchParams = {
   page?: string
   organization_badge?: string
   tag?: string
+  badge?: string
   format?: string
   license?: string
   schema?: string

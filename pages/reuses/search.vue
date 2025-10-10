@@ -26,6 +26,7 @@
 </template>
 
 <script setup lang="ts">
+import { getLink } from '@datagouv/components-next'
 import type { Reuse, ReuseTopic, Site } from '@datagouv/components-next'
 import { useUrlSearchParams } from '@vueuse/core'
 import type { LocationQueryValue } from 'vue-router'
@@ -34,7 +35,7 @@ import ListPage from '~/components/Reuses/ListPage.vue'
 import type { ReuseSearchParams } from '~/types/form'
 import type { PaginatedArray } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 useSeoMeta({
   title: t('Réutilisations'),

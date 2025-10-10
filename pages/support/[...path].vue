@@ -26,7 +26,7 @@
       </h2>
       <div class="grid gap-5 md:grid-cols-2">
         <SupportCard
-          image="/img/guides.svg"
+          image="/nuxt_images/guides.svg"
           title="Guides"
           description="Les guides vous accompagnent pas à pas pour publier, explorer et réutiliser les données ouvertes en toute simplicité."
         >
@@ -63,7 +63,7 @@
           </template>
         </SupportCard>
         <SupportCard
-          image="/img/forum.svg"
+          image="/nuxt_images/forum.svg"
           title="Forum"
           description="Echangez avec la communauté, partagez vos retours sur la plateforme et demandez l'ouverture de données."
         >
@@ -488,7 +488,7 @@ const firstQuestion: Question = { id, title, choices }
 const questions = ref<Array<Question>>([firstQuestion])
 const answers = ref<Array<string>>([])
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 useSeoMeta({
   title: t('Support'),

@@ -21,8 +21,14 @@
           <div class="fr-header__brand fr-enlarge-link">
             <div class="fr-header__brand-top">
               <div class="fr-header__logo">
-                <p class="fr-logo">
+                <p
+                  v-if="appConfig.isFrenchGovernment"
+                  class="fr-logo"
+                >
                   République <br>Française
+                </p>
+                <p v-else>
+                  Add Your logo
                 </p>
               </div>
               <div class="lg:!hidden flex flex-row items-start justify-end p-1 -mr-1 mt-1 order-3 flex-1 self-stretch z-[1000] gap-3">
@@ -78,10 +84,11 @@
                               color="primary-softer"
                               :icon="NuxtImg"
                               :icon-attrs="{
-                                src: getUserAvatar(me, 24),
-                                loading: 'lazy',
-                                alt: '',
-                                class: 'rounded-full',
+                                'src': getUserAvatar(me, 24),
+                                'loading': 'lazy',
+                                'alt': '',
+                                'class': 'rounded-full',
+                                'data-testid': 'user-avatar',
                               }"
                               @click="close"
                             >
@@ -170,7 +177,7 @@
                               :to="link.link"
                               target="_self"
                               :external="link.external"
-                              :aria-current="getAriaCurrent(localePath(link.link))"
+                              :aria-current="getAriaCurrent(link.link)"
                               @click="close"
                             >
                               {{ link.label }}
@@ -269,10 +276,11 @@
                       color="primary-softer"
                       :icon="NuxtImg"
                       :icon-attrs="{
-                        src: getUserAvatar(me, 24),
-                        loading: 'lazy',
-                        alt: '',
-                        class: 'rounded-full',
+                        'src': getUserAvatar(me, 24),
+                        'loading': 'lazy',
+                        'alt': '',
+                        'class': 'rounded-full',
+                        'data-testid': 'user-avatar',
                       }"
                     >
                       {{ me.first_name }} {{ me.last_name }}
@@ -370,7 +378,7 @@
                 :to="link.link"
                 target="_self"
                 :external="link.external"
-                :aria-current="getAriaCurrent(localePath(link.link))"
+                :aria-current="getAriaCurrent(link.link)"
               >
                 {{ link.label }}
               </CdataLink>
@@ -466,9 +474,9 @@ defineProps<{
 }>()
 
 const getUserAvatar = useGetUserAvatar()
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
-const localePath = useLocalePath()
+const appConfig = useAppConfig()
 const me = useMaybeMe()
 const currentRoute = useRoute()
 const router = useRouter()
@@ -484,6 +492,7 @@ const menu = [
     { label: t('Comment publier des données ?'), link: '/pages/onboarding/producteurs/' },
     { label: t('Comment utiliser des données ?'), link: '/pages/onboarding/reutilisateurs/' },
     { label: t('Les guides {site}', { site: config.public.title }), link: config.public.guidesUrl, external: true },
+    { label: t('Nos produits'), link: '/products/' },
   ], external: true },
   { label: t('Nouveautés'), link: '/posts/' },
   { label: t('Nous écrire'), link: '/support/' },

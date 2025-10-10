@@ -12,6 +12,7 @@
 
     :error-text
     :warning-text
+    data-testid="producer-select"
   >
     <template #option="{ option }">
       <div class="flex items-center space-x-2">
@@ -26,6 +27,7 @@
           v-else
           class="rounded-full border border-gray-default size-5"
           :src="getUserAvatar(option.owner, 24)"
+          data-testid="user-avatar"
           alt=""
         />
         <span v-if="option.organization">{{ option.organization.name }}</span>
@@ -51,7 +53,7 @@ const props = withDefaults(defineProps<{
 })
 const model = defineModel<Owned | null>({ required: true })
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const user = useMe()
 const { $api } = useNuxtApp()
 

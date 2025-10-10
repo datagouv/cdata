@@ -4,7 +4,6 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
 
   if (to.path !== '/en/admin' && me.value) {
     // console.log('-> redirecting to new admin…')
-    const localePath = useLocalePath()
-    return navigateTo(localePath('/admin'))
+    return navigateTo('/admin')
   }
 })

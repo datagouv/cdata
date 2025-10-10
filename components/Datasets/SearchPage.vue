@@ -148,6 +148,21 @@
                 {{ granularity.name }}
               </template>
             </SearchableSelect>
+            <SearchableSelect
+              v-model="facets.badge"
+              :label="t('Label de données')"
+              :placeholder="t('Tous les badges')"
+              :get-option-id="(badge) => badge.kind"
+              :display-value="(value) => value.label"
+              :multiple="false"
+              :options="badges ? badges : []"
+              :loading="badgeStatus === 'pending'"
+              data-testid="dataset-label-filter"
+            >
+              <template #option="{ option: badge }">
+                {{ badge.label }}
+              </template>
+            </SearchableSelect>
             <div
               v-if="isFiltered || organization"
               class="pb-6 text-center"
@@ -186,6 +201,7 @@
           <p
             class="fr-col-auto my-0"
             role="status"
+            data-testid="result-count"
           >
             {{ t("{count} résultats | {count} résultat | {count} résultats", searchResults.total) }}
           </p>
@@ -221,7 +237,10 @@
         <transition mode="out-in">
           <LoadingBlock :status="searchResultsStatus">
             <div v-if="searchResults && searchResults.data.length">
-              <ul class="space-y-4 mt-2 p-0 border-t border-gray-default relative z-2 list-none">
+              <ul
+                class="space-y-4 mt-2 p-0 border-t border-gray-default relative z-2 list-none"
+                data-testid="results"
+              >
                 <li
                   v-for="result in searchResults.data"
                   :key="result.id"
@@ -278,10 +297,9 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { getOrganizationTypes, Pagination, OTHER, USER, type DatasetV2, type License, type Organization, type OrganizationTypes, type RegisteredSchema } from '@datagouv/components-next'
+import { BrandedButton, getLink, getOrganizationTypes, Pagination, OTHER, USER } from '@datagouv/components-next'
+import type { DatasetV2, License, Organization, OrganizationTypes, RegisteredSchema, TranslatedBadge } from '@datagouv/components-next'
 import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiCloseCircleLine, RiDownloadLine } from '@remixicon/vue'
 import { computedAsync, debouncedRef, useUrlSearchParams } from '@vueuse/core'
 import SearchInput from '~/components/Search/SearchInput.vue'
@@ -294,17 +312,18 @@ const props = defineProps<{
 
 type Facets = {
   organization?: { id: string } | null
-  organizationType?: { type: OrganizationTypes }
-  tag?: string
+  organizationType?: { type: OrganizationTypes } | null
+  tag?: string | null
   license?: License | null
   format?: string | null
-  geozone?: SpatialZone
+  geozone?: SpatialZone | null
   granularity?: SpatialGranularity | null
   schema?: RegisteredSchema | null
+  badge?: TranslatedBadge | null
 }
 
 const { $api } = useNuxtApp()
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const { toast } = useToast()
 
@@ -335,6 +354,14 @@ const { data: schemas, status: schemasStatus } = await useAPI<Array<RegisteredSc
 const { data: licenses, status: licensesStatus } = await useAPI<Array<License>>('api/1/datasets/licenses/', { lazy: true })
 
 const { data: organizations, status: organizationsStatus } = await useAPI<PaginatedArray<Organization>>('/api/1/organizations/?sort=-followers', { lazy: true })
+
+const { data: badgeRecord, status: badgeStatus } = await useAPI<Record<string, string>>('/api/1/datasets/badges/', { lazy: true })
+
+const badges = computed(() => badgeRecord.value
+  ? Object.entries(badgeRecord.value)
+      .map(([kind, label]: Array<string>) => ({ kind, label }))
+      .filter(({ kind }) => config.public.datasetBadges.includes(kind))
+  : [])
 
 const organizationTypes = getOrganizationTypes()
   .filter(type => type.type !== OTHER && type.type !== USER)
@@ -390,6 +417,8 @@ const licenseFromParams = computed(() => licenses.value?.find(license => license
 
 const schemaFromParams = computed(() => schemas.value?.find(schema => schema.name === params.schema) ?? null)
 
+const badgeFromParams = computed(() => badges.value?.find(badge => badge.kind === params.badge) ?? null)
+
 let spatialCoverageFromSuggest: SpatialZone | undefined
 if (params.geozone) {
   const suggested = await suggestSpatialCoverages(params.geozone)
@@ -409,6 +438,7 @@ const facets = ref<Facets>({
   schema: null,
   geozone: spatialCoverageFromSuggest,
   granularity: null,
+  badge: null,
 })
 
 watchEffect(() => {
@@ -416,6 +446,7 @@ watchEffect(() => {
   facets.value.license = licenseFromParams.value
   facets.value.schema = schemaFromParams.value
   facets.value.granularity = granularityFromParams.value
+  facets.value.badge = badgeFromParams.value
 })
 
 /**
@@ -511,7 +542,7 @@ const sortOptions = [
 ]
 
 // Update model params
-watch([facets, deboucedQuery, searchSort], ([newFacets, q, sort]) => {
+watch([currentPage, facets, deboucedQuery, searchSort], ([newPage, newFacets, q, sort]) => {
   if (!props.organization) {
     params.organization = newFacets.organization?.id ?? undefined
     params.organization_badge = newFacets.organizationType?.type ?? undefined
@@ -523,7 +554,8 @@ watch([facets, deboucedQuery, searchSort], ([newFacets, q, sort]) => {
   params.schema = newFacets.schema?.name ?? undefined
   params.geozone = newFacets.geozone?.id ?? undefined
   params.granularity = newFacets.granularity?.id ?? undefined
-  if (currentPage.value > 1 || params.page) params.page = currentPage.value.toString()
+  params.badge = newFacets.badge?.kind ?? undefined
+  if (newPage > 1 || params.page) params.page = newPage.toString()
   params.q = q ?? undefined
   params.sort = sort ?? null
   return params

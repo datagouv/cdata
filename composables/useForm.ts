@@ -14,7 +14,7 @@ export type ValidationsMessages<Type> = {
 export type FormInfo<T> = ReturnType<typeof useForm<T>>['formInfo']
 
 export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsRules<T> = {}, warningsRules: ValidationsRules<T> = {}) {
-  const { t } = useI18n()
+  const { t } = useTranslation()
 
   const form = toRef(initialValues)
   const errors = ref({} as ValidationsMessages<T>)
@@ -111,6 +111,14 @@ export function minLength<T, K extends KeysOfUnion<T>, V extends (string | undef
     if (value && value.length >= min) return null
 
     return message || t('Le champ doit être de {min} caractères minimum', { min })
+  }
+}
+
+export function maxLength<T, K extends KeysOfUnion<T>, V extends (string | undefined) & T[K]>(max: number, message: string | null = null): ValidationFunction<T, K, V> {
+  return (value: V, key: K, form: T, t) => {
+    if (!value || value.length <= max) return null
+
+    return message || t('Le champ doit être de {max} caractères maximum', { max })
   }
 }
 

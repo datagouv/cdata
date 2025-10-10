@@ -1,43 +1,58 @@
 import type { Organization, User } from '@datagouv/components-next'
 import type { NuxtApp, UseFetchOptions } from 'nuxt/app'
+import type { $Fetch } from 'ofetch'
+import type { PaginatedArray } from '~/types/types'
 /*
   Example : const { data: datasets } = await useAPI<PaginatedArray<Dataset>>('/api/1/datasets')
 */
-export function useAPI<T, U = T>(
+export async function useAPI<T, U = T>(
   url: MaybeRefOrGetter<string>,
-  options?: UseFetchOptions<T, U> & { redirectOn404?: boolean },
+  options?: UseFetchOptions<T, U> & { redirectOn404?: boolean, redirectOnSlug?: string },
 ) {
   const { setCurrentOrganization, setCurrentUser } = useCurrentOwned()
   const isAdmin = isMeAdmin()
+  const route = useRoute()
+  // Use below to navigateTo, don't know why navigateTo crash when called outside context.
+  // I read something about calling stuff use* after an await in setup (and we have an await
+  // for the useFetch())…
+  const nuxtApp = useNuxtApp()
 
   const redirectOn404 = options && 'redirectOn404' in options && options.redirectOn404
-  return useFetch(url, {
+  const redirectOnSlug = options && 'redirectOnSlug' in options && options.redirectOnSlug
+  const response = await useFetch(url, {
     ...options,
     $fetch: redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api,
   })
-    .then((response) => {
-      if (isAdmin) {
-        // Check the response to see if an `organization` or an `owner` is present
-        // to add this organization/user to the menu.
-        const data = toValue(response.data)
-        if (data && typeof data === 'object' && 'organization' in data && data.organization) {
-          setCurrentOrganization(data.organization as Organization)
-        }
 
-        if (data && typeof data === 'object' && 'owner' in data && data.owner) {
-          setCurrentUser(data.owner as User)
-        }
-      }
+  const data = toValue(response.data) || {}
 
-      // This allow to remove the `null` variant from `useFetch`
-      // response. I think the `null` variant is here for `DELETE`
-      // responses (without body) but in our case this helper is intended
-      // to be used only for `GET` requests. We need to use $fetch for
-      // the others HTTP methods.
-      // TODO: add a check at the beginning of this function to prevent
-      // miss-use of this function (calling it with other methods)
-      return { ...response, data: response.data as Ref<T> }
-    })
+  if (redirectOnSlug && redirectOnSlug in route.params && 'slug' in data && route.params[redirectOnSlug] !== data.slug) {
+    const newParams = { ...route.params }
+    newParams[redirectOnSlug] = data.slug as string
+
+    await nuxtApp.runWithContext(() => navigateTo({ name: route.name, params: newParams, query: route.query, hash: route.hash }, { redirectCode: 301 }))
+  }
+
+  if (isAdmin) {
+    // Check the response to see if an `organization` or an `owner` is present
+    // to add this organization/user to the menu.
+    if ('organization' in data && data.organization) {
+      setCurrentOrganization(data.organization as Organization)
+    }
+
+    if ('owner' in data && data.owner) {
+      setCurrentUser(data.owner as User)
+    }
+  }
+
+  // This allow to remove the `null` variant from `useFetch`
+  // response. I think the `null` variant is here for `DELETE`
+  // responses (without body) but in our case this helper is intended
+  // to be used only for `GET` requests. We need to use $fetch for
+  // the others HTTP methods.
+  // TODO: add a check at the beginning of this function to prevent
+  // miss-use of this function (calling it with other methods)
+  return { ...response, data: response.data as Ref<T> }
 }
 
 export function getUserBasedKey(route: string) {
@@ -72,4 +87,30 @@ export function usePostApiWithCsrf() {
       },
     })
   }
+}
+
+export async function apiFetchAll<T>(
+  api: $Fetch,
+  baseUrl: string,
+) {
+  /**
+     * Wrapper to fetch all paginated data
+     */
+
+  const results: T[] = []
+  let nextPage: string | null = null
+
+  // Initial query
+  let response = await api<PaginatedArray<T>>(baseUrl)
+  results.push(...response.data)
+  nextPage = response.next_page
+
+  // Pagination
+  while (nextPage) {
+    response = await api<PaginatedArray<T>>(nextPage)
+    results.push(...response.data)
+    nextPage = response.next_page
+  }
+
+  return results
 }

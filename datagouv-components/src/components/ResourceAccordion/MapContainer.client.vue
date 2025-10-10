@@ -16,7 +16,6 @@
 
 <script setup lang = "ts">
 import { onMounted, ref, useTemplateRef } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiErrorWarningLine } from '@remixicon/vue'
 
 import View from 'ol/View'
@@ -37,10 +36,11 @@ import {
 
 import SimpleBanner from '../SimpleBanner.vue'
 import type { Resource } from '../../types/resources'
+import { useTranslation } from '../../composables/useTranslation'
 
 const props = defineProps<{ resource: Resource }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 let map = null
 const mapRef = useTemplateRef('mapRef')

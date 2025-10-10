@@ -116,7 +116,7 @@ const emit = defineEmits<{
   submit: [PostForm]
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(props.post, {
   name: [required()],
