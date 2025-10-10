@@ -291,7 +291,7 @@
             </SimpleBanner>
             <Tooltip v-if="!canGenerateDescriptionShort">
               <BrandedButton
-                class="mt-2"
+                class="mt-2 mb-3"
                 type="button"
                 color="primary"
                 :disabled="true"
@@ -311,7 +311,7 @@
             </Tooltip>
             <BrandedButton
               v-else
-              class="mt-2"
+              class="mt-2 mb-3"
               type="button"
               color="primary"
               :disabled="isGeneratingDescriptionShort"
