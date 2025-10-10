@@ -314,7 +314,7 @@
                 type="button"
                 color="primary"
                 :disabled="isGeneratingDescriptionShort"
-                @click="handleAutoCompleteDescriptionShort(form.description)"
+                @click="handleAutoCompleteDescriptionShort"
               >
                 <div class="flex items-center space-x-2">
                   <NuxtImg
@@ -781,7 +781,7 @@ const canGenerateDescriptionShort = computed(() => {
   return hasTitle && hasEnoughDescription
 })
 
-async function handleAutoCompleteDescriptionShort(description: string) {
+async function handleAutoCompleteDescriptionShort() {
   try {
     isGeneratingDescriptionShort.value = true
     
@@ -792,7 +792,7 @@ async function handleAutoCompleteDescriptionShort(description: string) {
       method: 'POST',
       body: {
         title: form.value.title,
-        description,
+        description: form.value.description,
         organization: form.value.owned?.organization?.name
       }
     })
