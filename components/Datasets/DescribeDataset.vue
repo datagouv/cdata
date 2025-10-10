@@ -289,49 +289,57 @@
             >
               {{ getFirstWarning("description_short") }}
             </SimpleBanner>
-            <Tooltip v-if="!canGenerateDescriptionShort">
+            <div class="flex items-center gap-4 mt-2 mb-3">
+              <Tooltip v-if="!canGenerateDescriptionShort">
+                <BrandedButton
+                  type="button"
+                  color="primary"
+                  :disabled="true"
+                >
+                  <div class="flex items-center space-x-2">
+                    <NuxtImg
+                      src="/illustrations/sparkle.svg"
+                      alt=""
+                      class="size-4"
+                    />
+                    <span>{{ $t('Suggérer une description courte') }}</span>
+                  </div>
+                </BrandedButton>
+                <template #tooltip>
+                  {{ $t('Remplissez le titre et une description d\'au moins {min} caractères pour utiliser cette fonctionnalité.', { min: DESCRIPTION_MIN_LENGTH }) }}
+                </template>
+              </Tooltip>
               <BrandedButton
-                class="mt-2 mb-3"
+                v-else
                 type="button"
                 color="primary"
-                :disabled="true"
+                :disabled="isGeneratingDescriptionShort"
+                @click="handleAutoCompleteDescriptionShort(form.description)"
               >
                 <div class="flex items-center space-x-2">
                   <NuxtImg
+                    v-if="!isGeneratingDescriptionShort"
                     src="/illustrations/sparkle.svg"
                     alt=""
                     class="size-4"
                   />
-                  <span>{{ $t('Suggérer une description courte') }}</span>
+                  <span v-if="isGeneratingDescriptionShort">{{ $t('Suggestion en cours...') }}</span>
+                  <span v-else>{{ $t('Suggérer une description courte') }}</span>
+                  <RiLoader5Line
+                    v-if="isGeneratingDescriptionShort"
+                    class="size-4 animate-spin text-primary"
+                  />
                 </div>
               </BrandedButton>
-              <template #tooltip>
-                {{ $t('Remplissez le titre et une description d\'au moins {min} caractères pour utiliser cette fonctionnalité.', { min: DESCRIPTION_MIN_LENGTH }) }}
-              </template>
-            </Tooltip>
-            <BrandedButton
-              v-else
-              class="mt-2 mb-3"
-              type="button"
-              color="primary"
-              :disabled="isGeneratingDescriptionShort"
-              @click="handleAutoCompleteDescriptionShort(form.description)"
-            >
-              <div class="flex items-center space-x-2">
-                <NuxtImg
-                  v-if="!isGeneratingDescriptionShort"
-                  src="/illustrations/sparkle.svg"
-                  alt=""
-                  class="size-4"
-                />
-                <span v-if="isGeneratingDescriptionShort">{{ $t('Suggestion en cours...') }}</span>
-                <span v-else>{{ $t('Suggérer une description courte') }}</span>
-                <RiLoader5Line
-                  v-if="isGeneratingDescriptionShort"
-                  class="size-4 animate-spin text-primary"
-                />
-              </div>
-            </BrandedButton>
+              <CdataLink
+                v-if="config.public.generateShortDescriptionFeedbackUrl"
+                :to="config.public.generateShortDescriptionFeedbackUrl"
+                target="_blank"
+                class="text-sm text-gray-medium"
+              >
+                {{ $t('Comment avez-vous trouvé cette suggestion ?') }}
+              </CdataLink>
+            </div>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
