@@ -293,12 +293,16 @@
               <BrandedButton
                 class="mt-2"
                 type="button"
-                color="primary-soft"
-                size="xs"
+                color="primary"
                 :disabled="true"
               >
                 <div class="flex items-center space-x-2">
-                  <span>✨ {{ $t('Suggérer un description courte') }}</span>
+                  <NuxtImg
+                    src="/illustrations/sparkle.svg"
+                    alt=""
+                    class="size-4"
+                  />
+                  <span>{{ $t('Suggérer une description courte') }}</span>
                 </div>
               </BrandedButton>
               <template #tooltip>
@@ -309,14 +313,19 @@
               v-else
               class="mt-2"
               type="button"
-              color="primary-soft"
-              size="xs"
+              color="primary"
               :disabled="isGeneratingDescriptionShort"
               @click="handleAutoCompleteDescriptionShort(form.description)"
             >
               <div class="flex items-center space-x-2">
+                <NuxtImg
+                  v-if="!isGeneratingDescriptionShort"
+                  src="/illustrations/sparkle.svg"
+                  alt=""
+                  class="size-4"
+                />
                 <span v-if="isGeneratingDescriptionShort">{{ $t('Suggestion en cours...') }}</span>
-                <span v-else>✨ {{ $t('Suggérer un description courte') }}</span>
+                <span v-else>{{ $t('Suggérer une description courte') }}</span>
                 <RiLoader5Line
                   v-if="isGeneratingDescriptionShort"
                   class="size-4 animate-spin text-primary"
