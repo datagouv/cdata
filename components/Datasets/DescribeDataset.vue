@@ -67,7 +67,7 @@
           <div class="prose prose-neutral m-0">
             <p class="fr-m-0">
               {{ $t(`La description courte présente votre jeu de données en une ou deux phrases. Elle aide les utilisateurs à comprendre rapidement ce qu’il contient et améliore sa visibilité dans les recherches.`) }}<br>
-              {{ $t(`Vous pouvez demander à l’intelligence artificielle de vous proposer une première version, puis la modifier à votre convenance. Pour cela, vous devez déjà avoir rempli le titre et une description d'au moins {min} caractères.`, { min: DESCRIPTION_MIN_LENGTH }) }}<br>
+              {{ $t(`Une première version peut être générée automatiquement si vous avez déjà rempli le titre et une description d'au moins {min} caractères, puis adaptée selon vos besoins.`, { min: DESCRIPTION_MIN_LENGTH }) }}<br>
               {{ $t(`L’IA se base uniquement sur les informations que vous avez fournies et peut parfois se tromper : relisez toujours la proposition avant de valider.`) }}
             </p>
           </div>
