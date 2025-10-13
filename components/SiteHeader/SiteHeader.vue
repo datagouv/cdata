@@ -532,15 +532,28 @@ onMounted(() => {
     connected: { type: 'success', text: t('Vous êtes maintenant connecté.') },
     change_email: { type: 'success', text: t('Merci. Les instructions de confirmation pour changer votre adresse email ont été envoyées à l\'adresse mail cible.') },
     post_confirm: { type: 'success', text: t('Votre adresse email est maintenant confirmée. Vous êtes maintenant connecté.') },
-    confirm_error: { type: 'error', text: route.query.info as string || t('Erreur lors de la confirmation de votre adresse email.') },
     change_email_confirmed: { type: 'success', text: t('Votre nouvelle adresse email est maintenant confirmée.') },
     change_email_expired: { type: 'error', text: t('Le code de vérification de votre adresse email a expiré, un nouveau mail vous a été envoyé.') },
     change_email_invalid: { type: 'error', text: t('Le code de vérification de votre adresse email est incorrect.') },
   }
 
   if (route.query.flash) {
-    const message = FLASH_MESSAGES[route.query.flash as string] || null
-    if (message) toast[message.type](message.text)
+    let message = null as { type: 'success' | 'error' | 'info', text: string } | null
+    if (route.query.flash === 'confirm_error') {
+      if (route.query.info) {
+        message = { type: 'info', text: route.query.info as string }
+      }
+      if (route.query.error) {
+        message = { type: 'error', text: route.query.error as string }
+      }
+    }
+    else {
+      message = FLASH_MESSAGES[route.query.flash as string] || null
+    }
+
+    if (message) {
+      toast[message.type](message.text)
+    }
   }
 })
 </script>
