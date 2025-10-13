@@ -91,7 +91,8 @@
                 </span>
               </h1>
               <div
-                v-if="displayShortDescription" class="mb-4"
+                v-if="displayShortDescription"
+                class="mb-4"
               >
                 <ReadMore>
                   <MarkdownViewer
@@ -403,14 +404,13 @@ import {
   RiExternalLinkFill,
   RiLockLine,
 } from '@remixicon/vue'
-import { TranslationT } from '@datagouv/components-next'
+import { getShortDescription, TranslationT } from '@datagouv/components-next'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
-import { getShortDescription } from '@datagouv/components-next'
 
 const config = useRuntimeConfig()
 const route = useRoute()
