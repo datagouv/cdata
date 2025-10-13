@@ -1,0 +1,25 @@
+name: Type check datagouv-components
+run-name: check datagouv-components types
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: []
+jobs:
+  sentry-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install datagouv-components dependencies
+        run: npm ci
+        working-directory: ./datagouv-components
+      
+      - name: Run datagouv-components scripts
+        run: npm run type-check
+        working-directory: ./datagouv-components
