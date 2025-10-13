@@ -360,7 +360,10 @@ const { data: badgeRecord, status: badgeStatus } = await useAPI<Record<string, s
 const badges = computed(() => badgeRecord.value
   ? Object.entries(badgeRecord.value)
       .map(([kind, label]: Array<string>) => ({ kind, label }))
-      .filter(({ kind }) => config.public.datasetBadges.includes(kind))
+      .filter(({ kind }) => {
+        const badges = Array.isArray(config.public.datasetBadges) ? config.public.datasetBadges : config.public.datasetBadges.split(',')
+        return badges.includes(kind)
+      })
   : [])
 
 const organizationTypes = getOrganizationTypes()
