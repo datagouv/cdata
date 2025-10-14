@@ -42,7 +42,7 @@ export class AlbertAPIClient {
     this.timeout = timeout
     if (!this.apiKey) {
       throw new Error(
-        "API key is required. Set albertApiKey parameter or NUXT_PUBLIC_ALBERT_API_KEY environment variable."
+        "API key is required. Set albertApiKey parameter or NUXT_ALBERT_API_KEY environment variable."
       )
     }
   }

@@ -17,8 +17,8 @@ export default defineEventHandler(async (event) => {
     const runtimeConfig = useRuntimeConfig()
     
     const albertClient = new AlbertAPIClient(
-      runtimeConfig.public.albertApiBaseUrl,
-      runtimeConfig.public.albertApiKey
+      runtimeConfig.albertApiBaseUrl,
+      runtimeConfig.albertApiKey
     )
 
     const messages = [

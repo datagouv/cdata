@@ -45,6 +45,8 @@ export default defineNuxtConfig({
     crispWebsiteId: '',
     pagesGhRepoName: 'datagouv/datagouvfr-pages',
     pagesGhRepoBranch: 'master',
+    albertApiBaseUrl: 'https://albert.api.etalab.gouv.fr/',
+    albertApiKey: '',
     public: {
       baseUrl: 'https://www.data.gouv.fr/',
       commitId: undefined,
@@ -56,8 +58,6 @@ export default defineNuxtConfig({
       metricsApi: 'https://metric-api.data.gouv.fr',
       devApiKey: undefined,
       staticUrl: 'https://static.data.gouv.fr/static/',
-      albertApiBaseUrl: 'https://albert.api.etalab.gouv.fr/',
-      albertApiKey: '',
       maxJsonPreviewCharSize: 1000000, // (~1MB)
       maxPdfPreviewByteSize: 10000000, // (10 MB)
       maxXmlPreviewCharSize: 100000, // (~100KB)
