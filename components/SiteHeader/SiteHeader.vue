@@ -287,12 +287,14 @@
                     </BrandedButton>
                     <Toggletip
                       :button-props="{
-                        class: `text-primary`,
+                        class: `px-1 text-xs h-5 gap-1 font-bold rounded-sm ${notifications.length ? 'text-danger bg-danger-lightest' : 'text-primary'}`,
                         title: $t('Show notification'),
                       }"
                       no-margin
+                      :styled-button="false"
                     >
-                      <RiInbox2Line class="size-4" />
+                      <RiInbox2Line class="size-3" />
+                      {{ notifications.length }}
                       <template #toggletip="{ close }">
                         <div class="flex justify-between border-bottom">
                           <h5 class="fr-text--sm fr-my-0 fr-p-2v">

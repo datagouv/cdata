@@ -13,7 +13,8 @@
     />
     <PopoverButton
       v-bind="buttonProps"
-      class="w-8 h-8 rounded-full -outline-offset-2 inline-flex items-center justify-center bg-transparent border-transparent hover:!bg-gray-some"
+      class="border-transparent -outline-offset-2 inline-flex items-center justify-center hover:bg-gray-some"
+      :class="{ 'w-8 h-8 rounded-full bg-transparent': styledButton }"
     >
       <slot>
         <RiInformationLine class="size-5" />
@@ -50,10 +51,13 @@ import { RiInformationLine } from '@remixicon/vue'
 import ClientOnly from './ClientOnly.vue'
 import ValueWatcher from './ValueWatcher.vue'
 
-defineProps<{
+withDefaults(defineProps<{
   buttonProps?: object
   noMargin?: boolean
-}>()
+  styledButton?: boolean
+}>(), {
+  styledButton: true,
+})
 
 const popoverRef = useTemplateRef<InstanceType<typeof Popover>>('popover')
 const panelRef = useTemplateRef<InstanceType<typeof PopoverPanel>>('panel')

@@ -1,11 +1,11 @@
 <template>
   <NuxtLoadingIndicator color="var(--blue-cumulus-main-526)" />
   <NuxtRouteAnnouncer />
+  <div
+    id="tooltips"
+    class="h-0"
+  />
   <NuxtLayout>
-    <div
-      id="tooltips"
-      class="h-0"
-    />
     <NuxtPage />
   </NuxtLayout>
 </template>
