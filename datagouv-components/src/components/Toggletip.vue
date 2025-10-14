@@ -10,7 +10,6 @@
     -->
     <ValueWatcher
       :value="open"
-      @changed="calculatePanelPosition"
     />
     <PopoverButton
       v-bind="buttonProps"
@@ -25,11 +24,12 @@
       <Teleport to="#tooltips">
         <PopoverPanel
           v-show="open"
-          class="toggletip absolute z-10"
+          ref="panel"
+          class="toggletip absolute z-[800]"
           :class="{
             'p-0': noMargin,
           }"
-          :style="panelStyle"
+          :style="floatingStyles"
           static
         >
           <slot
@@ -43,8 +43,9 @@
 </template>
 
 <script setup lang="ts">
+import { autoPlacement, autoUpdate, useFloating } from '@floating-ui/vue'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
-import { nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useTemplateRef } from 'vue'
+import { useTemplateRef } from 'vue'
 import { RiInformationLine } from '@remixicon/vue'
 import ClientOnly from './ClientOnly.vue'
 import ValueWatcher from './ValueWatcher.vue'
@@ -54,36 +55,14 @@ defineProps<{
   noMargin?: boolean
 }>()
 
-const popoverRef = useTemplateRef('popover')
-const panelStyle = ref({})
+const popoverRef = useTemplateRef<InstanceType<typeof Popover>>('popover')
+const panelRef = useTemplateRef<InstanceType<typeof PopoverPanel>>('panel')
 
-// Since the parent of the component can have an overflow-hidden
-// we teleport the popover to a #tooltips div in the layout.
-// We need to compute the correct position of the tooltip.
-const calculatePanelPosition = () => {
-  nextTick(() => {
-    const popover = popoverRef.value?.$el
-
-    if (!popover) {
-      console.error('Cannot find the popover of the Toggletip.)')
-      return
-    }
-    const popoverRect = popover.getBoundingClientRect()
-    panelStyle.value = {
-      left: `${popoverRect.left + window.scrollX}px`,
-      top: `${popoverRect.bottom + window.scrollY}px`,
-    }
-  })
-}
-
-onMounted(() => {
-  calculatePanelPosition()
-  window.addEventListener('resize', calculatePanelPosition)
+const { floatingStyles } = useFloating(popoverRef, panelRef, {
+  middleware: [autoPlacement({
+    alignment: 'end',
+    crossAxis: true,
+  })],
+  whileElementsMounted: autoUpdate,
 })
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', calculatePanelPosition)
-})
-
-onUpdated(() => calculatePanelPosition())
 </script>
