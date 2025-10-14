@@ -77,6 +77,7 @@
                         :src="getUserAvatar(user, 24)"
                         loading="lazy"
                         alt=""
+                        data-testid="user-avatar"
                       />
                       <span>{{ user.first_name }} {{ user.last_name }}
                         <small

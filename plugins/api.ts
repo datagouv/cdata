@@ -35,7 +35,7 @@ export default defineNuxtPlugin({
         async onResponseError({ response, options }) {
           if (response.status === 404) {
             if (apiOptions.redirectOn404) {
-              showError({ statusCode: 404, statusMessage: 'Page Not Found' })
+              await nuxtApp.runWithContext(() => showError({ statusCode: 404, statusMessage: 'Page Not Found', fatal: true }))
             }
             else {
               // We don't want to show the toast for default 404 Flask response

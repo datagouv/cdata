@@ -25,7 +25,7 @@ async function placeholderUrl() {
     import: 'default',
   })
   const name = Object.keys(placeholders).find(p => p.includes(props.type)) as string
-  const module = placeholders[name]
+  const module = placeholders[name] as () => Promise<unknown>
   const placeholder = await module()
   return props.src ? props.src : placeholder as string
 }

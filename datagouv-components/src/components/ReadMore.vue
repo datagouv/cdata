@@ -23,10 +23,10 @@
         @click.stop="toggle"
       >
         <template v-if="expanded">
-          {{ $t("Lire moins") }}
+          {{ t("Lire moins") }}
         </template>
         <template v-else>
-          {{ $t("Lire plus") }}
+          {{ t("Lire plus") }}
         </template>
       </BrandedButton>
     </div>
@@ -39,12 +39,15 @@ import { ref, useTemplateRef, watch } from 'vue'
 import { animate } from 'popmotion'
 import styler from 'stylefire'
 import BrandedButton from './BrandedButton.vue'
+import { useTranslation } from '../composables/useTranslation'
 
 const props = withDefaults(defineProps<{
   maxHeight?: string
 }>(), {
   maxHeight: '',
 })
+
+const { t } = useTranslation()
 
 const DEFAULT_HEIGHT = 284
 const expanded = ref(false)

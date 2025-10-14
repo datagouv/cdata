@@ -60,6 +60,18 @@
           </div>
         </Accordion>
         <Accordion
+          :id="writeAGoodDescriptionShortAccordionId"
+          :title="$t('Ecrire une description courte')"
+          :state="accordionState('description_short')"
+        >
+          <div class="prose prose-neutral m-0">
+            <p class="fr-m-0">
+              {{ $t(`La description courte présente votre jeu de données en une ou deux phrases.
+Elle aide les utilisateurs à comprendre rapidement ce qu’il contient et améliore sa visibilité dans les recherches.`) }}
+            </p>
+          </div>
+        </Accordion>
+        <Accordion
           :id="useTagsAccordionId"
           :title="$t('Mettre des mots-clés')"
           :state="accordionState('tags')"
@@ -254,6 +266,30 @@
             </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
+            class="fr-fieldset__element min-width-0"
+            :accordion="writeAGoodDescriptionShortAccordionId"
+          >
+            <InputGroup
+              v-model="form.description_short"
+              class="mb-3"
+              :label="$t(`Description courte`)"
+              :hint-text="$t(`Si ce champ est laissé vide, les ${DESCRIPTION_SHORT_MAX_LENGTH} premiers caractères de votre description seront utilisés.`)"
+              :required="false"
+              type="textarea"
+              :rows="3"
+              :has-error="!!getFirstError('description_short')"
+              :has-warning="!!getFirstWarning('description_short')"
+              :error-text="getFirstError('description_short')"
+              @blur="touch('description_short')"
+            />
+            <SimpleBanner
+              v-if="getFirstWarning('description_short')"
+              type="warning"
+            >
+              {{ getFirstWarning("description_short") }}
+            </SimpleBanner>
+          </LinkedToAccordion>
+          <LinkedToAccordion
             class="fr-fieldset__element"
             :accordion="useTagsAccordionId"
             @blur="touch('tags')"
@@ -405,6 +441,7 @@
               :required="true"
               :error-text="getFirstError('frequency')"
               :warning-text="getFirstWarning('frequency')"
+              data-testid="select-frequency"
             />
             <SimpleBanner
               v-if="getFirstWarning('frequency')"
@@ -579,6 +616,7 @@ import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone } from '~/types/types'
+import { DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 
@@ -602,6 +640,7 @@ const isGlobalAdmin = computed(() => isAdmin(user.value))
 const nameDatasetAccordionId = useId()
 const addAcronymAccordionId = useId()
 const writeAGoodDescriptionAccordionId = useId()
+const writeAGoodDescriptionShortAccordionId = useId()
 const useTagsAccordionId = useId()
 const selectLicenseAccordionId = useId()
 const contactPointAccordionId = useId()
@@ -609,7 +648,7 @@ const chooseFrequencyAccordionId = useId()
 const addTemporalCoverageAccordionId = useId()
 const addSpatialInformationAccordionId = useId()
 
-const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies', { lazy: true })
+const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies/', { lazy: true })
 
 const { data: allLicenses } = await useAPI<Array<License>>('/api/1/datasets/licenses', { lazy: true })
 
@@ -655,16 +694,16 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
   owned: [required()],
   title: [required()],
   description: [required()],
+  description_short: [maxLength(DESCRIPTION_SHORT_MAX_LENGTH, t(`La {property} ne doit pas dépasser {max} caractères.`, { property: t('description courte'), max: DESCRIPTION_SHORT_MAX_LENGTH }))],
   frequency: [required()],
   private: [],
 }, {
   title: [testNotAllowed(config.public.demoServer?.name)],
-  description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
+  description: [minLength(DESCRIPTION_MIN_LENGTH, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: DESCRIPTION_MIN_LENGTH }))],
   tags: [required(t('L\'ajout de mots-clés aide à améliorer le référencement de vos données.'))],
   license: [required()],
   frequency: [(f) => {
     if (f && f.id === 'unknown') return t('La fréquence doit être différente d\'inconnue.')
-
     return null
   }],
   spatial_granularity: [required(t('Vous n\'avez pas spécifié la granularité spatiale.'))],

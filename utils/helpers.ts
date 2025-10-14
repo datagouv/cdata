@@ -114,3 +114,7 @@ export function getAllErrorsInErrorFields(errors: FieldsErrors, key: string): st
 export function removeLangPrefix(url: string): string {
   return url.replace(/^\/(fr)|(en)/, '')
 }
+
+export function simpleSlug(str: string): string {
+  return str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
+}

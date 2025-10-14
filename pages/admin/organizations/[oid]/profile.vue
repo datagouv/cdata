@@ -73,11 +73,10 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, isOrganizationCertified, type Organization } from '@datagouv/components-next'
+import { BrandedButton, isOrganizationCertified, PaddedContainer, type Organization } from '@datagouv/components-next'
 import { RiEyeLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import PaddedContainer from '~/components/PaddedContainer/PaddedContainer.vue'
 
 const props = defineProps<{
   organization: Organization

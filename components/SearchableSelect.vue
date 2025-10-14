@@ -57,6 +57,7 @@
             <ComboboxButton
               v-if="! open"
               class="w-full h-full hover:!bg-transparent"
+              :data-testid="`searchable-select-${simpleSlug(label)}`"
             />
             <button
               v-if="showClearButton"

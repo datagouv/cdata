@@ -1,4 +1,6 @@
 import type { App, Plugin } from 'vue'
+import type { Activity, ActivityKey } from './types/activity.js'
+import type { PaginatedArray } from './types/api.js'
 import type { ContactPoint, ContactPointRole } from './types/contact_point.js'
 import type { Badge, Badges, TranslatedBadge } from './types/badges'
 import type { Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
@@ -16,6 +18,8 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User } from './types/users'
 
+import ActivityList from './components/ActivityList/ActivityList.vue'
+import UserActivityList from './components/ActivityList/UserActivityList.vue'
 import AnimatedLoader from './components/AnimatedLoader.vue'
 import AppLink from './components/AppLink.vue'
 import Avatar from './components/Avatar.vue'
@@ -38,6 +42,7 @@ import OrganizationCard from './components/OrganizationCard.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
 import OwnerTypeIcon from './components/OwnerTypeIcon.vue'
+import PaddedContainer from './components/PaddedContainer.vue'
 import Pagination from './components/Pagination.vue'
 import Placeholder from './components/Placeholder.vue'
 import ReadMore from './components/ReadMore.vue'
@@ -63,6 +68,7 @@ export * from './composables/useActiveDescendant'
 export * from './composables/useReuseType'
 export * from './composables/useTranslation'
 
+export * from './functions/activities'
 export * from './functions/datasets'
 export * from './functions/dates'
 export * from './functions/helpers'
@@ -71,6 +77,7 @@ export * from './functions/matomo'
 export * from './functions/never'
 export * from './functions/organizations'
 export * from './functions/owned'
+export * from './functions/pagination'
 export * from './functions/resources'
 export * from './functions/reuses'
 export * from './functions/schemas'
@@ -78,6 +85,8 @@ export * from './functions/users'
 
 export type {
   UseFetchFunction,
+  Activity,
+  ActivityKey,
   Badge,
   Badges,
   CommunityResource,
@@ -106,6 +115,7 @@ export type {
   Organization,
   Owned,
   OwnedWithId,
+  PaginatedArray,
   Quality,
   Rel,
   RemoteResourceFileType,
@@ -141,6 +151,7 @@ const datagouv: Plugin<PluginConfig> = {
 export {
   datagouv,
   useComponentsConfig,
+  ActivityList,
   AnimatedLoader,
   AppLink,
   Avatar,
@@ -163,6 +174,7 @@ export {
   OrganizationNameWithCertificate,
   OwnerType,
   OwnerTypeIcon,
+  PaddedContainer,
   Pagination,
   Placeholder,
   ReadMore,
@@ -181,4 +193,5 @@ export {
   Tooltip,
   Toggletip,
   TranslationT,
+  UserActivityList,
 }

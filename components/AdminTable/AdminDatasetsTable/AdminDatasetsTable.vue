@@ -141,13 +141,12 @@
 
 <script setup lang="ts">
 import { DatasetQualityScore, DatasetQualityTooltipContent, BrandedButton, AvatarWithName, Tooltip, useFormatDate } from '@datagouv/components-next'
-import type { Dataset, DatasetV2 } from '@datagouv/components-next'
+import type { Activity, Dataset, DatasetV2 } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '../../AdminBadge/AdminBadge.vue'
 import AdminContentWithTooltip from '../../AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
-import type { Activity } from '~/types/activity'
 import type { DatasetSortedBy, SortDirection } from '~/types/types'
 
 const emit = defineEmits<{

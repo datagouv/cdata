@@ -5,5 +5,6 @@ test('homepage is working', async ({ page }) => {
 
   // Expect a title "to contain" a substring.
   await expect(page).toHaveTitle('Accueil — data.gouv.fr')
-  await expect(page).toHaveScreenshot()
+  await page.waitForLoadState('networkidle')
+  await expect(page).toHaveScreenshot({ mask: [page.getByTestId('user-avatar')] })
 })

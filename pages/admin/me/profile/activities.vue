@@ -1,10 +1,9 @@
 <template>
-  <ActivityList :user="user.id" />
+  <UserActivityList :user="user.id" />
 </template>
 
 <script setup lang="ts">
-import type { User } from '@datagouv/components-next'
-import ActivityList from '~/components/ActivityList.vue'
+import { UserActivityList, type User } from '@datagouv/components-next'
 
 defineProps<{ user: User }>()
 </script>

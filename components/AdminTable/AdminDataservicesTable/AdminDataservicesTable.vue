@@ -112,14 +112,14 @@
 </template>
 
 <script setup lang="ts">
-import { AvatarWithName, BrandedButton, useFormatDate, type Dataservice } from '@datagouv/components-next'
+import type { Activity, Dataservice } from '@datagouv/components-next'
+import { AvatarWithName, BrandedButton, useFormatDate } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import DataserviceAccessTypeBadge from './DataserviceAccessTypeBadge.vue'
-import type { Activity } from '~/types/activity'
 import type { DataserviceSortedBy, SortDirection } from '~/types/types'
 
 const props = withDefaults(defineProps<{
