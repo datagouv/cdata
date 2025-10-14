@@ -44,7 +44,7 @@
       <div class="fr-col-12 fr-col-md-6">
         <ActionCard
           :title="$t('Publier avec un schéma')"
-          :content="$t('Vos données suivent-elles un schéma de référence ? Validez, corrigez et publiez vos données sur {site} !', { site: config.public.title })"
+          :content="$t('Vos données suivent-elles un schéma de référence ? Sélectionnez un schéma et créez vos données structurées !')"
           icon="/illustrations/schema.svg"
           actions-alignment="end"
           :stretch-height="true"
@@ -52,9 +52,9 @@
           <template #actions>
             <BrandedButton
               color="secondary"
-              :href="config.public.schemaPublishingUrl"
+              @click="goToStructured"
             >
-              {{ $t("Utiliser notre outil dédié") }}
+              {{ $t("Publier avec un schéma") }}
             </BrandedButton>
           </template>
         </ActionCard>
@@ -136,4 +136,8 @@ defineEmits<{
 }>()
 
 const config = useRuntimeConfig()
+
+const goToStructured = () => {
+  navigateTo('/admin/datasets/structured?step=1')
+}
 </script>
