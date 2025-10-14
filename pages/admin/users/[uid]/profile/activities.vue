@@ -1,9 +1,9 @@
 <template>
-  <ActivityList :user="user.id" />
+  <UserActivityList :user="user.id" />
 </template>
 
 <script setup lang="ts">
-import { ActivityList, type User } from '@datagouv/components-next'
+import { UserActivityList, type User } from '@datagouv/components-next'
 
 defineProps<{ user: User }>()
 </script>

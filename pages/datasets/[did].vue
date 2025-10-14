@@ -399,7 +399,7 @@ import {
   RiExternalLinkFill,
   RiLockLine,
 } from '@remixicon/vue'
-import { TranslationT } from '@datagouv/components-next'
+import { getShortDescription, TranslationT } from '@datagouv/components-next'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'

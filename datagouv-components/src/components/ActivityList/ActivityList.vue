@@ -25,7 +25,7 @@
                 <div class="size-[7px] rounded-full bg-gray-silver" />
               </div>
               <div class="flex w-full gap-x-3 items-start">
-                <div class="flex items-center">
+                <div class="flex flex-none items-center">
                   <Avatar
                     :rounded="true"
                     :size="16"
@@ -39,10 +39,15 @@
                 </div>
                 <details
                   v-if="hasChanges(activity)"
-                  class="flex-1"
+                  class="min-w-0 flex-1"
                 >
                   <summary class="m-0 text-xs text-gray-title">
-                    {{ getActivityTranslation(activity) }}
+                    <slot
+                      name="activity"
+                      v-bind="{ class: 'px-3.5', activity }"
+                    >
+                      {{ getActivityTranslation(activity) }}
+                    </slot>
                   </summary>
                   <p class="m-2 text-xs">
                     {{ t('Aucun Champs mis à jour : | 1 Champ mis à jour : | {n} Champs mis à jour :', { n: activity.changes?.length ?? 0 }) }}
@@ -61,11 +66,16 @@
                 </details>
                 <p
                   v-else
-                  class="m-0 text-xs text-gray-title flex-1"
+                  class="m-0 text-xs text-gray-title min-w-0 flex-1"
                 >
-                  {{ getActivityTranslation(activity) }}
+                  <slot
+                    name="activity"
+                    v-bind="{ class: '', activity }"
+                  >
+                    {{ getActivityTranslation(activity) }}
+                  </slot>
                 </p>
-                <p class="m-0 text-xs text-gray-medium">
+                <p class="m-0 flex-none text-xs text-gray-medium">
                   {{ t('le {date}', { date: formatDate(activity.created_at) }) }}
                 </p>
               </div>
@@ -99,16 +109,16 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { useTranslation } from '../composables/useTranslation'
-import { getActivityTranslation } from '../functions/activities'
-import { useFetch } from '../functions/api'
-import { useFormatDate } from '../functions/dates'
-import { getLink } from '../functions/pagination'
-import type { PaginatedArray } from '../types/api'
-import type { Activity } from '../types/activity'
-import Avatar from './Avatar.vue'
-import Pagination from './Pagination.vue'
-import PaddedContainer from './PaddedContainer.vue'
+import { useTranslation } from '../../composables/useTranslation'
+import { getActivityTranslation } from '../../functions/activities'
+import { useFetch } from '../../functions/api'
+import { useFormatDate } from '../../functions/dates'
+import { getLink } from '../../functions/pagination'
+import type { PaginatedArray } from '../../types/api'
+import type { Activity } from '../../types/activity'
+import Avatar from '../Avatar.vue'
+import Pagination from '../Pagination.vue'
+import PaddedContainer from '../PaddedContainer.vue'
 
 const props = defineProps<{
   id?: string
