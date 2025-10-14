@@ -270,7 +270,7 @@
             <div class="fr-header__tools-links">
               <ClientOnly v-if="me">
                 <ul class="list-none flex space-x-7">
-                  <li>
+                  <li class="flex gap-2 items-center">
                     <BrandedButton
                       :href="me.page"
                       color="primary-softer"
@@ -285,6 +285,31 @@
                     >
                       {{ me.first_name }} {{ me.last_name }}
                     </BrandedButton>
+                    <Toggletip
+                      :button-props="{
+                        class: `text-primary`,
+                        title: $t('Show notification'),
+                      }"
+                      no-margin
+                    >
+                      <RiInbox2Line class="size-4" />
+                      <template #toggletip="{ close }">
+                        <div class="flex justify-between border-bottom">
+                          <h5 class="fr-text--sm fr-my-0 fr-p-2v">
+                            {{ t("Notifications") }}
+                          </h5>
+                          <button
+                            type="button"
+                            :title="t('Fermer')"
+                            class="border-left close-button flex items-center justify-center"
+                            @click="close"
+                          >
+                            <RiCloseLine class="size-5" />
+                          </button>
+                        </div>
+                        <NotificationsList :notifications />
+                      </template>
+                    </Toggletip>
                   </li>
                   <li>
                     <BrandedButton
@@ -460,14 +485,15 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, useGetUserAvatar } from '@datagouv/components-next'
-import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line } from '@remixicon/vue'
+import { BrandedButton, Toggletip, useGetUserAvatar } from '@datagouv/components-next'
+import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
 import LogoAsText from '../LogoAsText.vue'
 import LogoImage from '../LogoImage.vue'
 import { NuxtImg } from '#components'
 import { useLogout, useMaybeMe } from '~/utils/auth'
+import type { UserNotification } from '~/types/notifications'
 
 defineProps<{
   fluid?: boolean
@@ -478,9 +504,12 @@ const { t } = useTranslation()
 const config = useRuntimeConfig()
 const appConfig = useAppConfig()
 const me = useMaybeMe()
+const { $api } = useNuxtApp()
 const currentRoute = useRoute()
 const router = useRouter()
 const route = useRoute()
+
+const notifications = ref<Array<UserNotification>>([])
 
 const menu = [
   { label: t('Données'), link: '/datasets/' },
@@ -524,7 +553,7 @@ const logout = async () => {
 }
 
 const { toast } = useToast()
-onMounted(() => {
+onMounted(async () => {
   // TODO: remove this logic when we don't rely on udata flash messages
   // following https://github.com/opendatateam/udata/pull/3348
   const FLASH_MESSAGES: Record<string, { type: 'success' | 'error', text: string }> = {
@@ -540,6 +569,9 @@ onMounted(() => {
   if (route.query.flash) {
     const message = FLASH_MESSAGES[route.query.flash as string] || null
     if (message) toast[message.type](message.text)
+  }
+  if (me.value) {
+    notifications.value = await $api<Array<UserNotification>>('api/1/notifications/')
   }
 })
 </script>
