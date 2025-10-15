@@ -214,6 +214,7 @@
                   type="line"
                   :summary="metricsViewsTotal"
                   class="mb-8 md:mb-0"
+                  :since="metricsSince"
                 />
               </div>
             </dl>
@@ -316,6 +317,11 @@ const openSwagger = ref(false)
 const accessAudiences = computed(() => (['local_authority_and_administration', 'company_and_association', 'private'] as Array<DataserviceAccessAudienceType>)
   .map(type => dataservice.value.access_audiences.find(a => a.role === type))
   .filter(Boolean) as Array<DataserviceAccessAudience>)
+
+const metricsSince = computed(() => {
+  // max of the start of metrics computing and the creation of the dataservice on the platform
+  return [dataservice.value.created_at, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
+})
 
 const metricsViews = ref<null | Record<string, number>>(null)
 const metricsViewsTotal = ref<null | number>(null)
