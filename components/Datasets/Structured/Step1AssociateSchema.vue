@@ -285,8 +285,8 @@ async function loadSchemas() {
   try {
     const response = await fetch('https://schema.data.gouv.fr/schemas.json')
     const data = await response.json() as { schemas: Schema[] }
-    // Filtrer uniquement les schémas de type tableschema
-    schemas.value = (data.schemas || []).filter((s: Schema) => s.schema_type === 'tableschema')
+    // Charger tous les schémas sans filtrer
+    schemas.value = data.schemas || []
   }
   catch (error) {
     console.error('Erreur lors du chargement des schémas:', error)
@@ -313,6 +313,9 @@ function onSearchChange() {
 async function selectSchema(schema: Schema) {
   form.value.selectedSchema = schema.name
   form.value.schemaUrl = schema.schema_url
+
+  const schemaTypeState = useState<string>('structured-schema-type', () => '')
+  schemaTypeState.value = schema.schema_type
 
   try {
     const response = await fetch(schema.schema_url)

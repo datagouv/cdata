@@ -32,6 +32,7 @@
           </div>
         </Accordion>
         <Accordion
+          v-if="isTableschema"
           :id="useSpreadsheetAccordionId"
           :title="$t('Utiliser l\'outil tableur')"
         >
@@ -60,7 +61,12 @@
               {{ $t('Comment souhaitez-vous ajouter vos données ?') }}
             </p>
             <p class="m-0 text-xs/5">
-              {{ $t('Vous pouvez soit importer un fichier existant, soit utiliser l\'outil tableur pour créer vos données.') }}
+              <template v-if="isTableschema">
+                {{ $t('Vous pouvez soit importer un fichier existant, soit utiliser l\'outil tableur pour créer vos données.') }}
+              </template>
+              <template v-else>
+                {{ $t('Importez un fichier existant conforme au schéma sélectionné.') }}
+              </template>
             </p>
           </div>
         </SimpleBanner>
@@ -143,8 +149,8 @@
           </LinkedToAccordion>
         </fieldset>
 
-        <!-- Grand séparateur OU -->
         <div
+          v-if="isTableschema"
           class="fr-my-6w"
           style="position: relative; text-align: center;"
         >
@@ -156,8 +162,8 @@
           </span>
         </div>
 
-        <!-- Section Tableur -->
         <fieldset
+          v-if="isTableschema"
           class="fr-fieldset min-width-0"
           aria-labelledby="spreadsheet-legend"
         >
@@ -268,6 +274,10 @@ const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extens
 
 const { t } = useI18n()
 
+const schemaType = useState<string>('structured-schema-type', () => '')
+
+const isTableschema = computed(() => schemaType.value === 'tableschema')
+
 const uploadFileAccordionId = useId()
 const useSpreadsheetAccordionId = useId()
 
@@ -339,8 +349,12 @@ const handleFileUpload = async (event: Event) => {
 }
 
 const submit = async () => {
+  const validationMessage = isTableschema.value
+    ? t('Vous devez soit importer un fichier, soit utiliser l\'outil tableur.')
+    : t('Vous devez importer un fichier.')
+
   if (!useSpreadsheet.value && resources.value.length === 0) {
-    customErrors.value = [t('Vous devez soit importer un fichier, soit utiliser l\'outil tableur.')]
+    customErrors.value = [validationMessage]
     return
   }
 
@@ -349,11 +363,17 @@ const submit = async () => {
   if (resources.value.length > 0) {
     const firstResource = resources.value[0]
     if (firstResource.filetype === 'file' && 'file' in firstResource && firstResource.file) {
-      const uploadedFileState = useState<File | null>('structured-uploaded-file', () => null)
-      uploadedFileState.value = firstResource.file.raw
+      if (isTableschema.value) {
+        const uploadedFileState = useState<File | null>('structured-uploaded-file', () => null)
+        uploadedFileState.value = firstResource.file.raw
 
-      navigateTo({ path: '/admin/datasets/structured', query: { step: '2-sheet' } })
-      return
+        navigateTo({ path: '/admin/datasets/structured', query: { step: '2-sheet' } })
+        return
+      }
+      else {
+        emit('next')
+        return
+      }
     }
   }
 
