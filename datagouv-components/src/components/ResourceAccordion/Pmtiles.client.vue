@@ -109,7 +109,8 @@ async function displayMap() {
           enableHighAccuracy: true,
         },
         trackUserLocation: true,
-      })
+        showAccuracyCircle: false,
+      }),
     )
 
     const popup = new maplibregl.Popup({
