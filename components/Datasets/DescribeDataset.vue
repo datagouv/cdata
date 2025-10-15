@@ -302,7 +302,7 @@
                   :disabled="true"
                 >
                   <div class="flex items-center space-x-2">
-                    <RiSparklingFill
+                    <RiSparklingLine
                       class="size-4"
                       aria-hidden="true"
                     />
@@ -321,7 +321,7 @@
                 @click="handleAutoCompleteDescriptionShort"
               >
                 <div class="flex items-center space-x-2">
-                  <RiSparklingFill
+                  <RiSparklingLine
                     v-if="!isGeneratingDescriptionShort"
                     class="size-4"
                     aria-hidden="true"
@@ -663,7 +663,7 @@
 <script setup lang="ts">
 import { BrandedButton, Tooltip } from '@datagouv/components-next'
 import { SimpleBanner, type Frequency, type License } from '@datagouv/components-next'
-import { RiAddLine, RiStarFill, RiLoader5Line, RiSparklingFill } from '@remixicon/vue'
+import { RiAddLine, RiStarFill, RiLoader5Line, RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
