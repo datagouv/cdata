@@ -44,8 +44,10 @@ const props = withDefaults(defineProps<{
   errorText?: string | null
   warningText?: string | null
   all?: boolean
+  organizationsOnly?: boolean
 }>(), {
   all: false,
+  organizationsOnly: false,
 })
 const model = defineModel<Owned | null>({ required: true })
 
@@ -54,7 +56,12 @@ const user = useMe()
 const { $api } = useNuxtApp()
 
 const ownedOptions = computed<Array<Owned>>(() => {
-  return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: user.value, organization: null }]
+  const organizations = user.value.organizations.map(organization => ({ organization, owner: null }))
+
+  if (props.organizationsOnly) {
+    return organizations
+  }
+  return [...organizations, { owner: user.value, organization: null }]
 })
 
 const suggest = computed(() => {
@@ -62,13 +69,19 @@ const suggest = computed(() => {
 
   return async (query: string) => {
     if (!query) return Promise.resolve(ownedOptions.value)
-    const users = await $api<Array<User>>('/api/1/users/suggest/', {
+
+    const organizations = await $api<Array<Organization>>('/api/1/organizations/suggest/', {
       query: {
         q: query,
         size: 5,
       },
     })
-    const organizations = await $api<Array<Organization>>('/api/1/organizations/suggest/', {
+
+    if (props.organizationsOnly) {
+      return organizations.map(organization => ({ organization, owner: null }))
+    }
+
+    const users = await $api<Array<User>>('/api/1/users/suggest/', {
       query: {
         q: query,
         size: 5,

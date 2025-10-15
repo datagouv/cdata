@@ -17,12 +17,22 @@
       <AccordionGroup :with-icon="true">
         <Accordion
           :id="chooseProducerAccordionId"
-          :title="$t('Choisir l\'identité sous laquelle vous souhaitez publier')"
+          :title="$t('Choisir l\'organisation sous laquelle vous souhaitez publier')"
           :state="accordionState('owned')"
           :opened="true"
         >
+          <p class="fr-m-0 fr-mb-2w">
+            {{ $t("La publication avec un schéma doit obligatoirement se faire au nom d'une organisation. Sélectionnez une organisation dont vous êtes membre.") }}
+          </p>
           <p class="fr-m-0">
-            {{ $t("Choisissez si vous souhaitez publier au nom de l'organisation ou en votre nom. Nous vous conseillons de publier sous le nom d'une organisation s'il s'agit d'une activité professionnelle.") }}
+            {{ $t("Si votre organisation n'existe pas encore, vous devez d'abord") }}
+            <NuxtLink
+              to="/admin/organizations/new/"
+              class="fr-link"
+              target="_blank"
+            >
+              {{ $t("la créer ici") }}
+            </NuxtLink>.
           </p>
         </Accordion>
         <Accordion
@@ -78,10 +88,10 @@
           >
             <ProducerSelect
               v-model="form.owned"
-              :label="t(`Vérifiez l'identité avec laquelle vous souhaitez publier`)"
+              :label="t(`Sélectionnez votre organisation`)"
               :required="true"
               :error-text="getFirstError('owned')"
-              :all="isMeAdmin()"
+              :organizations-only="true"
             />
           </LinkedToAccordion>
         </fieldset>
