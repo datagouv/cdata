@@ -136,77 +136,23 @@
           </LinkedToAccordion>
 
           <div
-            v-if="searchQuery && filteredSchemas.length > 0"
-            class="fr-mt-3w"
-          >
-            <p class="fr-text--sm fr-mb-2w">
-              {{ filteredSchemas.length }} {{ $t('résultat(s) trouvé(s)') }}
-            </p>
-            <div class="fr-grid-row fr-grid-row--gutters">
-              <div
-                v-for="schema in filteredSchemas"
-                :key="schema.name"
-                class="fr-col-12"
-              >
-                <div
-                  class="fr-card fr-card--sm"
-                  :class="{ 'fr-card--selected': form.selectedSchema === schema.name }"
-                  style="cursor: pointer"
-                  @click="selectSchema(schema)"
-                >
-                  <div class="fr-card__body">
-                    <div class="fr-card__content">
-                      <h3 class="fr-card__title fr-mb-1w">
-                        {{ schema.title }}
-                      </h3>
-                      <div class="fr-mb-1w">
-                        <span
-                          v-for="label in schema.labels"
-                          :key="label"
-                          class="fr-badge fr-badge--sm fr-badge--info fr-mr-1v"
-                        >
-                          {{ label }}
-                        </span>
-                        <span class="fr-badge fr-badge--sm fr-badge--new">
-                          {{ schema.schema_type }}
-                        </span>
-                      </div>
-                      <p class="fr-card__desc fr-text--sm fr-m-0">
-                        {{ schema.description }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            v-if="searchQuery && filteredSchemas.length === 0 && !loadingSchemas"
-            class="fr-mt-3w"
-          >
-            <SimpleBanner type="warning">
-              {{ $t('Aucun schéma ne correspond à votre recherche.') }}
-            </SimpleBanner>
-          </div>
-
-          <div
             v-if="form.selectedSchema && selectedSchemaDetails"
-            class="fr-mt-3w"
+            class="fr-mt-3w w-full"
           >
-            <SimpleBanner type="primary">
-              <div class="fr-grid-row">
-                <div class="fr-col-12">
-                  <p class="fr-m-0 fr-text--bold fr-mb-1w">
-                    ✓ {{ $t('Schéma sélectionné :') }} {{ selectedSchemaDetails.title }}
-                  </p>
-                  <p
-                    v-if="schemaDetails && schemaDetails.fields"
-                    class="fr-m-0 fr-text--sm"
-                  >
-                    <strong>{{ $t('Nombre de colonnes :') }}</strong> {{ schemaDetails.fields.length }}
-                  </p>
-                </div>
+            <SimpleBanner
+              type="primary"
+              class="w-full"
+            >
+              <div class="w-full">
+                <p class="fr-m-0 fr-text--bold fr-mb-1w">
+                  {{ $t('Schéma sélectionné :') }} {{ selectedSchemaDetails.title }}
+                </p>
+                <p
+                  v-if="schemaDetails && schemaDetails.fields"
+                  class="fr-m-0 fr-text--sm"
+                >
+                  <strong>{{ $t('Nombre de colonnes :') }}</strong> {{ schemaDetails.fields.length }}
+                </p>
               </div>
             </SimpleBanner>
           </div>
@@ -220,6 +166,61 @@
           >
             {{ $t("Suivant") }}
           </BrandedButton>
+        </div>
+
+        <div
+          v-if="searchQuery && filteredSchemas.length > 0"
+          class="fr-mt-3w"
+        >
+          <p class="fr-text--sm fr-mb-2w">
+            {{ filteredSchemas.length }} {{ $t('résultat(s) trouvé(s)') }}
+          </p>
+          <div class="fr-grid-row fr-grid-row--gutters">
+            <div
+              v-for="schema in filteredSchemas"
+              :key="schema.name"
+              class="fr-col-12"
+            >
+              <div
+                class="fr-card fr-card--sm"
+                :class="{ 'fr-card--selected': form.selectedSchema === schema.name }"
+                style="cursor: pointer"
+                @click="selectSchema(schema)"
+              >
+                <div class="fr-card__body">
+                  <div class="fr-card__content">
+                    <h3 class="fr-card__title fr-mb-1w">
+                      {{ schema.title }}
+                    </h3>
+                    <div class="fr-mb-1w">
+                      <span
+                        v-for="label in schema.labels"
+                        :key="label"
+                        class="fr-badge fr-badge--sm fr-badge--info fr-mr-1v"
+                      >
+                        {{ label }}
+                      </span>
+                      <span class="fr-badge fr-badge--sm fr-badge--new">
+                        {{ schema.schema_type }}
+                      </span>
+                    </div>
+                    <p class="fr-card__desc fr-text--sm fr-m-0">
+                      {{ schema.description }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-if="searchQuery && filteredSchemas.length === 0 && !loadingSchemas"
+          class="fr-mt-3w"
+        >
+          <SimpleBanner type="warning">
+            {{ $t('Aucun schéma ne correspond à votre recherche.') }}
+          </SimpleBanner>
         </div>
       </div>
     </div>
