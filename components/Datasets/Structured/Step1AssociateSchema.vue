@@ -338,6 +338,19 @@ async function selectSchema(schema: Schema) {
   const schemaTypeState = useState<string>('structured-schema-type', () => '')
   schemaTypeState.value = schema.schema_type
 
+  const schemaNameState = useState<string>('structured-schema-name', () => '')
+  const schemaVersionState = useState<string>('structured-schema-version', () => '')
+
+  schemaNameState.value = schema.name
+
+  if (schema.versions && schema.versions.length > 0) {
+    schemaVersionState.value = schema.versions[schema.versions.length - 1].version_name
+  }
+  else {
+    const versionMatch = schema.schema_url.match(/\/(\d+\.\d+\.\d+)\//)
+    schemaVersionState.value = versionMatch ? versionMatch[1] : ''
+  }
+
   try {
     const response = await fetch(schema.schema_url)
     schemaDetails.value = await response.json() as SchemaDetails

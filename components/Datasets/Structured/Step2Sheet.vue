@@ -205,6 +205,7 @@
         </BrandedButton>
         <BrandedButton
           color="primary"
+          :disabled="!!validationReport && !hasNoErrors"
           @click="submit"
         >
           {{ $t("Suivant") }}
@@ -319,6 +320,12 @@ const schemaFields = useState<string[]>(SCHEMA_FIELDS_STATE, () => [])
 
 const SCHEMA_DETAILS_STATE = 'structured-schema-details'
 const schemaDetails = useState<SchemaDetails | null>(SCHEMA_DETAILS_STATE, () => null)
+
+const SCHEMA_NAME_STATE = 'structured-schema-name'
+const schemaName = useState<string>(SCHEMA_NAME_STATE, () => '')
+
+const SCHEMA_VERSION_STATE = 'structured-schema-version'
+const schemaVersion = useState<string>(SCHEMA_VERSION_STATE, () => '')
 
 const STRUCTURED_STATE = 'structured-step1'
 const step1Form = useState<Step1Form>(STRUCTURED_STATE, () => ({
@@ -772,7 +779,13 @@ const submit = async () => {
     },
     description: t('Données saisies via le tableur'),
     filetype: 'file' as const,
-    schema: null,
+    schema: schemaName.value && schemaVersion.value
+      ? {
+          name: schemaName.value,
+          url: null,
+          version: schemaVersion.value,
+        }
+      : null,
     schema_url: null,
     checksum_type: null,
     checksum_value: null,

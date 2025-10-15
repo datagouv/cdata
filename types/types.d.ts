@@ -1,4 +1,4 @@
-import type { Dataset, CommunityResource, Dataservice, DataserviceAccessAudience, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, DataserviceAccessAudienceType, DataserviceAccessAudienceCondition, ContactPoint } from '@datagouv/components-next'
+import type { Dataset, CommunityResource, Dataservice, DataserviceAccessAudience, Reuse, User, Frequency, Organization, License, ReuseType, Resource, DataserviceAccessAudienceType, DataserviceAccessAudienceCondition, ContactPoint, Schema } from '@datagouv/components-next'
 
 export type AxisAlignment = 'start' | 'center' | 'end'
 
@@ -242,7 +242,7 @@ export type BaseResourceForm = {
   title: string
   type: ResourceType
   description: string
-  schema: RegisteredSchema | null
+  schema: Schema | null
   schema_url: string | null
 
   checksum_type: string | null

@@ -279,6 +279,8 @@ const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extens
 const { t } = useI18n()
 
 const schemaType = useState<string>('structured-schema-type', () => '')
+const schemaName = useState<string>('structured-schema-name', () => '')
+const schemaVersion = useState<string>('structured-schema-version', () => '')
 
 const isTableschema = computed(() => schemaType.value === 'tableschema')
 
@@ -339,7 +341,13 @@ const handleFileUpload = async (event: Event) => {
       },
       description: '',
       filetype: 'file',
-      schema: null,
+      schema: schemaName.value && schemaVersion.value
+        ? {
+            name: schemaName.value,
+            url: null,
+            version: schemaVersion.value,
+          }
+        : null,
       schema_url: null,
       checksum_type: null,
       checksum_value: null,
