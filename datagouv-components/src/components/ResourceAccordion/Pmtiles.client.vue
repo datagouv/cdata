@@ -122,9 +122,9 @@ async function displayMap() {
     )
 
     const popup = new maplibregl.Popup({
-      closeButton: false,
-      closeOnClick: false,
-    })
+      closeButton: true,
+      closeOnClick: true,
+    }).addClassName('rounded-full')
 
     // @ts-expect-error TODO: add type from library
     function showMapPopup(e) {
@@ -133,8 +133,8 @@ async function displayMap() {
       else {
         const coordinates = e.lngLat
         const description = Object.keys(e.features[0].properties).map((element) => {
-          return `<b>${DOMPurify.sanitize(element, { USE_PROFILES: { html: false } })} :</b> ${DOMPurify.sanitize(e.features[0].properties[element], { USE_PROFILES: { html: false } })}`
-        }).join('<br>')
+          return `<p class="my-2"><b class="font-marianne text-sm" !important;">${DOMPurify.sanitize(element, { USE_PROFILES: { html: false } })} :</b> <span class="font-mono text-xs">${DOMPurify.sanitize(e.features[0].properties[element], { USE_PROFILES: { html: false } })}</span></p>`
+        }).join('')
         popup.setLngLat(coordinates).setHTML(description).addTo(map)
       }
     }
@@ -173,11 +173,13 @@ async function displayMap() {
               [`${typeLayer.value}-opacity`]: { base: 1, stops: [[0, 0.9], [10, 0.6]] },
             },
           })
-          map.on('mousemove', layer.layer, showMapPopup)
-          // @ts-expect-error doesn't exist ?
-          map.on('touchmove', layer.layer, showMapPopup)
           map.on('click', layer.layer, showMapPopup)
-          map.on('mouseleave', layer.layer, showMapPopup)
+          map.on('mouseenter', layer.layer, () => {
+            map.getCanvas().style.cursor = 'pointer'
+          })
+          map.on('mouseleave', layer.layer, () => {
+            map.getCanvas().style.cursor = ''
+          })
         })
       }).catch (() => hasError.value = true)
     })
@@ -188,3 +190,10 @@ onMounted(() => {
   displayMap()
 })
 </script>
+
+<style scoped>
+.maplibregl-popup-close-button {
+  right: 10px !important;
+  top: 10px !important;
+}
+</style>
