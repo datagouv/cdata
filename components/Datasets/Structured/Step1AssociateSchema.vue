@@ -257,6 +257,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const route = useRoute()
 
 const chooseProducerAccordionId = useId()
 const selectSchemaAccordionId = useId()
@@ -285,8 +286,17 @@ async function loadSchemas() {
   try {
     const response = await fetch('https://schema.data.gouv.fr/schemas.json')
     const data = await response.json() as { schemas: Schema[] }
-    // Charger tous les schémas sans filtrer
     schemas.value = data.schemas || []
+
+    const schemaParam = route.query.schema as string
+    if (schemaParam) {
+      const schemaToSelect = schemas.value.find(s => s.name === schemaParam)
+      if (schemaToSelect) {
+        await selectSchema(schemaToSelect)
+        searchQuery.value = schemaToSelect.title
+        onSearchChange()
+      }
+    }
   }
   catch (error) {
     console.error('Erreur lors du chargement des schémas:', error)
