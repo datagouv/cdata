@@ -302,10 +302,9 @@
                   :disabled="true"
                 >
                   <div class="flex items-center space-x-2">
-                    <NuxtImg
-                      src="/illustrations/sparkle.svg"
-                      alt=""
+                    <RiSparklingFill
                       class="size-4"
+                      aria-hidden="true"
                     />
                     <span>{{ $t('Suggérer une description courte') }}</span>
                   </div>
@@ -322,11 +321,10 @@
                 @click="handleAutoCompleteDescriptionShort"
               >
                 <div class="flex items-center space-x-2">
-                  <NuxtImg
+                  <RiSparklingFill
                     v-if="!isGeneratingDescriptionShort"
-                    src="/illustrations/sparkle.svg"
-                    alt=""
                     class="size-4"
+                    aria-hidden="true"
                   />
                   <span v-if="isGeneratingDescriptionShort">{{ $t('Suggestion en cours...') }}</span>
                   <span v-else>{{ $t('Suggérer une description courte') }}</span>
@@ -665,7 +663,7 @@
 <script setup lang="ts">
 import { BrandedButton, Tooltip } from '@datagouv/components-next'
 import { SimpleBanner, type Frequency, type License } from '@datagouv/components-next'
-import { RiAddLine, RiStarFill, RiLoader5Line } from '@remixicon/vue'
+import { RiAddLine, RiStarFill, RiLoader5Line, RiSparklingFill } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
