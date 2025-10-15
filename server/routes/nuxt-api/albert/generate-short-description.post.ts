@@ -3,19 +3,26 @@ import { AlbertAPIClient } from '~/server/utils/albert-api-client'
 
 
 export default defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const { title, description, organization } = body
+
+  if (!title || !description || !organization) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Title, description and organization are required'
+    })
+  }
+
+  const runtimeConfig = useRuntimeConfig()
+  
+  if (!runtimeConfig.albertApiKey) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Albert API is not configured'
+    })
+  }
+
   try {
-    const body = await readBody(event)
-    const { title, description, organization } = body
-
-    if (!description) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Description is required'
-      })
-    }
-
-    const runtimeConfig = useRuntimeConfig()
-    
     const albertClient = new AlbertAPIClient(
       runtimeConfig.albertApiBaseUrl,
       runtimeConfig.albertApiKey
