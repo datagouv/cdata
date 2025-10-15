@@ -22,7 +22,7 @@
 import { computedAsync } from '@vueuse/core'
 import type { RouteLocationRaw } from 'vue-router'
 import AppLink from './AppLink.vue'
-import type { TranslatedBadge } from '@/types/badges'
+import type { TranslatedBadge } from '../types/badges'
 
 const props = defineProps<{
   badge: TranslatedBadge
