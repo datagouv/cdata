@@ -122,9 +122,13 @@
                 v-model="resources[index]"
                 class="fr-mb-3v"
                 :extensions
+                :show-edit-and-warning="!isTableschema"
                 @delete="removeFile(index)"
               />
-              <div class="fr-grid-row fr-grid-row--center fr-mt-2w">
+              <div
+                v-if="!isTableschema"
+                class="fr-grid-row fr-grid-row--center fr-mt-2w"
+              >
                 <label
                   for="file-upload-additional"
                   class="fr-btn fr-btn--secondary fr-btn--sm"
