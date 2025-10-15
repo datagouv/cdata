@@ -89,7 +89,7 @@ test('badge filter can be cleared', async ({ page }) => {
   await page.waitForTimeout(3000) // Allow for API call and re-render
 
   // Verify badge is selected
-  await expect(filterInput).toHaveValue('High value datasets')
+  await expect(filterInput).toHaveValue('Données de forte valeur')
 
   // Open dropdown and select "Tous les badges" (first option is usually "clear")
   await filter.locator('button').first().click()
