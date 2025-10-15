@@ -117,6 +117,7 @@ import { getLink } from '../../functions/pagination'
 import type { PaginatedArray } from '../../types/api'
 import type { Activity } from '../../types/activity'
 import Avatar from '../Avatar.vue'
+import LoadingBlock from '../LoadingBlock.vue'
 import Pagination from '../Pagination.vue'
 import PaddedContainer from '../PaddedContainer.vue'
 

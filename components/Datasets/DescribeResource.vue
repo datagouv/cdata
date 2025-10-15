@@ -386,7 +386,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getResourceLabel, RESOURCE_TYPE, SimpleBanner, TranslationT } from '@datagouv/components-next'
+import { BrandedButton, getResourceLabel, LoadingBlock, RESOURCE_TYPE, SimpleBanner, TranslationT } from '@datagouv/components-next'
 import type { SchemaResponseData } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
