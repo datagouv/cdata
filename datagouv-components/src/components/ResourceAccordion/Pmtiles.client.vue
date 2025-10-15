@@ -103,6 +103,15 @@ async function displayMap() {
       center: [h.centerLon, h.centerLat],
     })
     map.addControl(new maplibregl.NavigationControl())
+    map.addControl(
+      new maplibregl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true,
+        },
+        trackUserLocation: true,
+        showAccuracyCircle: false,
+      }),
+    )
 
     const popup = new maplibregl.Popup({
       closeButton: false,
