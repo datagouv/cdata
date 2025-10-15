@@ -116,7 +116,7 @@ async function displayMap() {
       else {
         const coordinates = e.lngLat
         const description = Object.keys(e.features[0].properties).map((element) => {
-          return `<b>${DOMPurify.sanitize(element)} :</b> ${DOMPurify.sanitize(e.features[0].properties[element])}`
+          return `<b>${DOMPurify.sanitize(element, { USE_PROFILES: { html: false } })} :</b> ${DOMPurify.sanitize(e.features[0].properties[element], { USE_PROFILES: { html: false } })}`
         }).join('<br>')
         popup.setLngLat(coordinates).setHTML(description).addTo(map)
       }
