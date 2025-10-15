@@ -144,8 +144,8 @@ export const useTranslation = () => {
     }
 
     // Try to get translation from loaded translations first
-    if (translations.value && translations.value[locale]![key]) {
-      result = translations.value[locale]![key]
+    if (translations.value && translations.value[locale] && translations.value[locale][key]) {
+      result = translations.value[locale][key]
     }
 
     const count = options?.n ?? options?.count
