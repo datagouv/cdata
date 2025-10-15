@@ -30,7 +30,7 @@
       <div v-else>
         <div class="fr-mb-3w">
           <p class="fr-text--sm fr-mb-1w">
-            <strong>{{ $t('Schéma utilisé :') }}</strong> {{ schemaFields.length }} {{ $t('colonnes') }}
+            <strong>{{ $t('Schéma utilisé :') }}</strong> {{ schemaDetails?.title || $t('Non défini') }}
           </p>
         </div>
 
@@ -104,7 +104,7 @@
             class="fr-mb-2w"
           >
             <template #title>
-              {{ $t('✗ Validation échouée') }}
+              {{ $t('Validation échouée') }}
             </template>
             <p class="fr-m-0 fr-mb-2w">
               {{ validationReport.report?.errors?.length || 0 }} {{ $t('erreur(s) détectée(s)') }}
@@ -118,37 +118,44 @@
           </Alert>
 
           <div v-if="!hasNoErrors && validationReport.report?.errors && validationReport.report.errors.length > 0">
-            <div class="fr-table fr-table--bordered">
-              <table>
-                <thead>
-                  <tr>
-                    <th>{{ $t('Ligne') }}</th>
-                    <th>{{ $t('Colonne') }}</th>
-                    <th>{{ $t('Type') }}</th>
-                    <th>{{ $t('Erreur') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="(error, index) in (validationReport.report?.errors || []).slice(0, 50)"
-                    :key="index"
-                  >
-                    <td>{{ error.rowNumber - 1 || '-' }}</td>
-                    <td>{{ error.fieldName || error.fieldNumber || '-' }}</td>
-                    <td>{{ error.title || error.type }}</td>
-                    <td class="fr-text--sm">
-                      {{ error.message }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <p
-              v-if="(validationReport.report?.errors?.length || 0) > 50"
-              class="fr-text--sm fr-mt-2w"
-            >
-              {{ $t('Seules les 50 premières erreurs sont affichées.') }}
-            </p>
+            <AccordionGroup :with-icon="false">
+              <Accordion
+                :title="$t('Voir le rapport d\'erreur détaillé')"
+                state="default"
+              >
+                <div class="fr-table fr-table--bordered">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>{{ $t('Ligne') }}</th>
+                        <th>{{ $t('Colonne') }}</th>
+                        <th>{{ $t('Type') }}</th>
+                        <th>{{ $t('Erreur') }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="(error, index) in (validationReport.report?.errors || []).slice(0, 50)"
+                        :key="index"
+                      >
+                        <td>{{ error.rowNumber - 1 || '-' }}</td>
+                        <td>{{ error.fieldName || error.fieldNumber || '-' }}</td>
+                        <td>{{ error.title || error.type }}</td>
+                        <td class="fr-text--sm">
+                          {{ error.message }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p
+                  v-if="(validationReport.report?.errors?.length || 0) > 50"
+                  class="fr-text--sm fr-mt-2w"
+                >
+                  {{ $t('Seules les 50 premières erreurs sont affichées.') }}
+                </p>
+              </Accordion>
+            </AccordionGroup>
           </div>
         </div>
 
@@ -345,7 +352,7 @@ const hasNoErrors = computed(() => {
   return errorCount === 0
 })
 
-function cellTooltip(_e: MouseEvent, cell: CellComponent): string | false {
+function cellTooltip(_e: MouseEvent, cell: CellComponent): string | undefined {
   const row = cell.getRow()
   const rowIndex = row.getPosition() - 1
   const field = cell.getField()
@@ -353,10 +360,10 @@ function cellTooltip(_e: MouseEvent, cell: CellComponent): string | false {
 
   if (validationErrors.value[errorKey]) {
     const error = validationErrors.value[errorKey]
-    return `${error.title}\n\n${error.message}`
+    return `<b>${error.title}</b><br>${error.message}`
   }
 
-  return false
+  return undefined
 }
 
 function getFieldDescription(fieldName: string): string {
@@ -370,7 +377,7 @@ function getFieldDescription(fieldName: string): string {
 
 function getColumns() {
   const rowNumberColumn = {
-    title: '#',
+    title: '',
     field: '_rowNumber',
     formatter: 'rownum',
     width: 60,
@@ -799,11 +806,60 @@ onMounted(() => {
 
 /* Style pour les cellules en erreur */
 :deep(.tabulator-cell.cell-error) {
-  background-color: #ff0000 !important;
+  background-color: #CE0500 !important;
   color: white !important;
 }
 
 :deep(.tabulator-cell.cell-error:hover) {
-  background-color: #cc0000 !important;
+  background-color: #CE0500 !important;
+}
+
+/* Style pour les en-têtes de colonne */
+:deep(.tabulator .tabulator-header) {
+  background-color: var(--color-datagouv) !important;
+}
+
+:deep(.tabulator .tabulator-col) {
+  background-color: var(--color-datagouv) !important;
+}
+
+:deep(.tabulator .tabulator-col-title) {
+  color: white !important;
+  font-weight: bold !important;
+}
+
+:deep(.tabulator .tabulator-header .tabulator-col-content) {
+  color: white !important;
+  font-weight: bold !important;
+}
+
+/* Suppression de la bordure extérieure de la table */
+:deep(.tabulator) {
+  border-top: none !important;
+  border-left: 1px solid #DDDDDD !important;
+  border-right: 1px solid #DDDDDD !important;
+  border-bottom: 1px solid #DDDDDD !important;
+}
+
+/* Bordures internes en gris clair */
+:deep(.tabulator .tabulator-cell) {
+  border-color: #DDDDDD !important;
+}
+
+:deep(.tabulator .tabulator-col) {
+  border-color: #DDDDDD !important;
+}
+
+:deep(.tabulator .tabulator-row) {
+  border-color: #DDDDDD !important;
+}
+
+/* Correction de la bordure doublée pour la colonne row number */
+:deep(.tabulator .tabulator-cell:first-child) {
+  border-right: 1px solid #DDDDDD !important;
+}
+
+:deep(.tabulator .tabulator-col:first-child) {
+  border-right: 1px solid #DDDDDD !important;
 }
 </style>
