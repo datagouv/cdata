@@ -186,6 +186,7 @@
               <Pmtiles
                 v-if="hasPmtiles"
                 :resource="resource"
+                :dataset="dataset"
               />
               <MapContainer
                 v-if="ogcWms"

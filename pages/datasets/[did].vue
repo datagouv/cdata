@@ -90,13 +90,6 @@
                   {{ dataset.acronym }}
                 </span>
               </h1>
-              <div v-if="displayDescriptionShort" class="mb-4">
-                <MarkdownViewer
-                  size="sm"
-                  :content="displayDescriptionShort"
-                  :min-heading="3"
-                />
-              </div>
               <div class="text-sm text-gray-plain font-bold mb-1 pb-0">
                 {{ $t("Description") }}
               </div>
@@ -401,7 +394,7 @@ import {
   RiExternalLinkFill,
   RiLockLine,
 } from '@remixicon/vue'
-import { getDescriptionShort, TranslationT } from '@datagouv/components-next'
+import { TranslationT } from '@datagouv/components-next'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
@@ -445,14 +438,6 @@ const hasContactPointsWithSpecificRole = computed(() => {
   return dataset.value.contact_points.some(
     contactPoint => contactPoint.role !== 'contact',
   )
-})
-
-const displayDescriptionShort = ref('')
-
-watchEffect(async () => {
-  if (dataset.value) {
-    displayDescriptionShort.value = await getDescriptionShort(dataset.value.description, dataset.value.description_short)
-  }
 })
 
 await useJsonLd('dataset', route.params.did as string)
