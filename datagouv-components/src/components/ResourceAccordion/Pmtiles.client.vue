@@ -89,9 +89,7 @@ const container = useTemplateRef('containerRef')
 const attributions = computed(() => {
   if (!props.dataset.organization && !props.dataset.owner)
     return ''
-  const name = getOwnerName(props.dataset)
-  const page = getOwnerPage(props.dataset)
-  return `© <a href="${page}" target="_blank">${name}</a>`
+  return `© <a href="${getOwnerPage(props.dataset)}" target="_blank">${getOwnerName(props.dataset)}</a>`
 })
 
 async function displayMap() {
