@@ -56,6 +56,7 @@ export default defineNuxtConfig({
       apiBase: 'http://dev.local:7000',
       frontBase: 'http://dev.local:3000',
       metricsApi: 'https://metric-api.data.gouv.fr',
+      metricsSince: '2022-07-01',
       devApiKey: undefined,
       staticUrl: 'https://static.data.gouv.fr/static/',
       maxJsonPreviewCharSize: 1000000, // (~1MB)
