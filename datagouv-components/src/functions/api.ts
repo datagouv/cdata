@@ -1,4 +1,4 @@
-import { ref, toValue, watchEffect, type ComputedRef, type Ref } from 'vue'
+import { reactive, ref, toValue, watchEffect, type ComputedRef, type Ref } from 'vue'
 import { ofetch } from 'ofetch'
 import { useComponentsConfig } from '../config'
 import { useTranslation } from '../composables/useTranslation'
@@ -23,6 +23,7 @@ export async function useFetch<DataT, ErrorT = never>(
   const execute = async (_opts?: AsyncDataExecuteOptions) => {
     const urlValue = toValue(url)
     if (!urlValue) return
+    const fetchOptions = reactive(options ?? {})
     status.value = 'pending'
     try {
       data.value = await ofetch(urlValue, {
@@ -66,7 +67,7 @@ export async function useFetch<DataT, ErrorT = never>(
           // TODO Toast outside Nuxt
           // toast.error(message)
         },
-        ...options,
+        ...fetchOptions,
       })
       status.value = 'success'
     }
