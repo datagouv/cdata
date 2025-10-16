@@ -94,10 +94,10 @@
         v-else
         class="flex flex-col items-center"
       >
-        <nuxt-img
-          src="/illustrations/list.svg"
+        <img
+          :src="listSrc"
           class="h-32"
-        />
+        >
         <p class="fr-text--bold fr-my-3v">
           {{ t(`Il n'y a pas encore d'activité`) }}
         </p>
@@ -120,6 +120,7 @@ import Avatar from '../Avatar.vue'
 import LoadingBlock from '../LoadingBlock.vue'
 import Pagination from '../Pagination.vue'
 import PaddedContainer from '../PaddedContainer.vue'
+import listSrc from '../../../../public/illustrations/list.svg?url'
 
 const props = defineProps<{
   id?: string
