@@ -355,20 +355,36 @@
               :error-text="getFirstError('tags')"
               :warning-text="getFirstWarning('tags')"
             />
-            <BrandedButton
-              class="mt-2 mb-3"
-              type="button"
-              color="primary-soft"
-              size="xs"
-              :disabled="isGeneratingTags || !form.description || form.description.trim().length === 0"
-              @click="handleAutoCompleteTags(form.description)"
-            >
-              <span v-if="isGeneratingTags" class="flex items-center space-x-2">
-                <span class="animate-spin">⏳</span>
-                <span>{{ $t('Suggestion en cours...') }}</span>
-              </span>
-              <span v-else>{{ $t('Suggérer des mots clés avec l\'IA') }}</span>
-            </BrandedButton>
+            <div class="flex items-center gap-4 mt-2 mb-3">
+              <BrandedButton
+                type="button"
+                color="primary"
+                :disabled="isGeneratingTags || !form.title || !form.description || form.description.trim().length === 0"
+                @click="handleAutoCompleteTags()"
+              >
+                <div class="flex items-center space-x-2">
+                  <RiSparklingLine
+                    v-if="!isGeneratingTags"
+                    class="size-4"
+                    aria-hidden="true"
+                  />
+                  <span v-if="isGeneratingTags">{{ $t('Suggestion en cours...') }}</span>
+                  <span v-else>{{ $t('Suggérer des mots clés') }}</span>
+                  <RiLoader5Line
+                    v-if="isGeneratingTags"
+                    class="size-4 animate-spin text-primary"
+                  />
+                </div>
+              </BrandedButton>
+              <CdataLink
+                v-if="config.public.generateTagsFeedbackUrl"
+                :to="config.public.generateTagsFeedbackUrl"
+                target="_blank"
+                class="text-sm text-gray-medium"
+              >
+                {{ $t('Comment avez-vous trouvé cette suggestion ?') }}
+              </CdataLink>
+            </div>
             <SimpleBanner
               v-if="getFirstWarning('tags')"
               type="warning"
@@ -831,7 +847,7 @@ async function submit() {
   }
 }
 
-async function handleAutoCompleteTags(description: string) {
+async function handleAutoCompleteTags() {
   try {
     isGeneratingTags.value = true
     
@@ -840,7 +856,11 @@ async function handleAutoCompleteTags(description: string) {
     // Our server acts as a proxy, keeping the API key secure on the server side.
     const response = await $fetch<{ tags: string[] }>('/nuxt-api/albert/generate-tags', {
       method: 'POST',
-      body: { description }
+      body: {
+        title: form.value.title,
+        description: form.value.description,
+        organization: form.value.owned?.organization?.name
+      }
     })
 
     // Convert the array of tags to the expected tags format

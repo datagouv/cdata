@@ -121,6 +121,7 @@ export default defineNuxtConfig({
       dataSearchFeedbackFormUrl: 'https://tally.so/r/mDKv1N',
       forumUrl: 'https://forum.data.gouv.fr/',
       generateShortDescriptionFeedbackUrl: 'https://tally.so/r/wbbRxo',
+      generateTagsFeedbackUrl: 'https://tally.so/r/wbbRxo',
       publishingDatasetFeedbackUrl: 'https://tally.so/r/nGo0yO',
       publishingDataserviceFeedbackUrl: 'https://tally.so/r/w2J7lL',
       publishingReuseFeedbackUrl: 'https://tally.so/r/mV98y6',
