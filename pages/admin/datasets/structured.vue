@@ -36,7 +36,7 @@
     <Step2Sheet
       v-if="currentStep === '2-sheet'"
       @previous="moveToStep(2)"
-      @next="moveToStep(3)"
+      @next="sheetNext"
     />
     <Step3DescribeDataset
       v-if="currentStep === 3"
@@ -105,15 +105,15 @@ const datasetForm = useState(DATASET_FORM_STATE, () => ({
 
 const resources = useState<Array<ResourceForm>>(DATASET_FILES_STATE, () => [])
 const newDataset = useState<Dataset | null>('structured-new-dataset', () => null)
+const publicationMode = useState<'new' | 'existing'>('structured-publication-mode', () => 'new')
+const existingDataset = useState<Dataset | null>('structured-existing-dataset', () => null)
 
-// Gérer à la fois les étapes numériques et la sous-étape "2-sheet"
 const currentStep = computed(() => {
   const step = route.query.step as string
   if (step === '2-sheet') return '2-sheet'
   return parseInt(step) || 1
 })
 
-// Pour le Stepper, on retourne toujours un number (l'étape 2-sheet est considérée comme étape 2)
 const currentStepNumber = computed(() => {
   const step = currentStep.value
   if (step === '2-sheet') return 2
@@ -142,7 +142,21 @@ const moveToStep = (step: number) => {
 }
 
 const dataNext = () => {
-  moveToStep(3)
+  if (publicationMode.value === 'existing') {
+    save()
+  }
+  else {
+    moveToStep(3)
+  }
+}
+
+const sheetNext = () => {
+  if (publicationMode.value === 'existing') {
+    save()
+  }
+  else {
+    moveToStep(3)
+  }
 }
 
 const goBackFromStep3 = () => {
@@ -162,21 +176,30 @@ const describeNext = () => {
 async function save() {
   try {
     loading.value = true
-    if (
-      datasetForm.value.contact_points
-      && datasetForm.value.owned?.organization
-    ) {
-      for (const contactPointKey in datasetForm.value.contact_points) {
-        if (datasetForm.value.contact_points[contactPointKey] && !('id' in datasetForm.value.contact_points[contactPointKey])) {
-          datasetForm.value.contact_points[contactPointKey] = await newContactPoint($api, datasetForm.value.owned?.organization, datasetForm.value.contact_points[contactPointKey])
+
+    let dataset: Dataset
+
+    if (publicationMode.value === 'existing' && existingDataset.value) {
+      dataset = existingDataset.value
+      newDataset.value = dataset
+    }
+    else {
+      if (
+        datasetForm.value.contact_points
+        && datasetForm.value.owned?.organization
+      ) {
+        for (const contactPointKey in datasetForm.value.contact_points) {
+          if (datasetForm.value.contact_points[contactPointKey] && !('id' in datasetForm.value.contact_points[contactPointKey])) {
+            datasetForm.value.contact_points[contactPointKey] = await newContactPoint($api, datasetForm.value.owned?.organization, datasetForm.value.contact_points[contactPointKey])
+          }
         }
       }
-    }
 
-    const dataset = newDataset.value = newDataset.value || await $api<Dataset>('/api/1/datasets/', {
-      method: 'POST',
-      body: JSON.stringify(datasetToApi(datasetForm.value, { private: true })),
-    })
+      dataset = newDataset.value = newDataset.value || await $api<Dataset>('/api/1/datasets/', {
+        method: 'POST',
+        body: JSON.stringify(datasetToApi(datasetForm.value, { private: true })),
+      })
+    }
 
     let results: Array<PromiseSettledResult<Resource>> = []
     for (const chunk of chunkArray(resources.value, config.public.maxNumberOfResourcesToUploadInParallel)) {
@@ -184,7 +207,12 @@ async function save() {
     }
 
     if (results.every(f => f.status !== 'rejected')) {
-      await moveToStep(4)
+      if (publicationMode.value === 'existing') {
+        await navigateTo(`/datasets/${dataset.slug}`)
+      }
+      else {
+        await moveToStep(4)
+      }
       clearNuxtState(DATASET_FORM_STATE)
       clearNuxtState(DATASET_FILES_STATE)
     }

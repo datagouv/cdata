@@ -111,6 +111,7 @@ const props = withDefaults(defineProps<{
   single?: boolean
   label?: string
   allowReorder?: boolean
+  organizationId?: string
 }>(), {
   single: false,
   allowReorder: true,
@@ -131,6 +132,26 @@ const config = useRuntimeConfig()
 const label = computed(() => props.label || t('Jeux de données associés'))
 
 const suggestDataset = async (query: string): Promise<Array<DatasetSuggest>> => {
+  if (props.organizationId) {
+    const searchResults = await $api<{ data: Array<DatasetV2> }>('/api/2/datasets/search/', {
+      query: {
+        q: query,
+        page_size: 5,
+        organization: props.organizationId,
+      },
+    })
+
+    // Convertir les résultats de recherche en format DatasetSuggest
+    return searchResults.data.map(dataset => ({
+      id: dataset.id,
+      title: dataset.title,
+      slug: dataset.slug,
+      acronym: dataset.acronym || '',
+      page: dataset.page || '',
+      image_url: null, // L'API de recherche ne retourne pas image_url
+    }))
+  }
+
   return await $api<Array<DatasetSuggest>>('/api/1/datasets/suggest/', {
     query: {
       q: query,

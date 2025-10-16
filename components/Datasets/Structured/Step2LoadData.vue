@@ -237,7 +237,7 @@
             color="primary"
             @click="submit"
           >
-            {{ $t("Suivant") }}
+            {{ publicationMode === 'existing' ? $t("Publier") : $t("Suivant") }}
           </BrandedButton>
         </div>
       </PaddedContainer>
@@ -281,6 +281,7 @@ const { t } = useI18n()
 const schemaType = useState<string>('structured-schema-type', () => '')
 const schemaName = useState<string>('structured-schema-name', () => '')
 const schemaVersion = useState<string>('structured-schema-version', () => '')
+const publicationMode = useState<'new' | 'existing'>('structured-publication-mode', () => 'new')
 
 const isTableschema = computed(() => schemaType.value === 'tableschema')
 

@@ -97,7 +97,66 @@
         </fieldset>
 
         <fieldset
+          v-if="form.owned"
           class="fr-fieldset fr-mt-4w"
+          aria-labelledby="publication-legend"
+        >
+          <legend
+            id="publication-legend"
+            class="fr-fieldset__legend"
+          >
+            <h2 class="text-sm font-bold uppercase mb-3">
+              {{ $t("Où souhaitez-vous publier vos données ?") }}
+            </h2>
+          </legend>
+          <div class="fr-fieldset__element">
+            <div class="publication-mode-selector">
+              <div class="fr-checkbox-group radio-as-checkbox">
+                <input
+                  id="mode-new"
+                  type="checkbox"
+                  :checked="publicationMode === 'new'"
+                  @change="publicationMode = 'new'"
+                >
+                <label
+                  class="fr-label"
+                  for="mode-new"
+                >
+                  {{ $t("Créer un nouveau jeu de données") }}
+                </label>
+              </div>
+              <div class="fr-checkbox-group radio-as-checkbox">
+                <input
+                  id="mode-existing"
+                  type="checkbox"
+                  :checked="publicationMode === 'existing'"
+                  @change="publicationMode = 'existing'"
+                >
+                <label
+                  class="fr-label"
+                  for="mode-existing"
+                >
+                  {{ $t("Ajouter à un jeu de données existant") }}
+                </label>
+              </div>
+            </div>
+            <br>
+            <div
+              v-if="publicationMode === 'existing'"
+              class="fr-mt-3w"
+            >
+              <DatasetsSelect
+                v-model="selectedDatasets"
+                :label="t('Sélectionnez un jeu de données')"
+                :single="true"
+                :organization-id="organizationId"
+              />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset
+          class="fr-fieldset fr-mt-2w"
           aria-labelledby="schema-legend"
         >
           <legend
@@ -229,8 +288,10 @@
 
 <script setup lang="ts">
 import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import type { Dataset } from '@datagouv/components-next'
 import { ref, onMounted, computed } from 'vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
+import DatasetsSelect from '~/components/DatasetsSelect.vue'
 import type { DatasetForm } from '~/types/types'
 
 interface SchemaVersion {
@@ -286,6 +347,20 @@ const form = useState(STRUCTURED_STATE, () => ({
   selectedSchema: '',
   schemaUrl: '',
 }))
+
+const publicationMode = ref<'new' | 'existing'>('new')
+const selectedDatasets = ref<Dataset[]>([])
+
+const organizationId = computed(() => {
+  const owned = form.value.owned
+  if (!owned) return undefined
+  // Check if owned has organization property and it's not null
+  if ('organization' in owned) {
+    const org = (owned as { organization: { id: string } | null }).organization
+    return org?.id
+  }
+  return undefined
+})
 
 const selectedSchemaDetails = computed(() => {
   if (!form.value.selectedSchema) return null
@@ -366,7 +441,14 @@ const { getFirstError, validate } = useForm(form, {
 })
 
 const canProceed = computed(() => {
-  return form.value.owned && form.value.selectedSchema && schemaDetails.value
+  const hasBasicInfo = form.value.owned && form.value.selectedSchema && schemaDetails.value
+
+  // Si on ajoute à un dataset existant, il faut qu'un dataset soit sélectionné
+  if (publicationMode.value === 'existing') {
+    return hasBasicInfo && selectedDatasets.value.length > 0
+  }
+
+  return hasBasicInfo
 })
 
 const accordionState = (key: keyof typeof form.value) => {
@@ -387,6 +469,22 @@ async function submit() {
       if (datasetFormState.value) {
         datasetFormState.value.owned = form.value.owned
       }
+
+      const publicationModeState = useState<'new' | 'existing'>('structured-publication-mode', () => 'new')
+      publicationModeState.value = publicationMode.value
+
+      if (publicationMode.value === 'existing' && selectedDatasets.value.length > 0) {
+        const existingDatasetState = useState<Dataset | null>('structured-existing-dataset', () => null)
+        const selectedDataset = selectedDatasets.value[0]
+
+        if ('resources' in selectedDataset && typeof selectedDataset.resources === 'object' && 'rel' in selectedDataset.resources) {
+          const { $api } = useNuxtApp()
+          existingDatasetState.value = await $api<Dataset>(`/api/1/datasets/${selectedDataset.id}/`)
+        }
+        else {
+          existingDatasetState.value = selectedDataset as Dataset
+        }
+      }
     }
 
     emit('next')
@@ -397,3 +495,15 @@ onMounted(() => {
   loadSchemas()
 })
 </script>
+
+<style scoped>
+.publication-mode-selector {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.radio-as-checkbox {
+  margin: 0;
+}
+</style>

@@ -34,21 +34,19 @@
           </p>
         </div>
 
+        <div class="fr-mb-3w">
+          <InputGroup
+            v-model="resourceTitle"
+            :label="t('Titre de la ressource')"
+            :required="true"
+            placeholder="donnees-schema"
+          />
+        </div>
+
         <div
           class="fr-mb-2w"
           style="display: flex; gap: 12px; flex-wrap: wrap;"
         >
-          <BrandedButton
-            color="primary"
-            :loading="validating"
-            @click="validateData"
-          >
-            <span
-              class="fr-icon-check-line fr-mr-1w"
-              aria-hidden="true"
-            />
-            {{ $t('Valider les données') }}
-          </BrandedButton>
           <BrandedButton
             color="secondary"
             @click="showAddColumnModal = true"
@@ -71,94 +69,6 @@
           </BrandedButton>
         </div>
 
-        <div
-          v-if="validationReport"
-          class="fr-mb-3w"
-        >
-          <h3 class="fr-h5 fr-mb-2w">
-            {{ $t('Rapport de validation') }}
-          </h3>
-
-          <Alert
-            v-if="hasNoErrors"
-            type="success"
-            class="fr-mb-2w"
-          >
-            <template #title>
-              {{ $t('✓ Validation réussie') }}
-            </template>
-            <p class="fr-m-0">
-              {{ $t('Vos données sont conformes au schéma.') }}
-            </p>
-            <p
-              v-if="validationReport.report?.stats"
-              class="fr-m-0 fr-text--sm fr-mt-1w"
-            >
-              {{ validationReport.report.stats.rows_processed }} {{ $t('lignes traitées') }}
-            </p>
-          </Alert>
-
-          <Alert
-            v-else
-            type="error"
-            class="fr-mb-2w"
-          >
-            <template #title>
-              {{ $t('Validation échouée') }}
-            </template>
-            <p class="fr-m-0 fr-mb-2w">
-              {{ validationReport.report?.errors?.length || 0 }} {{ $t('erreur(s) détectée(s)') }}
-            </p>
-            <p
-              v-if="validationReport.report?.stats"
-              class="fr-m-0 fr-text--sm"
-            >
-              {{ validationReport.report.stats.rows_processed }} {{ $t('lignes traitées') }}
-            </p>
-          </Alert>
-
-          <div v-if="!hasNoErrors && validationReport.report?.errors && validationReport.report.errors.length > 0">
-            <AccordionGroup :with-icon="false">
-              <Accordion
-                :title="$t('Voir le rapport d\'erreur détaillé')"
-                state="default"
-              >
-                <div class="fr-table fr-table--bordered">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>{{ $t('Ligne') }}</th>
-                        <th>{{ $t('Colonne') }}</th>
-                        <th>{{ $t('Type') }}</th>
-                        <th>{{ $t('Erreur') }}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="(error, index) in (validationReport.report?.errors || []).slice(0, 50)"
-                        :key="index"
-                      >
-                        <td>{{ error.rowNumber - 1 || '-' }}</td>
-                        <td>{{ error.fieldName || error.fieldNumber || '-' }}</td>
-                        <td>{{ error.title || error.type }}</td>
-                        <td class="fr-text--sm">
-                          {{ error.message }}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <p
-                  v-if="(validationReport.report?.errors?.length || 0) > 50"
-                  class="fr-text--sm fr-mt-2w"
-                >
-                  {{ $t('Seules les 50 premières erreurs sont affichées.') }}
-                </p>
-              </Accordion>
-            </AccordionGroup>
-          </div>
-        </div>
-
         <div ref="tableRef" />
 
         <div style="margin-top: 8px;">
@@ -175,6 +85,94 @@
         </div>
       </div>
 
+      <br>
+      <div
+        v-if="validationReport"
+        class="fr-mb-3w"
+      >
+        <h3 class="fr-h5 fr-mb-2w">
+          {{ $t('Rapport de validation') }}
+        </h3>
+
+        <Alert
+          v-if="hasNoErrors"
+          type="success"
+          class="fr-mb-2w"
+        >
+          <template #title>
+            {{ $t('✓ Validation réussie') }}
+          </template>
+          <p class="fr-m-0">
+            {{ $t('Vos données sont conformes au schéma.') }}
+          </p>
+          <p
+            v-if="validationReport.report?.stats"
+            class="fr-m-0 fr-text--sm fr-mt-1w"
+          >
+            {{ validationReport.report.stats.rows_processed }} {{ $t('lignes traitées') }}
+          </p>
+        </Alert>
+
+        <Alert
+          v-else
+          type="error"
+          class="fr-mb-2w"
+        >
+          <template #title>
+            {{ $t('Validation échouée') }}
+          </template>
+          <p class="fr-m-0 fr-mb-2w">
+            {{ validationReport.report?.errors?.length || 0 }} {{ $t('erreur(s) détectée(s)') }}
+          </p>
+          <p
+            v-if="validationReport.report?.stats"
+            class="fr-m-0 fr-text--sm"
+          >
+            {{ validationReport.report.stats.rows_processed }} {{ $t('lignes traitées') }}
+          </p>
+        </Alert>
+
+        <div v-if="!hasNoErrors && validationReport.report?.errors && validationReport.report.errors.length > 0">
+          <AccordionGroup :with-icon="false">
+            <Accordion
+              :title="$t('Voir le rapport d\'erreur détaillé')"
+              state="default"
+            >
+              <div class="fr-table fr-table--bordered">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>{{ $t('Ligne') }}</th>
+                      <th>{{ $t('Colonne') }}</th>
+                      <th>{{ $t('Type') }}</th>
+                      <th>{{ $t('Erreur') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="(error, index) in (validationReport.report?.errors || []).slice(0, 50)"
+                      :key="index"
+                    >
+                      <td>{{ error.rowNumber - 1 || '-' }}</td>
+                      <td>{{ error.fieldName || error.fieldNumber || '-' }}</td>
+                      <td>{{ error.title || error.type }}</td>
+                      <td class="fr-text--sm">
+                        {{ error.message }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p
+                v-if="(validationReport.report?.errors?.length || 0) > 50"
+                class="fr-text--sm fr-mt-2w"
+              >
+                {{ $t('Seules les 50 premières erreurs sont affichées.') }}
+              </p>
+            </Accordion>
+          </AccordionGroup>
+        </div>
+      </div>
       <Alert
         v-if="customErrors.length"
         type="error"
@@ -203,13 +201,26 @@
         >
           {{ $t("Retour") }}
         </BrandedButton>
-        <BrandedButton
-          color="primary"
-          :disabled="!!validationReport && !hasNoErrors"
-          @click="submit"
-        >
-          {{ $t("Suivant") }}
-        </BrandedButton>
+        <div style="display: flex; gap: 12px;">
+          <BrandedButton
+            color="primary"
+            :loading="validating"
+            @click="validateData"
+          >
+            <span
+              class="fr-icon-check-line fr-mr-1w"
+              aria-hidden="true"
+            />
+            {{ $t('Valider les données') }}
+          </BrandedButton>
+          <BrandedButton
+            color="primary"
+            :disabled="!validationReport || !hasNoErrors"
+            @click="submit"
+          >
+            {{ publicationMode === 'existing' ? $t("Publier") : $t("Suivant") }}
+          </BrandedButton>
+        </div>
       </div>
     </PaddedContainer>
 
@@ -327,6 +338,8 @@ const schemaName = useState<string>(SCHEMA_NAME_STATE, () => '')
 const SCHEMA_VERSION_STATE = 'structured-schema-version'
 const schemaVersion = useState<string>(SCHEMA_VERSION_STATE, () => '')
 
+const publicationMode = useState<'new' | 'existing'>('structured-publication-mode', () => 'new')
+
 const STRUCTURED_STATE = 'structured-step1'
 const step1Form = useState<Step1Form>(STRUCTURED_STATE, () => ({
   owned: null,
@@ -344,6 +357,8 @@ const customErrors = ref<string[]>([])
 
 const validating = ref(false)
 const validationReport = ref<ValidationReport | null>(null)
+
+const resourceTitle = ref<string>('')
 
 const showAddColumnModal = ref(false)
 const newColumnName = ref('')
@@ -726,12 +741,14 @@ function downloadCSV() {
 
   const csv = [header, ...rows].join('\n')
 
+  const downloadFileName = resourceTitle.value.endsWith('.csv') ? resourceTitle.value : `${resourceTitle.value || 'donnees'}.csv`
+
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
   const link = document.createElement('a')
   const url = URL.createObjectURL(blob)
 
   link.setAttribute('href', url)
-  link.setAttribute('download', 'donnees.csv')
+  link.setAttribute('download', downloadFileName)
   link.style.visibility = 'hidden'
   document.body.appendChild(link)
   link.click()
@@ -749,6 +766,11 @@ const submit = async () => {
     return
   }
 
+  if (!resourceTitle.value || resourceTitle.value.trim() === '') {
+    customErrors.value = [t('Veuillez saisir un titre pour la ressource')]
+    return
+  }
+
   const data = table.getData() as RowData[]
   const hasData = data.some((row: RowData) => {
     return schemaFields.value.some(col => row[col])
@@ -763,15 +785,17 @@ const submit = async () => {
 
   const csvContent = generateCSV()
 
+  const fileName = resourceTitle.value.endsWith('.csv') ? resourceTitle.value : `${resourceTitle.value}.csv`
+
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const file = new File([blob], 'donnees.csv', { type: 'text/csv;charset=utf-8;' })
+  const file = new File([blob], fileName, { type: 'text/csv;charset=utf-8;' })
 
   const DATASET_FILES_STATE = 'structured-dataset-files'
   const resources = useState<Array<ResourceForm>>(DATASET_FILES_STATE, () => [])
 
   const resourceForm: ResourceForm = {
     resource: null,
-    title: 'donnees.csv',
+    title: resourceTitle.value,
     type: 'main',
     file: {
       raw: file,
@@ -802,6 +826,15 @@ const submit = async () => {
 }
 
 onMounted(() => {
+  // Initialiser le titre de la ressource avec le format "donnees-nom-schema"
+  if (!resourceTitle.value && schemaName.value) {
+    const schemaShortName = schemaName.value.split('/').pop() || 'schema'
+    resourceTitle.value = `donnees-${schemaShortName}`
+  }
+  else if (!resourceTitle.value) {
+    resourceTitle.value = 'donnees'
+  }
+
   if (schemaFields.value.length > 0) {
     initializeTable()
   }
