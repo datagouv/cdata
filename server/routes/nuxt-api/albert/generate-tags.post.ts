@@ -1,30 +1,37 @@
 import { AlbertAPIClient } from '~/server/utils/albert-api-client'
 
 export default defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const { description, minTagsNb = 1, maxTagsNb = 6 } = body
+
+  if (!description) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Description is required'
+    })
+  }
+
+  // Validate tags nb limits
+  if (minTagsNb < 1 || maxTagsNb > 20 || minTagsNb > maxTagsNb) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid tags nb limits. minTagsNb must be >= 1, maxTagsNb must be <= 20, and minTagsNb <= maxTagsNb'
+    })
+  }
+
+  const runtimeConfig = useRuntimeConfig()
+  
+  if (!runtimeConfig.albertApiKey) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Albert API is not configured'
+    })
+  }
+
   try {
-    const body = await readBody(event)
-    const { description, minTagsNb = 1, maxTagsNb = 6 } = body
-
-    if (!description) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Description is required'
-      })
-    }
-
-    // Validate tags nb limits
-    if (minTagsNb < 1 || maxTagsNb > 20 || minTagsNb > maxTagsNb) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Invalid tags nb limits. minTagsNb must be >= 1, maxTagsNb must be <= 20, and minTagsNb <= maxTagsNb'
-      })
-    }
-
-    const runtimeConfig = useRuntimeConfig()
-    
     const albertClient = new AlbertAPIClient(
-      runtimeConfig.public.albertApiBaseUrl,
-      runtimeConfig.public.albertApiKey
+      runtimeConfig.albertApiBaseUrl,
+      runtimeConfig.albertApiKey
     )
 
     const messages = [
