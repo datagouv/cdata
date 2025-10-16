@@ -6,15 +6,15 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const { title, description, organization } = body
 
-  if (!title || !description || !organization) {
+  if (!title || !description) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Title, description and organization are required'
+      statusMessage: 'Title and description are required'
     })
   }
 
   const runtimeConfig = useRuntimeConfig()
-  
+
   if (!runtimeConfig.albertApiKey) {
     throw createError({
       statusCode: 400,
@@ -54,12 +54,12 @@ export default defineEventHandler(async (event) => {
           `→ Focus on what the dataset contains and what type of information it provides — not its context or uses.\n` +
           `→ Mention key variables, geographic or temporal scope if clearly present.\n` +
           `→ Do not repeat the dataset title.\n` +
-          `→ Mention the organization.\n` +
+          (organization ? `→ Mention the organization.\n` : '') +
           `\n` +
           `\n` +
           `Here is the dataset information:\n` +
           `Title: ${title}\n` +
-          `Organization: ${organization}\n` +
+          (organization ? `Organization: ${organization}\n` : '') +
           `Description: ${description}\n` +
           `\n` +
           `Output:\n` +
