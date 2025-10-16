@@ -82,9 +82,31 @@
           :title="$t('Mettre des mots-clés')"
           :state="accordionState('tags')"
         >
-          <p class="fr-m-0">
-            {{ $t("Les mots clés caractérisent votre jeu de données. Ils sont publics et apportent un meilleur référencement du jeu de données lors d’une recherche utilisateur.") }}
-          </p>
+          <div class="prose prose-neutral m-0">
+            <p class="fr-mt-3v font-bold">
+              {{ $t("À quoi servent les mots-clés ?") }}
+            </p>
+            <p class="m-0">
+              {{ $t("Les mots-clés décrivent votre jeu de données et facilitent sa découverte. Ils améliorent son référencement dans le moteur de recherche et aident les utilisateurs à retrouver plus facilement les données qui les intéressent.") }}
+            </p>
+            <p class="fr-mt-3v font-bold">
+              {{ $t("Pourquoi certains mots-clés s'affichent différemment ?") }}
+            </p>
+            <p class="m-0">
+              {{ $t("Certains mots-clés proviennent de vocabulaires officiels (DCAT). Ils assurent une meilleure cohérence entre catalogues et renforcent la visibilité au niveau européen. Les autres sont des mots-clés libres, plus souples, qui permettent d'affiner la description.") }}
+            </p>
+            <p class="fr-mt-3v font-bold">
+              {{ $t("Suggestions automatiques") }}
+            </p>
+            <p class="m-0">
+              <CdataLink
+                to="https://guides.data.gouv.fr/autres-ressources-utiles/notre-approche-de-lintelligence-artificielle-sur-data.gouv.fr"
+                target="_blank"
+              >
+                {{ $t("Pour vous aider, une IA peut proposer des mots-clés en fonction du contenu de votre jeu de données. Vous pouvez les accepter, les modifier ou en supprimer : vous gardez toujours le contrôle.") }}
+              </CdataLink>
+            </p>
+          </div>
         </Accordion>
         <Accordion
           :id="selectLicenseAccordionId"
