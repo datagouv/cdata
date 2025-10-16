@@ -65,9 +65,16 @@
           :state="accordionState('description_short')"
         >
           <div class="prose prose-neutral m-0">
-            <p class="fr-m-0">
-              {{ $t(`La description courte présente votre jeu de données en une ou deux phrases. Elle aide les utilisateurs à comprendre rapidement ce qu'il contient et améliore sa visibilité dans les recherches.`) }}<br>
-              {{ $t(`Une première version peut être générée automatiquement si vous avez déjà rempli le titre et une description d'au moins {min} caractères, puis adaptée selon vos besoins.`, { min: DESCRIPTION_MIN_LENGTH }) }}<br>
+            <p class="m-0">
+              {{ $t(`La description courte présente votre jeu de données en une ou deux phrases. Elle aide les utilisateurs à comprendre rapidement ce qu'il contient et améliore sa visibilité dans les recherches.`) }}
+            </p>
+            <p class="fr-mt-3v font-bold">
+              {{ $t("Suggestions automatiques") }}
+            </p>
+            <p class="m-0">
+              {{ $t(`Une première version peut être générée automatiquement si vous avez déjà rempli le titre et une description d'au moins {min} caractères, puis adaptée selon vos besoins.`, { min: DESCRIPTION_MIN_LENGTH }) }}
+            </p>
+            <p class="m-0">
               <CdataLink
                 to="https://guides.data.gouv.fr/autres-ressources-utiles/notre-approche-de-lintelligence-artificielle-sur-data.gouv.fr"
                 target="_blank"
@@ -83,27 +90,21 @@
           :state="accordionState('tags')"
         >
           <div class="prose prose-neutral m-0">
-            <p class="fr-mt-3v font-bold">
-              {{ $t("À quoi servent les mots-clés ?") }}
-            </p>
             <p class="m-0">
               {{ $t("Les mots-clés décrivent votre jeu de données et facilitent sa découverte. Ils améliorent son référencement dans le moteur de recherche et aident les utilisateurs à retrouver plus facilement les données qui les intéressent.") }}
             </p>
             <p class="fr-mt-3v font-bold">
-              {{ $t("Pourquoi certains mots-clés s'affichent différemment ?") }}
+              {{ $t("Suggestions automatiques") }}
             </p>
             <p class="m-0">
-              {{ $t("Certains mots-clés proviennent de vocabulaires officiels (DCAT). Ils assurent une meilleure cohérence entre catalogues et renforcent la visibilité au niveau européen. Les autres sont des mots-clés libres, plus souples, qui permettent d'affiner la description.") }}
-            </p>
-            <p class="fr-mt-3v font-bold">
-              {{ $t("Suggestions automatiques") }}
+                {{ $t("Des mots-clés peuvent vous être proposés automatiquement en fonction du contenu de votre jeu de données. Vous pouvez les accepter, les modifier ou les supprimer.") }}
             </p>
             <p class="m-0">
               <CdataLink
                 to="https://guides.data.gouv.fr/autres-ressources-utiles/notre-approche-de-lintelligence-artificielle-sur-data.gouv.fr"
                 target="_blank"
               >
-                {{ $t("Pour vous aider, une IA peut proposer des mots-clés en fonction du contenu de votre jeu de données. Vous pouvez les accepter, les modifier ou en supprimer : vous gardez toujours le contrôle.") }}
+                {{ $t(`L'IA se base uniquement sur les informations que vous avez fournies et peut parfois se tromper : relisez toujours la proposition avant de valider.`) }}
               </CdataLink>
             </p>
           </div>
