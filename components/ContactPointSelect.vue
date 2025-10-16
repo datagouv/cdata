@@ -142,12 +142,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { BrandedButton, type Organization } from '@datagouv/components-next'
+import { BrandedButton } from '@datagouv/components-next'
+import type { ContactPoint, ContactPointRole, Organization } from '@datagouv/components-next'
 import { RiSaveLine } from '@remixicon/vue'
 import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
-import type { ContactPoint, ContactPointInForm, NewContactPoint, PaginatedArray } from '~/types/types'
+import type { ContactPointInForm, NewContactPoint, PaginatedArray } from '~/types/types'
 
 const contact = defineModel<ContactPointInForm | null>()
 
@@ -158,9 +158,7 @@ const props = defineProps<{
   warningText?: string | null
 }>()
 
-type ContactType = { id: string, label: string }
-
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const { isLoading, start, finish } = useLoadingIndicator()
 
@@ -190,7 +188,7 @@ const { data: contacts, status } = await useAPI<PaginatedArray<ContactPoint>>(co
 })
 
 const roleKey = '/api/1/contacts/roles/'
-const { data: rolesList, status: rolesStatus } = await useAPI<Array<ContactType>>(roleKey, {
+const { data: rolesList, status: rolesStatus } = await useAPI<Array<ContactPointRole>>(roleKey, {
   key: roleKey,
   getCachedData: getDataFromSSRPayload,
 })

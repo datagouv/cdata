@@ -35,15 +35,15 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, type Organization } from '@datagouv/components-next'
+import { Pagination, type ContactPoint, type Organization } from '@datagouv/components-next'
 import AdminContactPointsTable from '~/components/AdminTable/AdminContactPointsTable/AdminContactPointsTable.vue'
-import type { ContactPoint, PaginatedArray, SortDirection } from '~/types/types'
+import type { PaginatedArray, SortDirection } from '~/types/types'
 
 const props = defineProps<{
   organization: Organization
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const page = ref(1)
 const pageSize = ref(20)

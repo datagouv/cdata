@@ -1,40 +1,5 @@
 <template>
   <div>
-    <AdminBreadcrumb>
-      <BreadcrumbItem>{{ $t('Profil') }}</BreadcrumbItem>
-    </AdminBreadcrumb>
-
-    <h1 class="text-2xl font-extrabold text-gray-title mb-5">
-      {{ $t("Profil") }}
-    </h1>
-    <PaddedContainer class="!p-5">
-      <div class="flex flex-wrap items-center gap-3">
-        <div class="flex-none">
-          <Avatar
-            :user="user"
-            :rounded="true"
-            :size="80"
-          />
-        </div>
-        <div class="w-full flex-none md:flex-1">
-          <h2 class="!mb-0 text-2xl font-bold">
-            {{ user.first_name }} {{ user.last_name }}
-          </h2>
-          <AdminEmail :user />
-        </div>
-        <div class="flex-none">
-          <BrandedButton
-            size="xs"
-            color="secondary"
-            as="a"
-            :href="user.page"
-            :icon="RiEyeLine"
-          >
-            {{ $t('Voir le profil public') }}
-          </BrandedButton>
-        </div>
-      </div>
-    </PaddedContainer>
     <h2 class="uppercase !text-sm !my-5">
       {{ $t('Éditer le Profil') }}
     </h2>
@@ -268,15 +233,13 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, CopyButton } from '@datagouv/components-next'
-import { Avatar, type User } from '@datagouv/components-next'
-import { RiDeleteBin6Line, RiEditLine, RiEyeLine, RiRecycleLine, RiSaveLine } from '@remixicon/vue'
+import { BannerAction, BrandedButton, CopyButton, PaddedContainer } from '@datagouv/components-next'
+import type { User } from '@datagouv/components-next'
+import { RiDeleteBin6Line, RiEditLine, RiRecycleLine, RiSaveLine } from '@remixicon/vue'
 import DeleteUserModal from './DeleteUserModal.vue'
 import ChangePasswordModal from './ChangePasswordModal.vue'
 import ChangeEmailModal from './ChangeEmailModal.vue'
 import { uploadProfilePicture } from '~/api/users'
-import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
-import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
 
 const props = defineProps<{
@@ -290,7 +253,7 @@ const emits = defineEmits<{
 const me = useMe()
 const config = useNuxtApp().$config
 const { toast } = useToast()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const apiKeyId = useId()

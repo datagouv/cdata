@@ -2,7 +2,7 @@
   <div>
     <Breadcrumb>
       <BreadcrumbItem to="/design/">
-        {{ $t('Système de design') }}
+        {{ t('Système de design') }}
       </BreadcrumbItem>
     </Breadcrumb>
     <h1 class="!mb-3">
@@ -124,7 +124,7 @@
       </h2>
       <div class="grid md:grid-cols-2">
         <SupportCard
-          image="/img/forum.svg"
+          image="/nuxt_images/forum.svg"
           title="Forum"
           description="Echangez avec la communauté, partagez vos retours sur la plateforme et demandez l'ouverture de données."
         >
@@ -152,10 +152,9 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, DatasetCard, DatasetQuality, ReadMore, ResourceAccordion, SimpleBanner, type Dataset } from '@datagouv/components-next'
+import { BrandedButton, DatasetCard, DatasetQuality, DateRangeDetails, ReadMore, ResourceAccordion, SimpleBanner, type Dataset } from '@datagouv/components-next'
 import { RiArrowRightLine } from '@remixicon/vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import DateRangeDetails from '~/components/DateRangeDetails.vue'
 import AdminBadge from '~/design-system/AdminBadge.vue'
 import BannerAction from '~/design-system/BannerAction.vue'
 import BannerNotif from '~/design-system/BannerNotif.vue'
@@ -163,5 +162,6 @@ import BannerSticky from '~/design-system/BannerSticky.vue'
 import OrganizationNameWithCertificate from '~/design-system/OrganizationNameWithCertificate.vue'
 import SearchInput from '~/design-system/SearchInput.vue'
 
+const { t } = useTranslation()
 const { data: dataset } = await useAPI<Dataset>('/api/2/datasets/repertoire-national-des-elus-1/')
 </script>

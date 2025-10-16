@@ -1,4 +1,9 @@
-import type { Dataset, CommunityResource, Dataservice, DataserviceAccessAudience, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, DataserviceAccessAudienceType, DataserviceAccessAudienceCondition } from '@datagouv/components-next'
+import type { Dataset, CommunityResource, Dataservice, DataserviceAccessAudience, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, DataserviceAccessAudienceType, DataserviceAccessAudienceCondition, ContactPoint, PaginatedArray } from '@datagouv/components-next'
+
+// Some types from @datagouv/components-next are exported here to avoid 50+ files refactors
+export type {
+  PaginatedArray,
+}
 
 export type AxisAlignment = 'start' | 'center' | 'end'
 
@@ -30,15 +35,6 @@ export type AccordionState = DSFRFormDefaultState | AccordionFunctionalState | D
 export type AdminBadgeState = DSFRFormDefaultState | FormFunctionalState | DSFRInfoState
 
 export type AdminBadgeType = 'primary' | 'secondary' | 'warning' | 'danger' | 'success' | 'default'
-
-export type PaginatedArray<T> = {
-  data: Array<T>
-  next_page: string | null
-  page: number
-  page_size: number
-  previous_page: string | null
-  total: number
-}
 
 export type DatasetSortedBy = 'title' | 'created' | 'last_update' | 'reuses' | 'followers' | 'views'
 
@@ -100,9 +96,9 @@ export type MultiSelectOption = {
   recommended?: string
 }
 
-type UserSuggest = Omit<User, 'avatar' | 'avatar_thumbnail' | 'roles' | 'pages'> & { avatar_url: string | null }
-type DatasetSuggest = Pick<Dataset, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
-type DatasetReference = Dataservice['datasets'][0]
+export type UserSuggest = Omit<User, 'avatar' | 'avatar_thumbnail' | 'roles' | 'pages'> & { avatar_url: string | null }
+export type DatasetSuggest = Pick<Dataset, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
+export type DatasetReference = Dataservice['datasets'][0]
 export type SpatialZone = {
   code: string
   id: string
@@ -127,6 +123,7 @@ export type DatasetForm = {
   title: string
   acronym: string
   description: string
+  description_short?: string
   tags: Array<Tag>
   license: License | null
   contact_points: Array<NewContactPoint | ContactPoint | null>
@@ -145,6 +142,7 @@ export type NewDatasetForApi = {
   deleted?: null
   acronym?: string
   description: string
+  description_short?: string
   organization?: string
   owner?: string
   tags: Array<string>
@@ -154,11 +152,11 @@ export type NewDatasetForApi = {
   frequency?: string
   spatial?: {
     granularity?: string
-    zones?: Array<string>
+    zones?: Array<string> | null
   }
 }
 
-type ReuseSuggest = Pick<Reuse, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
+export type ReuseSuggest = Pick<Reuse, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
 
 export type ReuseForm = {
   featured: boolean
@@ -190,6 +188,7 @@ export type NewReuseForApi = {
 }
 
 export type DataserviceForm = {
+  featured: boolean
   owned: Owned | null
   title: string
   acronym: string
@@ -229,7 +228,7 @@ export type NewDataserviceForApi = {
   availability: number | null
 }
 
-type EnrichedLicense = License & { group: string, recommended?: boolean, code?: string, description?: string }
+export type EnrichedLicense = License & { group: string, recommended?: boolean, code?: string, description?: string }
 
 export type RemoteResourceFileType = 'remote'
 
@@ -287,14 +286,6 @@ export type NewOrganization = {
   description: string
   url: string | null
   logo: string
-}
-
-export type ContactPoint = {
-  id: string
-  name: string
-  contact_form?: string
-  email?: string
-  role: string
 }
 
 export type NewContactPoint = Omit<ContactPoint, 'id'>

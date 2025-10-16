@@ -1,11 +1,11 @@
-import { useI18n } from 'vue-i18n'
+import { useTranslation } from '../composables/useTranslation'
 
 const SECONDS_IN_A_DAY = 3600 * 24
 
 export function useFormatDate() {
-  const { t, locale } = useI18n()
+  const { t, locale } = useTranslation()
 
-  const formatDate = (date: Date | string | null, options: Intl.DateTimeFormatOptions = {}) => {
+  const formatDate = (date: Date | string | null | undefined, options: Intl.DateTimeFormatOptions = {}) => {
     if (!date) {
       return ''
     }
@@ -13,14 +13,14 @@ export function useFormatDate() {
     if (!('dateStyle' in options)) {
       options.dateStyle = 'long'
     }
-    return new Intl.DateTimeFormat(locale.value, options).format(date)
+    return new Intl.DateTimeFormat(locale, options).format(date)
   }
 
   /**
    * Format date as relative from now.
    * It displays "today" or Intl.RelativeTimeFormat content, based on date.
    */
-  const formatFromNow = (date: Date | string | null) => {
+  const formatFromNow = (date: Date | string | null | undefined) => {
     if (!date) {
       return ''
     }
@@ -58,14 +58,14 @@ export function useFormatDate() {
       const diffInUnit = Math.abs(diff / unit.seconds)
       return diffInUnit < unit.changeAfter
     })!
-    return new Intl.RelativeTimeFormat(locale.value, { numeric: 'auto' }).format(Math.round(diff / correctUnit?.seconds), correctUnit?.unit)
+    return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(Math.round(diff / correctUnit?.seconds), correctUnit?.unit)
   }
 
   /**
    * Format date relative form now if date is less than a month ago.
    * Otherwise, show a formatted date.
    */
-  const formatRelativeIfRecentDate = (date: Date | string | null, options: Intl.DateTimeFormatOptions = {}) => {
+  const formatRelativeIfRecentDate = (date: Date | string | null | undefined, options: Intl.DateTimeFormatOptions = {}) => {
     if (!date) {
       return ''
     }

@@ -22,6 +22,7 @@
       <ComboboxButton
         class="absolute right-0 p-2 bg-datagouv rounded-tr hover:!bg-datagouv-hover"
       >
+        <span class="sr-only">{{ $t('Rechercher') }}</span>
         <RiSearchLine
           class="h-6 w-6 text-white"
           aria-hidden="true"
@@ -54,12 +55,11 @@
                 :is="item.icon"
                 class="h-4 w-4"
               />
-              <i18n-t
+              <TranslationT
                 v-if="query"
                 keypath="Rechercher « {query} » dans les {type}"
                 class="flex-1"
                 tag="div"
-                scope="global"
               >
                 <template #query>
                   <em>{{ query }}</em>
@@ -67,18 +67,17 @@
                 <template #type>
                   <strong>{{ item.type }}</strong>
                 </template>
-              </i18n-t>
-              <i18n-t
+              </TranslationT>
+              <TranslationT
                 v-else
                 keypath="Commencer à taper pour rechercher parmi les {type}"
                 class="flex-1"
                 tag="div"
-                scope="global"
               >
                 <template #type>
                   <strong>{{ item.type }}</strong>
                 </template>
-              </i18n-t>
+              </TranslationT>
               <div aria-hidden="true">
                 <RiArrowRightSLine class="h-4 w-4" />
               </div>
@@ -91,9 +90,10 @@
 </template>
 
 <script setup lang="ts">
-import { RiArrowRightSLine, RiDatabase2Line, RiGovernmentLine, RiLineChartLine, RiRobot2Line, RiSearchLine } from '@remixicon/vue'
+import { RiArrowRightSLine, RiDatabase2Line, RiBuilding2Line, RiLineChartLine, RiRobot2Line, RiSearchLine } from '@remixicon/vue'
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions, TransitionRoot } from '@headlessui/vue'
 import type { Component } from 'vue'
+import { TranslationT } from '@datagouv/components-next'
 
 type Item = {
   icon: Component
@@ -106,8 +106,7 @@ const emit = defineEmits<{
   selected: []
 }>()
 
-const { t } = useI18n()
-const localePath = useLocalePath()
+const { t } = useTranslation()
 const query = ref('')
 const selectedItem = ref<null | Item>(null)
 
@@ -121,34 +120,34 @@ const menu = computed(() => {
     {
       icon: RiDatabase2Line,
       type: t('jeux de données'),
-      to: localePath({
-        path: '/datasets/',
+      to: {
+        path: '/datasets/search/',
         query: { q: query.value.trim() },
-      }),
+      },
     },
     {
       icon: RiRobot2Line,
       type: t('APIs'),
-      to: localePath({
-        path: '/dataservices/',
+      to: {
+        path: '/dataservices/search/',
         query: { q: query.value.trim() },
-      }),
+      },
     },
     {
       icon: RiLineChartLine,
       type: t('réutilisations'),
-      to: localePath({
-        path: '/reuses/',
+      to: {
+        path: '/reuses/search/',
         query: { q: query.value.trim() },
-      }),
+      },
     },
     {
-      icon: RiGovernmentLine,
+      icon: RiBuilding2Line,
       type: t('organisations'),
-      to: localePath({
+      to: {
         path: '/organizations/',
         query: { q: query.value.trim() },
-      }),
+      },
     },
   ]
 })

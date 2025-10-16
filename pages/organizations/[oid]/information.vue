@@ -2,7 +2,8 @@
   <div>
     <div class="flex flex-wrap mb-6">
       <h2 class="text-sm w-full flex-none sm:flex-1 mb-0">
-        {{ $t('Statistiques à partir de juillet 2022') }}
+        {{ $t('Statistiques à partir de ') }}
+        {{ formatDate(config.public.metricsSince, { dateStyle: undefined, year: 'numeric', month: 'long', day: undefined }) }}.
       </h2>
       <div>
         <BrandedButton
@@ -276,17 +277,16 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, CopyButton, OrganizationNameWithCertificate, StatBox, useFormatDate, type Organization } from '@datagouv/components-next'
+import { Avatar, BrandedButton, CopyButton, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, useFormatDate, type Organization } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
-import getOrganizationOEmbedHtml from '~/datagouv-components/src/functions/organizations'
 
 const props = defineProps<{
   organization: Organization
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const config = useRuntimeConfig()

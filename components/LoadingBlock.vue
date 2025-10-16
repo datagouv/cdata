@@ -7,12 +7,14 @@
       v-if="loading"
       class="absolute inset-0 flex justify-center items-center min-h-64"
     >
-      <AdminLoader class="size-24" />
+      <AnimatedLoader class="size-24" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { AnimatedLoader } from '@datagouv/components-next'
+
 const props = defineProps<{
   status: string
 }>()

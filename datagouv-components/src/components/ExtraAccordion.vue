@@ -28,15 +28,12 @@
             v-if="open"
             class="sr-only"
           >
-            {{ $t('Fermer les détails') }}
+            {{ t('Fermer les détails') }}
           </span>
         </DisclosureButton>
       </div>
     </header>
-    <DisclosurePanel
-      :id="accordionId"
-      class="accordion-content"
-    >
+    <DisclosurePanel :id="accordionId">
       <div class="pb-6 mb-6 border-bottom border-gray-default">
         <div
           class="fr-grid-row fr-grid-row--gutters fr-text--sm fr-m-0"
@@ -69,8 +66,10 @@ import {
 } from '@headlessui/vue'
 import { RiArrowDownSLine, RiArrowUpSLine } from '@remixicon/vue'
 import BrandedButton from './BrandedButton.vue'
+import { useTranslation } from '../composables/useTranslation'
 
 const accordionId = useId()
+const { t } = useTranslation()
 
 defineProps<{
   buttonText: string

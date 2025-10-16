@@ -5,7 +5,7 @@ export type Option = {
   id: string
 }
 
-export default function useActiveDescendant<T extends Option>(options: MaybeRefOrGetter<Array<T>>, direction: 'horizontal' | 'vertical') {
+export function useActiveDescendant<T extends Option>(options: MaybeRefOrGetter<Array<T>>, direction: 'horizontal' | 'vertical') {
   const active = ref<string | undefined>()
 
   const activeOption = computed<T | undefined>(() => toValue(options).find(option => option.id === active.value))

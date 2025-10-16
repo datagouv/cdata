@@ -52,36 +52,45 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { computed, onMounted, ref, useTemplateRef } from 'vue'
 import { RiErrorWarningLine, RiExternalLinkFill } from '@remixicon/vue'
 import { Protocol, PMTiles } from 'pmtiles'
 import maplibregl from 'maplibre-gl'
 import DOMPurify from 'dompurify'
 import { useComponentsConfig } from '../../config'
 import { useFormatDate } from '../../functions/dates'
+import { throwOnNever } from '../../functions/never'
 import type { Resource } from '../../types/resources'
+import type { Dataset, DatasetV2 } from '../../types/datasets'
 import BrandedButton from '../BrandedButton.vue'
 import styleVector from '../../../assets/json/vector.json'
 import SimpleBanner from '../SimpleBanner.vue'
+import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
+import { getOwnerName, getOwnerPage } from '../../functions/owned'
 
-const props = defineProps<{ resource: Resource }>()
+const props = defineProps<{ resource: Resource, dataset: Dataset | DatasetV2 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const config = useComponentsConfig()
 
 const hasError = ref(false)
-const pmtilesUrl = computed(() => props.resource.extras['analysis:parsing:pmtiles_url'])
+const pmtilesUrl = computed(() => props.resource.extras['analysis:parsing:pmtiles_url'] as string)
 const pmtilesViewerUrl = computed(() => {
   return config.pmtilesViewerBaseUrl ? `${config.pmtilesViewerBaseUrl}${encodeURIComponent(pmtilesUrl.value)}` : null
 })
 
-const lastUpdate = computed(() => formatDate(props.resource.extras['analysis:parsing:finished_at']))
+const lastUpdate = computed(() => formatDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined))
 
 const container = useTemplateRef('containerRef')
+
+const attributions = computed(() => {
+  if (!props.dataset.organization && !props.dataset.owner)
+    return ''
+  return `© <a href="${getOwnerPage(props.dataset)}" target="_blank">${getOwnerName(props.dataset)}</a>`
+})
 
 async function displayMap() {
   await import('maplibre-gl/dist/maplibre-gl.css')
@@ -94,25 +103,37 @@ async function displayMap() {
 
   p.getHeader().then((h) => {
     const map = new maplibregl.Map({
+      // @ts-expect-error only null before mount
       container: container.value, // container id
+      // @ts-expect-error TODO: type JSON
       style: styleVector,
       zoom: h.maxZoom - 2,
       center: [h.centerLon, h.centerLat],
     })
     map.addControl(new maplibregl.NavigationControl())
+    map.addControl(
+      new maplibregl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true,
+        },
+        trackUserLocation: true,
+        showAccuracyCircle: false,
+      }),
+    )
 
     const popup = new maplibregl.Popup({
       closeButton: false,
       closeOnClick: false,
     })
 
+    // @ts-expect-error TODO: add type from library
     function showMapPopup(e) {
       if (!e.features || !e.features[0])
         popup.remove()
       else {
         const coordinates = e.lngLat
         const description = Object.keys(e.features[0].properties).map((element) => {
-          return `<b>${DOMPurify.sanitize(element)} :</b> ${DOMPurify.sanitize(e.features[0].properties[element])}`
+          return `<b>${DOMPurify.sanitize(element, { USE_PROFILES: { html: false } })} :</b> ${DOMPurify.sanitize(e.features[0].properties[element], { USE_PROFILES: { html: false } })}`
         }).join('<br>')
         popup.setLngLat(coordinates).setHTML(description).addTo(map)
       }
@@ -123,9 +144,9 @@ async function displayMap() {
         map.addSource('pmtiles_source', {
           type: 'vector',
           url: `pmtiles://${pmtilesUrl.value}`,
-          attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+          attribution: attributions.value,
         })
-
+        // @ts-expect-error not typed from library
         metadata.tilestats.layers.forEach((layer) => {
           const typeLayer = computed(() => {
             switch (layer.geometry) {
@@ -136,6 +157,7 @@ async function displayMap() {
               case 'LineString':
                 return `line`
               default:
+                // @ts-expect-error no other geometries ?
                 throwOnNever(layer.geometry, 'Unsupported geometry')
                 return ''
             }
@@ -144,6 +166,7 @@ async function displayMap() {
             'id': layer.layer,
             'source': 'pmtiles_source',
             'source-layer': layer.layer,
+            // @ts-expect-error `''` (empty string) shouldn't happen (see `throwOnNever`)
             'type': typeLayer.value,
             'paint': {
               [`${typeLayer.value}-color`]: 'steelblue',
@@ -151,6 +174,7 @@ async function displayMap() {
             },
           })
           map.on('mousemove', layer.layer, showMapPopup)
+          // @ts-expect-error doesn't exist ?
           map.on('touchmove', layer.layer, showMapPopup)
           map.on('click', layer.layer, showMapPopup)
           map.on('mouseleave', layer.layer, showMapPopup)

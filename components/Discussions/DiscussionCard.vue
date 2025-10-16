@@ -109,7 +109,6 @@ defineEmits<{
 
 const openDiscussionIfClosed = ref(false)
 const showRespondForm = ref(false)
-const localePath = useLocalePath()
 const { formatDate } = useFormatDate()
 const me = useMaybeMe()
 const route = useRoute()
@@ -119,7 +118,7 @@ const showRespondFormIfConnected = () => {
     showRespondForm.value = true
   }
   else {
-    navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true })
+    navigateTo({ path: '/login', query: { next: route.fullPath } }, { external: true })
   }
 }
 </script>

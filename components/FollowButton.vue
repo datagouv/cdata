@@ -63,8 +63,7 @@ const iconAttrs = computed(() => ({
 async function toggleFollow() {
   const me = useMaybeMe()
   if (!me.value) {
-    const localePath = useLocalePath()
-    navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true })
+    navigateTo({ path: '/login', query: { next: route.fullPath } }, { external: true })
   }
   loading.value = true
   try {

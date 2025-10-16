@@ -2,7 +2,7 @@
   <div :class="`${colorClass} flex items-center gap-1`">
     <OwnerTypeIcon
       :type="type"
-      class="size-4 -mt-1"
+      class="size-4"
     />
     <div :class="sizeClass">
       {{ name }}

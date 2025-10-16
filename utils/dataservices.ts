@@ -1,5 +1,5 @@
-import type { Dataservice, DataserviceAccessAudienceCondition, DataserviceAccessAudienceType, Dataset, DatasetV2 } from '@datagouv/components-next'
-import type { ContactPoint, DataserviceForm, DatasetSuggest, NewDataserviceForApi } from '~/types/types'
+import type { ContactPoint, Dataservice, DataserviceAccessAudienceCondition, DataserviceAccessAudienceType, Dataset, DatasetV2 } from '@datagouv/components-next'
+import type { DataserviceForm, DatasetSuggest, NewDataserviceForApi } from '~/types/types'
 
 export function getDataserviceAdminUrl(dataservice: Dataservice): string {
   return `/admin/dataservices/${dataservice.id}`
@@ -22,6 +22,7 @@ export function dataserviceToForm(dataservice: Dataservice): DataserviceForm {
     rate_limiting: dataservice.rate_limiting,
     availability: dataservice.availability?.toString() || '',
     private: dataservice.private,
+    featured: dataservice.featured,
   }
 }
 

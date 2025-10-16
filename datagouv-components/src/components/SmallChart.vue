@@ -21,7 +21,8 @@
 </template>
 
 <script setup lang="ts">
-import { Chart, type ChartOptions } from 'chart.js/auto'
+import type { ChartOptions, ScriptableLineSegmentContext } from 'chart.js'
+import Chart from 'chart.js/auto'
 import { computed, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
 
 const LIGHT_COLOR = '#B6CFFB'
@@ -43,7 +44,7 @@ const props = withDefaults(defineProps<{
   width: 120,
 })
 
-const last = (ctx, value) => {
+const last = (ctx: ScriptableLineSegmentContext, value: unknown) => {
   return ctx.p1DataIndex === months.value.length - 1 ? value : null
 }
 
@@ -56,16 +57,31 @@ const data = computed(() => {
   months.sort()
   const orderedData: Record<string, number> = {}
   for (const month of months) {
-    orderedData[month] = props.data[month]
+    orderedData[month] = 0
+    if (props.data[month]) {
+      orderedData[month] = props.data[month]
+    }
   }
   return orderedData
 })
 const months = computed(() => Object.keys(data.value))
 const values = computed(() => Object.values(data.value))
 
-const additionalDatasetConfig = computed(() => {
+const additionalDatasetConfig = computed<{
+  type: 'bar'
+  barPercentage: number
+  categoryPercentage: number
+  backgroundColor: Array<string>
+} | {
+  type: 'line'
+  segment?: {
+    borderColor: (ctx: ScriptableLineSegmentContext) => string
+    borderDash: (ctx: ScriptableLineSegmentContext) => Array<number>
+  }
+} | object>(() => {
   if (props.type === 'bar') {
     return {
+      type: 'bar',
       barPercentage: 1,
       categoryPercentage: 0.9,
       // Change the color of the last bar only
@@ -73,12 +89,18 @@ const additionalDatasetConfig = computed(() => {
     }
   }
 
-  if (props.type === 'line' && props.lastWithLowEmphasis) {
+  if (props.type === 'line') {
+    if (props.lastWithLowEmphasis) {
+      return {
+        type: 'line',
+        segment: {
+          borderColor: (ctx: ScriptableLineSegmentContext) => last(ctx, COLOR_WITH_OPACITY) || COLOR,
+          borderDash: (ctx: ScriptableLineSegmentContext) => last(ctx, [3, 3]) || [6, 0],
+        },
+      }
+    }
     return {
-      segment: {
-        borderColor: ctx => last(ctx, COLOR_WITH_OPACITY) || COLOR,
-        borderDash: ctx => last(ctx, [3, 3]) || [6, 0],
-      },
+      type: 'line',
     }
   }
 
@@ -91,10 +113,11 @@ const getMonthYear = (dateAsString: string): string => {
   return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)}`
 }
 
-const startDate = computed(() => months.value.length ? getMonthYear(months.value[0]) : null)
-const endDate = computed(() => months.value.length ? getMonthYear(months.value[months.value.length - 1]) : null)
+const startDate = computed(() => months.value.length ? getMonthYear(months.value[0]!) : null)
+const endDate = computed(() => months.value.length ? getMonthYear(months.value[months.value.length - 1]!) : null)
 
 const OPTIONS = {
+  // @ts-expect-error animation can be `true` but the typing is not expecting it
   animation: true,
   devicePixelRatio: 1,
   responsive: false,
@@ -155,8 +178,9 @@ watchEffect(() => {
   chart.value = new Chart(context.value, {
     data: {
       labels: months.value,
-      datasets: [{ data: values.value, type: props.type, ...additionalDatasetConfig.value }],
+      datasets: [{ data: values.value, ...additionalDatasetConfig.value }],
     },
+    // @ts-expect-error animation type should allow `true`
     options: OPTIONS,
   })
 })

@@ -25,6 +25,7 @@
         </h1>
         <BrandedButton
           :href="reuse.page"
+          new-tab
           color="secondary"
           size="xs"
           :icon="RiEyeLine"
@@ -105,16 +106,15 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, summarize, useFormatDate, AvatarWithName } from '@datagouv/components-next'
-import type { Reuse } from '@datagouv/components-next'
+import { BrandedButton, summarize, useFormatDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
+import type { Activity, Reuse } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiEyeLine, RiStarLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
-import type { Activity } from '~/types/activity'
 import type { PaginatedArray } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const me = useMe()
 const route = useRoute()

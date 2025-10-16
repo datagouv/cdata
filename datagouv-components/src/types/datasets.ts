@@ -27,6 +27,7 @@ export type BaseDataset = Owned & {
   acronym: string
   archived: boolean
   description: string
+  description_short: string
   tags: Array<string> | null
   license: string
   frequency: string
@@ -65,10 +66,15 @@ export type Dataset = BaseDataset & {
   created_at: string
   last_modified: string
   last_update: string
+  internal: {
+    created_at_internal: string
+    last_modified_internal: string
+  }
   uri: string
   slug: string
   quality: Quality
   metrics: {
+    dataservices: number
     discussions: number
     discussions_open: number
     followers: number
@@ -87,7 +93,7 @@ export type DatasetV2 = Owned & Omit<Dataset, 'resources' | 'community_resources
   community_resources: Rel
 }
 
-export type DatasetV2WithFullObject = Omit<DatasetV2, 'license' | 'frequency' | 'spatial'> & {
+export type DatasetV2WithFullObject = Owned & Omit<DatasetV2, 'license' | 'frequency' | 'spatial'> & {
   license: License
   frequency: Frequency
   spatial: {

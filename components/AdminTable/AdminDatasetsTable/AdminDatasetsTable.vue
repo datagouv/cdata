@@ -29,7 +29,7 @@
           scope="col"
           @sort="(direction: SortDirection) => updateSort('last_update', direction)"
         >
-          {{ t('Mis à jour le') }}
+          {{ t('Dernière activité sur {site} le', { site: config.public.title }) }}
         </AdminTableTh>
         <AdminTableTh
           class="w-16"
@@ -140,16 +140,13 @@
 </template>
 
 <script setup lang="ts">
-import { DatasetQualityScore, DatasetQualityTooltipContent, BrandedButton, AvatarWithName, useFormatDate } from '@datagouv/components-next'
-import type { Dataset, DatasetV2 } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
+import { DatasetQualityScore, DatasetQualityTooltipContent, BrandedButton, AvatarWithName, Tooltip, useFormatDate } from '@datagouv/components-next'
+import type { Activity, Dataset, DatasetV2 } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '../../AdminBadge/AdminBadge.vue'
 import AdminContentWithTooltip from '../../AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
-import Tooltip from '../../Tooltip/Tooltip.vue'
-import type { Activity } from '~/types/activity'
 import type { DatasetSortedBy, SortDirection } from '~/types/types'
 
 const emit = defineEmits<{
@@ -165,9 +162,11 @@ const props = withDefaults(defineProps<{
   activities: () => ({}),
 })
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const { getDatasetStatus } = useDatasetStatus()
+
+const config = useRuntimeConfig()
 
 function updateSort(column: DatasetSortedBy, direction: SortDirection) {
   emit('sort', column, direction)

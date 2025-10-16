@@ -7,7 +7,7 @@
       v-else-if="loading"
       class="text-gray-medium"
     >
-      {{ $t("Chargement de l'aperçu XML...") }}
+      {{ t("Chargement de l'aperçu XML...") }}
     </div>
     <SimpleBanner
       v-else-if="fileTooLarge"
@@ -16,8 +16,8 @@
     >
       <RiErrorWarningLine class="shink-0 size-6" />
       <span>{{ fileSizeBytes
-        ? $t("Fichier XML trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
-        : $t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
+        ? t("Fichier XML trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
+        : t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
       }}</span>
     </SimpleBanner>
     <SimpleBanner
@@ -26,7 +26,7 @@
       class="flex items-center space-x-2"
     >
       <RiErrorWarningLine class="shink-0 size-6" />
-      <span>{{ $t("Ce fichier XML ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
+      <span>{{ t("Ce fichier XML ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
     </SimpleBanner>
     <SimpleBanner
       v-else-if="error"
@@ -34,7 +34,7 @@
       class="flex items-center space-x-2"
     >
       <RiErrorWarningLine class="shink-0 size-6" />
-      <span>{{ $t("Erreur lors du chargement de l'aperçu XML.") }}</span>
+      <span>{{ t("Erreur lors du chargement de l'aperçu XML.") }}</span>
     </SimpleBanner>
   </div>
 </template>
@@ -46,6 +46,8 @@ import { RiErrorWarningLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../../config'
 import SimpleBanner from '../SimpleBanner.vue'
 import type { Resource } from '../../types/resources'
+import { useTranslation } from '../../composables/useTranslation'
+import '../../types/vue3-xml-viewer.d.ts'
 
 const XmlViewer = defineAsyncComponent(() =>
   import('vue3-xml-viewer').then((module) => {
@@ -58,6 +60,7 @@ const props = defineProps<{
 }>()
 
 const config = useComponentsConfig()
+const { t } = useTranslation()
 
 const xmlData = ref<string | null>(null)
 const loading = ref(false)

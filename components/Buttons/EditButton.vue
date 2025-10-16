@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, throwOnNever } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 
 const props = defineProps<{
@@ -18,7 +18,7 @@ const props = defineProps<{
   id: string
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const link = computed(() => {
   const base = `/admin/${props.type}/${props.id}/`

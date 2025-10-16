@@ -4,7 +4,7 @@
       v-if="loading"
       class="fr-p-4w text-center"
     >
-      <AdminLoader />
+      <AnimatedLoader />
     </div>
 
     <div
@@ -97,7 +97,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
-import AdminLoader from '../AdminLoader/AdminLoader.vue'
+import { AnimatedLoader } from '@datagouv/components-next'
 
 interface GristRecord {
   id: number
