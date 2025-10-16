@@ -124,7 +124,9 @@ async function displayMap() {
     const popup = new maplibregl.Popup({
       closeButton: true,
       closeOnClick: true,
-    }).addClassName('rounded-full')
+    })
+      .addClassName('rounded-full')
+      .setMaxWidth('300px')
 
     // @ts-expect-error TODO: add type from library
     function showMapPopup(e) {
@@ -133,7 +135,7 @@ async function displayMap() {
       else {
         const coordinates = e.lngLat
         const description = Object.keys(e.features[0].properties).map((element) => {
-          return `<p class="my-2"><b class="font-marianne text-sm" !important;">${DOMPurify.sanitize(element, { USE_PROFILES: { html: false } })} :</b> <span class="font-mono text-xs">${DOMPurify.sanitize(e.features[0].properties[element], { USE_PROFILES: { html: false } })}</span></p>`
+          return `<p class="my-0"><b class="font-marianne text-sm" !important;">${DOMPurify.sanitize(element, { USE_PROFILES: { html: false } })} :</b> <span class="font-mono text-xs">${DOMPurify.sanitize(e.features[0].properties[element], { USE_PROFILES: { html: false } })}</span></p>`
         }).join('')
         popup.setLngLat(coordinates).setHTML(description).addTo(map)
       }
@@ -191,9 +193,10 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
 .maplibregl-popup-close-button {
   right: 10px !important;
   top: 10px !important;
+  font-size: 1.2rem;
 }
 </style>
