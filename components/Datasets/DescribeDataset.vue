@@ -863,22 +863,9 @@ async function handleAutoCompleteTags() {
       }
     })
 
-    // Convert the array of tags to the expected tags format
+    // Convert the array of tags to the expected tags format and replace existing tags
     if (response.tags && response.tags.length > 0) {
-      const newTags = response.tags.map(tag => ({ text: tag }))
-      
-      // Get existing tags to avoid duplicates
-      const existingTags = form.value.tags || []
-      const existingTexts = existingTags.map(tag => 'text' in tag ? tag.text : tag)
-      
-      // Filter out duplicates and add new tags
-      const uniqueNewTags = newTags.filter(newTag => 
-        !existingTexts.includes(newTag.text)
-      )
-      
-      if (uniqueNewTags.length > 0) {
-        form.value.tags = [...existingTags, ...uniqueNewTags]
-      }
+      form.value.tags = response.tags.map(tag => ({ text: tag }))
     }
   } catch (error) {
     console.error('Failed to generate tags:', error)
