@@ -26,9 +26,18 @@ export async function useFetch<DataT, ErrorT = never>(
     const fetchOptions = reactive(options ?? {})
     status.value = 'pending'
     try {
-      data.value = await ofetch(urlValue, {
+      data.value = await ofetch<DataT | null>(urlValue, {
         baseURL: config.apiBase,
-        onRequest({ options }) {
+        onRequest(param) {
+          if (config.onRequest) {
+            if (Array.isArray(config.onRequest)) {
+              config.onRequest.forEach(r => r(param))
+            }
+            else {
+              config.onRequest(param)
+            }
+          }
+          const { options } = param
           options.headers.set('Content-Type', 'application/json')
           options.headers.set('Accept', 'application/json')
           options.credentials = 'include'
@@ -43,30 +52,9 @@ export async function useFetch<DataT, ErrorT = never>(
             options.params['lang'] = locale
           }
         },
-        async onResponseError() {
-          // TODO redirect to login outside Nuxt?
-          // if (response.status === 401) {
-          //   await nuxtApp.runWithContext(() => navigateTo(localePath('/login')))
-          // }
-
-          // let message
-          // try {
-          //   if ('error' in response._data) {
-          //     message = response._data.error
-          //   }
-          //   else if ('message' in response._data) {
-          //     message = response._data.message
-          //   }
-          // }
-          // catch (e) {
-          //   console.error(e)
-          //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          //   message = t(`L'API a retourné une erreur inattendue`)
-          // }
-
-          // TODO Toast outside Nuxt
-          // toast.error(message)
-        },
+        onRequestError: config.onRequestError,
+        onResponse: config.onResponse,
+        onResponseError: config.onResponseError,
         ...fetchOptions,
       })
       status.value = 'success'
