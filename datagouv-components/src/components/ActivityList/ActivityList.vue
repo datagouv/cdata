@@ -120,7 +120,7 @@ import Avatar from '../Avatar.vue'
 import LoadingBlock from '../LoadingBlock.vue'
 import Pagination from '../Pagination.vue'
 import PaddedContainer from '../PaddedContainer.vue'
-import listSrc from '../../../../public/illustrations/list.svg?url'
+import listSrc from '../../../assets/illustrations/list.svg?url'
 
 const props = defineProps<{
   id?: string
