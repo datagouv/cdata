@@ -52,6 +52,7 @@ export const loadMe = async (meState: Ref<Me | null | undefined>) => {
   const cookie = useRequestHeader('cookie')
 
   const token = useToken()
+  const { setCurrentOrganization, setCurrentUser } = useCurrentOwned()
 
   const headers: Record<string, string> = {}
 
@@ -73,6 +74,12 @@ export const loadMe = async (meState: Ref<Me | null | undefined>) => {
       credentials: 'include',
       headers,
     })
+    if (meState.value) {
+      setCurrentUser(meState.value)
+      for (const org of meState.value.organizations) {
+        setCurrentOrganization(org)
+      }
+    }
   }
   catch {
     meState.value = null

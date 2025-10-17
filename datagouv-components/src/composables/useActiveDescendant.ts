@@ -16,7 +16,8 @@ export function useActiveDescendant<T extends Option>(options: MaybeRefOrGetter<
 
   function activate(id?: string) {
     if (id === undefined) {
-      return activateAtPosition(0)
+      activateAtPosition(0)
+      return
     }
     active.value = id
   }

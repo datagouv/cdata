@@ -119,7 +119,7 @@ import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip
 import type { ReuseSortedBy, SortDirection } from '~/types/types'
 
 const props = withDefaults(defineProps<{
-  activities: Record<string, Activity>
+  activities?: Record<string, Activity>
   reuses: Array<Reuse>
   sortedBy: ReuseSortedBy
   sortDirection: SortDirection
