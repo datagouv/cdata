@@ -306,9 +306,11 @@ const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
 const { data: dataservice, status } = await useAPI<Dataservice>(url, { redirectOn404: true, redirectOnSlug: 'did' })
 
 const title = computed(() => dataservice.value?.title)
+const robots = computed(() => dataservice.value && dataservice.value.archived_at ? 'noindex' : 'all')
 
 useSeoMeta({
   title,
+  robots,
 })
 await useJsonLd('dataservice', route.params.did)
 
