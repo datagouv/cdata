@@ -21,7 +21,7 @@ jobs:
       
       - name: Run cdata lint
         run: npm run lint
-  check-quality:
+  check-components-quality:
     defaults:
       run:
         working-directory: ./datagouv-components
