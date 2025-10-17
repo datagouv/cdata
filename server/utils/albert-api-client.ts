@@ -21,6 +21,14 @@ export type AlbertConfig = {
   timeout?: number
 }
 
+export type ChatResponse = {
+  choices?: Array<{
+    message?: {
+      content?: string
+    }
+  }>
+}
+
 type RequestConfig = {
   body?: unknown
   data?: unknown
