@@ -22,11 +22,11 @@ export type AlbertConfig = {
 }
 
 type RequestConfig = {
-  body?: any
-  data?: any
+  body?: unknown
+  data?: unknown
   headers?: Record<string, string>
-  params?: Record<string, any>
-  [key: string]: any
+  params?: Record<string, unknown>
+  [key: string]: unknown
 }
 
 // ============================================================================
@@ -41,11 +41,11 @@ async function makeAlbertRequest(
   endpoint: string,
   config: AlbertConfig,
   requestConfig: RequestConfig = {}
-): Promise<any> {
+): Promise<unknown> {
   const url = `${config.baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`
 
   try {
-    const options: any = {
+    const options: Record<string, unknown> = {
       method,
       headers: {
         'Authorization': `Bearer ${config.apiKey}`,
@@ -57,7 +57,7 @@ async function makeAlbertRequest(
 
     // Remove Content-Type header for FormData requests
     if (options.body instanceof FormData) {
-      delete options.headers['Content-Type']
+      delete (options.headers as Record<string, string>)['Content-Type']
     }
 
     // Add other config options (like params for GET requests)
@@ -75,14 +75,8 @@ async function makeAlbertRequest(
     }
 
     return response
-  } catch (error: any) {
-    if (error.response) {
-      throw new Error(`API request failed: ${error.response.status} - ${error.response.statusText}`)
-    } else if (error.request) {
-      throw new Error(`API request failed: ${error.message}`)
-    } else {
-      throw new Error(`API request failed: ${error.message}`)
-    }
+  } catch (error) {
+    throw new Error(`API request failed: ${(error as Error).message}`)
   }
 }
 
@@ -122,10 +116,10 @@ export async function getAlbertModel(model: string, config: AlbertConfig) {
 
 export async function getAlbertModelsIds(config: AlbertConfig): Promise<string[]> {
   try {
-    const models = await getAlbertModels(config)
-    return models.data?.map((m: any) => m.id) || []
-  } catch (error: any) {
-    console.error(`Unable to get the list of Albert models: ${error.message}`)
+    const models = await getAlbertModels(config) as { data?: Array<{ id: string }> }
+    return models.data?.map((m) => m.id) || []
+  } catch (error) {
+    console.error(`Unable to get the list of Albert models: ${(error as Error).message}`)
     return []
   }
 }
@@ -138,7 +132,7 @@ export async function createChatCompletion(
   messages: ChatMessage[],
   model: string,
   config: AlbertConfig,
-  additionalParams: Record<string, any> = {}
+  additionalParams: Record<string, unknown> = {}
 ) {
   const data = { messages, model, ...additionalParams }
   return makeAlbertRequest('POST', '/v1/chat/completions', config, { body: data })
@@ -148,7 +142,7 @@ export async function createAgentCompletion(
   messages: ChatMessage[],
   model: string,
   config: AlbertConfig,
-  additionalParams: Record<string, any> = {}
+  additionalParams: Record<string, unknown> = {}
 ) {
   const data = { messages, model, ...additionalParams }
   return makeAlbertRequest('POST', '/v1/agents/completions', config, { body: data })
@@ -166,7 +160,7 @@ export async function createEmbeddings(
   inputText: string | string[],
   model: string,
   config: AlbertConfig,
-  additionalParams: Record<string, any> = {}
+  additionalParams: Record<string, unknown> = {}
 ) {
   const data = { input: inputText, model, ...additionalParams }
   return makeAlbertRequest('POST', '/v1/embeddings', config, { body: data })
@@ -180,7 +174,7 @@ export async function transcribeAudio(
   filePath: string,
   model: string,
   config: AlbertConfig,
-  additionalParams: Record<string, any> = {}
+  additionalParams: Record<string, unknown> = {}
 ) {
   const fullPath = path.resolve(filePath)
 
@@ -209,7 +203,7 @@ export async function transcribeAudio(
 export async function parseDocument(
   filePath: string,
   config: AlbertConfig,
-  additionalParams: Record<string, any> = {}
+  additionalParams: Record<string, unknown> = {}
 ) {
   const fullPath = path.resolve(filePath)
 
@@ -234,7 +228,7 @@ export async function ocrDocument(
   filePath: string,
   model: string,
   config: AlbertConfig,
-  additionalParams: Record<string, any> = {}
+  additionalParams: Record<string, unknown> = {}
 ) {
   const fullPath = path.resolve(filePath)
 
@@ -286,7 +280,7 @@ export async function getCollection(collectionId: number, config: AlbertConfig) 
 export async function updateCollection(
   collectionId: number,
   config: AlbertConfig,
-  updateData: Record<string, any> = {}
+  updateData: Record<string, unknown> = {}
 ) {
   return makeAlbertRequest('PATCH', `/v1/collections/${collectionId}`, config, { body: updateData })
 }
@@ -303,7 +297,7 @@ export async function createDocument(
   filePath: string,
   collectionId: number,
   config: AlbertConfig,
-  additionalParams: Record<string, any> = {}
+  additionalParams: Record<string, unknown> = {}
 ) {
   const fullPath = path.resolve(filePath)
 
@@ -331,7 +325,7 @@ export async function getDocuments(
   limit: number = 10,
   offset: number = 0
 ) {
-  const params: any = { limit, offset }
+  const params: { limit: number, offset: number, collection?: number } = { limit, offset }
   if (collectionId !== undefined) {
     params.collection = collectionId
   }
@@ -373,7 +367,7 @@ export async function search(
   prompt: string,
   config: AlbertConfig,
   collections?: number[],
-  additionalParams: Record<string, any> = {}
+  additionalParams: Record<string, unknown> = {}
 ) {
   const data = { prompt, collections: collections || [], ...additionalParams }
   return makeAlbertRequest('POST', '/v1/search', config, { body: data })
@@ -401,7 +395,7 @@ export async function getUsage(
   config: AlbertConfig,
   limit: number = 50,
   page: number = 1,
-  additionalParams: Record<string, any> = {}
+  additionalParams: Record<string, unknown> = {}
 ) {
   const params = { limit, page, ...additionalParams }
   return makeAlbertRequest('GET', '/v1/usage', config, { params })
@@ -417,7 +411,7 @@ export async function createToken(
   user?: number,
   expiresAt?: number
 ) {
-  const data: any = { name }
+  const data: { name: string, user?: number, expires_at?: number } = { name }
   if (user !== undefined) {
     data.user = user
   }
@@ -432,7 +426,7 @@ export async function getTokens(
   config: AlbertConfig,
   offset: number = 0,
   limit: number = 10,
-  additionalParams: Record<string, any> = {}
+  additionalParams: Record<string, unknown> = {}
 ) {
   const params = { offset, limit, ...additionalParams }
   return makeAlbertRequest('GET', '/tokens', config, { params })
