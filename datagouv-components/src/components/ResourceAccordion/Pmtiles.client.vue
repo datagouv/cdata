@@ -197,6 +197,9 @@ onMounted(() => {
 .maplibregl-popup-close-button {
   right: 10px !important;
   top: 10px !important;
-  font-size: 1.2rem;
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1;
 }
 </style>
