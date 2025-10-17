@@ -7,7 +7,7 @@
     :a-label="$t('un jeu de données')"
     :this-label="$t('ce jeu de données')"
     :allow-reorder
-    :suggest="(query) => $api<Array<DatasetSuggest>>('/api/1/datasets/suggest/', { query })"
+    :suggest="suggestDataset"
     :fetch="(id) => $api<DatasetV2>(`/api/2/datasets/${id}/`)"
     :object-image-url="(dataset) => ('image_url' in dataset && dataset.image_url) ? dataset.image_url : ''"
     :is-full-object="(dataset) => ('harvest' in dataset) ? dataset : null"
@@ -31,10 +31,39 @@ withDefaults(defineProps<{
   single?: boolean
   label?: string
   allowReorder?: boolean
+  organizationId?: string
 }>(), {
   single: false,
   allowReorder: true,
 })
 
 const selectedDatasets = defineModel<Array<DatasetV2 | DatasetSuggest>>({ required: true })
+
+const suggestDataset = async (query: string): Promise<Array<DatasetSuggest>> => {
+  if (props.organizationId) {
+    const searchResults = await $api<{ data: Array<DatasetV2> }>('/api/2/datasets/search/', {
+      query: {
+        q: query,
+        page_size: 5,
+        organization: props.organizationId,
+      },
+    })
+
+    // Convertir les résultats de recherche en format DatasetSuggest
+    return searchResults.data.map(dataset => ({
+      id: dataset.id,
+      title: dataset.title,
+      slug: dataset.slug,
+      acronym: dataset.acronym || '',
+      page: dataset.page || '',
+      image_url: null, // L'API de recherche ne retourne pas image_url
+    }))
+  }
+  return await $api<Array<DatasetSuggest>>('/api/1/datasets/suggest/', {
+    query: {
+      q: query,
+      size: 5,
+    },
+  })
+}
 </script>
