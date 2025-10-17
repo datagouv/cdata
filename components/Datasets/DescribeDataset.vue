@@ -661,7 +661,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Tooltip } from '@datagouv/components-next'
+import { BrandedButton, Tooltip, DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
 import { SimpleBanner, type Frequency, type License } from '@datagouv/components-next'
 import { RiAddLine, RiStarFill, RiLoader5Line, RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
@@ -671,7 +671,6 @@ import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone } from '~/types/types'
-import { DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 
