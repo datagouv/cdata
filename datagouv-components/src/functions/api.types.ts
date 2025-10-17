@@ -22,15 +22,11 @@ export type UseFetchOptions<DataT> = {
 
 export type AsyncData<DataT, ErrorT> = {
   data: Ref<DataT | null>
-  refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
-  execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  refresh: () => Promise<void>
+  execute: () => Promise<void>
   clear: () => void
   error: Ref<ErrorT | null>
   status: Ref<AsyncDataRequestStatus>
-}
-
-export interface AsyncDataExecuteOptions {
-  dedupe?: 'cancel' | 'defer'
 }
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
