@@ -102,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Pagination } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination } from '@datagouv/components-next'
 import type { Reuse, ReuseTopic } from '@datagouv/components-next'
 import { RiSearch2Line } from '@remixicon/vue'
 import { debouncedRef } from '@vueuse/core'

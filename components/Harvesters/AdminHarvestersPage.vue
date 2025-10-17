@@ -172,7 +172,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, BrandedButton, type Organization, useFormatDate } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, BrandedButton, type Organization, useFormatDate } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { RiPencilLine, RiSearchLine } from '@remixicon/vue'

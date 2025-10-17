@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, type ContactPoint, type Organization } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, type ContactPoint, type Organization } from '@datagouv/components-next'
 import AdminContactPointsTable from '~/components/AdminTable/AdminContactPointsTable/AdminContactPointsTable.vue'
 import type { PaginatedArray, SortDirection } from '~/types/types'
 

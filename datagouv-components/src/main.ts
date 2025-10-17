@@ -38,6 +38,7 @@ import DatasetQualityScore from './components/DatasetQualityScore.vue'
 import DatasetQualityTooltipContent from './components/DatasetQualityTooltipContent.vue'
 import ExtraAccordion from './components/ExtraAccordion.vue'
 import LabelTag from './components/DatasetLabelTag.vue'
+import LoadingBlock from './components/LoadingBlock.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
@@ -170,6 +171,7 @@ export {
   DateRangeDetails,
   ExtraAccordion,
   LabelTag,
+  LoadingBlock,
   OrganizationCard,
   OrganizationNameWithCertificate,
   OwnerType,
