@@ -97,7 +97,7 @@
               {{ $t("Suggestions automatiques") }}
             </p>
             <p class="m-0">
-                {{ $t("Des mots-clés peuvent vous être proposés automatiquement en fonction du contenu de votre jeu de données. Vous pouvez les accepter, les modifier ou les supprimer.") }}
+              {{ $t("Des mots-clés peuvent vous être proposés automatiquement en fonction du contenu de votre jeu de données. Vous pouvez les accepter, les modifier ou les supprimer.") }}
             </p>
             <p class="m-0">
               <CdataLink
@@ -340,22 +340,16 @@
                 v-else
                 type="button"
                 color="primary"
-                :disabled="isGeneratingDescriptionShort"
+                :icon="RiSparklingLine"
+                :loading="isGeneratingDescriptionShort"
                 @click="handleAutoCompleteDescriptionShort"
               >
-                <div class="flex items-center space-x-2">
-                  <RiSparklingLine
-                    v-if="!isGeneratingDescriptionShort"
-                    class="size-4"
-                    aria-hidden="true"
-                  />
-                  <span v-if="isGeneratingDescriptionShort">{{ $t('Suggestion en cours...') }}</span>
-                  <span v-else>{{ $t('Suggérer une description courte') }}</span>
-                  <RiLoader5Line
-                    v-if="isGeneratingDescriptionShort"
-                    class="size-4 animate-spin text-primary"
-                  />
-                </div>
+                <template v-if="isGeneratingDescriptionShort">
+                  {{ $t('Suggestion en cours...') }}
+                </template>
+                <template v-else>
+                  {{ $t('Suggérer une description courte') }}
+                </template>
               </BrandedButton>
               <CdataLink
                 v-if="config.public.generateShortDescriptionFeedbackUrl"
@@ -382,22 +376,17 @@
               <BrandedButton
                 type="button"
                 color="primary"
-                :disabled="isGeneratingTags || !form.title || !form.description || form.description.trim().length === 0"
+                :icon="RiSparklingLine"
+                :loading="isGeneratingTags"
+                :disabled="!form.title || !form.description || form.description.trim().length === 0"
                 @click="handleAutoCompleteTags()"
               >
-                <div class="flex items-center space-x-2">
-                  <RiSparklingLine
-                    v-if="!isGeneratingTags"
-                    class="size-4"
-                    aria-hidden="true"
-                  />
-                  <span v-if="isGeneratingTags">{{ $t('Suggestion en cours...') }}</span>
-                  <span v-else>{{ $t('Suggérer des mots clés') }}</span>
-                  <RiLoader5Line
-                    v-if="isGeneratingTags"
-                    class="size-4 animate-spin text-primary"
-                  />
-                </div>
+                <template v-if="isGeneratingTags">
+                  {{ $t('Suggestion en cours...') }}
+                </template>
+                <template v-else>
+                  {{ $t('Suggérer des mots clés') }}
+                </template>
               </BrandedButton>
               <CdataLink
                 v-if="config.public.generateTagsFeedbackUrl"
@@ -714,9 +703,9 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Tooltip } from '@datagouv/components-next'
+import { BrandedButton, Tooltip, DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
 import { SimpleBanner, type Frequency, type License } from '@datagouv/components-next'
-import { RiAddLine, RiStarFill, RiLoader5Line, RiSparklingLine } from '@remixicon/vue'
+import { RiAddLine, RiStarFill, RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
@@ -724,7 +713,6 @@ import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone } from '~/types/types'
-import { DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 
@@ -842,7 +830,7 @@ const canGenerateDescriptionShort = computed(() => {
 async function handleAutoCompleteDescriptionShort() {
   try {
     isGeneratingDescriptionShort.value = true
-    
+
     // We call our server-side API route instead of Albert API directly to avoid CORS issues.
     // The Albert API doesn't allow direct requests from browser-side JavaScript.
     // Our server acts as a proxy, keeping the API key secure on the server side.
@@ -851,18 +839,19 @@ async function handleAutoCompleteDescriptionShort() {
       body: {
         title: form.value.title,
         description: form.value.description,
-        organization: form.value.owned?.organization?.name
-      }
+        organization: form.value.owned?.organization?.name,
+      },
     })
 
     form.value.description_short = response.descriptionShort || ''
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to generate short description:', error)
-  } finally {
+  }
+  finally {
     isGeneratingDescriptionShort.value = false
   }
 }
-
 
 async function submit() {
   if (await validate()) {
@@ -873,7 +862,7 @@ async function submit() {
 async function handleAutoCompleteTags() {
   try {
     isGeneratingTags.value = true
-    
+
     // We call our server-side API route instead of Albert API directly to avoid CORS issues.
     // The Albert API doesn't allow direct requests from browser-side JavaScript.
     // Our server acts as a proxy, keeping the API key secure on the server side.
@@ -882,19 +871,20 @@ async function handleAutoCompleteTags() {
       body: {
         title: form.value.title,
         description: form.value.description,
-        organization: form.value.owned?.organization?.name
-      }
+        organization: form.value.owned?.organization?.name,
+      },
     })
 
     // Convert the array of tags to the expected tags format and replace existing tags
     if (response.tags && response.tags.length > 0) {
       form.value.tags = response.tags.map(tag => ({ text: tag }))
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to generate tags:', error)
-  } finally {
+  }
+  finally {
     isGeneratingTags.value = false
   }
 }
-
 </script>
