@@ -140,22 +140,22 @@ import { useTranslation } from '../composables/useTranslation'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import AppLink from './AppLink.vue'
 
-  type Props = {
-    dataservice: Dataservice
+type Props = {
+  dataservice: Dataservice
 
-    /**
+  /**
      * The dataserviceUrl is a route location object to allow Vue Router to navigate to the details of a dataservice.
      * It is used as a separate prop to allow other sites using the package to define their own dataservice pages.
      */
-    dataserviceUrl?: RouteLocationRaw
+  dataserviceUrl?: RouteLocationRaw
 
-    /**
+  /**
      * The organizationUrl is an optional route location object to allow Vue Router to navigate to the details of the organization linked to tha dataservice.
      * It is used as a separate prop to allow other sites using the package to define their own organization pages.
      */
-    organizationUrl?: RouteLocationRaw
-    showDescription?: boolean
-  }
+  organizationUrl?: RouteLocationRaw
+  showDescription?: boolean
+}
 
 const props = withDefaults(defineProps<Props>(), {
   style: () => ({}),
