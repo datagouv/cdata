@@ -85,11 +85,11 @@ export default defineEventHandler(async (event) => {
       : generatedDescriptionShort
     
     return { descriptionShort: finalDescriptionShort }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Albert API error:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: error.message || 'Failed to call Albert API'
+      statusMessage: (error as Error).message || 'Failed to call Albert API'
     })
   }
 })
