@@ -1,4 +1,4 @@
-import { AlbertAPIClient } from '~/server/utils/albert-api-client'
+import { createChatCompletion, useAlbertConfig } from '~/server/utils/albert-api-client'
 
 const NB_TAGS = 5
 
@@ -23,10 +23,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const albertClient = new AlbertAPIClient(
-      runtimeConfig.albertApiBaseUrl,
-      runtimeConfig.albertApiKey,
-    )
+    const albertConfig = useAlbertConfig()
 
     const messages = [
       {
@@ -86,7 +83,7 @@ export default defineEventHandler(async (event) => {
     // - AgentPublic/albert-spp-8b
     // - albert-code-beta
     // - albert-ministral
-    const response = await albertClient.chat_completions(messages, 'albert-small')
+    const response = await createChatCompletion(messages, 'albert-small', albertConfig)
     const generatedTags = response.choices?.[0]?.message?.content || ''
 
     // Parse the comma-separated tags and clean them
