@@ -99,7 +99,7 @@
           >
             <div class="flex items-center gap-1">
               <RiAlertLine class="size-4" /> <span>{{
-                t('Une organisation avec ce SIRET existe déjà sur {site} | {n} organisations avec ce SIRET existe déjà sur {site}', { site: config.public.title, n: organizationsWithSameSiret.total })
+                t('Une organisation avec ce SIRET existe déjà sur {site} | {n} organisations avec ce SIRET existent déjà sur {site}', { site: config.public.title, n: organizationsWithSameSiret.total })
               }}</span>
             </div>
             <ul class="text-sm list-none p-0">
@@ -261,7 +261,6 @@ import type { Badge, NewOrganization, Organization, OrganizationTypes } from '@d
 import { RiAlertLine } from '@remixicon/vue'
 import { asyncComputed } from '@vueuse/core'
 import { computed, ref, watchEffect } from 'vue'
-import { useI18n } from 'vue-i18n'
 import Alert from '~/components/Alert/Alert.vue'
 import FieldsetElement from '~/components/Form/FieldsetElement.vue'
 import FormFieldset from '~/components/Form/FormFieldset.vue'
@@ -292,7 +291,7 @@ const emit = defineEmits<{
 }>()
 
 const config = useRuntimeConfig()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges/')

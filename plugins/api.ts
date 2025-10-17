@@ -1,12 +1,10 @@
-import type { NuxtApp } from '#app'
-
 export default defineNuxtPlugin({
   async setup(nuxtApp) {
     const config = useRuntimeConfig()
     const token = useToken()
     const cookie = useRequestHeader('cookie')
-    const localePath = useLocalePath()
     const route = useRoute()
+    const { t, locale } = useTranslation()
 
     const { toast } = useToast()
     const makeApi = (apiOptions: { sendJson: boolean, redirectOn404: boolean }) => {
@@ -27,18 +25,17 @@ export default defineNuxtPlugin({
           if (cookie) {
             options.headers.set('Cookie', cookie)
           }
-          const i18n = nuxtApp.$i18n as NuxtApp['$i18n']
-          if (i18n.locale.value) {
+          if (locale) {
             if (!options.query) {
               options.query = {}
             }
-            options.query['lang'] = i18n.locale.value
+            options.query['lang'] = locale
           }
         },
         async onResponseError({ response, options }) {
           if (response.status === 404) {
             if (apiOptions.redirectOn404) {
-              showError({ statusCode: 404, statusMessage: 'Page Not Found' })
+              await nuxtApp.runWithContext(() => showError({ statusCode: 404, statusMessage: 'Page Not Found', fatal: true }))
             }
             else {
               // We don't want to show the toast for default 404 Flask response
@@ -47,10 +44,8 @@ export default defineNuxtPlugin({
           }
 
           if (response.status === 401) {
-            await nuxtApp.runWithContext(() => navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true }))
+            await nuxtApp.runWithContext(() => navigateTo({ path: '/login', query: { next: route.fullPath } }, { external: true }))
           }
-
-          const t = (nuxtApp.$i18n as NuxtApp['$i18n']).t
 
           if (response.status === 429) {
             toast.error(t('Erreur API 429 : trop de requêtes. Veuillez réessayer plus tard.'))

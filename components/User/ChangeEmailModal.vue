@@ -76,9 +76,8 @@ import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 import { RiEditLine } from '@remixicon/vue'
 import type { FieldsErrors } from '~/types/form'
 
-const { $api } = useNuxtApp()
 const { toast } = useToast()
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 
 const loading = ref(false)
@@ -87,21 +86,15 @@ const errors = ref<FieldsErrors>({})
 const newEmail = ref('')
 const confirmNewEmail = ref('')
 
+const postApiWithCsrf = usePostApiWithCsrf()
 const submit = async (close: () => void) => {
   loading.value = true
   errors.value = {}
 
   try {
-    // Using change password endpoint to get a CSRF Token because change-email doesn't support JSON.
-    const { response: { csrf_token } } = await $api<{ response: { csrf_token: string } }>('/fr/change/')
-
-    await $api('/fr/change-email', {
-      method: 'POST',
-      body: {
-        new_email: newEmail.value,
-        new_email_confirm: confirmNewEmail.value,
-        csrf_token,
-      },
+    await postApiWithCsrf('/change-email', {
+      new_email: newEmail.value,
+      new_email_confirm: confirmNewEmail.value,
     })
 
     if (config.public.requireEmailConfirmation) {

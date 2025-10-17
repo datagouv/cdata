@@ -165,18 +165,17 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, Avatar, BrandedButton, OrganizationNameWithCertificate, type Reuse } from '@datagouv/components-next'
+import { isOrganizationCertified, Avatar, BrandedButton, OrganizationNameWithCertificate, ReuseDetails, type Reuse } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
-import ReuseDetails from '~/datagouv-components/src/components/ReuseDetails.vue'
 
 const route = useRoute()
 
 const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
-const { data: reuse, status } = await useAPI<Reuse>(url, { redirectOn404: true })
+const { data: reuse, status } = await useAPI<Reuse>(url, { redirectOn404: true, redirectOnSlug: 'rid' })
 
 const title = computed(() => reuse.value?.title)
 const robots = computed(() => reuse.value && !reuse.value.metrics.datasets && !reuse.value.metrics.datasets ? 'noindex, nofollow' : 'all')

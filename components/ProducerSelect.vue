@@ -58,9 +58,11 @@
 </template>
 
 <script setup lang="ts">
-import { getUserAvatar, type Organization, type User, BrandedButton } from '@datagouv/components-next'
+import { useGetUserAvatar, BrandedButton, type Organization, type User } from '@datagouv/components-next'
 import type { Owned } from '~/types/types'
 import PaddedContainer from '~/components/PaddedContainer/PaddedContainer.vue'
+
+const getUserAvatar = useGetUserAvatar()
 
 const props = withDefaults(defineProps<{
   label: string
@@ -74,7 +76,7 @@ const props = withDefaults(defineProps<{
 })
 const model = defineModel<Owned | null>({ required: true })
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const user = useMe()
 const { $api } = useNuxtApp()
 

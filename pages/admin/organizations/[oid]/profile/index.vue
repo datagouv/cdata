@@ -90,7 +90,6 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import { AnimatedLoader, BannerAction, BrandedButton } from '@datagouv/components-next'
 import type { Organization, Badge } from '@datagouv/components-next'
@@ -104,11 +103,10 @@ const emit = defineEmits<{
   refresh: []
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { toast } = useToast()
 const { $api } = useNuxtApp()
 const { start, finish, isLoading } = useLoadingIndicator()
-const localPath = useLocalePath()
 
 const form = ref<InstanceType<typeof DescribeOrganizationFrom> | null>(null)
 
@@ -129,7 +127,7 @@ async function deleteCurrentOrganization() {
     }
     else {
       reloadNuxtApp({
-        path: localPath('/admin/me/profile'),
+        path: '/admin/me/profile',
       })
     }
   }

@@ -29,6 +29,7 @@
         :can-edit="dataset.permissions.edit_resources"
       />
     </div>
+
     <div
       v-for="{ data, status }, index in resourcesByTypes"
       v-else

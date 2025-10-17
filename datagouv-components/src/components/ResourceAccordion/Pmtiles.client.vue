@@ -53,7 +53,6 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, useTemplateRef } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiErrorWarningLine, RiExternalLinkFill } from '@remixicon/vue'
 import { Protocol, PMTiles } from 'pmtiles'
 import maplibregl from 'maplibre-gl'
@@ -62,14 +61,17 @@ import { useComponentsConfig } from '../../config'
 import { useFormatDate } from '../../functions/dates'
 import { throwOnNever } from '../../functions/never'
 import type { Resource } from '../../types/resources'
+import type { Dataset, DatasetV2 } from '../../types/datasets'
 import BrandedButton from '../BrandedButton.vue'
 import styleVector from '../../../assets/json/vector.json'
 import SimpleBanner from '../SimpleBanner.vue'
+import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
+import { getOwnerName, getOwnerPage } from '../../functions/owned'
 
-const props = defineProps<{ resource: Resource }>()
+const props = defineProps<{ resource: Resource, dataset: Dataset | DatasetV2 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const config = useComponentsConfig()
@@ -83,6 +85,12 @@ const pmtilesViewerUrl = computed(() => {
 const lastUpdate = computed(() => formatDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined))
 
 const container = useTemplateRef('containerRef')
+
+const attributions = computed(() => {
+  if (!props.dataset.organization && !props.dataset.owner)
+    return ''
+  return `© <a href="${getOwnerPage(props.dataset)}" target="_blank">${getOwnerName(props.dataset)}</a>`
+})
 
 async function displayMap() {
   await import('maplibre-gl/dist/maplibre-gl.css')
@@ -103,6 +111,15 @@ async function displayMap() {
       center: [h.centerLon, h.centerLat],
     })
     map.addControl(new maplibregl.NavigationControl())
+    map.addControl(
+      new maplibregl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true,
+        },
+        trackUserLocation: true,
+        showAccuracyCircle: false,
+      }),
+    )
 
     const popup = new maplibregl.Popup({
       closeButton: false,
@@ -116,7 +133,7 @@ async function displayMap() {
       else {
         const coordinates = e.lngLat
         const description = Object.keys(e.features[0].properties).map((element) => {
-          return `<b>${DOMPurify.sanitize(element)} :</b> ${DOMPurify.sanitize(e.features[0].properties[element])}`
+          return `<b>${DOMPurify.sanitize(element, { USE_PROFILES: { html: false } })} :</b> ${DOMPurify.sanitize(e.features[0].properties[element], { USE_PROFILES: { html: false } })}`
         }).join('<br>')
         popup.setLngLat(coordinates).setHTML(description).addTo(map)
       }
@@ -127,7 +144,7 @@ async function displayMap() {
         map.addSource('pmtiles_source', {
           type: 'vector',
           url: `pmtiles://${pmtilesUrl.value}`,
-          attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+          attribution: attributions.value,
         })
         // @ts-expect-error not typed from library
         metadata.tilestats.layers.forEach((layer) => {
@@ -162,9 +179,9 @@ async function displayMap() {
           map.on('click', layer.layer, showMapPopup)
           map.on('mouseleave', layer.layer, showMapPopup)
         })
-      }).catch (() => hasError.value = true)
+      }).catch(() => hasError.value = true)
     })
-  }).catch (() => hasError.value = true)
+  }).catch(() => hasError.value = true)
 }
 
 onMounted(() => {

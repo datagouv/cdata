@@ -1,6 +1,5 @@
 <template>
   <div class="p-4 border bg-white border-gray-default relative hover:bg-gray-some">
-    <div :id />
     <div
       v-if="dataset.private || dataset.archived"
       class="absolute top-0 fr-grid-row fr-grid-row--middle fr-mt-n3v fr-ml-n1v"
@@ -99,15 +98,12 @@
           </div>
           <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
           <div class="text-gray-medium whitespace-nowrap">
-            {{ $t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataset.last_update, { dateStyle: 'medium' }) }) }}
+            {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataset.last_update, { dateStyle: 'medium' }) }) }}
           </div>
         </div>
         <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium">
           <div class="fr-hidden flex-sm dash-after-sm text-gray-medium -ml-2.5">
-            <DatasetQualityInline
-              :quality="dataset.quality"
-              :teleport-id="id"
-            />
+            <DatasetQualityInline :quality="dataset.quality" />
           </div>
           <div class="flex flex-wrap items-center gap-1">
             <p
@@ -150,10 +146,10 @@
         </div>
         <component
           :is="config.textClamp"
-          v-if="showDescription && config && config.textClamp && description"
+          v-if="showDescriptionShort && config && config.textClamp && descriptionShort"
           class="fr-text--sm fr-mt-1w fr-mb-0 overflow-wrap-anywhere"
           :auto-resize="true"
-          :text="description"
+          :text="descriptionShort"
           :max-lines="2"
         />
       </div>
@@ -162,54 +158,53 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
-import { computed, ref, useId, watchEffect } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import { RiDownloadLine, RiEyeLine, RiLineChartLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import { summarize } from '../functions/helpers'
 import { useFormatDate } from '../functions/dates'
 import { getOwnerName } from '../functions/owned'
-import { removeMarkdown } from '../functions/markdown'
+import { getDescriptionShort } from '../functions/datasets'
 import { useComponentsConfig } from '../config'
+import { useTranslation } from '../composables/useTranslation'
 import DatasetQualityInline from './DatasetQualityInline.vue'
 import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import AppLink from './AppLink.vue'
 
-  type Props = {
-    dataset: Dataset | DatasetV2
+type Props = {
+  dataset: Dataset | DatasetV2
 
-    /**
+  /**
      * The datasetUrl is a route location object to allow Vue Router to navigate to the details of a dataset.
      * It is used as a separate prop to allow other sites using the package to define their own dataset pages.
      */
-    datasetUrl: RouteLocationRaw
-    datasetUrlInNewTab?: boolean
+  datasetUrl: RouteLocationRaw
+  datasetUrlInNewTab?: boolean
 
-    /**
+  /**
      * The organizationUrl is an optional route location object to allow Vue Router to navigate to the details of the organization linked to tha dataset.
      * It is used as a separate prop to allow other sites using the package to define their own organization pages.
      */
-    organizationUrl?: RouteLocationRaw
-    showDescription?: boolean
-  }
+  organizationUrl?: RouteLocationRaw
+  showDescriptionShort?: boolean
+}
 
 const props = withDefaults(defineProps<Props>(), {
   style: () => ({}),
-  showDescription: true,
+  showDescriptionShort: true,
 })
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
-const id = useId()
 const ownerName = computed(() => getOwnerName(props.dataset))
 const config = useComponentsConfig()
 
-const description = ref('')
+const descriptionShort = ref('')
 watchEffect(async () => {
-  if (!props.showDescription) return
-  description.value = await removeMarkdown(props.dataset.description)
+  if (!props.showDescriptionShort) return
+  descriptionShort.value = await getDescriptionShort(props.dataset.description, props.dataset.description_short)
 })
 </script>

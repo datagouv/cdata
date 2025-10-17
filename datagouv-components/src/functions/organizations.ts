@@ -1,8 +1,8 @@
-import { useI18n } from 'vue-i18n'
 import type { Component } from 'vue'
 import { RiBankLine, RiBuilding2Line, RiCommunityLine, RiGovernmentLine, RiUserLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../config'
 import type { Organization } from '../types/organizations'
+import { useTranslation } from '../composables/useTranslation'
 
 export const CERTIFIED = 'certified'
 export const PUBLIC_SERVICE = 'public-service'
@@ -31,7 +31,7 @@ export function hasBadge(organization: Organization, kind: string) {
 }
 
 export function getOrganizationTypes(): Array<{ type: OrganizationTypes | UserType, label: string, icon: Component | null }> {
-  const { t } = useI18n()
+  const { t } = useTranslation()
   return [{
     type: PUBLIC_SERVICE,
     label: t('Service public'),
@@ -91,9 +91,9 @@ export function isOrganizationCertified(organization: Organization | null): bool
   return hasBadge(organization, CERTIFIED) && (isType(organization, PUBLIC_SERVICE) || isType(organization, LOCAL_AUTHORITY))
 }
 
-export default function getOrganizationOEmbedHtml(type: string, id: string): string {
+export function getOrganizationOEmbedHtml(type: string, id: string): string {
   const config = useComponentsConfig()
 
-  const staticUrl = constructUrl(config.staticUrl, 'oembed.js')
+  const staticUrl = constructUrl(config.baseUrl, 'oembed.js')
   return `<div data-udata-${type}="${id}" data-height="1500" data-width="1200"></div><script data-udata="${config.baseUrl}" src="${staticUrl}" async defer></script>`
 }

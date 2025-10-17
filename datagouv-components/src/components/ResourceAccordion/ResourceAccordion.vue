@@ -45,8 +45,8 @@
             </button>
           </h4>
           <CopyButton
-            :label="$t('Copier le lien')"
-            :copied-label="$t('Lien copié !')"
+            :label="t('Copier le lien')"
+            :copied-label="t('Lien copié !')"
             :text="resourceExternalUrl"
             class="z-2"
           />
@@ -104,7 +104,7 @@
             size="xs"
             external
           >
-            {{ $t('Visiter') }}
+            {{ t('Visiter') }}
           </BrandedButton>
         </p>
         <p
@@ -186,6 +186,7 @@
               <Pmtiles
                 v-if="hasPmtiles"
                 :resource="resource"
+                :dataset="dataset"
               />
               <MapContainer
                 v-if="ogcWms"
@@ -243,13 +244,13 @@
                   v-if="resource.format === 'url'"
                   class="font-bold fr-text--sm fr-mb-0"
                 >
-                  {{ $t("URL d'origine") }}
+                  {{ t("URL d'origine") }}
                 </dt>
                 <dt
                   v-else
                   class="font-bold fr-text--sm fr-mb-0"
                 >
-                  {{ $t('Format original') }}
+                  {{ t('Format original') }}
                 </dt>
                 <dd class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
                   <span v-if="resource.format === 'url'">
@@ -279,19 +280,19 @@
                       class="fr-link"
                       rel="ugc nofollow noopener"
                     >
-                      <span>{{ $t('Format {format}', { format: resource.format }) }}<span v-if="resource.filesize"> - {{ filesize(resource.filesize) }}</span></span>
+                      <span>{{ t('Format {format}', { format: resource.format }) }}<span v-if="resource.filesize"> - {{ filesize(resource.filesize) }}</span></span>
                     </a>
                   </span>
                   <CopyButton
-                    :label="$t('Copier le lien')"
-                    :copied-label="$t('Lien copié !')"
+                    :label="t('Copier le lien')"
+                    :copied-label="t('Lien copié !')"
                     :text="resource.latest"
                     class="relative"
                   />
                 </dd>
                 <template v-if="generatedFormats.length">
                   <dt class="font-bold fr-text--sm fr-mb-0">
-                    {{ $t('Formats générés automatiquement par {platform} (dernière mise à jour {date})', { platform: config.name, date: conversionsLastUpdate }) }}
+                    {{ t('Formats générés automatiquement par {platform} (dernière mise à jour {date})', { platform: config.name, date: conversionsLastUpdate }) }}
                   </dt>
                   <dd
                     v-for="generatedFormat in generatedFormats"
@@ -305,12 +306,12 @@
                         class="fr-link"
                         rel="ugc nofollow noopener"
                       >
-                        <span>{{ $t('Format {format}', { format: generatedFormat.format }) }}<span v-if="generatedFormat.size"> - {{ filesize(generatedFormat.size) }}</span></span>
+                        <span>{{ t('Format {format}', { format: generatedFormat.format }) }}<span v-if="generatedFormat.size"> - {{ filesize(generatedFormat.size) }}</span></span>
                       </a>
                     </span>
                     <CopyButton
-                      :label="$t('Copier le lien')"
-                      :copied-label="$t('Lien copié !')"
+                      :label="t('Copier le lien')"
+                      :copied-label="t('Lien copié !')"
                       :text="generatedFormat.url"
                       class="relative"
                     />
@@ -321,7 +322,12 @@
             <div
               v-if="tab.key === 'swagger'"
             >
-              <div>{{ t("Swagger généré automatiquement par {platform}. Ce swagger vous permet d'interroger les données par API en les filtrant par valeur de colonne.", { platform: config.name }) }}</div>
+              <div class="fr-mb-4w">
+                <p>{{ t("Cette API est générée automatiquement par {platform} à partir du fichier.", { platform: config.name }) }}</p>
+                <p>{{ t("- Si le fichier est modifié, l'API sera mise à jour et sa structure pourra changer.") }}</p>
+                <p>{{ t("- Si le fichier est supprimé, l'API sera également supprimée.") }}</p>
+                <p>{{ t("Pour des usages pérennes, prévoyez que cette API dépend directement du fichier source.") }}</p>
+              </div>
               <Swagger
                 v-if="hasTabularData"
                 :url="`${config.tabularApiUrl}/api/resources/${props.resource.id}/swagger/`"
@@ -336,7 +342,6 @@
 
 <script setup lang="ts">
 import { ref, computed, defineAsyncComponent } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine } from '@remixicon/vue'
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
 import { filesize, summarize } from '../../functions/helpers'
@@ -356,6 +361,7 @@ import { getOwnerName } from '../../functions/owned'
 import { getResourceFormatIcon, getResourceTitleId, detectOgcService } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
 import { getResourceExternalUrl } from '../../functions/datasets'
+import { useTranslation } from '../../composables/useTranslation'
 import Metadata from './Metadata.vue'
 import SchemaBadge from './SchemaBadge.vue'
 import ResourceIcon from './ResourceIcon.vue'
@@ -386,7 +392,7 @@ const JsonPreview = defineAsyncComponent(() => import('./JsonPreview.client.vue'
 const PdfPreview = defineAsyncComponent(() => import('./PdfPreview.client.vue'))
 const XmlPreview = defineAsyncComponent(() => import('./XmlPreview.client.vue'))
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
 
 const hasPreview = computed(() => {
@@ -475,6 +481,9 @@ const tabsOptions = computed(() => {
 })
 const switchTab = (index: number) => {
   const option = tabsOptions.value[index]
+  if (!option) {
+    return
+  }
   trackEvent(['View resource tab', props.resource.id, option.label])
 
   if (option.key === 'data') {

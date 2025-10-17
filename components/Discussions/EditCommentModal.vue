@@ -88,7 +88,7 @@ const emit = defineEmits<{
   edited: []
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const { form, getFirstError, getFirstWarning } = useForm({

@@ -100,7 +100,7 @@ const props = defineProps<{
 
 const { $api } = useNuxtApp()
 const { toast } = useToast()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const loading = ref(false)

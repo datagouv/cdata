@@ -281,16 +281,12 @@
 </template>
 
 <script setup lang="ts">
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@datagouv/components-next'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import BrandCard from '~/components/Brand/BrandCard.vue'
-import TabGroup from '~/datagouv-components/src/components/Tabs/TabGroup.vue'
-import TabList from '~/datagouv-components/src/components/Tabs/TabList.vue'
-import Tab from '~/datagouv-components/src/components/Tabs/Tab.vue'
-import TabPanels from '~/datagouv-components/src/components/Tabs/TabPanels.vue'
-import TabPanel from '~/datagouv-components/src/components/Tabs/TabPanel.vue'
 import DatasetCard from '~/components/Embeds/DatasetCard.global.vue'
 import GristTableViewer from '~/components/GristTableViewer/GristTableViewer.vue'
 
@@ -393,7 +389,7 @@ const switchTab = (index: number) => {
   }
 }
 
-const { t } = useI18n()
+const { t } = useTranslation()
 useSeoMeta({ title: card.value ? ' Produit ' + card.value.product : t('Produit') })
 </script>
 

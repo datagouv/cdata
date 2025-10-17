@@ -6,12 +6,13 @@
     :height="size"
     loading="lazy"
     alt=""
+    data-testid="user-avatar"
   >
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { getUserAvatar } from '../functions/users'
+import { useGetUserAvatar } from '../functions/users'
 import type { User } from '../types/users'
 
 type Props = {
@@ -23,5 +24,6 @@ const props = withDefaults(defineProps<Props>(), {
   rounded: false,
   size: 40,
 })
+const getUserAvatar = useGetUserAvatar()
 const avatarUrl = computed(() => getUserAvatar(props.user, props.size))
 </script>

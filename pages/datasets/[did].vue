@@ -10,10 +10,10 @@
             to="/"
             :external="true"
           >
-            {{ $t('Accueil') }}
+            {{ $t("Accueil") }}
           </BreadcrumbItem>
           <BreadcrumbItem to="/datasets">
-            {{ $t('Jeux de données') }}
+            {{ $t("Jeux de données") }}
           </BreadcrumbItem>
           <BreadcrumbItem>
             {{ dataset.title }}
@@ -61,7 +61,7 @@
                   size="sm"
                   type="secondary"
                 >
-                  {{ $t('Supprimé') }}
+                  {{ $t("Supprimé") }}
                 </AdminBadge>
                 <AdminBadge
                   v-if="dataset.private"
@@ -69,7 +69,7 @@
                   size="sm"
                   type="secondary"
                 >
-                  {{ $t('Brouillon') }}
+                  {{ $t("Brouillon") }}
                 </AdminBadge>
                 <AdminBadge
                   v-if="dataset.archived"
@@ -77,7 +77,7 @@
                   size="sm"
                   type="secondary"
                 >
-                  {{ $t('Archivé') }}
+                  {{ $t("Archivé") }}
                 </AdminBadge>
               </div>
               <h1 class="text-2xl text-gray-title font-extrabold mb-6">
@@ -91,9 +91,9 @@
                 </span>
               </h1>
               <div class="text-sm text-gray-plain font-bold mb-1 pb-0">
-                {{ $t('Description') }}
+                {{ $t("Description") }}
               </div>
-              <ReadMore class="">
+              <ReadMore>
                 <MarkdownViewer
                   size="sm"
                   :content="dataset.description"
@@ -105,10 +105,10 @@
               <div class="space-y-1">
                 <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
                   <template v-if="hasContactPointsWithSpecificRole">
-                    {{ $t('Diffuseur') }}
+                    {{ $t("Diffuseur") }}
                   </template>
                   <template v-else>
-                    {{ $t('Producteur') }}
+                    {{ $t("Producteur") }}
                   </template>
                 </dt>
                 <dd class="p-0 text-sm">
@@ -127,7 +127,14 @@
                     type="warning"
                     class="text-sm"
                   >
-                    {{ $t("Ce jeu de données a été publié à l'initiative et sous la responsabilité de {author}.", { author: `${dataset.owner.first_name} ${dataset.owner.last_name}` }) }}
+                    {{
+                      $t(
+                        "Ce jeu de données a été publié à l'initiative et sous la responsabilité de {author}.",
+                        {
+                          author: `${dataset.owner.first_name} ${dataset.owner.last_name}`,
+                        },
+                      )
+                    }}
                   </SimpleBanner>
                 </dd>
               </div>
@@ -138,10 +145,10 @@
               >
                 <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
                   <template v-if="hasContactPointsWithSpecificRole">
-                    {{ $t('Attributions') }}
+                    {{ $t("Attributions") }}
                   </template>
                   <template v-else>
-                    {{ $t('Contacts') }}
+                    {{ $t("Contacts") }}
                   </template>
                 </dt>
                 <dd class="p-0 text-sm">
@@ -158,7 +165,7 @@
                 class="space-y-1"
               >
                 <dt class="text-sm text-gray-plain font-bold pb-0">
-                  {{ $t('Licence') }}
+                  {{ $t("Licence") }}
                 </dt>
                 <dd class="p-0 text-sm">
                   <License :license="dataset.license" />
@@ -167,7 +174,7 @@
 
               <div class="space-y-1">
                 <dt class="text-sm text-gray-plain font-bold pb-0">
-                  {{ $t('Dernière mise à jour') }}
+                  {{ $t("Dernière mise à jour") }}
                 </dt>
                 <dd class="p-0 text-sm">
                   {{ formatDate(dataset.last_update) }}
@@ -180,6 +187,7 @@
                   size="sm"
                   type="line"
                   :summary="datasetVisitsTotal"
+                  :since="metricsSince"
                 />
                 <StatBox
                   :title="$t('Téléchargements')"
@@ -187,6 +195,7 @@
                   size="sm"
                   type="line"
                   :summary="datasetDownloadsResourcesTotal"
+                  :since="metricsSince"
                 />
               </div>
               <div>
@@ -196,12 +205,85 @@
                 />
               </div>
 
+              <div v-if="badges.length > 0">
+                <dt
+                  class="text-sm text-gray-plain font-bold flex items-center pb-0"
+                >
+                  <Toggletip
+                    :button-props="{
+                      'class': '-ml-2 mt-px px-2',
+                      'title': $t('Label'),
+                      'data-testid': 'label-toggletip-button',
+                    }"
+                    no-margin
+                  >
+                    <template #toggletip="{ close }">
+                      <div class="flex justify-between border-bottom">
+                        <h5 class="fr-text--sm fr-my-0 fr-p-2v">
+                          {{ $t("Label") }}
+                        </h5>
+                        <button
+                          type="button"
+                          :title="$t('Fermer')"
+                          class="border-l border-gray-default w-10 text-[1.2rem] flex items-center justify-center"
+                          data-testid="label-toggletip-close-button"
+                          @click="close"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                      <div
+                        class="py-2 px-4"
+                        data-testid="label-toggletip-content"
+                      >
+                        {{
+                          $t(
+                            "Certains jeux de données bénéficient d’un ou plusieurs labels reconnus au niveau national, européen ou international.",
+                          )
+                        }}
+                        <br>
+                        {{
+                          $t(
+                            "Ces labels peuvent signaler une valeur réglementaire ou une importance stratégique.",
+                          )
+                        }}
+                      </div>
+                      <div
+                        v-if="config.public.guidesLabelsUrl"
+                        class="w-full text-right py-2 px-4"
+                        target="_blank"
+                      >
+                        <a :href="config.public.guidesLabelsUrl">{{
+                          $t("Voir les labels de données")
+                        }}</a>
+                      </div>
+                    </template>
+                  </Toggletip>
+                  {{ $t("Label") }}
+                </dt>
+                <dd
+                  class="p-0 text-sm flex flex-wrap gap-1"
+                  data-testid="label-list"
+                >
+                  <LabelTag
+                    v-for="badge in badges"
+                    :key="badge.kind"
+                    :badge
+                    :url="`/datasets/search?badge=${badge.kind}`"
+                  />
+                </dd>
+              </div>
+
               <SimpleBanner
                 v-if="hideWarnings"
                 type="primary-frame"
                 class="text-sm"
               >
-                {{ $t("La qualité des métadonnées peut être trompeuse car les métadonnées de la source originale peuvent avoir été perdues lors de leur récupération. Nous travaillons actuellement à améliorer la situation.") }}
+                {{
+                  $t(
+                    "La qualité des métadonnées peut être trompeuse car les métadonnées de la source originale peuvent avoir été perdues lors de leur récupération. Nous travaillons actuellement à améliorer la situation.",
+                  )
+                }}
               </SimpleBanner>
 
               <SimpleBanner
@@ -220,20 +302,25 @@
                 </CdataLink>
               </SimpleBanner>
               <SimpleBanner
-                v-if="'transport:url' in dataset.extras && dataset.extras['transport:url']"
+                v-if="
+                  'transport:url' in dataset.extras
+                    && dataset.extras['transport:url']
+                "
                 type="primary-frame"
               >
-                <i18n-t
+                <TranslationT
                   keypath="Consulter ce jeu de données sur {link} pour bénéficier d'informations supplémentaires : validations, visualisations, etc."
                   tag="p"
                   class="!m-0 text-sm"
                 >
                   <template #link>
                     <CdataLink :href="dataset.extras['transport:url']">
-                      {{ $t("le Point d'Accès National aux données de mobilités") }}
+                      {{
+                        $t("le Point d'Accès National aux données de mobilités")
+                      }}
                     </CdataLink>
                   </template>
-                </i18n-t>
+                </TranslationT>
               </SimpleBanner>
             </dl>
           </div>
@@ -247,14 +334,34 @@
         <FullPageTabs
           class="mt-12"
           :links="[
-            { label: $t('Fichiers'), href: `/datasets/${route.params.did}/`, count: dataset.resources.total },
-            { label: $t('Réutilisations et API'), href: `/datasets/${route.params.did}/reuses_and_dataservices`, count: (dataset.metrics.dataservices || 0) + (dataset.metrics.reuses || 0) },
-            { label: $t('Discussions'), href: `/datasets/${route.params.did}/discussions`, count: dataset.metrics.discussions ?? 0 },
-            { label: $t('Ressources communautaires'), href: `/datasets/${route.params.did}/community-resources` },
-            { label: $t('Informations'), href: `/datasets/${route.params.did}/informations` },
+            {
+              label: $t('Fichiers'),
+              href: `/datasets/${route.params.did}/`,
+              count: dataset.resources.total,
+            },
+            {
+              label: $t('Réutilisations et API'),
+              href: `/datasets/${route.params.did}/reuses_and_dataservices`,
+              count:
+                (dataset.metrics.dataservices || 0)
+                + (dataset.metrics.reuses || 0),
+            },
+            {
+              label: $t('Discussions'),
+              href: `/datasets/${route.params.did}/discussions`,
+              count: dataset.metrics.discussions ?? 0,
+            },
+            {
+              label: $t('Ressources communautaires'),
+              href: `/datasets/${route.params.did}/community-resources`,
+            },
+            {
+              label: $t('Informations'),
+              href: `/datasets/${route.params.did}/informations`,
+            },
           ]"
         />
-        <div class="bg-white pt-5 pb-8 lg:pb-24 ">
+        <div class="bg-white pt-5 pb-8 lg:pb-24">
           <NuxtPage
             v-if="dataset"
             class="container"
@@ -267,8 +374,27 @@
 </template>
 
 <script setup lang="ts">
-import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, type Resource, BrandedButton, useFormatDate, StatBox } from '@datagouv/components-next'
-import { RiDeleteBinLine, RiExternalLinkFill, RiLockLine } from '@remixicon/vue'
+import {
+  ReadMore,
+  AvatarWithName,
+  type DatasetV2WithFullObject,
+  SimpleBanner,
+  DatasetQuality,
+  isOrganizationCertified,
+  type Resource,
+  BrandedButton,
+  useFormatDate,
+  StatBox,
+  Toggletip,
+  type TranslatedBadge,
+  LabelTag,
+} from '@datagouv/components-next'
+import {
+  RiDeleteBinLine,
+  RiExternalLinkFill,
+  RiLockLine,
+} from '@remixicon/vue'
+import { TranslationT } from '@datagouv/components-next'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
@@ -290,6 +416,7 @@ const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
     'X-Get-Datasets-Full-Objects': 'True',
   },
   redirectOn404: true,
+  redirectOnSlug: 'did',
 })
 
 const title = computed(() => dataset.value?.title)
@@ -302,28 +429,58 @@ const hideWarnings = computed(() => {
   if (!dataset.value.harvest) return false
   if (!dataset.value.harvest.backend) return false
 
-  return config.public.harvestBackendsForHidingQuality.includes(dataset.value.harvest.backend)
+  return config.public.harvestBackendsForHidingQuality.includes(
+    dataset.value.harvest.backend,
+  )
 })
 
 const hasContactPointsWithSpecificRole = computed(() => {
-  return dataset.value.contact_points.some(contactPoint => contactPoint.role !== 'contact')
+  return dataset.value.contact_points.some(
+    contactPoint => contactPoint.role !== 'contact',
+  )
 })
 
-await useJsonLd('dataset', route.params.did)
+await useJsonLd('dataset', route.params.did as string)
 
 onMounted(async () => {
   await redirectLegacyHashes([
-    { from: 'resources', to: `/datasets/${route.params.did}/`, queryParam: 'resource_id' },
-    { from: 'resource', to: `/datasets/${route.params.did}/`, queryParam: 'resource_id' },
-    { from: 'community-reuses', to: `/datasets/${route.params.did}/reuses_and_dataservices/` },
-    { from: 'discussions', to: `/datasets/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
-    { from: 'discussion', to: `/datasets/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
-    { from: 'community-resources', to: `/datasets/${route.params.did}/community-resources/`, queryParam: 'resource_id' },
+    {
+      from: 'resources',
+      to: `/datasets/${route.params.did}/`,
+      queryParam: 'resource_id',
+    },
+    {
+      from: 'resource',
+      to: `/datasets/${route.params.did}/`,
+      queryParam: 'resource_id',
+    },
+    {
+      from: 'community-reuses',
+      to: `/datasets/${route.params.did}/reuses_and_dataservices/`,
+    },
+    {
+      from: 'discussions',
+      to: `/datasets/${route.params.did}/discussions/`,
+      queryParam: 'discussion_id',
+    },
+    {
+      from: 'discussion',
+      to: `/datasets/${route.params.did}/discussions/`,
+      queryParam: 'discussion_id',
+    },
+    {
+      from: 'community-resources',
+      to: `/datasets/${route.params.did}/community-resources/`,
+      queryParam: 'resource_id',
+    },
     { from: 'information', to: `/datasets/${route.params.did}/informations/` },
   ])
 })
 
-const { data: resources } = await useAPI<PaginatedArray<Resource>>(`/api/2/datasets/${route.params.did}/resources/`, { query: { type: 'main' } })
+const { data: resources } = await useAPI<PaginatedArray<Resource>>(
+  `/api/2/datasets/${route.params.did}/resources/`,
+  { query: { type: 'main' } },
+)
 const exploreUrl = computed(() => {
   if (!resources.value) return null
   for (const resource of resources.value.data) {
@@ -335,23 +492,46 @@ const exploreUrl = computed(() => {
 
 const datasetVisits = ref<Record<string, number>>({})
 const datasetDownloadsResources = ref<Record<string, number>>({})
+const { data: badgeTranslations } = await useAPI<Record<string, string>>(
+  '/api/1/datasets/badges',
+)
+
+const badges = computed(() =>
+  dataset.value.badges.map<TranslatedBadge>(b => ({
+    ...b,
+    label: badgeTranslations.value[b.kind],
+  })),
+)
 
 const datasetVisitsTotal = ref(0)
 const datasetDownloadsResourcesTotal = ref(0)
 
+const metricsSince = computed(() => {
+  // max of the start of metrics computing and the creation of the dataset on the platform
+  return [dataset.value.internal.created_at_internal, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
+})
+
 watchEffect(async () => {
-  if (!dataset.value.id) return
+  if (!dataset.value || !dataset.value.id) return
   // Fetching last 12 months
-  const response = await fetch(`${config.public.metricsApi}/api/datasets/data/?dataset_id__exact=${dataset.value.id}&metric_month__sort=desc&page_size=12`)
+  const response = await fetch(
+    `${config.public.metricsApi}/api/datasets/data/?dataset_id__exact=${dataset.value.id}&metric_month__sort=desc&page_size=12`,
+  )
   const page = await response.json()
 
-  for (const { metric_month, monthly_visit, monthly_download_resource } of page.data) {
+  for (const {
+    metric_month,
+    monthly_visit,
+    monthly_download_resource,
+  } of page.data) {
     datasetVisits.value[metric_month] = monthly_visit
     datasetDownloadsResources.value[metric_month] = monthly_download_resource
   }
   // Fetching totals
   if (page.data[0]) {
-    const totalResponse = await fetch(`${config.public.metricsApi}/api/datasets_total/data/?dataset_id__exact=${dataset.value.id}`)
+    const totalResponse = await fetch(
+      `${config.public.metricsApi}/api/datasets_total/data/?dataset_id__exact=${dataset.value.id}`,
+    )
     const totalPage = await totalResponse.json()
 
     datasetVisitsTotal.value = totalPage.data[0].visit

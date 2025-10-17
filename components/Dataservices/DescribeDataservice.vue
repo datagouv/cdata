@@ -156,6 +156,24 @@
 
         <RequiredExplanation />
         <fieldset
+          v-if="isMeAdmin() && type === 'update'"
+          class="fr-fieldset"
+        >
+          <legend
+            id="featured-legend"
+            class="fr-fieldset__legend"
+          >
+            <h2 class="text-sm font-bold uppercase mb-3">
+              {{ $t("Mis en avant") }}
+            </h2>
+          </legend>
+          <ToggleSwitch
+            v-model="form.featured"
+            :label="$t('Mettre en avant')"
+            @update:model-value="$emit('feature')"
+          />
+        </fieldset>
+        <fieldset
           v-if="type === 'create'"
           class="fr-fieldset"
           aria-labelledby="description-legend"
@@ -472,7 +490,7 @@
             size="lg"
             :opened="openConfirmModal"
           >
-            <i18n-t
+            <TranslationT
               keypath="Une documentation OpenAPI/swagger est un standard attendu par les utilisateurs d'API. Ce format est facile à mettre en place, vous pouvez utiliser l'éditeur officiel : {editor}."
               tag="p"
             >
@@ -482,7 +500,7 @@
                   class="whitespace-nowrap"
                 > https://editor.swagger.io/</a>
               </template>
-            </i18n-t>
+            </TranslationT>
 
             <p>{{ $t(`Si néanmoins vous souhaitez tout de même publier votre API sans ce standard, celle-ci sera moins mise en avant par le moteur de recherche de {site}.`, { site: config.public.title }) }}</p>
 
@@ -516,9 +534,11 @@
 import { BrandedButton, SimpleBanner, type DataserviceAccessAudienceCondition, type DataserviceAccessAudienceType } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import { computed } from 'vue'
+import { TranslationT } from '@datagouv/components-next'
 import ModalClient from '../Modal/Modal.client.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
+import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ContactPointSelect from '~/components/ContactPointSelect.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import type { DataserviceForm, Owned } from '~/types/types'
@@ -531,10 +551,10 @@ const props = defineProps<{
 const dataserviceForm = defineModel<DataserviceForm>({ required: true })
 
 const emit = defineEmits<{
-  (event: 'submit'): void
+  (event: 'feature' | 'submit'): void
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const formId = useId()
 
@@ -573,6 +593,7 @@ const machineDocumentationUrlWarningMessage = t(`Il est fortement recommandé d'
 const openConfirmModal = ref(false)
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(dataserviceForm, {
+  featured: [],
   owned: [required()],
   title: [required()],
   description: [required()],

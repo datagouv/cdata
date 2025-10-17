@@ -110,28 +110,28 @@
 
 <script setup lang="ts">
 import { AvatarWithName, BrandedButton, summarize, useFormatDate } from '@datagouv/components-next'
-import type { Reuse } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
+import type { Activity, Reuse } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
-import type { Activity } from '~/types/activity'
 import type { ReuseSortedBy, SortDirection } from '~/types/types'
 
-const props = defineProps<{
-  activities: Record<string, Activity>
+const props = withDefaults(defineProps<{
+  activities?: Record<string, Activity>
   reuses: Array<Reuse>
   sortedBy: ReuseSortedBy
   sortDirection: SortDirection
-}>()
+}>(), {
+  activities: () => ({}),
+})
 
 defineEmits<{
   (event: 'sort', column: ReuseSortedBy, direction: SortDirection): void
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const { getReuseStatus } = useReuseStatus()
 

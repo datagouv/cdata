@@ -1,6 +1,6 @@
 <template>
   <article
-    class="my-4 p-4 bg-white border fr-enlarge-link"
+    class="my-4 p-4 bg-white hover:bg-gray-some border fr-enlarge-link"
     :class="{
       'border-tabular-api': isTabularApi,
       'border-gray-default': !isTabularApi,
@@ -89,6 +89,7 @@
         {{ ownerName }}
       </p>
       <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
+      <!-- This comment is only here to fix this issue https://github.com/datagouv/cdata/issues/653, it could be empty… -->
       <p class="text-sm whitespace-nowrap mb-0">
         {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataservice.metadata_modified_at, { dateStyle: 'medium' }) }) }}
       </p>
@@ -127,7 +128,6 @@
 
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
 import { RiEyeLine, RiLockLine, RiPassValidLine, RiSparklingLine, RiStarLine, RiSubtractLine, RiTerminalLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../config'
@@ -136,32 +136,35 @@ import { summarize } from '../functions/helpers'
 import { removeMarkdown } from '../functions/markdown'
 import { getOwnerName } from '../functions/owned'
 import type { Dataservice } from '../types/dataservices'
+import { useTranslation } from '../composables/useTranslation'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import AppLink from './AppLink.vue'
 
-  type Props = {
-    dataservice: Dataservice
+type Props = {
+  dataservice: Dataservice
 
-    /**
+  /**
      * The dataserviceUrl is a route location object to allow Vue Router to navigate to the details of a dataservice.
      * It is used as a separate prop to allow other sites using the package to define their own dataservice pages.
      */
-    dataserviceUrl: RouteLocationRaw
+  dataserviceUrl?: RouteLocationRaw
 
-    /**
+  /**
      * The organizationUrl is an optional route location object to allow Vue Router to navigate to the details of the organization linked to tha dataservice.
      * It is used as a separate prop to allow other sites using the package to define their own organization pages.
      */
-    organizationUrl?: RouteLocationRaw
-    showDescription?: boolean
-  }
+  organizationUrl?: RouteLocationRaw
+  showDescription?: boolean
+}
 
 const props = withDefaults(defineProps<Props>(), {
   style: () => ({}),
   showDescription: true,
 })
 
-const { t } = useI18n()
+const dataserviceUrl = computed(() => props.dataserviceUrl || props.dataservice.self_web_url)
+
+const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
 const ownerName = computed(() => getOwnerName(props.dataservice))
 const showBadge = computed(() => props.dataservice.access_type === 'restricted' || props.dataservice.access_type === 'open_with_account' || props.dataservice.private || props.dataservice.archived_at)

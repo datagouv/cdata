@@ -57,11 +57,13 @@
             <ComboboxButton
               v-if="! open"
               class="w-full h-full hover:!bg-transparent"
+              :data-testid="`searchable-select-${simpleSlug(label)}`"
             />
             <button
               v-if="showClearButton"
               type="button"
               class="p-2"
+              :title="$t('Clear')"
               @click.prevent="model = null"
             >
               <RiDeleteBinLine class="size-4 text-gray-800" />

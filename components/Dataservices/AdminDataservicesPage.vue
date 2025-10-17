@@ -89,20 +89,18 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { Pagination, type Dataservice, type Organization, type User } from '@datagouv/components-next'
+import { BrandedButton, Pagination } from '@datagouv/components-next'
+import type { Activity, Dataservice, Organization, User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiDownloadLine, RiSearchLine } from '@remixicon/vue'
 import AdminInput from '../AdminInput.vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
 import AdminDataservicesTable from '~/components/AdminTable/AdminDataservicesTable/AdminDataservicesTable.vue'
 import type { DataserviceSortedBy, PaginatedArray, SortDirection } from '~/types/types'
-import type { Activity } from '~/types/activity'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const config = useRuntimeConfig()
@@ -141,7 +139,7 @@ const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Dataserv
 
 watchEffect(async () => {
   if (pageData.value) {
-    const activities = await getActitiesForObjects($api, pageData.value.data)
+    const activities = await getLatestActivitiesForObjects($api, pageData.value.data)
     dataserviceActivities.value = { ...dataserviceActivities.value, ...activities }
   }
 })

@@ -18,6 +18,10 @@ app.use(datagouv, {
 })
 ```
 
+### Layout
+
+To use the `Toggletip` component you should add a `<div id="tooltips" />` in your layout.
+
 ### Special functions and components (only for Nuxt)
 
 Nuxt is a special environment (both server and browser) and requires some special functions and components to work.
@@ -32,7 +36,7 @@ const runtimeConfig = useRuntimeConfig()
 app.vueApp.use(datagouv, {
     // These are the same as above…
     name: runtimeConfig.public.title,
-    baseUrl: runtimeConfig.public.i18n.baseUrl,
+    baseUrl: runtimeConfig.public.baseUrl,
     apiBase: runtimeConfig.public.apiBase,
     devApiKey: runtimeConfig.public.devApiKey,
 
@@ -45,10 +49,14 @@ app.vueApp.use(datagouv, {
     // Nuxt doesn't like `TextClamp` in the server, provides the client only `TextClamp`
     textClamp: TextClamp,
 
-    // Provide the component to create links inside the application
-    // This component will receive the raw link (without i18n prefix)
+    // The following properties allow to provide components specific to Nuxt.
+
+    // This `appLink` component will receive the raw link (without i18n prefix)
     // and needs to add it.
     appLink: CdataLink,
+    
+    // The ClientOnly allow to disable SSR for some components.
+    clientOnly: ClientOnly,
 })
 ```
 
@@ -61,21 +69,11 @@ app.vueApp.use(datagouv, {
 
 ### I18n
 
-`@datagouv/components` is using [`vue-i18n`](https://vue-i18n.intlify.dev/) to provide internationalisation. As always, there are two modes:
+`@datagouv/components` is using a few custom functions to provide internationalisation:
+- `$t()` inside templates
+- `const { t } = useTranslation()` inside JS
+- `<TranslationT keypath="xxx"></TranslationT>` for putting HTML inside text
 
-1. If the user is using Nuxt, it can simply add the locales files in the `nuxt.config.ts`
-
-```ts
-{
-    code: 'fr',
-    language: 'fr',
-    files: ['fr-FR.json', '../../node_modules/@datagouv/components-next/src/locales/fr.json'],
-},
-```
-
-Nuxt is responsible for building the JSON file to the correct `vue-i18n` JS format.
-
-2. If the user is not using Nuxt, it should provide the i18n object to the `datagouv` Vue plugin. The plugin will then merge the already built messages's files.
 
 ### `Suspense`
 
@@ -160,6 +158,37 @@ const config = useComponentsConfig()
 To do links in the application you can use the `<AppLink>` component. Not sure why it's required. Maybe we could always use a `<RouterLink>` from [`vue-router`](https://router.vuejs.org/) since every user is using `vue-router`? I think it's useful to add lang prefix to links but it's not done yet? Need testing.
 
 Maybe this component shouldn't be exposed too, because I don't know why a user should use this instead of their own component (`<RouterLink>` or `<CdataLink>`…)
+
+## Release
+
+This package is available as `@datagouv/components-next` on [npm](https://www.npmjs.com/package/@datagouv/components-next).
+
+It follows the [semantic versioning specification](https://semver.org/).
+
+To make a new release, you have to :
+1. update the version
+2. publish to npm
+3. Commit and push the version change
+
+### Update the version
+
+Use the dedicated npm command, with the correct parameter :
+
+```
+npm version VERSION
+```
+
+Where VERSION is :
+- `major` when you make incompatible API changes
+- `minor` when you add functionality in a backward compatible manner
+- `patch` version when you make backward compatible bug fixes
+Additional labels for pre-release and build metadata are available as extensions to the MAJOR.MINOR.PATCH format.
+
+### Publish to NPM
+
+```
+npm run publish-stable
+```
 
 ## 📄 License
 

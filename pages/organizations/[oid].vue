@@ -100,7 +100,7 @@ const route = useRoute()
 const me = useMaybeMe()
 
 const url = computed(() => `/api/1/organizations/${route.params.oid}/`)
-const { data: organization, status } = await useAPI<Organization>(url, { redirectOn404: true })
+const { data: organization, status } = await useAPI<Organization>(url, { redirectOn404: true, redirectOnSlug: 'oid' })
 
 const title = computed(() => organization.value?.name)
 const robots = computed(() => organization.value && !organization.value.metrics.dataservices && !organization.value.metrics.datasets && !organization.value.metrics.reuses ? 'noindex, nofollow' : 'all')

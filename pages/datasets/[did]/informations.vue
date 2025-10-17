@@ -127,7 +127,7 @@
           </div>
         </div>
         <p class="text-sm">
-          <i18n-t keypath="Les schémas de données permettent de décrire des modèles de données, découvrez comment les schémas améliorent la qualité des données et quels sont les cas d'usages possibles sur {link}">
+          <TranslationT keypath="Les schémas de données permettent de décrire des modèles de données, découvrez comment les schémas améliorent la qualité des données et quels sont les cas d'usages possibles sur {link}">
             <template #link>
               <CdataLink
                 :to="config.public.schemasSite.url"
@@ -136,7 +136,7 @@
                 {{ config.public.schemasSite.name }}
               </CdataLink>
             </template>
-          </i18n-t>
+          </TranslationT>
         </p>
       </div>
     </div>
@@ -193,11 +193,10 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, CopyButton, DateRangeDetails, useFormatDate, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
+import { BrandedButton, CopyButton, DateRangeDetails, ExtraAccordion, getDatasetOEmbedHtml, useFormatDate, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
 import { RiBook2Line, RiCheckboxCircleLine, RiServerLine } from '@remixicon/vue'
+import { TranslationT } from '@datagouv/components-next'
 import LeafletMapClient from '~/components/LeafletMap.client.vue'
-import ExtraAccordion from '~/datagouv-components/src/components/ExtraAccordion.vue'
-import getDatasetOEmbedHtml from '~/datagouv-components/src/functions/datasets'
 
 const props = defineProps<{ dataset: DatasetV2WithFullObject }>()
 

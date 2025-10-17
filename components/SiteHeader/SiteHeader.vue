@@ -21,8 +21,14 @@
           <div class="fr-header__brand fr-enlarge-link">
             <div class="fr-header__brand-top">
               <div class="fr-header__logo">
-                <p class="fr-logo">
+                <p
+                  v-if="appConfig.isFrenchGovernment"
+                  class="fr-logo"
+                >
                   République <br>Française
+                </p>
+                <p v-else>
+                  Add Your logo
                 </p>
               </div>
               <div class="lg:!hidden flex flex-row items-start justify-end p-1 -mr-1 mt-1 order-3 flex-1 self-stretch z-[1000] gap-3">
@@ -65,7 +71,7 @@
                       <RiMenuLine class="size-6" />
                     </button>
                   </template>
-                  <template #default>
+                  <template #default="{ close }">
                     <div>
                       <div class="fr-container fr-header__menu-links">
                         <ul
@@ -78,11 +84,13 @@
                               color="primary-softer"
                               :icon="NuxtImg"
                               :icon-attrs="{
-                                src: getUserAvatar(me, 24),
-                                loading: 'lazy',
-                                alt: '',
-                                class: 'rounded-full',
+                                'src': getUserAvatar(me, 24),
+                                'loading': 'lazy',
+                                'alt': '',
+                                'class': 'rounded-full',
+                                'data-testid': 'user-avatar',
                               }"
+                              @click="close"
                             >
                               {{ me.first_name }} {{ me.last_name }}
                             </BrandedButton>
@@ -93,6 +101,7 @@
                               :external="true"
                               color="primary-softer"
                               :icon="RiSettings3Line"
+                              @click="close"
                             >
                               {{ $t("Administration") }}
                             </BrandedButton>
@@ -103,7 +112,7 @@
                               type="button"
                               :icon="RiLogoutBoxRLine"
                               color="primary-softer"
-                              @click="logout"
+                              @click="async () => { (await logout()); close() }"
                             >
                               {{ $t('Se déconnecter') }}
                             </BrandedButton>
@@ -113,6 +122,7 @@
                               :icon="RiLogoutBoxRLine"
                               :external="true"
                               color="primary-softer"
+                              @click="close"
                             >
                               {{ $t('Se déconnecter') }}
                             </BrandedButton>
@@ -130,6 +140,7 @@
                               :external="true"
                               :icon="RiLockLine"
                               class="w-full"
+                              @click="close"
                             >
                               {{ $t("Se connecter") }}
                             </BrandedButton>
@@ -142,6 +153,7 @@
                               :external="true"
                               class="w-full"
                               :icon="RiAccountCircleLine"
+                              @click="close"
                             >
                               {{ $t("S'enregistrer") }}
                             </BrandedButton>
@@ -165,7 +177,8 @@
                               :to="link.link"
                               target="_self"
                               :external="link.external"
-                              :aria-current="getAriaCurrent(localePath(link.link))"
+                              :aria-current="getAriaCurrent(link.link)"
+                              @click="close"
                             >
                               {{ link.label }}
                             </CdataLink>
@@ -189,6 +202,7 @@
                                         class="fr-nav__link"
                                         :to="item.link"
                                         :external="true"
+                                        @click="close"
                                       >
                                         {{ item.label }}
                                       </DisclosureButton>
@@ -209,7 +223,7 @@
                                   <RiAddLine class="size-4 mr-1" />
                                   <span>
                                     {{ $t('Publier sur') }}
-                                    <SiteLogo />
+                                    <LogoAsText />
                                   </span>
                                 </DisclosureButton>
                                 <DisclosurePanel
@@ -248,7 +262,7 @@
                 href="/"
                 :title="$t(`Retourner à l'accueil de data.gouv.fr`)"
               >
-                <SiteLogo class="text-gray-logo text-xl tracking-wide" />
+                <LogoImage class="h-12" />
               </a>
             </div>
           </div>
@@ -262,10 +276,11 @@
                       color="primary-softer"
                       :icon="NuxtImg"
                       :icon-attrs="{
-                        src: getUserAvatar(me, 24),
-                        loading: 'lazy',
-                        alt: '',
-                        class: 'rounded-full',
+                        'src': getUserAvatar(me, 24),
+                        'loading': 'lazy',
+                        'alt': '',
+                        'class': 'rounded-full',
+                        'data-testid': 'user-avatar',
                       }"
                     >
                       {{ me.first_name }} {{ me.last_name }}
@@ -363,7 +378,7 @@
                 :to="link.link"
                 target="_self"
                 :external="link.external"
-                :aria-current="getAriaCurrent(localePath(link.link))"
+                :aria-current="getAriaCurrent(link.link)"
               >
                 {{ link.label }}
               </CdataLink>
@@ -406,7 +421,7 @@
                     <RiAddLine class="inline size-4 mr-1" />
                     <span>
                       {{ $t('Publier sur') }}
-                      <SiteLogo />
+                      <LogoAsText />
                     </span>
                   </PopoverButton>
                   <PopoverPanel
@@ -445,21 +460,23 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getUserAvatar } from '@datagouv/components-next'
+import { BrandedButton, useGetUserAvatar } from '@datagouv/components-next'
 import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
+import LogoAsText from '../LogoAsText.vue'
+import LogoImage from '../LogoImage.vue'
 import { NuxtImg } from '#components'
-import SiteLogo from '~/components/SiteLogo.vue'
-import { useMaybeMe } from '~/utils/auth'
+import { useLogout, useMaybeMe } from '~/utils/auth'
 
 defineProps<{
   fluid?: boolean
 }>()
 
-const { t } = useI18n()
+const getUserAvatar = useGetUserAvatar()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
-const localePath = useLocalePath()
+const appConfig = useAppConfig()
 const me = useMaybeMe()
 const currentRoute = useRoute()
 const router = useRouter()
@@ -475,6 +492,7 @@ const menu = [
     { label: t('Comment publier des données ?'), link: '/pages/onboarding/producteurs/' },
     { label: t('Comment utiliser des données ?'), link: '/pages/onboarding/reutilisateurs/' },
     { label: t('Les guides {site}', { site: config.public.title }), link: config.public.guidesUrl, external: true },
+    { label: t('Nos produits'), link: '/products/' },
   ], external: true },
   { label: t('Nouveautés'), link: '/posts/' },
   { label: t('Nous écrire'), link: '/support/' },
@@ -499,18 +517,10 @@ function getAriaCurrent(link: string) {
   return routesInPath.includes(link)
 }
 
-const { $api } = useNuxtApp()
-const token = useToken()
+const doLogout = useLogout()
 const logout = async () => {
-  token.value = null
-  refreshCookie('token')
-
-  await $api('/fr/logout/', {
-    method: 'POST',
-  })
-
-  me.value = null
-  await navigateTo('/')
+  doLogout()
+  toast.success(t('Vous avez été déconnecté.'))
 }
 
 const { toast } = useToast()
@@ -518,16 +528,32 @@ onMounted(() => {
   // TODO: remove this logic when we don't rely on udata flash messages
   // following https://github.com/opendatateam/udata/pull/3348
   const FLASH_MESSAGES: Record<string, { type: 'success' | 'error', text: string }> = {
+    logout: { type: 'success', text: t('Vous êtes maintenant déconnecté.') },
     connected: { type: 'success', text: t('Vous êtes maintenant connecté.') },
     change_email: { type: 'success', text: t('Merci. Les instructions de confirmation pour changer votre adresse email ont été envoyées à l\'adresse mail cible.') },
+    post_confirm: { type: 'success', text: t('Votre adresse email est maintenant confirmée. Vous êtes maintenant connecté.') },
     change_email_confirmed: { type: 'success', text: t('Votre nouvelle adresse email est maintenant confirmée.') },
     change_email_expired: { type: 'error', text: t('Le code de vérification de votre adresse email a expiré, un nouveau mail vous a été envoyé.') },
     change_email_invalid: { type: 'error', text: t('Le code de vérification de votre adresse email est incorrect.') },
   }
 
   if (route.query.flash) {
-    const message = FLASH_MESSAGES[route.query.flash as string] || null
-    if (message) toast[message.type](message.text)
+    let message = null as { type: 'success' | 'error' | 'info', text: string } | null
+    if (route.query.flash === 'confirm_error') {
+      if (route.query.info) {
+        message = { type: 'info', text: route.query.info as string }
+      }
+      if (route.query.error) {
+        message = { type: 'error', text: route.query.error as string }
+      }
+    }
+    else {
+      message = FLASH_MESSAGES[route.query.flash as string] || null
+    }
+
+    if (message) {
+      toast[message.type](message.text)
+    }
   }
 })
 </script>

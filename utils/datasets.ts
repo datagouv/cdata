@@ -1,12 +1,13 @@
-import { type Dataset, type DatasetV2, type Frequency, type License, type RegisteredSchema, type Resource, type CommunityResource, type Schema, throwOnNever } from '@datagouv/components-next'
+import type { Dataset, DatasetV2, RegisteredSchema, Resource, CommunityResource, Schema, DatasetV2WithFullObject } from '@datagouv/components-next'
+import { throwOnNever, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
 import type { FetchError } from 'ofetch'
 import { v4 as uuidv4 } from 'uuid'
 
-import type { CommunityResourceForm, DatasetForm, DatasetSuggest, FileInfo, NewDatasetForApi, ResourceForm, SpatialGranularity, SpatialZone } from '~/types/types'
+import type { CommunityResourceForm, DatasetForm, DatasetSuggest, FileInfo, NewDatasetForApi, ResourceForm } from '~/types/types'
 
 export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceForm>) {
   const isRemote = computed(() => toValue(file).filetype === 'remote')
-  const { t } = useI18n()
+  const { t } = useTranslation()
   const config = useRuntimeConfig()
 
   return useForm(file, {
@@ -15,7 +16,7 @@ export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceF
     url: [ruleIf(isRemote, required())],
     format: [ruleIf(isRemote, required())],
   }, {
-    description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
+    description: [minLength(DESCRIPTION_MIN_LENGTH, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: DESCRIPTION_MIN_LENGTH }))],
     title: [testNotAllowed(config.public.demoServer?.name)],
   })
 }
@@ -37,19 +38,20 @@ export function getDatasetAdminUrl(dataset: Dataset | DatasetV2): string {
   return `/admin/datasets/${dataset.id}`
 }
 
-export function datasetToForm(dataset: Dataset | DatasetV2, licenses: Array<License>, frequencies: Array<Frequency>, zones: Array<SpatialZone>, granularities: Array<SpatialGranularity>): DatasetForm {
+export function datasetToForm(dataset: DatasetV2WithFullObject): DatasetForm {
   return {
     owned: dataset.organization ? { organization: dataset.organization, owner: null } : { owner: dataset.owner, organization: null },
     title: dataset.title,
     description: dataset.description,
+    description_short: dataset.description_short,
     acronym: dataset.acronym,
     tags: dataset.tags?.map(text => ({ text })) || [],
-    license: licenses.find(l => l.id === dataset.license) || null,
+    license: dataset.license || null,
     contact_points: dataset.contact_points ?? [],
-    frequency: frequencies.find(f => f.id === dataset.frequency) || null,
+    frequency: dataset.frequency || null,
     temporal_coverage: dataset.temporal_coverage ? { start: dataset.temporal_coverage.start, end: dataset.temporal_coverage.end } : { start: null, end: null }, // TODO fix this type, the API returns an object not a string
-    spatial_zones: dataset.spatial?.zones?.map(id => zones.find(z => z.id === id)).filter(z => z !== undefined) || [],
-    spatial_granularity: granularities.find(g => g.id === dataset.spatial?.granularity) || null,
+    spatial_zones: dataset.spatial?.zones || [],
+    spatial_granularity: dataset.spatial?.granularity || null,
     private: dataset.private,
     featured: dataset.featured,
   }
@@ -57,6 +59,7 @@ export function datasetToForm(dataset: Dataset | DatasetV2, licenses: Array<Lice
 
 export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, private?: boolean, archived?: string | null } = {}): NewDatasetForApi {
   const contactPoints = form.contact_points?.filter(cp => cp !== null && 'id' in cp).map(cp => cp.id) ?? []
+
   return {
     organization: form.owned?.organization?.id,
     owner: form.owned?.owner?.id,
@@ -65,6 +68,7 @@ export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, pri
     archived: overrides.archived,
     deleted: overrides.deleted,
     description: form.description,
+    description_short: form.description_short,
     acronym: form.acronym,
     tags: form.tags.map(t => t.text),
     license: form.license?.id || '',
@@ -78,7 +82,7 @@ export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, pri
       : undefined,
     spatial: (form.spatial_granularity || form.spatial_zones)
       ? {
-          zones: form.spatial_zones.length ? form.spatial_zones.map(z => z.id) : undefined,
+          zones: form.spatial_zones.length ? form.spatial_zones.map(z => z.id) : Array.isArray(form.spatial_zones) ? null : undefined,
           granularity: form.spatial_granularity ? form.spatial_granularity.id : undefined,
         }
       : undefined,
@@ -206,7 +210,8 @@ export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resou
 }
 
 export async function sendFile(url: string, resourceForm: ResourceForm | CommunityResourceForm, fileInfo: FileInfo): Promise<Resource | CommunityResource> {
-  const { $fileApi, $i18n } = useNuxtApp()
+  const { $fileApi } = useNuxtApp()
+  const { t } = useTranslation()
   const config = useRuntimeConfig()
 
   if (resourceForm.filetype !== 'file') {
@@ -281,7 +286,7 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
     return resource
   }
   catch (e) {
-    const notificationMessage = $i18n.t('Échec du téléchargement du fichier {title}', { title: resourceForm.title })
+    const notificationMessage = t('Échec du téléchargement du fichier {title}', { title: resourceForm.title })
     let formError = notificationMessage
     const fetchError = e as unknown as FetchError
     if ('data' in fetchError && fetchError.data && 'message' in fetchError.data) {

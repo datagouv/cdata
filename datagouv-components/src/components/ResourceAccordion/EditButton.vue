@@ -11,10 +11,10 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { RiPencilLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import BrandedButton from '../BrandedButton.vue'
+import { useTranslation } from '../../composables/useTranslation'
 
 type Props = {
   datasetId: string
@@ -26,7 +26,7 @@ const props = withDefaults(defineProps<Props>(), {
   isCommunityResource: false,
 })
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const adminUrl = computed(() => {
   if (props.isCommunityResource) {
