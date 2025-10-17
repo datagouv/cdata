@@ -661,7 +661,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Tooltip } from '@datagouv/components-next'
+import { BrandedButton, Tooltip, DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
 import { SimpleBanner, type Frequency, type License } from '@datagouv/components-next'
 import { RiAddLine, RiStarFill, RiLoader5Line, RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
@@ -671,7 +671,6 @@ import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone } from '~/types/types'
-import { DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 
@@ -787,7 +786,7 @@ const canGenerateDescriptionShort = computed(() => {
 async function handleAutoCompleteDescriptionShort() {
   try {
     isGeneratingDescriptionShort.value = true
-    
+
     // We call our server-side API route instead of Albert API directly to avoid CORS issues.
     // The Albert API doesn't allow direct requests from browser-side JavaScript.
     // Our server acts as a proxy, keeping the API key secure on the server side.
@@ -796,23 +795,23 @@ async function handleAutoCompleteDescriptionShort() {
       body: {
         title: form.value.title,
         description: form.value.description,
-        organization: form.value.owned?.organization?.name
-      }
+        organization: form.value.owned?.organization?.name,
+      },
     })
 
     form.value.description_short = response.descriptionShort || ''
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to generate short description:', error)
-  } finally {
+  }
+  finally {
     isGeneratingDescriptionShort.value = false
   }
 }
-
 
 async function submit() {
   if (await validate()) {
     emit('submit')
   }
 }
-
 </script>

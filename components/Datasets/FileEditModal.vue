@@ -63,10 +63,13 @@
                 {{ t('Valider') }}
               </BrandedButton>
             </template>
-            <div v-if="hasTabularApi" class="fr-mt-4w">
+            <div
+              v-if="hasTabularApi"
+              class="fr-mt-4w"
+            >
               <p>
-                {{ $t(`Attention : l'`) }} 
-                <a 
+                {{ $t(`Attention : l'`) }}
+                <a
                   :href="`https://tabular-api.data.gouv.fr/api/resources/${resource.resource?.id}/`"
                   target="_blank"
                   class="fr-link"
@@ -94,7 +97,7 @@
               </div>
             </template>
           </ModalWithButton>
-          
+
           <!-- Simple validation button if file hasn't changed -->
           <BrandedButton
             v-else
@@ -105,7 +108,7 @@
           >
             {{ t('Valider') }}
           </BrandedButton>
-          
+
           <BrandedButton
             color="secondary"
             :disabled="loading"
@@ -141,10 +144,13 @@
               <p class="fr-text--bold">
                 {{ $t('Cette action est irréversible.') }}
               </p>
-              <div v-if="hasTabularApi" class="fr-mt-4w">
+              <div
+                v-if="hasTabularApi"
+                class="fr-mt-4w"
+              >
                 <p>
-                  {{ $t('Attention : cette ressource est exposée via une') }} 
-                  <a 
+                  {{ $t('Attention : cette ressource est exposée via une') }}
+                  <a
                     href="https://www.data.gouv.fr/dataservices/api-tabulaire-data-gouv-fr-beta/"
                     target="_blank"
                     class="fr-link"
@@ -154,8 +160,8 @@
                   {{ $t('fournie par data.gouv.fr.') }}
                 </p>
                 <p>
-                  {{ $t('Si vous supprimez la ressource,') }} 
-                  <a 
+                  {{ $t('Si vous supprimez la ressource,') }}
+                  <a
                     :href="`https://tabular-api.data.gouv.fr/api/resources/${resource.resource?.id}/`"
                     target="_blank"
                     class="fr-link"
@@ -225,7 +231,7 @@ const hasFileChanged = ref(false)
 
 // Check if resource has tabular API
 const hasTabularApi = computed(() => {
-  return props.resource.resource?.extras?.['analysis:parsing:parsing_table'] 
+  return props.resource.resource?.extras?.['analysis:parsing:parsing_table']
     && !props.resource.resource?.extras?.['analysis:parsing:error']
 })
 
@@ -239,7 +245,8 @@ watch(() => {
   // console.log('[FileEditModal] File changed:', newFile ? `${newFile.name} (${newFile.size} bytes)` : 'null')
   if (newFile) {
     checkFileChange()
-  } else {
+  }
+  else {
     hasFileChanged.value = false
   }
 })
@@ -250,7 +257,7 @@ const checkFileChange = () => {
     hasFileChanged.value = false
     return
   }
-  
+
   const newFile = resourceForm.value.file.raw
   const original = props.resource.resource
 
@@ -258,9 +265,9 @@ const checkFileChange = () => {
   const sizeChanged = newFile.size !== original.filesize
   const nameChanged = newFile.name !== original.title
   const typeChanged = newFile.type !== original.mime
-  
+
   hasFileChanged.value = sizeChanged || nameChanged || typeChanged
-  
+
   // console.log('[FileEditModal] File change detection:', {
   //   newFile: { name: newFile.name, size: newFile.size, type: newFile.type },
   //   original: { title: original.title, filesize: original.filesize, mime: original.mime },
@@ -281,7 +288,7 @@ const setQueryString = () => {
 const removeQueryString = () => {
   if (!props.resource.resource) return
   window.history.replaceState(null, '', `${route.path}`)
-  
+
   // Reset the form when closing the modal to avoid false positives on next open
   resourceForm.value = cloneDeep(props.resource)
   hasFileChanged.value = false

@@ -1,19 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Albert API TypeScript Client
- * 
+ *
  * A comprehensive TypeScript client for interacting with the Albert API.
  * Based on the OpenAPI 3.1.0 specification.
- * 
+ *
  * Documentation:
  * - API Documentation: https://albert.api.etalab.gouv.fr/documentation
  * - Swagger UI: https://albert.api.etalab.gouv.fr/swagger
  */
 
 // TypeScript declaration for $fetch (globally available in Nuxt context)
-declare const $fetch: any
-
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+
+declare const $fetch: any
 
 export interface ChatMessage {
   role: string
@@ -27,7 +28,7 @@ export class AlbertAPIClient {
 
   /**
    * Initialize the Albert API client.
-   * 
+   *
    * @param albertApiBaseUrl - Base URL for the Albert API
    * @param albertApiKey - API key for authentication
    * @param timeout - Request timeout in seconds
@@ -35,21 +36,21 @@ export class AlbertAPIClient {
   constructor(
     albertApiBaseUrl: string,
     albertApiKey?: string,
-    timeout: number = 30
+    timeout: number = 30,
   ) {
     this.baseUrl = albertApiBaseUrl
     this.apiKey = albertApiKey
     this.timeout = timeout
     if (!this.apiKey) {
       throw new Error(
-        "API key is required. Set albertApiKey parameter or NUXT_ALBERT_API_KEY environment variable."
+        'API key is required. Set albertApiKey parameter or NUXT_ALBERT_API_KEY environment variable.',
       )
     }
   }
 
   /**
    * Make a request to the Albert API.
-   * 
+   *
    * @param method - HTTP method
    * @param endpoint - API endpoint
    * @param config - Additional request configuration
@@ -59,7 +60,7 @@ export class AlbertAPIClient {
   private async _make_request(
     method: string,
     endpoint: string,
-    config: any = {}
+    config: any = {},
   ): Promise<any> {
     const url = `${this.baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`
 
@@ -69,8 +70,8 @@ export class AlbertAPIClient {
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
-          ...config.headers
-        }
+          ...config.headers,
+        },
       }
       options.body = config.body ?? config.data
 
@@ -80,7 +81,7 @@ export class AlbertAPIClient {
       }
 
       // Add other config options (like params for GET requests)
-      Object.keys(config).forEach(key => {
+      Object.keys(config).forEach((key) => {
         if (key !== 'body' && key !== 'data' && key !== 'headers') {
           options[key] = config[key]
         }
@@ -94,12 +95,15 @@ export class AlbertAPIClient {
       }
 
       return response
-    } catch (error: any) {
+    }
+    catch (error: any) {
       if (error.response) {
         throw new Error(`API request failed: ${error.response.status} - ${error.response.statusText}`)
-      } else if (error.request) {
+      }
+      else if (error.request) {
         throw new Error(`API request failed: ${error.message}`)
-      } else {
+      }
+      else {
         throw new Error(`API request failed: ${error.message}`)
       }
     }
@@ -111,7 +115,7 @@ export class AlbertAPIClient {
 
   /**
    * Get list of available models.
-   * 
+   *
    * @returns Dictionary containing available models
    */
   async get_models(): Promise<any> {
@@ -120,7 +124,7 @@ export class AlbertAPIClient {
 
   /**
    * Get information about a specific model.
-   * 
+   *
    * @param model - Model name/ID
    * @returns Model information
    */
@@ -135,7 +139,8 @@ export class AlbertAPIClient {
     try {
       const models = await this.get_models()
       return models.data?.map((m: any) => m.id) || []
-    } catch (error: any) {
+    }
+    catch (error: any) {
       console.error(`Unable to get the list of Albert models: ${error.message}`)
       return []
     }
@@ -147,7 +152,7 @@ export class AlbertAPIClient {
 
   /**
    * Create a chat completion.
-   * 
+   *
    * @param messages - List of message dictionaries
    * @param model - Model to use for completion
    * @param kwargs - Additional parameters (temperature, max_tokens, etc.)
@@ -156,7 +161,7 @@ export class AlbertAPIClient {
   async chat_completions(
     messages: ChatMessage[],
     model: string,
-    kwargs: any = {}
+    kwargs: any = {},
   ): Promise<any> {
     const data = { messages, model, ...kwargs }
     return this._make_request('POST', '/v1/chat/completions', { body: data })
@@ -164,7 +169,7 @@ export class AlbertAPIClient {
 
   /**
    * Create an agent completion with MCP bridge tools.
-   * 
+   *
    * @param messages - List of message dictionaries
    * @param model - Model to use for completion
    * @param kwargs - Additional parameters
@@ -173,7 +178,7 @@ export class AlbertAPIClient {
   async agents_completions(
     messages: ChatMessage[],
     model: string,
-    kwargs: any = {}
+    kwargs: any = {},
   ): Promise<any> {
     const data = { messages, model, ...kwargs }
     return this._make_request('POST', '/v1/agents/completions', { body: data })
@@ -181,7 +186,7 @@ export class AlbertAPIClient {
 
   /**
    * Get available tools for agents.
-   * 
+   *
    * @returns Available tools
    */
   async get_agents_tools(): Promise<any> {
@@ -194,7 +199,7 @@ export class AlbertAPIClient {
 
   /**
    * Create embeddings for text.
-   * 
+   *
    * @param input_text - Text or list of texts to embed
    * @param model - Embedding model to use
    * @param kwargs - Additional parameters
@@ -203,7 +208,7 @@ export class AlbertAPIClient {
   async create_embeddings(
     input_text: string | string[],
     model: string,
-    kwargs: any = {}
+    kwargs: any = {},
   ): Promise<any> {
     const data = { input: input_text, model, ...kwargs }
     return this._make_request('POST', '/v1/embeddings', { body: data })
@@ -215,7 +220,7 @@ export class AlbertAPIClient {
 
   /**
    * Transcribe audio file.
-   * 
+   *
    * @param file_path - Path to audio file
    * @param model - Transcription model to use
    * @param kwargs - Additional parameters (language, response_format, etc.)
@@ -224,7 +229,7 @@ export class AlbertAPIClient {
   async transcribe_audio(
     file_path: string,
     model: string,
-    kwargs: any = {}
+    kwargs: any = {},
   ): Promise<any> {
     const fullPath = path.resolve(file_path)
 
@@ -243,7 +248,7 @@ export class AlbertAPIClient {
     })
 
     return this._make_request('POST', '/v1/audio/transcriptions', {
-      body: formData
+      body: formData,
     })
   }
 
@@ -253,14 +258,14 @@ export class AlbertAPIClient {
 
   /**
    * Parse a document (PDF, etc.).
-   * 
+   *
    * @param file_path - Path to document file
    * @param kwargs - Additional parameters (output_format, force_ocr, etc.)
    * @returns Parsed document response
    */
   async parse_document(
     file_path: string,
-    kwargs: any = {}
+    kwargs: any = {},
   ): Promise<any> {
     const fullPath = path.resolve(file_path)
 
@@ -278,13 +283,13 @@ export class AlbertAPIClient {
     })
 
     return this._make_request('POST', '/v1/parse-beta', {
-      body: formData
+      body: formData,
     })
   }
 
   /**
    * Extract text from PDF using OCR.
-   * 
+   *
    * @param file_path - Path to PDF file
    * @param model - OCR model to use
    * @param kwargs - Additional parameters (dpi, prompt, etc.)
@@ -293,7 +298,7 @@ export class AlbertAPIClient {
   async ocr_document(
     file_path: string,
     model: string,
-    kwargs: any = {}
+    kwargs: any = {},
   ): Promise<any> {
     const fullPath = path.resolve(file_path)
 
@@ -309,10 +314,10 @@ export class AlbertAPIClient {
     // Add additional parameters
     Object.entries(kwargs).forEach(([key, value]) => {
       formData.append(key, String(value))
-    });
+    })
 
     return this._make_request('POST', '/v1/ocr-beta', {
-      body: formData
+      body: formData,
     })
   }
 
@@ -322,7 +327,7 @@ export class AlbertAPIClient {
 
   /**
    * Create a new collection.
-   * 
+   *
    * @param name - Collection name
    * @param description - Collection description
    * @param visibility - Collection visibility (private/public)
@@ -331,7 +336,7 @@ export class AlbertAPIClient {
   async create_collection(
     name: string,
     description?: string,
-    visibility: string = 'private'
+    visibility: string = 'private',
   ): Promise<any> {
     const data = { name, description, visibility }
     return this._make_request('POST', '/v1/collections', { body: data })
@@ -339,14 +344,14 @@ export class AlbertAPIClient {
 
   /**
    * Get list of collections.
-   * 
+   *
    * @param offset - Pagination offset
    * @param limit - Number of collections to return
    * @returns Collections list
    */
   async get_collections(
     offset: number = 0,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<any> {
     const params = { offset, limit }
     return this._make_request('GET', '/v1/collections', { params })
@@ -354,7 +359,7 @@ export class AlbertAPIClient {
 
   /**
    * Get collection by ID.
-   * 
+   *
    * @param collection_id - Collection ID
    * @returns Collection information
    */
@@ -364,20 +369,20 @@ export class AlbertAPIClient {
 
   /**
    * Update collection.
-   * 
+   *
    * @param collection_id - Collection ID
    * @param kwargs - Fields to update (name, description, visibility)
    */
   async update_collection(
     collection_id: number,
-    kwargs: any = {}
+    kwargs: any = {},
   ): Promise<void> {
     await this._make_request('PATCH', `/v1/collections/${collection_id}`, { body: kwargs })
   }
 
   /**
    * Delete collection.
-   * 
+   *
    * @param collection_id - Collection ID
    */
   async delete_collection(collection_id: number): Promise<void> {
@@ -386,7 +391,7 @@ export class AlbertAPIClient {
 
   /**
    * Create a document in a collection.
-   * 
+   *
    * @param file_path - Path to document file
    * @param collection_id - Collection ID
    * @param kwargs - Additional parameters (chunk_size, output_format, etc.)
@@ -395,7 +400,7 @@ export class AlbertAPIClient {
   async create_document(
     file_path: string,
     collection_id: number,
-    kwargs: any = {}
+    kwargs: any = {},
   ): Promise<any> {
     const fullPath = path.resolve(file_path)
 
@@ -414,13 +419,13 @@ export class AlbertAPIClient {
     })
 
     return this._make_request('POST', '/v1/documents', {
-      body: formData
+      body: formData,
     })
   }
 
   /**
    * Get documents from collection.
-   * 
+   *
    * @param collection_id - Collection ID (optional, to filter by collection)
    * @param limit - Number of documents to return
    * @param offset - Pagination offset
@@ -429,7 +434,7 @@ export class AlbertAPIClient {
   async get_documents(
     collection_id?: number,
     limit: number = 10,
-    offset: number = 0
+    offset: number = 0,
   ): Promise<any> {
     const params: any = { limit, offset }
     if (collection_id !== undefined) {
@@ -441,7 +446,7 @@ export class AlbertAPIClient {
 
   /**
    * Get document by ID.
-   * 
+   *
    * @param document_id - Document ID
    * @returns Document information
    */
@@ -451,7 +456,7 @@ export class AlbertAPIClient {
 
   /**
    * Delete document.
-   * 
+   *
    * @param document_id - Document ID
    */
   async delete_document(document_id: number): Promise<void> {
@@ -464,7 +469,7 @@ export class AlbertAPIClient {
 
   /**
    * Get chunks of a document.
-   * 
+   *
    * @param document_id - Document ID
    * @param limit - Number of chunks to return
    * @param offset - Pagination offset
@@ -473,7 +478,7 @@ export class AlbertAPIClient {
   async get_chunks(
     document_id: number,
     limit: number = 10,
-    offset: number = 0
+    offset: number = 0,
   ): Promise<any> {
     const params = { limit, offset }
     return this._make_request('GET', `/v1/chunks/${document_id}`, { params })
@@ -481,7 +486,7 @@ export class AlbertAPIClient {
 
   /**
    * Get specific chunk of a document.
-   * 
+   *
    * @param document_id - Document ID
    * @param chunk_id - Chunk ID
    * @returns Chunk information
@@ -496,7 +501,7 @@ export class AlbertAPIClient {
 
   /**
    * Search for relevant chunks.
-   * 
+   *
    * @param prompt - Search query
    * @param collections - List of collection IDs to search in
    * @param kwargs - Additional parameters (method, k, score_threshold, etc.)
@@ -505,7 +510,7 @@ export class AlbertAPIClient {
   async search(
     prompt: string,
     collections?: number[],
-    kwargs: any = {}
+    kwargs: any = {},
   ): Promise<any> {
     const data = { prompt, collections: collections || [], ...kwargs }
     return this._make_request('POST', '/v1/search', { body: data })
@@ -517,7 +522,7 @@ export class AlbertAPIClient {
 
   /**
    * Rerank texts by relevance to prompt.
-   * 
+   *
    * @param prompt - Reranking prompt
    * @param input_texts - List of texts to rerank
    * @param model - Reranking model to use
@@ -526,7 +531,7 @@ export class AlbertAPIClient {
   async rerank(
     prompt: string,
     input_texts: string[],
-    model: string
+    model: string,
   ): Promise<any> {
     const data = { prompt, input: input_texts, model }
     return this._make_request('POST', '/v1/rerank', { body: data })
@@ -538,7 +543,7 @@ export class AlbertAPIClient {
 
   /**
    * Get account usage information.
-   * 
+   *
    * @param limit - Number of records per page
    * @param page - Page number
    * @param kwargs - Additional parameters (order_by, order_direction, date_from, date_to)
@@ -547,7 +552,7 @@ export class AlbertAPIClient {
   async get_usage(
     limit: number = 50,
     page: number = 1,
-    kwargs: any = {}
+    kwargs: any = {},
   ): Promise<any> {
     const params = { limit, page, ...kwargs }
     return this._make_request('GET', '/v1/usage', { params })
@@ -559,7 +564,7 @@ export class AlbertAPIClient {
 
   /**
    * Create a new token.
-   * 
+   *
    * @param name - Token name
    * @param user - User ID (optional, for admin use)
    * @param expires_at - Expiration timestamp (optional)
@@ -568,7 +573,7 @@ export class AlbertAPIClient {
   async create_token(
     name: string,
     user?: number,
-    expires_at?: number
+    expires_at?: number,
   ): Promise<any> {
     const data: any = { name }
     if (user !== undefined) {
@@ -583,7 +588,7 @@ export class AlbertAPIClient {
 
   /**
    * Get list of tokens.
-   * 
+   *
    * @param offset - Pagination offset
    * @param limit - Number of tokens to return
    * @param kwargs - Additional parameters (order_by, order_direction)
@@ -592,7 +597,7 @@ export class AlbertAPIClient {
   async get_tokens(
     offset: number = 0,
     limit: number = 10,
-    kwargs: any = {}
+    kwargs: any = {},
   ): Promise<any> {
     const params = { offset, limit, ...kwargs }
     return this._make_request('GET', '/tokens', { params })
@@ -600,7 +605,7 @@ export class AlbertAPIClient {
 
   /**
    * Get token by ID.
-   * 
+   *
    * @param token_id - Token ID
    * @returns Token information
    */
@@ -610,11 +615,10 @@ export class AlbertAPIClient {
 
   /**
    * Delete token.
-   * 
+   *
    * @param token_id - Token ID
    */
   async delete_token(token_id: number): Promise<void> {
     await this._make_request('DELETE', `/tokens/${token_id}`)
   }
-
 }

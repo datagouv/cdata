@@ -20,6 +20,16 @@ jobs:
         run: npm ci
         working-directory: ./datagouv-components
       
-      - name: Run datagouv-components scripts
+      - name: Run datagouv-components type-check
         run: npm run type-check
         working-directory: ./datagouv-components
+
+      - name: Run datagouv-components linter
+        run: npm run lint
+        working-directory: ./datagouv-components
+
+      - name: Install cdata dependencies
+        run: npm ci
+      
+      - name: Run cdata lint
+        run: npm run lint
