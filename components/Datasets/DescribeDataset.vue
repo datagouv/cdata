@@ -65,9 +65,16 @@
           :state="accordionState('description_short')"
         >
           <div class="prose prose-neutral m-0">
-            <p class="fr-m-0">
-              {{ $t(`La description courte présente votre jeu de données en une ou deux phrases. Elle aide les utilisateurs à comprendre rapidement ce qu'il contient et améliore sa visibilité dans les recherches.`) }}<br>
-              {{ $t(`Une première version peut être générée automatiquement si vous avez déjà rempli le titre et une description d'au moins {min} caractères, puis adaptée selon vos besoins.`, { min: DESCRIPTION_MIN_LENGTH }) }}<br>
+            <p class="m-0">
+              {{ $t(`La description courte présente votre jeu de données en une ou deux phrases. Elle aide les utilisateurs à comprendre rapidement ce qu'il contient et améliore sa visibilité dans les recherches.`) }}
+            </p>
+            <p class="fr-mt-3v font-bold">
+              {{ $t("Suggestions automatiques") }}
+            </p>
+            <p class="m-0">
+              {{ $t(`Une première version peut être générée automatiquement si vous avez déjà rempli le titre et une description d'au moins {min} caractères, puis adaptée selon vos besoins.`, { min: DESCRIPTION_MIN_LENGTH }) }}
+            </p>
+            <p class="m-0">
               <CdataLink
                 to="https://guides.data.gouv.fr/autres-ressources-utiles/notre-approche-de-lintelligence-artificielle-sur-data.gouv.fr"
                 target="_blank"
@@ -82,9 +89,25 @@
           :title="$t('Mettre des mots-clés')"
           :state="accordionState('tags')"
         >
-          <p class="fr-m-0">
-            {{ $t("Les mots clés caractérisent votre jeu de données. Ils sont publics et apportent un meilleur référencement du jeu de données lors d’une recherche utilisateur.") }}
-          </p>
+          <div class="prose prose-neutral m-0">
+            <p class="m-0">
+              {{ $t("Les mots-clés décrivent votre jeu de données et facilitent sa découverte. Ils améliorent son référencement dans le moteur de recherche et aident les utilisateurs à retrouver plus facilement les données qui les intéressent.") }}
+            </p>
+            <p class="fr-mt-3v font-bold">
+              {{ $t("Suggestions automatiques") }}
+            </p>
+            <p class="m-0">
+              {{ $t("Des mots-clés peuvent vous être proposés automatiquement en fonction du contenu de votre jeu de données. Vous pouvez les accepter, les modifier ou les supprimer.") }}
+            </p>
+            <p class="m-0">
+              <CdataLink
+                to="https://guides.data.gouv.fr/autres-ressources-utiles/notre-approche-de-lintelligence-artificielle-sur-data.gouv.fr"
+                target="_blank"
+              >
+                {{ $t(`L'IA se base uniquement sur les informations que vous avez fournies et peut parfois se tromper : relisez toujours la proposition avant de valider.`) }}
+              </CdataLink>
+            </p>
+          </div>
         </Accordion>
         <Accordion
           :id="selectLicenseAccordionId"
@@ -317,22 +340,16 @@
                 v-else
                 type="button"
                 color="primary"
-                :disabled="isGeneratingDescriptionShort"
+                :icon="RiSparklingLine"
+                :loading="isGeneratingDescriptionShort"
                 @click="handleAutoCompleteDescriptionShort"
               >
-                <div class="flex items-center space-x-2">
-                  <RiSparklingLine
-                    v-if="!isGeneratingDescriptionShort"
-                    class="size-4"
-                    aria-hidden="true"
-                  />
-                  <span v-if="isGeneratingDescriptionShort">{{ $t('Suggestion en cours...') }}</span>
-                  <span v-else>{{ $t('Suggérer une description courte') }}</span>
-                  <RiLoader5Line
-                    v-if="isGeneratingDescriptionShort"
-                    class="size-4 animate-spin text-primary"
-                  />
-                </div>
+                <template v-if="isGeneratingDescriptionShort">
+                  {{ $t('Suggestion en cours...') }}
+                </template>
+                <template v-else>
+                  {{ $t('Suggérer une description courte') }}
+                </template>
               </BrandedButton>
               <CdataLink
                 v-if="config.public.generateShortDescriptionFeedbackUrl"
@@ -355,6 +372,31 @@
               :error-text="getFirstError('tags')"
               :warning-text="getFirstWarning('tags')"
             />
+            <div class="flex items-center gap-4 mt-2 mb-3">
+              <BrandedButton
+                type="button"
+                color="primary"
+                :icon="RiSparklingLine"
+                :loading="isGeneratingTags"
+                :disabled="!form.title || !form.description || form.description.trim().length === 0"
+                @click="handleAutoCompleteTags()"
+              >
+                <template v-if="isGeneratingTags">
+                  {{ $t('Suggestion en cours...') }}
+                </template>
+                <template v-else>
+                  {{ $t('Suggérer des mots clés') }}
+                </template>
+              </BrandedButton>
+              <CdataLink
+                v-if="config.public.generateTagsFeedbackUrl"
+                :to="config.public.generateTagsFeedbackUrl"
+                target="_blank"
+                class="text-sm text-gray-medium"
+              >
+                {{ $t('Comment avez-vous trouvé cette suggestion ?') }}
+              </CdataLink>
+            </div>
             <SimpleBanner
               v-if="getFirstWarning('tags')"
               type="warning"
@@ -663,7 +705,7 @@
 <script setup lang="ts">
 import { BrandedButton, Tooltip, DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
 import { SimpleBanner, type Frequency, type License } from '@datagouv/components-next'
-import { RiAddLine, RiStarFill, RiLoader5Line, RiSparklingLine } from '@remixicon/vue'
+import { RiAddLine, RiStarFill, RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
@@ -740,6 +782,8 @@ const getGranularityName = (zone: SpatialZone): string | undefined => {
   return granularities.value.find(granularity => granularity.id === zone.level)?.name
 }
 
+const isGeneratingTags = ref(false)
+
 const { $api } = useNuxtApp()
 
 const removeZone = (zone: SpatialZone) => {
@@ -812,6 +856,35 @@ async function handleAutoCompleteDescriptionShort() {
 async function submit() {
   if (await validate()) {
     emit('submit')
+  }
+}
+
+async function handleAutoCompleteTags() {
+  try {
+    isGeneratingTags.value = true
+
+    // We call our server-side API route instead of Albert API directly to avoid CORS issues.
+    // The Albert API doesn't allow direct requests from browser-side JavaScript.
+    // Our server acts as a proxy, keeping the API key secure on the server side.
+    const response = await $fetch<{ tags: string[] }>('/nuxt-api/albert/generate-tags', {
+      method: 'POST',
+      body: {
+        title: form.value.title,
+        description: form.value.description,
+        organization: form.value.owned?.organization?.name,
+      },
+    })
+
+    // Convert the array of tags to the expected tags format and replace existing tags
+    if (response.tags && response.tags.length > 0) {
+      form.value.tags = response.tags.map(tag => ({ text: tag }))
+    }
+  }
+  catch (error) {
+    console.error('Failed to generate tags:', error)
+  }
+  finally {
+    isGeneratingTags.value = false
   }
 }
 </script>

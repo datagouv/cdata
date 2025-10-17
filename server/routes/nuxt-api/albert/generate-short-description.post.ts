@@ -1,5 +1,5 @@
 import { DESCRIPTION_SHORT_MAX_LENGTH } from '~/datagouv-components/src/functions/datasets'
-import { createChatCompletion, useAlbertConfig } from '~/server/utils/albert-api-client'
+import { createChatCompletion, useAlbertConfig, type ChatResponse } from '~/server/utils/albert-api-client'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -72,7 +72,7 @@ export default defineEventHandler(async (event) => {
     // - AgentPublic/albert-spp-8b
     // - albert-code-beta
     // - albert-ministral
-    const response = await createChatCompletion(messages, 'albert-small', albertConfig)
+    const response = await createChatCompletion(messages, 'albert-small', albertConfig) as ChatResponse
     const generatedDescriptionShort = response.choices?.[0]?.message?.content || ''
 
     // Ensure the description doesn't exceed maxChars
