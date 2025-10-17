@@ -420,9 +420,11 @@ const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
 })
 
 const title = computed(() => dataset.value?.title)
+const robots = computed(() => dataset.value && dataset.value.archived ? 'noindex' : 'all')
 
 useSeoMeta({
   title,
+  robots,
 })
 
 const hideWarnings = computed(() => {

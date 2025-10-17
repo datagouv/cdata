@@ -2,7 +2,7 @@ import { ref, toValue, watchEffect, type ComputedRef, type Ref } from 'vue'
 import { ofetch } from 'ofetch'
 import { useComponentsConfig } from '../config'
 import { useTranslation } from '../composables/useTranslation'
-import type { AsyncData, AsyncDataExecuteOptions, AsyncDataRequestStatus, UseFetchOptions } from './api.types'
+import type { AsyncData, AsyncDataRequestStatus, UseFetchOptions } from './api.types'
 
 export async function useFetch<DataT, ErrorT = never>(
   url: string | Request | Ref<string | Request> | ComputedRef<string | null> | (() => string | Request),
@@ -20,7 +20,7 @@ export async function useFetch<DataT, ErrorT = never>(
   const error: Ref<ErrorT | null> = ref(null)
   const status = ref<AsyncDataRequestStatus>('idle')
 
-  const execute = async (_opts?: AsyncDataExecuteOptions) => {
+  const execute = async () => {
     const urlValue = toValue(url)
     if (!urlValue) return
     status.value = 'pending'
@@ -82,7 +82,7 @@ export async function useFetch<DataT, ErrorT = never>(
 
   return {
     data,
-    refresh: async (_opts?: AsyncDataExecuteOptions) => {
+    refresh: async () => {
       execute()
     },
     execute,
