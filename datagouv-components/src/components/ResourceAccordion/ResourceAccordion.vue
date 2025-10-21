@@ -92,7 +92,7 @@
       </div>
       <div class="flex items-center buttons">
         <p
-          v-if="resource.format === 'url'"
+          v-if="isResourceUrl"
           class="fr-col-auto fr-ml-3v fr-m-0 z-2"
         >
           <BrandedButton
@@ -370,6 +370,7 @@ import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
+const URL_FORMATS = ['url', 'doi', 'www:link', ' www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
 
 const props = withDefaults(defineProps<{
   dataset: Dataset | DatasetV2
@@ -512,6 +513,8 @@ const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset,
 const resourceContentId = 'resource-' + props.resource.id
 const resourceHeaderId = 'resource-' + props.resource.id + '-header'
 const resourceTitleId = getResourceTitleId(props.resource)
+
+const isResourceUrl = computed(() => URL_FORMATS.includes(props.resource.format))
 </script>
 
 <style scoped>
