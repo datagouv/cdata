@@ -712,7 +712,7 @@ import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
-import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone } from '~/types/types'
+import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone, Tag } from '~/types/types'
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 
@@ -784,6 +784,10 @@ const getGranularityName = (zone: SpatialZone): string | undefined => {
 
 const isGeneratingTags = ref(false)
 
+// Track tag sources
+const initialTags = ref<Array<Tag>>([])
+const lastSuggestedTags = ref<Array<Tag>>([])
+
 const { $api } = useNuxtApp()
 
 const removeZone = (zone: SpatialZone) => {
@@ -811,7 +815,11 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
 })
 
 onMounted(() => {
-  if (props.type === 'update') validate()
+  if (props.type === 'update') {
+    // Store the initial tags when component loads
+    initialTags.value = [...form.value.tags]
+    validate()
+  }
 })
 
 const accordionState = (key: keyof typeof form.value) => {
@@ -875,9 +883,27 @@ async function handleAutoCompleteTags() {
       },
     })
 
-    // Convert the array of tags to the expected tags format and replace existing tags
+    // Remove previously suggested tags and add new ones
     if (response.tags && response.tags.length > 0) {
-      form.value.tags = response.tags.map(tag => ({ text: tag }))
+      // Remove previously suggested tags by filtering out tags that match the last suggestions
+      let currentTags = form.value.tags
+      if (lastSuggestedTags.value.length > 0) {
+        currentTags = form.value.tags.filter(tag =>
+          !lastSuggestedTags.value.some(lastSuggested => lastSuggested.text === tag.text),
+        )
+      }
+
+      // Create new suggested tags, filtering out duplicates with existing tags
+      const existingTagTexts = currentTags.map(tag => tag.text)
+      const newSuggestedTags = response.tags
+        .filter(tag => !existingTagTexts.includes(tag))
+        .map(tag => ({ text: tag }))
+
+      // Update form with current tags + new suggested tags
+      form.value.tags = [...currentTags, ...newSuggestedTags]
+
+      // Update the suggested tags tracking
+      lastSuggestedTags.value = newSuggestedTags
     }
   }
   catch (error) {
