@@ -5,7 +5,7 @@
       class="mb-5"
     >
       <h2 class="text-sm font-bold uppercase m-0 text-gray-title">
-        {{ $t('{n} jeux de données', pageData.total) }}
+        {{ $t('1 jeu de données | {n} jeux de données', pageData.total) }}
       </h2>
       <div
         class="grid gap-5 mt-2"
