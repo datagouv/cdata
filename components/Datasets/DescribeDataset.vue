@@ -373,12 +373,27 @@
               :warning-text="getFirstWarning('tags')"
             />
             <div class="flex items-center gap-4 mt-2 mb-3">
+              <Tooltip v-if="!canGenerateTags && form.tags.length >= MAX_TAGS_NB">
+                <BrandedButton
+                  type="button"
+                  color="primary"
+                  :icon="RiSparklingLine"
+                  :loading="isGeneratingTags"
+                  :disabled="true"
+                >
+                  {{ $t('Suggérer des mots clés') }}
+                </BrandedButton>
+                <template #tooltip>
+                  {{ $t('Vous avez déjà {count} mots-clés. Le maximum recommandé est de {max}.', { count: form.tags.length, max: MAX_TAGS_NB }) }}
+                </template>
+              </Tooltip>
               <BrandedButton
+                v-else
                 type="button"
                 color="primary"
                 :icon="RiSparklingLine"
                 :loading="isGeneratingTags"
-                :disabled="!form.title || !form.description || form.description.trim().length === 0"
+                :disabled="!canGenerateTags"
                 @click="handleAutoCompleteTags()"
               >
                 <template v-if="isGeneratingTags">
@@ -730,6 +745,8 @@ const emit = defineEmits<{
 const { t } = useTranslation()
 const config = useRuntimeConfig()
 
+const MAX_TAGS_NB = 5
+
 const user = useMe()
 const isGlobalAdmin = computed(() => isAdmin(user.value))
 
@@ -835,6 +852,13 @@ const canGenerateDescriptionShort = computed(() => {
   return hasTitle && hasEnoughDescription
 })
 
+const canGenerateTags = computed(() => {
+  const hasTitle = form.value.title && form.value.title.trim().length > 0
+  const hasDescription = form.value.description && form.value.description.trim().length > 0
+  const hasLessThanMaxTags = form.value.tags.length < MAX_TAGS_NB
+  return hasTitle && hasDescription && hasLessThanMaxTags
+})
+
 async function handleAutoCompleteDescriptionShort() {
   try {
     isGeneratingDescriptionShort.value = true
@@ -867,7 +891,7 @@ async function submit() {
   }
 }
 
-async function handleAutoCompleteTags() {
+async function handleAutoCompleteTags(nbTags: number) {
   try {
     isGeneratingTags.value = true
 
@@ -880,12 +904,13 @@ async function handleAutoCompleteTags() {
         title: form.value.title,
         description: form.value.description,
         organization: form.value.owned?.organization?.name,
+        nbTags: Math.min(nbTags, MAX_TAGS_NB - form.value.tags.length),
       },
     })
 
     // Remove previously suggested tags and add new ones
     if (response.tags && response.tags.length > 0) {
-      // Remove previously suggested tags by filtering out tags that match the last suggestions
+      // Filter out tags that were the last suggested tags
       let currentTags = form.value.tags
       if (lastSuggestedTags.value.length > 0) {
         currentTags = form.value.tags.filter(tag =>

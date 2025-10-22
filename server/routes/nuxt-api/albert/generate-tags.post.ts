@@ -1,10 +1,8 @@
 import { createChatCompletion, useAlbertConfig, type ChatResponse } from '~/server/utils/albert-api-client'
 
-const NB_TAGS = 5
-
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { title, description, organization } = body
+  const { title, description, organization, nbTags = 5 } = body
 
   if (!title || !description) {
     throw createError({
@@ -32,7 +30,7 @@ export default defineEventHandler(async (event) => {
           + `Your task is to identify and synthesize the main topics of a dataset as five normalized keywords.\n`
           + `\n`
           + `Task goal:\n`
-          + `Generate exactly ${NB_TAGS} keywords that best represent the dataset's content.\n`
+          + `Generate exactly ${nbTags} keywords that best represent the dataset's content.\n`
           + `Your goal is to improve search and discoverability through clear, consistent terms.\n`
           + `\n`
           + `Semantic guidance:\n`
@@ -49,7 +47,7 @@ export default defineEventHandler(async (event) => {
           + `6. Remove duplicates or close synonyms.\n`
           + `\n`
           + `Output format:\n`
-          + `- Exactly ${NB_TAGS} keywords, separated by commas, and nothing else in the output.\n`
+          + `- Exactly ${nbTags} keywords, separated by commas, and nothing else in the output.\n`
           + `- No explanations, no labels, no extra punctuation.\n`
           + `- Follow this example format: qualite-air, pollution, mesure, station-urbaine, environnement\n`
           + `\n`
@@ -57,13 +55,13 @@ export default defineEventHandler(async (event) => {
       },
       {
         role: 'user',
-        content: `You are asked to generate ${NB_TAGS} keywords for the following dataset.\n`
+        content: `You are asked to generate ${nbTags} keywords for the following dataset.\n`
           + `\n`
           + `The title describes the main topic, the description explains the content,\n`
           + `and the organisation indicates the source or domain of activity.\n`
           + `\n`
           + `Goal:\n`
-          + `→ Suggest ${NB_TAGS} normalized French keywords representing the dataset's content.\n`
+          + `→ Suggest ${nbTags} normalized French keywords representing the dataset's content.\n`
           + `→ When possible, use wording aligned with EuroVoc concepts in French.\n`
           + `→ Focus on what the dataset is about, not on its context or structure.\n`
           + `\n`
@@ -73,7 +71,7 @@ export default defineEventHandler(async (event) => {
           + (organization ? `- Organisation: ${organization}\n` : '')
           + `\n`
           + `Output:\n`
-          + `→ A single line containing ${NB_TAGS} normalized keywords, separated by commas.\n`
+          + `→ A single line containing ${nbTags} normalized keywords, separated by commas.\n`
           + `→ Example: energie, consommation, electricite, region, environnement`,
       },
     ]
@@ -91,7 +89,7 @@ export default defineEventHandler(async (event) => {
       .split(',')
       .map((tag: string) => tag.trim())
       .filter((tag: string) => tag.length > 0)
-      .slice(0, NB_TAGS)
+      .slice(0, nbTags)
 
     return { tags }
   }
