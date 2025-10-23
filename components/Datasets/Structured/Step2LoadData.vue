@@ -276,7 +276,7 @@ const useSpreadsheet = computed({
 
 const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extensions/')
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const schemaType = useState<string>('structured-schema-type', () => '')
 const schemaName = useState<string>('structured-schema-name', () => '')

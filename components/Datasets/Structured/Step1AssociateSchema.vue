@@ -328,7 +328,7 @@ const emit = defineEmits<{
   (e: 'next'): void
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const route = useRoute()
 
 const chooseProducerAccordionId = useId()

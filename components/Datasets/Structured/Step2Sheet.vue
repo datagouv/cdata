@@ -264,7 +264,6 @@ import { BrandedButton, PaddedContainer, SimpleBanner } from '@datagouv/componen
 import { ref, onMounted, nextTick, computed } from 'vue'
 import { TabulatorFull as Tabulator } from 'tabulator-tables'
 import type { CellComponent, RowComponent } from 'tabulator-tables'
-import PaddedContainer from '~/components/PaddedContainer/PaddedContainer.vue'
 import Alert from '~/components/Alert/Alert.vue'
 import Modal from '~/components/Modal/Modal.client.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
@@ -323,7 +322,7 @@ const emit = defineEmits<{
   (e: 'previous' | 'next'): void
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const route = useRoute()
 
 const SCHEMA_FIELDS_STATE = 'structured-schema-fields'
