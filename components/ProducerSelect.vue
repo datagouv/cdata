@@ -58,9 +58,8 @@
 </template>
 
 <script setup lang="ts">
-import { useGetUserAvatar, BrandedButton, type Organization, type User } from '@datagouv/components-next'
+import { useGetUserAvatar, BrandedButton, PaddedContainer, type Organization, type User } from '@datagouv/components-next'
 import type { Owned } from '~/types/types'
-import PaddedContainer from '~/components/PaddedContainer/PaddedContainer.vue'
 
 const getUserAvatar = useGetUserAvatar()
 
