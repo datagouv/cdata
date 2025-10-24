@@ -287,42 +287,12 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
-import type { Dataset } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, useGetCatalog } from '@datagouv/components-next'
+import type { DatasetV2, RegisteredSchema, SchemaDetails, SchemaField } from '@datagouv/components-next'
 import { ref, onMounted, computed } from 'vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import DatasetsSelect from '~/components/DatasetsSelect.vue'
 import type { DatasetForm } from '~/types/types'
-
-interface SchemaVersion {
-  version_name: string
-  schema_url: string
-}
-
-interface Schema {
-  name: string
-  title: string
-  description: string
-  schema_type: string
-  schema_url: string
-  labels?: string[]
-  versions?: SchemaVersion[]
-}
-
-interface SchemaField {
-  name: string
-  description?: string
-  type: string
-  [key: string]: unknown
-}
-
-interface SchemaDetails {
-  name: string
-  title: string
-  description: string
-  fields: SchemaField[]
-  [key: string]: unknown
-}
 
 const emit = defineEmits<{
   (e: 'next'): void
@@ -330,15 +300,16 @@ const emit = defineEmits<{
 
 const { t } = useTranslation()
 const route = useRoute()
+const getCatalog = useGetCatalog()
 
 const chooseProducerAccordionId = useId()
 const selectSchemaAccordionId = useId()
 
-const schemas = ref<Schema[]>([])
+const schemas = ref<RegisteredSchema[]>([])
 const loadingSchemas = ref(false)
 const schemaDetails = ref<SchemaDetails | null>(null)
 const searchQuery = ref('')
-const filteredSchemas = ref<Schema[]>([])
+const filteredSchemas = ref<RegisteredSchema[]>([])
 
 const STRUCTURED_STATE = 'structured-step1'
 
@@ -349,7 +320,7 @@ const form = useState(STRUCTURED_STATE, () => ({
 }))
 
 const publicationMode = ref<'new' | 'existing'>('new')
-const selectedDatasets = ref<Dataset[]>([])
+const selectedDatasets = ref<DatasetV2[]>([])
 
 const organizationId = computed(() => {
   const owned = form.value.owned
@@ -370,9 +341,8 @@ const selectedSchemaDetails = computed(() => {
 async function loadSchemas() {
   loadingSchemas.value = true
   try {
-    const response = await fetch('https://schema.data.gouv.fr/schemas.json')
-    const data = await response.json() as { schemas: Schema[] }
-    schemas.value = data.schemas || []
+    const data = await getCatalog()
+    schemas.value = data || []
 
     const schemaParam = route.query.schema as string
     if (schemaParam) {
@@ -399,14 +369,14 @@ function onSearchChange() {
   }
 
   const query = searchQuery.value.toLowerCase()
-  filteredSchemas.value = schemas.value.filter((schema: Schema) => {
+  filteredSchemas.value = schemas.value.filter((schema: RegisteredSchema) => {
     const titleMatch = schema.title?.toLowerCase().includes(query)
     const descriptionMatch = schema.description?.toLowerCase().includes(query)
     return titleMatch || descriptionMatch
   })
 }
 
-async function selectSchema(schema: Schema) {
+async function selectSchema(schema: RegisteredSchema) {
   form.value.selectedSchema = schema.name
   form.value.schemaUrl = schema.schema_url
 
@@ -474,15 +444,15 @@ async function submit() {
       publicationModeState.value = publicationMode.value
 
       if (publicationMode.value === 'existing' && selectedDatasets.value.length > 0) {
-        const existingDatasetState = useState<Dataset | null>('structured-existing-dataset', () => null)
+        const existingDatasetState = useState<DatasetV2 | null>('structured-existing-dataset', () => null)
         const selectedDataset = selectedDatasets.value[0]
 
         if ('resources' in selectedDataset && typeof selectedDataset.resources === 'object' && 'rel' in selectedDataset.resources) {
           const { $api } = useNuxtApp()
-          existingDatasetState.value = await $api<Dataset>(`/api/1/datasets/${selectedDataset.id}/`)
+          existingDatasetState.value = await $api<DatasetV2>(`/api/1/datasets/${selectedDataset.id}/`)
         }
         else {
-          existingDatasetState.value = selectedDataset as Dataset
+          existingDatasetState.value = selectedDataset
         }
       }
     }

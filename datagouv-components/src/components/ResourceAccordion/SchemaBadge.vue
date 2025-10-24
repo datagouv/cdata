@@ -99,9 +99,9 @@ import { RiInformationLine } from '@remixicon/vue'
 import { computed, onMounted, ref } from 'vue'
 import type { Resource } from '../../types/resources'
 import Toggletip from '../Toggletip.vue'
-import type { RegisteredSchema, ValidataError } from '../../functions/schemas'
 import { findSchemaInCatalog, useGetCatalog, useGetSchemaDocumentation, useGetSchemaValidationUrl } from '../../functions/schemas'
 import { useTranslation } from '../../composables/useTranslation'
+import type { RegisteredSchema, ValidataError } from '../../types/schemas'
 
 const props = defineProps<{
   resource: Resource

@@ -260,7 +260,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, PaddedContainer, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, PaddedContainer, SimpleBanner, type SchemaDetails, type SchemaField } from '@datagouv/components-next'
 import { ref, onMounted, nextTick, computed } from 'vue'
 import { TabulatorFull as Tabulator } from 'tabulator-tables'
 import type { CellComponent, RowComponent } from 'tabulator-tables'
@@ -269,21 +269,6 @@ import Modal from '~/components/Modal/Modal.client.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
 import type { ResourceForm } from '~/types/types'
 import 'tabulator-tables/dist/css/tabulator.min.css'
-
-interface SchemaField {
-  name: string
-  description?: string
-  type: string
-  [key: string]: unknown
-}
-
-interface SchemaDetails {
-  name: string
-  title: string
-  description: string
-  fields: SchemaField[]
-  [key: string]: unknown
-}
 
 interface Step1Form {
   owned: unknown

@@ -12,6 +12,7 @@ import type { License } from './types/licenses'
 import type { Member, MemberRole, NewOrganization, Organization } from './types/organizations'
 import type { Owned, OwnedWithId } from './types/owned'
 import type { NewReuse, Reuse, ReuseTopic, ReuseType } from './types/reuses'
+import type { RegisteredSchema, Schema, SchemaDetails, SchemaField, SchemaPath, SchemaResponseData, SchemaVersion, ValidataError } from './types/schemas'
 import type { TopicV2, TopicElement, TopicElementClass, TopicElementRel } from './types/topics'
 import type { CommunityResource, FileResourceFileType, RemoteResourceFileType, ResourceFileType, ResourceType, Resource } from './types/resources'
 import type { Site } from './types/site'
@@ -117,6 +118,7 @@ export type {
   OwnedWithId,
   PaginatedArray,
   Quality,
+  RegisteredSchema,
   Rel,
   RemoteResourceFileType,
   Resource,
@@ -125,6 +127,12 @@ export type {
   Reuse,
   ReuseTopic,
   ReuseType,
+  Schema,
+  SchemaDetails,
+  SchemaField,
+  SchemaPath,
+  SchemaResponseData,
+  SchemaVersion,
   Site,
   SpatialZone,
   TranslatedBadge,
@@ -133,6 +141,7 @@ export type {
   TopicElementClass,
   TopicElementRel,
   User,
+  ValidataError,
   Weight,
   WellType,
 }
