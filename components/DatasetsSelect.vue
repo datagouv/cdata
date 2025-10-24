@@ -27,7 +27,7 @@ import type { DatasetV2 } from '@datagouv/components-next'
 import CardLg from '~/components/dataset/card-lg.vue'
 import type { DatasetSuggest } from '~/types/types'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   single?: boolean
   label?: string
   allowReorder?: boolean
@@ -37,13 +37,15 @@ withDefaults(defineProps<{
   allowReorder: true,
 })
 
+const { $api } = useNuxtApp()
+
 const selectedDatasets = defineModel<Array<DatasetV2 | DatasetSuggest>>({ required: true })
 
-const suggestDataset = async (query: string): Promise<Array<DatasetSuggest>> => {
+const suggestDataset = async (query: Record<string, string | number>): Promise<Array<DatasetSuggest>> => {
   if (props.organizationId) {
     const searchResults = await $api<{ data: Array<DatasetV2> }>('/api/2/datasets/search/', {
       query: {
-        q: query,
+        ...query,
         page_size: 5,
         organization: props.organizationId,
       },

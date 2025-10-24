@@ -246,7 +246,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, PaddedContainer, SimpleBanner } from '@datagouv/components-next'
 import type { ResourceForm } from '~/types/types'
 
 const props = defineProps<{

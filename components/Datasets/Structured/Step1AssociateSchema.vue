@@ -1,289 +1,233 @@
 <template>
-  <div class="flex">
-    <Sidemenu
-      class="w-5/12 hidden lg:block"
-      :button-text="$t('Aide')"
-      :on-right="true"
-      :fixed="true"
-      :show-border="false"
+  <FormWithAccordions
+    :form-info
+    @submit.prevent="submit"
+  >
+    <SimpleBanner
+      type="primary"
+      class="mb-4 flex items-center space-x-5"
     >
-      <template #title>
-        <span
-          class="fr-icon--sm fr-icon-question-line"
-          aria-hidden="true"
+      <NuxtImg
+        src="/illustrations/schema.svg"
+        loading="lazy"
+        class="size-14 shrink-0"
+        alt=""
+      />
+      <div class="w-full">
+        <p class="font-bold mb-1">
+          {{ $t('Publication structurée') }}
+        </p>
+        <p class="m-0 text-xs/5">
+          {{ $t('Sélectionnez le producteur et le schéma de données que vous souhaitez utiliser pour structurer votre jeu de données.') }}
+        </p>
+      </div>
+    </SimpleBanner>
+
+    <RequiredExplanation />
+
+    <FormFieldset
+      :legend="$t('Producteur')"
+    >
+      <FieldsetElement form-key="owned">
+        <ProducerSelect
+          v-model="form.owned"
+          :label="t(`Sélectionnez votre organisation`)"
+          :required="true"
+          :organizations-only="true"
+          :error-text="getFirstError('owned')"
+          @update:model-value="touch('owned')"
         />
-        {{ $t('Aide') }}
-      </template>
-      <AccordionGroup :with-icon="true">
-        <Accordion
-          :id="chooseProducerAccordionId"
-          :title="$t('Choisir l\'organisation sous laquelle vous souhaitez publier')"
-          :state="accordionState('owned')"
-          :opened="true"
-        >
-          <p class="fr-m-0 fr-mb-2w">
-            {{ $t("La publication avec un schéma doit obligatoirement se faire au nom d'une organisation. Sélectionnez une organisation dont vous êtes membre.") }}
-          </p>
-          <p class="fr-m-0">
-            {{ $t("Si votre organisation n'existe pas encore, vous devez d'abord") }}
-            <NuxtLink
-              to="/admin/organizations/new/"
-              class="fr-link"
-              target="_blank"
+        <template #accordion>
+          <HelpAccordion :title="$t(`Choisir l'organisation sous laquelle vous souhaitez publier`)">
+            <p class="m-0 mb-4">
+              {{ $t("La publication avec un schéma doit obligatoirement se faire au nom d'une organisation. Sélectionnez une organisation dont vous êtes membre.") }}
+            </p>
+            <p class="m-0">
+              {{ $t("Si votre organisation n'existe pas encore, vous devez d'abord") }}
+              <NuxtLink
+                to="/admin/organizations/new/"
+                class="link"
+                target="_blank"
+              >
+                {{ $t("la créer ici") }}
+              </NuxtLink>.
+            </p>
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+    </FormFieldset>
+
+    <FormFieldset
+      v-if="form.owned"
+      :legend="$t('Où souhaitez-vous publier vos données ?')"
+    >
+      <FieldsetElement form-key="existingDataset">
+        <div class="publication-mode-selector">
+          <div class="fr-checkbox-group radio-as-checkbox">
+            <input
+              id="mode-new"
+              type="checkbox"
+              :checked="publicationMode === 'new'"
+              @change="publicationMode = 'new'"
             >
-              {{ $t("la créer ici") }}
-            </NuxtLink>.
-          </p>
-        </Accordion>
-        <Accordion
-          :id="selectSchemaAccordionId"
-          :title="$t('Qu\'est-ce qu\'un schéma de données ?')"
-          :state="accordionState('selectedSchema')"
+            <label
+              class="fr-label"
+              for="mode-new"
+            >
+              {{ $t("Créer un nouveau jeu de données") }}
+            </label>
+          </div>
+          <div class="fr-checkbox-group radio-as-checkbox">
+            <input
+              id="mode-existing"
+              type="checkbox"
+              :checked="publicationMode === 'existing'"
+              @change="publicationMode = 'existing'"
+            >
+            <label
+              class="fr-label"
+              for="mode-existing"
+            >
+              {{ $t("Ajouter à un jeu de données existant") }}
+            </label>
+          </div>
+        </div>
+        <br>
+        <div
+          v-if="publicationMode === 'existing'"
+          class="fr-mt-3w"
         >
-          <p class="fr-m-0">
-            {{ $t("Les schémas de données permettent de décrire des modèles de données : quels sont les différents champs, comment sont représentées les données, quelles sont les valeurs possibles etc.") }}
-          </p>
-        </Accordion>
-      </AccordionGroup>
-    </Sidemenu>
-    <div class="w-full lg:w-7/12">
-      <div class="fr-p-3w bg-white">
+          <DatasetsSelect
+            v-model="selectedDatasets"
+            :label="t('Sélectionnez un jeu de données')"
+            :single="true"
+            :organization-id="organizationId"
+          />
+        </div>
+      </FieldsetElement>
+    </FormFieldset>
+
+    <FormFieldset
+      :legend="$t('Schéma de données')"
+    >
+      <FieldsetElement form-key="selectedSchema">
+        <label
+          class="fr-label"
+          for="schema-search"
+        >
+          {{ $t('Rechercher un schéma') }} <Required :required="true" />
+        </label>
+        <input
+          id="schema-search"
+          v-model="searchQuery"
+          type="text"
+          class="fr-input"
+          :placeholder="loadingSchemas ? 'Chargement...' : 'Saisissez un mot-clé...'"
+          :disabled="loadingSchemas"
+          @input="onSearchChange"
+        >
+        <p
+          v-if="getFirstError('selectedSchema')"
+          class="fr-error-text"
+        >
+          {{ getFirstError('selectedSchema') }}
+        </p>
+        <template #accordion>
+          <HelpAccordion :title="$t(`Qu'est-ce qu'un schéma de données ?`)">
+            <p class="m-0">
+              {{ $t("Les schémas de données permettent de décrire des modèles de données : quels sont les différents champs, comment sont représentées les données, quelles sont les valeurs possibles etc.") }}
+            </p>
+          </HelpAccordion>
+        </template>
+      </FieldsetElement>
+      <div
+        v-if="form.selectedSchema && selectedSchemaDetails"
+        class="fr-mt-3w w-full"
+      >
         <SimpleBanner
           type="primary"
-          class="mb-4 flex items-center space-x-5"
+          class="w-full"
         >
-          <NuxtImg
-            src="/illustrations/schema.svg"
-            loading="lazy"
-            class="size-14 shrink-0"
-            alt=""
-          />
           <div class="w-full">
-            <p class="font-bold mb-1">
-              {{ $t('Publication structurée') }}
+            <p class="fr-m-0 fr-text--bold fr-mb-1w">
+              {{ $t('Schéma sélectionné :') }} {{ selectedSchemaDetails.title }}
             </p>
-            <p class="m-0 text-xs/5">
-              {{ $t('Sélectionnez le producteur et le schéma de données que vous souhaitez utiliser pour structurer votre jeu de données.') }}
+            <p
+              v-if="schemaDetails && schemaDetails.fields"
+              class="fr-m-0 fr-text--sm"
+            >
+              <strong>{{ $t('Nombre de colonnes :') }}</strong> {{ schemaDetails.fields.length }}
             </p>
           </div>
         </SimpleBanner>
+      </div>
+    </FormFieldset>
 
-        <RequiredExplanation />
+    <div class="fr-grid-row fr-grid-row--right fr-mt-4w">
+      <BrandedButton
+        color="primary"
+        :disabled="!canProceed"
+        @click="submit"
+      >
+        {{ $t("Suivant") }}
+      </BrandedButton>
+    </div>
 
-        <fieldset
-          class="fr-fieldset"
-          aria-labelledby="producer-legend"
+    <div
+      v-if="searchQuery && filteredSchemas.length > 0"
+      class="fr-mt-3w"
+    >
+      <p class="fr-text--sm fr-mb-2w">
+        {{ filteredSchemas.length }} {{ $t('résultat(s) trouvé(s)') }}
+      </p>
+      <div class="fr-grid-row fr-grid-row--gutters">
+        <div
+          v-for="schema in filteredSchemas"
+          :key="schema.name"
+          class="fr-col-12"
         >
-          <legend
-            id="producer-legend"
-            class="fr-fieldset__legend"
-          >
-            <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Producteur") }}
-            </h2>
-          </legend>
-          <LinkedToAccordion
-            class="fr-fieldset__element"
-            :accordion="chooseProducerAccordionId"
-          >
-            <ProducerSelect
-              v-model="form.owned"
-              :label="t(`Sélectionnez votre organisation`)"
-              :required="true"
-              :error-text="getFirstError('owned')"
-              :organizations-only="true"
-            />
-          </LinkedToAccordion>
-        </fieldset>
-
-        <fieldset
-          v-if="form.owned"
-          class="fr-fieldset fr-mt-4w"
-          aria-labelledby="publication-legend"
-        >
-          <legend
-            id="publication-legend"
-            class="fr-fieldset__legend"
-          >
-            <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Où souhaitez-vous publier vos données ?") }}
-            </h2>
-          </legend>
-          <div class="fr-fieldset__element">
-            <div class="publication-mode-selector">
-              <div class="fr-checkbox-group radio-as-checkbox">
-                <input
-                  id="mode-new"
-                  type="checkbox"
-                  :checked="publicationMode === 'new'"
-                  @change="publicationMode = 'new'"
-                >
-                <label
-                  class="fr-label"
-                  for="mode-new"
-                >
-                  {{ $t("Créer un nouveau jeu de données") }}
-                </label>
-              </div>
-              <div class="fr-checkbox-group radio-as-checkbox">
-                <input
-                  id="mode-existing"
-                  type="checkbox"
-                  :checked="publicationMode === 'existing'"
-                  @change="publicationMode = 'existing'"
-                >
-                <label
-                  class="fr-label"
-                  for="mode-existing"
-                >
-                  {{ $t("Ajouter à un jeu de données existant") }}
-                </label>
-              </div>
-            </div>
-            <br>
-            <div
-              v-if="publicationMode === 'existing'"
-              class="fr-mt-3w"
-            >
-              <DatasetsSelect
-                v-model="selectedDatasets"
-                :label="t('Sélectionnez un jeu de données')"
-                :single="true"
-                :organization-id="organizationId"
-              />
-            </div>
-          </div>
-        </fieldset>
-
-        <fieldset
-          class="fr-fieldset fr-mt-2w"
-          aria-labelledby="schema-legend"
-        >
-          <legend
-            id="schema-legend"
-            class="fr-fieldset__legend"
-          >
-            <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Schéma de données") }}
-            </h2>
-          </legend>
-          <LinkedToAccordion
-            class="fr-fieldset__element"
-            :accordion="selectSchemaAccordionId"
-          >
-            <label
-              class="fr-label"
-              for="schema-search"
-            >
-              {{ $t('Rechercher un schéma') }} <Required :required="true" />
-            </label>
-            <input
-              id="schema-search"
-              v-model="searchQuery"
-              type="text"
-              class="fr-input"
-              :placeholder="loadingSchemas ? 'Chargement...' : 'Saisissez un mot-clé...'"
-              :disabled="loadingSchemas"
-              @input="onSearchChange"
-            >
-            <p
-              v-if="getFirstError('selectedSchema')"
-              class="fr-error-text"
-            >
-              {{ getFirstError('selectedSchema') }}
-            </p>
-          </LinkedToAccordion>
-
           <div
-            v-if="form.selectedSchema && selectedSchemaDetails"
-            class="fr-mt-3w w-full"
+            class="fr-card fr-card--sm"
+            :class="{ 'fr-card--selected': form.selectedSchema === schema.name }"
+            style="cursor: pointer"
+            @click="selectSchema(schema)"
           >
-            <SimpleBanner
-              type="primary"
-              class="w-full"
-            >
-              <div class="w-full">
-                <p class="fr-m-0 fr-text--bold fr-mb-1w">
-                  {{ $t('Schéma sélectionné :') }} {{ selectedSchemaDetails.title }}
-                </p>
-                <p
-                  v-if="schemaDetails && schemaDetails.fields"
-                  class="fr-m-0 fr-text--sm"
-                >
-                  <strong>{{ $t('Nombre de colonnes :') }}</strong> {{ schemaDetails.fields.length }}
-                </p>
-              </div>
-            </SimpleBanner>
-          </div>
-        </fieldset>
-
-        <div class="fr-grid-row fr-grid-row--right fr-mt-4w">
-          <BrandedButton
-            color="primary"
-            :disabled="!canProceed"
-            @click="submit"
-          >
-            {{ $t("Suivant") }}
-          </BrandedButton>
-        </div>
-
-        <div
-          v-if="searchQuery && filteredSchemas.length > 0"
-          class="fr-mt-3w"
-        >
-          <p class="fr-text--sm fr-mb-2w">
-            {{ filteredSchemas.length }} {{ $t('résultat(s) trouvé(s)') }}
-          </p>
-          <div class="fr-grid-row fr-grid-row--gutters">
-            <div
-              v-for="schema in filteredSchemas"
-              :key="schema.name"
-              class="fr-col-12"
-            >
-              <div
-                class="fr-card fr-card--sm"
-                :class="{ 'fr-card--selected': form.selectedSchema === schema.name }"
-                style="cursor: pointer"
-                @click="selectSchema(schema)"
-              >
-                <div class="fr-card__body">
-                  <div class="fr-card__content">
-                    <h3 class="fr-card__title fr-mb-1w">
-                      {{ schema.title }}
-                    </h3>
-                    <div class="fr-mb-1w">
-                      <span
-                        v-for="label in schema.labels"
-                        :key="label"
-                        class="fr-badge fr-badge--sm fr-badge--info fr-mr-1v"
-                      >
-                        {{ label }}
-                      </span>
-                      <span class="fr-badge fr-badge--sm fr-badge--new">
-                        {{ schema.schema_type }}
-                      </span>
-                    </div>
-                    <p class="fr-card__desc fr-text--sm fr-m-0">
-                      {{ schema.description }}
-                    </p>
-                  </div>
+            <div class="fr-card__body">
+              <div class="fr-card__content">
+                <h3 class="fr-card__title fr-mb-1w">
+                  {{ schema.title }}
+                </h3>
+                <div class="fr-mb-1w">
+                  <span
+                    v-for="label in schema.labels"
+                    :key="label"
+                    class="fr-badge fr-badge--sm fr-badge--info fr-mr-1v"
+                  >
+                    {{ label }}
+                  </span>
+                  <span class="fr-badge fr-badge--sm fr-badge--new">
+                    {{ schema.schema_type }}
+                  </span>
                 </div>
+                <p class="fr-card__desc fr-text--sm fr-m-0">
+                  {{ schema.description }}
+                </p>
               </div>
             </div>
           </div>
-        </div>
-
-        <div
-          v-if="searchQuery && filteredSchemas.length === 0 && !loadingSchemas"
-          class="fr-mt-3w"
-        >
-          <SimpleBanner type="warning">
-            {{ $t('Aucun schéma ne correspond à votre recherche.') }}
-          </SimpleBanner>
         </div>
       </div>
     </div>
-  </div>
+
+    <div
+      v-if="searchQuery && filteredSchemas.length === 0 && !loadingSchemas"
+      class="fr-mt-3w"
+    >
+      <SimpleBanner type="warning">
+        {{ $t('Aucun schéma ne correspond à votre recherche.') }}
+      </SimpleBanner>
+    </div>
+  </FormWithAccordions>
 </template>
 
 <script setup lang="ts">
@@ -293,6 +237,8 @@ import { ref, onMounted, computed } from 'vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import DatasetsSelect from '~/components/DatasetsSelect.vue'
 import type { DatasetForm } from '~/types/types'
+import FieldsetElement from '~/components/Form/FieldsetElement.vue'
+import HelpAccordion from '~/components/Form/HelpAccordion.vue'
 
 const emit = defineEmits<{
   (e: 'next'): void
@@ -301,9 +247,6 @@ const emit = defineEmits<{
 const { t } = useTranslation()
 const route = useRoute()
 const getCatalog = useGetCatalog()
-
-const chooseProducerAccordionId = useId()
-const selectSchemaAccordionId = useId()
 
 const schemas = ref<RegisteredSchema[]>([])
 const loadingSchemas = ref(false)
@@ -315,9 +258,15 @@ const STRUCTURED_STATE = 'structured-step1'
 
 const form = useState(STRUCTURED_STATE, () => ({
   owned: null,
+  existingDataset: null,
   selectedSchema: '',
   schemaUrl: '',
 }))
+
+const { formInfo, getFirstError, touch, validate } = useForm(form, {
+  owned: [required()],
+  selectedSchema: [required(t('Vous devez sélectionner un schéma'))],
+})
 
 const publicationMode = ref<'new' | 'existing'>('new')
 const selectedDatasets = ref<DatasetV2[]>([])
@@ -399,16 +348,12 @@ async function selectSchema(schema: RegisteredSchema) {
   try {
     const response = await fetch(schema.schema_url)
     schemaDetails.value = await response.json() as SchemaDetails
+    touch('selectedSchema')
   }
   catch (error) {
     console.error('Erreur lors du chargement du schéma:', error)
   }
 }
-
-const { getFirstError, validate } = useForm(form, {
-  owned: [required()],
-  selectedSchema: [required(t('Vous devez sélectionner un schéma'))],
-})
 
 const canProceed = computed(() => {
   const hasBasicInfo = form.value.owned && form.value.selectedSchema && schemaDetails.value
@@ -420,11 +365,6 @@ const canProceed = computed(() => {
 
   return hasBasicInfo
 })
-
-const accordionState = (key: keyof typeof form.value) => {
-  if (getFirstError(key)) return 'error'
-  return 'default'
-}
 
 async function submit() {
   if (await validate()) {

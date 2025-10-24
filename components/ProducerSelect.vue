@@ -58,8 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { useGetUserAvatar, BrandedButton, PaddedContainer, type Organization, type User } from '@datagouv/components-next'
-import type { Owned } from '~/types/types'
+import { useGetUserAvatar, BrandedButton, PaddedContainer, type Organization, type Owned, type User } from '@datagouv/components-next'
 
 const getUserAvatar = useGetUserAvatar()
 
@@ -68,9 +67,11 @@ const props = withDefaults(defineProps<{
   errorText?: string | null
   warningText?: string | null
   all?: boolean
+  required?: boolean
   organizationsOnly?: boolean
 }>(), {
   all: false,
+  required: false,
   organizationsOnly: false,
 })
 const model = defineModel<Owned | null>({ required: true })
