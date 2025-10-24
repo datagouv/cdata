@@ -3,7 +3,6 @@
     <Breadcrumb>
       <BreadcrumbItem
         to="/"
-        external
       >
         {{ $t('Accueil') }}
       </BreadcrumbItem>
@@ -97,6 +96,7 @@ const dataserviceForm = useState(
       machine_documentation_url: '',
       business_documentation_url: '',
       access_type: 'open',
+      featured: false,
       license: null,
       private: true,
       rate_limiting: '',

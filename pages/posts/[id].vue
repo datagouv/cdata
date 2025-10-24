@@ -8,7 +8,6 @@
       <Breadcrumb class="flex-1">
         <BreadcrumbItem
           to="/"
-          external
         >
           {{ $t('Accueil') }}
         </BreadcrumbItem>

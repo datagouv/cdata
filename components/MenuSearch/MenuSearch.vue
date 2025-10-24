@@ -99,7 +99,6 @@ type Item = {
   icon: Component
   type: string
   to: string
-  external: boolean
 }
 
 const emit = defineEmits<{
@@ -112,7 +111,7 @@ const selectedItem = ref<null | Item>(null)
 
 watch(selectedItem, async () => {
   if (!selectedItem.value) return
-  await navigateTo(selectedItem.value.to, { external: selectedItem.value.external })
+  await navigateTo(selectedItem.value.to)
   emit('selected')
 })
 const menu = computed(() => {

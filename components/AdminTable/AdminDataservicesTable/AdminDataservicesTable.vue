@@ -90,7 +90,6 @@
             :href="dataservice.self_web_url"
             :icon="RiEyeLine"
             icon-only
-            external
             keep-margins-even-without-borders
           >
             {{ $t('Voir la page publique') }}

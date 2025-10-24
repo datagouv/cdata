@@ -1,10 +1,7 @@
 <template>
   <div>
     <Breadcrumb>
-      <BreadcrumbItem
-        to="/"
-        external
-      >
+      <BreadcrumbItem to="/">
         {{ $t('Accueil') }}
       </BreadcrumbItem>
       <BreadcrumbItem to="/datasets">
