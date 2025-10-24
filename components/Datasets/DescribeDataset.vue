@@ -799,10 +799,8 @@ const getGranularityName = (zone: SpatialZone): string | undefined => {
   return granularities.value.find(granularity => granularity.id === zone.level)?.name
 }
 
-const isGeneratingTags = ref(false)
-
 // Track tag sources
-const initialTags = ref<Array<Tag>>([])
+const isGeneratingTags = ref(false)
 const lastSuggestedTags = ref<Array<Tag>>([])
 
 const { $api } = useNuxtApp()
@@ -832,11 +830,7 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
 })
 
 onMounted(() => {
-  if (props.type === 'update') {
-    // Store the initial tags when component loads
-    initialTags.value = [...form.value.tags]
-    validate()
-  }
+  if (props.type === 'update') validate()
 })
 
 const accordionState = (key: keyof typeof form.value) => {
