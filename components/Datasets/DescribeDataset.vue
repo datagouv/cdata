@@ -394,7 +394,7 @@
                 :icon="RiSparklingLine"
                 :loading="isGeneratingTags"
                 :disabled="!canGenerateTags"
-                @click="handleAutoCompleteTags()"
+                @click="handleAutoCompleteTags(MAX_TAGS_NB)"
               >
                 <template v-if="isGeneratingTags">
                   {{ $t('Suggestion en cours...') }}
@@ -898,7 +898,7 @@ async function handleAutoCompleteTags(nbTags: number) {
         title: form.value.title,
         description: form.value.description,
         organization: form.value.owned?.organization?.name,
-        nbTags: Math.min(nbTags, MAX_TAGS_NB - form.value.tags.length),
+        nbTags: nbTags,
       },
     })
 
