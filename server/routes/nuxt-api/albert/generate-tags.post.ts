@@ -2,7 +2,7 @@ import { createChatCompletion, useAlbertConfig, type ChatResponse } from '~/serv
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { title, description, organization, nbTags = 5 } = body
+  const { title, description, organization, nbTags } = body
 
   if (!title || !description) {
     throw createError({
