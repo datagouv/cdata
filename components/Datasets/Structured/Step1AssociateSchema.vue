@@ -120,9 +120,9 @@
         <input
           id="schema-search"
           v-model="searchQuery"
-          type="text"
+          type="search"
           class="fr-input"
-          :placeholder="loadingSchemas ? 'Chargement...' : 'Saisissez un mot-clé...'"
+          placeholder="Rechercher un schéma..."
           :disabled="loadingSchemas"
           @input="onSearchChange"
         >
@@ -178,7 +178,7 @@
       class="fr-mt-3w"
     >
       <p class="fr-text--sm fr-mb-2w">
-        {{ filteredSchemas.length }} {{ $t('résultat(s) trouvé(s)') }}
+        {{ $t('{n} résultat trouvé | {n} résultats trouvés', { n: filteredSchemas.length }) }}
       </p>
       <div class="fr-grid-row fr-grid-row--gutters">
         <div
