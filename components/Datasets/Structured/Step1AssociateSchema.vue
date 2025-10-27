@@ -62,8 +62,8 @@
       :legend="$t('Où souhaitez-vous publier vos données ?')"
     >
       <FieldsetElement form-key="existingDataset">
-        <div class="publication-mode-selector">
-          <div class="fr-checkbox-group radio-as-checkbox">
+        <div class="flex gap-8 items-start">
+          <div class="fr-checkbox-group m-0">
             <input
               id="mode-new"
               type="checkbox"
@@ -77,7 +77,7 @@
               {{ $t("Créer un nouveau jeu de données") }}
             </label>
           </div>
-          <div class="fr-checkbox-group radio-as-checkbox">
+          <div class="fr-checkbox-group m-0">
             <input
               id="mode-existing"
               type="checkbox"
@@ -142,19 +142,19 @@
       </FieldsetElement>
       <div
         v-if="form.selectedSchema && selectedSchemaDetails"
-        class="fr-mt-3w w-full"
+        class="mt-2 w-full"
       >
         <SimpleBanner
           type="primary"
           class="w-full"
         >
           <div class="w-full">
-            <p class="fr-m-0 fr-text--bold fr-mb-1w">
+            <p class="m-0 text-bold mb-2">
               {{ $t('Schéma sélectionné :') }} {{ selectedSchemaDetails.title }}
             </p>
             <p
               v-if="schemaDetails && schemaDetails.fields"
-              class="fr-m-0 fr-text--sm"
+              class="m-0 text-sm"
             >
               <strong>{{ $t('Nombre de colonnes :') }}</strong> {{ schemaDetails.fields.length }}
             </p>
@@ -163,7 +163,7 @@
       </div>
     </FormFieldset>
 
-    <div class="fr-grid-row fr-grid-row--right fr-mt-4w">
+    <div class="fr-grid-row fr-grid-row--right mt-5">
       <BrandedButton
         color="primary"
         :disabled="!canProceed"
@@ -175,16 +175,15 @@
 
     <div
       v-if="searchQuery && filteredSchemas.length > 0"
-      class="fr-mt-3w"
+      class="mt-4"
     >
-      <p class="fr-text--sm fr-mb-2w">
+      <p class="text-sm mb-4">
         {{ $t('{n} résultat trouvé | {n} résultats trouvés', { n: filteredSchemas.length }) }}
       </p>
-      <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="grid grid-cols-1 gap-4">
         <div
           v-for="schema in filteredSchemas"
           :key="schema.name"
-          class="fr-col-12"
         >
           <div
             class="fr-card fr-card--sm"
@@ -194,14 +193,14 @@
           >
             <div class="fr-card__body">
               <div class="fr-card__content">
-                <h3 class="fr-card__title fr-mb-1w">
+                <h3 class="fr-card__title mb-2">
                   {{ schema.title }}
                 </h3>
                 <div class="fr-mb-1w">
                   <span
                     v-for="label in schema.labels"
                     :key="label"
-                    class="fr-badge fr-badge--sm fr-badge--info fr-mr-1v"
+                    class="fr-badge fr-badge--sm fr-badge--info mr-1"
                   >
                     {{ label }}
                   </span>
@@ -209,7 +208,7 @@
                     {{ schema.schema_type }}
                   </span>
                 </div>
-                <p class="fr-card__desc fr-text--sm fr-m-0">
+                <p class="fr-card__desc fr-text--sm m-0">
                   {{ schema.description }}
                 </p>
               </div>
@@ -221,7 +220,7 @@
 
     <div
       v-if="searchQuery && filteredSchemas.length === 0 && !loadingSchemas"
-      class="fr-mt-3w"
+      class="mt-5"
     >
       <SimpleBanner type="warning">
         {{ $t('Aucun schéma ne correspond à votre recherche.') }}
@@ -405,15 +404,3 @@ onMounted(() => {
   loadSchemas()
 })
 </script>
-
-<style scoped>
-.publication-mode-selector {
-  display: flex;
-  gap: 2rem;
-  align-items: flex-start;
-}
-
-.radio-as-checkbox {
-  margin: 0;
-}
-</style>
