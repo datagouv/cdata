@@ -63,7 +63,7 @@ const suggestDataset = async (query: Record<string, string | number>): Promise<A
   }
   return await $api<Array<DatasetSuggest>>('/api/1/datasets/suggest/', {
     query: {
-      q: query,
+      ...query,
       size: 5,
     },
   })
