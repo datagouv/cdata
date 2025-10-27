@@ -63,7 +63,7 @@
           >
             <span class="hidden show-on-small">{{ t("Format") }}</span>
             {{ resource.format.trim().toLowerCase() }}
-            <span v-if="resource.filesize">({{ filesize(resource.filesize) }})</span>
+            <span v-if="resourceFilesize">({{ filesize(resourceFilesize) }})</span>
           </span>
           <span
             class="inline-flex items-center fr-text--xs fr-mb-0"
@@ -280,7 +280,7 @@
                       class="fr-link"
                       rel="ugc nofollow noopener"
                     >
-                      <span>{{ t('Format {format}', { format: resource.format }) }}<span v-if="resource.filesize"> - {{ filesize(resource.filesize) }}</span></span>
+                      <span>{{ t('Format {format}', { format: resource.format }) }}<span v-if="resourceFilesize"> - {{ filesize(resourceFilesize) }}</span></span>
                     </a>
                   </span>
                   <CopyButton
@@ -360,7 +360,7 @@ import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
 import { getResourceFormatIcon, getResourceTitleId, detectOgcService } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
-import { getResourceExternalUrl } from '../../functions/datasets'
+import { getResourceExternalUrl, getResourceFilesize } from '../../functions/datasets'
 import { useTranslation } from '../../composables/useTranslation'
 import Metadata from './Metadata.vue'
 import SchemaBadge from './SchemaBadge.vue'
@@ -504,6 +504,7 @@ const owner = computed(() => communityResource.value ? getOwnerName(communityRes
 const lastUpdate = props.resource.last_modified
 const conversionsLastUpdate = computed(() => formatRelativeIfRecentDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined))
 const availabilityChecked = props.resource.extras && 'check:available' in props.resource.extras
+const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 
 const unavailable = availabilityChecked && props.resource.extras['check:available'] === false
 const downloadButtonTitle = unavailable ? t(`Le robot de {certifier} n'a pas pu accéder à ce fichier - Télécharger le fichier en {format}`, { certifier: config.name, format: format.value }) : t(`Télécharger le fichier en {format}`, { format: format.value })

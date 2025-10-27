@@ -70,6 +70,7 @@ import SimpleBanner from '../SimpleBanner.vue'
 import { useComponentsConfig } from '../../config'
 import type { Resource } from '../../types/resources'
 import { useTranslation } from '../../composables/useTranslation'
+import { getResourceFilesize } from '../../functions/datasets'
 
 const PDF = defineAsyncComponent(() =>
   import('pdf-vue3').then((module) => {
@@ -89,20 +90,7 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const fileTooLarge = ref(false)
 
-const fileSizeBytes = computed(() => {
-  // Check if resource has filesize
-  if (props.resource.filesize) {
-    return props.resource.filesize
-  }
-
-  // Check if resource has content-length in extras (from API metadata)
-  const contentLength = props.resource.extras?.['analysis:content-length']
-  if (contentLength && typeof contentLength === 'number') {
-    return contentLength
-  }
-
-  return null
-})
+const fileSizeBytes = computed(() => getResourceFilesize(props.resource))
 
 const shouldLoadPdf = computed(() => {
   const size = fileSizeBytes.value
