@@ -124,7 +124,6 @@
           class="fr-input"
           placeholder="Rechercher un schéma..."
           :disabled="loadingSchemas"
-          @input="onSearchChange"
         >
         <p
           v-if="getFirstError('selectedSchema')"
@@ -140,38 +139,7 @@
           </HelpAccordion>
         </template>
       </FieldsetElement>
-      <div
-        v-if="form.selectedSchema && selectedSchemaDetails"
-        class="mt-2 w-full"
-      >
-        <SimpleBanner
-          type="primary"
-          class="w-full"
-        >
-          <div class="w-full">
-            <p class="m-0 text-bold mb-2">
-              {{ $t('Schéma sélectionné :') }} {{ selectedSchemaDetails.title }}
-            </p>
-            <p
-              v-if="schemaDetails && schemaDetails.fields"
-              class="m-0 text-sm"
-            >
-              <strong>{{ $t('Nombre de colonnes :') }}</strong> {{ schemaDetails.fields.length }}
-            </p>
-          </div>
-        </SimpleBanner>
-      </div>
     </FormFieldset>
-
-    <div class="fr-grid-row fr-grid-row--right mt-5">
-      <BrandedButton
-        color="primary"
-        :disabled="!canProceed"
-        @click="submit"
-      >
-        {{ $t("Suivant") }}
-      </BrandedButton>
-    </div>
 
     <div
       v-if="searchQuery && filteredSchemas.length > 0"
@@ -180,41 +148,19 @@
       <p class="text-sm mb-4">
         {{ $t('{n} résultat trouvé | {n} résultats trouvés', { n: filteredSchemas.length }) }}
       </p>
-      <div class="grid grid-cols-1 gap-4">
-        <div
+      <div
+        class="grid grid-cols-1 gap-4"
+        role="listbox"
+      >
+        <SchemaCard
           v-for="schema in filteredSchemas"
           :key="schema.name"
-        >
-          <div
-            class="fr-card fr-card--sm"
-            :class="{ 'fr-card--selected': form.selectedSchema === schema.name }"
-            style="cursor: pointer"
-            @click="selectSchema(schema)"
-          >
-            <div class="fr-card__body">
-              <div class="fr-card__content">
-                <h3 class="fr-card__title mb-2">
-                  {{ schema.title }}
-                </h3>
-                <div class="fr-mb-1w">
-                  <span
-                    v-for="label in schema.labels"
-                    :key="label"
-                    class="fr-badge fr-badge--sm fr-badge--info mr-1"
-                  >
-                    {{ label }}
-                  </span>
-                  <span class="fr-badge fr-badge--sm fr-badge--new">
-                    {{ schema.schema_type }}
-                  </span>
-                </div>
-                <p class="fr-card__desc fr-text--sm m-0">
-                  {{ schema.description }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+          :schema
+          class="cursor-pointer"
+          :selectable="true"
+          :selected="schema.name === form.selectedSchema?.name"
+          @click="selectSchema(schema)"
+        />
       </div>
     </div>
 
@@ -226,21 +172,41 @@
         {{ $t('Aucun schéma ne correspond à votre recherche.') }}
       </SimpleBanner>
     </div>
+
+    <!-- searchQuery is not saved between pages so this case will happen on "previous" -->
+    <template v-if="!searchQuery && form.selectedSchema">
+      <SchemaCard
+        :schema="form.selectedSchema"
+        class="cursor-pointer"
+        :selectable="true"
+        :selected="true"
+      />
+    </template>
+
+    <div class="fr-grid-row fr-grid-row--right mt-5">
+      <BrandedButton
+        color="primary"
+        :disabled="!canProceed"
+        @click="submit"
+      >
+        {{ $t("Suivant") }}
+      </BrandedButton>
+    </div>
   </FormWithAccordions>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, useGetCatalog } from '@datagouv/components-next'
-import type { DatasetV2, RegisteredSchema, SchemaDetails, SchemaField } from '@datagouv/components-next'
+import { BrandedButton, SchemaCard, SimpleBanner, useGetCatalog } from '@datagouv/components-next'
+import type { DatasetV2, RegisteredSchema } from '@datagouv/components-next'
 import { ref, onMounted, computed } from 'vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import DatasetsSelect from '~/components/DatasetsSelect.vue'
-import type { DatasetForm } from '~/types/types'
 import FieldsetElement from '~/components/Form/FieldsetElement.vue'
 import HelpAccordion from '~/components/Form/HelpAccordion.vue'
+import type { AssociateSchemaForm } from '~/types/schema'
 
 const emit = defineEmits<{
-  (e: 'next'): void
+  next: []
 }>()
 
 const { t } = useTranslation()
@@ -249,20 +215,11 @@ const getCatalog = useGetCatalog()
 
 const schemas = ref<RegisteredSchema[]>([])
 const loadingSchemas = ref(false)
-const schemaDetails = ref<SchemaDetails | null>(null)
 const searchQuery = ref('')
-const filteredSchemas = ref<RegisteredSchema[]>([])
 
-const STRUCTURED_STATE = 'structured-step1'
+const schemaForm = defineModel<AssociateSchemaForm>({ required: true })
 
-const form = useState(STRUCTURED_STATE, () => ({
-  owned: null,
-  existingDataset: null,
-  selectedSchema: '',
-  schemaUrl: '',
-}))
-
-const { formInfo, getFirstError, touch, validate } = useForm(form, {
+const { form, formInfo, getFirstError, touch, validate } = useForm(schemaForm, {
   owned: [required()],
   selectedSchema: [required(t('Vous devez sélectionner un schéma'))],
 })
@@ -281,11 +238,6 @@ const organizationId = computed(() => {
   return undefined
 })
 
-const selectedSchemaDetails = computed(() => {
-  if (!form.value.selectedSchema) return null
-  return schemas.value.find(s => s.name === form.value.selectedSchema)
-})
-
 async function loadSchemas() {
   loadingSchemas.value = true
   try {
@@ -298,7 +250,6 @@ async function loadSchemas() {
       if (schemaToSelect) {
         await selectSchema(schemaToSelect)
         searchQuery.value = schemaToSelect.title
-        onSearchChange()
       }
     }
   }
@@ -310,52 +261,23 @@ async function loadSchemas() {
   }
 }
 
-function onSearchChange() {
+const filteredSchemas = computed(() => schemas.value.filter((schema: RegisteredSchema) => {
   if (!searchQuery.value.trim()) {
-    filteredSchemas.value = []
-    return
+    return false
   }
-
   const query = searchQuery.value.toLowerCase()
-  filteredSchemas.value = schemas.value.filter((schema: RegisteredSchema) => {
-    const titleMatch = schema.title?.toLowerCase().includes(query)
-    const descriptionMatch = schema.description?.toLowerCase().includes(query)
-    return titleMatch || descriptionMatch
-  })
-}
+  const titleMatch = schema.title?.toLowerCase().includes(query)
+  const descriptionMatch = schema.description?.toLowerCase().includes(query)
+  return titleMatch || descriptionMatch
+}))
 
 async function selectSchema(schema: RegisteredSchema) {
-  form.value.selectedSchema = schema.name
-  form.value.schemaUrl = schema.schema_url
-
-  const schemaTypeState = useState<string>('structured-schema-type', () => '')
-  schemaTypeState.value = schema.schema_type
-
-  const schemaNameState = useState<string>('structured-schema-name', () => '')
-  const schemaVersionState = useState<string>('structured-schema-version', () => '')
-
-  schemaNameState.value = schema.name
-
-  if (schema.versions && schema.versions.length > 0) {
-    schemaVersionState.value = schema.versions[schema.versions.length - 1].version_name
-  }
-  else {
-    const versionMatch = schema.schema_url.match(/\/(\d+\.\d+\.\d+)\//)
-    schemaVersionState.value = versionMatch ? versionMatch[1] : ''
-  }
-
-  try {
-    const response = await fetch(schema.schema_url)
-    schemaDetails.value = await response.json() as SchemaDetails
-    touch('selectedSchema')
-  }
-  catch (error) {
-    console.error('Erreur lors du chargement du schéma:', error)
-  }
+  form.value.selectedSchema = schema
+  touch('selectedSchema')
 }
 
 const canProceed = computed(() => {
-  const hasBasicInfo = form.value.owned && form.value.selectedSchema && schemaDetails.value
+  const hasBasicInfo = form.value.owned && form.value.selectedSchema
 
   // Si on ajoute à un dataset existant, il faut qu'un dataset soit sélectionné
   if (publicationMode.value === 'existing') {
@@ -367,36 +289,23 @@ const canProceed = computed(() => {
 
 async function submit() {
   if (await validate()) {
-    if (schemaDetails.value && schemaDetails.value.fields) {
-      const schemaFieldsState = useState<string[]>('structured-schema-fields', () => [])
-      schemaFieldsState.value = schemaDetails.value.fields.map((field: SchemaField) => field.name)
+    const publicationModeState = useState<'new' | 'existing'>('structured-publication-mode', () => 'new')
+    publicationModeState.value = publicationMode.value
 
-      const schemaDetailsState = useState<SchemaDetails | null>('structured-schema-details', () => null)
-      schemaDetailsState.value = schemaDetails.value
+    if (publicationMode.value === 'existing' && selectedDatasets.value.length > 0) {
+      const existingDatasetState = useState<DatasetV2 | null>('structured-existing-dataset', () => null)
+      const selectedDataset = selectedDatasets.value[0]
 
-      const datasetFormState = useState<Partial<DatasetForm>>('structured-dataset-form', () => ({}))
-      if (datasetFormState.value) {
-        datasetFormState.value.owned = form.value.owned
+      if ('resources' in selectedDataset && typeof selectedDataset.resources === 'object' && 'rel' in selectedDataset.resources) {
+        const { $api } = useNuxtApp()
+        existingDatasetState.value = await $api<DatasetV2>(`/api/1/datasets/${selectedDataset.id}/`)
       }
-
-      const publicationModeState = useState<'new' | 'existing'>('structured-publication-mode', () => 'new')
-      publicationModeState.value = publicationMode.value
-
-      if (publicationMode.value === 'existing' && selectedDatasets.value.length > 0) {
-        const existingDatasetState = useState<DatasetV2 | null>('structured-existing-dataset', () => null)
-        const selectedDataset = selectedDatasets.value[0]
-
-        if ('resources' in selectedDataset && typeof selectedDataset.resources === 'object' && 'rel' in selectedDataset.resources) {
-          const { $api } = useNuxtApp()
-          existingDatasetState.value = await $api<DatasetV2>(`/api/1/datasets/${selectedDataset.id}/`)
-        }
-        else {
-          existingDatasetState.value = selectedDataset
-        }
+      else {
+        existingDatasetState.value = selectedDataset
       }
     }
 
-    emit('next')
+    emit('next', form.value)
   }
 }
 

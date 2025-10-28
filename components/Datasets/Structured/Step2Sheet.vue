@@ -260,7 +260,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, PaddedContainer, SimpleBanner, type SchemaDetails, type SchemaField } from '@datagouv/components-next'
+import { BrandedButton, PaddedContainer, SimpleBanner, type RegisteredSchema, type SchemaDetails, type SchemaField } from '@datagouv/components-next'
 import { ref, onMounted, nextTick, computed } from 'vue'
 import { TabulatorFull as Tabulator } from 'tabulator-tables'
 import type { CellComponent, RowComponent } from 'tabulator-tables'
@@ -269,12 +269,8 @@ import Modal from '~/components/Modal/Modal.client.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
 import type { ResourceForm } from '~/types/types'
 import 'tabulator-tables/dist/css/tabulator.min.css'
-
-interface Step1Form {
-  owned: unknown
-  selectedSchema: string
-  schemaUrl: string
-}
+import { computedAsync } from '@vueuse/core'
+import { ofetch } from 'ofetch'
 
 interface RowData {
   [key: string]: string | number | null | undefined
@@ -303,6 +299,10 @@ interface ValidationReport {
   }
 }
 
+const props = defineProps<{
+  schema: RegisteredSchema
+}>()
+
 const emit = defineEmits<{
   (e: 'previous' | 'next'): void
 }>()
@@ -313,23 +313,14 @@ const route = useRoute()
 const SCHEMA_FIELDS_STATE = 'structured-schema-fields'
 const schemaFields = useState<string[]>(SCHEMA_FIELDS_STATE, () => [])
 
-const SCHEMA_DETAILS_STATE = 'structured-schema-details'
-const schemaDetails = useState<SchemaDetails | null>(SCHEMA_DETAILS_STATE, () => null)
-
-const SCHEMA_NAME_STATE = 'structured-schema-name'
-const schemaName = useState<string>(SCHEMA_NAME_STATE, () => '')
+const schemaDetails = computedAsync(async () => {
+  return await ofetch<SchemaDetails>(props.schema.schema_url)
+})
 
 const SCHEMA_VERSION_STATE = 'structured-schema-version'
 const schemaVersion = useState<string>(SCHEMA_VERSION_STATE, () => '')
 
 const publicationMode = useState<'new' | 'existing'>('structured-publication-mode', () => 'new')
-
-const STRUCTURED_STATE = 'structured-step1'
-const step1Form = useState<Step1Form>(STRUCTURED_STATE, () => ({
-  owned: null,
-  selectedSchema: '',
-  schemaUrl: '',
-}))
 
 const UPLOADED_FILE_STATE = 'structured-uploaded-file'
 const uploadedFile = useState<File | null>(UPLOADED_FILE_STATE, () => null)
@@ -635,8 +626,8 @@ async function validateData() {
       return
     }
 
-    if (!step1Form.value.schemaUrl) {
-      customErrors.value = [t('L\'URL du schéma est introuvable. Veuillez retourner à l\'étape 1.')]
+    if (!props.schema.schema_url) {
+      customErrors.value = [t(`L'URL du schéma est introuvable. Veuillez retourner à l'étape 1.`)]
       validating.value = false
       return
     }
@@ -646,7 +637,7 @@ async function validateData() {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const formData = new FormData()
     formData.append('file', blob, 'data.csv')
-    formData.append('schema', step1Form.value.schemaUrl)
+    formData.append('schema', props.schema.schema_url)
 
     const response = await fetch('https://api.validata.etalab.studio/validate', {
       method: 'POST',
@@ -787,9 +778,9 @@ const submit = async () => {
     },
     description: t('Données saisies via le tableur'),
     filetype: 'file' as const,
-    schema: schemaName.value && schemaVersion.value
+    schema: props.schema
       ? {
-          name: schemaName.value,
+          name: props.schema.name,
           url: null,
           version: schemaVersion.value,
         }
@@ -811,8 +802,8 @@ const submit = async () => {
 
 onMounted(() => {
   // Initialiser le titre de la ressource avec le format "donnees-nom-schema"
-  if (!resourceTitle.value && schemaName.value) {
-    const schemaShortName = schemaName.value.split('/').pop() || 'schema'
+  if (!resourceTitle.value && props.schema.name) {
+    const schemaShortName = props.schema.name.split('/').pop() || 'schema'
     resourceTitle.value = `donnees-${schemaShortName}`
   }
   else if (!resourceTitle.value) {

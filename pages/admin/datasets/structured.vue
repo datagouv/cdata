@@ -19,6 +19,7 @@
 
     <Step1AssociateSchema
       v-if="currentStep === 1"
+      v-model="associateSchemaForm"
       @next="moveToStep(2)"
     />
     <Step2LoadData
@@ -51,24 +52,26 @@
 </template>
 
 <script setup lang="ts">
-import type { Dataset, Frequency, Owned, Resource } from '@datagouv/components-next'
+import type { Dataset, Frequency, Owned, Resource, SpatialZone } from '@datagouv/components-next'
 import Step1AssociateSchema from '~/components/Datasets/Structured/Step1AssociateSchema.vue'
 import Step2LoadData from '~/components/Datasets/Structured/Step2LoadData.vue'
 import Step2Sheet from '~/components/Datasets/Structured/Step2Sheet.vue'
 import Step3DescribeDataset from '~/components/Datasets/Structured/Step3DescribeDataset.vue'
 import Step4CompletePublication from '~/components/Datasets/New/Step4CompletePublication.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
-import type { DatasetForm, EnrichedLicense, ResourceForm, SpatialGranularity, SpatialZone, Tag } from '~/types/types'
+import type { DatasetForm, EnrichedLicense, ResourceForm, SpatialGranularity, Tag } from '~/types/types'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import type { AssociateSchemaForm } from '~/types/schema'
 
 const { t } = useTranslation()
 const config = useRuntimeConfig()
 const route = useRoute()
 const { $api } = useNuxtApp()
 
-const DATASET_FORM_STATE = 'structured-dataset-form'
+const ASSOCIATE_SCHEMA_FORM_STATE = 'structured-associate-schema-form'
 const DATASET_FILES_STATE = 'structured-dataset-files'
+const DATASET_FORM_STATE = 'dataset-form'
 const LOADING_STATE = 'structured-dataset-loading'
 const USE_SPREADSHEET_STATE = 'structured-use-spreadsheet'
 const SCHEMA_FIELDS_STATE = 'structured-schema-fields'
@@ -88,6 +91,7 @@ const datasetForm = useState(DATASET_FORM_STATE, () => ({
   title: '',
   acronym: '',
   description: '',
+  featured: false,
   owned: null as Owned | null,
   tags: [] as Array<Tag>,
   license: null as EnrichedLicense | null,
@@ -97,8 +101,27 @@ const datasetForm = useState(DATASET_FORM_STATE, () => ({
   spatial_granularity: null as SpatialGranularity | null,
   contact_points: [],
   private: true,
-  featured: false,
 } as DatasetForm))
+
+const associateSchemaForm = useState(ASSOCIATE_SCHEMA_FORM_STATE, () => ({
+  owned: null,
+  existingDataset: null,
+  selectedSchema: null,
+} as AssociateSchemaForm))
+
+// const schemaVersion = computed(() => {
+//   const schema = associateSchemaForm.value.selectedSchema
+//   if (!schema) {
+//     return null
+//   }
+//   if (schema.versions && schema.versions.length > 0) {
+//     return schema.versions[schema.versions.length - 1].version_name
+//   }
+//   else {
+//     const versionMatch = schema.schema_url.match(/\/(\d+\.\d+\.\d+)\//)
+//     return versionMatch ? versionMatch[1] : ''
+//   }
+// })
 
 const resources = useState<Array<ResourceForm>>(DATASET_FILES_STATE, () => [])
 const newDataset = useState<Dataset | null>('structured-new-dataset', () => null)

@@ -52,6 +52,7 @@ import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
 import Swagger from './components/ResourceAccordion/Swagger.client.vue'
 import ReuseCard from './components/ReuseCard.vue'
 import ReuseDetails from './components/ReuseDetails.vue'
+import SchemaCard from './components/SchemaCard.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
 import StatBox from './components/StatBox.vue'
 import Tab from './components/Tabs/Tab.vue'
@@ -191,6 +192,7 @@ export {
   ResourceIcon,
   ReuseCard,
   ReuseDetails,
+  SchemaCard,
   SimpleBanner,
   StatBox,
   Swagger,
