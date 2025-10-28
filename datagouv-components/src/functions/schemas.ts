@@ -18,6 +18,19 @@ export function useGetCatalog() {
   }
 }
 
+export function getSchemaVersion(schema: RegisteredSchema | null) {
+  if (!schema) {
+    return null
+  }
+  if (schema.versions && schema.versions.length > 0) {
+    return schema.versions[schema.versions.length - 1]?.version_name
+  }
+  else {
+    const versionMatch = schema.schema_url.match(/\/(\d+\.\d+\.\d+)\//)
+    return versionMatch ? versionMatch[1] : ''
+  }
+}
+
 export function findSchemaInCatalog(catalog: Array<RegisteredSchema>, schema: Schema | null): RegisteredSchema | null {
   if (!schema) return null
   return catalog.find(registeredSchema => schema.name === registeredSchema.name) || null

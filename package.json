@@ -43,6 +43,7 @@
     "@rollup/pluginutils": "^5.1.4",
     "@sentry/nuxt": "^10.16",
     "@tailwindcss/vite": "^4.0.7",
+    "@types/tabulator-tables": "^6.3.0",
     "@vueuse/core": "^13.0",
     "@vueuse/integrations": "^13.0",
     "@vueuse/nuxt": "^13.0",

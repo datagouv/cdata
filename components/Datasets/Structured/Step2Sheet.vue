@@ -23,7 +23,7 @@
 
       <div v-if="schemaFields.length === 0">
         <Alert type="warning">
-          {{ $t('Aucun schéma n\'a été sélectionné. Veuillez retourner à l\'étape précédente.') }}
+          {{ $t(`Aucun schéma n'a été sélectionné. Veuillez retourner à l'étape précédente.`) }}
         </Alert>
       </div>
 
@@ -85,7 +85,6 @@
         </div>
       </div>
 
-      <br>
       <div
         v-if="validationReport"
         class="fr-mb-3w"
@@ -260,7 +259,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, PaddedContainer, SimpleBanner, type RegisteredSchema, type SchemaDetails, type SchemaField } from '@datagouv/components-next'
+import { BrandedButton, getSchemaVersion, PaddedContainer, SimpleBanner, type RegisteredSchema, type SchemaDetails, type SchemaField } from '@datagouv/components-next'
 import { ref, onMounted, nextTick, computed } from 'vue'
 import { TabulatorFull as Tabulator } from 'tabulator-tables'
 import type { CellComponent, RowComponent } from 'tabulator-tables'
@@ -300,32 +299,32 @@ interface ValidationReport {
 }
 
 const props = defineProps<{
-  schema: RegisteredSchema
+  schema: RegisteredSchema | null
 }>()
 
 const emit = defineEmits<{
   (e: 'previous' | 'next'): void
 }>()
 
+const uploadedFile = defineModel<File | null>({ required: true })
+
 const { t } = useTranslation()
 const route = useRoute()
 
-const SCHEMA_FIELDS_STATE = 'structured-schema-fields'
-const schemaFields = useState<string[]>(SCHEMA_FIELDS_STATE, () => [])
-
 const schemaDetails = computedAsync(async () => {
+  if (!props.schema) {
+    return Promise.resolve(null)
+  }
   return await ofetch<SchemaDetails>(props.schema.schema_url)
 })
 
-const SCHEMA_VERSION_STATE = 'structured-schema-version'
-const schemaVersion = useState<string>(SCHEMA_VERSION_STATE, () => '')
+const schemaFields = computed(() => schemaDetails.value?.fields.map((field: SchemaField) => field.name) ?? [])
+
+const schemaVersion = computed(() => getSchemaVersion(props.schema))
 
 const publicationMode = useState<'new' | 'existing'>('structured-publication-mode', () => 'new')
 
-const UPLOADED_FILE_STATE = 'structured-uploaded-file'
-const uploadedFile = useState<File | null>(UPLOADED_FILE_STATE, () => null)
-
-const tableRef = ref<HTMLElement | null>(null)
+const tableRef = useTemplateRef<HTMLDivElement>('tableRef')
 let table: Tabulator | null = null
 
 const customErrors = ref<string[]>([])
@@ -440,6 +439,24 @@ function createEmptyRows(count = 10): RowData[] {
   return rows
 }
 
+function parseFileContent(lines: Array<string>, separator = ',') {
+  const headers = lines[0].split(separator).map(h => h.trim().replace(/^"|"$/g, ''))
+
+  const data: RowData[] = []
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(separator).map(v => v.trim().replace(/^"|"$/g, ''))
+    const row: RowData = {}
+
+    schemaFields.value.forEach((field, _index) => {
+      const headerIndex = headers.indexOf(field)
+      row[field] = headerIndex >= 0 && headerIndex < values.length ? values[headerIndex] : ''
+    })
+
+    data.push(row)
+  }
+  return data
+}
+
 async function parseCSV(file: File): Promise<RowData[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -457,19 +474,14 @@ async function parseCSV(file: File): Promise<RowData[]> {
         return
       }
 
-      const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''))
-
-      const data: RowData[] = []
-      for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''))
-        const row: RowData = {}
-
-        schemaFields.value.forEach((field, _index) => {
-          const headerIndex = headers.indexOf(field)
-          row[field] = headerIndex >= 0 && headerIndex < values.length ? values[headerIndex] : ''
-        })
-
-        data.push(row)
+      let data: RowData[] = []
+      for (const separator of [',', ';', '","', '";"']) {
+        const headers = lines[0].split(separator).map(h => h.trim().replace(/^"|"$/g, ''))
+        console.log(headers)
+        data = parseFileContent(lines, separator)
+        if (schemaFields.value.length === headers.length) {
+          break
+        }
       }
 
       resolve(data)
@@ -493,7 +505,6 @@ async function initializeTable() {
 
   let tableData: RowData[] = []
   let shouldValidate = false
-
   if (uploadedFile.value) {
     try {
       tableData = await parseCSV(uploadedFile.value)
@@ -626,7 +637,7 @@ async function validateData() {
       return
     }
 
-    if (!props.schema.schema_url) {
+    if (!props.schema?.schema_url) {
       customErrors.value = [t(`L'URL du schéma est introuvable. Veuillez retourner à l'étape 1.`)]
       validating.value = false
       return
@@ -802,18 +813,19 @@ const submit = async () => {
 
 onMounted(() => {
   // Initialiser le titre de la ressource avec le format "donnees-nom-schema"
-  if (!resourceTitle.value && props.schema.name) {
+  if (!resourceTitle.value && props.schema?.name) {
     const schemaShortName = props.schema.name.split('/').pop() || 'schema'
     resourceTitle.value = `donnees-${schemaShortName}`
   }
   else if (!resourceTitle.value) {
     resourceTitle.value = 'donnees'
   }
-
+})
+watch(schemaFields, () => {
   if (schemaFields.value.length > 0) {
     initializeTable()
   }
-})
+}, { immediate: true })
 </script>
 
 <style scoped>

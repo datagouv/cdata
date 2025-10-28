@@ -22,7 +22,7 @@ export type RegisteredSchema = {
   homepage: string
   labels: Array<string>
   name: string
-  schema_type: string
+  schema_type: 'tableschema' | 'jsonschema'
   schema_url: string
   title: string
   versions: Array<SchemaVersion>

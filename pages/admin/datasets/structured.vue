@@ -26,13 +26,15 @@
       v-if="currentStep === 2"
       v-model:resources="resources"
       v-model:use-spreadsheet="useSpreadsheet"
-      v-model:schema-fields="schemaFields"
-      :loading
+      :schema="associateSchemaForm.selectedSchema"
       @previous="moveToStep(1)"
       @next="dataNext"
+      @open-sheet="openSheet"
     />
     <Step2Sheet
       v-if="currentStep === '2-sheet'"
+      v-model="file"
+      :schema="associateSchemaForm.selectedSchema"
       @previous="moveToStep(2)"
       @next="sheetNext"
     />
@@ -44,7 +46,6 @@
     <Step4CompletePublication
       v-if="currentStep === 4 && newDataset"
       :dataset="newDataset"
-      :loading
       @next="updateDataset"
     />
     <div class="h-64" />
@@ -68,13 +69,12 @@ const { t } = useTranslation()
 const config = useRuntimeConfig()
 const route = useRoute()
 const { $api } = useNuxtApp()
+const { start, finish } = useLoadingIndicator()
 
 const ASSOCIATE_SCHEMA_FORM_STATE = 'structured-associate-schema-form'
 const DATASET_FILES_STATE = 'structured-dataset-files'
 const DATASET_FORM_STATE = 'dataset-form'
-const LOADING_STATE = 'structured-dataset-loading'
 const USE_SPREADSHEET_STATE = 'structured-use-spreadsheet'
-const SCHEMA_FIELDS_STATE = 'structured-schema-fields'
 
 const steps = computed(() => ([
   t('Associez un schéma'),
@@ -83,9 +83,7 @@ const steps = computed(() => ([
   t('Finalisez la publication'),
 ]))
 
-const loading = useState(LOADING_STATE, () => false)
 const useSpreadsheet = useState(USE_SPREADSHEET_STATE, () => false)
-const schemaFields = useState<string[]>(SCHEMA_FIELDS_STATE, () => [])
 
 const datasetForm = useState(DATASET_FORM_STATE, () => ({
   title: '',
@@ -109,20 +107,7 @@ const associateSchemaForm = useState(ASSOCIATE_SCHEMA_FORM_STATE, () => ({
   selectedSchema: null,
 } as AssociateSchemaForm))
 
-// const schemaVersion = computed(() => {
-//   const schema = associateSchemaForm.value.selectedSchema
-//   if (!schema) {
-//     return null
-//   }
-//   if (schema.versions && schema.versions.length > 0) {
-//     return schema.versions[schema.versions.length - 1].version_name
-//   }
-//   else {
-//     const versionMatch = schema.schema_url.match(/\/(\d+\.\d+\.\d+)\//)
-//     return versionMatch ? versionMatch[1] : ''
-//   }
-// })
-
+const file = useState<File | null>('uploaded-file', () => null)
 const resources = useState<Array<ResourceForm>>(DATASET_FILES_STATE, () => [])
 const newDataset = useState<Dataset | null>('structured-new-dataset', () => null)
 const publicationMode = useState<'new' | 'existing'>('structured-publication-mode', () => 'new')
@@ -157,11 +142,14 @@ const isCurrentStepValid = computed(() => {
   return true
 })
 
-const moveToStep = (step: number) => {
+function moveToStep(step: '2-sheet' | 1 | 2 | 3 | 4) {
+  if (step !== '2-sheet') {
+    file.value = null
+  }
   return navigateTo({ path: route.path, query: { ...route.query, step } })
 }
 
-const dataNext = () => {
+function dataNext() {
   if (publicationMode.value === 'existing') {
     save()
   }
@@ -170,7 +158,7 @@ const dataNext = () => {
   }
 }
 
-const sheetNext = () => {
+function sheetNext() {
   if (publicationMode.value === 'existing') {
     save()
   }
@@ -179,23 +167,29 @@ const sheetNext = () => {
   }
 }
 
-const goBackFromStep3 = () => {
+function goBackFromStep3() {
   // Si on a utilisé le tableur, retourner à l'écran tableur
   if (useSpreadsheet.value) {
-    navigateTo({ path: route.path, query: { ...route.query, step: '2-sheet' } })
+    moveToStep('2-sheet')
   }
   else {
     moveToStep(2)
   }
 }
 
-const describeNext = () => {
+function describeNext() {
   save()
+}
+
+function openSheet(fileToOpen?: File) {
+  console.log(fileToOpen)
+  file.value = fileToOpen ?? null
+  moveToStep('2-sheet')
 }
 
 async function save() {
   try {
-    loading.value = true
+    start()
 
     let dataset: Dataset
 
@@ -238,8 +232,7 @@ async function save() {
     }
   }
   finally {
-    loading.value = false
-    clearNuxtState(LOADING_STATE)
+    finish()
   }
 }
 
@@ -248,7 +241,7 @@ async function updateDataset(asPrivate: boolean) {
     return moveToStep(3)
   }
   if (!asPrivate) {
-    loading.value = true
+    start()
     try {
       newDataset.value.private = false
       await $api<Dataset>(`/api/1/datasets/${newDataset.value.id}`, {
@@ -257,7 +250,7 @@ async function updateDataset(asPrivate: boolean) {
       })
     }
     finally {
-      loading.value = false
+      finish()
     }
   }
 

@@ -78,7 +78,7 @@
             color="alt-grey"
           >
             <p class="fr-text--sm fr-mb-2w text-center">
-              {{ $t('Utilisez l\'outil tableur pour créer vos données directement en ligne avec les colonnes du schéma sélectionné.') }}
+              {{ $t(`Utilisez l'outil tableur pour créer vos données directement en ligne avec les colonnes du schéma sélectionné.`) }}
             </p>
             <BrandedButton
               color="primary"
@@ -132,7 +132,7 @@
           {{ $t("Précédent") }}
         </BrandedButton>
         <BrandedButton
-          :loading
+          :loading="isLoading"
           color="primary"
           @click="submit"
         >
@@ -144,50 +144,42 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, PaddedContainer, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, getSchemaVersion, PaddedContainer, SimpleBanner, type RegisteredSchema } from '@datagouv/components-next'
 import FieldsetElement from '~/components/Form/FieldsetElement.vue'
 import HelpAccordion from '~/components/Form/HelpAccordion.vue'
 import type { ResourceForm } from '~/types/types'
 
 const props = defineProps<{
-  loading: boolean
-  resources: Array<ResourceForm>
-  useSpreadsheet: boolean
-  schemaFields: string[]
+  schema: RegisteredSchema | null
 }>()
 
 const emit = defineEmits<{
-  'previous': []
-  'next': []
-  'update:resources': [value: Array<ResourceForm>]
-  'update:useSpreadsheet': [value: boolean]
-  'update:schemaFields': [value: string[]]
+  previous: []
+  next: []
+  openSheet: [file?: File]
 }>()
 
-const resources = computed({
-  get: () => props.resources,
-  set: value => emit('update:resources', value),
-})
+const { isLoading } = useLoadingIndicator()
+const resources = defineModel<Array<ResourceForm>>('resources', { required: true })
+const useSpreadsheet = defineModel<boolean>('useSpreadsheet', { required: true })
 
-const useSpreadsheet = computed({
-  get: () => props.useSpreadsheet,
-  set: value => emit('update:useSpreadsheet', value),
-})
+const key = '/api/1/datasets/extensions/'
 
-const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extensions/')
+const { data: extensions } = await useAPI<Array<string>>(key, {
+  key: key,
+  getCachedData: getDataFromSSRPayload,
+})
 
 const { t } = useTranslation()
 
-const schemaType = useState<string>('structured-schema-type', () => '')
-const schemaName = useState<string>('structured-schema-name', () => '')
-const schemaVersion = useState<string>('structured-schema-version', () => '')
+const schemaVersion = computed(() => getSchemaVersion(props.schema))
 const publicationMode = useState<'new' | 'existing'>('structured-publication-mode', () => 'new')
 
-const isTableschema = computed(() => schemaType.value === 'tableschema')
+const isTableschema = computed(() => props.schema?.schema_type === 'tableschema')
 
 const { formInfo, touch } = useForm({
-  resources: props.resources,
-  useSpreadsheet: props.useSpreadsheet,
+  resources,
+  useSpreadsheet,
 }, {
   resources: [],
 }, {})
@@ -197,11 +189,13 @@ function selectSpreadsheet() {
   resources.value = []
   touch('useSpreadsheet')
 
-  navigateTo({ path: '/admin/datasets/structured', query: { step: '2-sheet' } })
+  emit('openSheet')
 }
 
 function addResourceForms(resourceForms: Array<ResourceForm>) {
-  for (const resourceForm of resourceForms) resources.value.push(resourceForm)
+  for (const resourceForm of resourceForms) {
+    resources.value.push(resourceForm)
+  }
   useSpreadsheet.value = false
   touch('resources')
 }
@@ -235,9 +229,9 @@ async function handleFileUpload(files: Array<File>) {
       },
       description: '',
       filetype: 'file',
-      schema: schemaName.value && schemaVersion.value
+      schema: props.schema?.name && schemaVersion.value
         ? {
-            name: schemaName.value,
+            name: props.schema.name,
             url: null,
             version: schemaVersion.value,
           }
@@ -254,7 +248,7 @@ async function handleFileUpload(files: Array<File>) {
 
 async function submit() {
   const validationMessage = isTableschema.value
-    ? t('Vous devez soit importer un fichier, soit utiliser l\'outil tableur.')
+    ? t(`Vous devez soit importer un fichier, soit utiliser l'outil tableur.`)
     : t('Vous devez importer un fichier.')
 
   if (!useSpreadsheet.value && resources.value.length === 0) {
@@ -268,10 +262,7 @@ async function submit() {
     const firstResource = resources.value[0]
     if (firstResource.filetype === 'file' && 'file' in firstResource && firstResource.file) {
       if (isTableschema.value) {
-        const uploadedFileState = useState<File | null>('structured-uploaded-file', () => null)
-        uploadedFileState.value = firstResource.file.raw
-
-        navigateTo({ path: '/admin/datasets/structured', query: { step: '2-sheet' } })
+        emit('openSheet', firstResource.file.raw)
         return
       }
       else {

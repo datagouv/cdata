@@ -34,13 +34,13 @@
         <BrandedButton
           class="mr-3"
           color="secondary"
-          :disabled="loading"
+          :loading="isLoading"
           @click="submit(true)"
         >
           {{ $t("Sauvegarder le brouillon") }}
         </BrandedButton>
         <BrandedButton
-          :loading
+          :loading="isLoading"
           color="primary"
           @click="submit(false)"
         >
@@ -58,7 +58,6 @@ import { RiLightbulbLine } from '@remixicon/vue'
 
 const props = defineProps<{
   dataset: Dataset
-  loading: boolean
 }>()
 
 const publicDataset = computed(() => ({ ...props.dataset, private: false }))
@@ -68,6 +67,7 @@ const emit = defineEmits<{
 }>()
 
 const config = useRuntimeConfig()
+const { isLoading } = useLoadingIndicator()
 
 function submit(asPrivate: boolean) {
   emit('next', asPrivate)
