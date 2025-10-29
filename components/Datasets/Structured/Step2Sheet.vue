@@ -99,7 +99,7 @@
           class="fr-mb-2w"
         >
           <template #title>
-            {{ $t('✓ Validation réussie') }}
+            {{ $t('Validation réussie') }}
           </template>
           <p class="fr-m-0">
             {{ $t('Vos données sont conformes au schéma.') }}
@@ -259,10 +259,11 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getSchemaVersion, PaddedContainer, SimpleBanner, type RegisteredSchema, type SchemaDetails, type SchemaField } from '@datagouv/components-next'
+import { BrandedButton, getSchemaVersion, PaddedContainer, SimpleBanner } from '@datagouv/components-next'
+import type { SchemaPublicationMode, RegisteredSchema, SchemaDetails, SchemaField } from '@datagouv/components-next'
 import { ref, onMounted, nextTick, computed } from 'vue'
 import { TabulatorFull as Tabulator } from 'tabulator-tables'
-import type { CellComponent, RowComponent } from 'tabulator-tables'
+import type { CellComponent, Editor, Formatter, GlobalTooltipOption, RowComponent } from 'tabulator-tables'
 import Alert from '~/components/Alert/Alert.vue'
 import Modal from '~/components/Modal/Modal.client.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
@@ -300,6 +301,7 @@ interface ValidationReport {
 
 const props = defineProps<{
   schema: RegisteredSchema | null
+  publicationMode: SchemaPublicationMode
 }>()
 
 const emit = defineEmits<{
@@ -321,8 +323,6 @@ const schemaDetails = computedAsync(async () => {
 const schemaFields = computed(() => schemaDetails.value?.fields.map((field: SchemaField) => field.name) ?? [])
 
 const schemaVersion = computed(() => getSchemaVersion(props.schema))
-
-const publicationMode = useState<'new' | 'existing'>('structured-publication-mode', () => 'new')
 
 const tableRef = useTemplateRef<HTMLDivElement>('tableRef')
 let table: Tabulator | null = null
@@ -350,15 +350,17 @@ const hasNoErrors = computed(() => {
 
 function cellTooltip(_e: MouseEvent, cell: CellComponent): string | undefined {
   const row = cell.getRow()
-  const rowIndex = row.getPosition() - 1
-  const field = cell.getField()
-  const errorKey = `${rowIndex}_${field}`
+  const pos = row.getPosition()
+  if (pos) {
+    const rowIndex = pos - 1
+    const field = cell.getField()
+    const errorKey = `${rowIndex}_${field}`
 
-  if (validationErrors.value[errorKey]) {
-    const error = validationErrors.value[errorKey]
-    return `<b>${error.title}</b><br>${error.message}`
+    if (validationErrors.value[errorKey]) {
+      const error = validationErrors.value[errorKey]
+      return `<b>${error.title}</b><br>${error.message}`
+    }
   }
-
   return undefined
 }
 
@@ -375,7 +377,7 @@ function getColumns() {
   const rowNumberColumn = {
     title: '',
     field: '_rowNumber',
-    formatter: 'rownum',
+    formatter: 'rownum' as Formatter,
     width: 60,
     hozAlign: 'center' as const,
     headerSort: false,
@@ -385,10 +387,10 @@ function getColumns() {
   const dataColumns = schemaFields.value.map(field => ({
     title: field,
     field: field,
-    editor: 'input',
+    editor: 'input' as Editor,
     resizable: true,
     minWidth: 200,
-    tooltip: cellTooltip,
+    tooltip: cellTooltip as GlobalTooltipOption,
     headerSort: false,
     headerMenu: [
       {
@@ -410,20 +412,22 @@ function applyCellErrors() {
 
   const rows = table.getRows()
   rows.forEach((row: RowComponent) => {
-    const rowIndex = row.getPosition() - 1
+    const pos = row.getPosition()
+    if (pos) {
+      const rowIndex = pos - 1
+      schemaFields.value.forEach((field: string) => {
+        const cell = row.getCell(field)
+        const errorKey = `${rowIndex}_${field}`
+        const cellElement = cell.getElement()
 
-    schemaFields.value.forEach((field: string) => {
-      const cell = row.getCell(field)
-      const errorKey = `${rowIndex}_${field}`
-      const cellElement = cell.getElement()
-
-      if (validationErrors.value[errorKey]) {
-        cellElement.classList.add('cell-error')
-      }
-      else {
-        cellElement.classList.remove('cell-error')
-      }
-    })
+        if (validationErrors.value[errorKey]) {
+          cellElement.classList.add('cell-error')
+        }
+        else {
+          cellElement.classList.remove('cell-error')
+        }
+      })
+    }
   })
 }
 
@@ -477,7 +481,6 @@ async function parseCSV(file: File): Promise<RowData[]> {
       let data: RowData[] = []
       for (const separator of [',', ';', '","', '";"']) {
         const headers = lines[0].split(separator).map(h => h.trim().replace(/^"|"$/g, ''))
-        console.log(headers)
         data = parseFileContent(lines, separator)
         if (schemaFields.value.length === headers.length) {
           break

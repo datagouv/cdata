@@ -197,13 +197,14 @@
 
 <script setup lang="ts">
 import { BrandedButton, SchemaCard, SimpleBanner, useGetCatalog } from '@datagouv/components-next'
-import type { DatasetV2, RegisteredSchema } from '@datagouv/components-next'
+import type { Dataset, DatasetV2, RegisteredSchema } from '@datagouv/components-next'
 import { ref, onMounted, computed } from 'vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import DatasetsSelect from '~/components/DatasetsSelect.vue'
 import FieldsetElement from '~/components/Form/FieldsetElement.vue'
 import HelpAccordion from '~/components/Form/HelpAccordion.vue'
 import type { AssociateSchemaForm } from '~/types/schema'
+import type { DatasetSuggest } from '~/types/types'
 
 const emit = defineEmits<{
   next: []
@@ -212,20 +213,21 @@ const emit = defineEmits<{
 const { t } = useTranslation()
 const route = useRoute()
 const getCatalog = useGetCatalog()
+const { $api } = useNuxtApp()
 
-const schemas = ref<RegisteredSchema[]>([])
+const schemas = ref<Array<RegisteredSchema>>([])
 const loadingSchemas = ref(false)
 const searchQuery = ref('')
 
 const schemaForm = defineModel<AssociateSchemaForm>({ required: true })
+const publicationMode = defineModel<'new' | 'existing'>('publicationMode', { required: true })
 
 const { form, formInfo, getFirstError, touch, validate } = useForm(schemaForm, {
   owned: [required()],
   selectedSchema: [required(t('Vous devez sélectionner un schéma'))],
 })
 
-const publicationMode = ref<'new' | 'existing'>('new')
-const selectedDatasets = ref<DatasetV2[]>([])
+const selectedDatasets = ref<Array<DatasetV2 | DatasetSuggest>>([])
 
 const organizationId = computed(() => {
   const owned = form.value.owned
@@ -289,23 +291,12 @@ const canProceed = computed(() => {
 
 async function submit() {
   if (await validate()) {
-    const publicationModeState = useState<'new' | 'existing'>('structured-publication-mode', () => 'new')
-    publicationModeState.value = publicationMode.value
-
     if (publicationMode.value === 'existing' && selectedDatasets.value.length > 0) {
-      const existingDatasetState = useState<DatasetV2 | null>('structured-existing-dataset', () => null)
       const selectedDataset = selectedDatasets.value[0]
-
-      if ('resources' in selectedDataset && typeof selectedDataset.resources === 'object' && 'rel' in selectedDataset.resources) {
-        const { $api } = useNuxtApp()
-        existingDatasetState.value = await $api<DatasetV2>(`/api/1/datasets/${selectedDataset.id}/`)
-      }
-      else {
-        existingDatasetState.value = selectedDataset
-      }
+      form.value.existingDataset = await $api<Dataset>(`/api/1/datasets/${selectedDataset.id}/`)
     }
 
-    emit('next', form.value)
+    emit('next')
   }
 }
 

@@ -20,6 +20,7 @@
     <Step1AssociateSchema
       v-if="currentStep === 1"
       v-model="associateSchemaForm"
+      v-model:publication-mode="publicationMode"
       @next="moveToStep(2)"
     />
     <Step2LoadData
@@ -27,6 +28,7 @@
       v-model:resources="resources"
       v-model:use-spreadsheet="useSpreadsheet"
       :schema="associateSchemaForm.selectedSchema"
+      :publication-mode="publicationMode"
       @previous="moveToStep(1)"
       @next="dataNext"
       @open-sheet="openSheet"
@@ -35,6 +37,7 @@
       v-if="currentStep === '2-sheet'"
       v-model="file"
       :schema="associateSchemaForm.selectedSchema"
+      :publication-mode="publicationMode"
       @previous="moveToStep(2)"
       @next="sheetNext"
     />
@@ -53,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Dataset, Frequency, Owned, Resource, SpatialZone } from '@datagouv/components-next'
+import type { Dataset, Frequency, Owned, Resource, SchemaPublicationMode, SpatialZone } from '@datagouv/components-next'
 import Step1AssociateSchema from '~/components/Datasets/Structured/Step1AssociateSchema.vue'
 import Step2LoadData from '~/components/Datasets/Structured/Step2LoadData.vue'
 import Step2Sheet from '~/components/Datasets/Structured/Step2Sheet.vue'
@@ -73,8 +76,11 @@ const { start, finish } = useLoadingIndicator()
 
 const ASSOCIATE_SCHEMA_FORM_STATE = 'structured-associate-schema-form'
 const DATASET_FILES_STATE = 'structured-dataset-files'
-const DATASET_FORM_STATE = 'dataset-form'
+const DATASET_FORM_STATE = 'structured-dataset-form'
 const USE_SPREADSHEET_STATE = 'structured-use-spreadsheet'
+const NEW_DATASET_STATE = 'structured-new-dataset'
+const PUBLICATION_MODE_STATE = 'structured-publication-mode'
+const UPLOADED_FILE_STATE = 'strutured-uploaded-file'
 
 const steps = computed(() => ([
   t('Associez un schéma'),
@@ -107,11 +113,10 @@ const associateSchemaForm = useState(ASSOCIATE_SCHEMA_FORM_STATE, () => ({
   selectedSchema: null,
 } as AssociateSchemaForm))
 
-const file = useState<File | null>('uploaded-file', () => null)
+const file = useState<File | null>(UPLOADED_FILE_STATE, () => null)
 const resources = useState<Array<ResourceForm>>(DATASET_FILES_STATE, () => [])
-const newDataset = useState<Dataset | null>('structured-new-dataset', () => null)
-const publicationMode = useState<'new' | 'existing'>('structured-publication-mode', () => 'new')
-const existingDataset = useState<Dataset | null>('structured-existing-dataset', () => null)
+const newDataset = useState<Dataset | null>(NEW_DATASET_STATE, () => null)
+const publicationMode = useState<SchemaPublicationMode>(PUBLICATION_MODE_STATE, () => 'new')
 
 const currentStep = computed(() => {
   const step = route.query.step as string
@@ -134,8 +139,6 @@ const isCurrentStepValid = computed(() => {
   if (typeof step === 'number') {
     if (step < 1) return false
     if (step > steps.value.length) return false
-    // Step 3 est le formulaire de description, on ne vérifie pas le title ici
-    // car c'est justement là qu'on le remplit
     if (step === 4 && !newDataset.value) return false
   }
 
@@ -182,7 +185,6 @@ function describeNext() {
 }
 
 function openSheet(fileToOpen?: File) {
-  console.log(fileToOpen)
   file.value = fileToOpen ?? null
   moveToStep('2-sheet')
 }
@@ -191,11 +193,8 @@ async function save() {
   try {
     start()
 
-    let dataset: Dataset
-
-    if (publicationMode.value === 'existing' && existingDataset.value) {
-      dataset = existingDataset.value
-      newDataset.value = dataset
+    if (publicationMode.value === 'existing' && associateSchemaForm.value.existingDataset) {
+      newDataset.value = associateSchemaForm.value.existingDataset
     }
     else {
       if (
@@ -209,11 +208,12 @@ async function save() {
         }
       }
 
-      dataset = newDataset.value = newDataset.value || await $api<Dataset>('/api/1/datasets/', {
+      newDataset.value = newDataset.value || await $api<Dataset>('/api/1/datasets/', {
         method: 'POST',
         body: JSON.stringify(datasetToApi(datasetForm.value, { private: true })),
       })
     }
+    const dataset = newDataset.value
 
     let results: Array<PromiseSettledResult<Resource>> = []
     for (const chunk of chunkArray(resources.value, config.public.maxNumberOfResourcesToUploadInParallel)) {
@@ -227,8 +227,13 @@ async function save() {
       else {
         await moveToStep(4)
       }
+      clearNuxtState(ASSOCIATE_SCHEMA_FORM_STATE)
+      clearNuxtState(USE_SPREADSHEET_STATE)
       clearNuxtState(DATASET_FORM_STATE)
       clearNuxtState(DATASET_FILES_STATE)
+      clearNuxtState(NEW_DATASET_STATE)
+      clearNuxtState(PUBLICATION_MODE_STATE)
+      clearNuxtState(UPLOADED_FILE_STATE)
     }
   }
   finally {

@@ -52,6 +52,8 @@ export type Schema = {
   version?: string | null
 }
 
+export type SchemaPublicationMode = 'new' | 'existing'
+
 export type ValidataError = {
   code: string
   description: string

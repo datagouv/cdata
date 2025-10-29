@@ -144,13 +144,14 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getSchemaVersion, PaddedContainer, SimpleBanner, type RegisteredSchema } from '@datagouv/components-next'
+import { BrandedButton, getSchemaVersion, PaddedContainer, SimpleBanner, type RegisteredSchema, type SchemaPublicationMode } from '@datagouv/components-next'
 import FieldsetElement from '~/components/Form/FieldsetElement.vue'
 import HelpAccordion from '~/components/Form/HelpAccordion.vue'
 import type { ResourceForm } from '~/types/types'
 
 const props = defineProps<{
   schema: RegisteredSchema | null
+  publicationMode: SchemaPublicationMode
 }>()
 
 const emit = defineEmits<{
@@ -173,7 +174,6 @@ const { data: extensions } = await useAPI<Array<string>>(key, {
 const { t } = useTranslation()
 
 const schemaVersion = computed(() => getSchemaVersion(props.schema))
-const publicationMode = useState<'new' | 'existing'>('structured-publication-mode', () => 'new')
 
 const isTableschema = computed(() => props.schema?.schema_type === 'tableschema')
 

@@ -52,12 +52,12 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { SimpleBanner, type Dataset } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import type { Dataset, DatasetV2 } from '@datagouv/components-next'
 import { RiLightbulbLine } from '@remixicon/vue'
 
 const props = defineProps<{
-  dataset: Dataset
+  dataset: Dataset | DatasetV2
 }>()
 
 const publicDataset = computed(() => ({ ...props.dataset, private: false }))

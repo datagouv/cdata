@@ -1,8 +1,7 @@
-import type { DatasetV2, Organization, RegisteredSchema } from '@datagouv/components-next'
-import type { DatasetSuggest } from './types'
+import type { Dataset, Organization, Owned, RegisteredSchema } from '@datagouv/components-next'
 
 export type AssociateSchemaForm = {
-  owned: Organization | null
-  existingDataset: DatasetV2 | DatasetSuggest | null
+  owned: (Owned & { organization: Organization }) | null
+  existingDataset: Dataset | null
   selectedSchema: RegisteredSchema | null
 }
