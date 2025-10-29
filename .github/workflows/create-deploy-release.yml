@@ -6,7 +6,7 @@ on:
       - main
 jobs:
   trigger-gitlab-pipeline:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     env:
       # static variables and secrets to be defined
       APP_NAME: ${{ vars.APP_NAME }}
