@@ -392,16 +392,8 @@ function getColumns() {
     minWidth: 200,
     tooltip: cellTooltip as GlobalTooltipOption,
     headerSort: false,
-    headerMenu: [
-      {
-        label: '<strong>' + t('Description') + '</strong>',
-        disabled: true,
-      },
-      {
-        label: getFieldDescription(field),
-        disabled: true,
-      },
-    ],
+    headerPopup: `<strong> ${t('Description')} :</strong> ${getFieldDescription(field)}`,
+    headerPopupIcon: `<span aria-hidden="true" class="fr-icon-information-line"></span>`,
   }))
 
   return [rowNumberColumn, ...dataColumns]
