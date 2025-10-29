@@ -73,23 +73,19 @@
         :legend="$t('Saisir vos données')"
       >
         <FieldsetElement form-key="useSpreadsheet">
-          <PaddedContainer
-            class="flex flex-col items-center"
-            color="alt-grey"
-          >
-            <p class="fr-text--sm fr-mb-2w text-center">
+          <PaddedContainer color="alt-grey">
+            <p class="text-sm mb-4">
               {{ $t(`Utilisez l'outil tableur pour créer vos données directement en ligne avec les colonnes du schéma sélectionné.`) }}
             </p>
-            <BrandedButton
-              color="primary"
-              @click="selectSpreadsheet"
-            >
-              <span
-                class="fr-icon-table-line fr-mr-1w"
-                aria-hidden="true"
-              />
-              {{ $t(`Utiliser l'outil tableur`) }}
-            </BrandedButton>
+            <div class="text-center">
+              <BrandedButton
+                color="primary"
+                :icon="RiTableLine"
+                @click="selectSpreadsheet"
+              >
+                {{ $t(`Utiliser l'outil tableur`) }}
+              </BrandedButton>
+            </div>
           </PaddedContainer>
           <template #accordion>
             <HelpAccordion :title="$t(`Utiliser l'outil tableur`)">
@@ -145,6 +141,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, getSchemaVersion, PaddedContainer, SimpleBanner, type RegisteredSchema, type SchemaPublicationMode } from '@datagouv/components-next'
+import { RiTableLine } from '@remixicon/vue'
 import FieldsetElement from '~/components/Form/FieldsetElement.vue'
 import HelpAccordion from '~/components/Form/HelpAccordion.vue'
 import type { ResourceForm } from '~/types/types'
