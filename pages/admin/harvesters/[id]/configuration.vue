@@ -117,7 +117,7 @@ const save = async () => {
   try {
     loading.value = true
 
-    harvester.value = await $api(`/api/1/harvest/source/${harvester.value.id}`, {
+    await $api(`/api/1/harvest/source/${harvester.value.id}`, {
       method: 'PUT',
       body: JSON.stringify(harvesterToApi(harvesterForm.value)),
     })
