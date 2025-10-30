@@ -3,7 +3,6 @@
   <div class="container mb-7">
     <Breadcrumb>
       <BreadcrumbItem
-        :external="true"
         to="/"
       >
         Accueil

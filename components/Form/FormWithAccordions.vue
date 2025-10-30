@@ -53,6 +53,7 @@ provide('formInfo', props.formInfo)
 const opened = ref<string | null>(null)
 
 provide(key, {
+  withIcon: true,
   isOpen(id: string) {
     return opened.value === id
   },

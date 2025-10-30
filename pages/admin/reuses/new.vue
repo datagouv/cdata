@@ -3,7 +3,6 @@
     <Breadcrumb>
       <BreadcrumbItem
         to="/"
-        external
       >
         {{ $t('Accueil') }}
       </BreadcrumbItem>
@@ -87,6 +86,8 @@ const reuseForm = useState(
       owned: null,
       title: '',
       url: '',
+      featured: false,
+      archived: null,
       type: null,
       topic: null,
       description: '',

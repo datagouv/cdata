@@ -32,7 +32,7 @@
 
 <script setup lang="ts" generic="T">
 import { computed } from 'vue'
-import { RiCloseLine, RiErrorWarningLine, RiSubtractLine } from '@remixicon/vue'
+import { RiCheckLine, RiCloseLine, RiErrorWarningLine, RiSubtractLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { key, type AccordionRegister } from '~/components/Accordion/injectionKey'
 
@@ -42,20 +42,22 @@ defineProps<{
 
 const accordionId = inject<string>('accordionId', undefined as never)
 const formKey = inject<KeysOfUnion<T>>('formKey', undefined as never)
-const { getFirstError, getFirstWarning } = inject<FormInfo<T>>('formInfo', undefined as never)
+const { isTouched, getFirstError, getFirstWarning } = inject<FormInfo<T>>('formInfo', undefined as never)
 
 const { toggle, isOpen } = inject(key) as AccordionRegister
 
 const icon = computed(() => {
+  if (!isTouched(formKey)) return RiSubtractLine
   if (getFirstError(formKey)) return RiCloseLine
   if (getFirstWarning(formKey)) return RiErrorWarningLine
 
-  return RiSubtractLine
+  return RiCheckLine
 })
 const iconColor = computed(() => {
+  if (!isTouched(formKey)) return 'text-neutral-500'
   if (getFirstError(formKey)) return 'text-red-700'
   if (getFirstWarning(formKey)) return 'text-amber-700'
 
-  return 'text-neutral-500'
+  return 'text-green-700'
 })
 </script>
