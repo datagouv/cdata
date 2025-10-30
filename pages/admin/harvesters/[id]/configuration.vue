@@ -102,7 +102,7 @@ const { t } = useTranslation()
 const { toast } = useToast()
 
 const sourceUrl = computed(() => `/api/1/harvest/source/${route.params.id}`)
-const { data: harvester } = await useAPI<HarvesterSource>(sourceUrl, { redirectOn404: true })
+const { data: harvester, refresh } = await useAPI<HarvesterSource>(sourceUrl, { redirectOn404: true })
 
 const loading = ref(false)
 
@@ -132,6 +132,11 @@ const save = async () => {
       else {
         await $api(`/api/1/harvest/source/${harvester.value.id}/schedule`, { method: 'DELETE' })
       }
+
+      // Update harvester.value with the new schedule
+      // It could be better to be able to do `harvester.value = await $api…` above since
+      // the API returns the updated value…
+      await refresh()
     }
 
     toast.success(t('Moissonneur mis à jour !'))
