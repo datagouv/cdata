@@ -85,5 +85,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', calculatePanelPosition)
 })
 
-onUpdated(() => calculatePanelPosition())
+onUpdated(() => {
+  calculatePanelPosition()
+})
 </script>
