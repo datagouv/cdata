@@ -151,7 +151,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Pagination, SimpleBanner, TranslationT } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination, SimpleBanner, TranslationT } from '@datagouv/components-next'
 import { RiAddLine, RiCloseCircleLine, RiInformationLine, RiSearchLine } from '@remixicon/vue'
 import { refDebounced } from '@vueuse/core'
 import NewDiscussionForm from './NewDiscussionForm.vue'

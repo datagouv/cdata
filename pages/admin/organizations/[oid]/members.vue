@@ -289,7 +289,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BannerAction, useFormatDate, useGetUserAvatar, type Member, type Organization } from '@datagouv/components-next'
+import { Avatar, BannerAction, LoadingBlock, useFormatDate, useGetUserAvatar, type Member, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiAddLine, RiEyeLine, RiLogoutBoxRLine, RiPencilLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'

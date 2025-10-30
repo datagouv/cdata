@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Reuse } from '@datagouv/components-next'
+import { LoadingBlock, type Reuse } from '@datagouv/components-next'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 
 const props = defineProps<{

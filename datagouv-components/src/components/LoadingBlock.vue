@@ -13,7 +13,8 @@
 </template>
 
 <script setup lang="ts">
-import { AnimatedLoader } from '@datagouv/components-next'
+import { computed } from 'vue'
+import AnimatedLoader from './AnimatedLoader.vue'
 
 const props = defineProps<{
   status: string

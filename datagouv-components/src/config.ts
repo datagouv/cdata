@@ -1,5 +1,6 @@
 import { inject, type Component, type InjectionKey } from 'vue'
 import type { UseFetchFunction } from './functions/api.types'
+import type { FetchOptions } from 'ofetch'
 
 export type PluginConfig = {
   name: string // Name of the application (ex: data.gouv.fr)
@@ -18,6 +19,10 @@ export type PluginConfig = {
   tabularAllowRemote?: boolean
   tabularApiDataserviceId?: string
   customUseFetch?: UseFetchFunction | null
+  onRequest?: FetchOptions['onRequest']
+  onRequestError?: FetchOptions['onRequestError']
+  onResponse?: FetchOptions['onResponse']
+  onResponseError?: FetchOptions['onResponseError']
   textClamp?: string | Component | null
   appLink?: Component | null
   clientOnly?: Component | null

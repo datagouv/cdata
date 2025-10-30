@@ -140,7 +140,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Pagination, summarize, Tooltip, type Dataservice, type Organization, type User } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination, summarize, Tooltip, type Dataservice, type Organization, type User } from '@datagouv/components-next'
 import { RiChat3Line, RiDownloadLine, RiEyeLine, RiStarSLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
