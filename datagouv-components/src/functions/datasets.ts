@@ -50,3 +50,10 @@ export async function getDescriptionShort(
   }
   return ''
 }
+
+export function getResourceFilesize(resource: Resource): null | number {
+  if (resource.filesize) return resource.filesize
+  if ('analysis:content-length' in resource.extras) return resource.extras['analysis:content-length'] as number
+
+  return null
+}
