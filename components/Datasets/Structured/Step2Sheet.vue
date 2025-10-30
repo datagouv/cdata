@@ -21,11 +21,14 @@
         </div>
       </SimpleBanner>
 
-      <div v-if="schemaFields.length === 0">
-        <Alert type="warning">
-          {{ $t(`Aucun schéma n'a été sélectionné. Veuillez retourner à l'étape précédente.`) }}
-        </Alert>
-      </div>
+      <SimpleBanner
+        v-if="schemaFields.length === 0"
+        type="warning"
+        class="flex items-center space-x-2"
+      >
+        <RiErrorWarningLine class="shink-0 size-6" />
+        <span>{{ $t(`Aucun schéma n'a été sélectionné. Veuillez retourner à l'étape précédente.`) }}</span>
+      </SimpleBanner>
 
       <div v-else>
         <div class="fr-mb-3w">
@@ -93,10 +96,10 @@
           {{ $t('Rapport de validation') }}
         </h3>
 
-        <Alert
+        <SimpleBanner
           v-if="hasNoErrors"
           type="success"
-          class="fr-mb-2w"
+          class="mb-4"
         >
           <template #title>
             {{ $t('Validation réussie') }}
@@ -110,12 +113,12 @@
           >
             {{ validationReport.report.stats.rows_processed }} {{ $t('lignes traitées') }}
           </p>
-        </Alert>
+        </SimpleBanner>
 
-        <Alert
+        <SimpleBanner
           v-else
-          type="error"
-          class="fr-mb-2w"
+          type="danger"
+          class="mb-4"
         >
           <template #title>
             {{ $t('Validation échouée') }}
@@ -129,7 +132,7 @@
           >
             {{ validationReport.report.stats.rows_processed }} {{ $t('lignes traitées') }}
           </p>
-        </Alert>
+        </SimpleBanner>
 
         <div v-if="!hasNoErrors && validationReport.report?.errors && validationReport.report.errors.length > 0">
           <AccordionGroup :with-icon="false">
@@ -271,6 +274,7 @@ import type { ResourceForm } from '~/types/types'
 import 'tabulator-tables/dist/css/tabulator.min.css'
 import { computedAsync } from '@vueuse/core'
 import { ofetch } from 'ofetch'
+import { RiErrorWarningLine } from '@remixicon/vue'
 
 interface RowData {
   [key: string]: string | number | null | undefined
