@@ -160,7 +160,7 @@ watch(selectedSuggest, async () => {
       objectsByIds.value[object.id] = await props.fetch(object.id)
     }
   }
-}, { immediate: true })
+}, { immediate: true, deep: true })
 
 const selected = computed<Array<T | TSuggest>>(() => {
   return selectedSuggest.value.map((datasetSuggest) => {
