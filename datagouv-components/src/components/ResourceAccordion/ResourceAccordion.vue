@@ -103,6 +103,7 @@
             new-tab
             size="xs"
             external
+            @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
           >
             {{ t('Visiter') }}
           </BrandedButton>
@@ -136,6 +137,7 @@
             size="xs"
             :aria-describedby="resourceTitleId"
             external
+            @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
           >
             <span class="sr-only">{{ t('Télécharger la liste au format ') }}</span>{{ format }}
           </BrandedButton>
@@ -259,6 +261,7 @@
                       class="fr-link no-icon-after"
                       rel="ugc nofollow noopener"
                       target="_blank"
+                      @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
                     >
                       <component
                         :is="config.textClamp"
@@ -279,6 +282,7 @@
                       :href="resource.latest"
                       class="fr-link"
                       rel="ugc nofollow noopener"
+                      @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${resource.format}`)"
                     >
                       <span>{{ t('Format {format}', { format: resource.format }) }}<span v-if="resourceFilesize"> - {{ filesize(resourceFilesize) }}</span></span>
                     </a>
@@ -305,6 +309,7 @@
                         :href="generatedFormat.url"
                         class="fr-link"
                         rel="ugc nofollow noopener"
+                        @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${generatedFormat.format}`)"
                       >
                         <span>{{ t('Format {format}', { format: generatedFormat.format }) }}<span v-if="generatedFormat.size"> - {{ filesize(generatedFormat.size) }}</span></span>
                       </a>
@@ -445,10 +450,10 @@ const toggle = () => {
   open.value = !open.value
 
   if (open.value) {
-    trackEvent(['Open resource', props.resource.id])
+    trackEvent('Open resource', props.resource.id)
   }
   else {
-    trackEvent(['Close resource', props.resource.id])
+    trackEvent('Close resource', props.resource.id)
   }
 }
 
@@ -485,13 +490,13 @@ const switchTab = (index: number) => {
   if (!option) {
     return
   }
-  trackEvent(['View resource tab', props.resource.id, option.label])
+  trackEvent('View resource tab', props.resource.id, option.label)
 
   if (option.key === 'data') {
-    trackEvent(['Show preview', props.resource.id])
+    trackEvent('Show preview', props.resource.id)
   }
   if (option.key === 'data-structure') {
-    trackEvent(['Show data structure', props.resource.id])
+    trackEvent('Show data structure', props.resource.id)
   }
 }
 

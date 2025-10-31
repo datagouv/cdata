@@ -34,7 +34,8 @@
             :icon="RiExternalLinkFill"
             icon-right
             size="xs"
-            target="blank"
+            new-tab
+            @click="$matomo.trackEvent('Jeux de données', 'Explorer les données', 'Bouton : explorer les données')"
           >
             {{ $t("Explorer les données") }}
           </BrandedButton>

@@ -30,6 +30,7 @@
               :href="reuse.url"
               :new-tab="true"
               size="xs"
+              @click="$matomo.trackEvent('Réutilisation', `Voir la réutilisation`, 'Bouton :  voir la reutilisation')"
             >
               {{ $t('Voir la réutilisation') }}
             </BrandedButton>
@@ -131,6 +132,7 @@
                 size="xs"
                 :href="reuse.url"
                 :new-tab="true"
+                @click="$matomo.trackEvent('Réutilisation', `Voir la réutilisation`, 'Bouton : voir la reutilisation')"
               >
                 {{ $t('Voir la réutilisation') }}
               </BrandedButton>
