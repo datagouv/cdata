@@ -42,38 +42,40 @@
     >
       <div class="space-y-8">
         <div class="container pt-3 min-h-32">
-          <div class="flex flex-col md:space-x-10 md:flex-row">
+          <div class="flex flex-col md:space-x-10 md:flex-row md:items-start">
             <div class="flex-1 overflow-x-hidden">
-              <div class="flex gap-3 mb-2">
-                <AdminBadge
-                  v-if="dataservice.deleted_at"
-                  :icon="RiDeleteBinLine"
-                  size="sm"
-                  type="secondary"
-                >
-                  {{ $t('Supprimé') }}
-                </AdminBadge>
-                <AdminBadge
-                  v-if="dataservice.private"
-                  :icon="RiLockLine"
-                  size="sm"
-                  type="secondary"
-                >
-                  {{ $t('Brouillon') }}
-                </AdminBadge>
-                <AdminBadge
-                  v-if="dataservice.archived_at"
-                  :icon="RiLockLine"
-                  size="sm"
-                  type="secondary"
-                >
-                  {{ $t('Archivé') }}
-                </AdminBadge>
+              <div ref="header">
+                <div class="flex gap-3 mb-2">
+                  <AdminBadge
+                    v-if="dataservice.deleted_at"
+                    :icon="RiDeleteBinLine"
+                    size="sm"
+                    type="secondary"
+                  >
+                    {{ $t('Supprimé') }}
+                  </AdminBadge>
+                  <AdminBadge
+                    v-if="dataservice.private"
+                    :icon="RiLockLine"
+                    size="sm"
+                    type="secondary"
+                  >
+                    {{ $t('Brouillon') }}
+                  </AdminBadge>
+                  <AdminBadge
+                    v-if="dataservice.archived_at"
+                    :icon="RiLockLine"
+                    size="sm"
+                    type="secondary"
+                  >
+                    {{ $t('Archivé') }}
+                  </AdminBadge>
+                </div>
+                <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
+                  {{ dataservice.title }}
+                </h1>
               </div>
-              <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
-                {{ dataservice.title }}
-              </h1>
-              <ReadMore class="">
+              <ReadMore :wanted-height="sidebarHeight - headerHeight">
                 <MarkdownViewer
                   size="md"
                   :content="dataservice.description"
@@ -81,7 +83,10 @@
                 />
               </ReadMore>
             </div>
-            <dl class="pl-0 w-full shrink-0 md:w-[384px] space-y-2.5">
+            <dl
+              ref="sidebar"
+              class="pl-0 w-full shrink-0 md:w-[384px] space-y-2.5"
+            >
               <div class="space-y-1">
                 <dt class="text-gray-plain font-bold">
                   {{ $t('Producteur') }}
@@ -298,11 +303,18 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
+import { useElementSize } from '@vueuse/core'
 
 const config = useRuntimeConfig()
 const route = useRoute()
 const { formatDate } = useFormatDate()
 const { $matomo } = useNuxtApp()
+
+const sidebar = useTemplateRef('sidebar')
+const header = useTemplateRef('header')
+
+const { height: sidebarHeight } = useElementSize(sidebar)
+const { height: headerHeight } = useElementSize(header)
 
 const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
 const { data: dataservice, status } = await useAPI<Dataservice>(url, { redirectOn404: true, redirectOnSlug: 'did' })
