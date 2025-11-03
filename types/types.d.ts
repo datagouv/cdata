@@ -181,6 +181,7 @@ export type NewReuseForApi = {
   deleted?: null
   description: string
   datasets: Array<string> | undefined
+  dataservices: Array<string> | undefined
   url: string
   type: string | null
   topic: string | null

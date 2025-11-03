@@ -19,30 +19,31 @@
       </div>
     </SimpleBanner>
 
-    <DatasetsSelect v-model="datasets" />
-
-    <div class="fr-grid-row justify-between">
-      <BrandedButton
-        color="secondary"
-        @click="$emit('previous')"
-      >
-        {{ t("Précédent") }}
-      </BrandedButton>
-      <BrandedButton
-        color="primary"
-        :disabled="!datasets.length"
-        :loading
-        @click="$emit('next')"
-      >
-        {{ t("Suivant") }}
-      </BrandedButton>
+    <div class="space-y-16">
+      <DatasetsSelect v-model="datasets" />
+      <DataservicesSelect v-model="dataservices" />
+      <div class="fr-grid-row justify-between">
+        <BrandedButton
+          color="secondary"
+          @click="$emit('previous')"
+        >
+          {{ t("Précédent") }}
+        </BrandedButton>
+        <BrandedButton
+          color="primary"
+          :disabled="!datasets.length"
+          :loading
+          @click="$emit('next')"
+        >
+          {{ t("Suivant") }}
+        </BrandedButton>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { SimpleBanner, type Dataset, type DatasetV2 } from '@datagouv/components-next'
+import { BrandedButton, type Dataservice, SimpleBanner, type DatasetV2 } from '@datagouv/components-next'
 import type { DatasetSuggest } from '~/types/types'
 
 defineProps<{ loading: boolean }>()
@@ -52,7 +53,8 @@ defineEmits<{
   next: []
 }>()
 
-const datasets = defineModel<Array<Dataset | DatasetV2 | DatasetSuggest>>({ required: true })
+const datasets = defineModel<Array<DatasetV2 | DatasetSuggest>>('datasets', { required: true })
+const dataservices = defineModel<Array<Dataservice>>('dataservices', { required: true })
 
 const { t } = useTranslation()
 </script>
