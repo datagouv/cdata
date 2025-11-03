@@ -36,6 +36,7 @@
           <BrandedButton
             href="/datasets"
             class="w-full sm:w-auto"
+            @click="$matomo.trackEvent('Homepage', `Découvrir les données`, 'Bouton : découvrez les jeux de données')"
           >
             {{ $t('Découvrez les jeux de données') }}
           </BrandedButton>
@@ -43,6 +44,7 @@
             href="/reuses"
             color="primary-soft"
             class="w-full sm:w-auto"
+            @click="$matomo.trackEvent('Homepage', `Découvrir les réutilisation`, 'Bouton : explorez les réutilisations de données')"
           >
             {{ $t('Explorez les réutilisations de données') }}
           </BrandedButton>
