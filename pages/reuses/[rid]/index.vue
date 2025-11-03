@@ -105,6 +105,31 @@
         @change="(changedPage: number) => datasetsPage = changedPage"
       />
     </section>
+    <section v-if="dataservices">
+      <h2 class="uppercase text-sm mb-2.5">
+        {{ $t('aucune API associée | {n} API associée | {n} APIs associées', { n: dataservices.total }) }}
+      </h2>
+      <div
+        class="grid gap-5"
+        :class="{
+          'lg:grid-cols-2': dataservices.total > 1,
+        }"
+      >
+        <DataserviceCard
+          v-for="dataservice in dataservices.data"
+          :key="dataservice.id"
+          :dataservice
+          class="m-0 min-w-0"
+        />
+      </div>
+      <Pagination
+        class="mt-4"
+        :page="dataservicesPage"
+        :page-size="dataservicesPageSize"
+        :total-results="dataservices.total"
+        @change="(changedPage: number) => dataservicesPage = changedPage"
+      />
+    </section>
     <section>
       <LoadingBlock
         :status
@@ -143,7 +168,7 @@
 </template>
 
 <script setup lang="ts">
-import { getTopic, useReuseType, StatBox, type Reuse, type ReuseTopic, type DatasetV2, Pagination, useFormatDate } from '@datagouv/components-next'
+import { getTopic, useReuseType, StatBox, type Reuse, type ReuseTopic, type DatasetV2, Pagination, useFormatDate, DataserviceCard, type Dataservice } from '@datagouv/components-next'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import type { PaginatedArray } from '~/types/types'
 
@@ -169,6 +194,17 @@ const datasetsQuery = computed(() => {
   }
 })
 const { data: datasets } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/', { query: datasetsQuery })
+
+const dataservicesPage = ref(1)
+const dataservicesPageSize = ref(10)
+const dataservicesQuery = computed(() => {
+  return {
+    page: dataservicesPage.value,
+    page_size: dataservicesPageSize.value,
+    reuse: props.reuse.id,
+  }
+})
+const { data: dataservices } = await useAPI<PaginatedArray<Dataservice>>('/api/1/dataservices/', { query: dataservicesQuery })
 
 const topic = computed(() => getTopic(topics.value, props.reuse.topic))
 
