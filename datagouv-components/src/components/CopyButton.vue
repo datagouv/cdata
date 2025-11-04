@@ -9,7 +9,7 @@
       v-if="copied"
       class="flex items-center gap-1"
       :class="{ 'flex-row-reverse': reverse }"
-      style="color: #3558a2;"
+      style="color: #000091;"
     >
       <RiCheckLine class="flex-none size-4 inline" />
       <span
@@ -60,7 +60,7 @@ const copy = () => {
 
   <style scoped>
   button:hover .copy-icon {
-    color: #3558a2;
+    color: #000091;
   }
 
   .copy-link {

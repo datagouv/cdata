@@ -26,7 +26,7 @@ import Chart from 'chart.js/auto'
 import { computed, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
 
 const LIGHT_COLOR = '#B6CFFB'
-const COLOR = '#3558A2'
+const COLOR = '#000091'
 const COLOR_WITH_OPACITY = 'rgba(53, 88, 162, 0.7)'
 const LIGHT_COLOR_WITH_OPACITY = 'rgba(182, 207, 251, 0.7)'
 
