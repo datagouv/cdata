@@ -236,6 +236,7 @@
               :icon="RiExternalLinkLine"
               icon-right
               external
+              @click="$matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : documentation métier')"
             >
               {{ $t('Documentation métier') }}
             </BrandedButton>
@@ -247,7 +248,7 @@
             <button
               type="button"
               class="min-h-[42px] w-full flex items-center justify-between"
-              @click="openSwagger = !openSwagger"
+              @click="showSwagger"
             >
               <div class="text-datagouv-dark font-bold text-xl">
                 {{ $t('Swagger') }}
@@ -301,6 +302,7 @@ import ReportModal from '~/components/Spam/ReportModal.vue'
 const config = useRuntimeConfig()
 const route = useRoute()
 const { formatDate } = useFormatDate()
+const { $matomo } = useNuxtApp()
 
 const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
 const { data: dataservice, status } = await useAPI<Dataservice>(url, { redirectOn404: true, redirectOnSlug: 'did' })
@@ -315,6 +317,13 @@ useSeoMeta({
 await useJsonLd('dataservice', route.params.did)
 
 const openSwagger = ref(false)
+
+function showSwagger() {
+  openSwagger.value = !openSwagger.value
+  if (openSwagger.value) {
+    $matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : ouvrir swagger')
+  }
+}
 
 const accessAudiences = computed(() => (['local_authority_and_administration', 'company_and_association', 'private'] as Array<DataserviceAccessAudienceType>)
   .map(type => dataservice.value.access_audiences.find(a => a.role === type))

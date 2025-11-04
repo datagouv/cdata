@@ -386,8 +386,8 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getResourceLabel, LoadingBlock, RESOURCE_TYPE, SimpleBanner, TranslationT } from '@datagouv/components-next'
-import type { SchemaResponseData } from '@datagouv/components-next'
+import { BrandedButton, getResourceLabel,LoadingBlock, RESOURCE_TYPE, SimpleBanner, TranslationT } from '@datagouv/components-next'
+import type { DatasetV2, SchemaResponseData } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 import FieldsetElement from '../Form/FieldsetElement.vue'
@@ -412,8 +412,19 @@ const emit = defineEmits<{
 const resourceForm = defineModel<ResourceForm | CommunityResourceForm>({ required: true })
 const { form, getFirstError, getFirstWarning, validate, formInfo } = useResourceForm(resourceForm)
 
-const datasets = ref([])
+const datasets = ref<Array<DatasetV2>>([])
 const newFile = ref<File | null>(null)
+
+const route = useRoute()
+onMounted(async () => {
+  if (props.type !== 'create-community' || !('dataset' in form.value)) return
+  if (!route.query.dataset_id) return
+
+  const dataset = await $api<DatasetV2>(`/api/2/datasets/${route.query.dataset_id}/`)
+  if (!datasets.value.some(d => d.id === dataset.id)) {
+    datasets.value.push(dataset)
+  }
+})
 
 const isRemote = computed(() => resourceForm.value.filetype === 'remote')
 const nameAFile = computed(() => isRemote.value ? t('Nommer un lien') : t('Nommer un fichier'))

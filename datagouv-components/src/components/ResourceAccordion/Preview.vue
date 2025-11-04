@@ -32,6 +32,7 @@
               :href="resource.preview_url"
               :icon="RiExternalLinkFill"
               icon-right
+              @click="trackEvent('Jeux de données', 'Explorer les données', 'Bouton : explorer les données')"
             >
               {{ t("Explorer les données") }}
             </BrandedButton>
@@ -108,6 +109,7 @@ import { RiArrowDownLine, RiArrowUpLine, RiErrorWarningLine, RiExternalLinkFill 
 import Pagination from '../Pagination.vue'
 import { getData, type SortConfig } from '../../functions/tabularApi'
 import { useFormatDate } from '../../functions/dates'
+import { trackEvent } from '../../functions/matomo'
 import type { Resource } from '../../types/resources'
 import { useComponentsConfig } from '../../config'
 import BrandedButton from '../BrandedButton.vue'
