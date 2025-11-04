@@ -101,7 +101,7 @@
 
 <script setup lang="ts">
 import type { TopicV2, TopicElement, TopicElementClass } from '@datagouv/components-next'
-import { useFormatDate, Pagination, BrandedButton } from '@datagouv/components-next'
+import { useFormatDate, LoadingBlock, Pagination, BrandedButton } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { RiSearchLine } from '@remixicon/vue'
