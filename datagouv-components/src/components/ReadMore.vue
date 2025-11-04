@@ -42,30 +42,32 @@ import BrandedButton from './BrandedButton.vue'
 import { useTranslation } from '../composables/useTranslation'
 
 const props = withDefaults(defineProps<{
+  wantedHeight?: number
   maxHeight?: string
 }>(), {
+  wantedHeight: 284,
   maxHeight: '',
 })
 
 const { t } = useTranslation()
 
-const DEFAULT_HEIGHT = 284
 const expanded = ref(false)
 const readMoreRequired = ref(false)
 const containerRef = useTemplateRef<HTMLElement | null>('containerRef')
 const readMoreRef = useTemplateRef<HTMLElement | null>('readMoreRef')
 const { height } = useElementSize(containerRef)
-const containerHeight = ref(DEFAULT_HEIGHT)
+const containerHeight = ref(props.wantedHeight)
 const getHeight = (elt: Element) => {
   const style = getComputedStyle(elt)
   return parseFloat(style.getPropertyValue('height'))
     + parseFloat(style.getPropertyValue('margin-top'))
     + parseFloat(style.getPropertyValue('margin-bottom'))
 }
+
 const getDefaultHeight = () => {
   const elementMaxHeight = document.querySelector(`[data-read-more-max-height="${props.maxHeight}"]`)
   if (!elementMaxHeight) {
-    return DEFAULT_HEIGHT
+    return props.wantedHeight
   }
   return Array.from(elementMaxHeight.children)
     .map(getHeight)
@@ -78,6 +80,10 @@ const updateReadMoreHeight = (height: number) => {
     containerHeight.value = height
   }
 }
+
+watch(() => props.wantedHeight, () => {
+  updateReadMoreHeight(height.value)
+})
 const toggle = () => {
   if (!readMoreRef.value) {
     return
