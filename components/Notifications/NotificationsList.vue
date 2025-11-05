@@ -1,11 +1,11 @@
 <template>
-  <div class="divide-y">
+  <div class="divide-y h-96 overflow-y-auto">
     <div
       v-for="notification in notifications"
-      :key="notification.details.id"
+      :key="notification.id"
     >
       <NotificationsMembershipRequest
-        v-if="notification.type === 'membership_request'"
+        v-if="notification.details.class === 'MembershipRequestNotificationDetails'"
         :notification
       />
     </div>

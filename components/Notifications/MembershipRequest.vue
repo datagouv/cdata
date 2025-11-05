@@ -7,21 +7,21 @@
       <p class="m-0 text-xs font-bold">
         <NuxtLink
           class="after:absolute after:inset-0 bg-none"
-          :to="`/admin/organizations/${notification.details.organization}/members`"
+          :to="`/admin/organizations/${notification.details.request_organization.id}/members`"
         >
           {{ $t(`Demande d'adhésion`) }}
         </NuxtLink>
       </p>
       <p class="m-0 text-xs">
-        {{ $t(`de ${notification.details.user.fullname}`) }}
+        {{ $t(`de ${notification.details.request_user.first_name} ${notification.details.request_user.last_name}`) }}
       </p>
       <p class="m-0 text-xs">
-        {{ $t(`à ${notification.details.organization}`) }}
+        {{ $t(`à ${notification.details.request_organization.name}`) }}
       </p>
     </div>
     <div class="flex-none flex m-0 gap-1.5">
       <p class="m-0 text-xs">
-        {{ formatDate(notification.created_on) }}
+        {{ formatDate(notification.created_at) }}
       </p>
       <div class="size-2 rounded-full bg-danger mt-0.5" />
     </div>
