@@ -176,7 +176,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Pagination } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination, getLink } from '@datagouv/components-next'
 import type { Dataservice, Organization } from '@datagouv/components-next'
 import { RiCloseCircleLine } from '@remixicon/vue'
 import { computedAsync, debouncedRef, useUrlSearchParams } from '@vueuse/core'

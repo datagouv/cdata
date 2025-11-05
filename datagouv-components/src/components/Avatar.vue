@@ -6,6 +6,7 @@
     :height="size"
     loading="lazy"
     alt=""
+    data-testid="user-avatar"
   >
 </template>
 

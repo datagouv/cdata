@@ -1,6 +1,6 @@
 {
   "name": "@datagouv/components-next",
-  "version": "0.0.32",
+  "version": "0.1.5",
   "private": false,
   "type": "module",
   "main": "./src/main.ts",
@@ -15,7 +15,8 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "lint": "eslint . --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write src/",
     "css": "tailwindcss -i ./assets/main.css -o ./dist/components.css --minify --optimize",
     "preversion": "npm run build && npm run css",

@@ -8,31 +8,31 @@
         <div class="w-37 h-35 flex items-center justify-center md:w-25 md:h-24">
           <img
             v-if="statusCode === 404"
-            src="/assets/svg/errors/404.svg"
+            src="/nuxt_images/errors/404.svg"
             alt="Erreur 404"
             class="w-full h-full object-contain"
           >
           <img
             v-else-if="statusCode === 403"
-            src="/assets/svg/errors/403.svg"
+            src="/nuxt_images/errors/403.svg"
             alt="Erreur 403"
             class="w-full h-full object-contain"
           >
           <img
             v-else-if="statusCode === 410"
-            src="/assets/svg/errors/410.svg"
+            src="/nuxt_images/errors/410.svg"
             alt="Erreur 410"
             class="w-full h-full object-contain"
           >
           <img
             v-else-if="statusCode >= 500"
-            src="/assets/svg/errors/500.svg"
+            src="/nuxt_images/errors/500.svg"
             alt="Erreur serveur"
             class="w-full h-full object-contain"
           >
           <img
             v-else
-            src="/assets/svg/errors/500.svg"
+            src="/nuxt_images/errors/500.svg"
             alt="Erreur"
             class="w-full h-full object-contain"
           >

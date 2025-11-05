@@ -42,38 +42,40 @@
     >
       <div class="space-y-8">
         <div class="container pt-3 min-h-32">
-          <div class="flex flex-col md:space-x-10 md:flex-row">
+          <div class="flex flex-col md:space-x-10 md:flex-row md:items-start">
             <div class="flex-1 overflow-x-hidden">
-              <div class="flex gap-3 mb-2">
-                <AdminBadge
-                  v-if="dataservice.deleted_at"
-                  :icon="RiDeleteBinLine"
-                  size="sm"
-                  type="secondary"
-                >
-                  {{ $t('Supprimé') }}
-                </AdminBadge>
-                <AdminBadge
-                  v-if="dataservice.private"
-                  :icon="RiLockLine"
-                  size="sm"
-                  type="secondary"
-                >
-                  {{ $t('Brouillon') }}
-                </AdminBadge>
-                <AdminBadge
-                  v-if="dataservice.archived_at"
-                  :icon="RiLockLine"
-                  size="sm"
-                  type="secondary"
-                >
-                  {{ $t('Archivé') }}
-                </AdminBadge>
+              <div ref="header">
+                <div class="flex gap-3 mb-2">
+                  <AdminBadge
+                    v-if="dataservice.deleted_at"
+                    :icon="RiDeleteBinLine"
+                    size="sm"
+                    type="secondary"
+                  >
+                    {{ $t('Supprimé') }}
+                  </AdminBadge>
+                  <AdminBadge
+                    v-if="dataservice.private"
+                    :icon="RiLockLine"
+                    size="sm"
+                    type="secondary"
+                  >
+                    {{ $t('Brouillon') }}
+                  </AdminBadge>
+                  <AdminBadge
+                    v-if="dataservice.archived_at"
+                    :icon="RiLockLine"
+                    size="sm"
+                    type="secondary"
+                  >
+                    {{ $t('Archivé') }}
+                  </AdminBadge>
+                </div>
+                <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
+                  {{ dataservice.title }}
+                </h1>
               </div>
-              <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
-                {{ dataservice.title }}
-              </h1>
-              <ReadMore class="">
+              <ReadMore :wanted-height="sidebarHeight - headerHeight">
                 <MarkdownViewer
                   size="md"
                   :content="dataservice.description"
@@ -81,7 +83,10 @@
                 />
               </ReadMore>
             </div>
-            <dl class="pl-0 w-full shrink-0 md:w-[384px] space-y-2.5">
+            <dl
+              ref="sidebar"
+              class="pl-0 w-full shrink-0 md:w-[384px] space-y-2.5"
+            >
               <div class="space-y-1">
                 <dt class="text-gray-plain font-bold">
                   {{ $t('Producteur') }}
@@ -163,6 +168,7 @@
                   type="line"
                   :summary="metricsViewsTotal"
                   class="mb-8 md:mb-0"
+                  :since="metricsSince"
                 />
               </div>
             </dl>
@@ -184,6 +190,7 @@
               :icon="RiExternalLinkLine"
               icon-right
               external
+              @click="$matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : documentation métier')"
             >
               {{ $t('Documentation métier') }}
             </BrandedButton>
@@ -195,7 +202,7 @@
             <button
               type="button"
               class="min-h-[42px] w-full flex items-center justify-between"
-              @click="openSwagger = !openSwagger"
+              @click="showSwagger"
             >
               <div class="text-datagouv-dark font-bold text-xl">
                 {{ $t('Swagger') }}
@@ -236,7 +243,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, StatBox } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, StatBox, LoadingBlock } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
@@ -245,22 +252,44 @@ import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
+import { useElementSize } from '@vueuse/core'
 
 const config = useRuntimeConfig()
 const route = useRoute()
 const { formatDate } = useFormatDate()
+const { $matomo } = useNuxtApp()
+
+const sidebar = useTemplateRef('sidebar')
+const header = useTemplateRef('header')
+
+const { height: sidebarHeight } = useElementSize(sidebar)
+const { height: headerHeight } = useElementSize(header)
 
 const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
 const { data: dataservice, status } = await useAPI<Dataservice>(url, { redirectOn404: true, redirectOnSlug: 'did' })
 
 const title = computed(() => dataservice.value?.title)
+const robots = computed(() => dataservice.value && dataservice.value.archived_at ? 'noindex' : 'all')
 
 useSeoMeta({
   title,
+  robots,
 })
 await useJsonLd('dataservice', route.params.did)
 
 const openSwagger = ref(false)
+
+function showSwagger() {
+  openSwagger.value = !openSwagger.value
+  if (openSwagger.value) {
+    $matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : ouvrir swagger')
+  }
+}
+
+const metricsSince = computed(() => {
+  // max of the start of metrics computing and the creation of the dataservice on the platform
+  return [dataservice.value.created_at, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
+})
 
 const metricsViews = ref<null | Record<string, number>>(null)
 const metricsViewsTotal = ref<null | number>(null)

@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Pagination } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination, getLink } from '@datagouv/components-next'
 import type { Organization, Reuse } from '@datagouv/components-next'
 import { useUrlSearchParams } from '@vueuse/core'
 import Card from '~/components/Reuses/ReuseCard.vue'

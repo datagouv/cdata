@@ -1,5 +1,5 @@
 import type { Dataset, DatasetV2, RegisteredSchema, Resource, CommunityResource, Schema, DatasetV2WithFullObject } from '@datagouv/components-next'
-import { accessTypeToForm, accessTypeToApi, throwOnNever } from '@datagouv/components-next'
+import { accessTypeToForm, accessTypeToApi, throwOnNever, DESCRIPTION_MIN_LENGTH, getResourceFilesize } from '@datagouv/components-next'
 import type { FetchError } from 'ofetch'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -16,7 +16,7 @@ export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceF
     url: [ruleIf(isRemote, required())],
     format: [ruleIf(isRemote, required())],
   }, {
-    description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
+    description: [minLength(DESCRIPTION_MIN_LENGTH, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: DESCRIPTION_MIN_LENGTH }))],
     title: [testNotAllowed(config.public.demoServer?.name)],
   })
 }
@@ -43,6 +43,7 @@ export function datasetToForm(dataset: DatasetV2WithFullObject): DatasetForm {
     owned: dataset.organization ? { organization: dataset.organization, owner: null } : { owner: dataset.owner, organization: null },
     title: dataset.title,
     description: dataset.description,
+    description_short: dataset.description_short,
     acronym: dataset.acronym,
     tags: dataset.tags?.map(text => ({ text })) || [],
     ...accessTypeToForm(dataset),
@@ -59,6 +60,7 @@ export function datasetToForm(dataset: DatasetV2WithFullObject): DatasetForm {
 
 export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, private?: boolean, archived?: string | null } = {}): NewDatasetForApi {
   const contactPoints = form.contact_points?.filter(cp => cp !== null && 'id' in cp).map(cp => cp.id) ?? []
+
   return {
     organization: form.owned?.organization?.id,
     owner: form.owned?.owner?.id,
@@ -67,6 +69,7 @@ export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, pri
     archived: overrides.archived,
     deleted: overrides.deleted,
     description: form.description,
+    description_short: form.description_short,
     acronym: form.acronym,
     tags: form.tags.map(t => t.text),
     license: form.license?.id || '',
@@ -427,7 +430,7 @@ export function getFilesize(resourceForm: ResourceForm | CommunityResourceForm):
   }
 
   if (resourceForm.resource) {
-    return resourceForm.resource.filesize
+    return getResourceFilesize(resourceForm.resource)
   }
 
   return null

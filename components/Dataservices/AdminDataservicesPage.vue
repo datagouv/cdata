@@ -89,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Pagination } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination } from '@datagouv/components-next'
 import type { Activity, Dataservice, Organization, User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'

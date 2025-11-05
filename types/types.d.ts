@@ -1,4 +1,4 @@
-import type { AccessTypeForm, WithAccessType, Dataset, CommunityResource, Dataservice, DataserviceAccessAudience, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, DataserviceAccessAudienceType, DataserviceAccessAudienceCondition, ContactPoint, PaginatedArray } from '@datagouv/components-next'
+import type { AccessTypeForm, WithAccessType, Dataset, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, ContactPoint, PaginatedArray } from '@datagouv/components-next'
 
 // Some types from @datagouv/components-next are exported here to avoid 50+ files refactors
 export type {
@@ -123,6 +123,7 @@ export type DatasetForm = {
   title: string
   acronym: string
   description: string
+  description_short?: string
   tags: Array<Tag>
   license: License | null
   contact_points: Array<NewContactPoint | ContactPoint | null>
@@ -141,6 +142,7 @@ export type NewDatasetForApi = {
   deleted?: null
   acronym?: string
   description: string
+  description_short?: string
   organization?: string
   owner?: string
   tags: Array<string>

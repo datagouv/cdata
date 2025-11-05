@@ -20,6 +20,14 @@ const app = useNuxtApp()
 
 const { locale } = useTranslation()
 const runtimeConfig = useRuntimeConfig()
+const appConfig = useAppConfig()
+
+if (appConfig.isFrenchGovernment) {
+  import('./assets/css/fonts.css')
+}
+else {
+  import('./assets/css/fonts-without-marianne.css')
+}
 
 app.vueApp.use(datagouv, {
   name: runtimeConfig.public.title,

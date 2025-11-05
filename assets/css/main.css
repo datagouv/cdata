@@ -4,6 +4,5 @@
 
 @import "@datagouv/components-next/assets/main.css";
 
-@import "./fonts.css";
 @import "./forms.css";
 @import "./overrides.css";

@@ -34,7 +34,8 @@
             :icon="RiExternalLinkFill"
             icon-right
             size="xs"
-            target="blank"
+            new-tab
+            @click="$matomo.trackEvent('Jeux de données', 'Explorer les données', 'Bouton : explorer les données')"
           >
             {{ $t("Explorer les données") }}
           </BrandedButton>
@@ -52,48 +53,50 @@
     >
       <div class="space-y-8">
         <div class="container pt-3 min-h-32">
-          <div class="flex flex-col md:space-x-10 md:flex-row">
+          <div class="flex flex-col md:space-x-10 md:flex-row md:items-start">
             <div class="flex-1 overflow-x-hidden">
-              <div class="flex gap-3 mb-2">
-                <AdminBadge
-                  v-if="dataset.deleted"
-                  :icon="RiDeleteBinLine"
-                  size="sm"
-                  type="secondary"
-                >
-                  {{ $t("Supprimé") }}
-                </AdminBadge>
-                <AdminBadge
-                  v-if="dataset.private"
-                  :icon="RiLockLine"
-                  size="sm"
-                  type="secondary"
-                >
-                  {{ $t("Brouillon") }}
-                </AdminBadge>
-                <AdminBadge
-                  v-if="dataset.archived"
-                  :icon="RiLockLine"
-                  size="sm"
-                  type="secondary"
-                >
-                  {{ $t("Archivé") }}
-                </AdminBadge>
-              </div>
-              <h1 class="text-2xl text-gray-title font-extrabold mb-6">
-                {{ dataset.title }}
+              <div ref="header">
+                <div class="flex gap-3 mb-2">
+                  <AdminBadge
+                    v-if="dataset.deleted"
+                    :icon="RiDeleteBinLine"
+                    size="sm"
+                    type="secondary"
+                  >
+                    {{ $t("Supprimé") }}
+                  </AdminBadge>
+                  <AdminBadge
+                    v-if="dataset.private"
+                    :icon="RiLockLine"
+                    size="sm"
+                    type="secondary"
+                  >
+                    {{ $t("Brouillon") }}
+                  </AdminBadge>
+                  <AdminBadge
+                    v-if="dataset.archived"
+                    :icon="RiLockLine"
+                    size="sm"
+                    type="secondary"
+                  >
+                    {{ $t("Archivé") }}
+                  </AdminBadge>
+                </div>
+                <h1 class="text-2xl text-gray-title font-extrabold mb-6">
+                  {{ dataset.title }}
 
-                <span
-                  v-if="dataset.acronym"
-                  class="text-xs text-gray-title font-bold"
-                >
-                  {{ dataset.acronym }}
-                </span>
-              </h1>
+                  <span
+                    v-if="dataset.acronym"
+                    class="text-xs text-gray-title font-bold"
+                  >
+                    {{ dataset.acronym }}
+                  </span>
+                </h1>
+              </div>
               <div class="text-sm text-gray-plain font-bold mb-1 pb-0">
                 {{ $t("Description") }}
               </div>
-              <ReadMore>
+              <ReadMore :wanted-height="sidebarHeight - headerHeight">
                 <MarkdownViewer
                   size="sm"
                   :content="dataset.description"
@@ -101,7 +104,10 @@
                 />
               </ReadMore>
             </div>
-            <dl class="pl-0 w-full shrink-0 md:w-[384px] space-y-4">
+            <dl
+              ref="sidebar"
+              class="pl-0 w-full shrink-0 md:w-[384px] space-y-4"
+            >
               <div class="space-y-1">
                 <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
                   <template v-if="hasContactPointsWithSpecificRole">
@@ -193,6 +199,7 @@
                   size="sm"
                   type="line"
                   :summary="datasetVisitsTotal"
+                  :since="metricsSince"
                 />
                 <StatBox
                   v-if="dataset.access_type === 'open'"
@@ -201,6 +208,7 @@
                   size="sm"
                   type="line"
                   :summary="datasetDownloadsResourcesTotal"
+                  :since="metricsSince"
                 />
               </div>
 
@@ -436,6 +444,7 @@ import {
   SimpleBanner,
   DatasetQuality,
   isOrganizationCertified,
+  LoadingBlock,
   type Resource,
   BrandedButton,
   useFormatDate,
@@ -458,6 +467,7 @@ import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
+import { useElementSize } from '@vueuse/core'
 
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -466,6 +476,12 @@ const { formatDate } = useFormatDate()
 definePageMeta({
   keepScroll: true,
 })
+
+const sidebar = useTemplateRef('sidebar')
+const header = useTemplateRef('header')
+
+const { height: sidebarHeight } = useElementSize(sidebar)
+const { height: headerHeight } = useElementSize(header)
 
 const url = computed(() => `/api/2/datasets/${route.params.did}/`)
 const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
@@ -477,9 +493,11 @@ const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
 })
 
 const title = computed(() => dataset.value?.title)
+const robots = computed(() => dataset.value && dataset.value.archived ? 'noindex' : 'all')
 
 useSeoMeta({
   title,
+  robots,
 })
 
 const hideWarnings = computed(() => {
@@ -562,6 +580,11 @@ const badges = computed(() =>
 
 const datasetVisitsTotal = ref(0)
 const datasetDownloadsResourcesTotal = ref(0)
+
+const metricsSince = computed(() => {
+  // max of the start of metrics computing and the creation of the dataset on the platform
+  return [dataset.value.internal.created_at_internal, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
+})
 
 watchEffect(async () => {
   if (!dataset.value || !dataset.value.id) return

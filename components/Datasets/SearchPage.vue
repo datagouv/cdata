@@ -297,7 +297,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getOrganizationTypes, Pagination, OTHER, USER } from '@datagouv/components-next'
+import { BrandedButton, getLink, getOrganizationTypes, LoadingBlock, Pagination, OTHER, USER } from '@datagouv/components-next'
 import type { DatasetV2, License, Organization, OrganizationTypes, RegisteredSchema, TranslatedBadge } from '@datagouv/components-next'
 import { ref, computed } from 'vue'
 import { RiCloseCircleLine, RiDownloadLine } from '@remixicon/vue'
@@ -360,7 +360,10 @@ const { data: badgeRecord, status: badgeStatus } = await useAPI<Record<string, s
 const badges = computed(() => badgeRecord.value
   ? Object.entries(badgeRecord.value)
       .map(([kind, label]: Array<string>) => ({ kind, label }))
-      .filter(({ kind }) => config.public.datasetBadges.includes(kind))
+      .filter(({ kind }) => {
+        const badges = Array.isArray(config.public.datasetBadges) ? config.public.datasetBadges : config.public.datasetBadges.split(',')
+        return badges.includes(kind)
+      })
   : [])
 
 const organizationTypes = getOrganizationTypes()
@@ -542,7 +545,7 @@ const sortOptions = [
 ]
 
 // Update model params
-watch([facets, deboucedQuery, searchSort], ([newFacets, q, sort]) => {
+watch([currentPage, facets, deboucedQuery, searchSort], ([newPage, newFacets, q, sort]) => {
   if (!props.organization) {
     params.organization = newFacets.organization?.id ?? undefined
     params.organization_badge = newFacets.organizationType?.type ?? undefined
@@ -555,7 +558,7 @@ watch([facets, deboucedQuery, searchSort], ([newFacets, q, sort]) => {
   params.geozone = newFacets.geozone?.id ?? undefined
   params.granularity = newFacets.granularity?.id ?? undefined
   params.badge = newFacets.badge?.kind ?? undefined
-  if (currentPage.value > 1 || params.page) params.page = currentPage.value.toString()
+  if (newPage > 1 || params.page) params.page = newPage.toString()
   params.q = q ?? undefined
   params.sort = sort ?? null
   return params

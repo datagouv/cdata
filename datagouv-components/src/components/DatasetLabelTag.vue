@@ -22,7 +22,7 @@
 import { computedAsync } from '@vueuse/core'
 import type { RouteLocationRaw } from 'vue-router'
 import AppLink from './AppLink.vue'
-import type { TranslatedBadge } from '@/types/badges'
+import type { TranslatedBadge } from '../types/badges'
 
 const props = defineProps<{
   badge: TranslatedBadge
@@ -35,6 +35,6 @@ const img = computedAsync(async () => {
     import: 'default',
   })
   const src = Object.keys(labelImages).find(path => path.includes(props.badge.kind))
-  return src ? await labelImages[src]() as string : undefined
+  return src && labelImages[src] ? await labelImages[src]() as string : undefined
 })
 </script>

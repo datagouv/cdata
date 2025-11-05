@@ -4,6 +4,7 @@ export type Site = {
   datasets_page: string | null
   reuses_page: string | null
   dataservices_page: string | null
+  version: string
   metrics: {
     'dataservices': number
     'datasets': number

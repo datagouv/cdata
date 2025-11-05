@@ -1,29 +1,34 @@
 import { ref } from 'vue'
 
+// Declare useRequestHeaders for TypeScript (Nuxt composable)
+declare const useRequestHeader: ((header: string) => string | undefined) | undefined
+
 export type TranslationOptions = Record<string, string | number>
 
 const PLACEHOLDER_REGEX = /\{(\w+)\}/g
 
 // Pre-register all available translation files at build time
-const translationModules = import.meta.glob('../../../locales/*.json')
+const translationModules = import.meta.glob<Record<string, string>>('../../../locales/*.json', {
+  import: 'default',
+})
 
 function detectLanguage(): string {
   // Server-side (Nuxt)
   try {
-    const headers = useRequestHeaders()
-    const acceptLanguage = headers['accept-language']
+    const header = useRequestHeader?.('accept-language')
+    const acceptLanguage = header
     if (acceptLanguage) {
-      const primaryLang = acceptLanguage.split(',')[0].split('-')[0].toLowerCase()
+      const primaryLang = acceptLanguage.split(',')[0]!.split('-')[0]!.toLowerCase()
       return primaryLang
     }
   }
   catch {
-    // Fallback if not in Nuxt context
+    // useRequestHeaders not available, continue to client-side detection
   }
 
   // Client-side
   if (typeof window !== 'undefined' && navigator.language) {
-    return navigator.language.split('-')[0].toLowerCase()
+    return navigator.language.split('-')[0]!.toLowerCase()
   }
 
   return 'fr'
@@ -38,8 +43,7 @@ async function loadTranslationFile(lang: string): Promise<Record<string, string>
   }
 
   try {
-    const module = await moduleLoader()
-    return module.default || module
+    return await moduleLoader()
   }
   catch {
     return {}
@@ -58,7 +62,7 @@ export function extractPlaceholders(text: string): string[] {
   let match
 
   while ((match = regex.exec(text)) !== null) {
-    placeholders.push(match[1])
+    placeholders.push(match[1]!)
   }
 
   return placeholders
@@ -91,27 +95,27 @@ function handlePluralization(key: string, count: number): string {
   const parts = key.split('|').map(part => part.trim())
 
   if (parts.length === 1) {
-    return parts[0]
+    return parts[0]!
   }
 
   if (parts.length === 2) {
     // French pluralization rule: 0 or 1 = singular, > 1 = plural
-    return count <= 1 ? parts[0] : parts[1]
+    return count <= 1 ? parts[0]! : parts[1]!
   }
 
   if (parts.length >= 3) {
     if (count === 0) {
-      return parts[0]
+      return parts[0]!
     }
     else if (count === 1) {
-      return parts[1]
+      return parts[1]!
     }
     else {
-      return parts[2]
+      return parts[2]!
     }
   }
 
-  return parts[0]
+  return parts[0]!
 }
 
 const translations = ref<Record<string, Record<string, string>>>({})
@@ -125,6 +129,7 @@ export const loadCurrentTranslations = async () => {
 
   translations.value[currentLang] = await loadTranslationFile(currentLang)
 }
+
 export const useTranslation = () => {
   const locale = detectLanguage()
 
@@ -139,7 +144,7 @@ export const useTranslation = () => {
     }
 
     // Try to get translation from loaded translations first
-    if (translations.value && translations.value[locale][key]) {
+    if (translations.value && translations.value[locale] && translations.value[locale][key]) {
       result = translations.value[locale][key]
     }
 

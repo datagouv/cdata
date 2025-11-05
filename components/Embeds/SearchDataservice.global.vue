@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Organization } from '@datagouv/components-next'
+import { LoadingBlock, type Organization } from '@datagouv/components-next'
 
 const props = defineProps<{
   slug: string

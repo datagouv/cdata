@@ -88,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, TranslationT } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, TranslationT } from '@datagouv/components-next'
 
 definePageMeta({
   matomoIgnore: true,

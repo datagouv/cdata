@@ -28,6 +28,7 @@ export type BaseDataset = Owned & WithAccessType & {
   acronym: string
   archived: boolean
   description: string
+  description_short: string
   tags: Array<string> | null
   license: string
   frequency: string
@@ -66,6 +67,10 @@ export type Dataset = BaseDataset & {
   created_at: string
   last_modified: string
   last_update: string
+  internal: {
+    created_at_internal: string
+    last_modified_internal: string
+  }
   uri: string
   slug: string
   quality: Quality

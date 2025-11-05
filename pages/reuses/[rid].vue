@@ -30,6 +30,7 @@
               :href="reuse.url"
               :new-tab="true"
               size="xs"
+              @click="$matomo.trackEvent('Réutilisation', `Voir la réutilisation`, 'Bouton :  voir la reutilisation')"
             >
               {{ $t('Voir la réutilisation') }}
             </BrandedButton>
@@ -131,6 +132,7 @@
                 size="xs"
                 :href="reuse.url"
                 :new-tab="true"
+                @click="$matomo.trackEvent('Réutilisation', `Voir la réutilisation`, 'Bouton : voir la reutilisation')"
               >
                 {{ $t('Voir la réutilisation') }}
               </BrandedButton>
@@ -165,7 +167,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, Avatar, BrandedButton, OrganizationNameWithCertificate, ReuseDetails, type Reuse } from '@datagouv/components-next'
+import { isOrganizationCertified, Avatar, BrandedButton, LoadingBlock, OrganizationNameWithCertificate, ReuseDetails, type Reuse } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'

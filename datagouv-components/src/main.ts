@@ -19,7 +19,8 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User } from './types/users'
 
-import ActivityList from './components/ActivityList.vue'
+import ActivityList from './components/ActivityList/ActivityList.vue'
+import UserActivityList from './components/ActivityList/UserActivityList.vue'
 import AnimatedLoader from './components/AnimatedLoader.vue'
 import AppLink from './components/AppLink.vue'
 import Avatar from './components/Avatar.vue'
@@ -38,6 +39,7 @@ import DatasetQualityScore from './components/DatasetQualityScore.vue'
 import DatasetQualityTooltipContent from './components/DatasetQualityTooltipContent.vue'
 import ExtraAccordion from './components/ExtraAccordion.vue'
 import LabelTag from './components/DatasetLabelTag.vue'
+import LoadingBlock from './components/LoadingBlock.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
@@ -68,6 +70,7 @@ export * from './composables/useActiveDescendant'
 export * from './composables/useReuseType'
 export * from './composables/useTranslation'
 
+export * from './functions/activities'
 export * from './functions/datasets'
 export * from './functions/dates'
 export * from './functions/helpers'
@@ -76,6 +79,7 @@ export * from './functions/matomo'
 export * from './functions/never'
 export * from './functions/organizations'
 export * from './functions/owned'
+export * from './functions/pagination'
 export * from './functions/resources'
 export * from './functions/reuses'
 export * from './functions/schemas'
@@ -172,6 +176,7 @@ export {
   DateRangeDetails,
   ExtraAccordion,
   LabelTag,
+  LoadingBlock,
   OrganizationCard,
   OrganizationNameWithCertificate,
   OwnerType,
@@ -195,4 +200,5 @@ export {
   Tooltip,
   Toggletip,
   TranslationT,
+  UserActivityList,
 }

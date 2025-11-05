@@ -2,7 +2,7 @@
   <div class="m-0 flex flex-wrap items-center text-sm text-gray-medium">
     <div class="fr-grid-row fr-grid-row--middle">
       <Toggletip
-        :button-props="{ class: 'relative z-2 ml-0.5', title: $t('Qualité des métadonnées') }"
+        :button-props="{ class: 'relative z-2 ml-0.5', title: t('Qualité des métadonnées') }"
       >
         <RiInformationLine class="size-4" />
         <template #toggletip>
@@ -10,7 +10,7 @@
         </template>
       </Toggletip>
       <p class="my-0 mr-1 text-gray-medium text-sm">
-        {{ $t('Métadonnées :') }}
+        {{ t('Métadonnées :') }}
       </p>
       <div class="fr-grid-row fr-grid-row--middle fr-mr-1v">
         <DatasetQualityScore :score="quality.score" />
@@ -25,8 +25,11 @@ import type { Quality } from '../types/datasets'
 import DatasetQualityScore from './DatasetQualityScore.vue'
 import DatasetQualityTooltipContent from './DatasetQualityTooltipContent.vue'
 import Toggletip from './Toggletip.vue'
+import { useTranslation } from '../composables/useTranslation'
 
 defineProps<{
   quality: Quality
 }>()
+
+const { t } = useTranslation()
 </script>

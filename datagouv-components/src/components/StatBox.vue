@@ -60,8 +60,12 @@
       </div>
     </div>
     <template v-if="lastValue && lastMonth">
-      <p class="mt-1 mb-0 text-xs">
-        {{ $t('depuis juillet 2022') }}
+      <p
+        v-if="since"
+        class="mt-1 mb-0 text-xs"
+      >
+        {{ t("depuis ") }}
+        {{ formatDate(since, { dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }) }}
       </p>
       <p class="mt-1 mb-0 text-xs text-success-darkest">
         <strong>
@@ -161,6 +165,7 @@ const props = defineProps<{
   type: 'line' | 'bar'
   size?: 'sm'
   summary?: number | null
+  since?: string | null
 }>()
 
 const { t } = useTranslation()

@@ -4,12 +4,25 @@ on:
   push:
     branches: [main, develop]
   pull_request:
-    branches: [main, develop]
+    branches: []
 
 jobs:
   e2e-tests:
     timeout-minutes: 30
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.1-noble
+      options: --user 1001
+
+    services:
+      mongodb:
+        image: mongo:6.0.4
+        ports:
+          - 27017:27017
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
 
     steps:
       - name: Checkout cdata
@@ -22,6 +35,12 @@ jobs:
           path: udata
           ref: master
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.11"
+          working-directory: udata
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -32,31 +51,10 @@ jobs:
       - name: Install Node.js dependencies for cdata
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium firefox
-
-      - name: Start udata with Docker Compose
-        working-directory: udata
-        run: |
-          # Start MongoDB and Redis
-          docker compose up -d db broker
-
-          # Wait for services to be ready
-          timeout 60 bash -c 'until docker compose exec -T db mongosh --eval "db.runCommand({ping: 1})" ; do sleep 2; done'
-          timeout 30 bash -c 'until docker compose exec -T broker redis-cli ping ; do sleep 1; done'
-
-          echo "Database services are ready"
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-
       - name: Install Python dependencies for udata
         working-directory: udata
         run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[test,dev]"
+          uv sync --frozen --extra dev
 
       - name: Configure udata
         working-directory: udata
@@ -68,9 +66,11 @@ jobs:
           TESTING = True
           SECRET_KEY = 'test-secret-key-for-ci'
           SEND_MAIL = False
-          SERVER_NAME = 'localhost:5000'
-          CACHE_TYPE = 'flask_caching.backends.null'
+          SERVER_NAME = 'localhost:7000'
+          CACHE_TYPE = 'null'
           DEFAULT_LANGUAGE = 'fr'
+
+          SCHEMA_CATALOG_URL='https://schema.data.gouv.fr/schemas/schemas.json'
 
           URLS_ALLOW_PRIVATE = True
           URLS_ALLOW_LOCAL = True
@@ -84,6 +84,10 @@ jobs:
           SECURITY_EMAIL_VALIDATOR_ARGS = {
               "check_deliverability": False
           }
+
+          MONGODB_HOST = 'mongodb://mongodb:27017/udata'
+          CELERY_BROKER_URL = 'redis://redis:6379'
+          CELERY_RESULT_BACKEND = 'redis://redis:6379'
           EOF
 
       - name: Initialize udata
@@ -93,24 +97,26 @@ jobs:
           mkdir -p fs
 
           # Initialize udata
-          udata init
+          uv run udata init
 
-          udata licenses
-          udata spatial load
-          udata import-fixtures
+          uv run udata licenses
+          uv run udata spatial load
+          uv run udata import-fixtures
 
-          udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
+          uv run udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
+
+          uv run inv i18nc
 
           # Start udata server in background
-          inv serve --port=5000 > udata.log 2>&1 &
+          uv run inv serve --port=7000 > udata.log 2>&1 &
 
           # Wait for udata to be ready
-          timeout 90 bash -c 'until curl -f http://localhost:5000/api/1/site/; do sleep 2; done'
+          timeout 90 bash -c 'until curl -f http://localhost:7000/api/1/site/; do sleep 2; done'
           echo "udata server is ready"
 
       - name: Build and start cdata
         env:
-          NUXT_PUBLIC_API_BASE: http://localhost:5000
+          NUXT_PUBLIC_API_BASE: http://localhost:7000
           NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "['hero_15.png']"
         run: |
           # Build cdata
@@ -129,6 +135,13 @@ jobs:
           CI: true
         run: npm run test:e2e
 
+      - name: Kill udata server
+        if: always()
+        working-directory: udata
+        run: |
+          # Kill udata server to release the lock so that post setup-uv can prune the cache
+          pkill -f "uv run inv serve" || true
+
       - name: Show server logs
         if: always()
         run: |
@@ -137,6 +150,14 @@ jobs:
           echo ""
           echo "=== CDATA SERVER LOGS ==="
           cat cdata.log || echo "No cdata logs found"
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-screenshots
+          path: screenshot.png
+          retention-days: 7
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4

@@ -72,6 +72,7 @@
                 type="line"
                 :summary="metricsViewsTotal"
                 class="mb-8 md:mb-0"
+                :since="metricsSince"
               />
             </div>
           </dl>
@@ -142,13 +143,15 @@
 </template>
 
 <script setup lang="ts">
-import { getTopic, useReuseType, StatBox, type Reuse, type ReuseTopic, type DatasetV2, Pagination, useFormatDate } from '@datagouv/components-next'
+import { getTopic, useReuseType, StatBox, type Reuse, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, useFormatDate } from '@datagouv/components-next'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{
   reuse: Reuse
 }>()
+
+const config = useRuntimeConfig()
 
 const { formatDate } = useFormatDate()
 
@@ -183,6 +186,11 @@ const { data: reuses, status } = await useAPI<PaginatedArray<Reuse>>(`/api/2/reu
 
 // We want 3 reuses, but we don't want the one from the current page
 const relatedReuses = computed(() => reuses.value.data.filter(r => props.reuse.id != r.id).slice(0, 3))
+
+const metricsSince = computed(() => {
+  // max of the start of metrics computing and the creation of the reuse on the platform
+  return [props.reuse.created_at, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
+})
 
 const metricsViews = ref<null | Record<string, number>>(null)
 const metricsViewsTotal = ref<null | number>(null)
