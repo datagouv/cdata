@@ -1,5 +1,5 @@
 import type { Dataset, DatasetV2, RegisteredSchema, Resource, CommunityResource, Schema, DatasetV2WithFullObject } from '@datagouv/components-next'
-import { throwOnNever, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
+import { throwOnNever, DESCRIPTION_MIN_LENGTH, getResourceFilesize } from '@datagouv/components-next'
 import type { FetchError } from 'ofetch'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -428,7 +428,7 @@ export function getFilesize(resourceForm: ResourceForm | CommunityResourceForm):
   }
 
   if (resourceForm.resource) {
-    return resourceForm.resource.filesize
+    return getResourceFilesize(resourceForm.resource)
   }
 
   return null

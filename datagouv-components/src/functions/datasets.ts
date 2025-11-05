@@ -33,9 +33,9 @@ export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Datas
  * If description_short is provided, it is used.
  * Otherwise, the first DESCRIPTION_SHORT_MAX_LENGTH characters of description are used.
  */
-export async function getShortDescription(
+export async function getDescriptionShort(
   description: string | null | undefined,
-  descriptionShort: string | null | undefined
+  descriptionShort: string | null | undefined,
 ): Promise<string> {
   if (descriptionShort?.trim()) {
     return descriptionShort
@@ -49,4 +49,11 @@ export async function getShortDescription(
     return plainText
   }
   return ''
+}
+
+export function getResourceFilesize(resource: Resource): null | number {
+  if (resource.filesize) return resource.filesize
+  if ('analysis:content-length' in resource.extras) return resource.extras['analysis:content-length'] as number
+
+  return null
 }

@@ -297,7 +297,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getLink, getOrganizationTypes, Pagination, OTHER, USER } from '@datagouv/components-next'
+import { BrandedButton, getLink, getOrganizationTypes, LoadingBlock, Pagination, OTHER, USER } from '@datagouv/components-next'
 import type { DatasetV2, License, Organization, OrganizationTypes, RegisteredSchema, TranslatedBadge } from '@datagouv/components-next'
 import { ref, computed } from 'vue'
 import { RiCloseCircleLine, RiDownloadLine } from '@remixicon/vue'
@@ -360,7 +360,10 @@ const { data: badgeRecord, status: badgeStatus } = await useAPI<Record<string, s
 const badges = computed(() => badgeRecord.value
   ? Object.entries(badgeRecord.value)
       .map(([kind, label]: Array<string>) => ({ kind, label }))
-      .filter(({ kind }) => config.public.datasetBadges.includes(kind))
+      .filter(({ kind }) => {
+        const badges = Array.isArray(config.public.datasetBadges) ? config.public.datasetBadges : config.public.datasetBadges.split(',')
+        return badges.includes(kind)
+      })
   : [])
 
 const organizationTypes = getOrganizationTypes()

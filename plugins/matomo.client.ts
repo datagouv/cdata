@@ -1,16 +1,5 @@
+import { getMatomo } from '@datagouv/components-next'
 import type { RouteLocationNormalizedGeneric } from 'vue-router'
-
-export interface MatomoTracker {
-  // https://developer.matomo.org/api-reference/tracking-javascript
-  enableLinkTracking(bool: boolean): void
-  setReferrerUrl(url: string): void
-  trackPageView(title?: string): void
-  trackEvent(category: string, action: string, name: string): void
-  trackSiteSearch(keyword: string, category: string, resultsCount: number): void
-  trackGoal(idGoal: number, revenue: number): void
-  trackLink(url: string, linkType: string): void
-  // More TODO
-}
 
 export default defineNuxtPlugin({
   async setup(nuxtApp) {
@@ -46,6 +35,7 @@ export default defineNuxtPlugin({
         provide: {
           matomo: {
             trackPageView: (to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => trackPageView(to, from, debug, dryRun),
+            trackEvent: (category: string, action: string, name?: string) => trackEvent(category, action, name, debug, dryRun),
           },
         },
       }
@@ -56,9 +46,17 @@ export default defineNuxtPlugin({
   },
 })
 
-// inspired by https://github.com/AmazingDreams/vue-matomo/blob/master/src/index.js
-function getMatomo() {
-  return window?.Matomo?.getTracker() as MatomoTracker | undefined
+function trackEvent(category: string, action: string, name?: string, debug: boolean, dryRun: boolean) {
+  const matomo = getMatomo()
+  if (!matomo) {
+    if (debug) console.debug('[matomo] No matomo tracker found')
+    return
+  }
+  if (debug) console.debug(`[matomo] tracking event ${category} ${action} ${name ? name : ''}`)
+  if (dryRun) {
+    return
+  }
+  matomo.trackEvent(category, action, name)
 }
 
 function trackPageView(to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric, debug: boolean, dryRun: boolean) {

@@ -569,8 +569,22 @@ onMounted(async () => {
   }
 
   if (route.query.flash) {
-    const message = FLASH_MESSAGES[route.query.flash as string] || null
-    if (message) toast[message.type](message.text)
+    let message = null as { type: 'success' | 'error' | 'info', text: string } | null
+    if (route.query.flash === 'confirm_error') {
+      if (route.query.info) {
+        message = { type: 'info', text: route.query.info as string }
+      }
+      if (route.query.error) {
+        message = { type: 'error', text: route.query.error as string }
+      }
+    }
+    else {
+      message = FLASH_MESSAGES[route.query.flash as string] || null
+    }
+
+    if (message) {
+      toast[message.type](message.text)
+    }
   }
   if (me.value) {
     notifications.value = await $api<Array<UserNotification>>('api/1/notifications/')

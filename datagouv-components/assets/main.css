@@ -10,6 +10,8 @@
   --breakpoint-xl: 1248px;
   --breakpoint-2xl: initial;
 
+  --font-marianne:
+    'Marianne', Arial, sans-serif;
   --font-mono:
     'Noto Sans Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
     'Courier New', monospace;

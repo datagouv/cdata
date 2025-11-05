@@ -45,6 +45,8 @@ export default defineNuxtConfig({
     crispWebsiteId: '',
     pagesGhRepoName: 'datagouv/datagouvfr-pages',
     pagesGhRepoBranch: 'master',
+    albertApiBaseUrl: 'https://albert.api.etalab.gouv.fr/',
+    albertApiKey: '',
     public: {
       baseUrl: 'https://www.data.gouv.fr/',
       commitId: undefined,
@@ -54,7 +56,9 @@ export default defineNuxtConfig({
       apiBase: 'http://dev.local:7000',
       frontBase: 'http://dev.local:3000',
       metricsApi: 'https://metric-api.data.gouv.fr',
+      metricsSince: '2022-07-01',
       devApiKey: undefined,
+      staticUrl: 'https://static.data.gouv.fr/static/',
       maxJsonPreviewCharSize: 1000000, // (~1MB)
       maxPdfPreviewByteSize: 10000000, // (10 MB)
       maxXmlPreviewCharSize: 100000, // (~100KB)
@@ -116,6 +120,8 @@ export default defineNuxtConfig({
       datasetQualityGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
       dataSearchFeedbackFormUrl: 'https://tally.so/r/mDKv1N',
       forumUrl: 'https://forum.data.gouv.fr/',
+      generateShortDescriptionFeedbackUrl: 'https://tally.so/r/wbbRxo',
+      generateTagsFeedbackUrl: 'https://tally.so/r/w80JNP',
       publishingDatasetFeedbackUrl: 'https://tally.so/r/nGo0yO',
       publishingDataserviceFeedbackUrl: 'https://tally.so/r/w2J7lL',
       publishingReuseFeedbackUrl: 'https://tally.so/r/mV98y6',

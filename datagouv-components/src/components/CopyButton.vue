@@ -52,7 +52,7 @@ const props = withDefaults(defineProps<{
 const copied = ref(false)
 
 const copy = () => {
-  navigator.clipboard.writeText(props.text)
+  void navigator.clipboard.writeText(props.text)
   copied.value = true
   setTimeout(() => copied.value = false, 2000)
 }
