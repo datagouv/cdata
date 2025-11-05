@@ -372,7 +372,16 @@
               >
                 {{ dataset.access_type_reason }}
               </p>
-              <p class="mb-0">
+              <p
+                v-else-if="category"
+                class="text-sm"
+              >
+                {{ category.label }}
+              </p>
+              <p
+                v-if="config.public.datasetRestrictedGuideUrl"
+                class="mb-0"
+              >
                 <AppLink
                   :to="config.public.datasetRestrictedGuideUrl"
                   external
@@ -452,6 +461,7 @@ import {
   Toggletip,
   type TranslatedBadge,
   LabelTag,
+  AppLink,
 } from '@datagouv/components-next'
 import {
   RiDeleteBinLine,
@@ -612,5 +622,11 @@ watchEffect(async () => {
     datasetVisitsTotal.value = totalPage.data[0].visit
     datasetDownloadsResourcesTotal.value = totalPage.data[0].download_resource
   }
+})
+
+const { data: categories } = await useAPI<Array<{ value: string, label: string }>>('/api/1/access_type/reason_categories')
+const category = computed(() => {
+  if (!dataset.value.access_type_reason_category) return null
+  return categories.value.find(c => c.value === dataset.value.access_type_reason_category)
 })
 </script>
