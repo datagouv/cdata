@@ -165,7 +165,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, useFormatDate } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, useFormatDate } from '@datagouv/components-next'
 import { Pagination, type Organization } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'

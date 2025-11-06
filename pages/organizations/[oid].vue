@@ -87,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, OrganizationNameWithCertificate, OwnerType, getOrganizationType, type Organization } from '@datagouv/components-next'
+import { isOrganizationCertified, LoadingBlock, OrganizationNameWithCertificate, OwnerType, getOrganizationType, type Organization } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'

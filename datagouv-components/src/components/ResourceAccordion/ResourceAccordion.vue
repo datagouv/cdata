@@ -63,7 +63,7 @@
           >
             <span class="hidden show-on-small">{{ t("Format") }}</span>
             {{ resource.format.trim().toLowerCase() }}
-            <span v-if="resource.filesize">({{ filesize(resource.filesize) }})</span>
+            <span v-if="resourceFilesize">({{ filesize(resourceFilesize) }})</span>
           </span>
           <span
             class="inline-flex items-center fr-text--xs fr-mb-0"
@@ -92,7 +92,7 @@
       </div>
       <div class="flex items-center buttons">
         <p
-          v-if="resource.format === 'url'"
+          v-if="isResourceUrl"
           class="fr-col-auto fr-ml-3v fr-m-0 z-2"
         >
           <BrandedButton
@@ -103,6 +103,7 @@
             new-tab
             size="xs"
             external
+            @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
           >
             {{ t('Visiter') }}
           </BrandedButton>
@@ -136,6 +137,7 @@
             size="xs"
             :aria-describedby="resourceTitleId"
             external
+            @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
           >
             <span class="sr-only">{{ t('Télécharger la liste au format ') }}</span>{{ format }}
           </BrandedButton>
@@ -259,6 +261,7 @@
                       class="fr-link no-icon-after"
                       rel="ugc nofollow noopener"
                       target="_blank"
+                      @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
                     >
                       <component
                         :is="config.textClamp"
@@ -279,8 +282,9 @@
                       :href="resource.latest"
                       class="fr-link"
                       rel="ugc nofollow noopener"
+                      @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${resource.format}`)"
                     >
-                      <span>{{ t('Format {format}', { format: resource.format }) }}<span v-if="resource.filesize"> - {{ filesize(resource.filesize) }}</span></span>
+                      <span>{{ t('Format {format}', { format: resource.format }) }}<span v-if="resourceFilesize"> - {{ filesize(resourceFilesize) }}</span></span>
                     </a>
                   </span>
                   <CopyButton
@@ -305,6 +309,7 @@
                         :href="generatedFormat.url"
                         class="fr-link"
                         rel="ugc nofollow noopener"
+                        @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${generatedFormat.format}`)"
                       >
                         <span>{{ t('Format {format}', { format: generatedFormat.format }) }}<span v-if="generatedFormat.size"> - {{ filesize(generatedFormat.size) }}</span></span>
                       </a>
@@ -360,7 +365,7 @@ import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
 import { getResourceFormatIcon, getResourceTitleId, detectOgcService } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
-import { getResourceExternalUrl } from '../../functions/datasets'
+import { getResourceExternalUrl, getResourceFilesize } from '../../functions/datasets'
 import { useTranslation } from '../../composables/useTranslation'
 import Metadata from './Metadata.vue'
 import SchemaBadge from './SchemaBadge.vue'
@@ -370,6 +375,7 @@ import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
+const URL_FORMATS = ['url', 'doi', 'www:link', ' www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
 
 const props = withDefaults(defineProps<{
   dataset: Dataset | DatasetV2
@@ -444,10 +450,10 @@ const toggle = () => {
   open.value = !open.value
 
   if (open.value) {
-    trackEvent(['Open resource', props.resource.id])
+    trackEvent('Open resource', props.resource.id)
   }
   else {
-    trackEvent(['Close resource', props.resource.id])
+    trackEvent('Close resource', props.resource.id)
   }
 }
 
@@ -484,13 +490,13 @@ const switchTab = (index: number) => {
   if (!option) {
     return
   }
-  trackEvent(['View resource tab', props.resource.id, option.label])
+  trackEvent('View resource tab', props.resource.id, option.label)
 
   if (option.key === 'data') {
-    trackEvent(['Show preview', props.resource.id])
+    trackEvent('Show preview', props.resource.id)
   }
   if (option.key === 'data-structure') {
-    trackEvent(['Show data structure', props.resource.id])
+    trackEvent('Show data structure', props.resource.id)
   }
 }
 
@@ -503,6 +509,7 @@ const owner = computed(() => communityResource.value ? getOwnerName(communityRes
 const lastUpdate = props.resource.last_modified
 const conversionsLastUpdate = computed(() => formatRelativeIfRecentDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined))
 const availabilityChecked = props.resource.extras && 'check:available' in props.resource.extras
+const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 
 const unavailable = availabilityChecked && props.resource.extras['check:available'] === false
 const downloadButtonTitle = unavailable ? t(`Le robot de {certifier} n'a pas pu accéder à ce fichier - Télécharger le fichier en {format}`, { certifier: config.name, format: format.value }) : t(`Télécharger le fichier en {format}`, { format: format.value })
@@ -512,6 +519,8 @@ const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset,
 const resourceContentId = 'resource-' + props.resource.id
 const resourceHeaderId = 'resource-' + props.resource.id + '-header'
 const resourceTitleId = getResourceTitleId(props.resource)
+
+const isResourceUrl = computed(() => URL_FORMATS.includes(props.resource.format))
 </script>
 
 <style scoped>

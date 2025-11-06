@@ -38,6 +38,7 @@
 </template>
 
 <script setup lang="ts">
+import { LoadingBlock } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 

@@ -79,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, OrganizationCard, Pagination } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, OrganizationCard, Pagination } from '@datagouv/components-next'
 import type { Organization } from '@datagouv/components-next'
 import { RiSearch2Line } from '@remixicon/vue'
 import { debouncedRef } from '@vueuse/core'

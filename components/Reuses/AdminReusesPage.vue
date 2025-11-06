@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, type Organization, type Reuse, type User } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, type Organization, type Reuse, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { RiSearchLine } from '@remixicon/vue'

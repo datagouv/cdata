@@ -10,6 +10,7 @@ import { filesize } from '../../functions/helpers'
 import ExtraAccordion from '../ExtraAccordion.vue'
 import { getResourceTitleId, getResourceLabel } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
+import { getResourceFilesize } from '../../functions/datasets'
 
 const props = defineProps<{
   resource: Resource
@@ -17,6 +18,7 @@ const props = defineProps<{
 
 const hasExtras = computed(() => Object.keys(props.resource.extras).length)
 const resourceTitleId = computed(() => getResourceTitleId(props.resource))
+const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
@@ -100,10 +102,10 @@ const { formatDate } = useFormatDate()
         </DescriptionDetails>
       </DescriptionList>
       <DescriptionList style="flex-shrink: 0;">
-        <template v-if="resource.filesize">
+        <template v-if="resourceFilesize">
           <DescriptionTerm>{{ t('Taille') }}</DescriptionTerm>
           <DescriptionDetails>
-            {{ filesize(resource.filesize) }}
+            {{ filesize(resourceFilesize) }}
           </DescriptionDetails>
         </template>
         <template v-if="resource.mime">

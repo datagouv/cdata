@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock } from '@datagouv/components-next'
 import { RiStarFill, RiStarLine } from '@remixicon/vue'
 import { ref } from 'vue'
 import type { PaginatedArray } from '~/types/types'

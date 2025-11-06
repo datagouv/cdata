@@ -106,8 +106,9 @@ onMounted(async () => {
   if (!route.query.dataset_id) return
 
   const dataset = await $api<DatasetV2>(`/api/2/datasets/${route.query.dataset_id}/`)
-  if (!datasets.value.some(d => d.id === dataset.id))
+  if (!datasets.value.some(d => d.id === dataset.id)) {
     datasets.value.push(dataset)
+  }
 })
 
 const datasets = useState<Array<Dataset | DatasetV2 | DatasetSuggest>>(

@@ -19,6 +19,13 @@
           >&times;</button>
         </div>
         <div class="p-3">
+          <div v-if="validataStatus === 'none'">
+            {{ t("Ce fichier indique suivre le schéma :") }} <component
+              :is="documentationUrl ? 'a' : 'span'"
+              :href="documentationUrl"
+              class="fr-link fr-text--sm"
+            >{{ title }}</component>.
+          </div>
           <div v-if="validataStatus === 'ok'">
             {{ t("Ce fichier est valide pour le schéma :") }} <component
               :is="documentationUrl ? 'a' : 'span'"
@@ -64,7 +71,7 @@
           </div>
 
           <div
-            v-if="validationUrl"
+            v-if="validationUrl && validataStatus !== 'none'"
             class="w-full text-right mt-5"
             target="_blank"
           >
@@ -130,7 +137,8 @@ const validataWarnings = computed(() => validataErrors.value.filter(error => [''
 const validataBodyErrors = computed(() => validataErrors.value.filter(error => ['#body', '#cell', '#content', '#row', '#table'].some(tag => error.tags.includes(tag))))
 const validataStructureErrors = computed(() => validataErrors.value.filter(error => ['#head', '#structure', '#header'].some(tag => error.tags.includes(tag))))
 
-const validataStatus = computed<'ok' | 'warnings' | 'ko'>(() => {
+const validataStatus = computed<'none' | 'ok' | 'warnings' | 'ko'>(() => {
+  if (!('validation-report:errors' in props.resource.extras)) return 'none'
   if (validataErrors.value.length === 0) return 'ok'
   if (validataErrors.value.length === validataWarnings.value.length) return 'warnings'
   return 'ko'
