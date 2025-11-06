@@ -39,6 +39,7 @@ import DatasetQualityTooltipContent from './components/DatasetQualityTooltipCont
 import ExtraAccordion from './components/ExtraAccordion.vue'
 import LabelTag from './components/DatasetLabelTag.vue'
 import LoadingBlock from './components/LoadingBlock.vue'
+import MarkdownViewer from './components/MarkdownViewer.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
@@ -172,6 +173,7 @@ export {
   ExtraAccordion,
   LabelTag,
   LoadingBlock,
+  MarkdownViewer,
   OrganizationCard,
   OrganizationNameWithCertificate,
   OwnerType,
