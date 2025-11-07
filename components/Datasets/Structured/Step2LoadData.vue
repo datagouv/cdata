@@ -1,30 +1,16 @@
 <template>
   <FormWithAccordions :form-info>
     <PaddedContainer>
-      <SimpleBanner
-        type="primary"
-        class="mb-4 flex items-center space-x-5"
-      >
-        <NuxtImg
-          src="/illustrations/edit.svg"
-          loading="lazy"
-          class="size-14 shrink-0"
-          alt=""
+      <template v-if="schema">
+        <h2 class="text-sm font-bold uppercase mb-2">
+          {{ $t('Schéma sélectionné') }}
+        </h2>
+        <SchemaCard
+          class="mb-6"
+          :schema
+          :show-links="true"
         />
-        <div class="w-full">
-          <p class="font-bold mb-1">
-            {{ $t('Comment souhaitez-vous ajouter vos données ?') }}
-          </p>
-          <p class="m-0 text-xs/5">
-            <template v-if="isTableschema">
-              {{ $t(`Vous pouvez soit importer un fichier existant, soit utiliser l'outil tableur pour créer vos données.`) }}
-            </template>
-            <template v-else>
-              {{ $t('Importez un fichier existant conforme au schéma sélectionné.') }}
-            </template>
-          </p>
-        </div>
-      </SimpleBanner>
+      </template>
       <FormFieldset :legend="$t('Charger et vérifier un fichier existant')">
         <FieldsetElement form-key="resources">
           <FileCard
@@ -140,7 +126,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getSchemaVersion, PaddedContainer, SimpleBanner, type RegisteredSchema, type SchemaPublicationMode } from '@datagouv/components-next'
+import { BrandedButton, getSchemaVersion, PaddedContainer, SchemaCard, type RegisteredSchema, type SchemaPublicationMode } from '@datagouv/components-next'
 import { RiTableLine } from '@remixicon/vue'
 import FieldsetElement from '~/components/Form/FieldsetElement.vue'
 import HelpAccordion from '~/components/Form/HelpAccordion.vue'

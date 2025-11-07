@@ -28,7 +28,34 @@
     <p class="text-sm mt-4 mb-0">
       {{ schema.description }}
     </p>
-    <div class="flex items-center gap-2" />
+    <p
+      v-if="showLinks"
+      class="mt-4 mb-0 flex flex-col gap-2 text-sm"
+    >
+      <AppLink
+        class="link"
+        target="_blank"
+        :to="getDocumentation(schema.name)"
+      >
+        {{ t('Lire la documentation du schéma') }}
+      </AppLink>
+      <AppLink
+        v-for="example in schema.examples"
+        :key="example.path"
+        class="link"
+        target="_blank"
+        :to="example.path"
+      >
+        {{ example.title }}
+      </AppLink>
+      <AppLink
+        class="link"
+        target="_blank"
+        :to="`${config.baseUrl}/datasets/search?schema=${schema.name}`"
+      >
+        {{ t('Explorer les fichiers sur data.gouv.fr') }}
+      </AppLink>
+    </p>
     <RiCheckLine
       v-if="selected"
       class="size-6 fill-datagouv absolute top-4 right-4"
@@ -38,14 +65,20 @@
 
 <script setup lang="ts">
 import { RiCheckLine, RiInformationLine, RiNodeTree } from '@remixicon/vue'
+import AppLink from './AppLink.vue'
 import { useTranslation } from '../composables/useTranslation'
+import { useGetSchemaDocumentation } from '../functions/schemas'
 import type { RegisteredSchema } from '../types/schemas'
+import { useComponentsConfig } from '../config'
 
 defineProps<{
   schema: RegisteredSchema
   selectable?: boolean
   selected?: boolean
+  showLinks?: boolean
 }>()
 
 const { t } = useTranslation()
+const config = useComponentsConfig()
+const getDocumentation = useGetSchemaDocumentation()
 </script>
