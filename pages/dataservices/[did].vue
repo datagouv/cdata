@@ -294,7 +294,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, LoadingBlock, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, type DataserviceAccessAudienceType, type DataserviceAccessAudience, StatBox } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, LoadingBlock, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, type DataserviceAccessAudienceType, type DataserviceAccessAudience, StatBox, MarkdownViewer } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import DataserviceAccessTypeBadge from '~/components/AdminTable/AdminDataservicesTable/DataserviceAccessTypeBadge.vue'

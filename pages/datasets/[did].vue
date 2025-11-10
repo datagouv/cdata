@@ -395,6 +395,7 @@ import {
   Toggletip,
   type TranslatedBadge,
   LabelTag,
+  MarkdownViewer,
 } from '@datagouv/components-next'
 import {
   RiDeleteBinLine,

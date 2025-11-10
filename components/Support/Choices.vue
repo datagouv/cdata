@@ -99,8 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { useActiveDescendant, BrandedButton, SimpleBanner } from '@datagouv/components-next'
-import MarkdownViewer from '~/components/MarkdownViewer/MarkdownViewer.vue'
+import { useActiveDescendant, BrandedButton, MarkdownViewer, SimpleBanner } from '@datagouv/components-next'
 import type { Question, QuestionWithSegment } from '~/types/support'
 
 const emit = defineEmits<{

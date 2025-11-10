@@ -212,7 +212,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, OrganizationCard, Pagination, ReuseCard, getLink } from '@datagouv/components-next'
+import { Avatar, BrandedButton, MarkdownViewer, OrganizationCard, Pagination, ReuseCard, getLink } from '@datagouv/components-next'
 import type { DatasetV2, Reuse, User } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 import { DatasetCardLg } from '#components'
