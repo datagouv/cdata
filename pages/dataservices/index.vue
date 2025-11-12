@@ -15,7 +15,7 @@
     <PageShow
       v-if="page"
       :page
-      main-color="purple-flat"
+      main-color="brown-illustration"
     />
     <div class="container flex flex-col sm:flex-row items-center">
       <div class="w-full">
@@ -31,7 +31,7 @@
           </div>
 
           <BrandedButton
-            color="purple-flat"
+            color="brown-illustration"
             class="mt-8"
             :href="config.public.dataservicesOnboarding"
           >
