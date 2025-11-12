@@ -1,6 +1,6 @@
 <template>
   <SimpleBanner
-    v-if="config.public.readOnlyMode || true"
+    v-if="config.public.readOnlyMode"
     type="warning"
   >
     <div class="fr-container">
