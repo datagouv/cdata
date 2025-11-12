@@ -131,12 +131,10 @@ const currentStepNumber = computed(() => {
 })
 
 const isCurrentStepValid = computed(() => {
-  const step = currentStep.value
-
-  // Cas spécial pour l'étape tableur
-  if (step === '2-sheet') return true
+  const step = currentStepNumber.value
 
   if (typeof step === 'number') {
+    if (step > 1 && !associateSchemaForm.value.selectedSchema) return false
     if (step < 1) return false
     if (step > steps.value.length) return false
     if (step === 4 && !newDataset.value) return false

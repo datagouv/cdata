@@ -109,6 +109,7 @@
 
     <FormFieldset
       :legend="$t('Schéma de données')"
+      class="mb-0"
     >
       <FieldsetElement form-key="selectedSchema">
         <label
@@ -121,7 +122,7 @@
           id="schema-search"
           v-model="searchQuery"
           type="search"
-          class="fr-input"
+          class="fr-input mb-3"
           placeholder="Rechercher un schéma..."
           :disabled="loadingSchemas"
         >
@@ -131,6 +132,31 @@
         >
           {{ getFirstError('selectedSchema') }}
         </p>
+        <div v-if="searchQuery && filteredSchemas.length > 0">
+          <p class="text-sm mb-4">
+            {{ $t('{n} résultat trouvé | {n} résultats trouvés', { n: filteredSchemas.length }) }}
+          </p>
+          <div
+            class="grid grid-cols-1 gap-4"
+            role="listbox"
+          >
+            <SchemaCard
+              v-for="schema in filteredSchemas"
+              :key="schema.name"
+              :schema
+              class="cursor-pointer"
+              :selectable="true"
+              :selected="schema.name === form.selectedSchema?.name"
+              @click="selectSchema(schema)"
+            />
+          </div>
+        </div>
+
+        <div v-if="searchQuery && filteredSchemas.length === 0 && !loadingSchemas">
+          <SimpleBanner type="warning">
+            {{ $t('Aucun schéma ne correspond à votre recherche.') }}
+          </SimpleBanner>
+        </div>
         <template #accordion>
           <HelpAccordion :title="$t(`Qu'est-ce qu'un schéma de données ?`)">
             <p class="m-0">
@@ -140,38 +166,6 @@
         </template>
       </FieldsetElement>
     </FormFieldset>
-
-    <div
-      v-if="searchQuery && filteredSchemas.length > 0"
-      class="mt-4"
-    >
-      <p class="text-sm mb-4">
-        {{ $t('{n} résultat trouvé | {n} résultats trouvés', { n: filteredSchemas.length }) }}
-      </p>
-      <div
-        class="grid grid-cols-1 gap-4"
-        role="listbox"
-      >
-        <SchemaCard
-          v-for="schema in filteredSchemas"
-          :key="schema.name"
-          :schema
-          class="cursor-pointer"
-          :selectable="true"
-          :selected="schema.name === form.selectedSchema?.name"
-          @click="selectSchema(schema)"
-        />
-      </div>
-    </div>
-
-    <div
-      v-if="searchQuery && filteredSchemas.length === 0 && !loadingSchemas"
-      class="mt-5"
-    >
-      <SimpleBanner type="warning">
-        {{ $t('Aucun schéma ne correspond à votre recherche.') }}
-      </SimpleBanner>
-    </div>
 
     <!-- searchQuery is not saved between pages so this case will happen on "previous" -->
     <template v-if="!searchQuery && form.selectedSchema">

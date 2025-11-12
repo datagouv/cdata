@@ -85,26 +85,30 @@
         </FieldsetElement>
       </FormFieldset>
 
-      <Alert
+      <SimpleBanner
         v-if="customErrors.length"
-        type="error"
-        class="fr-mt-2w fr-mb-2w"
+        type="danger"
+        class="my-4"
       >
-        <template #title>
+        <p class="mb-0">
           {{ $t("Une erreur est survenue | Des erreurs sont survenues", customErrors.length) }}
-        </template>
+        </p>
         <ul v-if="customErrors.length > 1">
           <li
             v-for="error in customErrors"
             :key="error"
+            class="text-sm"
           >
             {{ error }}
           </li>
         </ul>
-        <p v-else>
+        <p
+          v-else
+          class="mb-0 text-sm"
+        >
           {{ customErrors[0] }}
         </p>
-      </Alert>
+      </SimpleBanner>
 
       <div class="fr-grid-row justify-between fr-mt-4w">
         <BrandedButton
@@ -126,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getSchemaVersion, PaddedContainer, SchemaCard, type RegisteredSchema, type SchemaPublicationMode } from '@datagouv/components-next'
+import { BrandedButton, getSchemaVersion, PaddedContainer, SchemaCard, SimpleBanner, type RegisteredSchema, type SchemaPublicationMode } from '@datagouv/components-next'
 import { RiTableLine } from '@remixicon/vue'
 import FieldsetElement from '~/components/Form/FieldsetElement.vue'
 import HelpAccordion from '~/components/Form/HelpAccordion.vue'
