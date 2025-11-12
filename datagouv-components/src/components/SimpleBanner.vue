@@ -16,7 +16,7 @@ const props = defineProps<{
 
 const classes = computed(() => {
   return {
-    'primary': 'bg-datagouv-lightest text-datagouv-dark',
+    'primary': 'bg-new-info-light text-new-info',
     'primary-frame': 'bg-gray-50 border border-datagouv',
     'warning': 'bg-warning3-lightest text-warning3-dark',
     'gray': 'bg-gray-some text-gray-plain',
