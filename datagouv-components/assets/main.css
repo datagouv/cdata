@@ -131,7 +131,7 @@
   --color-success-darker: #1f8d49; /* from DSFR to avoid contrast issue */
   --color-success-darkest: #18753c; /* from DSFR to avoid contrast issue */
 
-  --shadow-input-blue: inset 0 -2px 0 0 #3558a2;
+  --shadow-input-blue: inset 0 -2px 0 0 #000091;
   --shadow-input: inset 0 -2px 0 0 var(--blue-cumulus-sun-368-moon-732);
 
   /* This animation are copy/paste from the `pulse` animation of TailwindCSS because the `pulse` animation inherit of a blue background from somewhere (DSFR? Wrong component not-scoped style?) */

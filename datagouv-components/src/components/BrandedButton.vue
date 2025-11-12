@@ -111,9 +111,9 @@ const isDisabled = computed(() => props.disabled || props.loading)
 
 const colors = computed(() => {
   return {
-    'primary': `text-white bg-datagouv-dark !border-datagouv-dark ${!isDisabled.value ? 'hover:!bg-datagouv-hover hover:!border-datagouv-hover' : ''}`,
-    'primary-soft': `text-datagouv-dark bg-white !border-datagouv-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'primary-softer': `text-datagouv-dark bg-transparent !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'primary': `text-white bg-new-primary !border-new-primary ${!isDisabled.value ? 'hover:!bg-new-primary-hover hover:!border-new-primary-hover' : ''}`,
+    'primary-soft': `text-new-primary bg-white !border-new-primary ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'primary-softer': `text-new-primary bg-transparent !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'secondary': `text-gray-plain bg-white !border-gray-plain ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'secondary-softer': `text-gray-plain !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'warning': `text-warning-dark bg-white !border-warning-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
