@@ -15,32 +15,23 @@
           <BrandedButton
             color="primary"
             :loading="validating"
+            :icon="RiCheckLine"
             @click="validateData"
           >
-            <span
-              class="fr-icon-check-line fr-mr-1w"
-              aria-hidden="true"
-            />
             {{ $t('Valider les données') }}
           </BrandedButton>
           <BrandedButton
             color="secondary"
+            :icon="RiAddLine"
             @click="showAddColumnModal = true"
           >
-            <span
-              class="fr-icon-add-line fr-mr-1w"
-              aria-hidden="true"
-            />
             {{ $t('Ajouter une colonne') }}
           </BrandedButton>
           <BrandedButton
             color="secondary"
+            :icon="RiDownloadLine"
             @click="downloadCSV"
           >
-            <span
-              class="fr-icon-download-line fr-mr-1w"
-              aria-hidden="true"
-            />
             {{ $t('Télécharger en CSV') }}
           </BrandedButton>
         </div>
@@ -202,6 +193,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, SimpleBanner, type RegisteredSchema, type SchemaDetails, type SchemaField } from '@datagouv/components-next'
+import { RiAddLine, RiCheckLine, RiDownloadLine } from '@remixicon/vue'
 import { ofetch } from 'ofetch'
 import paparse from 'papaparse'
 import { TabulatorFull as Tabulator, type CellComponent, type Editor, type Formatter, type GlobalTooltipOption, type RowComponent } from 'tabulator-tables'
@@ -323,7 +315,7 @@ function confirmAddColumn() {
     table.setColumns(getColumns())
     table.setData(data)
 
-    setTimeout(() => applyCellErrors(), 100)
+    nextTick(applyCellErrors)
   }
 
   closeAddColumnModal()
@@ -423,18 +415,13 @@ async function initializeTable() {
     console.error('tableRef.value est null')
     return
   }
-  console.debug('initializing table')
   let tableData: RowData[] = []
   if (uploadedFile.value) {
-    console.debug('uploaded file found')
     try {
-      console.debug('parsing file')
       paparse.parse<RowData, File>(uploadedFile.value, {
         header: true,
         complete: function (results) {
-          console.log(results.data)
           tableData = results.data
-          console.debug('file parsed')
           makeTable(tableData, true)
           uploadedFile.value = null
         },
@@ -510,11 +497,8 @@ function applyCellErrors() {
       const rowIndex = pos - 1
       schemaFields.value.forEach((field: string) => {
         const cell = row.getCell(field)
-        console.log(cell)
         const errorKey = `${rowIndex}_${field}`
         const cellElement = cell.getElement()
-        console.log(validationErrors.value)
-        console.log(errorKey)
         if (validationErrors.value[errorKey]) {
           cellElement.classList.add('cell-error')
         }
@@ -610,7 +594,7 @@ watch(validationReport, () => {
   if (validationReport.value && !validationReport.value.report?.valid && validationReport.value.report?.errors) {
     const errors = validationReport.value.report.errors
 
-    errors.forEach((error) => {
+    for (const error of errors) {
       const rowIndex = error.rowNumber ? error.rowNumber - 2 : -1
       const columnName = error.fieldName
 
@@ -621,10 +605,9 @@ watch(validationReport, () => {
           message: error.message || error.type || 'Erreur de validation',
         }
       }
-    })
-
-    applyCellErrors()
+    }
   }
+  applyCellErrors()
 })
 </script>
 
