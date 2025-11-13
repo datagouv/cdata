@@ -156,6 +156,7 @@ function dataNext() {
   else {
     datasetForm.value.title = `${associateSchemaForm.value.selectedSchema?.title} (${associateSchemaForm.value.owned?.organization.name})`
     datasetForm.value.description = `Ce jeu de données répond aux spécifications du schéma ${associateSchemaForm.value.selectedSchema?.title}`
+    datasetForm.value.owned = associateSchemaForm.value.owned
     moveToStep(3)
   }
 }
