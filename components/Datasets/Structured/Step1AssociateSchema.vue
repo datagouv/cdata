@@ -92,20 +92,17 @@
             </label>
           </div>
         </div>
-        <br>
-        <div
-          v-if="publicationMode === 'existing'"
-          class="fr-mt-3w"
-        >
-          <DatasetsSelect
-            v-model="selectedDatasets"
-            :label="t('Sélectionnez un jeu de données')"
-            :single="true"
-            :organization-id="organizationId"
-          />
-        </div>
       </FieldsetElement>
     </FormFieldset>
+
+    <DatasetsSelect
+      v-if="publicationMode === 'existing'"
+      v-model="selectedDatasets"
+      class="min-w-0"
+      :label="t('Sélectionnez un jeu de données')"
+      :single="true"
+      :organization-id="organizationId"
+    />
 
     <FormFieldset
       :legend="$t('Schéma de données')"

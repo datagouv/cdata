@@ -38,6 +38,7 @@
         </div>
         <AnimatedLoader v-if="isLoading" />
         <TabularEditor
+          ref="tabularEditor"
           v-model:uploaded-file="uploadedFile"
           v-model:resource-title="resourceTitle"
           v-model:validation-report="validationReport"
@@ -85,6 +86,8 @@ const emit = defineEmits<{
   (e: 'previous' | 'next'): void
 }>()
 
+const tabularEditor = useTemplateRef<InstanceType<typeof TabularEditor>>('tabularEditor')
+
 const TabularEditor = defineAsyncComponent(() => {
   start()
   return import('../TabularEditor.client.vue').then((module) => {
@@ -94,6 +97,7 @@ const TabularEditor = defineAsyncComponent(() => {
 })
 
 const uploadedFile = defineModel<File | null>({ required: true })
+const resources = defineModel<Array<ResourceForm>>('resources', { required: true })
 
 const { t } = useTranslation()
 const route = useRoute()
@@ -123,8 +127,12 @@ const goBack = () => {
 }
 
 const submit = async () => {
-  const DATASET_FILES_STATE = 'structured-dataset-files'
-  const resources = useState<Array<ResourceForm>>(DATASET_FILES_STATE, () => [])
+  if (!tabularEditor.value) {
+    return
+  }
+  tabularEditor.value?.generateFile()
+
+  await nextTick()
 
   if (!uploadedFile.value) {
     return

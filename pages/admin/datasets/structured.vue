@@ -36,13 +36,15 @@
     <Step2Sheet
       v-if="currentStep === '2-sheet'"
       v-model="file"
+      v-model:resources="resources"
       :schema="associateSchemaForm.selectedSchema"
       :publication-mode="publicationMode"
       @previous="moveToStep(2)"
-      @next="sheetNext"
+      @next="dataNext"
     />
     <Step3DescribeDataset
-      v-if="currentStep === 3"
+      v-if="currentStep === 3 && associateSchemaForm.selectedSchema && associateSchemaForm.owned?.organization"
+      v-model="datasetForm"
       @previous="goBackFromStep3"
       @next="describeNext"
     />
@@ -72,7 +74,7 @@ const { t } = useTranslation()
 const config = useRuntimeConfig()
 const route = useRoute()
 const { $api } = useNuxtApp()
-const { start, finish } = useLoadingIndicator()
+const { start, set, progress, finish } = useLoadingIndicator()
 
 const ASSOCIATE_SCHEMA_FORM_STATE = 'structured-associate-schema-form'
 const DATASET_FILES_STATE = 'structured-dataset-files'
@@ -127,18 +129,15 @@ const currentStep = computed(() => {
 const currentStepNumber = computed(() => {
   const step = currentStep.value
   if (step === '2-sheet') return 2
-  return step as number
+  return step
 })
 
 const isCurrentStepValid = computed(() => {
   const step = currentStepNumber.value
 
-  if (typeof step === 'number') {
-    if (step > 1 && !associateSchemaForm.value.selectedSchema) return false
-    if (step < 1) return false
-    if (step > steps.value.length) return false
-    if (step === 4 && !newDataset.value) return false
-  }
+  if (step < 1) return false
+  if (step > steps.value.length) return false
+  if (step === 4 && !newDataset.value) return false
 
   return true
 })
@@ -155,15 +154,8 @@ function dataNext() {
     save()
   }
   else {
-    moveToStep(3)
-  }
-}
-
-function sheetNext() {
-  if (publicationMode.value === 'existing') {
-    save()
-  }
-  else {
+    datasetForm.value.title = `${associateSchemaForm.value.selectedSchema?.title} (${associateSchemaForm.value.owned?.organization.name})`
+    datasetForm.value.description = `Ce jeu de données répond aux spécifications du schéma ${associateSchemaForm.value.selectedSchema?.title}`
     moveToStep(3)
   }
 }
@@ -195,17 +187,6 @@ async function save() {
       newDataset.value = associateSchemaForm.value.existingDataset
     }
     else {
-      if (
-        datasetForm.value.contact_points
-        && datasetForm.value.owned?.organization
-      ) {
-        for (const contactPointKey in datasetForm.value.contact_points) {
-          if (datasetForm.value.contact_points[contactPointKey] && !('id' in datasetForm.value.contact_points[contactPointKey])) {
-            datasetForm.value.contact_points[contactPointKey] = await newContactPoint($api, datasetForm.value.owned?.organization, datasetForm.value.contact_points[contactPointKey])
-          }
-        }
-      }
-
       newDataset.value = newDataset.value || await $api<Dataset>('/api/1/datasets/', {
         method: 'POST',
         body: JSON.stringify(datasetToApi(datasetForm.value, { private: true })),
@@ -214,22 +195,37 @@ async function save() {
     const dataset = newDataset.value
 
     let results: Array<PromiseSettledResult<Resource>> = []
-    for (const chunk of chunkArray(resources.value, config.public.maxNumberOfResourcesToUploadInParallel)) {
-      results = [...results, ...await Promise.allSettled(chunk.map(resource => saveResourceForm(dataset, resource)))]
+    try {
+      start()
+      for (const chunk of chunkArray(resources.value, config.public.maxNumberOfResourcesToUploadInParallel)) {
+        results = [...results, ...await Promise.allSettled(chunk.map(async (resource) => {
+          const result = await saveResourceForm(dataset, resource)
+          set(progress.value + 100 / resources.value.length)
+          return result
+        }))]
+      }
+      finish()
+    }
+    catch {
+      finish({ error: true })
     }
 
     if (results.every(f => f.status !== 'rejected')) {
       if (publicationMode.value === 'existing') {
         await navigateTo(`/datasets/${dataset.slug}`)
+        clearNuxtState(NEW_DATASET_STATE)
       }
       else {
         await moveToStep(4)
       }
-      clearNuxtState(ASSOCIATE_SCHEMA_FORM_STATE)
+      associateSchemaForm.value = {
+        owned: null,
+        existingDataset: null,
+        selectedSchema: null,
+      }
       clearNuxtState(USE_SPREADSHEET_STATE)
       clearNuxtState(DATASET_FORM_STATE)
       clearNuxtState(DATASET_FILES_STATE)
-      clearNuxtState(NEW_DATASET_STATE)
       clearNuxtState(PUBLICATION_MODE_STATE)
       clearNuxtState(UPLOADED_FILE_STATE)
     }
@@ -258,6 +254,7 @@ async function updateDataset(asPrivate: boolean) {
   }
 
   await navigateTo(`/datasets/${newDataset.value.slug}`)
+  clearNuxtState(NEW_DATASET_STATE)
 }
 
 watchEffect(() => {
