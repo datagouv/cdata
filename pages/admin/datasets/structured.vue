@@ -255,7 +255,6 @@ async function updateDataset(asPrivate: boolean) {
   }
 
   await navigateTo(`/datasets/${newDataset.value.slug}`)
-  clearNuxtState(NEW_DATASET_STATE)
 }
 
 watchEffect(() => {
