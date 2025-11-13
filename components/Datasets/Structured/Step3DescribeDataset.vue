@@ -192,13 +192,7 @@ const frequencyAccordionId = useId()
 
 const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies', { lazy: true })
 
-const DATASET_FORM_STATE = 'structured-dataset-form'
-const datasetForm = useState<Partial<DatasetForm>>(DATASET_FORM_STATE, () => ({
-  title: '',
-  description: '',
-  owned: null,
-  frequency: null,
-}))
+const datasetForm = defineModel<DatasetForm>({ required: true })
 
 const form = ref({
   title: datasetForm.value.title || '',
