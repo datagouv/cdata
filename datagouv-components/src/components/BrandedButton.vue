@@ -53,7 +53,7 @@ import AppLink from './AppLink.vue'
 import { bannerActionTypeKey } from './BannerAction.vue'
 import AnimatedLoader from './AnimatedLoader.vue'
 
-export type ColorType = 'primary' | 'primary-soft' | 'primary-softer' | 'secondary' | 'secondary-softer' | 'warning' | 'danger' | 'tertiary' | 'purple-flat' | 'green-flat' | 'white-flat'
+export type ColorType = 'primary' | 'primary-soft' | 'primary-softer' | 'secondary' | 'secondary-softer' | 'warning' | 'danger' | 'tertiary' | 'brown-illustration' | 'green-illustration' | 'white-flat'
 
 const props = withDefaults(defineProps<{
   size?: '2xs' | 'xs' | 'sm' | 'lg' | 'xl'
@@ -111,16 +111,17 @@ const isDisabled = computed(() => props.disabled || props.loading)
 
 const colors = computed(() => {
   return {
-    'primary': `text-white bg-datagouv-dark !border-datagouv-dark ${!isDisabled.value ? 'hover:!bg-datagouv-hover hover:!border-datagouv-hover' : ''}`,
-    'primary-soft': `text-datagouv-dark bg-white !border-datagouv-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'primary-softer': `text-datagouv-dark bg-transparent !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'primary': `text-white bg-new-primary !border-new-primary ${!isDisabled.value ? 'hover:!bg-new-primary-hover hover:!border-new-primary-hover' : ''}`,
+    'primary-soft': `text-new-primary bg-white !border-new-primary ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'primary-softer': `text-new-primary bg-transparent !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'secondary': `text-gray-plain bg-white !border-gray-plain ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'secondary-softer': `text-gray-plain !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'warning': `text-warning-dark bg-white !border-warning-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'danger': `!text-danger-dark bg-white !border-danger-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'tertiary': `!border-none bg-transparent text-datagouv-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'purple-flat': `!border-none bg-purple-dataservice text-white ${!isDisabled.value ? '[&&]:hover:!bg-purple-dataservice/90' : ''}`,
-    'green-flat': `!border-none bg-green-reuse text-white ${!isDisabled.value ? '[&&]:hover:!bg-green-reuse/90' : ''}`,
+    'brown-illustration': `!border-none bg-new-brown-illustration text-white ${!isDisabled.value ? '[&&]:hover:!bg-new-brown-illustration/90' : ''}`,
+    'green-illustration': `!border-none bg-new-green-illustration text-white ${!isDisabled.value ? '[&&]:hover:!bg-new-green-illustration/90' : ''}`,
+    'blue-illustration': `!border-none bg-new-blue-illustration text-white ${!isDisabled.value ? '[&&]:hover:!bg-new-blue-illustration/90' : ''}`,
     'white-flat': `!border-none bg-white ${!isDisabled.value ? '[&&]:hover:!bg-white/90' : ''}`,
   }[color.value]
 })

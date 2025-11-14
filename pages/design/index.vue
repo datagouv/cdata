@@ -140,13 +140,6 @@
           </template>
         </SupportCard>
       </div>
-      <div class="space-y-8 py-8 pb-64">
-        <h2 class="!mb-3">
-          Full width content
-        </h2>
-
-        <BannerSticky />
-      </div>
     </div>
   </div>
 </template>
@@ -158,7 +151,6 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import AdminBadge from '~/design-system/AdminBadge.vue'
 import BannerAction from '~/design-system/BannerAction.vue'
 import BannerNotif from '~/design-system/BannerNotif.vue'
-import BannerSticky from '~/design-system/BannerSticky.vue'
 import OrganizationNameWithCertificate from '~/design-system/OrganizationNameWithCertificate.vue'
 import SearchInput from '~/design-system/SearchInput.vue'
 

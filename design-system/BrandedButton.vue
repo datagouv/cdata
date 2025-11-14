@@ -13,7 +13,7 @@
       class="space-y-5"
     >
       <div
-        v-for="color in ['primary', 'primary-soft', 'primary-softer', 'secondary', 'secondary-softer', 'warning', 'danger', 'tertiary', 'purple-flat', 'green-flat', 'white-flat']"
+        v-for="color in ['primary', 'primary-soft', 'primary-softer', 'secondary', 'secondary-softer', 'warning', 'danger', 'tertiary', 'brown-illustration', 'green-illustration', 'white-flat']"
         :key="color"
         class="space-y-5"
       >
