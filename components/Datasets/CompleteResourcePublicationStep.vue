@@ -30,7 +30,6 @@
       <BrandedButton
         color="primary"
         :href="getResourceExternalUrl(resource.dataset, resource)"
-        external
       >
         {{ $t("Voir la page publique") }}
       </BrandedButton>

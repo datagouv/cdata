@@ -8,7 +8,6 @@
         <Breadcrumb class="md:mb-0 md:mt-0">
           <BreadcrumbItem
             to="/"
-            :external="true"
           >
             {{ $t('Accueil') }}
           </BreadcrumbItem>

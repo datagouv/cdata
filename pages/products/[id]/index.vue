@@ -2,13 +2,11 @@
   <div class="fr-container">
     <Breadcrumb>
       <BreadcrumbItem
-        :external="true"
         to="/"
       >
         {{ t('Accueil') }}
       </BreadcrumbItem>
       <BreadcrumbItem
-        :external="true"
         to="/products"
       >
         {{ t('Produits') }}

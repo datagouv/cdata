@@ -44,7 +44,7 @@ export default defineNuxtPlugin({
           }
 
           if (response.status === 401) {
-            await nuxtApp.runWithContext(() => navigateTo({ path: '/login', query: { next: route.fullPath } }, { external: true }))
+            await nuxtApp.runWithContext(() => navigateTo({ path: '/login', query: { next: route.fullPath } }))
           }
 
           if (response.status === 429) {

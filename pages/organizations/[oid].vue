@@ -9,7 +9,6 @@
         <Breadcrumb>
           <BreadcrumbItem
             to="/"
-            :external="true"
           >
             {{ $t('Accueil') }}
           </BreadcrumbItem>

@@ -14,7 +14,6 @@
       v-else
       class="fr-breadcrumb__link"
       :to
-      :external
     >
       <slot />
     </CdataLink>
@@ -24,7 +23,6 @@
 <script setup lang="ts">
 const props = defineProps<{
   to?: string
-  external?: boolean
 }>()
 
 const isCurrentUrl = useIsCurrentUrl()

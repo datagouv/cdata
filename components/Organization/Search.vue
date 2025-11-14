@@ -78,7 +78,7 @@ async function fetchOptions() {
 }
 
 async function moveToOrganization(page: string) {
-  await navigateTo(page, { external: true })
+  await navigateTo(page)
 }
 
 watchDebounced(q, async (newValue, oldValue) => {
