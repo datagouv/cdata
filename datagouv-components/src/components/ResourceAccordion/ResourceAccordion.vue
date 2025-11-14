@@ -418,7 +418,7 @@ const hasTabularData = computed(() => {
 })
 
 const hasPmtiles = computed(() => {
-  return props.resource.extras['analysis:parsing:pmtiles_url']
+  return props.resource.extras['analysis:parsing:pmtiles_url'] || props.resource.format === 'pmtiles'
 })
 
 const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('Fichier'))
