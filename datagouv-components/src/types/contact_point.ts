@@ -5,5 +5,6 @@ export type ContactPoint = {
   name: string
   contact_form?: string
   email?: string
-  role: 'contact' | 'creator' | 'publisher'
+  role: 'contact' | 'creator' | 'publisher' | 'rightsHolder' | 'custodian' | 'distributor' | 'originator'
+    | 'principalInvestigator' | 'processor' | 'resourceProvider' | 'user'
 }

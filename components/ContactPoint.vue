@@ -50,6 +50,14 @@ const role = computed(() => {
     contact: t('Contact'),
     creator: t('Créateur'),
     publisher: t('Éditeur'),
+    rightsHolder: t('Détenteur des droits'),
+    custodian: t('Gestionnaire'),
+    distributor: t('Distributeur'),
+    originator: t('Producteur'),
+    principalInvestigator: t('Investigateur principal'),
+    processor: t('Exécutant'),
+    resourceProvider: t('Fournisseur'),
+    user: t('Utilisateur'),
   }[props.contact.role]
 })
 </script>
