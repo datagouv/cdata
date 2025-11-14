@@ -1,0 +1,58 @@
+<template>
+  <div class="fr-text--xs">
+    <div v-if="dataFairEmbedUrl">
+      <iframe
+        :src="dataFairEmbedUrl"
+        width="100%"
+        height="500px"
+        style="background-color: transparent;
+          border: none;"
+      />
+    </div>
+    <SimpleBanner
+      v-else
+      type="warning"
+      class="flex items-center space-x-2"
+    >
+      <RiErrorWarningLine class="shink-0 size-6" />
+      <span>{{ t("Erreur lors de l'affichage de l'aperçu.") }}</span>
+    </SimpleBanner>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { RiErrorWarningLine } from '@remixicon/vue'
+import SimpleBanner from '../SimpleBanner.vue'
+import type { Resource } from '../../types/resources.ts'
+import type { Dataset, DatasetV2 } from '../../types/datasets.ts'
+import { useTranslation } from '../../composables/useTranslation.ts'
+
+const props = defineProps<{
+  resource: Resource
+  dataset: Dataset | DatasetV2
+}>()
+
+const { t } = useTranslation()
+
+const datafairOrigin = computed(() => {
+  return props.resource.extras['datafairOrigin'] || props.dataset.extras['datafairOrigin']
+})
+const datafairDatasetId = computed(() => {
+  return props.resource.extras['datafairDatasetId'] || props.dataset.extras['datafairDatasetId']
+})
+const embed = computed(() => props.resource.extras['datafairEmbed'])
+const apidocUrl = computed(() => props.resource.extras['apidocUrl'])
+
+const dataFairEmbedUrl = computed(() => {
+  // if the return value is null, a banner error is shown
+  if (embed.value) {
+    if (!datafairOrigin.value || !datafairDatasetId.value)
+      return null
+    return `${datafairOrigin.value}/embed/dataset/${datafairDatasetId.value}/${embed.value}`
+  }
+  if (apidocUrl.value)
+    return `https://koumoul.com/openapi-viewer/?proxy=false&hide-toolbar=true&url=${apidocUrl.value}`
+  return null
+})
+</script>
