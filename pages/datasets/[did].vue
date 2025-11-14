@@ -336,7 +336,10 @@
           v-if="dataset"
           :dataset
         />
-
+        <RagWidgetBanner
+          v-if="dataset"
+          :dataset
+        />
         <FullPageTabs
           class="mt-12"
           :links="[
