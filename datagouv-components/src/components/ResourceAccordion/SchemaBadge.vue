@@ -81,7 +81,7 @@
       </template>
     </Toggletip>
     <span class="mr-1 text-gray-medium">{{ t("Schéma:") }}</span>
-    <span class="flex items-center bg-danger-lightest rounded-sm">
+    <span class="flex items-center bg-danger-lightest rounded-xl">
       <span class="fr-tag fr-tag--sm">{{ title }}</span>
       <span
         v-if="validataStatus === 'warnings'"
@@ -146,15 +146,7 @@ const validataStatus = computed<'none' | 'ok' | 'warnings' | 'ko'>(() => {
 </script>
 
 <style scoped>
-.close-button {
-    width: 40px;
-    font-size: 1.2rem;
-    line-height: 0;
-}
-.rounded-sm {
-    border-radius: 0.75rem;
-}
 .padding-sm {
-    padding: .125rem .5rem .125rem .25rem;
+  padding: .125rem .5rem .125rem .25rem;
 }
 </style>
