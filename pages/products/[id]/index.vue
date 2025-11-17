@@ -281,7 +281,7 @@
 </template>
 
 <script setup lang="ts">
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@datagouv/components-next'
+import { MarkdownViewer, Tab, TabGroup, TabList, TabPanel, TabPanels } from '@datagouv/components-next'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'

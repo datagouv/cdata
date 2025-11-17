@@ -220,9 +220,9 @@
             <div
               v-if="tab.key === 'description'"
             >
-              <div
-                class="fr-mt-0 markdown fr-text--sm text-mention-grey"
-                v-html="formatMarkdown(resource.description || '')"
+              <MarkdownViewer
+                :content="resource.description || ''"
+                size="sm"
               />
             </div>
             <div
@@ -350,8 +350,8 @@ import { ref, computed, defineAsyncComponent } from 'vue'
 import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine } from '@remixicon/vue'
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
 import { filesize, summarize } from '../../functions/helpers'
-import { formatMarkdown } from '../../functions/markdown'
 import { useFormatDate } from '../../functions/dates'
+import MarkdownViewer from '../MarkdownViewer.vue'
 import type { CommunityResource, Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 import TabGroup from '../Tabs/TabGroup.vue'
@@ -418,7 +418,7 @@ const hasTabularData = computed(() => {
 })
 
 const hasPmtiles = computed(() => {
-  return props.resource.extras['analysis:parsing:pmtiles_url']
+  return props.resource.extras['analysis:parsing:pmtiles_url'] || props.resource.format === 'pmtiles'
 })
 
 const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('Fichier'))

@@ -53,48 +53,50 @@
     >
       <div class="space-y-8">
         <div class="container pt-3 min-h-32">
-          <div class="flex flex-col md:space-x-10 md:flex-row">
+          <div class="flex flex-col md:space-x-10 md:flex-row md:items-start">
             <div class="flex-1 overflow-x-hidden">
-              <div class="flex gap-3 mb-2">
-                <AdminBadge
-                  v-if="dataset.deleted"
-                  :icon="RiDeleteBinLine"
-                  size="sm"
-                  type="secondary"
-                >
-                  {{ $t("Supprimé") }}
-                </AdminBadge>
-                <AdminBadge
-                  v-if="dataset.private"
-                  :icon="RiLockLine"
-                  size="sm"
-                  type="secondary"
-                >
-                  {{ $t("Brouillon") }}
-                </AdminBadge>
-                <AdminBadge
-                  v-if="dataset.archived"
-                  :icon="RiLockLine"
-                  size="sm"
-                  type="secondary"
-                >
-                  {{ $t("Archivé") }}
-                </AdminBadge>
-              </div>
-              <h1 class="text-2xl text-gray-title font-extrabold mb-6">
-                {{ dataset.title }}
+              <div ref="header">
+                <div class="flex gap-3 mb-2">
+                  <AdminBadge
+                    v-if="dataset.deleted"
+                    :icon="RiDeleteBinLine"
+                    size="sm"
+                    type="secondary"
+                  >
+                    {{ $t("Supprimé") }}
+                  </AdminBadge>
+                  <AdminBadge
+                    v-if="dataset.private"
+                    :icon="RiLockLine"
+                    size="sm"
+                    type="secondary"
+                  >
+                    {{ $t("Brouillon") }}
+                  </AdminBadge>
+                  <AdminBadge
+                    v-if="dataset.archived"
+                    :icon="RiLockLine"
+                    size="sm"
+                    type="secondary"
+                  >
+                    {{ $t("Archivé") }}
+                  </AdminBadge>
+                </div>
+                <h1 class="text-2xl text-gray-title font-extrabold mb-6">
+                  {{ dataset.title }}
 
-                <span
-                  v-if="dataset.acronym"
-                  class="text-xs text-gray-title font-bold"
-                >
-                  {{ dataset.acronym }}
-                </span>
-              </h1>
+                  <span
+                    v-if="dataset.acronym"
+                    class="text-xs text-gray-title font-bold"
+                  >
+                    {{ dataset.acronym }}
+                  </span>
+                </h1>
+              </div>
               <div class="text-sm text-gray-plain font-bold mb-1 pb-0">
                 {{ $t("Description") }}
               </div>
-              <ReadMore>
+              <ReadMore :wanted-height="sidebarHeight - headerHeight">
                 <MarkdownViewer
                   size="sm"
                   :content="dataset.description"
@@ -102,7 +104,10 @@
                 />
               </ReadMore>
             </div>
-            <dl class="pl-0 w-full shrink-0 md:w-[384px] space-y-4">
+            <dl
+              ref="sidebar"
+              class="pl-0 w-full shrink-0 md:w-[384px] space-y-4"
+            >
               <div class="space-y-1">
                 <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
                   <template v-if="hasContactPointsWithSpecificRole">
@@ -162,7 +167,7 @@
               </div>
 
               <div
-                v-if="dataset.license"
+                v-if="dataset.license && dataset.access_type === 'open'"
                 class="space-y-1"
               >
                 <dt class="text-sm text-gray-plain font-bold pb-0">
@@ -181,6 +186,12 @@
                   {{ formatDate(dataset.last_update) }}
                 </dd>
               </div>
+
+              <AccessTypePanel
+                v-if="dataset.access_type !== 'open'"
+                :object="dataset"
+              />
+
               <div class="grid gap-4 xl:grid-cols-2">
                 <StatBox
                   :title="$t('Vues')"
@@ -191,6 +202,7 @@
                   :since="metricsSince"
                 />
                 <StatBox
+                  v-if="dataset.access_type === 'open'"
                   :title="$t('Téléchargements')"
                   :data="datasetDownloadsResources"
                   size="sm"
@@ -199,7 +211,8 @@
                   :since="metricsSince"
                 />
               </div>
-              <div>
+
+              <div v-if="dataset.access_type === 'open'">
                 <DatasetQuality
                   :quality="dataset.quality"
                   :hide-warnings
@@ -332,11 +345,69 @@
           :dataset
         />
 
+        <div
+          v-if="dataset.access_type === 'restricted'"
+          class="container"
+        >
+          <SimpleBanner
+            type="pink"
+            class="p-4 flex justify-between items-center"
+          >
+            <div class="space-y-3.5">
+              <div>
+                <AdminBadge
+                  :icon="RiLockLine"
+                  size="xs"
+                  type="pink"
+                >
+                  {{ $t('Accès restreint') }}
+                </AdminBadge>
+              </div>
+              <p class="font-bold text-xl">
+                {{ $t('Ces données ne sont accessibles que sur habilitation') }}
+              </p>
+              <p
+                v-if="dataset.access_type_reason"
+                class="text-sm"
+              >
+                {{ dataset.access_type_reason }}
+              </p>
+              <p
+                v-else-if="category"
+                class="text-sm"
+              >
+                {{ category.label }}
+              </p>
+              <p
+                v-if="config.public.datasetRestrictedGuideUrl"
+                class="mb-0"
+              >
+                <AppLink
+                  :to="config.public.datasetRestrictedGuideUrl"
+                  external
+                >
+                  En savoir plus
+                </AppLink>
+              </p>
+            </div>
+            <div v-if="dataset.authorization_request_url">
+              <BrandedButton
+                color="secondary"
+                :icon="RiExternalLinkLine"
+                icon-right
+                :href="dataset.authorization_request_url"
+              >
+                {{ $t('Faire une demande d\'habilitation') }}
+              </BrandedButton>
+            </div>
+          </SimpleBanner>
+        </div>
+
         <FullPageTabs
           class="mt-12"
           :links="[
             {
-              label: $t('Fichiers'),
+              label: dataset.access_type === 'open' ? $t('Fichiers') : $t('Fichiers publics'),
               href: `/datasets/${route.params.did}/`,
               count: dataset.resources.total,
             },
@@ -382,6 +453,7 @@ import {
   SimpleBanner,
   DatasetQuality,
   isOrganizationCertified,
+  LoadingBlock,
   type Resource,
   BrandedButton,
   useFormatDate,
@@ -389,10 +461,13 @@ import {
   Toggletip,
   type TranslatedBadge,
   LabelTag,
+  AppLink,
+  MarkdownViewer,
 } from '@datagouv/components-next'
 import {
   RiDeleteBinLine,
   RiExternalLinkFill,
+  RiExternalLinkLine,
   RiLockLine,
 } from '@remixicon/vue'
 import { TranslationT } from '@datagouv/components-next'
@@ -402,6 +477,8 @@ import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
+import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
+import { useElementSize } from '@vueuse/core'
 
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -410,6 +487,12 @@ const { formatDate } = useFormatDate()
 definePageMeta({
   keepScroll: true,
 })
+
+const sidebar = useTemplateRef('sidebar')
+const header = useTemplateRef('header')
+
+const { height: sidebarHeight } = useElementSize(sidebar)
+const { height: headerHeight } = useElementSize(header)
 
 const url = computed(() => `/api/2/datasets/${route.params.did}/`)
 const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
@@ -540,5 +623,11 @@ watchEffect(async () => {
     datasetVisitsTotal.value = totalPage.data[0].visit
     datasetDownloadsResourcesTotal.value = totalPage.data[0].download_resource
   }
+})
+
+const { data: categories } = await useAPI<Array<{ value: string, label: string }>>('/api/1/access_type/reason_categories')
+const category = computed(() => {
+  if (!dataset.value.access_type_reason_category) return null
+  return categories.value.find(c => c.value === dataset.value.access_type_reason_category)
 })
 </script>

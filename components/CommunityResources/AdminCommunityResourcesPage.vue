@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, type CommunityResource, type Organization, type User } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, type CommunityResource, type Organization, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import AdminCommunityResourcesTable from '../AdminTable/AdminCommunityResourcesTable/AdminCommunityResourcesTable.vue'
