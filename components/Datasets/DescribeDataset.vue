@@ -404,7 +404,35 @@
               {{ getFirstWarning("tags") }}
             </SimpleBanner>
           </LinkedToAccordion>
+        </fieldset>
+        <fieldset
+          class="fr-fieldset"
+          aria-labelledby="description-legend"
+        >
+          <legend
+            id="description-legend"
+            class="fr-fieldset__legend"
+          >
+            <h2 class="text-sm font-bold uppercase mb-0">
+              {{ t("Accès") }}
+            </h2>
+          </legend>
+
           <LinkedToAccordion
+            class="fr-fieldset__element"
+            :accordion="accessTypeAccordionId"
+            @blur="touch('access_type')"
+          >
+            <AccessTypeForm
+              v-model="form"
+              :get-first-warning
+              :get-first-error
+              disallow-open-with-account
+            />
+          </LinkedToAccordion>
+
+          <LinkedToAccordion
+            v-if="form.access_type === 'open'"
             class="fr-fieldset__element"
             :accordion="selectLicenseAccordionId"
             @blur="touch('license')"
@@ -738,6 +766,7 @@ const addAcronymAccordionId = useId()
 const writeAGoodDescriptionAccordionId = useId()
 const writeAGoodDescriptionShortAccordionId = useId()
 const useTagsAccordionId = useId()
+const accessTypeAccordionId = useId()
 const selectLicenseAccordionId = useId()
 const contactPointAccordionId = useId()
 const chooseFrequencyAccordionId = useId()

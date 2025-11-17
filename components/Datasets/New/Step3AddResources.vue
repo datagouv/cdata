@@ -180,11 +180,12 @@
 <script setup lang="ts">
 import { BrandedButton, PaddedContainer, SimpleBanner } from '@datagouv/components-next'
 import UploadResourceModal from '../UploadResourceModal.vue'
-import type { ResourceForm } from '~/types/types'
+import type { DatasetForm, ResourceForm } from '~/types/types'
 
 const props = defineProps<{
   loading: boolean
   resources: Array<ResourceForm>
+  datasetForm: DatasetForm
 }>()
 
 const emit = defineEmits<{
@@ -199,11 +200,13 @@ const { t } = useTranslation()
 const publishFileAccordionId = useId()
 const addDescriptionAccordionId = useId()
 
+const isDatasetOpen = computed(() => props.datasetForm.access_type === 'open')
+
 const { form, getFirstError, getFirstWarning, touch, validate, errorsAsList: errors } = useForm({
   resources: props.resources,
   hasDocumentation: false,
 }, {
-  resources: [required(t('Au moins un fichier est requis.'))],
+  resources: [ruleIf(isDatasetOpen, required(t('Au moins un fichier est requis.')))],
 }, {
   resources: [resources => resources.find(resource => !isClosedFormat(resource, extensions.value)) ? null : t('Vous n\'avez pas ajouté de fichier dans un format ouvert.')],
   hasDocumentation: [hasDocumentation => !hasDocumentation ? t('Vous n\'avez pas ajouté de fichier de documentation ni décrit vos fichiers.') : null],
