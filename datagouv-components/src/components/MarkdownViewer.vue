@@ -7,8 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatMarkdown } from '@datagouv/components-next'
-import { markdownClasses, markdownSmClasses } from '~/utils/markdown'
+import { formatMarkdown, markdownClasses, markdownSmClasses } from '../functions/markdown'
 
 withDefaults(defineProps<{
   content: string

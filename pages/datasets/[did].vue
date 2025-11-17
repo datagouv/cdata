@@ -462,6 +462,7 @@ import {
   type TranslatedBadge,
   LabelTag,
   AppLink,
+  MarkdownViewer,
 } from '@datagouv/components-next'
 import {
   RiDeleteBinLine,
