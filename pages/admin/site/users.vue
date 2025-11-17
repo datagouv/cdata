@@ -157,10 +157,12 @@ const q = ref('')
 const qDebounced = refDebounced(q, 500) // TODO add 500 in config
 
 const url = computed(() => {
-  const url = new URL(`/api/1/users`, config.public.apiBase)
+  const url = new URL(`/api/1/users/`, config.public.apiBase)
 
   url.searchParams.set('deleted', 'true')
-  url.searchParams.set('sort', sortDirection.value)
+  if (!qDebounced.value || sortDirection.value !== '-created') {
+    url.searchParams.set('sort', sortDirection.value)
+  }
   url.searchParams.set('q', qDebounced.value)
   url.searchParams.set('page_size', pageSize.value.toString())
   url.searchParams.set('page', page.value.toString())

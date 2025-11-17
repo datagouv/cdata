@@ -166,7 +166,7 @@
               </div>
 
               <div
-                v-if="dataset.license"
+                v-if="dataset.license && dataset.access_type === 'open'"
                 class="space-y-1"
               >
                 <dt class="text-sm text-gray-plain font-bold pb-0">
@@ -185,6 +185,12 @@
                   {{ formatDate(dataset.last_update) }}
                 </dd>
               </div>
+
+              <AccessTypePanel
+                v-if="dataset.access_type !== 'open'"
+                :object="dataset"
+              />
+
               <div class="grid gap-4 xl:grid-cols-2">
                 <StatBox
                   :title="$t('Vues')"
@@ -195,6 +201,7 @@
                   :since="metricsSince"
                 />
                 <StatBox
+                  v-if="dataset.access_type === 'open'"
                   :title="$t('Téléchargements')"
                   :data="datasetDownloadsResources"
                   size="sm"
@@ -203,7 +210,8 @@
                   :since="metricsSince"
                 />
               </div>
-              <div>
+
+              <div v-if="dataset.access_type === 'open'">
                 <DatasetQuality
                   :quality="dataset.quality"
                   :hide-warnings
@@ -336,11 +344,69 @@
           :dataset
         />
 
+        <div
+          v-if="dataset.access_type === 'restricted'"
+          class="container"
+        >
+          <SimpleBanner
+            type="pink"
+            class="p-4 flex justify-between items-center"
+          >
+            <div class="space-y-3.5">
+              <div>
+                <AdminBadge
+                  :icon="RiLockLine"
+                  size="xs"
+                  type="pink"
+                >
+                  {{ $t('Accès restreint') }}
+                </AdminBadge>
+              </div>
+              <p class="font-bold text-xl">
+                {{ $t('Ces données ne sont accessibles que sur habilitation') }}
+              </p>
+              <p
+                v-if="dataset.access_type_reason"
+                class="text-sm"
+              >
+                {{ dataset.access_type_reason }}
+              </p>
+              <p
+                v-else-if="category"
+                class="text-sm"
+              >
+                {{ category.label }}
+              </p>
+              <p
+                v-if="config.public.datasetRestrictedGuideUrl"
+                class="mb-0"
+              >
+                <AppLink
+                  :to="config.public.datasetRestrictedGuideUrl"
+                  external
+                >
+                  En savoir plus
+                </AppLink>
+              </p>
+            </div>
+            <div v-if="dataset.authorization_request_url">
+              <BrandedButton
+                color="secondary"
+                :icon="RiExternalLinkLine"
+                icon-right
+                :href="dataset.authorization_request_url"
+              >
+                {{ $t('Faire une demande d\'habilitation') }}
+              </BrandedButton>
+            </div>
+          </SimpleBanner>
+        </div>
+
         <FullPageTabs
           class="mt-12"
           :links="[
             {
-              label: $t('Fichiers'),
+              label: dataset.access_type === 'open' ? $t('Fichiers') : $t('Fichiers publics'),
               href: `/datasets/${route.params.did}/`,
               count: dataset.resources.total,
             },
@@ -394,10 +460,13 @@ import {
   Toggletip,
   type TranslatedBadge,
   LabelTag,
+  AppLink,
+  MarkdownViewer,
 } from '@datagouv/components-next'
 import {
   RiDeleteBinLine,
   RiExternalLinkFill,
+  RiExternalLinkLine,
   RiLockLine,
 } from '@remixicon/vue'
 import { TranslationT } from '@datagouv/components-next'
@@ -407,6 +476,7 @@ import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
+import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import { useElementSize } from '@vueuse/core'
 
 const config = useRuntimeConfig()
@@ -552,5 +622,11 @@ watchEffect(async () => {
     datasetVisitsTotal.value = totalPage.data[0].visit
     datasetDownloadsResourcesTotal.value = totalPage.data[0].download_resource
   }
+})
+
+const { data: categories } = await useAPI<Array<{ value: string, label: string }>>('/api/1/access_type/reason_categories')
+const category = computed(() => {
+  if (!dataset.value.access_type_reason_category) return null
+  return categories.value.find(c => c.value === dataset.value.access_type_reason_category)
 })
 </script>

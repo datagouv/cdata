@@ -4,7 +4,8 @@ import type { PaginatedArray } from './types/api.js'
 import type { ContactPoint, ContactPointRole } from './types/contact_point.js'
 import type { Badge, Badges, TranslatedBadge } from './types/badges'
 import type { Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
-import type { NewDataservice, Dataservice, DataserviceAccessAudience, DataserviceAccessAudienceCondition, DataserviceAccessAudienceType } from './types/dataservices'
+import type { NewDataservice, Dataservice } from './types/dataservices'
+import type { AccessType, AccessAudience, AccessAudienceCondition, AccessAudienceType, WithAccessType, AccessTypeForm } from './types/access_types'
 import type { Frequency, Frequencies } from './types/frequency'
 import type { Granularity, Granularities, SpatialZone } from './types/granularity'
 import type { Harvest } from './types/harvest'
@@ -40,6 +41,7 @@ import DatasetQualityTooltipContent from './components/DatasetQualityTooltipCont
 import ExtraAccordion from './components/ExtraAccordion.vue'
 import LabelTag from './components/DatasetLabelTag.vue'
 import LoadingBlock from './components/LoadingBlock.vue'
+import MarkdownViewer from './components/MarkdownViewer.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
@@ -85,9 +87,16 @@ export * from './functions/resources'
 export * from './functions/reuses'
 export * from './functions/schemas'
 export * from './functions/users'
+export * from './types/access_types'
 
 export type {
   UseFetchFunction,
+  AccessType,
+  AccessAudience,
+  AccessAudienceCondition,
+  AccessAudienceType,
+  WithAccessType,
+  AccessTypeForm,
   Activity,
   ActivityKey,
   Badge,
@@ -99,9 +108,6 @@ export type {
   DatasetV2,
   DatasetV2WithFullObject,
   Dataservice,
-  DataserviceAccessAudience,
-  DataserviceAccessAudienceCondition,
-  DataserviceAccessAudienceType,
   NewDataservice,
   FileResourceFileType,
   Frequency,
@@ -183,6 +189,7 @@ export {
   ExtraAccordion,
   LabelTag,
   LoadingBlock,
+  MarkdownViewer,
   OrganizationCard,
   OrganizationNameWithCertificate,
   OwnerType,

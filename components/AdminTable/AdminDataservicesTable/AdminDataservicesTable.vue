@@ -61,7 +61,7 @@
           </AdminBadge>
         </td>
         <td>
-          <DataserviceAccessTypeBadge :dataservice />
+          <AccessTypeBadge :access-type="dataservice.access_type" />
         </td>
         <td>{{ formatDate(dataservice.created_at) }}</td>
         <td>
@@ -118,8 +118,8 @@ import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
-import DataserviceAccessTypeBadge from './DataserviceAccessTypeBadge.vue'
 import type { DataserviceSortedBy, SortDirection } from '~/types/types'
+import AccessTypeBadge from '~/components/AccessTypes/AccessTypeBadge.vue'
 
 const props = withDefaults(defineProps<{
   activities?: Record<string, Activity>

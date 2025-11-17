@@ -1,5 +1,5 @@
 import type { Dataset, DatasetV2, RegisteredSchema, Resource, CommunityResource, Schema, DatasetV2WithFullObject } from '@datagouv/components-next'
-import { throwOnNever, DESCRIPTION_MIN_LENGTH, getResourceFilesize } from '@datagouv/components-next'
+import { accessTypeToForm, accessTypeToApi, throwOnNever, DESCRIPTION_MIN_LENGTH, getResourceFilesize } from '@datagouv/components-next'
 import type { FetchError } from 'ofetch'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -46,6 +46,7 @@ export function datasetToForm(dataset: DatasetV2WithFullObject): DatasetForm {
     description_short: dataset.description_short,
     acronym: dataset.acronym,
     tags: dataset.tags?.map(text => ({ text })) || [],
+    ...accessTypeToForm(dataset),
     license: dataset.license || null,
     contact_points: dataset.contact_points ?? [],
     frequency: dataset.frequency || null,
@@ -72,6 +73,7 @@ export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, pri
     acronym: form.acronym,
     tags: form.tags.map(t => t.text),
     license: form.license?.id || '',
+    ...accessTypeToApi(form),
     contact_points: form.contact_points ? (contactPoints.length ? contactPoints : null) : undefined, // The udata API doesn't delete the last contact point if sending an empty array, we need to send `null` to remove all contact points (see :RemoveAllContactPoints in udata)
     frequency: form.frequency?.id || '',
     temporal_coverage: form.temporal_coverage.start

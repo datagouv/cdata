@@ -77,7 +77,11 @@ const { formatDate } = useFormatDate()
 const config = useComponentsConfig()
 
 const hasError = ref(false)
-const pmtilesUrl = computed(() => props.resource.extras['analysis:parsing:pmtiles_url'] as string)
+const pmtilesUrl = computed(() => {
+  if (props.resource.extras['analysis:parsing:pmtiles_url'])
+    return props.resource.extras['analysis:parsing:pmtiles_url'] as string
+  return props.resource.url as string
+})
 const pmtilesViewerUrl = computed(() => {
   return config.pmtilesViewerBaseUrl ? `${config.pmtilesViewerBaseUrl}${encodeURIComponent(pmtilesUrl.value)}` : null
 })
