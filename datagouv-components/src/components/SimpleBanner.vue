@@ -11,11 +11,12 @@
 import { computed } from 'vue'
 
 const props = defineProps<{
-  type: 'primary' | 'primary-frame' | 'warning' | 'gray' | 'danger' | 'success'
+  type: 'primary' | 'primary-frame' | 'warning' | 'gray' | 'danger' | 'success' | 'pink'
 }>()
 
 const classes = computed(() => {
   return {
+    'pink': 'bg-pink-softest border-2 border-pink-soft',
     'primary': 'bg-datagouv-lightest text-datagouv-dark',
     'primary-frame': 'bg-gray-50 border border-datagouv',
     'warning': 'bg-warning3-lightest text-warning3-dark',

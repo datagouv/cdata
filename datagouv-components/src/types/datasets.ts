@@ -7,6 +7,7 @@ import type { ContactPoint } from './contact_point'
 import type { License } from './licenses'
 import type { Frequency } from './frequency'
 import type { Granularity, SpatialZone } from './granularity'
+import type { WithAccessType } from './access_types'
 
 export type Quality = {
   all_resources_available: boolean
@@ -22,7 +23,7 @@ export type Quality = {
   update_fulfilled_in_time: boolean
 }
 
-export type BaseDataset = Owned & {
+export type BaseDataset = Owned & WithAccessType & {
   title: string
   acronym: string
   archived: boolean
