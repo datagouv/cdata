@@ -107,13 +107,14 @@
       />
       <Milkdown
         v-else
-        :class="[markdownSmClasses, markdownTableEditorCLasses]"
+        :class="[markdownSmClasses, markdownTableEditorClasses]"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { markdownSmClasses, markdownTableEditorClasses } from '@datagouv/components-next'
 import type { CmdKey } from '@milkdown/core'
 import { Editor, rootCtx, defaultValueCtx, editorViewOptionsCtx } from '@milkdown/core'
 import type { Ctx } from '@milkdown/ctx'

@@ -113,7 +113,7 @@
       </h2>
 
       <SimpleBanner
-        v-for="type in ['primary', 'warning']"
+        v-for="type in ['primary', 'primary-frame', 'warning', 'gray', 'danger', 'success', 'pink']"
         :key="type"
         :type="(type as 'primary' | 'warning')"
       >
