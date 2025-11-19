@@ -96,7 +96,7 @@ export const getResourceLabel = (type: ResourceType, count?: number) => {
       if (typeof count === 'number') {
         return t('1 fichier principal | {n} fichiers principaux', count)
       }
-      return t('Fichier principal')
+      return t('Fichiers principaux')
     case 'documentation':
       return t('Documentation')
     case 'update':
