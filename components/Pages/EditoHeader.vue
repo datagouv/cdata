@@ -5,12 +5,12 @@
   >
     <div class="container space-y-5">
       <div class="space-y-2">
-        <div class="flex flex-col-reverse sm:flex-row gap-5 sm:items-center sm:justify-between">
+        <div class="flex flex-col-reverse sm:flex-row gap-5 items-start sm:items-center sm:justify-between">
           <h1 class="text-white font-extrabold text-5xl mb-0">
             {{ title }}
           </h1>
           <CdataLink
-            class="bg-[#0D0C4F]/20 fr-raw-link text-white font-medium text-lg px-5 py-3 rounded-4xl flex items-center gap-2"
+            class="bg-[#0D0C4F]/20 fr-raw-link text-white font-medium text-lg px-5 py-3 rounded-4xl flex justify-start items-start sm:items-center gap-2"
             :href="linkUrl"
           >
             <RiInformation2Line class="size-6" />
