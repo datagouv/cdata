@@ -6,7 +6,7 @@
       </h2>
       <div class="grid md:grid-cols-12 gap-4">
         <MarkdownViewer
-          class="w-full min-w-0 md:col-span-9"
+          class="order-2 md:order-1 w-full min-w-0 md:col-span-9"
           :content="reuse.description"
           :min-heading="3"
         />
@@ -71,7 +71,6 @@
                 size="sm"
                 type="line"
                 :summary="metricsViewsTotal"
-                class="mb-8 md:mb-0"
                 :since="metricsSince"
               />
             </div>

@@ -30,6 +30,7 @@
               :href="reuse.url"
               :new-tab="true"
               size="xs"
+              class="hidden md:block"
               @click="$matomo.trackEvent('Réutilisation', `Voir la réutilisation`, 'Bouton :  voir la reutilisation')"
             >
               {{ $t('Voir la réutilisation') }}
@@ -52,7 +53,7 @@
       :status
     >
       <div class="container py-10 min-h-32">
-        <div class="grid md:grid-cols-12 md:gap-4">
+        <div class="grid md:grid-cols-12 gap-4">
           <div class="md:col-span-5 flex flex-col justify-center">
             <div class="flex gap-3 mb-2">
               <AdminBadge

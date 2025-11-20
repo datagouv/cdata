@@ -25,7 +25,7 @@
     <span
       v-if="hasText"
       class="whitespace-nowrap"
-      :class="iconOnly ? 'sr-only' : ''"
+      :class="{ 'sr-only': iconOnly, 'sr-only sm:not-sr-only': iconOnlyOnMobile }"
     ><slot /></span>
     <RiExternalLinkLine
       v-if="newTab"
@@ -65,6 +65,7 @@ const props = withDefaults(defineProps<{
   href?: string | RouteLocation
   newTab?: boolean
   iconOnly?: boolean
+  iconOnlyOnMobile?: boolean
   iconRight?: boolean
   keepMarginsEvenWithoutBorders?: boolean
   type?: 'submit' | 'button'
@@ -127,16 +128,16 @@ const colors = computed(() => {
 
 const sizes = computed(() => {
   return {
-    'xl': `text-xl h-16 ${hasText.value ? 'px-4 space-x-2' : 'w-16 px-3'}`,
-    'lg': `text-lg h-12 ${hasText.value ? 'px-4 space-x-2' : 'w-12 px-3'}`,
-    'sm': `text-sm h-10 leading-none ${hasText.value ? 'px-4 space-x-1' : 'w-10 px-2.5'}`,
-    'xs': `text-xs h-8 leading-[0.875rem] ${hasText.value ? 'px-4 space-x-1' : 'w-8 px-2'}`,
-    '2xs': `text-xs leading-[0.875rem] p-1 space-x-1`,
+    'xl': `text-xl h-16 ${hasText.value ? 'px-4 gap-x-2' : 'w-16 px-3'}`,
+    'lg': `text-lg h-12 ${hasText.value ? 'px-4 gap-x-2' : 'w-12 px-3'}`,
+    'sm': `text-sm h-10 leading-none ${hasText.value ? 'px-4 gap-x-1' : 'w-10 px-2.5'}`,
+    'xs': `text-xs h-8 leading-[0.875rem] ${hasText.value ? 'px-4 gap-x-1' : 'w-8 px-2'}`,
+    '2xs': `text-xs leading-[0.875rem] p-1 gap-x-1`,
   }[size.value]
 })
 
 const hasBorders = computed(() => {
-  return props.color !== 'primary-softer' && props.color !== 'secondary-softer'
+  return props.color !== 'primary-softer' && props.color !== 'secondary-softer' && props.color !== 'tertiary'
 })
 
 const removePaddingsIfNoBorders = computed(() => {
