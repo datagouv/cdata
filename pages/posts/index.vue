@@ -29,7 +29,8 @@
           v-for="(post, index) in posts.data"
           :key="post.id"
           :post
-          :class="index < 2 ? 'col-span-3' : 'col-span-2'"
+          class="col-span-2"
+          :class="{ 'md:col-span-3': index < 2 }"
         />
       </div>
       <Pagination

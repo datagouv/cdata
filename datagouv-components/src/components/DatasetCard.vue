@@ -73,7 +73,7 @@
         </h4>
         <div
           v-if="dataset.organization || dataset.owner"
-          class="text-sm m-0 flex items-center truncate"
+          class="text-sm m-0 flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
         >
           <template v-if="dataset.organization">
             <div class="-mr-0.5 flex-initial truncate">
@@ -96,8 +96,8 @@
           >
             {{ ownerName }}
           </div>
-          <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
-          <div class="text-gray-medium whitespace-nowrap">
+          <RiSubtractLine class="hidden md:block size-4 flex-none fill-gray-medium" />
+          <div class="w-full md:w-auto text-gray-medium whitespace-nowrap">
             {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataset.last_update, { dateStyle: 'medium' }) }) }}
           </div>
         </div>
@@ -147,7 +147,7 @@
         <component
           :is="config.textClamp"
           v-if="showDescriptionShort && config && config.textClamp && descriptionShort"
-          class="fr-text--sm fr-mt-1w fr-mb-0 overflow-wrap-anywhere"
+          class="fr-text--sm fr-mt-1w fr-mb-0 overflow-wrap-anywhere hidden sm:block"
           :auto-resize="true"
           :text="descriptionShort"
           :max-lines="2"
