@@ -373,13 +373,28 @@
               :warning-text="getFirstWarning('tags')"
             />
             <div class="flex items-center gap-4 mt-2 mb-3">
+              <Tooltip v-if="!canGenerateTags && form.tags.length >= MAX_TAGS_NB">
+                <BrandedButton
+                  type="button"
+                  color="primary"
+                  :icon="RiSparklingLine"
+                  :loading="isGeneratingTags"
+                  :disabled="true"
+                >
+                  {{ $t('Suggérer des mots clés') }}
+                </BrandedButton>
+                <template #tooltip>
+                  {{ $t('Vous avez déjà {count} mots-clés. Le maximum recommandé est de {max}.', { count: form.tags.length, max: MAX_TAGS_NB }) }}
+                </template>
+              </Tooltip>
               <BrandedButton
+                v-else
                 type="button"
                 color="primary"
                 :icon="RiSparklingLine"
                 :loading="isGeneratingTags"
-                :disabled="!form.title || !form.description || form.description.trim().length === 0"
-                @click="handleAutoCompleteTags()"
+                :disabled="!canGenerateTags"
+                @click="handleAutoCompleteTags(MAX_TAGS_NB)"
               >
                 <template v-if="isGeneratingTags">
                   {{ $t('Suggestion en cours...') }}
@@ -740,7 +755,7 @@ import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
-import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone } from '~/types/types'
+import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone, Tag } from '~/types/types'
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 
@@ -757,6 +772,8 @@ const emit = defineEmits<{
 
 const { t } = useTranslation()
 const config = useRuntimeConfig()
+
+const MAX_TAGS_NB = 5
 
 const user = useMe()
 const isGlobalAdmin = computed(() => isAdmin(user.value))
@@ -811,7 +828,9 @@ const getGranularityName = (zone: SpatialZone): string | undefined => {
   return granularities.value.find(granularity => granularity.id === zone.level)?.name
 }
 
+// Track tag sources
 const isGeneratingTags = ref(false)
+const lastSuggestedTags = ref<Array<Tag>>([])
 
 const { $api } = useNuxtApp()
 
@@ -856,6 +875,13 @@ const canGenerateDescriptionShort = computed(() => {
   return hasTitle && hasEnoughDescription
 })
 
+const canGenerateTags = computed(() => {
+  const hasTitle = form.value.title && form.value.title.trim().length > 0
+  const hasDescription = form.value.description && form.value.description.trim().length > 0
+  const hasLessThanMaxTags = form.value.tags.length < MAX_TAGS_NB
+  return hasTitle && hasDescription && hasLessThanMaxTags
+})
+
 async function handleAutoCompleteDescriptionShort() {
   try {
     isGeneratingDescriptionShort.value = true
@@ -888,7 +914,7 @@ async function submit() {
   }
 }
 
-async function handleAutoCompleteTags() {
+async function handleAutoCompleteTags(nbTags: number) {
   try {
     isGeneratingTags.value = true
 
@@ -901,12 +927,31 @@ async function handleAutoCompleteTags() {
         title: form.value.title,
         description: form.value.description,
         organization: form.value.owned?.organization?.name,
+        nbTags: nbTags,
       },
     })
 
-    // Convert the array of tags to the expected tags format and replace existing tags
+    // Remove previously suggested tags and add new ones
     if (response.tags && response.tags.length > 0) {
-      form.value.tags = response.tags.map(tag => ({ text: tag }))
+      // Filter out tags that were the last suggested tags
+      let currentTags = form.value.tags
+      if (lastSuggestedTags.value.length > 0) {
+        currentTags = form.value.tags.filter(tag =>
+          !lastSuggestedTags.value.some(lastSuggested => lastSuggested.text === tag.text),
+        )
+      }
+
+      // Create new suggested tags, filtering out duplicates with existing tags
+      const existingTagTexts = currentTags.map(tag => tag.text)
+      const newSuggestedTags = response.tags
+        .filter(tag => !existingTagTexts.includes(tag))
+        .map(tag => ({ text: tag }))
+
+      // Update form with current tags + new suggested tags
+      form.value.tags = [...currentTags, ...newSuggestedTags]
+
+      // Update the suggested tags tracking
+      lastSuggestedTags.value = newSuggestedTags
     }
   }
   catch (error) {

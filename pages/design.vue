@@ -54,6 +54,11 @@
           to="/design/organization-search/"
         />
         <AdminSidebarLink
+          :icon="RiEyeLine"
+          :label="$t('Previews')"
+          to="/design/previews/"
+        />
+        <AdminSidebarLink
           :icon="RiExternalLinkLine"
           :label="$t('Oembeds')"
           to="/design/oembeds/"
@@ -72,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { RiExternalLinkLine, RiFileSearchLine, RiIdCardLine, RiListView, RiRadioButtonLine, RiSearch2Line, RiSearchEyeLine, RiTranslate, RiUserSearchLine } from '@remixicon/vue'
+import { RiEyeLine, RiExternalLinkLine, RiFileSearchLine, RiIdCardLine, RiListView, RiRadioButtonLine, RiSearch2Line, RiSearchEyeLine, RiTranslate, RiUserSearchLine } from '@remixicon/vue'
 import AdminSidebarLink from '~/components/AdminSidebar/AdminSidebarLink/AdminSidebarLink.vue'
 import LogoOnly from '~/components/LogoOnly.vue'
 import Sidemenu from '~/components/Sidemenu/Sidemenu.global.vue'
