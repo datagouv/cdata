@@ -217,6 +217,11 @@
                 :resource="resource"
                 :dataset="dataset"
               />
+              <!-- Show Datafair embedded preview (koumoul) -->
+              <SwaggerClient
+                v-else-if="hasOpenAPIPreview"
+                :url="resource.extras['apidocUrl'] as string"
+              />
               <!-- Show regular preview for other file types -->
               <Preview
                 v-else
@@ -380,6 +385,7 @@ import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
 import { isOrganizationCertified } from '../../functions/organizations'
+import SwaggerClient from './Swagger.client.vue'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 const URL_FORMATS = ['url', 'doi', 'www:link', ' www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
@@ -432,9 +438,13 @@ const hasPmtiles = computed(() => {
 const hasDatafairPreview = computed(() => {
   // Checks if there are the corresponding extras for a datafair preview.
   // Limited only to datasets published by certified organizations since it will load an iframe.
-  if (!isOrganizationCertified(props.dataset.organization))
-    return false
-  return (props.resource.extras['datafairEmbed'] || props.resource.extras['apidocUrl'])
+  return isOrganizationCertified(props.dataset.organization) && props.resource.extras['datafairEmbed']
+})
+
+const hasOpenAPIPreview = computed(() => {
+  // Checks if there are the corresponding extras for a datafair preview.
+  // Limited only to datasets published by certified organizations since it will load an iframe.
+  return isOrganizationCertified(props.dataset.organization) && props.resource.extras['apidocUrl']
 })
 
 const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('Fichier'))
@@ -480,7 +490,7 @@ const tabsOptions = computed(() => {
     options.push({ key: 'map', label: t('Carte') })
   }
 
-  if (hasTabularData.value || hasPreview.value || hasDatafairPreview.value) {
+  if (hasTabularData.value || hasPreview.value || hasDatafairPreview.value || hasOpenAPIPreview.value) {
     options.push({ key: 'data', label: t('Aperçu') })
   }
 

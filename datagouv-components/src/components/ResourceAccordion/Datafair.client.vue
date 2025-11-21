@@ -42,17 +42,11 @@ const datafairDatasetId = computed(() => {
   return props.resource.extras['datafairDatasetId'] || props.dataset.extras['datafairDatasetId']
 })
 const embed = computed(() => props.resource.extras['datafairEmbed'])
-const apidocUrl = computed(() => props.resource.extras['apidocUrl'])
 
 const dataFairEmbedUrl = computed(() => {
   // if the return value is null, a banner error is shown
-  if (embed.value) {
-    if (!datafairOrigin.value || !datafairDatasetId.value)
-      return null
-    return `${datafairOrigin.value}/embed/dataset/${datafairDatasetId.value}/${embed.value}`
-  }
-  if (apidocUrl.value)
-    return `https://koumoul.com/openapi-viewer/?proxy=false&hide-toolbar=true&url=${apidocUrl.value}`
-  return null
+  if (!datafairOrigin.value || !datafairDatasetId.value)
+    return null
+  return `${datafairOrigin.value}/embed/dataset/${datafairDatasetId.value}/${embed.value}`
 })
 </script>
