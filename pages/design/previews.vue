@@ -64,9 +64,18 @@
       </div>
       <div>
         <h2>datafair Preview</h2>
-        <p>One added tab: <b>Aperçu</b>. The iframe could show a map, data table, structure field table or an api doc.</p>
+        <h3>Iframe preview</h3>
+        <p>One added tab: <b>Aperçu</b>. The iframe could show a map, data table or a structure field table.</p>
         <ResourceAccordion
           :resource="datafairDataset.resources.filter((r) => r.extras['datafairEmbed'] === 'map')[0]"
+          :dataset="datafairDataset"
+        />
+        <h3 class="mt-4">
+          API doc preview
+        </h3>
+        <p>One added tab: <b>Aperçu</b>. Show the api doc with a Swagger UI.</p>
+        <ResourceAccordion
+          :resource="datafairDataset.resources.filter((r) => r.extras['apidocUrl'])[0]"
           :dataset="datafairDataset"
         />
       </div>
