@@ -15,14 +15,14 @@
     />
     <div
       v-if="pageData"
-      class="flex flex-wrap gap-x-4 gap-y-2 items-center"
+      class="flex flex-wrap gap-x-4 gap-y-2 items-center mb-2"
     >
       <div class="w-full flex-none md:flex-1">
         <h2 class="text-sm font-bold uppercase m-0">
           {{ t('{n} API', pageData.total) }}
         </h2>
       </div>
-      <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
+      <div class="flex flex-wrap items-center md:gap-x-6 gap-2">
         <AdminInput
           v-model="q"
           type="search"
