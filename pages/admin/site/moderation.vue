@@ -9,13 +9,11 @@
     </h1>
     <div
       v-if="pageData"
-      class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle"
+      class="flex justify-between items-end"
     >
-      <div class="fr-col">
-        <h2 class="text-sm font-bold uppercase m-0">
-          {{ t('{n} signalements | {n} signalement | {n} signalements', pageData.total) }}
-        </h2>
-      </div>
+      <h2 class="text-sm font-bold uppercase m-0">
+        {{ t('{n} signalements | {n} signalement | {n} signalements', pageData.total) }}
+      </h2>
       <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
         <SearchableSelect
           v-model="filterStatus"
@@ -233,7 +231,6 @@ import DataserviceBadge from '~/components/AdminBadge/DataserviceBadge.vue'
 import ReuseBadge from '~/components/AdminBadge/ReuseBadge.vue'
 
 const { t } = useTranslation()
-const config = useRuntimeConfig()
 const { formatDate } = useFormatDate()
 const { $api } = useNuxtApp()
 
