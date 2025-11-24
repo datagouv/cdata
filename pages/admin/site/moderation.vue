@@ -16,7 +16,28 @@
           {{ t('{n} signalements | {n} signalement | {n} signalements', pageData.total) }}
         </h2>
       </div>
-      <div class="fr-col-auto fr-grid-row fr-grid-row--middle" />
+      <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
+        <SearchableSelect
+          v-model="filterStatus"
+          :placeholder="$t('Filtrer par statut')"
+          :label="$t('Filtrer par statut')"
+          :options="[{
+            label: t('En cours'),
+            id: 'ongoing',
+          }, {
+            label: t('Traités'),
+            id: 'done',
+          }, {
+            label: t('Tous'),
+            id: 'all',
+          }]"
+          :display-value="(option) => option.label"
+          :multiple="false"
+          class="mb-0"
+          hide-label
+          required
+        />
+      </div>
     </div>
 
     <LoadingBlock :status>
@@ -126,30 +147,52 @@
                 {{ report.message }}
               </td>
               <td>
-                <BrandedButton
-                  size="xs"
-                  color="secondary-softer"
-                  type="button"
-                  :icon="RiCheckLine"
-                  icon-only
-                  keep-margins-even-without-borders
-                  :disabled="report.dismissed_at"
-                  @click="dismiss(report)"
-                >
-                  {{ $t('Rejeter le signalement') }}
-                </BrandedButton>
-                <BrandedButton
-                  size="xs"
-                  color="secondary-softer"
-                  type="button"
-                  :icon="RiEyeOffLine"
-                  icon-only
-                  keep-margins-even-without-borders
-                  :disabled="report.dismissed_at"
-                  @click="dismiss(report)"
-                >
-                  {{ $t("Cacher l'objet") }}
-                </BrandedButton>
+                <div class="flex items-center">
+                  <BrandedButton
+                    size="xs"
+                    color="secondary-softer"
+                    type="button"
+                    :icon="RiCheckLine"
+                    icon-only
+                    keep-margins-even-without-borders
+                    :disabled="!!report.dismissed_at"
+                    @click="dismiss(report)"
+                  >
+                    {{ $t('Rejeter le signalement') }}
+                  </BrandedButton>
+                  <BrandedButton
+                    v-if="report.subject && getSwitchToPrivateMethodAndUrl(report.subject)"
+                    size="xs"
+                    color="secondary-softer"
+                    type="button"
+                    :icon="RiEyeOffLine"
+                    icon-only
+                    keep-margins-even-without-borders
+                    :disabled="subjects[report.id] && 'private' in subjects[report.id].value && subjects[report.id].value.private"
+                    @click="switchPrivate(report, report.subject)"
+                  >
+                    {{ $t("Cacher l'objet") }}
+                  </BrandedButton>
+                  <div
+                    v-else
+                    class="size-8 flex items-center justify-center"
+                  >
+                    —
+                  </div>
+                  <BrandedButton
+                    v-if="report.subject && getDeleteUrl(report.subject)"
+                    size="xs"
+                    color="secondary-softer"
+                    type="button"
+                    :icon="RiDeleteBinLine"
+                    icon-only
+                    keep-margins-even-without-borders
+                    :disabled="subjects[report.id] && isSubjectDeleted(subjects[report.id].value)"
+                    @click="deleteSubject(report, report.subject)"
+                  >
+                    {{ $t("Supprimer l'objet") }}
+                  </BrandedButton>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -177,7 +220,7 @@
 <script setup lang="ts">
 import { type Activity, type Dataservice, type DatasetV2, type Organization, type Report, type ReportReason, type ReportSubject, type Reuse, AvatarWithName, LoadingBlock, Pagination, useFormatDate } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
-import { RiCheckLine, RiEyeOffLine } from '@remixicon/vue'
+import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import type { PaginatedArray } from '~/types/types'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
@@ -197,16 +240,36 @@ const { $api } = useNuxtApp()
 const page = ref(1)
 const pageSize = ref(20)
 
-const url = computed(() => {
-  const url = new URL(`/api/1/reports/`, config.public.apiBase)
+const filterStatus = ref({ label: t('En cours'), id: 'ongoing' })
+const filterStatusValue = computed(() => filterStatus.value.id)
 
-  return url.toString()
-})
-
-const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Report>>(url, { lazy: true })
+const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Report>>(`/api/1/reports/`, { query: {
+  status: filterStatusValue,
+} })
 const { data: reasons } = await useAPI<Array<ReportReason>>('/api/1/reports/reasons/', { lazy: true })
 
-const subjects = ref({} as Record<string, { type: 'Dataset', value: DatasetV2 } | { type: 'Dataservice', value: Dataservice } | { type: 'Reuse', value: Reuse } | { type: 'Organization', value: Organization } | { type: 'Discussion', value: Thread }>)
+const getSubjectUrl = (subject: ReportSubject) => {
+  return {
+    Dataset: `/api/2/datasets/${subject.id}/`,
+    Dataservice: `/api/1/dataservices/${subject.id}/`,
+    Reuse: `/api/1/reuses/${subject.id}/`,
+    Organization: `/api/1/organizations/${subject.id}/`,
+    Discussion: `/api/1/discussions/${subject.id}/`,
+  }[subject.class]
+}
+
+type RecordSubjectFullObject = { type: 'Dataset', value: DatasetV2 }
+  | { type: 'Dataservice', value: Dataservice }
+  | { type: 'Reuse', value: Reuse }
+  | { type: 'Organization', value: Organization }
+  | { type: 'Discussion', value: Thread }
+
+const subjects = ref({} as Record<string, RecordSubjectFullObject>)
+const fetchFullSubject = async (report: Report, subject: ReportSubject) => {
+  const value = await $api(getSubjectUrl(subject))
+  subjects.value[report.id] = { type: subject.class, value }
+}
+
 watchEffect(async () => {
   if (!pageData.value) return
   for (const report of pageData.value.data) {
@@ -214,16 +277,7 @@ watchEffect(async () => {
     if (!subject) continue
     if (subjects.value[report.id]) continue
 
-    const url = {
-      Dataset: `/api/2/datasets/${subject.id}`,
-      Dataservice: `/api/1/dataservices/${subject.id}`,
-      Reuse: `/api/1/reuses/${subject.id}`,
-      Organization: `/api/1/organizations/${subject.id}`,
-      Discussion: `/api/1/discussions/${subject.id}`,
-    }[subject.class]
-
-    const value = await $api(url)
-    subjects.value[report.id] = { type: subject.class, value }
+    await fetchFullSubject(report, subject)
   }
 })
 
@@ -245,5 +299,51 @@ const dismiss = async (report: Report) => {
     },
   })
   await refresh()
+}
+
+const getSwitchToPrivateMethodAndUrl = (subject: ReportSubject): { method: 'PUT' | 'PATCH', url: string } | null => {
+  return {
+    Dataset: { method: 'PUT' as const, url: `/api/1/datasets/${subject.id}/` },
+    Dataservice: { method: 'PATCH' as const, url: `/api/1/dataservices/${subject.id}/` },
+    Reuse: { method: 'PUT' as const, url: `/api/1/reuses/${subject.id}/` },
+    Organization: null,
+    Discussion: null,
+  }[subject.class]
+}
+
+const switchPrivate = async (report: Report, subject: ReportSubject) => {
+  const methodAndUrl = getSwitchToPrivateMethodAndUrl(subject)
+  if (!methodAndUrl) return
+
+  await $api(methodAndUrl.url, {
+    method: methodAndUrl.method,
+    body: { private: true },
+  })
+  await fetchFullSubject(report, subject)
+}
+
+const getDeleteUrl = (subject: ReportSubject): string | null => {
+  return {
+    Dataset: `/api/1/datasets/${subject.id}/`,
+    Dataservice: `/api/1/dataservices/${subject.id}/`,
+    Reuse: `/api/1/reuses/${subject.id}/`,
+    Organization: `/api/1/organizations/${subject.id}/`,
+    Discussion: null,
+  }[subject.class]
+}
+
+const isSubjectDeleted = (subject: RecordSubjectFullObject['value']) => {
+  if ('deleted' in subject && subject.deleted) return true
+  if ('deleted_at' in subject && subject.deleted_at) return true
+
+  return false
+}
+
+const deleteSubject = async (report: Report, subject: ReportSubject) => {
+  const url = getDeleteUrl(subject)
+  if (!url) return
+
+  await $api(url, { method: 'DELETE' })
+  await fetchFullSubject(report, subject)
 }
 </script>
