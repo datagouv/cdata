@@ -124,7 +124,10 @@
             </AdminTableTh>
             <AdminTableTh scope="col">
               <span v-if="preview">{{ $t("Nom") }}</span>
-              <span v-else>{{ $t("Lien") }}</span>
+              <span v-else>{{ $t("Lien data.gouv.fr") }}</span>
+            </AdminTableTh>
+            <AdminTableTh scope="col">
+              {{ $t("Lien source") }}
             </AdminTableTh>
             <AdminTableTh scope="col">
               <Tooltip class="ml-auto">
@@ -168,6 +171,20 @@
                   :subject="item.dataservice"
                 />
               </div>
+            </td>
+            <td>
+              <CdataLink
+                v-if="item.remote_url"
+                class="link"
+                :to="item.remote_url"
+                external
+              >
+                <TextClamp
+                  :text="item.remote_url"
+                  :auto-resize="true"
+                  :max-lines="1"
+                />
+              </CdataLink>
             </td>
             <td class="font-mono !text-right">
               <span v-if="!(item.logs.length + item.errors.length)">{{ item.logs.length + item.errors.length }}</span>
