@@ -2,7 +2,7 @@
   <div class="bg-gray-lower flex items-center justify-center">
     <component
       :is="icon"
-      class="size-1/2 text-[#c9c9c9]"
+      class="size-1/2 text-gray-plain"
     />
   </div>
 </template>
