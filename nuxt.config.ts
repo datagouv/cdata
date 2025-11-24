@@ -79,6 +79,7 @@ export default defineNuxtConfig({
         name: 'demo.data.gouv.fr',
       },
       schemaPublishingUrl: 'https://publier.etalab.studio/fr',
+      enableStructuredDatasetForm: true,
       schemasSite: {
         url: 'https://schema.data.gouv.fr/',
         name: 'schema.data.gouv.fr',

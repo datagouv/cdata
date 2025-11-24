@@ -51,7 +51,7 @@
           <template #actions>
             <BrandedButton
               color="secondary"
-              href="/admin/datasets/structured?step=1"
+              :href="schemaPublishingUrl"
             >
               {{ $t("Publier avec un schéma") }}
             </BrandedButton>
@@ -135,4 +135,10 @@ defineEmits<{
 }>()
 
 const config = useRuntimeConfig()
+
+const schemaPublishingUrl = computed(() => {
+  return config.public.enableStructuredDatasetForm
+    ? '/admin/datasets/structured?step=1'
+    : config.public.schemaPublishingUrl
+})
 </script>
