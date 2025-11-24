@@ -23,7 +23,10 @@
       <p class="m-0 text-xs">
         {{ formatDate(notification.created_at) }}
       </p>
-      <div class="size-2 rounded-full bg-danger mt-0.5" />
+      <div
+        v-if="!notification.handled_at"
+        class="size-2 rounded-full bg-danger mt-0.5"
+      />
     </div>
   </div>
 </template>
@@ -31,10 +34,11 @@
 <script setup lang="ts">
 import { useFormatDate } from '@datagouv/components-next'
 import { RiUserAddLine } from '@remixicon/vue'
+import type { DeepReadonly } from 'vue'
 import type { MembershipRequestNotification } from '~/types/notifications'
 
 defineProps<{
-  notification: MembershipRequestNotification
+  notification: DeepReadonly<MembershipRequestNotification>
 }>()
 
 const { formatDate } = useFormatDate()

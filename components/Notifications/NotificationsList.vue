@@ -13,9 +13,10 @@
 </template>
 
 <script setup lang="ts">
+import type { DeepReadonly } from 'vue'
 import type { UserNotification } from '~/types/notifications'
 
 defineProps<{
-  notifications: Array<UserNotification>
+  notifications: DeepReadonly<Array<UserNotification>>
 }>()
 </script>

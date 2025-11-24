@@ -302,6 +302,7 @@ import SearchableSelect from '~/components/SearchableSelect.vue'
 import AdminMembershipRequest from '~/components/AdminMembershipRequest/AdminMembershipRequest.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import { useNotifications } from '~/composables/useNotifications.client'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
@@ -320,6 +321,7 @@ const url = computed(() => {
   return url.toString()
 })
 
+const { refreshNotifications } = useNotifications()
 const { data: organization, status, refresh } = await useAPI<Organization>(url, { redirectOn404: true })
 const { data: membershipRequests, refresh: refreshMembershipRequests } = await useAPI<Array<PendingMembershipRequest>>(`/api/1/organizations/${currentOrganization.value?.id}/membership/`, {
   lazy: true,
@@ -330,6 +332,7 @@ const refreshAll = async () => {
   await Promise.all([
     refresh(),
     refreshMembershipRequests(),
+    refreshNotifications(),
   ])
 }
 

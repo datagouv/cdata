@@ -505,15 +505,15 @@
 </template>
 
 <script setup lang="ts">
-import { AnimatedLoader, BrandedButton, Toggletip, useGetUserAvatar, type PaginatedArray } from '@datagouv/components-next'
+import { NuxtImg } from '#components'
+import { AnimatedLoader, BrandedButton, Toggletip, useGetUserAvatar } from '@datagouv/components-next'
 import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
 import LogoAsText from '../LogoAsText.vue'
 import LogoImage from '../LogoImage.vue'
-import { NuxtImg } from '#components'
+import { useNotifications } from '~/composables/useNotifications.client'
 import { useLogout, useMaybeMe } from '~/utils/auth'
-import type { UserNotification } from '~/types/notifications'
 
 defineProps<{
   fluid?: boolean
@@ -524,15 +524,11 @@ const { t } = useTranslation()
 const config = useRuntimeConfig()
 const appConfig = useAppConfig()
 const me = useMaybeMe()
-const { $api } = useNuxtApp()
 const currentRoute = useRoute()
 const router = useRouter()
 const route = useRoute()
-const { start, finish, isLoading } = useLoadingIndicator()
-
-const notifications = ref<PaginatedArray<UserNotification> | null>(null)
-const notificationsCombinatedList = ref<Array<UserNotification>>([])
-const page = ref(1)
+const { isLoading } = useLoadingIndicator()
+const { loadNotifications, loadMoreNotifications, notifications, notificationsCombinatedList } = useNotifications()
 
 const menu = [
   { label: t('Données'), link: '/datasets/' },
@@ -576,27 +572,6 @@ const logout = async () => {
 }
 
 const { toast } = useToast()
-
-async function loadNotifications() {
-  start()
-  try {
-    notifications.value = await $api<PaginatedArray<UserNotification>>('api/1/notifications/', {
-      params: {
-        page_size: 10,
-        page: page.value,
-      },
-    })
-    notificationsCombinatedList.value.push(...notifications.value.data)
-  }
-  finally {
-    finish()
-  }
-}
-
-function loadMoreNotifications() {
-  page.value++
-  return loadNotifications()
-}
 
 onMounted(async () => {
   // TODO: remove this logic when we don't rely on udata flash messages
