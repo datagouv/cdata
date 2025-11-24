@@ -10,6 +10,10 @@ export type Member = {
   since: string | null
 }
 
+export type OrganizationSuggest = { id: string, image_url: string, name: string }
+
+export type OrganizationOrSuggest = Organization | OrganizationSuggest
+
 export type NewOrganization = {
   acronym: string | null
   name: string

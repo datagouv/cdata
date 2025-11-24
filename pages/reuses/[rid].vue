@@ -84,13 +84,12 @@
               v-if="reuse.organization"
               class="flex gap-2 items-center"
             >
-              <Placeholder
-                :src="reuse.organization.logo_thumbnail"
-                type="organization"
-                alt=""
-                :size="32"
-                class="bg-white p-1 rounded-xs border border-gray-default object-contain"
-              />
+              <div class="bg-white p-1 rounded-xs border border-gray-default object-contain">
+                <OrganizationLogo
+                  :organization="reuse.organization"
+                  size-class="size-8"
+                />
+              </div>
               <CdataLink
                 class="link block"
                 :to="`/organizations/${reuse.organization.slug}/`"
@@ -167,7 +166,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, Avatar, BrandedButton, LoadingBlock, OrganizationNameWithCertificate, ReuseDetails, type Reuse } from '@datagouv/components-next'
+import { isOrganizationCertified, Avatar, BrandedButton, LoadingBlock, OrganizationNameWithCertificate, ReuseDetails, type Reuse, OrganizationLogo } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'

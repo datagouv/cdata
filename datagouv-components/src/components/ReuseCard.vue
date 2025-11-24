@@ -43,13 +43,18 @@
     </div>
     <div class="order-1 relative flex-auto">
       <div class="group-hover/reuse-card:brightness-90">
-        <Placeholder
-          class="object-cover block object-center w-full h-auto aspect-[1.4]"
-          alt=""
-          type="reuse"
-          :src="reuse.image"
-          :size="320"
-        />
+        <div class="object-cover block w-full h-auto aspect-[1.4]">
+          <img
+            v-if="reuse.image"
+            :src="reuse.image"
+            class="size-full object-cover"
+          >
+          <Placeholder
+            v-else
+            type="Reuse"
+            class="w-full"
+          />
+        </div>
       </div>
       <ul
         v-if="reuse.private || reuse.archived"
@@ -83,6 +88,7 @@ import { useTranslation } from '../composables/useTranslation'
 import AppLink from './AppLink.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import ReuseDetails from './ReuseDetails.vue'
+import Placeholder from './Placeholder.vue'
 
 const props = defineProps<{
   reuse: Reuse
