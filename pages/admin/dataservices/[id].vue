@@ -37,12 +37,7 @@
       <div class="text-sm text-mentionGrey space-y-1.5 mb-5">
         <p class="space-x-1">
           <span>{{ $t('Statut') }}:</span>
-          <AdminBadge
-            size="xs"
-            :type="getDataserviceStatus(dataservice).type"
-          >
-            {{ getDataserviceStatus(dataservice).label }}
-          </AdminBadge>
+          <DataserviceBadge :dataservice />
         </p>
         <p class="space-x-1">
           <RiBarChartBoxLine class="inline size-3" />
@@ -109,6 +104,7 @@
 import { AvatarWithName, BrandedButton, summarize, Tooltip, useFormatDate, getActivityTranslation } from '@datagouv/components-next'
 import type { Activity, Dataservice } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiEyeLine, RiStarLine } from '@remixicon/vue'
+import DataserviceBadge from '~/components/AdminBadge/DataserviceBadge.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
@@ -117,7 +113,6 @@ import type { PaginatedArray } from '~/types/types'
 const { t } = useTranslation()
 
 const route = useRoute()
-const { getDataserviceStatus } = useDataserviceStatus()
 const { formatDate } = useFormatDate()
 const me = useMe()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)

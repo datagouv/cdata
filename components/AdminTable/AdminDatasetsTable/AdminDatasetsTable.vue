@@ -68,12 +68,7 @@
           </AdminContentWithTooltip>
         </td>
         <td>
-          <AdminBadge
-            size="xs"
-            :type="getDatasetStatus(dataset).type"
-          >
-            {{ getDatasetStatus(dataset).label }}
-          </AdminBadge>
+          <DatasetBadge :dataset />
         </td>
         <td>
           {{ formatDate(dataset.created_at) }}
@@ -148,6 +143,7 @@ import AdminContentWithTooltip from '../../AdminContentWithTooltip/AdminContentW
 import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
 import type { DatasetSortedBy, SortDirection } from '~/types/types'
+import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
 
 const emit = defineEmits<{
   (event: 'sort', column: DatasetSortedBy, direction: SortDirection): void

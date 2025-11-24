@@ -17,9 +17,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed"
   },
-  "lint-staged": {
-    "*.{js,ts,vue,jsx,tsx}": "eslint --fix"
-  },
+
   "dependencies": {
     "@datagouv/components": "^2.0.5",
     "@datagouv/components-next": "file:datagouv-components",

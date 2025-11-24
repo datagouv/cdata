@@ -17,7 +17,7 @@ const props = defineProps<{
   type: 'author' | 'dataset' | 'news' | 'organization' | 'reuse'
   src?: string | null
   alt?: string
-  size: number
+  size?: number
 }>()
 async function placeholderUrl() {
   const placeholders = import.meta.glob(`../../assets/placeholders/*.png`, {

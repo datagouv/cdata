@@ -13,11 +13,12 @@
 const props = withDefaults(defineProps<{
   alt?: string
   lazy?: boolean
-  size?: number
+  size?: number | undefined
   src?: string | null
   type: string
 }>(), {
   lazy: true,
+  size: undefined,
 })
 const alternativeTextForDefinedImageOnly = computed(() => props.src ? props.alt : '')
 const path = computed(() => props.src ? props.src : `/placeholders/${props.type}.png`)

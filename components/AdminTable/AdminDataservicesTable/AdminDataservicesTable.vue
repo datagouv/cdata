@@ -53,12 +53,9 @@
           </AdminContentWithTooltip>
         </td>
         <td>
-          <AdminBadge
-            size="xs"
-            :type="getDataserviceStatus(dataservice).type"
-          >
-            {{ getDataserviceStatus(dataservice).label }}
-          </AdminBadge>
+          <DataserviceBadge
+            :dataservice
+          />
         </td>
         <td>
           <AccessTypeBadge :access-type="dataservice.access_type" />
@@ -121,6 +118,7 @@ import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import type { DataserviceSortedBy, SortDirection } from '~/types/types'
 import AccessTypeBadge from '~/components/AccessTypes/AccessTypeBadge.vue'
+import DataserviceBadge from '~/components/AdminBadge/DataserviceBadge.vue'
 
 const props = withDefaults(defineProps<{
   activities?: Record<string, Activity>
@@ -137,7 +135,6 @@ defineEmits<{
 
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
-const { getDataserviceStatus } = useDataserviceStatus()
 
 function sorted(column: DataserviceSortedBy) {
   if (props.sortedBy === column) {
