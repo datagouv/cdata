@@ -147,7 +147,6 @@ const { t } = useTranslation()
 const me = useMe()
 
 const route = useRoute()
-const { getDatasetStatus } = useDatasetStatus()
 const { formatDate } = useFormatDate()
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset } = await useAPI<DatasetV2>(url, { redirectOn404: true })

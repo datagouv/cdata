@@ -138,7 +138,6 @@
 import { DatasetQualityScore, DatasetQualityTooltipContent, BrandedButton, AvatarWithName, Tooltip, useFormatDate } from '@datagouv/components-next'
 import type { Activity, Dataset, DatasetV2 } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
-import AdminBadge from '../../AdminBadge/AdminBadge.vue'
 import AdminContentWithTooltip from '../../AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
@@ -160,7 +159,6 @@ const props = withDefaults(defineProps<{
 
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
-const { getDatasetStatus } = useDatasetStatus()
 
 const config = useRuntimeConfig()
 
