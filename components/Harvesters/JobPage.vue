@@ -297,7 +297,7 @@ const paginatedItems = computed(() => {
 
 const itemStatus = [
   { id: 'pending', label: t('En attente'), type: 'secondary' as AdminBadgeType },
-  { id: 'started', label: t('Started'), type: 'primary' as AdminBadgeType },
+  { id: 'started', label: t('Commencé'), type: 'primary' as AdminBadgeType },
   { id: 'done', label: t('Terminé'), type: 'success' as AdminBadgeType },
   { id: 'failed', label: t('Échoué'), type: 'danger' as AdminBadgeType },
   { id: 'skipped', label: t('Ignoré'), type: 'secondary' as AdminBadgeType },
