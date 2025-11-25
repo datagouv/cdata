@@ -10,7 +10,7 @@
       v-bind="$attrs"
       v-model="model"
       :type
-      class="border !border-gray-700 rounded-full pl-10 pr-4 py-1 placeholder-gray-800 text-sm"
+      class="border !border-gray-700 pl-10 pr-4 py-1 placeholder-gray-800 text-sm"
     >
   </div>
 </template>
