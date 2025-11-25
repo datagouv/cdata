@@ -20,7 +20,7 @@ export default defineNuxtConfig({
         class: 'datagouv-components',
       },
       link: [
-        { rel: 'shortcut icon', href: '/nuxt_images/favicon.png' },
+        { rel: 'shortcut icon', href: '/nuxt_images/favicon.svg', type: 'image/svg+xml' },
       ],
     },
   },
