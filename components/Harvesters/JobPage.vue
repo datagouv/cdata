@@ -305,7 +305,7 @@ const itemStatus = [
 ]
 
 function getStatus(item: HarvestItem): { id: string, label: string, type: AdminBadgeType } {
-  return itemStatus.filter(status => item.status == status.id)[0]
+  return itemStatus.find(status => item.status == status.id)
 }
 
 const showItemErrors = ref(false)
