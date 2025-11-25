@@ -1,6 +1,6 @@
 <template>
   <NuxtLink
-    v-bind="{ ...props, to, href }"
+    v-bind="{ ...filteredProps, to, href }"
   ><slot /></NuxtLink>
 </template>
 
@@ -10,6 +10,15 @@ import type { NuxtLinkProps } from '#app'
 const props = defineProps<NuxtLinkProps>()
 
 const absoluteUrlToRelative = useAbsoluteUrlToRelative()
+
+const filteredProps = computed(() => {
+  // Si prefetch et noPrefetch sont tous les deux définis, on ignore noPrefetch
+  if (props.prefetch !== undefined && props.noPrefetch !== undefined) {
+    const { noPrefetch, ...rest } = props
+    return rest
+  }
+  return props
+})
 
 const to = computed(() => {
   if (!props.to) return props.to
