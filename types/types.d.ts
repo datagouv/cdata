@@ -116,7 +116,7 @@ export type Tag = {
   text: string
 }
 
-type Owned = { organization: Organization, owner: null } | { owner: User, organization: null }
+export type Owned = { organization: Organization, owner: null } | { owner: User, organization: null }
 
 export type DatasetForm = {
   owned: Owned | null

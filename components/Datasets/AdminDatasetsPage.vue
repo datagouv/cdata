@@ -11,7 +11,7 @@
     <TransferRequestList
       v-if="props.organization || props.user"
       type="Dataset"
-      :recipient="props.organization || props.user"
+      :recipient="(props.organization || props.user)!"
       @done="refresh"
     />
 
@@ -161,12 +161,21 @@ function sort(column: DatasetSortedBy, newDirection: SortDirection) {
 
 function resetFilters() {
   q.value = ''
-  qDebounced.value = ''
   datasetsStatus.value = null
 }
 
 const params = computed(() => {
-  const query = {
+  const query: {
+    organization: string | undefined
+    owner: string | undefined
+    sort: string
+    q: string
+    page_size: number
+    page: number
+    archived?: string
+    deleted?: string
+    private?: string
+  } = {
     organization: props.organization?.id,
     owner: props.user?.id,
 
@@ -178,18 +187,18 @@ const params = computed(() => {
 
   if (datasetsStatus.value) {
     if (datasetsStatus.value.id === 'public') {
-      query['archived'] = 'false'
-      query['deleted'] = 'false'
-      query['private'] = 'false'
+      query.archived = 'false'
+      query.deleted = 'false'
+      query.private = 'false'
     }
     if (datasetsStatus.value.id === 'deleted') {
-      query['deleted'] = 'true'
+      query.deleted = 'true'
     }
     if (datasetsStatus.value.id === 'archived') {
-      query['archived'] = 'true'
+      query.archived = 'true'
     }
     if (datasetsStatus.value.id === 'private') {
-      query['private'] = 'true'
+      query.private = 'true'
     }
   }
 

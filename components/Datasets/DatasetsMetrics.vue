@@ -99,6 +99,7 @@ const metricsDownloads = ref<null | Record<string, number>>(null)
 const metricsDownloadsTotal = ref<null | number>(null)
 const metricsReuses = ref<null | Record<string, number>>(null)
 const metricsReusesTotal = ref<null | number>(null)
+const metricsDataservices = ref<null | Record<string, number>>(null)
 watchEffect(async () => {
   if (!props.organization.id) return
   const metrics = await getOrganizationMetrics(props.organization.id)
@@ -108,13 +109,14 @@ watchEffect(async () => {
   metricsReusesTotal.value = metrics.reusesViewsTotal
   metricsViews.value = metrics.datasetsViews
   metricsViewsTotal.value = metrics.datasetsViewsTotal
+  metricsDataservices.value = metrics.dataservicesViews
 })
 
 const downloadStatsUrl = computed(() => {
-  if (!metricsViews.value || !metricsDownloads.value || !metricsReuses.value) {
+  if (!metricsViews.value || !metricsDownloads.value || !metricsDataservices.value || !metricsReuses.value) {
     return null
   }
 
-  return createOrganizationMetricsUrl(metricsViews.value, metricsDownloads.value, metricsReuses.value)
+  return createOrganizationMetricsUrl(metricsViews.value, metricsDownloads.value, metricsDataservices.value, metricsReuses.value)
 })
 </script>
