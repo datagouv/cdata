@@ -120,7 +120,7 @@
                   >
                     <RiCheckLine
                       v-if="comboboxSlot.selected"
-                      class="size-4 text-primary"
+                      class="size-4 text-new-primary"
                     />
                   </div>
                   <slot

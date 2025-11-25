@@ -39,7 +39,7 @@
                 >
                   <template #button="{ attrs, listeners }">
                     <button
-                      class="flex-none w-10 h-10 text-primary inline-flex items-center justify-center"
+                      class="flex-none w-10 h-10 text-new-primary inline-flex items-center justify-center"
                       :title="$t('Recherche')"
                       v-bind="attrs"
                       v-on="listeners"
@@ -63,7 +63,7 @@
                 >
                   <template #button="{ attrs, listeners }">
                     <button
-                      class="flex-none w-10 h-10 text-primary border-solid border border-gray-300 inline-flex items-center justify-center"
+                      class="flex-none w-10 h-10 text-new-primary border-solid border border-gray-300 inline-flex items-center justify-center"
                       :title="$t('Menu')"
                       v-bind="attrs"
                       v-on="listeners"

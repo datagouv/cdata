@@ -5,7 +5,7 @@
     class="mt-0 mb-2 text-xs"
   >
     <template #markup>
-      <span class="text-primary">*</span>
+      <span class="text-new-primary">*</span>
     </template>
   </TranslationT>
 </template>

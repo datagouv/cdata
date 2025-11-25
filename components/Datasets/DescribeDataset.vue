@@ -488,7 +488,7 @@
                     >
                       <RiStarFill
                         class="self-center size-3 "
-                        :class="{ 'text-primary': !active }"
+                        :class="{ 'text-new-primary': !active }"
                         aria-hidden="true"
                       />
                       <span>{{ t('Recommandée') }}</span>

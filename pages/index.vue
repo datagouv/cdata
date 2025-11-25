@@ -9,7 +9,7 @@
         <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-5 items-center">
           <CdataLink
             v-if="lastPost"
-            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-primary border  border-primary rounded-lg bg-white"
+            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
             :to="`/posts/${lastPost.slug}`"
           >
             <RiBardLine class="size-4 shrink-0" />
@@ -17,7 +17,7 @@
           </CdataLink>
           <CdataLink
             v-if="config.public.homepageRightNow"
-            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-primary border  border-primary rounded-lg bg-white"
+            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
             :to="config.public.homepageRightNow.url"
           >
             <RiBardLine class="size-4 shrink-0" />
@@ -25,10 +25,10 @@
           </CdataLink>
         </div>
         <div class="space-y-4">
-          <h1 class="text-6xl font-extrabold text-primary text-center">
+          <h1 class="text-6xl font-extrabold text-new-primary text-center">
             {{ $t('La plateforme des données publiques françaises') }}
           </h1>
-          <p class="font-spectral italic text-2xl text-center text-primary">
+          <p class="font-spectral italic text-2xl text-center text-new-primary">
             {{ $t('Utilisez, partagez et améliorez les données publiques') }}
           </p>
         </div>
@@ -291,7 +291,7 @@
                     <CdataLink
                       :to="exploration.url"
                       external
-                      class="inline-flex items-center text-primary space-x-1"
+                      class="inline-flex items-center text-new-primary space-x-1"
                     >
                       <span>{{ $t('En savoir plus') }}</span>
                       <RiArrowRightLine class="size-3" />
