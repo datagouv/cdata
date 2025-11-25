@@ -63,7 +63,7 @@
             >
               <BrandedButton
                 v-if="isFiltered"
-                color="primary-soft"
+                color="secondary"
                 :icon="RiCloseCircleLine"
                 class="w-full justify-center"
                 type="button"

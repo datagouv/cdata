@@ -79,7 +79,7 @@
               <td>
                 <BrandedButton
                   size="xs"
-                  color="secondary-softer"
+                  color="tertiary"
                   :href="post.page"
                   :icon="RiEyeLine"
                   icon-only
@@ -90,7 +90,7 @@
                 </BrandedButton>
                 <BrandedButton
                   :href="`/admin/posts/${post.id}`"
-                  color="secondary-softer"
+                  color="tertiary"
                   :icon="RiPencilLine"
                   icon-only
                   size="xs"

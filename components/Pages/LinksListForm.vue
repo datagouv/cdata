@@ -27,7 +27,7 @@
       >
         <BrandedButton
           class="handle shrink-0"
-          color="primary-softer"
+          color="tertiary"
           :title="$t('Faites glisser pour déplacer ce contenu')"
           :icon="RiDraggable"
           size="lg"
@@ -40,7 +40,7 @@
         />
         <BrandedButton
           class="shrink-0"
-          color="primary-softer"
+          color="tertiary"
           :title="$t('Supprimer le lien')"
           :icon="RiDeleteBinLine"
           size="lg"
@@ -51,7 +51,7 @@
     </div>
     <div class="flex items-center justify-center">
       <BrandedButton
-        color="secondary-softer"
+        color="tertiary"
         size="xs"
         @click="bloc.links.push({ title: '', url: '', color: '' })"
       >

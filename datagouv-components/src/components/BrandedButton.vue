@@ -2,8 +2,8 @@
   <!-- 46 42 32 -->
   <component
     :is="href ? AppLink: 'button'"
-    class="inline-flex items-center justify-center rounded-full font-medium border !bg-none !no-underline after:content-none"
-    :class="[colors, sizes, removePaddingsIfNoBorders, isDisabled ? '!opacity-50' : '', iconRight && !newTab ? 'flex-row-reverse space-x-reverse' : '']"
+    class="inline-flex items-center justify-center font-marianne font-medium border !bg-none !no-underline after:content-none outline-none focus-visible:ring-2 focus-visible:ring-new-focus focus-visible:ring-offset-2"
+    :class="[colors, sizes, removePaddingsIfNoBorders, isDisabled && color !== 'primary' && color !== 'secondary' ? '!opacity-50' : '', iconRight && !newTab ? 'flex-row-reverse space-x-reverse' : '']"
     :disabled="isDisabled"
     :aria-disabled="isDisabled"
     :role="href ? 'link' : ''"
@@ -53,7 +53,7 @@ import AppLink from './AppLink.vue'
 import { bannerActionTypeKey } from './BannerAction.vue'
 import AnimatedLoader from './AnimatedLoader.vue'
 
-export type ColorType = 'primary' | 'primary-soft' | 'primary-softer' | 'secondary' | 'secondary-softer' | 'warning' | 'danger' | 'tertiary' | 'brown-illustration' | 'green-illustration' | 'white-flat'
+export type ColorType = 'primary' | 'secondary' | 'tertiary' | 'warning' | 'danger' | 'brown-illustration' | 'green-illustration' | 'white-flat'
 
 const props = withDefaults(defineProps<{
   size?: '2xs' | 'xs' | 'sm' | 'lg' | 'xl'
@@ -94,7 +94,7 @@ const color = computed<ColorType>(() => {
   if (props.color) return props.color
   if (bannerActionType) {
     return {
-      primary: 'primary-soft' as ColorType,
+      primary: 'secondary' as ColorType,
       warning: 'warning' as ColorType,
       danger: 'danger' as ColorType,
     }[bannerActionType]
@@ -111,14 +111,15 @@ const isDisabled = computed(() => props.disabled || props.loading)
 
 const colors = computed(() => {
   return {
-    'primary': `text-white bg-new-primary !border-new-primary ${!isDisabled.value ? 'hover:!bg-new-primary-hover hover:!border-new-primary-hover' : ''}`,
-    'primary-soft': `text-new-primary bg-white !border-new-primary ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'primary-softer': `text-new-primary bg-transparent !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'secondary': `text-gray-plain bg-white !border-gray-plain ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'secondary-softer': `text-gray-plain !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'warning': `text-warning-dark bg-white !border-warning-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'danger': `!text-danger-dark bg-white !border-danger-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'tertiary': `!border-none bg-transparent text-datagouv-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'primary': isDisabled.value
+      ? 'text-new-disabled-text bg-new-disabled-background !border-new-disabled-background'
+      : 'text-white bg-new-primary !border-new-primary hover:!bg-new-primary-hover hover:!border-new-primary-hover',
+    'secondary': isDisabled.value
+      ? 'text-new-disabled-text bg-white !border-new-disabled-background'
+      : 'text-new-gray-dark bg-white !border-new-gray-dark [&&]:hover:!bg-gray-some',
+    'tertiary': `text-gray-plain !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'warning': `text-new-warning bg-white !border-new-warning ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'danger': `!text-new-error bg-white !border-new-error ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'brown-illustration': `!border-none bg-new-brown-illustration text-white ${!isDisabled.value ? '[&&]:hover:!bg-new-brown-illustration/90' : ''}`,
     'green-illustration': `!border-none bg-new-green-illustration text-white ${!isDisabled.value ? '[&&]:hover:!bg-new-green-illustration/90' : ''}`,
     'blue-illustration': `!border-none bg-new-blue-illustration text-white ${!isDisabled.value ? '[&&]:hover:!bg-new-blue-illustration/90' : ''}`,
@@ -137,7 +138,7 @@ const sizes = computed(() => {
 })
 
 const hasBorders = computed(() => {
-  return props.color !== 'primary-softer' && props.color !== 'secondary-softer'
+  return props.color !== 'tertiary'
 })
 
 const removePaddingsIfNoBorders = computed(() => {

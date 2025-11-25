@@ -25,7 +25,7 @@
         v-if="config.public.publishingDataserviceFeedbackUrl"
         :href="config.public.publishingDataserviceFeedbackUrl"
         :icon="RiLightbulbLine"
-        color="secondary-softer"
+        color="tertiary"
         new-tab
       >
         {{ $t('Donnez-nous votre avis sur le parcours de publication') }}

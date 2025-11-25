@@ -543,7 +543,7 @@
             <BrandedButton
               class="mt-4"
               type="button"
-              color="primary-soft"
+              color="secondary"
               size="xs"
               :icon="RiAddLine"
               @click="form.contact_points.push({ ...defaultContactForm })"

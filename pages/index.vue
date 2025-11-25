@@ -42,7 +42,7 @@
           </BrandedButton>
           <BrandedButton
             href="/reuses"
-            color="primary-soft"
+            color="secondary"
             class="w-full sm:w-auto"
             @click="$matomo.trackEvent('Homepage', `Découvrir les réutilisation`, 'Bouton : explorez les réutilisations de données')"
           >
@@ -109,7 +109,7 @@
             </BrandedButton>
             <BrandedButton
               :href="config.public.homepagePublishDatasetOnboarding"
-              color="primary-soft"
+              color="secondary"
               class="w-full sm:w-auto"
             >
               {{ $t('Comment publier des données ?') }}
@@ -198,7 +198,7 @@
             </BrandedButton>
             <BrandedButton
               :href="config.public.homepagePublishReuseOnboarding"
-              color="primary-soft"
+              color="secondary"
               class="w-full sm:w-auto"
             >
               {{ $t('Comment réutiliser des données ?') }}
@@ -407,7 +407,7 @@
                 {{ $t("Consulter l'article") }}
               </BrandedButton>
               <BrandedButton
-                color="primary-soft"
+                color="secondary"
                 href="/posts"
                 class="w-full sm:w-auto"
               >

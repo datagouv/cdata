@@ -19,7 +19,7 @@
       @click.stop="toggle"
     >
       <BrandedButton
-        color="primary-softer"
+        color="tertiary"
         @click.stop="toggle"
       >
         <template v-if="expanded">
