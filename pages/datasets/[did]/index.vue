@@ -37,7 +37,7 @@
       class="space-y-1"
     >
       <div class="uppercase text-gray-plain text-sm font-bold">
-        {{ $t('{n} {label}', { n: data.value?.total, label: getResourceLabel(RESOURCE_TYPE[index]) }) }}
+        {{ getResourceLabel(RESOURCE_TYPE[index], data.value?.total ?? 0) }}
       </div>
       <div class="space-y-2.5">
         <SearchInput

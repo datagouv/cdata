@@ -130,6 +130,9 @@
   --color-success-dark: #27a658;
   --color-success-darker: #1f8d49; /* from DSFR to avoid contrast issue */
   --color-success-darkest: #18753c; /* from DSFR to avoid contrast issue */
+  --color-pink-softest: #FAFAFA;
+  --color-pink-soft: #FFE4F2;
+  --color-pink: #CF006D;
 
   --shadow-input-blue: inset 0 -2px 0 0 #000091;
   --shadow-input: inset 0 -2px 0 0 var(--blue-cumulus-sun-368-moon-732);
