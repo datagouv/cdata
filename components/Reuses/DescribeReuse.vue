@@ -342,14 +342,14 @@
 </template>
 
 <script setup lang="ts">
-import { SimpleBanner, type ReuseTopic, type ReuseType } from '@datagouv/components-next'
+import { SimpleBanner, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplanation.vue'
-import type { ReuseForm, Owned } from '~/types/types'
+import type { ReuseForm } from '~/types/types'
 
 const reuseForm = defineModel<ReuseForm>({ required: true })
 const props = defineProps<{
