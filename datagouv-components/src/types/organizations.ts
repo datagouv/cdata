@@ -23,15 +23,27 @@ export type NewOrganization = {
   logo: string
 }
 
-export type Organization = NewOrganization & {
+export type OrganizationReference = {
   id: string
+  name: string
+  acronym: string | null
+  slug: string
+  uri: string
+  page: string
+  logo: string
+  logo_thumbnail: string
+  badges: Badges
+}
+
+export type Organization = OrganizationReference & {
+  url: string // URL of the org website
+  description: string
+  business_number_id: string
   created_at: string
   last_modified: string
-  last_update: string
   deleted: string | null
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   extras: Record<string, any>
-  logo_thumbnail: string
   members: Array<Member>
   metrics: {
     dataservices: number
@@ -44,8 +56,4 @@ export type Organization = NewOrganization & {
     reuses_by_months: Record<string, number>
     views: number
   }
-  page: string
-  slug: string
-  uri: string
-  badges: Badges
 }
