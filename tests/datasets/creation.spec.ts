@@ -27,7 +27,6 @@ test('can create a minimal dataset', async ({ page }) => {
   await page.getByTestId('markdown-editor').press('Tab')
   await page.getByText('Il est recommandé d\'avoir une').click()
   await page.getByTestId('select-frequency').click()
-  await page.screenshot({ path: 'screenshot.png' })
   await page.getByRole('option', { name: 'Inconnu' }).click()
   await clickOutside(page)
   await page.getByRole('button', { name: 'Suivant' }).click()
