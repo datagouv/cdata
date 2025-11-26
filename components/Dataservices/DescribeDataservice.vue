@@ -419,7 +419,7 @@
             @blur="touch('access_type')"
           >
             <AccessTypeForm
-              :model="form"
+              v-model="form"
               :get-first-warning
               :get-first-error
             />
