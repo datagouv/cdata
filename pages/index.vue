@@ -458,6 +458,8 @@ const reusesMetrics = computed(() => {
   ]
 })
 
-const heroImages = config.public.homepageHeroImages
+// Cannot send arrays in .env so we support sending a single string for a single image (for E2E testing snapshots)s
+const heroImages = Array.isArray(config.public.homepageHeroImages) ? config.public.homepageHeroImages : [config.public.homepageHeroImages]
+
 const randomHeroImage = heroImages[Math.floor(Math.random() * heroImages.length)]
 </script>
