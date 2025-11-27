@@ -102,7 +102,7 @@
         <transition mode="out-in">
           <LoadingBlock :status="searchResultsStatus">
             <div v-if="searchResults && searchResults.data.length">
-              <ul class="mt-2 p-0 border-t border-gray-default relative z-2 list-none">
+              <ul class="mt-2 pt-2 p-0 border-t border-gray-default relative z-2 list-none">
                 <li
                   v-for="result in searchResults.data"
                   :key="result.id"

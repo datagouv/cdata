@@ -115,6 +115,10 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 import type { PaginatedArray } from '~/types/types'
 
+definePageMeta({
+  keepScroll: true,
+})
+
 const { t } = useTranslation()
 
 const me = useMe()

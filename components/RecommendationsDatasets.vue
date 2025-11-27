@@ -9,7 +9,7 @@
         {{ $t('1 jeu de données recommandé  | {n} jeux de données recommandés ', { n: recommendations.length }) }}
         {{ getRecommendationReason(recommendations[0], recommendations.length) }}
       </div>
-      <ul class="space-y-4 mt-2 p-0 border-t border-gray-default relative z-2 list-none">
+      <ul class="space-y-4 mt-2 pt-2 p-0 border-t border-gray-default relative z-2 list-none">
         <li
           v-for="recommendation in recommendations"
           :key="recommendation.id"
