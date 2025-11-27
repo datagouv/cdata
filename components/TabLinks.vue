@@ -1,5 +1,5 @@
 <template>
-  <div class="flex justify-start">
+  <div class="flex justify-start overflow-auto">
     <nav class="flex space-x-1 font-medium rounded border border-neutral-300">
       <template
         v-for="link in links"
@@ -8,7 +8,7 @@
         <CdataLink
           v-if="show(link.href)"
           :to="link.href"
-          class="group block rounded bg-none bg-transparent border border-transparent -m-px no-underline outline-none aria-current-page:border aria-current-page:border-new-primary aria-current-page:text-new-primary p-1"
+          class="whitespace-nowrap md:whitespace-normal group block rounded bg-none bg-transparent border border-transparent -m-px no-underline outline-none aria-current-page:border aria-current-page:border-new-primary aria-current-page:text-new-primary p-1"
           :aria-current="isCurrentUrl(link.href) ? 'page': false"
         >
           <span class="rounded px-2">
