@@ -58,7 +58,9 @@
               <AdminTableTh scope="col">
                 {{ t("Raison") }}
               </AdminTableTh>
-              <AdminTableTh scope="col" />
+              <AdminTableTh scope="col">
+                {{ $t('Actions') }}
+              </AdminTableTh>
             </tr>
           </thead>
           <tbody>
