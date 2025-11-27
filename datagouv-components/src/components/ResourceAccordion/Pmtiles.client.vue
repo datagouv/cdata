@@ -89,7 +89,7 @@ const pmtilesViewerUrl = computed(() => {
 const lastUpdate = computed(() => {
   if (props.resource.extras['analysis:parsing:pmtiles_url'])
     return formatDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined)
-  return formatDate(props.resource.last_modified)
+  return formatDate(props.resource.last_modified as string | undefined)
 })
 
 const container = useTemplateRef('containerRef')
