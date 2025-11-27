@@ -27,7 +27,7 @@
             id: 'done',
           }, {
             label: t('Tous'),
-            id: 'all',
+            id: '',
           }]"
           :display-value="(option) => option.label"
           :multiple="false"
@@ -148,7 +148,7 @@
                 <div class="flex items-center">
                   <BrandedButton
                     size="xs"
-                    color="secondary-softer"
+                    color="tertiary"
                     type="button"
                     :icon="RiCheckLine"
                     icon-only
@@ -161,7 +161,7 @@
                   <BrandedButton
                     v-if="report.subject && getSwitchToPrivateMethodAndUrl(report.subject)"
                     size="xs"
-                    color="secondary-softer"
+                    color="tertiary"
                     type="button"
                     :icon="RiEyeOffLine"
                     icon-only
@@ -180,7 +180,7 @@
                   <BrandedButton
                     v-if="report.subject && getDeleteUrl(report.subject)"
                     size="xs"
-                    color="secondary-softer"
+                    color="tertiary"
                     type="button"
                     :icon="RiDeleteBinLine"
                     icon-only
@@ -238,7 +238,7 @@ const page = ref(1)
 const pageSize = ref(20)
 
 const filterStatus = ref({ label: t('En cours'), id: 'ongoing' })
-const filterStatusValue = computed(() => filterStatus.value.id)
+const filterStatusValue = computed(() => filterStatus.value.id || undefined)
 
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Report>>(`/api/1/reports/`, { query: {
   status: filterStatusValue,
@@ -263,6 +263,7 @@ type RecordSubjectFullObject = { type: 'Dataset', value: DatasetV2 }
 
 const subjects = ref({} as Record<string, RecordSubjectFullObject>)
 const fetchFullSubject = async (report: Report, subject: ReportSubject) => {
+  console.log(subject.id)
   const value = await $api(getSubjectUrl(subject))
   subjects.value[report.id] = { type: subject.class, value }
 }
