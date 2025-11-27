@@ -1,5 +1,3 @@
-import type { Organization } from '@datagouv/components-next'
-
 export type DSFRFormDefaultState = 'default'
 
 export type DSFRFormFunctionalState = 'error' | 'success'
@@ -15,10 +13,6 @@ export type DSFRInfoState = 'info'
 export type PublishingFormAccordionState = AccordionFunctionalState | DSFRInfoState
 
 export type AccordionState = DSFRFormDefaultState | AccordionFunctionalState | DSFRInfoState
-
-export type OrganizationSuggest = { id: string, image_url: string, name: string }
-
-export type OrganizationOrSuggest = Organization | OrganizationSuggest
 
 export type DatasetSearchParams = {
   q?: string

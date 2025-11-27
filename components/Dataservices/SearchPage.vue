@@ -22,32 +22,12 @@
             {{ t('Filtres') }}
           </template>
           <div class="space-y-4">
-            <SearchableSelect
+            <OrganizationSelect
               v-if="!organization"
               v-model="facets.organization"
-              :options="organizations ? organizations.data : []"
-              :suggest="suggestOrganizations"
-              :label="t('Organisations')"
-              :placeholder="t('Toutes les organisations')"
-              :get-option-id="(option) => option.id"
-              :display-value="(option) => option.name"
-              :filter="(option, query) => (option.name).toLocaleLowerCase().includes(query.toLocaleLowerCase())"
-              :multiple="false"
+              :organizations="organizations?.data ?? []"
               :loading="organizationsStatus === 'pending'"
-            >
-              <template #option="{ option }">
-                <div class="flex items-center space-x-2">
-                  <Placeholder
-                    :lazy="false"
-                    type="organization"
-                    :src="'logo_thumbnail' in option ? option.logo_thumbnail : option.image_url"
-                    :size="32"
-                    class="flex-none"
-                  />
-                  <span>{{ option.name }}</span>
-                </div>
-              </template>
-            </SearchableSelect>
+            />
             <SelectGroup
               v-model="facets.isRestricted"
               :label="t('Accès')"
@@ -177,12 +157,12 @@
 
 <script setup lang="ts">
 import { BrandedButton, LoadingBlock, Pagination, getLink } from '@datagouv/components-next'
-import type { Dataservice, Organization } from '@datagouv/components-next'
+import type { Dataservice, Organization, OrganizationOrSuggest } from '@datagouv/components-next'
 import { RiCloseCircleLine } from '@remixicon/vue'
 import { computedAsync, debouncedRef, useUrlSearchParams } from '@vueuse/core'
 import SearchInput from '~/components/Search/SearchInput.vue'
 import type { PaginatedArray } from '~/types/types'
-import type { DataserviceSearchParams, OrganizationOrSuggest, OrganizationSuggest } from '~/types/form'
+import type { DataserviceSearchParams } from '~/types/form'
 import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 
 const props = defineProps<{
@@ -193,8 +173,6 @@ type Facets = {
   isRestricted?: boolean
   organization?: { id: string } | null
 }
-
-const { $api } = useNuxtApp()
 
 const route = useRoute()
 const { t } = useTranslation()
@@ -219,15 +197,6 @@ const { data: searchResults, status: searchResultsStatus, refresh } = await useA
 })
 
 const { data: organizations, status: organizationsStatus } = await useAPI<PaginatedArray<Organization>>('/api/1/organizations/?sort=-followers', { lazy: true })
-
-async function suggestOrganizations(q: string) {
-  return await $api<Array<OrganizationSuggest>>('/api/1/organizations/suggest/', {
-    query: {
-      q,
-      size: 20,
-    },
-  })
-}
 
 /**
  * Search query

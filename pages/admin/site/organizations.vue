@@ -61,10 +61,9 @@
             >
               <td>
                 <div class="flex items-center space-x-2">
-                  <Placeholder
-                    type="organization"
-                    :src="organization.logo_thumbnail"
-                    :size="20"
+                  <OrganizationLogo
+                    :organization
+                    size-class="size-5"
                   />
                   <AdminContentWithTooltip>
                     <CdataLink
@@ -166,7 +165,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, LoadingBlock, useFormatDate } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, OrganizationLogo, useFormatDate } from '@datagouv/components-next'
 import { Pagination, type Organization } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
@@ -177,7 +176,6 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
-import Placeholder from '~/components/Placeholder/Placeholder.vue'
 import AdminInput from '~/components/AdminInput.vue'
 
 const { t } = useTranslation()

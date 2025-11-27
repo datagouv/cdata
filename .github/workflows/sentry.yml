@@ -37,7 +37,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - run: npm run build
+      - name: Build with commit ID
+        run: npm run build
+        env:
+          NUXT_PUBLIC_COMMIT_ID: ${{ env.RELEASE_VERSION }}
 
       - name: Create Sentry release
         uses: getsentry/action-release@v3
@@ -47,8 +50,8 @@ jobs:
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
           SENTRY_URL: ${{ secrets.SENTRY_URL }}
         with:
-          inject: true
-          sourcemaps: ".nuxt/dist"
+          sourcemaps: ".output/public/_nuxt"
+          url_prefix: "~/_nuxt"
           ignore_missing: true
           environment: ${{ env.ENV }}
           release: ${{ env.RELEASE_VERSION }}

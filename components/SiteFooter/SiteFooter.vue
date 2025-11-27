@@ -194,7 +194,7 @@
                     class="fr-footer__top-link"
                     :title="site && site.version ? $t('Version {version}', { version: site.version }) : undefined"
                   >
-                    {{ $t('Moteur open source : udata') }}
+                    {{ $t('Moteur open source : udata ({version})', { version: site.version }) }}
                   </a>
                 </li>
                 <li>
@@ -203,7 +203,7 @@
                     :title="config.public.commitId ? $t('Version {version}', { version: config.public.commitId }) : undefined"
                     class="fr-footer__top-link"
                   >
-                    {{ $t('Interface utilisateur de data.gouv.fr : cdata') }}
+                    {{ $t('Interface utilisateur de data.gouv.fr : cdata ({version})', { version: config.public.commitId }) }}
                   </a>
                 </li>
               </ul>

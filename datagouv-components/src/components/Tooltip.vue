@@ -49,6 +49,7 @@ const floatingRef = useTemplateRef('floating')
 const { floatingStyles } = useFloating(referenceRef, floatingRef, {
   middleware: [autoPlacement({
     allowedPlacements: ['bottom-start', 'bottom', 'bottom-end'],
+    crossAxis: true,
   })],
   whileElementsMounted: autoUpdate,
 })
