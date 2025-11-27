@@ -265,6 +265,7 @@ const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Report>>
   handled: filterStatusValue,
   page: page,
   pageSize: pageSize,
+  sort: '-reported_at',
 } })
 const { data: reasons } = await useAPI<Array<ReportReason>>('/api/1/reports/reasons/', { lazy: true })
 
