@@ -46,7 +46,7 @@
         >
           <AddBlocDropdown @new-bloc="page.blocs.splice(0, 0, $event)">
             <BrandedButton
-              color="secondary-softer"
+              color="tertiary"
               size="xs"
               class="opacity-25 group-hover:opacity-100"
               :icon="RiAddLine"
@@ -67,7 +67,7 @@
             <div class="flex items-center space-x-2">
               <div class="shrink-0">
                 <BrandedButton
-                  color="primary-softer"
+                  color="tertiary"
                   :title="t('Faites glisser pour déplacer ce contenu')"
                   :icon="RiDraggable"
                   size="lg"
@@ -137,7 +137,7 @@
                 >
                   <template #button="{ attrs, listeners }">
                     <BrandedButton
-                      color="primary-softer"
+                      color="tertiary"
                       :title="t('Modifier le bloc')"
                       :icon="RiEditLine"
                       size="lg"
@@ -191,7 +191,7 @@
               </div>
               <div class="shrink-0">
                 <BrandedButton
-                  color="primary-softer"
+                  color="tertiary"
                   :title="t('Supprimer le bloc')"
                   :icon="RiDeleteBinLine"
                   size="lg"
@@ -203,7 +203,7 @@
             <div class="flex items-center justify-center group">
               <AddBlocDropdown @new-bloc="page.blocs.splice(index + 1, 0, $event)">
                 <BrandedButton
-                  color="secondary-softer"
+                  color="tertiary"
                   size="xs"
                   class="opacity-25 group-hover:opacity-100"
                   :icon="RiAddLine"

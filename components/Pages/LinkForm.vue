@@ -34,7 +34,7 @@ import type { LinkInBloc } from '~/types/pages'
 
 const link = defineModel<LinkInBloc>({ required: true })
 
-const colors = ['bg-primary', 'bg-purple-dataservice', 'bg-green-reuse', 'bg-ocher']
+const colors = ['bg-new-blue-illustration', 'bg-new-brown-illustration', 'bg-new-green-illustration', 'bg-ocher']
 
 const setColor = (event: MouseEvent) => {
   if (!event.target) return

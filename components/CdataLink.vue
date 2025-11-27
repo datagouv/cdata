@@ -1,13 +1,14 @@
 <template>
   <NuxtLink
-    v-bind="{ ...props, to, href }"
+    v-bind="{ ...attrs, to, href }"
   ><slot /></NuxtLink>
 </template>
 
 <script setup lang="ts">
 import type { NuxtLinkProps } from '#app'
 
-const props = defineProps<NuxtLinkProps>()
+const props = defineProps<Pick<NuxtLinkProps, 'to' | 'href' | 'external'>>()
+const attrs = useAttrs()
 
 const absoluteUrlToRelative = useAbsoluteUrlToRelative()
 

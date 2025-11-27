@@ -8,7 +8,7 @@
       <BrandedButton
         :icon="RiChatNewLine"
         size="xs"
-        color="secondary-softer"
+        color="tertiary"
         icon-only
         keep-margins-even-without-borders
         v-bind="attrs"

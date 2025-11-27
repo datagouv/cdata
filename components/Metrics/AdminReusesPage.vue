@@ -112,7 +112,7 @@
               <td>
                 <BrandedButton
                   size="xs"
-                  color="secondary-softer"
+                  color="tertiary"
                   :href="getCsvUrl(reuse)"
                   :icon="RiDownloadLine"
                   icon-only

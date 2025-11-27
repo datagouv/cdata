@@ -1,11 +1,9 @@
 <template>
   <div class="flex items-center space-x-2">
     <div class="shrink-0 p-1.5 border">
-      <Placeholder
-        type="organization"
-        :src="organization.logo_thumbnail"
-        class="shrink-0"
-        :class="logoSize"
+      <OrganizationLogo
+        :organization
+        size-class="size-8"
       />
     </div>
     <CdataLink
@@ -21,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { OrganizationNameWithCertificate, Placeholder, type Organization } from '@datagouv/components-next'
+import { OrganizationLogo, OrganizationNameWithCertificate, type Organization } from '@datagouv/components-next'
 
 withDefaults(defineProps<{
   organization: Organization

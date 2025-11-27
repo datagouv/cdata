@@ -23,11 +23,10 @@
           </p>
         </template>
         <template v-else-if="organization">
-          <div class="logo logo--sm">
-            <Placeholder
-              type="organization"
-              :src="organization.logo_thumbnail"
-              :size="20"
+          <div class="border border-gray-default rounded p-0.5 bg-white">
+            <OrganizationLogo
+              :organization
+              size-class="size-5"
             />
           </div>
           <p class="mx-2 fr-col text-ellipsis whitespace-nowrap overflow-hidden">
@@ -199,7 +198,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar } from '@datagouv/components-next'
+import { Avatar, OrganizationLogo } from '@datagouv/components-next'
 import type { Organization, User } from '@datagouv/components-next'
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { RiAlarmWarningLine, RiArticleLine, RiAwardLine, RiBarChartBoxLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiGitPullRequestLine, RiGroup3Line, RiLineChartLine, RiParentLine, RiPlanetLine, RiRobot2Line, RiServerLine, RiUserLine } from '@remixicon/vue'

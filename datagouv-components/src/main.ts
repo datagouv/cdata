@@ -10,7 +10,7 @@ import type { Frequency, Frequencies } from './types/frequency'
 import type { Granularity, Granularities, SpatialZone } from './types/granularity'
 import type { Harvest } from './types/harvest'
 import type { License } from './types/licenses'
-import type { Member, MemberRole, NewOrganization, Organization } from './types/organizations'
+import type { Member, MemberRole, NewOrganization, Organization, OrganizationOrSuggest, OrganizationSuggest } from './types/organizations'
 import type { Owned, OwnedWithId } from './types/owned'
 import type { NewReuse, Reuse, ReuseTopic, ReuseType } from './types/reuses'
 import type { TopicV2, TopicElement, TopicElementClass, TopicElementRel } from './types/topics'
@@ -43,6 +43,7 @@ import LabelTag from './components/DatasetLabelTag.vue'
 import LoadingBlock from './components/LoadingBlock.vue'
 import MarkdownViewer from './components/MarkdownViewer.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
+import OrganizationLogo from './components/OrganizationLogo.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
 import OwnerTypeIcon from './components/OwnerTypeIcon.vue'
@@ -121,6 +122,8 @@ export type {
   NewOrganization,
   NewReuse,
   Organization,
+  OrganizationSuggest,
+  OrganizationOrSuggest,
   Owned,
   OwnedWithId,
   PaginatedArray,
@@ -184,6 +187,7 @@ export {
   LoadingBlock,
   MarkdownViewer,
   OrganizationCard,
+  OrganizationLogo,
   OrganizationNameWithCertificate,
   OwnerType,
   OwnerTypeIcon,

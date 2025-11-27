@@ -1,11 +1,10 @@
 <template>
   <div class="flex items-center space-x-2 text-xs/loose">
     <div class="flex items-center space-x-1 text-mention-grey">
-      <Placeholder
+      <OrganizationLogo
         v-if="comment.posted_by_organization"
-        type="organization"
-        :src="comment.posted_by_organization.logo_thumbnail"
-        class="size-3"
+        :organization="comment.posted_by_organization"
+        size-class="size-3"
       />
       <Avatar
         v-else
@@ -49,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, useFormatDate } from '@datagouv/components-next'
+import { Avatar, OrganizationLogo, useFormatDate } from '@datagouv/components-next'
 import type { Comment, DiscussionSubjectTypes } from '~/types/discussions'
 import { isProducerOfSubject } from '~/utils/discussions'
 

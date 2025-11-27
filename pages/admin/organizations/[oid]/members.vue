@@ -194,7 +194,7 @@
               <div class="flex items-center">
                 <BrandedButton
                   :href="member.user.page"
-                  color="secondary-softer"
+                  color="tertiary"
                   :icon="RiEyeLine"
                   size="xs"
                   icon-only
@@ -210,7 +210,7 @@
                 >
                   <template #button="{ attrs, listeners }">
                     <BrandedButton
-                      color="secondary-softer"
+                      color="tertiary"
                       :icon="RiPencilLine"
                       icon-only
                       size="xs"

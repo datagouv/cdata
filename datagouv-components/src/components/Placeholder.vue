@@ -1,35 +1,25 @@
 <template>
-  <img
-    loading="lazy"
-    :src="path"
-    :alt="alternativeTextForDefinedImageOnly"
-    :width="size"
-    :height="size"
-    v-bind="$attrs"
-  >
+  <div class="bg-gray-lower flex items-center justify-center">
+    <component
+      :is="icon"
+      class="size-1/2 text-gray-plain"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { computedAsync } from '@vueuse/core'
+import { RiBuilding2Line, RiDatabase2Line, RiLineChartLine } from '@remixicon/vue'
 
 const props = defineProps<{
-  type: 'author' | 'dataset' | 'news' | 'organization' | 'reuse'
-  src?: string | null
-  alt?: string
-  size?: number
+  type: 'Dataset' | 'Reuse' | 'Organization'
 }>()
-async function placeholderUrl() {
-  const placeholders = import.meta.glob(`../../assets/placeholders/*.png`, {
-    query: '?url',
-    import: 'default',
-  })
-  const name = Object.keys(placeholders).find(p => p.includes(props.type)) as string
-  const module = placeholders[name] as () => Promise<unknown>
-  const placeholder = await module()
-  return props.src ? props.src : placeholder as string
-}
 
-const alternativeTextForDefinedImageOnly = computed(() => props.src ? props.alt : '')
-const path = computedAsync(() => placeholderUrl())
+const icon = computed(() => {
+  return {
+    Dataset: RiDatabase2Line,
+    Reuse: RiLineChartLine,
+    Organization: RiBuilding2Line,
+  }[props.type]
+})
 </script>

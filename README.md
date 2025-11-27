@@ -44,7 +44,7 @@ npm --version
 Make sure to install cdata dependencies:
 
 ```bash
-npm install
+npm ci
 ```
 
 > **Note:** If you encounter issues, try deleting `node_modules` folders and `package-lock.json` files, then reinstall.

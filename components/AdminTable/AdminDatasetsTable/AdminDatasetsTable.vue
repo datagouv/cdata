@@ -105,7 +105,7 @@
         <td>
           <BrandedButton
             size="xs"
-            color="secondary-softer"
+            color="tertiary"
             :href="dataset.page"
             :icon="RiEyeLine"
             icon-only
@@ -116,7 +116,7 @@
           </BrandedButton>
           <BrandedButton
             size="xs"
-            color="secondary-softer"
+            color="tertiary"
             :href="getDatasetAdminUrl(dataset)"
             :icon="RiPencilLine"
             icon-only
