@@ -263,6 +263,8 @@ const filterStatusValue = computed(() => filterStatus.value.id === null ? undefi
 
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Report>>(`/api/1/reports/`, { query: {
   handled: filterStatusValue,
+  page: page,
+  pageSize: pageSize,
 } })
 const { data: reasons } = await useAPI<Array<ReportReason>>('/api/1/reports/reasons/', { lazy: true })
 
