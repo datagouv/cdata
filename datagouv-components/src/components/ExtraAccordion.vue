@@ -18,7 +18,7 @@
         <slot name="buttons" />
         <DisclosureButton
           :as="BrandedButton"
-          color="secondary-softer"
+          color="tertiary"
           keep-margins-even-without-borders
           :icon="open ? RiArrowUpSLine : RiArrowDownSLine"
         >

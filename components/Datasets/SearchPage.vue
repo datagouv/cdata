@@ -23,31 +23,11 @@
           </template>
           <div class="space-y-4">
             <template v-if="!organization">
-              <SearchableSelect
+              <OrganizationSelect
                 v-model="facets.organization"
-                :options="organizations ? organizations.data : []"
-                :suggest="suggestOrganizations"
-                :label="t('Organisations')"
-                :placeholder="t('Toutes les organisations')"
-                :get-option-id="(option) => option.id"
-                :display-value="(option) => option.name"
-                :filter="(option, query) => (option.name).toLocaleLowerCase().includes(query.toLocaleLowerCase())"
-                :multiple="false"
+                :organizations="organizations?.data ?? []"
                 :loading="organizationsStatus === 'pending'"
-              >
-                <template #option="{ option }">
-                  <div class="flex items-center space-x-2">
-                    <Placeholder
-                      :lazy="false"
-                      type="organization"
-                      :src="'logo_thumbnail' in option ? option.logo_thumbnail : option.image_url"
-                      :size="32"
-                      class="flex-none"
-                    />
-                    <span>{{ option.name }}</span>
-                  </div>
-                </template>
-              </SearchableSelect>
+              />
               <SearchableSelect
                 v-model="facets.organizationType"
                 :options="organizationTypes"
@@ -169,7 +149,7 @@
             >
               <BrandedButton
                 v-if="isFiltered"
-                color="primary-soft"
+                color="secondary"
                 :icon="RiCloseCircleLine"
                 class="w-full justify-center"
                 @click="resetFilters"
@@ -298,13 +278,13 @@
 
 <script setup lang="ts">
 import { BrandedButton, getLink, getOrganizationTypes, LoadingBlock, Pagination, OTHER, USER } from '@datagouv/components-next'
-import type { DatasetV2, License, Organization, OrganizationTypes, RegisteredSchema, TranslatedBadge } from '@datagouv/components-next'
+import type { DatasetV2, License, Organization, OrganizationTypes, RegisteredSchema, TranslatedBadge, OrganizationOrSuggest } from '@datagouv/components-next'
 import { ref, computed } from 'vue'
 import { RiCloseCircleLine, RiDownloadLine } from '@remixicon/vue'
 import { computedAsync, debouncedRef, useUrlSearchParams } from '@vueuse/core'
 import SearchInput from '~/components/Search/SearchInput.vue'
 import type { PaginatedArray, SpatialGranularity, SpatialZone, Tag } from '~/types/types'
-import type { DatasetSearchParams, OrganizationOrSuggest, OrganizationSuggest } from '~/types/form'
+import type { DatasetSearchParams } from '~/types/form'
 
 const props = defineProps<{
   organization?: Organization
@@ -463,15 +443,6 @@ const searchRef = useTemplateRef('search')
 watch([deboucedQuery, facets], () => {
   currentPage.value = 1
 }, { deep: true })
-
-async function suggestOrganizations(q: string) {
-  return await $api<Array<OrganizationSuggest>>('/api/1/organizations/suggest/', {
-    query: {
-      q,
-      size: 20,
-    },
-  })
-}
 
 async function suggestSpatialCoverages(query: string) {
   return await $api<Array<SpatialZone>>('/api/1/spatial/zones/suggest/', {

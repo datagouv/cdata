@@ -23,7 +23,7 @@
       <BrandedButton
         v-if="config.public.publishingHarvesterFeedbackUrl"
         :href="config.public.publishingHarvesterFeedbackUrl"
-        color="secondary-softer"
+        color="tertiary"
         :icon="RiLightbulbLine"
         new-tab
       >

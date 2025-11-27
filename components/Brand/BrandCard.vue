@@ -143,7 +143,7 @@
         >
           <a
             :href="props.ctaUrl"
-            class="text-primary inline-flex items-center"
+            class="text-new-primary inline-flex items-center"
           >
             {{ props.ctaLabel }}
             <svg

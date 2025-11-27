@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, defaultAccessTypeForm } from '@datagouv/components-next'
 import type { Dataservice, Dataset, DatasetV2 } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -88,20 +88,18 @@ const dataserviceForm = useState(
       title: '',
       acronym: '',
       description: '',
-      authorization_request_url: '',
       availability: '',
       base_api_url: '',
       datasets: [],
       technical_documentation_url: '',
       machine_documentation_url: '',
       business_documentation_url: '',
-      access_type: 'open',
-      featured: false,
       license: null,
       private: true,
       rate_limiting: '',
       contact_points: [],
-      access_audiences: {} as DataserviceForm['access_audiences'],
+      featured: false,
+      ...defaultAccessTypeForm(),
     } as DataserviceForm),
 )
 

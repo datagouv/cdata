@@ -32,6 +32,7 @@
     >
       <div class="relative mt-1">
         <div
+          ref="floatingReference"
           class="relative w-full cursor-default overflow-hidden bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm"
         >
           <ComboboxInput
@@ -81,6 +82,7 @@
         >
           <ComboboxOptions
             ref="popover"
+            :style="floatingStyles"
             class="z-10 mt-1 absolute max-h-60 min-w-80 w-full overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm pl-0"
           >
             <div
@@ -120,7 +122,7 @@
                   >
                     <RiCheckLine
                       v-if="comboboxSlot.selected"
-                      class="size-4 text-primary"
+                      class="size-4 text-new-primary"
                     />
                   </div>
                   <slot
@@ -148,6 +150,7 @@
 
 <script setup lang="ts" generic="T extends string | number | object, Multiple extends true | false">
 import { ref, computed } from 'vue'
+import { useFloating, autoUpdate, autoPlacement } from '@floating-ui/vue'
 import { AnimatedLoader } from '@datagouv/components-next'
 import {
   Combobox,
@@ -306,4 +309,14 @@ function compareTwoOptions(a: T | null, b: T | null) {
 function isActive(activeOption: T, currentOption: T) {
   return activeOption ? props.getOptionId(activeOption) === props.getOptionId(currentOption) : false
 }
+
+const referenceRef = useTemplateRef('floatingReference')
+const floatingRef = useTemplateRef<InstanceType<typeof ComboboxOptions>>('popover')
+const { floatingStyles } = useFloating(referenceRef, floatingRef, {
+  middleware: [autoPlacement({
+    allowedPlacements: ['bottom-start', 'bottom', 'bottom-end'],
+    crossAxis: true,
+  })],
+  whileElementsMounted: autoUpdate,
+})
 </script>

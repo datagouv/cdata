@@ -20,7 +20,7 @@
         @change="query = $event.target.value"
       />
       <ComboboxButton
-        class="absolute right-0 p-2 bg-datagouv rounded-tr hover:!bg-datagouv-hover"
+        class="absolute right-0 p-2 bg-new-primary rounded-tr hover:!bg-new-primary-hover"
       >
         <span class="sr-only">{{ $t('Rechercher') }}</span>
         <RiSearchLine

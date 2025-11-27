@@ -36,7 +36,7 @@
             >
               <BrandedButton
                 :title="$t('Fermer la fenêtre modale')"
-                color="primary-softer"
+                color="tertiary"
                 :aria-controls="modalId"
                 :icon="RiCloseLine"
                 icon-right

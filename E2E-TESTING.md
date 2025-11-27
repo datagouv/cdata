@@ -54,7 +54,7 @@ npm run test:e2e
 
 Set in `.env` to avoid randomness:
 ```
-NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES=["hero_15.png"]
+NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES="hero_15.png"
 ```
 
 ## Scripts disponibles

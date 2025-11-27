@@ -70,7 +70,7 @@
               <td>
                 <BrandedButton
                   size="xs"
-                  color="secondary-softer"
+                  color="tertiary"
                   :href="user.page"
                   :icon="RiEyeLine"
                   icon-only
@@ -80,7 +80,7 @@
                 </BrandedButton>
                 <BrandedButton
                   size="xs"
-                  color="secondary-softer"
+                  color="tertiary"
                   :href="`/admin/users/${user.id}/profile`"
                   :icon="RiPencilLine"
                   icon-only

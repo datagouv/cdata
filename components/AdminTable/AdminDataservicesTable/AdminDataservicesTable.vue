@@ -86,7 +86,7 @@
         <td>
           <BrandedButton
             size="xs"
-            color="secondary-softer"
+            color="tertiary"
             :href="dataservice.self_web_url"
             :icon="RiEyeLine"
             icon-only
@@ -96,7 +96,7 @@
           </BrandedButton>
           <BrandedButton
             size="xs"
-            color="secondary-softer"
+            color="tertiary"
             :href="getDataserviceAdminUrl(dataservice)"
             :icon="RiPencilLine"
             icon-only

@@ -215,7 +215,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   loading: false,
   openOnMounted: false,
-  buttonColor: 'secondary-softer',
+  buttonColor: 'tertiary',
   buttonSize: 'xs',
 })
 const emit = defineEmits<{

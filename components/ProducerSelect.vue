@@ -16,12 +16,10 @@
     >
       <template #option="{ option }">
         <div class="flex items-center space-x-2">
-          <Placeholder
+          <OrganizationLogo
             v-if="option.organization"
-            type="organization"
-            :lazy="false"
-            :src="option.organization.logo_thumbnail"
-            :size="20"
+            :organization="option.organization"
+            size-class="size-5"
           />
           <NuxtImg
             v-else

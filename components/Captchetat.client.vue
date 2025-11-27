@@ -14,7 +14,7 @@
           :icon="RiVolumeUpLine"
           icon-only
           size="xl"
-          color="secondary-softer"
+          color="tertiary"
           keep-margins-even-without-borders
           @click="playSound"
         >
@@ -22,7 +22,7 @@
         </BrandedButton>
         <BrandedButton
           :icon="RiRefreshLine"
-          color="secondary-softer"
+          color="tertiary"
           size="xl"
           icon-only
           keep-margins-even-without-borders

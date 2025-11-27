@@ -116,7 +116,7 @@
           <template v-if="subject || subjects[discussion.subject.id]">
             <BrandedButton
               size="xs"
-              color="secondary-softer"
+              color="tertiary"
               :href="getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id])"
               :icon="RiEyeLine"
               icon-only
