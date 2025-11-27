@@ -77,7 +77,8 @@
                   <OrganizationOwner
                     v-if="'organization' in subjects[report.id].value && subjects[report.id].value.organization"
                     :organization="subjects[report.id].value.organization"
-                    logo-size="size-3.5"
+                    logo-size-class="size-3.5"
+                    logo-no-border
                   />
                   <AvatarWithName
                     v-if="'owner' in subjects[report.id].value && subjects[report.id].value.owner"
@@ -268,7 +269,7 @@ const fetchFullSubject = async (report: Report, subject: ReportSubject) => {
   subjects.value[report.id] = { type: subject.class, value }
 }
 
-watchEffect(async () => {
+watch(pageData, async () => {
   if (!pageData.value) return
   for (const report of pageData.value.data) {
     const subject = report.subject
@@ -277,7 +278,7 @@ watchEffect(async () => {
 
     await fetchFullSubject(report, subject)
   }
-})
+}, { immediate: true })
 
 const activities = ref({} as Record<string, Activity>)
 watchEffect(async () => {

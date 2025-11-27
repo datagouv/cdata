@@ -7,11 +7,7 @@
       :is="icon"
       class="self-center size-3.5"
     />
-    <TextClamp
-      :text="title"
-      :auto-resize="true"
-      :max-lines="1"
-    />
+    <span class="truncate">{{ title }}</span>
   </a>
 </template>
 

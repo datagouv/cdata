@@ -1,9 +1,9 @@
 <template>
   <div class="flex items-center space-x-2">
-    <div class="shrink-0 p-1.5 border">
+    <div :class="logoNoBorder ? '': 'shrink-0 p-1.5 border'">
       <OrganizationLogo
         :organization
-        size-class="size-8"
+        :size-class="logoSizeClass"
       />
     </div>
     <CdataLink
@@ -23,8 +23,10 @@ import { OrganizationLogo, OrganizationNameWithCertificate, type Organization } 
 
 withDefaults(defineProps<{
   organization: Organization
-  logoSize?: string | undefined
+  logoSizeClass?: string
+  logoNoBorder?: boolean
 }>(), {
-  logoSize: 'size-8',
+  logoSizeClass: 'size-8',
+  logoNoBorder: false,
 })
 </script>
