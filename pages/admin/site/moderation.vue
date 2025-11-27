@@ -21,13 +21,13 @@
           :label="$t('Filtrer par statut')"
           :options="[{
             label: t('En cours'),
-            id: 'ongoing',
+            id: false,
           }, {
             label: t('Traités'),
-            id: 'done',
+            id: true,
           }, {
             label: t('Tous'),
-            id: '',
+            id: null,
           }]"
           :display-value="(option) => option.label"
           :multiple="false"
@@ -258,11 +258,11 @@ const { $api } = useNuxtApp()
 const page = ref(1)
 const pageSize = ref(20)
 
-const filterStatus = ref({ label: t('En cours'), id: 'ongoing' })
-const filterStatusValue = computed(() => filterStatus.value.id || undefined)
+const filterStatus = ref({ label: t('En cours'), id: false })
+const filterStatusValue = computed(() => filterStatus.value.id === null ? undefined : filterStatus.value.id)
 
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Report>>(`/api/1/reports/`, { query: {
-  status: filterStatusValue,
+  handled: filterStatusValue,
 } })
 const { data: reasons } = await useAPI<Array<ReportReason>>('/api/1/reports/reasons/', { lazy: true })
 
