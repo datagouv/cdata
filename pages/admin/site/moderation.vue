@@ -67,13 +67,19 @@
               :key="report.id"
             >
               <td>
-                <div v-if="subjects[report.id]">
+                <div v-if="subjects[report.id] && subjects[report.id].value">
                   <LinkToSubject
                     :type="subjects[report.id].type"
                     :subject="subjects[report.id].value"
                   />
                 </div>
-                <div v-if="subjects[report.id]">
+                <div v-else-if="subjects[report.id]">
+                  <LinkToSubject
+                    :type="subjects[report.id].type"
+                    :subject="{ title: $t('Supprimé') }"
+                  />
+                </div>
+                <div v-if="subjects[report.id] && subjects[report.id].value">
                   <OrganizationOwner
                     v-if="'organization' in subjects[report.id].value && subjects[report.id].value.organization"
                     :organization="subjects[report.id].value.organization"
@@ -89,42 +95,53 @@
                 </div>
               </td>
               <td>
-                <DatasetBadge
-                  v-if="subjects[report.id] && subjects[report.id].type === 'Dataset'"
-                  :dataset="subjects[report.id].value"
-                />
-                <DataserviceBadge
-                  v-else-if="subjects[report.id] && subjects[report.id].type === 'Dataservice'"
-                  :dataservice="subjects[report.id].value"
-                />
-                <ReuseBadge
-                  v-else-if="subjects[report.id] && subjects[report.id].type === 'Reuse'"
-                  :reuse="subjects[report.id].value"
-                />
-                <div v-else>
-                  —
+                <div v-if="subjects[report.id] && subjects[report.id].value">
+                  <DatasetBadge
+                    v-if="subjects[report.id].type === 'Dataset'"
+                    :dataset="subjects[report.id].value"
+                  />
+                  <DataserviceBadge
+                    v-else-if="subjects[report.id].type === 'Dataservice'"
+                    :dataservice="subjects[report.id].value"
+                  />
+                  <ReuseBadge
+                    v-else-if="subjects[report.id].type === 'Reuse'"
+                    :reuse="subjects[report.id].value"
+                  />
+                  <div v-else>
+                    —
+                  </div>
                 </div>
+                <AdminBadge
+                  v-else
+                  type="danger"
+                  size="xs"
+                >
+                  {{ $t('Supprimé') }}
+                </AdminBadge>
               </td>
               <td>
-                <div v-if="subjects[report.id] && 'created_at' in subjects[report.id].value">
-                  {{ formatDate(subjects[report.id].value.created_at) }}
+                <div v-if="subjects[report.id] && subjects[report.id].value">
+                  <div v-if="'created_at' in subjects[report.id].value">
+                    {{ formatDate(subjects[report.id].value.created_at) }}
+                  </div>
+                  <div v-else-if="'created' in subjects[report.id].value">
+                    {{ formatDate(subjects[report.id].value.created) }}
+                  </div>
+                  <div v-else>
+                    —
+                  </div>
+                  <p
+                    v-if="report.subject && report.subject.id in activities"
+                    class="inline-flex items-center"
+                  >
+                    {{ t('par ') }}
+                    <AvatarWithName
+                      class="fr-ml-1v"
+                      :user="activities[report.subject.id].actor"
+                    />
+                  </p>
                 </div>
-                <div v-else-if="subjects[report.id] && 'created' in subjects[report.id].value">
-                  {{ formatDate(subjects[report.id].value.created) }}
-                </div>
-                <div v-else>
-                  —
-                </div>
-                <p
-                  v-if="report.subject && report.subject.id in activities"
-                  class="inline-flex items-center"
-                >
-                  {{ t('par ') }}
-                  <AvatarWithName
-                    class="fr-ml-1v"
-                    :user="activities[report.subject.id].actor"
-                  />
-                </p>
               </td>
               <td>
                 <div>{{ formatDate(report.reported_at) }}</div>
@@ -146,7 +163,10 @@
                 {{ report.message }}
               </td>
               <td>
-                <div class="flex items-center">
+                <div
+                  v-if="subjects[report.id] && subjects[report.id].value"
+                  class="flex items-center"
+                >
                   <BrandedButton
                     size="xs"
                     color="tertiary"
@@ -167,7 +187,7 @@
                     :icon="RiEyeOffLine"
                     icon-only
                     keep-margins-even-without-borders
-                    :disabled="subjects[report.id] && 'private' in subjects[report.id].value && subjects[report.id].value.private"
+                    :disabled="'private' in subjects[report.id].value && subjects[report.id].value.private"
                     @click="switchPrivate(report, report.subject)"
                   >
                     {{ $t("Cacher l'objet") }}
@@ -186,7 +206,7 @@
                     :icon="RiDeleteBinLine"
                     icon-only
                     keep-margins-even-without-borders
-                    :disabled="subjects[report.id] && isSubjectDeleted(subjects[report.id].value)"
+                    :disabled="isSubjectDeleted(subjects[report.id].value)"
                     @click="deleteSubject(report, report.subject)"
                   >
                     {{ $t("Supprimer l'objet") }}
@@ -256,20 +276,29 @@ const getSubjectUrl = (subject: ReportSubject) => {
   }[subject.class]
 }
 
-type RecordSubjectFullObject = { type: 'Dataset', value: DatasetV2 }
-  | { type: 'Dataservice', value: Dataservice }
-  | { type: 'Reuse', value: Reuse }
-  | { type: 'Organization', value: Organization }
-  | { type: 'Discussion', value: Thread }
+type RecordSubjectFullObject = { type: 'Dataset', value: null | DatasetV2 }
+  | { type: 'Dataservice', value: null | Dataservice }
+  | { type: 'Reuse', value: null | Reuse }
+  | { type: 'Organization', value: null | Organization }
+  | { type: 'Discussion', value: null | Thread }
 
 const subjects = ref({} as Record<string, RecordSubjectFullObject>)
 const fetchFullSubject = async (report: Report, subject: ReportSubject) => {
-  console.log(subject.id)
-  const value = await $api(getSubjectUrl(subject))
-  subjects.value[report.id] = { type: subject.class, value }
+  if (report.subject_deleted_at) {
+    subjects.value[report.id] = { type: subject.class, value: null }
+  }
+
+  try {
+    const value = await $api(getSubjectUrl(subject))
+    subjects.value[report.id] = { type: subject.class, value }
+  }
+  catch {
+    subjects.value[report.id] = { type: subject.class, value: null }
+  }
 }
 
 watch(pageData, async () => {
+  console.log('pageData changed')
   if (!pageData.value) return
   for (const report of pageData.value.data) {
     const subject = report.subject

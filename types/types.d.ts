@@ -284,9 +284,9 @@ export type NewOrganization = {
 export type NewContactPoint = Omit<ContactPoint, 'id'>
 export type ContactPointInForm = ContactPoint | NewContactPoint
 
-export type LinkToSubject = ({
-  title: string
-} | { name: string }) & ({ page: string, self_web_url?: undefined } | { self_web_url: string, page?: undefined })
+type TitleOrName = { title: string } | { name: string }
+
+export type LinkToSubject = TitleOrName & { page?: string, self_web_url?: undefined }
 
 export type TransferRequest = {
   id: string
