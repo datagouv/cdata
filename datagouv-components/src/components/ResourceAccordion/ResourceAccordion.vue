@@ -139,7 +139,7 @@
             external
             @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
           >
-            <span class="sr-only">{{ t('Télécharger la liste au format ') }}</span>{{ format }}
+            <span class="sr-only">{{ t('Télécharger le fichier au format ') }}</span>{{ format }}
           </BrandedButton>
         </p>
         <p
