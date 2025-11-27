@@ -52,7 +52,7 @@ export const loadMe = async (meState: Ref<Me | null | undefined>) => {
   const cookie = useRequestHeader('cookie')
 
   const token = useToken()
-  const { setCurrentOrganization, setCurrentUser } = useCurrentOwned()
+  const { setCurrentOrganization, setCurrentUser } = useCurrentOwnedSetters()
 
   const headers: Record<string, string> = {}
 

@@ -392,7 +392,7 @@
             <BrandedButton
               class="mt-3"
               type="button"
-              color="primary-soft"
+              color="secondary"
               size="xs"
               :icon="RiAddLine"
               @click="form.contact_points.push({ ...defaultContactForm })"
@@ -418,36 +418,11 @@
             :accordion="accessTypeAccordionId"
             @blur="touch('access_type')"
           >
-            <RadioButtons
-              v-model="form.access_type"
-              class="!mb-0"
-              :label="t(`Type d'accès`)"
-              :options="[
-                { value: 'open', label: t('Ouvert') },
-                { value: 'open_with_account', label: t('Ouvert avec compte') },
-                { value: 'restricted', label: t('Restreint') },
-              ]"
+            <AccessTypeForm
+              v-model="form"
+              :get-first-warning
+              :get-first-error
             />
-            <SimpleBanner
-              v-if="getFirstWarning('access_type')"
-              class="mt-2"
-              type="warning"
-            >
-              {{ getFirstWarning("access_type") }}
-            </SimpleBanner>
-            <div
-              v-if="form.access_type === 'restricted'"
-              class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 items-end"
-            >
-              <SelectGroup
-                v-for="accessAudienceType in accessAudienceTypes"
-                :key="accessAudienceType"
-                v-model="form.access_audiences[accessAudienceType]"
-                class="mb-0"
-                :label="getAccessAudienceType(accessAudienceType)"
-                :options="accessAudienceConditionOptions"
-              />
-            </div>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -531,18 +506,16 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, type DataserviceAccessAudienceCondition, type DataserviceAccessAudienceType } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, TranslationT, type Owned } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import { computed } from 'vue'
-import { TranslationT } from '@datagouv/components-next'
 import ModalClient from '../Modal/Modal.client.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ContactPointSelect from '~/components/ContactPointSelect.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
-import type { DataserviceForm, Owned } from '~/types/types'
-import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
+import type { DataserviceForm } from '~/types/types'
 
 const props = defineProps<{
   harvested?: boolean
@@ -574,20 +547,9 @@ const rateLimitingDataserviceAccordionId = useId()
 const availabilityDataserviceAccordionId = useId()
 const contactPointAccordionId = useId()
 
-const { getAccessAudienceCondition, getAccessAudienceType } = useAccessAudience()
-
 const ownedOptions = computed<Array<Owned>>(() => {
   return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: user.value, organization: null }]
 })
-
-const accessAudienceConditions: Array<DataserviceAccessAudienceCondition> = ['yes', 'no', 'under_condition']
-
-const accessAudienceTypes: Array<DataserviceAccessAudienceType> = ['local_authority_and_administration', 'company_and_association', 'private']
-
-const accessAudienceConditionOptions = computed(() => accessAudienceConditions.map(condition => ({
-  value: condition,
-  label: getAccessAudienceCondition(condition).label,
-})))
 
 const machineDocumentationUrlWarningMessage = t(`Il est fortement recommandé d'ajouter une documentation OpenAPI ou Swagger à votre API.`)
 const openConfirmModal = ref(false)

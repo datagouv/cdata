@@ -20,7 +20,7 @@ export default defineNuxtConfig({
         class: 'datagouv-components',
       },
       link: [
-        { rel: 'shortcut icon', href: '/nuxt_images/favicon.png' },
+        { rel: 'shortcut icon', href: '/nuxt_images/favicon.svg', type: 'image/svg+xml' },
       ],
     },
   },
@@ -118,6 +118,7 @@ export default defineNuxtConfig({
 
       datasetPublishingGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
       datasetQualityGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
+      datasetRestrictedGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-juridique/producteurs-de-donnees/quelles-sont-les-obligations',
       dataSearchFeedbackFormUrl: 'https://tally.so/r/mDKv1N',
       forumUrl: 'https://forum.data.gouv.fr/',
       generateShortDescriptionFeedbackUrl: 'https://tally.so/r/wbbRxo',

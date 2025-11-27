@@ -52,7 +52,7 @@
                 scope="col"
               >
                 <BrandedButton
-                  color="secondary-softer"
+                  color="tertiary"
                   :icon="isSortedBy(col) && sortConfig && sortConfig.type == 'asc' ? RiArrowUpLine : RiArrowDownLine"
                   icon-right
                   size="xs"

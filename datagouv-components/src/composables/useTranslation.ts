@@ -18,7 +18,7 @@ function detectLanguage(): string {
     const header = useRequestHeader?.('accept-language')
     const acceptLanguage = header
     if (acceptLanguage) {
-      const primaryLang = acceptLanguage.split(',')[0]!.split('-')[0]!.toLowerCase()
+      const primaryLang = acceptLanguage.split(';')[0]!.split(',')[0]!.split('-')[0]!.toLowerCase()
       return primaryLang
     }
   }

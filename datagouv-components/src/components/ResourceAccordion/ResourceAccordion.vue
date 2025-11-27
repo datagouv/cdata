@@ -139,7 +139,7 @@
             external
             @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
           >
-            <span class="sr-only">{{ t('Télécharger la liste au format ') }}</span>{{ format }}
+            <span class="sr-only">{{ t('Télécharger le fichier au format ') }}</span>{{ format }}
           </BrandedButton>
         </p>
         <p
@@ -210,6 +210,17 @@
               <XmlPreview
                 v-else-if="resource.format && resource.format.toLowerCase() === 'xml'"
                 :resource="resource"
+              />
+              <!-- Show Datafair embedded preview (koumoul) -->
+              <DatafairPreview
+                v-else-if="hasDatafairPreview"
+                :resource="resource"
+                :dataset="dataset"
+              />
+              <!-- Show Datafair embedded preview (koumoul) -->
+              <SwaggerClient
+                v-else-if="hasOpenAPIPreview"
+                :url="resource.extras['apidocUrl'] as string"
               />
               <!-- Show regular preview for other file types -->
               <Preview
@@ -373,6 +384,8 @@ import ResourceIcon from './ResourceIcon.vue'
 import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
+import { isOrganizationCertified } from '../../functions/organizations'
+import SwaggerClient from './Swagger.client.vue'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 const URL_FORMATS = ['url', 'doi', 'www:link', ' www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
@@ -397,6 +410,7 @@ const Pmtiles = defineAsyncComponent(() => import('./Pmtiles.client.vue'))
 const JsonPreview = defineAsyncComponent(() => import('./JsonPreview.client.vue'))
 const PdfPreview = defineAsyncComponent(() => import('./PdfPreview.client.vue'))
 const XmlPreview = defineAsyncComponent(() => import('./XmlPreview.client.vue'))
+const DatafairPreview = defineAsyncComponent(() => import('./Datafair.client.vue'))
 
 const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
@@ -419,6 +433,18 @@ const hasTabularData = computed(() => {
 
 const hasPmtiles = computed(() => {
   return props.resource.extras['analysis:parsing:pmtiles_url'] || props.resource.format === 'pmtiles'
+})
+
+const hasDatafairPreview = computed(() => {
+  // Checks if there are the corresponding extras for a datafair preview.
+  // Limited only to datasets published by certified organizations since it will load an iframe.
+  return isOrganizationCertified(props.dataset.organization) && props.resource.extras['datafairEmbed']
+})
+
+const hasOpenAPIPreview = computed(() => {
+  // Checks if there are the corresponding extras for a datafair preview.
+  // Limited only to datasets published by certified organizations since it will load an iframe.
+  return isOrganizationCertified(props.dataset.organization) && props.resource.extras['apidocUrl']
 })
 
 const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('Fichier'))
@@ -464,7 +490,7 @@ const tabsOptions = computed(() => {
     options.push({ key: 'map', label: t('Carte') })
   }
 
-  if (hasTabularData.value || hasPreview.value) {
+  if (hasTabularData.value || hasPreview.value || hasDatafairPreview.value || hasOpenAPIPreview.value) {
     options.push({ key: 'data', label: t('Aperçu') })
   }
 

@@ -7,8 +7,8 @@
     :data-content-target="recommendation.id"
     class="bg-blue-lightest py-12"
   >
-    <div class="container border-l-4 border-primary flex flex-col sm:flex-row sm:items-end sm:justify-between gap-12">
-      <div class="text-primary">
+    <div class="container border-l-4 border-new-primary flex flex-col sm:flex-row sm:items-end sm:justify-between gap-12">
+      <div class="text-new-primary">
         <h3 class="text-2xl">
           {{ recommendation.title }}
         </h3>
