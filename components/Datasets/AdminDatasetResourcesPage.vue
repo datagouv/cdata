@@ -121,7 +121,7 @@
               <div class="flex items-center">
                 <BrandedButton
                   :icon="RiArrowUpLine"
-                  color="secondary-softer"
+                  color="tertiary"
                   keep-margins-even-without-borders
                   :disabled="index === 0"
                   icon-only
@@ -132,7 +132,7 @@
                 <RiDraggable class="handle" />
                 <BrandedButton
                   :icon="RiArrowDownLine"
-                  color="secondary-softer"
+                  color="tertiary"
                   keep-margins-even-without-borders
                   :disabled="index === files.length - 1"
                   icon-only

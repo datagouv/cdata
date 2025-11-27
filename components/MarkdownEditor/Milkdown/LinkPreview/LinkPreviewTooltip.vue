@@ -20,12 +20,12 @@
         type="button"
         :title="$t('Modifier le lien')"
         size="xs"
-        color="primary-soft"
+        color="secondary"
         :icon="RiPencilLine"
         @click="editLink"
       />
       <BrandedButton
-        color="primary-soft"
+        color="secondary"
         size="xs"
         :title="t('Supprimer le lien')"
         :icon="RiLinkUnlink"

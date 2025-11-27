@@ -130,7 +130,7 @@
     <template v-if="form.filetype === 'remote'">
       <BrandedButton
         v-if="! showChecksum"
-        color="secondary-softer"
+        color="tertiary"
         :icon="RiAddLine"
         class="-mt-6 mb-6"
         @click="addChecksum = true"

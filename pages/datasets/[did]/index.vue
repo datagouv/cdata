@@ -14,7 +14,7 @@
           {{ $t('Vous consultez une resource spécifique.') }}
         </p>
         <BrandedButton
-          color="secondary-softer"
+          color="tertiary"
           keep-margins-even-without-borders
           :icon="RiCloseCircleLine"
           :href="{ name: route.name, params: route.params, query: { ...route.query, resource_id: undefined } }"

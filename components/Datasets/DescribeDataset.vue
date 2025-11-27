@@ -488,7 +488,7 @@
                     >
                       <RiStarFill
                         class="self-center size-3 "
-                        :class="{ 'text-primary': !active }"
+                        :class="{ 'text-new-primary': !active }"
                         aria-hidden="true"
                       />
                       <span>{{ t('Recommandée') }}</span>
@@ -543,7 +543,7 @@
             <BrandedButton
               class="mt-4"
               type="button"
-              color="primary-soft"
+              color="secondary"
               size="xs"
               :icon="RiAddLine"
               @click="form.contact_points.push({ ...defaultContactForm })"

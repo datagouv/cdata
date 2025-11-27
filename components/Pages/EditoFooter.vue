@@ -29,14 +29,14 @@ const props = defineProps<{
 }>()
 
 const bgColor = computed(() => ({
-  primary: 'bg-primary',
-  green: 'bg-green-reuse',
-  purple: 'bg-purple-dataservice',
+  primary: 'bg-new-blue-illustration',
+  green: 'bg-new-green-illustration',
+  purple: 'bg-new-brown-illustration',
 }[props.color]))
 
 const textColor = computed(() => ({
-  primary: 'text-primary',
-  green: 'text-green-reuse',
-  purple: 'text-purple-dataservice',
+  primary: 'text-new-blue-illustration',
+  green: 'text-new-green-illustration',
+  purple: 'text-new-brown-illustration',
 }[props.color]))
 </script>

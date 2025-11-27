@@ -12,7 +12,7 @@
       <slot />
       <BrandedButton
         v-if="sortable"
-        color="secondary-softer"
+        color="tertiary"
         size="2xs"
         class="shrink-0 ml-2"
         icon-only

@@ -103,7 +103,7 @@
               <td>
                 <BrandedButton
                   size="xs"
-                  color="secondary-softer"
+                  color="tertiary"
                   :href="organization.page"
                   :icon="RiEyeLine"
                   icon-only
@@ -114,7 +114,7 @@
                 </BrandedButton>
                 <BrandedButton
                   size="xs"
-                  color="secondary-softer"
+                  color="tertiary"
                   :href="`/admin/organizations/${organization.id}/profile`"
                   :icon="RiPencilLine"
                   icon-only

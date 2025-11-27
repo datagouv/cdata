@@ -23,7 +23,7 @@
           }) }}
         </p>
         <BrandedButton
-          color="secondary-softer"
+          color="tertiary"
           keep-margins-even-without-borders
           :icon="RiCloseCircleLine"
           :href="{ name: route.name, params: route.params, query: { ...route.query, discussion_id: undefined } }"

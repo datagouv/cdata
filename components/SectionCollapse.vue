@@ -11,11 +11,13 @@
       </h2>
       <div class="flex-none flex flex-wrap items-center gap-2">
         <slot name="buttons" />
-        <DisclosureButton class="flex items-center text-sm gap-1 rounded-full font-medium !bg-none py-3 px-4 hover:!bg-gray-some">
-          <RiArrowDownSLine
-            class="size-5"
-            :class="{ 'rotate-180 transform': open }"
-          />
+        <DisclosureButton
+          :as="BrandedButton"
+          color="tertiary"
+          keep-margins-even-without-borders
+          :icon="RiArrowDownSLine"
+          :icon-attrs="{ class: open ? 'rotate-180 transform' : '' }"
+        >
           {{ buttonText }}
         </DisclosureButton>
       </div>
@@ -31,6 +33,7 @@
 <script setup lang="ts">
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { RiArrowDownSLine } from '@remixicon/vue'
+import { BrandedButton } from '@datagouv/components-next'
 
 defineProps<{
   buttonText: string

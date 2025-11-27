@@ -79,7 +79,7 @@
         <td>
           <BrandedButton
             size="xs"
-            color="secondary-softer"
+            color="tertiary"
             :href="reuse.page"
             :icon="RiEyeLine"
             icon-only
@@ -90,7 +90,7 @@
           </BrandedButton>
           <BrandedButton
             size="xs"
-            color="secondary-softer"
+            color="tertiary"
             :href="getReuseAdminUrl(reuse)"
             :icon="RiPencilLine"
             icon-only

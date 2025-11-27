@@ -29,7 +29,7 @@
       <BrandedButton
         v-if="config.public.publishingReuseFeedbackUrl"
         :href="config.public.publishingReuseFeedbackUrl"
-        color="secondary-softer"
+        color="tertiary"
         :icon="RiLightbulbLine"
         new-tab
       >
