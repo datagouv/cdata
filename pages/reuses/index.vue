@@ -27,9 +27,9 @@
         </li>
       </ul>
     </EditoHeader>
-    <PageShow
-      v-if="page"
-      :page
+    <PageShowById
+      v-if="site.reuses_page"
+      :page-id="site.reuses_page"
     />
     <div class="overflow-hidden container flex flex-col md:flex-row items-center py-16 md:py-0">
       <div class="w-full">
@@ -42,7 +42,7 @@
           </div>
 
           <BrandedButton
-            color="green-flat"
+            color="green-illustration"
             class="mt-8 w-full md:w-auto"
             :href="config.public.reusesOnboardingUsecases"
           >
@@ -149,8 +149,7 @@ import { BrandedButton, type ReuseTopic, type Site } from '@datagouv/components-
 import CdataLink from '~/components/CdataLink.vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
-import PageShow from '~/components/Pages/PageShow.vue'
-import type { Page } from '~/types/pages'
+import PageShowById from '~/components/Pages/PageShowById.vue'
 
 const { t } = useTranslation()
 useSeoMeta({
@@ -173,5 +172,4 @@ onMounted(async () => {
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
 
 const { data: site } = await useAPI<Site>('/api/1/site')
-const { data: page } = await useAPI<Page>(`/api/1/pages/${site.value.reuses_page}`)
 </script>

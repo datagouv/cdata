@@ -27,7 +27,7 @@
           class="shrink-0"
         >
           <BrandedButton
-            color="primary-softer"
+            color="tertiary"
             :title="t('Faites glisser pour déplacer ce contenu')"
             :icon="RiDraggable"
             size="lg"
@@ -40,7 +40,7 @@
         />
         <div class="shrink-0">
           <BrandedButton
-            color="primary-softer"
+            color="tertiary"
             :title="t('Supprimer {objectType}', { objectType: theLabel })"
             :icon="RiDeleteBinLine"
             size="lg"

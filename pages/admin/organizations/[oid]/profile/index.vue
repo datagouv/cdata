@@ -54,7 +54,6 @@
               <template #button="{ attrs, listeners }">
                 <BrandedButton
                   :loading="isLoading"
-                  color="danger"
                   :icon="RiDeleteBin6Line"
                   v-bind="attrs"
                   v-on="listeners"
@@ -70,15 +69,14 @@
                 <p>{{ t("Si vous souhaitez aussi supprimer les contenus publiées que vous avez publiés, commencez par supprimer les contenus avant de supprimer votre compte.") }}</p>
               </template>
               <template #footer>
-                <div class="flex-1 fr-btns-group fr-btns-group--right fr-btns-group--inline-reverse fr-btns-group--inline-lg fr-btns-group--icon-left">
-                  <button
-                    class="fr-btn fr-btn--secondary rounded-full !text-red-600 !border border-solid !border-red-600 !shadow-none"
-                    role="button"
+                <div class="flex justify-end">
+                  <BrandedButton
+                    color="danger"
                     :loading="isLoading"
                     @click="deleteCurrentOrganization"
                   >
-                    {{ t("Supprimer l’organisation") }}
-                  </button>
+                    {{ t("Supprimer l'organisation") }}
+                  </BrandedButton>
                 </div>
               </template>
             </ModalWithButton>

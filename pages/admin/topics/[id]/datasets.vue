@@ -55,7 +55,7 @@
           <!-- <template #actions="{ dataset }">
             <BrandedButton
               icon-only
-              color="secondary-softer"
+              color="tertiary"
               keep-margins-even-without-borders
               :icon="RiDeleteBinLine"
               size="xs"

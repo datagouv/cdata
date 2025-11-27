@@ -11,7 +11,7 @@
     </p>
     <template #actions>
       <BrandedButton
-        color="primary-soft"
+        color="secondary"
         type="button"
         @click="$emit('resetFilters')"
       >

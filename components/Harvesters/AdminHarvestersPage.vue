@@ -119,7 +119,7 @@
               <td>
                 <BrandedButton
                   size="xs"
-                  color="secondary-softer"
+                  color="tertiary"
                   :href="getHarvesterAdminUrl(harvester)"
                   :icon="RiPencilLine"
                   icon-only

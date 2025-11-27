@@ -9,7 +9,7 @@
         <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-5 items-center">
           <CdataLink
             v-if="lastPost"
-            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-primary border  border-primary rounded-lg bg-white"
+            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
             :to="`/posts/${lastPost.slug}`"
           >
             <RiBardLine class="size-4 shrink-0" />
@@ -17,7 +17,7 @@
           </CdataLink>
           <CdataLink
             v-if="config.public.homepageRightNow"
-            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-primary border  border-primary rounded-lg bg-white"
+            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
             :to="config.public.homepageRightNow.url"
           >
             <RiBardLine class="size-4 shrink-0" />
@@ -25,10 +25,10 @@
           </CdataLink>
         </div>
         <div class="space-y-4">
-          <h1 class="text-6xl font-extrabold text-primary text-center">
+          <h1 class="text-6xl font-extrabold text-new-primary text-center">
             {{ $t('La plateforme des données publiques françaises') }}
           </h1>
-          <p class="font-spectral italic text-2xl text-center text-primary">
+          <p class="font-spectral italic text-2xl text-center text-new-primary">
             {{ $t('Utilisez, partagez et améliorez les données publiques') }}
           </p>
         </div>
@@ -42,7 +42,7 @@
           </BrandedButton>
           <BrandedButton
             href="/reuses"
-            color="primary-soft"
+            color="secondary"
             class="w-full sm:w-auto"
             @click="$matomo.trackEvent('Homepage', `Découvrir les réutilisation`, 'Bouton : explorez les réutilisations de données')"
           >
@@ -109,7 +109,7 @@
             </BrandedButton>
             <BrandedButton
               :href="config.public.homepagePublishDatasetOnboarding"
-              color="primary-soft"
+              color="secondary"
               class="w-full sm:w-auto"
             >
               {{ $t('Comment publier des données ?') }}
@@ -198,7 +198,7 @@
             </BrandedButton>
             <BrandedButton
               :href="config.public.homepagePublishReuseOnboarding"
-              color="primary-soft"
+              color="secondary"
               class="w-full sm:w-auto"
             >
               {{ $t('Comment réutiliser des données ?') }}
@@ -291,7 +291,7 @@
                     <CdataLink
                       :to="exploration.url"
                       external
-                      class="inline-flex items-center text-primary space-x-1"
+                      class="inline-flex items-center text-new-primary space-x-1"
                     >
                       <span>{{ $t('En savoir plus') }}</span>
                       <RiArrowRightLine class="size-3" />
@@ -407,7 +407,7 @@
                 {{ $t("Consulter l'article") }}
               </BrandedButton>
               <BrandedButton
-                color="primary-soft"
+                color="secondary"
                 href="/posts"
                 class="w-full sm:w-auto"
               >
@@ -458,6 +458,8 @@ const reusesMetrics = computed(() => {
   ]
 })
 
-const heroImages = config.public.homepageHeroImages
+// Cannot send arrays in .env so we support sending a single string for a single image (for E2E testing snapshots)s
+const heroImages = Array.isArray(config.public.homepageHeroImages) ? config.public.homepageHeroImages : [config.public.homepageHeroImages]
+
 const randomHeroImage = heroImages[Math.floor(Math.random() * heroImages.length)]
 </script>

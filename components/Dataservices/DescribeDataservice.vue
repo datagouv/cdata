@@ -392,7 +392,7 @@
             <BrandedButton
               class="mt-3"
               type="button"
-              color="primary-soft"
+              color="secondary"
               size="xs"
               :icon="RiAddLine"
               @click="form.contact_points.push({ ...defaultContactForm })"
@@ -419,7 +419,7 @@
             @blur="touch('access_type')"
           >
             <AccessTypeForm
-              :model="form"
+              v-model="form"
               :get-first-warning
               :get-first-error
             />
@@ -506,7 +506,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, TranslationT } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, TranslationT, type Owned } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import ModalClient from '../Modal/Modal.client.vue'
@@ -515,7 +515,7 @@ import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ContactPointSelect from '~/components/ContactPointSelect.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
-import type { DataserviceForm, Owned } from '~/types/types'
+import type { DataserviceForm } from '~/types/types'
 
 const props = defineProps<{
   harvested?: boolean

@@ -10,7 +10,7 @@
             {{ title }}
           </h1>
           <CdataLink
-            class="bg-[#0D0C4F]/20 fr-raw-link text-white font-medium text-lg px-5 py-3 rounded-4xl flex justify-start items-start sm:items-center gap-2"
+            class="bg-[#0D0C4F]/20 hover:bg-[#0D0C4F]/30 fr-raw-link text-white font-medium text-lg px-5 py-3 rounded-4xl flex justify-start items-start sm:items-center gap-2"
             :href="linkUrl"
           >
             <RiInformation2Line class="size-6" />
@@ -57,14 +57,14 @@ const props = defineProps<{
 }>()
 
 const bgColor = computed(() => ({
-  primary: 'bg-primary',
-  green: 'bg-green-reuse',
-  purple: 'bg-purple-dataservice',
+  primary: 'bg-new-blue-illustration',
+  green: 'bg-new-green-illustration',
+  purple: 'bg-new-brown-illustration',
 }[props.color]))
 
 const textColor = computed(() => ({
-  primary: 'text-primary',
-  green: 'text-green-reuse',
-  purple: 'text-purple-dataservice',
+  primary: 'text-new-blue-illustration',
+  green: 'text-new-green-illustration',
+  purple: 'text-new-brown-illustration',
 }[props.color]))
 </script>

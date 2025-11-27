@@ -89,11 +89,14 @@ export function getResourceTitleId(resource: Resource) {
 export const RESOURCE_TYPE = readonly(['main', 'documentation', 'update', 'api', 'code', 'other'] as const)
 export type ResourceType = typeof RESOURCE_TYPE[number]
 
-export const getResourceLabel = (type: ResourceType) => {
+export const getResourceLabel = (type: ResourceType, count?: number) => {
   const { t } = useTranslation()
   switch (type) {
     case 'main':
-      return t('Fichier principal') // TODO: manage the plural case
+      if (typeof count === 'number') {
+        return t('Aucun fichier principal | 1 fichier principal | {n} fichiers principaux', count)
+      }
+      return t('Fichiers principaux')
     case 'documentation':
       return t('Documentation')
     case 'update':

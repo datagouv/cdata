@@ -28,12 +28,10 @@
     <div class="flex flex-wrap md:flex-nowrap gap-4 items-start">
       <div class="flex-none">
         <div class="flex justify-center items-center p-2 border border-gray-lower bg-[#fff]">
-          <Placeholder
+          <OrganizationLogo
             v-if="dataset.organization"
-            type="dataset"
-            :src="dataset.organization.logo_thumbnail"
-            alt=""
-            :size="48"
+            :organization="dataset.organization"
+            size-class="size-12"
           />
           <Avatar
             v-else-if="dataset.owner"
@@ -42,8 +40,8 @@
           />
           <Placeholder
             v-else
-            type="dataset"
-            :size="48"
+            type="Dataset"
+            class="size-12"
           />
         </div>
       </div>
@@ -173,6 +171,7 @@ import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import AppLink from './AppLink.vue'
+import OrganizationLogo from './OrganizationLogo.vue'
 
 type Props = {
   dataset: Dataset | DatasetV2

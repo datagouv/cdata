@@ -13,11 +13,9 @@
     >
       <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle justify-between">
         <div class="fr-col-12 fr-col-md fr-grid-row fr-grid-row--middle">
-          <Placeholder
-            :src="organization.logo"
-            type="organization"
-            :size="80"
-            class="rounded border"
+          <OrganizationLogo
+            :organization
+            size-class="size-20"
           />
           <div class="fr-col fr-ml-3v fr-my-0 text-2xl font-bold">
             {{ organization.name }}
@@ -73,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, isOrganizationCertified, PaddedContainer, type Organization } from '@datagouv/components-next'
+import { BrandedButton, isOrganizationCertified, OrganizationLogo, PaddedContainer, type Organization } from '@datagouv/components-next'
 import { RiEyeLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'

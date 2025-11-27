@@ -12,10 +12,10 @@
       :link-label="$t(`Qu'est-ce qu'une API ?`)"
       :link-url="config.public.guideDataservices"
     />
-    <PageShow
-      v-if="page"
-      :page
-      main-color="purple-flat"
+    <PageShowById
+      v-if="site.dataservices_page"
+      :page-id="site.dataservices_page"
+      main-color="brown-illustration"
     />
     <div class="container flex flex-col sm:flex-row items-center  gap-2 py-16">
       <div class="w-full">
@@ -31,7 +31,7 @@
           </div>
 
           <BrandedButton
-            color="purple-flat"
+            color="brown-illustration"
             class="mt-8"
             :href="config.public.dataservicesOnboarding"
           >
@@ -119,8 +119,7 @@
 import { BrandedButton, type Site } from '@datagouv/components-next'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
-import PageShow from '~/components/Pages/PageShow.vue'
-import type { Page } from '~/types/pages'
+import PageShowById from '~/components/Pages/PageShowById.vue'
 
 const { t } = useTranslation()
 useSeoMeta({
@@ -141,5 +140,4 @@ onMounted(async () => {
 })
 
 const { data: site } = await useAPI<Site>('/api/1/site')
-const { data: page } = await useAPI<Page>(`/api/1/pages/${site.value.dataservices_page}`)
 </script>

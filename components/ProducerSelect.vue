@@ -16,15 +16,13 @@
   >
     <template #option="{ option }">
       <div class="flex items-center space-x-2">
-        <Placeholder
+        <OrganizationLogo
           v-if="option.organization"
-          type="organization"
-          :lazy="false"
-          :src="option.organization.logo_thumbnail"
-          :size="20"
+          :organization="option.organization"
+          size-class="size-5"
         />
         <NuxtImg
-          v-else
+          v-else-if="option.owner"
           class="rounded-full border border-gray-default size-5"
           :src="getUserAvatar(option.owner, 24)"
           data-testid="user-avatar"
@@ -38,8 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { useGetUserAvatar, type Organization, type User } from '@datagouv/components-next'
-import type { Owned } from '~/types/types'
+import { OrganizationLogo, useGetUserAvatar, type Organization, type User, type Owned } from '@datagouv/components-next'
 
 const getUserAvatar = useGetUserAvatar()
 
