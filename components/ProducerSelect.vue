@@ -56,8 +56,6 @@ const props = withDefaults(defineProps<{
 })
 const model = defineModel<Owned | null>({ required: true })
 
-const config = useRuntimeConfig()
-
 const { t } = useTranslation()
 const user = useMe()
 const { $api } = useNuxtApp()
@@ -66,8 +64,7 @@ const { $api } = useNuxtApp()
 // in case we want to filter on admin only organizations
 const organizations = await Promise.all(
   user.value.organizations.map(async (org) => {
-    const { data: organization } = await useAPI<Organization>(
-      new URL(`/api/1/organizations/${org.id}`, config.public.apiBase).toString(),
+    const { data: organization } = await useAPI<Organization>(`/api/1/organizations/${org.id}`,
       { redirectOn404: true },
     )
     return organization.value
