@@ -43,6 +43,12 @@ export function isMeAdmin(): boolean {
   return isAdmin(me.value)
 }
 
+export function isUserOrgAdmin(me: Me | null | undefined, organization: Organization | null | undefined): boolean {
+  if (isAdmin(me)) return true
+  if (!me || !organization) return false
+  return organization.members.some(member => member.user.id === me.id && member.role === 'admin')
+}
+
 export const loadMe = async (meState: Ref<Me | null | undefined>) => {
   // Here we cannot use the `useAPI` composable because
   // we don't want the classic error management that redirect
