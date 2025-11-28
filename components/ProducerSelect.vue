@@ -37,6 +37,7 @@
 
 <script setup lang="ts">
 import { useGetUserAvatar, BrandedButton, OrganizationLogo, PaddedContainer, type Organization, type Owned, type User } from '@datagouv/components-next'
+import { isUserOrgAdmin, useMe } from '~/utils/auth'
 
 const getUserAvatar = useGetUserAvatar()
 
@@ -64,9 +65,7 @@ const { $api } = useNuxtApp()
 // in case we want to filter on admin only organizations
 const organizations = await Promise.all(
   user.value.organizations.map(async (org) => {
-    const { data: organization } = await useAPI<Organization>(`/api/1/organizations/${org.id}`,
-      { redirectOn404: true },
-    )
+    const { data: organization } = await useAPI<Organization>(`/api/1/organizations/${org.id}`)
     return organization.value
   }),
 )
@@ -74,7 +73,7 @@ const organizations = await Promise.all(
 const ownedOptions = computed<Array<Owned>>(() => {
   let orgs = organizations.map(organization => ({ organization, owner: null }))
   if (props.adminOnly) {
-    orgs = orgs.filter(org => org.organization.members.some(member => member.user.id == user.value.id && member.role === 'admin'))
+    orgs = orgs.filter(org => isUserOrgAdmin(user.value, org.organization))
   }
   if (props.organizationsOnly) {
     return orgs
