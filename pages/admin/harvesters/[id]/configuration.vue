@@ -107,7 +107,7 @@ const { data: harvester, refresh } = await useAPI<HarvesterSource>(sourceUrl, { 
 // we fetch full organization object if exists because we need members details for isOrgAdmin
 const organization = harvester.value.organization ? (await useAPI<Organization>(`/api/1/organizations/${harvester.value.organization.id}`)).data : null
 
-const isOrgAdmin = computed(() => !harvester.value.organization || isUserOrgAdmin(me.value, organization.value))
+const isOrgAdmin = computed(() => !harvester.value.organization || isUserOrgAdmin(me.value, organization?.value))
 
 const loading = ref(false)
 
