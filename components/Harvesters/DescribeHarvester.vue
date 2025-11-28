@@ -9,7 +9,7 @@
       class="mb-4 flex items-center space-x-5"
     >
       <NuxtImg
-        src="/illustrations/truck.svg"
+        src="/illustrations/harvester.svg"
         loading="lazy"
         class="size-14 shrink-0"
         alt=""
