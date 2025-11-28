@@ -33,11 +33,30 @@
       <FieldsetElement form-key="owned">
         <ProducerSelect
           v-model="form.owned"
-          :label="t(`Vérifiez l'identité avec laquelle vous souhaitez publier`)"
+          :label="t(`Sélectionnez votre organisation`)"
           :required="true"
+          :organizations-only="true"
+          :admin-only="true"
           :error-text="getFirstError('owned')"
           :warning-text="getFirstWarning('owned')"
         />
+        <template #accordion>
+          <HelpAccordion :title="$t(`Choisir l'organisation pour laquelle vous souhaitez mettre en place un moissonneur`)">
+            <p class="m-0 mb-4">
+              {{ $t("La création d'un moissonneur doit obligatoirement se faire au nom d'une organisation et nécessite les droits administrateurs. Sélectionnez une organisation dont vous êtes administrateur.") }}
+            </p>
+            <p class="m-0">
+              {{ $t("Si votre organisation n'existe pas encore, vous devez d'abord") }}
+              <NuxtLink
+                to="/admin/organizations/new/"
+                class="link"
+                target="_blank"
+              >
+                {{ $t("la créer ici") }}
+              </NuxtLink>.
+            </p>
+          </HelpAccordion>
+        </template>
       </FieldsetElement>
     </FormFieldset>
 
