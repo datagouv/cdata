@@ -36,25 +36,57 @@
 </template>
 
 <script setup lang="ts">
-import { getUserAvatar, type Organization, type User } from '@datagouv/components-next'
-import type { Owned } from '~/types/types'
+import { useGetUserAvatar, BrandedButton, OrganizationLogo, PaddedContainer, type Organization, type Owned, type User } from '@datagouv/components-next'
+
+const getUserAvatar = useGetUserAvatar()
 
 const props = withDefaults(defineProps<{
   label: string
   errorText?: string | null
   warningText?: string | null
   all?: boolean
+  required?: boolean
+  organizationsOnly?: boolean
+  adminOnly?: boolean
 }>(), {
   all: false,
+  required: false,
+  organizationsOnly: false,
+  adminOnly: false,
 })
 const model = defineModel<Owned | null>({ required: true })
 
-const { t } = useI18n()
+const config = useRuntimeConfig()
+
+const { t } = useTranslation()
 const user = useMe()
 const { $api } = useNuxtApp()
 
+// we fetch full organization object because we need members details
+// in case we want to filter on admin only organizations
+const organizations = await Promise.all(
+  user.value.organizations.map(async (org) => {
+    const { data: organization } = await useAPI<Organization>(
+      new URL(`/api/1/organizations/${org.id}`, config.public.apiBase).toString(),
+      { redirectOn404: true },
+    )
+    return organization.value
+  }),
+)
+
 const ownedOptions = computed<Array<Owned>>(() => {
-  return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: user.value, organization: null }]
+  let orgs = organizations.map(organization => ({ organization, owner: null }))
+  if (props.adminOnly) {
+    orgs = orgs.filter(org => org.organization.members.some(member => member.user.id == user.value.id && member.role === 'admin'))
+  }
+  if (props.organizationsOnly) {
+    return orgs
+  }
+  return [...orgs, { owner: user.value, organization: null }]
+})
+
+const hasOrganizations = computed(() => {
+  return user.value?.organizations && user.value.organizations.length > 0
 })
 
 const suggest = computed(() => {
