@@ -187,9 +187,9 @@ async function displayMap() {
             map.getCanvas().style.cursor = ''
           })
         })
-      }).catch (() => hasError.value = true)
+      }).catch(() => hasError.value = true)
     })
-  }).catch (() => hasError.value = true)
+  }).catch(() => hasError.value = true)
 }
 
 onMounted(() => {
