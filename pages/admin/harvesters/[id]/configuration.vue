@@ -90,7 +90,7 @@
 
 <script setup lang="ts">
 import { RiDeleteBin6Line } from '@remixicon/vue'
-import { BannerAction, BrandedButton } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, type Organization } from '@datagouv/components-next'
 import DescribeHarvester from '~/components/Harvesters/DescribeHarvester.vue'
 import JobPage from '~/components/Harvesters/JobPage.vue'
 import PreviewLoader from '~/components/Harvesters/PreviewLoader.vue'
@@ -102,7 +102,12 @@ const { t } = useI18n()
 const { toast } = useToast()
 
 const sourceUrl = computed(() => `/api/1/harvest/source/${route.params.id}`)
-const { data: harvester } = await useAPI<HarvesterSource>(sourceUrl, { redirectOn404: true })
+const { data: harvester, refresh } = await useAPI<HarvesterSource>(sourceUrl, { redirectOn404: true })
+
+// we fetch full organization object if exists because we need members details for isOrgAdmin
+const organization = harvester.value.organization ? (await useAPI<Organization>(`/api/1/organizations/${harvester.value.organization.id}`)).data : null
+
+const isOrgAdmin = computed(() => !harvester.value.organization || isUserOrgAdmin(me.value, organization.value))
 
 const loading = ref(false)
 
