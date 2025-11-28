@@ -3,6 +3,17 @@
   "version": "0.1.5",
   "private": false,
   "type": "module",
+  "packageManager": "pnpm@10.23.0",
+  "engines": {
+    "node": ">= 20.0.0",
+    "pnpm": ">= 10.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "cypress",
+      "husky"
+    ]
+  },
   "main": "./src/main.ts",
   "files": [
     "assets",
@@ -19,8 +30,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write src/",
     "css": "tailwindcss -i ./assets/main.css -o ./dist/components.css --minify --optimize",
-    "preversion": "npm run build && npm run css",
-    "publish-stable": "npm publish --access public"
+    "preversion": "pnpm run build && pnpm run css",
+    "publish-stable": "pnpm publish --access public"
   },
   "dependencies": {
     "@floating-ui/vue": "^1.1.8",

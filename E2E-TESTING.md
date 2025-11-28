@@ -49,7 +49,7 @@ Pour tester localement :
 1. **Démarrer udata** :
 2. **Lancer les tests** :
 ```bash
-npm run test:e2e
+pnpm run test:e2e
 ```
 
 Set in `.env` to avoid randomness:
@@ -59,6 +59,6 @@ NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES="hero_15.png"
 
 ## Scripts disponibles
 
-- `npm run test:e2e` : Lance les tests E2E en mode headless
-- `npm run test:e2e:ui` : Lance les tests avec l'interface Playwright
-- `npm run test:e2e:headed` : Lance les tests en mode visible
+- `pnpm run test:e2e` : Lance les tests E2E en mode headless
+- `pnpm run test:e2e:ui` : Lance les tests avec l'interface Playwright
+- `pnpm run test:e2e:headed` : Lance les tests en mode visible
