@@ -15,7 +15,7 @@
   >
     <template #default="{ object: dataset }">
       <CardLg
-        class="flex-1"
+        class="flex-1 min-w-0"
         :dataset
       />
     </template>

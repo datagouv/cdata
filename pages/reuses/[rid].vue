@@ -174,6 +174,10 @@ import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 
+definePageMeta({
+  keepScroll: true,
+})
+
 const route = useRoute()
 
 const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
