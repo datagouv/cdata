@@ -33,7 +33,6 @@
           v-if="organization"
           :href="pageData.total ? `${config.public.apiBase}/api/1/organizations/${organization.id}/dataservices.csv` : undefined"
           size="xs"
-          :external="true"
           :icon="RiDownloadLine"
         >
           {{ t('Télécharger le catalogue') }}

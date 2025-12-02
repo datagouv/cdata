@@ -5,6 +5,8 @@ declare const useRequestHeader: ((header: string) => string | undefined) | undef
 
 export type TranslationOptions = Record<string, string | number>
 
+export type TranslationFunction = (key: string, options?: TranslationOptions | number) => string
+
 const PLACEHOLDER_REGEX = /\{(\w+)\}/g
 
 // Pre-register all available translation files at build time
@@ -136,7 +138,7 @@ export const useTranslation = () => {
   // Initialize translations if not already done.
   loadCurrentTranslations()
 
-  const t = (key: string, options?: TranslationOptions | number): string => {
+  const t: TranslationFunction = (key, options) => {
     let result = key
 
     if (typeof options == 'number') {
