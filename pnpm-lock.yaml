@@ -427,7 +427,7 @@ packages:
 
   '@datagouv/components-next@file:datagouv-components':
     resolution: {directory: datagouv-components, type: directory}
-    engines: {node: '>= 20.0.0', pnpm: '>= 10.0.0'}
+    engines: {node: '>= 20.0.0', npm: use-pnpm-instead, pnpm: '>= 10.0.0', yarn: use-pnpm-instead}
 
   '@datagouv/components@2.0.8':
     resolution: {integrity: sha512-qMvOiNKxapY/tTGe8t/zZU0tZDvMMxxFFaQb9k9xrt8JAuHEEskSSlH0KvTp3SwFvo32E+u8xxIng+goyEbMBQ==}
