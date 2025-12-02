@@ -1,4 +1,4 @@
-import type { AccessTypeForm, WithAccessType, Dataset, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, ContactPoint, PaginatedArray, Owned } from '@datagouv/components-next'
+import type { AccessTypeForm, WithAccessType, Dataset, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, License, ReuseType, Resource, ContactPoint, PaginatedArray, Owned } from '@datagouv/components-next'
 
 // Some types from @datagouv/components-next are exported here to avoid 50+ files refactors
 export type {
@@ -234,7 +234,7 @@ export type BaseResourceForm = {
   title: string
   type: ResourceType
   description: string
-  schema: RegisteredSchema | null
+  schema: Schema | null
   schema_url: string | null
 
   checksum_type: string | null

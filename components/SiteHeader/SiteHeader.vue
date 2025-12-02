@@ -98,7 +98,6 @@
                           <li>
                             <BrandedButton
                               href="/admin/"
-                              :external="true"
                               color="tertiary"
                               :icon="RiSettings3Line"
                               @click="close"
@@ -137,7 +136,6 @@
                               :href="{ path: '/login', query: { next: route.fullPath } }"
                               color="tertiary"
                               size="lg"
-                              :external="true"
                               :icon="RiLockLine"
                               class="w-full"
                               @click="close"
@@ -150,7 +148,6 @@
                               color="tertiary"
                               size="lg"
                               :href="{ path: '/register', query: { next: route.fullPath } }"
-                              :external="true"
                               class="w-full"
                               :icon="RiAccountCircleLine"
                               @click="close"
@@ -370,7 +367,6 @@
                   <BrandedButton
                     color="tertiary"
                     :href="{ path: '/login', query: { next: route.fullPath } }"
-                    :external="true"
                     :icon="RiLockLine"
                   >
                     {{ $t("Se connecter") }}
@@ -380,7 +376,6 @@
                   <BrandedButton
                     color="tertiary"
                     :href="{ path: '/register', query: { next: route.fullPath } }"
-                    :external="true"
                     :icon="RiAccountCircleLine"
                   >
                     {{ $t("S'enregistrer") }}

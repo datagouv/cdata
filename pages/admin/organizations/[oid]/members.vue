@@ -303,6 +303,7 @@ import AdminMembershipRequest from '~/components/AdminMembershipRequest/AdminMem
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import { useNotifications } from '~/composables/useNotifications.client'
+import { isUserOrgAdmin, useMe } from '~/utils/auth'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
@@ -336,7 +337,7 @@ const refreshAll = async () => {
   ])
 }
 
-const isOrgAdmin = computed(() => isMeAdmin() || (organization && organization.value.members.some(member => member.user.id === me.value.id && member.role === 'admin')))
+const isOrgAdmin = computed(() => isUserOrgAdmin(me.value, organization.value))
 
 const newRole = ref<MemberRole | null>(null)
 const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })
