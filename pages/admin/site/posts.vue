@@ -79,18 +79,17 @@
               <td>
                 <BrandedButton
                   size="xs"
-                  color="secondary-softer"
+                  color="tertiary"
                   :href="post.page"
                   :icon="RiEyeLine"
                   icon-only
-                  external
                   keep-margins-even-without-borders
                 >
                   {{ $t('Voir la page publique') }}
                 </BrandedButton>
                 <BrandedButton
                   :href="`/admin/posts/${post.id}`"
-                  color="secondary-softer"
+                  color="tertiary"
                   :icon="RiPencilLine"
                   icon-only
                   size="xs"

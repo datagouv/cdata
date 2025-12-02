@@ -10,9 +10,10 @@ import type { Frequency, Frequencies } from './types/frequency'
 import type { Granularity, Granularities, SpatialZone } from './types/granularity'
 import type { Harvest } from './types/harvest'
 import type { License } from './types/licenses'
-import type { Member, MemberRole, NewOrganization, Organization } from './types/organizations'
+import type { Member, MemberRole, NewOrganization, Organization, OrganizationOrSuggest, OrganizationSuggest } from './types/organizations'
 import type { Owned, OwnedWithId } from './types/owned'
 import type { NewReuse, Reuse, ReuseTopic, ReuseType } from './types/reuses'
+import type { RegisteredSchema, Schema, SchemaDetails, SchemaField, SchemaPath, SchemaPublicationMode, SchemaResponseData, SchemaVersion, ValidataError } from './types/schemas'
 import type { TopicV2, TopicElement, TopicElementClass, TopicElementRel } from './types/topics'
 import type { CommunityResource, FileResourceFileType, RemoteResourceFileType, ResourceFileType, ResourceType, Resource } from './types/resources'
 import type { Site } from './types/site'
@@ -42,6 +43,7 @@ import LabelTag from './components/DatasetLabelTag.vue'
 import LoadingBlock from './components/LoadingBlock.vue'
 import MarkdownViewer from './components/MarkdownViewer.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
+import OrganizationLogo from './components/OrganizationLogo.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
 import OwnerTypeIcon from './components/OwnerTypeIcon.vue'
@@ -54,6 +56,7 @@ import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
 import Swagger from './components/ResourceAccordion/Swagger.client.vue'
 import ReuseCard from './components/ReuseCard.vue'
 import ReuseDetails from './components/ReuseDetails.vue'
+import SchemaCard from './components/SchemaCard.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
 import StatBox from './components/StatBox.vue'
 import Tab from './components/Tabs/Tab.vue'
@@ -120,10 +123,13 @@ export type {
   NewOrganization,
   NewReuse,
   Organization,
+  OrganizationSuggest,
+  OrganizationOrSuggest,
   Owned,
   OwnedWithId,
   PaginatedArray,
   Quality,
+  RegisteredSchema,
   Rel,
   RemoteResourceFileType,
   Resource,
@@ -132,6 +138,13 @@ export type {
   Reuse,
   ReuseTopic,
   ReuseType,
+  Schema,
+  SchemaDetails,
+  SchemaField,
+  SchemaPath,
+  SchemaPublicationMode,
+  SchemaResponseData,
+  SchemaVersion,
   Site,
   SpatialZone,
   TranslatedBadge,
@@ -140,6 +153,7 @@ export type {
   TopicElementClass,
   TopicElementRel,
   User,
+  ValidataError,
   Weight,
   WellType,
 }
@@ -180,6 +194,7 @@ export {
   LoadingBlock,
   MarkdownViewer,
   OrganizationCard,
+  OrganizationLogo,
   OrganizationNameWithCertificate,
   OwnerType,
   OwnerTypeIcon,
@@ -191,6 +206,7 @@ export {
   ResourceIcon,
   ReuseCard,
   ReuseDetails,
+  SchemaCard,
   SimpleBanner,
   StatBox,
   Swagger,

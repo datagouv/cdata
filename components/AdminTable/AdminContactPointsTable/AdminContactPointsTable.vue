@@ -55,7 +55,7 @@
           >
             <template #button="{ attrs, listeners }">
               <BrandedButton
-                color="secondary-softer"
+                color="tertiary"
                 :icon="RiPencilLine"
                 icon-only
                 size="xs"

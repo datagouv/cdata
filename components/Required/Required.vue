@@ -1,7 +1,7 @@
 <template>
   <span
     v-if="props.required"
-    class="text-primary"
+    class="text-new-primary"
   >*</span>
 </template>
 

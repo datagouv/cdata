@@ -3,7 +3,6 @@
     <Breadcrumb>
       <BreadcrumbItem
         to="/"
-        external
       >
         {{ $t('Accueil') }}
       </BreadcrumbItem>

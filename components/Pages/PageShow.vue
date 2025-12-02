@@ -102,6 +102,7 @@
 </template>
 
 <script setup lang="ts">
+import type { ComponentProps } from 'vue-component-type-helpers'
 import { BrandedButton, DataserviceCard, ReuseCard } from '@datagouv/components-next'
 import { RiArrowRightUpLine } from '@remixicon/vue'
 import CdataLink from '../CdataLink.vue'
@@ -109,7 +110,7 @@ import type { Page } from '~/types/pages'
 
 withDefaults(defineProps<{
   page: Page
-  mainColor?: string
+  mainColor?: ComponentProps<typeof BrandedButton>['color']
 }>(), {
   mainColor: 'primary',
 })

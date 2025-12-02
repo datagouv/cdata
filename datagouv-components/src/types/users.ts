@@ -1,17 +1,21 @@
 import type { Organization } from './organizations'
 
-export type User = {
+export type UserReference = {
   id: string
-  apikey?: string
-  slug?: string
-  email?: string
   first_name: string
   last_name: string
-  about: string
-  avatar?: string | null
-  website?: string
+  slug: string
+  uri: string
   page: string
-  avatar_thumbnail?: string | null
+  avatar: string
+  avatar_thumbnail: string
+}
+
+export type User = UserReference & {
+  apikey?: string
+  email?: string
+  about: string
+  website?: string
   roles?: Array<string>
   organizations: Array<Organization>
   last_login_at: string | null

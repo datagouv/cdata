@@ -110,18 +110,17 @@
         <td>
           <BrandedButton
             size="xs"
-            color="secondary-softer"
+            color="tertiary"
             :href="dataset.page"
             :icon="RiEyeLine"
             icon-only
-            external
             keep-margins-even-without-borders
           >
             {{ $t('Voir la page publique') }}
           </BrandedButton>
           <BrandedButton
             size="xs"
-            color="secondary-softer"
+            color="tertiary"
             :href="getDatasetAdminUrl(dataset)"
             :icon="RiPencilLine"
             icon-only

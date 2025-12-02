@@ -12,11 +12,10 @@
     >
       {{ $t('Discussion close par ') }}
       <span class="inline-flex items-center space-x-1 text-mention-grey">
-        <Placeholder
+        <OrganizationLogo
           v-if="thread.closed_by_organization"
-          type="organization"
-          :src="thread.closed_by_organization.logo_thumbnail"
-          class="size-3"
+          :organization="thread.closed_by_organization"
+          size-class="size-3"
         />
         <Avatar
           v-else
@@ -93,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, ReadMore, useFormatDate } from '@datagouv/components-next'
+import { Avatar, BrandedButton, OrganizationLogo, ReadMore, useFormatDate } from '@datagouv/components-next'
 import ThreadHeader from './ThreadHeader.vue'
 import CommentBlock from './CommentBlock.vue'
 import RespondForm from './RespondForm.vue'

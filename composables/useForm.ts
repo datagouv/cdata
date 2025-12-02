@@ -1,8 +1,9 @@
+import type { TranslationFunction } from '@datagouv/components-next'
 import type { PaginatedArray } from '~/types/types'
 
 export type KeysOfUnion<T> = T extends T ? keyof T : never
 
-export type ValidationFunction<T, K extends KeysOfUnion<T>, V extends T[K]> = (value: V, key: K, form: T, t: (key: string, values?: Record<string, unknown>) => string) => string | null | Promise<string | null>
+export type ValidationFunction<T, K extends KeysOfUnion<T>, V extends T[K]> = (value: V, key: K, form: T, t: TranslationFunction) => string | null | Promise<string | null>
 
 export type ValidationsRules<Type> = {
   [Property in KeysOfUnion<Type>]?: Array<ValidationFunction<Type, Property, Type[Property]>>;
@@ -17,6 +18,7 @@ export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsR
   const { t } = useTranslation()
 
   const form = toRef(initialValues)
+  const touched = computed(() => Object.keys(errors.value))
   const errors = ref({} as ValidationsMessages<T>)
   const warnings = ref({} as ValidationsMessages<T>)
 
@@ -46,6 +48,7 @@ export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsR
 
     return bag[key][0]
   }
+  const isTouched = (key: KeysOfUnion<T>): boolean => touched.value.includes(key as string)
   const getFirstError = (key: KeysOfUnion<T>): string | null => getFirst(errors.value, key)
   const getFirstWarning = (key: KeysOfUnion<T>): string | null => getFirst(warnings.value, key)
 
@@ -67,7 +70,7 @@ export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsR
     return true
   }
 
-  const formInfo = { errors, warnings, touch, getFirstError, getFirstWarning, validate, removeErrorsAndWarnings, warningsAsList, errorsAsList }
+  const formInfo = { touched, errors, warnings, touch, isTouched, getFirstError, getFirstWarning, validate, removeErrorsAndWarnings, warningsAsList, errorsAsList }
   return { form, formInfo, ...formInfo }
 }
 

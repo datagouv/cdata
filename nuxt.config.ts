@@ -20,7 +20,7 @@ export default defineNuxtConfig({
         class: 'datagouv-components',
       },
       link: [
-        { rel: 'shortcut icon', href: '/nuxt_images/favicon.png' },
+        { rel: 'shortcut icon', href: '/nuxt_images/favicon.svg', type: 'image/svg+xml' },
       ],
     },
   },
@@ -79,6 +79,7 @@ export default defineNuxtConfig({
         name: 'demo.data.gouv.fr',
       },
       schemaPublishingUrl: 'https://publier.etalab.studio/fr',
+      enableStructuredDatasetForm: true,
       schemasSite: {
         url: 'https://schema.data.gouv.fr/',
         name: 'schema.data.gouv.fr',

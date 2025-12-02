@@ -20,7 +20,7 @@
         @change="query = $event.target.value"
       />
       <ComboboxButton
-        class="absolute right-0 p-2 bg-datagouv rounded-tr hover:!bg-datagouv-hover"
+        class="absolute right-0 p-2 bg-new-primary rounded-tr hover:!bg-new-primary-hover"
       >
         <span class="sr-only">{{ $t('Rechercher') }}</span>
         <RiSearchLine
@@ -99,7 +99,6 @@ type Item = {
   icon: Component
   type: string
   to: string
-  external: boolean
 }
 
 const emit = defineEmits<{
@@ -112,7 +111,7 @@ const selectedItem = ref<null | Item>(null)
 
 watch(selectedItem, async () => {
   if (!selectedItem.value) return
-  await navigateTo(selectedItem.value.to, { external: selectedItem.value.external })
+  await navigateTo(selectedItem.value.to)
   emit('selected')
 })
 const menu = computed(() => {

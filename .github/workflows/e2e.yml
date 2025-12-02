@@ -117,7 +117,7 @@ jobs:
       - name: Build and start cdata
         env:
           NUXT_PUBLIC_API_BASE: http://localhost:7000
-          NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "['hero_15.png']"
+          NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "hero_15.png"
         run: |
           # Build cdata
           npm run build

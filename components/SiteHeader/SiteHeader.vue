@@ -39,7 +39,7 @@
                 >
                   <template #button="{ attrs, listeners }">
                     <button
-                      class="flex-none w-10 h-10 text-primary inline-flex items-center justify-center"
+                      class="flex-none w-10 h-10 text-new-primary inline-flex items-center justify-center"
                       :title="$t('Recherche')"
                       v-bind="attrs"
                       v-on="listeners"
@@ -63,7 +63,7 @@
                 >
                   <template #button="{ attrs, listeners }">
                     <button
-                      class="flex-none w-10 h-10 text-primary border-solid border border-gray-300 inline-flex items-center justify-center"
+                      class="flex-none w-10 h-10 text-new-primary border-solid border border-gray-300 inline-flex items-center justify-center"
                       :title="$t('Menu')"
                       v-bind="attrs"
                       v-on="listeners"
@@ -81,7 +81,7 @@
                           <li>
                             <BrandedButton
                               :href="me.page"
-                              color="primary-softer"
+                              color="tertiary"
                               :icon="NuxtImg"
                               :icon-attrs="{
                                 'src': getUserAvatar(me, 24),
@@ -98,8 +98,7 @@
                           <li>
                             <BrandedButton
                               href="/admin/"
-                              :external="true"
-                              color="primary-softer"
+                              color="tertiary"
                               :icon="RiSettings3Line"
                               @click="close"
                             >
@@ -111,7 +110,7 @@
                               v-if="config.public.enableCdataSecurityViews"
                               type="button"
                               :icon="RiLogoutBoxRLine"
-                              color="primary-softer"
+                              color="tertiary"
                               @click="async () => { (await logout()); close() }"
                             >
                               {{ $t('Se déconnecter') }}
@@ -121,7 +120,7 @@
                               :href="`${config.public.apiBase}/logout`"
                               :icon="RiLogoutBoxRLine"
                               :external="true"
-                              color="primary-softer"
+                              color="tertiary"
                               @click="close"
                             >
                               {{ $t('Se déconnecter') }}
@@ -135,9 +134,8 @@
                           <li>
                             <BrandedButton
                               :href="{ path: '/login', query: { next: route.fullPath } }"
-                              color="primary-softer"
+                              color="tertiary"
                               size="lg"
-                              :external="true"
                               :icon="RiLockLine"
                               class="w-full"
                               @click="close"
@@ -147,10 +145,9 @@
                           </li>
                           <li>
                             <BrandedButton
-                              color="primary-softer"
+                              color="tertiary"
                               size="lg"
                               :href="{ path: '/register', query: { next: route.fullPath } }"
-                              :external="true"
                               class="w-full"
                               :icon="RiAccountCircleLine"
                               @click="close"
@@ -273,7 +270,7 @@
                   <li>
                     <BrandedButton
                       :href="me.page"
-                      color="primary-softer"
+                      color="tertiary"
                       :icon="NuxtImg"
                       :icon-attrs="{
                         'src': getUserAvatar(me, 24),
@@ -289,7 +286,7 @@
                   <li>
                     <BrandedButton
                       href="/admin/"
-                      color="primary-softer"
+                      color="tertiary"
                       :icon="RiSettings3Line"
                     >
                       {{ $t("Administration") }}
@@ -299,7 +296,7 @@
                     <BrandedButton
                       v-if="config.public.enableCdataSecurityViews"
                       type="button"
-                      color="primary-softer"
+                      color="tertiary"
                       :icon="RiLogoutBoxRLine"
                       @click="logout"
                     >
@@ -308,7 +305,7 @@
                     <BrandedButton
                       v-else
                       :href="`${config.public.apiBase}/logout`"
-                      color="primary-softer"
+                      color="tertiary"
                       :icon="RiLogoutBoxRLine"
                       external
                     >
@@ -323,9 +320,8 @@
               >
                 <li>
                   <BrandedButton
-                    color="primary-softer"
+                    color="tertiary"
                     :href="{ path: '/login', query: { next: route.fullPath } }"
-                    :external="true"
                     :icon="RiLockLine"
                   >
                     {{ $t("Se connecter") }}
@@ -333,9 +329,8 @@
                 </li>
                 <li>
                   <BrandedButton
-                    color="primary-softer"
+                    color="tertiary"
                     :href="{ path: '/register', query: { next: route.fullPath } }"
-                    :external="true"
                     :icon="RiAccountCircleLine"
                   >
                     {{ $t("S'enregistrer") }}

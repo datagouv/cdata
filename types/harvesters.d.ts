@@ -20,6 +20,7 @@ export type HarvestLog = {
 
 export type HarvestItem = {
   remote_id: string
+  remote_url: string | null
   dataset: Dataset | null
   dataservice: Dataservice | null
   status: 'pending' | 'started' | 'done' | 'failed' | 'skipped' | 'archived'

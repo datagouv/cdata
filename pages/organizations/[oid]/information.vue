@@ -112,13 +112,13 @@
           <p class="!mb-4">
             {{ $t(`L'administrateur de l'organisation doit accepter votre demande.`) }}
           </p>
-          <p class="flex items-center gap-2 !mb-4 text-sm">
-            <Placeholder
-              :src="organization.logo_thumbnail"
-              type="organization"
-              :size="28"
-              class=" flex-none p-1 border rounded-sm border-gray-default"
-            />
+          <div class="flex items-center gap-2 !mb-4 text-sm">
+            <div class="flex-none p-1 border rounded-sm border-gray-default">
+              <OrganizationLogo
+                :organization
+                size-class="size-full"
+              />
+            </div>
             <OrganizationNameWithCertificate
               :organization
               :certifier="config.public.title"
@@ -126,7 +126,7 @@
               class="truncate"
               size="sm"
             />
-          </p>
+          </div>
           <InputGroup
             v-model="reason"
             :label="$t('Motif de la demande')"
@@ -277,7 +277,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, CopyButton, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, useFormatDate, type Organization } from '@datagouv/components-next'
+import { Avatar, BrandedButton, CopyButton, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, useFormatDate, type Organization } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'

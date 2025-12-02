@@ -9,7 +9,6 @@
         <Breadcrumb>
           <BreadcrumbItem
             to="/"
-            :external="true"
           >
             {{ $t('Accueil') }}
           </BreadcrumbItem>
@@ -45,13 +44,12 @@
           <RiDeleteBinLine class="size-3.5" />
           {{ $t('Supprimée') }}
         </p>
-        <Placeholder
-          :src="organization.logo_thumbnail"
-          type="organization"
-          alt=""
-          :size="80"
-          class="bg-white p-1 rounded-sm border border-gray-default object-contain mb-2.5"
-        />
+        <div class="bg-white p-1 rounded-sm border border-gray-default object-contain mb-2.5 size-20">
+          <OrganizationLogo
+            :organization
+            size-class="size-full"
+          />
+        </div>
         <h1 class="text-2xl font-extrabold text-gray-title mb-2.5">
           <OrganizationNameWithCertificate
             :certifier="config.public.title"
@@ -88,11 +86,10 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, LoadingBlock, OrganizationNameWithCertificate, OwnerType, getOrganizationType, type Organization } from '@datagouv/components-next'
+import { isOrganizationCertified, LoadingBlock, OrganizationNameWithCertificate, OwnerType, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import Placeholder from '~/components/Placeholder/Placeholder.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 
 const config = useRuntimeConfig()
