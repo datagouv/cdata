@@ -13,6 +13,7 @@ import type { License } from './types/licenses'
 import type { Member, MemberRole, NewOrganization, Organization, OrganizationOrSuggest, OrganizationSuggest } from './types/organizations'
 import type { Owned, OwnedWithId } from './types/owned'
 import type { NewReuse, Reuse, ReuseTopic, ReuseType } from './types/reuses'
+import type { RegisteredSchema, Schema, SchemaDetails, SchemaField, SchemaPath, SchemaPublicationMode, SchemaResponseData, SchemaVersion, ValidataError } from './types/schemas'
 import type { TopicV2, TopicElement, TopicElementClass, TopicElementRel } from './types/topics'
 import type { CommunityResource, FileResourceFileType, RemoteResourceFileType, ResourceFileType, ResourceType, Resource } from './types/resources'
 import type { Site } from './types/site'
@@ -56,7 +57,9 @@ import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
 import Swagger from './components/ResourceAccordion/Swagger.client.vue'
 import ReuseCard from './components/ReuseCard.vue'
 import ReuseDetails from './components/ReuseDetails.vue'
+import SchemaCard from './components/SchemaCard.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
+import SmallChart from './components/SmallChart.vue'
 import StatBox from './components/StatBox.vue'
 import Tab from './components/Tabs/Tab.vue'
 import TabGroup from './components/Tabs/TabGroup.vue'
@@ -70,6 +73,7 @@ import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
 export * from './composables/useActiveDescendant'
+export * from './composables/useMetrics'
 export * from './composables/useReuseType'
 export * from './composables/useTranslation'
 
@@ -79,6 +83,7 @@ export * from './functions/dates'
 export * from './functions/helpers'
 export * from './functions/markdown'
 export * from './functions/matomo'
+export * from './functions/metrics'
 export * from './functions/never'
 export * from './functions/organizations'
 export * from './functions/owned'
@@ -128,6 +133,7 @@ export type {
   OwnedWithId,
   PaginatedArray,
   Quality,
+  RegisteredSchema,
   Rel,
   RemoteResourceFileType,
   Report,
@@ -139,6 +145,13 @@ export type {
   Reuse,
   ReuseTopic,
   ReuseType,
+  Schema,
+  SchemaDetails,
+  SchemaField,
+  SchemaPath,
+  SchemaPublicationMode,
+  SchemaResponseData,
+  SchemaVersion,
   Site,
   SpatialZone,
   TranslatedBadge,
@@ -147,6 +160,7 @@ export type {
   TopicElementClass,
   TopicElementRel,
   User,
+  ValidataError,
   Weight,
   WellType,
 }
@@ -199,7 +213,9 @@ export {
   ResourceIcon,
   ReuseCard,
   ReuseDetails,
+  SchemaCard,
   SimpleBanner,
+  SmallChart,
   StatBox,
   Swagger,
   Tab,

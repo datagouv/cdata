@@ -27,7 +27,6 @@
       <template #terms>
         <CdataLink
           to="/pages/legal/cgu/"
-          external
         >
           {{ $t("nos modalités d'utilisation") }}
         </CdataLink>
@@ -41,7 +40,6 @@
         {{ $t("Merci de ne signaler qu’en cas d’inquiétude sérieuse.") }}
         <CdataLink
           to="/pages/legal/cgu/"
-          external
         >
           {{ $t("Voir nos modalités d'utilisation.") }}
         </CdataLink>

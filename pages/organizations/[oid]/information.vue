@@ -52,27 +52,27 @@
       <ClientOnly>
         <StatBox
           :title="$t('Vues')"
-          :data="metricsDatasetsViews"
+          :data="metrics?.datasetsViews"
           type="line"
-          :summary="metricsDatasetsViewsTotal"
+          :summary="metrics?.datasetsViewsTotal"
         />
         <StatBox
           :title="$t('Téléchargements des données')"
-          :data="metricsDownloads"
+          :data="metrics?.downloads"
           type="line"
-          :summary="metricsDownloadsTotal"
+          :summary="metrics?.downloadsTotal"
         />
         <StatBox
           :title="$t('Nombre de visites des API')"
-          :data="metricsDataservicesViews"
+          :data="metrics?.dataservicesViews"
           type="line"
-          :summary="metricsDataservicesViewsTotal"
+          :summary="metrics?.dataservicesViewsTotal"
         />
         <StatBox
           :title="$t('Nombre de visites des réutilisations')"
-          :data="metricsReuses"
+          :data="metrics?.reusesViews"
           type="line"
-          :summary="metricsReusesTotal"
+          :summary="metrics?.reusesViewsTotal"
         />
       </ClientOnly>
     </section>
@@ -277,7 +277,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, CopyButton, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, useFormatDate, type Organization } from '@datagouv/components-next'
+import { Avatar, BrandedButton, CopyButton, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, useFormatDate, useMetrics, createOrganizationMetricsUrl, type Organization, type OrganizationMetrics } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
@@ -294,33 +294,17 @@ const { $api } = useNuxtApp()
 const { toast } = useToast()
 const me = useMaybeMe()
 
-const metricsDataservicesViews = ref<null | Record<string, number>>(null)
-const metricsDataservicesViewsTotal = ref<null | number>(null)
-const metricsDatasetsViews = ref<null | Record<string, number>>(null)
-const metricsDatasetsViewsTotal = ref<null | number>(null)
-const metricsDownloads = ref<null | Record<string, number>>(null)
-const metricsDownloadsTotal = ref<null | number>(null)
-const metricsReuses = ref<null | Record<string, number>>(null)
-const metricsReusesTotal = ref<null | number>(null)
+const { getOrganizationMetrics } = useMetrics()
+const metrics = ref<OrganizationMetrics | null>(null)
 
 watchEffect(async () => {
-  const metrics = await getOrganizationMetrics(props.organization.id)
-  metricsDownloads.value = metrics.downloads
-  metricsDownloadsTotal.value = metrics.downloadsTotal
-  metricsReuses.value = metrics.reusesViews
-  metricsReusesTotal.value = metrics.reusesViewsTotal
-  metricsDataservicesViews.value = metrics.dataservicesViews
-  metricsDataservicesViewsTotal.value = metrics.dataservicesViewsTotal
-  metricsDatasetsViews.value = metrics.datasetsViews
-  metricsDatasetsViewsTotal.value = metrics.datasetsViewsTotal
+  metrics.value = await getOrganizationMetrics(props.organization.id)
 })
 
 const downloadStatsUrl = computed(() => {
-  if (!metricsDatasetsViews.value || !metricsDownloads.value || !metricsDataservicesViews.value || !metricsReuses.value) {
-    return null
-  }
+  if (!metrics.value) return null
 
-  return createOrganizationMetricsUrl(metricsDatasetsViews.value, metricsDownloads.value, metricsDataservicesViews.value, metricsReuses.value)
+  return createOrganizationMetricsUrl(metrics.value.datasetsViews, metrics.value.downloads, metrics.value.dataservicesViews, metrics.value.reusesViews)
 })
 
 const reason = ref('')
