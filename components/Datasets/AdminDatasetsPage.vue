@@ -1,11 +1,11 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Datasets') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Jeux de données') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="font-bold text-2xl mb-5">
-      {{ t("Datasets") }}
+    <h1 class="font-extrabold text-2xl text-gray-title mb-5">
+      {{ t("Jeux de données") }}
     </h1>
 
     <TransferRequestList
@@ -15,26 +15,20 @@
       @done="refresh"
     />
 
-    <DatasetsMetrics
-      v-if="organization && pageData && pageData.total > 0"
-      class="mb-8"
-      :organization
-    />
-
     <div
       v-if="pageData"
       class="flex flex-wrap gap-x-4 gap-y-2 items-center"
     >
       <div class="w-full flex-none md:flex-1">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ t('{n} datasets', pageData.total) }}
+          {{ t('{n} jeux de données', pageData.total) }}
         </h2>
       </div>
       <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
         <SearchableSelect
           v-model="datasetsStatus"
-          :placeholder="$t('Filter by status')"
-          :label="$t('Filter by status')"
+          :placeholder="$t('Filtrer par statut')"
+          :label="$t('Filtrer par statut')"
           :options="statusOption"
           :display-value="(option) => option.label"
           :multiple="false"
@@ -45,7 +39,7 @@
           v-model="q"
           type="search"
           :icon="RiSearchLine"
-          :placeholder="$t('Search')"
+          :placeholder="$t('Recherche')"
         />
         <BrandedButton
           v-if="organization"
@@ -54,7 +48,7 @@
           :external="true"
           :icon="RiDownloadLine"
         >
-          {{ t('Download catalog') }}
+          {{ t('Télécharger le catalogue') }}
         </BrandedButton>
       </div>
     </div>
@@ -90,24 +84,24 @@
           v-if="q"
           class="fr-text--bold fr-my-3v"
         >
-          {{ t(`No results for "{q}"`, { q }) }}
+          {{ t(`Pas de résultats pour « {q} »`, { q }) }}
         </p>
         <p
           v-else
           class="fr-text--bold fr-my-3v"
         >
-          {{ t('No results') }}
+          {{ t('Pas de résultats') }}
         </p>
         <BrandedButton
           color="primary"
           @click="resetFilters"
         >
-          {{ $t('Reset filters') }}
+          {{ $t('Réinitialiser les filtres') }}
         </BrandedButton>
       </template>
       <template v-else>
         <p class="fr-text--bold fr-my-3v">
-          {{ t(`You haven't published a dataset yet`) }}
+          {{ t(`Vous n'avez pas encore publié de jeu de données`) }}
         </p>
         <AdminPublishButton type="dataset" />
       </template>
@@ -116,24 +110,22 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type DatasetV2, Pagination, type Organization, type User } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination } from '@datagouv/components-next'
+import type { Activity, DatasetV2, Organization, User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiDownloadLine, RiSearchLine } from '@remixicon/vue'
 import TransferRequestList from '../TransferRequestList.vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
-import DatasetsMetrics from './DatasetsMetrics.vue'
 import AdminDatasetsTable from '~/components/AdminTable/AdminDatasetsTable/AdminDatasetsTable.vue'
 import type { DatasetSortedBy, PaginatedArray, SortDirection } from '~/types/types'
-import type { Activity } from '~/types/activity'
 
 const props = defineProps<{
   organization?: Organization | null
   user?: User | null
 }>()
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
@@ -152,13 +144,13 @@ const statusOption = [{
   label: t('Public'),
   id: 'public',
 }, {
-  label: t('Archived'),
+  label: t('Archivé'),
   id: 'archived',
 }, {
-  label: t('Draft'),
+  label: t('Brouillon'),
   id: 'private',
 }, {
-  label: t('Deleted'),
+  label: t('Supprimé'),
   id: 'deleted',
 }]
 
@@ -207,7 +199,9 @@ const params = computed(() => {
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/', { lazy: true, query: params })
 
 watchEffect(async () => {
-  const activities = await getActitiesForObjects($api, pageData.value?.data)
-  datasetActivities.value = { ...datasetActivities.value, ...activities }
+  if (pageData.value) {
+    const activities = await getLatestActivitiesForObjects($api, pageData.value.data)
+    datasetActivities.value = { ...datasetActivities.value, ...activities }
+  }
 })
 </script>

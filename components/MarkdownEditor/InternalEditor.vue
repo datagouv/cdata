@@ -8,12 +8,12 @@
         <div role="group">
           <EditorButton
             :icon="RiArrowGoBackLine"
-            :title="t('Undo')"
+            :title="t('Annuler')"
             @click="() => call(undoCommand.key)"
           />
           <EditorButton
             :icon="RiArrowGoForwardLine"
-            :title="t('Redo')"
+            :title="t('Rétablir')"
             @click="() => call(redoCommand.key)"
           />
         </div>
@@ -24,22 +24,22 @@
         <div role="group">
           <EditorButton
             :icon="RiBold"
-            :title="t('Bold')"
+            :title="t('Gras')"
             @click="() => call(toggleStrongCommand.key)"
           />
           <EditorButton
             :icon="RiItalic"
-            :title="t('Italic')"
+            :title="t('Italique')"
             @click="() => call(toggleEmphasisCommand.key)"
           />
           <EditorButton
             :icon="RiH1"
-            :title="t('Title')"
+            :title="t('Titre')"
             @click="() => call(wrapInHeadingCommand.key, 3)"
           />
           <EditorButton
             :icon="RiH2"
-            :title="t('Subtitle')"
+            :title="t('Sous-titre')"
             @click="() => call(wrapInHeadingCommand.key, 4)"
           />
         </div>
@@ -50,12 +50,12 @@
         <div role="group">
           <EditorButton
             :icon="RiTable2"
-            :title="t('Table')"
+            :title="t('Tableau')"
             @click="() => call(insertTableCommand.key)"
           />
           <EditorButton
             :icon="RiLink"
-            :title="t('Link')"
+            :title="t('Lien')"
             @click="() => call(insertLinkCommand.key)"
           />
           <ImageModalButton
@@ -69,22 +69,22 @@
         <div role="group">
           <EditorButton
             :icon="RiListUnordered"
-            :title="t('List unordered')"
+            :title="t('Liste non ordonnée')"
             @click="() => call(wrapInBulletListCommand.key)"
           />
           <EditorButton
             :icon="RiListOrdered"
-            :title="t('List ordered')"
+            :title="t('Liste ordonnée')"
             @click="() => call(wrapInOrderedListCommand.key)"
           />
           <EditorButton
             :icon="RiCodeSSlashLine"
-            :title="t('Code block')"
+            :title="t('Bloc de code')"
             @click="() => call(createCodeBlockCommand.key)"
           />
           <EditorButton
             :icon="RiDoubleQuotesL"
-            :title="t('Quote')"
+            :title="t('Citation')"
             @click="() => call(wrapInBlockquoteCommand.key)"
           />
         </div>
@@ -98,16 +98,23 @@
       </div>
     </div>
     <div class="p-1">
-      <textarea v-if="raw" :value @change="$emit('change', $event.target.value)" class="w-full text-sm" rows="10"></textarea>
+      <textarea
+        v-if="raw"
+        :value
+        class="w-full text-sm"
+        rows="10"
+        @change="$emit('change', $event.target.value)"
+      />
       <Milkdown
         v-else
-        :class="[markdownSmClasses, markdownTableEditorCLasses]"
+        :class="[markdownSmClasses, markdownTableEditorClasses]"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { markdownSmClasses, markdownTableEditorClasses } from '@datagouv/components-next'
 import type { CmdKey } from '@milkdown/core'
 import { Editor, rootCtx, defaultValueCtx, editorViewOptionsCtx } from '@milkdown/core'
 import type { Ctx } from '@milkdown/ctx'
@@ -136,7 +143,7 @@ import { RiArrowGoBackLine, RiArrowGoForwardLine, RiBold, RiCodeSSlashLine, RiDo
 import { Milkdown, useEditor } from '@milkdown/vue'
 import { usePluginViewFactory, useWidgetViewFactory } from '@prosemirror-adapter/vue'
 import { useDebounceFn } from '@vueuse/core'
-import { useI18n } from 'vue-i18n'
+import { clipboard } from '@milkdown/kit/plugin/clipboard'
 import type { ImageModalForm } from '~/components/MarkdownEditor/ImageModal/ImageModalButton.vue'
 import ImageModalButton from '~/components/MarkdownEditor/ImageModal/ImageModalButton.vue'
 import { dsfrColumnResizingPlugin } from '~/components/MarkdownEditor/Milkdown/dsfrColumnResizingPlugin'
@@ -150,7 +157,6 @@ import { tableTooltip, tableTooltipCtx } from '~/components/MarkdownEditor/Milkd
 import TableTooltip from '~/components/MarkdownEditor/Milkdown/TableTooltip/TableTooltip.vue'
 import EditorButton from '~/components/MarkdownEditor/EditorButton.vue'
 import type { MarkdownEditorProps } from '~/components/MarkdownEditor/types'
-import { clipboard } from '@milkdown/kit/plugin/clipboard'
 
 import 'prosemirror-view/style/prosemirror.css'
 import 'prosemirror-tables/style/tables.css'
@@ -167,7 +173,7 @@ const emit = defineEmits<{
 const raw = ref(false)
 const onChange = useDebounceFn((markdown: string) => emit('change', markdown), 300)
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const pluginViewFactory = usePluginViewFactory()
 const widgetViewFactory = useWidgetViewFactory()

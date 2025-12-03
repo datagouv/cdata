@@ -1,3 +1,3 @@
-export type Harvest = Record<string, any> & {
-  backend?: string;
-} | null;
+export type Harvest = Record<string, unknown> & {
+  backend?: string
+} | null

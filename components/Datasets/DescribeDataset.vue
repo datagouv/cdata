@@ -2,7 +2,7 @@
   <div class="flex">
     <Sidemenu
       class="w-5/12 hidden lg:block"
-      :button-text="$t('Help')"
+      :button-text="$t('Aide')"
       :on-right="true"
       :fixed="true"
     >
@@ -11,27 +11,27 @@
           class="fr-icon--sm fr-icon-question-line"
           aria-hidden="true"
         />
-        {{ $t('Help') }}
+        {{ $t('Aide') }}
       </template>
       <AccordionGroup :with-icon="true">
         <Accordion
           :id="nameDatasetAccordionId"
-          :title="$t('Naming your dataset')"
+          :title="$t('Nommer son jeu de données')"
           :state="accordionState('title')"
         >
           <p class="fr-m-0">
-            {{ $t("The title of your dataset should be as precise and specific as possible.") }} <br>
-            {{ $t("It should also correspond to the vocabulary used by users.") }} <br>
-            {{ $t("They often search for data in a search engine.") }}
+            {{ $t("Le titre de votre jeu de données doit être le plus précis et spécifique possible. ") }} <br>
+            {{ $t("Il doit également correspondre au vocabulaire employé par les utilisateurs.") }} <br>
+            {{ $t("Ces derniers recherchent les données le plus souvent dans un moteur de recherche.") }}
           </p>
         </Accordion>
         <Accordion
           :id="addAcronymAccordionId"
-          :title="$t('Add an acronym to the dataset')"
+          :title="$t('Ajouter un sigle au jeu de données')"
           :state="accordionState('acronym')"
         >
           <p class="fr-m-0">
-            {{ $t("You have the option to add an acronym to your dataset. The letters that make up this acronym do not need to be separated by periods.") }}
+            {{ $t("Vous avez la possibilité d’apposer un sigle à votre jeu de données. Les lettres qui composent ce sigle n’ont pas besoin d’être séparées par des points.") }}
           </p>
         </Accordion>
         <Accordion
@@ -41,40 +41,81 @@
         >
           <div class="prose prose-neutral m-0">
             <p class="m-0">
-              {{ $t(`The description of your dataset allows to obtain information about the content and structure of the published resources. You can provide:`) }}
+              {{ $t(`La description de votre jeu de données permet aux personnes qui le consultent d’obtenir des informations sur le contenu et la structure des ressources publiées, vous pouvez notamment renseigner :`) }}
             </p>
             <ul class="fr-mt-3v">
-              <li>{{ $t("A list of the files available ;") }}</li>
-              <li>{{ $t("A description of the file format ;") }}</li>
-              <li>{{ $t("The update frequency.") }}</li>
+              <li>{{ $t("La liste des fichiers mis à disposition ;") }}</li>
+              <li>{{ $t("La description du format des fichiers ;") }}</li>
+              <li>{{ $t("La fréquence de mise à jour.") }}</li>
             </ul>
             <ul class="fr-mt-3v">
-              <li>{{ $t("Motivations for creating the dataset ;") }}</li>
-              <li>{{ $t("The composition of the dataset ;") }}</li>
-              <li>{{ $t("The data collection process ;") }}</li>
-              <li>{{ $t("Data preprocessing ;") }}</li>
-              <li>{{ $t("Dataset dissemination ;") }}</li>
-              <li>{{ $t("Dataset maintenance ;") }}</li>
-              <li>{{ $t("Legal and ethical considerations.") }}</li>
+              <li>{{ $t("Les motivations pour la création du jeu de données ;") }}</li>
+              <li>{{ $t("La composition du jeu de données ;") }}</li>
+              <li>{{ $t("Le processus de collecte des données ;") }}</li>
+              <li>{{ $t("Le pré-traitement des données ;") }}</li>
+              <li>{{ $t("La diffusion du jeu de données ;") }}</li>
+              <li>{{ $t("La maintenance du jeu de données ;") }}</li>
+              <li>{{ $t("Les considérations légales et éthiques.") }}</li>
             </ul>
           </div>
         </Accordion>
         <Accordion
+          :id="writeAGoodDescriptionShortAccordionId"
+          :title="$t('Ecrire une description courte')"
+          :state="accordionState('description_short')"
+        >
+          <div class="prose prose-neutral m-0">
+            <p class="m-0">
+              {{ $t(`La description courte présente votre jeu de données en une ou deux phrases. Elle aide les utilisateurs à comprendre rapidement ce qu'il contient et améliore sa visibilité dans les recherches.`) }}
+            </p>
+            <p class="fr-mt-3v font-bold">
+              {{ $t("Suggestions automatiques") }}
+            </p>
+            <p class="m-0">
+              {{ $t(`Une première version peut être générée automatiquement si vous avez déjà rempli le titre et une description d'au moins {min} caractères, puis adaptée selon vos besoins.`, { min: DESCRIPTION_MIN_LENGTH }) }}
+            </p>
+            <p class="m-0">
+              <CdataLink
+                to="https://guides.data.gouv.fr/autres-ressources-utiles/notre-approche-de-lintelligence-artificielle-sur-data.gouv.fr"
+                target="_blank"
+              >
+                {{ $t(`L'IA se base uniquement sur les informations que vous avez fournies et peut parfois se tromper : relisez toujours la proposition avant de valider.`) }}
+              </CdataLink>
+            </p>
+          </div>
+        </Accordion>
+        <Accordion
           :id="useTagsAccordionId"
-          :title="$t('Use tags')"
+          :title="$t('Mettre des mots-clés')"
           :state="accordionState('tags')"
         >
-          <p class="fr-m-0">
-            {{ $t("Tags characterize your dataset. They are public and improve the dataset's search engine optimization during a user search.") }}
-          </p>
+          <div class="prose prose-neutral m-0">
+            <p class="m-0">
+              {{ $t("Les mots-clés décrivent votre jeu de données et facilitent sa découverte. Ils améliorent son référencement dans le moteur de recherche et aident les utilisateurs à retrouver plus facilement les données qui les intéressent.") }}
+            </p>
+            <p class="fr-mt-3v font-bold">
+              {{ $t("Suggestions automatiques") }}
+            </p>
+            <p class="m-0">
+              {{ $t("Des mots-clés peuvent vous être proposés automatiquement en fonction du contenu de votre jeu de données. Vous pouvez les accepter, les modifier ou les supprimer.") }}
+            </p>
+            <p class="m-0">
+              <CdataLink
+                to="https://guides.data.gouv.fr/autres-ressources-utiles/notre-approche-de-lintelligence-artificielle-sur-data.gouv.fr"
+                target="_blank"
+              >
+                {{ $t(`L'IA se base uniquement sur les informations que vous avez fournies et peut parfois se tromper : relisez toujours la proposition avant de valider.`) }}
+              </CdataLink>
+            </p>
+          </div>
         </Accordion>
         <Accordion
           :id="selectLicenseAccordionId"
-          :title="$t('Select a license')"
+          :title="$t('Sélectionner une licence')"
           :state="accordionState('license')"
         >
           <p class="fr-m-0">
-            {{ $t("Licenses define the rules for reuse. By choosing a reuse license, you ensure that the published dataset will be reused according to the usage conditions you have defined.") }}
+            {{ $t("Les licences définissent les règles de réutilisation. En choisissant une licence de réutilisation, vous vous assurez que le jeu de données publié sera réutilisé selon les conditions d’usage que vous avez définies.") }}
           </p>
         </Accordion>
         <Accordion
@@ -89,32 +130,32 @@
         </Accordion>
         <Accordion
           :id="chooseFrequencyAccordionId"
-          :title="$t('Choose the update frequency')"
+          :title="$t('Choisir la fréquence de mise à jour')"
           :state="accordionState('frequency')"
         >
           <p class="fr-m-0">
-            {{ $t("The update frequency corresponds to how often you plan to update the published data. This update frequency is only indicative.") }}
+            {{ $t("La fréquence de mise à jour correspond à la fréquence à laquelle vous prévoyez de mettre à jour les données publiées. Cette fréquence de mise à jour reste indicative.") }}
           </p>
         </Accordion>
         <Accordion
           :id="addTemporalCoverageAccordionId"
-          :title="$t('Provide the temporal coverage')"
+          :title="$t('Renseigner la couverture temporelle')"
           :state="accordionState('temporal_coverage')"
         >
           <p class="fr-m-0">
-            {{ $t("The temporal coverage indicates the time range of the published data.") }} <br>
-            {{ $t("For example : from 2012 to 2015.") }}
+            {{ $t("La couverture temporelle indique la portée dans le temps des données publiées.") }} <br>
+            {{ $t("Par exemple : de 2012 à 2015.") }}
           </p>
         </Accordion>
         <Accordion
           :id="addSpatialInformationAccordionId"
-          :title="$t('Complete the spatial information')"
+          :title="$t('Compléter les informations spatiales')"
           :state="accordionState('spatial_granularity')"
         >
           <!-- TODO add spatial zones too -->
           <p class="fr-m-0">
-            {{ $t("The spatial granularity indicates the finest geographical level of detail that your data can cover.") }} <br>
-            {{ $t("For example: at the department or municipality scale.") }}
+            {{ $t("La granularité spatiale indique le niveau de détail géographique le plus fin que peut couvrir vos données.") }} <br>
+            {{ $t("Par exemple : à l’échelle du département ou de la commune.") }}
           </p>
         </Accordion>
       </AccordionGroup>
@@ -134,13 +175,15 @@
           />
           <div class="w-full">
             <p class="font-bold mb-1">
-              {{ $t('What is a dataset?') }}
+              {{ $t('Qu’est-ce qu’un jeu de données ?') }}
             </p>
             <p class="m-0 text-xs/5">
-              {{ $t('On {site}, a dataset is a set of files.', { site: config.public.title }) }}
+              {{ $t('Sur {site} un jeu de données est un ensemble de fichiers.', { site: config.public.title }) }}
             </p>
           </div>
         </SimpleBanner>
+
+        <slot name="top" />
 
         <RequiredExplanation />
         <fieldset
@@ -152,12 +195,12 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Featured") }}
+              {{ $t("Mis en avant") }}
             </h2>
           </legend>
           <ToggleSwitch
             v-model="form.featured"
-            :label="$t('Feature')"
+            :label="$t('Mettre en avant')"
             @update:model-value="$emit('feature')"
           />
         </fieldset>
@@ -171,13 +214,13 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Producer") }}
+              {{ $t("Producteur") }}
             </h2>
           </legend>
           <div class="fr-fieldset__element">
             <ProducerSelect
               v-model="form.owned"
-              :label="t('Check the identity with which you want to publish')"
+              :label="t(`Vérifiez l'identité avec laquelle vous souhaitez publier`)"
               :required="true"
               :error-text="getFirstError('owned')"
               :warning-text="getFirstWarning('owned')"
@@ -206,7 +249,7 @@
               v-model="form.title"
               class="mb-3"
               :aria-describedby="nameDatasetAccordionId"
-              :label="$t('Dataset name')"
+              :label="$t('Titre')"
               :required="true"
               :has-error="!!getFirstError('title')"
               :has-warning="!!getFirstWarning('title')"
@@ -226,7 +269,7 @@
           >
             <InputGroup
               v-model="form.acronym"
-              :label="$t('Acronym')"
+              :label="$t('Acronyme')"
             />
           </LinkedToAccordion>
           <LinkedToAccordion
@@ -252,6 +295,73 @@
             </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
+            class="fr-fieldset__element min-width-0"
+            :accordion="writeAGoodDescriptionShortAccordionId"
+          >
+            <InputGroup
+              v-model="form.description_short"
+              class="mb-3"
+              :label="$t(`Description courte`)"
+              :hint-text="$t(`Si ce champ est laissé vide, les ${DESCRIPTION_SHORT_MAX_LENGTH} premiers caractères de votre description seront utilisés.`)"
+              :required="false"
+              type="textarea"
+              :rows="3"
+              :has-error="!!getFirstError('description_short')"
+              :has-warning="!!getFirstWarning('description_short')"
+              :error-text="getFirstError('description_short')"
+              @blur="touch('description_short')"
+            />
+            <SimpleBanner
+              v-if="getFirstWarning('description_short')"
+              type="warning"
+            >
+              {{ getFirstWarning("description_short") }}
+            </SimpleBanner>
+            <div class="flex items-center gap-4 mt-2 mb-3">
+              <Tooltip v-if="!canGenerateDescriptionShort">
+                <BrandedButton
+                  type="button"
+                  color="primary"
+                  :disabled="true"
+                >
+                  <div class="flex items-center space-x-2">
+                    <RiSparklingLine
+                      class="size-4"
+                      aria-hidden="true"
+                    />
+                    <span>{{ $t('Suggérer une description courte') }}</span>
+                  </div>
+                </BrandedButton>
+                <template #tooltip>
+                  {{ $t('Remplissez le titre et une description d\'au moins {min} caractères pour utiliser cette fonctionnalité.', { min: DESCRIPTION_MIN_LENGTH }) }}
+                </template>
+              </Tooltip>
+              <BrandedButton
+                v-else
+                type="button"
+                color="primary"
+                :icon="RiSparklingLine"
+                :loading="isGeneratingDescriptionShort"
+                @click="handleAutoCompleteDescriptionShort"
+              >
+                <template v-if="isGeneratingDescriptionShort">
+                  {{ $t('Suggestion en cours...') }}
+                </template>
+                <template v-else>
+                  {{ $t('Suggérer une description courte') }}
+                </template>
+              </BrandedButton>
+              <CdataLink
+                v-if="config.public.generateShortDescriptionFeedbackUrl"
+                :to="config.public.generateShortDescriptionFeedbackUrl"
+                target="_blank"
+                class="text-sm text-gray-medium"
+              >
+                {{ $t('Comment avez-vous trouvé cette suggestion ?') }}
+              </CdataLink>
+            </div>
+          </LinkedToAccordion>
+          <LinkedToAccordion
             class="fr-fieldset__element"
             :accordion="useTagsAccordionId"
             @blur="touch('tags')"
@@ -262,6 +372,46 @@
               :error-text="getFirstError('tags')"
               :warning-text="getFirstWarning('tags')"
             />
+            <div class="flex items-center gap-4 mt-2 mb-3">
+              <Tooltip v-if="!canGenerateTags && form.tags.length >= MAX_TAGS_NB">
+                <BrandedButton
+                  type="button"
+                  color="primary"
+                  :icon="RiSparklingLine"
+                  :loading="isGeneratingTags"
+                  :disabled="true"
+                >
+                  {{ $t('Suggérer des mots clés') }}
+                </BrandedButton>
+                <template #tooltip>
+                  {{ $t('Vous avez déjà {count} mots-clés. Le maximum recommandé est de {max}.', { count: form.tags.length, max: MAX_TAGS_NB }) }}
+                </template>
+              </Tooltip>
+              <BrandedButton
+                v-else
+                type="button"
+                color="primary"
+                :icon="RiSparklingLine"
+                :loading="isGeneratingTags"
+                :disabled="!canGenerateTags"
+                @click="handleAutoCompleteTags(MAX_TAGS_NB)"
+              >
+                <template v-if="isGeneratingTags">
+                  {{ $t('Suggestion en cours...') }}
+                </template>
+                <template v-else>
+                  {{ $t('Suggérer des mots clés') }}
+                </template>
+              </BrandedButton>
+              <CdataLink
+                v-if="config.public.generateTagsFeedbackUrl"
+                :to="config.public.generateTagsFeedbackUrl"
+                target="_blank"
+                class="text-sm text-gray-medium"
+              >
+                {{ $t('Comment avez-vous trouvé cette suggestion ?') }}
+              </CdataLink>
+            </div>
             <SimpleBanner
               v-if="getFirstWarning('tags')"
               type="warning"
@@ -269,7 +419,35 @@
               {{ getFirstWarning("tags") }}
             </SimpleBanner>
           </LinkedToAccordion>
+        </fieldset>
+        <fieldset
+          class="fr-fieldset"
+          aria-labelledby="description-legend"
+        >
+          <legend
+            id="description-legend"
+            class="fr-fieldset__legend"
+          >
+            <h2 class="text-sm font-bold uppercase mb-0">
+              {{ t("Accès") }}
+            </h2>
+          </legend>
+
           <LinkedToAccordion
+            class="fr-fieldset__element"
+            :accordion="accessTypeAccordionId"
+            @blur="touch('access_type')"
+          >
+            <AccessTypeForm
+              v-model="form"
+              :get-first-warning
+              :get-first-error
+              disallow-open-with-account
+            />
+          </LinkedToAccordion>
+
+          <LinkedToAccordion
+            v-if="form.access_type === 'open'"
             class="fr-fieldset__element"
             :accordion="selectLicenseAccordionId"
             @blur="touch('license')"
@@ -277,8 +455,8 @@
             <SearchableSelect
               v-model="form.license"
               :options="licenses"
-              :label="t('License')"
-              :placeholder="t('Select a license')"
+              :label="t('Licence')"
+              :placeholder="t('Sélectionnez une licence')"
               :display-value="(option) => option.title"
               :multiple="false"
               :group-by="(option) => option.group"
@@ -310,10 +488,10 @@
                     >
                       <RiStarFill
                         class="self-center size-3 "
-                        :class="{ 'text-primary': !active }"
+                        :class="{ 'text-new-primary': !active }"
                         aria-hidden="true"
                       />
-                      <span>{{ t('Recommended') }}</span>
+                      <span>{{ t('Recommandée') }}</span>
                     </div>
                     <div v-if="option.description">
                       {{ option.description }}
@@ -340,13 +518,12 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-0">
-              {{ harvested ? t("Attributions et points de contacts") : t("Contact points") }}
+              {{ harvested ? t("Attributions et points de contact") : t("Points de contact") }}
             </h2>
           </legend>
           <LinkedToAccordion
             class="fr-fieldset__element"
             :accordion="contactPointAccordionId"
-            @blur="touch('contact_points')"
           >
             <ContactPointSelect
               v-for="(contact_point, index) in form.contact_points"
@@ -364,14 +541,14 @@
               :show-attributions="harvested"
             />
             <BrandedButton
-              class="mt-3"
+              class="mt-4"
               type="button"
-              color="primary-soft"
+              color="secondary"
               size="xs"
               :icon="RiAddLine"
               @click="form.contact_points.push({ ...defaultContactForm })"
             >
-              {{ harvested ? t('New Attribution') : t('New Contact') }}
+              {{ harvested ? t('Nouvelle attribution') : t('Nouveau contact') }}
             </BrandedButton>
           </LinkedToAccordion>
         </fieldset>
@@ -384,7 +561,7 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Time") }}
+              {{ $t("Temps") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -395,8 +572,8 @@
             <SearchableSelect
               v-model="form.frequency"
               class="mb-3"
-              :label="$t('Update frequency')"
-              :placeholder="$t('Search a frequency…')"
+              :label="$t('Fréquence de mise à jour')"
+              :placeholder="$t('Recherchez une fréquence…')"
               :get-option-id="(frequency) => frequency.label"
               :display-value="(frequency) => frequency.label"
               :options="frequencies"
@@ -404,6 +581,7 @@
               :required="true"
               :error-text="getFirstError('frequency')"
               :warning-text="getFirstWarning('frequency')"
+              data-testid="select-frequency"
             />
             <SimpleBanner
               v-if="getFirstWarning('frequency')"
@@ -418,12 +596,12 @@
             @blur="touch('temporal_coverage')"
           >
             <p class="!mb-2">
-              {{ $t('Temporal coverage') }}
+              {{ $t('Couverture temporelle') }}
             </p>
             <div class="grid lg:grid-cols-2 gap-4">
               <InputGroup
                 v-model="form.temporal_coverage.start"
-                :label="$t('start')"
+                :label="$t('début')"
                 type="date"
                 :show-label-inside="true"
                 :has-error="!!getFirstError('temporal_coverage')"
@@ -432,7 +610,7 @@
               />
               <InputGroup
                 v-model="form.temporal_coverage.end"
-                :label="$t('end')"
+                :label="$t('fin')"
                 type="date"
                 :show-label-inside="true"
               />
@@ -454,7 +632,7 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t("Space") }}
+              {{ $t("Spatiale") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -467,8 +645,8 @@
                 <div>
                   <SearchableSelect
                     v-model="form.spatial_zones"
-                    :label="$t('Spatial coverage')"
-                    :placeholder="$t('Search a spatial coverage…')"
+                    :label="$t('Couverture spatiale')"
+                    :placeholder="$t('Rechercher une couverture spatiale…')"
                     :suggest="suggestSpatial"
                     :multiple="true"
                     class="!mb-0"
@@ -519,8 +697,8 @@
                 <SearchableSelect
                   v-model="form.spatial_granularity"
                   class="mb-3"
-                  :label="$t('Spatial granularity')"
-                  :placeholder="$t('Search a granularity…')"
+                  :label="$t('Granularité spatiale')"
+                  :placeholder="$t('Chercher une granularité…')"
                   :get-option-id="(granularity) => granularity.id"
                   :display-value="(granularity) => granularity.name"
                   :options="granularities"
@@ -542,40 +720,6 @@
               </div>
             </div>
           </LinkedToAccordion>
-          <fieldset
-            v-if="type === 'update'"
-            class="fr-fieldset__element"
-          >
-            <fieldset
-              id="checkboxes-hint-el-sm"
-              class="fr-fieldset"
-              aria-labelledby="checkboxes-hint-el-sm-legend checkboxes-hint-el-sm-messages"
-            >
-              <div class="fr-fieldset__element">
-                <div class="fr-checkbox-group fr-checkbox-group--sm">
-                  <input
-                    id="checkboxes-hint-el-sm-1"
-                    v-model="datasetForm.private"
-                    name="checkboxes-hint-el-sm-1"
-                    type="checkbox"
-                    aria-describedby="checkboxes-hint-el-sm-1-messages"
-                  >
-                  <label
-                    class="fr-label"
-                    for="checkboxes-hint-el-sm-1"
-                  >
-                    {{ t('Passer en mode brouillon') }}
-                    <span class="fr-hint-text">{{ t('The dataset will only be visible to members of your organization.') }}</span>
-                  </label>
-                  <div
-                    id="checkboxes-hint-el-sm-1-messages"
-                    class="fr-messages-group"
-                    aria-live="assertive"
-                  />
-                </div>
-              </div>
-            </fieldset>
-          </fieldset>
         </fieldset>
         <div
           class="fr-grid-row"
@@ -586,7 +730,7 @@
             color="secondary"
             @click="$emit('previous')"
           >
-            {{ $t('Previous') }}
+            {{ $t('Précédent') }}
           </BrandedButton>
           <BrandedButton
             color="primary"
@@ -602,16 +746,16 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, Tooltip, DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
 import { SimpleBanner, type Frequency, type License } from '@datagouv/components-next'
-import { RiAddLine, RiStarFill } from '@remixicon/vue'
+import { RiAddLine, RiStarFill, RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
-import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone } from '~/types/types'
+import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone, Tag } from '~/types/types'
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 
@@ -626,8 +770,10 @@ const emit = defineEmits<{
   submit: []
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
+
+const MAX_TAGS_NB = 5
 
 const user = useMe()
 const isGlobalAdmin = computed(() => isAdmin(user.value))
@@ -635,12 +781,16 @@ const isGlobalAdmin = computed(() => isAdmin(user.value))
 const nameDatasetAccordionId = useId()
 const addAcronymAccordionId = useId()
 const writeAGoodDescriptionAccordionId = useId()
+const writeAGoodDescriptionShortAccordionId = useId()
 const useTagsAccordionId = useId()
+const accessTypeAccordionId = useId()
 const selectLicenseAccordionId = useId()
 const contactPointAccordionId = useId()
 const chooseFrequencyAccordionId = useId()
 const addTemporalCoverageAccordionId = useId()
 const addSpatialInformationAccordionId = useId()
+
+const isGeneratingDescriptionShort = ref(false)
 
 const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies', { lazy: true })
 
@@ -678,6 +828,10 @@ const getGranularityName = (zone: SpatialZone): string | undefined => {
   return granularities.value.find(granularity => granularity.id === zone.level)?.name
 }
 
+// Track tag sources
+const isGeneratingTags = ref(false)
+const lastSuggestedTags = ref<Array<Tag>>([])
+
 const { $api } = useNuxtApp()
 
 const removeZone = (zone: SpatialZone) => {
@@ -688,20 +842,20 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
   owned: [required()],
   title: [required()],
   description: [required()],
+  description_short: [maxLength(DESCRIPTION_SHORT_MAX_LENGTH, t(`La {property} ne doit pas dépasser {max} caractères.`, { property: t('description courte'), max: DESCRIPTION_SHORT_MAX_LENGTH }))],
   frequency: [required()],
   private: [],
 }, {
   title: [testNotAllowed(config.public.demoServer?.name)],
-  description: [minLength(200, t(`It's advised to have a {property} of at least {min} characters.`, { property: t('description'), min: 200 }))],
-  tags: [required(t('Adding tags helps improve the SEO of your data.'))],
+  description: [minLength(DESCRIPTION_MIN_LENGTH, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: DESCRIPTION_MIN_LENGTH }))],
+  tags: [required(t('L\'ajout de mots-clés aide à améliorer le référencement de vos données.'))],
   license: [required()],
   frequency: [(f) => {
-    if (f && f.id === 'unknown') return t('The frequency must be different than unknown.')
-
+    if (f && f.id === 'unknown') return t('La fréquence doit être différente d\'inconnue.')
     return null
   }],
-  spatial_granularity: [required(t('You have not specified the spatial granularity.'))],
-  temporal_coverage: [required(t('You did not provide the temporal coverage.'))],
+  spatial_granularity: [required(t('Vous n\'avez pas spécifié la granularité spatiale.'))],
+  temporal_coverage: [required(t('Vous n\'avez pas fourni la couverture temporelle.'))],
 })
 
 onMounted(() => {
@@ -715,9 +869,96 @@ const accordionState = (key: keyof typeof form.value) => {
   return 'default'
 }
 
-function submit() {
-  if (validate()) {
+const canGenerateDescriptionShort = computed(() => {
+  const hasTitle = form.value.title && form.value.title.trim().length > 0
+  const hasEnoughDescription = form.value.description && form.value.description.length >= DESCRIPTION_MIN_LENGTH
+  return hasTitle && hasEnoughDescription
+})
+
+const canGenerateTags = computed(() => {
+  const hasTitle = form.value.title && form.value.title.trim().length > 0
+  const hasDescription = form.value.description && form.value.description.trim().length > 0
+  const hasLessThanMaxTags = form.value.tags.length < MAX_TAGS_NB
+  return hasTitle && hasDescription && hasLessThanMaxTags
+})
+
+async function handleAutoCompleteDescriptionShort() {
+  try {
+    isGeneratingDescriptionShort.value = true
+
+    // We call our server-side API route instead of Albert API directly to avoid CORS issues.
+    // The Albert API doesn't allow direct requests from browser-side JavaScript.
+    // Our server acts as a proxy, keeping the API key secure on the server side.
+    const response = await $fetch<{ descriptionShort?: string }>('/nuxt-api/albert/generate-short-description', {
+      method: 'POST',
+      body: {
+        title: form.value.title,
+        description: form.value.description,
+        organization: form.value.owned?.organization?.name,
+      },
+    })
+
+    form.value.description_short = response.descriptionShort || ''
+  }
+  catch (error) {
+    console.error('Failed to generate short description:', error)
+  }
+  finally {
+    isGeneratingDescriptionShort.value = false
+  }
+}
+
+async function submit() {
+  if (await validate()) {
     emit('submit')
   }
-};
+}
+
+async function handleAutoCompleteTags(nbTags: number) {
+  try {
+    isGeneratingTags.value = true
+
+    // We call our server-side API route instead of Albert API directly to avoid CORS issues.
+    // The Albert API doesn't allow direct requests from browser-side JavaScript.
+    // Our server acts as a proxy, keeping the API key secure on the server side.
+    const response = await $fetch<{ tags: string[] }>('/nuxt-api/albert/generate-tags', {
+      method: 'POST',
+      body: {
+        title: form.value.title,
+        description: form.value.description,
+        organization: form.value.owned?.organization?.name,
+        nbTags: nbTags,
+      },
+    })
+
+    // Remove previously suggested tags and add new ones
+    if (response.tags && response.tags.length > 0) {
+      // Filter out tags that were the last suggested tags
+      let currentTags = form.value.tags
+      if (lastSuggestedTags.value.length > 0) {
+        currentTags = form.value.tags.filter(tag =>
+          !lastSuggestedTags.value.some(lastSuggested => lastSuggested.text === tag.text),
+        )
+      }
+
+      // Create new suggested tags, filtering out duplicates with existing tags
+      const existingTagTexts = currentTags.map(tag => tag.text)
+      const newSuggestedTags = response.tags
+        .filter(tag => !existingTagTexts.includes(tag))
+        .map(tag => ({ text: tag }))
+
+      // Update form with current tags + new suggested tags
+      form.value.tags = [...currentTags, ...newSuggestedTags]
+
+      // Update the suggested tags tracking
+      lastSuggestedTags.value = newSuggestedTags
+    }
+  }
+  catch (error) {
+    console.error('Failed to generate tags:', error)
+  }
+  finally {
+    isGeneratingTags.value = false
+  }
+}
 </script>

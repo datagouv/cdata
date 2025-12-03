@@ -1,16 +1,17 @@
-import { useI18n } from 'vue-i18n'
+import { useTranslation } from '../composables/useTranslation'
 
 export const filesize = (val: number) => {
-  const { t } = useI18n()
-  const suffix = t('B')
+  const { t, locale } = useTranslation()
+  const suffix = t('o')
+  const formatter = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
   const units = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']
   for (const unit of units) {
     if (Math.abs(val) < 1024.0) {
-      return `${val.toFixed(1)}${unit}${suffix}`
+      return `${formatter.format(val)} ${unit}${suffix}`.trim()
     }
     val /= 1024.0
   }
-  return `${val.toFixed(1)}Y${suffix}`
+  return `${formatter.format(val)} Y${suffix}`.trim()
 }
 
 export const summarize = (val: number, fractionDigits = 0) => {

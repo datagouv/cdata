@@ -7,15 +7,35 @@
       {{ $t('Ces ressources sont publiées par la communauté et ne sont pas sous la responsabilité du producteur des données.') }}
     </SimpleBanner>
     <div class="space-y-1">
-      <div class="uppercase text-gray-plain text-sm font-bold">
-        {{ $t('{n} community resources', { n: resources.total }) }}
+      <div class="flex flex-wrap justify-between items-center mb-5 gap-2">
+        <h2
+          v-if="resources"
+          class="text-sm font-bold uppercase m-0 text-gray-title"
+        >
+          {{ $t('{n} ressources communautaires', { n: resources.total }) }}
+        </h2>
+
+        <div class="flex flex-wrap items-center md:gap-x-6 gap-2">
+          <div>
+            <BrandedButton
+              color="secondary"
+              size="xs"
+              :icon="RiAddLine"
+              :href="`/admin/community-resources/new?dataset_id=${dataset.id}`"
+            >
+              {{ t("Partagez vos ressources") }}
+            </BrandedButton>
+          </div>
+        </div>
       </div>
+
       <div class="space-y-2.5">
         <ResourceAccordion
           v-for="resource in resources.data"
           :key="resource.id"
           :dataset
           :resource
+          :can-edit="resource.permissions.edit"
           is-community-resource
         />
         <Pagination
@@ -57,6 +77,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, Pagination, ResourceAccordion, SimpleBanner, type CommunityResource, type DatasetV2 } from '@datagouv/components-next'
+import { RiAddLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{ dataset: DatasetV2 }>()
@@ -64,6 +85,7 @@ const props = defineProps<{ dataset: DatasetV2 }>()
 useSeoMeta({ robots: 'noindex' })
 
 const config = useRuntimeConfig()
+const { t } = useTranslation()
 
 const page = ref(1)
 const query = computed(() => ({

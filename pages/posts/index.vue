@@ -3,20 +3,19 @@
     <div class="container">
       <Breadcrumb>
         <BreadcrumbItem
-          :external="true"
           to="/"
         >
-          {{ $t('Home') }}
+          {{ $t('Accueil') }}
         </BreadcrumbItem>
         <BreadcrumbItem>
-          {{ $t('Posts') }}
+          {{ $t('Articles') }}
         </BreadcrumbItem>
       </Breadcrumb>
     </div>
     <div class="border-b border-gray-lowest">
       <div class="container">
-        <h1 class="text-4.5xl font-extrabold pt-10 pb-[3.75rem] !mb-0">
-          {{ $t('Posts') }}
+        <h1 class="text-4.5xl font-extrabold text-gray-title pt-10 pb-[3.75rem] !mb-0">
+          {{ $t('Articles') }}
         </h1>
       </div>
     </div>
@@ -44,16 +43,16 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination } from '@datagouv/components-next'
+import { Pagination, getLink } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 useSeoMeta({
-  title: t('Posts'),
+  title: t('Articles'),
 })
 const route = useRoute()
 const page = ref(route.query.page ?? 1)

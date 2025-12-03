@@ -1,42 +1,7 @@
 <template>
   <div>
-    <AdminBreadcrumb>
-      <BreadcrumbItem>{{ $t('Profile') }}</BreadcrumbItem>
-    </AdminBreadcrumb>
-
-    <h1 class="fr-h3 !mb-5">
-      {{ $t("Profile") }}
-    </h1>
-    <PaddedContainer class="!p-5">
-      <div class="flex flex-wrap items-center gap-3">
-        <div class="flex-none">
-          <Avatar
-            :user="user"
-            :rounded="true"
-            :size="80"
-          />
-        </div>
-        <div class="w-full flex-none md:flex-1">
-          <h2 class="!mb-0 fr-h3">
-            {{ user.first_name }} {{ user.last_name }}
-          </h2>
-          <AdminEmail :user />
-        </div>
-        <div class="flex-none">
-          <BrandedButton
-            size="xs"
-            color="secondary"
-            as="a"
-            :href="user.page"
-            :icon="RiEyeLine"
-          >
-            {{ $t('See public profile') }}
-          </BrandedButton>
-        </div>
-      </div>
-    </PaddedContainer>
     <h2 class="uppercase !text-sm !my-5">
-      {{ $t('Edit Profile') }}
+      {{ $t('Éditer le Profil') }}
     </h2>
     <PaddedContainer class="!p-5">
       <fieldset class="fr-grid-row fr-grid-row--gutters">
@@ -44,7 +9,7 @@
           v-model="form.first_name"
           class="fr-col"
           autocomplete="given-name"
-          :label="$t('First name')"
+          :label="$t('Prénom')"
           :required="true"
           :spellcheck="false"
         />
@@ -52,7 +17,7 @@
           v-model="form.last_name"
           class="fr-col"
           autocomplete="family-name"
-          :label="$t('Last name')"
+          :label="$t('Nom')"
           :required="true"
           :spellcheck="false"
         />
@@ -60,20 +25,20 @@
       <InputGroup
         v-model="form.about"
         class="fr-col"
-        :label="$t('Biography')"
+        :label="$t('Biographie')"
         type="markdown"
       />
       <InputGroup
         v-model="form.website"
         class="fr-col"
-        :label="$t('Website')"
+        :label="$t('Site Internet')"
         type="url"
       />
       <UploadGroup
-        :label="$t('Profile picture')"
+        :label="$t('Image de profil')"
         type="drop"
         accept=".jpeg, .jpg, .png"
-        :hint-text="$t('Max size: 4Mo. Accepted formats: JPG, JPEG, PNG')"
+        :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
         :show-label="true"
         @change="setFiles"
       />
@@ -92,9 +57,9 @@
         v-if="isMeAdmin()"
         v-model="form.roles"
         class="fr-input-group"
-        :label="$t('Roles')"
+        :label="$t('Rôles')"
         :options="allRolesAsString"
-        :placeholder="t('Select a role')"
+        :placeholder="t('Sélectionnez un rôle')"
         :display-value="(option) => humanJoin(option)"
         :get-option-id="(option) => option"
         :multiple="true"
@@ -106,7 +71,7 @@
           :icon="RiSaveLine"
           @click="updateUser"
         >
-          {{ $t('Save') }}
+          {{ $t('Sauvegarder') }}
         </BrandedButton>
       </div>
       <div
@@ -117,12 +82,12 @@
           class="fr-label"
           :for="apiKeyId"
         >
-          {{ $t('API Key') }}
+          {{ $t(`Clé d'API`) }}
           <span
             v-if="user.apikey"
             class="fr-hint-text"
           >
-            {{ $t('Warning: If you erase your API key you risk to loose acces to {site} services', { site: config.public.title }) }}
+            {{ $t(`Attention: Si vous supprimez votre clé d'API vous risquez de perdre l'accès aux services de {site}`, { site: config.public.title }) }}
           </span>
         </label>
         <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
@@ -130,7 +95,7 @@
             <div class="relative">
               <input
                 :id="apiKeyId"
-                v-model="user.apikey"
+                :value="user.apikey"
                 type="password"
                 class="fr-input !pr-8"
                 disabled
@@ -138,8 +103,8 @@
               <div class="absolute right-1 top-1 !mt-0.5 !mr-0.5">
                 <CopyButton
                   v-if="user.apikey"
-                  :label="$t('Copy API key')"
-                  :copied-label="$t('API key copied')"
+                  :label="$t(`Copier la clé d'API`)"
+                  :copied-label="$t('Clé API copiée')"
                   :text="user.apikey"
                   reverse
                 />
@@ -155,8 +120,8 @@
                 :icon="RiRecycleLine"
                 @click="regenerateApiKey"
               >
-                <span v-if="user.apikey">{{ $t('Regenerate') }}</span>
-                <span v-else>{{ $t('Generate') }}</span>
+                <span v-if="user.apikey">{{ $t('Regénérer') }}</span>
+                <span v-else>{{ $t('Générer') }}</span>
               </BrandedButton>
             </div>
             <div
@@ -170,7 +135,7 @@
                 :icon="RiDeleteBin6Line"
                 @click="deleteApiKey"
               >
-                {{ $t('Delete') }}
+                {{ $t('Supprimer') }}
               </BrandedButton>
             </div>
           </div>
@@ -184,7 +149,7 @@
           class="fr-label mb-2"
           :for="emailId"
         >
-          {{ $t('E-mail address') }}
+          {{ $t('Adresse e-mail') }}
         </label>
         <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
           <div class="fr-col-12 fr-col-sm-7 fr-col-lg-8 fr-col-xl-9">
@@ -200,14 +165,17 @@
           </div>
           <div class="fr-col-auto">
             <BrandedButton
+              v-if="config.public.changeEmailPage"
               color="secondary"
               size="xs"
               as="a"
               :href="`${config.public.apiBase}/${config.public.changeEmailPage}`"
               :icon="RiEditLine"
+              external
             >
-              {{ $t('Change e-mail address') }}
+              {{ $t(`Changer d'adresse email`) }}
             </BrandedButton>
+            <ChangeEmailModal v-else />
           </div>
         </div>
       </div>
@@ -219,7 +187,7 @@
           class="fr-label mb-2"
           :for="passwordId"
         >
-          {{ $t('Password') }}
+          {{ $t('Mot de passe') }}
         </label>
         <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
           <div class="fr-col-12 fr-col-sm-7 fr-col-lg-8 fr-col-xl-9">
@@ -235,23 +203,26 @@
           </div>
           <div class="fr-col-auto">
             <BrandedButton
+              v-if="config.public.changePasswordPage"
               color="secondary"
               size="xs"
               as="a"
               :href="`${config.public.apiBase}/${config.public.changePasswordPage}`"
               :icon="RiEditLine"
+              external
             >
-              {{ $t('Change password') }}
+              {{ $t('Changer de mot de passe') }}
             </BrandedButton>
+            <ChangePasswordModal v-else />
           </div>
         </div>
       </div>
       <BannerAction
         type="danger"
-        :title="$t('Delete the account')"
+        :title="$t('Supprimer le compte')"
         class="mt-4"
       >
-        {{ $t("Be careful, this action can't be reverse.") }}
+        {{ $t("Attention, cette action ne peut pas être annulée.") }}
 
         <template #button>
           <DeleteUserModal :user />
@@ -262,23 +233,27 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, CopyButton } from '@datagouv/components-next'
-import { Avatar, type User } from '@datagouv/components-next'
-import { RiDeleteBin6Line, RiEditLine, RiEyeLine, RiRecycleLine, RiSaveLine } from '@remixicon/vue'
+import { BannerAction, BrandedButton, CopyButton, PaddedContainer } from '@datagouv/components-next'
+import type { User } from '@datagouv/components-next'
+import { RiDeleteBin6Line, RiEditLine, RiRecycleLine, RiSaveLine } from '@remixicon/vue'
 import DeleteUserModal from './DeleteUserModal.vue'
+import ChangePasswordModal from './ChangePasswordModal.vue'
+import ChangeEmailModal from './ChangeEmailModal.vue'
 import { uploadProfilePicture } from '~/api/users'
-import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
-import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
 
 const props = defineProps<{
   user: User
 }>()
 
+const emits = defineEmits<{
+  refresh: []
+}>()
+
 const me = useMe()
 const config = useNuxtApp().$config
 const { toast } = useToast()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const apiKeyId = useId()
@@ -314,10 +289,10 @@ async function updateUser() {
   loading.value = true
   if (profilePicture.value) {
     try {
-      await uploadProfilePicture(profilePicture.value)
+      await uploadProfilePicture(profilePicture.value, me.value.id === props.user.id ? null : props.user)
     }
     catch {
-      toast.error(t(`Your profile picture couldn't be updated !`))
+      toast.error(t(`Votre image de profil n'a pas pu être téléversée !`))
     }
   }
   try {
@@ -331,8 +306,9 @@ async function updateUser() {
         roles: isMeAdmin() ? form.value.roles : props.user.roles,
       },
     })
-    toast.success(t('Profile updated !'))
+    toast.success(t('Profil mis à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+    emits('refresh')
   }
   finally {
     loading.value = false

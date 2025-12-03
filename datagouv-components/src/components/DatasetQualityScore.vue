@@ -10,17 +10,17 @@
     :value="score"
   >
     <template v-if="score >= high">
-      {{ t('Good') }}
+      {{ t('Bon') }}
     </template>
     <template v-else>
-      {{ t('To improve') }}
+      {{ t('À améliorer') }}
     </template>({{ calculatedScore }})
   </meter>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { useTranslation } from '../composables/useTranslation'
 
 const props = withDefaults(defineProps<{
   score: number
@@ -30,6 +30,6 @@ const props = withDefaults(defineProps<{
 })
 const quality_max_score = 1
 const high = quality_max_score * 2 / 3
-const { t, locale } = useI18n()
-const calculatedScore = computed(() => new Intl.NumberFormat(locale.value, { style: 'percent' }).format(props.score))
+const { t, locale } = useTranslation()
+const calculatedScore = computed(() => new Intl.NumberFormat(locale, { style: 'percent' }).format(props.score))
 </script>

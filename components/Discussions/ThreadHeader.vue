@@ -1,13 +1,14 @@
 <template>
   <header class="space-y-1">
-    <div class="flex sm:items-center sm:justify-between flex-col sm:flex-row">
+    <div class="flex gap-3 sm:items-center sm:justify-between flex-col sm:flex-row">
       <h3 class="m-0 text-base/normal text-gray-title flex items-center space-x-1">
         <RiLockLine
           v-if="thread.closed"
           class="size-4"
         />
-        <span>{{ thread.title }}</span>
+        <span class="flex-1">{{ thread.title }}</span>
         <CopyButton
+          class="max-w-6/12"
           :label="$t('Copier le lien vers cette discussion')"
           :copied-label="$t('Lien copié')"
           :text="getDiscussionUrl(thread.id, subject)"
@@ -17,6 +18,14 @@
         v-if="showActions"
         class="space-x-2"
       >
+        <BrandedButton
+          v-if="isMeAdmin() && thread.spam?.status === 'potential_spam'"
+          color="warning"
+          size="xs"
+          @click="markAsNoSpam"
+        >
+          {{ $t('Marquer comme non spam') }}
+        </BrandedButton>
         <EditCommentModal
           v-if="firstComment.permissions.edit"
           :subject
@@ -47,7 +56,7 @@
 
 <script setup lang="ts">
 import { RiLockLine } from '@remixicon/vue'
-import { CopyButton } from '@datagouv/components-next'
+import { BrandedButton, CopyButton } from '@datagouv/components-next'
 import ReportModal from '../Spam/ReportModal.vue'
 import DeleteThreadModal from './DeleteThreadModal.vue'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
@@ -61,9 +70,15 @@ const props = withDefaults(defineProps<{
 }>(), {
   showActions: false,
 })
-defineEmits<{
+const emit = defineEmits<{
   change: []
 }>()
 
 const firstComment = computed(() => props.thread.discussion[0])
+
+const { $api } = useNuxtApp()
+const markAsNoSpam = async () => {
+  await $api(`/api/1/discussions/${props.thread.id}/spam`, { method: 'DELETE' })
+  emit('change')
+}
 </script>

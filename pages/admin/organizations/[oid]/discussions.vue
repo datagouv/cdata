@@ -4,7 +4,7 @@
       <BreadcrumbItem>{{ t('Discussions') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="font-bold text-2xl mb-5">
+    <h1 class="font-extrabold text-gray-title text-2xl mb-5">
       {{ t("Discussions") }}
     </h1>
 
@@ -16,11 +16,10 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const { currentOrganization } = useCurrentOwned()
 </script>

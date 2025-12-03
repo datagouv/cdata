@@ -3,7 +3,6 @@
     <Breadcrumb>
       <BreadcrumbItem
         to="/"
-        external
       >
         {{ $t('Accueil') }}
       </BreadcrumbItem>
@@ -31,7 +30,7 @@
           type="submit"
           color="primary"
         >
-          {{ $t("Next") }}
+          {{ $t("Suivant") }}
         </BrandedButton>
       </template>
     </DescribeHarvester>
@@ -61,14 +60,14 @@ import PreviewStep from '~/components/Harvesters/PreviewStep.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { HarvesterForm, HarvesterSource } from '~/types/harvesters'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const route = useRoute()
 const { $api } = useNuxtApp()
 
 const steps = computed(() => [
-  t('Describe your harvester'),
-  t('Preview your harvester'),
-  t('Complete your publishing'),
+  t('Décrire votre moissonneur'),
+  t('Prévisualiser votre moissonneur'),
+  t('Finalisez la publication'),
 ])
 
 const HARSVESTER_FORM_STATE = 'harvester-form'

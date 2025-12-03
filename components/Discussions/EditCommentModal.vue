@@ -1,6 +1,6 @@
 <template>
   <ModalWithButton
-    :title="t('Edit message')"
+    :title="t('Éditer le message')"
     size="lg"
     form
     @submit.prevent="editMessage"
@@ -15,7 +15,7 @@
         :loading
         v-on="listeners"
       >
-        {{ $t('Edit') }}
+        {{ $t('Modifier') }}
       </BrandedButton>
     </template>
 
@@ -29,7 +29,7 @@
         <InputGroup
           v-if="index === 0 && thread.permissions.edit"
           v-model="form.title"
-          :label="$t('Title')"
+          :label="$t('Titre')"
           :required="true"
           :has-error="!!getFirstError('title')"
           :has-warning="!!getFirstWarning('title')"
@@ -38,13 +38,13 @@
 
         <InputGroup
           v-model="form.comment"
-          :label="$t('Your message')"
+          :label="$t('Votre message')"
           :required="true"
           type="textarea"
           :has-error="!!getFirstError('comment')"
           :has-warning="!!getFirstWarning('comment')"
           :error-text="getFirstError('comment')"
-          :placeholder="$t('Please remain courteous and constructive. Avoid sharing personal information.')"
+          :placeholder="$t('Merci de rester courtois et constructif. Eviter de communiquer des données personnelles.')"
         />
       </div>
     </template>
@@ -57,7 +57,7 @@
           :loading
           @click="close"
         >
-          {{ t("Cancel") }}
+          {{ t("Annuler") }}
         </BrandedButton>
         <BrandedButton
           type="submit"
@@ -65,7 +65,7 @@
           size="xs"
           :loading
         >
-          {{ t("Update") }}
+          {{ t("Mettre à jour") }}
         </BrandedButton>
       </div>
     </template>
@@ -88,7 +88,7 @@ const emit = defineEmits<{
   edited: []
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const { form, getFirstError, getFirstWarning } = useForm({

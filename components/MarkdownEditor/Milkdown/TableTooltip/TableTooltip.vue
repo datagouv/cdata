@@ -8,7 +8,7 @@
         v-if="!isWholeTable && !isHeading && isRow"
         :icon="RiArrowUpLine"
         class="fr-mr-1v"
-        :title="t('Add row before')"
+        :title="t('Ajouter une ligne avant')"
         @click="() => {
           if (loading) return;
 
@@ -22,7 +22,7 @@
         v-if="!isWholeTable && isCol"
         :icon="RiArrowLeftLine"
         class="fr-mr-1v"
-        :title="t('Add column before')"
+        :title="t('Ajouter une colonne avant')"
         @click="() => {
           if (loading) return;
 
@@ -36,7 +36,7 @@
         v-if="isWholeTable || (!isHeading && isAny)"
         :icon="RiDeleteBinLine"
         class="fr-mr-1v"
-        :title="t('Delete selected cells')"
+        :title="t('Supprimer les cellules sélectionnées')"
         @click="() => {
           if (loading) return;
 
@@ -50,7 +50,7 @@
         v-if="!isWholeTable && isRow"
         :icon="RiArrowDownLine"
         class="fr-mr-1v"
-        :title="t('Add row after')"
+        :title="t('Ajouter une ligne après')"
         @click="() => {
           if (loading) return;
 
@@ -64,7 +64,7 @@
         <TooltipButton
           :icon="RiArrowRightLine"
           class="fr-mr-1v"
-          :title="t('Add column after')"
+          :title="t('Ajouter une colonne après')"
           @click="() => {
             if (loading) return;
             getEditor()?.action((ctx) => {
@@ -77,7 +77,7 @@
         <TooltipButton
           :icon="RiAlignLeft"
           class="fr-mr-1v"
-          :title="t('Align left')"
+          :title="t('Aligner à gauche')"
           @click="() => {
             if (loading) return;
             getEditor()?.action((ctx) => {
@@ -88,7 +88,7 @@
         <TooltipButton
           class="fr-mr-1v"
           :icon="RiAlignCenter"
-          :title="t('Align center')"
+          :title="t('Centrer')"
           @click="() => {
             if (loading) return;
             getEditor()?.action((ctx) => {
@@ -99,7 +99,7 @@
         <TooltipButton
           class="fr-mr-1v"
           :icon="RiAlignRight"
-          :title="t('Align right')"
+          :title="t('Aligner à droite')"
           @click="() => {
             if (loading) return;
             getEditor()?.action((ctx) => {
@@ -128,13 +128,12 @@ import {
   usePluginViewContext,
 } from '@prosemirror-adapter/vue'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiAlignCenter, RiAlignLeft, RiAlignRight, RiArrowDownLine, RiArrowLeftLine, RiArrowRightLine, RiArrowUpLine, RiDeleteBinLine } from '@remixicon/vue'
 import { makeTooltipProvider } from '~/components/MarkdownEditor/Milkdown/Tooltip/useTooltipProvider'
 import { tableTooltipCtx } from '~/components/MarkdownEditor/Milkdown/TableTooltip/tableTooltipCtx'
 import TooltipButton from '~/components/MarkdownEditor/Milkdown/TableTooltip/TooltipButton.vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const toolTipRef = ref<HTMLDivElement | null>(null)
 const { view } = usePluginViewContext()
 

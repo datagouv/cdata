@@ -10,6 +10,8 @@
   --breakpoint-xl: 1248px;
   --breakpoint-2xl: initial;
 
+  --font-marianne:
+    'Marianne', Arial, sans-serif;
   --font-mono:
     'Noto Sans Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
     'Courier New', monospace;
@@ -18,10 +20,78 @@
 
   --text-4\.5xl: 2.75rem;
 
+
+  --color-new-primary: #000091;
+  --color-new-primary-hover: #1212FF;
+  --color-new-primary-clic: #2323FF;
+  
+  --color-new-gray-dark: #161616;
+  --color-new-gray-dark-hover: #343434;
+  --color-new-gray-dark-clic: #474747;
+
+  --color-new-gray-medium: #3A3A3A;
+  --color-new-gray-medium-hover: #616161;
+  --color-new-gray-medium-clic: #777777;
+
+  --color-new-gray-light: #CECECE;
+  --color-new-gray-light-hover: #A8A8A8;
+  --color-new-gray-light-clic: #939393;
+
+  --color-new-info-light: #E8EDFF;
+  --color-new-info-light-hover: #C2D1FF;
+  --color-new-info-light-clic: #A9BFFF;
+
+  --color-new-info: #0063CB;
+  --color-new-info-hover: #3B87FF;
+  --color-new-info-clic: #6798FF;
+
+  --color-new-error-light: #FFE9E9;
+  --color-new-error-light-hover: #FFC5C5;
+  --color-new-error-light-clic: #FFAFAF;
+
+  --color-new-error: #CE0500;
+  --color-new-error-hover: #FF2725;
+  --color-new-error-clic: #FF4140;
+
+  --color-new-warning-light: #FFE9E6;
+  --color-new-warning-light-hover: #FFC6BD;
+  --color-new-warning-light-clic: #FFB0A2;
+
+  --color-new-warning: #B34000;
+  --color-new-warning-hover: #FF6218;
+  --color-new-warning-clic: #FF7A55;
+
+  --color-new-success-light: #B8FEC9;
+  --color-new-success-light-hover: #46FD89;
+  --color-new-success-light-clic: #34EB7B;
+
+  --color-new-success: #18753C;
+  --color-new-success-hover: #27A959;
+  --color-new-success-clic: #2FC368;
+
+  --color-new-blue-illustration: #102185;
+  --color-new-blue-illustration-light: #EBEDFF;
+
+  --color-new-green-illustration: #005D6A;
+  --color-new-green-illustration-light: #D5F2FF;
+
+  --color-new-brown-illustration: #6E0844;
+  --color-new-brown-illustration-light: #FFE7F4;
+
+  --color-new-focus: #0A76F6;
+
+  --color-new-disabled-background: #E5E5E5;
+  --color-new-disabled-text: #929292;
+
+
   --color-primary: #3558a2;
+  --color-ocher: #A6481C;
+  --color-green-reuse: #2B6972;
+  --color-purple-dataservice: #5E5DAE;
   --color-mention-grey: #666; /* Copy from --text-mention-grey */
   --color-gray-title: #161616;
   --color-gray-medium: #666666;
+  --color-gray-lowest-2: #fafafa;
   --color-gray-low: #929292;
   --color-gray-lower-hover: #d2d2d2;
   --color-gray-lower-active: #c1c1c1;
@@ -65,8 +135,11 @@
   --color-success-dark: #27a658;
   --color-success-darker: #1f8d49; /* from DSFR to avoid contrast issue */
   --color-success-darkest: #18753c; /* from DSFR to avoid contrast issue */
+  --color-pink-softest: #FAFAFA;
+  --color-pink-soft: #FFE4F2;
+  --color-pink: #CF006D;
 
-  --shadow-input-blue: inset 0 -2px 0 0 #3558a2;
+  --shadow-input-blue: inset 0 -2px 0 0 #000091;
   --shadow-input: inset 0 -2px 0 0 var(--blue-cumulus-sun-368-moon-732);
 
   /* This animation are copy/paste from the `pulse` animation of TailwindCSS because the `pulse` animation inherit of a blue background from somewhere (DSFR? Wrong component not-scoped style?) */

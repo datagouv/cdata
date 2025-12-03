@@ -5,7 +5,7 @@
       class="flex flex-wrap justify-between items-center"
     >
       <h2 class="text-sm font-bold uppercase m-0">
-        {{ t('{n} discussions', pageData.total) }}
+        {{ t('{n} discussions | {n} discussion | {n} discussions', pageData.total) }}
       </h2>
 
       <div>
@@ -15,9 +15,9 @@
           :label="$t('Type')"
           :required="true"
           :options="[
-            { label: $t('All discussions'), value: null },
-            { label: $t('Closed discussions'), value: true },
-            { label: $t('Opened discussions'), value: false },
+            { label: $t('Toutes les discussions'), value: null },
+            { label: $t('Discussions clôturées'), value: true },
+            { label: $t('Discussions ouvertes'), value: false },
           ]"
           hide-null-option
         />
@@ -52,15 +52,14 @@
         class="h-20"
       />
       <p class="fr-text--bold fr-my-3v">
-        {{ t(`There is no discussion yet`) }}
+        {{ t(`Il n'y a pas encore de discussion`) }}
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Pagination, type Organization } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
+import { LoadingBlock, Pagination, type Organization } from '@datagouv/components-next'
 import AdminDiscussionsTable from '../AdminTable/AdminDiscussionsTable/AdminDiscussionsTable.vue'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 import type { PaginatedArray, SortDirection } from '~/types/types'
@@ -71,7 +70,7 @@ const props = defineProps<{
   subject?: DiscussionSubjectTypes
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const isClosed = ref(null as null | true | false)
 

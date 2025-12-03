@@ -3,12 +3,11 @@
     <Breadcrumb>
       <BreadcrumbItem
         to="/"
-        :external="true"
       >
-        {{ $t('Home') }}
+        {{ $t('Accueil') }}
       </BreadcrumbItem>
       <BreadcrumbItem>
-        {{ $t('Organizations') }}
+        {{ $t('Organisations') }}
       </BreadcrumbItem>
     </Breadcrumb>
     <OrganizationListPage
@@ -24,48 +23,54 @@
 </template>
 
 <script setup lang="ts">
+import { getLink } from '@datagouv/components-next'
 import type { Organization } from '@datagouv/components-next'
+import { useUrlSearchParams } from '@vueuse/core'
 import type { LocationQueryValue } from 'vue-router'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import type { OrganizationSearchParams } from '~/types/form'
 import type { PaginatedArray } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 useSeoMeta({
-  title: t('Organizations'),
+  title: t('Organisations'),
 })
 const route = useRoute()
+const params = useUrlSearchParams<OrganizationSearchParams>('history', {
+  initialValue: route.query,
+  removeNullishValues: true,
+  removeFalsyValues: true,
+})
+const nonFalsyParams = computed(() => {
+  const filteredParams = Object.entries(toValue(params)).filter(([_k, v]) => v)
+  return { ...Object.fromEntries(filteredParams), page_size: pageSize }
+})
+
 const q = ref('')
 watchEffect(() => {
   if (Array.isArray(route.query.q)) return
   if (!route.query.q) return
   q.value = route.query.q
 })
+
 const sort = ref((route.query.sort as string | null) || undefined)
 const page = ref(parseInt(route.query.page as LocationQueryValue ?? '1', 10))
 const pageSize = 21
+
+watchEffect(() => {
+  if (page.value > 1 || params.page) params.page = page.value.toString()
+  params.q = q.value
+  params.sort = sort.value
+})
 
 function change(newQs: string, newSort: string | undefined, newPage: number) {
   q.value = newQs
   sort.value = newSort
   page.value = newPage
-  return navigateTo({
-    ...route,
-    query: {
-      ...route.query,
-      q: q.value,
-      page: page.value,
-      sort: sort.value,
-    },
-  })
 }
 
-const { data: organizations, status } = await useAPI<PaginatedArray<Organization>>(`/api/2/organizations/search/`, { params:
-  {
-    q,
-    page,
-    page_size: pageSize,
-    sort,
-  },
+const { data: organizations, status } = await useAPI<PaginatedArray<Organization>>(`/api/2/organizations/search/`, {
+  params: nonFalsyParams,
 })
 </script>

@@ -16,12 +16,13 @@
       <ComboboxInput
         class="w-full border-none bg-gray-lower rounded-tl py-2 px-4 text-base text-gray-plain focus:outline-offset-2 focus:outline-2 focus:outline-blue-outline shadow-input-blue placeholder:italic placeholder:text-gray-medium"
         :display-value="() => ''"
-        :placeholder="$t('Search')"
+        :placeholder="$t('Recherche')"
         @change="query = $event.target.value"
       />
       <ComboboxButton
-        class="absolute right-0 p-2 bg-datagouv rounded-tr hover:!bg-datagouv-hover"
+        class="absolute right-0 p-2 bg-new-primary rounded-tr hover:!bg-new-primary-hover"
       >
+        <span class="sr-only">{{ $t('Rechercher') }}</span>
         <RiSearchLine
           class="h-6 w-6 text-white"
           aria-hidden="true"
@@ -36,7 +37,7 @@
       @after-leave="query = ''"
     >
       <ComboboxOptions
-        class="text-left mt-1 max-h-60 overflow-auto rounded-md bg-white text-base shadow-lg focus:outline-none sm:text-sm"
+        class="list-none pl-0 text-left mt-1 mb-0 max-h-60 overflow-auto rounded-md bg-white text-base shadow-lg focus:outline-none sm:text-sm"
       >
         <ComboboxOption
           v-for="item in menu"
@@ -54,12 +55,11 @@
                 :is="item.icon"
                 class="h-4 w-4"
               />
-              <i18n-t
+              <TranslationT
                 v-if="query"
-                keypath="Search “{query}” in {type}"
+                keypath="Rechercher « {query} » dans les {type}"
                 class="flex-1"
                 tag="div"
-                scope="global"
               >
                 <template #query>
                   <em>{{ query }}</em>
@@ -67,18 +67,17 @@
                 <template #type>
                   <strong>{{ item.type }}</strong>
                 </template>
-              </i18n-t>
-              <i18n-t
+              </TranslationT>
+              <TranslationT
                 v-else
-                keypath="Start typing to search in {type}"
+                keypath="Commencer à taper pour rechercher parmi les {type}"
                 class="flex-1"
                 tag="div"
-                scope="global"
               >
                 <template #type>
                   <strong>{{ item.type }}</strong>
                 </template>
-              </i18n-t>
+              </TranslationT>
               <div aria-hidden="true">
                 <RiArrowRightSLine class="h-4 w-4" />
               </div>
@@ -91,59 +90,63 @@
 </template>
 
 <script setup lang="ts">
-import { RiArrowRightSLine, RiDatabase2Line, RiGovernmentLine, RiLineChartLine, RiRobot2Line, RiSearchLine } from '@remixicon/vue'
+import { RiArrowRightSLine, RiDatabase2Line, RiBuilding2Line, RiLineChartLine, RiRobot2Line, RiSearchLine } from '@remixicon/vue'
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions, TransitionRoot } from '@headlessui/vue'
 import type { Component } from 'vue'
+import { TranslationT } from '@datagouv/components-next'
 
 type Item = {
   icon: Component
   type: string
   to: string
-  external: boolean
 }
 
-const { t } = useI18n()
-const localePath = useLocalePath()
+const emit = defineEmits<{
+  selected: []
+}>()
+
+const { t } = useTranslation()
 const query = ref('')
 const selectedItem = ref<null | Item>(null)
 
-watch(selectedItem, () => {
+watch(selectedItem, async () => {
   if (!selectedItem.value) return
-  navigateTo(selectedItem.value.to, { external: selectedItem.value.external })
+  await navigateTo(selectedItem.value.to)
+  emit('selected')
 })
 const menu = computed(() => {
   return [
     {
       icon: RiDatabase2Line,
-      type: t('datasets'),
-      to: localePath({
-        path: '/datasets/',
+      type: t('jeux de données'),
+      to: {
+        path: '/datasets/search/',
         query: { q: query.value.trim() },
-      }),
+      },
     },
     {
       icon: RiRobot2Line,
-      type: t('dataservies'),
-      to: localePath({
-        path: '/dataservices/',
+      type: t('APIs'),
+      to: {
+        path: '/dataservices/search/',
         query: { q: query.value.trim() },
-      }),
+      },
     },
     {
       icon: RiLineChartLine,
-      type: t('reuses'),
-      to: localePath({
-        path: '/reuses/',
+      type: t('réutilisations'),
+      to: {
+        path: '/reuses/search/',
         query: { q: query.value.trim() },
-      }),
+      },
     },
     {
-      icon: RiGovernmentLine,
-      type: t('organizations'),
-      to: localePath({
+      icon: RiBuilding2Line,
+      type: t('organisations'),
+      to: {
         path: '/organizations/',
         query: { q: query.value.trim() },
-      }),
+      },
     },
   ]
 })

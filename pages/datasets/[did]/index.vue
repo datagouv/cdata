@@ -14,7 +14,7 @@
           {{ $t('Vous consultez une resource spécifique.') }}
         </p>
         <BrandedButton
-          color="secondary-softer"
+          color="tertiary"
           keep-margins-even-without-borders
           :icon="RiCloseCircleLine"
           :href="{ name: route.name, params: route.params, query: { ...route.query, resource_id: undefined } }"
@@ -26,9 +26,10 @@
         :dataset
         :resource="selectedResource"
         expanded-on-mount
-        :can-edit="isMeAdmin()"
+        :can-edit="dataset.permissions.edit_resources"
       />
     </div>
+
     <div
       v-for="{ data, status }, index in resourcesByTypes"
       v-else
@@ -36,11 +37,11 @@
       class="space-y-1"
     >
       <div class="uppercase text-gray-plain text-sm font-bold">
-        {{ $t('{n} {label}', { n: data.value.total, label: getResourceLabel(RESOURCE_TYPE[index]) }) }}
+        {{ getResourceLabel(RESOURCE_TYPE[index], data.value?.total ?? 0) }}
       </div>
       <div class="space-y-2.5">
         <SearchInput
-          v-if="data.value.total > data.value.page_size || searchByResourceType[index].value"
+          v-if="data.value?.total > data.value.page_size || searchByResourceType[index].value"
           v-model="searchByResourceType[index].value"
           :placeholder="$t('Rechercher')"
         />
@@ -50,7 +51,7 @@
             :key="resource.id"
             :dataset
             :resource
-            :can-edit="isMeAdmin()"
+            :can-edit="dataset.permissions.edit_resources"
           />
           <Pagination
             :total-results="data.value.total"
@@ -69,13 +70,13 @@
               class="h-20"
             />
             <p class="fr-text--bold fr-my-3v">
-              {{ $t(`No results for "{q}"`, { q: searchByResourceType[index].value }) }}
+              {{ $t(`Pas de résultats pour « {q} »`, { q: searchByResourceType[index].value }) }}
             </p>
             <BrandedButton
               color="primary"
               @click="searchByResourceType[index].value = ''"
             >
-              {{ $t('Reset filters') }}
+              {{ $t('Réinitialiser les filtres') }}
             </BrandedButton>
           </div>
         </div>
@@ -98,6 +99,14 @@ const pageSize = ref(10)
 
 const pageByResourceType: Array<Ref<number>> = RESOURCE_TYPE.map(() => ref(1))
 const searchByResourceType: Array<Ref<string>> = RESOURCE_TYPE.map(() => ref(''))
+
+watch(searchByResourceType, (newQueries, oldQueries) => {
+  for (const index in newQueries) {
+    if (newQueries[index] != oldQueries[index]) {
+      pageByResourceType[index].value = 1
+    }
+  }
+})
 
 const queryParamsByResourceType = RESOURCE_TYPE.map((type, index) => {
   return computed(() => ({

@@ -8,7 +8,7 @@
 
     <div v-if="reuse">
       <div class="flex items-center justify-between mb-5">
-        <h1 class="fr-h3 !mb-0">
+        <h1 class="text-2xl font-extrabold text-gray-title !mb-0">
           {{ reuse.title }}
         </h1>
         <BrandedButton
@@ -17,15 +17,16 @@
           size="xs"
           :icon="RiEyeLine"
         >
-          {{ t('See the reuse page') }}
+          {{ t('Voir la page publique de la réutilisation') }}
         </BrandedButton>
       </div>
 
       <TabLinks
         class="mb-5"
         :links="[
-          { href: getReuseAdminUrl(reuse), label: t('Metadata') },
-          { href: `${getReuseAdminUrl(reuse)}/datasets`, label: t('Associated datasets') },
+          { href: getReuseAdminUrl(reuse), label: t('Métadonnées') },
+          { href: `${getReuseAdminUrl(reuse)}/datasets`, label: t('Jeux de données associés') },
+          { href: `${getReuseAdminUrl(reuse)}/dataservices`, label: t('APIs associées') },
         ]"
       />
 
@@ -45,11 +46,9 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 
-const { t } = useI18n()
-
-const { currentOrganization } = useCurrentOwned()
+const { t } = useTranslation()
 
 const route = useRoute()
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
-const { data: reuse } = await useAPI<Reuse>(url, { lazy: true })
+const { data: reuse } = await useAPI<Reuse>(url, { redirectOn404: true })
 </script>

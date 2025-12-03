@@ -2,7 +2,7 @@
   <BannerNotif
     type="primary"
     :icon="RiUserAddLine"
-    :badge="$t('Membership Request')"
+    :badge="$t(`Demande de rattachement`)"
     :user="request.user"
     :date="new Date(request.created)"
   >
@@ -11,7 +11,7 @@
         v-if="request.user.email"
         class="text-gray-medium bg-gray-lower px-1 text-sm rounded-sm"
       >{{ request.user.email }}</code>
-      {{ t("asks to join the organization.") }}
+      {{ t("demande à rejoindre l'organisation.") }}
     </template>
 
     <template #body>
@@ -26,11 +26,11 @@
         :icon="RiCheckLine"
         @click="accept"
       >
-        {{ $t('Accept request') }}
+        {{ $t('Accepter la demande') }}
       </BrandedButton>
       <ModalWithButton
         v-if="showActions"
-        :title="t('Refuse membership request')"
+        :title="t(`Refuser la demande de rattachement`)"
         size="lg"
         @open="refuseComment = ''"
       >
@@ -42,7 +42,7 @@
             v-bind="attrs"
             v-on="listeners"
           >
-            {{ t("Refuse") }}
+            {{ t("Refuser") }}
           </BrandedButton>
         </template>
 
@@ -60,7 +60,7 @@
           >
             <InputGroup
               v-model="refuseComment"
-              :label="t('You can provide the refusal reason:')"
+              :label="t('Vous pouvez fournir le motif de refus :')"
             />
           </form>
         </template>
@@ -73,7 +73,7 @@
                 :disabled="loading"
                 @click="close"
               >
-                {{ t("Cancel") }}
+                {{ t("Annuler") }}
               </BrandedButton>
             </div>
             <div class="fr-col-auto">
@@ -83,7 +83,7 @@
                 :disabled="loading || !refuseComment"
                 :form="refuseFormId"
               >
-                {{ t("Refuse request") }}
+                {{ t("Refuser la demande") }}
               </BrandedButton>
             </div>
           </div>
@@ -96,7 +96,6 @@
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
 import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiCheckLine, RiUserAddLine } from '@remixicon/vue'
 import InputGroup from '../InputGroup/InputGroup.vue'
 import ModalWithButton from '../Modal/ModalWithButton.vue'
@@ -111,7 +110,7 @@ const emits = defineEmits<{
   (e: 'refresh'): void
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const loading = ref(false)
 

@@ -6,12 +6,13 @@
     >
       <div class="w-full flex-none md:flex-1">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ $t('{n} datasets', pageData.total) }}
+          {{ $t('{n} jeux de données', pageData.total) }}
         </h2>
       </div>
       <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
-        <ModalWithButton
-          :title="$t('Add datasets')"
+        <!-- TODO: re-enable when elements are properly handled -->
+        <!-- <ModalWithButton
+          :title="$t('Ajouter des jeux de données')"
           size="xl"
         >
           <template #button="{ attrs, listeners }">
@@ -21,7 +22,7 @@
               v-bind="attrs"
               v-on="listeners"
             >
-              {{ $t('Add datasets') }}
+              {{ $t('Ajouter des jeux de données') }}
             </BrandedButton>
           </template>
 
@@ -37,11 +38,11 @@
                 :disabled="!datasets.length"
                 @click="save(close)"
               >
-                {{ $t("Save") }}
+                {{ $t("Sauvegarder") }}
               </BrandedButton>
             </div>
           </template>
-        </ModalWithButton>
+        </ModalWithButton> -->
       </div>
     </div>
 
@@ -50,18 +51,19 @@
         <AdminDatasetsTable
           :datasets="pageData ? pageData.data : []"
         >
-          <template #actions="{ dataset }">
+          <!-- TODO: re-enable when elements are properly handled -->
+          <!-- <template #actions="{ dataset }">
             <BrandedButton
               icon-only
-              color="secondary-softer"
+              color="tertiary"
               keep-margins-even-without-borders
               :icon="RiDeleteBinLine"
               size="xs"
               @click="removeDataset(dataset)"
             >
-              {{ $t('Remove dataset') }}
+              {{ $t('Supprimer le jeu de données') }}
             </BrandedButton>
-          </template>
+          </template> -->
         </AdminDatasetsTable>
         <Pagination
           :page="page"
@@ -74,43 +76,18 @@
 </template>
 
 <script setup lang="ts">
-import type { Dataset, DatasetV2, TopicV2 } from '@datagouv/components-next'
-import { BrandedButton } from '@datagouv/components-next'
-import { RiAddLine, RiDeleteBinLine } from '@remixicon/vue'
+import type { DatasetV2, TopicV2 } from '@datagouv/components-next'
+import { LoadingBlock, Pagination } from '@datagouv/components-next'
 import AdminDatasetsTable from '~/components/AdminTable/AdminDatasetsTable/AdminDatasetsTable.vue'
-import Pagination from '~/datagouv-components/src/components/Pagination.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{
   topic: TopicV2
 }>()
 
-const datasets = ref<Array<Dataset | DatasetV2>>([])
-
 const page = ref(1)
 const params = computed(() => {
-  return { page: page.value }
+  return { page: page.value, topic: props.topic.id }
 })
-const { data: pageData, status, refresh } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/topics/${props.topic.id}/datasets/`, { lazy: true, query: params })
-
-const { $api } = useNuxtApp()
-const { toast } = useToast()
-const { t } = useI18n()
-const save = async (close: () => void) => {
-  await $api(`/api/2/topics/${props.topic.id}/datasets/`, {
-    method: 'POST',
-    body: datasets.value,
-  })
-
-  toast.success(t('Saved.'))
-  close()
-  datasets.value = []
-  await refresh()
-}
-const removeDataset = async (dataset: Dataset | DatasetV2) => {
-  await $api(`/api/2/topics/${props.topic.id}/datasets/${dataset.id}/`, { method: 'DELETE' })
-
-  toast.success(t('Removed.'))
-  await refresh()
-}
+const { data: pageData, status } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/datasets/`, { lazy: true, query: params })
 </script>

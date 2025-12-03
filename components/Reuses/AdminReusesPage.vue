@@ -1,11 +1,11 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Reuses') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Réutilisations') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="font-bold text-2xl mb-5">
-      {{ t("Reuses") }}
+    <h1 class="font-extrabold text-2xl text-gray-title mb-5">
+      {{ t("Réutilisations") }}
     </h1>
     <TransferRequestList
       v-if="props.organization || props.user"
@@ -19,7 +19,7 @@
     >
       <div class="w-full flex-none md:flex-1">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ t('{n} reuses', pageData.total) }}
+          {{ t('{n} réutilisations | {n} réutilisation | {n} réutilisations', pageData.total) }}
         </h2>
       </div>
       <div class="flex-none">
@@ -27,7 +27,7 @@
           v-model="q"
           type="search"
           :icon="RiSearchLine"
-          :placeholder="$t('Search')"
+          :placeholder="$t('Recherche')"
         />
       </div>
     </div>
@@ -60,18 +60,18 @@
       />
       <template v-if="q">
         <p class="fr-text--bold fr-my-3v">
-          {{ t(`No results for "{q}"`, { q }) }}
+          {{ t(`Pas de résultats pour « {q} »`, { q }) }}
         </p>
         <BrandedButton
           color="primary"
           @click="q = qDebounced = ''"
         >
-          {{ $t('Reset filters') }}
+          {{ $t('Réinitialiser les filtres') }}
         </BrandedButton>
       </template>
       <template v-else>
         <p class="fr-text--bold fr-my-3v">
-          {{ t(`You haven't published a reuse yet`) }}
+          {{ t(`Vous n'avez pas encore publié de réutilisation`) }}
         </p>
         <AdminPublishButton type="reuse" />
       </template>
@@ -80,10 +80,9 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, type Organization, type Reuse, type User } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, type Organization, type Reuse, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiSearchLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import AdminReusesTable from '../AdminTable/AdminReusesTable/AdminReusesTable.vue'
@@ -91,7 +90,7 @@ import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
 import type { PaginatedArray, ReuseSortedBy, SortDirection } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const props = defineProps<{
   organization?: Organization | null
@@ -128,8 +127,10 @@ const params = computed(() => {
 
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Reuse>>('/api/1/reuses/', { lazy: true, query: params })
 
-watch(pageData, async (data) => {
-  const activities = await getActitiesForObjects($api, data.data, 'created_at')
-  reuseActivities.value = { ...reuseActivities.value, ...activities }
+watchEffect(async () => {
+  if (pageData.value) {
+    const activities = await getLatestActivitiesForObjects($api, pageData.value.data, 'created_at')
+    reuseActivities.value = { ...reuseActivities.value, ...activities }
+  }
 })
 </script>

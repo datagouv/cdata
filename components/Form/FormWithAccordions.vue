@@ -5,7 +5,7 @@
   >
     <Sidemenu
       class="w-5/12 hidden lg:block"
-      :button-text="$t('Help')"
+      :button-text="$t('Aide')"
       :on-right="true"
       :fixed="true"
     >
@@ -14,7 +14,7 @@
           class="fr-icon--sm fr-icon-question-line"
           aria-hidden="true"
         />
-        {{ $t('Help') }}
+        {{ $t('Aide') }}
       </template>
 
       <div
@@ -53,6 +53,7 @@ provide('formInfo', props.formInfo)
 const opened = ref<string | null>(null)
 
 provide(key, {
+  withIcon: true,
   isOpen(id: string) {
     return opened.value === id
   },

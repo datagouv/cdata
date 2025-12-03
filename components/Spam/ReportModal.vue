@@ -1,6 +1,6 @@
 <template>
   <ModalWithButton
-    :title="reported ? $t('Thanks for having reported this content') : $t('Report this content')"
+    :title="reported ? $t(`Merci d'avoir signalé ce contenu`) : $t('Signaler ce contenu')"
     size="lg"
   >
     <template #button="{ attrs, listeners }">
@@ -12,44 +12,42 @@
         v-bind="attrs"
         v-on="listeners"
       >
-        {{ $t('Report') }}
+        {{ $t('Signalement') }}
       </BrandedButton>
     </template>
 
-    <i18n-t
+    <TranslationT
       v-if="reported"
-      keypath="The {site} team will review the content to determine if it violates {terms}. Thank you for your help."
+      keypath="L’équipe de {site} examinera le contenu pour déterminer si celui-ci enfreint {terms}. Merci pour votre aide."
       tag="p"
     >
       <template #site>
         {{ config.public.title }}
       </template>
       <template #terms>
-        <NuxtLinkLocale
+        <CdataLink
           to="/pages/legal/cgu/"
-          external
         >
-          {{ $t("our terms of use") }}
-        </NuxtLinkLocale>
+          {{ $t("nos modalités d'utilisation") }}
+        </CdataLink>
       </template>
-    </i18n-t>
+    </TranslationT>
     <div v-else>
       <SimpleBanner
         type="warning"
         class="mb-5"
       >
         {{ $t("Merci de ne signaler qu’en cas d’inquiétude sérieuse.") }}
-        <NuxtLinkLocale
+        <CdataLink
           to="/pages/legal/cgu/"
-          external
         >
-          {{ $t("See our terms of use.") }}
-        </NuxtLinkLocale>
+          {{ $t("Voir nos modalités d'utilisation.") }}
+        </CdataLink>
       </SimpleBanner>
 
       <SelectGroup
         v-model="form.reason"
-        :label="$t('Report reason')"
+        :label="$t('Raison du signalement')"
         :required="true"
         :has-error="!!getFirstError('reason')"
         :has-warning="!!getFirstWarning('reason')"
@@ -60,8 +58,8 @@
       <InputGroup
         v-model="form.message"
         type="textarea"
-        :label="$t('Your message')"
-        :placeholder="$t('Avoid sharing personal information.')"
+        :label="$t('Votre message')"
+        :placeholder="$t('Évitez de partager des informations personnelles.')"
         :has-error="!!getFirstError('message')"
         :has-warning="!!getFirstWarning('message')"
         :error-text="getFirstError('message')"
@@ -77,7 +75,7 @@
           color="primary"
           @click="close"
         >
-          {{ $t('Close') }}
+          {{ $t('Fermer') }}
         </BrandedButton>
         <BrandedButton
           v-if="! reported"
@@ -85,7 +83,7 @@
           :loading
           @click="close"
         >
-          {{ $t('Cancel') }}
+          {{ $t('Annuler') }}
         </BrandedButton>
         <BrandedButton
           v-if="! reported"
@@ -94,7 +92,7 @@
           :icon="RiFlagLine"
           @click="send"
         >
-          {{ $t('Report') }}
+          {{ $t('Signalement') }}
         </BrandedButton>
       </div>
     </template>
@@ -103,8 +101,9 @@
 
 <script setup lang="ts">
 import { RiFlagLine } from '@remixicon/vue'
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, TranslationT } from '@datagouv/components-next'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
+import CdataLink from '../CdataLink.vue'
 
 const props = defineProps<{
   subject: { id: string, class: string }

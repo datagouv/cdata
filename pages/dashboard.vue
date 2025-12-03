@@ -4,7 +4,6 @@
       <Breadcrumb>
         <BreadcrumbItem
           to="/"
-          :external="true"
         >
           {{ $t('Accueil') }}
         </BreadcrumbItem>
@@ -13,7 +12,7 @@
         </BreadcrumbItem>
       </Breadcrumb>
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl text-gray-title  mb-0 font-extrabold">
+        <h1 class="text-2xl text-gray-title mb-0 font-extrabold">
           {{ $t('Statistiques des 12 derniers mois') }}
         </h1>
         <BrandedButton

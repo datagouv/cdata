@@ -4,14 +4,14 @@
       type="primary"
       class="mb-4 flex items-center space-x-5"
     >
-      <AdminLoader class="size-14" />
+      <AnimatedLoader class="size-14" />
 
       <div class="w-full">
         <p class="font-bold mb-1">
-          {{ $t("Your harvester's preview is loading.") }}
+          {{ $t("La prévisualisation de votre moissonneur est en cours.") }}
         </p>
         <p class="m-0 text-xs/5">
-          {{ $t('This may take a few moments, thank you for your patience!') }}
+          {{ $t('Cela peut prendre quelques instants, merci de votre patience !') }}
         </p>
       </div>
     </SimpleBanner>
@@ -65,8 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { SimpleBanner } from '@datagouv/components-next'
-import AdminLoader from '../AdminLoader/AdminLoader.vue'
+import { AnimatedLoader, SimpleBanner } from '@datagouv/components-next'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 </script>

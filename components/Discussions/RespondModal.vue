@@ -1,20 +1,20 @@
 <template>
   <ModalWithButton
     v-if="!thread.closed"
-    :title="$t('Respond')"
+    :title="$t('Répondre')"
     size="lg"
   >
     <template #button="{ attrs, listeners }">
       <BrandedButton
         :icon="RiChatNewLine"
         size="xs"
-        color="secondary-softer"
+        color="tertiary"
         icon-only
         keep-margins-even-without-borders
         v-bind="attrs"
         v-on="listeners"
       >
-        {{ $t('Respond to the discussion') }}
+        {{ $t('Répondre à la discussion') }}
       </BrandedButton>
     </template>
     <template #default="{ close }">

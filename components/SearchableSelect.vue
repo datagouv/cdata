@@ -28,9 +28,11 @@
       :by="compareTwoOptions"
       :aria-describedby="ariaDescribedBy"
       :disabled="loading"
+      nullable
     >
       <div class="relative mt-1">
         <div
+          ref="floatingReference"
           class="relative w-full cursor-default overflow-hidden bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm"
         >
           <ComboboxInput
@@ -41,7 +43,7 @@
             :placeholder
             @change="query = $event.target.value"
           />
-          <AdminLoader
+          <AnimatedLoader
             v-if="loading"
             class="absolute text-lg top-2 right-3 flex items-center justify-end hover:!bg-transparent"
           />
@@ -56,11 +58,13 @@
             <ComboboxButton
               v-if="! open"
               class="w-full h-full hover:!bg-transparent"
+              :data-testid="`searchable-select-${simpleSlug(label)}`"
             />
             <button
               v-if="showClearButton"
               type="button"
               class="p-2"
+              :title="$t('Clear')"
               @click.prevent="model = null"
             >
               <RiDeleteBinLine class="size-4 text-gray-800" />
@@ -78,13 +82,14 @@
         >
           <ComboboxOptions
             ref="popover"
+            :style="floatingStyles"
             class="z-10 mt-1 absolute max-h-60 min-w-80 w-full overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm pl-0"
           >
             <div
               v-if="!filteredAndGroupedOptions && query !== ''"
               class="relative cursor-default select-none px-4 py-2 text-gray-700"
             >
-              Nothing found.
+              {{ $t('Aucun résultat') }}
             </div>
 
             <div
@@ -117,7 +122,7 @@
                   >
                     <RiCheckLine
                       v-if="comboboxSlot.selected"
-                      class="size-4 text-primary"
+                      class="size-4 text-new-primary"
                     />
                   </div>
                   <slot
@@ -145,7 +150,8 @@
 
 <script setup lang="ts" generic="T extends string | number | object, Multiple extends true | false">
 import { ref, computed } from 'vue'
-import { RiArrowDownSLine, RiCheckLine, RiDeleteBinLine } from '@remixicon/vue'
+import { useFloating, autoUpdate, autoPlacement } from '@floating-ui/vue'
+import { AnimatedLoader } from '@datagouv/components-next'
 import {
   Combobox,
   ComboboxInput,
@@ -154,6 +160,7 @@ import {
   ComboboxOption,
   TransitionRoot,
 } from '@headlessui/vue'
+import { RiArrowDownSLine, RiCheckLine, RiDeleteBinLine } from '@remixicon/vue'
 import { watchDebounced } from '@vueuse/core'
 
 type ModelType = Multiple extends false ? T : Array<T>
@@ -240,6 +247,15 @@ const fetchSuggests = async () => {
   }
 }
 
+async function fetchSuggestsQuery(q: string) {
+  query.value = q
+  return fetchSuggests()
+}
+
+defineExpose({
+  fetchSuggestsQuery,
+})
+
 onMounted(async () => {
   await fetchSuggests()
 })
@@ -293,4 +309,14 @@ function compareTwoOptions(a: T | null, b: T | null) {
 function isActive(activeOption: T, currentOption: T) {
   return activeOption ? props.getOptionId(activeOption) === props.getOptionId(currentOption) : false
 }
+
+const referenceRef = useTemplateRef('floatingReference')
+const floatingRef = useTemplateRef<InstanceType<typeof ComboboxOptions>>('popover')
+const { floatingStyles } = useFloating(referenceRef, floatingRef, {
+  middleware: [autoPlacement({
+    allowedPlacements: ['bottom-start', 'bottom', 'bottom-end'],
+    crossAxis: true,
+  })],
+  whileElementsMounted: autoUpdate,
+})
 </script>

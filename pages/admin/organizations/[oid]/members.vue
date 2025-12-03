@@ -1,11 +1,11 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Members') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Membres') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="font-bold text-2xl mb-5">
-      {{ t("Members") }}
+    <h1 class="font-extrabold text-gray-title text-2xl mb-5">
+      {{ t("Membres") }}
     </h1>
 
     <div
@@ -13,7 +13,7 @@
       class="mb-8"
     >
       <h2 class="text-sm font-bold uppercase mt-5 mb-5">
-        {{ t("{n} requests", { n: membershipRequests.length }) }}
+        {{ t("{n} demandes | {n} demande | {n} demandes", { n: membershipRequests.length }) }}
       </h2>
       <div class="space-y-8 max-w-6xl">
         <AdminMembershipRequest
@@ -33,7 +33,7 @@
     >
       <div class="flex-1">
         <h2 class="text-sm font-bold uppercase m-0">
-          {{ t("{n} members", { n: organization.members.length }) }}
+          {{ t("{n} membres | {n} membre | {n} membres", { n: organization.members.length }) }}
         </h2>
       </div>
       <div
@@ -41,7 +41,7 @@
         class="flex-none"
       >
         <ModalWithButton
-          :title="t('Add member to the organization')"
+          :title="t(`Ajouter un membre à l'organisation`)"
           size="lg"
         >
           <template #button="{ attrs, listeners }">
@@ -51,7 +51,7 @@
               v-bind="attrs"
               v-on="listeners"
             >
-              {{ t("Add member") }}
+              {{ t("Ajouter un membre") }}
             </BrandedButton>
           </template>
 
@@ -63,8 +63,8 @@
               <div>
                 <SearchableSelect
                   v-model="addForm.user"
-                  :label="$t('User')"
-                  :placeholder="$t('Search a user')"
+                  :label="$t('Utilisateur')"
+                  :placeholder="$t('Rechercher un utilisateur')"
                   class="mb-6"
                   :display-value="(user) => `${user.first_name} ${user.last_name}`"
                   :suggest="suggestUser"
@@ -77,8 +77,14 @@
                         :src="getUserAvatar(user, 24)"
                         loading="lazy"
                         alt=""
+                        data-testid="user-avatar"
                       />
-                      <span>{{ user.first_name }} {{ user.last_name }}</span>
+                      <span>{{ user.first_name }} {{ user.last_name }}
+                        <small
+                          v-if="user.email"
+                          class="text-gray-medium"
+                        >({{ user.email }})</small>
+                      </span>
                     </div>
                   </template>
                 </SearchableSelect>
@@ -86,7 +92,7 @@
               <SelectGroup
                 v-if="roles.length > 0"
                 v-model="addForm.role"
-                :label="t('Role of the member')"
+                :label="t('Rôle du membre')"
                 :options="rolesOptions"
               />
             </form>
@@ -100,7 +106,7 @@
                 :disabled="loading"
                 @click="close"
               >
-                {{ t("Cancel") }}
+                {{ t("Annuler") }}
               </BrandedButton>
               <BrandedButton
                 color="primary"
@@ -109,7 +115,7 @@
                 :form="addFormId"
                 :disabled="loading || !canSubmitNewMember"
               >
-                {{ t("Add to the organization") }}
+                {{ t("Ajouter à l'organisation") }}
               </BrandedButton>
             </div>
           </template>
@@ -124,25 +130,25 @@
         <thead>
           <tr>
             <AdminTableTh scope="col">
-              {{ t("Members") }}
+              {{ t("Membres") }}
             </AdminTableTh>
             <AdminTableTh
               scope="col"
               class="w-36"
             >
-              {{ t("Status") }}
+              {{ t("Statut") }}
             </AdminTableTh>
             <AdminTableTh
               scope="col"
               class="w-28"
             >
-              {{ t("Member since") }}
+              {{ t("Membre depuis") }}
             </AdminTableTh>
             <AdminTableTh
               scope="col"
               class="w-40"
             >
-              {{ t("Last connection") }}
+              {{ t("Dernière connexion") }}
             </AdminTableTh>
             <AdminTableTh scope="col">
               {{ t("Actions") }}
@@ -156,12 +162,12 @@
           >
             <td>
               <p v-if="isMeAdmin()">
-                <NuxtLinkLocale
+                <CdataLink
                   :to="`/admin/users/${member.user.id}/profile`"
                   class="fr-text--bold fr-m-0"
                 >
                   {{ member.user.first_name }} {{ member.user.last_name }}
-                </NuxtLinkLocale>
+                </CdataLink>
               </p>
               <p
                 v-else
@@ -176,35 +182,35 @@
                 size="xs"
                 :type="getStatusType(member.role)"
               >
-                {{ getStatus(member.role) }}
+                {{ member.label }}
               </AdminBadge>
             </td>
             <td>{{ formatDate(member.since) }}</td>
             <td>
               <span v-if="member.user.last_login_at">{{ formatFromNow(member.user.last_login_at) }}</span>
-              <span v-else>{{ t("No connection") }}</span>
+              <span v-else>{{ t("Aucune connexion") }}</span>
             </td>
             <td>
               <div class="flex items-center">
                 <BrandedButton
                   :href="member.user.page"
-                  color="secondary-softer"
+                  color="tertiary"
                   :icon="RiEyeLine"
                   size="xs"
                   icon-only
                   keep-margins-even-without-borders
                 >
-                  {{ $t('See public page') }}
+                  {{ $t('Voir la page publique') }}
                 </BrandedButton>
                 <ModalWithButton
                   v-if="isOrgAdmin"
-                  :title="$t('Edit member')"
+                  :title="$t('Modifier le membre')"
                   size="lg"
                   @open="newRole = member.role"
                 >
                   <template #button="{ attrs, listeners }">
                     <BrandedButton
-                      color="secondary-softer"
+                      color="tertiary"
                       :icon="RiPencilLine"
                       icon-only
                       size="xs"
@@ -212,7 +218,7 @@
                       v-bind="attrs"
                       v-on="listeners"
                     >
-                      {{ t("Edit") }}
+                      {{ t("Modifier") }}
                     </BrandedButton>
                   </template>
 
@@ -242,7 +248,7 @@
                         <SelectGroup
                           v-if="roles.length > 0"
                           v-model="newRole"
-                          :label="t('Role of the member')"
+                          :label="t('Rôle du membre')"
                           :options="rolesOptions"
                         />
                       </div>
@@ -251,23 +257,23 @@
                           type="submit"
                           :disabled="loading"
                         >
-                          {{ t("Validate") }}
+                          {{ t("Valider") }}
                         </BrandedButton>
                       </div>
                     </form>
                     <BannerAction
                       class="mt-4"
                       type="danger"
-                      :title="$t('Remove member from the organization')"
+                      :title="$t(`Retirer le membre de l'organisation`)"
                     >
-                      {{ t("Be careful, this action can't be reverse.") }}
+                      {{ t("Attention, cette action ne peut pas être annulée.") }}
                       <template #button>
                         <BrandedButton
                           :loading
                           :icon="RiLogoutBoxRLine"
                           @click="removeMemberFromOrganization(member, close)"
                         >
-                          {{ t('Remove member') }}
+                          {{ t('Retirer le membre') }}
                         </BrandedButton>
                       </template>
                     </BannerAction>
@@ -283,9 +289,8 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BannerAction, getUserAvatar, useFormatDate, type Member, type Organization } from '@datagouv/components-next'
+import { Avatar, BannerAction, LoadingBlock, useFormatDate, useGetUserAvatar, type Member, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiAddLine, RiEyeLine, RiLogoutBoxRLine, RiPencilLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import type { AdminBadgeType, MemberRole, PendingMembershipRequest, UserSuggest } from '~/types/types'
@@ -297,12 +302,13 @@ import SearchableSelect from '~/components/SearchableSelect.vue'
 import AdminMembershipRequest from '~/components/AdminMembershipRequest/AdminMembershipRequest.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import { isUserOrgAdmin, useMe } from '~/utils/auth'
 
 const config = useRuntimeConfig()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate, formatFromNow } = useFormatDate()
 const { $api } = useNuxtApp()
-
+const getUserAvatar = useGetUserAvatar()
 const me = useMe()
 
 const { currentOrganization } = useCurrentOwned()
@@ -315,7 +321,7 @@ const url = computed(() => {
   return url.toString()
 })
 
-const { data: organization, status, refresh } = await useAPI<Organization>(url, { lazy: true })
+const { data: organization, status, refresh } = await useAPI<Organization>(url, { redirectOn404: true })
 const { data: membershipRequests, refresh: refreshMembershipRequests } = await useAPI<Array<PendingMembershipRequest>>(`/api/1/organizations/${currentOrganization.value?.id}/membership/`, {
   lazy: true,
   query: { status: 'pending' },
@@ -328,12 +334,12 @@ const refreshAll = async () => {
   ])
 }
 
-const isOrgAdmin = computed(() => isMeAdmin() || (organization && organization.value.members.some(member => member.user.id === me.value.id && member.role === 'admin')))
+const isOrgAdmin = computed(() => isUserOrgAdmin(me.value, organization.value))
 
 const newRole = ref<MemberRole | null>(null)
 const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })
 const rolesOptions = computed(() => {
-  if (!roles) return []
+  if (!roles.value) return []
 
   return roles.value.map(role => ({
     label: role.label,
@@ -341,10 +347,6 @@ const rolesOptions = computed(() => {
   }))
 })
 const loading = ref(false)
-
-function getStatus(role: MemberRole): string {
-  return roles.value.find(memberRole => memberRole.id === role)?.label ?? role
-}
 
 function getStatusType(role: MemberRole): AdminBadgeType {
   return role === 'admin' ? 'primary' : 'secondary'

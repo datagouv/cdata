@@ -3,7 +3,6 @@
     <Breadcrumb>
       <BreadcrumbItem
         to="/"
-        external
       >
         {{ $t('Accueil') }}
       </BreadcrumbItem>
@@ -31,17 +30,18 @@
           type="submit"
           color="primary"
         >
-          {{ $t("Next") }}
+          {{ $t("Suivant") }}
         </BrandedButton>
       </template>
     </DescribeReuse>
 
-    <Step2AddDatasets
+    <Step2AddDatasetsAndDataservices
       v-if="currentStep === 2"
-      v-model="datasets"
+      v-model:datasets="datasets"
+      v-model:dataservices="dataservices"
       :loading
       @previous="moveToStep(1)"
-      @next="datasetsNext"
+      @next="datasetsAndDataservicesNext"
     />
     <Step3CompletePublication
       v-if="currentStep === 3 && newReuse"
@@ -55,11 +55,11 @@
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
-import type { Dataset, DatasetV2, Reuse } from '@datagouv/components-next'
+import type { Dataservice, DatasetV2, Reuse } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
-import Step2AddDatasets from '~/components/Reuses/New/Step2AddDatasets.vue'
+import Step2AddDatasetsAndDataservices from '~/components/Reuses/New/Step2AddDatasetsAndDataservices.vue'
 import Step3CompletePublication from '~/components/Reuses/New/Step3CompletePublication.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type {
@@ -67,18 +67,19 @@ import type {
   ReuseForm,
 } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const route = useRoute()
 const { $api, $fileApi } = useNuxtApp()
 
 const steps = computed(() => [
-  t('Describe your reuse'),
-  t('Link datasets'),
-  t('Complete your publishing'),
+  t('Décrivez votre réutilisation'),
+  t('Lier des jeux de données et des APIs'),
+  t('Finalisez la publication'),
 ])
 
 const REUSE_FORM_STATE = 'reuse-form'
 const REUSE_DATASET_STATE = 'reuse-datasets'
+const REUSE_DATASERVICE_STATE = 'reuse-dataservices'
 
 const reuseForm = useState(
   REUSE_FORM_STATE,
@@ -93,6 +94,8 @@ const reuseForm = useState(
       tags: [],
       image: null,
       private: true,
+      featured: false,
+      archived: null,
     } as ReuseForm),
 )
 
@@ -105,12 +108,27 @@ onMounted(async () => {
   if (!route.query.dataset_id) return
 
   const dataset = await $api<DatasetV2>(`/api/2/datasets/${route.query.dataset_id}/`)
-  if (!datasets.value.some(d => d.id === dataset.id))
+  if (!datasets.value.some(d => d.id === dataset.id)) {
     datasets.value.push(dataset)
+  }
 })
 
-const datasets = useState<Array<Dataset | DatasetV2 | DatasetSuggest>>(
+const datasets = useState<Array<DatasetV2 | DatasetSuggest>>(
   REUSE_DATASET_STATE,
+  () => [],
+)
+
+onMounted(async () => {
+  if (!route.query.dataservice_id) return
+
+  const dataservice = await $api<Dataservice>(`/api/2/dataservices/${route.query.dataservice_id}/`)
+  if (!dataservices.value.some(d => d.id === dataservice.id)) {
+    dataservices.value.push(dataservice)
+  }
+})
+
+const dataservices = useState<Array<Dataservice>>(
+  REUSE_DATASERVICE_STATE,
   () => [],
 )
 
@@ -134,7 +152,7 @@ function reuseNext() {
   moveToStep(2)
 }
 
-function datasetsNext() {
+function datasetsAndDataservicesNext() {
   save()
 }
 
@@ -143,7 +161,11 @@ async function save() {
     loading.value = true
     newReuse.value = await $api<Reuse>('/api/1/reuses/', {
       method: 'POST',
-      body: JSON.stringify(reuseToApi(reuseForm.value, { private: true, datasets: datasets.value })),
+      body: JSON.stringify(reuseToApi(reuseForm.value, {
+        private: true,
+        datasets: datasets.value,
+        dataservices: dataservices.value,
+      })),
     })
 
     if (reuseForm.value.image && typeof reuseForm.value.image !== 'string') {
@@ -158,6 +180,7 @@ async function save() {
     await moveToStep(3)
     clearNuxtState(REUSE_FORM_STATE)
     clearNuxtState(REUSE_DATASET_STATE)
+    clearNuxtState(REUSE_DATASERVICE_STATE)
   }
   finally {
     loading.value = false

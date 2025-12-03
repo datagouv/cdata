@@ -1,4 +1,4 @@
-import type { Dataset, DatasetV2, Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
+import type { Dataservice, Dataset, DatasetV2, Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
 import type { DatasetSuggest, NewReuseForApi, ReuseForm } from '~/types/types'
 
 export const reusesXFields = 'data{archived,deleted,featured,id,owner,organization,metrics,created_at,last_modified,title,slug,page,description,type,url,image,image_thumbnail},page,page_size,total'
@@ -23,7 +23,7 @@ export function reuseToForm(reuse: Reuse, types: Array<ReuseType>, topics: Array
   }
 }
 
-export function reuseToApi(form: ReuseForm, overrides: { datasets?: Array<Dataset | DatasetV2 | DatasetSuggest>, private?: boolean, archived?: string | null } = {}): NewReuseForApi {
+export function reuseToApi(form: ReuseForm, overrides: { datasets?: Array<Dataset | DatasetV2 | DatasetSuggest>, dataservices?: Array<Dataservice>, private?: boolean, archived?: string | null, deleted?: null } = {}): NewReuseForApi {
   return {
     organization: form.owned?.organization?.id,
     owner: form.owned?.owner?.id,
@@ -31,8 +31,10 @@ export function reuseToApi(form: ReuseForm, overrides: { datasets?: Array<Datase
     url: form.url,
     private: overrides.private,
     archived: overrides.archived,
+    deleted: overrides.deleted,
     description: form.description,
     datasets: overrides.datasets ? overrides.datasets.map(({ id }) => id) : undefined,
+    dataservices: overrides.dataservices ? overrides.dataservices.map(({ id }) => id) : undefined,
     type: form.type?.id || '',
     topic: form.topic?.id || '',
     tags: form.tags.map(t => t.text),
@@ -63,14 +65,4 @@ export async function getReuseMetrics(rid: string) {
     reuseViews,
     reuseViewsTotal,
   }
-}
-
-export function createReuseMetricsUrl(reuseViews: Record<string, number>) {
-  let data = 'month,visit\n'
-
-  for (const month in reuseViews) {
-    data += `${month},${reuseViews[month]}\n`
-  }
-
-  return URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
 }

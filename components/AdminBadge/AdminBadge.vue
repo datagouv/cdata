@@ -26,12 +26,13 @@ const props = defineProps<{
 
 const colors = computed(() => {
   return {
-    primary: 'text-datagouv bg-datagouv-lightest',
+    primary: 'text-new-info bg-new-info-light',
     secondary: 'text-secondary-dark bg-secondary-lightest',
-    success: 'text-success-dark bg-success-lightest',
-    warning: 'text-warning2-dark bg-warning2-lightest',
-    danger: 'text-danger-dark bg-danger-lightest',
+    success: 'text-new-success bg-new-success-light',
+    warning: 'text-new-warning bg-new-warning-light',
+    danger: 'text-new-error bg-new-error-light',
     default: 'text-gray-plain bg-gray-lower',
+    pink: 'text-pink bg-pink-soft',
   }[props.type]
 })
 

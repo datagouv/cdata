@@ -1,4 +1,5 @@
 import type { Organization, User } from '@datagouv/components-next'
+import { usePostApiWithCsrf } from './api'
 
 export type Me = User & {
   about: string | null
@@ -25,7 +26,10 @@ export const useMaybeMe = () => {
 }
 
 export const useToken = () => {
-  return useCookie('token')
+  return useCookie('token', {
+    secure: true,
+    sameSite: true,
+  })
 }
 
 export function isAdmin(me: Me | null | undefined): boolean {
@@ -39,6 +43,12 @@ export function isMeAdmin(): boolean {
   return isAdmin(me.value)
 }
 
+export function isUserOrgAdmin(me: Me | null | undefined, organization: Organization | null | undefined): boolean {
+  if (isAdmin(me)) return true
+  if (!me || !organization) return false
+  return organization.members.some(member => member.user.id === me.id && member.role === 'admin')
+}
+
 export const loadMe = async (meState: Ref<Me | null | undefined>) => {
   // Here we cannot use the `useAPI` composable because
   // we don't want the classic error management that redirect
@@ -48,6 +58,7 @@ export const loadMe = async (meState: Ref<Me | null | undefined>) => {
   const cookie = useRequestHeader('cookie')
 
   const token = useToken()
+  const { setCurrentOrganization, setCurrentUser } = useCurrentOwnedSetters()
 
   const headers: Record<string, string> = {}
 
@@ -69,8 +80,36 @@ export const loadMe = async (meState: Ref<Me | null | undefined>) => {
       credentials: 'include',
       headers,
     })
+    if (meState.value) {
+      setCurrentUser(meState.value)
+      for (const org of meState.value.organizations) {
+        setCurrentOrganization(org)
+      }
+    }
   }
   catch {
     meState.value = null
+  }
+}
+
+export function useLogout() {
+  const postApiWithCsrf = usePostApiWithCsrf()
+  const token = useToken()
+  const me = useMe()
+
+  return async () => {
+    token.value = null
+    refreshCookie('token')
+
+    const response = await postApiWithCsrf<{ proconnect_logout_url: string | null }>('/logout/', {})
+
+    await loadMe(me)
+
+    if (response.proconnect_logout_url) {
+      await navigateTo(response.proconnect_logout_url, { external: true })
+    }
+    else {
+      await navigateTo('/')
+    }
   }
 }

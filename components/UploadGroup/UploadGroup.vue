@@ -18,9 +18,9 @@
       class="flex flex-col items-center gap-2 border border-gray-default border-dashed text-mention-grey font-bold"
       :class="{ 'border-plain-error': hasError }"
     >
-      <div>{{ $t('Drag and drop files') }}</div>
+      <div>{{ $t('Glissez et déposez des fichiers') }}</div>
       <Divider color="bg-gray-200">
-        {{ $t('or') }}
+        {{ $t('ou') }}
       </Divider>
       <input
         :id="id"
@@ -36,11 +36,11 @@
       <BrandedButton
         color="secondary"
         :disabled="disabled"
-        :title="$t('Browse')"
+        :title="$t('Parcourir')"
         :aria-controls="id"
         @click.prevent.stop="open"
       >
-        {{ $t('Browse') }}
+        {{ $t('Parcourir') }}
       </BrandedButton>
     </PaddedContainer>
     <p
@@ -68,10 +68,9 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, PaddedContainer } from '@datagouv/components-next'
 import { computed } from 'vue'
 import { useDropZone } from '@vueuse/core'
-import PaddedContainer from '~/components/PaddedContainer/PaddedContainer.vue'
 import Required from '~/components/Required/Required.vue'
 
 const props = withDefaults(defineProps<{

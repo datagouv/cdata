@@ -5,28 +5,28 @@
       size="xs"
       type="danger"
     >
-      {{ $t('Deleted') }}
+      {{ $t('Supprimé') }}
     </AdminBadge>
     <AdminBadge
       v-else-if="!harvester.active"
       size="xs"
       type="danger"
     >
-      {{ $t('Inactive') }}
+      {{ $t('Inactif') }}
     </AdminBadge>
     <AdminBadge
       v-else-if="harvester.validation.state === 'refused'"
       size="xs"
       type="danger"
     >
-      {{ $t('Refused') }}
+      {{ $t('Refusé') }}
     </AdminBadge>
     <AdminBadge
       v-else-if="harvester.validation.state === 'pending'"
       size="xs"
       type="warning"
     >
-      {{ $t('Waiting validation') }}
+      {{ $t('En attente de validation') }}
     </AdminBadge>
     <JobBadge
       v-else-if="harvester.last_job"
@@ -37,7 +37,7 @@
       size="xs"
       type="secondary"
     >
-      {{ $t('No job yet') }}
+      {{ $t(`Aucun job pour l'instant`) }}
     </AdminBadge>
   </span>
 </template>

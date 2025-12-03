@@ -3,7 +3,6 @@
     <Breadcrumb>
       <BreadcrumbItem
         to="/"
-        external
       >
         {{ $t('Accueil') }}
       </BreadcrumbItem>
@@ -26,12 +25,13 @@
       type="create"
       @submit="dataserviceNext"
     >
-      <template #button>
+      <template #button="attrs">
         <BrandedButton
           type="submit"
+          v-bind="attrs"
           color="primary"
         >
-          {{ $t("Next") }}
+          {{ $t("Suivant") }}
         </BrandedButton>
       </template>
     </DescribeDataservice>
@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, defaultAccessTypeForm } from '@datagouv/components-next'
 import type { Dataservice, Dataset, DatasetV2 } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -67,14 +67,14 @@ import type {
   DatasetSuggest,
 } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const route = useRoute()
 const { $api } = useNuxtApp()
 
 const steps = computed(() => [
-  t('Describe your dataservice'),
-  t('Link datasets'),
-  t('Complete your publishing'),
+  t('Décrire votre API'),
+  t('Lier des jeux de données'),
+  t('Finalisez la publication'),
 ])
 
 const DATASERVICE_FORM_STATE = 'dataservice-form'
@@ -88,18 +88,18 @@ const dataserviceForm = useState(
       title: '',
       acronym: '',
       description: '',
-      authorization_request_url: '',
       availability: '',
       base_api_url: '',
       datasets: [],
       technical_documentation_url: '',
       machine_documentation_url: '',
       business_documentation_url: '',
-      access_type: 'open',
       license: null,
       private: true,
       rate_limiting: '',
       contact_points: [],
+      featured: false,
+      ...defaultAccessTypeForm(),
     } as DataserviceForm),
 )
 

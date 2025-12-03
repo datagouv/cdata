@@ -3,7 +3,7 @@
     <div class="fr-col-12 fr-col-md-4 fr-col-lg-3 fr-col-xl-2">
       <nav
         class="fr-sidemenu !mx-0 !p-0 md:h-full"
-        :aria-label="t('Administration menu')"
+        :aria-label="t(`Menu d'administration`)"
       >
         <ClientOnly>
           <Disclosure
@@ -15,7 +15,7 @@
               class="fr-sidemenu__btn after:!mr-0"
               hidden
             >
-              {{ t('Open menu') }}
+              {{ t('Ouvrir le menu') }}
             </DisclosureButton>
             <DisclosurePanel>
               <AccordionGroup
@@ -43,26 +43,6 @@
       </nav>
     </div>
     <div class="fr-col-12 fr-col-md-8 fr-col-lg-9 fr-col-xl-10 md:h-full !px-4 sm:!px-10 pb-8 md:pb-16 lg:pb-64">
-      <SimpleBanner
-        type="primary"
-        class="mt-6"
-      >
-        <div class="flex flex-wrap space-x-8">
-          <div class="w-full flex-none md:flex-1 flex items-center space-x-2">
-            <RiInformationLine class="size-6 -mt-0.5" />
-            <div>{{ t("You're on the new admin interface.") }}</div>
-          </div>
-          <div class="space-x-4">
-            <a
-              class="fr-link fr-link--external"
-              :href="config.public.betaAdminFeedbackUrl"
-              target="_blank"
-            >
-              {{ $t('Give your opinion') }}
-            </a>
-          </div>
-        </div>
-      </SimpleBanner>
       <NuxtPage
         :page-key="route => route.fullPath"
       />
@@ -71,35 +51,31 @@
 </template>
 
 <script setup lang="ts">
-import { SimpleBanner } from '@datagouv/components-next'
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
-import { RiInformationLine } from '@remixicon/vue'
 import AdminSidebarMenu from '~/components/AdminSidebar/AdminSidebarMenu/AdminSidebarMenu.vue'
 
 definePageMeta({
   layout: 'fluid',
   middleware: ['auth'],
+  matomoIgnore: true,
 })
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const route = useRoute()
-const localePath = useLocalePath()
-const localeRoute = useLocaleRoute()
+const { resolve } = useRouter()
 const me = useMe()
-const { locale } = useI18n()
-const config = useRuntimeConfig()
 
 useSeoMeta({ title: 'Admin' })
 
 const { organizations, users } = useCurrentOwned()
 const isSiteAdmin = computed(() => me.value.roles?.includes('admin') || false)
 
-if (route.name === localeRoute('/admin/')?.name) {
+if (route.name === resolve('/admin/')?.name) {
   if (me.value.organizations.length > 0) {
-    await navigateTo(localePath(`/admin/organizations/${me.value.organizations[0].id}/datasets`), { replace: true })
+    await navigateTo(`/admin/organizations/${me.value.organizations[0].id}/datasets`, { replace: true })
   }
   else {
-    await navigateTo(localePath('/admin/me/datasets'), { replace: true })
+    await navigateTo('/admin/me/datasets', { replace: true })
   }
 }
 </script>

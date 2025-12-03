@@ -56,7 +56,7 @@
           :state="accordionState('machine_documentation_url')"
         >
           <p class="fr-m-0">
-            {{ t("Idéalement, proposez un lien OpenAPI (swagger) qui permet aux développeurs d'explorer les endpoints, voir les méthodes disponibles, et tester des requêtes directement depuis la documentation. Dans le cas de services géographiques, vous pouvez renseigner un lien vers le service avec une requête GetCapabilities pour obtenir les métadonnées du service.") }}
+            {{ t("Idéalement, proposez un lien OpenAPI (Swagger) qui permet aux développeurs d'explorer les endpoints, voir les méthodes disponibles, et tester des requêtes directement depuis la documentation. Dans le cas de services géographiques, vous pouvez renseigner un lien vers le service avec une requête GetCapabilities pour obtenir les métadonnées du service.") }}
           </p>
         </Accordion>
         <Accordion
@@ -70,7 +70,7 @@
         </Accordion>
         <Accordion
           :id="rateLimitingDataserviceAccordionId"
-          :title="t('Indiquer le rate limiting')"
+          :title="t(`Indiquer la limite d'appels`)"
           :state="accordionState('rate_limiting')"
         >
           <p class="fr-m-0">
@@ -126,6 +126,7 @@
       </AccordionGroup>
     </Sidemenu>
     <form
+      :id="formId"
       class="w-full lg:w-7/12"
       @submit.prevent="submit"
     >
@@ -150,7 +151,28 @@
             </p>
           </div>
         </SimpleBanner>
+
+        <slot name="top" />
+
         <RequiredExplanation />
+        <fieldset
+          v-if="isMeAdmin() && type === 'update'"
+          class="fr-fieldset"
+        >
+          <legend
+            id="featured-legend"
+            class="fr-fieldset__legend"
+          >
+            <h2 class="text-sm font-bold uppercase mb-3">
+              {{ $t("Mis en avant") }}
+            </h2>
+          </legend>
+          <ToggleSwitch
+            v-model="form.featured"
+            :label="$t('Mettre en avant')"
+            @update:model-value="$emit('feature')"
+          />
+        </fieldset>
         <fieldset
           v-if="type === 'create'"
           class="fr-fieldset"
@@ -274,13 +296,14 @@
             <InputGroup
               v-model="form.machine_documentation_url"
               :aria-describedby="machineDocumentationUrlAccordionId"
-              :label="t(`Lien vers la documentation machine de l'API`)"
+              :label="t(`Lien vers la documentation machine de l'API (fichier OpenAPI ou Swagger)`)"
               type="url"
               placeholder="https://..."
               :required="false"
               :has-error="!!getFirstError('machine_documentation_url')"
               :has-warning="!!getFirstWarning('machine_documentation_url')"
               :error-text="getFirstError('machine_documentation_url')"
+              :warning-text="getFirstWarning('machine_documentation_url')"
             />
           </LinkedToAccordion>
           <LinkedToAccordion
@@ -308,7 +331,7 @@
             <InputGroup
               v-model="form.rate_limiting"
               :aria-describedby="rateLimitingDataserviceAccordionId"
-              :label="t('Rate limiting')"
+              :label="t(`Limite d'appels`)"
               :required="false"
               :has-error="!!getFirstError('rate_limiting')"
               :has-warning="!!getFirstWarning('rate_limiting')"
@@ -369,7 +392,7 @@
             <BrandedButton
               class="mt-3"
               type="button"
-              color="primary-soft"
+              color="secondary"
               size="xs"
               :icon="RiAddLine"
               @click="form.contact_points.push({ ...defaultContactForm })"
@@ -395,36 +418,11 @@
             :accordion="accessTypeAccordionId"
             @blur="touch('access_type')"
           >
-            <RadioButtons
-              v-model="form.access_type"
-              class="!mb-0"
-              :label="t(`Type d'accès`)"
-              :options="[
-                { value: 'open', label: t('Open') },
-                { value: 'open_with_account', label: t('Open with account') },
-                { value: 'restricted', label: t('Restricted') },
-              ]"
+            <AccessTypeForm
+              v-model="form"
+              :get-first-warning
+              :get-first-error
             />
-            <SimpleBanner
-              v-if="getFirstWarning('access_type')"
-              class="mt-2"
-              type="warning"
-            >
-              {{ getFirstWarning("access_type") }}
-            </SimpleBanner>
-            <div
-              v-if="form.access_type === 'restricted'"
-              class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 items-end"
-            >
-              <SelectGroup
-                v-for="accessAudienceType in accessAudienceTypes"
-                :key="accessAudienceType"
-                v-model="form.access_audiences[accessAudienceType]"
-                class="mb-0"
-                :label="getAccessAudienceType(accessAudienceType)"
-                :options="accessAudienceConditionOptions"
-              />
-            </div>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -461,32 +459,45 @@
             />
           </LinkedToAccordion>
         </fieldset>
-        <div
-          v-if="type === 'update'"
-          class="fr-checkbox-group fr-checkbox-group--sm mb-4"
-        >
-          <input
-            id="checkboxes-hint-el-sm-1"
-            v-model="dataserviceForm.private"
-            name="checkboxes-hint-el-sm-1"
-            type="checkbox"
-            aria-describedby="checkboxes-hint-el-sm-1-messages"
-          >
-          <label
-            class="fr-label"
-            for="checkboxes-hint-el-sm-1"
-          >
-            {{ t('Passer en mode brouillon') }}
-            <span class="fr-hint-text">{{ t(`L'API ne sera visible que par les membres de l’organisation.`) }}</span>
-          </label>
-          <div
-            id="checkboxes-hint-el-sm-1-messages"
-            class="fr-messages-group"
-            aria-live="assertive"
-          />
-        </div>
         <div class="fr-grid-row fr-grid-row--right">
-          <slot name="button" />
+          <ModalClient
+            :title="$t(`Êtes vous-sûr de vouloir publier cette API sans documentation OpenAPI/Swagger ?`)"
+            size="lg"
+            :opened="openConfirmModal"
+          >
+            <TranslationT
+              keypath="Une documentation OpenAPI/swagger est un standard attendu par les utilisateurs d'API. Ce format est facile à mettre en place, vous pouvez utiliser l'éditeur officiel : {editor}."
+              tag="p"
+            >
+              <template #editor>
+                <a
+                  href="https://editor.swagger.io/"
+                  class="whitespace-nowrap"
+                > https://editor.swagger.io/</a>
+              </template>
+            </TranslationT>
+
+            <p>{{ $t(`Si néanmoins vous souhaitez tout de même publier votre API sans ce standard, celle-ci sera moins mise en avant par le moteur de recherche de {site}.`, { site: config.public.title }) }}</p>
+
+            <template #footer>
+              <div class="w-full flex justify-end space-x-4">
+                <BrandedButton
+                  color="secondary"
+                  @click="openConfirmModal = false"
+                >
+                  {{ t('Revenir au formulaire') }}
+                </BrandedButton>
+                <slot
+                  name="button"
+                  :form="formId"
+                />
+              </div>
+            </template>
+          </ModalClient>
+          <slot
+            name="button"
+            :form="formId"
+          />
         </div>
         <slot />
       </div>
@@ -495,15 +506,16 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, type DataserviceAccessAudienceCondition, type DataserviceAccessAudienceType } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, TranslationT, type Owned } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import { computed } from 'vue'
+import ModalClient from '../Modal/Modal.client.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
+import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ContactPointSelect from '~/components/ContactPointSelect.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
-import type { DataserviceForm, Owned } from '~/types/types'
-import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
+import type { DataserviceForm } from '~/types/types'
 
 const props = defineProps<{
   harvested?: boolean
@@ -512,10 +524,12 @@ const props = defineProps<{
 const dataserviceForm = defineModel<DataserviceForm>({ required: true })
 
 const emit = defineEmits<{
-  (event: 'submit'): void
+  (event: 'feature' | 'submit'): void
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
+
+const formId = useId()
 
 const user = useMe()
 const config = useRuntimeConfig()
@@ -533,22 +547,15 @@ const rateLimitingDataserviceAccordionId = useId()
 const availabilityDataserviceAccordionId = useId()
 const contactPointAccordionId = useId()
 
-const { getAccessAudienceCondition, getAccessAudienceType } = useAccessAudience()
-
 const ownedOptions = computed<Array<Owned>>(() => {
   return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: user.value, organization: null }]
 })
 
-const accessAudienceConditions: Array<DataserviceAccessAudienceCondition> = ['yes', 'no', 'under_condition']
-
-const accessAudienceTypes: Array<DataserviceAccessAudienceType> = ['local_authority_and_administration', 'company_and_association', 'private']
-
-const accessAudienceConditionOptions = computed(() => accessAudienceConditions.map(condition => ({
-  value: condition,
-  label: getAccessAudienceCondition(condition).label,
-})))
+const machineDocumentationUrlWarningMessage = t(`Il est fortement recommandé d'ajouter une documentation OpenAPI ou Swagger à votre API.`)
+const openConfirmModal = ref(false)
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(dataserviceForm, {
+  featured: [],
   owned: [required()],
   title: [required()],
   description: [required()],
@@ -560,7 +567,8 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
   private: [],
 }, {
   title: [testNotAllowed(config.public.demoServer?.name)],
-  description: [minLength(200, t(`It's advised to have a {property} of at least {min} characters.`, { property: t('description'), min: 200 }))],
+  description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
+  machine_documentation_url: [required(machineDocumentationUrlWarningMessage)],
 })
 
 onMounted(() => {
@@ -574,9 +582,15 @@ const accordionState = (key: keyof typeof form.value) => {
   return 'default'
 }
 
-function submit() {
-  if (validate()) {
-    emit('submit')
+async function submit() {
+  if (await validate()) {
+    if (dataserviceForm.value.machine_documentation_url || openConfirmModal.value) {
+      emit('submit')
+      openConfirmModal.value = false
+    }
+    else {
+      openConfirmModal.value = true
+    }
   }
 }
 </script>

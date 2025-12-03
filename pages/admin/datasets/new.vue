@@ -3,7 +3,6 @@
     <Breadcrumb>
       <BreadcrumbItem
         to="/"
-        external
       >
         {{ $t('Accueil') }}
       </BreadcrumbItem>
@@ -27,7 +26,7 @@
     <DescribeDataset
       v-if="currentStep === 2"
       v-model="datasetForm"
-      :submit-label="t('Next')"
+      :submit-label="t('Suivant')"
       type="create"
       @previous="moveToStep(1)"
       @submit="datasetNext"
@@ -35,6 +34,7 @@
     <Step3AddResources
       v-if="currentStep === 3"
       :resources
+      :dataset-form
       :loading
       @previous="moveToStep(2)"
       @next="filesNext"
@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Dataset, Frequency, Owned } from '@datagouv/components-next'
+import { defaultAccessTypeForm, type Dataset, type Frequency, type Owned, type Resource } from '@datagouv/components-next'
 import Step1PublishingType from '~/components/Datasets/New/Step1PublishingType.vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import Step3AddResources from '~/components/Datasets/New/Step3AddResources.vue'
@@ -60,7 +60,7 @@ import type { DatasetForm, EnrichedLicense, ResourceForm, SpatialGranularity, Sp
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const route = useRoute()
 const { $api } = useNuxtApp()
@@ -70,10 +70,10 @@ const DATASET_FILES_STATE = 'dataset-files'
 const LOADING_STATE = 'dataset-loading'
 
 const steps = computed(() => ([
-  t('Publish data on {site}', { site: config.public.title }),
-  t('Describe your dataset'),
-  t('Add files'),
-  t('Complete your publishing'),
+  t('Publier des données sur {site}', { site: config.public.title }),
+  t('Décrivez votre jeu de données'),
+  t('Ajoutez des fichiers'),
+  t('Finalisez la publication'),
 ]))
 
 const loading = useState(LOADING_STATE, () => false)
@@ -91,6 +91,8 @@ const datasetForm = useState(DATASET_FORM_STATE, () => ({
   spatial_granularity: null as SpatialGranularity | null,
   contact_points: [],
   private: true,
+  featured: false,
+  ...defaultAccessTypeForm(),
 } as DatasetForm))
 const resources = useState<Array<ResourceForm>>(DATASET_FILES_STATE, () => [])
 const newDataset = useState<Dataset | null>('new-dataset', () => null)
@@ -135,7 +137,10 @@ async function save() {
       body: JSON.stringify(datasetToApi(datasetForm.value, { private: true })),
     })
 
-    const results = await Promise.allSettled(resources.value.map((_, i: number) => saveResourceForm(dataset, resources.value[i])))
+    let results: Array<PromiseSettledResult<Resource>> = []
+    for (const chunk of chunkArray(resources.value, config.public.maxNumberOfResourcesToUploadInParallel)) {
+      results = [...results, ...await Promise.allSettled(chunk.map(resource => saveResourceForm(dataset, resource)))]
+    }
 
     if (results.every(f => f.status !== 'rejected')) {
       await moveToStep(4)

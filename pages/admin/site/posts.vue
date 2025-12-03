@@ -1,32 +1,32 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Posts') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Articles') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="fr-h3 fr-mb-5v">
-      {{ t("Posts") }}
+    <h1 class="text-2xl font-extrabold text-gray-title mb-5">
+      {{ t("Articles") }}
     </h1>
     <div
       v-if="pageData"
       class="flex items-center justify-between"
     >
       <h2 class="text-sm font-bold uppercase m-0">
-        {{ t('{n} posts', pageData.total) }}
+        {{ t('{n} articles', pageData.total) }}
       </h2>
       <div class="flex space-x-2.5">
         <AdminInput
           v-model="q"
           type="search"
           :icon="RiSearchLine"
-          :placeholder="$t('Search')"
+          :placeholder="$t('Recherche')"
         />
         <BrandedButton
           size="xs"
           :icon="RiAddLine"
           href="/admin/posts/new"
         >
-          {{ $t('Create a post') }}
+          {{ $t('Créer un article') }}
         </BrandedButton>
       </div>
     </div>
@@ -37,16 +37,16 @@
           <thead>
             <tr>
               <AdminTableTh scope="col">
-                {{ t("Title") }}
+                {{ t("Titre") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Status") }}
+                {{ t("Statut") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Created at") }}
+                {{ t("Créé le") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
-                {{ t("Updated at") }}
+                {{ t("Mis à jour le") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
                 {{ t("Action") }}
@@ -79,24 +79,23 @@
               <td>
                 <BrandedButton
                   size="xs"
-                  color="secondary-softer"
+                  color="tertiary"
                   :href="post.page"
                   :icon="RiEyeLine"
                   icon-only
-                  external
                   keep-margins-even-without-borders
                 >
-                  {{ $t('Show public page') }}
+                  {{ $t('Voir la page publique') }}
                 </BrandedButton>
                 <BrandedButton
                   :href="`/admin/posts/${post.id}`"
-                  color="secondary-softer"
+                  color="tertiary"
                   :icon="RiPencilLine"
                   icon-only
                   size="xs"
                   keep-margins-even-without-borders
                 >
-                  {{ t("Edit") }}
+                  {{ t("Modifier") }}
                 </BrandedButton>
               </td>
             </tr>
@@ -121,30 +120,29 @@
       />
       <template v-if="q">
         <p class="fr-text--bold fr-my-3v">
-          {{ t(`No results for "{q}"`, { q }) }}
+          {{ t(`Pas de résultats pour « {q} »`, { q }) }}
         </p>
         <BrandedButton
           color="primary"
           @click="q = qDebounced = ''"
         >
-          {{ $t('Reset filters') }}
+          {{ $t('Réinitialiser les filtres') }}
         </BrandedButton>
       </template>
       <p
         v-else
         class="fr-text--bold fr-my-3v"
       >
-        {{ t(`No posts`) }}
+        {{ t(`Pas d'article`) }}
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Pagination, BrandedButton, useFormatDate } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, BrandedButton, useFormatDate } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiAddLine, RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
 import type { AdminBadgeType, PaginatedArray } from '~/types/types'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
@@ -153,7 +151,7 @@ import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import type { Post } from '~/types/posts'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const page = ref(1)
@@ -164,6 +162,7 @@ const qDebounced = refDebounced(q, 500) // TODO add 500 in config
 const params = computed(() => {
   return {
     with_drafts: true,
+    sort: '-created_at',
 
     q: qDebounced.value,
     page_size: pageSize.value,
@@ -176,13 +175,13 @@ const { data: pageData, status } = await useAPI<PaginatedArray<Post>>('/api/1/po
 function getStatus(post: Post): { label: string, type: AdminBadgeType } {
   if (post.published) {
     return {
-      label: t('Published the {date}', { date: formatDate(post.published) }),
+      label: t('Publié le {date}', { date: formatDate(post.published) }),
       type: 'primary',
     }
   }
   else {
     return {
-      label: t('Draft'),
+      label: t('Brouillon'),
       type: 'secondary',
     }
   }

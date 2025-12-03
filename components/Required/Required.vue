@@ -1,12 +1,12 @@
 <template>
   <span
-    v-if="required"
-    class="text-primary"
+    v-if="props.required"
+    class="text-new-primary"
   >*</span>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   required: boolean
 }>()
 </script>

@@ -8,25 +8,25 @@
           class="w-1/3"
           @sort="(direction: SortDirection) => $emit('sort', 'title', direction)"
         >
-          {{ t("Dataservice title") }}
+          {{ t("Titre de l'API") }}
         </AdminTableTh>
         <AdminTableTh class="w-24">
-          {{ t("Status") }}
+          {{ t("Statut") }}
         </AdminTableTh>
         <AdminTableTh class="w-24">
-          {{ t("Access") }}
+          {{ t("Accès") }}
         </AdminTableTh>
         <AdminTableTh>
-          {{ t("Created at") }}
+          {{ t("Créé le") }}
         </AdminTableTh>
         <AdminTableTh>
-          {{ t("Modified at") }}
+          {{ t("Modifié le") }}
         </AdminTableTh>
         <AdminTableTh class="w-64">
-          {{ t("Rate limiting") }}
+          {{ t("Limite d'appels") }}
         </AdminTableTh>
         <AdminTableTh>
-          {{ t("Availability") }}
+          {{ t("Disponibilité") }}
         </AdminTableTh>
         <AdminTableTh scope="col">
           {{ t("Actions") }}
@@ -40,7 +40,7 @@
       >
         <td>
           <AdminContentWithTooltip>
-            <NuxtLinkLocale
+            <CdataLink
               class="fr-link fr-reset-link"
               :to="getDataserviceAdminUrl(dataservice)"
             >
@@ -49,26 +49,26 @@
                 :auto-resize="true"
                 :max-lines="2"
               />
-            </NuxtLinkLocale>
+            </CdataLink>
           </AdminContentWithTooltip>
         </td>
         <td>
           <AdminBadge
             size="xs"
-            :type="getStatus(dataservice).type"
+            :type="getDataserviceStatus(dataservice).type"
           >
-            {{ getStatus(dataservice).label }}
+            {{ getDataserviceStatus(dataservice).label }}
           </AdminBadge>
         </td>
         <td>
-          <DataserviceAccessTypeBadge :dataservice />
+          <AccessTypeBadge :access-type="dataservice.access_type" />
         </td>
         <td>{{ formatDate(dataservice.created_at) }}</td>
         <td>
           <div v-if="dataservice.id in activities">
             <p>{{ formatDate(activities[dataservice.id].created_at) }}</p>
             <p class="inline-flex items-center">
-              {{ t('by ') }}
+              {{ t('par ') }}
               <AvatarWithName
                 class="fr-ml-1v"
                 :user="activities[dataservice.id].actor"
@@ -86,24 +86,23 @@
         <td>
           <BrandedButton
             size="xs"
-            color="secondary-softer"
+            color="tertiary"
             :href="dataservice.self_web_url"
             :icon="RiEyeLine"
             icon-only
-            external
             keep-margins-even-without-borders
           >
-            {{ $t('Show public page') }}
+            {{ $t('Voir la page publique') }}
           </BrandedButton>
           <BrandedButton
             size="xs"
-            color="secondary-softer"
+            color="tertiary"
             :href="getDataserviceAdminUrl(dataservice)"
             :icon="RiPencilLine"
             icon-only
             keep-margins-even-without-borders
           >
-            {{ $t('Edit') }}
+            {{ $t('Modifier') }}
           </BrandedButton>
         </td>
       </tr>
@@ -112,16 +111,15 @@
 </template>
 
 <script setup lang="ts">
-import { AvatarWithName, BrandedButton, useFormatDate, type Dataservice } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
+import type { Activity, Dataservice } from '@datagouv/components-next'
+import { AvatarWithName, BrandedButton, useFormatDate } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
-import DataserviceAccessTypeBadge from './DataserviceAccessTypeBadge.vue'
-import type { Activity } from '~/types/activity'
-import type { AdminBadgeType, DataserviceSortedBy, SortDirection } from '~/types/types'
+import type { DataserviceSortedBy, SortDirection } from '~/types/types'
+import AccessTypeBadge from '~/components/AccessTypes/AccessTypeBadge.vue'
 
 const props = withDefaults(defineProps<{
   activities?: Record<string, Activity>
@@ -136,40 +134,14 @@ defineEmits<{
   (event: 'sort', column: DataserviceSortedBy, direction: SortDirection): void
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
+const { getDataserviceStatus } = useDataserviceStatus()
 
 function sorted(column: DataserviceSortedBy) {
   if (props.sortedBy === column) {
     return props.sortDirection
   }
   return null
-}
-
-function getStatus(dataservice: Dataservice): { label: string, type: AdminBadgeType } {
-  if (dataservice.deleted_at) {
-    return {
-      label: t('Deleted'),
-      type: 'danger',
-    }
-  }
-  else if (dataservice.archived_at) {
-    return {
-      label: t('Archived'),
-      type: 'warning',
-    }
-  }
-  else if (dataservice.private) {
-    return {
-      label: t('Draft'),
-      type: 'secondary',
-    }
-  }
-  else {
-    return {
-      label: t('Public'),
-      type: 'primary',
-    }
-  }
 }
 </script>

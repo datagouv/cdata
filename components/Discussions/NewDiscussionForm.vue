@@ -5,15 +5,15 @@
   >
     <div class="flex justify-between items-center">
       <div class="font-bold uppercase text-sm/loose text-gray-title">
-        {{ $t('New discussion') }}
+        {{ $t('Nouvelle discussion') }}
       </div>
       <BrandedButton
         :icon="RiCloseLine"
-        color="secondary-softer"
+        color="tertiary"
         size="xs"
         @click="$emit('close')"
       >
-        {{ $t('Close') }}
+        {{ $t('Fermer') }}
       </BrandedButton>
     </div>
     <div class="flex flex-col w-full space-y-4">
@@ -21,7 +21,7 @@
 
       <ProducerSelect
         v-model="form.owned"
-        :label="t('Choose the identity with which you want to publish this message')"
+        :label="t(`Choisissez l'identité avec laquelle vous souhaitez publier ce message`)"
         :required="true"
         :error-text="getFirstError('owned')"
         :warning-text="getFirstWarning('owned')"
@@ -29,7 +29,7 @@
 
       <InputGroup
         v-model="form.title"
-        :label="$t('Title')"
+        :label="$t('Titre')"
         :required="true"
         :has-error="!!getFirstError('title')"
         :has-warning="!!getFirstWarning('title')"
@@ -38,13 +38,13 @@
 
       <InputGroup
         v-model="form.comment"
-        :label="$t('Your message')"
+        :label="$t('Votre message')"
         :required="true"
         type="textarea"
         :has-error="!!getFirstError('comment')"
         :has-warning="!!getFirstWarning('comment')"
         :error-text="getFirstError('comment')"
-        :placeholder="$t('Please remain courteous and constructive. Avoid sharing personal information.')"
+        :placeholder="$t('Merci de rester courtois et constructif. Eviter de communiquer des données personnelles.')"
       />
     </div>
 
@@ -55,7 +55,7 @@
         size="xs"
         :loading
       >
-        {{ t("Send") }}
+        {{ t("Envoyer") }}
       </BrandedButton>
     </div>
   </form>
@@ -74,7 +74,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const loading = ref(false)

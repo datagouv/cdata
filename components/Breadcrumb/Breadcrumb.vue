@@ -1,12 +1,12 @@
 <template>
   <nav
     rol="navigation"
-    :aria-label="$t(`You're here:`)"
-    class="fr-breadcrumb mb-5"
+    :aria-label="$t(`Vous êtes ici :`)"
+    class="fr-breadcrumb truncate mb-5"
   >
     <ol
       ref="rootRef"
-      class="fr-breadcrumb__list"
+      class="fr-breadcrumb__list truncate"
     >
       <slot />
     </ol>
@@ -40,7 +40,7 @@ const updateBreadcrumbs = () => {
 
     return (child as HTMLElement).dataset.breadcrumbTo || null
   })
-  breadcrumbs.value.push(route.fullPath)
+  breadcrumbs.value.push(removeLangPrefix(route.fullPath))
 }
 
 const observer = ref<MutationObserver | null>(null)

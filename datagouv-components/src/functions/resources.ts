@@ -1,6 +1,5 @@
 import { readonly, type Component } from 'vue'
 
-import { useI18n } from 'vue-i18n'
 import { RiEarthLine, RiMap2Line } from '@remixicon/vue'
 import Archive from '../components/Icons/Archive.vue'
 import Code from '../components/Icons/Code.vue'
@@ -9,6 +8,7 @@ import Image from '../components/Icons/Image.vue'
 import Link from '../components/Icons/Link.vue'
 import Table from '../components/Icons/Table.vue'
 import type { Resource } from '../types/resources'
+import { useTranslation } from '../composables/useTranslation'
 
 export function getResourceFormatIcon(format: string): Component | null {
   switch (format?.trim()?.toLowerCase()) {
@@ -63,6 +63,7 @@ export function getResourceFormatIcon(format: string): Component | null {
     case 'xls':
     case 'xlsx':
     case 'parquet':
+    case 'csv.gz':
       return Table
     case 'geojson':
       return RiMap2Line
@@ -74,6 +75,7 @@ export function getResourceFormatIcon(format: string): Component | null {
     case 'png':
     case 'jpg':
     case 'jpeg':
+    case 'svg':
       return Image
     default:
       return null
@@ -87,20 +89,43 @@ export function getResourceTitleId(resource: Resource) {
 export const RESOURCE_TYPE = readonly(['main', 'documentation', 'update', 'api', 'code', 'other'] as const)
 export type ResourceType = typeof RESOURCE_TYPE[number]
 
-export const getResourceLabel = (type: ResourceType) => {
-  const { t } = useI18n()
+export const getResourceLabel = (type: ResourceType, count?: number) => {
+  const { t } = useTranslation()
   switch (type) {
     case 'main':
-      return t('Main file')
+      if (typeof count === 'number') {
+        return t('Aucun fichier principal | 1 fichier principal | {n} fichiers principaux', count)
+      }
+      return t('Fichiers principaux')
     case 'documentation':
       return t('Documentation')
     case 'update':
-      return t('Update')
+      return t('Mise à jour')
     case 'api':
       return t('API')
     case 'code':
-      return t('Source code')
+      return t('Code source')
     case 'other':
-      return t('Other')
+      return t('Autre')
   }
+}
+
+export const OGC_SERVICES_FORMATS = ['wfs', 'wms']
+
+export const detectOgcService = (resource: Resource) => {
+  // Detect OGC Services either based on format or a URL with GetCapabilities and known REQUEST type
+  // Return the format if found else false
+  if (resource.format) {
+    const format = resource.format.replace(/^ogc:/, '')
+    if (OGC_SERVICES_FORMATS.includes(format))
+      return format
+  }
+  const url = resource.url.toLowerCase()
+  if (url.includes('request=getcapabilities')) {
+    for (const format of OGC_SERVICES_FORMATS)
+      if (url.includes(`service=${format}`)) {
+        return format
+      }
+  }
+  return false
 }

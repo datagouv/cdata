@@ -1,7 +1,8 @@
-import { useI18n } from 'vue-i18n'
 import type { Component } from 'vue'
 import { RiBankLine, RiBuilding2Line, RiCommunityLine, RiGovernmentLine, RiUserLine } from '@remixicon/vue'
-import type { Organization } from '../types/organizations'
+import { useComponentsConfig } from '../config'
+import type { OrganizationReference } from '../types/organizations'
+import { useTranslation } from '../composables/useTranslation'
 
 export const CERTIFIED = 'certified'
 export const PUBLIC_SERVICE = 'public-service'
@@ -15,24 +16,30 @@ export type OrganizationTypes = typeof PUBLIC_SERVICE | typeof ASSOCIATION | typ
 
 export type UserType = typeof USER
 
-export function isType(organization: Organization, type: OrganizationTypes) {
+function constructUrl(baseUrl: string, path: string): string {
+  const url = new URL(baseUrl)
+  url.pathname = `${url.pathname}${path}`
+  return url.toString()
+}
+
+export function isType(organization: OrganizationReference, type: OrganizationTypes) {
   return hasBadge(organization, type)
 }
 
-export function hasBadge(organization: Organization, kind: string) {
+export function hasBadge(organization: OrganizationReference, kind: string) {
   return organization.badges.some(badge => badge.kind === kind)
 }
 
 export function getOrganizationTypes(): Array<{ type: OrganizationTypes | UserType, label: string, icon: Component | null }> {
-  const { t } = useI18n()
+  const { t } = useTranslation()
   return [{
     type: PUBLIC_SERVICE,
-    label: t('Public service'),
+    label: t('Service public'),
     icon: RiBankLine,
   },
   {
     type: LOCAL_AUTHORITY,
-    label: t('Local authority'),
+    label: t('Collectivité territoriale'),
     icon: RiGovernmentLine,
   },
   {
@@ -42,17 +49,17 @@ export function getOrganizationTypes(): Array<{ type: OrganizationTypes | UserTy
   },
   {
     type: COMPANY,
-    label: t('Company'),
+    label: t('Entreprise'),
     icon: RiBuilding2Line,
   },
   {
     type: OTHER,
-    label: t('Other'),
+    label: t('Autre'),
     icon: null,
   },
   {
     type: USER,
-    label: t('User'),
+    label: t('Utilisateur'),
     icon: RiUserLine,
   }]
 }
@@ -61,7 +68,7 @@ export function findOrganizationType(searched: OrganizationTypes | UserType) {
   return getOrganizationTypes().find(type => type.type === searched)!
 }
 
-export function getOrganizationType(organization: Organization): OrganizationTypes {
+export function getOrganizationType(organization: OrganizationReference): OrganizationTypes {
   if (isType(organization, LOCAL_AUTHORITY)) {
     return LOCAL_AUTHORITY
   }
@@ -79,7 +86,14 @@ export function getOrganizationType(organization: Organization): OrganizationTyp
   }
 }
 
-export function isOrganizationCertified(organization: Organization | null): boolean {
+export function isOrganizationCertified(organization: OrganizationReference | null): boolean {
   if (!organization) return false
   return hasBadge(organization, CERTIFIED) && (isType(organization, PUBLIC_SERVICE) || isType(organization, LOCAL_AUTHORITY))
+}
+
+export function getOrganizationOEmbedHtml(type: string, id: string): string {
+  const config = useComponentsConfig()
+
+  const staticUrl = constructUrl(config.baseUrl, 'oembed.js')
+  return `<div data-udata-${type}="${id}" data-height="1500" data-width="1200"></div><script data-udata="${config.baseUrl}" src="${staticUrl}" async defer></script>`
 }

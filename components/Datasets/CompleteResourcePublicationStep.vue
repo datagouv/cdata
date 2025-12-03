@@ -11,10 +11,10 @@
         </div>
         <div class="fr-col">
           <p class="fr-m-0 fr-text--bold">
-            {{ $t("Your community resource is created!") }}
+            {{ $t("Votre ressource communautaire a été créée !") }}
           </p>
           <p class="fr-m-0 fr-text--xs">
-            {{ $t("You can now see it in the public page.") }}
+            {{ $t("Voir sur la page publique.") }}
           </p>
         </div>
       </div>
@@ -30,9 +30,8 @@
       <BrandedButton
         color="primary"
         :href="getResourceExternalUrl(resource.dataset, resource)"
-        external
       >
-        {{ $t("Go to public page") }}
+        {{ $t("Voir la page publique") }}
       </BrandedButton>
     </div>
   </div>

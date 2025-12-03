@@ -1,11 +1,11 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Harvesters') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Moissonneurs') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="font-bold text-2xl mb-5">
-      {{ t("Harvesters") }}
+    <h1 class="font-extrabold text-2xl text-gray-title mb-5">
+      {{ t("Moissonneurs") }}
     </h1>
     <div
       v-if="pageData && pageData.total"
@@ -14,7 +14,7 @@
       <h2
         class="text-sm font-bold uppercase m-0"
       >
-        {{ t('{n} harvesters', pageData.total) }}
+        {{ t('{n} moissonneurs', pageData.total) }}
       </h2>
       <div class="flex space-x-2.5 fr-grid-row fr-grid-row--right">
         <AdminInput
@@ -22,7 +22,7 @@
           v-model="q"
           type="search"
           :icon="RiSearchLine"
-          :placeholder="$t('Search')"
+          :placeholder="$t('Recherche')"
         />
       </div>
     </div>
@@ -33,45 +33,45 @@
           <thead>
             <tr>
               <AdminTableTh scope="col">
-                {{ t("Name") }}
+                {{ t("Nom") }}
               </AdminTableTh>
               <AdminTableTh
                 scope="col"
                 class="w-56"
               >
-                {{ t("Status") }}
+                {{ t("Statut") }}
               </AdminTableTh>
               <AdminTableTh
                 scope="col"
                 class="w-56"
               >
-                {{ t("Implementation") }}
+                {{ t("Implémentation") }}
               </AdminTableTh>
               <AdminTableTh
                 scope="col"
                 class="w-32"
               >
-                {{ t("Created at") }}
+                {{ t("Créé le") }}
               </AdminTableTh>
               <AdminTableTh
                 scope="col"
                 class="w-32"
               >
-                {{ t("Last run") }}
+                {{ t("Dernière exécution") }}
               </AdminTableTh>
               <AdminTableTh
                 scope="col"
                 class="w-24"
                 align="right"
               >
-                {{ t("Datasets") }}
+                {{ t("Jeux de données") }}
               </AdminTableTh>
               <AdminTableTh
                 scope="col"
                 class="w-24"
                 align="right"
               >
-                {{ t("Dataservices") }}
+                {{ t("API") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
                 {{ t("Actions") }}
@@ -85,7 +85,7 @@
             >
               <td>
                 <AdminContentWithTooltip>
-                  <NuxtLinkLocale
+                  <CdataLink
                     class="fr-link fr-reset-link"
                     :href="getHarvesterAdminUrl(harvester)"
                   >
@@ -94,7 +94,7 @@
                       :auto-resize="true"
                       :max-lines="2"
                     />
-                  </NuxtLinkLocale>
+                  </CdataLink>
                 </AdminContentWithTooltip>
               </td>
               <td>
@@ -107,7 +107,7 @@
                   {{ formatDate(harvester.last_job.ended) }}
                 </template>
                 <template v-else>
-                  {{ t('Not yet') }}
+                  {{ t('Pas encore') }}
                 </template>
               </td>
               <td class="font-mono text-right">
@@ -119,13 +119,13 @@
               <td>
                 <BrandedButton
                   size="xs"
-                  color="secondary-softer"
+                  color="tertiary"
                   :href="getHarvesterAdminUrl(harvester)"
                   :icon="RiPencilLine"
                   icon-only
                   keep-margins-even-without-borders
                 >
-                  {{ $t('Edit') }}
+                  {{ $t('Modifier') }}
                 </BrandedButton>
               </td>
             </tr>
@@ -152,19 +152,19 @@
         v-if="organization"
       >
         <p class="fr-text--bold fr-my-3v">
-          {{ t(`You haven't published a harvester yet`) }}
+          {{ t(`Vous n'avez pas encore publié de moissonneur`) }}
         </p>
         <AdminPublishButton type="harvester" />
       </template>
       <template v-else-if="q">
         <p class="fr-text--bold fr-my-3v">
-          {{ t(`No results for "{q}"`, { q }) }}
+          {{ t(`Pas de résultats pour « {q} »`, { q }) }}
         </p>
         <BrandedButton
           color="primary"
           @click="q = qDebounced = ''"
         >
-          {{ $t('Reset filters') }}
+          {{ $t('Réinitialiser les filtres') }}
         </BrandedButton>
       </template>
     </div>
@@ -172,10 +172,9 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, BrandedButton, type Organization, useFormatDate } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, BrandedButton, type Organization, useFormatDate } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiPencilLine, RiSearchLine } from '@remixicon/vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
@@ -189,7 +188,7 @@ import { getHarvesterAdminUrl } from '~/utils/harvesters'
 const props = defineProps<{
   organization?: Organization | null
 }>()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()

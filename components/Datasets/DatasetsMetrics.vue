@@ -17,11 +17,11 @@
             @click="metricsOpen = ! metricsOpen"
           >
             <div class="text-gray-title font-bold text-base/6">
-              {{ t('Statistics for the last 12 months') }}
+              {{ t('Statistiques des 12 derniers mois') }}
             </div>
             <div class="text-gray-medium font-normal text-sm/6">
-              <span v-if="new Date().getHours() > 7 - 1">{{ $t('Updated this morning') }}</span>
-              <span v-else>{{ $t('Updated yesterday') }}</span>
+              <span v-if="new Date().getHours() > 7 - 1">{{ $t('Mises à jour ce matin') }}</span>
+              <span v-else>{{ $t('Mises à jour hier') }}</span>
             </div>
 
             <span class="absolute inset-0 z-1" />
@@ -34,13 +34,13 @@
             :disabled="!downloadStatsUrl"
             :href="downloadStatsUrl || ''"
             rel="ugc nofollow noopener"
-            :title="t('Download file')"
+            :title="t('Télécharger le fichier')"
             download="stats.csv"
             :icon="RiDownloadLine"
             size="xs"
             class="relative z-2"
           >
-            {{ t('Download') }}
+            {{ t('Télécharger') }}
           </BrandedButton>
         </p>
         <div
@@ -55,24 +55,24 @@
       class="flex flex-col md:flex-row px-4 pb-4"
     >
       <StatBox
-        :title="t('Views')"
-        :data="metricsViews"
+        :title="t('Vues')"
+        :data="metrics?.datasetsViews"
         type="line"
-        :summary="metricsViewsTotal"
+        :summary="metrics?.datasetsViewsTotal"
         class="md:w-1/3 mb-8 md:mb-0"
       />
       <StatBox
-        :title="t('Downloads')"
-        :data="metricsDownloads"
+        :title="t('Téléchargements')"
+        :data="metrics?.downloads"
         type="line"
-        :summary="metricsDownloadsTotal"
+        :summary="metrics?.downloadsTotal"
         class="md:w-1/3 mb-8 md:mb-0"
       />
       <StatBox
-        :title="t('Reuses Visits')"
-        :data="metricsReuses"
+        :title="t('Nombre de visites des réutilisations')"
+        :data="metrics?.reusesViews"
         type="line"
-        :summary="metricsReusesTotal"
+        :summary="metrics?.reusesViewsTotal"
         class="md:w-1/3 mb-8 md:mb-0"
       />
     </section>
@@ -80,41 +80,29 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { StatBox, type Organization } from '@datagouv/components-next'
+import { BrandedButton, StatBox, useMetrics, createOrganizationMetricsUrl, type Organization, type OrganizationMetrics } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 
 const props = defineProps<{
   organization: Organization
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
+const { getOrganizationMetrics } = useMetrics()
 
 const metricsOpen = ref(false)
 const metricsTitleId = useId()
 
-const metricsViews = ref<null | Record<string, number>>(null)
-const metricsViewsTotal = ref<null | number>(null)
-const metricsDownloads = ref<null | Record<string, number>>(null)
-const metricsDownloadsTotal = ref<null | number>(null)
-const metricsReuses = ref<null | Record<string, number>>(null)
-const metricsReusesTotal = ref<null | number>(null)
+const metrics = ref<OrganizationMetrics | null>(null)
+
 watchEffect(async () => {
   if (!props.organization.id) return
-  const metrics = await getOrganizationMetrics(props.organization.id)
-  metricsDownloads.value = metrics.downloads
-  metricsDownloadsTotal.value = metrics.downloadsTotal
-  metricsReuses.value = metrics.reusesViews
-  metricsReusesTotal.value = metrics.reusesViewsTotal
-  metricsViews.value = metrics.datasetsViews
-  metricsViewsTotal.value = metrics.datasetsViewsTotal
+  metrics.value = await getOrganizationMetrics(props.organization.id)
 })
 
 const downloadStatsUrl = computed(() => {
-  if (!metricsViews.value || !metricsDownloads.value || !metricsReuses.value) {
-    return null
-  }
+  if (!metrics.value) return null
 
-  return createOrganizationMetricsUrl(metricsViews.value, metricsDownloads.value, metricsReuses.value)
+  return createOrganizationMetricsUrl(metrics.value.datasetsViews, metrics.value.downloads, metrics.value.dataservicesViews, metrics.value.reusesViews)
 })
 </script>

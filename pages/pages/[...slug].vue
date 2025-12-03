@@ -3,7 +3,6 @@
   <div class="container mb-7">
     <Breadcrumb>
       <BreadcrumbItem
-        :external="true"
         to="/"
       >
         Accueil
@@ -31,14 +30,15 @@
         v-else
         class="py-9 prose"
       >
-        <h1>{{ $t('Error 404') }}</h1>
-        <p>{{ $t("The page you're looking for cannot be found.") }}</p>
+        <h1>{{ $t('Erreur 404') }}</h1>
+        <p>{{ $t("La page que vous recherchez est introuvable.") }}</p>
       </div>
     </LoadingBlock>
   </div>
 </template>
 
 <script setup lang="ts">
+import { LoadingBlock, markdownClasses, MarkdownViewer } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 

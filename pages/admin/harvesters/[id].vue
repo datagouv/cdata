@@ -5,7 +5,7 @@
         v-if="currentOrganization"
         :to="`/admin/organizations/${currentOrganization.id}/harvesters`"
       >
-        {{ t('Harvesters') }}
+        {{ t('Moissonneurs') }}
       </BreadcrumbItem>
       <template v-if="job">
         <BreadcrumbItem
@@ -26,24 +26,24 @@
     <div v-if="harvester && !job">
       <div class="mb-5">
         <div class="flex flex-wrap items-center justify-between mb-3 gap-x-4 gap-y-2">
-          <h1 class="flex-none w-full md:flex-1 font-bold text-2xl !mb-0">
+          <h1 class="flex-none w-full md:flex-1 font-extrabold text-gray-title text-2xl !mb-0">
             {{ harvester.name }}
           </h1>
           <BrandedButton
-            v-if="harvester.validation.state === 'accepted' && harvester.active"
+            v-if="harvester.validation.state === 'accepted' && harvester.active && (config.public.harvestEnableManualRun || isMeAdmin())"
             :icon="RiPlayLargeLine"
             size="xs"
             :loading
             @click="run"
           >
-            {{ $t('Schedule execution') }}
+            {{ $t(`Planifier l'exécution`) }}
           </BrandedButton>
         </div>
 
         <div class="text-sm text-mentionGrey space-y-1.5">
           <div class="space-x-1">
             <RiToolsLine class="inline size-3" />
-            <span>{{ $t('Implementation:') }}</span>
+            <span>{{ $t('Implémentation:') }}</span>
             <span class="font-mono">{{ harvester.backend }}</span>
           </div>
           <div class="space-x-1">
@@ -53,12 +53,12 @@
           </div>
           <div class="space-x-1">
             <RiCalendarEventLine class="inline size-3" />
-            <span>{{ $t('Schedule:') }}</span>
+            <span>{{ $t('Planning :') }}</span>
             <span class="font-mono">{{ harvester.schedule || 'N/A' }}</span>
           </div>
           <div class="space-x-1">
             <RiCheckboxCircleLine class="inline size-3" />
-            <span>{{ $t('Status:') }}</span>
+            <span>{{ $t('Statut :') }}</span>
             <HarvesterBadge :harvester />
           </div>
         </div>
@@ -67,16 +67,16 @@
           v-if="harvester.validation.state === 'pending'"
           class="mt-3"
           type="primary"
-          :title="$t('Your harvester is created, it\'s waiting the validation from the administration team.')"
+          :title="$t(`Votre moissonneur est créé, il est en attente de validation de l'équipe administratrice de la plateforme.`)"
         >
-          {{ $t("Please notify us via the contact form below if you want this harvester validated. You'll be notify when approved (or refused)") }}
+          {{ $t("Merci de nous informer via le formulaire de contact suivant si vous souhaitez que nous validions votre moissonneur. Vous serez notifié à l’approbation (ou au refus).") }}
 
           <template #button>
             <BrandedButton
               :href="config.public.harvesterRequestValidationUrl"
               new-tab
             >
-              {{ $t("Request validation") }}
+              {{ $t("Demander la validation") }}
             </BrandedButton>
           </template>
         </BannerAction>
@@ -85,13 +85,13 @@
           v-if="isMeAdmin() && harvester.validation.state === 'pending'"
           class="mt-3"
           type="primary"
-          :title="$t('Harvester validation')"
+          :title="$t('Validation du moissonneur')"
         >
-          {{ $t("Please note that the data will be published once the harvester has been validated.") }}
+          {{ $t("Attention les données seront publiées une fois le moissonneur validé.") }}
 
           <template #button>
             <ModalWithButton
-              :title="$t('Harvester validation')"
+              :title="$t('Validation du moissonneur')"
               size="lg"
             >
               <template #button="{ attrs, listeners }">
@@ -99,7 +99,7 @@
                   v-bind="attrs"
                   v-on="listeners"
                 >
-                  {{ $t('Validate or refuse…') }}
+                  {{ $t('Valider ou refuser…') }}
                 </BrandedButton>
               </template>
 
@@ -107,7 +107,7 @@
                 <InputGroup
                   v-model="comment"
                   type="textarea"
-                  :label="$t('Comment')"
+                  :label="$t('Commentaire')"
                 />
               </div>
               <template #footer="{ close }">
@@ -119,14 +119,14 @@
                     :loading
                     @click="validate(close, 'accepted')"
                   >
-                    {{ $t('Validate') }}
+                    {{ $t('Valider') }}
                   </BrandedButton>
                   <BrandedButton
                     color="danger"
                     :loading
                     @click="validate(close, 'refused')"
                   >
-                    {{ $t('Refuse') }}
+                    {{ $t('Refuser') }}
                   </BrandedButton>
                 </div>
               </template>
@@ -158,7 +158,7 @@ import TabLinks from '~/components/TabLinks.vue'
 import type { HarvesterJob, HarvesterSource } from '~/types/harvesters'
 
 const config = useRuntimeConfig()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const { toast } = useToast()
 
@@ -166,7 +166,7 @@ const { currentOrganization } = useCurrentOwned()
 
 const route = useRoute()
 const url = computed(() => `/api/1/harvest/source/${route.params.id}`)
-const { data: harvester, refresh } = await useAPI<HarvesterSource>(url, { lazy: true })
+const { data: harvester, refresh } = await useAPI<HarvesterSource>(url, { redirectOn404: true })
 const job = ref<HarvesterJob | null>(null)
 watchEffect(async () => {
   if (!harvester.value) return
@@ -183,7 +183,7 @@ const run = async () => {
     await $api(`/api/1/harvest/source/${route.params.id}/run`, {
       method: 'POST',
     })
-    toast.success(t('The run is scheduled'))
+    toast.success(t(`L'exécution est planifiée`))
   }
   finally {
     loading.value = false

@@ -6,15 +6,19 @@
       :size
       :rounded="true"
     />
-    <span class="fr-text--bold">
+    <AppLink
+      :to="user.page"
+      class="fr-text--bold"
+    >
       {{ user.first_name }}
       {{ user.last_name }}
-    </span>
+    </AppLink>
   </span>
 </template>
 
 <script setup lang="ts">
 import type { User } from '../types/users'
+import AppLink from './AppLink.vue'
 import Avatar from './Avatar.vue'
 
 withDefaults(defineProps<{

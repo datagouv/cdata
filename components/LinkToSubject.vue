@@ -17,6 +17,7 @@
 
 <script setup lang="ts">
 import { RiDatabase2Line, RiLineChartLine, RiRobot2Line } from '@remixicon/vue'
+import { throwOnNever } from '@datagouv/components-next'
 import type { LinkToSubject } from '~/types/types'
 
 const props = defineProps<{

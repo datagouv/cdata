@@ -6,7 +6,7 @@
     >
       <RiInformationLine class="shink-0 size-6" />
       <p class="w-full mb-0">
-        {{ t('It is important to associate all the datasets used, as this allows to understand the cross-references and improve the visibility of your reuse.') }}
+        {{ t('Il est important d’associer tous les jeux de données utilisés, car cela permet de comprendre les croisements qui ont été nécessaires et d’améliorer la visibilité de votre réutilisation.') }}
       </p>
     </SimpleBanner>
     <DatasetsSelect v-model="datasets" />
@@ -15,14 +15,14 @@
         color="secondary"
         @click="$emit('previous')"
       >
-        {{ t("Previous") }}
+        {{ t("Précédent") }}
       </BrandedButton>
       <BrandedButton
         :loading
         color="secondary"
         @click="$emit('next')"
       >
-        {{ t("Next") }}
+        {{ t("Suivant") }}
       </BrandedButton>
     </div>
   </div>
@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
-import { SimpleBanner, type Dataset, type DatasetV2 } from '@datagouv/components-next'
+import { SimpleBanner, type DatasetV2 } from '@datagouv/components-next'
 import { RiInformationLine } from '@remixicon/vue'
 import type { DatasetSuggest } from '~/types/types'
 
@@ -43,7 +43,7 @@ defineEmits<{
   next: []
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
-const datasets = defineModel<Array<Dataset | DatasetV2 | DatasetSuggest>>({ required: true })
+const datasets = defineModel<Array<DatasetV2 | DatasetSuggest>>({ required: true })
 </script>

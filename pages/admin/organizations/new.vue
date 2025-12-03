@@ -3,7 +3,6 @@
     <Breadcrumb>
       <BreadcrumbItem
         to="/"
-        external
       >
         {{ $t('Accueil') }}
       </BreadcrumbItem>
@@ -28,7 +27,7 @@
       v-if="currentStep === 2"
       v-model="organizationForm"
       type="create"
-      :submit-label="$t('Next')"
+      :submit-label="$t(`Créer l'organisation`)"
       :errors="errors"
       :loading
       @previous="moveToStep(1)"
@@ -50,17 +49,17 @@ import { loadMe } from '~/utils/auth'
 import type { NewOrganization } from '~/types/types'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const route = useRoute()
 const { $api } = useNuxtApp()
-const { organizations, currentOwnedId } = useCurrentOwned()
+const { organizations, setCurrentOrganization } = useCurrentOwned()
 const me = useMe()
 
 const steps = computed(() => ([
-  t('Create or join an organization on {site}', { site: config.public.title }),
-  t('Describe your organization'),
-  t('Finalize your organization'),
+  t('Créer ou rejoindre une organisation sur {site}', { site: config.public.title }),
+  t('Décrivez votre organisation'),
+  t('Finaliser votre organisation'),
 ]))
 
 const organizationForm = ref<NewOrganization>({
@@ -72,6 +71,7 @@ const organizationForm = ref<NewOrganization>({
   logo: '',
 })
 
+const moveToNextStep = ref(false)
 const errors = ref<Array<string>>([])
 const newOrganization = useState<Organization | null>('new-organization', () => null)
 
@@ -94,7 +94,7 @@ function moveToStep(step: number) {
 
 async function createOrganizationAndMoveToNextStep(logo_file: File | null) {
   errors.value = []
-  let moveToNextStep = false
+  moveToNextStep.value = false
   try {
     loading.value = true
     newOrganization.value = await $api<Organization>('/api/1/organizations/', {
@@ -105,8 +105,8 @@ async function createOrganizationAndMoveToNextStep(logo_file: File | null) {
       }),
     })
     organizations.value[newOrganization.value.id] = newOrganization.value
-    currentOwnedId.value = { organization: newOrganization.value.id }
-    moveToNextStep = true
+    setCurrentOrganization(newOrganization.value)
+    moveToNextStep.value = true
   }
   catch (e) {
     if (e instanceof Error) {
@@ -123,15 +123,16 @@ async function createOrganizationAndMoveToNextStep(logo_file: File | null) {
       newOrganization.value.logo_thumbnail = resp.image
     }
     catch {
-      errors.value.push(t('Failed to upload logo, you can upload it again in your management panel'))
+      errors.value.push(t(`Impossible de téléverser le logo, vous pouvez le téléverser à nouveau dans votre panneau d'administration`))
     }
     finally {
       loading.value = false
     }
   }
-  if (moveToNextStep) {
+  if (moveToNextStep.value) {
     loadMe(me)
-    moveToStep(3)
+    await moveToStep(3)
+    moveToNextStep.value = false
   }
 }
 
@@ -140,4 +141,17 @@ watchEffect(() => {
     moveToStep(1)
   }
 })
+watch(currentStep, (step) => {
+  // reset state when returning to page
+  if (step === 1) {
+    newOrganization.value = null
+  }
+  // redirect to organization profile when moving back to step 2
+  if (newOrganization.value?.id && newOrganization.value.id in organizations.value
+    && !moveToNextStep.value
+    && !loading.value
+    && step < 3) {
+    navigateTo(`/admin/organizations/${newOrganization.value.id}/profile`, { replace: true })
+  }
+}, { immediate: true })
 </script>

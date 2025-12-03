@@ -6,7 +6,7 @@
       class="flex items-center space-x-2"
     >
       <RiErrorWarningLine class="shink-0 size-6" />
-      <span>{{ t("The preview of this file failed to load.") }}</span>
+      <span>{{ t("L'aperçu de ce fichier n'a pas pu être chargé.") }}</span>
     </SimpleBanner>
     <PreviewLoader v-else-if="loading" />
     <div
@@ -21,10 +21,10 @@
           />
           <div class="fr-col">
             <p class="fr-text--bold fr-m-0">
-              {{ t("Explore data in detail") }}
+              {{ t("Explorer les données en détail") }}
             </p>
             <p class="fr-text--sm fr-m-0 f-italic">
-              {{ t("Use our tool to get an overview of data, learn about different columns or perform filters and sorts.") }}
+              {{ t("Utiliser notre outil pour obtenir un aperçu des données, en savoir plus sur les différentes colonnes ou réaliser des filtres et des tris.") }}
             </p>
           </div>
           <p class="fr-col-auto fr-my-0">
@@ -32,8 +32,9 @@
               :href="resource.preview_url"
               :icon="RiExternalLinkFill"
               icon-right
+              @click="trackEvent('Jeux de données', 'Explorer les données', 'Bouton : explorer les données')"
             >
-              {{ t("Explore data") }}
+              {{ t("Explorer les données") }}
             </BrandedButton>
           </p>
         </div>
@@ -41,7 +42,7 @@
       <div class="fr-table fr-table--no-background fr-p-0 fr-m-0">
         <table class="fr-mb-3w">
           <caption class="sr-only">
-            {{ t('Preview of {name}', { name: resource.title }) }}
+            {{ t('Prévisualisation de {name}', { name: resource.title }) }}
           </caption>
           <thead>
             <tr>
@@ -51,7 +52,7 @@
                 scope="col"
               >
                 <BrandedButton
-                  color="secondary-softer"
+                  color="tertiary"
                   :icon="isSortedBy(col) && sortConfig && sortConfig.type == 'asc' ? RiArrowUpLine : RiArrowDownLine"
                   icon-right
                   size="xs"
@@ -60,7 +61,7 @@
                   <!-- There is a weird bug with `sr-only`, I needed to add a relative parent to avoid full page x scrolling into the void…  -->
                   <span class="relative">
                     {{ col }}
-                    <span class="sr-only">{{ sortConfig && sortConfig.type == 'desc' ? t("Sort ascending") : t("Sort descending") }}</span>
+                    <span class="sr-only">{{ sortConfig && sortConfig.type == 'desc' ? t("Trier par ordre croissant") : t("Trier par ordre décroissant") }}</span>
                   </span>
                 </BrandedButton>
               </th>
@@ -76,7 +77,7 @@
                 :key="colIndex"
                 class="cell-padding"
               >
-                <div class="fr-grid-row fr-grid-row--middle fr-text--xs w-100 style-cell">
+                <div class="fr-grid-row fr-grid-row--middle fr-text--xs w-full style-cell">
                   <div class="fr-my-auto">
                     {{ row[col] }}
                   </div>
@@ -94,9 +95,9 @@
         @change="changePage"
       />
       <div class="fr-px-5v">
-        {{ t("Preview updated on {date}", { date: lastUpdate }) }} —
-        {{ t('{count} columns', columns.length) }} —
-        {{ t('{count} rows', rowCount) }}
+        {{ t("Dernière mise à jour de la prévisualisation : {date}", { date: lastUpdate }) }} —
+        {{ t('{count} colonnes', columns.length) }} —
+        {{ t('Lignes {count}', rowCount) }}
       </div>
     </div>
   </div>
@@ -104,21 +105,22 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiArrowDownLine, RiArrowUpLine, RiErrorWarningLine, RiExternalLinkFill } from '@remixicon/vue'
 import Pagination from '../Pagination.vue'
 import { getData, type SortConfig } from '../../functions/tabularApi'
 import { useFormatDate } from '../../functions/dates'
+import { trackEvent } from '../../functions/matomo'
 import type { Resource } from '../../types/resources'
 import { useComponentsConfig } from '../../config'
 import BrandedButton from '../BrandedButton.vue'
 import SimpleBanner from '../SimpleBanner.vue'
+import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
 import PreviewLoader from './PreviewLoader.vue'
 
 const props = defineProps<{ resource: Resource }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const rows = ref<Array<Record<string, unknown>>>([])
@@ -144,12 +146,12 @@ function isSortedBy(col: string) {
 async function getTableInfos(page: number, sortConfig?: SortConfig) {
   try {
     // Check that this function return wanted data
-    const { data } = await getData(config, props.resource.id, page, sortConfig)
-    if ('data' in data && data.data && data.data.length > 0) {
+    const response = await getData(config, props.resource.id, page, sortConfig)
+    if ('data' in response && response.data && response.data.length > 0) {
       // Update existing rows
-      rows.value = data.data
-      columns.value = Object.keys(data.data[0]).filter(item => item !== '__id')
-      rowCount.value = data.meta.total
+      rows.value = response.data
+      columns.value = Object.keys(response.data[0]).filter(item => item !== '__id')
+      rowCount.value = response.meta.total
       currentPage.value = page
       loading.value = false
     }
@@ -199,7 +201,7 @@ function sortByField(col: string) {
   getTableInfos(currentPage.value, sortConfig.value)
 };
 
-const lastUpdate = computed(() => formatDate(props.resource.extras['analysis:parsing:finished_at']))
+const lastUpdate = computed(() => formatDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined))
 
 onMounted(() => {
   getTableInfos(currentPage.value)

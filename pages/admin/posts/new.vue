@@ -3,7 +3,6 @@
     <Breadcrumb>
       <BreadcrumbItem
         to="/"
-        external
       >
         {{ $t('Accueil') }}
       </BreadcrumbItem>
@@ -24,14 +23,14 @@
       v-if="currentStep === 1"
       :post="postForm"
       type="create"
-      :submit-label="t('Next')"
+      :submit-label="t('Suivant')"
       @submit="postNext"
     />
     <PostContentForm
       v-if="currentStep === 2"
       :post="postForm"
       type="create"
-      :submit-label="t('Save')"
+      :submit-label="t('Sauvegarder')"
       @submit="save"
     />
     <div class="h-64" />
@@ -46,15 +45,14 @@ import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { Post, PostForm } from '~/types/posts'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const route = useRoute()
-const localePath = useLocalePath()
 const { $api, $fileApi } = useNuxtApp()
 const me = useMe()
 
 const steps = computed(() => [
-  t('Describe your post'),
-  t('Content'),
+  t('Décrivez votre article'),
+  t('Contenu'),
 ])
 
 const POST_FORM_STATE = 'post-form'
@@ -119,7 +117,7 @@ async function save(form: { content: string }) {
         body: formData,
       })
     }
-    await navigateTo(localePath(`/admin/posts/${newPost.value.id}`))
+    await navigateTo(`/admin/posts/${newPost.value.id}`)
   }
   finally {
     clearNuxtState(POST_LOADING_STATE)

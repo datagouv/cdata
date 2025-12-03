@@ -1,17 +1,17 @@
-import type { NuxtApp } from '#app'
-
 export default defineNuxtPlugin({
   async setup(nuxtApp) {
     const config = useRuntimeConfig()
     const token = useToken()
     const cookie = useRequestHeader('cookie')
-    const localePath = useLocalePath()
+    const route = useRoute()
+    const { t, locale } = useTranslation()
+
     const { toast } = useToast()
-    const makeApi = (sendJson = true) => {
+    const makeApi = (apiOptions: { sendJson: boolean, redirectOn404: boolean }) => {
       return $fetch.create({
         baseURL: config.public.apiBase,
         onRequest({ options }) {
-          if (sendJson) {
+          if (apiOptions.sendJson) {
             options.headers.set('Content-Type', 'application/json')
           }
           options.headers.set('Accept', 'application/json')
@@ -25,20 +25,27 @@ export default defineNuxtPlugin({
           if (cookie) {
             options.headers.set('Cookie', cookie)
           }
-          const i18n = nuxtApp.$i18n as NuxtApp['$i18n']
-          if (i18n.locale.value) {
+          if (locale) {
             if (!options.query) {
               options.query = {}
             }
-            options.query['lang'] = i18n.locale.value
+            options.query['lang'] = locale
           }
         },
-        async onResponseError({ response }) {
-          if (response.status === 401) {
-            await nuxtApp.runWithContext(() => navigateTo(localePath('/login'), { external: true }))
+        async onResponseError({ response, options }) {
+          if (response.status === 404) {
+            if (apiOptions.redirectOn404) {
+              await nuxtApp.runWithContext(() => showError({ statusCode: 404, statusMessage: 'Page Not Found', fatal: true }))
+            }
+            else {
+              // We don't want to show the toast for default 404 Flask response
+              return
+            }
           }
 
-          const t = (nuxtApp.$i18n as NuxtApp['$i18n']).t
+          if (response.status === 401) {
+            await nuxtApp.runWithContext(() => navigateTo({ path: '/login', query: { next: route.fullPath } }))
+          }
 
           if (response.status === 429) {
             toast.error(t('Erreur API 429 : trop de requêtes. Veuillez réessayer plus tard.'))
@@ -50,24 +57,35 @@ export default defineNuxtPlugin({
             return
           }
 
-          let message
-          try {
-            if ('error' in response._data) {
-              message = response._data.error
+          let message = ''
+          if (response._data) {
+            try {
+              if ('error' in response._data) {
+                message = response._data.error
+              }
+              else if ('message' in response._data) {
+                message = response._data.message
+              }
+              else if ('errors' in response._data && typeof response._data.errors === 'object') {
+                message = Object.entries(response._data.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
+              }
             }
-            else if ('message' in response._data) {
-              message = response._data.message
+            catch (e) {
+              console.error(e)
             }
-            else if ('errors' in response._data && typeof response._data.errors === 'object') {
-              message = Object.entries(response._data.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
-            }
-          }
-          catch (e) {
-            console.error(e)
-            message = t('The API returned an unexpected error')
           }
 
-          toast.error(message)
+          if (options?.method && ['POST', 'PUT', 'PATCH'].includes(options.method) && response.status === 400) {
+            toast.error(t(`Le formulaire contient des erreurs. ${message}`))
+            return
+          }
+
+          if (message) {
+            toast.error(message)
+          }
+          else {
+            toast.error(t(`L'API a retourné une erreur inattendue`))
+          }
         },
       })
     }
@@ -75,8 +93,9 @@ export default defineNuxtPlugin({
     // Expose to useNuxtApp().$api
     return {
       provide: {
-        api: makeApi(),
-        fileApi: makeApi(false),
+        api: makeApi({ sendJson: true, redirectOn404: false }),
+        fileApi: makeApi({ sendJson: false, redirectOn404: false }),
+        apiWith404: makeApi({ sendJson: true, redirectOn404: true }),
       },
     }
   },

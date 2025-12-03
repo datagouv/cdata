@@ -8,7 +8,7 @@
       <ComboboxLabel
         class="fr-label"
       >
-        {{ t('Search for data') }}
+        {{ t('Rechercher des données') }}
       </ComboboxLabel>
       <RiSearch2Line
         class="absolute text-base top-3 left-2"
@@ -17,7 +17,7 @@
       />
       <ComboboxInput
         class="fr-input fr-col-12 !pl-8"
-        :placeholder="t('Search an organization on data.gouv.fr')"
+        :placeholder="t('Rechercher une organisation sur {platform}', { platform: config.public.title })"
         autocomplete="off"
         data-cy="search-input"
         name="q"
@@ -35,13 +35,24 @@
         class="marker:hidden p-0"
         :value="option"
       >
-        <OrganizationSearchOption
-          :active
-          :logo="option.image_url"
-          :name="option.name"
-          :link="option.page"
+        <div
+          class="relative flex items-center py-2 fr-enlarge-link border-neutral-200 border-bottom"
+          :class="{ 'bg-indigo-100 outline outline-1 outline-primary outline-offset-[-2px]': active }"
           @mousedown.left="moveToOrganization(option.page)"
-        />
+        >
+          <OrganizationLogo
+            :organization="option"
+            class="flex-none mx-2"
+            size-class="size-8"
+          />
+          <CdataLink
+            class="flex-1"
+            :to="option.page"
+            :external="true"
+          >
+            <span class="font-bold">{{ option.name }}</span>
+          </CdataLink>
+        </div>
       </ComboboxOption>
     </ComboboxOptions>
   </Combobox>
@@ -49,14 +60,14 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import type { Organization } from '@datagouv/components-next'
+import { OrganizationLogo, type Organization } from '@datagouv/components-next'
 import { watchDebounced } from '@vueuse/core'
 import { RiSearch2Line } from '@remixicon/vue'
 import { Combobox, ComboboxInput, ComboboxLabel, ComboboxOption, ComboboxOptions } from '@headlessui/vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { toast } = useToast()
+const config = useRuntimeConfig()
 const q = ref('')
 const { $api } = useNuxtApp()
 
@@ -72,13 +83,13 @@ async function fetchOptions() {
       link: option.page,
     }))
   }
-  catch (_error) {
-    toast.error(t('An error occurred while fetching the options.'))
+  catch {
+    toast.error(t(`Une erreur s'est produite lors de la mise à jour des options.`))
   }
 }
 
 async function moveToOrganization(page: string) {
-  await navigateTo(page, { external: true })
+  await navigateTo(page)
 }
 
 watchDebounced(q, async (newValue, oldValue) => {

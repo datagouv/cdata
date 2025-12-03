@@ -4,7 +4,7 @@
       v-if="post"
       :post="postForm"
       type="update"
-      :submit-label="t('Save')"
+      :submit-label="t('Sauvegarder')"
       @submit="save"
     />
   </div>
@@ -14,13 +14,13 @@
 import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import type { Post } from '~/types/posts'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const { toast } = useToast()
 
 const route = useRoute()
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
-const { data: post, refresh } = await useAPI<Post>(url, { lazy: true })
+const { data: post, refresh } = await useAPI<Post>(url, { redirectOn404: true })
 const postForm = computed(() => postToForm(post.value))
 
 const loading = ref(false)
@@ -36,7 +36,7 @@ const save = async (form: { content: string }) => {
       }),
     })
 
-    toast.success(t('Post updated!'))
+    toast.success(t('Article mis à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
     refresh()
   }

@@ -9,12 +9,11 @@
         <Breadcrumb>
           <BreadcrumbItem
             to="/"
-            :external="true"
           >
-            {{ $t('Home') }}
+            {{ $t('Accueil') }}
           </BreadcrumbItem>
           <BreadcrumbItem to="/organizations">
-            {{ $t('Organizations') }}
+            {{ $t('Organisations') }}
           </BreadcrumbItem>
           <BreadcrumbItem>
             {{ organization.name }}
@@ -43,19 +42,19 @@
           class="fr-badge mb-2 flex gap-1 items-center"
         >
           <RiDeleteBinLine class="size-3.5" />
-          {{ $t('Deleted') }}
+          {{ $t('Supprimée') }}
         </p>
-        <Placeholder
-          :src="organization.logo_thumbnail"
-          type="organization"
-          alt=""
-          :size="80"
-          class="bg-white p-1 rounded-sm border border-gray-default object-contain mb-2.5"
-        />
-        <h1 class="!text-2xl !font-extrabold !mb-2.5">
+        <div class="bg-white p-1 rounded-sm border border-gray-default object-contain mb-2.5 size-20">
+          <OrganizationLogo
+            :organization
+            size-class="size-full"
+          />
+        </div>
+        <h1 class="text-2xl font-extrabold text-gray-title mb-2.5">
           <OrganizationNameWithCertificate
             :certifier="config.public.title"
             :organization
+            :show-acronym="true"
             :show-type="false"
           />
         </h1>
@@ -68,11 +67,11 @@
       <FullPageTabs
         class="mt-12"
         :links="[
-          { label: $t('Presentation'), href: `/organizations/${route.params.oid}/` },
-          { label: $t('Datasets'), href: `/organizations/${route.params.oid}/datasets`, count: organization.metrics.datasets },
-          { label: $t('Dataservices'), href: `/organizations/${route.params.oid}/dataservices`, count: organization.metrics.dataservices },
-          { label: $t('Reuses'), href: `/organizations/${route.params.oid}/reuses`, count: organization.metrics.reuses },
-          { label: $t('Information'), href: `/organizations/${route.params.oid}/information` },
+          { label: $t('Présentation'), href: `/organizations/${route.params.oid}/` },
+          { label: $t('Jeux de données'), href: `/organizations/${route.params.oid}/datasets`, count: organization.metrics.datasets },
+          { label: $t('API'), href: `/organizations/${route.params.oid}/dataservices`, count: organization.metrics.dataservices },
+          { label: $t('Réutilisations'), href: `/organizations/${route.params.oid}/reuses`, count: organization.metrics.reuses },
+          { label: $t('Informations'), href: `/organizations/${route.params.oid}/information` },
         ]"
       />
       <div class="bg-white pt-5 pb-8 lg:pb-24">
@@ -87,11 +86,10 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, OrganizationNameWithCertificate, OwnerType, getOrganizationType, type Organization } from '@datagouv/components-next'
+import { isOrganizationCertified, LoadingBlock, OrganizationNameWithCertificate, OwnerType, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import Placeholder from '~/components/Placeholder/Placeholder.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 
 const config = useRuntimeConfig()
@@ -99,7 +97,7 @@ const route = useRoute()
 const me = useMaybeMe()
 
 const url = computed(() => `/api/1/organizations/${route.params.oid}/`)
-const { data: organization, status } = await useAPI<Organization>(url)
+const { data: organization, status } = await useAPI<Organization>(url, { redirectOn404: true, redirectOnSlug: 'oid' })
 
 const title = computed(() => organization.value?.name)
 const robots = computed(() => organization.value && !organization.value.metrics.dataservices && !organization.value.metrics.datasets && !organization.value.metrics.reuses ? 'noindex, nofollow' : 'all')

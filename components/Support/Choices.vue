@@ -99,9 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
-import MarkdownViewer from '~/components/MarkdownViewer/MarkdownViewer.vue'
-import useActiveDescendant from '~/datagouv-components/src/composables/useActiveDescendant'
+import { useActiveDescendant, BrandedButton, MarkdownViewer, SimpleBanner } from '@datagouv/components-next'
 import type { Question, QuestionWithSegment } from '~/types/support'
 
 const emit = defineEmits<{
@@ -147,7 +145,7 @@ function selectActiveChoice(e: Event) {
 }
 
 async function submit(question: QuestionWithSegment) {
-  if (!validate()) {
+  if (!await validate()) {
     return
   }
   loading.value = true

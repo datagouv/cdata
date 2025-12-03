@@ -5,12 +5,12 @@
     :icon="RiEdit2Line"
     size="xs"
   >
-    {{ $t('Edit') }}
+    {{ $t('Modifier') }}
   </BrandedButton>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, throwOnNever } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 
 const props = defineProps<{
@@ -18,7 +18,7 @@ const props = defineProps<{
   id: string
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const link = computed(() => {
   const base = `/admin/${props.type}/${props.id}/`
@@ -33,7 +33,7 @@ const link = computed(() => {
     case 'datasets':
       return base
     default:
-      return throwOnNever(props.type as never, t('No other type defined'))
+      return throwOnNever(props.type as never, t('Aucun autre type défini'))
   }
 })
 </script>

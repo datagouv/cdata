@@ -1,53 +1,84 @@
 <template>
   <div>
-    <div class="flex flex-wrap mb-2">
-      <h2 class="!text-sm !mb-2.5 w-full flex-none sm:flex-1">
-        {{ $t('Statistics from the last 12 months') }}
+    <div class="flex flex-wrap mb-6">
+      <h2 class="text-sm w-full flex-none sm:flex-1 mb-0">
+        {{ $t('Statistiques à partir de ') }}
+        {{ formatDate(config.public.metricsSince, { dateStyle: undefined, year: 'numeric', month: 'long', day: undefined }) }}.
       </h2>
       <div>
         <BrandedButton
           color="secondary"
           :disabled="!downloadStatsUrl"
           :href="downloadStatsUrl || ''"
-          :title="$t('Download file')"
           download="stats.csv"
           :icon="RiDownloadLine"
           size="xs"
         >
-          {{ $t('Download statistics as CSV') }}
+          {{ $t('Télécharger les statistiques au format CSV') }}
         </BrandedButton>
       </div>
     </div>
     <section
-      class="flex flex-col md:flex-row px-4 pb-4"
+      class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 pb-4"
     >
       <ClientOnly>
         <StatBox
-          :title="$t('Views')"
-          :data="metricsViews"
-          type="line"
-          :summary="metricsViewsTotal"
-          class="md:w-1/3 mb-8 md:mb-0"
+          :title="$t('Jeux de données')"
+          :data="organization.metrics.datasets_by_months"
+          type="bar"
+          :summary="organization.metrics.datasets"
         />
         <StatBox
-          :title="$t('Downloads')"
-          :data="metricsDownloads"
-          type="line"
-          :summary="metricsDownloadsTotal"
-          class="md:w-1/3 mb-8 md:mb-0"
+          :title="$t('API')"
+          :data="organization.metrics.dataservices_by_months"
+          type="bar"
+          :summary="organization.metrics.dataservices"
         />
         <StatBox
-          :title="$t('Reuses Visits')"
-          :data="metricsReuses"
+          :title="$t('Réutilisations')"
+          :data="organization.metrics.reuses_by_months"
+          type="bar"
+          :summary="organization.metrics.reuses"
+        />
+      </ClientOnly>
+    </section>
+    <Divider
+      color="bg-gray-default"
+      class="mb-6 pr-24"
+    />
+    <section
+      class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 pb-4"
+    >
+      <ClientOnly>
+        <StatBox
+          :title="$t('Vues')"
+          :data="metrics?.datasetsViews"
           type="line"
-          :summary="metricsReusesTotal"
-          class="md:w-1/3 mb-8 md:mb-0"
+          :summary="metrics?.datasetsViewsTotal"
+        />
+        <StatBox
+          :title="$t('Téléchargements des données')"
+          :data="metrics?.downloads"
+          type="line"
+          :summary="metrics?.downloadsTotal"
+        />
+        <StatBox
+          :title="$t('Nombre de visites des API')"
+          :data="metrics?.dataservicesViews"
+          type="line"
+          :summary="metrics?.dataservicesViewsTotal"
+        />
+        <StatBox
+          :title="$t('Nombre de visites des réutilisations')"
+          :data="metrics?.reusesViews"
+          type="line"
+          :summary="metrics?.reusesViewsTotal"
         />
       </ClientOnly>
     </section>
     <SectionCollapse
-      :title="$t('Members')"
-      :button-text="$t('See members')"
+      :title="$t('Membres')"
+      :button-text="$t('Voir les membres')"
     >
       <template #buttons>
         <BrandedButton
@@ -57,12 +88,12 @@
           :icon="RiCheckLine"
           :disabled="true"
         >
-          {{ $t('Request pending approval') }}
+          {{ $t(`Requête en attente d'approbation`) }}
         </BrandedButton>
         <ModalWithButton
           v-else-if="me && !alreadyMember"
           size="lg"
-          :title="$t('Ask to join the organization')"
+          :title="$t(`Demander à rejoindre l'organisation`)"
         >
           <template #button="{ attrs, listeners }">
             <div>
@@ -74,20 +105,20 @@
                 v-bind="attrs"
                 v-on="listeners"
               >
-                {{ $t('Ask to join the organization') }}
+                {{ $t(`Demander à rejoindre l'organisation`) }}
               </BrandedButton>
             </div>
           </template>
           <p class="!mb-4">
-            {{ $t('Organization administrator will have to accept your request.') }}
+            {{ $t(`L'administrateur de l'organisation doit accepter votre demande.`) }}
           </p>
-          <p class="flex items-center gap-2 !mb-4 text-sm">
-            <Placeholder
-              :src="organization.logo_thumbnail"
-              type="organization"
-              :size="28"
-              class=" flex-none p-1 border rounded-sm border-gray-default"
-            />
+          <div class="flex items-center gap-2 !mb-4 text-sm">
+            <div class="flex-none p-1 border rounded-sm border-gray-default">
+              <OrganizationLogo
+                :organization
+                size-class="size-full"
+              />
+            </div>
             <OrganizationNameWithCertificate
               :organization
               :certifier="config.public.title"
@@ -95,11 +126,11 @@
               class="truncate"
               size="sm"
             />
-          </p>
+          </div>
           <InputGroup
             v-model="reason"
-            :label="$t('Request reason')"
-            :placeholder="$t('Specify your role in the organization and why you want to join it.')"
+            :label="$t('Motif de la demande')"
+            :placeholder="$t(`Indiquer votre rôle dans l'organisation et pourquoi vous voulez la rejoindre.`)"
             type="textarea"
             :required="true"
           />
@@ -110,14 +141,14 @@
                 size="sm"
                 @click="close"
               >
-                {{ $t('Cancel') }}
+                {{ $t('Annuler') }}
               </BrandedButton>
               <BrandedButton
                 color="primary"
                 size="sm"
                 @click="sendRequest(reason, close)"
               >
-                {{ $t('Send your request') }}
+                {{ $t('Envoyer votre demande') }}
               </BrandedButton>
             </div>
           </template>
@@ -146,7 +177,7 @@
                 type="secondary"
                 size="sm"
               >
-                {{ member.role }}
+                {{ member.label }}
               </AdminBadge>
             </p>
           </div>
@@ -154,22 +185,22 @@
       </div>
     </SectionCollapse>
     <SectionCollapse
-      :title="$t('Technical information')"
-      :button-text="$t('See technical information')"
+      :title="$t('Informations techniques')"
+      :button-text="$t('Voir les informations techniques')"
     >
       <DescriptionList class="mb-2">
         <div>
-          <DescriptionListTerm>{{ $t('Latest update') }}</DescriptionListTerm>
+          <DescriptionListTerm>{{ $t('Dernière mise à jour') }}</DescriptionListTerm>
           <DescriptionListDetails>{{ formatDate(organization.last_modified) }}</DescriptionListDetails>
         </div>
         <div>
-          <DescriptionListTerm>{{ $t('ID') }}</DescriptionListTerm>
+          <DescriptionListTerm>{{ $t('Identifiant') }}</DescriptionListTerm>
           <DescriptionListDetails class="flex items-center gap-2">
             {{ organization.id }}
             <CopyButton
               class="!-mt-0.5"
-              :label="$t('Copy organization ID')"
-              :copied-label="$t('Organization ID copied')"
+              :label="$t(`Copier l'identifiant de l'organisation`)"
+              :copied-label="$t(`Identifiant de l'organisation copié !`)"
               :text="organization.id"
               :hide-label="true"
             />
@@ -178,24 +209,84 @@
       </DescriptionList>
       <DescriptionList>
         <div>
-          <DescriptionListTerm>{{ $t('Creation date') }}</DescriptionListTerm>
+          <DescriptionListTerm>{{ $t('Date de création') }}</DescriptionListTerm>
           <DescriptionListDetails>{{ formatDate(organization.created_at) }}</DescriptionListDetails>
         </div>
       </DescriptionList>
+    </SectionCollapse>
+    <SectionCollapse
+      :title="$t('Intégrer sur votre site')"
+      :button-text="$t('Voir les oembeds')"
+    >
+      <h3 class="subtitle fr-mb-1v">
+        {{ $t('La recherche de jeux de données de l\'organisation') }}
+        <CopyButton
+          :hide-label="true"
+          :label="$t(`Copier l'intégration`)"
+          :copied-label="$t('Intégration copiée !')"
+          class="fr-my-1w fr-mr-1w"
+          :text="getOrganizationOEmbedHtml('search-dataset', organization.id)"
+        />
+      </h3>
+      <div class="embed-wrapper">
+        <textarea
+          ref="textAreaRef1"
+          :value="getOrganizationOEmbedHtml('search-dataset', organization.id)"
+          readonly="true"
+          rows="1"
+        />
+      </div>
+      <h3 class="subtitle fr-mb-1v">
+        {{ $t('La recherche des API de l\'organisation') }}
+        <CopyButton
+          :hide-label="true"
+          :label="$t(`Copier l'intégration`)"
+          :copied-label="$t('Intégration copiée !')"
+          class="fr-my-1w fr-mr-1w"
+          :text="getOrganizationOEmbedHtml('search-dataservice', organization.id)"
+        />
+      </h3>
+      <div class="embed-wrapper">
+        <textarea
+          ref="textAreaRef2"
+          :value="getOrganizationOEmbedHtml('search-dataservice', organization.id)"
+          readonly="true"
+          rows="1"
+        />
+      </div>
+      <h3 class="subtitle fr-mb-1v">
+        {{ $t('La liste des réutilisations de l\'organisation') }}
+        <CopyButton
+          :hide-label="true"
+          :label="$t(`Copier l'intégration`)"
+          :copied-label="$t('Intégration copiée !')"
+          class="fr-my-1w fr-mr-1w"
+          :text="getOrganizationOEmbedHtml('list-reuse', organization.id)"
+        />
+      </h3>
+      <div class="embed-wrapper">
+        <textarea
+          ref="textAreaRef3"
+          :value="getOrganizationOEmbedHtml('list-reuse', organization.id)"
+          readonly="true"
+          rows="1"
+        />
+      </div>
     </SectionCollapse>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, CopyButton, OrganizationNameWithCertificate, StatBox, useFormatDate, type Organization } from '@datagouv/components-next'
+import { Avatar, BrandedButton, CopyButton, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, useFormatDate, useMetrics, createOrganizationMetricsUrl, type Organization, type OrganizationMetrics } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
+import Divider from '~/components/Divider.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
 
 const props = defineProps<{
   organization: Organization
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const config = useRuntimeConfig()
@@ -203,34 +294,22 @@ const { $api } = useNuxtApp()
 const { toast } = useToast()
 const me = useMaybeMe()
 
-const metricsViews = ref<null | Record<string, number>>(null)
-const metricsViewsTotal = ref<null | number>(null)
-const metricsDownloads = ref<null | Record<string, number>>(null)
-const metricsDownloadsTotal = ref<null | number>(null)
-const metricsReuses = ref<null | Record<string, number>>(null)
-const metricsReusesTotal = ref<null | number>(null)
+const { getOrganizationMetrics } = useMetrics()
+const metrics = ref<OrganizationMetrics | null>(null)
+
+watchEffect(async () => {
+  metrics.value = await getOrganizationMetrics(props.organization.id)
+})
+
+const downloadStatsUrl = computed(() => {
+  if (!metrics.value) return null
+
+  return createOrganizationMetricsUrl(metrics.value.datasetsViews, metrics.value.downloads, metrics.value.dataservicesViews, metrics.value.reusesViews)
+})
 
 const reason = ref('')
 
 const alreadyMember = computed(() => me.value?.organizations.find(organization => organization.id === props.organization.id))
-
-const downloadStatsUrl = computed(() => {
-  if (!metricsViews.value || !metricsDownloads.value || !metricsReuses.value) {
-    return null
-  }
-
-  return createOrganizationMetricsUrl(metricsViews.value, metricsDownloads.value, metricsReuses.value)
-})
-
-watchEffect(async () => {
-  const metrics = await getOrganizationMetrics(props.organization.id)
-  metricsDownloads.value = metrics.downloads
-  metricsDownloadsTotal.value = metrics.downloadsTotal
-  metricsReuses.value = metrics.reusesViews
-  metricsReusesTotal.value = metrics.reusesViewsTotal
-  metricsViews.value = metrics.datasetsViews
-  metricsViewsTotal.value = metrics.datasetsViewsTotal
-})
 
 const { data: pendingRequests, status, refresh } = await useAsyncData<Array<PendingMembershipRequest | MembershipRequest>>('membership-requests', () => {
   if (me.value) {
@@ -256,7 +335,7 @@ async function sendRequest(comment: string, closeModal: () => void) {
     closeModal()
   }
   catch {
-    toast.error(t('An error occured while sending your request'))
+    toast.error(t(`Une erreur est survenue pendant l'envoi de votre demande`))
   }
 }
 </script>

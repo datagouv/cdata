@@ -1,112 +1,123 @@
 <template>
   <span
     v-if="title"
-    class="inline-flex fr-mb-0 align-items-baseline fr-text--xs"
+    class="inline-flex mb-0 items-baseline text-xs"
   >
     <Toggletip
-      position="right"
+      :button-props="{ class: 'relative z-2 -ml-3 top-1 -my-3', title: t('Schéma de données') }"
       no-margin
-      class="relative z-2 -ml-3 top-1 -my-3"
     >
+      <RiInformationLine class="size-4" />
       <template #toggletip="{ close }">
         <div class="flex justify-between border-bottom">
-          <h5 class="fr-text--sm fr-my-0 fr-p-2v">{{ $t("Data schema") }}</h5>
+          <h5 class="fr-text--sm fr-my-0 fr-p-2v">{{ t("Schéma de données") }}</h5>
           <button
             type="button"
-            :title="t('Close')"
+            :title="t('Fermer')"
             class="border-left close-button flex items-center justify-center"
             @click="close"
           >&times;</button>
         </div>
-        <div class="fr-p-3v">
+        <div class="p-3">
+          <div v-if="validataStatus === 'none'">
+            {{ t("Ce fichier indique suivre le schéma :") }} <component
+              :is="documentationUrl ? 'a' : 'span'"
+              :href="documentationUrl"
+              class="fr-link fr-text--sm"
+            >{{ title }}</component>.
+          </div>
           <div v-if="validataStatus === 'ok'">
-            {{ t("This file is valid for the shema:") }} <component
+            {{ t("Ce fichier est valide pour le schéma :") }} <component
               :is="documentationUrl ? 'a' : 'span'"
               :href="documentationUrl"
               class="fr-link fr-text--sm"
             >{{ title }}</component>.
           </div>
           <div v-if="validataStatus === 'warnings'">
-            {{ t("This file is valid for the shema:") }} <component
+            {{ t("Ce fichier est valide pour le schéma :") }} <component
               :is="documentationUrl ? 'a' : 'span'"
               :href="documentationUrl"
               class="fr-link fr-text--sm"
-            >{{ title }}</component>. {{ t("But its compliance could be improved.") }}
+            >{{ title }}</component>. {{ t("Mais sa conformité peut être améliorée.") }}
           </div>
           <div v-if="validataStatus === 'ko'">
-            {{ t("This file indicates to follow the schema:") }} <component
+            {{ t("Ce fichier indique suivre le schéma :") }} <component
               :is="documentationUrl ? 'a' : 'span'"
               :href="documentationUrl"
               class="fr-link fr-text--sm"
-            >{{ title }}</component>. {{ t("But is not compliant.") }}
+            >{{ title }}</component>. {{ t("Mais n'est pas conforme.") }}
           </div>
 
           <div
             v-if="validataWarnings.length"
-            class="text-default-warning flex items-center fr-mt-4v"
+            class="text-default-warning flex items-center mt-4"
           >
-            <span class="fr-icon-alert-line fr-icon--sm fr-mr-1v" />
-            <span>{{ validataWarnings.length }} {{ t('advices') }}</span>
+            <span class="fr-icon-alert-line fr-icon--sm mr-1" />
+            <span>{{ validataWarnings.length }} {{ t('recommandations') }}</span>
           </div>
           <div
             v-if="validataStructureErrors.length"
-            class="text-default-warning flex items-center fr-mt-4v"
+            class="text-default-warning flex items-center mt-4"
           >
-            <span class="fr-icon-alert-line fr-icon--sm fr-mr-1v" />
-            <span>{{ validataStructureErrors.length }} {{ t('structure errors') }}</span>
+            <span class="fr-icon-alert-line fr-icon--sm mr-1" />
+            <span>{{ validataStructureErrors.length }} {{ t('erreurs de structures') }}</span>
           </div>
           <div
             v-if="validataBodyErrors.length"
-            class="text-default-warning flex items-center fr-mt-4v"
+            class="text-default-warning flex items-center mt-4"
           >
-            <span class="fr-icon-alert-line fr-icon--sm fr-mr-1v" />
-            <span>{{ validataBodyErrors.length }} {{ t('body errors') }}</span>
+            <span class="fr-icon-alert-line fr-icon--sm mr-1" />
+            <span>{{ validataBodyErrors.length }} {{ t('erreurs de contenus') }}</span>
           </div>
 
           <div
-            v-if="validationUrl"
-            class="w-100 text-align-right fr-mt-5v"
+            v-if="validationUrl && validataStatus !== 'none'"
+            class="w-full text-right mt-5"
             target="_blank"
           >
-            <a :href="validationUrl">{{ t('See validation report') }}</a>
+            <a :href="validationUrl">{{ t('Voir le rapport de validation') }}</a>
           </div>
         </div>
       </template>
     </Toggletip>
-    <span class="fr-mr-1v text-gray-medium">{{ t("Schema:") }}</span>
+    <span class="mr-1 text-gray-medium">{{ t("Schéma:") }}</span>
     <span class="flex items-center bg-danger-lightest rounded-sm">
       <span class="fr-tag fr-tag--sm">{{ title }}</span>
       <span
         v-if="validataStatus === 'warnings'"
         class="flex items-center padding-sm"
       >
-        <span class="fr-icon-alert-line fr-icon--sm fr-mr-1v" />
-        <span>{{ t("Invalid") }}</span>
+        <span class="fr-icon-alert-line fr-icon--sm mr-1" />
+        <span>{{ t("Invalide") }}</span>
       </span>
       <span
         v-if="validataStatus === 'ko'"
         class="flex items-center text-warning-dark padding-sm"
       >
-        <span class="fr-icon-error-line fr-icon--sm fr-mr-1v" />
-        <span>{{ t("Invalid") }}</span>
+        <span class="fr-icon-error-line fr-icon--sm mr-1" />
+        <span>{{ t("Invalide") }}</span>
       </span>
     </span>
   </span>
 </template>
 
 <script setup lang="ts">
+import { RiInformationLine } from '@remixicon/vue'
 import { computed, onMounted, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type { Resource } from '../../types/resources'
 import Toggletip from '../Toggletip.vue'
-import type { RegisteredSchema, ValidataError } from '../../functions/schemas'
-import { findSchemaInCatalog, getCatalog, getSchemaDocumentation, getSchemaValidationUrl } from '../../functions/schemas'
+import { findSchemaInCatalog, useGetCatalog, useGetSchemaDocumentation, useGetSchemaValidationUrl } from '../../functions/schemas'
+import { useTranslation } from '../../composables/useTranslation'
+import type { RegisteredSchema, ValidataError } from '../../types/schemas'
 
 const props = defineProps<{
   resource: Resource
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
+const getSchemaValidationUrl = useGetSchemaValidationUrl()
+const getSchemaDocumentation = useGetSchemaDocumentation()
+const getCatalog = useGetCatalog()
 
 const catalog = ref<Array<RegisteredSchema> | null>(null)
 onMounted(async () => {
@@ -121,12 +132,13 @@ const title = computed(() => {
   return props.resource.schema.name || props.resource.schema.url
 })
 
-const validataErrors = computed<Array<ValidataError>>(() => props.resource.extras['validation-report:errors'] || [])
+const validataErrors = computed<Array<ValidataError>>(() => props.resource.extras['validation-report:errors'] as Array<ValidataError> || [])
 const validataWarnings = computed(() => validataErrors.value.filter(error => [''].includes(error.code)))
 const validataBodyErrors = computed(() => validataErrors.value.filter(error => ['#body', '#cell', '#content', '#row', '#table'].some(tag => error.tags.includes(tag))))
 const validataStructureErrors = computed(() => validataErrors.value.filter(error => ['#head', '#structure', '#header'].some(tag => error.tags.includes(tag))))
 
-const validataStatus = computed<'ok' | 'warnings' | 'ko'>(() => {
+const validataStatus = computed<'none' | 'ok' | 'warnings' | 'ko'>(() => {
+  if (!('validation-report:errors' in props.resource.extras)) return 'none'
   if (validataErrors.value.length === 0) return 'ok'
   if (validataErrors.value.length === validataWarnings.value.length) return 'warnings'
   return 'ko'

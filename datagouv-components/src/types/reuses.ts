@@ -1,6 +1,7 @@
 import type { Owned, OwnedWithId } from './owned'
 import type { Dataset } from './datasets'
 import type { Badges } from './badges'
+import type { Dataservice } from './dataservices'
 
 export type BaseReuse = Owned & {
   title: string
@@ -19,9 +20,10 @@ export type Reuse = BaseReuse & {
   badges: Badges
   created_at: string
   datasets: Array<Dataset>
+  dataservices: Array<Dataservice>
   archived: string | null
   deleted: string | null
-  extras: Record<string, any>
+  extras: Record<string, unknown>
   featured: boolean
   id: string
   image: string | null
@@ -30,12 +32,14 @@ export type Reuse = BaseReuse & {
   metrics: {
     datasets: number
     discussions: number
+    discussions_open: number
     followers: number
     views: number
   }
   slug: string
   page: string
   uri: string
+  permissions: { edit: boolean, delete: boolean }
 }
 
 export type ReuseType = {

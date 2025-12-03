@@ -1,17 +1,17 @@
 <template>
   <div>
     <AdminBreadcrumb>
-      <BreadcrumbItem>{{ t('Community Resources') }}</BreadcrumbItem>
+      <BreadcrumbItem>{{ t('Ressources communautaires') }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="font-bold text-2xl mb-5">
-      {{ t("Community Resources") }}
+    <h1 class="font-extrabold text-2xl text-gray-title mb-5">
+      {{ t("Ressources communautaires") }}
     </h1>
     <h2
       v-if="pageData && pageData.total"
       class="text-sm font-bold uppercase m-0"
     >
-      {{ t('{n} community resources', pageData.total) }}
+      {{ t('{n} ressources communautaires', pageData.total) }}
     </h2>
 
     <LoadingBlock :status>
@@ -41,17 +41,16 @@
         class="h-20"
       />
       <p class="fr-text--bold fr-my-3v">
-        {{ t(`You haven't published a community resource yet`) }}
+        {{ t(`Vous n'avez pas encore publié de ressource communautaire`) }}
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Pagination, type CommunityResource, type Organization, type User } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, type CommunityResource, type Organization, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import AdminCommunityResourcesTable from '../AdminTable/AdminCommunityResourcesTable/AdminCommunityResourcesTable.vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
@@ -61,7 +60,7 @@ const props = defineProps<{
   organization?: Organization | null
   user?: User | null
 }>()
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 
 const page = ref(1)

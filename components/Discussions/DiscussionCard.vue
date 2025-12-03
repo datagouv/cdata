@@ -10,13 +10,12 @@
       v-if="thread.closed"
       class="border-l-2 pl-2.5 border-gray-default text-xs/loose"
     >
-      {{ $t('Discussion closed by ') }}
+      {{ $t('Discussion close par ') }}
       <span class="inline-flex items-center space-x-1 text-mention-grey">
-        <Placeholder
+        <OrganizationLogo
           v-if="thread.closed_by_organization"
-          type="organization"
-          :src="thread.closed_by_organization.logo_thumbnail"
-          class="size-3"
+          :organization="thread.closed_by_organization"
+          size-class="size-3"
         />
         <Avatar
           v-else
@@ -24,22 +23,22 @@
           :rounded="true"
           class="size-3"
         />
-        <NuxtLink
+        <CdataLink
           v-if="thread.closed_by_organization"
           class="link"
           :href="thread.closed_by_organization.page"
         >
           {{ thread.closed_by_organization.name }}
-        </NuxtLink>
-        <NuxtLink
+        </CdataLink>
+        <CdataLink
           v-else
           class="link"
           :href="thread.closed_by.page"
         >
           {{ thread.closed_by.first_name }} {{ thread.closed_by.last_name }}
-        </NuxtLink>
+        </CdataLink>
       </span>
-      {{ $t('the {date}', { date: formatDate(thread.closed) }) }}
+      {{ $t('le {date}', { date: formatDate(thread.closed) }) }}
     </div>
     <template v-if="!thread.closed || openDiscussionIfClosed">
       <template
@@ -77,8 +76,8 @@
         size="xs"
         @click="openDiscussionIfClosed = !openDiscussionIfClosed"
       >
-        <span v-if="openDiscussionIfClosed">{{ $t('Hide discussion') }}</span>
-        <span v-else>{{ $t('See discussion') }}</span>
+        <span v-if="openDiscussionIfClosed">{{ $t('Cacher la discussion') }}</span>
+        <span v-else>{{ $t('Voir la discussion') }}</span>
       </BrandedButton>
       <BrandedButton
         v-else-if="!showRespondForm"
@@ -86,14 +85,14 @@
         size="xs"
         @click="showRespondFormIfConnected"
       >
-        {{ $t('Respond') }}
+        {{ $t('Répondre') }}
       </BrandedButton>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, ReadMore, useFormatDate } from '@datagouv/components-next'
+import { Avatar, BrandedButton, OrganizationLogo, ReadMore, useFormatDate } from '@datagouv/components-next'
 import ThreadHeader from './ThreadHeader.vue'
 import CommentBlock from './CommentBlock.vue'
 import RespondForm from './RespondForm.vue'
@@ -109,16 +108,16 @@ defineEmits<{
 
 const openDiscussionIfClosed = ref(false)
 const showRespondForm = ref(false)
-const localePath = useLocalePath()
 const { formatDate } = useFormatDate()
 const me = useMaybeMe()
+const route = useRoute()
 
 const showRespondFormIfConnected = () => {
   if (me.value) {
     showRespondForm.value = true
   }
   else {
-    navigateTo(localePath('/login'), { external: true })
+    navigateTo({ path: '/login', query: { next: route.fullPath } }, { external: true })
   }
 }
 </script>

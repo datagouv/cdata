@@ -7,17 +7,17 @@
         :is="icon"
         class="fr-mr-1w size-4"
       />
-      <NuxtLinkLocale
-        :to="to"
+      <CdataLink
+        :to
         class="[[aria-current=page]]:-translate-y-0.5"
-        :aria-current="route.fullPath === localeRoute(to)?.fullPath || isLastBreadcrumb ? 'page' : false"
+        :aria-current="route.fullPath === resolve(to)?.fullPath || isLastBreadcrumb ? 'page' : false"
       >
         <TextClamp
           :text="label"
           :auto-resize="true"
           :max-lines="1"
         />
-      </NuxtLinkLocale>
+      </CdataLink>
     </div>
   </li>
 </template>
@@ -27,7 +27,7 @@ import type { Component } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 
 const route = useRoute()
-const localeRoute = useLocaleRoute()
+const { resolve } = useRouter()
 
 const props = defineProps<{
   label: string
@@ -49,14 +49,14 @@ const lastBreadcrumbInSidebar = computed(() => {
   const breadcrumbsInSidebar = breadcrumbs.value.filter((breadcrumbUrl) => {
     if (!breadcrumbUrl) return false
     return Object.values(sidebarLinks.value)
-      .find(sidebarLink => localeRoute(sidebarLink)?.fullPath === localeRoute(breadcrumbUrl)?.fullPath)
+      .find(sidebarLink => resolve(sidebarLink)?.fullPath === resolve(breadcrumbUrl)?.fullPath)
   })
   if (!breadcrumbsInSidebar.length) return null
   return breadcrumbsInSidebar[breadcrumbsInSidebar.length - 1]
 })
 const isLastBreadcrumb = computed(() => {
   if (!lastBreadcrumbInSidebar.value) return false
-  return localeRoute(lastBreadcrumbInSidebar.value)?.fullPath === localeRoute(props.to)?.fullPath
+  return resolve(lastBreadcrumbInSidebar.value)?.fullPath === resolve(props.to)?.fullPath
 })
 </script>
 

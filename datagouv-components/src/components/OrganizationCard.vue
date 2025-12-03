@@ -12,23 +12,29 @@
         >
       </div>
       <p class="mb-0.5 font-bold">
-        <NuxtLinkLocale
+        <AppLink
           :to="`/organizations/${organization.slug}`"
+          class="overflow-hidden"
         >
           <OrganizationNameWithCertificate
             :show-type="false"
             :organization
           />
-        </NuxtLinkLocale>
+        </AppLink>
       </p>
-      <div class="mb-2 flex flex-wrap items-center">
-        <OwnerType
-          v-if="type !== 'other'"
-          class="mb-0 text-sm after:content-['—'] after:ml-1"
-          :type
-        />
+      <div class="mb-2 flex flex-wrap gap-1 items-center">
+        <template v-if="type !== 'other'">
+          <OwnerType
+            class="mb-0 text-sm"
+            :type
+          />
+          <RiSubtractLine class="size-4 fill-gray-medium" />
+        </template>
         <div>
-          <div class="text-gray-medium flex items-center text-sm gap-0.5" v-if="organization.metrics">
+          <div
+            v-if="organization.metrics"
+            class="text-gray-medium flex items-center text-sm gap-0.5"
+          >
             <RiDatabase2Line class="size-4 -mt-1" /> {{ organization.metrics.datasets }}
             <RiTerminalLine class="size-4 -mt-1 ml-1" /> {{ organization.metrics.dataservices }}
             <RiLineChartLine class="size-4 -mt-1 ml-1" /> {{ organization.metrics.reuses }}
@@ -47,13 +53,14 @@
 </template>
 
 <script setup lang="ts">
-import { RiLineChartLine, RiDatabase2Line, RiTerminalLine } from '@remixicon/vue'
+import { RiLineChartLine, RiDatabase2Line, RiTerminalLine, RiSubtractLine } from '@remixicon/vue'
 import { computed, ref, watchEffect } from 'vue'
 import { removeMarkdown } from '../functions/markdown'
 import { getOrganizationType } from '../functions/organizations'
 import type { Organization } from '../types/organizations'
 import OwnerType from './OwnerType.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
+import AppLink from './AppLink.vue'
 
 const props = defineProps<{
   organization: Organization

@@ -5,17 +5,17 @@
     </div>
     <div class="p-4">
       <p class="text-lg mb-2.5 font-bold">
-        <NuxtLinkLocale
+        <CdataLink
           :to="`/posts/${post.slug}/`"
         >
           {{ post.name }}
-        </NuxtLinkLocale>
+        </CdataLink>
       </p>
       <p
         v-if="post.published"
         class="mb-0 text-gray-medium"
       >
-        {{ $t('Published the {date}', { date: formatDate(post.published) }) }}
+        {{ $t('Publié le {date}', { date: formatDate(post.published) }) }}
       </p>
     </div>
   </div>

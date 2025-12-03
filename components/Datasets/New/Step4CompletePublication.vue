@@ -14,7 +14,7 @@
             {{ $t('Your dataset is created!') }}
           </p>
           <p class="fr-m-0 fr-text--xs">
-            {{ $t('You can now publish it or save it as a draft.') }}
+            {{ $t('Vous pouvez maintenant le publier ou le sauvegarder en brouillon.') }}
           </p>
         </div>
       </div>
@@ -25,26 +25,26 @@
         v-if="config.public.publishingDatasetFeedbackUrl"
         :href="config.public.publishingDatasetFeedbackUrl"
         :icon="RiLightbulbLine"
-        color="secondary-softer"
+        color="tertiary"
         new-tab
       >
-        {{ $t('Give us your feedback on the publishing form') }}
+        {{ $t('Donnez-nous votre avis sur le parcours de publication') }}
       </BrandedButton>
       <div class="fr-grid-row fr-grid-row--right">
         <BrandedButton
           class="mr-3"
           color="secondary"
-          :disabled="loading"
+          :loading="isLoading"
           @click="submit(true)"
         >
-          {{ $t("Save as draft") }}
+          {{ $t("Sauvegarder le brouillon") }}
         </BrandedButton>
         <BrandedButton
-          :loading
+          :loading="isLoading"
           color="primary"
           @click="submit(false)"
         >
-          {{ $t("Publish the dataset") }}
+          {{ $t("Publier le jeu de données") }}
         </BrandedButton>
       </div>
     </div>
@@ -52,13 +52,12 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { SimpleBanner, type Dataset } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import type { Dataset, DatasetV2 } from '@datagouv/components-next'
 import { RiLightbulbLine } from '@remixicon/vue'
 
 const props = defineProps<{
-  dataset: Dataset
-  loading: boolean
+  dataset: Dataset | DatasetV2
 }>()
 
 const publicDataset = computed(() => ({ ...props.dataset, private: false }))
@@ -68,6 +67,7 @@ const emit = defineEmits<{
 }>()
 
 const config = useRuntimeConfig()
+const { isLoading } = useLoadingIndicator()
 
 function submit(asPrivate: boolean) {
   emit('next', asPrivate)

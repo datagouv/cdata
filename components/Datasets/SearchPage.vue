@@ -3,6 +3,7 @@
     v-if="!organization || organization.metrics.datasets"
     class="group/form"
     data-input-color="blue"
+    @submit.prevent="() => refresh()"
   >
     <div
       ref="search"
@@ -11,47 +12,27 @@
     >
       <SearchInput
         v-model="queryString"
-        :placeholder="organization ? t('Search a dataset of the organization') : t('Ex. 2022 presidential election')"
+        :placeholder="organization ? t(`Rechercher un jeu de données de l'organisation`) : t('Ex : élection présidentielle 2022')"
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
       <div class="col-span-12 md:col-span-4 lg:col-span-3">
-        <Sidemenu :button-text="t('Filters')">
+        <Sidemenu :button-text="t('Filtres')">
           <template #title>
-            {{ t('Filters') }}
+            {{ t('Filtres') }}
           </template>
           <div class="space-y-4">
             <template v-if="!organization">
-              <SearchableSelect
+              <OrganizationSelect
                 v-model="facets.organization"
-                :options="organizations ? organizations.data : []"
-                :suggest="suggestOrganizations"
-                :label="t('Organizations')"
-                :placeholder="t('All organizations')"
-                :get-option-id="(option) => option.id"
-                :display-value="(option) => option.name"
-                :filter="(option, query) => (option.name).toLocaleLowerCase().includes(query.toLocaleLowerCase())"
-                :multiple="false"
+                :organizations="organizations?.data ?? []"
                 :loading="organizationsStatus === 'pending'"
-              >
-                <template #option="{ option }">
-                  <div class="flex items-center space-x-2">
-                    <Placeholder
-                      :lazy="false"
-                      type="organization"
-                      :src="'logo_thumbnail' in option ? option.logo_thumbnail : option.image_url"
-                      :size="32"
-                      class="flex-none"
-                    />
-                    <span>{{ option.name }}</span>
-                  </div>
-                </template>
-              </SearchableSelect>
+              />
               <SearchableSelect
                 v-model="facets.organizationType"
                 :options="organizationTypes"
-                :label="t('Organization type')"
-                :placeholder="t('All types')"
+                :label="t(`Type d'organisation`)"
+                :placeholder="t('Tous les types')"
                 :get-option-id="(type) => type.type"
                 :display-value="(value) => value.label"
                 :multiple="false"
@@ -63,8 +44,8 @@
             </template>
             <SearchableSelect
               v-model="facets.tag"
-              :label="t('Tags')"
-              :placeholder="t('All tags')"
+              :label="t('Mots clés')"
+              :placeholder="t('Tous les mots clés')"
               :get-option-id="(tag) => tag"
               :display-value="(value) => value"
               :suggest="suggestTags"
@@ -77,7 +58,7 @@
             <SearchableSelect
               v-model="facets.format"
               :label="t('Formats')"
-              :placeholder="t('All formats')"
+              :placeholder="t('Tous les formats')"
               :options="allowedFormats ? allowedFormats : []"
               :loading="allowedFormatsStatus === 'pending'"
               :get-option-id="(format) => format"
@@ -90,9 +71,9 @@
             </SearchableSelect>
             <SearchableSelect
               v-model="facets.license"
-              :label="t('Licenses')"
-              :explanation="t('Licenses define reuse rules for published datasets. See page data.gouv.fr/licences')"
-              :placeholder="t('All licenses')"
+              :label="t('Licences')"
+              :explanation="t('Les licences définissent les règles de réutilisation des jeux de données publiés. Voir la page data.gouv.fr/licences')"
+              :placeholder="t('Toutes les licences')"
               :display-value="(value) => value.title"
               :options="licenses ? licenses : []"
               :loading="licensesStatus === 'pending'"
@@ -104,11 +85,11 @@
             </SearchableSelect>
             <SearchableSelect
               v-model="facets.schema"
-              :label="t('Schema')"
-              :explanation="t('Data schemas describe data models: what are the fields, how are data shown, what are the available values, etc. See schema.data.gouv.fr')"
+              :label="t('Schéma')"
+              :explanation="t('Les schémas de données permettent de décrire des modèles de données : quels sont les différents champs, comment sont représentées les données, quelles sont les valeurs possibles etc. Voir schema.data.gouv.fr')"
               :display-value="(value) => value.name"
               :get-option-id="(option) => option.name"
-              :placeholder="t('All schemas')"
+              :placeholder="t('Tous les schémas')"
               :options="schemas ? schemas : []"
               :loading="schemasStatus === 'pending'"
               :multiple="false"
@@ -119,8 +100,8 @@
             </SearchableSelect>
             <SearchableSelect
               v-model="facets.geozone"
-              :label="t('Spatial coverage')"
-              :placeholder="t('All coverages')"
+              :label="t('Couverture spatiale')"
+              :placeholder="t('Toutes les couvertures')"
               :suggest="suggestSpatialCoverages"
               :get-option-id="(coverage) => coverage.id"
               :display-value="(value) => value.name"
@@ -135,8 +116,8 @@
             </SearchableSelect>
             <SearchableSelect
               v-model="facets.granularity"
-              :label="t('Spatial granularity')"
-              :placeholder="t('All granularities')"
+              :label="t('Granularité spatiale')"
+              :placeholder="t('Toutes les granularités')"
               :get-option-id="(granularity) => granularity.id"
               :display-value="(value) => value.name"
               :multiple="false"
@@ -147,18 +128,33 @@
                 {{ granularity.name }}
               </template>
             </SearchableSelect>
+            <SearchableSelect
+              v-model="facets.badge"
+              :label="t('Label de données')"
+              :placeholder="t('Tous les badges')"
+              :get-option-id="(badge) => badge.kind"
+              :display-value="(value) => value.label"
+              :multiple="false"
+              :options="badges ? badges : []"
+              :loading="badgeStatus === 'pending'"
+              data-testid="dataset-label-filter"
+            >
+              <template #option="{ option: badge }">
+                {{ badge.label }}
+              </template>
+            </SearchableSelect>
             <div
               v-if="isFiltered || organization"
               class="pb-6 text-center"
             >
               <BrandedButton
                 v-if="isFiltered"
-                color="primary-soft"
+                color="secondary"
                 :icon="RiCloseCircleLine"
                 class="w-full justify-center"
                 @click="resetFilters"
               >
-                {{ t('Reset filters') }}
+                {{ t('Réinitialiser les filtres') }}
               </BrandedButton>
               <BrandedButton
                 v-else-if="organization"
@@ -167,7 +163,7 @@
                 :external="true"
                 :icon="RiDownloadLine"
               >
-                {{ t('Download the list as CSV') }}
+                {{ t('Télécharger la liste en CSV') }}
               </BrandedButton>
             </div>
           </div>
@@ -180,20 +176,21 @@
       >
         <div
           v-if="searchResults?.total"
-          class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle justify-between pb-2"
+          class="flex flex-wrap gap-4 items-center justify-between pb-2"
         >
           <p
             class="fr-col-auto my-0"
             role="status"
+            data-testid="result-count"
           >
-            {{ t("{count} results", searchResults.total) }}
+            {{ t("{count} résultats | {count} résultat | {count} résultats", searchResults.total) }}
           </p>
           <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
             <label
               for="sort-search"
               class="fr-col-auto text-sm m-0 mr-2"
             >
-              {{ t('Sort by:') }}
+              {{ t('Trier par :') }}
             </label>
             <div class="fr-col">
               <select
@@ -204,7 +201,7 @@
                 @change="currentPage = 1"
               >
                 <option value="">
-                  {{ t('Relevance') }}
+                  {{ t('Pertinence') }}
                 </option>
                 <option
                   v-for="{ value, label } in sortOptions"
@@ -220,7 +217,10 @@
         <transition mode="out-in">
           <LoadingBlock :status="searchResultsStatus">
             <div v-if="searchResults && searchResults.data.length">
-              <ul class="space-y-4 mt-2 p-0 border-t border-gray-default relative z-2 list-none">
+              <ul
+                class="space-y-4 mt-2 p-0 border-t border-gray-default relative z-2 list-none"
+                data-testid="results"
+              >
                 <li
                   v-for="result in searchResults.data"
                   :key="result.id"
@@ -265,27 +265,26 @@
       height="117"
     />
     <p class="mt-4 mb-5 font-bold text-lg">
-      {{ $t(`This organization hasn't published any datasets yet.`) }}
+      {{ $t(`Cette organisation n'a pas encore publié de jeux de données.`) }}
     </p>
     <BrandedButton
       color="secondary"
       :href="config.public.datasetPublishingGuideUrl"
     >
-      {{ $t(`What's a dataset ?`) }}
+      {{ $t(`Qu'est-ce qu'un jeu de données ?`) }}
     </BrandedButton>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { getOrganizationTypes, Pagination, OTHER, USER, type DatasetV2, type License, type Organization, type OrganizationTypes, type RegisteredSchema } from '@datagouv/components-next'
+import { BrandedButton, getLink, getOrganizationTypes, LoadingBlock, Pagination, OTHER, USER } from '@datagouv/components-next'
+import type { DatasetV2, License, Organization, OrganizationTypes, RegisteredSchema, TranslatedBadge, OrganizationOrSuggest } from '@datagouv/components-next'
 import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiCloseCircleLine, RiDownloadLine } from '@remixicon/vue'
 import { computedAsync, debouncedRef, useUrlSearchParams } from '@vueuse/core'
 import SearchInput from '~/components/Search/SearchInput.vue'
 import type { PaginatedArray, SpatialGranularity, SpatialZone, Tag } from '~/types/types'
-import type { DatasetSearchParams, OrganizationOrSuggest, OrganizationSuggest } from '~/types/form'
+import type { DatasetSearchParams } from '~/types/form'
 
 const props = defineProps<{
   organization?: Organization
@@ -293,23 +292,24 @@ const props = defineProps<{
 
 type Facets = {
   organization?: { id: string } | null
-  organizationType?: { type: OrganizationTypes }
-  tag?: string
+  organizationType?: { type: OrganizationTypes } | null
+  tag?: string | null
   license?: License | null
   format?: string | null
-  geozone?: SpatialZone
+  geozone?: SpatialZone | null
   granularity?: SpatialGranularity | null
   schema?: RegisteredSchema | null
+  badge?: TranslatedBadge | null
 }
 
 const { $api } = useNuxtApp()
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const { toast } = useToast()
 
-const url = useRequestURL()
+const route = useRoute()
 const params = useUrlSearchParams<DatasetSearchParams>('history', {
-  initialValue: Object.fromEntries(url.searchParams.entries()),
+  initialValue: route.query,
   removeNullishValues: true,
   removeFalsyValues: true,
 })
@@ -317,10 +317,10 @@ const params = useUrlSearchParams<DatasetSearchParams>('history', {
 const nonFalsyParams = computed(() => {
   const filteredParams = Object.entries(toValue(params)).filter(([_k, v]) => v)
   const propsParams = props.organization ? { organization: props.organization.id } : {}
-  return { ...propsParams, ...Object.fromEntries(filteredParams) }
+  return { ...propsParams, ...Object.fromEntries(filteredParams), page_size: pageSize }
 })
 
-const { data: searchResults, status: searchResultsStatus } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/search/', {
+const { data: searchResults, status: searchResultsStatus, refresh } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/search/', {
   params: nonFalsyParams,
   lazy: true,
 })
@@ -335,13 +335,23 @@ const { data: licenses, status: licensesStatus } = await useAPI<Array<License>>(
 
 const { data: organizations, status: organizationsStatus } = await useAPI<PaginatedArray<Organization>>('/api/1/organizations/?sort=-followers', { lazy: true })
 
+const { data: badgeRecord, status: badgeStatus } = await useAPI<Record<string, string>>('/api/1/datasets/badges/', { lazy: true })
+
+const badges = computed(() => badgeRecord.value
+  ? Object.entries(badgeRecord.value)
+      .map(([kind, label]: Array<string>) => ({ kind, label }))
+      .filter(({ kind }) => {
+        const badges = Array.isArray(config.public.datasetBadges) ? config.public.datasetBadges : config.public.datasetBadges.split(',')
+        return badges.includes(kind)
+      })
+  : [])
+
 const organizationTypes = getOrganizationTypes()
   .filter(type => type.type !== OTHER && type.type !== USER)
 
 /**
  * Search query
  */
-const route = useRoute()
 const queryString = ref('')
 watchEffect(() => {
   // We use route.query here instead of params because params doesn't change when Nuxt
@@ -374,9 +384,11 @@ const organizationFromParams = computed(() => organizations.value?.data.find(org
 
 const organizationFromSuggest = computedAsync<OrganizationOrSuggest | null>(async () => {
   if (!props.organization && !organizationFromParams.value && params.organization) {
-    const suggested = await suggestOrganizations(params.organization)
-    if (suggested && suggested.length > 0) {
-      return suggested[0]
+    try {
+      return await $api<Organization>(`/api/1/organizations/${params.organization}/`)
+    }
+    catch {
+      return null
     }
   }
   return null
@@ -387,6 +399,8 @@ const organizationTypeFromParams = organizationTypes.find(type => type.type === 
 const licenseFromParams = computed(() => licenses.value?.find(license => license.id === params.license) ?? null)
 
 const schemaFromParams = computed(() => schemas.value?.find(schema => schema.name === params.schema) ?? null)
+
+const badgeFromParams = computed(() => badges.value?.find(badge => badge.kind === params.badge) ?? null)
 
 let spatialCoverageFromSuggest: SpatialZone | undefined
 if (params.geozone) {
@@ -407,6 +421,7 @@ const facets = ref<Facets>({
   schema: null,
   geozone: spatialCoverageFromSuggest,
   granularity: null,
+  badge: null,
 })
 
 watchEffect(() => {
@@ -414,6 +429,7 @@ watchEffect(() => {
   facets.value.license = licenseFromParams.value
   facets.value.schema = schemaFromParams.value
   facets.value.granularity = granularityFromParams.value
+  facets.value.badge = badgeFromParams.value
 })
 
 /**
@@ -427,15 +443,6 @@ const searchRef = useTemplateRef('search')
 watch([deboucedQuery, facets], () => {
   currentPage.value = 1
 }, { deep: true })
-
-async function suggestOrganizations(q: string) {
-  return await $api<Array<OrganizationSuggest>>('/api/1/organizations/suggest/', {
-    query: {
-      q,
-      size: 20,
-    },
-  })
-}
 
 async function suggestSpatialCoverages(query: string) {
   return await $api<Array<SpatialZone>>('/api/1/spatial/zones/suggest/', {
@@ -502,35 +509,35 @@ const isFiltered = computed(() => {
 })
 
 const sortOptions = [
-  { label: t('Creation date'), value: '-created' },
-  { label: t('Last update'), value: '-last_update' },
-  { label: t('Number of followers'), value: '-followers' },
-  { label: t('Number of reuses'), value: '-reuses' },
+  { label: t('Date de création'), value: '-created' },
+  { label: t('Dernière mise à jour'), value: '-last_update' },
+  { label: t(`Nombre d'abonnés`), value: '-followers' },
+  { label: t('Nombre de réutilisations'), value: '-reuses' },
 ]
 
 // Update model params
-watchEffect(() => {
-  params.page_size = pageSize.toFixed()
+watch([currentPage, facets, deboucedQuery, searchSort], ([newPage, newFacets, q, sort]) => {
   if (!props.organization) {
-    params.organization = facets.value.organization?.id ?? undefined
-    params.organization_badge = facets.value.organizationType?.type ?? undefined
+    params.organization = newFacets.organization?.id ?? undefined
+    params.organization_badge = newFacets.organizationType?.type ?? undefined
   }
-  params.tag = facets.value.tag
-  params.format = facets.value.format ?? undefined
-  params.organization_badge = facets.value.organizationType?.type ?? undefined
-  params.license = facets.value.license?.id ?? undefined
-  params.schema = facets.value.schema?.name ?? undefined
-  params.geozone = facets.value.geozone?.id ?? undefined
-  params.granularity = facets.value.granularity?.id ?? undefined
-  if (currentPage.value >= 1) params.page = currentPage.value.toString()
-  params.q = deboucedQuery.value ?? undefined
-  params.sort = searchSort.value ?? null
+  params.tag = newFacets.tag
+  params.format = newFacets.format ?? undefined
+  params.organization_badge = newFacets.organizationType?.type ?? undefined
+  params.license = newFacets.license?.id ?? undefined
+  params.schema = newFacets.schema?.name ?? undefined
+  params.geozone = newFacets.geozone?.id ?? undefined
+  params.granularity = newFacets.granularity?.id ?? undefined
+  params.badge = newFacets.badge?.kind ?? undefined
+  if (newPage > 1 || params.page) params.page = newPage.toString()
+  params.q = q ?? undefined
+  params.sort = sort ?? null
   return params
-})
+}, { deep: true })
 
 watch(searchResultsStatus, () => {
   if (searchResultsStatus.value === 'error') {
-    toast.error(t(`The search request failed`))
+    toast.error(t(`La recherche a échoué`))
   }
 })
 </script>

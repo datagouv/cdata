@@ -1,7 +1,7 @@
 <template>
   <div class="pb-14">
     <h2 class="!text-sm !mb-2.5">
-      {{ $t('Organization description') }}
+      {{ $t(`Description de l'organisation`) }}
     </h2>
     <MarkdownViewer
       :content="organization.description"
@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Organization } from '@datagouv/components-next'
+import { MarkdownViewer, type Organization } from '@datagouv/components-next'
 
 defineProps<{
   organization: Organization
