@@ -12,6 +12,7 @@ export type PluginConfig = {
   maxPdfPreviewByteSize?: number // Maximum size of PDF to preview in bytes
   maxXmlPreviewCharSize?: number // Maximum size of XML to preview in characters. XML preview module can NOT be collapsed by default so we should not have a preview for large files.
   pmtilesViewerBaseUrl?: string | null // Base URL of a pmtiles viewer (ex: https://pmtiles.io/#url=)
+  metricsApiUrl?: string
   schemaValidataUrl?: string
   schemaDocumentationUrl?: string
   tabularApiUrl?: string

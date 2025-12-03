@@ -45,11 +45,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: "npm"
-          cache-dependency-path: package-lock.json
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install Node.js dependencies for cdata
-        run: npm ci
+        run: pnpm install
 
       - name: Install Python dependencies for udata
         working-directory: udata
@@ -120,10 +120,10 @@ jobs:
           NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "hero_15.png"
         run: |
           # Build cdata
-          npm run build
+          pnpm run build
 
           # Start cdata server in background
-          PORT=3000 npm run preview > cdata.log 2>&1 &
+          PORT=3000 pnpm run preview > cdata.log 2>&1 &
 
           # Wait for cdata to be ready
           timeout 90 bash -c 'until curl -f http://localhost:3000; do sleep 2; done'
@@ -133,7 +133,7 @@ jobs:
         env:
           BASE_URL: http://localhost:3000
           CI: true
-        run: npm run test:e2e
+        run: pnpm run test:e2e
 
       - name: Kill udata server
         if: always()

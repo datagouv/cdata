@@ -86,7 +86,11 @@ const pmtilesViewerUrl = computed(() => {
   return config.pmtilesViewerBaseUrl ? `${config.pmtilesViewerBaseUrl}${encodeURIComponent(pmtilesUrl.value)}` : null
 })
 
-const lastUpdate = computed(() => formatDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined))
+const lastUpdate = computed(() => {
+  if (props.resource.extras['analysis:parsing:pmtiles_url'])
+    return formatDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined)
+  return formatDate(props.resource.last_modified)
+})
 
 const container = useTemplateRef('containerRef')
 

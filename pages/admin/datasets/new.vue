@@ -82,7 +82,6 @@ const datasetForm = useState(DATASET_FORM_STATE, () => ({
   title: '',
   acronym: '',
   description: '',
-  featured: false,
   owned: null as Owned | null,
   tags: [] as Array<Tag>,
   license: null as EnrichedLicense | null,

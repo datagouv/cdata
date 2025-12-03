@@ -38,7 +38,7 @@
 <script setup lang="ts">
 import { RiCheckboxCircleLine } from '@remixicon/vue'
 import { getOrganizationType, isOrganizationCertified } from '../functions/organizations'
-import type { Organization } from '../types/organizations'
+import type { OrganizationReference } from '../types/organizations'
 import { useComponentsConfig } from '../config'
 import { useTranslation } from '../composables/useTranslation'
 import OwnerTypeIcon from './OwnerTypeIcon.vue'
@@ -48,7 +48,7 @@ const config = useComponentsConfig()
 
 const { t } = useTranslation()
 withDefaults(defineProps<{
-  organization: Organization
+  organization: OrganizationReference
   showAcronym?: boolean
   showType?: boolean
   size?: 'base' | 'sm'
