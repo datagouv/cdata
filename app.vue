@@ -38,6 +38,7 @@ app.vueApp.use(datagouv, {
   maxJsonPreviewCharSize: runtimeConfig.public.maxJsonPreviewCharSize,
   maxPdfPreviewByteSize: runtimeConfig.public.maxPdfPreviewByteSize,
   maxXmlPreviewCharSize: runtimeConfig.public.maxXmlPreviewCharSize,
+  metricsApiUrl: runtimeConfig.public.metricsApi,
   pmtilesViewerBaseUrl: null,
   schemaValidataUrl: runtimeConfig.public.schemaValidataUrl,
   schemaDocumentationUrl: runtimeConfig.public.schemasSite.url,

@@ -222,6 +222,26 @@ export default defineNuxtConfig({
 
   vite: {
     assetsInclude: ['**/*.md'],
+    optimizeDeps: {
+      // Some `@datagouv/components-next` dependencies aren't scanned by Vite dev server.
+      // It must optimized them to be able to handle commonjs dependencies.
+      // See https://vite.dev/guide/dep-pre-bundling.html#customizing-the-behavior
+      include: [
+        'debug',
+        'extend',
+        'highlight.js',
+        'rehype-highlight',
+        'swagger-ui-dist',
+        'unist-util-find',
+        'unist-util-find-all-between',
+        'vue',
+        'vue-router',
+      ],
+      // `@datagouv/components-next` shouldn't be optimize otherwise its vue instance is not the same
+      // as the one used in udata-front-kit. This cause errors with the `provide` / `inject` functions
+      // used for the components configuration.
+      exclude: ['@datagouv/components-next'],
+    },
     css: {
       preprocessorOptions: {
         scss: {
