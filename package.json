@@ -2,6 +2,19 @@
   "name": "nuxt-app",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.23.0",
+  "engines": {
+    "node": ">= 20.0.0",
+    "pnpm": ">= 10.0.0",
+    "npm": "use-pnpm-instead",
+    "yarn": "use-pnpm-instead"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "cypress",
+      "husky"
+    ]
+  },
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -62,7 +75,8 @@
     "vue": "^3.5",
     "vue-content-loader": "^2.0.1",
     "vue-router": "^4.4",
-    "vue3-text-clamp": "^0.1.2"
+    "vue3-text-clamp": "^0.1.2",
+    "@vue/server-renderer": "^3.5"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
