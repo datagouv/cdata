@@ -69,27 +69,27 @@
           <ClientOnly>
             <StatBox
               :title="$t('Visites des jeux de données')"
-              :data="metricsDatasetsViews"
+              :data="metrics?.datasetsViews"
               type="line"
-              :summary="metricsDatasetsViewsTotal"
+              :summary="metrics?.datasetsViewsTotal"
             />
             <StatBox
               :title="$t('Téléchargements des données')"
-              :data="metricsDownloads"
+              :data="metrics?.downloads"
               type="line"
-              :summary="metricsDownloadsTotal"
+              :summary="metrics?.downloadsTotal"
             />
             <StatBox
               :title="$t('Visites des API')"
-              :data="metricsDataservicesViews"
+              :data="metrics?.dataservicesViews"
               type="line"
-              :summary="metricsDataservicesViewsTotal"
+              :summary="metrics?.dataservicesViewsTotal"
             />
             <StatBox
               :title="$t('Visites des réutilisations')"
-              :data="metricsReuses"
+              :data="metrics?.reusesViews"
               type="line"
-              :summary="metricsReusesTotal"
+              :summary="metrics?.reusesViewsTotal"
             />
           </ClientOnly>
         </section>
@@ -99,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, PaddedContainer, StatBox, type Organization, type User } from '@datagouv/components-next'
+import { BrandedButton, PaddedContainer, StatBox, useMetrics, createOrganizationMetricsUrl, type Organization, type User, type OrganizationMetrics } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 
 const props = defineProps<{
@@ -107,33 +107,17 @@ const props = defineProps<{
   user?: User | null
 }>()
 
-const metricsDataservicesViews = ref<null | Record<string, number>>(null)
-const metricsDataservicesViewsTotal = ref<null | number>(null)
-const metricsDatasetsViews = ref<null | Record<string, number>>(null)
-const metricsDatasetsViewsTotal = ref<null | number>(null)
-const metricsDownloads = ref<null | Record<string, number>>(null)
-const metricsDownloadsTotal = ref<null | number>(null)
-const metricsReuses = ref<null | Record<string, number>>(null)
-const metricsReusesTotal = ref<null | number>(null)
+const { getOrganizationMetrics } = useMetrics()
+const metrics = ref<OrganizationMetrics | null>(null)
 
 watchEffect(async () => {
   if (!props.organization) return
-  const metrics = await getOrganizationMetrics(props.organization.id)
-  metricsDownloads.value = metrics.downloads
-  metricsDownloadsTotal.value = metrics.downloadsTotal
-  metricsReuses.value = metrics.reusesViews
-  metricsReusesTotal.value = metrics.reusesViewsTotal
-  metricsDataservicesViews.value = metrics.dataservicesViews
-  metricsDataservicesViewsTotal.value = metrics.dataservicesViewsTotal
-  metricsDatasetsViews.value = metrics.datasetsViews
-  metricsDatasetsViewsTotal.value = metrics.datasetsViewsTotal
+  metrics.value = await getOrganizationMetrics(props.organization.id)
 })
 
 const downloadStatsUrl = computed(() => {
-  if (!metricsDatasetsViews.value || !metricsDownloads.value || !metricsDataservicesViews.value || !metricsReuses.value) {
-    return null
-  }
+  if (!metrics.value) return null
 
-  return createOrganizationMetricsUrl(metricsDatasetsViews.value, metricsDownloads.value, metricsDataservicesViews.value, metricsReuses.value)
+  return createOrganizationMetricsUrl(metrics.value.datasetsViews, metrics.value.downloads, metrics.value.dataservicesViews, metrics.value.reusesViews)
 })
 </script>

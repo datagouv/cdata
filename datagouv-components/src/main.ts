@@ -58,6 +58,7 @@ import ReuseCard from './components/ReuseCard.vue'
 import ReuseDetails from './components/ReuseDetails.vue'
 import SchemaCard from './components/SchemaCard.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
+import SmallChart from './components/SmallChart.vue'
 import StatBox from './components/StatBox.vue'
 import Tab from './components/Tabs/Tab.vue'
 import TabGroup from './components/Tabs/TabGroup.vue'
@@ -71,6 +72,7 @@ import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
 export * from './composables/useActiveDescendant'
+export * from './composables/useMetrics'
 export * from './composables/useReuseType'
 export * from './composables/useTranslation'
 
@@ -80,6 +82,7 @@ export * from './functions/dates'
 export * from './functions/helpers'
 export * from './functions/markdown'
 export * from './functions/matomo'
+export * from './functions/metrics'
 export * from './functions/never'
 export * from './functions/organizations'
 export * from './functions/owned'
@@ -208,6 +211,7 @@ export {
   ReuseDetails,
   SchemaCard,
   SimpleBanner,
+  SmallChart,
   StatBox,
   Swagger,
   Tab,

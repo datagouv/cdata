@@ -56,23 +56,23 @@
     >
       <StatBox
         :title="t('Vues')"
-        :data="metricsViews"
+        :data="metrics?.datasetsViews"
         type="line"
-        :summary="metricsViewsTotal"
+        :summary="metrics?.datasetsViewsTotal"
         class="md:w-1/3 mb-8 md:mb-0"
       />
       <StatBox
         :title="t('Téléchargements')"
-        :data="metricsDownloads"
+        :data="metrics?.downloads"
         type="line"
-        :summary="metricsDownloadsTotal"
+        :summary="metrics?.downloadsTotal"
         class="md:w-1/3 mb-8 md:mb-0"
       />
       <StatBox
         :title="t('Nombre de visites des réutilisations')"
-        :data="metricsReuses"
+        :data="metrics?.reusesViews"
         type="line"
-        :summary="metricsReusesTotal"
+        :summary="metrics?.reusesViewsTotal"
         class="md:w-1/3 mb-8 md:mb-0"
       />
     </section>
@@ -80,8 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { StatBox, type Organization } from '@datagouv/components-next'
+import { BrandedButton, StatBox, useMetrics, createOrganizationMetricsUrl, type Organization } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 
 const props = defineProps<{
@@ -89,6 +88,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useTranslation()
+const { getOrganizationMetrics } = useMetrics()
 
 const metricsOpen = ref(false)
 const metricsTitleId = useId()
