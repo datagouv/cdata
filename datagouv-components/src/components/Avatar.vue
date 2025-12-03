@@ -13,12 +13,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useGetUserAvatar } from '../functions/users'
-import type { User } from '../types/users'
+import type { UserReference } from '../types/users'
 
 type Props = {
   rounded?: boolean
   size?: number
-  user: User
+  user: UserReference
 }
 const props = withDefaults(defineProps<Props>(), {
   rounded: false,

@@ -3,7 +3,6 @@
     <div class="container">
       <Breadcrumb>
         <BreadcrumbItem
-          :external="true"
           to="/"
         >
           {{ $t('Accueil') }}

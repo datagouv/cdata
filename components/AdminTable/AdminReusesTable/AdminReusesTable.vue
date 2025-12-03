@@ -83,7 +83,6 @@
             :href="reuse.page"
             :icon="RiEyeLine"
             icon-only
-            external
             keep-margins-even-without-borders
           >
             {{ $t('Voir la page publique') }}

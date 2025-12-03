@@ -8,7 +8,6 @@
         <Breadcrumb class="md:my-0">
           <BreadcrumbItem
             to="/"
-            :external="true"
           >
             {{ $t("Accueil") }}
           </BreadcrumbItem>
@@ -463,6 +462,8 @@ import {
   LabelTag,
   AppLink,
   MarkdownViewer,
+  useMetrics,
+  type DatasetMetrics,
 } from '@datagouv/components-next'
 import {
   RiDeleteBinLine,
@@ -576,8 +577,6 @@ const exploreUrl = computed(() => {
   return null
 })
 
-const datasetVisits = ref<Record<string, number>>({})
-const datasetDownloadsResources = ref<Record<string, number>>({})
 const { data: badgeTranslations } = await useAPI<Record<string, string>>(
   '/api/1/datasets/badges',
 )
@@ -589,41 +588,23 @@ const badges = computed(() =>
   })),
 )
 
-const datasetVisitsTotal = ref(0)
-const datasetDownloadsResourcesTotal = ref(0)
-
 const metricsSince = computed(() => {
   // max of the start of metrics computing and the creation of the dataset on the platform
   return [dataset.value.internal.created_at_internal, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
 })
 
+const { getDatasetMetrics } = useMetrics()
+const datasetMetrics = ref<DatasetMetrics | null>(null)
+
 watchEffect(async () => {
   if (!dataset.value || !dataset.value.id) return
-  // Fetching last 12 months
-  const response = await fetch(
-    `${config.public.metricsApi}/api/datasets/data/?dataset_id__exact=${dataset.value.id}&metric_month__sort=desc&page_size=12`,
-  )
-  const page = await response.json()
-
-  for (const {
-    metric_month,
-    monthly_visit,
-    monthly_download_resource,
-  } of page.data) {
-    datasetVisits.value[metric_month] = monthly_visit
-    datasetDownloadsResources.value[metric_month] = monthly_download_resource
-  }
-  // Fetching totals
-  if (page.data[0]) {
-    const totalResponse = await fetch(
-      `${config.public.metricsApi}/api/datasets_total/data/?dataset_id__exact=${dataset.value.id}`,
-    )
-    const totalPage = await totalResponse.json()
-
-    datasetVisitsTotal.value = totalPage.data[0].visit
-    datasetDownloadsResourcesTotal.value = totalPage.data[0].download_resource
-  }
+  datasetMetrics.value = await getDatasetMetrics(dataset.value.id)
 })
+
+const datasetVisits = computed(() => datasetMetrics.value?.visits ?? {})
+const datasetDownloadsResources = computed(() => datasetMetrics.value?.downloads ?? {})
+const datasetVisitsTotal = computed(() => datasetMetrics.value?.visitsTotal ?? 0)
+const datasetDownloadsResourcesTotal = computed(() => datasetMetrics.value?.downloadsTotal ?? 0)
 
 const { data: categories } = await useAPI<Array<{ value: string, label: string }>>('/api/1/access_type/reason_categories')
 const category = computed(() => {

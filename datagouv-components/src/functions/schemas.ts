@@ -1,49 +1,7 @@
 import { ofetch } from 'ofetch'
 import type { Resource } from '../types/resources'
 import { useComponentsConfig } from '../config'
-
-/**
- * A schema version.
- */
-export type SchemaVersion = {
-  version_name: string
-  schema_url: string
-}
-
-/**
- * A schema from the schema catalog
- */
-export type RegisteredSchema = {
-  name: string
-  schema_type: string
-  versions: Array<SchemaVersion>
-}
-
-/**
- * A schema associated with a resource.
- */
-export type Schema = {
-  name?: string | null
-  url?: string | null
-  version?: string | null
-}
-
-export interface ValidataError {
-  code: string
-  description: string
-  fieldName: string
-  fieldNumber: number
-  fieldPosition: number
-  message: string
-  name: string
-  note: string
-  rowNumber: number
-  rowPosition: number
-  tags: Array<string>
-}
-export type SchemaResponseData = Array<RegisteredSchema>
-
-type SchemaPath = { schema_name: string } | { schema_url: string }
+import type { RegisteredSchema, Schema, SchemaPath, SchemaResponseData } from '../types/schemas'
 
 let catalogRequest: Promise<Array<RegisteredSchema>> | null = null
 export function useGetCatalog() {
@@ -57,6 +15,19 @@ export function useGetCatalog() {
     return await (catalogRequest = ofetch('api/1/datasets/schemas/', {
       baseURL: config.apiBase,
     }))
+  }
+}
+
+export function getSchemaVersion(schema: RegisteredSchema | null) {
+  if (!schema) {
+    return null
+  }
+  if (schema.versions && schema.versions.length > 0) {
+    return schema.versions[schema.versions.length - 1]?.version_name
+  }
+  else {
+    const versionMatch = schema.schema_url.match(/\/(\d+\.\d+\.\d+)\//)
+    return versionMatch ? versionMatch[1] : ''
   }
 }
 

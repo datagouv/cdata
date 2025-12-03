@@ -31,12 +31,12 @@ If you want to fork cdata, you must :
 Before setting up the project, make sure you have the following installed:
 
 - **Node.js** (version 18 or higher) - [Download here](https://nodejs.org/)
-- **npm** (comes with Node.js)
+- **pnpm** (see [installation methods](https://pnpm.io/installation))
 
 You can check your versions with:
 ```bash
 node --version
-npm --version
+pnpm --version
 ```
 
 ## ⚙️ Setup
@@ -44,27 +44,27 @@ npm --version
 Make sure to install cdata dependencies:
 
 ```bash
-npm ci
+pnpm install
 ```
 
-> **Note:** If you encounter issues, try deleting `node_modules` folders and `package-lock.json` files, then reinstall.
+> **Note:** If you encounter issues, try deleting `node_modules` folders.
 
 ## 🚀 Development Server
 
 Start the development server on `http://localhost:3000`:
 
 ```bash
-# npm
-npm run dev
+# pnpm
+pnpm run dev
 ```
 
 ### Common Commands
 ```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run preview      # Preview production build
-npm run lint         # Check for code style violations
-npm run lint:fix     # Automatically fix ESLint issues and format code
+pnpm run dev          # Start development server
+pnpm run build        # Build for production
+pnpm run preview      # Preview production build
+pnpm run lint         # Check for code style violations
+pnpm run lint:fix     # Automatically fix ESLint issues and format code
 ```
 
 ## 🛠️ Technology Stack
@@ -75,6 +75,17 @@ npm run lint:fix     # Automatically fix ESLint issues and format code
 - **State Management**: Vue 3 Composition API
 - **Build Tool**: [Vite](https://vitejs.dev/)
 - **Linting**: [ESLint](https://eslint.org/) + [Prettier](https://prettier.io/)
+
+### Why pnpm ?
+
+This project uses [pnpm](https://pnpm.io/) instead of npm mostly for security reasons:
+
+- prevents install scripts by default (except for Cypress and Husky with `onlyBuiltDependencies`),
+- 4 days cooldown (`minimum-release-age`) before installing new packages, leaving time for the community to detect malware versions,
+- install based on lockfile by default (`npm ci` like),
+- ... and other default configurations that are saner than npm.
+
+`pnpm` also promises to be fast and disk space efficient.
 
 ### 🔧 Environment Variables
 
@@ -143,15 +154,15 @@ definePageMeta({
 Build the application for production:
 
 ```bash
-# npm
-npm run build
+# pnpm
+pnpm run build
 ```
 
 Locally preview production build:
 
 ```bash
-# npm
-npm run preview
+# pnpm
+pnpm run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
@@ -185,8 +196,8 @@ The application will be available at `http://localhost:3000`.
 The project uses [ESLint](https://eslint.org/) for code linting and formatting to maintain consistent code style. **Running these commands is required before submitting contributions.**
 
 ```bash
-npm run lint          # Check for code style violations and potential issues
-npm run lint:fix      # Automatically fix ESLint issues and format code
+pnpm run lint          # Check for code style violations and potential issues
+pnpm run lint:fix      # Automatically fix ESLint issues and format code
 ```
 
 **Note:** Prettier is only used in the `datagouv-components` subdirectory. The main project relies on ESLint's built-in formatting capabilities.

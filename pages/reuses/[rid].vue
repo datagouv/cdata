@@ -9,7 +9,6 @@
         <Breadcrumb class="md:mb-0 md:mt-0">
           <BreadcrumbItem
             to="/"
-            :external="true"
           >
             {{ $t('Accueil') }}
           </BreadcrumbItem>
@@ -112,7 +111,6 @@
               <CdataLink
                 class="link block"
                 :to="`/users/${reuse.owner.slug}/`"
-                :external="true"
               >
                 {{ reuse.owner.first_name }} {{ reuse.owner.last_name }}
               </CdataLink>
