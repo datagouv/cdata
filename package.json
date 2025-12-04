@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@datagouv/components": "^2.0.5",
-    "@datagouv/components-next": "file:datagouv-components",
+    "@datagouv/components-next": "link:datagouv-components",
     "@gouvfr/dsfr": "^1.11.1",
     "@headlessui/vue": "^1.7.23",
     "@milkdown/core": "^7.5.0",

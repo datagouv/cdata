@@ -31,10 +31,10 @@ const props = defineProps<{ dataset: DatasetV2 }>()
 const reuses = ref<Record<string, Reuse>>({})
 
 const reusesIds = computed(() => {
-  const recommendations = props.dataset.extras['recommendations-reuses'] || null
+  const recommendations = props.dataset.extras['recommendations-reuses'] as Array<{ id: string }> | undefined
   if (!recommendations || !recommendations.length) return []
 
-  return recommendations.map((r: { id: string }) => r.id)
+  return recommendations.map(r => r.id)
 })
 
 const { $api } = useNuxtApp()
