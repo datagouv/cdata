@@ -1,7 +1,7 @@
 <template>
   <div class="p-8 space-y-4">
     <h1 class="text-2xl font-bold">
-      Test du système de traduction
+      Test du système de traduction : {{ locale }}
     </h1>
 
     <div class="space-y-2">
@@ -96,7 +96,7 @@
 <script setup lang="ts">
 import { TranslationT } from '@datagouv/components-next'
 
-const { t } = useTranslation()
+const { locale, t } = useTranslation()
 
 const messageFromComposable = computed(() => t('Message depuis le composable'))
 </script>

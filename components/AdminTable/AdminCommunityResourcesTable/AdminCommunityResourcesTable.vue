@@ -1,7 +1,7 @@
 <template>
   <FileEditModalFromQueryStringClient
     :schemas
-    @submit="(closeModal, resourceForm) => updateResource(resourceForm.resource, closeModal, resourceForm)"
+    @submit="(closeModal: () => void, resourceForm: CommunityResourceForm) => updateResource(resourceForm.resource, closeModal, resourceForm)"
   />
 
   <AdminTable>

@@ -530,6 +530,7 @@ onMounted(() => {
     change_email_confirmed: { type: 'success', text: t('Votre nouvelle adresse email est maintenant confirmée.') },
     change_email_expired: { type: 'error', text: t('Le code de vérification de votre adresse email a expiré, un nouveau mail vous a été envoyé.') },
     change_email_invalid: { type: 'error', text: t('Le code de vérification de votre adresse email est incorrect.') },
+    change_email_already_taken: { type: 'error', text: t('Cette adresse email est déjà utilisée par un autre compte. Votre adresse email n\'a pas été modifiée.') },
   }
 
   if (route.query.flash) {
