@@ -303,7 +303,6 @@ const fetchFullSubject = async (report: Report, subject: ReportSubject) => {
 }
 
 watch(pageData, async () => {
-  console.log('pageData changed')
   if (!pageData.value) return
   for (const report of pageData.value.data) {
     const subject = report.subject
