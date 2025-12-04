@@ -521,7 +521,7 @@ watch([currentPage, facets, deboucedQuery, searchSort], ([newPage, newFacets, q,
     params.organization = newFacets.organization?.id ?? undefined
     params.organization_badge = newFacets.organizationType?.type ?? undefined
   }
-  params.tag = newFacets.tag
+  params.tag = newFacets.tag ?? undefined
   params.format = newFacets.format ?? undefined
   params.organization_badge = newFacets.organizationType?.type ?? undefined
   params.license = newFacets.license?.id ?? undefined

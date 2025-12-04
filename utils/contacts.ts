@@ -1,6 +1,5 @@
 import type { ContactPoint, Organization } from '@datagouv/components-next'
-import type { $Fetch } from 'ofetch'
-import type { NewContactPoint } from '~/types/types'
+import type { ApiFetch, NewContactPoint } from '~/types/types'
 
 export const defaultContactForm = {
   name: '',
@@ -9,7 +8,7 @@ export const defaultContactForm = {
   role: 'contact' as const,
 }
 
-export async function newContactPoint(api: $Fetch, organization: Organization, contactPoint: NewContactPoint): Promise<ContactPoint> {
+export async function newContactPoint(api: ApiFetch, organization: Organization, contactPoint: NewContactPoint): Promise<ContactPoint> {
   return await api<ContactPoint>('/api/1/contacts/', {
     method: 'POST',
     body: JSON.stringify({
@@ -22,7 +21,7 @@ export async function newContactPoint(api: $Fetch, organization: Organization, c
   })
 }
 
-export async function saveContactPoint(api: $Fetch, organization: Organization, contactPoint: ContactPoint): Promise<ContactPoint> {
+export async function saveContactPoint(api: ApiFetch, organization: Organization, contactPoint: ContactPoint): Promise<ContactPoint> {
   return await api<ContactPoint>(`/api/1/contacts/${contactPoint.id}/`, {
     method: 'PUT',
     body: JSON.stringify({

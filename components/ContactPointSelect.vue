@@ -224,6 +224,14 @@ function touchEmailAndForm() {
 
 async function save() {
   if (!validate()) return
+  if (!contact.value) {
+    console.error('[ContactPointSelect] Cannot save: contact is null or undefined')
+    return
+  }
+  if ('id' in contact.value) {
+    console.error('[ContactPointSelect] Cannot save: contact already has an id, expected a new contact')
+    return
+  }
   start()
   try {
     const newContact = await newContactPoint($api, props.organization, contact.value)

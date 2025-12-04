@@ -1,9 +1,12 @@
 import type { AccessTypeForm, WithAccessType, Dataset, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, License, ReuseType, Resource, ContactPoint, PaginatedArray, Owned } from '@datagouv/components-next'
+import type { NitroFetchRequest, NitroFetchOptions } from 'nitropack'
 
 // Some types from @datagouv/components-next are exported here to avoid 50+ files refactors
 export type {
   PaginatedArray,
 }
+
+export type ApiFetch = <T>(url: string, options?: NitroFetchOptions<NitroFetchRequest>) => Promise<T>
 
 export type AxisAlignment = 'start' | 'center' | 'end'
 
