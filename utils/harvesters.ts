@@ -30,8 +30,8 @@ export function harvesterToForm(harvester: HarvesterSource): HarvesterForm {
 
 export function harvesterToApi(form: HarvesterForm): HarvesterSource {
   return {
-    organization: form.owned?.organization?.id,
-    owner: form.owned?.owner?.id,
+    organization: form.owned?.organization?.id ?? null,
+    owner: form.owned?.owner?.id ?? null,
     name: form.name,
     description: form.description,
     url: form.url,

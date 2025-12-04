@@ -287,7 +287,6 @@ export default defineNuxtConfig({
     cacheMaxAgeSeconds: 3600, // 1 hour
     sitemaps: {
       content: {
-        includeGlobalSources: true,
         includeAppSources: true,
         exclude: ['/admin/**'],
       },

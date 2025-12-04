@@ -44,7 +44,7 @@ useHead({
     {
       'data-udata': config.public.frontBase,
       'src': '/oembed.js',
-      'body': true,
+      'tagPosition': 'bodyClose',
     },
   ],
 })

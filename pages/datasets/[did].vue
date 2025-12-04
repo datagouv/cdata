@@ -306,7 +306,7 @@
               >
                 {{ $t("Ce jeu de données provient d'un portail externe.") }}
                 <CdataLink
-                  :to="dataset.harvest.remote_url"
+                  :to="dataset.harvest.remote_url as string"
                   rel="ugc nofollow noopener"
                   target="_blank"
                   external
