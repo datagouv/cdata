@@ -143,7 +143,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { BrandedButton } from '@datagouv/components-next'
-import type { ContactPoint, ContactPointRole, Organization } from '@datagouv/components-next'
+import type { ContactPoint, ContactPointRole, Organization, OrganizationReference } from '@datagouv/components-next'
 import { RiSaveLine } from '@remixicon/vue'
 import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
@@ -152,7 +152,7 @@ import type { ContactPointInForm, NewContactPoint, PaginatedArray } from '~/type
 const contact = defineModel<ContactPointInForm | null>()
 
 const props = defineProps<{
-  organization: Organization
+  organization: Organization | OrganizationReference
   showAttributions?: boolean
   errorText?: string | null
   warningText?: string | null
