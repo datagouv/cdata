@@ -46,6 +46,15 @@ export type HarvesterJob = {
   source: string
 }
 
+export type HarvesterSourcePermissions = {
+  edit: boolean
+  delete: boolean
+  run: boolean
+  preview: boolean
+  validate: boolean
+  schedule: boolean
+}
+
 export type HarvesterSource = Owned & {
   id: string
   name: string
@@ -60,6 +69,7 @@ export type HarvesterSource = Owned & {
   last_job: HarvesterJob | null
   deleted: string | null
   schedule: string
+  permissions: HarvesterSourcePermissions
 }
 
 export type HarvesterForm = {

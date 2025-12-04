@@ -30,7 +30,7 @@
             {{ harvester.name }}
           </h1>
           <BrandedButton
-            v-if="harvester.validation.state === 'accepted' && harvester.active && (config.public.harvestEnableManualRun || isMeAdmin())"
+            v-if="harvester.validation.state === 'accepted' && harvester.active && harvester.permissions.run && (config.public.harvestEnableManualRun || isMeAdmin())"
             :icon="RiPlayLargeLine"
             size="xs"
             :loading
@@ -82,7 +82,7 @@
         </BannerAction>
 
         <BannerAction
-          v-if="isMeAdmin() && harvester.validation.state === 'pending'"
+          v-if="harvester.permissions.validate && harvester.validation.state === 'pending'"
           class="mt-3"
           type="primary"
           :title="$t('Validation du moissonneur')"
