@@ -126,7 +126,7 @@ export type DatasetForm = {
   description: string
   description_short?: string
   tags: Array<Tag>
-  license: License | null
+  license: License | EnrichedLicense | null
   contact_points: Array<NewContactPoint | ContactPoint | null>
   temporal_coverage: { start: null | string, end: null | string }
   frequency: Frequency | null
@@ -237,7 +237,7 @@ export type BaseResourceForm = {
   title: string
   type: ResourceType
   description: string
-  schema: Schema | null
+  schema: Schema | RegisteredSchema | null
   schema_url: string | null
 
   checksum_type: string | null

@@ -94,6 +94,7 @@ function moveToStep(step: number) {
 }
 
 async function save() {
+  if (!resourceForm.value.dataset) throw new Error('Dataset is required')
   communityResource.value = await saveResourceForm(resourceForm.value.dataset, resourceForm.value)
   moveToStep(2)
 }
