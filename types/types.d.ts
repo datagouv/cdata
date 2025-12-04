@@ -1,4 +1,4 @@
-import type { AccessTypeForm, WithAccessType, Dataset, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, License, ReuseType, Resource, ContactPoint, PaginatedArray, Owned } from '@datagouv/components-next'
+import type { AccessTypeForm, WithAccessType, Dataset, DatasetV2, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, OrganizationReference, UserReference, License, ReuseType, Resource, ResourceType, ResourceFileType, Schema, ContactPoint, PaginatedArray, Owned } from '@datagouv/components-next'
 import type { NitroFetchRequest, NitroFetchOptions } from 'nitropack'
 
 // Some types from @datagouv/components-next are exported here to avoid 50+ files refactors
@@ -270,10 +270,30 @@ export type ResourceForm = ResourceFormRemote | ResourceFormLocal
 
 export type AdditionalDataForCommunityResourceForm = {
   owned: Owned | null
-  dataset: Dataset | DatasetV2 | DatasetSuggest | null
+  dataset: Dataset | DatasetV2 | DatasetSuggest | Omit<Dataset, 'resources' | 'community_resources'> | null
 }
 // Useful to be able to exclude by resource.type = 'remote' | 'file' some data
 export type CommunityResourceForm = (ResourceFormRemote & AdditionalDataForCommunityResourceForm) | (ResourceFormLocal & AdditionalDataForCommunityResourceForm) | (UnknownResourceForm & AdditionalDataForCommunityResourceForm)
+
+// Types for API submissions (without server-generated fields)
+export type NewResourceForApi = {
+  filetype: ResourceFileType
+  title: string
+  type: ResourceType
+  description: string
+  schema: Schema | null
+  checksum: { type: string, value: string } | null
+  // Remote-specific fields
+  url?: string
+  format?: string
+  mime?: string
+}
+
+export type NewCommunityResourceForApi = NewResourceForApi & {
+  organization: OrganizationReference | null
+  owner: UserReference | null
+  dataset: Dataset | DatasetV2 | DatasetSuggest | Omit<Dataset, 'resources' | 'community_resources'> | null
+}
 
 export type NewOrganization = {
   acronym: string | null

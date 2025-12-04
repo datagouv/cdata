@@ -92,3 +92,18 @@ export type HarvestBackend = {
   features: Array<{ label: string, key: string, default: string, description: string }>
   extra_configs: Array<{ label: string, key: string, default: string, description: string }>
 }
+
+export type NewHarvesterForApi = {
+  organization: string | null
+  owner: string | null
+  name: string
+  description: string
+  url: string
+  backend: string
+  autoarchive: boolean
+  active: boolean
+  config: {
+    filters: Array<HarvestSourceFilter>
+    extra_configs: Array<HarvestSourceConfig>
+  }
+}
