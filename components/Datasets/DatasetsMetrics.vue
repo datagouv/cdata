@@ -56,23 +56,23 @@
     >
       <StatBox
         :title="t('Vues')"
-        :data="metrics?.datasetsViews"
+        :data="metricsViews"
         type="line"
-        :summary="metrics?.datasetsViewsTotal"
+        :summary="metricsViewsTotal"
         class="md:w-1/3 mb-8 md:mb-0"
       />
       <StatBox
         :title="t('Téléchargements')"
-        :data="metrics?.downloads"
+        :data="metricsDownloads"
         type="line"
-        :summary="metrics?.downloadsTotal"
+        :summary="metricsDownloadsTotal"
         class="md:w-1/3 mb-8 md:mb-0"
       />
       <StatBox
         :title="t('Nombre de visites des réutilisations')"
-        :data="metrics?.reusesViews"
+        :data="metricsReuses"
         type="line"
-        :summary="metrics?.reusesViewsTotal"
+        :summary="metricsReusesTotal"
         class="md:w-1/3 mb-8 md:mb-0"
       />
     </section>

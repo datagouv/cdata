@@ -279,7 +279,7 @@
 <script setup lang="ts">
 import { BrandedButton, getLink, getOrganizationTypes, LoadingBlock, Pagination, OTHER, USER } from '@datagouv/components-next'
 import type { DatasetV2, License, Organization, OrganizationTypes, RegisteredSchema, TranslatedBadge, OrganizationOrSuggest } from '@datagouv/components-next'
-import { ref, computed } from 'vue'
+import { ref, computed, type Component } from 'vue'
 import { RiCloseCircleLine, RiDownloadLine } from '@remixicon/vue'
 import { computedAsync, debouncedRef, useUrlSearchParams } from '@vueuse/core'
 import SearchInput from '~/components/Search/SearchInput.vue'
@@ -291,8 +291,8 @@ const props = defineProps<{
 }>()
 
 type Facets = {
-  organization?: { id: string } | null
-  organizationType?: { type: OrganizationTypes } | null
+  organization?: OrganizationOrSuggest | null
+  organizationType?: { type: OrganizationTypes, label: string, icon: Component | null } | null
   tag?: string | null
   license?: License | null
   format?: string | null
