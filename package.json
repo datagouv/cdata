@@ -82,7 +82,7 @@
     "@axe-core/playwright": "^4.10.2",
     "@nuxt/eslint": "^1.9",
     "@parcel/watcher": "^2.5.1",
-    "@playwright/test": "^1.55.0",
+    "@playwright/test": "^1.57.0",
     "@tailwindcss/oxide": "^4.0.15",
     "@tailwindcss/typography": "^0.5.15",
     "@types/geojson": "^7946.0.16",
