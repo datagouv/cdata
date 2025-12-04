@@ -24,12 +24,14 @@
             v-if="reuse"
             :url="`/api/1/reuses/${reuse.id}/followers/`"
           />
-          <div v-if="!reuse.archived">
+          <div
+            v-if="!reuse.archived"
+            class="hidden md:block"
+          >
             <BrandedButton
               :href="reuse.url"
               :new-tab="true"
               size="xs"
-              class="hidden md:block"
               @click="$matomo.trackEvent('Réutilisation', `Voir la réutilisation`, 'Bouton :  voir la reutilisation')"
             >
               {{ $t('Voir la réutilisation') }}
