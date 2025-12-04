@@ -26,12 +26,12 @@
 
 <script setup lang="ts">
 import { OrganizationLogo } from '@datagouv/components-next'
-import type { Organization, OrganizationSuggest, OrganizationOrSuggest } from '@datagouv/components-next'
+import type { OrganizationSuggest, OrganizationOrSuggest } from '@datagouv/components-next'
 
 const model = defineModel<OrganizationOrSuggest | null>()
 
 defineProps<{
-  organizations: Array<Organization>
+  organizations: Array<OrganizationOrSuggest>
   loading?: boolean
 }>()
 

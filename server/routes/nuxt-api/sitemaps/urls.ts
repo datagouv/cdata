@@ -1,4 +1,6 @@
+// @ts-expect-error - defineSitemapEventHandler is auto-imported by @nuxtjs/sitemap but types aren't exported
 import { defineSitemapEventHandler } from '#imports'
+import { getQuery } from 'h3'
 import type { SitemapUrl } from '#sitemap/types'
 import type { H3Event } from 'h3'
 

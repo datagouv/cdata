@@ -24,9 +24,9 @@
 import { computed } from 'vue'
 import { RiErrorWarningLine } from '@remixicon/vue'
 import SimpleBanner from '../SimpleBanner.vue'
-import type { Resource } from '../../types/resources.ts'
-import type { Dataset, DatasetV2 } from '../../types/datasets.ts'
-import { useTranslation } from '../../composables/useTranslation.ts'
+import type { Resource } from '../../types/resources'
+import type { Dataset, DatasetV2 } from '../../types/datasets'
+import { useTranslation } from '../../composables/useTranslation'
 
 const props = defineProps<{
   resource: Resource

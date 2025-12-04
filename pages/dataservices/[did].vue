@@ -274,7 +274,7 @@ useSeoMeta({
   title,
   robots,
 })
-await useJsonLd('dataservice', route.params.did)
+await useJsonLd('dataservice', route.params.did as string)
 
 const openSwagger = ref(false)
 

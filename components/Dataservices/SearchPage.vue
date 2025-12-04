@@ -157,7 +157,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, LoadingBlock, Pagination, getLink } from '@datagouv/components-next'
-import type { Dataservice, Organization, OrganizationOrSuggest } from '@datagouv/components-next'
+import type { Dataservice, Organization, OrganizationOrSuggest, OrganizationSuggest } from '@datagouv/components-next'
 import { RiCloseCircleLine } from '@remixicon/vue'
 import { computedAsync, debouncedRef, useUrlSearchParams } from '@vueuse/core'
 import SearchInput from '~/components/Search/SearchInput.vue'
@@ -171,13 +171,23 @@ const props = defineProps<{
 
 type Facets = {
   isRestricted?: boolean
-  organization?: { id: string } | null
+  organization?: OrganizationOrSuggest | null
 }
 
 const route = useRoute()
 const { t } = useTranslation()
 const config = useRuntimeConfig()
 const { toast } = useToast()
+const { $api } = useNuxtApp()
+
+async function suggestOrganizations(q: string) {
+  return await $api<Array<OrganizationSuggest>>('/api/1/organizations/suggest/', {
+    query: {
+      q,
+      size: 20,
+    },
+  })
+}
 
 const params = useUrlSearchParams<DataserviceSearchParams>('history', {
   initialValue: route.query,

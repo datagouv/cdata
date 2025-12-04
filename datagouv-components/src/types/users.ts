@@ -19,6 +19,7 @@ export type User = UserReference & {
   roles?: Array<string>
   organizations: Array<Organization>
   last_login_at: string | null
+  since: string | null
   metrics: {
     datasets: number
     dataservices: number

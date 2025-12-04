@@ -1,6 +1,12 @@
 import { getMatomo } from '@datagouv/components-next'
 import type { RouteLocationNormalizedGeneric } from 'vue-router'
 
+declare global {
+  interface Window {
+    _paq?: Array<unknown[]>
+  }
+}
+
 export default defineNuxtPlugin({
   async setup(nuxtApp) {
     const _paq = (window._paq = window._paq || [])
@@ -46,7 +52,7 @@ export default defineNuxtPlugin({
   },
 })
 
-function trackEvent(category: string, action: string, name?: string, debug: boolean, dryRun: boolean) {
+function trackEvent(category: string, action: string, name?: string, debug = false, dryRun = false) {
   const matomo = getMatomo()
   if (!matomo) {
     if (debug) console.debug('[matomo] No matomo tracker found')

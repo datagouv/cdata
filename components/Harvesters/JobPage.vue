@@ -304,25 +304,28 @@ const selectedItemStatus = ref<{ id: string, label: string, type: AdminBadgeType
 watch(selectedItemStatus, () => {
   page.value = 1
   currentItems.value = props.job.items
-  if (selectedItemStatus.value)
-    currentItems.value = currentItems.value.filter(item => item.status == selectedItemStatus.value.id)
+  const status = selectedItemStatus.value
+  if (status)
+    currentItems.value = currentItems.value.filter(item => item.status == status.id)
 })
 
 const paginatedItems = computed(() => {
   return currentItems.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value)
 })
 
-const itemStatus = [
-  { id: 'pending', label: t('En attente'), type: 'secondary' as AdminBadgeType },
-  { id: 'started', label: t('Commencé'), type: 'primary' as AdminBadgeType },
-  { id: 'done', label: t('Terminé'), type: 'success' as AdminBadgeType },
-  { id: 'failed', label: t('Échoué'), type: 'danger' as AdminBadgeType },
-  { id: 'skipped', label: t('Ignoré'), type: 'secondary' as AdminBadgeType },
-  { id: 'archived', label: t('Archivé'), type: 'secondary' as AdminBadgeType },
-]
+const itemStatusMap: Record<HarvestItem['status'], { label: string, type: AdminBadgeType }> = {
+  pending: { label: t('En attente'), type: 'secondary' },
+  started: { label: t('Commencé'), type: 'primary' },
+  done: { label: t('Terminé'), type: 'success' },
+  failed: { label: t('Échoué'), type: 'danger' },
+  skipped: { label: t('Ignoré'), type: 'secondary' },
+  archived: { label: t('Archivé'), type: 'secondary' },
+}
 
-function getStatus(item: HarvestItem): { id: string, label: string, type: AdminBadgeType } {
-  return itemStatus.find(status => item.status == status.id)
+const itemStatus = Object.entries(itemStatusMap).map(([id, status]) => ({ id, ...status }))
+
+function getStatus(item: HarvestItem): { label: string, type: AdminBadgeType } {
+  return itemStatusMap[item.status]
 }
 
 const showItemErrors = ref(false)

@@ -51,9 +51,11 @@
 import { SimpleBanner, type AccessTypeForm } from '@datagouv/components-next'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 
+type AccessTypeFormKeys = 'access_type' | 'access_type_reason'
+
 defineProps<{
-  getFirstWarning: (key: string) => string | null
-  getFirstError: (key: string) => string | null
+  getFirstWarning: (key: AccessTypeFormKeys) => string | null
+  getFirstError: (key: AccessTypeFormKeys) => string | null
   disallowOpenWithAccount?: boolean
 }>()
 

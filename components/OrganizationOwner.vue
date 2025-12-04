@@ -20,9 +20,9 @@
 </template>
 
 <script setup lang="ts">
-import { OrganizationLogo, OrganizationNameWithCertificate, type Organization } from '@datagouv/components-next'
+import { OrganizationLogo, OrganizationNameWithCertificate, type Organization, type OrganizationReference } from '@datagouv/components-next'
 
 defineProps<{
-  organization: Organization
+  organization: Organization | OrganizationReference
 }>()
 </script>

@@ -47,8 +47,8 @@ import { useComponentsConfig } from '../../config'
 import SimpleBanner from '../SimpleBanner.vue'
 import type { Resource } from '../../types/resources'
 import { useTranslation } from '../../composables/useTranslation'
-import '../../types/vue3-xml-viewer.d.ts'
-import { getResourceFilesize } from '../../main.ts'
+import '../../types/vue3-xml-viewer.d'
+import { getResourceFilesize } from '../../main'
 
 const XmlViewer = defineAsyncComponent(() =>
   import('vue3-xml-viewer').then((module) => {

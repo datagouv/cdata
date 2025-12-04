@@ -26,7 +26,7 @@
           color="tertiary"
           keep-margins-even-without-borders
           :icon="RiCloseCircleLine"
-          :href="{ name: route.name, params: route.params, query: { ...route.query, discussion_id: undefined } }"
+          :href="hrefWithoutDiscussionId"
         >
           {{ $t("Voir toutes les discussions") }}
         </BrandedButton>
@@ -184,7 +184,6 @@ const newDiscussion = ref(false)
 
 function resetFilters() {
   q.value = ''
-  qDebounced.value = ''
 }
 
 function showDiscussionForm() {
@@ -239,6 +238,10 @@ const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Thread>>
 const route = useRoute()
 const { $api } = useNuxtApp()
 const selectedDiscussion = ref<Thread | null>(null)
+const hrefWithoutDiscussionId = computed(() => {
+  const { discussion_id: _, ...queryWithoutDiscussionId } = route.query
+  return { name: route.name ?? undefined, params: route.params, query: queryWithoutDiscussionId }
+})
 const selectedDiscussionBanner = useTemplateRef('selectedDiscussionBannerRef')
 watchEffect(async () => {
   if ('discussion_id' in route.query && route.query.discussion_id) {
