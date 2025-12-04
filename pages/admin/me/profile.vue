@@ -22,6 +22,10 @@
 <script setup lang="ts">
 import AdminUserProfileHeader from '~/components/User/AdminUserProfileHeader.vue'
 
+definePageMeta({
+  keepScroll: true,
+})
+
 const me = useMe()
 
 function refresh() {

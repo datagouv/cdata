@@ -157,6 +157,10 @@ import HarvesterBadge from '~/components/Harvesters/HarvesterBadge.vue'
 import TabLinks from '~/components/TabLinks.vue'
 import type { HarvesterJob, HarvesterSource } from '~/types/harvesters'
 
+definePageMeta({
+  keepScroll: true,
+})
+
 const config = useRuntimeConfig()
 const { t } = useTranslation()
 const { $api } = useNuxtApp()

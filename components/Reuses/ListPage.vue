@@ -22,6 +22,7 @@
     <BrandedButton
       class="rounded-none rounded-tr"
       :icon="RiSearch2Line"
+      icon-only-on-mobile
       size="lg"
     >
       {{ $t('Recherche') }}
@@ -87,7 +88,7 @@
       <ReuseCard
         v-for="reuse in reuses.data"
         :key="reuse.id"
-        class="col-span-1"
+        class="col-span-1 min-w-0"
         :reuse
       />
     </div>

@@ -5,7 +5,7 @@
         v-if="dataset"
         class="mt-4 flex gap-4 flex-wrap md:flex-nowrap items-center justify-between"
       >
-        <Breadcrumb class="md:mb-0 md:mt-0">
+        <Breadcrumb class="md:my-0">
           <BreadcrumbItem
             to="/"
           >
@@ -18,7 +18,7 @@
             {{ dataset.title }}
           </BreadcrumbItem>
         </Breadcrumb>
-        <div class="flex-none flex gap-2.5 md:max-w-6/12">
+        <div class="md:flex-none flex flex-wrap md:flex-nowrap gap-2.5 md:max-w-6/12">
           <FollowButton
             v-if="dataset"
             :url="`/api/1/datasets/${dataset.id}/followers/`"

@@ -12,10 +12,11 @@
       :link-label="$t(`Qu'est-ce qu'une réutilisation ?`)"
       :link-url="config.public.guideReuses"
     >
-      <ul class="flex flex-wrap gap-3 list-none pl-0">
+      <ul class="flex flex-nowrap md:flex-wrap overflow-auto gap-3 list-none pl-0">
         <li
           v-for="topic in topics"
           :key="topic.id"
+          class="flex-none"
         >
           <CdataLink
             class="bg-white/10 text-white rounded-md px-2 py-1 text-lg fr-raw-link"
@@ -49,7 +50,7 @@
           </BrandedButton>
         </div>
       </div>
-      <div class="w-full grid grid-cols-3 gap-x-2.5 md:-my-10">
+      <div class="w-full grid grid-cols-3 gap-x-2.5 my-4 md:-my-10">
         <div class="flex flex-col space-y-3 justify-center">
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">

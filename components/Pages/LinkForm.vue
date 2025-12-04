@@ -4,7 +4,7 @@
       v-model="link.title"
       :label="$t('Titre')"
     />
-    <div class="flex space-x-2">
+    <div class="flex flex-wrap gap-2">
       <InputGroup
         v-model="link.url"
         class="w-full mb-0"

@@ -6,7 +6,7 @@
       </h2>
       <div class="grid md:grid-cols-12 gap-4">
         <MarkdownViewer
-          class="w-full min-w-0 md:col-span-9"
+          class="order-2 md:order-1 w-full min-w-0 md:col-span-9"
           :content="reuse.description"
           :min-heading="3"
         />
@@ -71,7 +71,6 @@
                 size="sm"
                 type="line"
                 :summary="metricsViewsTotal"
-                class="mb-8 md:mb-0"
                 :since="metricsSince"
               />
             </div>
@@ -135,33 +134,21 @@
         :status
         class="min-h-32"
       >
-        <h2 class="uppercase text-sm mb-2.5">
-          {{ $t('{n} réutilisations du même créateur | {n} réutilisation du même créateur | {n} réutilisations du même créateur', { n: relatedReuses.length }) }}
-        </h2>
-        <div
-          v-if="relatedReuses.length"
-          class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
-        >
-          <ReuseCard
-            v-for="related in relatedReuses"
-            :key="related.id"
-            class="min-w-0"
-            :reuse="related"
-          />
-        </div>
-        <div
-          v-else
-          class="flex flex-col items-center"
-        >
-          <NuxtImg
-            src="/illustrations/reuse.svg"
-            width="137"
-            height="104"
-          />
-          <p class="mt-4 mb-5 font-bold text-lg">
-            {{ $t(`Il n'y a pas d'autres réutilisations du même créateur.`) }}
-          </p>
-        </div>
+        <template v-if="relatedReuses.length">
+          <h2 class="uppercase text-sm mb-2.5">
+            {{ $t('{n} réutilisations du même créateur | {n} réutilisation du même créateur | {n} réutilisations du même créateur', { n: relatedReuses.length }) }}
+          </h2>
+          <div
+            class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+          >
+            <ReuseCard
+              v-for="related in relatedReuses"
+              :key="related.id"
+              class="min-w-0"
+              :reuse="related"
+            />
+          </div>
+        </template>
       </LoadingBlock>
     </section>
   </div>

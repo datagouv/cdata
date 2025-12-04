@@ -35,8 +35,6 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue'
-
 const props = defineProps({
   backgroundImage: { type: String, required: true },
   title: { type: String, required: true },

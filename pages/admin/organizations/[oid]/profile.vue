@@ -79,6 +79,11 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 const props = defineProps<{
   organization: Organization
 }>()
+
+definePageMeta({
+  keepScroll: true,
+})
+
 defineEmits<{
   refresh: []
 }>()

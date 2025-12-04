@@ -19,12 +19,12 @@
       v-if="pageData"
       class="flex flex-wrap gap-x-4 gap-y-2 items-center"
     >
-      <div class="w-full flex-none md:flex-1">
+      <div class="w-full flex-1">
         <h2 class="text-sm font-bold uppercase m-0">
           {{ t('{n} jeux de données', pageData.total) }}
         </h2>
       </div>
-      <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
+      <div class="flex flex-wrap items-center md:gap-x-6 gap-4">
         <SearchableSelect
           v-model="datasetsStatus"
           :placeholder="$t('Filtrer par statut')"
@@ -41,15 +41,17 @@
           :icon="RiSearchLine"
           :placeholder="$t('Recherche')"
         />
-        <BrandedButton
-          v-if="organization"
-          :href="pageData.total ? `${config.public.apiBase}/api/1/organizations/${organization.id}/datasets.csv` : undefined"
-          size="xs"
-          :external="true"
-          :icon="RiDownloadLine"
-        >
-          {{ t('Télécharger le catalogue') }}
-        </BrandedButton>
+        <div>
+          <BrandedButton
+            v-if="organization"
+            :href="pageData.total ? `${config.public.apiBase}/api/1/organizations/${organization.id}/datasets.csv` : undefined"
+            size="xs"
+            :external="true"
+            :icon="RiDownloadLine"
+          >
+            {{ t('Télécharger le catalogue') }}
+          </BrandedButton>
+        </div>
       </div>
     </div>
 

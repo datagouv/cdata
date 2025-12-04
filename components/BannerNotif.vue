@@ -9,7 +9,7 @@
       {{ badge }}
     </AdminBadge>
 
-    <div class="flex justify-between space-x-5">
+    <div class="flex flex-wrap justify-between space-x-5">
       <div class="space-y-1">
         <div class="flex flex-wrap items-start space-x-1">
           <Avatar

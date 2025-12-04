@@ -38,7 +38,7 @@
       type="warning"
       class="flex items-center space-x-2"
     >
-      <RiErrorWarningLine class="shink-0 size-6" />
+      <RiErrorWarningLine class="flex-none size-6" />
       <span>{{ fileSizeBytes
         ? t("Fichier PDF trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
         : t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
@@ -49,7 +49,7 @@
       type="warning"
       class="flex items-center space-x-2"
     >
-      <RiErrorWarningLine class="shink-0 size-6" />
+      <RiErrorWarningLine class="flex-none size-6" />
       <span>{{ t("Ce fichier PDF ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
     </SimpleBanner>
     <SimpleBanner
@@ -57,7 +57,7 @@
       type="warning"
       class="flex items-center space-x-2"
     >
-      <RiErrorWarningLine class="shink-0 size-6" />
+      <RiErrorWarningLine class="flex-none size-6" />
       <span>{{ t("Erreur lors du chargement de l'aperçu PDF. Pour consulter le fichier, téléchargez-le depuis l'onglet Téléchargements.") }}</span>
     </SimpleBanner>
   </div>

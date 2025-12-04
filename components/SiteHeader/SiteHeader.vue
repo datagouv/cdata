@@ -259,7 +259,7 @@
                 href="/"
                 :title="$t(`Retourner à l'accueil de data.gouv.fr`)"
               >
-                <LogoImage class="h-12" />
+                <LogoImage class="mt-2 lg:mt-0 h-12" />
               </a>
             </div>
           </div>

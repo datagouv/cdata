@@ -9,7 +9,7 @@
     <template #title>
       <code
         v-if="request.user.email"
-        class="text-gray-medium bg-gray-lower px-1 text-sm rounded-sm"
+        class="text-gray-medium bg-gray-lower px-1 text-sm rounded-sm break-all"
       >{{ request.user.email }}</code>
       {{ t("demande à rejoindre l'organisation.") }}
     </template>

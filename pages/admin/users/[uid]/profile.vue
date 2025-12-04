@@ -26,6 +26,10 @@
 import type { User } from '@datagouv/components-next'
 import AdminUserProfileHeader from '~/components/User/AdminUserProfileHeader.vue'
 
+definePageMeta({
+  keepScroll: true,
+})
+
 const { currentUser: user, setCurrentUser } = useCurrentOwned()
 const { $api } = useNuxtApp()
 

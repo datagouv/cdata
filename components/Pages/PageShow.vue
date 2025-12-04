@@ -76,7 +76,7 @@
             :key="link.title"
           >
             <CdataLink
-              class="inline-block relative font-extrabold text-[var(--link-color)] no-underline hover:underline fr-raw-link"
+              class="hyphens-auto inline-flex items-start relative font-extrabold text-[var(--link-color)] no-underline hover:underline fr-raw-link"
               :class="[bloc.paragraph ? 'text-6xl' : 'text-7xl']"
               :style="{
                 '--link-color': link.color,
@@ -84,7 +84,7 @@
               :href="link.url"
             >
               {{ link.title }}
-              <RiArrowRightUpLine class="absolute top-0 -right-9 size-9" />
+              <RiArrowRightUpLine class="size-9" />
             </CdataLink>
           </div>
           <BrandedButton

@@ -24,7 +24,10 @@
             v-if="reuse"
             :url="`/api/1/reuses/${reuse.id}/followers/`"
           />
-          <div v-if="!reuse.archived">
+          <div
+            v-if="!reuse.archived"
+            class="hidden md:block"
+          >
             <BrandedButton
               :href="reuse.url"
               :new-tab="true"
@@ -51,7 +54,7 @@
       :status
     >
       <div class="container py-10 min-h-32">
-        <div class="grid md:grid-cols-12 md:gap-4">
+        <div class="grid md:grid-cols-12 gap-4">
           <div class="md:col-span-5 flex flex-col justify-center">
             <div class="flex gap-3 mb-2">
               <AdminBadge
@@ -170,6 +173,10 @@ import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
+
+definePageMeta({
+  keepScroll: true,
+})
 
 const route = useRoute()
 

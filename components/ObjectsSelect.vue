@@ -1,6 +1,6 @@
 <template>
   <fieldset
-    class="fr-fieldset"
+    class="fr-fieldset min-w-0"
     :aria-labelledby="mainLabel ? legendId : undefined"
   >
     <legend

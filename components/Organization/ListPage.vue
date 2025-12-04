@@ -22,6 +22,7 @@
     <BrandedButton
       class="rounded-none rounded-tr"
       :icon="RiSearch2Line"
+      icon-only-on-mobile
       size="lg"
     >
       {{ $t('Rechercher') }}
