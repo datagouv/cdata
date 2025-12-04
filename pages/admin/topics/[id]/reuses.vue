@@ -50,6 +50,8 @@
       <div v-if="pageData && pageData.total > 0">
         <AdminReusesTable
           :reuses="reuses"
+          sorted-by="created"
+          sort-direction="desc"
         >
           <!-- TODO: re-enable when elements are properly handled -->
           <!-- <template #actions="{ reuse }">
