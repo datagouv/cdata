@@ -132,7 +132,7 @@ const accept = async () => {
 
 const refuseFormId = useId()
 const refuseComment = ref('')
-const refuse = async (close) => {
+const refuse = async (close: () => void) => {
   try {
     loading.value = true
     await $api(`/api/1/organizations/${props.oid}/membership/${props.request.id}/refuse`, {

@@ -65,7 +65,7 @@
           <p v-if="!subject && subjects[discussion.subject.id]">
             <a
               class="fr-link inline-flex"
-              :href="getSubjectPage(subjects[discussion.subject.id])"
+              :href="getSubjectPage(subjects[discussion.subject.id]!)"
             >
               <component
                 :is="getSubjectTypeIcon(discussion.subject.class)"
@@ -74,7 +74,7 @@
               />
               <TextClamp
                 class="overflow-wrap-anywhere"
-                :text="getSubjectTitle(subjects[discussion.subject.id])"
+                :text="getSubjectTitle(subjects[discussion.subject.id]!)"
                 :auto-resize="true"
                 :max-lines="1"
               />

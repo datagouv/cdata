@@ -6,7 +6,7 @@ export const defaultContactForm = {
   name: '',
   email: '',
   contact_form: '',
-  role: 'contact',
+  role: 'contact' as const,
 }
 
 export async function newContactPoint(api: $Fetch, organization: Organization, contactPoint: NewContactPoint): Promise<ContactPoint> {
