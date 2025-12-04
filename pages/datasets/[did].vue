@@ -28,7 +28,7 @@
             :subject="{ id: dataset.id, class: 'Dataset' }"
           />
           <BrandedButton
-            v-if="exploreUrl || true"
+            v-if="exploreUrl"
             :href="exploreUrl"
             :icon="RiExternalLinkFill"
             icon-right
