@@ -8,7 +8,7 @@
     />
     <AppLink
       :to="user.page"
-      class="fr-text--bold"
+      class="fr-text--bold truncate"
     >
       {{ user.first_name }}
       {{ user.last_name }}
