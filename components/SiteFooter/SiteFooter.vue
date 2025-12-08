@@ -315,7 +315,7 @@ openDataLinks.push({ label: t('Portail des données européennes'), link: 'https
 
 const platformLinks: Array<Link> = [
   { label: t('Guides'), link: config.public.guidesUrl, external: true },
-  { label: t('Feuille de route et nouveautés'), link: '/pages/roadmap' },
+  { label: t('Feuille de route et nouveautés'), link: '/products/datagouv?tab=roadmap' },
   { label: t('Nous écrire'), link: '/support' },
   { label: t('Échangez avec la communauté'), link: config.public.forumUrl, external: true },
   { label: t('Statistiques'), link: '/dashboard' },
