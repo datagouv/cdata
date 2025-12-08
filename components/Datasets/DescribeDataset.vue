@@ -798,7 +798,7 @@ const { data: allLicenses } = await useAPI<Array<License>>('/api/1/datasets/lice
 
 // Merge some information between database (all licenses) and config (selectable license, some recommanded, codes…)
 // Maybe all these information could be better stored in database too…
-const licenses = computed((): Array<EnrichedLicense> => {
+const licenses = computed<Array<EnrichedLicense>>(() => {
   if (!allLicenses.value) return []
 
   const licenses: Array<EnrichedLicense> = []
