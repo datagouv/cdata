@@ -75,7 +75,7 @@
 
     <div
       v-if="status != 'pending' && pageData && !pageData.total"
-      class="flex flex-col items-center fr-my-3v"
+      class="flex flex-col items-center mt-6 mb-3"
     >
       <nuxt-img
         src="/illustrations/dataset.svg"
@@ -84,7 +84,7 @@
       <template v-if="q || datasetsStatus">
         <p
           v-if="q"
-          class="fr-text--bold fr-my-3v"
+          class="font-bold my-3"
         >
           {{ t(`Pas de résultats pour « {q} »`, { q }) }}
         </p>
