@@ -56,7 +56,8 @@
 </template>
 
 <script setup lang="ts">
-import { useGetUserAvatar, BrandedButton, PaddedContainer, type Organization, type Owned, type User, OrganizationLogo } from '@datagouv/components-next'
+import { useGetUserAvatar, BrandedButton, OrganizationLogo, PaddedContainer, type Organization, type Owned, type User } from '@datagouv/components-next'
+import { isUserOrgAdmin, useMe } from '~/utils/auth'
 
 const getUserAvatar = useGetUserAvatar()
 
@@ -67,10 +68,12 @@ const props = withDefaults(defineProps<{
   all?: boolean
   required?: boolean
   organizationsOnly?: boolean
+  adminOnly?: boolean
 }>(), {
   all: false,
   required: false,
   organizationsOnly: false,
+  adminOnly: false,
 })
 const model = defineModel<Owned | null>({ required: true })
 
@@ -78,13 +81,24 @@ const { t } = useTranslation()
 const user = useMe()
 const { $api } = useNuxtApp()
 
-const ownedOptions = computed<Array<Owned>>(() => {
-  const organizations = user.value.organizations.map(organization => ({ organization, owner: null }))
+// we fetch full organization object because we need members details
+// in case we want to filter on admin only organizations
+const organizations = await Promise.all(
+  user.value.organizations.map(async (org) => {
+    const { data: organization } = await useAPI<Organization>(`/api/1/organizations/${org.id}`)
+    return organization.value
+  }),
+)
 
-  if (props.organizationsOnly) {
-    return organizations
+const ownedOptions = computed<Array<Owned>>(() => {
+  let orgs = organizations.map(organization => ({ organization, owner: null }))
+  if (props.adminOnly) {
+    orgs = orgs.filter(org => isUserOrgAdmin(user.value, org.organization))
   }
-  return [...organizations, { owner: user.value, organization: null }]
+  if (props.organizationsOnly) {
+    return orgs
+  }
+  return [...orgs, { owner: user.value, organization: null }]
 })
 
 const hasOrganizations = computed(() => {
