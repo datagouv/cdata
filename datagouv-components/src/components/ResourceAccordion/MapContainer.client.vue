@@ -54,8 +54,7 @@ async function displayMap() {
 
   CRS.load()
   map = new Map({
-    // @ts-expect-error null is not happening during onMount
-    target: mapRef.value,
+    target: mapRef.value!,
     layers: [
       new TileLayer({
         source: new OSM(),

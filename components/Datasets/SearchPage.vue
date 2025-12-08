@@ -279,7 +279,7 @@
 <script setup lang="ts">
 import { BrandedButton, getLink, getOrganizationTypes, LoadingBlock, Pagination, OTHER, USER } from '@datagouv/components-next'
 import type { DatasetV2, License, Organization, OrganizationTypes, RegisteredSchema, TranslatedBadge, OrganizationOrSuggest } from '@datagouv/components-next'
-import { ref, computed } from 'vue'
+import { ref, computed, type Component } from 'vue'
 import { RiCloseCircleLine, RiDownloadLine } from '@remixicon/vue'
 import { computedAsync, debouncedRef, useUrlSearchParams } from '@vueuse/core'
 import SearchInput from '~/components/Search/SearchInput.vue'
@@ -291,8 +291,8 @@ const props = defineProps<{
 }>()
 
 type Facets = {
-  organization?: { id: string } | null
-  organizationType?: { type: OrganizationTypes } | null
+  organization?: OrganizationOrSuggest | null
+  organizationType?: { type: OrganizationTypes, label: string, icon: Component | null } | null
   tag?: string | null
   license?: License | null
   format?: string | null
@@ -340,10 +340,7 @@ const { data: badgeRecord, status: badgeStatus } = await useAPI<Record<string, s
 const badges = computed(() => badgeRecord.value
   ? Object.entries(badgeRecord.value)
       .map(([kind, label]: Array<string>) => ({ kind, label }))
-      .filter(({ kind }) => {
-        const badges = Array.isArray(config.public.datasetBadges) ? config.public.datasetBadges : config.public.datasetBadges.split(',')
-        return badges.includes(kind)
-      })
+      .filter(({ kind }) => config.public.datasetBadges.includes(kind))
   : [])
 
 const organizationTypes = getOrganizationTypes()
@@ -521,7 +518,7 @@ watch([currentPage, facets, deboucedQuery, searchSort], ([newPage, newFacets, q,
     params.organization = newFacets.organization?.id ?? undefined
     params.organization_badge = newFacets.organizationType?.type ?? undefined
   }
-  params.tag = newFacets.tag
+  params.tag = newFacets.tag ?? undefined
   params.format = newFacets.format ?? undefined
   params.organization_badge = newFacets.organizationType?.type ?? undefined
   params.license = newFacets.license?.id ?? undefined

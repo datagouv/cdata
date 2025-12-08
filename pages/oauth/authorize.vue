@@ -106,7 +106,7 @@ const { data, status } = await useAPI<{ client: { name: string }, scopes: Array<
 const { data: csrf_response } = await useAPI<{ response: { csrf_token: string } }>('/get-csrf', { lazy: true, server: false })
 
 const authorizeUrl = computed(() => {
-  const queryString = new URLSearchParams(route.query).toString()
+  const queryString = new URLSearchParams(route.query as Record<string, string>).toString()
   return `${config.public.apiBase}/oauth/authorize?${queryString}`
 })
 </script>

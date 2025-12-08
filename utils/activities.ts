@@ -1,8 +1,7 @@
-import type { $Fetch } from 'nitropack'
 import type { Activity } from '@datagouv/components-next'
-import type { PaginatedArray } from '~/types/types'
+import type { ApiFetch, PaginatedArray } from '~/types/types'
 
-export async function getLatestActivitiesForObjects(api: $Fetch, auditables: Array<{ id: string }> | undefined, sort: '-created_at' | 'created_at' = '-created_at', page_size: number = 1) {
+export async function getLatestActivitiesForObjects(api: ApiFetch, auditables: Array<{ id: string }> | undefined, sort: '-created_at' | 'created_at' = '-created_at', page_size: number = 1) {
   const activityPromises: Record<string, Promise<PaginatedArray<Activity>>> = {}
   if (!auditables) {
     return Promise.resolve({})

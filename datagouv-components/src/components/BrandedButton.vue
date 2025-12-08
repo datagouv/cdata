@@ -48,7 +48,7 @@ import {
   useSlots,
 } from 'vue'
 import { RiExternalLinkLine } from '@remixicon/vue'
-import type { RouteLocation } from 'vue-router'
+import type { RouteLocationRaw } from 'vue-router'
 import AppLink from './AppLink.vue'
 import { bannerActionTypeKey } from './BannerAction.vue'
 import AnimatedLoader from './AnimatedLoader.vue'
@@ -62,7 +62,7 @@ const props = withDefaults(defineProps<{
   loading?: boolean
   icon?: Component
   iconAttrs?: Record<string, string>
-  href?: string | RouteLocation
+  href?: string | RouteLocationRaw
   newTab?: boolean
   iconOnly?: boolean
   iconRight?: boolean

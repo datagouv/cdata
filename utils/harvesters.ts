@@ -1,5 +1,5 @@
 import type { Dataservice, Dataset, DatasetV2, DatasetV2WithFullObject } from '@datagouv/components-next'
-import type { HarvesterForm, HarvesterJob, HarvesterSource, HarvestSourceConfig, HarvestSourceFilter } from '~/types/harvesters'
+import type { HarvesterForm, HarvesterJob, HarvesterSource, HarvestSourceConfig, HarvestSourceFilter, NewHarvesterForApi } from '~/types/harvesters'
 
 export function getHarvesterAdminUrl(harvester: HarvesterSource) {
   return `/admin/harvesters/${harvester.id}`
@@ -28,10 +28,10 @@ export function harvesterToForm(harvester: HarvesterSource): HarvesterForm {
   }
 }
 
-export function harvesterToApi(form: HarvesterForm): HarvesterSource {
+export function harvesterToApi(form: HarvesterForm): NewHarvesterForApi {
   return {
-    organization: form.owned?.organization?.id,
-    owner: form.owned?.owner?.id,
+    organization: form.owned?.organization?.id ?? null,
+    owner: form.owned?.owner?.id ?? null,
     name: form.name,
     description: form.description,
     url: form.url,

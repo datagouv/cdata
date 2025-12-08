@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, StatBox, useMetrics, createOrganizationMetricsUrl, type Organization } from '@datagouv/components-next'
+import { BrandedButton, StatBox, useMetrics, createOrganizationMetricsUrl, type Organization, type OrganizationMetrics } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 
 const props = defineProps<{
@@ -93,30 +93,16 @@ const { getOrganizationMetrics } = useMetrics()
 const metricsOpen = ref(false)
 const metricsTitleId = useId()
 
-const metricsViews = ref<null | Record<string, number>>(null)
-const metricsViewsTotal = ref<null | number>(null)
-const metricsDownloads = ref<null | Record<string, number>>(null)
-const metricsDownloadsTotal = ref<null | number>(null)
-const metricsReuses = ref<null | Record<string, number>>(null)
-const metricsReusesTotal = ref<null | number>(null)
-const metricsDataservices = ref<null | Record<string, number>>(null)
+const metrics = ref<OrganizationMetrics | null>(null)
+
 watchEffect(async () => {
   if (!props.organization.id) return
-  const metrics = await getOrganizationMetrics(props.organization.id)
-  metricsDownloads.value = metrics.downloads
-  metricsDownloadsTotal.value = metrics.downloadsTotal
-  metricsReuses.value = metrics.reusesViews
-  metricsReusesTotal.value = metrics.reusesViewsTotal
-  metricsViews.value = metrics.datasetsViews
-  metricsViewsTotal.value = metrics.datasetsViewsTotal
-  metricsDataservices.value = metrics.dataservicesViews
+  metrics.value = await getOrganizationMetrics(props.organization.id)
 })
 
 const downloadStatsUrl = computed(() => {
-  if (!metricsViews.value || !metricsDownloads.value || !metricsDataservices.value || !metricsReuses.value) {
-    return null
-  }
+  if (!metrics.value) return null
 
-  return createOrganizationMetricsUrl(metricsViews.value, metricsDownloads.value, metricsDataservices.value, metricsReuses.value)
+  return createOrganizationMetricsUrl(metrics.value.datasetsViews, metrics.value.downloads, metrics.value.dataservicesViews, metrics.value.reusesViews)
 })
 </script>
