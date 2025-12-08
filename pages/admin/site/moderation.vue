@@ -135,9 +135,9 @@
                   </div>
                   <p
                     v-if="report.subject && report.subject.id in activities"
-                    class="inline-flex items-center"
+                    class="inline-flex items-center flex-wrap"
                   >
-                    {{ t('par ') }}
+                    {{ t('Modifié le {date} par ', { date: formatDate(activities[report.subject.id].created_at) }) }}
                     <AvatarWithName
                       class="fr-ml-1v"
                       :user="activities[report.subject.id].actor"
@@ -160,7 +160,7 @@
               </td>
               <td>
                 <div class="font-bold">
-                  {{ reasons.find((reason) => reason.value === report.reason)?.label || report.reason }}
+                  {{ reasons?.find((reason) => reason.value === report.reason)?.label || report.reason }}
                 </div>
                 {{ report.message }}
               </td>
