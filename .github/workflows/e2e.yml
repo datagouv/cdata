@@ -51,14 +51,12 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install Node.js dependencies for @datagouv/components
-        working-directory: datagouv-components
-        run: |
-          pnpm install
+      # - name: Install Node.js dependencies for @datagouv/components
+      #   working-directory: datagouv-components
+      #   run: pnpm install
 
       - name: Install Node.js dependencies for cdata
-        run: |
-          pnpm install
+        run: pnpm install
 
       - name: Install Python dependencies for udata
         working-directory: udata
