@@ -8,7 +8,7 @@
     <template #button>
       <div class="flex items-center space-x-4">
         <ModalWithButton
-          v-if="isOrgAdmin"
+          v-if="harvester.permissions.preview"
           :title="$t('Prévisualiser')"
           size="fullscreen"
           @open="preview"
@@ -42,12 +42,14 @@
         <BrandedButton
           type="submit"
           :loading
+          :disabled="!harvester.permissions.edit"
         >
           {{ $t("Sauvegarder") }}
         </BrandedButton>
       </div>
     </template>
     <BannerAction
+      v-if="harvester.permissions.delete"
       class="mt-5"
       type="danger"
       :title="$t('Supprimer le moissonneur')"
@@ -96,18 +98,14 @@ import DescribeHarvester from '~/components/Harvesters/DescribeHarvester.vue'
 import JobPage from '~/components/Harvesters/JobPage.vue'
 import PreviewLoader from '~/components/Harvesters/PreviewLoader.vue'
 import type { HarvesterForm, HarvesterJob, HarvesterSource } from '~/types/harvesters'
-import { isUserOrgAdmin, useMe } from '~/utils/auth'
 
 const route = useRoute()
 const { $api } = useNuxtApp()
 const { t } = useTranslation()
 const { toast } = useToast()
-const me = useMe()
 
 const sourceUrl = computed(() => `/api/1/harvest/source/${route.params.id}`)
 const { data: harvester, refresh } = await useAPI<HarvesterSource>(sourceUrl, { redirectOn404: true })
-
-const isOrgAdmin = computed(() => !harvester.value.organization || isUserOrgAdmin(me.value, harvester.value.organization))
 
 const loading = ref(false)
 
