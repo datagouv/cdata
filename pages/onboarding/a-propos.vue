@@ -2,15 +2,15 @@
   <div>
     <OnboardingHero color="dark">
       <template #title>
-        {{ $t('À propos de data.gouv.fr') }}
+        {{ $t('À propos de {site}', { site: config.public.title }) }}
       </template>
       <template #subtitle>
-        {{ $t('data.gouv.fr assure la mise à disposition des données en organisant leur diffusion et leur exploitation.') }}
+        {{ $t('{site} assure la mise à disposition des données en organisant leur diffusion et leur exploitation.', { site: config.public.title }) }}
       </template>
     </OnboardingHero>
 
     <OnboardingSection>
-      <div class="max-w-[950px]">
+      <div class="max-w-4xl">
         <OnboardingTitle class="mb-4">
           {{ $t('Qu\'est ce que {site} ?', { site: config.public.title }) }}
         </OnboardingTitle>
@@ -30,7 +30,7 @@
         <ul class="list-disc list-inside text-2xl font-light leading-normal text-black mb-8 space-y-2">
           <li>{{ $t('des jeux de données publiés par l\'ensemble des administrations, mais aussi par la société civile ;') }}</li>
           <li>{{ $t('des réutilisations qui montrent comment ces données peuvent servir à analyser un sujet, créer un outil ou comprendre un phénomène ;') }}</li>
-          <li>{{ $t('une communauté qui échangent et partagent leurs travaux.') }}</li>
+          <li>{{ $t('une communauté qui échange et partage ses travaux.') }}</li>
         </ul>
       </div>
 

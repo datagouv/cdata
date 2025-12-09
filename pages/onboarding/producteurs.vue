@@ -19,7 +19,7 @@
     </OnboardingHero>
 
     <OnboardingSection>
-      <div class="max-w-3xl">
+      <div class="max-w-4xl">
         <OnboardingTitle class="mb-4">
           {{ $t('Valorisez et partagez vos données simplement') }}
         </OnboardingTitle>

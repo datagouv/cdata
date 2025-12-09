@@ -8,7 +8,7 @@
     >
       <NuxtImg
         :src="image"
-        :alt="imageAlt || ''"
+        alt=""
         class="h-[240px] md:h-[320px] w-auto object-contain"
         loading="lazy"
       />
@@ -21,7 +21,7 @@
     >
       <NuxtImg
         :src="image"
-        :alt="imageAlt || ''"
+        alt=""
         class="w-[260px] md:w-[348px] h-auto object-contain object-right-bottom mt-5 md:mt-[30px]"
         loading="lazy"
       />
@@ -43,7 +43,6 @@ const props = withDefaults(defineProps<{
   title: string
   description: string
   image?: string
-  imageAlt?: string
   size?: 'large' | 'small'
   color?: 'blue' | 'green'
 }>(), {
