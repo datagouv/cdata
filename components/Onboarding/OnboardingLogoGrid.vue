@@ -1,11 +1,11 @@
 <template>
   <section class="py-8">
-    <p
+    <SmallCapsLabel
       v-if="label"
-      class="text-xs text-gray-low uppercase tracking-wide mb-4"
+      class="mb-4"
     >
       {{ label }}
-    </p>
+    </SmallCapsLabel>
     <div class="flex flex-wrap items-center justify-between">
       <slot />
     </div>
@@ -13,6 +13,8 @@
 </template>
 
 <script setup lang="ts">
+import SmallCapsLabel from '~/components/Onboarding/SmallCapsLabel.vue'
+
 defineProps<{
   label?: string
 }>()

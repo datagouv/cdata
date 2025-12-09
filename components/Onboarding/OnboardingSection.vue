@@ -23,7 +23,7 @@ const props = defineProps<{
 
 const bgClass = computed(() => ({
   white: 'bg-white',
-  gray: 'bg-gray-some',
+  gray: 'bg-[#F6F6F6]',
   dark: 'bg-gray-dark text-white',
 }[props.background || 'white']))
 </script>

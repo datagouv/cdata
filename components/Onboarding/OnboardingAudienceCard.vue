@@ -4,13 +4,13 @@
       <component
         :is="icon"
         v-if="icon"
-        class="size-6 text-gray-title"
+        class="size-6 text-[#3A3A3A]"
       />
     </div>
-    <h3 class="text-base font-bold text-gray-title mb-2">
+    <h3 class="text-lg font-bold leading-6 text-[#3A3A3A] mb-2">
       {{ title }}
     </h3>
-    <p class="text-gray-medium text-sm mb-0">
+    <p class="text-base font-normal leading-normal text-[#3C4043] mb-0">
       {{ description }}
     </p>
   </div>

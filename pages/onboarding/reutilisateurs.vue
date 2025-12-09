@@ -1,7 +1,6 @@
 <template>
   <div>
-    <!-- Hero Section -->
-    <OnboardingHero color="primary">
+    <OnboardingHero color="green">
       <template #title>
         {{ $t('Trouvez les données dont vous avez besoin et partagez vos travaux avec la communauté') }}
       </template>
@@ -25,50 +24,50 @@
       </template>
     </OnboardingHero>
 
-    <!-- Section: Accédez facilement aux données publiques -->
     <OnboardingSection>
       <div class="max-w-3xl">
-        <h2 class="text-2xl font-bold text-gray-title mb-4">
+        <OnboardingTitle class="mb-4">
           {{ $t('Accédez facilement aux données publiques') }}
-        </h2>
-        <p class="text-gray-plain mb-4">
+        </OnboardingTitle>
+        <OnboardingParagraph class="mb-4">
           {{ $t('Que vous soyez entrepreneur, chercheur, journaliste, agent public ou citoyen,') }}
           <strong>{{ $t('accédez gratuitement à des milliers de données fiables') }}</strong>
           {{ $t("publiées par l'ensemble des administrations françaises.") }}
-        </p>
-        <p class="text-gray-plain mb-8">
+        </OnboardingParagraph>
+        <OnboardingParagraph class="mb-8">
           <strong>{{ $t('Partagez vos travaux') }}</strong>
           {{ $t('pour gagner en visibilité, recevoir des retours de la communauté, échanger avec les producteurs de données et inspirer les autres utilisateurs.') }}
-        </p>
+        </OnboardingParagraph>
       </div>
 
-      <!-- Logo grid -->
-      <OnboardingLogoGrid :label="$t('ILS RÉUTILISENT LES DONNÉES DE DATA.GOUV.FR')">
+      <OnboardingLogoGrid :label="$t('Ils réutilisent les données de {site}', { site: config.public.title })">
         <NuxtImg
           v-for="logo in reuserLogos"
           :key="logo.name"
           :src="`/nuxt_images/onboarding/logo-${logo.name}.png`"
           :alt="logo.label"
-          class="h-10 md:h-12 object-contain"
+          class="h-20 object-contain"
         />
       </OnboardingLogoGrid>
     </OnboardingSection>
 
-    <!-- Section: Tout ce qu'il vous faut -->
     <OnboardingSection
       :title="$t('Tout ce qu\'il vous faut pour explorer et réutiliser les données publiques')"
-      background="gray"
     >
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <OnboardingFeatureCard
           :title="$t('Explorateur de données')"
           :description="$t('Permet de visualiser la structure d\'un jeu de données, d\'explorer ses colonnes et de vérifier rapidement s\'il correspond à votre besoin.')"
-          image="/nuxt_images/onboarding/explorer.png"
+          image="/nuxt_images/onboarding/explorer.svg"
+          size="large"
+          color="green"
         />
         <OnboardingFeatureCard
           :title="$t('API automatique')"
           :description="$t('Chaque jeu de données tabulaire dispose d\'une API prête à l\'emploi pour intégrer facilement les données dans vos scripts, analyses ou applications.')"
-          image="/nuxt_images/onboarding/api.png"
+          image="/nuxt_images/onboarding/api.svg"
+          size="large"
+          color="green"
         />
       </div>
 
@@ -76,23 +75,25 @@
         <OnboardingFeatureCard
           :title="$t('Discussions')"
           :description="$t('Posez vos questions, obtenez des précisions ou échangez avec les producteurs et autres réutilisateurs pour mieux comprendre les données.')"
-          image="/nuxt_images/onboarding/discussions.png"
+          image="/nuxt_images/onboarding/discussions.svg"
+          color="green"
         />
         <OnboardingFeatureCard
           :title="$t('Suivi des statistiques')"
           :description="$t('Suivez les visites et téléchargements de votre réutilisation pour mesurer son impact et valoriser votre travail auprès de la communauté.')"
-          image="/nuxt_images/onboarding/stats.png"
+          image="/nuxt_images/onboarding/stats-reuses.svg"
+          color="green"
         />
         <OnboardingFeatureCard
           :title="$t('Défis et ressources pédagogiques')"
           :description="$t('Accédez à des guides et exercices pour apprendre à manipuler les données et découvrir de nouveaux usages.')"
-          image="/nuxt_images/onboarding/guides.png"
+          image="/nuxt_images/onboarding/guides.svg"
+          color="green"
         />
       </div>
     </OnboardingSection>
 
-    <!-- CTA Section -->
-    <OnboardingCTA color="primary">
+    <OnboardingCTA color="green">
       <template #title>
         {{ $t('Partagez dès maintenant vos réutilisations') }}
       </template>
@@ -116,11 +117,14 @@ import OnboardingSection from '~/components/Onboarding/OnboardingSection.vue'
 import OnboardingFeatureCard from '~/components/Onboarding/OnboardingFeatureCard.vue'
 import OnboardingLogoGrid from '~/components/Onboarding/OnboardingLogoGrid.vue'
 import OnboardingCTA from '~/components/Onboarding/OnboardingCTA.vue'
+import OnboardingParagraph from '~/components/Onboarding/OnboardingParagraph.vue'
+import OnboardingTitle from '~/components/Onboarding/OnboardingTitle.vue'
 
+const config = useRuntimeConfig()
 const { t } = useTranslation()
 
 useSeoMeta({
-  title: t('Réutilisateurs de données - data.gouv.fr'),
+  title: t('Réutilisateurs de données - {site}', { site: config.public.title }),
 })
 
 const reuserLogos = [

@@ -16,12 +16,13 @@
 
 <script setup lang="ts">
 const props = defineProps<{
-  color?: 'primary' | 'green' | 'brown'
+  color?: 'primary' | 'green' | 'brown' | 'dark'
 }>()
 
 const bgColor = computed(() => ({
-  primary: 'bg-new-primary',
+  primary: 'bg-new-blue-illustration',
   green: 'bg-new-green-illustration',
   brown: 'bg-new-brown-illustration',
+  dark: 'bg-gray-dark',
 }[props.color || 'primary']))
 </script>
