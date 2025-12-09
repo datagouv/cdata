@@ -218,7 +218,7 @@
           <LoadingBlock :status="searchResultsStatus">
             <div v-if="searchResults && searchResults.data.length">
               <ul
-                class="space-y-4 mt-2 p-0 border-t border-gray-default relative z-2 list-none"
+                class="space-y-4 mt-2 pt-2 p-0 border-t border-gray-default relative z-2 list-none"
                 data-testid="results"
               >
                 <li

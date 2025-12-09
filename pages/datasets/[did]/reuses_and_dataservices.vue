@@ -22,6 +22,24 @@
         />
       </div>
     </div>
+    <div
+      v-if="dataservices && !dataservices.total"
+      class="flex flex-col items-center mb-4"
+    >
+      <nuxt-img
+        src="/illustrations/dataservice.svg"
+        class="h-20"
+      />
+      <p class="font-bold my-3">
+        {{ $t(`Il n'y a pas encore d'API associées`) }}
+      </p>
+      <BrandedButton
+        color="primary"
+        href="/admin/dataservices/new/"
+      >
+        {{ $t('Ajouter une API') }}
+      </BrandedButton>
+    </div>
     <RecommendationsReuses :dataset />
     <div
       v-if="reuses && reuses.total"
@@ -48,11 +66,29 @@
         />
       </div>
     </div>
+    <div
+      v-if="reuses && !reuses.total"
+      class="flex flex-col items-center"
+    >
+      <nuxt-img
+        src="/illustrations/reuse.svg"
+        class="h-20"
+      />
+      <p class="font-bold my-3">
+        {{ $t(`Il n'y a pas encore de réutilisations associées`) }}
+      </p>
+      <BrandedButton
+        color="primary"
+        href="/admin/reuses/new/"
+      >
+        {{ $t('Ajouter une réutilisation') }}
+      </BrandedButton>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { DataserviceCard, Pagination, type Dataservice, type DatasetV2, type Reuse } from '@datagouv/components-next'
+import { BrandedButton, DataserviceCard, Pagination, type Dataservice, type DatasetV2, type Reuse } from '@datagouv/components-next'
 import type { PaginatedArray } from '~/types/types'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 

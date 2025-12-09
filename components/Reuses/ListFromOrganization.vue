@@ -8,6 +8,7 @@
         v-for="reuse in reuses.data"
         :key="reuse.id"
         :reuse
+        class="min-w-0"
       />
     </div>
     <Pagination
