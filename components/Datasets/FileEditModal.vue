@@ -151,7 +151,7 @@
                 <p>
                   {{ $t('Attention : cette ressource est exposée via une') }}
                   <a
-                    href="https://www.data.gouv.fr/dataservices/api-tabulaire-data-gouv-fr-beta/"
+                    href="https://www.data.gouv.fr/dataservices/api-tabulaire-data-gouv-fr-beta"
                     target="_blank"
                     class="fr-link"
                   >

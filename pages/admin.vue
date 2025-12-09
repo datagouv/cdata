@@ -70,7 +70,7 @@ useSeoMeta({ title: 'Admin' })
 const { organizations, users } = useCurrentOwned()
 const isSiteAdmin = computed(() => me.value.roles?.includes('admin') || false)
 
-if (route.name === resolve('/admin/')?.name) {
+if (route.name === resolve('/admin')?.name) {
   if (me.value.organizations.length > 0) {
     await navigateTo(`/admin/organizations/${me.value.organizations[0].id}/datasets`, { replace: true })
   }
