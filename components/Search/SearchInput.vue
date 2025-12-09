@@ -21,6 +21,7 @@
       size="lg"
       color="primary"
       :icon="RiSearchLine"
+      icon-only-on-mobile
       type="submit"
     >
       {{ $t('Recherche') }}

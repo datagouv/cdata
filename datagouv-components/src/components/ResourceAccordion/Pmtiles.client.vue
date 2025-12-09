@@ -109,12 +109,10 @@ async function displayMap() {
   const p = new PMTiles(pmtilesUrl.value)
   protocol.add(p)
 
-  p.getHeader().then((h) => {
+  p.getHeader().then((h: { maxZoom: number, centerLon: number, centerLat: number }) => {
     const map = new maplibregl.Map({
-      // @ts-expect-error only null before mount
-      container: container.value, // container id
-      // @ts-expect-error TODO: type JSON
-      style: styleVector,
+      container: container.value!,
+      style: styleVector as maplibregl.StyleSpecification,
       zoom: h.maxZoom - 2,
       center: [h.centerLon, h.centerLat],
     })
@@ -150,13 +148,13 @@ async function displayMap() {
     }
 
     map.on('load', () => {
-      p.getMetadata().then((metadata) => {
+      p.getMetadata().then((_metadata) => {
+        const metadata = _metadata as { tilestats: { layers: Array<{ geometry: string, layer: string }> } }
         map.addSource('pmtiles_source', {
           type: 'vector',
           url: `pmtiles://${pmtilesUrl.value}`,
           attribution: attributions.value,
         })
-        // @ts-expect-error not typed from library
         metadata.tilestats.layers.forEach((layer) => {
           const typeLayer = computed(() => {
             switch (layer.geometry) {
@@ -176,13 +174,12 @@ async function displayMap() {
             'id': layer.layer,
             'source': 'pmtiles_source',
             'source-layer': layer.layer,
-            // @ts-expect-error `''` (empty string) shouldn't happen (see `throwOnNever`)
-            'type': typeLayer.value,
+            'type': typeLayer.value as 'fill' | 'circle' | 'line',
             'paint': {
               [`${typeLayer.value}-color`]: 'steelblue',
               [`${typeLayer.value}-opacity`]: { base: 1, stops: [[0, 0.9], [10, 0.6]] },
             },
-          })
+          } as maplibregl.AddLayerObject)
           map.on('click', layer.layer, showMapPopup)
           map.on('mouseenter', layer.layer, () => {
             map.getCanvas().style.cursor = 'pointer'

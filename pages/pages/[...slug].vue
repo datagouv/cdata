@@ -52,7 +52,7 @@ const { data, status } = useFetch<{
   }
   extension: string
   content: string
-}>(`/nuxt-api/pages/${route.params.slug ? route.params.slug.join('/') : ''}`)
+}>(`/nuxt-api/pages/${route.params.slug ? (route.params.slug as string[]).join('/') : ''}`)
 
 const title = computed(() => data.value?.data.title)
 const description = computed(() => data.value?.data.description)
@@ -67,7 +67,7 @@ useHead({
     {
       'data-udata': config.public.frontBase,
       'src': '/oembed.js',
-      'body': true,
+      'tagPosition': 'bodyClose',
     },
   ],
 })

@@ -6,7 +6,7 @@
       </h2>
       <div class="grid md:grid-cols-12 gap-4">
         <MarkdownViewer
-          class="w-full min-w-0 md:col-span-9"
+          class="order-2 md:order-1 w-full min-w-0 md:col-span-9"
           :content="reuse.description"
           :min-heading="3"
         />
@@ -71,7 +71,6 @@
                 size="sm"
                 type="line"
                 :summary="metricsViewsTotal"
-                class="mb-8 md:mb-0"
                 :since="metricsSince"
               />
             </div>
@@ -80,95 +79,125 @@
       </div>
     </section>
     <section v-if="datasets">
-      <h2 class="uppercase text-sm mb-2.5">
-        {{ $t('aucun jeu de données associé | {n} jeu de données associé | {n} jeux de données associés', { n: datasets.total }) }}
-      </h2>
-      <div
-        class="grid gap-5"
-        :class="{
-          'lg:grid-cols-2': datasets.total > 1,
-        }"
-      >
-        <DatasetCardLg
-          v-for="dataset in datasets.data"
-          :key="dataset.id"
-          :dataset="dataset"
-          :show-description="datasets.total === 1"
-          class="m-0 min-w-0"
+      <template v-if="datasets.total">
+        <h2 class="uppercase text-sm mb-2.5">
+          {{ $t('aucun jeu de données associé | {n} jeu de données associé | {n} jeux de données associés', { n: datasets.total }) }}
+        </h2>
+        <div
+          class="grid gap-5"
+          :class="{
+            'lg:grid-cols-2': datasets.total > 1,
+          }"
+        >
+          <DatasetCardLg
+            v-for="dataset in datasets.data"
+            :key="dataset.id"
+            :dataset="dataset"
+            :show-description="datasets.total === 1"
+            class="m-0 min-w-0"
+          />
+        </div>
+        <Pagination
+          class="mt-4"
+          :page="datasetsPage"
+          :page-size="datasetsPageSize"
+          :total-results="datasets.total"
+          @change="(changedPage: number) => datasetsPage = changedPage"
         />
+      </template>
+      <div
+        v-else
+        class="flex flex-col items-center"
+      >
+        <nuxt-img
+          src="/illustrations/dataset.svg"
+          class="h-20"
+        />
+        <p class="font-bold my-3">
+          {{ $t(`Il n'y a pas encore de jeux de données associées`) }}
+        </p>
+        <BrandedButton
+          v-if="reuse.permissions.edit"
+          color="primary"
+          :href="`/admin/reuses/${reuse.id}/datasets`"
+        >
+          {{ $t('Ajouter un jeu de données') }}
+        </BrandedButton>
       </div>
-      <Pagination
-        class="mt-4"
-        :page="datasetsPage"
-        :page-size="datasetsPageSize"
-        :total-results="datasets.total"
-        @change="(changedPage: number) => datasetsPage = changedPage"
-      />
     </section>
     <section v-if="dataservices">
-      <h2 class="uppercase text-sm mb-2.5">
-        {{ $t('aucune API associée | {n} API associée | {n} APIs associées', { n: dataservices.total }) }}
-      </h2>
-      <div
-        class="grid gap-5"
-        :class="{
-          'lg:grid-cols-2': dataservices.total > 1,
-        }"
-      >
-        <DataserviceCard
-          v-for="dataservice in dataservices.data"
-          :key="dataservice.id"
-          :dataservice
-          class="m-0 min-w-0"
+      <template v-if="dataservices.total">
+        <h2 class="uppercase text-sm mb-2.5">
+          {{ $t('aucune API associée | {n} API associée | {n} APIs associées', { n: dataservices.total }) }}
+        </h2>
+        <div
+          class="grid gap-5"
+          :class="{
+            'lg:grid-cols-2': dataservices.total > 1,
+          }"
+        >
+          <DataserviceCard
+            v-for="dataservice in dataservices.data"
+            :key="dataservice.id"
+            :dataservice
+            class="m-0 min-w-0"
+          />
+        </div>
+        <Pagination
+          class="mt-4"
+          :page="dataservicesPage"
+          :page-size="dataservicesPageSize"
+          :total-results="dataservices.total"
+          @change="(changedPage: number) => dataservicesPage = changedPage"
         />
+      </template>
+      <div
+        v-else
+        class="flex flex-col items-center"
+      >
+        <nuxt-img
+          src="/illustrations/dataservice.svg"
+          class="h-20"
+        />
+        <p class="font-bold my-3">
+          {{ $t(`Il n'y a pas encore d'API associées`) }}
+        </p>
+        <BrandedButton
+          v-if="reuse.permissions.edit"
+          color="primary"
+          :href="`/admin/reuses/${reuse.id}/dataservices`"
+        >
+          {{ $t('Ajouter une API') }}
+        </BrandedButton>
       </div>
-      <Pagination
-        class="mt-4"
-        :page="dataservicesPage"
-        :page-size="dataservicesPageSize"
-        :total-results="dataservices.total"
-        @change="(changedPage: number) => dataservicesPage = changedPage"
-      />
     </section>
     <section>
       <LoadingBlock
         :status
         class="min-h-32"
       >
-        <h2 class="uppercase text-sm mb-2.5">
-          {{ $t('{n} réutilisations du même créateur | {n} réutilisation du même créateur | {n} réutilisations du même créateur', { n: relatedReuses.length }) }}
-        </h2>
-        <div
-          v-if="relatedReuses.length"
-          class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
-        >
-          <ReuseCard
-            v-for="related in relatedReuses"
-            :key="related.id"
-            class="min-w-0"
-            :reuse="related"
-          />
-        </div>
-        <div
-          v-else
-          class="flex flex-col items-center"
-        >
-          <NuxtImg
-            src="/illustrations/reuse.svg"
-            width="137"
-            height="104"
-          />
-          <p class="mt-4 mb-5 font-bold text-lg">
-            {{ $t(`Il n'y a pas d'autres réutilisations du même créateur.`) }}
-          </p>
-        </div>
+        <template v-if="relatedReuses.length">
+          <h2 class="uppercase text-sm mb-2.5">
+            {{ $t('{n} réutilisations du même créateur | {n} réutilisation du même créateur | {n} réutilisations du même créateur', { n: relatedReuses.length }) }}
+          </h2>
+          <div
+            class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+          >
+            <ReuseCard
+              v-for="related in relatedReuses"
+              :key="related.id"
+              class="min-w-0"
+              :reuse="related"
+            />
+          </div>
+        </template>
       </LoadingBlock>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, useFormatDate, MarkdownViewer } from '@datagouv/components-next'
+import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, useFormatDate, MarkdownViewer, BrandedButton } from '@datagouv/components-next'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import type { PaginatedArray } from '~/types/types'
 

@@ -253,6 +253,10 @@ import ReportModal from '~/components/Spam/ReportModal.vue'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import { useElementSize } from '@vueuse/core'
 
+definePageMeta({
+  keepScroll: true,
+})
+
 const config = useRuntimeConfig()
 const route = useRoute()
 const { formatDate } = useFormatDate()
@@ -274,7 +278,7 @@ useSeoMeta({
   title,
   robots,
 })
-await useJsonLd('dataservice', route.params.did)
+await useJsonLd('dataservice', route.params.did as string)
 
 const openSwagger = ref(false)
 

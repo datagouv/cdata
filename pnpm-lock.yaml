@@ -13,7 +13,10 @@ importers:
         version: 2.0.8(@gouvfr/dsfr@1.11.2)(typescript@5.9.2)(vue-router@4.5.1(vue@3.5.22(typescript@5.9.2)))
       '@datagouv/components-next':
         specifier: file:datagouv-components
-        version: file:datagouv-components(core-js@3.45.1)(resize-detector@0.3.0)(typescript@5.9.2)
+        version: file:datagouv-components(core-js@3.47.0)(resize-detector@0.3.0)(typescript@5.9.2)
+      '@floating-ui/vue':
+        specifier: ^1.1.8
+        version: 1.1.9(vue@3.5.22(typescript@5.9.2))
       '@gouvfr/dsfr':
         specifier: ^1.11.1
         version: 1.11.2
@@ -849,12 +852,15 @@ packages:
     resolution: {integrity: sha512-IGJtuBbaGzOUgODdBRg66p8stnwj9iDXkgbYKoYcNiiQmaez5WVRfXm4b03MCDwmZyX93csbfHFWEJJYHnn5oA==}
     hasBin: true
 
-  '@maplibre/maplibre-gl-style-spec@24.2.0':
-    resolution: {integrity: sha512-cE80g83fRcBbZbQC70siOUxUK6YJ/5ZkClDZbmm+hzrUbv+J6yntkMmcpdz9DbOrWOM7FHKR5rruc6Q/hWx5cA==}
+  '@maplibre/maplibre-gl-style-spec@24.3.1':
+    resolution: {integrity: sha512-TUM5JD40H2mgtVXl5IwWz03BuQabw8oZQLJTmPpJA0YTYF+B+oZppy5lNMO6bMvHzB+/5mxqW9VLG3wFdeqtOw==}
     hasBin: true
 
-  '@maplibre/vt-pbf@4.0.3':
-    resolution: {integrity: sha512-YsW99BwnT+ukJRkseBcLuZHfITB4puJoxnqPVjo72rhW/TaawVYsgQHcqWLzTxqknttYoDpgyERzWSa/XrETdA==}
+  '@maplibre/mlt@1.1.2':
+    resolution: {integrity: sha512-SQKdJ909VGROkA6ovJgtHNs9YXV4YXUPS+VaZ50I2Mt951SLlUm2Cv34x5Xwc1HiFlsd3h2Yrs5cn7xzqBmENw==}
+
+  '@maplibre/vt-pbf@4.1.0':
+    resolution: {integrity: sha512-9LjFAoWtxdGRns8RK9vG3Fcw/fb3eHMxvAn2jffwn3jnVO1k49VOv6+FEza70rK7WzF8GnBiKa0K39RyfevKUw==}
 
   '@marijn/find-cluster-break@1.0.2':
     resolution: {integrity: sha512-l0h88YhZFyKdXIFNfSWpyjStDjGHwZ/U7iobcK1cQQD8sejsONdQtTVU+1wVN1PBw40PiiHB1vA5S7VTfQiP9g==}
@@ -1406,8 +1412,8 @@ packages:
     resolution: {integrity: sha512-dfUnCxiN9H4ap84DvD2ubjw+3vUNpstxa0TneY/Paat8a3R4uQZDLSvWjmznAY/DoahqTHl9V46HF/Zs3F29pg==}
     engines: {node: '>= 10.0.0'}
 
-  '@petamoriken/float16@3.9.2':
-    resolution: {integrity: sha512-VgffxawQde93xKxT3qap3OH+meZf7VaSB5Sqd4Rqc+FP5alWbpOyan/7tRbOAvynjpG3GpdtAuGU/NdhQpmrog==}
+  '@petamoriken/float16@3.9.3':
+    resolution: {integrity: sha512-8awtpHXCx/bNpFt4mt2xdkgtgVvKqty8VbjHI/WWWQuEw+KLzFot3f4+LkQY9YmOtq7A5GdOnqoIC8Pdygjk2g==}
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -3038,8 +3044,8 @@ packages:
   core-js-pure@3.45.1:
     resolution: {integrity: sha512-OHnWFKgTUshEU8MK+lOs1H8kC8GkTi9Z1tvNkxrCcw9wl3MJIO7q2ld77wjWn4/xuGrVu2X+nME1iIIPBSdyEQ==}
 
-  core-js@3.45.1:
-    resolution: {integrity: sha512-L4NPsJlCfZsPeXukyzHFlg/i7IIVwHSItR0wg0FLNqYClJ4MQYTYLbC7EkjKYRLZF2iof2MUgN0EGy7MdQFChg==}
+  core-js@3.47.0:
+    resolution: {integrity: sha512-c3Q2VVkGAUyupsjRnaNX6u8Dq2vAdzm9iuPj5FW0fRxzlxgq9Q39MDq10IvmQSpLgHQNyQzQmOo6bgGHmH3NNg==}
 
   core-util-is@1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
@@ -4634,8 +4640,8 @@ packages:
   mapbox-to-css-font@3.2.0:
     resolution: {integrity: sha512-kvsEfzvLik34BiFj+S19bv5d70l9qSdkUzrq99dvZ9d5POaLyB4vJMQmq3BoJ5D6lFG1GYnMM7o7cm5Jh8YEEg==}
 
-  maplibre-gl@5.7.3:
-    resolution: {integrity: sha512-T6XsjwcSfOr0vtAt4GTzx4m/vD6nrbR0+61MgMzZ9REQwILSEnhqwNpFuFbDedX6LC3ZWjZWnxN7fN/I66WoDQ==}
+  maplibre-gl@5.14.0:
+    resolution: {integrity: sha512-O2ok6N/bQ9NA9nJ22r/PRQQYkUe9JwfDMjBPkQ+8OwsVH4TpA5skIAM2wc0k+rni5lVbAVONVyBvgi1rF2vEPA==}
     engines: {node: '>=16.14.0', npm: '>=8.1.0'}
 
   markdown-link@0.1.1:
@@ -4693,8 +4699,8 @@ packages:
   mdast-util-phrasing@4.1.0:
     resolution: {integrity: sha512-TqICwyvJJpBwvGAMZjj4J2n0X8QWp21b9l0o7eXyVJ25YNWYbJDVIyD1bZXE6WtV6RmKJVYmQAKWa0zWOABz2w==}
 
-  mdast-util-to-hast@13.2.0:
-    resolution: {integrity: sha512-QGYKEuUsYT9ykKBCMOEDLsU5JRObWQusAolFMeko/tYPufNkRffBAQjIE+99jbA87xv6FgmjLtwjh9wBWajwAA==}
+  mdast-util-to-hast@13.2.1:
+    resolution: {integrity: sha512-cctsq2wp5vTsLIcaymblUriiTcZd0CwWtCbLvrOzYCDZoWyMNV8sZ7krj09FSnsiJi3WVsHLM4k6Dq/yaPyCXA==}
 
   mdast-util-to-markdown@2.1.2:
     resolution: {integrity: sha512-xj68wMTvGXVOKonmog6LwyJKrYXZPvlwabaryTjLh9LuvovB/KAH+kvi8Gjj+7rJjsFi23nkUxRQv1KqSroMqA==}
@@ -5097,8 +5103,8 @@ packages:
     peerDependencies:
       ol: '*'
 
-  ol@10.6.1:
-    resolution: {integrity: sha512-xp174YOwPeLj7c7/8TCIEHQ4d41tgTDDhdv6SqNdySsql5/MaFJEJkjlsYcvOPt7xA6vrum/QG4UdJ0iCGT1cg==}
+  ol@10.7.0:
+    resolution: {integrity: sha512-122U5gamPqNgLpLOkogFJhgpywvd/5en2kETIDW+Ubfi9lPnZ0G9HWRdG+CX0oP8od2d6u6ky3eewIYYlrVczw==}
 
   on-change@5.0.1:
     resolution: {integrity: sha512-n7THCP7RkyReRSLkJb8kUWoNsxUIBxTkIp3JKno+sEz6o/9AJ3w3P9fzQkITEkMwyTKJjZciF3v/pVoouxZZMg==}
@@ -6441,8 +6447,8 @@ packages:
   swagger-themes@1.4.3:
     resolution: {integrity: sha512-1G0CqJC1IBbNxkAOyJoREd9hfwXH1R6+3GOFxLhQho2w2i+AbaJqkF4mTJhkce4yhaEMUXvv4KKu1YO/qpe6nQ==}
 
-  swagger-ui-dist@5.29.1:
-    resolution: {integrity: sha512-qyjpz0qgcomRr41a5Aye42o69TKwCeHM9F8htLGVeUMKekNS6qAqz9oS7CtSvgGJSppSNAYAIh7vrfrSdHj9zw==}
+  swagger-ui-dist@5.30.3:
+    resolution: {integrity: sha512-giQl7/ToPxCqnUAx2wpnSnDNGZtGzw1LyUw6ZitIpTmdrvpxKFY/94v1hihm0zYNpgp1/VY0jTDk//R0BBgnRQ==}
 
   swagger-ui@5.29.1:
     resolution: {integrity: sha512-Qy5vDEyu1DqrMYfkAQLgTeOZr2n01qaI6jDXrkGEeB1LirOwFWWA1fj2RBotdM+E9IttpoxitEtvsV/b4N+ZEA==}
@@ -7698,7 +7704,7 @@ snapshots:
       style-mod: 4.1.2
       w3c-keyname: 2.2.8
 
-  '@datagouv/components-next@file:datagouv-components(core-js@3.45.1)(resize-detector@0.3.0)(typescript@5.9.2)':
+  '@datagouv/components-next@file:datagouv-components(core-js@3.47.0)(resize-detector@0.3.0)(typescript@5.9.2)':
     dependencies:
       '@floating-ui/vue': 1.1.9(vue@3.5.22(typescript@5.9.2))
       '@headlessui/vue': 1.7.23(vue@3.5.22(typescript@5.9.2))
@@ -7708,9 +7714,9 @@ snapshots:
       chart.js: 4.5.0
       dompurify: 3.2.7
       geopf-extensions-openlayers: 1.0.0-beta.6
-      maplibre-gl: 5.7.3
+      maplibre-gl: 5.14.0
       ofetch: 1.4.1
-      ol: 10.6.1
+      ol: 10.7.0
       pdf-vue3: 1.0.12
       pmtiles: 4.3.0
       popmotion: 11.0.5
@@ -7726,7 +7732,7 @@ snapshots:
       remark-rehype: 11.1.2
       strip-markdown: 6.0.0
       stylefire: 7.0.3
-      swagger-ui-dist: 5.29.1
+      swagger-ui-dist: 5.30.3
       unified: 11.0.5
       unist-util-visit: 5.0.0
       vue: 3.5.22(typescript@5.9.2)
@@ -7734,7 +7740,7 @@ snapshots:
       vue-router: 4.5.1(vue@3.5.22(typescript@5.9.2))
       vue3-json-viewer: 2.4.1(vue@3.5.22(typescript@5.9.2))
       vue3-text-clamp: 0.1.2(resize-detector@0.3.0)(vue@3.5.22(typescript@5.9.2))
-      vue3-xml-viewer: 0.0.14(core-js@3.45.1)(vue@3.5.22(typescript@5.9.2))
+      vue3-xml-viewer: 0.0.14(core-js@3.47.0)(vue@3.5.22(typescript@5.9.2))
     transitivePeerDependencies:
       - '@vue/composition-api'
       - core-js
@@ -8185,7 +8191,7 @@ snapshots:
       rw: 1.3.3
       tinyqueue: 3.0.0
 
-  '@maplibre/maplibre-gl-style-spec@24.2.0':
+  '@maplibre/maplibre-gl-style-spec@24.3.1':
     dependencies:
       '@mapbox/jsonlint-lines-primitives': 2.0.2
       '@mapbox/unitbezier': 0.0.1
@@ -8195,7 +8201,11 @@ snapshots:
       rw: 1.3.3
       tinyqueue: 3.0.0
 
-  '@maplibre/vt-pbf@4.0.3':
+  '@maplibre/mlt@1.1.2':
+    dependencies:
+      '@mapbox/point-geometry': 1.1.0
+
+  '@maplibre/vt-pbf@4.1.0':
     dependencies:
       '@mapbox/point-geometry': 1.1.0
       '@mapbox/vector-tile': 2.0.4
@@ -9259,7 +9269,7 @@ snapshots:
       '@parcel/watcher-win32-ia32': 2.5.1
       '@parcel/watcher-win32-x64': 2.5.1
 
-  '@petamoriken/float16@3.9.2': {}
+  '@petamoriken/float16@3.9.3': {}
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -11164,7 +11174,7 @@ snapshots:
 
   core-js-pure@3.45.1: {}
 
-  core-js@3.45.1: {}
+  core-js@3.47.0: {}
 
   core-util-is@1.0.3: {}
 
@@ -11928,9 +11938,9 @@ snapshots:
       geoportal-access-lib: 3.4.6
       loglevel: 1.9.2
       markdown-toc: 1.2.0
-      ol: 10.6.1
-      ol-contextmenu: 5.5.0(ol@10.6.1)
-      ol-mapbox-style: 12.6.1(ol@10.6.1)
+      ol: 10.7.0
+      ol-contextmenu: 5.5.0(ol@10.7.0)
+      ol-mapbox-style: 12.6.1(ol@10.7.0)
       proj4: 2.15.0
       sortablejs: 1.15.3
       typescript: 5.9.2
@@ -11949,7 +11959,7 @@ snapshots:
 
   geotiff@2.1.3:
     dependencies:
-      '@petamoriken/float16': 3.9.2
+      '@petamoriken/float16': 3.9.3
       lerc: 3.0.0
       pako: 2.1.0
       parse-headers: 2.0.6
@@ -12177,7 +12187,7 @@ snapshots:
       hast-util-from-parse5: 8.0.3
       hast-util-to-parse5: 8.0.0
       html-void-elements: 3.0.0
-      mdast-util-to-hast: 13.2.0
+      mdast-util-to-hast: 13.2.1
       parse5: 7.3.0
       unist-util-position: 5.0.0
       unist-util-visit: 5.0.0
@@ -12199,7 +12209,7 @@ snapshots:
       comma-separated-tokens: 2.0.3
       hast-util-whitespace: 3.0.0
       html-void-elements: 3.0.0
-      mdast-util-to-hast: 13.2.0
+      mdast-util-to-hast: 13.2.1
       property-information: 7.1.0
       space-separated-tokens: 2.0.2
       stringify-entities: 4.0.4
@@ -12866,7 +12876,7 @@ snapshots:
 
   mapbox-to-css-font@3.2.0: {}
 
-  maplibre-gl@5.7.3:
+  maplibre-gl@5.14.0:
     dependencies:
       '@mapbox/geojson-rewind': 0.5.2
       '@mapbox/jsonlint-lines-primitives': 2.0.2
@@ -12875,8 +12885,9 @@ snapshots:
       '@mapbox/unitbezier': 0.0.1
       '@mapbox/vector-tile': 2.0.4
       '@mapbox/whoots-js': 3.1.0
-      '@maplibre/maplibre-gl-style-spec': 24.2.0
-      '@maplibre/vt-pbf': 4.0.3
+      '@maplibre/maplibre-gl-style-spec': 24.3.1
+      '@maplibre/mlt': 1.1.2
+      '@maplibre/vt-pbf': 4.1.0
       '@types/geojson': 7946.0.16
       '@types/geojson-vt': 3.2.5
       '@types/supercluster': 7.1.3
@@ -13023,7 +13034,7 @@ snapshots:
       '@types/mdast': 4.0.4
       unist-util-is: 6.0.0
 
-  mdast-util-to-hast@13.2.0:
+  mdast-util-to-hast@13.2.1:
     dependencies:
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
@@ -13704,18 +13715,18 @@ snapshots:
 
   ohash@2.0.11: {}
 
-  ol-contextmenu@5.5.0(ol@10.6.1):
+  ol-contextmenu@5.5.0(ol@10.7.0):
     dependencies:
-      ol: 10.6.1
+      ol: 10.7.0
       tiny-emitter: 2.1.0
 
-  ol-mapbox-style@12.6.1(ol@10.6.1):
+  ol-mapbox-style@12.6.1(ol@10.7.0):
     dependencies:
       '@maplibre/maplibre-gl-style-spec': 23.3.0
       mapbox-to-css-font: 3.2.0
-      ol: 10.6.1
+      ol: 10.7.0
 
-  ol@10.6.1:
+  ol@10.7.0:
     dependencies:
       '@types/rbush': 4.0.0
       earcut: 3.0.2
@@ -14547,7 +14558,7 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
-      mdast-util-to-hast: 13.2.0
+      mdast-util-to-hast: 13.2.1
       unified: 11.0.5
       vfile: 6.0.3
 
@@ -15180,7 +15191,7 @@ snapshots:
 
   swagger-themes@1.4.3: {}
 
-  swagger-ui-dist@5.29.1:
+  swagger-ui-dist@5.30.3:
     dependencies:
       '@scarf/scarf': 1.4.0
 
@@ -15882,9 +15893,9 @@ snapshots:
       resize-detector: 0.3.0
       vue: 3.5.22(typescript@5.9.2)
 
-  vue3-xml-viewer@0.0.14(core-js@3.45.1)(vue@3.5.22(typescript@5.9.2)):
+  vue3-xml-viewer@0.0.14(core-js@3.47.0)(vue@3.5.22(typescript@5.9.2)):
     dependencies:
-      core-js: 3.45.1
+      core-js: 3.47.0
       vue: 3.5.22(typescript@5.9.2)
 
   vue@3.5.22(typescript@5.9.2):

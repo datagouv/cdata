@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Dataset, Frequency, Owned, Resource, SchemaPublicationMode, SpatialZone } from '@datagouv/components-next'
+import { defaultAccessTypeForm, type Dataset, type Frequency, type Owned, type Resource, type SchemaPublicationMode, type SpatialZone } from '@datagouv/components-next'
 import Step1AssociateSchema from '~/components/Datasets/Structured/Step1AssociateSchema.vue'
 import Step2LoadData from '~/components/Datasets/Structured/Step2LoadData.vue'
 import Step2Sheet from '~/components/Datasets/Structured/Step2Sheet.vue'
@@ -107,6 +107,7 @@ const datasetForm = useState(DATASET_FORM_STATE, () => ({
   spatial_granularity: null as SpatialGranularity | null,
   contact_points: [],
   private: true,
+  ...defaultAccessTypeForm(),
 } as DatasetForm))
 
 const associateSchemaForm = useState(ASSOCIATE_SCHEMA_FORM_STATE, () => ({

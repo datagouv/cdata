@@ -10,7 +10,7 @@
     <TransferRequestList
       v-if="props.organization || props.user"
       type="Reuse"
-      :recipient="props.organization || props.user"
+      :recipient="(props.organization || props.user)!"
       @done="refresh"
     />
     <div

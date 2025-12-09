@@ -3,7 +3,7 @@ import { accessTypeToForm, accessTypeToApi, throwOnNever, DESCRIPTION_MIN_LENGTH
 import type { FetchError } from 'ofetch'
 import { v4 as uuidv4 } from 'uuid'
 
-import type { CommunityResourceForm, DatasetForm, DatasetSuggest, FileInfo, NewDatasetForApi, ResourceForm } from '~/types/types'
+import type { CommunityResourceForm, NewCommunityResourceForApi, NewResourceForApi, DatasetForm, DatasetSuggest, FileInfo, NewDatasetForApi, ResourceForm } from '~/types/types'
 
 export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceForm>) {
   const isRemote = computed(() => toValue(file).filetype === 'remote')
@@ -140,7 +140,7 @@ export function resourceToForm(resource: Resource | CommunityResource, schemas: 
   }
 }
 
-export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resource | CommunityResource {
+export function resourceToApi(form: ResourceForm | CommunityResourceForm): NewResourceForApi | NewCommunityResourceForApi {
   let schema = null as Schema | null
   if (form.schema) {
     if ('version' in form.schema && typeof form.schema.version === 'string') {
@@ -166,7 +166,7 @@ export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resou
     description: form.description,
 
     schema,
-  } as Resource
+  } as NewResourceForApi
 
   if (form.checksum_type && form.checksum_value) {
     resource.checksum = {
@@ -205,7 +205,7 @@ export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resou
       ...resource,
       dataset: form.dataset,
       ...form.owned.organization ? { organization: form.owned.organization, owner: null } : { owner: form.owned.owner, organization: null },
-    } satisfies CommunityResource
+    } satisfies NewCommunityResourceForApi
   }
 
   return resource

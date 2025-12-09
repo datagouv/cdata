@@ -103,7 +103,7 @@
         :value
         class="w-full text-sm"
         rows="10"
-        @change="$emit('change', $event.target.value)"
+        @change="$emit('change', ($event.target as HTMLTextAreaElement).value)"
       />
       <Milkdown
         v-else

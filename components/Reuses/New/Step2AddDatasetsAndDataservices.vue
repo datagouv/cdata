@@ -31,7 +31,7 @@
         </BrandedButton>
         <BrandedButton
           color="primary"
-          :disabled="!datasets.length"
+          :disabled="!datasets.length && !reuseToApi.length"
           :loading
           @click="$emit('next')"
         >
