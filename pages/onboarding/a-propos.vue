@@ -10,7 +10,7 @@
     </OnboardingHero>
 
     <OnboardingSection>
-      <div class="max-w-4xl">
+      <div class="max-w-[950px]">
         <OnboardingTitle class="mb-4">
           {{ $t('Qu\'est ce que {site} ?', { site: config.public.title }) }}
         </OnboardingTitle>

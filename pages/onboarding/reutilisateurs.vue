@@ -26,7 +26,7 @@
     </OnboardingHero>
 
     <OnboardingSection>
-      <div class="max-w-4xl">
+      <div class="max-w-[950px]">
         <OnboardingTitle class="mb-4">
           {{ $t('Accédez facilement aux données publiques') }}
         </OnboardingTitle>
