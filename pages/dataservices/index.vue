@@ -78,6 +78,18 @@
           <div class="text-sm text-center">
             {{ $t(`Simplifiez les démarches et services des citoyens, entreprises et associations, en récupérant pour eux leurs informations administratives grâces aux API.`) }}
           </div>
+          <BrandedButton
+            href="https://simplifions.data.gouv.fr/"
+            target="_blank"
+            rel="noopener noreferrer"
+            color="tertiary"
+            :icon="RiExternalLinkLine"
+            :icon-right="true"
+            size="sm"
+            aria-label="Aller sur Simplifions.data — lien externe"
+          >
+            Aller sur Simplifions.data
+          </BrandedButton>
         </div>
         <div class="bg-gray-lowest-2 flex flex-col items-center p-8 space-y-4">
           <nuxt-img
