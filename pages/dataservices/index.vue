@@ -24,19 +24,11 @@
             {{ $t('Administrations, ') }}
           </div>
           <div class="text-3xl">
-            {{ $t('simplifiez les démarches administratives grâce aux APIs') }}
+            {{ $t('simplifiez les démarches administratives grâce aux API') }}
           </div>
           <div class="mt-2">
-            {{ $t('Retrouvez ici des exemples d’outils et d’accompagnement qui sont à votre disposition afin de simplifier, avec de la donnée, les démarches des citoyens.') }}
+            {{ $t('Des exemples d’outils et de l′accompagnement à votre disposition pour simplifier, avec de la donnée, les démarches des citoyens.') }}
           </div>
-
-          <BrandedButton
-            color="brown-illustration"
-            class="mt-8"
-            :href="config.public.dataservicesOnboarding"
-          >
-            {{ $t('En savoir plus') }}
-          </BrandedButton>
         </div>
       </div>
       <div class="w-full grid grid-cols-2 gap-4">
@@ -47,11 +39,23 @@
           />
 
           <div class="font-extrabold text-center">
-            {{ $t('La doctrine des APIs') }}
+            {{ $t('La doctrine des API') }}
           </div>
           <div class="text-sm text-center">
             {{ $t('Elle précise le cadre d’action et identifie les bonnes pratiques à poursuivre en matière d’usage et d’exposition d’API par les administrations') }}
           </div>
+           <BrandedButton
+            href="https://guides.data.gouv.fr/guide-data.gouv.fr/api/outils-pour-les-administrations/doctrine-des-api"
+            target="_blank"
+            rel="noopener noreferrer"
+            color="brown-illustration"
+            :icon="RiArrowRightLine"
+            :icon-right="true"
+            size="sm"
+            aria-label="Doctrine des API sur guides.data.gouv.fr"
+          >
+           Lire la doctrine
+          </BrandedButton>
         </div>
         <div class="bg-gray-lowest-2 flex flex-col items-center p-8 space-y-4">
           <nuxt-img
@@ -63,8 +67,20 @@
             {{ $t('Datapass') }}
           </div>
           <div class="text-sm text-center">
-            {{ $t(`En tant qu'administration souhaitant diffuser des données restreintes, vous pouvez avoir besoin de délivrer des habilitations aux usagers.`) }}
+            {{ $t(`Datapass vous permet de demander et gérer vos habilitations à différentes données en accès restreint.`) }}
           </div>
+           <BrandedButton
+            href="https://guides.data.gouv.fr/guide-data.gouv.fr/api/outils-pour-les-administrations/datapass-outil-dhabilitations"
+            target="_blank"
+            rel="noopener noreferrer"
+            color="secondary"
+            :icon="RiArrowRightLine"
+            :icon-right="true"
+            size="sm"
+            aria-label="DataPass sur guides.data.gouv.fr"
+          >
+           En savoir plus
+          </BrandedButton>
         </div>
         <div class="bg-gray-lowest-2 flex flex-col items-center p-8 space-y-4">
           <nuxt-img
@@ -73,22 +89,22 @@
           />
 
           <div class="font-extrabold text-center">
-            {{ $t('simplifions.data.gouv') }}
+            {{ $t('Le portail Simplifions.data.gouv') }}
           </div>
           <div class="text-sm text-center">
-            {{ $t(`Simplifiez les démarches et services des citoyens, entreprises et associations, en récupérant pour eux leurs informations administratives grâces aux API.`) }}
+            {{ $t(`Des cas d'usages et des solutions pour simplifier les démarches des citoyens, entreprises et associations, grâce aux API et aux données.`) }}
           </div>
           <BrandedButton
             href="https://simplifions.data.gouv.fr/"
             target="_blank"
             rel="noopener noreferrer"
-            color="tertiary"
-            :icon="RiExternalLinkLine"
+            color="brown-illustration"
+            :icon="RiExternalLinkFill"
             :icon-right="true"
             size="sm"
             aria-label="Aller sur Simplifions.data — lien externe"
           >
-            Aller sur Simplifions.data
+           Consulter le site 
           </BrandedButton>
         </div>
         <div class="bg-gray-lowest-2 flex flex-col items-center p-8 space-y-4">
@@ -103,6 +119,18 @@
           <div class="text-sm text-center">
             {{ $t(`N’hésitez pas à contacter le pôle circulation de la donnée de la DINUM, qui est disponible pour vous aider pour toutes vos questions relatives aux APIs. `) }}
           </div>
+                    <BrandedButton
+            href="https://guides.data.gouv.fr/guide-data.gouv.fr/api/outils-pour-les-administrations/accompagnement-humain"
+            target="_blank"
+            rel="noopener noreferrer"
+            color="secondary"
+            :icon="RiExternalLinkFill"
+            :icon-right="true"
+            size="sm"
+            aria-label="Accompagnement humain sur guides.data.gouv.fr"
+          >
+           En savoir plus
+          </BrandedButton>
         </div>
       </div>
     </div>
@@ -116,6 +144,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, type Site } from '@datagouv/components-next'
+import { RiExternalLinkFill, RiArrowRightLine } from '@remixicon/vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
 import PageShowById from '~/components/Pages/PageShowById.vue'
