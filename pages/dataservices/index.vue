@@ -73,25 +73,12 @@
           />
 
           <div class="font-extrabold text-center">
-            {{ $t('Les bouquets API Entreprise et Particulier') }}
-          </div>
-          <div class="text-sm text-center">
-            {{ $t(`Les bouquets API Entreprise et API Particulier sont conçus pour faire circuler les données administratives entre administrations.`) }}
-          </div>
-        </div>
-        <!-- <div class="bg-gray-lowest-2 flex flex-col items-center p-8 space-y-4">
-          <nuxt-img
-            src="/illustrations/lightbulb.svg"
-            class="h-20"
-          />
-
-          <div class="font-extrabold text-center">
             {{ $t('simplifions.data.gouv') }}
           </div>
           <div class="text-sm text-center">
             {{ $t(`Simplifiez les démarches et services des citoyens, entreprises et associations en récupérant pour eux leurs informations administratives.`) }}
           </div>
-        </div> -->
+        </div>
         <div class="bg-gray-lowest-2 flex flex-col items-center p-8 space-y-4">
           <nuxt-img
             src="/illustrations/show.svg"
