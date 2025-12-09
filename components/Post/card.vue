@@ -6,7 +6,7 @@
     <div class="p-4">
       <p class="text-lg mb-2.5 font-bold">
         <CdataLink
-          :to="`/posts/${post.slug}/`"
+          :to="post.page"
         >
           {{ post.name }}
         </CdataLink>
