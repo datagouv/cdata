@@ -9,14 +9,15 @@
       </template>
       <template #actions>
         <BrandedButton
-          color="secondary"
+          color="white-flat"
+          class="text-new-green-illustration"
           href="/datasets"
         >
           {{ $t('Trouver des données') }}
         </BrandedButton>
         <BrandedButton
           color="white-flat"
-          class="text-new-blue-illustration"
+          class="text-new-green-illustration"
           href="/reuses/new"
         >
           {{ $t('Publier votre réutilisation') }}
@@ -100,7 +101,7 @@
       <template #actions>
         <BrandedButton
           color="white-flat"
-          class="text-new-blue-illustration"
+          class="text-new-green-illustration"
           href="/reuses/new"
         >
           {{ $t('Publier votre réutilisation') }}
