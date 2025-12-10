@@ -2,8 +2,8 @@
   <div>
     <EditoHeader
       color="purple"
-      :title="$t('APIs')"
-      :subtitle="$t('Rechercher parmi les {count} APIs sur {site}', {
+      :title="$t('API')"
+      :subtitle="$t('Rechercher parmi les {count} API sur {site}', {
         count: site.metrics.dataservices,
         site: config.public.title,
       })"
@@ -27,7 +27,7 @@
           {{ $t('des ressources sont à votre disposition :') }}
         </p>
       </div>
-       <div class="w-full grid md:grid-cols-3 gap-x-2.5 mb-10">
+       <div class="w-full grid md:grid-cols-3 gap-5 mb-10">
         <div class="flex flex-col space-y-3 justify-center">
            <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
@@ -54,9 +54,7 @@
             >
               Lire la doctrine
             </BrandedButton>
-          </div>
-          
-          
+          </div>     
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
               <nuxt-img
@@ -68,10 +66,11 @@
             {{ $t('Publier vos API') }}
             </div>
             <div class="text-center">
-              {{ $t(`Data.gouv.fr vous permet d'exposer vos API en quelques clics.`) }}
+              {{ $t(`Data.gouv.fr permet l'exposition de vos API en quelques clics.`) }}<br/><br/>
+              {{ $t(`Créez dès maintenant une page pour votre organisation et référencez vos API :`) }}
             </div>
              <BrandedButton
-              href="https://entreprise.api.gouv.fr/"
+              href="/admin/dataservices/new"
               target="_blank"
               rel="noopener noreferrer"
               color="brown-illustration"
@@ -81,12 +80,11 @@
               aria-label="Documentation API Entreprise"
               >
                Publier une API sur data.gouv.fr
-            </BrandedButton>
-            
+            </BrandedButton>         
           </div>
         </div>
         <div class="flex flex-col space-y-3 justify-center">
-                   <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
+          <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
               <nuxt-img
                 src="/illustrations/schema.svg"
@@ -97,7 +95,7 @@
             {{ $t('Un accompagnement') }}<br/>{{ $t('technique et métier') }}
             </div>
             <div class="text-center">
-              {{ $t(`Le pôle Data de la DINUM est disponible pour vous aider pour toutes vos questions relatives aux API. `) }}
+              {{ $t(`Le pôle Data de la DINUM est disponible pour vous aider pour toute question relative aux API.`) }}
             </div>
             <BrandedButton
               href="https://guides.data.gouv.fr/guide-data.gouv.fr/api/outils-pour-les-administrations/accompagnement-humain"
@@ -107,7 +105,7 @@
               :icon="RiArrowRightLine"
               :icon-right="true"
               size="sm"
-              aria-label="Accompagnement humain sur guides.data.gouv.fr"
+              aria-label="Accompagnement technique et métier sur guides.data.gouv.fr"
             >
               Demander conseil
             </BrandedButton>
@@ -120,11 +118,12 @@
               />
             </div>
             <div class="font-extrabold text-center text-lg">
-            {{ $t('Datapass') }}
+            {{ $t('Datapass') }}<br/>{{ $t('Habilitations juridiques') }}
+
             </div>
             <div class="text-center">
-              {{ $t(`En tant qu'utilisateur, Datapass accélère votre habilitation aux API sous accès restreint.`) }}<br/><br/>
-              {{ $t(`En tant que fournisseur d'API, Datapass est un outil clé en main d'instruction et de délivrance d’habilitations.`) }}
+              {{ $t(`DataPass est un outil clé en main pour déposer et instruire des demandes d'accès aux données.`) }}<br/><br/>
+              {{ $t(`Fournisseurs d'API en accès restreint, mettez en place vos formulaires d'habilitation DataPass :`) }}
             </div>
             <BrandedButton
               href="https://guides.data.gouv.fr/guide-data.gouv.fr/api/outils-pour-les-administrations/datapass-outil-dhabilitations"
@@ -139,21 +138,21 @@
               En savoir plus
             </BrandedButton>
           </div>
-
         </div>
         <div class="flex flex-col space-y-3 justify-center">
-<div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
+          <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
               <nuxt-img
                 src="/illustrations/lightbulb.svg"
                 class="w-12"
               />
             </div>
-             <div class="font-extrabold text-center text-lg">
+            <div class="font-extrabold text-center text-lg">
             {{ $t('Simplifions.data.gouv.fr') }}
             </div>
             <div class="text-center">
-              {{ $t(`Un catalogue des API, données et solutions par cas d'usages pour vous aider à mettre en oeuvre le Dites-le nous une fois et la proactivité.`) }}
+              {{ $t(`Un catalogue des API, données et solutions utiles pour simplifier les démarches administratives.`) }} <br/><br/>
+              {{ $t(`Consultez Simplifions.data pour vous aider à mettre en oeuvre le Dites-le nous une fois et la proactivité :`) }}
             </div>
             <BrandedButton
               href="https://simplifions.data.gouv.fr/"
@@ -176,16 +175,17 @@
               />
             </div>
             <div class="font-extrabold text-center text-lg">
-              {{ $t('API Entreprise et API Particulier') }}
+              {{ $t('API Entreprise') }}<br/>
+              {{ $t('et API Particulier') }}
               </div>
             <div class="text-center">
-              {{ $t(`Les données des particuliers, des entreprises et associations, accessibles depuis une même API pour les administrations, afin de simplifier les démarches administratives.`) }}
+              {{ $t(`Les données des particuliers, des entreprises et associations, accessibles depuis une même API.`) }}
             </div>    
            <BrandedButton
               href="https://entreprise.api.gouv.fr/"
               target="_blank"
               rel="noopener noreferrer"
-              color="brown-illustration"
+              color="secondary"
               :icon="RiExternalLinkFill"
               :icon-right="true"
               size="sm"
@@ -206,14 +206,14 @@
                API Particulier
             </BrandedButton>
              <div class="text-center">              
-              {{ $t(`Fournisseurs d'API, les bouquets s'occupent de l'exposition et du support de vos API permettant la mise en oeuvre du Dites-le nous une fois.`) }}
+              {{ $t(`Fournisseurs d'API, les bouquets s'occupent de l'exposition et du support de vos API utiles pour la mise en oeuvre du Dites-le nous une fois.`) }}
               
             </div>
             <BrandedButton
               href="https://guides.data.gouv.fr/guide-data.gouv.fr/api/outils-pour-les-administrations/bouquets-api-entreprise-et-api-particulier#comment-rejoindre-les-bouquets-api-entreprise-api-particulier"
               target="_blank"
               rel="noopener noreferrer"
-              color="secondary"
+              color="brown-illustration"
               :icon="RiArrowRightLine"
               :icon-right="true"
               size="sm"
@@ -242,7 +242,7 @@ import PageShowById from '~/components/Pages/PageShowById.vue'
 
 const { t } = useTranslation()
 useSeoMeta({
-  title: t('APIs'),
+  title: t('API'),
 })
 
 const config = useRuntimeConfig()
