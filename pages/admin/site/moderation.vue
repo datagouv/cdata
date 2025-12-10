@@ -239,11 +239,10 @@
 </template>
 
 <script setup lang="ts">
-import { type Activity, type Dataservice, type DatasetV2, type Organization, type Reuse, AvatarWithName, LoadingBlock, Pagination, useFormatDate } from '@datagouv/components-next'
-import type { Report, ReportReason, ReportSubject } from '~/types/reports'
+import type { Report, ReportReason, ReportSubject, Activity, Dataservice, DatasetV2, Organization, Reuse } from '@datagouv/components-next'
+import { AvatarWithName, LoadingBlock, Pagination, useFormatDate, BrandedButton } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine } from '@remixicon/vue'
-import { BrandedButton } from '@datagouv/components-next'
 import type { PaginatedArray } from '~/types/types'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
