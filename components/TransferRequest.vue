@@ -9,6 +9,10 @@
       :date="new Date(transfer.created)"
     >
       <template #title>
+        <a
+          :href="transfer.user.page"
+          class="link"
+        >{{ transfer.user.first_name }} {{ transfer.user.last_name }}</a>
         {{ $t('a demandé un transfert') }}
       </template>
       <template #subtitle>
