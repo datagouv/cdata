@@ -61,7 +61,7 @@ jobs:
       - name: Install Python dependencies for udata
         working-directory: udata
         run: |
-          uv sync --frozen --extra dev
+          uv sync --frozen
 
       - name: Configure udata
         working-directory: udata
