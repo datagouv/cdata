@@ -459,7 +459,7 @@
               :placeholder="t('Sélectionnez une licence')"
               :display-value="(option) => option.title"
               :multiple="false"
-              :group-by="(option) => option.group"
+              :group-by="(option) => 'group' in option ? option.group : ''"
               :error-text="getFirstError('license')"
               :warning-text="getFirstWarning('license')"
             >
@@ -468,7 +468,7 @@
                   <div class="flex items-center justify-between space-x-2">
                     <div>{{ option.title }}</div>
                     <div
-                      v-if="option.code"
+                      v-if="'code' in option && option.code"
                       class="font-mono  px-2 py-1 border border-transparent text-xs"
                       :class="{ 'bg-gray-100': ! active, 'border-white': active }"
                     >
@@ -476,14 +476,14 @@
                     </div>
                   </div>
                   <div
-                    v-if="option.recommended || option.description"
+                    v-if="('recommended' in option && option.recommended) || ('description' in option && option.description)"
                     class="flex items-center justify-between space-x-2"
                     :class="{
                       'text-gray-500': !active,
                     }"
                   >
                     <div
-                      v-if="option.recommended"
+                      v-if="'recommended' in option && option.recommended"
                       class="flex items-center space-x-1"
                     >
                       <RiStarFill
@@ -493,7 +493,7 @@
                       />
                       <span>{{ t('Recommandée') }}</span>
                     </div>
-                    <div v-if="option.description">
+                    <div v-if="'description' in option && option.description">
                       {{ option.description }}
                     </div>
                   </div>
@@ -798,7 +798,7 @@ const { data: allLicenses } = await useAPI<Array<License>>('/api/1/datasets/lice
 
 // Merge some information between database (all licenses) and config (selectable license, some recommanded, codes…)
 // Maybe all these information could be better stored in database too…
-const licenses = computed<Array<EnrichedLicense>>(() => {
+const licenses = computed<Array<License | EnrichedLicense>>(() => {
   if (!allLicenses.value) return []
 
   const licenses: Array<EnrichedLicense> = []

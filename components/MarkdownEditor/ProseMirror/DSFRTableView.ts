@@ -1,5 +1,6 @@
 import type { Node } from 'prosemirror-model'
 import { TableView as ProseTableView } from 'prosemirror-tables'
+import type { ViewMutationRecord } from 'prosemirror-view'
 
 /**
  * This extended class is necessary to customize the `className` of the table wrapper
@@ -11,7 +12,8 @@ export class TableView extends ProseTableView {
     this.dom.className = 'fr-table fr-table--no-caption fr-table--layout-fixed'
   }
 
-  override ignoreMutation(record: MutationRecord): boolean {
+  override ignoreMutation(record: ViewMutationRecord): boolean {
+    if (record.type === 'selection') return true
     return super.ignoreMutation(record) || (record.type === 'attributes' && record.target === this.dom)
   }
 }

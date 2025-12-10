@@ -1,7 +1,7 @@
 <template>
   <a
     class="inline-flex items-baseline !bg-none underline space-x-1 link"
-    :href="subject.page || subject.self_web_url"
+    :href="subjectUrl"
   >
     <component
       :is="icon"
@@ -24,6 +24,11 @@ const props = defineProps<{
   type: 'Dataservice' | 'Dataset' | 'Reuse'
   subject: LinkToSubject
 }>()
+
+const subjectUrl = computed(() => {
+  if ('page' in props.subject) return props.subject.page
+  return props.subject.self_web_url
+})
 
 const icon = computed(() => {
   if (props.type === 'Dataset') return RiDatabase2Line

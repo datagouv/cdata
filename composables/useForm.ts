@@ -97,7 +97,7 @@ export function required<T, K extends KeysOfUnion<T>, V extends T[K]>(message: s
 export function ruleIf<T, K extends KeysOfUnion<T>, V extends T[K]>(condition: Ref<boolean>, rule: ValidationFunction<T, K, V>): ValidationFunction<T, K, V> {
   return (value: T[keyof T], key: K, form: T, t) => {
     if (!condition.value) return null
-    return rule(value, key, form, t)
+    return rule(value as V, key, form, t)
   }
 }
 

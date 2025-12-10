@@ -5,26 +5,10 @@
       :icon="RiSendPlaneLine"
       class="mb-4"
       :badge="$t('Transfert en attente')"
-      :user="transfer.user || transfer.owner"
+      :user="transfer.user"
       :date="new Date(transfer.created)"
     >
       <template #title>
-        <a
-          v-if="transfer.user"
-          :href="transfer.user.page"
-          class="link"
-        >{{ transfer.user.first_name }} {{ transfer.user.last_name }}</a>
-        <a
-          v-else-if="transfer.owner.class === 'User'"
-          :href="transfer.owner.page"
-          class="link"
-        >{{ transfer.owner.first_name }} {{ transfer.owner.last_name }}</a>
-        <a
-          v-else-if="transfer.owner.class === 'Organization'"
-          :href="transfer.owner.page"
-          class="link"
-        >{{ transfer.owner.name }}</a>
-
         {{ $t('a demandé un transfert') }}
       </template>
       <template #subtitle>

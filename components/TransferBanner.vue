@@ -87,14 +87,14 @@
 </template>
 
 <script setup lang="ts">
-import type { Dataservice, Dataset, DatasetV2, Reuse, Owned } from '@datagouv/components-next'
+import type { Owned } from '@datagouv/components-next'
 import { RiSendPlaneLine } from '@remixicon/vue'
 import { AnimatedLoader, BannerAction, BrandedButton, useFormatDate } from '@datagouv/components-next'
 import type { LinkToSubject, TransferRequest } from '~/types/types'
 
 const props = defineProps<{
   type: 'Dataservice' | 'Dataset' | 'Reuse'
-  subject: (LinkToSubject & Dataservice) | Dataset | DatasetV2 | Reuse
+  subject: LinkToSubject
   label: string
 }>()
 

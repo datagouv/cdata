@@ -1,4 +1,4 @@
-import type { AccessTypeForm, WithAccessType, Dataset, DatasetV2, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, OrganizationReference, UserReference, License, ReuseType, Resource, ResourceType, ResourceFileType, Schema, ContactPoint, PaginatedArray, Owned } from '@datagouv/components-next'
+import type { AccessTypeForm, WithAccessType, Dataset, DatasetV2, DatasetV2WithFullObject, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, OrganizationReference, UserReference, License, ReuseType, Resource, ResourceType, ResourceFileType, Schema, ContactPoint, PaginatedArray, Owned } from '@datagouv/components-next'
 import type { NitroFetchRequest, NitroFetchOptions } from 'nitropack'
 
 // Some types from @datagouv/components-next are exported here to avoid 50+ files refactors
@@ -307,16 +307,14 @@ export type NewOrganization = {
 export type NewContactPoint = Omit<ContactPoint, 'id'>
 export type ContactPointInForm = ContactPoint | NewContactPoint
 
-export type LinkToSubject = {
-  title: string
-} & ({ page: string, self_web_url?: undefined } | { self_web_url: string, page?: undefined })
+export type LinkToSubject = Dataset | DatasetV2 | DatasetV2WithFullObject | Omit<Dataset, 'resources' | 'community_resources'> | Reuse | Dataservice
 
 export type TransferRequest = {
   id: string
-  user: User | null // TODO add this in API
+  user: User
   owner: (User & { class: 'User' }) | (Organization & { class: 'Organization' })
   recipient: (User & { class: 'User' }) | (Organization & { class: 'Organization' })
-  subject: (Dataset & { class: 'Dataset' }) | (Reuse & { class: 'Reuse' }) | (LinkToSubject & Dataservice & { class: 'Dataservice' })
+  subject: (Dataset & { class: 'Dataset' }) | (Reuse & { class: 'Reuse' }) | (Dataservice & { class: 'Dataservice' })
   comment: string
   created: string
   status: 'pending' | 'accepted' | 'refused'

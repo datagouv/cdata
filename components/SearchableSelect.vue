@@ -39,7 +39,7 @@
             :id
             class="input shadow-input group-data-[input-color=blue]/form:shadow-input-blue !pr-10"
             :class="showClearButton ? '!pr-[4.5rem]' : '!pr-10'"
-            :display-value="(option: ModelType) => option ? displayValue(option): null"
+            :display-value="(option: unknown) => option ? displayValue(option as ModelType) : ''"
             :placeholder
             @change="query = $event.target.value"
           />
@@ -129,7 +129,7 @@
                     name="option"
                     v-bind="{ option, active: isActive(activeOption, option) as boolean }"
                   >
-                    {{ displayValue(multiple ? [option] : option) }}
+                    {{ displayValue((multiple ? [option] : option) as ModelType) }}
                   </slot>
                 </li>
               </ComboboxOption>
