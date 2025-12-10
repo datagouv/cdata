@@ -343,6 +343,10 @@
           v-if="dataset"
           :dataset
         />
+        <RagWidgetBanner
+          v-if="dataset"
+          :dataset
+        />
 
         <div
           v-if="dataset.access_type === 'restricted'"
