@@ -9,7 +9,7 @@ export default defineNuxtRouteMiddleware((to, _from) => {
   if (to.path.endsWith('/') && to.path.length > 1) {
     const newPath = to.path.replace(/\/+$/, '')
     return navigateTo(to.fullPath.replace(to.path, newPath), {
-      redirectCode: 301,
+      redirectCode: 308,
     })
   }
 })
