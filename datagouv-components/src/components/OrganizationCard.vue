@@ -13,7 +13,7 @@
       </div>
       <p class="mb-0.5 font-bold">
         <AppLink
-          :to="`/organizations/${organization.slug}`"
+          :to="organization.page"
           class="overflow-hidden"
         >
           <OrganizationNameWithCertificate

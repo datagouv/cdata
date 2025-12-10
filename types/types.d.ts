@@ -1,5 +1,6 @@
 import type { AccessTypeForm, WithAccessType, Dataset, DatasetV2, DatasetV2WithFullObject, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, OrganizationReference, UserReference, License, ReuseType, Resource, ResourceType, ResourceFileType, Schema, ContactPoint, PaginatedArray, Owned } from '@datagouv/components-next'
 import type { NitroFetchRequest, NitroFetchOptions } from 'nitropack'
+import type { Thread } from './discussions'
 
 // Some types from @datagouv/components-next are exported here to avoid 50+ files refactors
 export type {
@@ -307,7 +308,7 @@ export type NewOrganization = {
 export type NewContactPoint = Omit<ContactPoint, 'id'>
 export type ContactPointInForm = ContactPoint | NewContactPoint
 
-export type LinkToSubject = Dataset | DatasetV2 | DatasetV2WithFullObject | Omit<Dataset, 'resources' | 'community_resources'> | Reuse | Dataservice
+export type LinkToSubject = Dataset | DatasetV2 | DatasetV2WithFullObject | Omit<Dataset, 'resources' | 'community_resources'> | Reuse | Dataservice | Organization | Thread | { title: string }
 
 export type TransferRequest = {
   id: string

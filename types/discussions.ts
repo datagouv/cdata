@@ -37,6 +37,7 @@ export type Thread = {
   spam?: Spam
   subject: DiscussionSubject
   permissions: { delete: boolean, edit: boolean, close: boolean }
+  self_web_url: string
 }
 
 export type Comment = {

@@ -225,7 +225,7 @@
         <FullPageTabs
           class="mt-12"
           :links="[
-            { label: $t('Informations'), href: `/dataservices/${route.params.did}/` },
+            { label: $t('Informations'), href: `/dataservices/${route.params.did}` },
             { label: $t('Discussions'), href: `/dataservices/${route.params.did}/discussions`, count: dataservice.metrics.discussions ?? 0 },
           ]"
         />
@@ -321,8 +321,8 @@ watchEffect(async () => {
 
 onMounted(async () => {
   await redirectLegacyHashes([
-    { from: 'discussions', to: `/dataservices/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
-    { from: 'discussion', to: `/dataservices/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+    { from: 'discussions', to: `/dataservices/${route.params.did}/discussions`, queryParam: 'discussion_id' },
+    { from: 'discussion', to: `/dataservices/${route.params.did}/discussions`, queryParam: 'discussion_id' },
   ])
 })
 </script>

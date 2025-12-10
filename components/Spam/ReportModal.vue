@@ -102,11 +102,12 @@
 <script setup lang="ts">
 import { RiFlagLine } from '@remixicon/vue'
 import { BrandedButton, SimpleBanner, TranslationT } from '@datagouv/components-next'
+import type { ReportReason, ReportSubject } from '~/types/reports'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 import CdataLink from '../CdataLink.vue'
 
 const props = defineProps<{
-  subject: { id: string, class: string }
+  subject: ReportSubject
 }>()
 const emit = defineEmits<{
   (e: 'reported'): void
@@ -125,9 +126,9 @@ const { form, getFirstError, getFirstWarning } = useForm({
   message: [required()],
 })
 
-const reasons = ref([] as Array<{ label: string, value: string }>)
+const reasons = ref([] as Array<ReportReason>)
 onMounted(async () => {
-  reasons.value = await $api<Array<{ label: string, value: string }>>('/api/1/reports/reasons/')
+  reasons.value = await $api<Array<ReportReason>>('/api/1/reports/reasons/')
 })
 
 const send = async () => {

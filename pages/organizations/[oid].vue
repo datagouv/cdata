@@ -67,7 +67,7 @@
       <FullPageTabs
         class="mt-12"
         :links="[
-          { label: $t('Présentation'), href: `/organizations/${route.params.oid}/` },
+          { label: $t('Présentation'), href: `/organizations/${route.params.oid}` },
           { label: $t('Jeux de données'), href: `/organizations/${route.params.oid}/datasets`, count: organization.metrics.datasets },
           { label: $t('API'), href: `/organizations/${route.params.oid}/dataservices`, count: organization.metrics.dataservices },
           { label: $t('Réutilisations'), href: `/organizations/${route.params.oid}/reuses`, count: organization.metrics.reuses },
