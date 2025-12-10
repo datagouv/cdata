@@ -24,14 +24,17 @@ const props = defineProps<{
 const subjectUrl = computed(() => {
   if ('page' in props.subject) return props.subject.page
   if ('self_web_url' in props.subject) return props.subject.self_web_url
-  return undefined
+  if ('customUrl' in props.subject) return props.subject.customUrl
+
+  return throwOnNever(props.subject, `Subject "${props.type}" without page, self_web_url or customUrl (subject is ${JSON.stringify(props.subject)}).`)
 })
 
 const title = computed(() => {
   if ('title' in props.subject) return props.subject.title
   if ('name' in props.subject) return props.subject.name
+  if ('customTitle' in props.subject) return props.subject.customTitle
 
-  return throwOnNever(props.subject, `Subject "${props.type}" without title or name (subject is ${JSON.stringify(props.subject)}).`)
+  return throwOnNever(props.subject, `Subject "${props.type}" without title, name or customTitle (subject is ${JSON.stringify(props.subject)}).`)
 })
 
 const icon = computed(() => {

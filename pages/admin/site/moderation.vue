@@ -78,7 +78,7 @@
                 <div v-else-if="subjects[report.id]">
                   <LinkToSubject
                     :type="subjects[report.id].type"
-                    :subject="{ title: $t('Supprimé') }"
+                    :subject="{ customTitle: $t('Supprimé'), customUrl: undefined }"
                   />
                 </div>
                 <div v-if="subjects[report.id] && subjects[report.id].value">
