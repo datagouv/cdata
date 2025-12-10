@@ -33,6 +33,7 @@ export default defineNuxtConfig({
   site: {
     url: 'https://www.data.gouv.fr',
     name: 'data.gouv.fr',
+    trailingSlash: false,
   },
 
   appConfig: {

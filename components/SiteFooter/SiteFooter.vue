@@ -36,7 +36,7 @@
                 <BrandedButton
                   color="secondary"
                   :title="$t(`Abonnez-vous à notre lettre d'information`)"
-                  href="/events/rentree-data-gouv/"
+                  href="/events/rentree-data-gouv"
                 >
                   {{ $t("Voir nos prochains évènements") }}
                 </BrandedButton>

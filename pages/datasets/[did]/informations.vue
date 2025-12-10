@@ -182,7 +182,7 @@
             size="xs"
             color="secondary"
             :icon="RiServerLine"
-            :href="`/admin/harvesters/${dataset.harvest.source_id}/`"
+            :href="`/admin/harvesters/${dataset.harvest.source_id}`"
           >
             {{ $t('Voir la source du moissonnage') }}
           </BrandedButton>
