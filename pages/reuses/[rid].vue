@@ -24,7 +24,10 @@
             v-if="reuse"
             :url="`/api/1/reuses/${reuse.id}/followers/`"
           />
-          <div v-if="!reuse.archived">
+          <div
+            v-if="!reuse.archived"
+            class="hidden md:block"
+          >
             <BrandedButton
               :href="reuse.url"
               :new-tab="true"
@@ -51,7 +54,7 @@
       :status
     >
       <div class="container py-10 min-h-32">
-        <div class="grid md:grid-cols-12 md:gap-4">
+        <div class="grid md:grid-cols-12 gap-4">
           <div class="md:col-span-5 flex flex-col justify-center">
             <div class="flex gap-3 mb-2">
               <AdminBadge
@@ -91,7 +94,7 @@
               </div>
               <CdataLink
                 class="link block"
-                :to="`/organizations/${reuse.organization.slug}/`"
+                :to="reuse.organization.page"
               >
                 <OrganizationNameWithCertificate
                   :organization="reuse.organization"
@@ -109,7 +112,7 @@
               />
               <CdataLink
                 class="link block"
-                :to="`/users/${reuse.owner.slug}/`"
+                :to="reuse.owner.page"
               >
                 {{ reuse.owner.first_name }} {{ reuse.owner.last_name }}
               </CdataLink>
@@ -145,8 +148,8 @@
       </div>
       <FullPageTabs
         :links="[
-          { label: $t('Description'), href: `/reuses/${route.params.rid}/` },
-          { label: $t('Discussions'), href: `/reuses/${route.params.rid}/discussions/`, count: reuse.metrics.discussions ?? 0 },
+          { label: $t('Description'), href: `/reuses/${route.params.rid}` },
+          { label: $t('Discussions'), href: `/reuses/${route.params.rid}/discussions`, count: reuse.metrics.discussions ?? 0 },
         ]"
       />
       <div
@@ -171,6 +174,10 @@ import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 
+definePageMeta({
+  keepScroll: true,
+})
+
 const route = useRoute()
 
 const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
@@ -186,8 +193,8 @@ useSeoMeta({
 
 onMounted(async () => {
   await redirectLegacyHashes([
-    { from: 'discussions', to: `/reuses/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
-    { from: 'discussion', to: `/reuses/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+    { from: 'discussions', to: `/reuses/${route.params.did}/discussions`, queryParam: 'discussion_id' },
+    { from: 'discussion', to: `/reuses/${route.params.did}/discussions`, queryParam: 'discussion_id' },
   ])
 })
 </script>

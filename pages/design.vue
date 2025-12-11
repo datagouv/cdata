@@ -16,57 +16,57 @@
         <AdminSidebarLink
           :icon="RiListView"
           :label="$t('Composants')"
-          to="/design/"
+          to="/design"
         />
         <AdminSidebarLink
           :icon="LogoOnly"
           :label="$t('Logos')"
-          to="/design/logos/"
+          to="/design/logos"
         />
         <AdminSidebarLink
           :icon="RiRadioButtonLine"
           :label="$t('Boutons')"
-          to="/design/buttons/"
+          to="/design/buttons"
         />
         <AdminSidebarLink
           :icon="RiIdCardLine"
           :label="$t('Cartes')"
-          to="/design/cards/"
+          to="/design/cards"
         />
         <AdminSidebarLink
           :icon="RiFileSearchLine"
           :label="$t('Recherche de jeux de données')"
-          to="/design/dataset-search/"
+          to="/design/dataset-search"
         />
         <AdminSidebarLink
           :icon="RiSearch2Line"
           :label="$t('Recherche d\'APIs')"
-          to="/design/dataservice-search/"
+          to="/design/dataservice-search"
         />
         <AdminSidebarLink
           :icon="RiSearchEyeLine"
           :label="$t('Recherche de réutilisations')"
-          to="/design/reuse-search/"
+          to="/design/reuse-search"
         />
         <AdminSidebarLink
           :icon="RiUserSearchLine"
           :label="$t('Recherche d\'organisations')"
-          to="/design/organization-search/"
+          to="/design/organization-search"
         />
         <AdminSidebarLink
           :icon="RiEyeLine"
           :label="$t('Previews')"
-          to="/design/previews/"
+          to="/design/previews"
         />
         <AdminSidebarLink
           :icon="RiExternalLinkLine"
           :label="$t('Oembeds')"
-          to="/design/oembeds/"
+          to="/design/oembeds"
         />
         <AdminSidebarLink
           :icon="RiTranslate"
           :label="$t('Traductions')"
-          to="/design/translations/"
+          to="/design/translations"
         />
       </ul>
     </Sidemenu>

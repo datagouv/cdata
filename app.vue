@@ -59,4 +59,20 @@ useHeadSafe({
     return titleChunk ? `${titleChunk} - data.gouv.fr` : 'data.gouv.fr'
   },
 })
+
+useSeoMeta({
+  description: runtimeConfig.public.description,
+  ogTitle: runtimeConfig.public.title,
+  ogDescription: runtimeConfig.public.description,
+  ogType: 'website',
+  ogUrl: runtimeConfig.public.baseUrl,
+  ogSiteName: runtimeConfig.public.title,
+  ogLocale: 'fr_FR',
+  ogImage: `${runtimeConfig.public.baseUrl}nuxt_images/og-image.png`,
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
+  twitterCard: 'summary_large_image',
+  twitterSite: '@datagouvfr',
+  twitterImage: `${runtimeConfig.public.baseUrl}nuxt_images/og-image.png`,
+})
 </script>

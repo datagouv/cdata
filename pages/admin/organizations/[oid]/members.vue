@@ -358,7 +358,7 @@ function getStatusType(role: MemberRole): AdminBadgeType {
 const removeMemberFromOrganization = async (member: Member, close: () => void) => {
   try {
     loading.value = true
-    await $api(`/api/1/organizations/${currentOrganization.value.id}/member/${member.user.id}`, { method: 'DELETE' })
+    await $api(`/api/1/organizations/${currentOrganization.value!.id}/member/${member.user.id}`, { method: 'DELETE' })
     await refresh()
     close()
   }
@@ -370,7 +370,7 @@ const removeMemberFromOrganization = async (member: Member, close: () => void) =
   }
 }
 
-const updateRole = async (member: Member, close) => {
+const updateRole = async (member: Member, close: () => void) => {
   if (member.role === newRole.value) {
     close()
     return
@@ -378,7 +378,7 @@ const updateRole = async (member: Member, close) => {
 
   try {
     loading.value = true
-    await $api(`/api/1/organizations/${currentOrganization.value.id}/member/${member.user.id}`, {
+    await $api(`/api/1/organizations/${currentOrganization.value!.id}/member/${member.user.id}`, {
       method: 'PUT',
       body: JSON.stringify({ role: newRole.value }),
     })

@@ -1,6 +1,6 @@
 <template>
   <h5 class="text-sm text-gray-plain font-bold">
-    {{ t("Qualité des métadonnées:") }}
+    {{ t("Qualité des métadonnées :") }}
   </h5>
   <ul class="list-none pl-0 space-y-2">
     <DatasetQualityItem

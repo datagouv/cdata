@@ -17,7 +17,7 @@
       :page-id="site.dataservices_page"
       main-color="brown-illustration"
     />
-    <div class="container flex flex-col sm:flex-row items-center">
+    <div class="container flex flex-col sm:flex-row items-center  gap-2 py-16">
       <div class="w-full">
         <div class="max-w-md">
           <div class="font-extrabold text-3xl">
@@ -39,7 +39,7 @@
           </BrandedButton>
         </div>
       </div>
-      <div class="w-full py-16 grid grid-cols-2 gap-4">
+      <div class="w-full grid grid-cols-2 gap-4">
         <div class="bg-gray-lowest-2 flex flex-col items-center p-8 space-y-4">
           <nuxt-img
             src="/illustrations/book-2.svg"

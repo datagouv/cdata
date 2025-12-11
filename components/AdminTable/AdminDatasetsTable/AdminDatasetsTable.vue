@@ -68,12 +68,7 @@
           </AdminContentWithTooltip>
         </td>
         <td>
-          <AdminBadge
-            size="xs"
-            :type="getDatasetStatus(dataset).type"
-          >
-            {{ getDatasetStatus(dataset).label }}
-          </AdminBadge>
+          <DatasetBadge :dataset />
         </td>
         <td>
           {{ formatDate(dataset.created_at) }}
@@ -142,11 +137,11 @@
 import { DatasetQualityScore, DatasetQualityTooltipContent, BrandedButton, AvatarWithName, Tooltip, useFormatDate } from '@datagouv/components-next'
 import type { Activity, Dataset, DatasetV2 } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
-import AdminBadge from '../../AdminBadge/AdminBadge.vue'
 import AdminContentWithTooltip from '../../AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
 import type { DatasetSortedBy, SortDirection } from '~/types/types'
+import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
 
 const emit = defineEmits<{
   (event: 'sort', column: DatasetSortedBy, direction: SortDirection): void
@@ -163,7 +158,6 @@ const props = withDefaults(defineProps<{
 
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
-const { getDatasetStatus } = useDatasetStatus()
 
 const config = useRuntimeConfig()
 

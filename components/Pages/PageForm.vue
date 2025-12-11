@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-5">
-    <div class="flex justify-end gap-4">
+    <div class="flex flex-wrap justify-end gap-4">
       <BrandedButton
         v-if="publicPage"
         :href="publicPage"

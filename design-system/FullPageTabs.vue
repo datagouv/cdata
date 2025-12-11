@@ -1,7 +1,7 @@
 <template>
   <FullPageTabs
     :links="[
-      { label: $t('Présentation'), href: '/design/' },
+      { label: $t('Présentation'), href: '/design' },
       { label: $t('Jeux de données'), href: getOrganizationUrl('datasets'), count: 12 },
       { label: $t('API'), href: getOrganizationUrl('dataservices') },
       { label: $t('Réutilisations'), href: getOrganizationUrl('reuses'), count: 0 },

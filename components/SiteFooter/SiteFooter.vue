@@ -4,7 +4,7 @@
       <div class="fr-container">
         <div class="flex flex-wrap divide-y md:divide-y-0 md:divide-x divide-gray-default">
           <div class="w-full pb-6 md:pb-0 md:pr-[6%] md:w-2/3 flex flex-wrap">
-            <div class="flex-none flex items-center mr-5">
+            <div class="flex-none hidden sm:flex items-center mr-5">
               <NuxtImg
                 src="/illustrations/newspaper-black.svg"
                 loading="lazy"
@@ -13,11 +13,11 @@
               />
             </div>
             <div class="w-full !flex-none sm:!flex-1">
-              <div>
+              <div class="mb-4">
                 <p class="font-extrabold text-2xl text-gray-title leading-8 mb-1">
                   {{ $t("Abonnez-vous à notre lettre d'information") }}
                 </p>
-                <p class="mb-4">
+                <p class="hidden sm:block mb-4">
                   {{
                     $t("Pour ne rien manquer de l’actualité de {site} et de l’open data, inscrivez-vous à notre infolettre et suivez nos événements.",
                        { site: config.public.title })
@@ -36,7 +36,7 @@
                 <BrandedButton
                   color="secondary"
                   :title="$t(`Abonnez-vous à notre lettre d'information`)"
-                  href="/events/rentree-data-gouv/"
+                  href="/events/rentree-data-gouv"
                 >
                   {{ $t("Voir nos prochains évènements") }}
                 </BrandedButton>
@@ -315,7 +315,7 @@ openDataLinks.push({ label: t('Portail des données européennes'), link: 'https
 
 const platformLinks: Array<Link> = [
   { label: t('Guides'), link: config.public.guidesUrl, external: true },
-  { label: t('Feuille de route et nouveautés'), link: '/pages/roadmap' },
+  { label: t('Feuille de route et nouveautés'), link: '/products/datagouv?tab=roadmap' },
   { label: t('Nous écrire'), link: '/support' },
   { label: t('Échangez avec la communauté'), link: config.public.forumUrl, external: true },
   { label: t('Statistiques'), link: '/dashboard' },

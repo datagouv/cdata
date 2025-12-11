@@ -17,7 +17,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       bodyAttrs: {
-        class: 'datagouv-components',
+        class: 'datagouv-components font-marianne',
       },
       link: [
         { rel: 'shortcut icon', href: '/nuxt_images/favicon.svg', type: 'image/svg+xml' },
@@ -33,6 +33,7 @@ export default defineNuxtConfig({
   site: {
     url: 'https://www.data.gouv.fr',
     name: 'data.gouv.fr',
+    trailingSlash: false,
   },
 
   appConfig: {
@@ -53,6 +54,7 @@ export default defineNuxtConfig({
       banner: undefined,
 
       title: 'data.gouv.fr',
+      description: 'Plateforme ouverte des données publiques françaises : téléchargez, partagez et réutilisez les données ouvertes de l\'État et des collectivités',
       apiBase: 'http://dev.local:7000',
       frontBase: 'http://dev.local:3000',
       metricsApi: 'https://metric-api.data.gouv.fr',
@@ -197,10 +199,14 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    // @ts-expect-error ssr option is valid but not in Nuxt types (see https://github.com/nuxt/nuxt/issues/15199)
     '/*/organizations/': { ssr: true },
+    // @ts-expect-error ssr option is valid but not in Nuxt types
     '/*/posts/': { ssr: true },
+    // @ts-expect-error ssr option is valid but not in Nuxt types
     '/*/posts/**': { ssr: true },
     // Admin dashboard renders only on server-side
+    // @ts-expect-error ssr option is valid but not in Nuxt types
     '/*/admin/**': { ssr: true },
   },
 
@@ -248,6 +254,7 @@ export default defineNuxtConfig({
     css: {
       preprocessorOptions: {
         scss: {
+          // @ts-expect-error api option is valid for sass-embedded but not in Vite types
           api: 'modern-compiler',
         },
       },
@@ -287,7 +294,6 @@ export default defineNuxtConfig({
     cacheMaxAgeSeconds: 3600, // 1 hour
     sitemaps: {
       content: {
-        includeGlobalSources: true,
         includeAppSources: true,
         exclude: ['/admin/**'],
       },

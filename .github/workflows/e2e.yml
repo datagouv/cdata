@@ -33,7 +33,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: udata
-          ref: master
+          ref: main
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
@@ -51,13 +51,17 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: pnpm-lock.yaml
 
+      # - name: Install Node.js dependencies for @datagouv/components
+      #   working-directory: datagouv-components
+      #   run: pnpm install
+
       - name: Install Node.js dependencies for cdata
         run: pnpm install
 
       - name: Install Python dependencies for udata
         working-directory: udata
         run: |
-          uv sync --frozen --extra dev
+          uv sync --frozen
 
       - name: Configure udata
         working-directory: udata

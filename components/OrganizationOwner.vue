@@ -1,12 +1,11 @@
 <template>
   <div class="flex items-center space-x-2">
-    <div class="shrink-0 p-1.5 border">
+    <div :class="logoNoBorder ? '': 'shrink-0 p-1.5 border'">
       <OrganizationLogo
         :organization
-        size-class="size-8"
+        :size-class="logoSizeClass"
       />
     </div>
-    <!-- :size=32 is the same as size-8, should remove the size prop to use Tailwind… -->
     <CdataLink
       :to="organization.page"
       class="link flex-1 min-w-0"
@@ -20,9 +19,14 @@
 </template>
 
 <script setup lang="ts">
-import { OrganizationLogo, OrganizationNameWithCertificate, type Organization } from '@datagouv/components-next'
+import { OrganizationLogo, OrganizationNameWithCertificate, type Organization, type OrganizationReference } from '@datagouv/components-next'
 
-defineProps<{
-  organization: Organization
-}>()
+withDefaults(defineProps<{
+  organization: Organization | OrganizationReference
+  logoSizeClass?: string
+  logoNoBorder?: boolean
+}>(), {
+  logoSizeClass: 'size-8',
+  logoNoBorder: false,
+})
 </script>

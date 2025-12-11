@@ -38,12 +38,7 @@
         <div class="text-sm text-mentionGrey space-y-1.5">
           <p class="space-x-1">
             <span>{{ $t('Statut') }}:</span>
-            <AdminBadge
-              size="xs"
-              :type="getDatasetStatus(dataset).type"
-            >
-              {{ getDatasetStatus(dataset).label }}
-            </AdminBadge>
+            <DatasetBadge :dataset />
           </p>
           <p class="space-x-1 flex items-center">
             <RiPriceTag3Line class="inline size-3" />
@@ -142,16 +137,20 @@
 import { BrandedButton, DatasetQualityTooltipContent, DatasetQualityScore, summarize, useFormatDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
 import type { Activity, DatasetV2 } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiDownloadLine, RiEyeLine, RiLineChartLine, RiPriceTag3Line, RiStarLine } from '@remixicon/vue'
+import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 import type { PaginatedArray } from '~/types/types'
 
+definePageMeta({
+  keepScroll: true,
+})
+
 const { t } = useTranslation()
 const me = useMe()
 
 const route = useRoute()
-const { getDatasetStatus } = useDatasetStatus()
 const { formatDate } = useFormatDate()
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset } = await useAPI<DatasetV2>(url, { redirectOn404: true })

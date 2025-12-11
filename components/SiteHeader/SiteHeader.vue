@@ -97,7 +97,7 @@
                           </li>
                           <li>
                             <BrandedButton
-                              href="/admin/"
+                              href="/admin"
                               color="tertiary"
                               :icon="RiSettings3Line"
                               @click="close"
@@ -259,7 +259,7 @@
                 href="/"
                 :title="$t(`Retourner à l'accueil de data.gouv.fr`)"
               >
-                <LogoImage class="h-12" />
+                <LogoImage class="mt-2 lg:mt-0 h-12" />
               </a>
             </div>
           </div>
@@ -330,7 +330,7 @@
                   </li>
                   <li>
                     <BrandedButton
-                      href="/admin/"
+                      href="/admin"
                       color="tertiary"
                       :icon="RiSettings3Line"
                     >
@@ -526,28 +526,28 @@ const { isLoading } = useLoadingIndicator()
 const { loadNotifications, loadMoreNotifications, notifications, notificationsCombinatedList } = useNotifications()
 
 const menu = [
-  { label: t('Données'), link: '/datasets/' },
-  { label: t('API'), link: '/dataservices/' },
-  { label: t('Réutilisations'), link: '/reuses/' },
-  { label: t('Organisations'), link: '/organizations/' },
+  { label: t('Données'), link: '/datasets' },
+  { label: t('API'), link: '/dataservices' },
+  { label: t('Réutilisations'), link: '/reuses' },
+  { label: t('Organisations'), link: '/organizations' },
   { label: t('Démarrer sur {site}', { site: config.public.title }), items: [
-    { label: t(`Qu'est-ce que {site} ?`, { site: config.public.title }), link: '/pages/about/a-propos_data-gouv/' },
-    { label: t('Comment publier des données ?'), link: '/pages/onboarding/producteurs/' },
-    { label: t('Comment utiliser des données ?'), link: '/pages/onboarding/reutilisateurs/' },
+    { label: t(`Qu'est-ce que {site} ?`, { site: config.public.title }), link: '/pages/about/a-propos_data-gouv' },
+    { label: t('Comment publier des données ?'), link: '/pages/onboarding/producteurs' },
+    { label: t('Comment utiliser des données ?'), link: '/pages/onboarding/reutilisateurs' },
     { label: t('Les guides {site}', { site: config.public.title }), link: config.public.guidesUrl, external: true },
-    { label: t('Nos produits'), link: '/products/' },
+    { label: t('Nos produits'), link: '/products' },
   ], external: true },
-  { label: t('Nouveautés'), link: '/posts/' },
-  { label: t('Nous écrire'), link: '/support/' },
+  { label: t('Nouveautés'), link: '/posts' },
+  { label: t('Nous écrire'), link: '/support' },
 ]
 
 const publishMenu = [
-  { label: t('Un jeu de données'), icon: RiDatabase2Line, link: '/admin/datasets/new/' },
-  { label: t('Une API'), icon: RiRobot2Line, link: '/admin/dataservices/new/' },
-  { label: t('Une réutilisation'), icon: RiLineChartLine, link: '/admin/reuses/new/' },
-  { label: t('Un moissonneur'), icon: RiServerLine, link: '/admin/harvesters/new/' },
-  { label: t('Une organisation'), icon: RiBuilding2Line, link: '/admin/organizations/new/' },
-  { label: t('Un article'), icon: RiArticleLine, link: '/admin/posts/new/', show: isMeAdmin() },
+  { label: t('Un jeu de données'), icon: RiDatabase2Line, link: '/admin/datasets/new' },
+  { label: t('Une API'), icon: RiRobot2Line, link: '/admin/dataservices/new' },
+  { label: t('Une réutilisation'), icon: RiLineChartLine, link: '/admin/reuses/new' },
+  { label: t('Un moissonneur'), icon: RiServerLine, link: '/admin/harvesters/new' },
+  { label: t('Une organisation'), icon: RiBuilding2Line, link: '/admin/organizations/new' },
+  { label: t('Un article'), icon: RiArticleLine, link: '/admin/posts/new', show: isMeAdmin() },
 ]
 
 const filteredPublishMenu = computed(() => publishMenu.filter(item => !('show' in item) || item.show))
@@ -579,6 +579,7 @@ onMounted(async () => {
     change_email_confirmed: { type: 'success', text: t('Votre nouvelle adresse email est maintenant confirmée.') },
     change_email_expired: { type: 'error', text: t('Le code de vérification de votre adresse email a expiré, un nouveau mail vous a été envoyé.') },
     change_email_invalid: { type: 'error', text: t('Le code de vérification de votre adresse email est incorrect.') },
+    change_email_already_taken: { type: 'error', text: t('Cette adresse email est déjà utilisée par un autre compte. Votre adresse email n\'a pas été modifiée.') },
   }
 
   if (route.query.flash) {

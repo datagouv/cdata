@@ -51,7 +51,7 @@
             :title="$t('Éditer le point de contact')"
             size="lg"
             @open="newContactForm = contactPoint"
-            @close="newContactForm = null"
+            @close="newContactForm = { ...defaultContactForm, id: '' }"
           >
             <template #button="{ attrs, listeners }">
               <BrandedButton

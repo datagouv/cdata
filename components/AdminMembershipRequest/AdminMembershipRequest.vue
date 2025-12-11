@@ -9,7 +9,7 @@
     <template #title>
       <code
         v-if="request.user.email"
-        class="text-gray-medium bg-gray-lower px-1 text-sm rounded-sm"
+        class="text-gray-medium bg-gray-lower px-1 text-sm rounded-sm break-all"
       >{{ request.user.email }}</code>
       {{ t("demande à rejoindre l'organisation.") }}
     </template>
@@ -132,7 +132,7 @@ const accept = async () => {
 
 const refuseFormId = useId()
 const refuseComment = ref('')
-const refuse = async (close) => {
+const refuse = async (close: () => void) => {
   try {
     loading.value = true
     await $api(`/api/1/organizations/${props.oid}/membership/${props.request.id}/refuse`, {

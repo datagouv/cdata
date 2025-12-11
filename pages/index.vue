@@ -10,7 +10,7 @@
           <CdataLink
             v-if="lastPost"
             class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
-            :to="`/posts/${lastPost.slug}`"
+            :to="lastPost.page"
           >
             <RiBardLine class="size-4 shrink-0" />
             <span class="truncate"><span class="font-bold">{{ $t('Actualités') }}</span><span>&nbsp;: {{ lastPost.name }}</span></span>

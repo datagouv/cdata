@@ -225,7 +225,7 @@
         <FullPageTabs
           class="mt-12"
           :links="[
-            { label: $t('Informations'), href: `/dataservices/${route.params.did}/` },
+            { label: $t('Informations'), href: `/dataservices/${route.params.did}` },
             { label: $t('Discussions'), href: `/dataservices/${route.params.did}/discussions`, count: dataservice.metrics.discussions ?? 0 },
           ]"
         />
@@ -253,6 +253,10 @@ import ReportModal from '~/components/Spam/ReportModal.vue'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import { useElementSize } from '@vueuse/core'
 
+definePageMeta({
+  keepScroll: true,
+})
+
 const config = useRuntimeConfig()
 const route = useRoute()
 const { formatDate } = useFormatDate()
@@ -274,7 +278,7 @@ useSeoMeta({
   title,
   robots,
 })
-await useJsonLd('dataservice', route.params.did)
+await useJsonLd('dataservice', route.params.did as string)
 
 const openSwagger = ref(false)
 
@@ -317,8 +321,8 @@ watchEffect(async () => {
 
 onMounted(async () => {
   await redirectLegacyHashes([
-    { from: 'discussions', to: `/dataservices/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
-    { from: 'discussion', to: `/dataservices/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+    { from: 'discussions', to: `/dataservices/${route.params.did}/discussions`, queryParam: 'discussion_id' },
+    { from: 'discussion', to: `/dataservices/${route.params.did}/discussions`, queryParam: 'discussion_id' },
   ])
 })
 </script>

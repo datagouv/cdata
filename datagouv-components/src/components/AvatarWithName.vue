@@ -8,7 +8,7 @@
     />
     <AppLink
       :to="user.page"
-      class="fr-text--bold"
+      class="fr-text--bold truncate"
     >
       {{ user.first_name }}
       {{ user.last_name }}
@@ -17,12 +17,12 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '../types/users'
+import type { User, UserReference } from '../types/users'
 import AppLink from './AppLink.vue'
 import Avatar from './Avatar.vue'
 
 withDefaults(defineProps<{
-  user: User
+  user: User | UserReference
   size?: number
 }>(), {
   size: 12,

@@ -74,7 +74,7 @@
           >
             <div v-if="checkOrga.exists">
               <p class="m-0 text-sm font-bold">
-                {{ t('Le SIRET n°{number} correspond', { number: organization.business_number_id }) }}
+                {{ t('Le SIRET n°{number} correspond', { number: organization.business_number_id ?? '' }) }}
               </p>
               <p class="m-0 text-xs">
                 {{ checkOrga.name }}

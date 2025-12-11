@@ -46,6 +46,10 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 
+definePageMeta({
+  keepScroll: true,
+})
+
 const { t } = useTranslation()
 
 const route = useRoute()

@@ -5,7 +5,7 @@
         v-if="dataset"
         class="mt-4 flex gap-4 flex-wrap md:flex-nowrap items-center justify-between"
       >
-        <Breadcrumb class="md:mb-0 md:mt-0">
+        <Breadcrumb class="md:my-0">
           <BreadcrumbItem
             to="/"
           >
@@ -18,7 +18,7 @@
             {{ dataset.title }}
           </BreadcrumbItem>
         </Breadcrumb>
-        <div class="flex-none flex gap-2.5 md:max-w-6/12">
+        <div class="md:flex-none flex flex-wrap md:flex-nowrap gap-2.5 md:max-w-6/12">
           <FollowButton
             v-if="dataset"
             :url="`/api/1/datasets/${dataset.id}/followers/`"
@@ -306,7 +306,7 @@
               >
                 {{ $t("Ce jeu de données provient d'un portail externe.") }}
                 <CdataLink
-                  :to="dataset.harvest.remote_url"
+                  :to="dataset.harvest.remote_url as string"
                   rel="ugc nofollow noopener"
                   target="_blank"
                   external
@@ -407,7 +407,7 @@
           :links="[
             {
               label: dataset.access_type === 'open' ? $t('Fichiers') : $t('Fichiers publics'),
-              href: `/datasets/${route.params.did}/`,
+              href: `/datasets/${route.params.did}`,
               count: dataset.resources.total,
             },
             {
@@ -533,34 +533,34 @@ onMounted(async () => {
   await redirectLegacyHashes([
     {
       from: 'resources',
-      to: `/datasets/${route.params.did}/`,
+      to: `/datasets/${route.params.did}`,
       queryParam: 'resource_id',
     },
     {
       from: 'resource',
-      to: `/datasets/${route.params.did}/`,
+      to: `/datasets/${route.params.did}`,
       queryParam: 'resource_id',
     },
     {
       from: 'community-reuses',
-      to: `/datasets/${route.params.did}/reuses_and_dataservices/`,
+      to: `/datasets/${route.params.did}/reuses_and_dataservices`,
     },
     {
       from: 'discussions',
-      to: `/datasets/${route.params.did}/discussions/`,
+      to: `/datasets/${route.params.did}/discussions`,
       queryParam: 'discussion_id',
     },
     {
       from: 'discussion',
-      to: `/datasets/${route.params.did}/discussions/`,
+      to: `/datasets/${route.params.did}/discussions`,
       queryParam: 'discussion_id',
     },
     {
       from: 'community-resources',
-      to: `/datasets/${route.params.did}/community-resources/`,
+      to: `/datasets/${route.params.did}/community-resources`,
       queryParam: 'resource_id',
     },
-    { from: 'information', to: `/datasets/${route.params.did}/informations/` },
+    { from: 'information', to: `/datasets/${route.params.did}/informations` },
   ])
 })
 

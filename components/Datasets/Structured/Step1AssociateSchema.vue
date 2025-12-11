@@ -45,7 +45,7 @@
             <p class="m-0">
               {{ $t("Si votre organisation n'existe pas encore, vous devez d'abord") }}
               <NuxtLink
-                to="/admin/organizations/new/"
+                to="/admin/organizations/new"
                 class="link"
                 target="_blank"
               >

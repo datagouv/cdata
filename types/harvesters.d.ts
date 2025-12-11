@@ -46,6 +46,15 @@ export type HarvesterJob = {
   source: string
 }
 
+export type HarvesterSourcePermissions = {
+  edit: boolean
+  delete: boolean
+  run: boolean
+  preview: boolean
+  validate: boolean
+  schedule: boolean
+}
+
 export type HarvesterSource = Owned & {
   id: string
   name: string
@@ -60,6 +69,7 @@ export type HarvesterSource = Owned & {
   last_job: HarvesterJob | null
   deleted: string | null
   schedule: string
+  permissions: HarvesterSourcePermissions
 }
 
 export type HarvesterForm = {
@@ -91,4 +101,19 @@ export type HarvestBackend = {
   filters: Array<{ label: string, key: string, type: string, description: string }>
   features: Array<{ label: string, key: string, default: string, description: string }>
   extra_configs: Array<{ label: string, key: string, default: string, description: string }>
+}
+
+export type NewHarvesterForApi = {
+  organization: string | null
+  owner: string | null
+  name: string
+  description: string
+  url: string
+  backend: string
+  autoarchive: boolean
+  active: boolean
+  config: {
+    filters: Array<HarvestSourceFilter>
+    extra_configs: Array<HarvestSourceConfig>
+  }
 }
