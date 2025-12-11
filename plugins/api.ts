@@ -73,6 +73,13 @@ export default defineNuxtPlugin({
             catch (e) {
               console.error(e)
             }
+            finally {
+              // This is really ugly but if there is a response.field_errors the form should show
+              // them near the inputs. We only want to catch unknown responses.
+              if (!message && !response._data?.response?.field_errors) {
+                message = JSON.stringify(response._data)
+              }
+            }
           }
 
           if (options?.method && ['POST', 'PUT', 'PATCH'].includes(options.method) && response.status === 400) {
