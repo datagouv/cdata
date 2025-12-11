@@ -24,7 +24,7 @@ export function configurePreviewTooltip(ctx: Ctx, updateLink: (newLink: string) 
     hovering.value = false
   }
 
-  const onMouseMove = useDebounceFn((view: EditorView, event: MouseEvent) => {
+  const onMouseMoveDebounced = useDebounceFn((view: EditorView, event: MouseEvent) => {
     if (!view.hasFocus())
       return
 
@@ -52,6 +52,10 @@ export function configurePreviewTooltip(ctx: Ctx, updateLink: (newLink: string) 
 
     onMouseLeave()
   }, DELAY)
+
+  const onMouseMove = (view: EditorView, event: MouseEvent) => {
+    onMouseMoveDebounced(view, event)
+  }
 
   const onMouseLeave = () => {
     setTimeout(() => {
