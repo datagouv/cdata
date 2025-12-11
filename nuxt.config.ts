@@ -17,7 +17,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       bodyAttrs: {
-        class: 'datagouv-components',
+        class: 'datagouv-components font-marianne',
       },
       link: [
         { rel: 'shortcut icon', href: '/nuxt_images/favicon.svg', type: 'image/svg+xml' },
