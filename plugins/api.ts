@@ -73,6 +73,11 @@ export default defineNuxtPlugin({
             catch (e) {
               console.error(e)
             }
+            finally {
+              if (!message) {
+                message = JSON.stringify(response._data)
+              }
+            }
           }
 
           if (options?.method && ['POST', 'PUT', 'PATCH'].includes(options.method) && response.status === 400) {
