@@ -74,7 +74,9 @@ export default defineNuxtPlugin({
               console.error(e)
             }
             finally {
-              if (!message) {
+              // This is really ugly but if there is a response.field_errors the form should show
+              // them near the inputs. We only want to catch unknown responses.
+              if (!message && !response._data?.response?.field_errors) {
                 message = JSON.stringify(response._data)
               }
             }
