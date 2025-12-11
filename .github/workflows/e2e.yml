@@ -140,7 +140,7 @@ jobs:
         env:
           BASE_URL: http://localhost:3000
           CI: true
-        run: pnpm run test:e2e
+        run: pnpm run test:e2e:upload-screenshots
 
       - name: Kill udata server
         if: always()
