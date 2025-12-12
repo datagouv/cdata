@@ -60,7 +60,7 @@
           <div class="flex justify-center">
             <BrandedButton
               type="submit"
-              :loading="isLoading"
+              :loading="loading"
             >
               {{ $t('Se connecter') }}
             </BrandedButton>
@@ -132,7 +132,7 @@ const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
 const rememberMeId = useId()
-const { isLoading, start, finish } = useLoadingIndicator()
+const loading = ref(false)
 const errors = ref<FieldsErrors>({})
 const me = useMe()
 
@@ -145,19 +145,20 @@ onMounted(() => {
 })
 
 const postApiWithCsrf = usePostApiWithCsrf()
-async function connect() {
+const connect = async () => {
+  loading.value = true
+  errors.value = {}
+
   try {
-    if (!me.value) {
-      start()
-      errors.value = {}
-      await postApiWithCsrf('/login/', {
-        email: email.value,
-        password: password.value,
-        remember: rememberMe.value,
-      })
-      toast.success(t('Vous êtes maintenant connecté.'))
-    }
+    await postApiWithCsrf('/login/', {
+      email: email.value,
+      password: password.value,
+      remember: rememberMe.value,
+    })
+
+    toast.success(t('Vous êtes maintenant connecté.'))
     await loadMe(me)
+
     const next = sessionStorage.getItem('next')
     if (next) {
       navigateTo(next)
@@ -172,7 +173,7 @@ async function connect() {
     if (fieldsErrors) errors.value = fieldsErrors
   }
   finally {
-    finish()
+    loading.value = false
   }
 }
 
