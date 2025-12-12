@@ -22,13 +22,6 @@
           </BrandedButton>
           <BrandedButton
             color="secondary"
-            :icon="RiAddLine"
-            @click="showAddColumnModal = true"
-          >
-            {{ $t('Ajouter une colonne') }}
-          </BrandedButton>
-          <BrandedButton
-            color="secondary"
             :icon="RiDownloadLine"
             @click="downloadCSV"
           >
@@ -118,17 +111,25 @@
         </div>
       </div>
 
+      <SimpleBanner
+        type="gray"
+        class="mb-2 flex items-center gap-1"
+      >
+        <RiInformationLine class="size-4" />
+        <p class="text-sm mb-0">
+          {{ $t(`Un menu d'édition est accessible au clic droit dans le tableau.`) }}
+        </p>
+      </SimpleBanner>
+
       <div ref="tableRef" />
 
       <div class="mt-2">
         <BrandedButton
           color="secondary"
+          :icon="RiAddLine"
+          size="xs"
           @click="addRow"
         >
-          <span
-            class="fr-icon-add-line fr-mr-1w"
-            aria-hidden="true"
-          />
           {{ $t('Ajouter une ligne') }}
         </BrandedButton>
       </div>
@@ -156,44 +157,12 @@
         {{ customErrors[0] }}
       </p>
     </SimpleBanner>
-    <Modal
-      :opened="showAddColumnModal"
-      :title="$t('Ajouter une colonne')"
-      size="sm"
-      @close="closeAddColumnModal"
-    >
-      <InputGroup
-        v-model="newColumnName"
-        :label="$t('Nom de la colonne')"
-        :required="true"
-        :has-error="!!columnNameError"
-        :error-text="columnNameError"
-        :placeholder="$t('Ex: ma_nouvelle_colonne')"
-      />
-
-      <template #footer>
-        <div class="w-full flex justify-end space-x-4">
-          <BrandedButton
-            color="secondary"
-            @click="closeAddColumnModal"
-          >
-            {{ $t("Annuler") }}
-          </BrandedButton>
-          <BrandedButton
-            color="primary"
-            @click="confirmAddColumn"
-          >
-            {{ $t("Ajouter") }}
-          </BrandedButton>
-        </div>
-      </template>
-    </Modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { BrandedButton, SimpleBanner, type RegisteredSchema, type SchemaDetails, type SchemaField } from '@datagouv/components-next'
-import { RiAddLine, RiCheckLine, RiDownloadLine } from '@remixicon/vue'
+import { RiAddLine, RiCheckLine, RiDownloadLine, RiInformationLine } from '@remixicon/vue'
 import { ofetch } from 'ofetch'
 import paparse from 'papaparse'
 import { TabulatorFull as Tabulator, type CellComponent, type Editor, type Formatter, type GlobalTooltipOption, type RowComponent } from 'tabulator-tables'
@@ -218,9 +187,6 @@ const { t } = useTranslation()
 
 const customErrors = ref<string[]>([])
 const validating = ref(false)
-const showAddColumnModal = ref(false)
-const newColumnName = ref('')
-const columnNameError = ref('')
 
 const schemaFields = computed(() => props.schemaDetails?.fields.map((field: SchemaField) => field.name) ?? [])
 
@@ -283,42 +249,6 @@ function getColumns() {
   }))
 
   return [rowNumberColumn, ...dataColumns]
-}
-
-function closeAddColumnModal() {
-  showAddColumnModal.value = false
-  newColumnName.value = ''
-  columnNameError.value = ''
-}
-
-function confirmAddColumn() {
-  const columnName = newColumnName.value.trim()
-
-  if (!columnName) {
-    columnNameError.value = t('Le nom de la colonne est obligatoire')
-    return
-  }
-
-  if (schemaFields.value.includes(columnName)) {
-    columnNameError.value = t('Une colonne avec ce nom existe déjà')
-    return
-  }
-
-  schemaFields.value.push(columnName)
-
-  if (table) {
-    const data = table.getData() as RowData[]
-    data.forEach((row: RowData) => {
-      row[columnName] = ''
-    })
-
-    table.setColumns(getColumns())
-    table.setData(data)
-
-    nextTick(applyCellErrors)
-  }
-
-  closeAddColumnModal()
 }
 
 function addRow() {
@@ -421,7 +351,9 @@ async function initializeTable() {
       paparse.parse<RowData, File>(uploadedFile.value, {
         header: true,
         complete: function (results) {
-          tableData = results.data
+          tableData = results.data.map((r, i) => {
+            return { id: i, ...r }
+          })
           makeTable(tableData, true)
           uploadedFile.value = null
         },
@@ -450,9 +382,22 @@ async function makeTable(data: Array<RowData>, shouldValidate = false) {
     columns: getColumns(),
     rowContextMenu: [
       {
+        label: t('Dupliquer la ligne'),
+        action: function (_e: MouseEvent, row: RowComponent) {
+          if (table) {
+            table.addRow({ id: table.getDataCount(), ...row.getData() }, false, row.getIndex())
+          }
+        },
+      },
+      {
+        separator: true,
+      },
+      {
         label: t('Ajouter une ligne'),
-        action: function (_e: MouseEvent, _row: RowComponent) {
-          addRow()
+        action: function (_e: MouseEvent, row: RowComponent) {
+          if (table) {
+            table.addRow({ id: table.getDataCount() }, false, row.getIndex())
+          }
         },
       },
       {
@@ -478,7 +423,7 @@ async function makeTable(data: Array<RowData>, shouldValidate = false) {
 function createEmptyRows(count = 10): RowData[] {
   const rows: RowData[] = []
   for (let i = 0; i < count; i++) {
-    const row: RowData = {}
+    const row: RowData = { id: i }
     schemaFields.value.forEach((col) => {
       row[col] = ''
     })
@@ -654,12 +599,16 @@ watch(validationReport, () => {
 }
 
 /* Bordures internes en gris clair */
+.tabulator .tabulator-frozen.tabulator-frozen-left {
+  border-right-width: 1px !important;
+}
+
 .tabulator .tabulator-cell {
-  border-color: transparent !important;
+  border-color: var(--color-gray-silver) !important;
 }
 
 .tabulator .tabulator-col {
-  border-color: transparent !important;
+  border-color: var(--color-gray-silver) !important;
 }
 
 .tabulator .tabulator-row {
