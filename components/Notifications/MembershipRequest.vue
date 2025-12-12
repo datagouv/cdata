@@ -13,10 +13,10 @@
         </NuxtLink>
       </p>
       <p class="m-0 text-xs">
-        {{ $t(`de ${notification.details.request_user.first_name} ${notification.details.request_user.last_name}`) }}
+        {{ $t('de {name}', { name: `${notification.details.request_user.first_name} ${notification.details.request_user.last_name}` }) }}
       </p>
       <p class="m-0 text-xs">
-        {{ $t(`à ${notification.details.request_organization.name}`) }}
+        {{ $t('à {org}', { org: notification.details.request_organization.name }) }}
       </p>
     </div>
     <div class="flex-none flex m-0 gap-1.5">
