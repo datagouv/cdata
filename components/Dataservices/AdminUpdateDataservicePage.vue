@@ -72,7 +72,7 @@
       <div class="mt-5 space-y-5">
         <TransferBanner
           type="Dataservice"
-          :subject="dataserviceSubject"
+          :subject="dataservice"
           :label="$t(`Transférer l'API`)"
         />
         <BannerAction
@@ -139,7 +139,7 @@ import type { Dataservice } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import { BannerAction, BrandedButton, TranslationT } from '@datagouv/components-next'
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'
-import type { DataserviceForm, LinkToSubject } from '~/types/types'
+import type { DataserviceForm } from '~/types/types'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
@@ -150,12 +150,6 @@ const { start, finish, isLoading } = useLoadingIndicator()
 
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
 const { data: dataservice, refresh } = await useAPI<Dataservice>(url, { redirectOn404: true })
-const dataserviceSubject = computed<Dataservice & LinkToSubject>(() => {
-  return {
-    ...dataservice.value,
-    page: dataservice.value.self_web_url,
-  }
-})
 const dataserviceForm = ref<DataserviceForm | null>(null)
 const harvested = ref(false)
 watchEffect(() => {

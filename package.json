@@ -21,7 +21,7 @@
     "lint:fix": "eslint . --fix",
     "lint-staged": "lint-staged",
     "build": "nuxt build",
-    "type-check": "nuxt typecheck",
+    "typecheck": "nuxt typecheck",
     "dev": "NUXT_PUBLIC_COMMIT_ID=`git rev-parse --short HEAD` nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",

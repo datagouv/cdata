@@ -72,26 +72,26 @@
                 <div v-if="subjects[report.id] && subjects[report.id].value">
                   <LinkToSubject
                     :type="subjects[report.id].type"
-                    :subject="subjects[report.id].value"
+                    :subject="subjects[report.id].value!"
                   />
                 </div>
                 <div v-else-if="subjects[report.id]">
                   <LinkToSubject
                     :type="subjects[report.id].type"
-                    :subject="{ title: $t('Supprimé') }"
+                    :subject="{ customTitle: $t('Supprimé'), customUrl: undefined }"
                   />
                 </div>
                 <div v-if="subjects[report.id] && subjects[report.id].value">
                   <OrganizationOwner
-                    v-if="'organization' in subjects[report.id].value && subjects[report.id].value.organization"
-                    :organization="subjects[report.id].value.organization"
+                    v-if="'organization' in subjects[report.id].value! && (subjects[report.id].value as any).organization"
+                    :organization="(subjects[report.id].value as any).organization"
                     logo-size-class="size-3.5"
                     logo-no-border
                   />
                   <AvatarWithName
-                    v-if="'owner' in subjects[report.id].value && subjects[report.id].value.owner"
+                    v-if="'owner' in subjects[report.id].value! && (subjects[report.id].value as any).owner"
                     :size="14"
-                    :user="subjects[report.id].value.owner"
+                    :user="(subjects[report.id].value as any).owner"
                     class="space-x-2"
                   />
                 </div>
@@ -100,15 +100,15 @@
                 <div v-if="subjects[report.id] && subjects[report.id].value">
                   <DatasetBadge
                     v-if="subjects[report.id].type === 'Dataset'"
-                    :dataset="subjects[report.id].value"
+                    :dataset="(subjects[report.id].value as DatasetV2)"
                   />
                   <DataserviceBadge
                     v-else-if="subjects[report.id].type === 'Dataservice'"
-                    :dataservice="subjects[report.id].value"
+                    :dataservice="(subjects[report.id].value as Dataservice)"
                   />
                   <ReuseBadge
                     v-else-if="subjects[report.id].type === 'Reuse'"
-                    :reuse="subjects[report.id].value"
+                    :reuse="(subjects[report.id].value as Reuse)"
                   />
                   <div v-else>
                     —
@@ -124,11 +124,11 @@
               </td>
               <td>
                 <div v-if="subjects[report.id] && subjects[report.id].value">
-                  <div v-if="'created_at' in subjects[report.id].value">
-                    {{ formatDate(subjects[report.id].value.created_at) }}
+                  <div v-if="'created_at' in subjects[report.id].value!">
+                    {{ formatDate((subjects[report.id].value as any).created_at) }}
                   </div>
-                  <div v-else-if="'created' in subjects[report.id].value">
-                    {{ formatDate(subjects[report.id].value.created) }}
+                  <div v-else-if="'created' in subjects[report.id].value!">
+                    {{ formatDate((subjects[report.id].value as any).created) }}
                   </div>
                   <div v-else>
                     —
@@ -189,7 +189,7 @@
                     :icon="RiEyeOffLine"
                     icon-only
                     keep-margins-even-without-borders
-                    :disabled="'private' in subjects[report.id].value && subjects[report.id].value.private"
+                    :disabled="'private' in subjects[report.id].value! && (subjects[report.id].value as any).private"
                     @click="switchPrivate(report, report.subject)"
                   >
                     {{ $t("Cacher l'objet") }}
@@ -239,10 +239,10 @@
 </template>
 
 <script setup lang="ts">
-import { type Activity, type Dataservice, type DatasetV2, type Organization, type Report, type ReportReason, type ReportSubject, type Reuse, AvatarWithName, LoadingBlock, Pagination, useFormatDate } from '@datagouv/components-next'
+import type { Report, ReportReason, ReportSubject, Activity, Dataservice, DatasetV2, Organization, Reuse } from '@datagouv/components-next'
+import { AvatarWithName, LoadingBlock, Pagination, useFormatDate, BrandedButton } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine } from '@remixicon/vue'
-import { BrandedButton } from '@datagouv/components-next'
 import type { PaginatedArray } from '~/types/types'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -294,8 +294,8 @@ const fetchFullSubject = async (report: Report, subject: ReportSubject) => {
   }
 
   try {
-    const value = await $api(getSubjectUrl(subject))
-    subjects.value[report.id] = { type: subject.class, value }
+    const value = await $api<RecordSubjectFullObject['value']>(getSubjectUrl(subject))
+    subjects.value[report.id] = { type: subject.class, value } as RecordSubjectFullObject
   }
   catch {
     subjects.value[report.id] = { type: subject.class, value: null }
@@ -365,6 +365,7 @@ const getDeleteUrl = (subject: ReportSubject): string | null => {
 }
 
 const isSubjectDeleted = (subject: RecordSubjectFullObject['value']) => {
+  if (!subject) return true
   if ('deleted' in subject && subject.deleted) return true
   if ('deleted_at' in subject && subject.deleted_at) return true
 

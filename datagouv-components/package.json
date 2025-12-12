@@ -24,10 +24,10 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "build": "run-p typecheck \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
-    "type-check": "vue-tsc --build",
+    "typecheck": "vue-tsc --build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write src/",
