@@ -3,7 +3,7 @@ import type { PaginatedArray } from '~/types/types'
 
 const page = ref(1)
 const notifications = ref<PaginatedArray<UserNotification> | null>(null)
-const notificationsCombinatedList = ref<Array<UserNotification>>([])
+const notificationsCombinedList = ref<Array<UserNotification>>([])
 
 export function useNotifications() {
   const { start, finish } = useLoadingIndicator()
@@ -18,7 +18,7 @@ export function useNotifications() {
           page: page.value,
         },
       })
-      notificationsCombinatedList.value.push(...notifications.value.data)
+      notificationsCombinedList.value.push(...notifications.value.data)
     }
     finally {
       finish()
@@ -35,7 +35,7 @@ export function useNotifications() {
           page: page.value,
         },
       })
-      notificationsCombinatedList.value = notifications.value.data
+      notificationsCombinedList.value = notifications.value.data
     }
     finally {
       finish()
@@ -46,5 +46,5 @@ export function useNotifications() {
     page.value++
     return loadNotifications()
   }
-  return { notifications: readonly(notifications), notificationsCombinatedList: readonly(notificationsCombinatedList), loadNotifications, loadMoreNotifications, refreshNotifications }
+  return { notifications: readonly(notifications), notificationsCombinedList: readonly(notificationsCombinedList), loadNotifications, loadMoreNotifications, refreshNotifications }
 }

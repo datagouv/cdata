@@ -307,7 +307,7 @@
                             <RiCloseLine class="size-5" />
                           </button>
                         </div>
-                        <NotificationsList :notifications="notificationsCombinatedList" />
+                        <NotificationsList :notifications="notificationsCombinedList" />
                         <button
                           v-if="notifications.next_page"
                           type="button"
@@ -523,7 +523,7 @@ const currentRoute = useRoute()
 const router = useRouter()
 const route = useRoute()
 const { isLoading } = useLoadingIndicator()
-const { loadNotifications, loadMoreNotifications, notifications, notificationsCombinatedList } = useNotifications()
+const { loadNotifications, loadMoreNotifications, notifications, notificationsCombinedList } = useNotifications()
 
 const menu = [
   { label: t('Données'), link: '/datasets' },
