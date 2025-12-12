@@ -9,6 +9,7 @@ setup('authenticate', async ({ page, baseURL }) => {
   const loginURL = baseURL || 'http://localhost:3000'
 
   await page.goto(`${loginURL}/login/?next=%2F`)
+  await page.waitForLoadState('networkidle')
   await page.getByLabel('Adresse email').fill('admin@example.com')
   await page.getByLabel('Mot de passe').fill('@1337Password42')
   await page.getByRole('button', { name: 'Se connecter' }).first().click()

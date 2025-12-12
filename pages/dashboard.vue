@@ -97,7 +97,7 @@ import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const config = useRuntimeConfig()
-const { data: site } = await useAPI<Site>('/api/1/site')
+const { data: site } = await useAPI<Site>('/api/1/site/')
 
 const downloadUrl = computed(() => {
   return `${config.public.metricsApi}/api/site/data/csv/?metric_month__sort=asc`

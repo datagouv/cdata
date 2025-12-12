@@ -343,5 +343,5 @@ const networkLinks: Array<Link> = [
   { label: 'service-public.fr', link: 'https://www.service-public.fr' },
 ]
 
-const { data: site } = await useAPI<Site>('/api/1/site')
+const { data: site } = await useAPI<Site>('/api/1/site/')
 </script>
