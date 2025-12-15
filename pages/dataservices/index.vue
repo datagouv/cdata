@@ -204,7 +204,7 @@
             >
               API Particulier
             </BrandedButton>
-            <div class="text-center">              
+            <div class="text-center">
               {{ $t(`Fournisseurs d'API, les bouquets s'occupent de l'exposition et du support de vos API utiles pour la mise en oeuvre du Dites-le nous une fois.`) }}
             </div>
             <BrandedButton
