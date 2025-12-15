@@ -78,7 +78,7 @@
               :icon-right="true"
               size="sm"
               aria-label="Documentation API Entreprise"
-              >
+            >
               Publier une API sur data.gouv.fr
             </BrandedButton>
           </div>
@@ -118,8 +118,7 @@
               />
             </div>
             <div class="font-extrabold text-center text-lg">
-            {{ $t('Datapass') }}<br>{{ $t('Habilitations juridiques') }}
-
+              {{ $t('Datapass') }}<br>{{ $t('Habilitations juridiques') }}
             </div>
             <div class="text-center">
               {{ $t(`DataPass est un outil clé en main pour déposer et instruire des demandes d'accès aux données.`) }}<br><br>
@@ -148,7 +147,7 @@
               />
             </div>
             <div class="font-extrabold text-center text-lg">
-            {{ $t('Simplifions.data.gouv.fr') }}
+              {{ $t('Simplifions.data.gouv.fr') }}
             </div>
             <div class="text-center">
               {{ $t(`Un catalogue des API, données et solutions utiles pour simplifier les démarches administratives.`) }} <br><br>
@@ -177,11 +176,11 @@
             <div class="font-extrabold text-center text-lg">
               {{ $t('API Entreprise') }}<br>
               {{ $t('et API Particulier') }}
-              </div>
+            </div>
             <div class="text-center">
               {{ $t(`Les données des particuliers, des entreprises et associations, accessibles depuis une même API.`) }}
-            </div>    
-           <BrandedButton
+            </div>
+            <BrandedButton
               href="https://entreprise.api.gouv.fr/"
               target="_blank"
               rel="noopener noreferrer"
@@ -190,8 +189,8 @@
               :icon-right="true"
               size="sm"
               aria-label="Documentation API Entreprise"
-              >
-               API Entreprise
+            >
+              API Entreprise
             </BrandedButton>
             <BrandedButton
               href="https://particulier.api.gouv.fr/"
@@ -202,12 +201,11 @@
               :icon-right="true"
               size="sm"
               aria-label="Documentation API Particulier"
-              >
-               API Particulier
+            >
+              API Particulier
             </BrandedButton>
-             <div class="text-center">              
+            <div class="text-center">              
               {{ $t(`Fournisseurs d'API, les bouquets s'occupent de l'exposition et du support de vos API utiles pour la mise en oeuvre du Dites-le nous une fois.`) }}
-              
             </div>
             <BrandedButton
               href="https://guides.data.gouv.fr/guide-data.gouv.fr/api/outils-pour-les-administrations/bouquets-api-entreprise-et-api-particulier#comment-rejoindre-les-bouquets-api-entreprise-api-particulier"
@@ -218,8 +216,8 @@
               :icon-right="true"
               size="sm"
               aria-label="Documentation API Particulier"
-              >
-               Proposer votre API
+            >
+              Proposer votre API
             </BrandedButton>
           </div>
         </div>
