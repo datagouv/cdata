@@ -23,7 +23,7 @@
           {{ $t('Des outils pour les administrations') }}
         </h2>
         <p class="text-2xl">
-          {{ $t('Acteurs publics, que vous soyez utilisateurs ou fournisseurs d’API,') }}<br />
+          {{ $t('Acteurs publics, que vous soyez utilisateurs ou fournisseurs d’API,') }}<br>
           {{ $t('des ressources sont à votre disposition :') }}
         </p>
       </div>
@@ -66,7 +66,7 @@
               {{ $t('Publier vos API') }}
             </div>
             <div class="text-center">
-              {{ $t(`Data.gouv.fr permet l'exposition de vos API en quelques clics.`) }}<br /><br />
+              {{ $t(`Data.gouv.fr permet l'exposition de vos API en quelques clics.`) }}<br><br>
               {{ $t(`Créez dès maintenant une page pour votre organisation et référencez vos API :`) }}
             </div>
             <BrandedButton
@@ -92,7 +92,7 @@
               />
             </div>
             <div class="font-extrabold text-center text-lg">
-              {{ $t('Un accompagnement') }}<br />{{ $t('technique et métier') }}
+              {{ $t('Un accompagnement') }}<br>{{ $t('technique et métier') }}
             </div>
             <div class="text-center">
               {{ $t(`Le pôle Data de la DINUM est disponible pour vous aider pour toute question relative aux API.`) }}
@@ -118,11 +118,11 @@
               />
             </div>
             <div class="font-extrabold text-center text-lg">
-            {{ $t('Datapass') }}<br />{{ $t('Habilitations juridiques') }}
+            {{ $t('Datapass') }}<br>{{ $t('Habilitations juridiques') }}
 
             </div>
             <div class="text-center">
-              {{ $t(`DataPass est un outil clé en main pour déposer et instruire des demandes d'accès aux données.`) }}<br /><br />
+              {{ $t(`DataPass est un outil clé en main pour déposer et instruire des demandes d'accès aux données.`) }}<br><br>
               {{ $t(`Fournisseurs d'API en accès restreint, mettez en place vos formulaires d'habilitation DataPass :`) }}
             </div>
             <BrandedButton
@@ -151,7 +151,7 @@
             {{ $t('Simplifions.data.gouv.fr') }}
             </div>
             <div class="text-center">
-              {{ $t(`Un catalogue des API, données et solutions utiles pour simplifier les démarches administratives.`) }} <br /><br />
+              {{ $t(`Un catalogue des API, données et solutions utiles pour simplifier les démarches administratives.`) }} <br><br>
               {{ $t(`Consultez Simplifions.data pour vous aider à mettre en oeuvre le Dites-le nous une fois et la proactivité :`) }}
             </div>
             <BrandedButton
@@ -175,7 +175,7 @@
               />
             </div>
             <div class="font-extrabold text-center text-lg">
-              {{ $t('API Entreprise') }}<br />
+              {{ $t('API Entreprise') }}<br>
               {{ $t('et API Particulier') }}
               </div>
             <div class="text-center">
