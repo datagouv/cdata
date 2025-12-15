@@ -139,5 +139,5 @@ onMounted(async () => {
   }
 })
 
-const { data: site } = await useAPI<Site>('/api/1/site')
+const { data: site } = await useAPI<Site>('/api/1/site/')
 </script>
