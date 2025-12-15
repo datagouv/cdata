@@ -27,9 +27,9 @@
           {{ $t('des ressources sont à votre disposition :') }}
         </p>
       </div>
-       <div class="w-full grid md:grid-cols-3 gap-5 mb-10">
+      <div class="w-full grid md:grid-cols-3 gap-5 mb-10">
         <div class="flex flex-col space-y-3 justify-center">
-           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
+          <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
               <nuxt-img
                 src="/illustrations/book-2.svg"
@@ -54,7 +54,7 @@
             >
               Lire la doctrine
             </BrandedButton>
-          </div>     
+          </div>
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
               <nuxt-img
@@ -63,13 +63,13 @@
               />
             </div>
             <div class="font-extrabold text-center text-lg">
-            {{ $t('Publier vos API') }}
+              {{ $t('Publier vos API') }}
             </div>
             <div class="text-center">
               {{ $t(`Data.gouv.fr permet l'exposition de vos API en quelques clics.`) }}<br /><br />
               {{ $t(`Créez dès maintenant une page pour votre organisation et référencez vos API :`) }}
             </div>
-             <BrandedButton
+            <BrandedButton
               href="/admin/dataservices/new"
               target="_blank"
               rel="noopener noreferrer"
@@ -79,8 +79,8 @@
               size="sm"
               aria-label="Documentation API Entreprise"
               >
-               Publier une API sur data.gouv.fr
-            </BrandedButton>         
+              Publier une API sur data.gouv.fr
+            </BrandedButton>
           </div>
         </div>
         <div class="flex flex-col space-y-3 justify-center">
@@ -91,8 +91,8 @@
                 class="w-18"
               />
             </div>
-             <div class="font-extrabold text-center text-lg">
-            {{ $t('Un accompagnement') }}<br />{{ $t('technique et métier') }}
+            <div class="font-extrabold text-center text-lg">
+              {{ $t('Un accompagnement') }}<br />{{ $t('technique et métier') }}
             </div>
             <div class="text-center">
               {{ $t(`Le pôle Data de la DINUM est disponible pour vous aider pour toute question relative aux API.`) }}
