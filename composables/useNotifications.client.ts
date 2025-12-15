@@ -12,7 +12,7 @@ export function useNotifications() {
   async function loadNotifications() {
     start()
     try {
-      notifications.value = await $api<PaginatedArray<UserNotification>>('api/1/notifications/', {
+      notifications.value = await $api<PaginatedArray<UserNotification>>('/api/1/notifications/', {
         params: {
           page_size: 10,
           page: page.value,
