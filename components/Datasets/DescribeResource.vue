@@ -364,20 +364,20 @@
               class="w-full !mb-0"
             />
           </template>
-          <template #accordion>
-            <HelpAccordion :title="$t('Sélectionner un schéma')">
-              <TranslationT
-                keypath="Il est possible d'identifier un schéma de données existant en visitant le site web {schema}, qui référence une liste de schémas de données existants."
-                tag="p"
-                class="fr-m-0 fr-mb-1w"
-              >
-                <template #schema>
-                  <a :href="config.public.schemasSite.url">{{ config.public.schemasSite.name }}</a>
-                </template>
-              </TranslationT>
-            </HelpAccordion>
-          </template>
         </LoadingBlock>
+        <template #accordion>
+          <HelpAccordion :title="$t('Sélectionner un schéma')">
+            <TranslationT
+              keypath="Il est possible d'identifier un schéma de données existant en visitant le site web {schema}, qui référence une liste de schémas de données existants."
+              tag="p"
+              class="fr-m-0 fr-mb-1w"
+            >
+              <template #schema>
+                <a :href="config.public.schemasSite.url">{{ config.public.schemasSite.name }}</a>
+              </template>
+            </TranslationT>
+          </HelpAccordion>
+        </template>
       </FieldsetElement>
     </FormFieldset>
 
