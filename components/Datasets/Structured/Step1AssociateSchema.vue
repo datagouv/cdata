@@ -247,7 +247,6 @@ async function loadSchemas() {
     schemas.value = data || []
 
     if (params.schema) {
-      console.log(params.schema)
       const schemaToSelect = schemas.value.find(s => s.name === params.schema)
       if (schemaToSelect) {
         await toggleSchema(schemaToSelect)
