@@ -190,7 +190,7 @@ const titleAccordionId = useId()
 const descriptionAccordionId = useId()
 const frequencyAccordionId = useId()
 
-const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies', { lazy: true })
+const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies/', { lazy: true })
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 

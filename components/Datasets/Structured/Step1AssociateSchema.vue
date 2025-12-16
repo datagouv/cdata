@@ -137,15 +137,17 @@
             class="grid grid-cols-1 gap-4"
             role="listbox"
           >
-            <SchemaCard
-              v-for="schema in filteredSchemas"
-              :key="schema.name"
-              :schema
-              class="cursor-pointer"
-              :selectable="true"
-              :selected="schema.name === form.selectedSchema?.name"
-              @click="selectSchema(schema)"
-            />
+            <template v-for="schema in filteredSchemas">
+              <SchemaCard
+                v-if="!form.selectedSchema || form.selectedSchema.name === schema.name"
+                :key="schema.name"
+                :schema
+                class="cursor-pointer"
+                :selectable="true"
+                :selected="schema.name === form.selectedSchema?.name"
+                @click="toggleSchema(schema)"
+              />
+            </template>
           </div>
         </div>
 
@@ -196,6 +198,7 @@ import FieldsetElement from '~/components/Form/FieldsetElement.vue'
 import HelpAccordion from '~/components/Form/HelpAccordion.vue'
 import type { AssociateSchemaForm } from '~/types/schema'
 import type { DatasetSuggest } from '~/types/types'
+import { useUrlSearchParams } from '@vueuse/core'
 
 const emit = defineEmits<{
   next: []
@@ -205,6 +208,12 @@ const { t } = useTranslation()
 const route = useRoute()
 const getCatalog = useGetCatalog()
 const { $api } = useNuxtApp()
+
+const params = useUrlSearchParams<{ schema?: string }>('history', {
+  initialValue: route.query,
+  removeNullishValues: true,
+  removeFalsyValues: true,
+})
 
 const schemas = ref<Array<RegisteredSchema>>([])
 const loadingSchemas = ref(false)
@@ -237,11 +246,10 @@ async function loadSchemas() {
     const data = await getCatalog()
     schemas.value = data || []
 
-    const schemaParam = route.query.schema as string
-    if (schemaParam) {
-      const schemaToSelect = schemas.value.find(s => s.name === schemaParam)
+    if (params.schema) {
+      const schemaToSelect = schemas.value.find(s => s.name === params.schema)
       if (schemaToSelect) {
-        await selectSchema(schemaToSelect)
+        await toggleSchema(schemaToSelect)
         searchQuery.value = schemaToSelect.title
       }
     }
@@ -264,8 +272,13 @@ const filteredSchemas = computed(() => schemas.value.filter((schema: RegisteredS
   return titleMatch || descriptionMatch
 }))
 
-async function selectSchema(schema: RegisteredSchema) {
-  form.value.selectedSchema = schema
+async function toggleSchema(schema: RegisteredSchema) {
+  if (form.value.selectedSchema && form.value.selectedSchema.name === schema.name) {
+    form.value.selectedSchema = null
+  }
+  else {
+    form.value.selectedSchema = schema
+  }
   touch('selectedSchema')
 }
 
@@ -293,5 +306,14 @@ async function submit() {
 
 onMounted(() => {
   loadSchemas()
+})
+
+watch(() => form.value.selectedSchema, () => {
+  if (form.value.selectedSchema) {
+    params.schema = form.value.selectedSchema.name
+  }
+  else {
+    params.schema = undefined
+  }
 })
 </script>

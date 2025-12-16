@@ -156,6 +156,7 @@ export type NewDatasetForApi = {
     granularity?: string
     zones?: Array<string> | null
   }
+  extras?: Record<string, unknown>
 } & WithAccessType
 
 export type ReuseSuggest = Pick<Reuse, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }

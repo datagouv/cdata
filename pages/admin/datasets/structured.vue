@@ -191,7 +191,9 @@ async function save() {
     else {
       newDataset.value = newDataset.value || await $api<Dataset>('/api/1/datasets/', {
         method: 'POST',
-        body: JSON.stringify(datasetToApi(datasetForm.value, { private: true })),
+        body: JSON.stringify(datasetToApi(datasetForm.value, { private: true, extras: {
+          publish_source: `${config.public.title}:structured${useSpreadsheet.value ? '-table' : ''}`,
+        } })),
       })
     }
     const dataset = newDataset.value

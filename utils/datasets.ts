@@ -58,7 +58,7 @@ export function datasetToForm(dataset: DatasetV2WithFullObject): DatasetForm {
   }
 }
 
-export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, private?: boolean, archived?: string | null } = {}): NewDatasetForApi {
+export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, private?: boolean, archived?: string | null, extras?: Record<string, unknown> } = {}): NewDatasetForApi {
   const contactPoints = form.contact_points?.filter(cp => cp !== null && 'id' in cp).map(cp => cp.id) ?? []
 
   return {
@@ -76,6 +76,7 @@ export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, pri
     ...accessTypeToApi(form),
     contact_points: form.contact_points ? (contactPoints.length ? contactPoints : null) : undefined, // The udata API doesn't delete the last contact point if sending an empty array, we need to send `null` to remove all contact points (see :RemoveAllContactPoints in udata)
     frequency: form.frequency?.id || '',
+    extras: overrides.extras,
     temporal_coverage: form.temporal_coverage.start
       ? {
           start: new Date(form.temporal_coverage.start).toISOString(),
