@@ -60,7 +60,11 @@
       </select>
     </div>
   </div>
-  <LoadingBlock :status>
+  <LoadingBlock
+    v-slot="{ data: organizations }"
+    :status
+    :data="organizations"
+  >
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 mb-16">
       <OrganizationCard
         v-for="organization in organizations.data"

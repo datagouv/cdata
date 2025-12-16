@@ -72,6 +72,7 @@ watchEffect(() => {
 })
 
 const playSound = async () => {
+  if (!data.value) return
   const query = new URLSearchParams({ get: 'sound', c: config.public.captcheta.style, t: data.value.uuid })
   await new Audio(`${config.public.apiBase}/api/2/captchetat?${query.toString()}`).play()
 }

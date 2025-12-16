@@ -1,7 +1,7 @@
 <template>
   <div>
     <div
-      v-if="status === 'success' && pageData.total"
+      v-if="status === 'success' && pageData?.total"
       class="flex flex-wrap justify-between items-center"
     >
       <h2 class="text-sm font-bold uppercase m-0">
@@ -24,7 +24,11 @@
       </div>
     </div>
 
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: pageData }"
+      :status
+      :data="pageData"
+    >
       <div v-if="pageData && pageData.total > 0">
         <AdminDiscussionsTable
           :discussions="pageData.data"

@@ -115,7 +115,7 @@
               </h3>
               <UploadResourceModal
                 :error-text="getFirstError('resources')"
-                :extensions
+                :extensions="extensions ?? []"
                 @new-files="addResourceForms"
               />
             </PaddedContainer>
@@ -125,12 +125,12 @@
                 :key="index"
                 v-model="form.resources[index]"
                 class="fr-mb-3v"
-                :extensions
+                :extensions="extensions ?? []"
                 @delete="removeFile(index)"
               />
               <div class="fr-grid-row fr-grid-row--center">
                 <UploadResourceModal
-                  :extensions
+                  :extensions="extensions ?? []"
                   @new-files="addResourceForms"
                 />
               </div>
@@ -208,7 +208,7 @@ const { form, getFirstError, getFirstWarning, touch, validate, errorsAsList: err
 }, {
   resources: [ruleIf(isDatasetOpen, required(t('Au moins un fichier est requis.')))],
 }, {
-  resources: [resources => resources.find(resource => !isClosedFormat(resource, extensions.value)) ? null : t('Vous n\'avez pas ajouté de fichier dans un format ouvert.')],
+  resources: [resources => resources.find(resource => !isClosedFormat(resource, extensions.value ?? [])) ? null : t('Vous n\'avez pas ajouté de fichier dans un format ouvert.')],
   hasDocumentation: [hasDocumentation => !hasDocumentation ? t('Vous n\'avez pas ajouté de fichier de documentation ni décrit vos fichiers.') : null],
 })
 

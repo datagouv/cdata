@@ -1,6 +1,6 @@
 <template>
   <FileEditModalFromQueryStringClient
-    :schemas
+    :schemas="schemas ?? []"
     @submit="(closeModal: () => void, resourceForm: CommunityResourceForm) => updateResource(resourceForm.resource, closeModal, resourceForm)"
   />
 
@@ -79,7 +79,7 @@
           <FileEditModal
             :dataset="communityResource.dataset"
             :loading
-            :resource="resourceToForm(communityResource, schemas || [])"
+            :resource="resourceToForm(communityResource, schemas ?? [])"
             @submit="(closeModal, resourceForm) => updateResource(communityResource, closeModal, resourceForm)"
             @delete="$emit('refresh')"
           />

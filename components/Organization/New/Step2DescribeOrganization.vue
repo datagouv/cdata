@@ -209,8 +209,8 @@
       :placeholder="$t(`Associer des badges à l'organisation…`)"
       class="mb-6"
       :options="badges"
-      :get-option-id="(badge) => badgesLabels[badge.kind]"
-      :display-value="(badges) => badges ? humanJoin(badges.map(b => badgesLabels[b.kind])) : ''"
+      :get-option-id="(badge) => (badgesLabels ?? {})[badge.kind]"
+      :display-value="(badges) => badges ? humanJoin(badges.map(b => (badgesLabels ?? {})[b.kind])) : ''"
       :multiple="true"
     />
     <Alert
@@ -295,7 +295,7 @@ const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges/')
-const badges = computed(() => Object.keys(badgesLabels.value || {}).map(key => ({ kind: key })))
+const badges = computed(() => Object.keys(badgesLabels.value ?? {}).map(key => ({ kind: key })))
 const defaultValue = { data: [], total: 0 }
 const organizationsWithSameSiret = asyncComputed(async () => {
   if (!form.value.business_number_id || !getFirstWarning('business_number_id')) {

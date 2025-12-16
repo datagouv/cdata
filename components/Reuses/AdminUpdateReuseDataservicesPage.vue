@@ -34,6 +34,7 @@ watchEffect(async () => {
 })
 
 const submit = async () => {
+  if (!reuse.value) return
   await $api(`/api/1/reuses/${reuse.value.id}/`, {
     method: 'PUT',
     body: JSON.stringify({

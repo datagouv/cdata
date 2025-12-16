@@ -46,7 +46,11 @@
       </div>
     </div>
 
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: pageData }"
+      :status
+      :data="pageData"
+    >
       <div v-if="pageData && pageData.total > 0">
         <AdminReusesTable
           :reuses="reuses"
@@ -79,7 +83,7 @@
 
 <script setup lang="ts">
 import type { Reuse, TopicV2, TopicElement } from '@datagouv/components-next'
-import { Pagination } from '@datagouv/components-next'
+import { LoadingBlock, Pagination } from '@datagouv/components-next'
 import AdminReusesTable from '~/components/AdminTable/AdminReusesTable/AdminReusesTable.vue'
 import type { PaginatedArray } from '~/types/types'
 
@@ -98,6 +102,8 @@ const { data: pageData, status } = await useAPI<PaginatedArray<TopicElement>>(`/
 const { $api } = useNuxtApp()
 
 watch(pageData, async (_pageData) => {
+  if (!_pageData) return
+
   reuses.value = await Promise.all(_pageData.data.map(async (element) => {
     return await $api(`/api/1/reuses/${element.element.id}/`)
   }))

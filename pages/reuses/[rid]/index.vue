@@ -173,7 +173,9 @@
     </section>
     <section>
       <LoadingBlock
+        v-slot="{ data: relatedReuses }"
         :status
+        :data="relatedReusesData"
         class="min-h-32"
       >
         <template v-if="relatedReuses.length">
@@ -235,7 +237,7 @@ const dataservicesQuery = computed(() => {
 })
 const { data: dataservices } = await useAPI<PaginatedArray<Dataservice>>('/api/1/dataservices/', { query: dataservicesQuery })
 
-const topic = computed(() => getTopic(topics.value, props.reuse.topic))
+const topic = computed(() => getTopic(topics.value ?? [], props.reuse.topic))
 
 const { data: reuses, status } = await useAPI<PaginatedArray<Reuse>>(`/api/2/reuses/search/`, {
   headers: {
@@ -250,7 +252,7 @@ const { data: reuses, status } = await useAPI<PaginatedArray<Reuse>>(`/api/2/reu
 })
 
 // We want 3 reuses, but we don't want the one from the current page
-const relatedReuses = computed(() => reuses.value.data.filter(r => props.reuse.id != r.id).slice(0, 3))
+const relatedReusesData = computed(() => (reuses.value?.data ?? []).filter(r => props.reuse.id != r.id).slice(0, 3))
 
 const metricsSince = computed(() => {
   // max of the start of metrics computing and the creation of the reuse on the platform

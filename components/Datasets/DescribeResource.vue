@@ -48,7 +48,11 @@
         v-if="form.filetype === 'file' || !form.filetype"
         form-key="file"
       >
-        <LoadingBlock :status>
+        <LoadingBlock
+          v-slot="{ data: extensions }"
+          :status
+          :data="extensions"
+        >
           <div v-if="extensions">
             <div v-if="newFile">
               <label
@@ -272,7 +276,7 @@
           :placeholder="$t('Rechercher un format…')"
           :display-value="(option) => option"
           :allow-new-option="(query) => query"
-          :options="extensions"
+          :options="extensions ?? []"
           :multiple="false"
           class="mb-6"
           required
@@ -330,32 +334,36 @@
         form-key="schema"
         class="space-y-2"
       >
-        <LoadingBlock :status="schemaStatus">
-          <SearchableSelect
-            v-model="form.schema"
-            :label="$t('Schéma')"
-            :placeholder="$t('Rechercher un schéma référencé sur {site}…', { site: config.public.schemasSite.name })"
-            :display-value="(option) => option.name"
-            :get-option-id="(option) => option.name"
-            :options="schemas"
-            :multiple="false"
+        <LoadingBlock
+          :status="schemaStatus"
+          :data="schemasData"
+        >
+          <template #default="{ data: schemas }">
+            <SearchableSelect
+              v-model="form.schema"
+              :label="$t('Schéma')"
+              :placeholder="$t('Rechercher un schéma référencé sur {site}…', { site: config.public.schemasSite.name })"
+              :display-value="(option) => option.name"
+              :get-option-id="(option) => option.name"
+              :options="schemas ?? []"
+              :multiple="false"
 
-            :error-text="getFirstError('schema')"
-            :warning-text="getFirstWarning('schema')"
-          />
-          <Divider v-if="!form.schema">
-            {{ $t('ou') }}
-          </Divider>
-          <InputGroup
-            v-if="!form.schema"
-            v-model="form.schema_url"
-            :label="t('Ajouter un lien vers le schéma')"
-            :placeholder="'https://...'"
-            :error-text="getFirstError('schema_url')"
-            :warning-text="getFirstWarning('schema_url')"
-            class="w-full !mb-0"
-          />
-
+              :error-text="getFirstError('schema')"
+              :warning-text="getFirstWarning('schema')"
+            />
+            <Divider v-if="!form.schema">
+              {{ $t('ou') }}
+            </Divider>
+            <InputGroup
+              v-if="!form.schema"
+              v-model="form.schema_url"
+              :label="t('Ajouter un lien vers le schéma')"
+              :placeholder="'https://...'"
+              :error-text="getFirstError('schema_url')"
+              :warning-text="getFirstWarning('schema_url')"
+              class="w-full !mb-0"
+            />
+          </template>
           <template #accordion>
             <HelpAccordion :title="$t('Sélectionner un schéma')">
               <TranslationT
@@ -444,7 +452,7 @@ const setFiles = (files: Array<File>) => {
 }
 
 const { data: extensions, status } = await useAPI<Array<string>>('/api/1/datasets/extensions/', { lazy: true })
-const { data: schemas, status: schemaStatus } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/', { lazy: true })
+const { data: schemasData, status: schemaStatus } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/', { lazy: true })
 
 const { toast } = useToast()
 

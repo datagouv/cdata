@@ -1,5 +1,9 @@
 <template>
-  <div>
+  <LoadingBlock
+    v-slot="{ data: dataset }"
+    :status
+    :data="dataset"
+  >
     <DescribeDataset
       v-if="datasetForm"
       v-model="datasetForm"
@@ -124,12 +128,12 @@
         </BannerAction>
       </div>
     </DescribeDataset>
-  </div>
+  </LoadingBlock>
 </template>
 
 <script setup lang="ts">
 import type { DatasetV2WithFullObject } from '@datagouv/components-next'
-import { BannerAction, BrandedButton, TranslationT } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, LoadingBlock, TranslationT } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import type { DatasetForm } from '~/types/types'
@@ -143,7 +147,7 @@ const { start, finish, isLoading } = useLoadingIndicator()
 const { toast } = useToast()
 
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
-const { data: dataset, refresh } = await useAPI<DatasetV2WithFullObject>(url, {
+const { data: dataset, status, refresh } = await useAPI<DatasetV2WithFullObject>(url, {
   headers: {
     'X-Get-Datasets-Full-Objects': 'True',
   },
@@ -175,12 +179,12 @@ async function save() {
       }
     }
 
-    await $api(`/api/1/datasets/${dataset.value.id}/`, {
+    await $api(`/api/1/datasets/${dataset.value?.id}/`, {
       method: 'PUT',
       body: JSON.stringify(datasetToApi(datasetForm.value, { private: datasetForm.value.private })),
     })
 
-    refresh()
+    await refresh()
     toast.success(t('Jeu de données mis à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
@@ -208,11 +212,11 @@ async function switchDatasetPrivate() {
   if (!datasetForm.value) throw new Error('No dataset form')
   start()
   try {
-    await $api(`/api/1/datasets/${dataset.value.id}/`, {
+    await $api(`/api/1/datasets/${dataset.value?.id}/`, {
       method: 'PUT',
       body: JSON.stringify(datasetToApi(datasetForm.value, { private: !datasetForm.value.private })),
     })
-    refresh()
+    await refresh()
     if (datasetForm.value.private) {
       toast.success(t('Jeu de données publié !'))
     }
@@ -229,11 +233,11 @@ async function restoreDataset() {
   if (!datasetForm.value) throw new Error('No dataset form')
   start()
   try {
-    await $api(`/api/1/datasets/${dataset.value.id}/`, {
+    await $api(`/api/1/datasets/${dataset.value?.id}/`, {
       method: 'PUT',
       body: JSON.stringify(datasetToApi(datasetForm.value, { deleted: null })),
     })
-    refresh()
+    await refresh()
     toast.success(t('Jeu de données restauré !'))
   }
   finally {
@@ -245,12 +249,12 @@ async function archiveDataset() {
   if (!datasetForm.value) throw new Error('No dataset form')
   start()
   try {
-    await $api(`/api/1/datasets/${dataset.value.id}/`, {
+    await $api(`/api/1/datasets/${dataset.value?.id}/`, {
       method: 'PUT',
-      body: JSON.stringify(datasetToApi(datasetForm.value, { archived: dataset.value.archived ? null : new Date().toISOString() })),
+      body: JSON.stringify(datasetToApi(datasetForm.value, { archived: dataset.value?.archived ? null : new Date().toISOString() })),
     })
-    refresh()
-    if (dataset.value.archived) {
+    await refresh()
+    if (dataset.value?.archived) {
       toast.success(t('Jeu de données désarchivé !'))
     }
     else {
@@ -264,7 +268,7 @@ async function archiveDataset() {
 }
 
 async function feature() {
-  const method = dataset.value.featured ? 'DELETE' : 'POST'
+  const method = dataset.value?.featured ? 'DELETE' : 'POST'
   try {
     start()
     await $api(`/api/1/datasets/${route.params.id}/featured`, {

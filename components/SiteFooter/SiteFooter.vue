@@ -194,7 +194,7 @@
                     class="fr-footer__top-link"
                     :title="site && site.version ? $t('Version {version}', { version: site.version }) : undefined"
                   >
-                    {{ $t('Moteur open source : udata ({version})', { version: site.version }) }}
+                    {{ $t('Moteur open source : udata ({version})', { version: site?.version ?? '' }) }}
                   </a>
                 </li>
                 <li>

@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-5">
     <section
-      v-if="status === 'success'"
+      v-if="status === 'success' && pageData"
       class="mb-5"
     >
       <h2 class="text-sm font-bold uppercase m-0 text-gray-title">

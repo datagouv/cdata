@@ -67,6 +67,7 @@ watchEffect(async () => {
 
 const savePage = async () => {
   if (!page.value) return
+  if (!site.value) return
 
   loading.value = true
 

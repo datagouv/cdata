@@ -1,5 +1,9 @@
 <template>
-  <LoadingBlock :status="followStatus">
+  <LoadingBlock
+    v-slot="{ data: follower }"
+    :status="followStatus"
+    :data="follower"
+  >
     <BrandedButton
       v-if="me"
       type="button"
@@ -53,7 +57,7 @@ const loading = ref(false)
 const readOnlyEnabled = config.public.readOnlyMode
 
 watchEffect(() => {
-  following.value = follower && follower.value.total > 0
+  following.value = !!(follower && follower.value && follower.value.total > 0)
 })
 
 const iconAttrs = computed(() => ({

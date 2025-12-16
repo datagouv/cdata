@@ -83,7 +83,11 @@
       </select>
     </div>
   </div>
-  <LoadingBlock :status>
+  <LoadingBlock
+    v-slot="{ data: reuses }"
+    :status
+    :data="reuses"
+  >
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 mb-16">
       <ReuseCard
         v-for="reuse in reuses.data"
