@@ -602,9 +602,9 @@ onMounted(() => {
   }
 })
 
-watchEffect(() => {
+watch(me, () => {
   if (me.value) {
     refreshNotifications()
   }
-})
+}, { immediate: true })
 </script>

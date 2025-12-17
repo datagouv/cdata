@@ -42,7 +42,7 @@ export function useNotifications() {
       nextPage.value = notifications.next_page
       pendingNotifications.value = await $api<PaginatedArray<UserNotification>>('/api/1/notifications/', {
         params: {
-          page_size: PAGE_SIZE,
+          page_size: 1,
           page: page.value,
           handled: false,
         },
@@ -57,5 +57,12 @@ export function useNotifications() {
     page.value++
     return loadNotifications()
   }
-  return { pendingNotifications: readonly(pendingNotifications), nextPage: readonly(nextPage), notificationsCombinedList: readonly(notificationsCombinedList), loadNotifications, loadMoreNotifications, refreshNotifications }
+  return {
+    pendingNotifications: readonly(pendingNotifications),
+    nextPage: readonly(nextPage),
+    notificationsCombinedList: readonly(notificationsCombinedList),
+    loadNotifications,
+    loadMoreNotifications,
+    refreshNotifications,
+  }
 }
