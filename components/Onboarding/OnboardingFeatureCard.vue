@@ -22,7 +22,7 @@
       <NuxtImg
         :src="image"
         alt=""
-        class="w-[92%] h-auto translate-x-px translate-y-px"
+        class="w-[92%] aspect-[378/240] translate-x-px translate-y-px"
         loading="lazy"
       />
     </div>

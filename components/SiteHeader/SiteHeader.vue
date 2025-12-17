@@ -423,13 +423,13 @@
                 {{ link.label }}
               </CdataLink>
               <ClientOnly v-else-if="link.items">
-                <Disclosure>
-                  <DisclosureButton
+                <Menu>
+                  <MenuButton
                     class="fr-nav__btn"
                   >
                     {{ link.label }}
-                  </DisclosureButton>
-                  <DisclosurePanel
+                  </MenuButton>
+                  <MenuItems
                     class="fr-menu"
                   >
                     <ul class="fr-menu__list">
@@ -437,17 +437,19 @@
                         v-for="item in link.items"
                         :key="item.label"
                       >
-                        <CdataLink
-                          class="fr-nav__link"
-                          :to="item.link"
-                          :external="true"
-                        >
-                          {{ item.label }}
-                        </CdataLink>
+                        <MenuItem>
+                          <CdataLink
+                            class="fr-nav__link"
+                            :to="item.link"
+                            :external="true"
+                          >
+                            {{ item.label }}
+                          </CdataLink>
+                        </MenuItem>
                       </li>
                     </ul>
-                  </DisclosurePanel>
-                </Disclosure>
+                  </MenuItems>
+                </Menu>
               </ClientOnly>
             </li>
             <li
@@ -503,7 +505,7 @@
 import { NuxtImg } from '#components'
 import { AnimatedLoader, BrandedButton, Toggletip, useGetUserAvatar } from '@datagouv/components-next'
 import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
-import { Disclosure, DisclosureButton, DisclosurePanel, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
+import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
 import LogoAsText from '../LogoAsText.vue'
 import LogoImage from '../LogoImage.vue'
@@ -531,9 +533,9 @@ const menu = [
   { label: t('Réutilisations'), link: '/reuses' },
   { label: t('Organisations'), link: '/organizations' },
   { label: t('Démarrer sur {site}', { site: config.public.title }), items: [
-    { label: t(`Qu'est-ce que {site} ?`, { site: config.public.title }), link: '/pages/about/a-propos_data-gouv' },
-    { label: t('Comment publier des données ?'), link: '/pages/onboarding/producteurs' },
-    { label: t('Comment utiliser des données ?'), link: '/pages/onboarding/reutilisateurs' },
+    { label: t(`Qu'est-ce que {site} ?`, { site: config.public.title }), link: config.public.homepageAboutUs },
+    { label: t('Comment publier des données ?'), link: config.public.homepagePublishDatasetOnboarding },
+    { label: t('Comment utiliser des données ?'), link: config.public.homepagePublishReuseOnboarding },
     { label: t('Les guides {site}', { site: config.public.title }), link: config.public.guidesUrl, external: true },
     { label: t('Nos produits'), link: '/products' },
   ], external: true },
