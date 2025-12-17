@@ -283,16 +283,16 @@
                       {{ me.first_name }} {{ me.last_name }}
                     </BrandedButton>
                     <Toggletip
-                      v-if="notifications"
+                      v-if="pendingNotifications"
                       :button-props="{
-                        class: `px-1 text-xs h-5 gap-1 font-bold rounded-sm ${notifications.total ? 'text-danger bg-danger-lightest' : 'text-primary'}`,
+                        class: `px-1 text-xs h-5 gap-1 font-bold rounded-sm ${pendingNotifications.total ? 'text-danger bg-danger-lightest' : 'text-primary'}`,
                         title: $t('Show notification'),
                       }"
                       no-margin
                       :styled-button="false"
                     >
                       <RiInbox2Line class="size-3" />
-                      {{ notifications.total }}
+                      {{ pendingNotifications.total }}
                       <template #toggletip="{ close }">
                         <div class="flex justify-between border-bottom">
                           <h5 class="fr-text--sm fr-my-0 fr-p-2v">
@@ -309,7 +309,7 @@
                         </div>
                         <NotificationsList :notifications="notificationsCombinedList" />
                         <button
-                          v-if="notifications.next_page"
+                          v-if="nextPage"
                           type="button"
                           class="w-full bg-datagouv hover:bg-datagouv-dark text-white p-2 flex items-center justify-center"
                           :disabled="isLoading"
@@ -523,7 +523,7 @@ const currentRoute = useRoute()
 const router = useRouter()
 const route = useRoute()
 const { isLoading } = useLoadingIndicator()
-const { loadNotifications, loadMoreNotifications, notifications, notificationsCombinedList } = useNotifications()
+const { refreshNotifications, loadMoreNotifications, pendingNotifications, nextPage, notificationsCombinedList } = useNotifications()
 
 const menu = [
   { label: t('Données'), link: '/datasets' },
@@ -568,7 +568,7 @@ const logout = async () => {
 
 const { toast } = useToast()
 
-onMounted(async () => {
+onMounted(() => {
   // TODO: remove this logic when we don't rely on udata flash messages
   // following https://github.com/opendatateam/udata/pull/3348
   const FLASH_MESSAGES: Record<string, { type: 'success' | 'error', text: string }> = {
@@ -600,8 +600,11 @@ onMounted(async () => {
       toast[message.type](message.text)
     }
   }
+})
+
+watchEffect(() => {
   if (me.value) {
-    loadNotifications()
+    refreshNotifications()
   }
 })
 </script>
