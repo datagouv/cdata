@@ -21,6 +21,7 @@ export function useNotifications() {
         },
       })
       notificationsCombinedList.value.push(...notifications.data)
+      nextPage.value = notifications.next_page
     }
     finally {
       finish()
