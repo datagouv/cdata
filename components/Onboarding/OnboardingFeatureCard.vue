@@ -6,12 +6,12 @@
       class="rounded-t overflow-hidden flex items-center justify-center py-8 md:py-[60px] px-4 bg-gradient-to-b border-b border-gray-default"
       :class="gradientClass"
     >
-      <NuxtImg
+      <img
         :src="image"
         alt=""
         class="h-[240px] md:h-[320px] w-auto object-contain"
         loading="lazy"
-      />
+      >
     </div>
     <!-- Petite carte : container avec aspect-ratio, image proportionnelle -->
     <div
@@ -19,12 +19,12 @@
       class="rounded-t overflow-hidden aspect-[378/240] pl-[8%] flex items-end justify-end bg-gradient-to-b border-b border-gray-default"
       :class="gradientClass"
     >
-      <NuxtImg
+      <img
         :src="image"
         alt=""
-        class="w-[92%] aspect-[378/240] translate-x-px translate-y-px"
+        class="w-[92%] translate-x-px translate-y-px"
         loading="lazy"
-      />
+      >
     </div>
     <div class="p-4 flex flex-col flex-1">
       <h3 class="text-lg font-bold leading-normal text-[#161616] mb-2">
