@@ -36,7 +36,7 @@
                 <BrandedButton
                   color="secondary"
                   :title="$t(`Abonnez-vous à notre lettre d'information`)"
-                  href="/events/rentree-data-gouv/"
+                  href="/events/rentree-data-gouv"
                 >
                   {{ $t("Voir nos prochains évènements") }}
                 </BrandedButton>
@@ -343,5 +343,5 @@ const networkLinks: Array<Link> = [
   { label: 'service-public.fr', link: 'https://www.service-public.fr' },
 ]
 
-const { data: site } = await useAPI<Site>('/api/1/site')
+const { data: site } = await useAPI<Site>('/api/1/site/')
 </script>

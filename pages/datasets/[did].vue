@@ -407,7 +407,7 @@
           :links="[
             {
               label: dataset.access_type === 'open' ? $t('Fichiers') : $t('Fichiers publics'),
-              href: `/datasets/${route.params.did}/`,
+              href: `/datasets/${route.params.did}`,
               count: dataset.resources.total,
             },
             {
@@ -533,34 +533,34 @@ onMounted(async () => {
   await redirectLegacyHashes([
     {
       from: 'resources',
-      to: `/datasets/${route.params.did}/`,
+      to: `/datasets/${route.params.did}`,
       queryParam: 'resource_id',
     },
     {
       from: 'resource',
-      to: `/datasets/${route.params.did}/`,
+      to: `/datasets/${route.params.did}`,
       queryParam: 'resource_id',
     },
     {
       from: 'community-reuses',
-      to: `/datasets/${route.params.did}/reuses_and_dataservices/`,
+      to: `/datasets/${route.params.did}/reuses_and_dataservices`,
     },
     {
       from: 'discussions',
-      to: `/datasets/${route.params.did}/discussions/`,
+      to: `/datasets/${route.params.did}/discussions`,
       queryParam: 'discussion_id',
     },
     {
       from: 'discussion',
-      to: `/datasets/${route.params.did}/discussions/`,
+      to: `/datasets/${route.params.did}/discussions`,
       queryParam: 'discussion_id',
     },
     {
       from: 'community-resources',
-      to: `/datasets/${route.params.did}/community-resources/`,
+      to: `/datasets/${route.params.did}/community-resources`,
       queryParam: 'resource_id',
     },
-    { from: 'information', to: `/datasets/${route.params.did}/informations/` },
+    { from: 'information', to: `/datasets/${route.params.did}/informations` },
   ])
 })
 

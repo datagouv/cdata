@@ -35,7 +35,7 @@
       </p>
       <BrandedButton
         color="primary"
-        href="/admin/dataservices/new/"
+        href="/admin/dataservices/new"
       >
         {{ $t('Ajouter une API') }}
       </BrandedButton>
@@ -79,7 +79,7 @@
       </p>
       <BrandedButton
         color="primary"
-        href="/admin/reuses/new/"
+        href="/admin/reuses/new"
       >
         {{ $t('Ajouter une réutilisation') }}
       </BrandedButton>

@@ -134,7 +134,9 @@ async function save() {
 
     const dataset = newDataset.value = newDataset.value || await $api<Dataset>('/api/1/datasets/', {
       method: 'POST',
-      body: JSON.stringify(datasetToApi(datasetForm.value, { private: true })),
+      body: JSON.stringify(datasetToApi(datasetForm.value, { private: true, extras: {
+        publish_source: `${config.public.title}:new`,
+      } })),
     })
 
     let results: Array<PromiseSettledResult<Resource>> = []

@@ -2,7 +2,7 @@
   <ReuseCard
     :reuse
     :reuse-url="reuse.page"
-    :organization-url="`/organizations/${reuse.organization?.slug}`"
+    :organization-url="reuse.organization?.page"
   />
 </template>
 

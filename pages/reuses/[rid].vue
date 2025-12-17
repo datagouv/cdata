@@ -94,7 +94,7 @@
               </div>
               <CdataLink
                 class="link block"
-                :to="`/organizations/${reuse.organization.slug}/`"
+                :to="reuse.organization.page"
               >
                 <OrganizationNameWithCertificate
                   :organization="reuse.organization"
@@ -112,7 +112,7 @@
               />
               <CdataLink
                 class="link block"
-                :to="`/users/${reuse.owner.slug}/`"
+                :to="reuse.owner.page"
               >
                 {{ reuse.owner.first_name }} {{ reuse.owner.last_name }}
               </CdataLink>
@@ -148,8 +148,8 @@
       </div>
       <FullPageTabs
         :links="[
-          { label: $t('Description'), href: `/reuses/${route.params.rid}/` },
-          { label: $t('Discussions'), href: `/reuses/${route.params.rid}/discussions/`, count: reuse.metrics.discussions ?? 0 },
+          { label: $t('Description'), href: `/reuses/${route.params.rid}` },
+          { label: $t('Discussions'), href: `/reuses/${route.params.rid}/discussions`, count: reuse.metrics.discussions ?? 0 },
         ]"
       />
       <div
@@ -193,8 +193,8 @@ useSeoMeta({
 
 onMounted(async () => {
   await redirectLegacyHashes([
-    { from: 'discussions', to: `/reuses/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
-    { from: 'discussion', to: `/reuses/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+    { from: 'discussions', to: `/reuses/${route.params.did}/discussions`, queryParam: 'discussion_id' },
+    { from: 'discussion', to: `/reuses/${route.params.did}/discussions`, queryParam: 'discussion_id' },
   ])
 })
 </script>

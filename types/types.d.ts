@@ -1,5 +1,6 @@
-import type { AccessTypeForm, WithAccessType, Dataset, DatasetV2, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, OrganizationReference, UserReference, License, ReuseType, Resource, ResourceType, ResourceFileType, Schema, ContactPoint, PaginatedArray, Owned } from '@datagouv/components-next'
+import type { AccessTypeForm, WithAccessType, Dataset, DatasetV2, DatasetV2WithFullObject, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, OrganizationReference, UserReference, License, ReuseType, Resource, ResourceType, ResourceFileType, Schema, ContactPoint, PaginatedArray, Owned } from '@datagouv/components-next'
 import type { NitroFetchRequest, NitroFetchOptions } from 'nitropack'
+import type { Thread } from './discussions'
 
 // Some types from @datagouv/components-next are exported here to avoid 50+ files refactors
 export type {
@@ -155,6 +156,7 @@ export type NewDatasetForApi = {
     granularity?: string
     zones?: Array<string> | null
   }
+  extras?: Record<string, unknown>
 } & WithAccessType
 
 export type ReuseSuggest = Pick<Reuse, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
@@ -307,16 +309,15 @@ export type NewOrganization = {
 export type NewContactPoint = Omit<ContactPoint, 'id'>
 export type ContactPointInForm = ContactPoint | NewContactPoint
 
-type TitleOrName = { title: string } | { name: string }
-
-export type LinkToSubject = TitleOrName & { page?: string, self_web_url?: undefined }
+export type LinkToSubjectFallback = { customTitle: string, customUrl: string | undefined }
+export type LinkToSubject = Dataset | DatasetV2 | DatasetV2WithFullObject | Omit<Dataset, 'resources' | 'community_resources'> | Reuse | Dataservice | Organization | Thread | LinkToSubjectFallback
 
 export type TransferRequest = {
   id: string
-  user: User | null // TODO add this in API
+  user: User
   owner: (User & { class: 'User' }) | (Organization & { class: 'Organization' })
   recipient: (User & { class: 'User' }) | (Organization & { class: 'Organization' })
-  subject: (Dataset & { class: 'Dataset' }) | (Reuse & { class: 'Reuse' }) | (LinkToSubject & Dataservice & { class: 'Dataservice' })
+  subject: (Dataset & { class: 'Dataset' }) | (Reuse & { class: 'Reuse' }) | (Dataservice & { class: 'Dataservice' })
   comment: string
   created: string
   status: 'pending' | 'accepted' | 'refused'
