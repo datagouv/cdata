@@ -22,8 +22,7 @@
       <img
         :src="image"
         alt=""
-        class="w-[92%] translate-x-px translate-y-px"
-        loading="lazy"
+        class="w-[92%] h-auto translate-x-px translate-y-px"
       >
     </div>
     <div class="p-4 flex flex-col flex-1">
