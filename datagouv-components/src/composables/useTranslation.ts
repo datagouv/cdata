@@ -10,7 +10,7 @@ export type TranslationFunction = (key: string, options?: TranslationOptions | n
 const PLACEHOLDER_REGEX = /\{(\w+)\}/g
 
 // Pre-register all available translation files at build time
-const translationModules = import.meta.glob<Record<string, string>>('../../../../../locales/*.json', {
+const translationModules = import.meta.glob<Record<string, string>>('../../../locales/*.json', {
   import: 'default',
 })
 
@@ -37,7 +37,7 @@ function detectLanguage(): string {
 }
 
 async function loadTranslationFile(lang: string): Promise<Record<string, string>> {
-  const modulePath = `../../../../../locales/${lang}.json`
+  const modulePath = `../../../locales/${lang}.json`
   const moduleLoader = translationModules[modulePath]
 
   if (!moduleLoader) {
