@@ -50,4 +50,9 @@ test('can create a reuse', async ({ page }) => {
 
   // Verify
   await expect(page.getByRole('heading', { level: 1 })).toContainText(`Visualisation des données ${uniqueId}`)
+
+  // Cleanup: delete the created reuse
+  await page.getByRole('link', { name: 'Modifier' }).click()
+  await page.getByRole('button', { name: 'Supprimer' }).click()
+  await page.getByRole('button', { name: 'Supprimer cette réutilisation' }).click()
 })

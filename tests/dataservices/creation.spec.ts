@@ -34,4 +34,9 @@ test('can create a dataservice', async ({ page }) => {
 
   // Verify
   await expect(page.getByRole('heading', { level: 1 })).toContainText(`Mon API ${uniqueId}`)
+
+  // Cleanup: delete the created dataservice
+  await page.getByRole('link', { name: 'Modifier' }).click()
+  await page.getByRole('button', { name: 'Supprimer' }).click()
+  await page.getByRole('button', { name: 'Supprimer l\'API' }).click()
 })
