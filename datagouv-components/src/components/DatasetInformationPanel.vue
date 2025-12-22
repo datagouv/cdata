@@ -13,7 +13,7 @@
             {{ t('Licence') }}
           </dt>
           <dd class="text-sm m-0 text-gray-medium p-0">
-            <code class="bg-grey-some px-1 text-gray-medium">
+            <code class="bg-gray-some px-1 text-gray-medium">
               <a :href="license.url">
                 {{ license.title }}
               </a>
