@@ -10,12 +10,12 @@
         :rel="link ? 'ugc nofollow noopener' : undefined"
         :target="link ? '_blank' : undefined"
         :title="label"
-        class="text-grey-title"
+        class="text-gray-title"
         :class="{ truncate: link }"
       >
         {{ label }}
       </component>
-      <small class="text-grey-medium italic">({{ role }})</small>
+      <small class="text-gray-medium italic">({{ role }})</small>
     </div>
   </div>
 </template>
