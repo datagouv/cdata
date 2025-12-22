@@ -6,13 +6,15 @@
     :duration="4000"
     close-button
   />
-  <div
-    id="tooltips"
-    class="h-0"
-  />
-  <NuxtLayout>
-    <NuxtPage />
-  </NuxtLayout>
+  <div class="datagouv-components">
+    <div
+      id="tooltips"
+      class="h-0"
+    />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </div>
 </template>
 
 <script setup lang="ts">

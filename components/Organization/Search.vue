@@ -36,8 +36,8 @@
         :value="option"
       >
         <div
-          class="relative flex items-center py-2 fr-enlarge-link border-neutral-200 border-bottom"
-          :class="{ 'bg-indigo-100 outline outline-1 outline-primary outline-offset-[-2px]': active }"
+          class="relative flex items-center py-2 fr-enlarge-link border-neutral-200 border-b"
+          :class="{ 'bg-indigo-100 outline outline-primary outline-offset-[-2px]': active }"
           @mousedown.left="moveToOrganization(option.page)"
         >
           <OrganizationLogo

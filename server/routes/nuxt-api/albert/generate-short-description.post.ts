@@ -67,12 +67,11 @@ export default defineEventHandler(async (event) => {
       },
     ]
 
-    // As of 2025/08, models available for text generation:
-    // - albert-small
-    // - AgentPublic/albert-spp-8b
-    // - albert-code-beta
-    // - albert-ministral
-    const response = await createChatCompletion(messages, 'albert-small', albertConfig) as ChatResponse
+    // Models available for text generation:
+    // - openweight-small (replaces albert-small)
+    // - openweight-medium (replaces albert-large)
+    // - openweight-large
+    const response = await createChatCompletion(messages, 'openweight-small', albertConfig) as ChatResponse
     const generatedDescriptionShort = response.choices?.[0]?.message?.content || ''
 
     // Ensure the description doesn't exceed maxChars
