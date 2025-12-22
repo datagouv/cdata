@@ -1,7 +1,7 @@
 <template>
   <div>
     <PostContentForm
-      v-if="post"
+      v-if="postForm"
       :post="postForm"
       type="update"
       :submit-label="t('Sauvegarder')"
@@ -21,11 +21,13 @@ const { toast } = useToast()
 const route = useRoute()
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
 const { data: post, refresh } = await useAPI<Post>(url, { redirectOn404: true })
-const postForm = computed(() => postToForm(post.value))
+const postForm = computed(() => post.value ? postToForm(post.value) : null)
 
 const loading = ref(false)
 
 const save = async (form: { content: string }) => {
+  if (!post.value) return
+
   try {
     loading.value = true
 

@@ -16,7 +16,11 @@
         {{ $t('Télécharger le catalogue') }}
       </BrandedButton>
     </div>
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: pageData }"
+      :status
+      :data="pageData"
+    >
       <div v-if="pageData && pageData.total > 0">
         <AdminTable>
           <thead>

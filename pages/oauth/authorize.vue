@@ -2,7 +2,9 @@
   <div class="bg-gray-some py-6 space-y-6">
     <div class="container bg-white max-w-xl p-6 border border-gray-lower">
       <LoadingBlock
+        v-slot="{ data }"
         :status
+        :data="apiData"
       >
         <div
           v-if="data"
@@ -101,7 +103,7 @@ useSeoMeta({ title: t('Connexion') })
 
 const route = useRoute()
 
-const { data, status } = await useAPI<{ client: { name: string }, scopes: Array<string> }>('/oauth/client_info', { query: route.query })
+const { data: apiData, status } = await useAPI<{ client: { name: string }, scopes: Array<string> }>('/oauth/client_info', { query: route.query })
 
 const { data: csrf_response } = await useAPI<{ response: { csrf_token: string } }>('/get-csrf', { lazy: true, server: false })
 

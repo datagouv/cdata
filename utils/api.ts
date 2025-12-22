@@ -44,14 +44,9 @@ export async function useAPI<T, U = T>(
     }
   }
 
-  // This allow to remove the `null` variant from `useFetch`
-  // response. I think the `null` variant is here for `DELETE`
-  // responses (without body) but in our case this helper is intended
-  // to be used only for `GET` requests. We need to use $fetch for
-  // the others HTTP methods.
-  // TODO: add a check at the beginning of this function to prevent
-  // miss-use of this function (calling it with other methods)
-  return { ...response, data: response.data as Ref<T> }
+  // data can be null in case of SSR timeout, network errors, or API errors.
+  // Use LoadingBlock with v-slot="{ data }" to get a non-null typed data in templates.
+  return response
 }
 
 export function getUserBasedKey(route: string) {

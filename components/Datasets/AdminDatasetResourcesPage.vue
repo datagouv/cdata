@@ -48,7 +48,7 @@
         </BrandedButton>
         <UploadResourceModal
           v-if="! reorder"
-          :extensions
+          :extensions="extensions ?? []"
           @new-files="addFiles"
         />
       </div>
@@ -66,13 +66,18 @@
     />
 
     <FileEditModalFromQueryStringClient
-      :schemas
+      v-if="dataset"
+      :schemas="schemas ?? []"
       :dataset
       @submit="updateResource"
       @delete="refreshResources"
     />
 
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: resourcesPage }"
+      :status
+      :data="resourcesPage"
+    >
       <AdminTable v-if="resourcesPage && resourcesPage.data.length">
         <thead>
           <tr>
@@ -171,9 +176,9 @@
             </td>
             <td>
               <FileEditModal
-                :dataset
+                :dataset="dataset ?? undefined"
                 :loading
-                :resource="resourceToForm(resource, schemas || [])"
+                :resource="resourceToForm(resource, schemas ?? [])"
                 @submit="updateResource"
                 @delete="refreshResources"
               />
@@ -243,6 +248,7 @@ const removeFirstNewFile = () => {
   resourceForms.value = [...resourceForms.value.slice(1)]
 }
 const saveFirstNewFile = async (closeModal: () => void, form: ResourceForm | CommunityResourceForm) => {
+  if (!dataset.value) return
   loading.value = true
   try {
     await saveResourceForm(dataset.value, form)
@@ -257,6 +263,7 @@ const saveFirstNewFile = async (closeModal: () => void, form: ResourceForm | Com
   refreshResources()
 }
 const updateResource = async (closeModal: () => void, resourceForm: ResourceForm | CommunityResourceForm) => {
+  if (!dataset.value) return
   loading.value = true
 
   try {
@@ -319,6 +326,7 @@ const cancelReorder = () => {
 }
 
 const saveReorder = async () => {
+  if (!dataset.value) return
   try {
     loadingForOrdering.value = true
 

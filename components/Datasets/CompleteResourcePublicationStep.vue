@@ -21,9 +21,9 @@
     </SimpleBanner>
 
     <FileCard
-      :model-value="resourceToForm(resource, schemas)"
+      :model-value="resourceToForm(resource, schemas ?? [])"
       :show-edit-and-warning="false"
-      :extensions
+      :extensions="extensions ?? []"
     />
 
     <div class="flex justify-end">

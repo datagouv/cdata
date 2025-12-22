@@ -12,13 +12,13 @@
     </Breadcrumb>
     <ListPage
       :link="getLink"
-      :reuses
+      :reuses="reuses ?? { data: [], total: 0, page: 1, page_size: 21, next_page: null, previous_page: null }"
       :initial-q="q"
       :sort
       :status
       :topic
-      :topics
-      :total-reuses="site.metrics.reuses"
+      :topics="topics ?? []"
+      :total-reuses="site?.metrics.reuses ?? 0"
       @change="change"
     />
   </div>

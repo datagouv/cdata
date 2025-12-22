@@ -1,7 +1,9 @@
 <template>
   <LoadingBlock
     v-if="organization.metrics.reuses"
+    v-slot="{ data: reuses }"
     :status
+    :data="reusesData"
   >
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
       <Card
@@ -66,7 +68,7 @@ const nonFalsyParams = computed(() => {
   return { ...Object.fromEntries(filteredParams), organization: props.organization.id, page_size: 15 }
 })
 
-const { data: reuses, status } = await useAPI<PaginatedArray<Reuse>>('/api/2/reuses/search/', {
+const { data: reusesData, status } = await useAPI<PaginatedArray<Reuse>>('/api/2/reuses/search/', {
   headers: {
     'X-Fields': reusesXFields,
   },

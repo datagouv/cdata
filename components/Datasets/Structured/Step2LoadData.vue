@@ -18,7 +18,7 @@
             :key="index"
             v-model="resources[index]"
             class="fr-mb-3v"
-            :extensions
+            :extensions="extensions ?? []"
             :show-edit-and-warning="!isTableschema"
             @delete="removeFile(index)"
           />

@@ -1,6 +1,6 @@
 <template>
   <DescribeHarvester
-    v-if="harvesterForm"
+    v-if="harvester && harvesterForm"
     v-model="harvesterForm"
     type="update"
     @submit="save"
@@ -111,11 +111,13 @@ const loading = ref(false)
 
 const harvesterForm = ref<HarvesterForm | null>(null)
 watchEffect(() => {
+  if (!harvester.value) return
   harvesterForm.value = harvesterToForm(harvester.value)
 })
 
 const save = async () => {
   if (!harvesterForm.value) throw new Error('No harvester form')
+  if (!harvester.value) return
 
   try {
     loading.value = true
@@ -161,6 +163,8 @@ const preview = async () => {
 }
 
 const deleteHarvester = async () => {
+  if (!harvester.value) return
+
   loading.value = true
   try {
     await $api(`/api/1/harvest/source/${harvester.value.id}`, {

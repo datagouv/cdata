@@ -4,7 +4,7 @@
       color="green"
       :title="$t('Réutilisations')"
       :subtitle="$t('Rechercher parmi les {count} réutilisations sur {site}', {
-        count: site.metrics.reuses,
+        count: site?.metrics.reuses ?? 0,
         site: config.public.title,
       })"
       :placeholder="$t('Rechercher une réutilisation de données')"
@@ -28,7 +28,7 @@
       </ul>
     </EditoHeader>
     <PageShowById
-      v-if="site.reuses_page"
+      v-if="site?.reuses_page"
       :page-id="site.reuses_page"
     />
     <div class="overflow-hidden container flex flex-col md:flex-row items-center py-16 md:py-0">

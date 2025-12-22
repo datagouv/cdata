@@ -4,7 +4,7 @@
       color="purple"
       :title="$t('API')"
       :subtitle="$t('Rechercher parmi les {count} API sur {site}', {
-        count: site.metrics.dataservices,
+        count: site?.metrics.dataservices || 0,
         site: config.public.title,
       })"
       :placeholder="$t('ex: SIRENE')"
@@ -13,7 +13,7 @@
       :link-url="config.public.guideDataservices"
     />
     <PageShowById
-      v-if="site.dataservices_page"
+      v-if="site?.dataservices_page"
       :page-id="site.dataservices_page"
       main-color="brown-illustration"
     />

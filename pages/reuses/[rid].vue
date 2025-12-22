@@ -51,7 +51,9 @@
     </div>
     <LoadingBlock
       v-if="reuse"
+      v-slot="{ data: reuse }"
       :status
+      :data="reuse"
     >
       <div class="container py-10 min-h-32">
         <div class="grid md:grid-cols-12 gap-4">

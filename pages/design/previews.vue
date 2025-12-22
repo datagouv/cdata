@@ -18,6 +18,7 @@
         <p>Two added tabs: <b>Aperçu</b> and <b>Structure des données</b>.</p>
 
         <ResourceAccordion
+          v-if="tabularDataset"
           :resource="tabularDataset.resources.filter((r) => r.format === 'csv')[0]"
           :dataset="tabularDataset"
         />
@@ -26,6 +27,7 @@
         <h2>Pmtiles Preview</h2>
         <p>One added tab: <b>Carte</b>.</p>
         <ResourceAccordion
+          v-if="pmtilesDataset"
           :resource="pmtilesDataset.resources.filter((r) => r.format === 'pmtiles')[0]"
           :dataset="pmtilesDataset"
         />
@@ -34,6 +36,7 @@
         <h2>OGC WMS Preview</h2>
         <p>One added tab: <b>Carte</b>.</p>
         <ResourceAccordion
+          v-if="ogcDataset"
           :resource="ogcDataset.resources.filter((r) => r.format === 'ogc:wms')[0]"
           :dataset="ogcDataset"
         />
@@ -42,6 +45,7 @@
         <h2>Pdf Preview</h2>
         <p>One added tab: <b>Aperçu</b>.</p>
         <ResourceAccordion
+          v-if="pdfDataset"
           :resource="pdfDataset.resources.filter((r) => r.format === 'pdf')[0]"
           :dataset="pdfDataset"
         />
@@ -50,6 +54,7 @@
         <h2>XML Preview</h2>
         <p>One added tab: <b>Aperçu</b>.</p>
         <ResourceAccordion
+          v-if="xmlAndJsonDataset"
           :resource="xmlAndJsonDataset.resources.filter((r) => r.format === 'xml')[0]"
           :dataset="xmlAndJsonDataset"
         />
@@ -58,6 +63,7 @@
         <h2>JSON Preview</h2>
         <p>One added tab: <b>Aperçu</b>.</p>
         <ResourceAccordion
+          v-if="xmlAndJsonDataset"
           :resource="xmlAndJsonDataset.resources.filter((r) => r.format === 'json')[0]"
           :dataset="xmlAndJsonDataset"
         />
@@ -67,6 +73,7 @@
         <h3>Iframe preview</h3>
         <p>One added tab: <b>Aperçu</b>. The iframe could show a map, data table or a structure field table.</p>
         <ResourceAccordion
+          v-if="datafairDataset"
           :resource="datafairDataset.resources.filter((r) => r.extras['datafairEmbed'] === 'map')[0]"
           :dataset="datafairDataset"
         />
@@ -75,6 +82,7 @@
         </h3>
         <p>One added tab: <b>Aperçu</b>. Show the api doc with a Swagger UI.</p>
         <ResourceAccordion
+          v-if="datafairDataset"
           :resource="datafairDataset.resources.filter((r) => r.extras['apidocUrl'])[0]"
           :dataset="datafairDataset"
         />

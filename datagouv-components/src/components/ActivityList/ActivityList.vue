@@ -1,7 +1,11 @@
 <template>
   <PaddedContainer class="p-4 pr-7">
-    <LoadingBlock :status>
-      <template v-if="activities && activities.total">
+    <LoadingBlock
+      v-slot="{ data: activities }"
+      :status
+      :data="activities"
+    >
+      <template v-if="activities.total">
         <div
           v-for="(monthlyActivities, month) in groupedActivities"
           :key="month"

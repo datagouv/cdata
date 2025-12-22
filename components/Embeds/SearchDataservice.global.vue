@@ -1,6 +1,8 @@
 <template>
   <LoadingBlock
+    v-slot="{ data: organization }"
     :status
+    :data="organizationData"
     class="bg-transparent"
   >
     <div
@@ -23,5 +25,5 @@ const props = defineProps<{
 }>()
 
 const url = computed(() => `/api/1/organizations/${props.slug}/`)
-const { data: organization, status } = await useAPI<Organization>(url, { lazy: true, server: false })
+const { data: organizationData, status } = await useAPI<Organization>(url, { lazy: true, server: false })
 </script>

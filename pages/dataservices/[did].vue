@@ -37,7 +37,9 @@
     </div>
     <LoadingBlock
       v-if="dataservice"
+      v-slot="{ data: dataservice }"
       :status
+      :data="dataservice"
     >
       <div class="space-y-8">
         <div class="container pt-3 min-h-32">
@@ -290,6 +292,7 @@ function showSwagger() {
 }
 
 const metricsSince = computed(() => {
+  if (!dataservice.value) return config.public.metricsSince
   // max of the start of metrics computing and the creation of the dataservice on the platform
   return [dataservice.value.created_at, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
 })
@@ -298,7 +301,7 @@ const metricsViews = ref<null | Record<string, number>>(null)
 const metricsViewsTotal = ref<null | number>(null)
 
 watchEffect(async () => {
-  if (!dataservice.value.id) return
+  if (!dataservice.value?.id) return
   const response = await fetch(`${config.public.metricsApi}/api/dataservices/data/?dataservice_id__exact=${dataservice.value.id}&metric_month__sort=desc&page_size=12`)
   const page = await response.json()
 
