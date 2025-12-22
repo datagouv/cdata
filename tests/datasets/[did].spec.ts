@@ -85,3 +85,46 @@ test('dataset without labels does not show label section', async ({ page }) => {
   const labelSection = page.getByTestId('labelsList')
   await expect(labelSection).not.toBeVisible()
 })
+
+test('tabs are accessible', async ({ page }) => {
+  await page.goto(
+    '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
+  )
+
+  await expect(page.getByRole('link', { name: /Fichiers/ })).toBeVisible()
+  await expect(page.getByRole('link', { name: /Réutilisations et API/ })).toBeVisible()
+  await expect(page.getByRole('link', { name: /Discussions/ })).toBeVisible()
+})
+
+test('discussions tab navigates to discussions page', async ({ page }) => {
+  await page.goto(
+    '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
+  )
+
+  const discussionsTab = page.getByRole('link', { name: /Discussions/ })
+  await discussionsTab.click()
+
+  await page.waitForURL('**/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/discussions')
+})
+
+test('resources are displayed and accordion expands', async ({ page }) => {
+  await page.goto(
+    '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
+  )
+
+  // Check that resource accordions are present (expand buttons)
+  const expandButtons = page.getByTestId('expand-button')
+  await expect(expandButtons.first()).toBeVisible()
+
+  // Get the first accordion button
+  const firstAccordion = expandButtons.first()
+
+  // Check it's not expanded initially
+  await expect(firstAccordion).toHaveAttribute('aria-expanded', 'false')
+
+  // Click to expand
+  await firstAccordion.click()
+
+  // Verify it's now expanded
+  await expect(firstAccordion).toHaveAttribute('aria-expanded', 'true')
+})
