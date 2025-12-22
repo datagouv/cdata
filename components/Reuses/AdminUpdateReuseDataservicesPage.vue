@@ -16,13 +16,12 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, toast } from '@datagouv/components-next'
 import type { Dataservice, Reuse } from '@datagouv/components-next'
 import DataservicesSelect from '../DataservicesSelect.vue'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { toast } = useToast()
 
 const route = useRoute()
 const url = computed(() => `/api/1/reuses/${route.params.id}`)

@@ -123,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, toast } from '@datagouv/components-next'
 import type { ContactPoint, ContactPointRole, Organization } from '@datagouv/components-next'
 import { RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
@@ -143,7 +143,6 @@ const emit = defineEmits<{
 const { $api } = useNuxtApp()
 
 const { t } = useTranslation()
-const { toast } = useToast()
 
 const { form: newContactForm, getFirstError, touch, validate } = useForm({
   ...defaultContactForm,

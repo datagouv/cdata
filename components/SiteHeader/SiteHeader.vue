@@ -503,7 +503,7 @@
 
 <script setup lang="ts">
 import { NuxtImg } from '#components'
-import { AnimatedLoader, BrandedButton, Toggletip, useGetUserAvatar } from '@datagouv/components-next'
+import { AnimatedLoader, BrandedButton, Toggletip, useGetUserAvatar, toast } from '@datagouv/components-next'
 import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
@@ -567,8 +567,6 @@ const logout = async () => {
   doLogout()
   toast.success(t('Vous avez été déconnecté.'))
 }
-
-const { toast } = useToast()
 
 onMounted(() => {
   // TODO: remove this logic when we don't rely on udata flash messages

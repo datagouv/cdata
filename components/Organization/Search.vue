@@ -60,13 +60,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { OrganizationLogo, type Organization } from '@datagouv/components-next'
+import { OrganizationLogo, type Organization, toast } from '@datagouv/components-next'
 import { watchDebounced } from '@vueuse/core'
 import { RiSearch2Line } from '@remixicon/vue'
 import { Combobox, ComboboxInput, ComboboxLabel, ComboboxOption, ComboboxOptions } from '@headlessui/vue'
 
 const { t } = useTranslation()
-const { toast } = useToast()
 const config = useRuntimeConfig()
 const q = ref('')
 const { $api } = useNuxtApp()

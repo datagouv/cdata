@@ -37,6 +37,7 @@
 <script setup lang="ts">
 import { RiCheckLine, RiClipboardLine, RiFileCopyLine } from '@remixicon/vue'
 import { ref } from 'vue'
+import { toast } from 'vue-sonner'
 
 const props = withDefaults(defineProps<{
   text: string
@@ -51,10 +52,15 @@ const props = withDefaults(defineProps<{
 
 const copied = ref(false)
 
-const copy = () => {
-  void navigator.clipboard.writeText(props.text)
-  copied.value = true
-  setTimeout(() => copied.value = false, 2000)
+const copy = async () => {
+  try {
+    await navigator.clipboard.writeText(props.text)
+    copied.value = true
+    setTimeout(() => copied.value = false, 2000)
+  }
+  catch {
+    toast.error('Impossible de copier dans le presse-papier')
+  }
 }
 </script>
 

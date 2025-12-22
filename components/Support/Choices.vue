@@ -99,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { useActiveDescendant, BrandedButton, MarkdownViewer, SimpleBanner } from '@datagouv/components-next'
+import { useActiveDescendant, BrandedButton, MarkdownViewer, SimpleBanner, toast } from '@datagouv/components-next'
 import type { Question, QuestionWithSegment } from '~/types/support'
 
 const emit = defineEmits<{
@@ -114,8 +114,6 @@ const props = defineProps<{
 const answerResponse = ref('')
 const loading = ref(false)
 const messageSent = ref(false)
-
-const { toast } = useToast()
 
 const { isActive, active, focusOut, handleKeyPressForActiveDescendant } = useActiveDescendant('choices' in props.question ? props.question.choices : [], 'horizontal')
 
