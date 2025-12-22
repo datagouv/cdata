@@ -301,7 +301,7 @@
                           <button
                             type="button"
                             :title="t('Fermer')"
-                            class="border-l close-button flex items-center justify-center"
+                            class="border-l border-gray-default close-button flex items-center justify-center"
                             @click="close"
                           >
                             <RiCloseLine class="size-5" />
