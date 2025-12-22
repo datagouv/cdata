@@ -142,7 +142,7 @@ const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const route = useRoute()
-const { start, finish, isLoading } = useLoadingIndicator()
+const isLoading = ref(false)
 
 const { toast } = useToast()
 
@@ -167,7 +167,7 @@ async function save() {
   if (!datasetForm.value) throw new Error('No dataset form')
 
   try {
-    start()
+    isLoading.value = true
     if (
       datasetForm.value.contact_points
       && datasetForm.value.owned?.organization
@@ -189,12 +189,12 @@ async function save() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function deleteDataset() {
-  start()
+  isLoading.value = true
   try {
     await $api(`/api/1/datasets/${route.params.id}`, {
       method: 'DELETE',
@@ -204,13 +204,13 @@ async function deleteDataset() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function switchDatasetPrivate() {
   if (!datasetForm.value) throw new Error('No dataset form')
-  start()
+  isLoading.value = true
   try {
     await $api(`/api/1/datasets/${dataset.value?.id}/`, {
       method: 'PUT',
@@ -225,13 +225,13 @@ async function switchDatasetPrivate() {
     }
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function restoreDataset() {
   if (!datasetForm.value) throw new Error('No dataset form')
-  start()
+  isLoading.value = true
   try {
     await $api(`/api/1/datasets/${dataset.value?.id}/`, {
       method: 'PUT',
@@ -241,13 +241,13 @@ async function restoreDataset() {
     toast.success(t('Jeu de données restauré !'))
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function archiveDataset() {
   if (!datasetForm.value) throw new Error('No dataset form')
-  start()
+  isLoading.value = true
   try {
     await $api(`/api/1/datasets/${dataset.value?.id}/`, {
       method: 'PUT',
@@ -263,14 +263,14 @@ async function archiveDataset() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function feature() {
   const method = dataset.value?.featured ? 'DELETE' : 'POST'
   try {
-    start()
+    isLoading.value = true
     await $api(`/api/1/datasets/${route.params.id}/featured`, {
       method,
     })
@@ -286,7 +286,7 @@ async function feature() {
     toast.error(t('Impossible de mettre en avant ce jeu de données'))
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 </script>

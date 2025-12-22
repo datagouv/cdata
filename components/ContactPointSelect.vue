@@ -160,7 +160,7 @@ const props = defineProps<{
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { isLoading, start, finish } = useLoadingIndicator()
+const isLoading = ref(false)
 
 const contactSelectRef = useTemplateRef('contactSelect')
 
@@ -232,7 +232,7 @@ async function save() {
     console.error('[ContactPointSelect] Cannot save: contact already has an id, expected a new contact')
     return
   }
-  start()
+  isLoading.value = true
   try {
     const newContact = await newContactPoint($api, props.organization, contact.value)
     if (contactSelectRef.value) {
@@ -241,7 +241,7 @@ async function save() {
     }
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 </script>
