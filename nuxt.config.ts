@@ -101,9 +101,9 @@ export default defineNuxtConfig({
       reusesOnboardingUsecases: 'https://www.data.gouv.fr/pages/onboarding/liste_cas_usage/',
       dataservicesOnboarding: 'https://guides.data.gouv.fr/guide-data.gouv.fr/api/outils-pour-les-administrations',
 
-      homepagePublishDatasetOnboarding: '/pages/onboarding/producteurs',
-      homepagePublishReuseOnboarding: '/pages/onboarding/reutilisateurs',
-      homepageAboutUs: '/pages/about/a-propos_data-gouv',
+      homepagePublishDatasetOnboarding: '/producteurs',
+      homepagePublishReuseOnboarding: '/reutilisateurs',
+      homepageAboutUs: '/a-propos',
       homepageExplore: 'https://explore.data.gouv.fr',
       homepageRightNow: {
         title: 'Données relatives aux Énergies',

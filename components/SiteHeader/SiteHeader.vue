@@ -283,16 +283,16 @@
                       {{ me.first_name }} {{ me.last_name }}
                     </BrandedButton>
                     <Toggletip
-                      v-if="notifications"
+                      v-if="pendingNotifications"
                       :button-props="{
-                        class: `px-1 text-xs h-5 gap-1 font-bold rounded-sm ${notifications.total ? 'text-danger bg-danger-lightest' : 'text-primary'}`,
+                        class: `px-1 text-xs h-5 gap-1 font-bold rounded-sm ${pendingNotifications.total ? 'text-danger bg-danger-lightest' : 'text-primary'}`,
                         title: $t('Show notification'),
                       }"
                       no-margin
                       :styled-button="false"
                     >
                       <RiInbox2Line class="size-3" />
-                      {{ notifications.total }}
+                      {{ pendingNotifications.total }}
                       <template #toggletip="{ close }">
                         <div class="flex justify-between border-bottom">
                           <h5 class="fr-text--sm fr-my-0 fr-p-2v">
@@ -309,7 +309,7 @@
                         </div>
                         <NotificationsList :notifications="notificationsCombinedList" />
                         <button
-                          v-if="notifications.next_page"
+                          v-if="nextPage"
                           type="button"
                           class="w-full bg-datagouv hover:bg-datagouv-dark text-white p-2 flex items-center justify-center"
                           :disabled="isLoading"
@@ -423,13 +423,13 @@
                 {{ link.label }}
               </CdataLink>
               <ClientOnly v-else-if="link.items">
-                <Disclosure>
-                  <DisclosureButton
+                <Menu>
+                  <MenuButton
                     class="fr-nav__btn"
                   >
                     {{ link.label }}
-                  </DisclosureButton>
-                  <DisclosurePanel
+                  </MenuButton>
+                  <MenuItems
                     class="fr-menu"
                   >
                     <ul class="fr-menu__list">
@@ -437,17 +437,19 @@
                         v-for="item in link.items"
                         :key="item.label"
                       >
-                        <CdataLink
-                          class="fr-nav__link"
-                          :to="item.link"
-                          :external="true"
-                        >
-                          {{ item.label }}
-                        </CdataLink>
+                        <MenuItem>
+                          <CdataLink
+                            class="fr-nav__link"
+                            :to="item.link"
+                            :external="true"
+                          >
+                            {{ item.label }}
+                          </CdataLink>
+                        </MenuItem>
                       </li>
                     </ul>
-                  </DisclosurePanel>
-                </Disclosure>
+                  </MenuItems>
+                </Menu>
               </ClientOnly>
             </li>
             <li
@@ -503,7 +505,7 @@
 import { NuxtImg } from '#components'
 import { AnimatedLoader, BrandedButton, Toggletip, useGetUserAvatar } from '@datagouv/components-next'
 import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
-import { Disclosure, DisclosureButton, DisclosurePanel, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
+import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
 import LogoAsText from '../LogoAsText.vue'
 import LogoImage from '../LogoImage.vue'
@@ -523,7 +525,7 @@ const currentRoute = useRoute()
 const router = useRouter()
 const route = useRoute()
 const { isLoading } = useLoadingIndicator()
-const { loadNotifications, loadMoreNotifications, notifications, notificationsCombinedList } = useNotifications()
+const { refreshNotifications, loadMoreNotifications, pendingNotifications, nextPage, notificationsCombinedList } = useNotifications()
 
 const menu = [
   { label: t('Données'), link: '/datasets' },
@@ -531,9 +533,9 @@ const menu = [
   { label: t('Réutilisations'), link: '/reuses' },
   { label: t('Organisations'), link: '/organizations' },
   { label: t('Démarrer sur {site}', { site: config.public.title }), items: [
-    { label: t(`Qu'est-ce que {site} ?`, { site: config.public.title }), link: '/pages/about/a-propos_data-gouv' },
-    { label: t('Comment publier des données ?'), link: '/pages/onboarding/producteurs' },
-    { label: t('Comment utiliser des données ?'), link: '/pages/onboarding/reutilisateurs' },
+    { label: t(`Qu'est-ce que {site} ?`, { site: config.public.title }), link: config.public.homepageAboutUs },
+    { label: t('Comment publier des données ?'), link: config.public.homepagePublishDatasetOnboarding },
+    { label: t('Comment utiliser des données ?'), link: config.public.homepagePublishReuseOnboarding },
     { label: t('Les guides {site}', { site: config.public.title }), link: config.public.guidesUrl, external: true },
     { label: t('Nos produits'), link: '/products' },
   ], external: true },
@@ -568,7 +570,7 @@ const logout = async () => {
 
 const { toast } = useToast()
 
-onMounted(async () => {
+onMounted(() => {
   // TODO: remove this logic when we don't rely on udata flash messages
   // following https://github.com/opendatateam/udata/pull/3348
   const FLASH_MESSAGES: Record<string, { type: 'success' | 'error', text: string }> = {
@@ -600,8 +602,11 @@ onMounted(async () => {
       toast[message.type](message.text)
     }
   }
-  if (me.value) {
-    loadNotifications()
-  }
 })
+
+watch(me, () => {
+  if (me.value) {
+    refreshNotifications()
+  }
+}, { immediate: true })
 </script>

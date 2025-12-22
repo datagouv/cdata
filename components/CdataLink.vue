@@ -1,6 +1,7 @@
 <template>
   <NuxtLink
     v-bind="{ ...attrs, to, href }"
+    @click="$emit('click')"
   ><slot /></NuxtLink>
 </template>
 
@@ -9,6 +10,9 @@ import type { NuxtLinkProps } from '#app'
 
 const props = defineProps<Pick<NuxtLinkProps, 'to' | 'href' | 'external'>>()
 const attrs = useAttrs()
+defineEmits<{
+  click: []
+}>()
 
 const absoluteUrlToRelative = useAbsoluteUrlToRelative()
 
