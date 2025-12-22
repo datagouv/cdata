@@ -125,7 +125,7 @@ const { formatDate } = useFormatDate()
     <div>
       <ExtraAccordion
         v-if="hasExtras"
-        class="pt-6 mt-6 border-top border-gray-default"
+        class="pt-6 mt-6 border-t border-gray-default"
         :button-text="t('Voir les extras')"
         :title-text="t('Extras de la ressource')"
         title-level="h5"

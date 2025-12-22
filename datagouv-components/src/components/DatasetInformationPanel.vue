@@ -1,6 +1,6 @@
 <template>
-  <div class="py-6 mb-6 border-bottom border-gray-default">
-    <h2 class="subtitle subtitle--uppercase">
+  <div class="py-6 mb-6 border-b border-gray-default">
+    <h2 class="subtitle uppercase">
       {{ t('Informations') }}
     </h2>
     <div class="fr-text--sm fr-m-0">
@@ -31,8 +31,8 @@
       </dl>
     </div>
   </div>
-  <div class="pb-6 mb-6 border-bottom border-gray-default">
-    <h2 class="subtitle subtitle--uppercase">
+  <div class="pb-6 mb-6 border-b border-gray-default">
+    <h2 class="subtitle uppercase">
       {{ t('Temporalité') }}
     </h2>
     <div class="fr-text--sm fr-m-0">
@@ -69,8 +69,8 @@
       </dl>
     </div>
   </div>
-  <div class="pb-6 mb-6 border-bottom border-gray-default">
-    <h2 class="subtitle subtitle--uppercase">
+  <div class="pb-6 mb-6 border-b border-gray-default">
+    <h2 class="subtitle uppercase">
       {{ t('Couverture spatiale') }}
     </h2>
     <div class="fr-text--sm fr-m-0">
@@ -100,8 +100,8 @@
       </dl>
     </div>
   </div>
-  <div class="pb-6 mb-6 border-bottom border-gray-default">
-    <h2 class="subtitle subtitle--uppercase">
+  <div class="pb-6 mb-6 border-b border-gray-default">
+    <h2 class="subtitle uppercase">
       {{ t('Actions') }}
     </h2>
     <div class="fr-text--sm fr-m-0">

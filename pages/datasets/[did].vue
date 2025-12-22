@@ -233,7 +233,7 @@
                     no-margin
                   >
                     <template #toggletip="{ close }">
-                      <div class="flex justify-between border-bottom">
+                      <div class="flex justify-between border-b">
                         <h5 class="fr-text--sm fr-my-0 fr-p-2v">
                           {{ $t("Label") }}
                         </h5>

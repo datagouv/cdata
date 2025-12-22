@@ -4,12 +4,12 @@
     as="div"
   >
     <header
-      class="flex flex-wrap items-center pb-6 mb-6 border-bottom border-gray-default"
+      class="flex flex-wrap items-center pb-6 mb-6 border-b border-gray-default"
     >
       <div class="fr-col">
         <component
           :is="titleLevel"
-          class="subtitle subtitle--uppercase fr-m-0"
+          class="subtitle uppercase fr-m-0"
         >
           {{ titleText }}
         </component>
@@ -34,7 +34,7 @@
       </div>
     </header>
     <DisclosurePanel :id="accordionId">
-      <div class="pb-6 mb-6 border-bottom border-gray-default">
+      <div class="pb-6 mb-6 border-b border-gray-default">
         <div
           class="fr-grid-row fr-grid-row--gutters fr-text--sm fr-m-0"
           data-testid="extra-list"
