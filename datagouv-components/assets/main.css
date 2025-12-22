@@ -256,6 +256,8 @@
   [data-sonner-toast][data-type="info"] [data-close-button] {
     border-color: var(--color-new-info) !important;
     color: var(--color-new-info) !important;
+  }
+
   .fr-connect {
     padding-left: 4.375em !important;
   }
