@@ -38,6 +38,7 @@
 import { RiCheckLine, RiClipboardLine, RiFileCopyLine } from '@remixicon/vue'
 import { ref } from 'vue'
 import { toast } from 'vue-sonner'
+import { useTranslation } from '../composables/useTranslation'
 
 const props = withDefaults(defineProps<{
   text: string
@@ -50,6 +51,7 @@ const props = withDefaults(defineProps<{
   reverse: false,
 })
 
+const { t } = useTranslation()
 const copied = ref(false)
 
 const copy = async () => {
@@ -59,7 +61,7 @@ const copy = async () => {
     setTimeout(() => copied.value = false, 2000)
   }
   catch {
-    toast.error('Impossible de copier dans le presse-papier')
+    toast.error(t('Impossible de copier dans le presse-papier'))
   }
 }
 </script>

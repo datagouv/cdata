@@ -210,4 +210,42 @@
   meter.quality-score:-moz-meter-optimum::-moz-meter-bar {
     background-color: #27A658;
   }
+
+  /* Vue Sonner Toast custom colors */
+  [data-sonner-toast][data-type="success"] {
+    background-color: var(--color-new-success-light) !important;
+    color: var(--color-new-success) !important;
+    border-color: var(--color-new-success) !important;
+  }
+  [data-sonner-toast][data-type="success"] [data-close-button] {
+    border-color: var(--color-new-success) !important;
+    color: var(--color-new-success) !important;
+  }
+  [data-sonner-toast][data-type="error"] {
+    background-color: var(--color-new-error-light) !important;
+    color: var(--color-new-error) !important;
+    border-color: var(--color-new-error) !important;
+  }
+  [data-sonner-toast][data-type="error"] [data-close-button] {
+    border-color: var(--color-new-error) !important;
+    color: var(--color-new-error) !important;
+  }
+  [data-sonner-toast][data-type="warning"] {
+    background-color: var(--color-new-warning-light) !important;
+    color: var(--color-new-warning) !important;
+    border-color: var(--color-new-warning) !important;
+  }
+  [data-sonner-toast][data-type="warning"] [data-close-button] {
+    border-color: var(--color-new-warning) !important;
+    color: var(--color-new-warning) !important;
+  }
+  [data-sonner-toast][data-type="info"] {
+    background-color: var(--color-new-info-light) !important;
+    color: var(--color-new-info) !important;
+    border-color: var(--color-new-info) !important;
+  }
+  [data-sonner-toast][data-type="info"] [data-close-button] {
+    border-color: var(--color-new-info) !important;
+    color: var(--color-new-info) !important;
+  }
 }

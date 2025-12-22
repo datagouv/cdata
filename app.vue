@@ -4,7 +4,6 @@
   <Toaster
     position="bottom-right"
     :duration="4000"
-    rich-colors
     close-button
   />
   <div
