@@ -277,7 +277,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, CopyButton, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, useFormatDate, useMetrics, createOrganizationMetricsUrl, type Organization, type OrganizationMetrics } from '@datagouv/components-next'
+import { Avatar, BrandedButton, CopyButton, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, useFormatDate, useMetrics, createOrganizationMetricsUrl, type Organization, type OrganizationMetrics, toast } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
@@ -291,7 +291,6 @@ const { formatDate } = useFormatDate()
 
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
-const { toast } = useToast()
 const me = useMaybeMe()
 
 const { getOrganizationMetrics } = useMetrics()
