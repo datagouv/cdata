@@ -23,3 +23,14 @@ test('search filters results', async ({ page }) => {
 
   await expect(page.getByRole('link', { name: /Explore API/i })).toBeVisible()
 })
+
+test('clicking dataservice navigates to detail', async ({ page }) => {
+  await page.goto('/dataservices/search')
+
+  const dataserviceLink = page.getByRole('link', { name: /Explore API/i })
+  await expect(dataserviceLink).toBeVisible()
+
+  await dataserviceLink.click()
+
+  await page.waitForURL('**/dataservices/explore-api**')
+})
