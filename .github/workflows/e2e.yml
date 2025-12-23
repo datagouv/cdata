@@ -33,7 +33,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: udata
-          ref: main
+          ref: add_markdown_bloc
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
