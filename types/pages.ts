@@ -37,4 +37,15 @@ export type LinksListBloc = {
   links: Array<LinkInBloc>
 } & BlocWithTitle & { id: string }
 
-export type PageBloc = DatasetsListBloc | DataservicesListBloc | ReusesListBloc | LinksListBloc
+export type MarkdownBloc = {
+  class: 'MarkdownBloc'
+  content: string
+} & { id: string }
+
+export type PageBloc = DatasetsListBloc | DataservicesListBloc | ReusesListBloc | LinksListBloc | MarkdownBloc
+
+export type PageBlocWithTitle = Exclude<PageBloc, MarkdownBloc>
+
+export function blocHasTitle(bloc: PageBloc): bloc is PageBlocWithTitle {
+  return bloc.class !== 'MarkdownBloc'
+}

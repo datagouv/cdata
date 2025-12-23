@@ -5,7 +5,10 @@
     class="py-24 odd:bg-gray-some"
   >
     <div class="container space-y-6">
-      <div class="space-y-2.5">
+      <div
+        v-if="blocHasTitle(bloc)"
+        class="space-y-2.5"
+      >
         <div class="text-gray-title text-3xl font-extrabold">
           {{ bloc.title }}
         </div>
@@ -97,16 +100,22 @@
           </BrandedButton>
         </div>
       </div>
+      <div
+        v-if="bloc.class === 'MarkdownBloc'"
+        :class="markdownClasses"
+        v-html="formatMarkdown(bloc.content)"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ComponentProps } from 'vue-component-type-helpers'
-import { BrandedButton, DataserviceCard, ReuseCard } from '@datagouv/components-next'
+import { BrandedButton, DataserviceCard, formatMarkdown, markdownClasses, ReuseCard } from '@datagouv/components-next'
 import { RiArrowRightUpLine } from '@remixicon/vue'
 import CdataLink from '../CdataLink.vue'
 import type { Page } from '~/types/pages'
+import { blocHasTitle } from '~/types/pages'
 
 withDefaults(defineProps<{
   page: Page
