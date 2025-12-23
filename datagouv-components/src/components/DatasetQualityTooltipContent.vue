@@ -52,7 +52,7 @@
       class="pb-0"
     />
   </ul>
-  <div class="fr-grid-row fr-grid-row--right not-enlarged">
+  <div class="fr-grid-row fr-grid-row--right">
     <a
       :href="config.datasetQualityGuideUrl"
       target="_blank"
