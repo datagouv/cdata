@@ -68,7 +68,7 @@
     >
       <p
         v-if="dataservice.organization"
-        class="text-sm block not-enlarged overflow-hidden mb-0"
+        class="text-sm block overflow-hidden mb-0 relative z-[2]"
       >
         <AppLink
           v-if="organizationUrl"
