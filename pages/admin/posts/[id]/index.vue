@@ -33,13 +33,12 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, toast } from '@datagouv/components-next'
 import DescribePost from '~/components/Posts/DescribePost.vue'
 import type { Post, PostForm } from '~/types/posts'
 
 const { t } = useTranslation()
 const { $api, $fileApi } = useNuxtApp()
-const { toast } = useToast()
 
 const route = useRoute()
 const url = computed(() => `/api/1/posts/${route.params.id}/`)

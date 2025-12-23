@@ -114,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 import { usePostApiWithCsrf } from '~/utils/api'
 
@@ -123,7 +123,6 @@ definePageMeta({
 })
 
 const { t } = useTranslation()
-const { toast } = useToast()
 const config = useRuntimeConfig()
 
 useSeoMeta({ title: t('Connexion') })

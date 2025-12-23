@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import { RiDeleteBin6Line } from '@remixicon/vue'
-import { BrandedButton, type User } from '@datagouv/components-next'
+import { BrandedButton, type User, toast } from '@datagouv/components-next'
 import { useLogout } from '~/utils/auth'
 
 const props = defineProps<{
@@ -65,7 +65,6 @@ const props = defineProps<{
 const me = useMe()
 const { $api } = useNuxtApp()
 const config = useRuntimeConfig()
-const { toast } = useToast()
 const { t } = useTranslation()
 
 const loading = ref(false)

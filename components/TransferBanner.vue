@@ -87,9 +87,9 @@
 </template>
 
 <script setup lang="ts">
+import { AnimatedLoader, BannerAction, BrandedButton, useFormatDate, toast } from '@datagouv/components-next'
 import type { Dataservice, DatasetV2, DatasetV2WithFullObject, Owned, Reuse } from '@datagouv/components-next'
 import { RiSendPlaneLine } from '@remixicon/vue'
-import { AnimatedLoader, BannerAction, BrandedButton, useFormatDate } from '@datagouv/components-next'
 import type { TransferRequest } from '~/types/types'
 
 const props = defineProps<{
@@ -99,7 +99,6 @@ const props = defineProps<{
 }>()
 
 const { $api } = useNuxtApp()
-const { toast } = useToast()
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 

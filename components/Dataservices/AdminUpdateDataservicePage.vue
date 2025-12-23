@@ -139,15 +139,14 @@
 </template>
 
 <script setup lang="ts">
+import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
 import type { Dataservice } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
-import { BannerAction, BrandedButton, LoadingBlock, TranslationT } from '@datagouv/components-next'
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'
 import type { DataserviceForm } from '~/types/types'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { toast } = useToast()
 
 const route = useRoute()
 const { start, finish, isLoading } = useLoadingIndicator()
@@ -202,10 +201,10 @@ async function archiveDataservice() {
     })
     await refresh()
     if (dataservice.value?.archived_at) {
-      toast.success(t('API désarchivée !'))
+      toast.success(t('API archivée !'))
     }
     else {
-      toast.success(t('API archivée !'))
+      toast.success(t('API désarchivée !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
@@ -225,10 +224,10 @@ async function switchDataservicePrivate() {
     })
     await refresh()
     if (dataservice.value?.private) {
-      toast.success(t('API publiée !'))
+      toast.success(t('API passée en brouillon !'))
     }
     else {
-      toast.success(t('API passée en brouillon !'))
+      toast.success(t('API publiée !'))
     }
   }
   finally {

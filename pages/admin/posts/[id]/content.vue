@@ -11,12 +11,12 @@
 </template>
 
 <script setup lang="ts">
+import { toast } from '@datagouv/components-next'
 import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import type { Post } from '~/types/posts'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { toast } = useToast()
 
 const route = useRoute()
 const url = computed(() => `/api/1/posts/${route.params.id}/`)

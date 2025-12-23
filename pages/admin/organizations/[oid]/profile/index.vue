@@ -89,7 +89,7 @@
 
 <script setup lang="ts">
 import { RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
-import { AnimatedLoader, BannerAction, BrandedButton } from '@datagouv/components-next'
+import { AnimatedLoader, BannerAction, BrandedButton, toast } from '@datagouv/components-next'
 import type { Organization, Badge } from '@datagouv/components-next'
 import DescribeOrganizationFrom from '~/components/Organization/New/Step2DescribeOrganization.vue'
 import { updateOrganization, updateOrganizationBadges, uploadLogo } from '~/api/organizations'
@@ -102,7 +102,6 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useTranslation()
-const { toast } = useToast()
 const { $api } = useNuxtApp()
 const { start, finish, isLoading } = useLoadingIndicator()
 

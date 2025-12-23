@@ -72,6 +72,8 @@ import TranslationT from './components/TranslationT.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
+export { Toaster, toast } from 'vue-sonner'
+
 export * from './composables/useActiveDescendant'
 export * from './composables/useMetrics'
 export * from './composables/useReuseType'

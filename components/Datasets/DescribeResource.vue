@@ -394,7 +394,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getResourceLabel, LoadingBlock, RESOURCE_TYPE, SimpleBanner, TranslationT } from '@datagouv/components-next'
+import { BrandedButton, getResourceLabel, LoadingBlock, RESOURCE_TYPE, SimpleBanner, TranslationT, toast } from '@datagouv/components-next'
 import type { DatasetV2, SchemaResponseData } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
@@ -453,8 +453,6 @@ const setFiles = (files: Array<File>) => {
 
 const { data: extensions, status } = await useAPI<Array<string>>('/api/1/datasets/extensions/', { lazy: true })
 const { data: schemasData, status: schemaStatus } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/', { lazy: true })
-
-const { toast } = useToast()
 
 watch(newFile, (file) => {
   // console.log('[DescribeResource] newFile changed:', file ? file.name : 'null')

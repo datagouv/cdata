@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
 import type { Dataservice, DatasetV2 } from '@datagouv/components-next'
 import type { DatasetSuggest } from '~/types/types'
 
@@ -48,7 +48,6 @@ const config = useRuntimeConfig()
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { toast } = useToast()
 
 const route = useRoute()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
