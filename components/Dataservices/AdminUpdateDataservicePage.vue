@@ -201,10 +201,10 @@ async function archiveDataservice() {
     })
     await refresh()
     if (dataservice.value?.archived_at) {
-      toast.success(t('API désarchivée !'))
+      toast.success(t('API archivée !'))
     }
     else {
-      toast.success(t('API archivée !'))
+      toast.success(t('API désarchivée !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }

@@ -253,10 +253,10 @@ async function archiveDataset() {
     })
     await refresh()
     if (dataset.value?.archived) {
-      toast.success(t('Jeu de données désarchivé !'))
+      toast.success(t('Jeu de données archivé !'))
     }
     else {
-      toast.success(t('Jeu de données archivé !'))
+      toast.success(t('Jeu de données désarchivé !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }

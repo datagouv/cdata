@@ -222,10 +222,10 @@ async function archiveReuse() {
 
     await refresh()
     if (reuse.value?.archived) {
-      toast.success(t('Réutilisation désarchivée !'))
+      toast.success(t('Réutilisation archivée !'))
     }
     else {
-      toast.success(t('Réutilisation archivée !'))
+      toast.success(t('Réutilisation désarchivée !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
