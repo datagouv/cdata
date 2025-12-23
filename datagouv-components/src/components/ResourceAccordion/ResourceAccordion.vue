@@ -132,14 +132,15 @@
             rel="ugc nofollow noopener"
             :title="downloadButtonTitle"
             download
-            class="relative text-transform-uppercase matomo_download z-2"
+            class="relative matomo_download z-2"
             :icon="unavailable ? RiFileWarningLine : RiDownloadLine"
             size="xs"
+            color="secondary"
             :aria-describedby="resourceTitleId"
             external
             @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
           >
-            <span class="sr-only">{{ t('Télécharger le fichier au format ') }}</span>{{ format }}
+            {{ t('Télécharger') }}
           </BrandedButton>
         </p>
         <p
