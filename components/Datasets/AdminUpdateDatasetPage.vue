@@ -215,7 +215,7 @@ async function switchDatasetPrivate() {
       body: JSON.stringify(datasetToApi(datasetForm.value, { private: !datasetForm.value.private })),
     })
     await refresh()
-    if (datasetForm.value.private) {
+    if (dataset.value?.private) {
       toast.success(t('Jeu de données passé en brouillon !'))
     }
     else {
