@@ -210,10 +210,10 @@
     <section class="bg-gray-dark text-white">
       <div class="max-w-7xl mx-auto px-6 py-16 space-y-8">
         <div>
-          <h2 class="text-3xl font-normal mb-0">
+          <h2 class="text-white text-3xl font-normal mb-0">
             {{ $t('La mission {site}', { site: config.public.title }) }}
           </h2>
-          <h3 class="text-3xl mb-0 font-extrabold">
+          <h3 class="text-white text-3xl mb-0 font-extrabold">
             {{ $t('Simplifier l’accès aux données publiques') }}
           </h3>
         </div>
@@ -259,7 +259,7 @@
           </BrandedButton>
         </div>
         <div class="space-y-8">
-          <h3 class="text-3xl font-extrabold">
+          <h3 class="text-white text-3xl font-extrabold">
             {{ $t('Produire de l’information à partir des données') }}
           </h3>
           <div>
@@ -313,7 +313,7 @@
           </BrandedButton>
         </div>
         <div class="space-y-8">
-          <h3 class="text-3xl font-extrabold">
+          <h3 class="text-white text-3xl font-extrabold">
             {{ $t('Fédérer un écosystème') }}
           </h3>
           <div>
@@ -330,7 +330,7 @@
                 :key="platform.name"
                 class="relative bg-gray-disabled p-4 space-y-2 hover:bg-gray-plain"
               >
-                <h5 class="text-xl">
+                <h5 class="text-white text-xl">
                   <CdataLink
                     :to="platform.url"
                     external
