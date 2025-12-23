@@ -40,7 +40,8 @@
     "test:e2e": "playwright test",
     "test:e2e:update-screenshots": "playwright test tests/homepage.spec.ts --update-snapshots",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:show-report": "bash -c 'rm -rf /tmp/playwright && mkdir /tmp/playwright && mv \"$1\" /tmp/playwright/report.zip && unzip -d /tmp/playwright /tmp/playwright/report.zip && pnpm exec playwright show-report /tmp/playwright' _"
   },
   "lint-staged": {
     "*.{js,ts,vue,jsx,tsx}": "eslint --fix"
