@@ -25,7 +25,7 @@ export function isCommunityResource(resource: Resource | CommunityResource): boo
 }
 
 export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource | CommunityResource): string {
-  return `${dataset.page}#/${isCommunityResource(resource) ? 'community-resources' : 'resources'}/${resource.id}`
+  return `${dataset.page}${isCommunityResource(resource) ? '/community-resources' : ''}?resource_id=${resource.id}`
 }
 
 /**
