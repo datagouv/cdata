@@ -9,7 +9,7 @@
       <div class="fr-col">
         <component
           :is="titleLevel"
-          class="subtitle uppercase fr-m-0"
+          class="subtitle uppercase m-0"
         >
           {{ titleText }}
         </component>
@@ -44,7 +44,7 @@
             :key="key"
             class="fr-col-12 fr-col-sm-6 fr-col-md-4"
           >
-            <h3 class="subtitle fr-mb-1v">
+            <h3 class="subtitle mb-1">
               {{ key }}
             </h3>
             <p class="text-sm m-0 text-gray-medium break-all">

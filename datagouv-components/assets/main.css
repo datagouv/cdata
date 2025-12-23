@@ -183,10 +183,10 @@
 
 @layer components {
   .subtitle {
-      @apply text-sm font-bold leading-5 mb-4
+      @apply text-sm! font-bold! leading-5!;
   }
   .code {
-      @apply p-1 font-mono bg-gray-lower text-sm text-gray-medium rounded;
+      @apply p-1! font-mono! bg-gray-lower! text-sm! text-gray-medium! rounded!;
   }
   meter.quality-score {
     background: none;
