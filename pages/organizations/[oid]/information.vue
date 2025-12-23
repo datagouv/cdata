@@ -218,7 +218,7 @@
       :title="$t('Intégrer sur votre site')"
       :button-text="$t('Voir les oembeds')"
     >
-      <h3 class="subtitle fr-mb-1v">
+      <h3 class="subtitle mb-1">
         {{ $t('La recherche de jeux de données de l\'organisation') }}
         <CopyButton
           :hide-label="true"
@@ -236,7 +236,7 @@
           rows="1"
         />
       </div>
-      <h3 class="subtitle fr-mb-1v">
+      <h3 class="subtitle mb-1">
         {{ $t('La recherche des API de l\'organisation') }}
         <CopyButton
           :hide-label="true"
@@ -254,7 +254,7 @@
           rows="1"
         />
       </div>
-      <h3 class="subtitle fr-mb-1v">
+      <h3 class="subtitle mb-1">
         {{ $t('La liste des réutilisations de l\'organisation') }}
         <CopyButton
           :hide-label="true"
