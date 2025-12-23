@@ -248,10 +248,10 @@ async function switchReusePrivate() {
 
     await refresh()
     if (reuse.value?.private) {
-      toast.success(t('Réutilisation publiée !'))
+      toast.success(t('Réutilisation passée en brouillon !'))
     }
     else {
-      toast.success(t('Réutilisation passée en brouillon !'))
+      toast.success(t('Réutilisation publiée !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
