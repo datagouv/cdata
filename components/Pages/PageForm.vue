@@ -82,7 +82,7 @@
                     class="size-4 -mt-1"
                   />
                   <div class="font-bold">
-                    {{ bloc.title }}
+                    {{ blocHasTitle(bloc) ? bloc.title : blocsTypes[bloc.class].name }}
                   </div>
                 </div>
                 <div
@@ -129,10 +129,21 @@
                     {{ $t('Pas encore de liens') }}
                   </template>
                 </div>
+                <div
+                  v-if="bloc.class === 'MarkdownBloc'"
+                  class="max-w-full text-gray-title truncate"
+                >
+                  <template v-if="bloc.content">
+                    {{ bloc.content.slice(0, 100) }}{{ bloc.content.length > 100 ? '…' : '' }}
+                  </template>
+                  <template v-else>
+                    {{ $t('Pas encore de contenu') }}
+                  </template>
+                </div>
               </div>
               <div class="shrink-0">
                 <ModalWithButton
-                  :title="bloc.title"
+                  :title="blocHasTitle(bloc) ? bloc.title : blocsTypes[bloc.class].name"
                   size="xl"
                 >
                   <template #button="{ attrs, listeners }">
@@ -147,16 +158,18 @@
                     />
                   </template>
 
-                  <InputGroup
-                    v-model="bloc.title"
-                    :label="$t('Titre')"
-                    :required="true"
-                  />
+                  <template v-if="blocHasTitle(bloc)">
+                    <InputGroup
+                      v-model="bloc.title"
+                      :label="$t('Titre')"
+                      :required="true"
+                    />
 
-                  <InputGroup
-                    v-model="bloc.subtitle"
-                    :label="$t('Sous-titre')"
-                  />
+                    <InputGroup
+                      v-model="bloc.subtitle"
+                      :label="$t('Sous-titre')"
+                    />
+                  </template>
 
                   <DatasetsSelect
                     v-if="bloc.class === 'DatasetsListBloc'"
@@ -176,6 +189,23 @@
                     :model-value="bloc"
                     @update:model-value="page.blocs[index] = $event"
                   />
+                  <div
+                    v-if="bloc.class === 'MarkdownBloc'"
+                    class="space-y-2"
+                  >
+                    <label
+                      :for="`markdown-editor-${bloc.id}`"
+                      class="font-bold"
+                    >
+                      {{ $t('Contenu Markdown') }} *
+                    </label>
+                    <MarkdownEditor
+                      :id="`markdown-editor-${bloc.id}`"
+                      :value="bloc.content"
+                      :aria-label="$t('Contenu Markdown')"
+                      @change="bloc.content = $event"
+                    />
+                  </div>
 
                   <template #footer="{ close }">
                     <div class="flex-1 flex justify-end">
@@ -239,10 +269,12 @@ import { BrandedButton, PaddedContainer } from '@datagouv/components-next'
 import { RiAddLine, RiDeleteBinLine, RiDraggable, RiEditLine, RiEyeLine } from '@remixicon/vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import ReusesSelect from '../ReusesSelect.vue'
+import MarkdownEditor from '../MarkdownEditor/MarkdownEditor.vue'
 import PageShow from './PageShow.vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
 import LinksListForm from './LinksListForm.vue'
 import type { Page } from '~/types/pages'
+import { blocHasTitle } from '~/types/pages'
 
 const { t } = useTranslation()
 
