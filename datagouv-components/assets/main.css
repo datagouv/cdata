@@ -183,10 +183,7 @@
 
 @layer components {
   .subtitle {
-      font-size:.875rem;
-      font-weight:700;
-      line-height:1.25rem;
-      margin-bottom:1rem;
+      @apply text-sm font-bold leading-5 mb-4
   }
   .code {
       @apply p-1 font-mono bg-gray-lower text-sm text-gray-medium rounded;
