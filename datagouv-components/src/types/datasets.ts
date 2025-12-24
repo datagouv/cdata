@@ -23,9 +23,18 @@ export type Quality = {
   update_fulfilled_in_time: boolean
 }
 
-export type BaseDataset = Owned & WithAccessType & {
-  title: string
+export type DatasetReference = {
+  class: 'Dataset'
+  id: string
   acronym: string
+  page: string
+  title: string
+  uri: string
+}
+
+export type BaseDataset = Owned & WithAccessType & {
+  title: DatasetReference['title']
+  acronym: DatasetReference['acronym']
   archived: boolean
   description: string
   description_short: string
@@ -58,10 +67,10 @@ export type Rel = {
 }
 
 export type Dataset = BaseDataset & {
-  id: string
+  id: DatasetReference['id']
   badges: Badges
   deleted: string | null
-  page: string
+  page: DatasetReference['page']
   resources: Array<Resource>
   community_resources: Array<Resource>
   created_at: string
@@ -71,7 +80,7 @@ export type Dataset = BaseDataset & {
     created_at_internal: string
     last_modified_internal: string
   }
-  uri: string
+  uri: DatasetReference['uri']
   slug: string
   quality: Quality
   metrics: {
