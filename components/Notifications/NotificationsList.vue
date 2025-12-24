@@ -6,7 +6,11 @@
     >
       <NotificationsMembershipRequest
         v-if="notification.details.class === 'MembershipRequestNotificationDetails'"
-        :notification
+        :notification="notification as MembershipRequestNotification"
+      />
+      <NotificationsTransferRequest
+        v-if="notification.details.class === 'TransferRequestNotificationDetails'"
+        :notification="notification as TransferRequestNotification"
       />
     </div>
   </div>
@@ -14,7 +18,7 @@
 
 <script setup lang="ts">
 import type { DeepReadonly } from 'vue'
-import type { UserNotification } from '~/types/notifications'
+import type { MembershipRequestNotification, TransferRequestNotification, UserNotification } from '~/types/notifications'
 
 defineProps<{
   notifications: DeepReadonly<Array<UserNotification>>
