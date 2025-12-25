@@ -32,6 +32,9 @@ import BrandedButton from './components/BrandedButton.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
 import DatasetCard from './components/DatasetCard.vue'
+import DiscussionCard from './components/DiscussionCard.vue'
+import PostCard from './components/PostCard.vue'
+import TopicCard from './components/TopicCard.vue'
 import DateRangeDetails from './components/DateRangeDetails.vue'
 import DatasetInformationPanel from './components/DatasetInformationPanel.vue'
 import DatasetQuality from './components/DatasetQuality.vue'
@@ -69,6 +72,7 @@ import TabPanels from './components/Tabs/TabPanels.vue'
 import Tooltip from './components/Tooltip.vue'
 import Toggletip from './components/Toggletip.vue'
 import TranslationT from './components/TranslationT.vue'
+import SearchGlobal from './components/SearchGlobal.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
@@ -191,6 +195,9 @@ export {
   CopyButton,
   DataserviceCard,
   DatasetCard,
+  DiscussionCard,
+  PostCard,
+  TopicCard,
   DatasetInformationPanel,
   DatasetQuality,
   DatasetQualityInline,
@@ -216,6 +223,7 @@ export {
   ReuseCard,
   ReuseDetails,
   SchemaCard,
+  SearchGlobal,
   SimpleBanner,
   SmallChart,
   StatBox,

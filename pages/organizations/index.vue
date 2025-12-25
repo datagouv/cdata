@@ -1,76 +1,78 @@
 <template>
-  <div class="container mb-16">
-    <Breadcrumb>
-      <BreadcrumbItem
-        to="/"
-      >
-        {{ $t('Accueil') }}
-      </BreadcrumbItem>
-      <BreadcrumbItem>
-        {{ $t('Organisations') }}
-      </BreadcrumbItem>
-    </Breadcrumb>
-    <OrganizationListPage
-      v-if="organizations"
-      :link="getLink"
-      :organizations
-      :initial-q="q"
-      :sort
-      :status
-      @change="change"
+  <div>
+    <EditoHeader
+      color="primary"
+      subtitle=""
+      :title="$t('Rechercher sur DataGouv')"
+      :placeholder="$t('ex. élections présidentielles')"
+      search-url="/reuses/search"
+      :default-query="searchQuery"
     />
+    <SearchGlobal :config="searchConfig" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { getLink } from '@datagouv/components-next'
-import type { Organization } from '@datagouv/components-next'
-import { useUrlSearchParams } from '@vueuse/core'
-import type { LocationQueryValue } from 'vue-router'
-import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import type { OrganizationSearchParams } from '~/types/form'
-import type { PaginatedArray } from '~/types/types'
+import { SearchGlobal } from '@datagouv/components-next'
+import EditoHeader from '~/components/Pages/EditoHeader.vue'
 
 const { t } = useTranslation()
-
 useSeoMeta({
-  title: t('Organisations'),
+  title: t('Recherche des jeux de données — data.gouv.fr'),
 })
+
 const route = useRoute()
-const params = useUrlSearchParams<OrganizationSearchParams>('history', {
-  initialValue: route.query,
-  removeNullishValues: true,
-  removeFalsyValues: true,
-})
-const nonFalsyParams = computed(() => {
-  const filteredParams = Object.entries(toValue(params)).filter(([_k, v]) => v)
-  return { ...Object.fromEntries(filteredParams), page_size: pageSize }
-})
+const searchQuery = computed(() => (route.query.q as string) || '')
 
-const q = ref('')
-watchEffect(() => {
-  if (Array.isArray(route.query.q)) return
-  if (!route.query.q) return
-  q.value = route.query.q
-})
-
-const sort = ref((route.query.sort as string | null) || undefined)
-const page = ref(parseInt(route.query.page as LocationQueryValue ?? '1', 10))
-const pageSize = 21
-
-watchEffect(() => {
-  if (page.value > 1 || params.page) params.page = page.value.toString()
-  params.q = q.value
-  params.sort = sort.value
-})
-
-function change(newQs: string, newSort: string | undefined, newPage: number) {
-  q.value = newQs
-  sort.value = newSort
-  page.value = newPage
-}
-
-const { data: organizations, status } = await useAPI<PaginatedArray<Organization>>(`/api/2/organizations/search/`, {
-  params: nonFalsyParams,
-})
+const searchConfig = [
+  {
+    className: 'Organisations',
+    class: 'organizations' as const,
+    display: true,
+    basicFilters: ['producer_type'],
+    advancedFilters: [],
+  },
+  {
+    className: 'Jeux de données',
+    class: 'datasets' as const,
+    display: true,
+    basicFilters: ['format_family', 'access_type', 'last_update_range', 'producer_type', 'data_label'],
+    advancedFilters: ['organization', 'tags', 'format', 'license', 'schema', 'geozone', 'granularity'],
+  },
+  {
+    className: 'API',
+    class: 'dataservices' as const,
+    display: true,
+    basicFilters: ['access_type', 'last_update_range', 'producer_type', 'data_label'],
+    advancedFilters: ['organization', 'tags'],
+  },
+  {
+    className: 'Réutilisations',
+    class: 'reuses' as const,
+    display: true,
+    basicFilters: ['type', 'topic'],
+    advancedFilters: ['organization', 'tags'],
+  },
+  {
+    className: 'Discussions',
+    class: 'discussions' as const,
+    display: true,
+    basicFilters: ['object_type', 'last_update_range'],
+    advancedFilters: [],
+  },
+  {
+    className: 'Articles',
+    class: 'posts' as const,
+    display: true,
+    basicFilters: ['last_update_range'],
+    advancedFilters: [],
+  },
+  {
+    className: 'Thématiques',
+    class: 'topics' as const,
+    display: true,
+    basicFilters: ['last_update_range', 'producer_type'],
+    advancedFilters: ['organization', 'tags'],
+  },
+]
 </script>
