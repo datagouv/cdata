@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
 import type { Dataservice, DatasetV2 } from '@datagouv/components-next'
 import type { DatasetSuggest } from '~/types/types'
 
@@ -48,13 +48,12 @@ const config = useRuntimeConfig()
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { toast } = useToast()
 
 const route = useRoute()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
 const { data: dataservice } = await useAPI<Dataservice>(url, { redirectOn404: true })
 
-const tooManyDatasets = computed(() => dataservice.value.datasets.total > config.public.maxNumberOfDatasetsForDataserviceUpdate)
+const tooManyDatasets = computed(() => dataservice.value?.datasets.total ?? 0 > config.public.maxNumberOfDatasetsForDataserviceUpdate)
 const datasets = ref<Array<DatasetV2 | DatasetSuggest>>([])
 watch(dataservice, async () => {
   if (!dataservice.value || tooManyDatasets.value) return
@@ -62,6 +61,7 @@ watch(dataservice, async () => {
 }, { immediate: true })
 
 const submit = async () => {
+  if (!dataservice.value) return
   await $api(`/api/1/dataservices/${dataservice.value.id}/`, {
     method: 'PATCH',
     body: JSON.stringify({

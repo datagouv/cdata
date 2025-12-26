@@ -48,7 +48,9 @@
     </div>
     <LoadingBlock
       v-if="dataset"
+      v-slot="{ data: dataset }"
       :status
+      :data="dataset"
     >
       <div class="space-y-8">
         <div class="container pt-3 min-h-32">
@@ -231,7 +233,7 @@
                     no-margin
                   >
                     <template #toggletip="{ close }">
-                      <div class="flex justify-between border-bottom">
+                      <div class="flex justify-between border-b">
                         <h5 class="fr-text--sm fr-my-0 fr-p-2v">
                           {{ $t("Label") }}
                         </h5>
@@ -464,6 +466,7 @@ import {
   MarkdownViewer,
   useMetrics,
   type DatasetMetrics,
+  TranslationT,
 } from '@datagouv/components-next'
 import {
   RiDeleteBinLine,
@@ -471,7 +474,6 @@ import {
   RiExternalLinkLine,
   RiLockLine,
 } from '@remixicon/vue'
-import { TranslationT } from '@datagouv/components-next'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
@@ -513,7 +515,7 @@ useSeoMeta({
 })
 
 const hideWarnings = computed(() => {
-  if (!dataset.value.harvest) return false
+  if (!dataset.value?.harvest) return false
   if (!dataset.value.harvest.backend) return false
 
   return config.public.harvestBackendsForHidingQuality.includes(
@@ -522,6 +524,7 @@ const hideWarnings = computed(() => {
 })
 
 const hasContactPointsWithSpecificRole = computed(() => {
+  if (!dataset.value) return false
   return dataset.value.contact_points.some(
     contactPoint => contactPoint.role !== 'contact',
   )
@@ -582,13 +585,14 @@ const { data: badgeTranslations } = await useAPI<Record<string, string>>(
 )
 
 const badges = computed(() =>
-  dataset.value.badges.map<TranslatedBadge>(b => ({
+  (dataset.value?.badges ?? []).map<TranslatedBadge>(b => ({
     ...b,
-    label: badgeTranslations.value[b.kind],
+    label: badgeTranslations.value?.[b.kind] ?? '',
   })),
 )
 
 const metricsSince = computed(() => {
+  if (!dataset.value) return config.public.metricsSince
   // max of the start of metrics computing and the creation of the dataset on the platform
   return [dataset.value.internal.created_at_internal, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
 })
@@ -608,7 +612,7 @@ const datasetDownloadsResourcesTotal = computed(() => datasetMetrics.value?.down
 
 const { data: categories } = await useAPI<Array<{ value: string, label: string }>>('/api/1/access_type/reason_categories')
 const category = computed(() => {
-  if (!dataset.value.access_type_reason_category) return null
-  return categories.value.find(c => c.value === dataset.value.access_type_reason_category)
+  if (!dataset.value?.access_type_reason_category) return null
+  return categories.value?.find(c => c.value === dataset.value?.access_type_reason_category)
 })
 </script>

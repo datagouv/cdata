@@ -36,33 +36,37 @@
       :key="RESOURCE_TYPE[index]"
       class="space-y-1"
     >
-      <div class="uppercase text-gray-plain text-sm font-bold">
-        {{ getResourceLabel(RESOURCE_TYPE[index], data.value?.total ?? 0) }}
-      </div>
-      <div class="space-y-2.5">
-        <SearchInput
-          v-if="data.value?.total > data.value.page_size || searchByResourceType[index].value"
-          v-model="searchByResourceType[index].value"
-          :placeholder="$t('Rechercher')"
-        />
-        <div class="space-y-2.5">
-          <ResourceAccordion
-            v-for="resource in data.value.data"
-            :key="resource.id"
-            :dataset
-            :resource
-            :can-edit="dataset.permissions.edit_resources"
-          />
-          <Pagination
-            :total-results="data.value.total"
-            :page-size="data.value.page_size"
-            :page="data.value.page"
-            @change="(newPage) => pageByResourceType[index].value = newPage"
-          />
+      <LoadingBlock
+        v-slot="{ data: resourcesData }"
+        :status="status.value"
+        :data="data.value"
+      >
+        <div class="uppercase text-gray-plain text-sm font-bold">
+          {{ getResourceLabel(RESOURCE_TYPE[index], resourcesData.total) }}
         </div>
-        <div>
+        <div class="space-y-2.5">
+          <SearchInput
+            v-if="resourcesData.total > resourcesData.page_size || searchByResourceType[index].value"
+            v-model="searchByResourceType[index].value"
+            :placeholder="$t('Rechercher')"
+          />
+          <div class="space-y-2.5">
+            <ResourceAccordion
+              v-for="resource in resourcesData.data"
+              :key="resource.id"
+              :dataset
+              :resource
+              :can-edit="dataset.permissions.edit_resources"
+            />
+            <Pagination
+              :total-results="resourcesData.total"
+              :page-size="resourcesData.page_size"
+              :page="resourcesData.page"
+              @change="(newPage) => pageByResourceType[index].value = newPage"
+            />
+          </div>
           <div
-            v-if="status.value != 'pending' && data.value && !data.value.total"
+            v-if="!resourcesData.total"
             class="flex flex-col items-center"
           >
             <nuxt-img
@@ -80,14 +84,14 @@
             </BrandedButton>
           </div>
         </div>
-      </div>
+      </LoadingBlock>
     </div>
     <RecommendationsDatasets :dataset />
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getResourceLabel, Pagination, RESOURCE_TYPE, ResourceAccordion, SimpleBanner, type DatasetV2, type Resource } from '@datagouv/components-next'
+import { BrandedButton, getResourceLabel, LoadingBlock, Pagination, RESOURCE_TYPE, ResourceAccordion, SimpleBanner, type DatasetV2, type Resource } from '@datagouv/components-next'
 import { RiCloseCircleLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'
 
@@ -123,9 +127,9 @@ const rawResourcesByTypes = await Promise.all(
 
 const resourcesByTypes = computed(() => {
   const result = {} as Record<number, typeof rawResourcesByTypes[number]>
-  for (const index in rawResourcesByTypes) {
-    if (rawResourcesByTypes[index].data.value?.total > 0 || searchByResourceType[index].value) {
-      result[index] = rawResourcesByTypes[index]
+  for (let i = 0; i < rawResourcesByTypes.length; i++) {
+    if ((rawResourcesByTypes[i].data.value?.total ?? 0) > 0 || searchByResourceType[i].value) {
+      result[i] = rawResourcesByTypes[i]
     }
   }
   return result

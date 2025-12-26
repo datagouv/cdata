@@ -119,7 +119,7 @@
               :placeholder="$t('Recherchez une fréquence…')"
               :get-option-id="(frequency) => frequency.label"
               :display-value="(frequency) => frequency.label"
-              :options="frequencies"
+              :options="frequencies ?? []"
               :multiple="false"
               :required="true"
               :error-text="getFirstError('frequency')"

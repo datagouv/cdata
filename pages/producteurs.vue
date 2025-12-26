@@ -11,7 +11,7 @@
         <BrandedButton
           color="white-flat"
           class="text-new-blue-illustration"
-          href="/datasets/new"
+          href="/admin/datasets/new"
         >
           {{ $t('Publier vos données') }}
         </BrandedButton>
@@ -107,7 +107,7 @@
         <BrandedButton
           color="white-flat"
           class="text-new-blue-illustration"
-          href="/datasets/new"
+          href="/admin/datasets/new"
         >
           {{ $t('Publier vos données') }}
         </BrandedButton>

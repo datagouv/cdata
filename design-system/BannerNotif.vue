@@ -18,6 +18,7 @@
       </template>
       <template #subtitle>
         <LinkToSubject
+          v-if="dataset"
           type="Dataset"
           :subject="dataset"
         />

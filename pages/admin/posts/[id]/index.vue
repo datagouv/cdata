@@ -1,7 +1,7 @@
 <template>
   <div>
     <DescribePost
-      v-if="post"
+      v-if="post && postForm"
       :post="postForm"
       type="update"
       :submit-label="t('Sauvegarder')"
@@ -33,22 +33,23 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, toast } from '@datagouv/components-next'
 import DescribePost from '~/components/Posts/DescribePost.vue'
 import type { Post, PostForm } from '~/types/posts'
 
 const { t } = useTranslation()
 const { $api, $fileApi } = useNuxtApp()
-const { toast } = useToast()
 
 const route = useRoute()
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
 const { data: post, refresh } = await useAPI<Post>(url, { redirectOn404: true })
-const postForm = computed(() => postToForm(post.value))
+const postForm = computed(() => post.value ? postToForm(post.value) : null)
 
 const loading = ref(false)
 
 const save = async (form: PostForm) => {
+  if (!post.value) return
+
   try {
     loading.value = true
 

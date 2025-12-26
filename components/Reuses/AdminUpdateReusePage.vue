@@ -1,5 +1,9 @@
 <template>
-  <div>
+  <LoadingBlock
+    v-slot="{ data: reuse }"
+    :status
+    :data="reuse"
+  >
     <DescribeReuse
       v-if="reuseForm"
       v-model="reuseForm"
@@ -132,11 +136,11 @@
         </BannerAction>
       </div>
     </DescribeReuse>
-  </div>
+  </LoadingBlock>
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, TranslationT } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
 import type { Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
@@ -144,24 +148,25 @@ import type { ReuseForm } from '~/types/types'
 
 const { t } = useTranslation()
 const { $api, $fileApi } = useNuxtApp()
-const { toast } = useToast()
 
 const route = useRoute()
 const { start, finish, isLoading } = useLoadingIndicator()
 
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
-const { data: reuse, refresh } = await useAPI<Reuse>(url, { redirectOn404: true })
+const { data: reuse, status, refresh } = await useAPI<Reuse>(url, { redirectOn404: true })
 
 const { data: types } = await useAPI<Array<ReuseType>>('/api/1/reuses/types', { lazy: true })
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics', { lazy: true })
 
 const reuseForm = ref<ReuseForm | null>(null)
 watchEffect(() => {
+  if (!reuse.value) return
   reuseForm.value = reuseToForm(reuse.value, types.value || [], topics.value || [])
 })
 
 async function save() {
   if (!reuseForm.value) throw new Error('No reuse form')
+  if (!reuse.value) return
 
   try {
     start()
@@ -205,6 +210,7 @@ async function deleteReuse() {
 
 async function archiveReuse() {
   if (!reuseForm.value) throw new Error('No reuse form')
+  if (!reuse.value) return
 
   try {
     start()
@@ -214,12 +220,12 @@ async function archiveReuse() {
       body: JSON.stringify(reuseToApi(reuseForm.value, { archived: reuseForm.value.archived ? null : (new Date()).toISOString() })),
     })
 
-    refresh()
-    if (reuse.value.archived) {
-      toast.success(t('Réutilisation désarchivée !'))
+    await refresh()
+    if (reuse.value?.archived) {
+      toast.success(t('Réutilisation archivée !'))
     }
     else {
-      toast.success(t('Réutilisation archivée !'))
+      toast.success(t('Réutilisation désarchivée !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
@@ -230,6 +236,7 @@ async function archiveReuse() {
 
 async function switchReusePrivate() {
   if (!reuseForm.value) throw new Error('No reuse form')
+  if (!reuse.value) return
 
   try {
     start()
@@ -239,12 +246,12 @@ async function switchReusePrivate() {
       body: JSON.stringify(reuseToApi(reuseForm.value, { private: !reuseForm.value.private })),
     })
 
-    refresh()
-    if (reuse.value.private) {
-      toast.success(t('Réutilisation publiée !'))
+    await refresh()
+    if (reuse.value?.private) {
+      toast.success(t('Réutilisation passée en brouillon !'))
     }
     else {
-      toast.success(t('Réutilisation passée en brouillon !'))
+      toast.success(t('Réutilisation publiée !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
@@ -255,6 +262,7 @@ async function switchReusePrivate() {
 
 async function restoreReuse() {
   if (!reuseForm.value) throw new Error('No reuse form')
+  if (!reuse.value) return
 
   try {
     start()
@@ -264,7 +272,7 @@ async function restoreReuse() {
       body: JSON.stringify(reuseToApi(reuseForm.value, { deleted: null })),
     })
 
-    refresh()
+    await refresh()
     toast.success(t('Réutilisation restaurée !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
@@ -274,6 +282,7 @@ async function restoreReuse() {
 }
 
 async function feature() {
+  if (!reuse.value) return
   const method = reuse.value.featured ? 'DELETE' : 'POST'
   try {
     start()

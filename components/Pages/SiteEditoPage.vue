@@ -29,6 +29,7 @@
 </template>
 
 <script setup lang="ts">
+import { toast } from '@datagouv/components-next'
 import type { Site } from '@datagouv/components-next'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -46,7 +47,6 @@ definePageMeta({
 })
 
 const { $api } = useNuxtApp()
-const { toast } = useToast()
 const { t } = useTranslation()
 
 const loading = ref(false)
@@ -67,6 +67,7 @@ watchEffect(async () => {
 
 const savePage = async () => {
   if (!page.value) return
+  if (!site.value) return
 
   loading.value = true
 

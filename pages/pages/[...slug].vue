@@ -11,7 +11,11 @@
         {{ data.data.title }}
       </BreadcrumbItem>
     </Breadcrumb>
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data }"
+      :status
+      :data="data"
+    >
       <div
         v-if="status === 'success' && data"
         :class="markdownClasses"

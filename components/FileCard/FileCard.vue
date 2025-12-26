@@ -1,6 +1,6 @@
 <template>
   <div class="border border-gray-default fr-p-1w">
-    <div class="fr-grid-row fr-grid-row--middle no-wrap wrap-md justify-between">
+    <div class="fr-grid-row fr-grid-row--middle flex-nowrap md:flex-wrap justify-between">
       <div class="fr-col-auto min-width-0">
         <div class="flex items-center mb-1">
           <ResourceIcon
@@ -71,7 +71,7 @@
         <FileLoader v-if="loading" />
         <div
           v-else
-          class="fr-grid-row fr-grid-row--middle no-wrap wrap-md"
+          class="fr-grid-row fr-grid-row--middle flex-nowrap md:flex-wrap"
         >
           <p
             v-if="showEditAndWarning"

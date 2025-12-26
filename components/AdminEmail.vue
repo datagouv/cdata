@@ -1,7 +1,7 @@
 <template>
   <p
     v-if="'email' in user && user.email"
-    class="fr-m-0 fr-text--xs text-mention-grey f-italic inline-flex items-center"
+    class="fr-m-0 fr-text--xs text-mention-grey italic inline-flex items-center"
   >
     <RiMailLine class="size-3" />
     <TextClamp

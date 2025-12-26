@@ -1,17 +1,25 @@
 <template>
   <NuxtLoadingIndicator color="var(--blue-cumulus-main-526)" />
   <NuxtRouteAnnouncer />
-  <div
-    id="tooltips"
-    class="h-0"
+  <Toaster
+    position="bottom-right"
+    :duration="4000"
+    close-button
   />
-  <NuxtLayout>
-    <NuxtPage />
-  </NuxtLayout>
+  <div class="datagouv-components">
+    <div
+      id="tooltips"
+      class="h-0"
+    />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { datagouv } from '@datagouv/components-next'
+import 'vue-sonner/style.css'
+import { Toaster, datagouv } from '@datagouv/components-next'
 import type { UseFetchFunction } from '@datagouv/components-next'
 import CdataLink from './components/CdataLink.vue'
 import { ClientOnly, TextClamp } from '#components'

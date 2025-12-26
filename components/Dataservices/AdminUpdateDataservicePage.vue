@@ -1,5 +1,9 @@
 <template>
-  <div>
+  <LoadingBlock
+    v-slot="{ data: dataservice }"
+    :status
+    :data="dataservice"
+  >
     <DescribeDataservice
       v-if="dataserviceForm"
       v-model="dataserviceForm"
@@ -131,34 +135,34 @@
         </BannerAction>
       </div>
     </DescribeDataservice>
-  </div>
+  </LoadingBlock>
 </template>
 
 <script setup lang="ts">
+import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
 import type { Dataservice } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
-import { BannerAction, BrandedButton, TranslationT } from '@datagouv/components-next'
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'
 import type { DataserviceForm } from '~/types/types'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { toast } = useToast()
 
 const route = useRoute()
 const { start, finish, isLoading } = useLoadingIndicator()
 
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
-const { data: dataservice, refresh } = await useAPI<Dataservice>(url, { redirectOn404: true })
+const { data: dataservice, status, refresh } = await useAPI<Dataservice>(url, { redirectOn404: true })
 const dataserviceForm = ref<DataserviceForm | null>(null)
 const harvested = ref(false)
 watchEffect(() => {
+  if (!dataservice.value) return
   dataserviceForm.value = dataserviceToForm(dataservice.value)
   harvested.value = isHarvested(dataservice.value)
 })
 
 async function save() {
-  if (!dataserviceForm.value) throw new Error('No dataservice form')
+  if (!dataserviceForm.value || !dataservice.value) throw new Error('No dataservice form')
 
   try {
     start()
@@ -187,7 +191,7 @@ async function save() {
 }
 
 async function archiveDataservice() {
-  if (!dataserviceForm.value) throw new Error('No dataservice form')
+  if (!dataserviceForm.value || !dataservice.value) throw new Error('No dataservice form')
 
   try {
     start()
@@ -195,12 +199,12 @@ async function archiveDataservice() {
       method: 'PATCH',
       body: JSON.stringify(dataserviceToApi(dataserviceForm.value, { archived_at: dataservice.value.archived_at ? null : new Date().toISOString() })),
     })
-    refresh()
-    if (dataservice.value.archived_at) {
-      toast.success(t('API désarchivée !'))
+    await refresh()
+    if (dataservice.value?.archived_at) {
+      toast.success(t('API archivée !'))
     }
     else {
-      toast.success(t('API archivée !'))
+      toast.success(t('API désarchivée !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
@@ -210,7 +214,7 @@ async function archiveDataservice() {
 }
 
 async function switchDataservicePrivate() {
-  if (!dataserviceForm.value) throw new Error('No dataservice form')
+  if (!dataserviceForm.value || !dataservice.value) throw new Error('No dataservice form')
 
   try {
     start()
@@ -218,12 +222,12 @@ async function switchDataservicePrivate() {
       method: 'PATCH',
       body: JSON.stringify(dataserviceToApi(dataserviceForm.value, { private: !dataservice.value.private })),
     })
-    refresh()
-    if (dataservice.value.private) {
-      toast.success(t('API publiée !'))
+    await refresh()
+    if (dataservice.value?.private) {
+      toast.success(t('API passée en brouillon !'))
     }
     else {
-      toast.success(t('API passée en brouillon !'))
+      toast.success(t('API publiée !'))
     }
   }
   finally {
@@ -232,7 +236,7 @@ async function switchDataservicePrivate() {
 }
 
 async function restoreDataservice() {
-  if (!dataserviceForm.value) throw new Error('No dataset form')
+  if (!dataserviceForm.value || !dataservice.value) throw new Error('No dataset form')
   start()
   try {
     await $api(`/api/1/dataservices/${dataservice.value.id}/`, {
@@ -263,6 +267,7 @@ async function deleteDataservice() {
 }
 
 async function feature() {
+  if (!dataservice.value) return
   const method = dataservice.value.featured ? 'DELETE' : 'POST'
   try {
     start()

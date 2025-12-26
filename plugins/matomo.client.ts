@@ -7,15 +7,20 @@ declare global {
   }
 }
 
+const noopMatomo = {
+  trackPageView: () => {},
+  trackEvent: () => {},
+}
+
 export default defineNuxtPlugin({
   async setup(nuxtApp) {
     const _paq = (window._paq = window._paq || [])
-    if (!_paq) return {}
+    if (!_paq) return { provide: { matomo: noopMatomo } }
 
     let u = nuxtApp.$config.public.matomo.host
     const debug = nuxtApp.$config.public.matomo.debug
     const dryRun = nuxtApp.$config.public.matomo.dryRun
-    if (!u) return {}
+    if (!u) return { provide: { matomo: noopMatomo } }
 
     u = u.endsWith('/') ? u : u + '/'
     /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
@@ -47,7 +52,7 @@ export default defineNuxtPlugin({
       }
     }
     catch {
-      return {}
+      return { provide: { matomo: noopMatomo } }
     }
   },
 })

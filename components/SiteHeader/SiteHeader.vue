@@ -294,14 +294,14 @@
                       <RiInbox2Line class="size-3" />
                       {{ pendingNotifications.total }}
                       <template #toggletip="{ close }">
-                        <div class="flex justify-between border-bottom">
+                        <div class="flex justify-between border-b border-gray-default">
                           <h5 class="fr-text--sm fr-my-0 fr-p-2v">
                             {{ t("Notifications") }}
                           </h5>
                           <button
                             type="button"
                             :title="t('Fermer')"
-                            class="border-left close-button flex items-center justify-center"
+                            class="border-l border-gray-default close-button flex items-center justify-center"
                             @click="close"
                           >
                             <RiCloseLine class="size-5" />
@@ -503,7 +503,7 @@
 
 <script setup lang="ts">
 import { NuxtImg } from '#components'
-import { AnimatedLoader, BrandedButton, Toggletip, useGetUserAvatar } from '@datagouv/components-next'
+import { AnimatedLoader, BrandedButton, Toggletip, useGetUserAvatar, toast } from '@datagouv/components-next'
 import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
@@ -567,8 +567,6 @@ const logout = async () => {
   doLogout()
   toast.success(t('Vous avez été déconnecté.'))
 }
-
-const { toast } = useToast()
 
 onMounted(() => {
   // TODO: remove this logic when we don't rely on udata flash messages

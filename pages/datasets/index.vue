@@ -4,7 +4,7 @@
       color="primary"
       :title="$t('Jeux de données')"
       :subtitle="$t('Rechercher parmi les {count} jeux de données sur {site}', {
-        count: site.metrics.datasets,
+        count: site?.metrics.datasets ?? 0,
         site: config.public.title,
       })"
       :placeholder="$t('ex. élections présidentielles')"
@@ -13,7 +13,7 @@
       :link-url="config.public.guideDatasets"
     />
     <PageShowById
-      v-if="site.datasets_page"
+      v-if="site?.datasets_page"
       :page-id="site.datasets_page"
     />
     <EditoFooter

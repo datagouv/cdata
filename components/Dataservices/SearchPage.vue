@@ -100,7 +100,11 @@
           </div>
         </div>
         <transition mode="out-in">
-          <LoadingBlock :status="searchResultsStatus">
+          <LoadingBlock
+            v-slot="{ data: searchResults }"
+            :status="searchResultsStatus"
+            :data="searchResults"
+          >
             <div v-if="searchResults && searchResults.data.length">
               <ul class="mt-2 pt-2 p-0 border-t border-gray-default relative z-2 list-none">
                 <li
@@ -156,7 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, LoadingBlock, Pagination, getLink } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination, getLink, toast } from '@datagouv/components-next'
 import type { Dataservice, Organization, OrganizationOrSuggest, OrganizationSuggest } from '@datagouv/components-next'
 import { RiCloseCircleLine } from '@remixicon/vue'
 import { computedAsync, debouncedRef, useUrlSearchParams } from '@vueuse/core'
@@ -177,7 +181,6 @@ type Facets = {
 const route = useRoute()
 const { t } = useTranslation()
 const config = useRuntimeConfig()
-const { toast } = useToast()
 const { $api } = useNuxtApp()
 
 async function suggestOrganizations(q: string) {

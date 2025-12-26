@@ -1,3 +1,5 @@
+import { toast } from '@datagouv/components-next'
+
 export default defineNuxtPlugin({
   async setup(nuxtApp) {
     const config = useRuntimeConfig()
@@ -6,7 +8,6 @@ export default defineNuxtPlugin({
     const route = useRoute()
     const { t, locale } = useTranslation()
 
-    const { toast } = useToast()
     const makeApi = (apiOptions: { sendJson: boolean, redirectOn404: boolean }) => {
       return $fetch.create({
         baseURL: config.public.apiBase,

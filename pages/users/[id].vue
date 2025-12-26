@@ -237,7 +237,7 @@ const datasetsParams = computed(() => {
   return {
     page: datasetsPage.value,
     page_size: 3,
-    owner: user.value.id,
+    owner: user.value?.id,
   }
 })
 const { data: datasets } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/datasets`, { query: datasetsParams })
@@ -247,7 +247,7 @@ const reusesParams = computed(() => {
   return {
     page: reusesPage.value,
     page_size: 6,
-    owner: user.value.id,
+    owner: user.value?.id,
   }
 })
 const { data: reuses } = await useAPI<PaginatedArray<Reuse>>(`/api/1/reuses`, { query: reusesParams })
@@ -257,7 +257,7 @@ const followedDatasetsParams = computed(() => {
   return {
     page: followedDatasetsPage.value,
     page_size: 6,
-    followed_by: user.value.id,
+    followed_by: user.value?.id,
   }
 })
 const { data: followedDatasets } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/datasets`, { query: followedDatasetsParams })

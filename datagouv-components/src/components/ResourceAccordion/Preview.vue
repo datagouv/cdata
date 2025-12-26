@@ -23,7 +23,7 @@
             <p class="fr-text--bold fr-m-0">
               {{ t("Explorer les données en détail") }}
             </p>
-            <p class="fr-text--sm fr-m-0 f-italic">
+            <p class="fr-text--sm fr-m-0 italic">
               {{ t("Utiliser notre outil pour obtenir un aperçu des données, en savoir plus sur les différentes colonnes ou réaliser des filtres et des tris.") }}
             </p>
           </div>

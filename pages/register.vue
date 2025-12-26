@@ -142,7 +142,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, TranslationT } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, TranslationT, toast } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 
 definePageMeta({
@@ -176,7 +176,6 @@ onMounted(() => {
 })
 
 const postApiWithCsrf = usePostApiWithCsrf()
-const { toast } = useToast()
 const me = useMe()
 
 const connect = async () => {

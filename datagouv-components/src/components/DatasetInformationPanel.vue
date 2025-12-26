@@ -1,6 +1,6 @@
 <template>
-  <div class="py-6 mb-6 border-bottom border-gray-default">
-    <h2 class="subtitle subtitle--uppercase">
+  <div class="py-6 mb-6 border-b border-gray-default">
+    <h2 class="subtitle uppercase mb-4">
       {{ t('Informations') }}
     </h2>
     <div class="fr-text--sm fr-m-0">
@@ -9,11 +9,11 @@
           v-if="license"
           class="fr-col-12 fr-col-sm-6 fr-col-md-4"
         >
-          <dt class="subtitle fr-mb-0">
+          <dt class="subtitle">
             {{ t('Licence') }}
           </dt>
           <dd class="text-sm m-0 text-gray-medium p-0">
-            <code class="bg-grey-some px-1 text-gray-medium">
+            <code class="bg-gray-some px-1 text-gray-medium">
               <a :href="license.url">
                 {{ license.title }}
               </a>
@@ -21,7 +21,7 @@
           </dd>
         </div>
         <div class="fr-col-12 fr-col-sm-6 fr-col-md-4">
-          <dt class="subtitle fr-mb-0">
+          <dt class="subtitle">
             {{ t('Identifiant') }}
           </dt>
           <dd class="text-sm m-0 text-gray-medium p-0">
@@ -31,14 +31,14 @@
       </dl>
     </div>
   </div>
-  <div class="pb-6 mb-6 border-bottom border-gray-default">
-    <h2 class="subtitle subtitle--uppercase">
+  <div class="pb-6 mb-6 border-b border-gray-default">
+    <h2 class="subtitle uppercase mb-4">
       {{ t('Temporalité') }}
     </h2>
     <div class="fr-text--sm fr-m-0">
       <dl class="fr-grid-row fr-grid-row--gutters">
         <div class="fr-col-12 fr-col-sm-6 fr-col-md-4">
-          <dt class="subtitle fr-mb-0">
+          <dt class="subtitle mb-0">
             {{ t('Création') }}
           </dt>
           <dd class="text-sm m-0 text-gray-medium p-0">
@@ -49,7 +49,7 @@
           v-if="frequency"
           class="fr-col-12 fr-col-sm-6 fr-col-md-4"
         >
-          <dt class="subtitle fr-mb-0">
+          <dt class="subtitle mb-0">
             {{ t('Fréquence') }}
           </dt>
           <dd class="text-sm m-0 text-gray-medium p-0">
@@ -59,7 +59,7 @@
       </dl>
       <dl class="fr-grid-row fr-grid-row--gutters">
         <div class="fr-col-12 fr-col-sm-6 fr-col-md-4">
-          <dt class="subtitle fr-mb-0">
+          <dt class="subtitle mb-0">
             {{ t('Dernière mise à jour') }}
           </dt>
           <dd class="text-sm m-0 text-gray-medium p-0">
@@ -69,8 +69,8 @@
       </dl>
     </div>
   </div>
-  <div class="pb-6 mb-6 border-bottom border-gray-default">
-    <h2 class="subtitle subtitle--uppercase">
+  <div class="pb-6 mb-6 border-b border-gray-default">
+    <h2 class="subtitle uppercase mb-4">
       {{ t('Couverture spatiale') }}
     </h2>
     <div class="fr-text--sm fr-m-0">
@@ -79,7 +79,7 @@
           v-if="zonesLabels.length"
           class="fr-col-12 fr-col-sm-6 fr-col-md-4"
         >
-          <dt class="subtitle fr-mb-0">
+          <dt class="subtitle mb-0">
             {{ t('Couverture territoriale') }}
           </dt>
           <dd class="text-sm m-0 text-gray-medium p-0">
@@ -90,7 +90,7 @@
           v-if="granularity"
           class="fr-col-12 fr-col-sm-6 fr-col-md-4"
         >
-          <dt class="subtitle fr-mb-0">
+          <dt class="subtitle mb-0">
             {{ t('Granularité de la couverture territoriale') }}
           </dt>
           <dd class="text-sm m-0 text-gray-medium p-0">
@@ -100,12 +100,12 @@
       </dl>
     </div>
   </div>
-  <div class="pb-6 mb-6 border-bottom border-gray-default">
-    <h2 class="subtitle subtitle--uppercase">
+  <div class="pb-6 mb-6 border-b border-gray-default">
+    <h2 class="subtitle uppercase mb-4">
       {{ t('Actions') }}
     </h2>
     <div class="fr-text--sm fr-m-0">
-      <h3 class="subtitle fr-mb-1v">
+      <h3 class="subtitle mb-1">
         {{ t('Intégrer sur votre site') }}
         <CopyButton
           :hide-label="true"

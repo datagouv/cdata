@@ -9,12 +9,12 @@
     >
       <RiInformationLine class="size-4" />
       <template #toggletip="{ close }">
-        <div class="flex justify-between border-bottom">
+        <div class="flex justify-between border-b">
           <h5 class="fr-text--sm fr-my-0 fr-p-2v">{{ t("Schéma de données") }}</h5>
           <button
             type="button"
             :title="t('Fermer')"
-            class="border-left close-button flex items-center justify-center"
+            class="border-l close-button flex items-center justify-center"
             @click="close"
           >&times;</button>
         </div>

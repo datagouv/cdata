@@ -55,14 +55,13 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 
 definePageMeta({
   matomoIgnore: true,
 })
 
-const { toast } = useToast()
 const { t } = useTranslation()
 const route = useRoute()
 const me = useMaybeMe()

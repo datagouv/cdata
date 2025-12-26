@@ -18,7 +18,7 @@
         <BrandedButton
           color="white-flat"
           class="text-new-green-illustration"
-          href="/reuses/new"
+          href="/admin/reuses/new"
         >
           {{ $t('Publier votre réutilisation') }}
         </BrandedButton>
@@ -102,7 +102,7 @@
         <BrandedButton
           color="white-flat"
           class="text-new-green-illustration"
-          href="/reuses/new"
+          href="/admin/reuses/new"
         >
           {{ $t('Publier votre réutilisation') }}
         </BrandedButton>

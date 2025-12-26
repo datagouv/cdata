@@ -90,7 +90,7 @@
                 </SearchableSelect>
               </div>
               <SelectGroup
-                v-if="roles.length > 0"
+                v-if="roles && roles.length > 0"
                 v-model="addForm.role"
                 :label="t('Rôle du membre')"
                 :options="rolesOptions"
@@ -123,7 +123,11 @@
       </div>
     </div>
 
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: organization }"
+      :status
+      :data="organization"
+    >
       <AdminTable
         v-if="organization && organization.members.length > 0"
       >
@@ -246,7 +250,7 @@
                     >
                       <div class="flex-1">
                         <SelectGroup
-                          v-if="roles.length > 0"
+                          v-if="roles && roles.length > 0"
                           v-model="newRole"
                           :label="t('Rôle du membre')"
                           :options="rolesOptions"

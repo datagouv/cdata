@@ -4,7 +4,7 @@
     :class="bgColor"
   >
     <div class="container max-w-3xl text-center text-white">
-      <h1 class="text-3xl md:text-4xl lg:text-4.5xl font-extrabold mb-4">
+      <h1 class="text-white text-3xl md:text-4xl lg:text-4.5xl font-extrabold mb-4">
         <slot name="title" />
       </h1>
       <p

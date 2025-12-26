@@ -14,7 +14,11 @@
       {{ t('{n} ressources communautaires', pageData.total) }}
     </h2>
 
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: pageData }"
+      :status
+      :data="pageData"
+    >
       <div v-if="pageData && pageData.total > 0">
         <AdminCommunityResourcesTable
           :community-resources="pageData ? pageData.data : []"

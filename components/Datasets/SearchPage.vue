@@ -225,7 +225,11 @@
           </div>
         </div>
         <transition mode="out-in">
-          <LoadingBlock :status="searchResultsStatus">
+          <LoadingBlock
+            v-slot="{ data: searchResults }"
+            :status="searchResultsStatus"
+            :data="searchResults"
+          >
             <div v-if="searchResults && searchResults.data.length">
               <ul
                 class="space-y-4 mt-2 pt-2 p-0 border-t border-gray-default relative z-2 list-none"
@@ -287,7 +291,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getLink, getOrganizationTypes, LoadingBlock, Pagination, OTHER, USER } from '@datagouv/components-next'
+import { BrandedButton, getLink, getOrganizationTypes, LoadingBlock, Pagination, OTHER, USER, toast } from '@datagouv/components-next'
 import type { DatasetV2, License, Organization, OrganizationTypes, RegisteredSchema, TranslatedBadge, OrganizationOrSuggest } from '@datagouv/components-next'
 import { ref, computed, type Component } from 'vue'
 import { RiCloseCircleLine, RiDownloadLine, RiRssLine } from '@remixicon/vue'
@@ -315,7 +319,6 @@ type Facets = {
 const { $api } = useNuxtApp()
 const { t } = useTranslation()
 const config = useRuntimeConfig()
-const { toast } = useToast()
 
 const route = useRoute()
 const params = useUrlSearchParams<DatasetSearchParams>('history', {

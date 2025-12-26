@@ -59,7 +59,7 @@ export function getDiscussionUrl(discussionId: string, subject: DiscussionSubjec
   if (!subject) {
     return ''
   }
-  return `${getSubjectPage(subject)}#/discussions/${discussionId}`
+  return `${getSubjectPage(subject)}/discussions?discussion_id=${discussionId}`
 }
 
 export function isProducerOfSubject(subject: DiscussionSubjectTypes, comment: Comment): boolean {

@@ -11,9 +11,19 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "@scarf/scarf",
+      "@tailwindcss/oxide",
       "cypress",
+      "esbuild",
       "husky",
       "sharp"
+    ],
+    "ignoredBuiltDependencies": [
+      "@sentry/cli",
+      "core-js",
+      "unrs-resolver",
+      "vue-demi"
     ]
   },
   "scripts": {
@@ -30,13 +40,13 @@
     "test:e2e": "playwright test",
     "test:e2e:update-screenshots": "playwright test tests/homepage.spec.ts --update-snapshots",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:show-report": "bash -c 'rm -rf /tmp/playwright && mkdir /tmp/playwright && mv \"$1\" /tmp/playwright/report.zip && unzip -d /tmp/playwright /tmp/playwright/report.zip && pnpm exec playwright show-report /tmp/playwright' _"
   },
   "lint-staged": {
     "*.{js,ts,vue,jsx,tsx}": "eslint --fix"
   },
   "dependencies": {
-    "@datagouv/components": "^2.0.5",
     "@datagouv/components-next": "workspace:*",
     "@floating-ui/vue": "^1.1.8",
     "@gouvfr/dsfr": "^1.11.1",
@@ -69,7 +79,6 @@
     "gray-matter": "^4.0.3",
     "leaflet": "^1.9.4",
     "lodash-es": "^4.17.21",
-    "mitt": "^3.0.1",
     "nuxt": "~3.16.2",
     "ofetch": "^1.4.1",
     "papaparse": "^5.5.3",

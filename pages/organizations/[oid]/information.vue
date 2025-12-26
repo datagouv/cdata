@@ -218,7 +218,7 @@
       :title="$t('Intégrer sur votre site')"
       :button-text="$t('Voir les oembeds')"
     >
-      <h3 class="subtitle fr-mb-1v">
+      <h3 class="subtitle mb-1">
         {{ $t('La recherche de jeux de données de l\'organisation') }}
         <CopyButton
           :hide-label="true"
@@ -236,7 +236,7 @@
           rows="1"
         />
       </div>
-      <h3 class="subtitle fr-mb-1v">
+      <h3 class="subtitle mb-1">
         {{ $t('La recherche des API de l\'organisation') }}
         <CopyButton
           :hide-label="true"
@@ -254,7 +254,7 @@
           rows="1"
         />
       </div>
-      <h3 class="subtitle fr-mb-1v">
+      <h3 class="subtitle mb-1">
         {{ $t('La liste des réutilisations de l\'organisation') }}
         <CopyButton
           :hide-label="true"
@@ -277,7 +277,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, CopyButton, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, useFormatDate, useMetrics, createOrganizationMetricsUrl, type Organization, type OrganizationMetrics } from '@datagouv/components-next'
+import { Avatar, BrandedButton, CopyButton, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, useFormatDate, useMetrics, createOrganizationMetricsUrl, type Organization, type OrganizationMetrics, toast } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
@@ -291,7 +291,6 @@ const { formatDate } = useFormatDate()
 
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
-const { toast } = useToast()
 const me = useMaybeMe()
 
 const { getOrganizationMetrics } = useMetrics()
