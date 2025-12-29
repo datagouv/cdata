@@ -203,9 +203,8 @@
                   size="xs"
                   icon-only
                   keep-margins-even-without-borders
-                >
-                  {{ $t('Voir la page publique') }}
-                </BrandedButton>
+                  :title="$t('Voir la page publique')"
+                />
                 <ModalWithButton
                   v-if="isOrgAdmin"
                   :title="$t('Modifier le membre')"
@@ -219,11 +218,10 @@
                       icon-only
                       size="xs"
                       keep-margins-even-without-borders
+                      :title="t('Modifier')"
                       v-bind="attrs"
                       v-on="listeners"
-                    >
-                      {{ t("Modifier") }}
-                    </BrandedButton>
+                    />
                   </template>
 
                   <template #default="{ close }">

@@ -20,9 +20,7 @@
         :class="sorted ? '' : 'opacity-50'"
         :title="t('Trier')"
         @click="toggleSort"
-      >
-        {{ t("Trier") }}
-      </BrandedButton>
+      />
     </div>
   </th>
 </template>

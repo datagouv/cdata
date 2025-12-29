@@ -17,7 +17,10 @@
       :class="{ 'w-8 h-8 rounded-full bg-transparent': styledButton }"
     >
       <slot>
-        <RiInformationLine class="size-5" />
+        <RiInformationLine
+          class="size-5"
+          aria-hidden="true"
+        />
       </slot>
     </PopoverButton>
 

@@ -16,11 +16,10 @@
         :icon="RiPencilLine"
         :color="buttonColor"
         :size="buttonSize"
+        :title="$t('Éditer le fichier')"
         keep-margins-even-without-borders
         v-on="listeners"
-      >
-        {{ $t('Éditer le fichier') }}
-      </BrandedButton>
+      />
     </template>
 
     <template #default="{ close }">

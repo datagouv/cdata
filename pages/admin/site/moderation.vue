@@ -181,10 +181,9 @@
                     icon-only
                     keep-margins-even-without-borders
                     :disabled="!!report.dismissed_at"
+                    :title="$t('Rejeter le signalement')"
                     @click="dismiss(report)"
-                  >
-                    {{ $t('Rejeter le signalement') }}
-                  </BrandedButton>
+                  />
                   <BrandedButton
                     v-if="report.subject && getSwitchToPrivateMethodAndUrl(report.subject)"
                     size="xs"
@@ -194,10 +193,9 @@
                     icon-only
                     keep-margins-even-without-borders
                     :disabled="'private' in subjects[report.id].value! && (subjects[report.id].value as any).private"
+                    :title="$t('Cacher l\'objet')"
                     @click="switchPrivate(report, report.subject)"
-                  >
-                    {{ $t("Cacher l'objet") }}
-                  </BrandedButton>
+                  />
                   <div
                     v-else
                     class="size-8 flex items-center justify-center"
@@ -213,10 +211,9 @@
                     icon-only
                     keep-margins-even-without-borders
                     :disabled="isSubjectDeleted(subjects[report.id].value)"
+                    :title="$t('Supprimer l\'objet')"
                     @click="deleteSubject(report, report.subject)"
-                  >
-                    {{ $t("Supprimer l'objet") }}
-                  </BrandedButton>
+                  />
                 </div>
               </td>
             </tr>

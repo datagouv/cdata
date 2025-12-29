@@ -28,16 +28,33 @@
             class="mb-0 text-sm"
             :type
           />
-          <RiSubtractLine class="size-4 fill-gray-medium" />
+          <RiSubtractLine
+            aria-hidden="true"
+            class="size-4 fill-gray-medium"
+          />
         </template>
         <div>
           <div
             v-if="organization.metrics"
             class="text-gray-medium flex items-center text-sm gap-0.5"
+            :aria-label="t('{datasets} jeux de données, {dataservices} API et {reuses} réutilisations', {
+              datasets: organization.metrics.datasets,
+              dataservices: organization.metrics.dataservices,
+              reuses: organization.metrics.reuses,
+            })"
           >
-            <RiDatabase2Line class="size-4 -mt-1" /> {{ organization.metrics.datasets }}
-            <RiTerminalLine class="size-4 -mt-1 ml-1" /> {{ organization.metrics.dataservices }}
-            <RiLineChartLine class="size-4 -mt-1 ml-1" /> {{ organization.metrics.reuses }}
+            <RiDatabase2Line
+              aria-hidden="true"
+              class="size-4 -mt-1"
+            /> {{ organization.metrics.datasets }}
+            <RiTerminalLine
+              aria-hidden="true"
+              class="size-4 -mt-1 ml-1"
+            /> {{ organization.metrics.dataservices }}
+            <RiLineChartLine
+              aria-hidden="true"
+              class="size-4 -mt-1 ml-1"
+            /> {{ organization.metrics.reuses }}
           </div>
         </div>
       </div>
@@ -61,10 +78,13 @@ import type { Organization } from '../types/organizations'
 import OwnerType from './OwnerType.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import AppLink from './AppLink.vue'
+import { useTranslation } from '../main'
 
 const props = defineProps<{
   organization: Organization
 }>()
+
+const { t } = useTranslation()
 
 const type = computed(() => getOrganizationType(props.organization))
 

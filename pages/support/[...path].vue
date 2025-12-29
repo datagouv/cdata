@@ -461,7 +461,7 @@
       >
         <SupportTitle
           v-if="question.title"
-          :id="question.title"
+          :id="question.id"
         >
           {{ question.title }}
         </SupportTitle>

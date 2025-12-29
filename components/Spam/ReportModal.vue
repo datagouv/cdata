@@ -8,12 +8,11 @@
         color="secondary"
         size="xs"
         :icon="RiFlagLine"
+        :title="$t('Signalement')"
         icon-only
         v-bind="attrs"
         v-on="listeners"
-      >
-        {{ $t('Signalement') }}
-      </BrandedButton>
+      />
     </template>
 
     <TranslationT

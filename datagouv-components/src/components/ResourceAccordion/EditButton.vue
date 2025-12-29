@@ -4,10 +4,9 @@
     icon-only
     :icon="RiPencilLine"
     color="warning"
+    :title="t('Éditer le fichier')"
     data-testid="edit-button"
-  >
-    {{ t("Éditer le fichier") }}
-  </BrandedButton>
+  />
 </template>
 
 <script setup lang="ts">

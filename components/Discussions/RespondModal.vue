@@ -11,11 +11,10 @@
         color="tertiary"
         icon-only
         keep-margins-even-without-borders
+        :title="$t('Répondre à la discussion')"
         v-bind="attrs"
         v-on="listeners"
-      >
-        {{ $t('Répondre à la discussion') }}
-      </BrandedButton>
+      />
     </template>
     <template #default="{ close }">
       <DiscussionCard

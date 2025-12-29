@@ -30,6 +30,7 @@
     ><slot /></span>
     <RiExternalLinkLine
       v-if="newTab"
+      aria-hidden="true"
       :class="iconSize"
     />
   </component>

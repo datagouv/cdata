@@ -5,6 +5,7 @@
         :is="icon"
         v-if="icon"
         class="size-6 text-[#3A3A3A]"
+        aria-hidden="true"
       />
     </div>
     <h3 class="text-lg font-bold leading-6 text-[#3A3A3A] mb-2">

@@ -11,12 +11,11 @@
         size="xs"
         :icon="RiPencilLine"
         icon-only
+        :title="$t('Modifier')"
         v-bind="attrs"
         :loading
         v-on="listeners"
-      >
-        {{ $t('Modifier') }}
-      </BrandedButton>
+      />
     </template>
 
     <template #default>

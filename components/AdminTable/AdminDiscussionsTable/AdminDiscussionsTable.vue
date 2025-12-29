@@ -119,11 +119,10 @@
               color="tertiary"
               :href="getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id])"
               :icon="RiEyeLine"
+              :title="getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id])"
               icon-only
               keep-margins-even-without-borders
-            >
-              {{ getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id]) }}
-            </BrandedButton>
+            />
 
             <DiscussionsRespondModal
               :thread="discussion"
