@@ -12,7 +12,10 @@
             class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
             :to="lastPost.page"
           >
-            <RiBardLine class="size-4 shrink-0" />
+            <RiBardLine
+              aria-hidden="true"
+              class="size-4 shrink-0"
+            />
             <span class="truncate"><span class="font-bold">{{ $t('Actualités') }}</span><span>&nbsp;: {{ lastPost.name }}</span></span>
           </CdataLink>
           <CdataLink
@@ -20,8 +23,16 @@
             class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
             :to="config.public.homepageRightNow.url"
           >
-            <RiBardLine class="size-4 shrink-0" />
-            <span class="truncate"><span class="font-bold">{{ $t('En ce moment') }}</span><span>&nbsp;: {{ config.public.homepageRightNow.title }}</span></span>
+            <RiBardLine
+              aria-hidden="true"
+              class="size-4 shrink-0"
+            />
+            <span class="truncate">
+              <span class="font-bold">
+                {{ $t('En ce moment') }}
+              </span>
+              <span>&nbsp;: {{ config.public.homepageRightNow.title }}</span>
+            </span>
           </CdataLink>
         </div>
         <div class="space-y-4">
@@ -56,6 +67,7 @@
         <div class="w-full max-w-lg space-y-8">
           <div class="space-y-2">
             <nuxt-img
+              aria-hidden="true"
               src="/illustrations/dataset.svg"
               class="h-16 grayscale"
             />
@@ -126,6 +138,7 @@
             src="/nuxt_images/homepage/datasets.png"
             srcset="/nuxt_images/homepage/datasets.png, /nuxt_images/homepage/datasets@2x.png 2x, /nuxt_images/homepage/datasets@3x.png 3x"
             class="w-full sm:-mb-16"
+            alt=""
           />
         </figure>
       </div>
@@ -138,6 +151,7 @@
             src="/nuxt_images/homepage/reuses.png"
             srcset="/nuxt_images/homepage/reuses.png, /nuxt_images/homepage/reuses@2x.png 2x, /nuxt_images/homepage/reuses@3x.png 3x"
             class="w-full"
+            alt=""
           />
         </figure>
       </div>
@@ -147,6 +161,7 @@
             <nuxt-img
               src="/illustrations/discussion.svg"
               class="h-16 grayscale"
+              aria-hidden="true"
             />
             <h2 class="text-3xl text-gray-title font-extrabold">
               {{ $t('Une communauté dynamique et engagée') }}
@@ -242,6 +257,7 @@
               <component
                 :is="icon"
                 class="size-6"
+                aria-hidden="true"
               />
               <p class="text-2xl font-bold mb-0">
                 {{ label }}
@@ -279,6 +295,7 @@
                   :src="`/nuxt_images/homepage/${exploration.image}.png`"
                   :srcset="`/nuxt_images/homepage/${exploration.image}.png, /nuxt_images/homepage/${exploration.image}@2x.png 2x`"
                   class="w-full h-[300px] object-cover"
+                  alt=""
                 />
                 <div class="p-4 space-y-2.5">
                   <p class="text-sm uppercase font-bold text-gray-medium">
@@ -294,7 +311,10 @@
                       class="inline-flex items-center text-new-primary space-x-1"
                     >
                       <span>{{ $t('En savoir plus') }}</span>
-                      <RiArrowRightLine class="size-3" />
+                      <RiArrowRightLine
+                        aria-hidden="true"
+                        class="size-3"
+                      />
                     </CdataLink>
                   </div>
                 </div>
@@ -386,6 +406,7 @@
             v-if="lastPost.image"
             :src="lastPost.image"
             class="sm:col-span-5"
+            alt=""
           >
           <div class="sm:col-span-7 flex flex-col justify-center space-y-8">
             <div class="space-y-2">

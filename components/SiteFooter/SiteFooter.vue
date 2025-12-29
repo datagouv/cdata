@@ -7,6 +7,7 @@
             <div class="flex-none hidden sm:flex items-center mr-5">
               <NuxtImg
                 src="/illustrations/newspaper-black.svg"
+                aria-hidden="true"
                 loading="lazy"
                 width="71"
                 height="55"
@@ -57,7 +58,7 @@
                     href="https://www.linkedin.com/company/data-gouv-fr/"
                     target="_blank"
                   >
-                    <RiLinkedinBoxLine />
+                    <RiLinkedinBoxLine aria-hidden="true" />
                   </a>
                 </li>
                 <li>
@@ -67,7 +68,7 @@
                     href="https://social.numerique.gouv.fr/@datagouvfr"
                     target="_blank"
                   >
-                    <RiMastodonLine />
+                    <RiMastodonLine aria-hidden="true" />
                   </a>
                 </li>
                 <li>
@@ -77,7 +78,7 @@
                     href="https://bsky.app/profile/datagouvfr.bsky.social"
                     target="_blank"
                   >
-                    <RiBlueskyLine />
+                    <RiBlueskyLine aria-hidden="true" />
                   </a>
                 </li>
                 <li>
@@ -87,7 +88,7 @@
                     href="https://www.youtube.com/@data-gouv-fr"
                     target="_blank"
                   >
-                    <RiYoutubeLine />
+                    <RiYoutubeLine aria-hidden="true" />
                   </a>
                 </li>
                 <li>
@@ -97,7 +98,7 @@
                     href="https://github.com/datagouv/data.gouv.fr"
                     target="_blank"
                   >
-                    <RiGithubLine />
+                    <RiGithubLine aria-hidden="true" />
                   </a>
                 </li>
                 <li>
@@ -108,7 +109,7 @@
                     :external="true"
                     target="_blank"
                   >
-                    <RiRssLine />
+                    <RiRssLine aria-hidden="true" />
                   </CdataLink>
                 </li>
               </ul>
