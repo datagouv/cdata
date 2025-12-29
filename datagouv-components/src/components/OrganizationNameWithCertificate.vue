@@ -4,9 +4,10 @@
       v-if="showType"
       :type="getOrganizationType(organization)"
     />
-    <div
-      class="mb-0 truncate flex-initial"
-      :class="{ 'text-sm': size === 'sm' }"
+    <component
+      :is="as"
+      class="mb-0 truncate flex-initial font-normal text-new-primary"
+      :class="{ 'text-sm': size === 'sm', 'text-base': size === 'base' }"
     >
       {{ organization.name }}
       <small
@@ -15,7 +16,7 @@
       >
         {{ organization.acronym }}
       </small>
-    </div>
+    </component>
     <Tooltip v-if="isOrganizationCertified(organization)">
       <RiCheckboxCircleLine
         class="flex-none"
@@ -52,9 +53,11 @@ withDefaults(defineProps<{
   showAcronym?: boolean
   showType?: boolean
   size?: 'base' | 'sm'
+  as?: string
 }>(), {
   showAcronym: false,
   showType: true,
   size: 'base',
+  as: 'div',
 })
 </script>
