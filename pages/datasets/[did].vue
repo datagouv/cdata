@@ -122,6 +122,7 @@
                   <OrganizationOwner
                     v-if="dataset.organization"
                     :organization="dataset.organization"
+                    as="h2"
                   />
                   <AvatarWithName
                     v-if="dataset.owner"
@@ -486,6 +487,7 @@ import { useElementSize } from '@vueuse/core'
 const config = useRuntimeConfig()
 const route = useRoute()
 const { formatDate } = useFormatDate()
+const { t } = useTranslation()
 
 definePageMeta({
   keepScroll: true,
@@ -506,12 +508,14 @@ const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
   redirectOnSlug: 'did',
 })
 
-const title = computed(() => dataset.value?.title)
+const title = computed(() => t('Jeu de données {title} | {site}', { title: dataset.value?.title ?? '', site: config.public.title }))
 const robots = computed(() => dataset.value && dataset.value.archived ? 'noindex' : 'all')
+const description = computed(() => dataset.value?.description_short)
 
 useSeoMeta({
   title,
   robots,
+  description,
 })
 
 const hideWarnings = computed(() => {
