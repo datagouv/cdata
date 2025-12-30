@@ -308,7 +308,7 @@
                           </button>
                         </div>
                         <NotificationsList
-                          v-if="notificationsCombinedList.length && false"
+                          v-if="notificationsCombinedList.length"
                           :notifications="notificationsCombinedList"
                         />
                         <template v-else>
