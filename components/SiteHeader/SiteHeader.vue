@@ -307,7 +307,25 @@
                             <RiCloseLine class="size-5" />
                           </button>
                         </div>
-                        <NotificationsList :notifications="notificationsCombinedList" />
+                        <NotificationsList
+                          v-if="notificationsCombinedList.length && false"
+                          :notifications="notificationsCombinedList"
+                        />
+                        <template v-else>
+                          <div class="py-5 px-16 flex flex-col items-center text-center">
+                            <NuxtImg
+                              class="w-6"
+                              src="/illustrations/coffee.svg"
+                              alt=""
+                            />
+                            <p class="m-0 font-bold text-xs">
+                              {{ $t(`Vous n'avez pas encore de notifications`) }}
+                            </p>
+                            <p class="m-0 text-xs">
+                              {{ $t('Le système de notifications est actuellement en cours de refonte.') }}
+                            </p>
+                          </div>
+                        </template>
                         <button
                           v-if="nextPage"
                           type="button"
