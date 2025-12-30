@@ -1,7 +1,10 @@
 <template>
   <div class="border-b border-gray-default">
     <div class="container">
-      <div class="flex gap-2 overflow-auto">
+      <component
+        :is="as"
+        class="font-normal text-base m-0 flex gap-2 overflow-auto"
+      >
         <CdataLink
           v-for="link in links"
           :key="link.label"
@@ -17,15 +20,18 @@
             <span aria-hidden="true">(</span>{{ link.count }}<span aria-hidden="true">)</span>
           </sup>
         </CdataLink>
-      </div>
+      </component>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+withDefaults(defineProps<{
   links: Array<{ href: string, label: string, count?: number }>
-}>()
+  as?: string
+}>(), {
+  as: 'h2',
+})
 
 const isCurrentUrl = useIsCurrentUrl()
 </script>
