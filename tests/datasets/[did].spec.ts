@@ -7,7 +7,7 @@ test('show details page', async ({ page }) => {
 
   // Expect a title "to contain" a substring.
   await expect(page).toHaveTitle(
-    'Base Sirene des entreprises et de leurs établissements (SIREN, SIRET)',
+    'Jeu de données Base Sirene des entreprises et de leurs établissements (SIREN, SIRET) | data.gouv.fr',
   )
 })
 
@@ -17,7 +17,7 @@ test('dataset with labels shows label section', async ({ page }) => {
   )
 
   await expect(page).toHaveTitle(
-    'Base Sirene des entreprises et de leurs établissements (SIREN, SIRET)',
+    'Jeu de données Base Sirene des entreprises et de leurs établissements (SIREN, SIRET) | data.gouv.fr',
   )
 
   // Check that there's a corresponding dd element with labels
