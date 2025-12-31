@@ -90,10 +90,9 @@
               :icon="RiDeleteBinLine"
               icon-only
               size="sm"
+              :title="$t('Supprimer le fichier')"
               @click="$emit('delete')"
-            >
-              {{ $t("Supprimer le fichier") }}
-            </BrandedButton>
+            />
           </p>
         </div>
       </div>

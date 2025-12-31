@@ -96,6 +96,7 @@
                   <OrganizationOwner
                     v-if="dataservice.organization"
                     :organization="dataservice.organization"
+                    as="h2"
                   />
                   <AvatarWithName
                     v-if="dataservice.owner"
@@ -182,9 +183,9 @@
             type="primary-frame"
             class="flex items-center justify-between"
           >
-            <div class="text-datagouv-dark font-bold text-xl">
+            <h2 class="text-datagouv-dark font-bold text-xl mb-0">
               {{ $t(`Accéder à l'API`) }}
-            </div>
+            </h2>
             <BrandedButton
               color="primary"
               :href="dataservice.business_documentation_url"
@@ -273,12 +274,14 @@ const { height: headerHeight } = useElementSize(header)
 const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
 const { data: dataservice, status } = await useAPI<Dataservice>(url, { redirectOn404: true, redirectOnSlug: 'did' })
 
-const title = computed(() => dataservice.value?.title)
+const title = computed(() => `${dataservice.value?.title} | ${config.public.title}`)
+const description = computed(() => dataservice.value?.description)
 const robots = computed(() => dataservice.value && dataservice.value.archived_at ? 'noindex' : 'all')
 
 useSeoMeta({
   title,
   robots,
+  description,
 })
 await useJsonLd('dataservice', route.params.did as string)
 

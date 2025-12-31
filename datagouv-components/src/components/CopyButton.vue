@@ -11,10 +11,13 @@
       :class="{ 'flex-row-reverse': reverse }"
       style="color: #3558a2;"
     >
-      <RiCheckLine class="flex-none size-4 inline" />
+      <RiCheckLine
+        class="flex-none size-4 inline"
+        aria-hidden="true"
+      />
       <span
         class="copy-label"
-        :class="{ 'fr-sr-only': hideLabel }"
+        :class="{ 'sr-only': hideLabel }"
       >{{ copiedLabel }}</span>
     </span>
     <span
@@ -25,10 +28,11 @@
       <component
         :is="hideLabel ? RiClipboardLine : RiFileCopyLine"
         class="size-4 flex-none inline"
+        aria-hidden="true"
       />
       <span
         class="copy-link copy-label"
-        :class="{ 'fr-sr-only': hideLabel }"
+        :class="{ 'sr-only': hideLabel }"
       >{{ label }}</span>
     </span>
   </button>

@@ -12,24 +12,22 @@
         <BrandedButton
           type="button"
           :icon="RiVolumeUpLine"
+          :title="$t('Énoncer le code du captcha')"
           icon-only
           size="xl"
           color="tertiary"
           keep-margins-even-without-borders
           @click="playSound"
-        >
-          {{ $t('Énoncer le code du captcha') }}
-        </BrandedButton>
+        />
         <BrandedButton
           :icon="RiRefreshLine"
+          :title="$t('Générer un nouveau captcha')"
           color="tertiary"
           size="xl"
           icon-only
           keep-margins-even-without-borders
           @click="() => refresh()"
-        >
-          {{ $t('Générer un nouveau captcha') }}
-        </BrandedButton>
+        />
       </div>
     </div>
     <InputGroup

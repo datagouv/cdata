@@ -2,6 +2,7 @@
   <component
     :is="(resource.format ? getResourceFormatIcon(resource.format) : null) || File"
     class="text-gray-800 shrink-0"
+    aria-hidden="true"
   />
 </template>
 

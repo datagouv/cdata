@@ -130,10 +130,9 @@
                   keep-margins-even-without-borders
                   :disabled="index === 0"
                   icon-only
+                  :title="$t('Déplacer vers le haut')"
                   @click="moveFile(index, index - 1)"
-                >
-                  {{ $t('Déplacer vers le haut') }}
-                </BrandedButton>
+                />
                 <RiDraggable class="handle" />
                 <BrandedButton
                   :icon="RiArrowDownLine"
@@ -141,10 +140,9 @@
                   keep-margins-even-without-borders
                   :disabled="index === files.length - 1"
                   icon-only
+                  :title="$t('Déplacer vers le bas')"
                   @click="moveFile(index, index + 1)"
-                >
-                  {{ $t('Déplacer vers le bas') }}
-                </BrandedButton>
+                />
               </div>
             </td>
             <td>

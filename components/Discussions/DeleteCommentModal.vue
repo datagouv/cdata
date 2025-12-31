@@ -11,12 +11,11 @@
         size="xs"
         :icon="RiDeleteBin6Line"
         icon-only
+        :title="$t('Supprimer')"
         v-bind="attrs"
         :loading
         v-on="listeners"
-      >
-        {{ $t('Supprimer') }}
-      </BrandedButton>
+      />
     </template>
 
     <template #default>
