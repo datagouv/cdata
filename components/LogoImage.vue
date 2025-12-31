@@ -4,6 +4,7 @@
     v-if="appConfig.isFrenchGovernment"
     src="/nuxt_images/logo_text.svg"
     class="inline -translate-y-[15%]"
+    alt=""
   />
   <p
     v-else

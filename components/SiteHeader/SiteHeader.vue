@@ -286,12 +286,15 @@
                       v-if="pendingNotifications"
                       :button-props="{
                         class: `px-1 text-xs h-5 gap-1 font-bold rounded-sm ${pendingNotifications.total ? 'text-danger bg-danger-lightest' : 'text-primary'}`,
-                        title: $t('Show notification'),
+                        title: $t('Voir les notifications - {new} nouvelle | Voir les notifications - {new} nouvelles', { new: pendingNotifications.total }),
                       }"
                       no-margin
                       :styled-button="false"
                     >
-                      <RiInbox2Line class="size-3" />
+                      <RiInbox2Line
+                        class="size-3"
+                        aria-hidden="true"
+                      />
                       {{ pendingNotifications.total }}
                       <template #toggletip="{ close }">
                         <div class="flex justify-between border-b border-gray-default">

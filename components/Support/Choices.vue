@@ -2,7 +2,7 @@
   <div
     class="flex flex-wrap gap-2"
     role="listbox"
-    :aria-labelledby="question.title"
+    :aria-labelledby="question.id"
     tabindex="0"
     :aria-activedescendant="active"
     @keydown="handleKeyPressForActiveDescendant"

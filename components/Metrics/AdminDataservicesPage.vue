@@ -112,9 +112,8 @@
                   icon-only
                   external
                   keep-margins-even-without-borders
-                >
-                  {{ $t(`Télécharger les statistiques de l'API`) }}
-                </BrandedButton>
+                  :title="$t(`Télécharger les statistiques de l'API`)"
+                />
               </td>
             </tr>
           </tbody>

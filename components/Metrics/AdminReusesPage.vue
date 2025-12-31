@@ -122,9 +122,8 @@
                   icon-only
                   external
                   keep-margins-even-without-borders
-                >
-                  {{ $t("Télécharger les statistiques de la réutilisation") }}
-                </BrandedButton>
+                  :title="$t('Télécharger les statistiques de la réutilisation')"
+                />
               </td>
             </tr>
           </tbody>
