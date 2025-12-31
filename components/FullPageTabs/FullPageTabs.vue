@@ -1,26 +1,30 @@
 <template>
   <div class="border-b border-gray-default">
     <div class="container">
-      <component
-        :is="as"
-        class="font-normal text-base m-0 flex gap-2 overflow-auto"
+      <div
+        class="flex gap-2 overflow-auto -my-px"
       >
-        <CdataLink
+        <component
+          :is="as"
           v-for="link in links"
           :key="link.label"
-          class="whitespace-nowrap md:whitespace-normal bg-blue-action-low px-4 py-2 !bg-none font-bold aria-current-page:text-new-primary aria-current-page:border-t-2 aria-current-page:border-t-new-primary aria-current-page:bg-white aria-current-page:border-x aria-current-page:border-x-gray-default aria-current-page:shadow-[0_1px_white] hover:aria-current-page:!bg-white active:aria-current-page:!bg-white hover:!bg-blue-action-low-hover active:!bg-blue-action-low-active"
-          :to="link.href"
-          :aria-current="isCurrentUrl(link.href) ? 'page': false"
+          class="flex font-bold text-base whitespace-nowrap lg:whitespace-normal m-0"
         >
-          {{ link.label }}
-          <sup
-            v-if="'count' in link"
-            class="font-normal"
+          <CdataLink
+            class="!bg-none bg-blue-action-low px-4 py-2 aria-current-page:text-new-primary aria-current-page:border-t-2 aria-current-page:border-t-new-primary aria-current-page:bg-white aria-current-page:border-x aria-current-page:border-x-gray-default hover:aria-current-page:!bg-white active:aria-current-page:!bg-white hover:!bg-blue-action-low-hover active:!bg-blue-action-low-active"
+            :to="link.href"
+            :aria-current="isCurrentUrl(link.href) ? 'page': false"
           >
-            <span aria-hidden="true">(</span>{{ link.count }}<span aria-hidden="true">)</span>
-          </sup>
-        </CdataLink>
-      </component>
+            {{ link.label }}
+            <sup
+              v-if="'count' in link"
+              class="font-normal"
+            >
+              <span aria-hidden="true">(</span>{{ link.count }}<span aria-hidden="true">)</span>
+            </sup>
+          </CdataLink>
+        </component>
+      </div>
     </div>
   </div>
 </template>
