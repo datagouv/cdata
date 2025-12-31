@@ -1,44 +1,78 @@
 <template>
-  <div class="container mb-16">
-    <Breadcrumb>
-      <BreadcrumbItem
-        to="/"
-        :external="true"
-      >
-        {{ $t('Accueil') }}
-      </BreadcrumbItem>
-      <BreadcrumbItem>
-        {{ $t('API') }}
-      </BreadcrumbItem>
-    </Breadcrumb>
-
-    <h1 class="text-gray-title font-extrabold text-2xl mb-2">
-      {{ $t('API') }}
-    </h1>
-    <p
-      v-if="site"
-      class="block mb-3"
-    >
-      {{ $t('Rechercher parmi {count} APIs sur {site}', {
-        count: site.metrics.dataservices,
-        site: config.public.title,
-      }) }}
-    </p>
-
-    <DataservicesSearchPage />
+  <div>
+    <EditoHeader
+      color="purple"
+      subtitle=""
+      :title="$t('Rechercher sur DataGouv')"
+      :placeholder="$t('ex. élections présidentielles')"
+      search-url="/reuses/search"
+      :default-query="searchQuery"
+    />
+    <SearchGlobal :config="searchConfig" />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Site } from '@datagouv/components-next'
-import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import { SearchGlobal } from '@datagouv/components-next'
+import EditoHeader from '~/components/Pages/EditoHeader.vue'
 
 const { t } = useTranslation()
 useSeoMeta({
-  title: t('API'),
+  title: t('Recherche des jeux de données — data.gouv.fr'),
 })
 
-const config = useRuntimeConfig()
+const route = useRoute()
+const searchQuery = computed(() => (route.query.q as string) || '')
 
-const { data: site } = await useAPI<Site>('/api/1/site/')
+const searchConfig = [
+  {
+    className: 'API',
+    class: 'dataservices' as const,
+    display: true,
+    basicFilters: ['access_type', 'last_update_range', 'producer_type', 'data_label'],
+    advancedFilters: ['organization', 'tags'],
+  },
+  {
+    className: 'Jeux de données',
+    class: 'datasets' as const,
+    display: true,
+    basicFilters: ['format_family', 'access_type', 'last_update_range', 'producer_type', 'data_label'],
+    advancedFilters: ['organization', 'tags', 'format', 'license', 'schema', 'geozone', 'granularity'],
+  },
+  {
+    className: 'Réutilisations',
+    class: 'reuses' as const,
+    display: true,
+    basicFilters: ['type', 'topic'],
+    advancedFilters: ['organization', 'tags'],
+  },
+  {
+    className: 'Organisations',
+    class: 'organizations' as const,
+    display: true,
+    basicFilters: ['producer_type'],
+    advancedFilters: [],
+  },
+  {
+    className: 'Discussions',
+    class: 'discussions' as const,
+    display: true,
+    basicFilters: ['object_type', 'last_update_range'],
+    advancedFilters: [],
+  },
+  {
+    className: 'Articles',
+    class: 'posts' as const,
+    display: true,
+    basicFilters: ['last_update_range'],
+    advancedFilters: [],
+  },
+  {
+    className: 'Thématiques',
+    class: 'topics' as const,
+    display: true,
+    basicFilters: ['last_update_range', 'producer_type'],
+    advancedFilters: ['organization', 'tags'],
+  },
+]
 </script>
