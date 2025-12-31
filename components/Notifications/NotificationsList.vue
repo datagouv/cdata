@@ -1,5 +1,5 @@
 <template>
-  <div class="divide-y h-96 overflow-y-auto">
+  <div class="divide-y max-h-96 overflow-y-auto">
     <div
       v-for="notification in notifications"
       :key="notification.id"
