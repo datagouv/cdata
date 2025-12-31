@@ -17,7 +17,10 @@
       :class="{ 'w-8 h-8 rounded-full bg-transparent': styledButton }"
     >
       <slot>
-        <RiInformationLine class="size-5" />
+        <RiInformationLine
+          class="size-5"
+          aria-hidden="true"
+        />
       </slot>
     </PopoverButton>
 
@@ -26,9 +29,10 @@
         <PopoverPanel
           v-show="open"
           ref="panel"
-          class="toggletip absolute z-[800]"
+          class="drop-shadow bg-white rounded-sm w-96 absolute z-[800]"
           :class="{
             'p-0': noMargin,
+            'p-3': !noMargin,
           }"
           :style="floatingStyles"
           static

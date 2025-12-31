@@ -3,6 +3,7 @@
     <component
       :is="icon"
       class="size-1/2 text-gray-plain"
+      aria-hidden="true"
     />
   </div>
 </template>

@@ -93,7 +93,7 @@
 
 <script setup lang="ts">
 import { RiDeleteBin6Line } from '@remixicon/vue'
-import { BannerAction, BrandedButton } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, toast } from '@datagouv/components-next'
 import DescribeHarvester from '~/components/Harvesters/DescribeHarvester.vue'
 import JobPage from '~/components/Harvesters/JobPage.vue'
 import PreviewLoader from '~/components/Harvesters/PreviewLoader.vue'
@@ -102,7 +102,6 @@ import type { HarvesterForm, HarvesterJob, HarvesterSource } from '~/types/harve
 const route = useRoute()
 const { $api } = useNuxtApp()
 const { t } = useTranslation()
-const { toast } = useToast()
 
 const sourceUrl = computed(() => `/api/1/harvest/source/${route.params.id}`)
 const { data: harvester, refresh } = await useAPI<HarvesterSource>(sourceUrl, { redirectOn404: true })

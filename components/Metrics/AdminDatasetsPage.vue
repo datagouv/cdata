@@ -149,9 +149,8 @@
                   icon-only
                   external
                   keep-margins-even-without-borders
-                >
-                  {{ $t('Télécharger les statistiques du jeu de données') }}
-                </BrandedButton>
+                  :title="$t('Télécharger les statistiques du jeu de données')"
+                />
               </td>
             </tr>
           </tbody>

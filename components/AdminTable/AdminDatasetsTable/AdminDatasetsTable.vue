@@ -108,21 +108,19 @@
             color="tertiary"
             :href="dataset.page"
             :icon="RiEyeLine"
+            :title="$t('Voir la page publique')"
             icon-only
             keep-margins-even-without-borders
-          >
-            {{ $t('Voir la page publique') }}
-          </BrandedButton>
+          />
           <BrandedButton
             size="xs"
             color="tertiary"
             :href="getDatasetAdminUrl(dataset)"
             :icon="RiPencilLine"
+            :title="$t('Modifier')"
             icon-only
             keep-margins-even-without-borders
-          >
-            {{ $t('Modifier') }}
-          </BrandedButton>
+          />
           <slot
             name="actions"
             :dataset

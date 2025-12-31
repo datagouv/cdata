@@ -128,3 +128,14 @@ test('badge filter persists on page reload', async ({ page }) => {
   const url = new URL(page.url())
   expect(url.searchParams.has('badge')).toBeTruthy()
 })
+
+test('clicking dataset navigates to detail', async ({ page }) => {
+  await page.goto('/datasets/search/')
+
+  const datasetLink = page.getByRole('link', { name: /SIRENE/i }).first()
+  await expect(datasetLink).toBeVisible()
+
+  await datasetLink.click()
+
+  await page.waitForURL('**/datasets/base-sirene**')
+})

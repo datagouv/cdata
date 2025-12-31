@@ -132,8 +132,8 @@
 </template>
 
 <script setup lang="ts">
+import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
 import type { DatasetV2WithFullObject } from '@datagouv/components-next'
-import { BannerAction, BrandedButton, LoadingBlock, TranslationT } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import type { DatasetForm } from '~/types/types'
@@ -143,8 +143,6 @@ const { $api } = useNuxtApp()
 
 const route = useRoute()
 const { start, finish, isLoading } = useLoadingIndicator()
-
-const { toast } = useToast()
 
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset, status, refresh } = await useAPI<DatasetV2WithFullObject>(url, {
@@ -217,11 +215,11 @@ async function switchDatasetPrivate() {
       body: JSON.stringify(datasetToApi(datasetForm.value, { private: !datasetForm.value.private })),
     })
     await refresh()
-    if (datasetForm.value.private) {
-      toast.success(t('Jeu de données publié !'))
+    if (dataset.value?.private) {
+      toast.success(t('Jeu de données passé en brouillon !'))
     }
     else {
-      toast.success(t('Jeu de données passé en brouillon !'))
+      toast.success(t('Jeu de données publié !'))
     }
   }
   finally {
@@ -255,10 +253,10 @@ async function archiveDataset() {
     })
     await refresh()
     if (dataset.value?.archived) {
-      toast.success(t('Jeu de données désarchivé !'))
+      toast.success(t('Jeu de données archivé !'))
     }
     else {
-      toast.success(t('Jeu de données archivé !'))
+      toast.success(t('Jeu de données désarchivé !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }

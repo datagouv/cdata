@@ -30,8 +30,8 @@
 </template>
 
 <script setup lang="ts">
+import { BrandedButton, toast } from '@datagouv/components-next'
 import type { TopicV2 } from '@datagouv/components-next'
-import { BrandedButton } from '@datagouv/components-next'
 
 const props = defineProps<{
   topic: TopicV2
@@ -49,7 +49,6 @@ const { form, validate, getFirstError, getFirstWarning } = useForm({
 }, {})
 
 const { $api } = useNuxtApp()
-const { toast } = useToast()
 const { t } = useTranslation()
 
 const save = async () => {

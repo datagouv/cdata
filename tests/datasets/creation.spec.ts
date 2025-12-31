@@ -1,16 +1,8 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import * as path from 'path'
+import { clickOutside } from '../helpers'
 
 const __dirname = import.meta.dirname
-
-const clickOutside = async (page: Page) => {
-  // When clicking "Suivant" we execute the validation of the frequency input
-  // because we blur outside the select. This validation create a warning (because
-  // "Inconnu" is not recommanded), and the warning make the "Suivant" button
-  // move a little bit down so the click is miss. We want to fix this one day!
-  // (it also happens in a regular browser with a human, so it's really not ideal)
-  await page.mouse.click(1, 1)
-}
 
 test('can create a minimal dataset', async ({ page }) => {
   await page.goto('/')

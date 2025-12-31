@@ -57,6 +57,7 @@
               <nuxt-img
                 src="/illustrations/bikelane.svg"
                 class="w-12"
+                alt=""
               />
             </div>
             <p class="font-extrabold text-gray-title text-center mb-0">
@@ -68,6 +69,7 @@
               <nuxt-img
                 src="/illustrations/house.svg"
                 class="w-12"
+                alt=""
               />
             </div>
             <p class="font-extrabold text-gray-title text-center mb-0">
@@ -81,6 +83,7 @@
               <nuxt-img
                 src="/illustrations/business.svg"
                 class="w-12"
+                alt=""
               />
             </div>
             <p class="font-extrabold text-gray-title text-center mb-0">
@@ -92,6 +95,7 @@
               <nuxt-img
                 src="/illustrations/heart.svg"
                 class="w-12"
+                alt=""
               />
             </div>
             <p class="font-extrabold text-gray-title text-center mb-0">
@@ -103,6 +107,7 @@
               <nuxt-img
                 src="/illustrations/briefcase.svg"
                 class="w-12"
+                alt=""
               />
             </div>
             <p class="font-extrabold text-gray-title text-center mb-0">
@@ -116,6 +121,7 @@
               <nuxt-img
                 src="/illustrations/pin.svg"
                 class="w-12"
+                alt=""
               />
             </div>
             <p class="font-extrabold text-gray-title text-center mb-0">
@@ -127,6 +133,7 @@
               <nuxt-img
                 src="/illustrations/truck.svg"
                 class="w-12"
+                alt=""
               />
             </div>
             <p class="font-extrabold text-gray-title text-center mb-0">

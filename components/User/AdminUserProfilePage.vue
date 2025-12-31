@@ -233,7 +233,7 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, CopyButton, PaddedContainer } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, CopyButton, PaddedContainer, toast } from '@datagouv/components-next'
 import type { User } from '@datagouv/components-next'
 import { RiDeleteBin6Line, RiEditLine, RiRecycleLine, RiSaveLine } from '@remixicon/vue'
 import DeleteUserModal from './DeleteUserModal.vue'
@@ -252,7 +252,6 @@ const emits = defineEmits<{
 
 const me = useMe()
 const config = useNuxtApp().$config
-const { toast } = useToast()
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
 

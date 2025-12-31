@@ -11,10 +11,13 @@
       :class="{ 'flex-row-reverse': reverse }"
       style="color: #3558a2;"
     >
-      <RiCheckLine class="flex-none size-4 inline" />
+      <RiCheckLine
+        class="flex-none size-4 inline"
+        aria-hidden="true"
+      />
       <span
         class="copy-label"
-        :class="{ 'fr-sr-only': hideLabel }"
+        :class="{ 'sr-only': hideLabel }"
       >{{ copiedLabel }}</span>
     </span>
     <span
@@ -25,10 +28,11 @@
       <component
         :is="hideLabel ? RiClipboardLine : RiFileCopyLine"
         class="size-4 flex-none inline"
+        aria-hidden="true"
       />
       <span
         class="copy-link copy-label"
-        :class="{ 'fr-sr-only': hideLabel }"
+        :class="{ 'sr-only': hideLabel }"
       >{{ label }}</span>
     </span>
   </button>
@@ -37,6 +41,8 @@
 <script setup lang="ts">
 import { RiCheckLine, RiClipboardLine, RiFileCopyLine } from '@remixicon/vue'
 import { ref } from 'vue'
+import { toast } from 'vue-sonner'
+import { useTranslation } from '../composables/useTranslation'
 
 const props = withDefaults(defineProps<{
   text: string
@@ -49,12 +55,18 @@ const props = withDefaults(defineProps<{
   reverse: false,
 })
 
+const { t } = useTranslation()
 const copied = ref(false)
 
-const copy = () => {
-  void navigator.clipboard.writeText(props.text)
-  copied.value = true
-  setTimeout(() => copied.value = false, 2000)
+const copy = async () => {
+  try {
+    await navigator.clipboard.writeText(props.text)
+    copied.value = true
+    setTimeout(() => copied.value = false, 2000)
+  }
+  catch {
+    toast.error(t('Impossible de copier dans le presse-papier'))
+  }
 }
 </script>
 

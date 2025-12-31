@@ -130,10 +130,9 @@
                   keep-margins-even-without-borders
                   :disabled="index === 0"
                   icon-only
+                  :title="$t('Déplacer vers le haut')"
                   @click="moveFile(index, index - 1)"
-                >
-                  {{ $t('Déplacer vers le haut') }}
-                </BrandedButton>
+                />
                 <RiDraggable class="handle" />
                 <BrandedButton
                   :icon="RiArrowDownLine"
@@ -141,10 +140,9 @@
                   keep-margins-even-without-borders
                   :disabled="index === files.length - 1"
                   icon-only
+                  :title="$t('Déplacer vers le bas')"
                   @click="moveFile(index, index + 1)"
-                >
-                  {{ $t('Déplacer vers le bas') }}
-                </BrandedButton>
+                />
               </div>
             </td>
             <td>
@@ -198,7 +196,7 @@
 </template>
 
 <script setup lang="ts">
-import { getResourceLabel, BrandedButton, LoadingBlock, Pagination, Tooltip, useFormatDate, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
+import { getResourceLabel, BrandedButton, LoadingBlock, Pagination, Tooltip, useFormatDate, type DatasetV2, type Resource, type SchemaResponseData, toast } from '@datagouv/components-next'
 import { RiArrowDownLine, RiArrowUpLine, RiCheckLine, RiDraggable } from '@remixicon/vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { useTemplateRef } from 'vue'
@@ -210,7 +208,6 @@ import FileEditModalFromQueryStringClient from './FileEditModalFromQueryString.c
 import type { AdminBadgeType, CommunityResourceForm, PaginatedArray, ResourceForm } from '~/types/types'
 
 const route = useRoute()
-const { toast } = useToast()
 const { $api } = useNuxtApp()
 const { formatDate } = useFormatDate()
 

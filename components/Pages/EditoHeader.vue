@@ -14,31 +14,43 @@
             class="bg-[#0D0C4F]/20 hover:bg-[#0D0C4F]/30 fr-raw-link text-white font-medium text-lg px-5 py-3 rounded-4xl flex justify-start items-start sm:items-center gap-2"
             :href="linkUrl"
           >
-            <RiInformation2Line class="size-6" />
+            <RiInformation2Line
+              class="size-6"
+              aria-hidden="true"
+            />
             <span>{{ linkLabel }}</span>
           </CdataLink>
-        </div>
-        <div class="italic font-spectral text-2xl text-white">
-          {{ subtitle }}
         </div>
       </div>
       <form
         method="GET"
         :action="searchUrl"
-        class="w-full flex rounded-t overflow-hidden"
       >
-        <input
-          name="q"
-          :value="defaultQuery"
-          class="w-full text-2xl bg-white/80 border-b-4 border-white px-4 text-black placeholder:text-gray-plain"
-          :placeholder
+        <label
+          :for="id"
+          class="italic font-spectral text-2xl text-white"
         >
-        <button class="shrink-0 size-20 bg-white flex items-center justify-center">
-          <RiSearchLine
-            class="size-10"
-            :class="textColor"
-          />
-        </button>
+          {{ subtitle }}
+        </label>
+        <div class="w-full flex rounded-t overflow-hidden">
+          <input
+            :id="id"
+            :value="defaultQuery"
+            name="q"
+            class="w-full text-2xl bg-white/80 border-b-4 border-white px-4 text-black placeholder:text-gray-plain"
+            :placeholder
+          >
+          <button
+            class="shrink-0 size-20 bg-white flex items-center justify-center"
+            :title="$t('Rechercher')"
+          >
+            <RiSearchLine
+              class="size-10"
+              :class="textColor"
+              aria-hidden="true"
+            />
+          </button>
+        </div>
       </form>
       <slot />
     </div>
@@ -62,6 +74,8 @@ const props = withDefaults(defineProps<{
   linkUrl: '',
   defaultQuery: '',
 })
+
+const id = useId()
 
 const bgColor = computed(() => ({
   primary: 'bg-new-blue-illustration',

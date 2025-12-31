@@ -88,9 +88,8 @@
                   :icon="RiEyeLine"
                   icon-only
                   keep-margins-even-without-borders
-                >
-                  {{ $t('Voir la page publique') }}
-                </BrandedButton>
+                  :title="$t('Voir la page publique')"
+                />
                 <BrandedButton
                   :href="`/admin/posts/${post.id}`"
                   color="tertiary"
@@ -98,9 +97,8 @@
                   icon-only
                   size="xs"
                   keep-margins-even-without-borders
-                >
-                  {{ t("Modifier") }}
-                </BrandedButton>
+                  :title="t('Modifier')"
+                />
               </td>
             </tr>
           </tbody>

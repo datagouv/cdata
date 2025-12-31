@@ -74,6 +74,8 @@ jobs:
           SECRET_KEY = 'test-secret-key-for-ci'
           SEND_MAIL = False
           SERVER_NAME = 'localhost:7000'
+          CDATA_BASE_URL="http://localhost:3000"
+
           CACHE_TYPE = 'null'
           DEFAULT_LANGUAGE = 'fr'
 

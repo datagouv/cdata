@@ -80,11 +80,10 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
 import { RiEditLine } from '@remixicon/vue'
 import type { FieldsErrors } from '~/types/form'
 
-const { toast } = useToast()
 const { t } = useTranslation()
 
 const loading = ref(false)

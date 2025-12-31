@@ -140,7 +140,7 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, LoadingBlock, TranslationT } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
 import type { Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
@@ -148,7 +148,6 @@ import type { ReuseForm } from '~/types/types'
 
 const { t } = useTranslation()
 const { $api, $fileApi } = useNuxtApp()
-const { toast } = useToast()
 
 const route = useRoute()
 const { start, finish, isLoading } = useLoadingIndicator()
@@ -223,10 +222,10 @@ async function archiveReuse() {
 
     await refresh()
     if (reuse.value?.archived) {
-      toast.success(t('Réutilisation désarchivée !'))
+      toast.success(t('Réutilisation archivée !'))
     }
     else {
-      toast.success(t('Réutilisation archivée !'))
+      toast.success(t('Réutilisation désarchivée !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
@@ -249,10 +248,10 @@ async function switchReusePrivate() {
 
     await refresh()
     if (reuse.value?.private) {
-      toast.success(t('Réutilisation publiée !'))
+      toast.success(t('Réutilisation passée en brouillon !'))
     }
     else {
-      toast.success(t('Réutilisation passée en brouillon !'))
+      toast.success(t('Réutilisation publiée !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }

@@ -281,7 +281,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getLink, getOrganizationTypes, LoadingBlock, Pagination, OTHER, USER } from '@datagouv/components-next'
+import { BrandedButton, getLink, getOrganizationTypes, LoadingBlock, Pagination, OTHER, USER, toast } from '@datagouv/components-next'
 import type { DatasetV2, License, Organization, OrganizationTypes, RegisteredSchema, TranslatedBadge, OrganizationOrSuggest } from '@datagouv/components-next'
 import { ref, computed, type Component } from 'vue'
 import { RiCloseCircleLine, RiDownloadLine } from '@remixicon/vue'
@@ -309,7 +309,6 @@ type Facets = {
 const { $api } = useNuxtApp()
 const { t } = useTranslation()
 const config = useRuntimeConfig()
-const { toast } = useToast()
 
 const route = useRoute()
 const params = useUrlSearchParams<DatasetSearchParams>('history', {

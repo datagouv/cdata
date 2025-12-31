@@ -128,9 +128,8 @@
                   :icon="RiPencilLine"
                   icon-only
                   keep-margins-even-without-borders
-                >
-                  {{ $t('Modifier') }}
-                </BrandedButton>
+                  :title="$t('Modifier')"
+                />
               </td>
             </tr>
           </tbody>

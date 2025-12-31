@@ -79,9 +79,8 @@
                   :icon="RiEyeLine"
                   icon-only
                   keep-margins-even-without-borders
-                >
-                  {{ $t('Voir la page publique') }}
-                </BrandedButton>
+                  :title="$t('Voir la page publique')"
+                />
                 <BrandedButton
                   size="xs"
                   color="tertiary"
@@ -89,9 +88,8 @@
                   :icon="RiPencilLine"
                   icon-only
                   keep-margins-even-without-borders
-                >
-                  {{ $t('Modifier') }}
-                </BrandedButton>
+                  :title="$t('Modifier')"
+                />
               </td>
             </tr>
           </tbody>
