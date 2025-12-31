@@ -1,9 +1,9 @@
 <template>
   <div class="divide-y divide-gray-default *:py-5">
     <section>
-      <h2 class="uppercase text-sm mb-2.5">
+      <div class="uppercase text-sm mb-2.5">
         {{ $t('Description') }}
-      </h2>
+      </div>
       <div class="grid md:grid-cols-12 gap-4">
         <MarkdownViewer
           class="order-2 md:order-1 w-full min-w-0 md:col-span-9"

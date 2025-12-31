@@ -12,6 +12,7 @@
     >
       <OrganizationNameWithCertificate
         class="w-full"
+        :as
         :organization
       />
     </CdataLink>
@@ -25,6 +26,7 @@ withDefaults(defineProps<{
   organization: Organization | OrganizationReference
   logoSizeClass?: string
   logoNoBorder?: boolean
+  as?: string
 }>(), {
   logoSizeClass: 'size-8',
   logoNoBorder: false,
