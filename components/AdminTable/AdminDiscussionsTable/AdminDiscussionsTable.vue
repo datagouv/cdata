@@ -63,9 +63,9 @@
             />
           </p>
           <p v-if="!subject && subjects[discussion.subject.id]">
-            <a
-              class="fr-link inline-flex"
-              :href="getSubjectPage(subjects[discussion.subject.id]!)"
+            <CdataLink
+              class="link inline-flex gap-1"
+              :to="getSubjectPage(subjects[discussion.subject.id]!)"
             >
               <component
                 :is="getSubjectTypeIcon(discussion.subject.class)"
@@ -78,7 +78,7 @@
                 :auto-resize="true"
                 :max-lines="1"
               />
-            </a>
+            </CdataLink>
           </p>
         </td>
         <td>
@@ -119,7 +119,8 @@
               color="tertiary"
               :href="getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id])"
               :icon="RiEyeLine"
-              :title="getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id])"
+              :title="$t('Voir la discussion')"
+              :aria-label="$t('Voir la discussion {title}', { title: discussion.title })"
               icon-only
               keep-margins-even-without-borders
             />
