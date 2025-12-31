@@ -92,7 +92,6 @@
                 <OrganizationLogo
                   :organization="reuse.organization"
                   size-class="size-8"
-                  as="h2"
                 />
               </div>
               <CdataLink
@@ -101,6 +100,7 @@
               >
                 <OrganizationNameWithCertificate
                   :organization="reuse.organization"
+                  as="h2"
                 />
               </CdataLink>
             </div>
