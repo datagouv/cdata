@@ -54,12 +54,30 @@ export type CommunityResourceSortedBy = 'created_at_internal' | 'last_modified_i
 
 export type MembershipStatus = 'pending' | 'accepted' | 'refused'
 
+export type MembershipRequestKind = 'request' | 'invitation'
+
 export type PendingMembershipRequest = {
   id: string
-  user: User & { email: string }
+  user: (User & { email: string }) | null
+  email: string | null
+  kind: MembershipRequestKind
   status: MembershipStatus
   created: string
-  comment: string
+  comment: string | null
+  role: MemberRole
+}
+
+export type OrgInvitation = {
+  id: string
+  organization: {
+    id: string
+    name: string
+    slug: string
+    logo: string | null
+  }
+  role: MemberRole
+  comment: string | null
+  created: string
 }
 
 export type MembershipRequest = PendingMembershipRequest & {

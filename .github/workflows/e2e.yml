@@ -33,7 +33,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: udata
-          ref: main
+          ref: add_member_invitation_from_org
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
