@@ -27,7 +27,7 @@
       </div>
     </template>
 
-    <template v-else-if="mailOption === 'custom' && recipientEmail">
+    <template v-else-if="mailOption === 'custom'">
       <div class="flex flex-col items-center gap-4 py-6">
         <div class="flex items-center gap-2 text-success-dark">
           <RiCheckLine class="size-6" />
@@ -110,19 +110,13 @@ const loading = ref(false)
 const deleted = ref(false)
 const mailOption = ref<MailOption | null>(null)
 
-const mailOptions = computed(() => {
-  const options = [
-    { value: 'auto' as MailOption, label: t('Envoyer un mail automatique (voies de recours)') },
-  ]
-  if (props.recipientEmail) {
-    options.push({ value: 'custom' as MailOption, label: t('Envoyer un mail personnalisé') })
-  }
-  return options
-})
+const mailOptions = computed(() => [
+  { value: 'auto' as const, label: t('Envoyer un mail automatique (voies de recours)') },
+  { value: 'custom' as const, label: t('Envoyer un mail personnalisé') },
+])
 
 const mailtoLink = computed(() => {
-  if (!props.recipientEmail) return ''
-  return generateMailtoLink(props.recipientEmail, props.objectType, props.objectTitle)
+  return generateMailtoLink(props.recipientEmail || '', props.objectType, props.objectTitle)
 })
 
 const deleteButtonLabel = computed(() => props.deleteButtonLabel || t('Supprimer'))
@@ -144,7 +138,7 @@ async function handleDelete(closeModal: () => void) {
 
     await $api(url, { method: 'DELETE' })
 
-    if (isMeAdmin() && mailOption.value === 'custom' && props.recipientEmail) {
+    if (isMeAdmin() && mailOption.value === 'custom') {
       deleted.value = true
     }
     else {
