@@ -286,12 +286,15 @@
                       v-if="pendingNotifications"
                       :button-props="{
                         class: `px-1 text-xs h-5 gap-1 font-bold rounded-sm ${pendingNotifications.total ? 'text-danger bg-danger-lightest' : 'text-primary'}`,
-                        title: $t('Show notification'),
+                        title: $t('Voir les notifications - {new} nouvelle | Voir les notifications - {new} nouvelles', { new: pendingNotifications.total }),
                       }"
                       no-margin
                       :styled-button="false"
                     >
-                      <RiInbox2Line class="size-3" />
+                      <RiInbox2Line
+                        class="size-3"
+                        aria-hidden="true"
+                      />
                       {{ pendingNotifications.total }}
                       <template #toggletip="{ close }">
                         <div class="flex justify-between border-b border-gray-default">
@@ -307,7 +310,25 @@
                             <RiCloseLine class="size-5" />
                           </button>
                         </div>
-                        <NotificationsList :notifications="notificationsCombinedList" />
+                        <NotificationsList
+                          v-if="notificationsCombinedList.length"
+                          :notifications="notificationsCombinedList"
+                        />
+                        <template v-else>
+                          <div class="py-5 px-16 flex flex-col items-center text-center">
+                            <NuxtImg
+                              class="w-6"
+                              src="/illustrations/coffee.svg"
+                              alt=""
+                            />
+                            <p class="m-0 font-bold text-xs">
+                              {{ $t(`Vous n'avez pas encore de notifications`) }}
+                            </p>
+                            <p class="m-0 text-xs">
+                              {{ $t('Le système de notifications est actuellement en cours de refonte.') }}
+                            </p>
+                          </div>
+                        </template>
                         <button
                           v-if="nextPage"
                           type="button"

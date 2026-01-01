@@ -7,7 +7,7 @@ test('show details page', async ({ page }) => {
 
   // Expect a title "to contain" a substring.
   await expect(page).toHaveTitle(
-    'Base Sirene des entreprises et de leurs établissements (SIREN, SIRET)',
+    'Jeu de données Base Sirene des entreprises et de leurs établissements (SIREN, SIRET) | data.gouv.fr',
   )
 })
 
@@ -17,7 +17,7 @@ test('dataset with labels shows label section', async ({ page }) => {
   )
 
   await expect(page).toHaveTitle(
-    'Base Sirene des entreprises et de leurs établissements (SIREN, SIRET)',
+    'Jeu de données Base Sirene des entreprises et de leurs établissements (SIREN, SIRET) | data.gouv.fr',
   )
 
   // Check that there's a corresponding dd element with labels
@@ -127,4 +127,40 @@ test('resources are displayed and accordion expands', async ({ page }) => {
 
   // Verify it's now expanded
   await expect(firstAccordion).toHaveAttribute('aria-expanded', 'true')
+})
+
+test('quality tooltip displays content and link is clickable', async ({ page, context }) => {
+  await page.goto(
+    '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
+  )
+
+  const qualityButton = page.getByRole('button', { name: 'Qualité des métadonnées' }).first()
+  await expect(qualityButton).toBeVisible()
+
+  await qualityButton.click()
+
+  // Target the tooltip panel specifically
+  const tooltip = page.locator('#tooltips')
+
+  // Verify tooltip content (actual data from seed)
+  await expect(tooltip.getByText('Qualité des métadonnées :')).toBeVisible()
+  await expect(tooltip.getByText('Description des données renseignée')).toBeVisible()
+  await expect(tooltip.getByText('Fichiers documentés')).toBeVisible()
+  await expect(tooltip.getByText('Licence non renseignée')).toBeVisible()
+  await expect(tooltip.getByText('Fréquence de mise à jour non respectée')).toBeVisible()
+  await expect(tooltip.getByText('Formats de fichiers standards')).toBeVisible()
+  await expect(tooltip.getByText('Couverture temporelle renseignée')).toBeVisible()
+  await expect(tooltip.getByText('Couverture spatiale non renseignée')).toBeVisible()
+  await expect(tooltip.getByText('Tous les fichiers sont disponibles')).toBeVisible()
+
+  // Verify link is clickable
+  const learnMoreLink = tooltip.getByRole('link', { name: /En savoir plus sur cet indicateur/i })
+  await expect(learnMoreLink).toBeVisible()
+
+  const [newPage] = await Promise.all([
+    context.waitForEvent('page'),
+    learnMoreLink.click(),
+  ])
+
+  await expect(newPage).toHaveURL(/guides/)
 })

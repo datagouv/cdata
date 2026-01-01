@@ -63,9 +63,7 @@
                 keep-margins-even-without-borders
                 v-bind="attrs"
                 v-on="listeners"
-              >
-                {{ $t('Modifier') }}
-              </BrandedButton>
+              />
             </template>
             <form class="block space-y-4">
               <RequiredExplanation />

@@ -21,6 +21,7 @@
       v-else-if="icon"
       :class="iconSize"
       v-bind="iconAttrs"
+      aria-hidden="true"
     />
     <span
       v-if="hasText"
@@ -29,6 +30,7 @@
     ><slot /></span>
     <RiExternalLinkLine
       v-if="newTab"
+      aria-hidden="true"
       :class="iconSize"
     />
   </component>

@@ -3,6 +3,7 @@
     :is="icon"
     v-if="icon"
     class="size-3.5 flex-none"
+    aria-hidden="true"
   />
 </template>
 

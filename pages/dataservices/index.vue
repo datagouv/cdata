@@ -34,6 +34,7 @@
               <nuxt-img
                 src="/illustrations/book-2.svg"
                 class="w-18"
+                alt=""
               />
             </div>
             <div class="font-extrabold text-center text-lg">
@@ -60,6 +61,7 @@
               <nuxt-img
                 src="/illustrations/_keyboard.svg"
                 class="w-16"
+                alt=""
               />
             </div>
             <div class="font-extrabold text-center text-lg">
@@ -89,6 +91,7 @@
               <nuxt-img
                 src="/illustrations/schema.svg"
                 class="w-18"
+                alt=""
               />
             </div>
             <div class="font-extrabold text-center text-lg">
@@ -115,6 +118,7 @@
               <nuxt-img
                 src="/illustrations/_keys.svg"
                 class="w-20"
+                alt=""
               />
             </div>
             <div class="font-extrabold text-center text-lg">
@@ -144,6 +148,7 @@
               <nuxt-img
                 src="/illustrations/lightbulb.svg"
                 class="w-12"
+                alt=""
               />
             </div>
             <div class="font-extrabold text-center text-lg">
@@ -171,6 +176,7 @@
               <nuxt-img
                 src="/illustrations/_safe.svg"
                 class="w-20"
+                alt=""
               />
             </div>
             <div class="font-extrabold text-center text-lg">

@@ -86,21 +86,19 @@
             color="tertiary"
             :href="dataservice.self_web_url"
             :icon="RiEyeLine"
+            :title="$t('Voir la page publique')"
             icon-only
             keep-margins-even-without-borders
-          >
-            {{ $t('Voir la page publique') }}
-          </BrandedButton>
+          />
           <BrandedButton
             size="xs"
             color="tertiary"
             :href="getDataserviceAdminUrl(dataservice)"
             :icon="RiPencilLine"
+            :title="$t('Modifier')"
             icon-only
             keep-margins-even-without-borders
-          >
-            {{ $t('Modifier') }}
-          </BrandedButton>
+          />
         </td>
       </tr>
     </tbody>
