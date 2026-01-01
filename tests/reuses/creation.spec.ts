@@ -54,5 +54,6 @@ test('can create a reuse', async ({ page }) => {
   // Cleanup: delete the created reuse
   await page.getByRole('link', { name: 'Modifier' }).click()
   await page.getByRole('button', { name: 'Supprimer' }).click()
+  await page.getByText('Envoyer un mail automatique (voies de recours)').click()
   await page.getByRole('button', { name: 'Supprimer cette réutilisation' }).click()
 })

@@ -101,9 +101,14 @@
         >
           {{ $t("Attention, cette action ne peut pas être annulée.") }}
           <template #button>
-            <ModalWithButton
+            <AdminDeleteModal
               :title="$t('Êtes-vous sûr de vouloir supprimer cette API ?')"
-              size="lg"
+              :delete-url="`/api/1/dataservices/${route.params.id}`"
+              :delete-button-label="$t(`Supprimer l'API`)"
+              :recipient-email="getOwnerEmail(dataservice)"
+              object-type="dataservice"
+              :object-title="dataservice.title"
+              @deleted="onDataserviceDeleted"
             >
               <template #button="{ attrs, listeners }">
                 <BrandedButton
@@ -119,18 +124,7 @@
               <p class="fr-text--bold">
                 {{ $t("Cette action est irréversible.") }}
               </p>
-              <template #footer>
-                <div class="flex-1 flex justify-end">
-                  <BrandedButton
-                    color="danger"
-                    :loading="isLoading"
-                    @click="deleteDataservice"
-                  >
-                    {{ $t("Supprimer l'API") }}
-                  </BrandedButton>
-                </div>
-              </template>
-            </ModalWithButton>
+            </AdminDeleteModal>
           </template>
         </BannerAction>
       </div>
@@ -143,7 +137,9 @@ import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '
 import type { Dataservice } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'
+import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import type { DataserviceForm } from '~/types/types'
+import { getOwnerEmail } from '~/utils/owner'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
@@ -251,19 +247,10 @@ async function restoreDataservice() {
   }
 }
 
-async function deleteDataservice() {
-  start()
-  try {
-    await $api(`/api/1/dataservices/${route.params.id}`, {
-      method: 'DELETE',
-    })
-    refresh()
-    toast.success(t('API supprimée !'))
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-  }
-  finally {
-    finish()
-  }
+function onDataserviceDeleted() {
+  refresh()
+  toast.success(t('API supprimée !'))
+  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
 }
 
 async function feature() {

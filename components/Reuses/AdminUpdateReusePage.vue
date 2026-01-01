@@ -102,9 +102,14 @@
         >
           {{ $t("Attention, cette action ne peut pas être annulée.") }}
           <template #button>
-            <ModalWithButton
-              :title="$t('Êtes-vous sûr de vouloir supprimer cette réutilisation?')"
-              size="lg"
+            <AdminDeleteModal
+              :title="$t('Êtes-vous sûr de vouloir supprimer cette réutilisation ?')"
+              :delete-url="`/api/1/reuses/${route.params.id}`"
+              :delete-button-label="$t('Supprimer cette réutilisation')"
+              :recipient-email="getOwnerEmail(reuse)"
+              object-type="reuse"
+              :object-title="reuse.title"
+              @deleted="onReuseDeleted"
             >
               <template #button="{ attrs, listeners }">
                 <BrandedButton
@@ -120,18 +125,7 @@
               <p class="fr-text--bold">
                 {{ $t("Cette action ne peut pas être annulée.") }}
               </p>
-              <template #footer>
-                <div class="flex-1 flex justify-end">
-                  <BrandedButton
-                    color="danger"
-                    :loading="isLoading"
-                    @click="deleteReuse"
-                  >
-                    {{ $t("Supprimer cette réutilisation") }}
-                  </BrandedButton>
-                </div>
-              </template>
-            </ModalWithButton>
+            </AdminDeleteModal>
           </template>
         </BannerAction>
       </div>
@@ -144,7 +138,9 @@ import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '
 import type { Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
+import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import type { ReuseForm } from '~/types/types'
+import { getOwnerEmail } from '~/utils/owner'
 
 const { t } = useTranslation()
 const { $api, $fileApi } = useNuxtApp()
@@ -193,19 +189,10 @@ async function save() {
   }
 }
 
-async function deleteReuse() {
-  start()
-  try {
-    await $api(`/api/1/reuses/${route.params.id}`, {
-      method: 'DELETE',
-    })
-    refresh()
-    toast.success(t('Réutilisation supprimée !'))
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-  }
-  finally {
-    finish()
-  }
+function onReuseDeleted() {
+  refresh()
+  toast.success(t('Réutilisation supprimée !'))
+  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
 }
 
 async function archiveReuse() {

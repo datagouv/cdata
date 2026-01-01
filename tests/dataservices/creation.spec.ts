@@ -38,5 +38,6 @@ test('can create a dataservice', async ({ page }) => {
   // Cleanup: delete the created dataservice
   await page.getByRole('link', { name: 'Modifier' }).click()
   await page.getByRole('button', { name: 'Supprimer' }).click()
+  await page.getByText('Envoyer un mail automatique (voies de recours)').click()
   await page.getByRole('button', { name: 'Supprimer l\'API' }).click()
 })
