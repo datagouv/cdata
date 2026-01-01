@@ -16,7 +16,7 @@
       <slot />
 
       <div
-        v-if="isMeAdmin() && recipientEmail"
+        v-if="isMeAdmin()"
         class="mt-6 pt-4 border-t border-default-grey"
       >
         <RadioButtons
@@ -27,7 +27,7 @@
       </div>
     </template>
 
-    <template v-else>
+    <template v-else-if="mailOption === 'custom' && recipientEmail">
       <div class="flex flex-col items-center gap-4 py-6">
         <div class="flex items-center gap-2 text-success-dark">
           <RiCheckLine class="size-6" />
@@ -60,7 +60,7 @@
           v-if="!deleted"
           color="danger"
           :loading
-          :disabled="isMeAdmin() && !!recipientEmail && !mailOption"
+          :disabled="isMeAdmin() && !mailOption"
           @click="() => handleDelete(closeModal)"
         >
           {{ deleteButtonLabel }}
@@ -110,10 +110,15 @@ const loading = ref(false)
 const deleted = ref(false)
 const mailOption = ref<MailOption | null>(null)
 
-const mailOptions = computed(() => [
-  { value: 'auto' as MailOption, label: t('Envoyer un mail automatique (voies de recours)') },
-  { value: 'custom' as MailOption, label: t('Envoyer un mail personnalisé') },
-])
+const mailOptions = computed(() => {
+  const options = [
+    { value: 'auto' as MailOption, label: t('Envoyer un mail automatique (voies de recours)') },
+  ]
+  if (props.recipientEmail) {
+    options.push({ value: 'custom' as MailOption, label: t('Envoyer un mail personnalisé') })
+  }
+  return options
+})
 
 const mailtoLink = computed(() => {
   if (!props.recipientEmail) return ''

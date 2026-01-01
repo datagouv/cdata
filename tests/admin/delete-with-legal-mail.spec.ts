@@ -4,17 +4,8 @@ import { clickOutside } from '../helpers'
 
 const __dirname = import.meta.dirname
 
-test.describe('Delete modal for reuse', () => {
-  // Note: Mail options (auto mail / custom mail) only appear when:
-  // 1. User is sysadmin (isMeAdmin() returns true)
-  // 2. Recipient email is available (owner.email or org admin emails)
-  //
-  // In the test environment, the API does not expose owner email in the response
-  // (UserReference type doesn't include email). Therefore, mail options won't appear.
-  // To test the full mail flow with options, the backend would need to include
-  // email for admin requests, or we'd need to fetch owner data separately.
-
-  test('opens delete modal and confirms deletion', async ({ page }) => {
+test.describe('Delete modal with legal mail option', () => {
+  test('shows mail option for admin and sends legal notice on delete', async ({ page }) => {
     const uniqueId = Date.now()
 
     // Create a reuse
@@ -74,13 +65,20 @@ test.describe('Delete modal for reuse', () => {
     await page.getByRole('button', { name: 'Supprimer' }).click()
     await expect(page.getByRole('dialog')).toBeVisible()
 
-    // Verify modal content
     const dialog = page.getByRole('dialog')
-    await expect(dialog.getByRole('heading', { name: 'Êtes-vous sûr de vouloir supprimer cette réutilisation ?' })).toBeVisible()
-    await expect(dialog.getByText('Cette action ne peut pas être annulée.', { exact: true })).toBeVisible()
 
-    // Delete button should be enabled (no mail options when email is not available)
+    // Verify mail options are shown for admin
+    await expect(dialog.getByText('Notification par email')).toBeVisible()
+    await expect(dialog.getByText('Envoyer un mail automatique (voies de recours)')).toBeVisible()
+
+    // Delete button should be disabled until an option is selected
     const deleteButton = dialog.getByRole('button', { name: 'Supprimer cette réutilisation' })
+    await expect(deleteButton).toBeDisabled()
+
+    // Select automatic mail option
+    await dialog.getByText('Envoyer un mail automatique (voies de recours)').click()
+
+    // Now delete button should be enabled
     await expect(deleteButton).toBeEnabled()
 
     // Confirm deletion
