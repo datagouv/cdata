@@ -138,7 +138,7 @@ const mailOptions = computed(() => [
 
 const mailtoLink = computed(() => {
   if (!authorEmail.value) return ''
-  return generateMailtoLink(authorEmail.value, 'comment')
+  return generateMailtoLink([authorEmail.value], 'comment')
 })
 
 watch(isOpen, (newVal) => {

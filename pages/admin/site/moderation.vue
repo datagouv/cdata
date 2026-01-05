@@ -207,7 +207,7 @@
                     :title="$t('Êtes-vous sûr de vouloir supprimer cet objet ?')"
                     :delete-url="getDeleteUrl(report.subject)!"
                     :delete-button-label="$t('Supprimer')"
-                    :recipient-email="getSubjectOwnerEmail(subjects[report.id]?.value)"
+                    :owned-object="subjects[report.id]?.value"
                     :object-type="getObjectType(report.subject.class)"
                     :object-title="getSubjectTitle(subjects[report.id]?.value)"
                     @deleted="() => fetchFullSubject(report, report.subject!)"
@@ -269,7 +269,6 @@ import type { Thread } from '~/types/discussions'
 import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
 import DataserviceBadge from '~/components/AdminBadge/DataserviceBadge.vue'
 import ReuseBadge from '~/components/AdminBadge/ReuseBadge.vue'
-import { getOwnerEmail, getOrganizationAdminEmails } from '~/utils/owner'
 
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
@@ -400,22 +399,6 @@ const getObjectType = (subjectClass: string): ObjectType => {
     Organization: 'organization' as ObjectType,
     Discussion: 'discussion' as ObjectType,
   }[subjectClass] || 'dataset'
-}
-
-const getSubjectOwnerEmail = (subject: RecordSubjectFullObject['value']): string | null => {
-  if (!subject) return null
-
-  if ('organization' in subject && subject.organization) {
-    return getOrganizationAdminEmails(subject.organization as Organization)
-  }
-  if ('owner' in subject && subject.owner) {
-    return getOwnerEmail({ owner: subject.owner as { email?: string | null } })
-  }
-  if ('members' in subject) {
-    return getOrganizationAdminEmails(subject as Organization)
-  }
-
-  return null
 }
 
 const getSubjectTitle = (subject: RecordSubjectFullObject['value']): string | undefined => {

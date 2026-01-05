@@ -16,7 +16,7 @@
       <slot />
 
       <div
-        v-if="isMeAdmin()"
+        v-if="isAdmin"
         class="mt-6 pt-4 border-t border-default-grey"
       >
         <RadioButtons
@@ -60,7 +60,7 @@
           v-if="!deleted"
           color="danger"
           :loading
-          :disabled="isMeAdmin() && !mailOption"
+          :disabled="isAdmin && !mailOption"
           @click="() => handleDelete(closeModal)"
         >
           {{ deleteButtonLabel }}
@@ -81,6 +81,7 @@ import { BrandedButton } from '@datagouv/components-next'
 import { RiCheckLine } from '@remixicon/vue'
 import { isMeAdmin } from '~/utils/auth'
 import { useDeleteMailto } from '~/composables/useDeleteMailto'
+import { getOwnerEmails, type OwnedObject } from '~/utils/owner'
 import RadioButtons from '~/components/RadioButtons.vue'
 
 type MailOption = 'auto' | 'custom'
@@ -90,11 +91,11 @@ const props = withDefaults(defineProps<{
   title: string
   deleteUrl: string
   deleteButtonLabel?: string
-  recipientEmail?: string | null
+  ownedObject?: OwnedObject | null
   objectType: ObjectType
   objectTitle?: string
 }>(), {
-  recipientEmail: null,
+  ownedObject: null,
 })
 
 const emit = defineEmits<{
@@ -105,10 +106,12 @@ const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const { generateMailtoLink } = useDeleteMailto()
 
+const isAdmin = isMeAdmin()
 const isOpen = ref(false)
 const loading = ref(false)
 const deleted = ref(false)
 const mailOption = ref<MailOption | null>(null)
+const recipientEmails = ref<string[]>([])
 
 const mailOptions = computed(() => [
   { value: 'auto' as const, label: t('Envoyer un mail automatique (voies de recours)') },
@@ -116,15 +119,19 @@ const mailOptions = computed(() => [
 ])
 
 const mailtoLink = computed(() => {
-  return generateMailtoLink(props.recipientEmail || '', props.objectType, props.objectTitle)
+  return generateMailtoLink(recipientEmails.value, props.objectType, props.objectTitle)
 })
 
 const deleteButtonLabel = computed(() => props.deleteButtonLabel || t('Supprimer'))
 
-watch(isOpen, (newVal) => {
+watch(isOpen, async (newVal) => {
+  if (newVal && isAdmin && props.ownedObject) {
+    recipientEmails.value = await getOwnerEmails($api, props.ownedObject)
+  }
   if (!newVal) {
     deleted.value = false
     mailOption.value = null
+    recipientEmails.value = []
   }
 })
 
@@ -132,20 +139,19 @@ async function handleDelete(closeModal: () => void) {
   loading.value = true
   try {
     let url = props.deleteUrl
-    if (isMeAdmin() && mailOption.value === 'auto') {
+    if (isAdmin && mailOption.value === 'auto') {
       url += url.includes('?') ? '&send_legal_notice=true' : '?send_legal_notice=true'
     }
 
     await $api(url, { method: 'DELETE' })
 
-    if (isMeAdmin() && mailOption.value === 'custom') {
+    if (isAdmin && mailOption.value === 'custom') {
       deleted.value = true
     }
     else {
       closeModal()
+      emit('deleted')
     }
-
-    emit('deleted')
   }
   finally {
     loading.value = false
@@ -154,5 +160,6 @@ async function handleDelete(closeModal: () => void) {
 
 function handleClose(closeModal: () => void) {
   closeModal()
+  emit('deleted')
 }
 </script>

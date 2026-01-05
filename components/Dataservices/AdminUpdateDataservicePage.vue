@@ -105,7 +105,7 @@
               :title="$t('Êtes-vous sûr de vouloir supprimer cette API ?')"
               :delete-url="`/api/1/dataservices/${route.params.id}`"
               :delete-button-label="$t(`Supprimer l'API`)"
-              :recipient-email="getOwnerEmail(dataservice)"
+              :owned-object="dataservice"
               object-type="dataservice"
               :object-title="dataservice.title"
               @deleted="onDataserviceDeleted"
@@ -139,7 +139,6 @@ import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/v
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import type { DataserviceForm } from '~/types/types'
-import { getOwnerEmail } from '~/utils/owner'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()

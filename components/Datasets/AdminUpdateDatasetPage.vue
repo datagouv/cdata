@@ -99,7 +99,7 @@
               :title="$t('Êtes-vous sûr de vouloir supprimer ce jeu de données ?')"
               :delete-url="`/api/1/datasets/${route.params.id}`"
               :delete-button-label="$t('Supprimer le jeu de données')"
-              :recipient-email="getOwnerEmail(dataset)"
+              :owned-object="dataset"
               object-type="dataset"
               :object-title="dataset.title"
               @deleted="onDatasetDeleted"
@@ -132,7 +132,6 @@ import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/v
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import type { DatasetForm } from '~/types/types'
-import { getOwnerEmail } from '~/utils/owner'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()

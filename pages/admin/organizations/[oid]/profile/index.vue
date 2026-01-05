@@ -51,7 +51,7 @@
               :title="t('Êtes-vous sûrs de vouloir supprimer cette organisation ?')"
               :delete-url="`/api/1/organizations/${organization.id}/`"
               :delete-button-label="t(`Supprimer l'organisation`)"
-              :recipient-email="getOrganizationAdminEmails(organization)"
+              :owned-object="organization"
               object-type="organization"
               :object-title="organization.name"
               @deleted="onOrganizationDeleted"
@@ -88,7 +88,6 @@ import type { Organization, Badge } from '@datagouv/components-next'
 import DescribeOrganizationFrom from '~/components/Organization/New/Step2DescribeOrganization.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import { updateOrganization, updateOrganizationBadges, uploadLogo } from '~/api/organizations'
-import { getOrganizationAdminEmails } from '~/utils/owner'
 
 const props = defineProps<{
   organization: Organization

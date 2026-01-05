@@ -127,7 +127,7 @@ const mailOptions = computed(() => [
 
 const mailtoLink = computed(() => {
   if (!props.user.email) return ''
-  return generateMailtoLink(props.user.email, 'user', props.user.first_name + ' ' + props.user.last_name)
+  return generateMailtoLink([props.user.email], 'user', props.user.first_name + ' ' + props.user.last_name)
 })
 
 const logout = useLogout()

@@ -141,7 +141,7 @@ const mailOptions = computed(() => [
 
 const mailtoLink = computed(() => {
   if (!authorEmail.value) return ''
-  return generateMailtoLink(authorEmail.value, 'discussion', props.thread.title)
+  return generateMailtoLink([authorEmail.value], 'discussion', props.thread.title)
 })
 
 watch(isOpen, (newVal) => {

@@ -18,7 +18,7 @@ export function useDeleteMailto() {
   }
 
   const generateMailtoLink = (
-    recipientEmail: string,
+    recipientEmails: string[],
     objectType: ObjectType,
     objectTitle?: string,
   ): string => {
@@ -45,7 +45,8 @@ L'équipe {site}`, {
       site: siteName,
     })
 
-    return `mailto:${encodeURIComponent(recipientEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    const recipients = recipientEmails.join(',')
+    return `mailto:${encodeURIComponent(recipients)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   }
 
   return {

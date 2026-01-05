@@ -106,7 +106,7 @@
               :title="$t('Êtes-vous sûr de vouloir supprimer cette réutilisation ?')"
               :delete-url="`/api/1/reuses/${route.params.id}`"
               :delete-button-label="$t('Supprimer cette réutilisation')"
-              :recipient-email="getOwnerEmail(reuse)"
+              :owned-object="reuse"
               object-type="reuse"
               :object-title="reuse.title"
               @deleted="onReuseDeleted"
@@ -140,7 +140,6 @@ import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/v
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import type { ReuseForm } from '~/types/types'
-import { getOwnerEmail } from '~/utils/owner'
 
 const { t } = useTranslation()
 const { $api, $fileApi } = useNuxtApp()
