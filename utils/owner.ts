@@ -2,13 +2,13 @@ import { throwOnNever, type Dataservice, type DatasetV2, type DatasetV2WithFullO
 import type { $Fetch } from 'nitropack'
 import type { Comment, Thread } from '~/types/discussions'
 
-export type OwnedObject = DatasetV2 | DatasetV2WithFullObject | Reuse | Dataservice | Organization | User | Thread | Comment
+export type DeletableObject = DatasetV2 | DatasetV2WithFullObject | Reuse | Dataservice | Organization | User | Thread | Comment
 
 type OrganizationWithMembers = Organization & {
   members: Array<{ user: User, role: string }>
 }
 
-export async function getOwnerEmails($api: $Fetch, obj: OwnedObject): Promise<string[]> {
+export async function getOwnerEmails($api: $Fetch, obj: DeletableObject): Promise<string[]> {
   // User (has email directly)
   if ('first_name' in obj && 'last_name' in obj) {
     return obj.email ? [obj.email] : []

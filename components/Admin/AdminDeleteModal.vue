@@ -81,7 +81,7 @@ import { BrandedButton } from '@datagouv/components-next'
 import { RiCheckLine } from '@remixicon/vue'
 import { isMeAdmin } from '~/utils/auth'
 import { useDeleteMailto } from '~/composables/useDeleteMailto'
-import { getOwnerEmails, type OwnedObject } from '~/utils/owner'
+import { getOwnerEmails, type DeletableObject } from '~/utils/owner'
 import RadioButtons from '~/components/RadioButtons.vue'
 import type { ObjectType, MailOption } from '~/types/delete'
 
@@ -89,7 +89,7 @@ const props = withDefaults(defineProps<{
   title: string
   deleteUrl: string
   deleteButtonLabel?: string
-  ownedObject?: OwnedObject | null
+  ownedObject?: DeletableObject | null
   objectType: ObjectType
   objectTitle?: string
 }>(), {
