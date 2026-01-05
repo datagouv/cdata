@@ -98,8 +98,7 @@ import { BrandedButton, type User, toast } from '@datagouv/components-next'
 import { isMeAdmin, useLogout } from '~/utils/auth'
 import { useDeleteMailto } from '~/composables/useDeleteMailto'
 import RadioButtons from '~/components/RadioButtons.vue'
-
-type MailOption = 'auto' | 'custom'
+import type { MailOption } from '~/types/delete'
 
 const props = defineProps<{
   user: User & { email?: string }
@@ -109,7 +108,7 @@ const me = useMe()
 const { $api } = useNuxtApp()
 const config = useRuntimeConfig()
 const { t } = useTranslation()
-const { generateMailtoLink } = useDeleteMailto()
+const { generateMailtoLink, mailOptions } = useDeleteMailto()
 
 const isAdmin = isMeAdmin()
 const isOpen = ref(false)
@@ -120,11 +119,6 @@ const mailOption = ref<MailOption | null>(null)
 const showMailOptions = computed(() => {
   return isAdmin && props.user.id !== me.value.id && props.user.email
 })
-
-const mailOptions = computed(() => [
-  { value: 'auto' as MailOption, label: t('Envoyer un mail automatique (voies de recours)') },
-  { value: 'custom' as MailOption, label: t('Envoyer un mail personnalisé') },
-])
 
 const mailtoLink = computed(() => {
   if (!props.user.email) return ''

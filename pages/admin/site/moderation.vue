@@ -260,6 +260,7 @@ import { AvatarWithName, LoadingBlock, Pagination, useFormatDate, BrandedButton 
 import { computed, ref } from 'vue'
 import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'
+import type { ObjectType } from '~/types/delete'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
@@ -388,8 +389,6 @@ const isSubjectDeleted = (subject: RecordSubjectFullObject['value']) => {
 
   return false
 }
-
-type ObjectType = 'dataset' | 'reuse' | 'dataservice' | 'organization' | 'user' | 'discussion' | 'comment'
 
 const getObjectType = (subjectClass: string): ObjectType => {
   return {

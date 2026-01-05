@@ -83,9 +83,7 @@ import { isMeAdmin } from '~/utils/auth'
 import { useDeleteMailto } from '~/composables/useDeleteMailto'
 import { getOwnerEmails, type OwnedObject } from '~/utils/owner'
 import RadioButtons from '~/components/RadioButtons.vue'
-
-type MailOption = 'auto' | 'custom'
-type ObjectType = 'dataset' | 'reuse' | 'dataservice' | 'organization' | 'user' | 'discussion' | 'comment'
+import type { ObjectType, MailOption } from '~/types/delete'
 
 const props = withDefaults(defineProps<{
   title: string
@@ -104,7 +102,7 @@ const emit = defineEmits<{
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { generateMailtoLink } = useDeleteMailto()
+const { generateMailtoLink, mailOptions } = useDeleteMailto()
 
 const isAdmin = isMeAdmin()
 const isOpen = ref(false)
@@ -114,11 +112,6 @@ const mailOption = ref<MailOption | null>(null)
 const recipientEmails = ref<string[]>([])
 
 const showMailOptions = computed(() => isAdmin && recipientEmails.value.length > 0)
-
-const mailOptions = computed(() => [
-  { value: 'auto' as const, label: t('Envoyer un mail automatique (voies de recours)') },
-  { value: 'custom' as const, label: t('Envoyer un mail personnalisé') },
-])
 
 const mailtoLink = computed(() => {
   return generateMailtoLink(recipientEmails.value, props.objectType, props.objectTitle)

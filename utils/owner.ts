@@ -48,8 +48,3 @@ export async function getOrganizationAdminEmails($api: $Fetch, orgId: string): P
     .filter((m): m is typeof m & { user: { email: string } } => m.role === 'admin' && !!m.user?.email)
     .map(m => m.user.email)
 }
-
-export function getUserEmail(user: User | null | undefined): string | null {
-  if (!user) return null
-  return user.email || null
-}

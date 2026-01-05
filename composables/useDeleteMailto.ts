@@ -1,4 +1,4 @@
-type ObjectType = 'dataset' | 'reuse' | 'dataservice' | 'organization' | 'user' | 'discussion' | 'comment'
+import type { ObjectType, MailOption } from '~/types/delete'
 
 export function useDeleteMailto() {
   const { t } = useTranslation()
@@ -16,6 +16,11 @@ export function useDeleteMailto() {
     }
     return labels[type]
   }
+
+  const mailOptions = computed(() => [
+    { value: 'auto' as MailOption, label: t('Envoyer un mail automatique (voies de recours)') },
+    { value: 'custom' as MailOption, label: t('Envoyer un mail personnalisé') },
+  ])
 
   const generateMailtoLink = (
     recipientEmails: string[],
@@ -51,6 +56,6 @@ L'équipe {site}`, {
 
   return {
     generateMailtoLink,
-    getObjectTypeLabel,
+    mailOptions,
   }
 }
