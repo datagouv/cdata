@@ -16,7 +16,7 @@
       <slot />
 
       <div
-        v-if="isAdmin"
+        v-if="showMailOptions"
         class="mt-6 pt-4 border-t border-default-grey"
       >
         <RadioButtons
@@ -60,7 +60,7 @@
           v-if="!deleted"
           color="danger"
           :loading
-          :disabled="isAdmin && !mailOption"
+          :disabled="showMailOptions && !mailOption"
           @click="() => handleDelete(closeModal)"
         >
           {{ deleteButtonLabel }}
@@ -113,6 +113,8 @@ const deleted = ref(false)
 const mailOption = ref<MailOption | null>(null)
 const recipientEmails = ref<string[]>([])
 
+const showMailOptions = computed(() => isAdmin && recipientEmails.value.length > 0)
+
 const mailOptions = computed(() => [
   { value: 'auto' as const, label: t('Envoyer un mail automatique (voies de recours)') },
   { value: 'custom' as const, label: t('Envoyer un mail personnalisé') },
@@ -139,13 +141,13 @@ async function handleDelete(closeModal: () => void) {
   loading.value = true
   try {
     let url = props.deleteUrl
-    if (isAdmin && mailOption.value === 'auto') {
+    if (showMailOptions.value && mailOption.value === 'auto') {
       url += url.includes('?') ? '&send_legal_notice=true' : '?send_legal_notice=true'
     }
 
     await $api(url, { method: 'DELETE' })
 
-    if (isAdmin && mailOption.value === 'custom') {
+    if (showMailOptions.value && mailOption.value === 'custom') {
       deleted.value = true
     }
     else {

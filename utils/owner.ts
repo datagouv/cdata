@@ -1,11 +1,11 @@
 import { throwOnNever, type Dataservice, type DatasetV2, type DatasetV2WithFullObject, type Organization, type Reuse, type User } from '@datagouv/components-next'
 import type { $Fetch } from 'nitropack'
-import type { Thread } from '~/types/discussions'
+import type { Comment, Thread } from '~/types/discussions'
 
-export type OwnedObject = DatasetV2 | DatasetV2WithFullObject | Reuse | Dataservice | Organization | User | Thread
+export type OwnedObject = DatasetV2 | DatasetV2WithFullObject | Reuse | Dataservice | Organization | User | Thread | Comment
 
 type OrganizationWithMembers = Organization & {
-  members: Array<{ user: User & { email?: string }, role: string }>
+  members: Array<{ user: User, role: string }>
 }
 
 export async function getOwnerEmails($api: $Fetch, obj: OwnedObject): Promise<string[]> {
@@ -19,15 +19,16 @@ export async function getOwnerEmails($api: $Fetch, obj: OwnedObject): Promise<st
     return await getOrganizationAdminEmails($api, obj.id)
   }
 
-  // Thread (no owner to notify)
-  if ('discussion' in obj) {
-    return []
+  // Thread or Comment (author is posted_by)
+  if ('discussion' in obj || 'posted_by' in obj) {
+    const author = 'discussion' in obj ? obj.discussion[0]?.posted_by : obj.posted_by
+    return author?.email ? [author.email] : []
   }
 
   // Owned objects (Dataset, Reuse, Dataservice)
   if ('owner' in obj && 'organization' in obj) {
     if (obj.owner) {
-      const user = await $api<User & { email?: string }>(`/api/1/users/${obj.owner.id}/`)
+      const user = await $api<User>(`/api/1/users/${obj.owner.id}/`)
       return user.email ? [user.email] : []
     }
     if (obj.organization) {
@@ -50,5 +51,5 @@ export async function getOrganizationAdminEmails($api: $Fetch, orgId: string): P
 
 export function getUserEmail(user: User | null | undefined): string | null {
   if (!user) return null
-  return 'email' in user ? (user as User & { email?: string }).email || null : null
+  return user.email || null
 }

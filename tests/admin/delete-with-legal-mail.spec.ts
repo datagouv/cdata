@@ -1,91 +1,94 @@
 import { test, expect } from '@playwright/test'
-import * as path from 'path'
-import { clickOutside } from '../helpers'
 
-const __dirname = import.meta.dirname
+const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
 test.describe('Delete modal with legal mail option', () => {
-  test('shows mail option for admin and sends legal notice on delete', async ({ page }) => {
-    const uniqueId = Date.now()
+  test.describe('Dataset deletion', () => {
+    test('shows mail options and sends automatic legal notice', async ({ page }) => {
+      const uniqueId = Date.now()
 
-    // Create a reuse
-    await page.goto('/')
-    await page.getByRole('button', { name: 'Publier sur data.gouv.fr' }).click()
-    await page.getByRole('link', { name: 'Une réutilisation' }).click()
-    await page.waitForURL('**/admin/reuses/new**')
+      // Create dataset via API
+      const response = await page.request.post(`${API_BASE}/api/1/datasets/`, {
+        data: {
+          title: `Test delete auto mail ${uniqueId}`,
+          description: 'Description pour test de suppression',
+          frequency: 'unknown',
+        },
+      })
+      const dataset = await response.json()
 
-    // Select producer
-    await page.getByTestId('producer-select').click()
-    await page.getByRole('option', { name: 'Admin User' }).click()
+      // Go to admin page
+      await page.goto(`/admin/datasets/${dataset.id}/`)
+      await expect(page.getByRole('button', { name: 'Supprimer' })).toBeVisible()
 
-    // Fill the form
-    await page.getByRole('textbox', { name: 'Nom de la réutilisation' }).fill(`Test suppression ${uniqueId}`)
-    await page.getByRole('textbox', { name: 'Lien' }).fill(`https://example.com/test-delete-${uniqueId}`)
+      // Open delete modal
+      await page.getByRole('button', { name: 'Supprimer' }).click()
+      await expect(page.getByRole('dialog')).toBeVisible()
 
-    // Select type
-    await page.getByTestId('searchable-select-type').click()
-    await page.getByRole('option', { name: 'Application' }).click()
-    await clickOutside(page)
+      const dialog = page.getByRole('dialog')
 
-    // Select thématique
-    await page.getByTestId('searchable-select-thmatique').click()
-    await page.getByRole('option', { name: 'Culture et loisirs' }).click()
-    await clickOutside(page)
+      // Verify mail options are shown for admin
+      await expect(dialog.getByText('Notification par email')).toBeVisible()
+      await expect(dialog.getByText('Envoyer un mail automatique (voies de recours)')).toBeVisible()
+      await expect(dialog.getByText('Envoyer un mail personnalisé')).toBeVisible()
 
-    // Fill description
-    await page.getByTestId('markdown-editor').click()
-    await page.getByTestId('markdown-editor').fill('Une description de ma réutilisation qui utilise des données ouvertes. Cette réutilisation permet de visualiser et d\'analyser des données publiques de manière innovante et accessible à tous les citoyens.')
-    await page.getByTestId('markdown-editor').press('Tab')
+      // Delete button should be disabled until an option is selected
+      const deleteButton = dialog.getByRole('button', { name: 'Supprimer le jeu de données' })
+      await expect(deleteButton).toBeDisabled()
 
-    // Upload image
-    const fileChooserPromise = page.waitForEvent('filechooser')
-    await page.getByRole('button', { name: 'Parcourir' }).click()
-    const fileChooser = await fileChooserPromise
-    await fileChooser.setFiles(path.join(__dirname, '../../public/nuxt_images/onboarding/logo-ign.png'))
-    await clickOutside(page)
-    await page.waitForTimeout(500)
+      // Select automatic mail option
+      await dialog.getByText('Envoyer un mail automatique (voies de recours)').click()
+      await expect(deleteButton).toBeEnabled()
 
-    // Go to step 2
-    await page.getByRole('button', { name: 'Suivant' }).click()
-    await expect(page.getByText('Étape 2 sur 3')).toBeVisible()
+      // Confirm deletion
+      await deleteButton.click()
 
-    // Go to step 3
-    await page.getByRole('button', { name: 'Suivant' }).click()
-    await expect(page.getByText('Étape 3 sur 3')).toBeVisible()
+      // Modal should close and dataset should be marked as deleted
+      await expect(page.getByRole('dialog')).not.toBeVisible()
+      await expect(page.getByText('Restaurer ce jeu de données')).toBeVisible()
+    })
 
-    // Publish the reuse
-    await page.getByRole('button', { name: 'Publier la réutilisation' }).click()
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(`Test suppression ${uniqueId}`)
+    test('shows mailto link when custom mail option is selected', async ({ page }) => {
+      const uniqueId = Date.now()
 
-    // Go to edit page
-    await page.getByRole('link', { name: 'Modifier' }).click()
-    await expect(page.getByRole('button', { name: 'Supprimer' })).toBeVisible()
+      // Create dataset via API
+      const response = await page.request.post(`${API_BASE}/api/1/datasets/`, {
+        data: {
+          title: `Test delete custom mail ${uniqueId}`,
+          description: 'Description pour test de suppression',
+          frequency: 'unknown',
+        },
+      })
+      const dataset = await response.json()
 
-    // Open delete modal
-    await page.getByRole('button', { name: 'Supprimer' }).click()
-    await expect(page.getByRole('dialog')).toBeVisible()
+      // Go to admin page
+      await page.goto(`/admin/datasets/${dataset.id}/`)
+      await expect(page.getByRole('button', { name: 'Supprimer' })).toBeVisible()
 
-    const dialog = page.getByRole('dialog')
+      // Open delete modal
+      await page.getByRole('button', { name: 'Supprimer' }).click()
+      await expect(page.getByRole('dialog')).toBeVisible()
 
-    // Verify mail options are shown for admin
-    await expect(dialog.getByText('Notification par email')).toBeVisible()
-    await expect(dialog.getByText('Envoyer un mail automatique (voies de recours)')).toBeVisible()
+      const dialog = page.getByRole('dialog')
 
-    // Delete button should be disabled until an option is selected
-    const deleteButton = dialog.getByRole('button', { name: 'Supprimer cette réutilisation' })
-    await expect(deleteButton).toBeDisabled()
+      // Select custom mail option
+      await dialog.getByText('Envoyer un mail personnalisé').click()
 
-    // Select automatic mail option
-    await dialog.getByText('Envoyer un mail automatique (voies de recours)').click()
+      // Confirm deletion
+      await dialog.getByRole('button', { name: 'Supprimer le jeu de données' }).click()
 
-    // Now delete button should be enabled
-    await expect(deleteButton).toBeEnabled()
+      // Modal should stay open with mailto link
+      await expect(dialog.getByText('Suppression effectuée')).toBeVisible()
+      await expect(dialog.getByText('Vous pouvez maintenant envoyer un mail personnalisé au propriétaire.')).toBeVisible()
+      await expect(dialog.getByRole('link', { name: 'Envoyer le mail personnalisé' })).toBeVisible()
 
-    // Confirm deletion
-    await deleteButton.click()
+      // Verify mailto link format
+      const mailtoLink = dialog.getByRole('link', { name: 'Envoyer le mail personnalisé' })
+      await expect(mailtoLink).toHaveAttribute('href', /^mailto:/)
 
-    // Modal should close and reuse should be marked as deleted
-    await expect(page.getByRole('dialog')).not.toBeVisible()
-    await expect(page.getByText('Restaurer la réutilisation')).toBeVisible()
+      // Close the modal (use the footer button, not the X button)
+      await dialog.getByRole('button', { name: 'Fermer', exact: true }).last().click()
+      await expect(page.getByRole('dialog')).not.toBeVisible()
+    })
   })
 })

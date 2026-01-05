@@ -57,7 +57,7 @@
     <template #footer>
       <div class="w-full flex justify-end space-x-4">
         <template v-if="!deleted">
-          <div v-if="isMeAdmin() && user.id !== me.id">
+          <div v-if="isAdmin && user.id !== me.id">
             <BrandedButton
               color="warning"
               :disabled="loading || (!!showMailOptions && !mailOption)"
@@ -111,13 +111,14 @@ const config = useRuntimeConfig()
 const { t } = useTranslation()
 const { generateMailtoLink } = useDeleteMailto()
 
+const isAdmin = isMeAdmin()
 const isOpen = ref(false)
 const loading = ref(false)
 const deleted = ref(false)
 const mailOption = ref<MailOption | null>(null)
 
 const showMailOptions = computed(() => {
-  return isMeAdmin() && props.user.id !== me.value.id && props.user.email
+  return isAdmin && props.user.id !== me.value.id && props.user.email
 })
 
 const mailOptions = computed(() => [
@@ -149,7 +150,7 @@ async function deleteUser({ spam = false }) {
       params.set('no_mail', 'true')
       params.set('delete_comments', 'true')
     }
-    if (isMeAdmin() && mailOption.value === 'auto' && !spam) {
+    if (isAdmin && mailOption.value === 'auto' && !spam) {
       params.set('send_legal_notice', 'true')
     }
 
@@ -170,7 +171,7 @@ async function deleteUser({ spam = false }) {
         await navigateTo(`${config.public.apiBase}/logout`, { external: true })
       }
     }
-    else if (isMeAdmin() && mailOption.value === 'custom' && props.user.email) {
+    else if (isAdmin && mailOption.value === 'custom' && props.user.email) {
       deleted.value = true
     }
     else {
