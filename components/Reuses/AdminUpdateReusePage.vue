@@ -106,7 +106,7 @@
               :title="$t('Êtes-vous sûr de vouloir supprimer cette réutilisation ?')"
               :delete-url="`/api/1/reuses/${route.params.id}`"
               :delete-button-label="$t('Supprimer cette réutilisation')"
-              :owned-object="reuse"
+              :deletable-object="reuse"
               object-type="reuse"
               :object-title="reuse.title"
               @deleted="onReuseDeleted"

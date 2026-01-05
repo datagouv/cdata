@@ -207,7 +207,7 @@
                     :title="$t('Êtes-vous sûr de vouloir supprimer cet objet ?')"
                     :delete-url="getDeleteUrl(report.subject)!"
                     :delete-button-label="$t('Supprimer')"
-                    :owned-object="subjects[report.id]?.value"
+                    :deletable-object="subjects[report.id].value!"
                     :object-type="getObjectType(report.subject.class)"
                     :object-title="getSubjectTitle(subjects[report.id]?.value)"
                     @deleted="() => fetchFullSubject(report, report.subject!)"

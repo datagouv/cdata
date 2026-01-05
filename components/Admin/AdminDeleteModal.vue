@@ -81,20 +81,18 @@ import { BrandedButton } from '@datagouv/components-next'
 import { RiCheckLine } from '@remixicon/vue'
 import { isMeAdmin } from '~/utils/auth'
 import { useDeleteMailto } from '~/composables/useDeleteMailto'
-import { getOwnerEmails, type DeletableObject } from '~/utils/owner'
+import { getOwnerEmails } from '~/utils/owner'
 import RadioButtons from '~/components/RadioButtons.vue'
-import type { ObjectType, MailOption } from '~/types/delete'
+import type { ObjectType, MailOption, DeletableObject } from '~/types/delete'
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   title: string
   deleteUrl: string
   deleteButtonLabel?: string
-  ownedObject?: DeletableObject | null
+  deletableObject: DeletableObject
   objectType: ObjectType
   objectTitle?: string
-}>(), {
-  ownedObject: null,
-})
+}>()
 
 const emit = defineEmits<{
   deleted: []
@@ -120,8 +118,8 @@ const mailtoLink = computed(() => {
 const deleteButtonLabel = computed(() => props.deleteButtonLabel || t('Supprimer'))
 
 watch(isOpen, async (newVal) => {
-  if (newVal && isAdmin && props.ownedObject) {
-    recipientEmails.value = await getOwnerEmails($api, props.ownedObject)
+  if (newVal && isAdmin) {
+    recipientEmails.value = await getOwnerEmails($api, props.deletableObject)
   }
   if (!newVal) {
     deleted.value = false

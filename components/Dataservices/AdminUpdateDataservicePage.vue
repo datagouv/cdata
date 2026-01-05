@@ -105,7 +105,7 @@
               :title="$t('Êtes-vous sûr de vouloir supprimer cette API ?')"
               :delete-url="`/api/1/dataservices/${route.params.id}`"
               :delete-button-label="$t(`Supprimer l'API`)"
-              :owned-object="dataservice"
+              :deletable-object="dataservice"
               object-type="dataservice"
               :object-title="dataservice.title"
               @deleted="onDataserviceDeleted"

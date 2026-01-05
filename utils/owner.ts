@@ -1,8 +1,6 @@
-import { throwOnNever, type Dataservice, type DatasetV2, type DatasetV2WithFullObject, type Organization, type Reuse, type User } from '@datagouv/components-next'
+import { throwOnNever, type Organization, type User } from '@datagouv/components-next'
 import type { $Fetch } from 'nitropack'
-import type { Comment, Thread } from '~/types/discussions'
-
-export type DeletableObject = DatasetV2 | DatasetV2WithFullObject | Reuse | Dataservice | Organization | User | Thread | Comment
+import type { DeletableObject } from '~/types/delete'
 
 type OrganizationWithMembers = Organization & {
   members: Array<{ user: User, role: string }>

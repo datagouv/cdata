@@ -99,7 +99,7 @@
               :title="$t('Êtes-vous sûr de vouloir supprimer ce jeu de données ?')"
               :delete-url="`/api/1/datasets/${route.params.id}`"
               :delete-button-label="$t('Supprimer le jeu de données')"
-              :owned-object="dataset"
+              :deletable-object="dataset"
               object-type="dataset"
               :object-title="dataset.title"
               @deleted="onDatasetDeleted"

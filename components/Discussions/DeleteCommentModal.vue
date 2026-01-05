@@ -3,7 +3,7 @@
     :title="t('Êtes-vous sûrs de vouloir supprimer ce message ?')"
     :delete-url="`/api/1/discussions/${thread.id}/comments/${index}/`"
     :delete-button-label="t('Supprimer le commentaire')"
-    :owned-object="comment"
+    :deletable-object="comment"
     object-type="comment"
     @deleted="emit('deleted')"
   >

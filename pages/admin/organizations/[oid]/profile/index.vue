@@ -51,7 +51,7 @@
               :title="t('Êtes-vous sûrs de vouloir supprimer cette organisation ?')"
               :delete-url="`/api/1/organizations/${organization.id}/`"
               :delete-button-label="t(`Supprimer l'organisation`)"
-              :owned-object="organization"
+              :deletable-object="organization"
               object-type="organization"
               :object-title="organization.name"
               @deleted="onOrganizationDeleted"
