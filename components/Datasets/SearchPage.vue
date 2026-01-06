@@ -327,10 +327,10 @@ const params = useUrlSearchParams<DatasetSearchParams>('history', {
   removeFalsyValues: true,
 })
 
-const nonFalsyParams = computed(() => {
+const nonFalsyParams = computed<DatasetSearchParams>(() => {
   const filteredParams = Object.entries(toValue(params)).filter(([_k, v]) => v)
   const propsParams = props.organization ? { organization: props.organization.id } : {}
-  return { ...propsParams, ...Object.fromEntries(filteredParams), page_size: pageSize }
+  return { ...propsParams, ...Object.fromEntries(filteredParams) as DatasetSearchParams, page_size: pageSize.toFixed(0) }
 })
 
 const atomFeedUrl = computed(() => {
