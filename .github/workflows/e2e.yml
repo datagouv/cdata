@@ -33,7 +33,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: udata
-          ref: main
+          ref: upgrade_dependencies_and_downgrade_werkzeug
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
