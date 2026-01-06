@@ -12,26 +12,35 @@
           </h4>
         </div>
         <div class="fr-my-0 text-gray-medium fr-grid-row fr-grid-row--middle">
-          <div
-            v-if="resourceForm.schema?.name"
-            class="flex items-center space-x-1 text-sm fr-m-0 overflow-wrap-anywhere truncate dash-after"
-          >
-            <RiInformationLine class="size-3 shrink-0" />
-            <span class="truncate">{{ $t('Schéma : {schema}', { schema: resourceForm.schema?.name }) }}</span>
-          </div>
-          <p
-            v-if="resourceForm.filetype === 'file' && resourceForm.file && resourceForm.file.raw.name != resourceForm.title"
-            class="text-sm fr-m-0 overflow-wrap-anywhere truncate dash-after"
-          >
-            {{ resourceForm.file.raw.name }}
-          </p>
-          <p
-            v-if="resourceForm.resource"
-            class="text-sm fr-m-0 dash-after"
-          >
-            <!-- Not sure if this date is useful, since it's about modification on a ressource  -->
-            {{ $t('Mis à jour {date}', { date: formatRelativeIfRecentDate(resourceForm.resource.last_modified) }) }}
-          </p>
+          <template v-if="resourceForm.schema?.name">
+            <div class="flex items-center space-x-1 text-sm fr-m-0 overflow-wrap-anywhere truncate">
+              <RiInformationLine class="size-3 shrink-0" />
+              <span class="truncate">{{ $t('Schéma : {schema}', { schema: resourceForm.schema?.name }) }}</span>
+            </div>
+            <RiSubtractLine
+              aria-hidden="true"
+              class="size-3"
+            />
+          </template>
+          <template v-if="resourceForm.filetype === 'file' && resourceForm.file && resourceForm.file.raw.name != resourceForm.title">
+            <p class="text-sm fr-m-0 overflow-wrap-anywhere truncate">
+              {{ resourceForm.file.raw.name }}
+            </p>
+            <RiSubtractLine
+              aria-hidden="true"
+              class="size-3"
+            />
+          </template>
+          <template v-if="resourceForm.resource">
+            <p class="text-sm fr-m-0">
+              <!-- Not sure if this date is useful, since it's about modification on a ressource  -->
+              {{ $t('Mis à jour {date}', { date: formatRelativeIfRecentDate(resourceForm.resource.last_modified) }) }}
+            </p>
+            <RiSubtractLine
+              aria-hidden="true"
+              class="size-3"
+            />
+          </template>
           <p
             v-if="guessFormat(resourceForm, extensions)"
             class="text-sm fr-m-0"
@@ -148,7 +157,7 @@
 <script setup lang="ts">
 import { BrandedButton, filesize as formatFilesize, useFormatDate, ResourceIcon } from '@datagouv/components-next'
 import { computed } from 'vue'
-import { RiCodeSSlashLine, RiDeleteBinLine, RiInformationLine, RiLink, RiMapPin2Line } from '@remixicon/vue'
+import { RiCodeSSlashLine, RiDeleteBinLine, RiInformationLine, RiLink, RiMapPin2Line, RiSubtractLine } from '@remixicon/vue'
 import FileEditModal from '../Datasets/FileEditModal.vue'
 import FileLoader from './FileLoader.vue'
 import type { CommunityResourceForm, ResourceForm } from '~/types/types'

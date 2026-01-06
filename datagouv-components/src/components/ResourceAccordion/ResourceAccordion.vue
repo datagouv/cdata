@@ -54,17 +54,27 @@
         <div class="text-gray-medium subheaders-infos">
           <SchemaBadge
             :resource
-            class="dash-after"
           />
-          <span class="fr-text--xs fr-mb-0 dash-after">{{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(lastUpdate) }) }}</span>
-          <span
-            v-if="resource.format"
-            class="fr-text--xs fr-mb-0 dash-after"
-          >
-            <span class="hidden show-on-small">{{ t("Format") }}</span>
-            {{ resource.format.trim().toLowerCase() }}
-            <span v-if="resourceFilesize">({{ filesize(resourceFilesize) }})</span>
-          </span>
+          <RiSubtractLine
+            aria-hidden="true"
+            class="size-3"
+          />
+          <span class="fr-text--xs fr-mb-0">{{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(lastUpdate) }) }}</span>
+          <RiSubtractLine
+            aria-hidden="true"
+            class="size-3"
+          />
+          <template v-if="resource.format">
+            <span class="fr-text--xs fr-mb-0">
+              <span class="hidden show-on-small">{{ t("Format") }}</span>
+              {{ resource.format.trim().toLowerCase() }}
+              <span v-if="resourceFilesize">({{ filesize(resourceFilesize) }})</span>
+            </span>
+            <RiSubtractLine
+              aria-hidden="true"
+              class="size-3"
+            />
+          </template>
           <span
             class="inline-flex items-center fr-text--xs fr-mb-0"
             :aria-label="t('{n} téléchargements', resource.metrics.views)"
@@ -359,7 +369,7 @@
 
 <script setup lang="ts">
 import { ref, computed, defineAsyncComponent } from 'vue'
-import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine } from '@remixicon/vue'
+import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiSubtractLine } from '@remixicon/vue'
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
 import { filesize, summarize } from '../../functions/helpers'
 import { useFormatDate } from '../../functions/dates'
@@ -596,9 +606,7 @@ article {
   article header .subheaders-infos .hidden.show-on-small {
     display: inline !important;
   }
-  article header .dash-after::after {
-    content: ''
-  } */
+ */
 
   /* article .fr-pl-4v fr-pr-4v {
     padding: 0.75rem !important;
