@@ -185,33 +185,43 @@
           >
             {{ t("{count} résultats | {count} résultat | {count} résultats", searchResults.total) }}
           </p>
-          <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
-            <label
-              for="sort-search"
-              class="fr-col-auto text-sm m-0 mr-2"
-            >
-              {{ t('Trier par :') }}
-            </label>
-            <div class="fr-col">
-              <select
-                id="sort-search"
-                v-model="searchSort"
-                class="fr-select !shadow-input-blue"
-                name="sort"
-                @change="currentPage = 1"
+          <div class="fr-col-auto fr-grid-row fr-grid-row--middle gap-4">
+            <div class="fr-grid-row fr-grid-row--middle">
+              <label
+                for="sort-search"
+                class="fr-col-auto text-sm m-0 mr-2"
               >
-                <option value="">
-                  {{ t('Pertinence') }}
-                </option>
-                <option
-                  v-for="{ value, label } in sortOptions"
-                  :key="label"
-                  :value="value"
+                {{ t('Trier par :') }}
+              </label>
+              <div class="fr-col">
+                <select
+                  id="sort-search"
+                  v-model="searchSort"
+                  class="fr-select !shadow-input-blue"
+                  name="sort"
+                  @change="currentPage = 1"
                 >
-                  {{ label }}
-                </option>
-              </select>
+                  <option value="">
+                    {{ t('Pertinence') }}
+                  </option>
+                  <option
+                    v-for="{ value, label } in sortOptions"
+                    :key="label"
+                    :value="value"
+                  >
+                    {{ label }}
+                  </option>
+                </select>
+              </div>
             </div>
+            <BrandedButton
+              :href="atomFeedUrl"
+              :icon="RiRssLine"
+              :title="t('Flux Atom de cette recherche')"
+              color="secondary"
+              size="sm"
+              external
+            />
           </div>
         </div>
         <transition mode="out-in">
@@ -284,7 +294,7 @@
 import { BrandedButton, getLink, getOrganizationTypes, LoadingBlock, Pagination, OTHER, USER, toast } from '@datagouv/components-next'
 import type { DatasetV2, License, Organization, OrganizationTypes, RegisteredSchema, TranslatedBadge, OrganizationOrSuggest } from '@datagouv/components-next'
 import { ref, computed, type Component } from 'vue'
-import { RiCloseCircleLine, RiDownloadLine } from '@remixicon/vue'
+import { RiCloseCircleLine, RiDownloadLine, RiRssLine } from '@remixicon/vue'
 import { computedAsync, debouncedRef, useUrlSearchParams } from '@vueuse/core'
 import SearchInput from '~/components/Search/SearchInput.vue'
 import type { PaginatedArray, SpatialGranularity, SpatialZone, Tag } from '~/types/types'
@@ -317,10 +327,16 @@ const params = useUrlSearchParams<DatasetSearchParams>('history', {
   removeFalsyValues: true,
 })
 
-const nonFalsyParams = computed(() => {
+const nonFalsyParams = computed<DatasetSearchParams>(() => {
   const filteredParams = Object.entries(toValue(params)).filter(([_k, v]) => v)
   const propsParams = props.organization ? { organization: props.organization.id } : {}
-  return { ...propsParams, ...Object.fromEntries(filteredParams), page_size: pageSize }
+  return { ...propsParams, ...Object.fromEntries(filteredParams) as DatasetSearchParams, page_size: pageSize.toFixed(0) }
+})
+
+const atomFeedUrl = computed(() => {
+  const { page, page_size, ...feedParams } = nonFalsyParams.value
+  const query = new URLSearchParams(feedParams).toString()
+  return `${config.public.apiBase}/api/1/datasets/recent.atom${query ? `?${query}` : ''}`
 })
 
 const { data: searchResults, status: searchResultsStatus, refresh } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/search/', {
