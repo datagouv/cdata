@@ -1,5 +1,5 @@
 import type { Dataset, DatasetV2, RegisteredSchema, Resource, CommunityResource, Schema, DatasetV2WithFullObject } from '@datagouv/components-next'
-import { accessTypeToForm, accessTypeToApi, throwOnNever, DESCRIPTION_MIN_LENGTH, getResourceFilesize } from '@datagouv/components-next'
+import { accessTypeToForm, accessTypeToApi, throwOnNever, DESCRIPTION_MIN_LENGTH, getResourceFilesize, toast } from '@datagouv/components-next'
 import type { FetchError } from 'ofetch'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -250,25 +250,29 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
       let chunkStart = 0
 
       for (let i = 0; i < nbChunks; i++) {
-        const chunk = fileInfo.raw.slice(chunkStart, chunkStart + chunkSize, fileInfo.raw.type)
-        const chunkData = new FormData()
-        chunkData.set('uuid', uuid)
-        chunkData.set('filename', fileInfo.raw.name)
-        chunkData.set('file', chunk)
-        chunkData.set('partindex', i.toString())
-        chunkData.set('partbyteoffset', chunkStart.toString())
-        chunkData.set('totalparts', nbChunks.toString())
-        chunkData.set('chunksize', chunk.size.toString())
+        const chunk = fileInfo.raw.slice(chunkStart, chunkStart + chunkSize)
 
+        // Binary upload mode: raw bytes in body, metadata in headers.
+        // This avoids an ambiguity in multipart parsing where a \r byte at the
+        // end of a chunk can be confused with the \r\n boundary separator,
+        // causing data corruption for files with Windows line endings (CRLF).
         await retry(() => {
           return $fileApi<{
             error: string | null
             message: string
-            success:
-            boolean
+            success: boolean
           }>(url, {
             method: 'POST',
-            body: chunkData,
+            body: chunk,
+            headers: {
+              'Content-Type': 'application/octet-stream',
+              'Upload-UUID': uuid,
+              'Upload-Filename': fileInfo.raw.name,
+              'Upload-Part-Index': i.toString(),
+              'Upload-Part-Byte-Offset': chunkStart.toString(),
+              'Upload-Total-Parts': nbChunks.toString(),
+              'Upload-Chunk-Size': chunk.size.toString(),
+            },
           })
         }, 3)
 
@@ -286,6 +290,7 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
     })
 
     fileInfo.state = { status: 'uploaded', resource }
+    toast.success(t('Fichier téléversé !'))
     return resource
   }
   catch (e) {
