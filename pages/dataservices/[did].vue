@@ -274,7 +274,7 @@ const { height: headerHeight } = useElementSize(header)
 const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
 const { data: dataservice, status } = await useAPI<Dataservice>(url, { redirectOn404: true, redirectOnSlug: 'did' })
 
-const title = computed(() => `${dataservice.value?.title} | ${config.public.title}`)
+const title = computed(() => `API - ${dataservice.value?.title} | ${config.public.title}`)
 const description = computed(() => dataservice.value?.description)
 const robots = computed(() => dataservice.value && dataservice.value.archived_at ? 'noindex' : 'all')
 
