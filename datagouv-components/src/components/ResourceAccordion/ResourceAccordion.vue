@@ -51,32 +51,33 @@
             class="z-2"
           />
         </div>
-        <div class="text-gray-medium subheaders-infos">
+        <div class="text-gray-medium subheaders-infos flex items-center gap-1">
           <SchemaBadge
             :resource
           />
           <RiSubtractLine
+            v-if="resource.schema"
             aria-hidden="true"
-            class="size-3"
+            class="size-3 fill-gray-medium"
           />
-          <span class="fr-text--xs fr-mb-0">{{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(lastUpdate) }) }}</span>
+          <span class="text-xs mb-0">{{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(lastUpdate) }) }}</span>
           <RiSubtractLine
             aria-hidden="true"
-            class="size-3"
+            class="size-3 fill-gray-medium"
           />
           <template v-if="resource.format">
-            <span class="fr-text--xs fr-mb-0">
-              <span class="hidden show-on-small">{{ t("Format") }}</span>
+            <span class="text-xs mb-0">
+              <span class="hidden sm:inline">{{ t("Format") }}</span>
               {{ resource.format.trim().toLowerCase() }}
               <span v-if="resourceFilesize">({{ filesize(resourceFilesize) }})</span>
             </span>
             <RiSubtractLine
               aria-hidden="true"
-              class="size-3"
+              class="size-3 fill-gray-medium"
             />
           </template>
           <span
-            class="inline-flex items-center fr-text--xs fr-mb-0"
+            class="inline-flex items-center text-xs mb-0"
             :aria-label="t('{n} téléchargements', resource.metrics.views)"
           >
             <span class="fr-icon-download-line fr-icon--xs fr-mr-1v" />
