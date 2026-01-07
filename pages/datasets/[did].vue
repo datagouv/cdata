@@ -508,7 +508,7 @@ const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
   redirectOnSlug: 'did',
 })
 
-const title = computed(() => t('Jeu de données {title} | {site}', { title: dataset.value?.title ?? '', site: config.public.title }))
+const title = computed(() => t('Jeu de données - {title} | {site}', { title: dataset.value?.title ?? '', site: config.public.title }))
 const robots = computed(() => dataset.value && dataset.value.archived ? 'noindex' : 'all')
 const description = computed(() => dataset.value?.description_short)
 
