@@ -51,22 +51,33 @@
             class="z-2"
           />
         </div>
-        <div class="text-gray-medium subheaders-infos">
+        <div class="text-gray-medium subheaders-infos flex items-center gap-1">
           <SchemaBadge
             :resource
-            class="dash-after"
           />
-          <span class="fr-text--xs fr-mb-0 dash-after">{{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(lastUpdate) }) }}</span>
+          <RiSubtractLine
+            v-if="resource.schema"
+            aria-hidden="true"
+            class="size-3 fill-gray-medium"
+          />
+          <span class="text-xs mb-0">{{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(lastUpdate) }) }}</span>
+          <RiSubtractLine
+            aria-hidden="true"
+            class="size-3 fill-gray-medium"
+          />
+          <template v-if="resource.format">
+            <span class="text-xs mb-0">
+              <span class="hidden sm:inline">{{ t("Format") }}</span>
+              {{ resource.format.trim().toLowerCase() }}
+              <span v-if="resourceFilesize">({{ filesize(resourceFilesize) }})</span>
+            </span>
+            <RiSubtractLine
+              aria-hidden="true"
+              class="size-3 fill-gray-medium"
+            />
+          </template>
           <span
-            v-if="resource.format"
-            class="fr-text--xs fr-mb-0 dash-after"
-          >
-            <span class="hidden show-on-small">{{ t("Format") }}</span>
-            {{ resource.format.trim().toLowerCase() }}
-            <span v-if="resourceFilesize">({{ filesize(resourceFilesize) }})</span>
-          </span>
-          <span
-            class="inline-flex items-center fr-text--xs fr-mb-0"
+            class="inline-flex items-center text-xs mb-0"
             :aria-label="t('{n} téléchargements', resource.metrics.views)"
           >
             <span class="fr-icon-download-line fr-icon--xs fr-mr-1v" />
@@ -359,7 +370,7 @@
 
 <script setup lang="ts">
 import { ref, computed, defineAsyncComponent } from 'vue'
-import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine } from '@remixicon/vue'
+import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiSubtractLine } from '@remixicon/vue'
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
 import { filesize, summarize } from '../../functions/helpers'
 import { useFormatDate } from '../../functions/dates'
@@ -596,9 +607,7 @@ article {
   article header .subheaders-infos .hidden.show-on-small {
     display: inline !important;
   }
-  article header .dash-after::after {
-    content: ''
-  } */
+ */
 
   /* article .fr-pl-4v fr-pr-4v {
     padding: 0.75rem !important;

@@ -100,9 +100,13 @@
           </div>
         </div>
         <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium">
-          <div class="fr-hidden flex-sm dash-after-sm text-gray-medium -ml-2.5">
+          <div class="fr-hidden flex-sm text-gray-medium -ml-2.5">
             <DatasetQualityInline :quality="dataset.quality" />
           </div>
+          <RiSubtractLine
+            aria-hidden="true"
+            class="hidden sm:block size-3"
+          />
           <div class="flex flex-wrap items-center gap-1">
             <p
               class="text-sm mb-0 flex items-center gap-0.5"
