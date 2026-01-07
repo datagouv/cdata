@@ -5,7 +5,7 @@ const REUSE_SLUG = 'itineriz-deplacements-professionnels-jop-paris-2024'
 test('page loads with correct title', async ({ page }) => {
   await page.goto(`/reuses/${REUSE_SLUG}`)
 
-  await expect(page).toHaveTitle(/itineriz/i)
+  await expect(page).toHaveTitle('Réutilisation - Itineriz - Déplacements professionnels JOP Paris 2024 | data.gouv.fr')
 
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
 })

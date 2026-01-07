@@ -5,7 +5,7 @@ const DATASERVICE_SLUG = 'explore-api-v2-30'
 test('page loads with correct title', async ({ page }) => {
   await page.goto(`/dataservices/${DATASERVICE_SLUG}`)
 
-  await expect(page).toHaveTitle(/explore/i)
+  await expect(page).toHaveTitle('API - Explore API v2 | data.gouv.fr')
 
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
 })
