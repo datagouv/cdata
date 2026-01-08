@@ -2,6 +2,8 @@
   <component
     :is="tag"
     :contenteditable="true"
+    role="textbox"
+    :aria-multiline="tag !== 'span'"
     :class="['outline-none focus:ring-2 focus:ring-blue-300 rounded-sm cursor-text', { 'whitespace-pre-wrap': tag !== 'span' }]"
     @blur="onBlur"
     @keydown.enter="onEnter"

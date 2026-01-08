@@ -3,7 +3,7 @@
     as="div"
     class="relative inline-block text-left"
   >
-    <MenuButton>
+    <MenuButton as="template">
       <slot />
     </MenuButton>
     <transition
