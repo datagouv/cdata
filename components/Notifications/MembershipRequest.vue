@@ -13,10 +13,19 @@
         </NuxtLink>
       </p>
       <p class="m-0 text-xs">
-        {{ $t('de {name}', { name: `${notification.details.request_user.first_name} ${notification.details.request_user.last_name}` }) }}
+        {{ $t('de') }}
+        <AvatarWithName
+          :user="notification.details.request_user"
+          :with-link="false"
+        />
       </p>
       <p class="m-0 text-xs">
-        {{ $t('à {org}', { org: notification.details.request_organization.name }) }}
+        {{ $t('à') }}
+        <OrganizationOwner
+          :organization="notification.details.request_organization as OrganizationReference"
+          logo-size-class="size-3"
+          :logo-no-border="true"
+        />
       </p>
     </div>
     <div class="flex-none flex m-0 gap-1.5">
@@ -32,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { useFormatDate } from '@datagouv/components-next'
+import { AvatarWithName, useFormatDate, type OrganizationReference } from '@datagouv/components-next'
 import { RiUserAddLine } from '@remixicon/vue'
 import type { DeepReadonly } from 'vue'
 import type { MembershipRequestNotification } from '~/types/notifications'

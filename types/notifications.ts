@@ -25,4 +25,11 @@ export type TransferRequestNotification = CommonNotification & {
   }
 }
 
-export type UserNotification = MembershipRequestNotification | TransferRequestNotification
+export type CertifiedNotification = CommonNotification & {
+  details: {
+    class: 'CertifiedNotificationDetails'
+    organization: OrganizationReference
+  }
+}
+
+export type UserNotification = MembershipRequestNotification | TransferRequestNotification | CertifiedNotification
