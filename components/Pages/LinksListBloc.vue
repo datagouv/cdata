@@ -10,6 +10,7 @@
         class="relative"
       >
         <button
+          type="button"
           class="absolute -left-12 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
           :title="$t('Supprimer le paragraphe')"
           @click="bloc.paragraph = null"
@@ -46,6 +47,7 @@
       <!-- Button to add a paragraph when there is none -->
       <button
         v-if="edit && !bloc.paragraph"
+        type="button"
         class="text-gray-400 hover:text-gray-600 flex items-center gap-1 text-sm"
         @click="bloc.paragraph = $t('Texte du paragraphe')"
       >
@@ -84,6 +86,7 @@
                 class="size-6 rounded cursor-pointer border-0"
               >
               <button
+                type="button"
                 class="text-gray-500 hover:text-gray-700"
                 :title="$t('Supprimer')"
                 @click="bloc.links.splice(i, 1)"
@@ -96,12 +99,11 @@
               :class="[bloc.paragraph ? 'text-6xl' : 'text-7xl']"
               :style="{ color: link.color ?? '#000091' }"
             >
-              <span
-                contenteditable="true"
-                class="outline-none focus:ring-2 focus:ring-blue-300 rounded min-w-[2ch] caret-current"
-                @blur="link.title = ($event.target as HTMLElement).textContent || ''"
-                @keydown.enter.prevent="($event.target as HTMLElement).blur()"
-                v-text="link.title || $t('Titre du lien')"
+              <EditableText
+                :model-value="link.title || $t('Titre du lien')"
+                tag="span"
+                class="min-w-[2ch] caret-current"
+                @update:model-value="link.title = $event"
               />
               <RiArrowRightUpLine class="size-9 flex-shrink-0" />
             </div>
@@ -118,6 +120,7 @@
       <!-- Add a link -->
       <button
         v-if="edit"
+        type="button"
         class="text-gray-400 hover:text-gray-600 flex items-center gap-1"
         @click="bloc.links.push({ title: '', url: '', color: '#000091' })"
       >

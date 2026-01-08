@@ -7,6 +7,7 @@
   >
     <button
       v-if="title || href"
+      type="button"
       class="absolute -left-12 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
       :title="$t('Supprimer')"
       @click="$emit('clear')"

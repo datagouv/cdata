@@ -83,7 +83,7 @@ watchEffect(async () => {
   if (site.value && site.value[props.siteKey]) {
     const fetched = await $api<Page>(`/api/1/pages/${site.value[props.siteKey]}/`)
     page.value = fetched
-    originalPage.value = JSON.parse(JSON.stringify(fetched))
+    originalPage.value = structuredClone(fetched)
   }
   else {
     page.value = { id: '', blocs: [] }
@@ -93,7 +93,7 @@ watchEffect(async () => {
 
 function resetPage() {
   if (originalPage.value) {
-    page.value = JSON.parse(JSON.stringify(originalPage.value))
+    page.value = structuredClone(originalPage.value)
   }
 }
 
@@ -118,7 +118,7 @@ const savePage = async (updatedPage: Page) => {
       await $api(`/api/1/site/`, { method: 'PATCH', body })
       await refresh()
     }
-    originalPage.value = JSON.parse(JSON.stringify(page.value))
+    originalPage.value = structuredClone(page.value)
     toast.success(t('Page sauvegardée'))
   }
   catch {

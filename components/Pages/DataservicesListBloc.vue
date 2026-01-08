@@ -11,6 +11,7 @@
     >
       <button
         v-if="edit"
+        type="button"
         class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 z-10"
         :title="$t('Supprimer')"
         @click="bloc.dataservices.splice(i, 1)"
