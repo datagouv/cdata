@@ -1,36 +1,19 @@
 <template>
-  <div
-    v-if="tag === 'div'"
+  <component
+    :is="tag"
     :contenteditable="true"
-    :class="[className, 'outline-none focus:ring-2 focus:ring-blue-300 rounded-sm cursor-text whitespace-pre-wrap']"
+    :class="['outline-none focus:ring-2 focus:ring-blue-300 rounded-sm cursor-text', { 'whitespace-pre-wrap': tag !== 'span' }]"
     @blur="onBlur"
+    @keydown.enter="onEnter"
   >
     {{ modelValue }}
-  </div>
-  <p
-    v-else-if="tag === 'p'"
-    :contenteditable="true"
-    :class="[className, 'outline-none focus:ring-2 focus:ring-blue-300 rounded-sm cursor-text whitespace-pre-wrap']"
-    @blur="onBlur"
-  >
-    {{ modelValue }}
-  </p>
-  <span
-    v-else
-    :contenteditable="true"
-    :class="[className, 'outline-none focus:ring-2 focus:ring-blue-300 rounded-sm cursor-text']"
-    @blur="onBlur"
-    @keydown.enter.prevent="($event.target as HTMLElement).blur()"
-  >
-    {{ modelValue }}
-  </span>
+  </component>
 </template>
 
 <script setup lang="ts">
 const props = withDefaults(defineProps<{
   modelValue: string
-  tag?: string
-  className?: string
+  tag?: 'div' | 'p' | 'span'
 }>(), {
   tag: 'div',
 })
@@ -44,6 +27,15 @@ function onBlur(e: FocusEvent) {
   const newValue = target.textContent || ''
   if (newValue !== props.modelValue) {
     emit('update:modelValue', newValue)
+  }
+}
+
+// For spans (titles, links), Enter confirms the edit instead of inserting a line break.
+// div/p keep the default behavior to allow multi-line text.
+function onEnter(e: KeyboardEvent) {
+  if (props.tag === 'span') {
+    e.preventDefault()
+    ;(e.target as HTMLElement).blur()
   }
 }
 </script>
