@@ -188,7 +188,27 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding links bloc with paragraph
   await page.screenshot({ path: 'tests/edito/screenshots/05-links-bloc-with-paragraph.png', fullPage: true })
 
-  // === Step 5: Add a LinksListBloc WITHOUT paragraph ===
+  // === Step 5: Add a MarkdownBloc ===
+  await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
+  await page.getByText('Bloc Markdown').click()
+  await page.waitForTimeout(300)
+
+  // Type some markdown content in the editor
+  const markdownEditor = page.locator('.milkdown').last()
+  await markdownEditor.click()
+  await page.keyboard.type('# Titre de section')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('Voici un paragraphe avec du **texte en gras** et du *texte en italique*.')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('- Premier élément')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('- Deuxième élément')
+
+  // Debug screenshot: after adding markdown bloc
+  await page.screenshot({ path: 'tests/edito/screenshots/05b-markdown-bloc.png', fullPage: true })
+
+  // === Step 6: Add a LinksListBloc WITHOUT paragraph ===
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
   await page.getByText('Liens à la une').click()
   await page.waitForTimeout(300)
@@ -228,7 +248,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding links bloc without paragraph
   await page.screenshot({ path: 'tests/edito/screenshots/06-links-bloc-without-paragraph.png', fullPage: true })
 
-  // === Step 6: Test bloc manipulation ===
+  // === Step 7: Test bloc manipulation ===
   // Move the first bloc down
   await page.locator('[title="Descendre"]').first().click()
   await page.waitForTimeout(300)
@@ -278,7 +298,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after re-adding reuses bloc
   await page.screenshot({ path: 'tests/edito/screenshots/09-reuses-bloc-readded.png', fullPage: true })
 
-  // === Step 7: Save the page ===
+  // === Step 8: Save the page ===
   await page.getByRole('button', { name: 'Sauvegarder' }).click()
   await page.waitForTimeout(1000)
 
@@ -288,7 +308,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Wait for the toast to confirm save
   await expect(page.getByText('Page créée').or(page.getByText('Page sauvegardée'))).toBeVisible()
 
-  // === Step 8: Final screenshot for visual regression ===
+  // === Step 9: Final screenshot for visual regression ===
   await page.waitForLoadState('networkidle')
   await page.waitForTimeout(500)
 

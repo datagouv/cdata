@@ -1,5 +1,5 @@
-import { RiDatabase2Line, RiLineChartLine, RiLink, RiRobot2Line } from '@remixicon/vue'
-import type { DataservicesListBloc, DatasetsListBloc, LinksListBloc, ReusesListBloc } from '~/types/pages'
+import { RiDatabase2Line, RiLineChartLine, RiLink, RiMarkdownLine, RiRobot2Line } from '@remixicon/vue'
+import type { DataservicesListBloc, DatasetsListBloc, LinksListBloc, MarkdownBloc, ReusesListBloc } from '~/types/pages'
 
 export function useBlocsTypes() {
   const { t } = useTranslation()
@@ -28,6 +28,12 @@ export function useBlocsTypes() {
       name: t('Liens à la une'),
       description: t('Mettre en avant jusqu\'à 4 liens'),
       default: (): Omit<LinksListBloc, 'id'> => ({ class: 'LinksListBloc', title: 'Mes liens', subtitle: '', paragraph: '', main_link_title: '', main_link_url: '', links: [] }),
+    },
+    MarkdownBloc: {
+      icon: RiMarkdownLine,
+      name: t('Bloc Markdown'),
+      description: t('Ajouter du contenu texte riche'),
+      default: (): Omit<MarkdownBloc, 'id'> => ({ class: 'MarkdownBloc', title: 'Titre', subtitle: null, content: '' }),
     },
   }
 }

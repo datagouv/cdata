@@ -33,7 +33,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: udata
-          ref: main
+          ref: refs/pull/3581/head
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
