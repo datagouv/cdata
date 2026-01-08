@@ -137,5 +137,5 @@ test('clicking dataset navigates to detail', async ({ page }) => {
 
   await datasetLink.click()
 
-  await page.waitForURL('**/datasets/base-sirene**')
+  await expect(page).toHaveURL(/\/datasets\/base-sirene/)
 })

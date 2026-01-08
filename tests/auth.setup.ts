@@ -1,4 +1,4 @@
-import { test as setup } from '@playwright/test'
+import { test as setup, expect } from '@playwright/test'
 import path from 'path'
 
 const authFile = path.join(import.meta.dirname, '../playwright/.auth/user.json')
@@ -13,7 +13,7 @@ setup('authenticate', async ({ page, baseURL }) => {
   await page.getByLabel('Adresse email').fill('admin@example.com')
   await page.getByLabel('Mot de passe').fill('@1337Password42')
   await page.getByRole('button', { name: 'Se connecter' }).first().click()
-  await page.waitForURL(`${loginURL}/`)
+  await expect(page).toHaveURL(`${loginURL}/`)
 
   // End of authentication steps.
 

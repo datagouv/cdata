@@ -34,6 +34,8 @@ test('dataset labels have proper tooltips and information', async ({
   await page.goto(
     '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
   )
+  // Wait for Vue hydration before clicking the toggletip (try fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   await page.getByTestId('label-toggletip-button').click()
   await expect(page.getByTestId('label-toggletip-content')).toBeVisible()
@@ -62,10 +64,8 @@ test('clicking dataset label navigates to filtered search', async ({
   // Click the label
   await firstLabel.click()
 
-  await page.waitForURL('**/datasets/search*')
-
   // Should navigate to search page with badge filter
-  expect(page.url()).toContain('/datasets/search?badge=spd')
+  await expect(page).toHaveURL('/datasets/search?badge=spd')
 
   // Verify search page loads with filter applied
   await expect(page).toHaveTitle(
@@ -104,7 +104,7 @@ test('discussions tab navigates to discussions page', async ({ page }) => {
   const discussionsTab = page.getByRole('link', { name: /Discussions/ })
   await discussionsTab.click()
 
-  await page.waitForURL('**/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/discussions')
+  await expect(page).toHaveURL('/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/discussions')
 })
 
 test('resources are displayed and accordion expands', async ({ page }) => {
@@ -133,6 +133,8 @@ test('quality tooltip displays content and link is clickable', async ({ page, co
   await page.goto(
     '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
   )
+  // Wait for Vue hydration before clicking the toggletip (try fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   const qualityButton = page.getByRole('button', { name: 'Qualité des métadonnées' }).first()
   await expect(qualityButton).toBeVisible()

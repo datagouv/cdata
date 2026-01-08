@@ -38,5 +38,5 @@ test('discussions tab is accessible', async ({ page }) => {
 
   await discussionsTab.click()
 
-  await page.waitForURL(`**/reuses/${REUSE_SLUG}/discussions`)
+  await expect(page).toHaveURL(`/reuses/${REUSE_SLUG}/discussions`)
 })
