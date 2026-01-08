@@ -3,7 +3,7 @@
     <div
       v-for="(bloc, index) in workingPage.blocs"
       :key="bloc.id"
-      class="py-24 odd:bg-gray-some relative"
+      class="py-24 odd:bg-gray-some even:bg-white relative"
     >
       <!-- Bouton ajouter au-dessus du bloc (positionné en absolute) -->
       <div
