@@ -9,18 +9,37 @@
     </h1>
 
     <div
-      v-if="currentOrganization && membershipRequests && membershipRequests.length"
+      v-if="currentOrganization && pendingRequests.length"
       class="mb-8"
     >
       <h2 class="text-sm font-bold uppercase mt-5 mb-5">
-        {{ t("{n} demandes | {n} demande | {n} demandes", { n: membershipRequests.length }) }}
+        {{ t("{n} demandes de rattachement | {n} demande de rattachement | {n} demandes de rattachement", { n: pendingRequests.length }) }}
       </h2>
-      <div class="space-y-8 max-w-6xl">
+      <div class="space-y-4 max-w-6xl">
         <AdminMembershipRequest
-          v-for="request in membershipRequests"
+          v-for="request in pendingRequests"
           :key="request.id"
           :oid="currentOrganization.id"
           :request="request"
+          :show-actions="true"
+          @refresh="refreshAll"
+        />
+      </div>
+    </div>
+
+    <div
+      v-if="currentOrganization && pendingInvitations.length"
+      class="mb-8"
+    >
+      <h2 class="text-sm font-bold uppercase mt-5 mb-5">
+        {{ t("{n} invitations en attente | {n} invitation en attente | {n} invitations en attente", { n: pendingInvitations.length }) }}
+      </h2>
+      <div class="space-y-4 max-w-6xl">
+        <AdminMembershipRequest
+          v-for="invitation in pendingInvitations"
+          :key="invitation.id"
+          :oid="currentOrganization.id"
+          :request="invitation"
           :show-actions="true"
           @refresh="refreshAll"
         />
@@ -41,34 +60,36 @@
         class="flex-none"
       >
         <ModalWithButton
-          :title="t(`Ajouter un membre à l'organisation`)"
+          :title="t(`Inviter un membre`)"
           size="lg"
+          @open="resetInviteForm"
         >
           <template #button="{ attrs, listeners }">
             <BrandedButton
               size="xs"
-              :icon="RiAddLine"
+              :icon="RiUserAddLine"
               v-bind="attrs"
               v-on="listeners"
             >
-              {{ t("Ajouter un membre") }}
+              {{ t("Inviter un membre") }}
             </BrandedButton>
           </template>
 
           <template #default="{ close }">
             <form
-              :id="addFormId"
-              @submit.prevent="submitNewMember(close)"
+              :id="inviteFormId"
+              @submit.prevent="submitInvitation(close)"
             >
-              <div>
+              <div class="space-y-4">
                 <SearchableSelect
-                  v-model="addForm.user"
+                  v-model="inviteForm.user"
                   :label="$t('Utilisateur')"
                   :placeholder="$t('Rechercher un utilisateur')"
-                  class="mb-6"
+                  :hint="$t(`Laissez vide si vous souhaitez inviter par email`)"
                   :display-value="(user) => `${user.first_name} ${user.last_name}`"
                   :suggest="suggestUser"
                   :multiple="false"
+                  :disabled="!!inviteForm.email"
                 >
                   <template #option="{ option: user }">
                     <div class="flex items-center space-x-2">
@@ -88,13 +109,32 @@
                     </div>
                   </template>
                 </SearchableSelect>
+
+                <p class="text-center text-gray-medium text-sm">
+                  {{ t('ou') }}
+                </p>
+
+                <InputGroup
+                  v-model="inviteForm.email"
+                  :label="$t('Email')"
+                  :hint="$t(`Inviter une personne par email (même si elle n'a pas encore de compte)`)"
+                  type="email"
+                  :disabled="!!inviteForm.user"
+                />
+
+                <SelectGroup
+                  v-if="roles && roles.length > 0"
+                  v-model="inviteForm.role"
+                  :label="t('Rôle')"
+                  :options="rolesOptions"
+                />
+
+                <InputGroup
+                  v-model="inviteForm.comment"
+                  :label="$t('Message (optionnel)')"
+                  :hint="$t(`Ce message sera inclus dans l'email d'invitation`)"
+                />
               </div>
-              <SelectGroup
-                v-if="roles && roles.length > 0"
-                v-model="addForm.role"
-                :label="t('Rôle du membre')"
-                :options="rolesOptions"
-              />
             </form>
           </template>
 
@@ -112,10 +152,10 @@
                 color="primary"
                 size="xs"
                 type="submit"
-                :form="addFormId"
-                :disabled="loading || !canSubmitNewMember"
+                :form="inviteFormId"
+                :disabled="loading || !canSubmitInvitation"
               >
-                {{ t("Ajouter à l'organisation") }}
+                {{ t("Envoyer l'invitation") }}
               </BrandedButton>
             </div>
           </template>
@@ -293,7 +333,7 @@
 <script setup lang="ts">
 import { Avatar, BannerAction, LoadingBlock, useFormatDate, useGetUserAvatar, type Member, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
-import { RiAddLine, RiEyeLine, RiLogoutBoxRLine, RiPencilLine } from '@remixicon/vue'
+import { RiEyeLine, RiLogoutBoxRLine, RiPencilLine, RiUserAddLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import type { AdminBadgeType, MemberRole, PendingMembershipRequest, UserSuggest } from '~/types/types'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
@@ -301,6 +341,7 @@ import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import ModalWithButton from '~/components/Modal/ModalWithButton.vue'
 import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
+import InputGroup from '~/components/InputGroup/InputGroup.vue'
 import AdminMembershipRequest from '~/components/AdminMembershipRequest/AdminMembershipRequest.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -329,6 +370,16 @@ const { data: organization, status, refresh } = await useAPI<Organization>(url, 
 const { data: membershipRequests, refresh: refreshMembershipRequests } = await useAPI<Array<PendingMembershipRequest>>(`/api/1/organizations/${currentOrganization.value?.id}/membership/`, {
   lazy: true,
   query: { status: 'pending' },
+})
+
+const pendingRequests = computed(() => {
+  if (!membershipRequests.value) return []
+  return membershipRequests.value.filter(r => r.kind !== 'invitation')
+})
+
+const pendingInvitations = computed(() => {
+  if (!membershipRequests.value) return []
+  return membershipRequests.value.filter(r => r.kind === 'invitation')
 })
 
 const refreshAll = async () => {
@@ -404,33 +455,49 @@ const suggestUser = async (query: string): Promise<Array<UserSuggest>> => {
   })
 }
 
-const addFormId = useId()
-const addForm = ref({
+const inviteFormId = useId()
+const inviteForm = ref({
   role: null as MemberRole | null,
   user: null as UserSuggest | null,
+  email: '',
+  comment: '',
 })
-const canSubmitNewMember = computed(() => {
-  if (!addForm.value.role) return false
-  if (!addForm.value.user) return false
 
+const resetInviteForm = () => {
+  inviteForm.value = {
+    role: null,
+    user: null,
+    email: '',
+    comment: '',
+  }
+}
+
+const canSubmitInvitation = computed(() => {
+  if (!inviteForm.value.role) return false
+  if (!inviteForm.value.user && !inviteForm.value.email) return false
   return true
 })
-const submitNewMember = async (close: () => void) => {
-  if (!canSubmitNewMember.value) return
+
+const submitInvitation = async (close: () => void) => {
+  if (!canSubmitInvitation.value) return
 
   try {
     loading.value = true
-    await $api(`/api/1/organizations/${currentOrganization.value?.id}/member/${addForm.value.user?.id}`, {
+    await $api(`/api/1/organizations/${currentOrganization.value?.id}/member/`, {
       method: 'POST',
-      body: JSON.stringify({ role: addForm.value.role }),
+      body: JSON.stringify({
+        user: inviteForm.value.user?.id || undefined,
+        email: inviteForm.value.email || undefined,
+        role: inviteForm.value.role,
+        comment: inviteForm.value.comment || undefined,
+      }),
     })
-    await refresh()
-    addForm.value.role = null
-    addForm.value.user = null
+    await refreshAll()
+    resetInviteForm()
     close()
   }
   catch {
-    // toast.error(t('An error occurred while update member role.'))
+    // TODO: toast error
   }
   finally {
     loading.value = false
