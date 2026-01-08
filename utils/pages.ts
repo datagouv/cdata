@@ -1,5 +1,5 @@
-import { RiDatabase2Line, RiLineChartLine, RiLink, RiRobot2Line } from '@remixicon/vue'
-import type { DataservicesListBloc, DatasetsListBloc, LinksListBloc, ReusesListBloc } from '~/types/pages'
+import { RiDatabase2Line, RiLineChartLine, RiLink, RiRobot2Line, RiWindow2Line } from '@remixicon/vue'
+import type { DataservicesListBloc, DatasetsListBloc, HeroBloc, LinksListBloc, ReusesListBloc } from '~/types/pages'
 
 export function useBlocsTypes() {
   const { t } = useTranslation()
@@ -28,6 +28,12 @@ export function useBlocsTypes() {
       name: t('Liens à la une'),
       description: t('Mettre en avant jusqu\'à 4 liens'),
       default: (): Omit<LinksListBloc, 'id'> => ({ class: 'LinksListBloc', title: 'Mes liens', subtitle: '', paragraph: '', main_link_title: '', main_link_url: '', links: [] }),
+    },
+    HeroBloc: {
+      icon: RiWindow2Line,
+      name: t('Hero'),
+      description: t('Bandeau d\'en-tête avec titre et description'),
+      default: (): Omit<HeroBloc, 'id'> => ({ class: 'HeroBloc', title: 'Titre', description: null, color: 'primary' }),
     },
   }
 }
