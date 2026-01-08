@@ -46,7 +46,6 @@
 </template>
 
 <script setup lang="ts">
-import Sortable, { type MoveEvent, type SortableEvent } from 'sortablejs'
 import { BrandedButton, DataserviceCard } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
 import AddObjectCard from './AddObjectCard.vue'
@@ -59,39 +58,10 @@ const props = defineProps<{
 
 const bloc = defineModel<DataservicesListBloc>({ required: true })
 
-// Sortable
-let sortableInstance: Sortable | null = null
-
-function initSortable(el: HTMLElement | null) {
-  if (!el) return
-
-  if (!props.edit) {
-    sortableInstance?.destroy()
-    sortableInstance = null
-    return
-  }
-
-  if (sortableInstance) return
-
-  sortableInstance = Sortable.create(el, {
-    animation: 150,
-    ghostClass: 'opacity-50',
-    filter: '.add-object-card',
-    onMove: (evt: MoveEvent) => {
-      if (evt.related?.classList.contains('add-object-card')) {
-        return false
-      }
-      return true
-    },
-    onEnd: (evt: SortableEvent) => {
-      if (evt.oldIndex === undefined || evt.newIndex === undefined) return
-      if (evt.oldIndex === evt.newIndex) return
-
-      const item = bloc.value.dataservices.splice(evt.oldIndex, 1)[0]
-      bloc.value.dataservices.splice(evt.newIndex, 0, item)
-    },
-  })
-}
+const { initSortable } = useBlocSortable(
+  computed(() => bloc.value.dataservices),
+  toRef(props, 'edit'),
+)
 
 // Dataservice selector modal
 const isSelectorOpen = ref(false)
