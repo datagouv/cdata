@@ -37,4 +37,9 @@ export type LinksListBloc = {
   links: Array<LinkInBloc>
 } & BlocWithTitle & { id: string }
 
-export type PageBloc = DatasetsListBloc | DataservicesListBloc | ReusesListBloc | LinksListBloc
+export type MarkdownBloc = {
+  class: 'MarkdownBloc'
+  content: string
+} & BlocWithTitle & { id: string }
+
+export type PageBloc = DatasetsListBloc | DataservicesListBloc | ReusesListBloc | LinksListBloc | MarkdownBloc

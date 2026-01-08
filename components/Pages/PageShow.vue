@@ -108,6 +108,12 @@
           :edit
           :main-color="mainColor"
         />
+
+        <MarkdownBloc
+          v-if="bloc.class === 'MarkdownBloc'"
+          v-model="(workingPage.blocs[index] as MarkdownBlocType)"
+          :edit
+        />
       </div>
 
       <!-- Add button below the last bloc -->
@@ -173,12 +179,14 @@ import DatasetsListBloc from './DatasetsListBloc.vue'
 import DataservicesListBloc from './DataservicesListBloc.vue'
 import ReusesListBloc from './ReusesListBloc.vue'
 import LinksListBloc from './LinksListBloc.vue'
+import MarkdownBloc from './MarkdownBloc.vue'
 import type {
   Page,
   DatasetsListBloc as DatasetsListBlocType,
   DataservicesListBloc as DataservicesListBlocType,
   ReusesListBloc as ReusesListBlocType,
   LinksListBloc as LinksListBlocType,
+  MarkdownBloc as MarkdownBlocType,
 } from '~/types/pages'
 
 const props = withDefaults(defineProps<{
