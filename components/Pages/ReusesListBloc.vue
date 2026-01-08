@@ -1,6 +1,6 @@
 <template>
   <div
-    :ref="el => initSortable(el as HTMLElement)"
+    ref="sortableRef"
     class="grid sm:grid-cols-3 gap-5"
   >
     <div
@@ -62,7 +62,7 @@ const bloc = defineModel<ReusesListBloc>({ required: true })
 const { $api } = useNuxtApp()
 const { t } = useTranslation()
 
-const { initSortable } = useBlocSortable(
+const { sortableRef } = useBlocSortable(
   computed(() => bloc.value.reuses),
   toRef(props, 'edit'),
 )

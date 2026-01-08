@@ -1,6 +1,6 @@
 <template>
   <div
-    :ref="el => initSortable(el as HTMLElement)"
+    ref="sortableRef"
     class="grid sm:grid-cols-2 gap-5"
   >
     <div
@@ -59,7 +59,7 @@ const props = defineProps<{
 
 const bloc = defineModel<DataservicesListBloc>({ required: true })
 
-const { initSortable } = useBlocSortable(
+const { sortableRef } = useBlocSortable(
   computed(() => bloc.value.dataservices),
   toRef(props, 'edit'),
 )
