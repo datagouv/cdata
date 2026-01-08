@@ -19,7 +19,7 @@ test('search filters results', async ({ page }) => {
   const searchInput = page.getByPlaceholder(/élection présidentielle/)
   await searchInput.fill('explore')
 
-  await page.waitForURL('**/dataservices/search?q=explore**')
+  await expect(page).toHaveURL(/\/dataservices\/search\?q=explore/)
 
   await expect(page.getByRole('link', { name: /Explore API/i })).toBeVisible()
 })
@@ -32,5 +32,5 @@ test('clicking dataservice navigates to detail', async ({ page }) => {
 
   await dataserviceLink.click()
 
-  await page.waitForURL('**/dataservices/explore-api**')
+  await expect(page).toHaveURL(/\/dataservices\/explore-api/)
 })

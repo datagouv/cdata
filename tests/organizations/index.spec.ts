@@ -19,7 +19,7 @@ test('search filters results', async ({ page }) => {
   const searchInput = page.getByPlaceholder(/Rechercher/)
   await searchInput.fill('sobrana')
 
-  await page.waitForURL('**/organizations?q=sobrana**')
+  await expect(page).toHaveURL(/\/organizations\?q=sobrana/)
 
   await expect(page.getByRole('link', { name: /sobrana/i })).toBeVisible()
 })

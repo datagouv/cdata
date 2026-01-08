@@ -8,7 +8,7 @@ test('can create a dataservice', async ({ page }) => {
   await page.getByRole('button', { name: 'Publier sur data.gouv.fr' }).click()
   await expect(page.getByRole('link', { name: 'Une API' })).toBeVisible()
   await page.getByRole('link', { name: 'Une API' }).click()
-  await page.waitForURL('**/admin/dataservices/new**')
+  await expect(page).toHaveURL(/\/admin\/dataservices\/new/)
 
   // Step 1: Describe dataservice
   await page.getByTestId('producer-select').click()

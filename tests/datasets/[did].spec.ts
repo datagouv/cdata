@@ -102,7 +102,7 @@ test('discussions tab navigates to discussions page', async ({ page }) => {
   const discussionsTab = page.getByRole('link', { name: /Discussions/ })
   await discussionsTab.click()
 
-  await page.waitForURL('**/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/discussions')
+  await expect(page).toHaveURL('/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/discussions')
 })
 
 test('resources are displayed and accordion expands', async ({ page }) => {

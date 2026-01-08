@@ -11,7 +11,7 @@ test('can create a reuse', async ({ page }) => {
   await page.getByRole('button', { name: 'Publier sur data.gouv.fr' }).click()
   await expect(page.getByRole('link', { name: 'Une réutilisation' })).toBeVisible()
   await page.getByRole('link', { name: 'Une réutilisation' }).click()
-  await page.waitForURL('**/admin/reuses/new**')
+  await expect(page).toHaveURL(/\/admin\/reuses\/new/)
 
   // Step 1: Describe reuse
   await page.getByTestId('producer-select').click()
