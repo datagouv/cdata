@@ -179,7 +179,10 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.locator('input[placeholder="URL"]').nth(1).fill('https://guides.data.gouv.fr')
 
   // Fill in the main button
-  await page.locator('input[placeholder="Titre du bouton"]').first().fill('Voir tous les guides')
+  const buttonTitle1 = page.locator('[aria-label="Titre du bouton"]').first()
+  await buttonTitle1.click()
+  await buttonTitle1.fill('Voir tous les guides')
+  await page.mouse.click(1, 1)
   await page.locator('input[placeholder="URL du bouton"]').first().fill('https://guides.data.gouv.fr')
 
   // Debug screenshot: after adding links bloc with paragraph
@@ -216,7 +219,10 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.locator('input[placeholder="URL"]').nth(3).fill('https://support.data.gouv.fr')
 
   // Fill in the main button
-  await page.locator('input[placeholder="Titre du bouton"]').last().fill('Contacter le support')
+  const buttonTitle2 = page.locator('[aria-label="Titre du bouton"]').last()
+  await buttonTitle2.click()
+  await buttonTitle2.fill('Contacter le support')
+  await page.mouse.click(1, 1)
   await page.locator('input[placeholder="URL du bouton"]').last().fill('https://support.data.gouv.fr')
 
   // Debug screenshot: after adding links bloc without paragraph

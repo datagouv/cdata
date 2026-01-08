@@ -14,20 +14,18 @@
     >
       <RiDeleteBinLine class="size-5" />
     </button>
-    <BrandedButton
-      :color
-      class="pointer-events-none"
+    <div
+      class="inline-flex items-center justify-center font-marianne font-medium border text-sm h-10 leading-none px-4 gap-x-1"
+      :class="buttonColors"
     >
-      <input
-        :value="title"
-        type="text"
-        class="bg-transparent border-none outline-none text-inherit font-inherit pointer-events-auto"
-        :style="{ width: `${Math.max(10, title?.length || 0)}ch` }"
-        :placeholder="$t('Titre du bouton')"
+      <span
+        contenteditable="true"
+        role="textbox"
+        class="outline-none min-w-[10ch] focus:ring-2 focus:ring-blue-300 rounded-sm"
         :aria-label="$t('Titre du bouton')"
-        @input="$emit('update:title', ($event.target as HTMLInputElement).value)"
-      >
-    </BrandedButton>
+        @blur="$emit('update:title', ($event.target as HTMLElement).textContent || '')"
+      >{{ title || $t('Titre du bouton') }}</span>
+    </div>
     <input
       :value="href"
       type="text"
@@ -54,7 +52,7 @@ import type { ComponentProps } from 'vue-component-type-helpers'
 import { BrandedButton } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   edit: boolean
   title?: string | null
   href?: string | null
@@ -63,6 +61,19 @@ withDefaults(defineProps<{
 }>(), {
   color: 'primary',
   class: '',
+})
+
+const buttonColors = computed(() => {
+  const colors: Record<string, string> = {
+    'primary': 'text-white bg-new-primary !border-new-primary',
+    'secondary': 'text-new-gray-dark bg-white !border-new-gray-dark',
+    'tertiary': 'text-gray-plain !border-transparent',
+    'warning': 'text-new-warning bg-white !border-new-warning',
+    'danger': '!text-new-error bg-white !border-new-error',
+    'brown-illustration': '!border-none bg-new-brown-illustration text-white',
+    'green-illustration': '!border-none bg-new-green-illustration text-white',
+  }
+  return colors[props.color] || colors.primary
 })
 
 defineEmits<{
