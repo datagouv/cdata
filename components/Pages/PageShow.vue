@@ -24,7 +24,7 @@
       <!-- Toolbar bloc en mode edit -->
       <div
         v-if="edit"
-        class="absolute left-4 lg:left-8 xl:left-12 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10"
+        class="absolute left-4 top-4 flex flex-row gap-2 z-10 min-[1530px]:left-8 min-[1530px]:top-1/2 min-[1530px]:-translate-y-1/2 min-[1530px]:flex-col"
       >
         <BrandedButton
           color="tertiary"
@@ -78,7 +78,7 @@
           <button
             v-else-if="edit"
             class="text-gray-400 hover:text-gray-600 text-sm"
-            @click="bloc.subtitle = 'Sous-titre'"
+            @click="bloc.subtitle = $t('Sous-titre')"
           >
             + {{ $t('Ajouter un sous-titre') }}
           </button>
@@ -264,7 +264,7 @@
             <button
               v-if="edit && !bloc.paragraph"
               class="text-gray-400 hover:text-gray-600 flex items-center gap-1 text-sm"
-              @click="bloc.paragraph = 'Texte du paragraphe'"
+              @click="bloc.paragraph = $t('Texte du paragraphe')"
             >
               <RiAddLine class="size-4" />
               {{ $t('Ajouter un paragraphe') }}
@@ -492,6 +492,7 @@
 <script setup lang="ts">
 import type { ComponentProps } from 'vue-component-type-helpers'
 import Sortable, { type MoveEvent, type SortableEvent } from 'sortablejs'
+import { toast } from 'vue-sonner'
 import { BrandedButton, DataserviceCard, ReuseCard } from '@datagouv/components-next'
 import { RiAddLine, RiArrowDownLine, RiArrowRightUpLine, RiArrowUpLine, RiDeleteBinLine } from '@remixicon/vue'
 import CdataLink from '../CdataLink.vue'
@@ -594,6 +595,7 @@ function cancel() {
 }
 
 const { $api } = useNuxtApp()
+const { t } = useTranslation()
 
 // Helpers pour vérifier si un objet est complet
 function isFullDataset(obj: Dataset | DatasetV2 | DatasetSuggest): obj is DatasetV2 {
@@ -617,15 +619,20 @@ function openDatasetSelector(bloc: DatasetsListBloc) {
 
 async function validateDatasetSelection() {
   if (currentDatasetBloc) {
-    const fullDatasets = await Promise.all(
-      selectedDatasets.value.map(async (dataset) => {
-        if (isFullDataset(dataset)) {
-          return dataset
-        }
-        return await $api<DatasetV2>(`/api/2/datasets/${dataset.id}/`)
-      }),
-    )
-    currentDatasetBloc.datasets = fullDatasets
+    try {
+      const fullDatasets = await Promise.all(
+        selectedDatasets.value.map(async (dataset) => {
+          if (isFullDataset(dataset)) {
+            return dataset
+          }
+          return await $api<DatasetV2>(`/api/2/datasets/${dataset.id}/`)
+        }),
+      )
+      currentDatasetBloc.datasets = fullDatasets
+    }
+    catch {
+      toast.error(t('Erreur lors du chargement des jeux de données'))
+    }
   }
   isDatasetSelectorOpen.value = false
 }
@@ -643,15 +650,20 @@ function openReuseSelector(bloc: ReusesListBloc) {
 
 async function validateReuseSelection() {
   if (currentReuseBloc) {
-    const fullReuses = await Promise.all(
-      selectedReuses.value.map(async (reuse) => {
-        if (isFullReuse(reuse)) {
-          return reuse
-        }
-        return await $api<Reuse>(`/api/1/reuses/${reuse.id}/`)
-      }),
-    )
-    currentReuseBloc.reuses = fullReuses
+    try {
+      const fullReuses = await Promise.all(
+        selectedReuses.value.map(async (reuse) => {
+          if (isFullReuse(reuse)) {
+            return reuse
+          }
+          return await $api<Reuse>(`/api/1/reuses/${reuse.id}/`)
+        }),
+      )
+      currentReuseBloc.reuses = fullReuses
+    }
+    catch {
+      toast.error(t('Erreur lors du chargement des réutilisations'))
+    }
   }
   isReuseSelectorOpen.value = false
 }

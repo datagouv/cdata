@@ -1,7 +1,6 @@
 <template>
   <div
     v-if="tag === 'div'"
-    ref="el"
     :contenteditable="true"
     :class="[className, 'outline-none focus:ring-2 focus:ring-blue-300 rounded-sm cursor-text whitespace-pre-wrap']"
     @blur="onBlur"
@@ -10,7 +9,6 @@
   </div>
   <p
     v-else-if="tag === 'p'"
-    ref="el"
     :contenteditable="true"
     :class="[className, 'outline-none focus:ring-2 focus:ring-blue-300 rounded-sm cursor-text whitespace-pre-wrap']"
     @blur="onBlur"
@@ -19,7 +17,6 @@
   </p>
   <span
     v-else
-    ref="el"
     :contenteditable="true"
     :class="[className, 'outline-none focus:ring-2 focus:ring-blue-300 rounded-sm cursor-text']"
     @blur="onBlur"
