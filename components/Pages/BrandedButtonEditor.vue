@@ -3,7 +3,7 @@
   <div
     v-if="edit"
     class="space-y-2 relative"
-    :class="className"
+    :class="$props.class"
   >
     <button
       v-if="title || href"
@@ -40,7 +40,7 @@
   <BrandedButton
     v-else-if="title && href"
     :href="href!"
-    :class="className"
+    :class="$props.class"
     :color
   >
     {{ title }}
@@ -52,7 +52,7 @@ import type { ComponentProps } from 'vue-component-type-helpers'
 import { BrandedButton } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   edit: boolean
   title?: string | null
   href?: string | null
@@ -68,6 +68,4 @@ defineEmits<{
   'update:href': [value: string]
   'clear': []
 }>()
-
-const className = computed(() => props.class)
 </script>

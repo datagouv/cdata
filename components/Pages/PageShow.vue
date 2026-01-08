@@ -201,7 +201,7 @@ const localPage = ref<Page | null>(null)
 
 watchEffect(() => {
   if (props.edit && !localPage.value) {
-    localPage.value = JSON.parse(JSON.stringify(props.page))
+    localPage.value = structuredClone(props.page)
   }
 })
 
