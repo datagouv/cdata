@@ -1,8 +1,7 @@
 <template>
   <PageShow
-    v-if="page"
-    :page
-    :edit="isEditing"
+    :page="emptyPage"
+    :edit="true"
     :main-color
     @save="savePage"
     @cancel="exitEditMode"
@@ -16,33 +15,44 @@ import PageShow from './PageShow.vue'
 import type { Page } from '~/types/pages'
 
 const props = withDefaults(defineProps<{
-  pageId: string
+  siteKey: 'datasets_page' | 'reuses_page' | 'dataservices_page'
   mainColor?: ComponentProps<typeof PageShow>['mainColor']
 }>(), {
   mainColor: 'primary',
 })
 
+const emit = defineEmits<{
+  created: [id: string]
+}>()
+
 const { $api } = useNuxtApp()
 const { t } = useTranslation()
-const route = useRoute()
 const router = useRouter()
+const route = useRoute()
 
-const { data: page, refresh } = await useAPI<Page>(`/api/1/pages/${props.pageId}`)
-
-const isEditing = computed(() => route.query.edit === 'true')
+const emptyPage: Page = {
+  id: '',
+  blocs: [],
+}
 
 async function savePage(updatedPage: Page) {
   try {
-    await $api(`/api/1/pages/${props.pageId}/`, {
-      method: 'PUT',
+    const createdPage = await $api<Page>('/api/1/pages/', {
+      method: 'POST',
       body: updatedPage,
     })
-    toast.success(t('Page sauvegardée'))
-    await refresh()
+
+    await $api('/api/1/site/', {
+      method: 'PATCH',
+      body: { [props.siteKey]: createdPage.id },
+    })
+
+    toast.success(t('Page créée'))
+    emit('created', createdPage.id)
     exitEditMode()
   }
   catch {
-    toast.error(t('Erreur lors de la sauvegarde'))
+    toast.error(t('Erreur lors de la création de la page'))
   }
 }
 

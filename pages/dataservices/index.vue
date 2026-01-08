@@ -17,6 +17,12 @@
       :page-id="site.dataservices_page"
       main-color="brown-illustration"
     />
+    <PageShowNew
+      v-else-if="isEditing"
+      site-key="dataservices_page"
+      main-color="brown-illustration"
+      @created="onPageCreated"
+    />
     <section class="container w-full pt-16">
       <div>
         <h2 class="font-extrabold text-3xl">
@@ -243,6 +249,7 @@ import { RiExternalLinkFill, RiArrowRightLine } from '@remixicon/vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
 import PageShowById from '~/components/Pages/PageShowById.vue'
+import PageShowNew from '~/components/Pages/PageShowNew.vue'
 
 const { t } = useTranslation()
 useSeoMeta({
@@ -262,5 +269,11 @@ onMounted(async () => {
   }
 })
 
-const { data: site } = await useAPI<Site>('/api/1/site/')
+const { data: site, refresh: refreshSite } = await useAPI<Site>('/api/1/site/')
+
+const isEditing = computed(() => route.query.edit === 'true')
+
+async function onPageCreated() {
+  await refreshSite()
+}
 </script>
