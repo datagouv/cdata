@@ -5,12 +5,15 @@
     class="py-24 odd:bg-gray-some"
   >
     <div class="container space-y-6">
-      <div class="space-y-2.5">
+      <div
+        v-if="bloc.title"
+        class="space-y-2.5"
+      >
         <div class="text-gray-title text-3xl font-extrabold">
           {{ bloc.title }}
         </div>
         <div
-          v-if="bloc.subtitle"
+          v-if="'subtitle' in bloc && bloc.subtitle"
           class="text-gray-plain"
         >
           {{ bloc.subtitle }}
@@ -97,6 +100,78 @@
           </BrandedButton>
         </div>
       </div>
+      <template v-if="bloc.class === 'AccordionBloc'">
+        <p
+          v-if="bloc.description"
+          class="text-gray-plain"
+        >
+          {{ bloc.description }}
+        </p>
+        <AccordionGroup>
+          <Accordion
+            v-for="(item, itemIndex) in bloc.items"
+            :key="itemIndex"
+            :title="item.title"
+          >
+            <div
+              v-for="(contentBloc, contentIndex) in item.content"
+              :key="contentIndex"
+              class="space-y-4"
+            >
+              <div
+                v-if="contentBloc.class === 'DatasetsListBloc'"
+                class="grid sm:grid-cols-2 gap-5"
+              >
+                <DatasetCardLg
+                  v-for="dataset in contentBloc.datasets"
+                  :key="dataset.id"
+                  class="min-w-0"
+                  :dataset
+                />
+              </div>
+              <div
+                v-if="contentBloc.class === 'DataservicesListBloc'"
+                class="grid sm:grid-cols-2 gap-5"
+              >
+                <DataserviceCard
+                  v-for="dataservice in contentBloc.dataservices"
+                  :key="dataservice.id"
+                  class="min-w-0"
+                  :dataservice
+                />
+              </div>
+              <div
+                v-if="contentBloc.class === 'ReusesListBloc'"
+                class="grid sm:grid-cols-3 gap-5"
+              >
+                <ReuseCard
+                  v-for="reuse in contentBloc.reuses"
+                  :key="reuse.id"
+                  class="min-w-0"
+                  :reuse
+                />
+              </div>
+              <div
+                v-if="contentBloc.class === 'LinksListBloc'"
+                class="space-y-4"
+              >
+                <div
+                  v-for="link in contentBloc.links"
+                  :key="link.title"
+                >
+                  <CdataLink
+                    class="inline-flex items-center font-bold text-blue-france no-underline hover:underline fr-raw-link"
+                    :href="link.url"
+                  >
+                    {{ link.title }}
+                    <RiArrowRightUpLine class="size-4 ml-1" />
+                  </CdataLink>
+                </div>
+              </div>
+            </div>
+          </Accordion>
+        </AccordionGroup>
+      </template>
     </div>
   </div>
 </template>

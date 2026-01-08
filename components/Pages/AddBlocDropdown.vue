@@ -67,6 +67,7 @@ const { t } = useTranslation()
 const blocsTypes = useBlocsTypes()
 
 const newBlocsTypes: Array<{ name: string, blocsTypes: Array<keyof typeof blocsTypes> }> = [
+  { name: t('Mise en page'), blocsTypes: ['AccordionBloc'] },
   { name: t('Contenus à la une'), blocsTypes: ['DatasetsListBloc', 'ReusesListBloc', 'DataservicesListBloc', 'LinksListBloc'] },
 ]
 </script>

@@ -129,10 +129,16 @@
                     {{ $t('Pas encore de liens') }}
                   </template>
                 </div>
+                <div
+                  v-if="bloc.class === 'AccordionBloc'"
+                  class="max-w-full text-gray-title truncate"
+                >
+                  {{ $t('{n} élément | {n} éléments', bloc.items.length) }}
+                </div>
               </div>
               <div class="shrink-0">
                 <ModalWithButton
-                  :title="bloc.title"
+                  :title="bloc.title || blocsTypes[bloc.class].name"
                   size="xl"
                 >
                   <template #button="{ attrs, listeners }">
@@ -150,10 +156,11 @@
                   <InputGroup
                     v-model="bloc.title"
                     :label="$t('Titre')"
-                    :required="true"
+                    :required="bloc.class !== 'AccordionBloc'"
                   />
 
                   <InputGroup
+                    v-if="bloc.class !== 'AccordionBloc'"
                     v-model="bloc.subtitle"
                     :label="$t('Sous-titre')"
                   />
@@ -173,6 +180,11 @@
                   <LinksListForm
                     v-if="bloc.class === 'LinksListBloc'"
                     class="border-t"
+                    :model-value="bloc"
+                    @update:model-value="page.blocs[index] = $event"
+                  />
+                  <AccordionBlocForm
+                    v-if="bloc.class === 'AccordionBloc'"
                     :model-value="bloc"
                     @update:model-value="page.blocs[index] = $event"
                   />

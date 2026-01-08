@@ -1,7 +1,7 @@
-import { RiDatabase2Line, RiLineChartLine, RiLink, RiRobot2Line } from '@remixicon/vue'
-import type { DataservicesListBloc, DatasetsListBloc, LinksListBloc, ReusesListBloc } from '~/types/pages'
+import { RiDatabase2Line, RiLineChartLine, RiLink, RiListCheck2, RiRobot2Line } from '@remixicon/vue'
+import type { AccordionBloc, DataservicesListBloc, DatasetsListBloc, LinksListBloc, ReusesListBloc } from '~/types/pages'
 
-export function useBlocsTypes() {
+export function useContentBlocsTypes() {
   const { t } = useTranslation()
 
   return {
@@ -28,6 +28,21 @@ export function useBlocsTypes() {
       name: t('Liens à la une'),
       description: t('Mettre en avant jusqu\'à 4 liens'),
       default: (): Omit<LinksListBloc, 'id'> => ({ class: 'LinksListBloc', title: 'Mes liens', subtitle: '', paragraph: '', main_link_title: '', main_link_url: '', links: [] }),
+    },
+  }
+}
+
+export function useBlocsTypes() {
+  const contentBlocsTypes = useContentBlocsTypes()
+  const { t } = useTranslation()
+
+  return {
+    ...contentBlocsTypes,
+    AccordionBloc: {
+      icon: RiListCheck2,
+      name: t('Accordéon'),
+      description: t('Liste dépliable de contenus (FAQ, etc.)'),
+      default: (): Omit<AccordionBloc, 'id'> => ({ class: 'AccordionBloc', title: '', description: '', items: [] }),
     },
   }
 }
