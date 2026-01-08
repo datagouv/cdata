@@ -44,7 +44,7 @@
       />
       <div
         v-if="imagePreview"
-        class="text-align-center"
+        class="text-center"
       >
         <NuxtImg
           :src="imagePreview"

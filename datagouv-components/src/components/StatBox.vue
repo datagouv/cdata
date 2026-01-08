@@ -140,7 +140,7 @@
     </div>
     <p
       v-if="lastValue && lastMonth"
-      class="mt-2 font-normal text-transform-none fr-badge fr-badge--no-icon fr-badge--success"
+      class="mt-2 font-normal normal-case fr-badge fr-badge--no-icon fr-badge--success"
     >
       <strong class="mr-1">
         + {{ summarize(lastValue, 2) }}
