@@ -9,12 +9,17 @@
       })"
       :placeholder="$t('ex. élections présidentielles')"
       search-url="/datasets/search"
-      :link-label="$t(`Qu'est-ce qu'un jeu de données ?`)"
+      :link-label="$t(`Qu'est-ce qu'un jeu de données ?`)"
       :link-url="config.public.guideDatasets"
     />
     <PageShowById
       v-if="site?.datasets_page"
       :page-id="site.datasets_page"
+    />
+    <PageShowNew
+      v-else-if="isEditing"
+      site-key="datasets_page"
+      @created="onPageCreated"
     />
     <EditoFooter
       color="primary"
@@ -29,6 +34,7 @@ import type { Site } from '@datagouv/components-next'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
 import PageShowById from '~/components/Pages/PageShowById.vue'
+import PageShowNew from '~/components/Pages/PageShowNew.vue'
 
 const { t } = useTranslation()
 useSeoMeta({
@@ -49,5 +55,11 @@ onMounted(async () => {
   }
 })
 
-const { data: site } = await useAPI<Site>('/api/1/site/')
+const { data: site, refresh: refreshSite } = await useAPI<Site>('/api/1/site/')
+
+const isEditing = computed(() => route.query.edit === 'true')
+
+async function onPageCreated() {
+  await refreshSite()
+}
 </script>

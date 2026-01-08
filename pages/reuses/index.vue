@@ -30,6 +30,13 @@
     <PageShowById
       v-if="site?.reuses_page"
       :page-id="site.reuses_page"
+      main-color="green-illustration"
+    />
+    <PageShowNew
+      v-else-if="isEditing"
+      site-key="reuses_page"
+      main-color="green-illustration"
+      @created="onPageCreated"
     />
     <div class="overflow-hidden container flex flex-col md:flex-row items-center py-16 md:py-0">
       <div class="w-full">
@@ -157,6 +164,7 @@ import CdataLink from '~/components/CdataLink.vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
 import PageShowById from '~/components/Pages/PageShowById.vue'
+import PageShowNew from '~/components/Pages/PageShowNew.vue'
 
 const { t } = useTranslation()
 useSeoMeta({
@@ -178,5 +186,11 @@ onMounted(async () => {
 
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
 
-const { data: site } = await useAPI<Site>('/api/1/site/')
+const { data: site, refresh: refreshSite } = await useAPI<Site>('/api/1/site/')
+
+const isEditing = computed(() => route.query.edit === 'true')
+
+async function onPageCreated() {
+  await refreshSite()
+}
 </script>
