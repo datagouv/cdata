@@ -70,7 +70,7 @@
         <ClientOnly>
           <div
             v-if="checkOrga.exists !== null"
-            class="fr-col mx-2 mb-2 bg-gray-lower text-align-center p-4"
+            class="fr-col mx-2 mb-2 bg-gray-lower text-center p-4"
           >
             <div v-if="checkOrga.exists">
               <p class="m-0 text-sm font-bold">
@@ -126,7 +126,7 @@
               {{ t("Un numéro SIRET nous permettra d’attribuer un type à votre organisation (administrations, collectivités, entreprises etc.) et facilitera votre certification. Le numéro doit faire 14 chiffres.") }} <br>
               {{ t("Veuillez noter que toutes les administrations ont un numéro SIRET.") }} <br>
               {{ t("Vous pouvez trouver votre SIRET sur ") }}<a
-                class="text-decoration-underline"
+                class="underline"
                 href="https://annuaire-entreprises.data.gouv.fr/"
                 target="_blank"
               >{{ t("l’Annuaire des Entreprises.") }}</a>

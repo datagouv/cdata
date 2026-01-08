@@ -2,7 +2,7 @@
   <div class="fr-p-3w bg-white">
     <RequiredExplanation />
     <fieldset
-      class="fr-fieldset min-width-0"
+      class="fr-fieldset min-w-0"
       aria-labelledby="description-legend"
     >
       <legend
@@ -69,7 +69,7 @@
         />
         <div
           v-if="imagePreview"
-          class="text-align-center"
+          class="text-center"
         >
           <NuxtImg
             :src="imagePreview"

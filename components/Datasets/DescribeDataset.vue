@@ -229,7 +229,7 @@
           </div>
         </fieldset>
         <fieldset
-          class="fr-fieldset min-width-0"
+          class="fr-fieldset min-w-0"
           aria-labelledby="description-legend"
         >
           <legend
@@ -273,7 +273,7 @@
             />
           </LinkedToAccordion>
           <LinkedToAccordion
-            class="fr-fieldset__element min-width-0"
+            class="fr-fieldset__element min-w-0"
             :accordion="writeAGoodDescriptionAccordionId"
           >
             <InputGroup
@@ -295,7 +295,7 @@
             </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
-            class="fr-fieldset__element min-width-0"
+            class="fr-fieldset__element min-w-0"
             :accordion="writeAGoodDescriptionShortAccordionId"
           >
             <InputGroup
