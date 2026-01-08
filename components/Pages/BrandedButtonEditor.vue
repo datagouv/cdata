@@ -24,6 +24,7 @@
         class="bg-transparent border-none outline-none text-inherit font-inherit pointer-events-auto"
         :style="{ width: `${Math.max(10, title?.length || 0)}ch` }"
         :placeholder="$t('Titre du bouton')"
+        :aria-label="$t('Titre du bouton')"
         @input="$emit('update:title', ($event.target as HTMLInputElement).value)"
       >
     </BrandedButton>
@@ -32,6 +33,7 @@
       type="text"
       class="block text-sm text-gray-500 border rounded px-2 py-1 w-full max-w-xs"
       :placeholder="$t('URL du bouton')"
+      :aria-label="$t('URL du bouton')"
       @input="$emit('update:href', ($event.target as HTMLInputElement).value)"
     >
   </div>

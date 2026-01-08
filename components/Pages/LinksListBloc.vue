@@ -84,6 +84,7 @@
                 v-model="link.color"
                 type="color"
                 class="size-6 rounded cursor-pointer border-0"
+                :aria-label="$t('Couleur du lien')"
               >
               <button
                 type="button"
@@ -112,6 +113,7 @@
               type="text"
               class="text-sm text-gray-500 border rounded px-2 py-1 max-w-xs"
               :placeholder="$t('URL')"
+              :aria-label="$t('URL du lien')"
             >
           </div>
         </template>
