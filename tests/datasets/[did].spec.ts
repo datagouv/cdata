@@ -34,6 +34,8 @@ test('dataset labels have proper tooltips and information', async ({
   await page.goto(
     '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
   )
+  // Wait for Vue hydration before clicking the toggletip (try fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   await page.getByTestId('label-toggletip-button').click()
   await expect(page.getByTestId('label-toggletip-content')).toBeVisible()
@@ -131,6 +133,8 @@ test('quality tooltip displays content and link is clickable', async ({ page, co
   await page.goto(
     '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
   )
+  // Wait for Vue hydration before clicking the toggletip (try fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   const qualityButton = page.getByRole('button', { name: 'Qualité des métadonnées' }).first()
   await expect(qualityButton).toBeVisible()
