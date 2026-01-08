@@ -1,9 +1,12 @@
 <template>
-  <ModalWithButton
-    :title="t('Êtes-vous sûr de vouloir supprimer cette discussion ?')"
-    size="lg"
-    form
-    @submit.prevent="deleteThread"
+  <AdminDeleteModal
+    :title="t('Êtes-vous sûr de vouloir supprimer cette discussion ?')"
+    :delete-url="`/api/1/discussions/${thread.id}/`"
+    :delete-button-label="t('Supprimer la discussion et les commentaires')"
+    :deletable-object="thread"
+    object-type="discussion"
+    :object-title="thread.title"
+    @deleted="emit('deleted')"
   >
     <template #button="{ attrs, listeners }">
       <BrandedButton
@@ -13,78 +16,40 @@
         icon-only
         :title="$t('Supprimer')"
         v-bind="attrs"
-        :loading
         v-on="listeners"
       />
     </template>
 
-    <template #default>
-      <ThreadHeader
-        :subject
-        :thread
-      />
-      <ReadMore
-        class="prose whitespace-pre-line max-w-none text-sm"
-      >
-        {{ thread.discussion[0].content }}
-      </ReadMore>
-      <div class="mt-4 font-bold">
-        {{ $t('Cette action est irréversible. Tous les commentaires de cette discussion seront aussi supprimés.') }}
-      </div>
-    </template>
-
-    <template #footer="{ close }">
-      <div class="w-full flex justify-end space-x-4">
-        <BrandedButton
-          color="secondary"
-          size="xs"
-          :loading
-          @click="close"
-        >
-          {{ t("Annuler") }}
-        </BrandedButton>
-        <BrandedButton
-          type="submit"
-          color="danger"
-          size="xs"
-          :loading
-        >
-          {{ t("Supprimer la discussion et les commentaires") }}
-        </BrandedButton>
-      </div>
-    </template>
-  </ModalWithButton>
+    <ThreadHeader
+      :subject
+      :thread
+    />
+    <ReadMore
+      class="prose whitespace-pre-line max-w-none text-sm"
+    >
+      {{ thread.discussion[0].content }}
+    </ReadMore>
+    <div class="mt-4 font-bold">
+      {{ $t('Cette action est irréversible. Tous les commentaires de cette discussion seront aussi supprimés.') }}
+    </div>
+  </AdminDeleteModal>
 </template>
 
 <script setup lang="ts">
 import { RiDeleteBin6Line } from '@remixicon/vue'
 import { BrandedButton, ReadMore } from '@datagouv/components-next'
+import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import ThreadHeader from './ThreadHeader.vue'
 import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
-const props = defineProps<{
+defineProps<{
   subject: DiscussionSubjectTypes
   thread: Thread
 }>()
+
 const emit = defineEmits<{
   deleted: []
 }>()
 
 const { t } = useTranslation()
-const { $api } = useNuxtApp()
-
-const loading = ref(false)
-
-const deleteThread = async (_: SubmitEvent, close: () => void) => {
-  loading.value = true
-
-  try {
-    await $api(`/api/1/discussions/${props.thread.id}/`, { method: 'DELETE' })
-    close()
-    emit('deleted')
-  }
-  finally {
-    loading.value = false
-  }
-}
 </script>

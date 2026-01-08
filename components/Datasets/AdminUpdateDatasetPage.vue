@@ -95,9 +95,14 @@
           {{ $t("Attention, cette action ne peut pas être annulée.") }}
 
           <template #button>
-            <ModalWithButton
+            <AdminDeleteModal
               :title="$t('Êtes-vous sûr de vouloir supprimer ce jeu de données ?')"
-              size="lg"
+              :delete-url="`/api/1/datasets/${route.params.id}`"
+              :delete-button-label="$t('Supprimer le jeu de données')"
+              :deletable-object="dataset"
+              object-type="dataset"
+              :object-title="dataset.title"
+              @deleted="onDatasetDeleted"
             >
               <template #button="{ attrs, listeners }">
                 <BrandedButton
@@ -112,18 +117,7 @@
               <p class="fr-text--bold">
                 {{ $t("Cette action est irréversible.") }}
               </p>
-              <template #footer>
-                <div class="flex-1 flex justify-end">
-                  <BrandedButton
-                    color="danger"
-                    :loading="isLoading"
-                    @click="deleteDataset"
-                  >
-                    {{ $t("Supprimer le jeu de données") }}
-                  </BrandedButton>
-                </div>
-              </template>
-            </ModalWithButton>
+            </AdminDeleteModal>
           </template>
         </BannerAction>
       </div>
@@ -136,6 +130,7 @@ import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '
 import type { DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
+import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import type { DatasetForm } from '~/types/types'
 
 const { t } = useTranslation()
@@ -191,19 +186,10 @@ async function save() {
   }
 }
 
-async function deleteDataset() {
-  isLoading.value = true
-  try {
-    await $api(`/api/1/datasets/${route.params.id}`, {
-      method: 'DELETE',
-    })
-    refresh()
-    toast.success(t('Jeu de données supprimé !'))
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-  }
-  finally {
-    isLoading.value = false
-  }
+function onDatasetDeleted() {
+  refresh()
+  toast.success(t('Jeu de données supprimé !'))
+  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
 }
 
 async function switchDatasetPrivate() {
