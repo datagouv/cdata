@@ -70,7 +70,7 @@
         <ClientOnly>
           <div
             v-if="checkOrga.exists !== null"
-            class="fr-col mx-2 mb-2 bg-contrast-grey text-align-center p-4"
+            class="fr-col mx-2 mb-2 bg-gray-lower text-align-center p-4"
           >
             <div v-if="checkOrga.exists">
               <p class="m-0 text-sm font-bold">
