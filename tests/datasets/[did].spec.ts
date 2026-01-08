@@ -62,10 +62,8 @@ test('clicking dataset label navigates to filtered search', async ({
   // Click the label
   await firstLabel.click()
 
-  await page.waitForURL('**/datasets/search*')
-
   // Should navigate to search page with badge filter
-  expect(page.url()).toContain('/datasets/search?badge=spd')
+  await expect(page).toHaveURL('/datasets/search?badge=spd')
 
   // Verify search page loads with filter applied
   await expect(page).toHaveTitle(
