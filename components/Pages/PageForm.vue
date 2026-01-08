@@ -254,6 +254,7 @@ import ReusesSelect from '../ReusesSelect.vue'
 import PageShow from './PageShow.vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
 import LinksListForm from './LinksListForm.vue'
+import AccordionBlocForm from './AccordionBlocForm.vue'
 import type { Page } from '~/types/pages'
 
 const { t } = useTranslation()
