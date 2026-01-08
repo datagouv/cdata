@@ -90,7 +90,7 @@
         </SimpleBanner>
 
         <fieldset
-          class="fr-fieldset min-width-0"
+          class="fr-fieldset min-w-0"
           aria-labelledby="description-legend"
         >
           <legend
@@ -102,7 +102,7 @@
             </h2>
           </legend>
           <LinkedToAccordion
-            class="fr-fieldset__element min-width-0"
+            class="fr-fieldset__element min-w-0"
             :accordion="publishFileAccordionId"
           >
             <PaddedContainer

@@ -136,11 +136,12 @@ const resourcesByTypes = computed(() => {
 })
 
 const route = useRoute()
+const hasResourceId = computed(() => 'resource_id' in route.query && route.query.resource_id)
 const { $api } = useNuxtApp()
 const selectedResource = ref<Resource | null>(null)
 const selectedResourceBanner = useTemplateRef('selectedResourceBannerRef')
 watchEffect(async () => {
-  if ('resource_id' in route.query && route.query.resource_id) {
+  if (hasResourceId.value) {
     selectedResource.value = await $api<Resource>(`/api/1/datasets/${props.dataset.id}/resources/${route.query.resource_id}/`)
     nextTick(() => {
       selectedResourceBanner.value?.scrollIntoView({ behavior: 'smooth' })
@@ -150,4 +151,10 @@ watchEffect(async () => {
     selectedResource.value = null
   }
 })
+
+if (import.meta.server && hasResourceId.value) {
+  useSeoMeta({
+    robots: 'noindex',
+  })
+}
 </script>
