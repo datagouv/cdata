@@ -378,7 +378,7 @@ watchEffect(() => {
   queryString.value = route.query.q
 })
 
-const deboucedQuery = debouncedRef(queryString, config.public.searchAutocompleteDebounce)
+const deboucedQuery = debouncedRef(queryString, config.public.searchDebounce)
 
 /**
  * Query sort

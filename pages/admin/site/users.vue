@@ -156,7 +156,7 @@ const sortedBy = ref<DiscussionSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 const q = ref('')
-const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const qDebounced = refDebounced(q, config.public.searchDebounce)
 
 const url = computed(() => {
   const url = new URL(`/api/1/users/`, config.public.apiBase)

@@ -73,7 +73,7 @@ const sortedBy = ref<CommunityResourceSortedBy>('created_at_internal')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 const q = ref('')
-const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const qDebounced = refDebounced(q, config.public.searchDebounce)
 
 function sort(column: CommunityResourceSortedBy, newDirection: SortDirection) {
   sortedBy.value = column
