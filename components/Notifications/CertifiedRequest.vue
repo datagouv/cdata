@@ -3,7 +3,7 @@
     <div class="flex-none">
       <RiCheckboxCircleLine class="size-4" />
     </div>
-    <div class="flex-1">
+    <div class="flex-1 truncate">
       <p class="m-0 text-xs font-bold">
         <NuxtLink
           class="after:absolute after:inset-0 bg-none"
@@ -14,6 +14,11 @@
       </p>
       <OrganizationOwner
         :organization="notification.details.organization as OrganizationReference"
+        logo-size-class="size-3"
+        :logo-no-border="true"
+        name-size="xs"
+        name-color="text-gray-plain"
+        :with-link="false"
       />
     </div>
     <div class="flex-none flex m-0 gap-1.5">

@@ -6,8 +6,8 @@
     />
     <component
       :is="as"
-      class="mb-0 truncate flex-initial font-normal text-new-primary"
-      :class="{ 'text-sm': size === 'sm', 'text-base': size === 'base' }"
+      class="mb-0 truncate flex-initial font-normal"
+      :class="[colorClass, { 'text-xs': size === 'xs', 'text-sm': size === 'sm', 'text-base': size === 'base' }]"
     >
       {{ organization.name }}
       <small
@@ -52,12 +52,14 @@ withDefaults(defineProps<{
   organization: OrganizationReference
   showAcronym?: boolean
   showType?: boolean
-  size?: 'base' | 'sm'
+  size?: 'base' | 'sm' | 'xs'
+  colorClass?: string
   as?: string
 }>(), {
   showAcronym: false,
   showType: true,
   size: 'base',
+  colorClass: 'text-new-primary',
   as: 'div',
 })
 </script>

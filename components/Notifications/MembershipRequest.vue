@@ -3,7 +3,7 @@
     <div class="flex-none">
       <RiUserAddLine class="size-4" />
     </div>
-    <div class="flex-1">
+    <div class="flex-1 truncate">
       <p class="m-0 text-xs font-bold">
         <NuxtLink
           class="after:absolute after:inset-0 bg-none"
@@ -19,12 +19,15 @@
           :with-link="false"
         />
       </p>
-      <p class="m-0 text-xs">
+      <p class="flex items-center gap-1 m-0 text-xs">
         {{ $t('à') }}
         <OrganizationOwner
           :organization="notification.details.request_organization as OrganizationReference"
           logo-size-class="size-3"
           :logo-no-border="true"
+          name-size="xs"
+          name-color="text-gray-plain"
+          :with-link="false"
         />
       </p>
     </div>
