@@ -142,7 +142,7 @@ const sortedBy = ref<DatasetSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 const q = ref('')
-const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const qDebounced = refDebounced(q, config.public.searchDebounce)
 const datasetsStatus = ref<{ label: string, id: string } | null>(null)
 const datasetActivities = ref<Record<DatasetV2['id'], Activity>>({})
 

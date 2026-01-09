@@ -55,8 +55,8 @@ export default defineNuxtConfig({
 
       title: 'data.gouv.fr',
       description: 'Plateforme ouverte des données publiques françaises : téléchargez, partagez et réutilisez les données ouvertes de l\'État et des collectivités',
-      apiBase: 'http://dev.local:7000',
-      frontBase: 'http://dev.local:3000',
+      apiBase: 'http://localhost:7000',
+      frontBase: 'http://localhost:3000',
       metricsApi: 'https://metric-api.data.gouv.fr',
       metricsSince: '2022-07-01',
       devApiKey: undefined,
@@ -69,7 +69,7 @@ export default defineNuxtConfig({
       tabularApiDataserviceId: undefined,
 
       qualityDescriptionLength: 100,
-      searchAutocompleteDebounce: 200,
+      searchDebounce: 300,
       searchSirenUrl: 'https://recherche-entreprises.api.gouv.fr/search',
       csvDatasetId: undefined,
 
@@ -214,7 +214,7 @@ export default defineNuxtConfig({
 
   devServer: {
     port: 3000,
-    host: 'dev.local',
+    host: 'localhost',
   },
 
   features: {
@@ -261,7 +261,7 @@ export default defineNuxtConfig({
     },
     plugins: [toml(), tailwindcss()],
     server: {
-      allowedHosts: ['dev.local'],
+      allowedHosts: ['localhost'],
     },
   },
 
