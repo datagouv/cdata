@@ -120,6 +120,7 @@ import AdminInput from '~/components/AdminInput.vue'
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
+const config = useRuntimeConfig()
 const page = ref(1)
 const pageSize = ref(20)
 const sortedBy = ref<DiscussionSortedBy>('created')
