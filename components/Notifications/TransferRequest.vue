@@ -74,7 +74,11 @@ const user = useMe()
 const link = computed(() => {
   const recipient = props.notification.details.transfer_recipient
   const subject = props.notification.details.transfer_subject
-  const subjectPath = `${subject.class.toLowerCase()}s`
+  const subjectPath = {
+    Dataset: 'datasets',
+    Reuse: 'reuses',
+    Dataservice: 'dataservices',
+  }[subject.class]
   if (recipient.class == 'User') {
     return user.value.id === recipient.id ? `/admin/me/${subjectPath}` : `/admin/users/${recipient.id}/${subjectPath}`
   }
