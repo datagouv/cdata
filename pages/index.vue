@@ -455,7 +455,7 @@ const config = useRuntimeConfig()
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
-const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts/')
+const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts/', { params: { kind: 'news' } })
 const { data: site } = await useAPI<Site>('/api/1/site/')
 
 const lastPost = computed(() => {

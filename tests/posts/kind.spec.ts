@@ -2,9 +2,24 @@ import { test, expect } from '@playwright/test'
 import * as path from 'path'
 
 const __dirname = import.meta.dirname
-const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
 test.describe('Post kind filter', () => {
+  let newsPostId: string | undefined
+  let pagePostId: string | undefined
+  const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
+
+  test.afterEach(async ({ request }) => {
+    // Cleanup created posts to avoid affecting other tests (like homepage screenshot)
+    if (newsPostId) {
+      await request.delete(`${API_BASE_URL}/api/1/posts/${newsPostId}/`)
+      newsPostId = undefined
+    }
+    if (pagePostId) {
+      await request.delete(`${API_BASE_URL}/api/1/posts/${pagePostId}/`)
+      pagePostId = undefined
+    }
+  })
+
   test('page posts should not appear in public news list, admin should show type and filter', async ({ page }) => {
     const uniqueId = Date.now()
 
@@ -27,7 +42,7 @@ test.describe('Post kind filter', () => {
     await page.getByRole('button', { name: 'Sauvegarder' }).click()
     await page.waitForURL(/\/admin\/posts\/[^/]+$/)
     const newsPostUrl = page.url()
-    const newsPostId = newsPostUrl.split('/').pop()
+    newsPostId = newsPostUrl.split('/').pop()
 
     // Publish the news post
     const publishButton = page.getByRole('button', { name: 'Publier', exact: true })
@@ -56,13 +71,18 @@ test.describe('Post kind filter', () => {
     await page.getByRole('button', { name: 'Sauvegarder' }).click()
     await page.waitForURL(/\/admin\/posts\/[^/]+$/)
     const pagePostUrl = page.url()
-    const pagePostId = pagePostUrl.split('/').pop()
+    pagePostId = pagePostUrl.split('/').pop()
 
     // Publish the page post
     const publishButton2 = page.getByRole('button', { name: 'Publier', exact: true })
     await publishButton2.scrollIntoViewIfNeeded()
     await publishButton2.click()
     await expect(page.getByRole('button', { name: 'Dépublier' })).toBeVisible({ timeout: 10000 })
+
+    // Go to homepage and verify the latest news appears in the news section (not the page)
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 3, name: `Test News ${uniqueId}` })).toBeVisible()
+    await expect(page.getByText(`Test Page ${uniqueId}`)).not.toBeVisible()
 
     // Go to public news page and verify only news appears
     await page.goto('/posts')
@@ -95,9 +115,5 @@ test.describe('Post kind filter', () => {
 
     await expect(page.getByText(`Test News ${uniqueId}`)).toBeVisible()
     await expect(page.getByText(`Test Page ${uniqueId}`)).not.toBeVisible()
-
-    // Cleanup
-    await page.request.delete(`${API_BASE}/api/1/posts/${newsPostId}/`)
-    await page.request.delete(`${API_BASE}/api/1/posts/${pagePostId}/`)
   })
 })
