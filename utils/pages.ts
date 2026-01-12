@@ -1,5 +1,5 @@
 import { RiDatabase2Line, RiLineChartLine, RiLink, RiListCheck2, RiRobot2Line, RiWindow2Line } from '@remixicon/vue'
-import type { AccordionBloc, DataservicesListBloc, DatasetsListBloc, HeroBloc, LinksListBloc, ReusesListBloc } from '~/types/pages'
+import type { AccordionListBloc, DataservicesListBloc, DatasetsListBloc, HeroBloc, LinksListBloc, ReusesListBloc } from '~/types/pages'
 
 export function useContentBlocsTypes() {
   const { t } = useTranslation()
@@ -44,11 +44,11 @@ export function useBlocsTypes() {
 
   return {
     ...contentBlocsTypes,
-    AccordionBloc: {
+    AccordionListBloc: {
       icon: RiListCheck2,
       name: t('Accordéon'),
       description: t('Liste dépliable de contenus (FAQ, etc.)'),
-      default: (): Omit<AccordionBloc, 'id'> => ({ class: 'AccordionBloc', title: '', description: '', items: [] }),
+      default: (): Omit<AccordionListBloc, 'id'> => ({ class: 'AccordionListBloc', title: '', description: '', items: [] }),
     },
   }
 }

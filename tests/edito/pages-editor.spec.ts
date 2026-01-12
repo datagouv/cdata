@@ -278,6 +278,22 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await firstItemTitle.fill('Comment accéder aux données ?')
   await page.mouse.click(1, 1)
 
+  // Add content inside the first accordion item (it's auto-expanded)
+  await page.getByTestId('accordion-add-content').click()
+  await page.waitForTimeout(300)
+  await page.getByTestId('add-content-LinksListBloc').click({ force: true })
+  await page.waitForTimeout(300)
+
+  // Add a link inside the accordion item content
+  const accordionContentBloc = page.getByTestId('accordion-content-bloc')
+  await accordionContentBloc.getByText('Ajouter un lien').click()
+  await page.waitForTimeout(300)
+  const accordionLinkTitle = accordionContentBloc.locator('[contenteditable="true"]').first()
+  await accordionLinkTitle.click()
+  await accordionLinkTitle.fill('Guide des données')
+  await page.mouse.click(1, 1)
+  await accordionContentBloc.locator('input[placeholder="URL"]').first().fill('https://doc.data.gouv.fr')
+
   // Add second accordion item
   await page.getByText('Ajouter un élément').last().click()
   await page.waitForTimeout(300)

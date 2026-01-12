@@ -79,6 +79,7 @@
               v-for="(contentBloc, contentIndex) in item.content"
               :key="contentBloc.id"
               class="relative border rounded p-4"
+              data-testid="accordion-content-bloc"
             >
               <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2 text-gray-title text-sm font-medium">
@@ -126,6 +127,7 @@
               <button
                 type="button"
                 class="text-gray-400 hover:text-gray-600 flex items-center gap-1 text-sm"
+                data-testid="accordion-add-content"
               >
                 <RiAddLine class="size-4" />
                 {{ $t('Ajouter un contenu') }}
@@ -222,7 +224,7 @@ import ReusesListBloc from './ReusesListBloc.vue'
 import LinksListBloc from './LinksListBloc.vue'
 import CdataLink from '../CdataLink.vue'
 import type {
-  AccordionBloc,
+  AccordionListBloc,
   DatasetsListBloc as DatasetsListBlocType,
   DataservicesListBloc as DataservicesListBlocType,
   ReusesListBloc as ReusesListBlocType,
@@ -233,7 +235,7 @@ const props = defineProps<{
   edit: boolean
 }>()
 
-const bloc = defineModel<AccordionBloc>({ required: true })
+const bloc = defineModel<AccordionListBloc>({ required: true })
 
 const contentBlocsTypes = useContentBlocsTypes()
 

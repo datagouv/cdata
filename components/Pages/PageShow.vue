@@ -125,8 +125,8 @@
         />
 
         <AccordionBlocEditor
-          v-if="bloc.class === 'AccordionBloc'"
-          v-model="(workingPage.blocs[index] as AccordionBlocType)"
+          v-if="bloc.class === 'AccordionListBloc'"
+          v-model="(workingPage.blocs[index] as AccordionListBlocType)"
           :edit
         />
       </div>
@@ -202,7 +202,7 @@ import type {
   DataservicesListBloc as DataservicesListBlocType,
   ReusesListBloc as ReusesListBlocType,
   LinksListBloc as LinksListBlocType,
-  AccordionBloc as AccordionBlocType,
+  AccordionListBloc as AccordionListBlocType,
   HeroBloc as HeroBlocType,
 } from '~/types/pages'
 

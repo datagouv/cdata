@@ -44,8 +44,8 @@ export type AccordionItemBloc = {
   content: Array<ContentBloc>
 }
 
-export type AccordionBloc = {
-  class: 'AccordionBloc'
+export type AccordionListBloc = {
+  class: 'AccordionListBloc'
   title: string | null
   description: string | null
   items: Array<AccordionItemBloc>
@@ -58,4 +58,4 @@ export type HeroBloc = {
   color: 'primary' | 'green' | 'purple'
 } & { id: string }
 
-export type PageBloc = ContentBloc | AccordionBloc | HeroBloc
+export type PageBloc = ContentBloc | AccordionListBloc | HeroBloc
