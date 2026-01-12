@@ -3,7 +3,8 @@
     <div
       v-for="(bloc, index) in workingPage.blocs"
       :key="bloc.id"
-      class="py-24 odd:bg-gray-some even:bg-white relative"
+      class="relative"
+      :class="bloc.class !== 'HeroBloc' && 'py-24 odd:bg-gray-some even:bg-white'"
     >
       <!-- Add button above the bloc (absolute positioned) -->
       <div
@@ -48,7 +49,18 @@
         />
       </div>
 
-      <div class="container space-y-6">
+      <!-- HeroBloc has its own full-width layout -->
+      <HeroBloc
+        v-if="bloc.class === 'HeroBloc'"
+        v-model="(workingPage.blocs[index] as HeroBlocType)"
+        :edit
+      />
+
+      <!-- Other blocs use container layout with title/subtitle -->
+      <div
+        v-else
+        class="container space-y-6"
+      >
         <div class="space-y-2.5">
           <!-- Editable title -->
           <EditableText
@@ -180,6 +192,7 @@ import DataservicesListBloc from './DataservicesListBloc.vue'
 import ReusesListBloc from './ReusesListBloc.vue'
 import LinksListBloc from './LinksListBloc.vue'
 import MarkdownBloc from './MarkdownBloc.vue'
+import HeroBloc from './HeroBloc.vue'
 import type {
   Page,
   DatasetsListBloc as DatasetsListBlocType,
@@ -187,6 +200,7 @@ import type {
   ReusesListBloc as ReusesListBlocType,
   LinksListBloc as LinksListBlocType,
   MarkdownBloc as MarkdownBlocType,
+  HeroBloc as HeroBlocType,
 } from '~/types/pages'
 
 const props = withDefaults(defineProps<{

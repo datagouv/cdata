@@ -42,4 +42,11 @@ export type MarkdownBloc = {
   content: string
 } & BlocWithTitle & { id: string }
 
-export type PageBloc = DatasetsListBloc | DataservicesListBloc | ReusesListBloc | LinksListBloc | MarkdownBloc
+export type HeroBloc = {
+  class: 'HeroBloc'
+  title: string
+  description: string | null
+  color: 'primary' | 'green' | 'purple'
+} & { id: string }
+
+export type PageBloc = DatasetsListBloc | DataservicesListBloc | ReusesListBloc | LinksListBloc | MarkdownBloc | HeroBloc

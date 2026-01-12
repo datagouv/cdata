@@ -1,5 +1,5 @@
-import { RiDatabase2Line, RiLineChartLine, RiLink, RiMarkdownLine, RiRobot2Line } from '@remixicon/vue'
-import type { DataservicesListBloc, DatasetsListBloc, LinksListBloc, MarkdownBloc, ReusesListBloc } from '~/types/pages'
+import { RiDatabase2Line, RiLineChartLine, RiLink, RiMarkdownLine, RiRobot2Line, RiWindow2Line } from '@remixicon/vue'
+import type { DataservicesListBloc, DatasetsListBloc, HeroBloc, LinksListBloc, MarkdownBloc, ReusesListBloc } from '~/types/pages'
 
 export function useBlocsTypes() {
   const { t } = useTranslation()
@@ -34,6 +34,12 @@ export function useBlocsTypes() {
       name: t('Bloc Markdown'),
       description: t('Ajouter du contenu texte riche'),
       default: (): Omit<MarkdownBloc, 'id'> => ({ class: 'MarkdownBloc', title: 'Titre', subtitle: null, content: '' }),
+    },
+    HeroBloc: {
+      icon: RiWindow2Line,
+      name: t('Hero'),
+      description: t('Bandeau d\'en-tête avec titre et description'),
+      default: (): Omit<HeroBloc, 'id'> => ({ class: 'HeroBloc', title: 'Titre', description: null, color: 'primary' }),
     },
   }
 }
