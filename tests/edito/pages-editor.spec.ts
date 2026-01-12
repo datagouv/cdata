@@ -21,20 +21,46 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after deleting all blocs
   await page.screenshot({ path: 'tests/edito/screenshots/01b-empty-page.png', fullPage: true })
 
-  // === Step 1: Add a DatasetsListBloc with multiple datasets ===
+  // === Step 1: Add a HeroBloc ===
   await page.getByRole('button', { name: 'Ajouter un bloc' }).first().click()
+  await page.getByText('Hero').click()
+  await page.waitForTimeout(300)
+
+  // Edit the hero title (it has a default "Titre")
+  const heroTitle = page.locator('.bg-new-blue-illustration [contenteditable="true"]').first()
+  await heroTitle.click()
+  await heroTitle.fill('Bienvenue sur data.gouv.fr')
+  await page.mouse.click(1, 1)
+
+  // Add a description
+  await page.getByText('Ajouter une description').click()
+  await page.waitForTimeout(200)
+  const heroDescription = page.locator('.bg-new-blue-illustration [contenteditable="true"]').nth(1)
+  await heroDescription.click()
+  await heroDescription.fill('La plateforme ouverte des données publiques françaises')
+  await page.mouse.click(1, 1)
+
+  // Change the color to green
+  await page.locator('.bg-new-green-illustration.size-8').click()
+  await page.waitForTimeout(200)
+
+  // Debug screenshot: after adding hero bloc
+  await page.screenshot({ path: 'tests/edito/screenshots/01c-hero-bloc.png', fullPage: true })
+
+  // === Step 2: Add a DatasetsListBloc with multiple datasets ===
+  await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
   await page.getByText('Données à la une').click()
   await page.waitForTimeout(300)
 
-  // Edit the title
-  const datasetsBlocTitle = page.locator('[contenteditable="true"]').first()
+  // Edit the title (use container to avoid hero bloc)
+  const datasetsBlocTitle = page.locator('.container [contenteditable="true"]').first()
   await datasetsBlocTitle.click()
   await datasetsBlocTitle.fill('Nos jeux de données phares')
   await page.mouse.click(1, 1)
 
   // Add subtitle
   await page.getByText('Ajouter un sous-titre').first().click()
-  const datasetsSubtitle = page.locator('[contenteditable="true"]').nth(1)
+  const datasetsSubtitle = page.locator('.container [contenteditable="true"]').nth(1)
   await datasetsSubtitle.click()
   await datasetsSubtitle.fill('Découvrez les données les plus consultées')
   await page.mouse.click(1, 1)
@@ -65,7 +91,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding datasets
   await page.screenshot({ path: 'tests/edito/screenshots/02-datasets-bloc.png', fullPage: true })
 
-  // === Step 2: Add a ReusesListBloc with multiple reuses ===
+  // === Step 3: Add a ReusesListBloc with multiple reuses ===
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
   await page.getByText('Réutilisations à la une').click()
   await page.waitForTimeout(300)
@@ -102,7 +128,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding reuses
   await page.screenshot({ path: 'tests/edito/screenshots/03-reuses-bloc.png', fullPage: true })
 
-  // === Step 3: Add a DataservicesListBloc with multiple APIs ===
+  // === Step 4: Add a DataservicesListBloc with multiple APIs ===
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
   await page.getByText('APIs à la une').click()
   await page.waitForTimeout(300)
@@ -139,7 +165,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding dataservices
   await page.screenshot({ path: 'tests/edito/screenshots/04-dataservices-bloc.png', fullPage: true })
 
-  // === Step 4: Add a LinksListBloc WITH paragraph ===
+  // === Step 5: Add a LinksListBloc WITH paragraph ===
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
   await page.getByText('Liens à la une').click()
   await page.waitForTimeout(300)
@@ -188,7 +214,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding links bloc with paragraph
   await page.screenshot({ path: 'tests/edito/screenshots/05-links-bloc-with-paragraph.png', fullPage: true })
 
-  // === Step 5: Add a LinksListBloc WITHOUT paragraph ===
+  // === Step 6: Add a LinksListBloc WITHOUT paragraph ===
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
   await page.getByText('Liens à la une').click()
   await page.waitForTimeout(300)
@@ -228,7 +254,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding links bloc without paragraph
   await page.screenshot({ path: 'tests/edito/screenshots/06-links-bloc-without-paragraph.png', fullPage: true })
 
-  // === Step 6: Add an AccordionBloc ===
+  // === Step 7: Add an AccordionBloc ===
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
   await page.getByText('Accordéon').click()
   await page.waitForTimeout(300)
@@ -263,7 +289,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.mouse.click(1, 1)
 
   // Debug screenshot: after adding accordion bloc
-  await page.screenshot({ path: 'tests/edito/screenshots/06b-accordion-bloc.png', fullPage: true })
+  await page.screenshot({ path: 'tests/edito/screenshots/07-accordion-bloc.png', fullPage: true })
 
   // === Step 8: Test bloc manipulation ===
   // Move the first bloc down

@@ -51,4 +51,11 @@ export type AccordionBloc = {
   items: Array<AccordionItemBloc>
 } & { id: string }
 
-export type PageBloc = ContentBloc | AccordionBloc
+export type HeroBloc = {
+  class: 'HeroBloc'
+  title: string
+  description: string | null
+  color: 'primary' | 'green' | 'purple'
+} & { id: string }
+
+export type PageBloc = ContentBloc | AccordionBloc | HeroBloc
