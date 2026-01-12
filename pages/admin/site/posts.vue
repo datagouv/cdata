@@ -15,6 +15,17 @@
         {{ t('{n} articles', pageData.total) }}
       </h2>
       <div class="flex space-x-2.5">
+        <SearchableSelect
+          v-model="filterKind"
+          :placeholder="$t('Filtrer par type')"
+          :label="$t('Filtrer par type')"
+          :options="kindOptions"
+          :display-value="(option: KindOption) => option.label"
+          :multiple="false"
+          class="mb-0"
+          hide-label
+          required
+        />
         <AdminInput
           v-model="q"
           type="search"
@@ -44,6 +55,9 @@
                 {{ t("Titre") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
+                {{ t("Type") }}
+              </AdminTableTh>
+              <AdminTableTh scope="col">
                 {{ t("Statut") }}
               </AdminTableTh>
               <AdminTableTh scope="col">
@@ -70,6 +84,7 @@
                 >{{ post.name }}</a>
                 <span v-else>{{ post.name }}</span>
               </td>
+              <td>{{ getKindLabel(post.kind) }}</td>
               <td>
                 <AdminBadge
                   size="xs"
@@ -143,6 +158,7 @@
 
 <script setup lang="ts">
 import { LoadingBlock, Pagination, BrandedButton, useFormatDate } from '@datagouv/components-next'
+import SearchableSelect from '~/components/SearchableSelect.vue'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { RiAddLine, RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
@@ -161,18 +177,30 @@ const pageSize = ref(20)
 const q = ref('')
 const qDebounced = refDebounced(q, 500) // TODO add 500 in config
 
+type KindOption = { label: string, id: 'news' | 'page' | null }
+const kindOptions: KindOption[] = [
+  { label: t('Tous'), id: null },
+  { label: t('Actualité'), id: 'news' },
+  { label: t('Page'), id: 'page' },
+]
+const filterKind = ref<KindOption>(kindOptions[0])
+
 const params = computed(() => {
   return {
     with_drafts: true,
     sort: '-created_at',
-
     q: qDebounced.value,
     page_size: pageSize.value,
     page: page.value,
+    kind: filterKind.value.id ?? undefined,
   }
 })
 
 const { data: pageData, status } = await useAPI<PaginatedArray<Post>>('/api/1/posts/', { lazy: true, query: params })
+
+function getKindLabel(kind: Post['kind']) {
+  return kind === 'page' ? t('Page') : t('Actualité')
+}
 
 function getStatus(post: Post): { label: string, type: AdminBadgeType } {
   if (post.published) {
