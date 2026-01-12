@@ -1,4 +1,4 @@
-import type { Organization } from './organizations'
+import type { OrganizationReference } from './organizations'
 
 export type UserReference = {
   class: 'User'
@@ -26,7 +26,7 @@ export type User = {
   about: string
   website?: string
   roles?: Array<string>
-  organizations: Array<Organization>
+  organizations: Array<OrganizationReference>
   last_login_at: string | null
   since: string | null
   metrics: {

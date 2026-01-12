@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { useFormatDate } from '@datagouv/components-next'
+import { AvatarWithName, useFormatDate, type OrganizationReference } from '@datagouv/components-next'
 import { RiSendPlaneLine } from '@remixicon/vue'
 import type { DeepReadonly } from 'vue'
 import type { TransferRequestNotification } from '~/types/notifications'

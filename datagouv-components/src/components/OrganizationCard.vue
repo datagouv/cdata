@@ -35,7 +35,7 @@
         </template>
         <div>
           <div
-            v-if="organization.metrics"
+            v-if="'metrics' in organization"
             class="text-gray-medium flex items-center text-sm gap-0.5"
             :aria-label="t('{datasets} jeux de données, {dataservices} API et {reuses} réutilisations', {
               datasets: organization.metrics.datasets,
@@ -74,14 +74,14 @@ import { RiLineChartLine, RiDatabase2Line, RiTerminalLine, RiSubtractLine } from
 import { computed, ref, watchEffect } from 'vue'
 import { removeMarkdown } from '../functions/markdown'
 import { getOrganizationType } from '../functions/organizations'
-import type { Organization } from '../types/organizations'
+import type { Organization, OrganizationReference } from '../types/organizations'
 import OwnerType from './OwnerType.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import AppLink from './AppLink.vue'
 import { useTranslation } from '../main'
 
 const props = defineProps<{
-  organization: Organization
+  organization: Organization | OrganizationReference
 }>()
 
 const { t } = useTranslation()
@@ -90,6 +90,6 @@ const type = computed(() => getOrganizationType(props.organization))
 
 const description = ref('')
 watchEffect(async () => {
-  description.value = await removeMarkdown(props.organization.description)
+  description.value = 'description' in props.organization ? await removeMarkdown(props.organization.description) : ''
 })
 </script>
