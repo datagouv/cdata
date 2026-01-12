@@ -56,49 +56,11 @@
         :edit
       />
 
-      <!-- Other blocs use container layout with title/subtitle -->
+      <!-- Other blocs use container layout -->
       <div
         v-else
-        class="container space-y-6"
+        class="container"
       >
-        <div
-          v-if="'subtitle' in bloc"
-          class="space-y-2.5"
-        >
-          <!-- Editable title -->
-          <EditableText
-            v-if="edit"
-            v-model="bloc.title"
-            class="text-gray-title text-3xl font-extrabold"
-          />
-          <div
-            v-else-if="bloc.title"
-            class="text-gray-title text-3xl font-extrabold"
-          >
-            {{ bloc.title }}
-          </div>
-
-          <!-- Editable subtitle -->
-          <EditableText
-            v-if="edit && bloc.subtitle"
-            v-model="bloc.subtitle"
-            class="text-gray-plain"
-          />
-          <div
-            v-else-if="bloc.subtitle"
-            class="text-gray-plain"
-          >
-            {{ bloc.subtitle }}
-          </div>
-          <button
-            v-else-if="edit"
-            class="text-gray-400 hover:text-gray-600 text-sm"
-            @click="bloc.subtitle = $t('Sous-titre')"
-          >
-            + {{ $t('Ajouter un sous-titre') }}
-          </button>
-        </div>
-
         <DatasetsListBloc
           v-if="bloc.class === 'DatasetsListBloc'"
           v-model="(workingPage.blocs[index] as DatasetsListBlocType)"
@@ -188,7 +150,6 @@
 import type { ComponentProps } from 'vue-component-type-helpers'
 import { BrandedButton } from '@datagouv/components-next'
 import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine } from '@remixicon/vue'
-import EditableText from './EditableText.vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
 import DatasetsListBloc from './DatasetsListBloc.vue'
 import DataservicesListBloc from './DataservicesListBloc.vue'

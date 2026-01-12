@@ -22,7 +22,9 @@
           :class="iconColor"
           size="24px"
         />
-        {{ title }}
+        <slot name="title">
+          {{ title }}
+        </slot>
       </DisclosureButton>
     </component>
     <DisclosurePanel
