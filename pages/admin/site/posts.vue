@@ -141,7 +141,7 @@
         </p>
         <BrandedButton
           color="primary"
-          @click="q = qDebounced = ''"
+          @click="q = qDebounced = ''; filterKind = kindOptions[0]"
         >
           {{ $t('Réinitialiser les filtres') }}
         </BrandedButton>
@@ -160,7 +160,7 @@
 import { LoadingBlock, Pagination, BrandedButton, useFormatDate } from '@datagouv/components-next'
 import SearchableSelect from '~/components/SearchableSelect.vue'
 import { refDebounced } from '@vueuse/core'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { RiAddLine, RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
 import type { AdminBadgeType, PaginatedArray } from '~/types/types'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
@@ -184,6 +184,10 @@ const kindOptions: KindOption[] = [
   { label: t('Page'), id: 'page' },
 ]
 const filterKind = ref<KindOption>(kindOptions[0])
+
+watch(filterKind, () => {
+  page.value = 1
+})
 
 const params = computed(() => {
   return {

@@ -22,7 +22,7 @@ test.describe('Post kind filter', () => {
     await page.getByRole('button', { name: 'Suivant' }).click()
     await page.locator('.milkdown .editor').click()
     await page.locator('.milkdown .editor').fill('Contenu de l\'actualité')
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(500) // Wait for milkdown to propagate content
 
     await page.getByRole('button', { name: 'Sauvegarder' }).click()
     await page.waitForURL(/\/admin\/posts\/[^/]+$/)
@@ -51,7 +51,8 @@ test.describe('Post kind filter', () => {
     await page.getByRole('button', { name: 'Suivant' }).click()
     await page.locator('.milkdown .editor').click()
     await page.locator('.milkdown .editor').fill('Contenu de la page')
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(500) // Wait for milkdown to propagate content
+
     await page.getByRole('button', { name: 'Sauvegarder' }).click()
     await page.waitForURL(/\/admin\/posts\/[^/]+$/)
     const pagePostUrl = page.url()
@@ -84,7 +85,6 @@ test.describe('Post kind filter', () => {
     // Test filter: filter by "Page" type
     await page.getByTestId('searchable-select-filtrerpartype').click()
     await page.getByRole('option', { name: 'Page' }).click()
-    await page.waitForTimeout(500)
 
     await expect(page.getByText(`Test Page ${uniqueId}`)).toBeVisible()
     await expect(page.getByText(`Test News ${uniqueId}`)).not.toBeVisible()
@@ -92,7 +92,6 @@ test.describe('Post kind filter', () => {
     // Test filter: filter by "Actualité" type
     await page.getByTestId('searchable-select-filtrerpartype').click()
     await page.getByRole('option', { name: 'Actualité' }).click()
-    await page.waitForTimeout(500)
 
     await expect(page.getByText(`Test News ${uniqueId}`)).toBeVisible()
     await expect(page.getByText(`Test Page ${uniqueId}`)).not.toBeVisible()
