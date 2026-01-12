@@ -33,7 +33,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: udata
-          ref: add_post_kind # TODO: revert to main after https://github.com/opendatateam/udata/pull/3603 is merged
+          ref: main
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
