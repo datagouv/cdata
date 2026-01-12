@@ -49,7 +49,10 @@
       </div>
 
       <div class="container space-y-6">
-        <div class="space-y-2.5">
+        <div
+          v-if="'subtitle' in bloc"
+          class="space-y-2.5"
+        >
           <!-- Editable title -->
           <EditableText
             v-if="edit"

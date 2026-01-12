@@ -228,13 +228,50 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding links bloc without paragraph
   await page.screenshot({ path: 'tests/edito/screenshots/06-links-bloc-without-paragraph.png', fullPage: true })
 
-  // === Step 6: Test bloc manipulation ===
+  // === Step 6: Add an AccordionBloc ===
+  await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
+  await page.getByText('Accordéon').click()
+  await page.waitForTimeout(300)
+
+  // Add a description
+  await page.getByText('Ajouter une description').click()
+  await page.waitForTimeout(300)
+
+  const accordionDescription = page.locator('p[contenteditable="true"]').last()
+  await accordionDescription.click()
+  await accordionDescription.fill('Questions fréquemment posées')
+  await page.mouse.click(1, 1)
+
+  // Add first accordion item
+  await page.getByText('Ajouter un élément').last().click()
+  await page.waitForTimeout(300)
+
+  // Edit the first item title
+  const firstItemTitle = page.locator('.border.rounded-lg .font-bold[contenteditable="true"]').first()
+  await firstItemTitle.click()
+  await firstItemTitle.fill('Comment accéder aux données ?')
+  await page.mouse.click(1, 1)
+
+  // Add second accordion item
+  await page.getByText('Ajouter un élément').last().click()
+  await page.waitForTimeout(300)
+
+  // Edit the second item title
+  const secondItemTitle = page.locator('.border.rounded-lg .font-bold[contenteditable="true"]').last()
+  await secondItemTitle.click()
+  await secondItemTitle.fill('Où trouver de l\'aide ?')
+  await page.mouse.click(1, 1)
+
+  // Debug screenshot: after adding accordion bloc
+  await page.screenshot({ path: 'tests/edito/screenshots/06b-accordion-bloc.png', fullPage: true })
+
+  // === Step 8: Test bloc manipulation ===
   // Move the first bloc down
   await page.locator('[title="Descendre"]').first().click()
   await page.waitForTimeout(300)
 
   // Debug screenshot: after moving bloc down
-  await page.screenshot({ path: 'tests/edito/screenshots/07-bloc-moved-down.png', fullPage: true })
+  await page.screenshot({ path: 'tests/edito/screenshots/08-bloc-moved-down.png', fullPage: true })
 
   // Move it back up
   await page.locator('[title="Monter"]').nth(1).click()
@@ -245,7 +282,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.waitForTimeout(300)
 
   // Debug screenshot: after deleting reuses bloc
-  await page.screenshot({ path: 'tests/edito/screenshots/08-reuses-bloc-deleted.png', fullPage: true })
+  await page.screenshot({ path: 'tests/edito/screenshots/09-reuses-bloc-deleted.png', fullPage: true })
 
   // Re-add a reuses bloc and add some reuses to it
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
@@ -276,19 +313,19 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   }
 
   // Debug screenshot: after re-adding reuses bloc
-  await page.screenshot({ path: 'tests/edito/screenshots/09-reuses-bloc-readded.png', fullPage: true })
+  await page.screenshot({ path: 'tests/edito/screenshots/10-reuses-bloc-readded.png', fullPage: true })
 
-  // === Step 7: Save the page ===
+  // === Step 9: Save the page ===
   await page.getByRole('button', { name: 'Sauvegarder' }).click()
   await page.waitForTimeout(1000)
 
   // Debug screenshot: after saving
-  await page.screenshot({ path: 'tests/edito/screenshots/10-after-save.png', fullPage: true })
+  await page.screenshot({ path: 'tests/edito/screenshots/11-after-save.png', fullPage: true })
 
   // Wait for the toast to confirm save
   await expect(page.getByText('Page créée').or(page.getByText('Page sauvegardée'))).toBeVisible()
 
-  // === Step 8: Final screenshot for visual regression ===
+  // === Step 10: Final screenshot for visual regression ===
   await page.waitForLoadState('networkidle')
   await page.waitForTimeout(500)
 
