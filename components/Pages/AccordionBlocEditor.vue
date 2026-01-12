@@ -69,7 +69,10 @@
                   v-if="edit"
                   class="flex items-center justify-center"
                 >
-                  <AddContentBlocDropdown @new-bloc="item.content.splice(contentIndex, 0, $event)">
+                  <AddBlocDropdown
+                    content-only
+                    @new-bloc="item.content.splice(contentIndex, 0, $event as ContentBloc)"
+                  >
                     <button
                       type="button"
                       class="text-gray-400 hover:text-gray-600 flex items-center gap-1 text-sm"
@@ -77,7 +80,7 @@
                       <RiAddLine class="size-4" />
                       {{ $t('Ajouter un bloc') }}
                     </button>
-                  </AddContentBlocDropdown>
+                  </AddBlocDropdown>
                 </div>
 
                 <div
@@ -142,7 +145,10 @@
                 v-if="edit"
                 class="flex items-center justify-center"
               >
-                <AddContentBlocDropdown @new-bloc="item.content.push($event)">
+                <AddBlocDropdown
+                  content-only
+                  @new-bloc="item.content.push($event as ContentBloc)"
+                >
                   <button
                     type="button"
                     class="text-gray-400 hover:text-gray-600 flex items-center gap-1 text-sm"
@@ -151,7 +157,7 @@
                     <RiAddLine class="size-4" />
                     {{ $t('Ajouter un bloc') }}
                   </button>
-                </AddContentBlocDropdown>
+                </AddBlocDropdown>
               </div>
             </div>
           </Accordion>
@@ -185,13 +191,14 @@
 import { BrandedButton } from '@datagouv/components-next'
 import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine } from '@remixicon/vue'
 import EditableText from './EditableText.vue'
-import AddContentBlocDropdown from './AddContentBlocDropdown.vue'
+import AddBlocDropdown from './AddBlocDropdown.vue'
 import DatasetsListBloc from './DatasetsListBloc.vue'
 import DataservicesListBloc from './DataservicesListBloc.vue'
 import ReusesListBloc from './ReusesListBloc.vue'
 import LinksListBloc from './LinksListBloc.vue'
 import type {
   AccordionListBloc,
+  ContentBloc,
   DatasetsListBloc as DatasetsListBlocType,
   DataservicesListBloc as DataservicesListBlocType,
   ReusesListBloc as ReusesListBlocType,
