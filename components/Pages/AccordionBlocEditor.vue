@@ -165,24 +165,29 @@
       </div>
 
       <!-- New accordion placeholder in edit mode -->
-      <Accordion
+      <div
         v-if="edit"
-        :key="newItemKey"
-        :title="$t('Titre de l\'élément')"
+        data-testid="accordion-new-item"
       >
-        <template #title>
-          <EditableText
-            :model-value="newItemTitle"
-            tag="span"
-            class="flex-1 text-gray-400"
-            :placeholder="$t('Titre de l\'élément')"
-            @update:model-value="createNewItem($event)"
-          />
-        </template>
-        <div class="text-gray-400 text-sm">
-          {{ $t('Renseignez un titre pour créer un nouvel élément') }}
-        </div>
-      </Accordion>
+        <Accordion
+          :key="newItemKey"
+          :title="$t('Titre de l\'élément')"
+        >
+          <template #title>
+            <EditableText
+              :model-value="newItemTitle"
+              tag="span"
+              class="flex-1"
+              data-testid="accordion-new-item-title"
+              :placeholder="$t('Titre de l\'élément')"
+              @update:model-value="createNewItem($event)"
+            />
+          </template>
+          <div class="text-gray-400 text-sm">
+            {{ $t('Renseignez un titre pour créer un nouvel élément') }}
+          </div>
+        </Accordion>
+      </div>
     </AccordionGroup>
   </div>
 </template>

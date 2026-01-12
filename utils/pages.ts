@@ -9,25 +9,25 @@ export function useContentBlocsTypes() {
       icon: RiDatabase2Line,
       name: t('Données à la une'),
       description: t('Mettre en avant jusqu\'à 4 jeux de données'),
-      default: (): Omit<DatasetsListBloc, 'id'> => ({ class: 'DatasetsListBloc', title: '', subtitle: '', datasets: [] }),
+      default: (): Omit<DatasetsListBloc, 'id'> => ({ class: 'DatasetsListBloc', title: t('Mes jeux de données'), subtitle: null, datasets: [] }),
     },
     DataservicesListBloc: {
       icon: RiRobot2Line,
       name: t('APIs à la une'),
       description: t('Mettre en avant jusqu\'à 4 APIs'),
-      default: (): Omit<DataservicesListBloc, 'id'> => ({ class: 'DataservicesListBloc', title: '', subtitle: '', dataservices: [] }),
+      default: (): Omit<DataservicesListBloc, 'id'> => ({ class: 'DataservicesListBloc', title: t('Mes APIs'), subtitle: null, dataservices: [] }),
     },
     ReusesListBloc: {
       icon: RiLineChartLine,
       name: t('Réutilisations à la une'),
       description: t('Mettre en avant jusqu\'à 4 réutilisations'),
-      default: (): Omit<ReusesListBloc, 'id'> => ({ class: 'ReusesListBloc', title: '', subtitle: '', reuses: [] }),
+      default: (): Omit<ReusesListBloc, 'id'> => ({ class: 'ReusesListBloc', title: t('Mes réutilisations'), subtitle: null, reuses: [] }),
     },
     LinksListBloc: {
       icon: RiLink,
       name: t('Liens à la une'),
       description: t('Mettre en avant jusqu\'à 4 liens'),
-      default: (): Omit<LinksListBloc, 'id'> => ({ class: 'LinksListBloc', title: '', subtitle: '', paragraph: '', main_link_title: '', main_link_url: '', links: [] }),
+      default: (): Omit<LinksListBloc, 'id'> => ({ class: 'LinksListBloc', title: t('Mes liens'), subtitle: null, paragraph: null, main_link_title: null, main_link_url: null, links: [] }),
     },
   }
 }
