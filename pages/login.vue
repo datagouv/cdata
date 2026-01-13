@@ -149,21 +149,25 @@ const connect = async () => {
   errors.value = {}
 
   try {
-    await postApiWithCsrf('/login/', {
+    const { response } = await postApiWithCsrf('/login/', {
       email: email.value,
       password: password.value,
       remember: rememberMe.value,
     })
 
-    toast.success(t('Vous êtes maintenant connecté.'))
-    await loadMe(me)
-
-    const next = sessionStorage.getItem('next')
-    if (next) {
-      navigateTo(next)
-    }
+    if (response.tf_required == true)
+      navigateTo('/tf-validate')
     else {
-      await navigateTo('/')
+      toast.success(t('Vous êtes maintenant connecté.'))
+      await loadMe(me)
+
+      const next = sessionStorage.getItem('next')
+      if (next) {
+        navigateTo(next)
+      }
+      else {
+        await navigateTo('/')
+      }
     }
   }
   catch (e) {
@@ -177,4 +181,6 @@ const connect = async () => {
 }
 
 const proconnectUrl = computed(() => `${config.public.apiBase}/api/1/proconnect/login/`)
+
+useSeoMeta({ robots: 'noindex' })
 </script>
