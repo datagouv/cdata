@@ -1,4 +1,5 @@
 <template>
+  <!-- @keydown.space.stop prevents DisclosureButton (Headless UI) from toggling the accordion when typing spaces -->
   <component
     :is="tag"
     :contenteditable="true"
@@ -8,6 +9,7 @@
     @blur="onBlur"
     @focus="onFocus"
     @keydown.enter="onEnter"
+    @keydown.space.stop
   >
     {{ modelValue || placeholder }}
   </component>

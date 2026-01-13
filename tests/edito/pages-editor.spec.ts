@@ -268,10 +268,11 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await accordionDescription.fill('Questions fréquemment posées')
   await page.mouse.click(1, 1)
 
-  // Add first accordion item by filling the placeholder accordion title
+  // Add first accordion item by typing the title character by character
+  // This tests that spaces can be typed (they were blocked by DisclosureButton before the fix)
   const firstItemTitle = page.getByTestId('accordion-new-item-title')
   await firstItemTitle.click()
-  await firstItemTitle.fill('Comment accéder aux données ?')
+  await page.keyboard.pressSequentially('Comment acceder aux donnees ?')
   await page.mouse.click(1, 1)
   await page.waitForTimeout(300)
 
