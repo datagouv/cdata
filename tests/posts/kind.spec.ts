@@ -40,6 +40,7 @@ test.describe('Post kind filter', () => {
     await page.getByTestId('markdown-editor').click()
     await page.getByTestId('markdown-editor').fill('Contenu de l\'actualité')
     await page.getByTestId('markdown-editor').press('Tab')
+    await page.waitForTimeout(500)
 
     await page.getByRole('button', { name: 'Sauvegarder' }).click()
     await expect(page).toHaveURL(/\/admin\/posts\/(?!new)[a-z0-9-]+$/)
@@ -68,6 +69,7 @@ test.describe('Post kind filter', () => {
     await page.getByTestId('markdown-editor').click()
     await page.getByTestId('markdown-editor').fill('Contenu de la page')
     await page.getByTestId('markdown-editor').press('Tab')
+    await page.waitForTimeout(500)
 
     await page.getByRole('button', { name: 'Sauvegarder' }).click()
     await expect(page).toHaveURL(/\/admin\/posts\/(?!new)[a-z0-9-]+$/)
