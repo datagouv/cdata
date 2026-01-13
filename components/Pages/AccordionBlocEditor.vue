@@ -1,31 +1,8 @@
 <template>
-  <div class="space-y-6">
-    <!-- Description -->
-    <div v-if="edit || bloc.description">
-      <EditableText
-        v-if="edit"
-        :model-value="bloc.description ?? ''"
-        tag="p"
-        class="text-gray-plain"
-        @update:model-value="bloc.description = $event || null"
-      />
-      <p
-        v-else-if="bloc.description"
-        class="text-gray-plain"
-      >
-        {{ bloc.description }}
-      </p>
-    </div>
-    <button
-      v-if="edit && !bloc.description"
-      type="button"
-      class="text-gray-400 hover:text-gray-600 flex items-center gap-1 text-sm"
-      @click="bloc.description = $t('Description de l\'accordéon')"
-    >
-      <RiAddLine class="size-4" />
-      {{ $t('Ajouter une description') }}
-    </button>
-
+  <BlocWithTitleAndSubtitle
+    v-model="bloc"
+    :edit
+  >
     <!-- Accordion items -->
     <AccordionGroup>
       <div ref="sortableRef">
@@ -46,7 +23,10 @@
             <RiDeleteBinLine class="size-5" />
           </button>
 
-          <Accordion :title="item.title || $t('Titre de l\'élément')">
+          <Accordion
+            :id="`accordion-${bloc.id}-${itemIndex}`"
+            :title="item.title || $t('Titre de l\'élément')"
+          >
             <template
               v-if="edit"
               #title
@@ -170,6 +150,7 @@
         data-testid="accordion-new-item"
       >
         <Accordion
+          :id="`accordion-${bloc.id}-new-${newItemKey}`"
           :key="newItemKey"
           :title="$t('Titre de l\'élément')"
         >
@@ -189,12 +170,13 @@
         </Accordion>
       </div>
     </AccordionGroup>
-  </div>
+  </BlocWithTitleAndSubtitle>
 </template>
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
 import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine } from '@remixicon/vue'
+import BlocWithTitleAndSubtitle from './BlocWithTitleAndSubtitle.vue'
 import EditableText from './EditableText.vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
 import DatasetsListBloc from './DatasetsListBloc.vue'

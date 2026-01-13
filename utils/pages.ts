@@ -42,7 +42,7 @@ export function useBlocsTypes() {
       icon: RiListCheck2,
       name: t('Accordéon'),
       description: t('Liste dépliable de contenus (FAQ, etc.)'),
-      default: (): Omit<AccordionListBloc, 'id'> => ({ class: 'AccordionListBloc', title: '', description: '', items: [] }),
+      default: (): Omit<AccordionListBloc, 'id'> => ({ class: 'AccordionListBloc', title: t('Mon accordéon'), description: null, items: [] }),
     },
     MarkdownBloc: {
       icon: RiMarkdownLine,

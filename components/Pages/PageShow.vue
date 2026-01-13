@@ -9,7 +9,7 @@
       <!-- Add button above the bloc (absolute positioned) -->
       <div
         v-if="edit"
-        class="absolute -top-4 left-0 right-0 flex items-center justify-center z-20"
+        class="absolute -top-4 left-0 right-0 flex items-center justify-center"
       >
         <AddBlocDropdown @new-bloc="workingPage.blocs.splice(index, 0, $event)">
           <BrandedButton
@@ -102,7 +102,7 @@
       <!-- Add button below the last bloc -->
       <div
         v-if="edit && index === workingPage.blocs.length - 1"
-        class="absolute -bottom-4 left-0 right-0 flex items-center justify-center z-20"
+        class="absolute -bottom-4 left-0 right-0 flex items-center justify-center"
       >
         <AddBlocDropdown @new-bloc="workingPage.blocs.push($event)">
           <BrandedButton
