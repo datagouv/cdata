@@ -37,9 +37,9 @@ test.describe('Post kind filter', () => {
     await fileChooser1.setFiles(path.join(__dirname, '../../public/nuxt_images/onboarding/logo-ign.png'))
 
     await page.getByRole('button', { name: 'Suivant' }).click()
-    await page.locator('.milkdown .editor').click()
-    await page.locator('.milkdown .editor').fill('Contenu de l\'actualité')
-    await page.waitForTimeout(500) // Wait for milkdown to propagate content
+    await page.getByTestId('markdown-editor').click()
+    await page.getByTestId('markdown-editor').fill('Contenu de l\'actualité')
+    await page.getByTestId('markdown-editor').press('Tab')
 
     await page.getByRole('button', { name: 'Sauvegarder' }).click()
     await expect(page).toHaveURL(/\/admin\/posts\/(?!new)[a-z0-9-]+$/)
@@ -65,9 +65,9 @@ test.describe('Post kind filter', () => {
     await fileChooser2.setFiles(path.join(__dirname, '../../public/nuxt_images/onboarding/logo-ign.png'))
 
     await page.getByRole('button', { name: 'Suivant' }).click()
-    await page.locator('.milkdown .editor').click()
-    await page.locator('.milkdown .editor').fill('Contenu de la page')
-    await page.waitForTimeout(500) // Wait for milkdown to propagate content
+    await page.getByTestId('markdown-editor').click()
+    await page.getByTestId('markdown-editor').fill('Contenu de la page')
+    await page.getByTestId('markdown-editor').press('Tab')
 
     await page.getByRole('button', { name: 'Sauvegarder' }).click()
     await expect(page).toHaveURL(/\/admin\/posts\/(?!new)[a-z0-9-]+$/)
