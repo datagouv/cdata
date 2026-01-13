@@ -232,7 +232,7 @@ function createNewItem(title: string) {
   }
 }
 
-function moveContent(content: Array<unknown>, index: number, direction: -1 | 1) {
+function moveContent(content: Array<ContentBloc>, index: number, direction: -1 | 1) {
   const newIndex = index + direction
   if (newIndex < 0 || newIndex >= content.length) return
   const temp = content[index]
