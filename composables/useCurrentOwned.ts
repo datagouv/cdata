@@ -1,4 +1,4 @@
-import type { Organization, User } from '@datagouv/components-next'
+import type { Organization, OrganizationReference, User } from '@datagouv/components-next'
 import { keyBy } from 'lodash-es'
 
 /**
@@ -8,11 +8,11 @@ import { keyBy } from 'lodash-es'
 export function useCurrentOwnedSetters() {
   const me = useMaybeMe()
 
-  const organizations = useState('organizations', () => keyBy(me.value?.organizations, org => org.id))
+  const organizations = useState<Record<string, Organization | OrganizationReference>>('organizations', () => keyBy(me.value?.organizations, org => org.id))
   const users = useState<Record<string, User | Me>>('users', () => (me.value?.id ? { [me.value.id]: me.value } : {}))
   const currentOwnedId = useState<{ organization: string } | { user: string } | null>('currentOrganizationId', () => null)
 
-  const setCurrentOrganization = (organization: Organization) => {
+  const setCurrentOrganization = (organization: Organization | OrganizationReference) => {
     if (currentOwnedId.value && 'organization' in currentOwnedId.value && currentOwnedId.value.organization === organization.id) return
     currentOwnedId.value = { organization: organization.id }
     organizations.value[organization.id] = organization

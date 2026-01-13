@@ -1,4 +1,4 @@
-import type { Organization, User } from '@datagouv/components-next'
+import type { Organization, OrganizationReference, User } from '@datagouv/components-next'
 import { usePostApiWithCsrf } from './api'
 
 export type Me = User & {
@@ -12,7 +12,7 @@ export type Me = User & {
     following: number
     reuses: number
   }
-  organizations: Array<Organization>
+  organizations: Array<OrganizationReference>
   since: string
   website: string
 }

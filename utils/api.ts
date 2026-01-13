@@ -1,4 +1,4 @@
-import type { Organization, User } from '@datagouv/components-next'
+import type { OrganizationReference, User } from '@datagouv/components-next'
 import type { NuxtApp, UseFetchOptions } from 'nuxt/app'
 import type { ApiFetch, PaginatedArray } from '~/types/types'
 /*
@@ -36,7 +36,7 @@ export async function useAPI<T, U = T>(
     // Check the response to see if an `organization` or an `owner` is present
     // to add this organization/user to the menu.
     if ('organization' in data && data.organization) {
-      setCurrentOrganization(data.organization as Organization)
+      setCurrentOrganization(data.organization as OrganizationReference)
     }
 
     if ('owner' in data && data.owner) {

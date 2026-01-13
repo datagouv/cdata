@@ -1,7 +1,7 @@
 import type { Component } from 'vue'
 import { RiBankLine, RiBuilding2Line, RiCommunityLine, RiGovernmentLine, RiUserLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../config'
-import type { OrganizationReference } from '../types/organizations'
+import type { Organization, OrganizationReference } from '../types/organizations'
 import { useTranslation } from '../composables/useTranslation'
 
 export const CERTIFIED = 'certified'
@@ -22,11 +22,11 @@ function constructUrl(baseUrl: string, path: string): string {
   return url.toString()
 }
 
-export function isType(organization: OrganizationReference, type: OrganizationTypes) {
+export function isType(organization: Organization | OrganizationReference, type: OrganizationTypes) {
   return hasBadge(organization, type)
 }
 
-export function hasBadge(organization: OrganizationReference, kind: string) {
+export function hasBadge(organization: Organization | OrganizationReference, kind: string) {
   return organization.badges.some(badge => badge.kind === kind)
 }
 
@@ -68,7 +68,7 @@ export function findOrganizationType(searched: OrganizationTypes | UserType) {
   return getOrganizationTypes().find(type => type.type === searched)!
 }
 
-export function getOrganizationType(organization: OrganizationReference): OrganizationTypes {
+export function getOrganizationType(organization: Organization | OrganizationReference): OrganizationTypes {
   if (isType(organization, LOCAL_AUTHORITY)) {
     return LOCAL_AUTHORITY
   }
@@ -86,7 +86,7 @@ export function getOrganizationType(organization: OrganizationReference): Organi
   }
 }
 
-export function isOrganizationCertified(organization: OrganizationReference | null): boolean {
+export function isOrganizationCertified(organization: Organization | OrganizationReference | null): boolean {
   if (!organization) return false
   return hasBadge(organization, CERTIFIED) && (isType(organization, PUBLIC_SERVICE) || isType(organization, LOCAL_AUTHORITY))
 }

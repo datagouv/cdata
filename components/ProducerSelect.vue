@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { useGetUserAvatar, BrandedButton, PaddedContainer, type Organization, type Owned, type User, OrganizationLogo } from '@datagouv/components-next'
+import { useGetUserAvatar, BrandedButton, PaddedContainer, OrganizationLogo, type Owned, type OrganizationReference, type UserReference } from '@datagouv/components-next'
 
 const getUserAvatar = useGetUserAvatar()
 
@@ -84,7 +84,7 @@ const ownedOptions = computed<Array<Owned>>(() => {
   if (props.organizationsOnly) {
     return organizations
   }
-  return [...organizations, { owner: user.value, organization: null }]
+  return [...organizations, { owner: { ...user.value, class: 'User' }, organization: null }]
 })
 
 const hasOrganizations = computed(() => {
@@ -97,7 +97,7 @@ const suggest = computed(() => {
   return async (query: string) => {
     if (!query) return Promise.resolve(ownedOptions.value)
 
-    const organizations = await $api<Array<Organization>>('/api/1/organizations/suggest/', {
+    const organizations = await $api<Array<OrganizationReference>>('/api/1/organizations/suggest/', {
       query: {
         q: query,
         size: 5,
@@ -108,7 +108,7 @@ const suggest = computed(() => {
       return organizations.map(organization => ({ organization, owner: null }))
     }
 
-    const users = await $api<Array<User>>('/api/1/users/suggest/', {
+    const users = await $api<Array<UserReference>>('/api/1/users/suggest/', {
       query: {
         q: query,
         size: 5,

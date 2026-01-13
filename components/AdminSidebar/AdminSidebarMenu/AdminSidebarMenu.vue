@@ -199,7 +199,7 @@
 
 <script setup lang="ts">
 import { Avatar, OrganizationLogo } from '@datagouv/components-next'
-import type { Organization, User } from '@datagouv/components-next'
+import type { OrganizationReference, User } from '@datagouv/components-next'
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { RiAlarmWarningLine, RiArticleLine, RiAwardLine, RiBarChartBoxLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiGitPullRequestLine, RiGroup3Line, RiLineChartLine, RiParentLine, RiPlanetLine, RiRobot2Line, RiServerLine, RiUserLine } from '@remixicon/vue'
 import { key, type AccordionRegister } from '~/components/Accordion/injectionKey'
@@ -213,7 +213,7 @@ const props = defineProps<{
   /**
    * An organization, to show a menu with its logo and name
    */
-  organization?: Organization
+  organization?: OrganizationReference
 }>()
 
 defineEmits<{

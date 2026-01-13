@@ -10,7 +10,7 @@
 
     <DiscussionsPage
       v-if="currentOrganization"
-      :organization="currentOrganization"
+      :organization="currentOrganization as Organization"
     />
   </div>
 </template>
@@ -18,6 +18,7 @@
 <script setup lang="ts">
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import type { Organization } from '@datagouv/components-next'
 
 const { t } = useTranslation()
 

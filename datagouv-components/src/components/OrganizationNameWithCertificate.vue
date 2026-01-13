@@ -6,8 +6,8 @@
     />
     <component
       :is="as"
-      class="mb-0 truncate flex-initial font-normal text-new-primary"
-      :class="{ 'text-sm': size === 'sm', 'text-base': size === 'base' }"
+      class="mb-0 truncate flex-initial font-normal"
+      :class="[colorClass, { 'text-xs': size === 'xs', 'text-sm': size === 'sm', 'text-base': size === 'base' }]"
     >
       {{ organization.name }}
       <small
@@ -39,7 +39,7 @@
 <script setup lang="ts">
 import { RiCheckboxCircleLine } from '@remixicon/vue'
 import { getOrganizationType, isOrganizationCertified } from '../functions/organizations'
-import type { OrganizationReference } from '../types/organizations'
+import type { Organization, OrganizationReference } from '../types/organizations'
 import { useComponentsConfig } from '../config'
 import { useTranslation } from '../composables/useTranslation'
 import OwnerTypeIcon from './OwnerTypeIcon.vue'
@@ -49,15 +49,17 @@ const config = useComponentsConfig()
 
 const { t } = useTranslation()
 withDefaults(defineProps<{
-  organization: OrganizationReference
+  organization: Organization | OrganizationReference
   showAcronym?: boolean
   showType?: boolean
-  size?: 'base' | 'sm'
+  size?: 'base' | 'sm' | 'xs'
+  colorClass?: string
   as?: string
 }>(), {
   showAcronym: false,
   showType: true,
   size: 'base',
+  colorClass: 'text-new-primary',
   as: 'div',
 })
 </script>
