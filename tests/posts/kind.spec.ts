@@ -11,11 +11,13 @@ test.describe('Post kind filter', () => {
   test.afterEach(async ({ request }) => {
     // Cleanup created posts to avoid affecting other tests (like homepage screenshot)
     if (newsPostId) {
-      await request.delete(`${API_BASE_URL}/api/1/posts/${newsPostId}/`)
+      const res = await request.delete(`${API_BASE_URL}/api/1/posts/${newsPostId}/`)
+      console.log(`DELETE news post ${newsPostId}: ${res.status()}`)
       newsPostId = undefined
     }
     if (pagePostId) {
-      await request.delete(`${API_BASE_URL}/api/1/posts/${pagePostId}/`)
+      const res = await request.delete(`${API_BASE_URL}/api/1/posts/${pagePostId}/`)
+      console.log(`DELETE page post ${pagePostId}: ${res.status()}`)
       pagePostId = undefined
     }
   })
