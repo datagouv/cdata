@@ -3,9 +3,10 @@
     <div class="space-y-2.5">
       <EditableText
         v-if="edit"
-        v-model="bloc.title"
+        :model-value="bloc.title ?? ''"
         class="text-gray-title text-3xl font-extrabold"
         :placeholder="$t('Titre du bloc')"
+        @update:model-value="bloc.title = $event || null"
       />
       <div
         v-else-if="bloc.title"
@@ -42,9 +43,10 @@
 
 <script setup lang="ts">
 import EditableText from './EditableText.vue'
-import type { BlocWithTitle } from '~/types/pages'
 
-type BlocWithSecondaryText = BlocWithTitle & { id: string } & ({ subtitle?: string | null } | { description?: string | null })
+type BlocWithSubtitle = { id: string, title: string | null, subtitle: string | null }
+type BlocWithDescription = { id: string, title: string | null, description: string | null }
+type BlocWithSecondaryText = BlocWithSubtitle | BlocWithDescription
 
 defineProps<{
   edit: boolean
