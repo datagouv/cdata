@@ -272,7 +272,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // This tests that spaces can be typed (they were blocked by DisclosureButton before the fix)
   const firstItemTitle = page.getByTestId('accordion-new-item-title')
   await firstItemTitle.click()
-  await page.keyboard.pressSequentially('Comment acceder aux donnees ?')
+  await firstItemTitle.pressSequentially('Comment acceder aux donnees ?')
   await page.mouse.click(1, 1)
   await page.waitForTimeout(300)
 
