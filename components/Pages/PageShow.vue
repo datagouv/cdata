@@ -91,6 +91,12 @@
           v-model="(workingPage.blocs[index] as AccordionListBlocType)"
           :edit
         />
+
+        <MarkdownBloc
+          v-if="bloc.class === 'MarkdownBloc'"
+          v-model="(workingPage.blocs[index] as MarkdownBlocType)"
+          :edit
+        />
       </div>
 
       <!-- Add button below the last bloc -->
@@ -156,6 +162,7 @@ import DataservicesListBloc from './DataservicesListBloc.vue'
 import ReusesListBloc from './ReusesListBloc.vue'
 import LinksListBloc from './LinksListBloc.vue'
 import AccordionBlocEditor from './AccordionBlocEditor.vue'
+import MarkdownBloc from './MarkdownBloc.vue'
 import HeroBloc from './HeroBloc.vue'
 import type {
   Page,
@@ -164,6 +171,7 @@ import type {
   ReusesListBloc as ReusesListBlocType,
   LinksListBloc as LinksListBlocType,
   AccordionListBloc as AccordionListBlocType,
+  MarkdownBloc as MarkdownBlocType,
   HeroBloc as HeroBlocType,
 } from '~/types/pages'
 

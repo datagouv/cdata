@@ -111,5 +111,6 @@ const contentBlocKeys = Object.keys(contentBlocsTypes) as Array<keyof typeof con
 const newBlocsTypes: Array<{ name: string, blocsTypes: Array<keyof typeof blocsTypes> }> = [
   { name: t('Mise en page'), blocsTypes: ['HeroBloc', 'AccordionListBloc'] },
   { name: t('Contenus à la une'), blocsTypes: ['DatasetsListBloc', 'ReusesListBloc', 'DataservicesListBloc', 'LinksListBloc'] },
+  { name: t('Texte'), blocsTypes: ['MarkdownBloc'] },
 ]
 </script>
