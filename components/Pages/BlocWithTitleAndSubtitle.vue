@@ -33,7 +33,7 @@
         class="text-gray-400 hover:text-gray-600 text-sm"
         @click="updateSecondaryText(secondaryLabel)"
       >
-        + {{ $t('Ajouter un sous-titre') }}
+        + {{ hasSubtitle ? $t('Ajouter un sous-titre') : $t('Ajouter une description') }}
       </button>
     </div>
 
