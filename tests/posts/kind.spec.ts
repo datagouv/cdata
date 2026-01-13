@@ -42,9 +42,8 @@ test.describe('Post kind filter', () => {
     await page.waitForTimeout(500) // Wait for milkdown to propagate content
 
     await page.getByRole('button', { name: 'Sauvegarder' }).click()
-    await page.waitForURL(/\/admin\/posts\/[^/]+$/)
-    const newsPostUrl = page.url()
-    newsPostId = newsPostUrl.split('/').pop()
+    await expect(page).toHaveURL(/\/admin\/posts\/(?!new)[a-z0-9-]+$/)
+    newsPostId = page.url().split('/').pop()
 
     // Publish the news post
     const publishButton = page.getByRole('button', { name: 'Publier', exact: true })
@@ -71,9 +70,8 @@ test.describe('Post kind filter', () => {
     await page.waitForTimeout(500) // Wait for milkdown to propagate content
 
     await page.getByRole('button', { name: 'Sauvegarder' }).click()
-    await page.waitForURL(/\/admin\/posts\/[^/]+$/)
-    const pagePostUrl = page.url()
-    pagePostId = pagePostUrl.split('/').pop()
+    await expect(page).toHaveURL(/\/admin\/posts\/(?!new)[a-z0-9-]+$/)
+    pagePostId = page.url().split('/').pop()
 
     // Publish the page post
     const publishButton2 = page.getByRole('button', { name: 'Publier', exact: true })
