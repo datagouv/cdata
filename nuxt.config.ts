@@ -69,7 +69,7 @@ export default defineNuxtConfig({
       tabularApiDataserviceId: undefined,
 
       qualityDescriptionLength: 100,
-      searchAutocompleteDebounce: 200,
+      searchDebounce: 300,
       searchSirenUrl: 'https://recherche-entreprises.api.gouv.fr/search',
       csvDatasetId: undefined,
 
