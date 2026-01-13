@@ -214,6 +214,26 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding links bloc with paragraph
   await page.screenshot({ path: 'tests/edito/screenshots/05-links-bloc-with-paragraph.png', fullPage: true })
 
+  // === Step 5b: Add a MarkdownBloc ===
+  await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
+  await page.getByText('Bloc Markdown').click()
+  await page.waitForTimeout(300)
+
+  // Type some markdown content in the editor
+  const markdownEditor = page.locator('.milkdown').last()
+  await markdownEditor.click()
+  await page.keyboard.type('# Titre de section')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('Voici un paragraphe avec du **texte en gras** et du *texte en italique*.')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('- Premier élément')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('- Deuxième élément')
+
+  // Debug screenshot: after adding markdown bloc
+  await page.screenshot({ path: 'tests/edito/screenshots/05b-markdown-bloc.png', fullPage: true })
+
   // === Step 6: Add a LinksListBloc WITHOUT paragraph ===
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
   await page.getByText('Liens à la une').click()
