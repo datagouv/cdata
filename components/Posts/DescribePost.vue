@@ -43,6 +43,7 @@
           :options="[
             { value: 'html', label: t('HTML') },
             { value: 'markdown', label: t('Markdown') },
+            { value: 'blocs', label: t('Blocs') },
           ]"
         />
       </div>

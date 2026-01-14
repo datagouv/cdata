@@ -51,12 +51,16 @@
           :src="post.image"
           class="w-full h-auto mb-2"
         >
-        <MarkdownViewer
-          v-if="post.body_type === 'markdown'"
-          :content="post.content"
-          :min-heading="2"
-          size="md"
-        />
+        <template v-if="post.body_type === 'blocs' && pageId">
+          <PageShowById :page-id="pageId" />
+        </template>
+        <template v-else-if="post.body_type === 'markdown'">
+          <MarkdownViewer
+            :content="post.content"
+            :min-heading="2"
+            size="md"
+          />
+        </template>
         <div
           v-else
           :class="markdownClasses"
@@ -81,6 +85,7 @@
 import { markdownClasses, MarkdownViewer, useFormatDate } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
+import PageShowById from '~/components/Pages/PageShowById.vue'
 import type { Post } from '~/types/posts'
 
 const config = useRuntimeConfig()
@@ -92,6 +97,13 @@ const { data: post } = await useAPI<Post>(url, { redirectOn404: true })
 
 const name = computed(() => post.value?.name)
 const robots = computed(() => !post.value?.published ? 'noindex, nofollow' : 'all')
+
+const pageId = computed(() => {
+  if (!post.value?.content_as_page) return null
+  return typeof post.value.content_as_page === 'string'
+    ? post.value.content_as_page
+    : post.value.content_as_page.id
+})
 
 useSeoMeta({
   title: name,
