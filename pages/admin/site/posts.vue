@@ -171,11 +171,12 @@ import type { Post } from '~/types/posts'
 
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
+const config = useRuntimeConfig()
 
 const page = ref(1)
 const pageSize = ref(20)
 const q = ref('')
-const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const qDebounced = refDebounced(q, config.public.searchDebounce)
 
 type KindOption = { label: string, id: 'news' | 'page' | null }
 const kindOptions: KindOption[] = [

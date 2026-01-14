@@ -1,33 +1,38 @@
 <template>
-  <div
-    ref="sortableRef"
-    class="grid sm:grid-cols-3 gap-5"
+  <BlocWithTitleAndSubtitle
+    v-model="bloc"
+    :edit
   >
     <div
-      v-for="(reuse, i) in bloc.reuses"
-      :key="reuse.id"
-      class="relative"
-      :class="{ 'cursor-grab active:cursor-grabbing': edit }"
+      ref="sortableRef"
+      class="grid sm:grid-cols-3 gap-5"
     >
-      <button
-        v-if="edit"
-        class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 z-10"
-        :title="$t('Supprimer')"
-        @click="bloc.reuses.splice(i, 1)"
+      <div
+        v-for="(reuse, i) in bloc.reuses"
+        :key="reuse.id"
+        class="relative"
+        :class="{ 'cursor-grab active:cursor-grabbing': edit }"
       >
-        <RiDeleteBinLine class="size-5" />
-      </button>
-      <ReuseCard
-        class="min-w-0"
-        :reuse
+        <button
+          v-if="edit"
+          class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 z-10"
+          :title="$t('Supprimer')"
+          @click="bloc.reuses.splice(i, 1)"
+        >
+          <RiDeleteBinLine class="size-5" />
+        </button>
+        <ReuseCard
+          class="min-w-0"
+          :reuse
+        />
+      </div>
+      <AddObjectCard
+        v-if="edit"
+        :label="$t('Ajouter une réutilisation')"
+        @click="openSelector"
       />
     </div>
-    <AddObjectCard
-      v-if="edit"
-      :label="$t('Ajouter une réutilisation')"
-      @click="openSelector"
-    />
-  </div>
+  </BlocWithTitleAndSubtitle>
 
   <ModalWithButton
     v-model="isSelectorOpen"
@@ -50,6 +55,7 @@ import { toast } from 'vue-sonner'
 import { BrandedButton, ReuseCard } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
 import AddObjectCard from './AddObjectCard.vue'
+import BlocWithTitleAndSubtitle from './BlocWithTitleAndSubtitle.vue'
 import type { Reuse } from '@datagouv/components-next'
 import type { ReusesListBloc } from '~/types/pages'
 

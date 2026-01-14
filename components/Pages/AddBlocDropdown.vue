@@ -14,7 +14,44 @@
       leave-from-class="transform opacity-100 scale-100"
       leave-to-class="transform opacity-0 scale-95"
     >
-      <MenuItems class="overflow-hidden absolute right-0 z-10 mt-2 w-96 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden">
+      <!-- Content only: simple flat list -->
+      <MenuItems
+        v-if="contentOnly"
+        class="absolute left-0 z-50 mt-2 w-80 origin-top-left divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden"
+      >
+        <MenuItem
+          v-for="key in contentBlocKeys"
+          :key="contentBlocsTypes[key].name"
+          v-slot="{ active }"
+        >
+          <button
+            class="block px-4 py-2 text-sm w-full text-left space-y-1"
+            :class="[active ? 'bg-gray-100 text-gray-900 outline-hidden' : 'text-gray-700']"
+            type="button"
+            :data-testid="`add-content-${key}`"
+            @click="$emit('newBloc', { id: uuidv4(), ...contentBlocsTypes[key].default() } as PageBloc)"
+          >
+            <div class="flex space-x-1 items-center text-gray-title">
+              <component
+                :is="contentBlocsTypes[key].icon"
+                class="size-4"
+              />
+              <div class="text-sm">
+                {{ contentBlocsTypes[key].name }}
+              </div>
+            </div>
+            <div class="text-xs text-gray-plain">
+              {{ contentBlocsTypes[key].description }}
+            </div>
+          </button>
+        </MenuItem>
+      </MenuItems>
+
+      <!-- All blocs: grouped list -->
+      <MenuItems
+        v-else
+        class="overflow-hidden absolute right-0 z-10 mt-2 w-96 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden"
+      >
         <div
           v-for="groupOfBloc in newBlocsTypes"
           :key="groupOfBloc.name"
@@ -58,14 +95,22 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { v4 as uuidv4 } from 'uuid'
 import type { PageBloc } from '~/types/pages'
 
+defineProps<{
+  contentOnly?: boolean
+}>()
+
 defineEmits<{
   newBloc: [PageBloc]
 }>()
+
 const { t } = useTranslation()
 const blocsTypes = useBlocsTypes()
+const contentBlocsTypes = useContentBlocsTypes()
+const contentBlocKeys = Object.keys(contentBlocsTypes) as Array<keyof typeof contentBlocsTypes>
 
 const newBlocsTypes: Array<{ name: string, blocsTypes: Array<keyof typeof blocsTypes> }> = [
-  { name: t('Mise en page'), blocsTypes: ['HeroBloc'] },
+  { name: t('Mise en page'), blocsTypes: ['HeroBloc', 'AccordionListBloc'] },
   { name: t('Contenus à la une'), blocsTypes: ['DatasetsListBloc', 'ReusesListBloc', 'DataservicesListBloc', 'LinksListBloc'] },
+  { name: t('Texte'), blocsTypes: ['MarkdownBloc'] },
 ]
 </script>
