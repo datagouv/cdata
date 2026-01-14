@@ -10,6 +10,7 @@
             {{ title }}
           </h1>
           <CdataLink
+            v-if="linkUrl && linkLabel"
             class="bg-[#0D0C4F]/20 hover:bg-[#0D0C4F]/30 fr-raw-link text-white font-medium text-lg px-5 py-3 rounded-4xl flex justify-start items-start sm:items-center gap-2"
             :href="linkUrl"
           >
@@ -34,6 +35,7 @@
         <div class="w-full flex rounded-t overflow-hidden">
           <input
             :id="id"
+            :value="defaultQuery"
             name="q"
             class="w-full text-2xl bg-white/80 border-b-4 border-white px-4 text-black placeholder:text-gray-plain"
             :placeholder
@@ -58,15 +60,20 @@
 <script setup lang="ts">
 import { RiInformation2Line, RiSearchLine } from '@remixicon/vue'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   color: 'primary' | 'green' | 'purple'
   title: string
   subtitle: string
   placeholder: string
   searchUrl: string
-  linkLabel: string
-  linkUrl: string
-}>()
+  linkLabel?: string
+  linkUrl?: string
+  defaultQuery?: string
+}>(), {
+  linkLabel: '',
+  linkUrl: '',
+  defaultQuery: '',
+})
 
 const id = useId()
 

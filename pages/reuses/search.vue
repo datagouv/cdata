@@ -1,93 +1,78 @@
 <template>
-  <div class="container mb-16">
-    <Breadcrumb>
-      <BreadcrumbItem
-        to="/"
-      >
-        {{ $t('Accueil') }}
-      </BreadcrumbItem>
-      <BreadcrumbItem>
-        {{ $t('Réutilisations') }}
-      </BreadcrumbItem>
-    </Breadcrumb>
-    <ListPage
-      :link="getLink"
-      :reuses="reuses ?? { data: [], total: 0, page: 1, page_size: 21, next_page: null, previous_page: null }"
-      :initial-q="q"
-      :sort
-      :status
-      :topic
-      :topics="topics ?? []"
-      :total-reuses="site?.metrics.reuses ?? 0"
-      @change="change"
+  <div>
+    <EditoHeader
+      color="green"
+      subtitle=""
+      :title="$t('Rechercher sur DataGouv')"
+      :placeholder="$t('ex. élections présidentielles')"
+      search-url="/reuses/search"
+      :default-query="searchQuery"
     />
+    <SearchGlobal :config="searchConfig" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { getLink } from '@datagouv/components-next'
-import type { Reuse, ReuseTopic, Site } from '@datagouv/components-next'
-import { useUrlSearchParams } from '@vueuse/core'
-import type { LocationQueryValue } from 'vue-router'
-import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import ListPage from '~/components/Reuses/ListPage.vue'
-import type { ReuseSearchParams } from '~/types/form'
-import type { PaginatedArray } from '~/types/types'
+import { SearchGlobal } from '@datagouv/components-next'
+import EditoHeader from '~/components/Pages/EditoHeader.vue'
 
 const { t } = useTranslation()
-
 useSeoMeta({
-  title: t('Réutilisations'),
+  title: t('Recherche des jeux de données — data.gouv.fr'),
 })
 
 const route = useRoute()
-const params = useUrlSearchParams<ReuseSearchParams>('history', {
-  initialValue: route.query,
-  removeNullishValues: true,
-  removeFalsyValues: true,
-})
+const searchQuery = computed(() => (route.query.q as string) || '')
 
-const q = ref('')
-watchEffect(() => {
-  if (Array.isArray(route.query.q)) return
-  if (!route.query.q) return
-  q.value = route.query.q
-})
-
-const sort = ref((route.query.sort as string | null) || undefined)
-const tag = ref((route.query.tag as string | null) || undefined)
-const topic = ref((route.query.topic as string | null) || undefined)
-const page = ref(parseInt(route.query.page as LocationQueryValue ?? '1', 10))
-const pageSize = 21
-
-const nonFalsyParams = computed(() => {
-  const filteredParams = Object.entries(toValue(params)).filter(([_k, v]) => v)
-  return { ...Object.fromEntries(filteredParams), page_size: pageSize }
-})
-
-function change(newQs: string, newTopic: string | undefined, newSort: string | undefined, newPage: number) {
-  q.value = newQs
-  sort.value = newSort
-  page.value = newPage
-  topic.value = newTopic
-}
-
-const { data: site } = await useAPI<Site>('/api/1/site/')
-
-const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
-
-const { data: reuses, status } = await useAPI<PaginatedArray<Reuse>>(`/api/2/reuses/search/`, {
-  headers: {
-    'X-Fields': reusesXFields,
+const searchConfig = [
+  {
+    className: 'Réutilisations',
+    class: 'reuses' as const,
+    display: true,
+    basicFilters: ['type', 'topic'],
+    advancedFilters: ['organization', 'tags'],
   },
-  params: nonFalsyParams,
-})
-
-watchEffect(() => {
-  if (page.value > 1 || params.page) params.page = page.value.toString()
-  params.q = q.value
-  params.sort = sort.value
-  params.tag = tag.value
-  params.topic = topic.value
-})
+  {
+    className: 'Jeux de données',
+    class: 'datasets' as const,
+    display: true,
+    basicFilters: ['format_family', 'access_type', 'last_update_range', 'producer_type', 'data_label'],
+    advancedFilters: ['organization', 'tags', 'format', 'license', 'schema', 'geozone', 'granularity'],
+  },
+  {
+    className: 'API',
+    class: 'dataservices' as const,
+    display: true,
+    basicFilters: ['access_type', 'last_update_range', 'producer_type', 'data_label'],
+    advancedFilters: ['organization', 'tags'],
+  },
+  {
+    className: 'Organisations',
+    class: 'organizations' as const,
+    display: true,
+    basicFilters: ['producer_type'],
+    advancedFilters: [],
+  },
+  {
+    className: 'Discussions',
+    class: 'discussions' as const,
+    display: true,
+    basicFilters: ['object_type', 'last_update_range'],
+    advancedFilters: [],
+  },
+  {
+    className: 'Articles',
+    class: 'posts' as const,
+    display: true,
+    basicFilters: ['last_update_range'],
+    advancedFilters: [],
+  },
+  {
+    className: 'Thématiques',
+    class: 'topics' as const,
+    display: true,
+    basicFilters: ['last_update_range', 'producer_type'],
+    advancedFilters: ['organization', 'tags'],
+  },
+]
 </script>
