@@ -14,7 +14,7 @@
       <h2 class="text-sm font-bold uppercase m-0">
         {{ t('{n} articles', pageData.total) }}
       </h2>
-      <div class="flex space-x-2.5">
+      <div class="flex items-end space-x-2.5">
         <SearchableSelect
           v-model="filterKind"
           :placeholder="$t('Filtrer par type')"
