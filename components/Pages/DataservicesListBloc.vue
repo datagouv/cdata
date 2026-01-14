@@ -1,34 +1,39 @@
 <template>
-  <div
-    ref="sortableRef"
-    class="grid sm:grid-cols-2 gap-5"
+  <BlocWithTitleAndSubtitle
+    v-model="bloc"
+    :edit
   >
     <div
-      v-for="(dataservice, i) in bloc.dataservices"
-      :key="dataservice.id"
-      class="relative"
-      :class="{ 'cursor-grab active:cursor-grabbing': edit }"
+      ref="sortableRef"
+      class="grid sm:grid-cols-2 gap-5"
     >
-      <button
-        v-if="edit"
-        type="button"
-        class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 z-10"
-        :title="$t('Supprimer')"
-        @click="bloc.dataservices.splice(i, 1)"
+      <div
+        v-for="(dataservice, i) in bloc.dataservices"
+        :key="dataservice.id"
+        class="relative"
+        :class="{ 'cursor-grab active:cursor-grabbing': edit }"
       >
-        <RiDeleteBinLine class="size-5" />
-      </button>
-      <DataserviceCard
-        class="min-w-0"
-        :dataservice
+        <button
+          v-if="edit"
+          type="button"
+          class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 z-10"
+          :title="$t('Supprimer')"
+          @click="bloc.dataservices.splice(i, 1)"
+        >
+          <RiDeleteBinLine class="size-5" />
+        </button>
+        <DataserviceCard
+          class="min-w-0"
+          :dataservice
+        />
+      </div>
+      <AddObjectCard
+        v-if="edit"
+        :label="$t('Ajouter une API')"
+        @click="openSelector"
       />
     </div>
-    <AddObjectCard
-      v-if="edit"
-      :label="$t('Ajouter une API')"
-      @click="openSelector"
-    />
-  </div>
+  </BlocWithTitleAndSubtitle>
 
   <ModalWithButton
     v-model="isSelectorOpen"
@@ -50,6 +55,7 @@
 import { BrandedButton, DataserviceCard } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
 import AddObjectCard from './AddObjectCard.vue'
+import BlocWithTitleAndSubtitle from './BlocWithTitleAndSubtitle.vue'
 import type { Dataservice } from '@datagouv/components-next'
 import type { DataservicesListBloc } from '~/types/pages'
 
