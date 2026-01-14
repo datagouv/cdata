@@ -10,6 +10,7 @@ export type Post = {
   headline: string
   id: string
   image: string | null
+  kind: 'news' | 'page'
   last_modified: string
   name: string
   owner: User
