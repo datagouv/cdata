@@ -35,6 +35,8 @@ test('topic filter works', async ({ page }) => {
 
 test('clicking reuse navigates to detail', async ({ page }) => {
   await page.goto('/reuses/search')
+  // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   const reuseLink = page.getByRole('link', { name: /itineriz/i })
   await expect(reuseLink).toBeVisible()

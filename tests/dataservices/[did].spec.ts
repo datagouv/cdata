@@ -27,6 +27,8 @@ test('sidebar displays correct metadata values', async ({ page }) => {
 
 test('discussions tab is accessible', async ({ page }) => {
   await page.goto(`/dataservices/${DATASERVICE_SLUG}`)
+  // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   const discussionsTab = page.getByRole('link', { name: /Discussions/ })
   await expect(discussionsTab).toBeVisible()

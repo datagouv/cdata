@@ -49,6 +49,8 @@ test('clicking dataset label navigates to filtered search', async ({
   await page.goto(
     '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
   )
+  // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   // Check if dataset has labels
   const labelsList = page.getByTestId('label-list')
@@ -100,6 +102,8 @@ test('discussions tab navigates to discussions page', async ({ page }) => {
   await page.goto(
     '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
   )
+  // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   const discussionsTab = page.getByRole('link', { name: /Discussions/ })
   await discussionsTab.click()
