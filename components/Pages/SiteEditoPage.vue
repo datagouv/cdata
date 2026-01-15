@@ -94,7 +94,7 @@ watchEffect(async () => {
 
 function resetPage() {
   if (originalPage.value) {
-    page.value = structuredClone(originalPage.value)
+    page.value = structuredClone(toRaw(originalPage.value))
   }
 }
 
