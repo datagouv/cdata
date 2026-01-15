@@ -25,7 +25,7 @@ const postForm = computed(() => post.value ? postToForm(post.value) : null)
 
 watchEffect(() => {
   if (post.value?.body_type === 'blocs') {
-    navigateTo(post.value.page + '?edit=true', { external: true })
+    navigateTo(post.value.page + '?edit=true')
   }
 })
 

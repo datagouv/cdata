@@ -106,7 +106,14 @@ async function postNext(form: PostForm) {
       body: { blocs: [] },
     })
     postForm.value.content_as_page = page.id
-    await save({ content: '' })
+
+    try {
+      await save({ content: '' })
+    }
+    catch (error) {
+      await $api(`/api/1/pages/${page.id}/`, { method: 'DELETE' })
+      throw error
+    }
   }
   else {
     moveToStep(2)
@@ -130,7 +137,12 @@ async function save(form: { content: string }) {
         body: formData,
       })
     }
-    await navigateTo(`/admin/posts/${newPost.value.id}`)
+    if (newPost.value.body_type === 'blocs') {
+      await navigateTo(newPost.value.page + '?edit=true')
+    }
+    else {
+      await navigateTo(`/admin/posts/${newPost.value.id}`)
+    }
   }
   finally {
     clearNuxtState(POST_LOADING_STATE)
