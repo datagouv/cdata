@@ -125,6 +125,9 @@ importers:
       tabulator-tables:
         specifier: ^6.3.1
         version: 6.3.1
+      uqr:
+        specifier: ^0.1.2
+        version: 0.1.2
       uuid:
         specifier: ^13.0.0
         version: 13.0.0

@@ -156,7 +156,11 @@ const connect = async () => {
     })
 
     if (response.tf_required == true)
-      navigateTo('/tf-validate')
+      // 2FA is required, we should either set it up if not done already or validate it
+      if (response.setup_from_login)
+        navigateTo('/tf-setup')
+      else
+        navigateTo('/tf-validate')
     else {
       toast.success(t('Vous êtes maintenant connecté.'))
       await loadMe(me)
