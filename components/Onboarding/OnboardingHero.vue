@@ -14,6 +14,7 @@
         <img
           :src="image"
           :alt="imageAlt || ''"
+          :aria-hidden="!imageAlt"
           class="w-80"
         >
       </div>

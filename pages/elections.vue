@@ -41,7 +41,6 @@
           :key="election.slug"
           :title="election.title"
           :description="election.description"
-          :label="election.label"
           :to="election.to"
           :image="election.image"
         />
@@ -51,10 +50,6 @@
 </template>
 
 <script setup lang="ts">
-import OnboardingHero from '~/components/Onboarding/OnboardingHero.vue'
-import OnboardingSection from '~/components/Onboarding/OnboardingSection.vue'
-import ElectionCard from '~/components/Elections/ElectionCard.vue'
-
 const config = useRuntimeConfig()
 const { t } = useTranslation()
 
@@ -65,7 +60,6 @@ useSeoMeta({
 const elections = [
   {
     slug: 'municipales',
-    label: t('Élections municipales'),
     title: t('Données des élections municipales'),
     description: t('Cette page rassemble toutes les données relatives aux élections municipales : résultats par bureau de vote, informations sur les élus et toutes les données utiles permettant de comprendre les enjeux propres aux communes.'),
     to: '/#',
@@ -73,7 +67,6 @@ const elections = [
   },
   {
     slug: 'legislatives',
-    label: t('Élections législatives'),
     title: t('Données des élections législatives'),
     description: t('Cette page rassemble l\'ensemble des données relatives aux élections législatives : résultats par circonscription, nuances politiques et toutes les données permettant de saisir les enjeux propres à la représentation des territoires à l\'Assemblée nationale.'),
     to: '/#',
@@ -81,7 +74,6 @@ const elections = [
   },
   {
     slug: 'presidentielles',
-    label: t('Élections présidentielles'),
     title: t('Données des élections présidentielles'),
     description: t('Cette page permet d\'accéder aux différentes données des élections présidentielles : résultats par tour, séries historiques, etc., ainsi que les données pertinentes pour analyser les dynamiques politiques à l\'échelle nationale.'),
     to: '/#',
@@ -89,7 +81,6 @@ const elections = [
   },
   {
     slug: 'autres',
-    label: t('Autres données relatives aux élections'),
     title: t('Autres données des élections'),
     description: t('Cette page rassemble les résultats des autres scrutins (élections sénatoriales, élections européennes...).'),
     to: '/#',
