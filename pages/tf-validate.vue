@@ -42,7 +42,7 @@
         </form>
 
         <div class="text-center text-gray-plain text-sm">
-          {{ $t('Trouble Accessing Your Account?/Lost Mobile Device?') }} <CdataLink to="/support">
+          {{ $t('Problème d’accès à votre compte ? / Appareil mobile perdu ?') }} <CdataLink to="/support">
             {{ $t('Contacter le support') }}
           </CdataLink>
         </div>

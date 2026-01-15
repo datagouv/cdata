@@ -149,7 +149,7 @@ const connect = async () => {
   errors.value = {}
 
   try {
-    const { response } = await postApiWithCsrf<{ response: { tf_required: boolean, setup_from_login: boolean } }>('/login/', {
+    const { response } = await postApiWithCsrf<{ response: { tf_required: boolean, tf_state: string } }>('/login/', {
       email: email.value,
       password: password.value,
       remember: rememberMe.value,
@@ -157,7 +157,7 @@ const connect = async () => {
 
     if (response.tf_required == true)
       // 2FA is required, we should either set it up if not done already or validate it
-      if (response.setup_from_login)
+      if (response.tf_state == 'setup_from_login')
         navigateTo('/tf-setup')
       else
         navigateTo('/tf-validate')
