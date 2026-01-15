@@ -55,30 +55,21 @@ const save = async (form: PostForm) => {
     loading.value = true
 
     const formToSend = { ...form }
-    let createdPage: Page | null = null
 
     // We only create a page when switching to blocs, but we never delete it when switching back to markdown/html.
     // This way, users can switch back to blocs later without losing their content.
     if (form.body_type === 'blocs' && !form.content_as_page) {
-      createdPage = await $api<Page>('/api/1/pages/', {
+      const page = await $api<Page>('/api/1/pages/', {
         method: 'POST',
         body: { blocs: [] },
       })
-      formToSend.content_as_page = createdPage.id
+      formToSend.content_as_page = page.id
     }
 
-    try {
-      await $api(`/api/1/posts/${post.value.id}/`, {
-        method: 'PUT',
-        body: JSON.stringify(postToApi(formToSend)),
-      })
-    }
-    catch (error) {
-      if (createdPage) {
-        await $api(`/api/1/pages/${createdPage.id}/`, { method: 'DELETE' })
-      }
-      throw error
-    }
+    await $api(`/api/1/posts/${post.value.id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(postToApi(formToSend)),
+    })
 
     if (form.image && typeof form.image !== 'string') {
       const formData = new FormData()

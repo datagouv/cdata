@@ -107,14 +107,7 @@ async function postNext(form: PostForm) {
       body: { blocs: [] },
     })
     postForm.value.content_as_page = page.id
-
-    try {
-      await save({ content: '' })
-    }
-    catch (error) {
-      await $api(`/api/1/pages/${page.id}/`, { method: 'DELETE' })
-      throw error
-    }
+    await save({ content: '' })
   }
   else {
     moveToStep(2)
