@@ -149,7 +149,7 @@ const connect = async () => {
   errors.value = {}
 
   try {
-    const { response } = await postApiWithCsrf('/login/', {
+    const { response } = await postApiWithCsrf<{ response: { tf_required: boolean, setup_from_login: boolean } }>('/login/', {
       email: email.value,
       password: password.value,
       remember: rememberMe.value,
