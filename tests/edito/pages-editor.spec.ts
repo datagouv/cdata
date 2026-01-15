@@ -1,5 +1,22 @@
 import { test, expect } from '@playwright/test'
 
+test('can save edito page from admin without error toast', async ({ page }) => {
+  await page.goto('/admin/site/edito/datasets')
+  await page.waitForLoadState('networkidle')
+
+  // Wait for page to be loaded
+  await expect(page.getByRole('button', { name: 'Sauvegarder' })).toBeVisible()
+
+  // Save the page
+  await page.getByRole('button', { name: 'Sauvegarder' }).click()
+
+  // Wait for toast to appear - should be success, not error
+  await expect(page.getByText('Page sauvegardée')).toBeVisible({ timeout: 5000 })
+
+  // Verify error toast is NOT visible
+  await expect(page.getByText('Erreur lors de la sauvegarde')).not.toBeVisible()
+})
+
 test('can edit edito page with all bloc types', async ({ page }) => {
   // Go directly to the datasets page in edit mode
   await page.goto('/datasets?edit=true')
