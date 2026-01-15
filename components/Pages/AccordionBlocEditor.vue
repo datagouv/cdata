@@ -97,24 +97,9 @@
                     />
                   </div>
 
-                  <DatasetsListBloc
-                    v-if="contentBloc.class === 'DatasetsListBloc'"
-                    v-model="(item.content[contentIndex] as DatasetsListBlocType)"
-                    :edit
-                  />
-                  <DataservicesListBloc
-                    v-if="contentBloc.class === 'DataservicesListBloc'"
-                    v-model="(item.content[contentIndex] as DataservicesListBlocType)"
-                    :edit
-                  />
-                  <ReusesListBloc
-                    v-if="contentBloc.class === 'ReusesListBloc'"
-                    v-model="(item.content[contentIndex] as ReusesListBlocType)"
-                    :edit
-                  />
-                  <LinksListBloc
-                    v-if="contentBloc.class === 'LinksListBloc'"
-                    v-model="(item.content[contentIndex] as LinksListBlocType)"
+                  <component
+                    :is="contentBlocsTypes[contentBloc.class].component"
+                    v-model="(item.content[contentIndex] as any)"
                     :edit
                   />
                 </div>
@@ -179,18 +164,9 @@ import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine } from '@rem
 import BlocWithTitleAndSubtitle from './BlocWithTitleAndSubtitle.vue'
 import EditableText from './EditableText.vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
-import DatasetsListBloc from './DatasetsListBloc.vue'
-import DataservicesListBloc from './DataservicesListBloc.vue'
-import ReusesListBloc from './ReusesListBloc.vue'
-import LinksListBloc from './LinksListBloc.vue'
-import type {
-  AccordionListBloc,
-  ContentBloc,
-  DatasetsListBloc as DatasetsListBlocType,
-  DataservicesListBloc as DataservicesListBlocType,
-  ReusesListBloc as ReusesListBlocType,
-  LinksListBloc as LinksListBlocType,
-} from '~/types/pages'
+import type { AccordionListBloc, ContentBloc } from '~/types/pages'
+
+const contentBlocsTypes = useContentBlocsTypes()
 
 const props = defineProps<{
   edit: boolean
