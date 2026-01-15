@@ -52,6 +52,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, toast } from '@datagouv/components-next'
+import { toRaw } from 'vue'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import type { Site } from '@datagouv/components-next'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
@@ -83,7 +84,7 @@ watchEffect(async () => {
   if (site.value && site.value[props.siteKey]) {
     const fetched = await $api<Page>(`/api/1/pages/${site.value[props.siteKey]}/`)
     page.value = fetched
-    originalPage.value = structuredClone(fetched)
+    originalPage.value = structuredClone(toRaw(fetched))
   }
   else {
     page.value = { id: '', blocs: [] }
@@ -118,7 +119,7 @@ const savePage = async (updatedPage: Page) => {
       await $api(`/api/1/site/`, { method: 'PATCH', body })
       await refresh()
     }
-    originalPage.value = structuredClone(page.value)
+    originalPage.value = structuredClone(toRaw(page.value))
     toast.success(t('Page sauvegardée'))
   }
   catch {
