@@ -54,8 +54,6 @@
 
 <script setup lang="ts">
 import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
-import type { FieldsErrors } from '~/types/form'
-import { usePostApiWithCsrf } from '~/utils/api'
 
 definePageMeta({
   matomoIgnore: true,
@@ -65,12 +63,16 @@ const { t } = useTranslation()
 
 useSeoMeta({ title: t('Connexion') })
 
-const code = ref('')
-const loading = ref(false)
-const errors = ref<FieldsErrors>({})
 const me = useMe()
 
 const route = useRoute()
+
+const {
+  code,
+  loading,
+  errors,
+  validateCode,
+} = useTwoFactorSetup()
 
 onMounted(() => {
   if (route.query.next) {
@@ -78,16 +80,8 @@ onMounted(() => {
   }
 })
 
-const postApiWithCsrf = usePostApiWithCsrf()
-const connect = async () => {
-  loading.value = true
-  errors.value = {}
-
-  try {
-    await postApiWithCsrf('/tf-validate', {
-      code: code.value,
-    })
-
+const connect = () => {
+  validateCode(async () => {
     toast.success(t('Vous êtes maintenant connecté.'))
     await loadMe(me)
 
@@ -98,15 +92,7 @@ const connect = async () => {
     else {
       await navigateTo('/')
     }
-  }
-  catch (e) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const fieldsErrors = (e as any)?.response?._data?.response?.field_errors
-    if (fieldsErrors) errors.value = fieldsErrors
-  }
-  finally {
-    loading.value = false
-  }
+  })
 }
 
 useSeoMeta({ robots: 'noindex' })

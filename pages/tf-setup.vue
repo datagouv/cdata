@@ -20,7 +20,7 @@
 
         <form
           class="space-y-6"
-          @submit.prevent="connect"
+          @submit.prevent="submit"
         >
           <p>
             {{ $t('Ouvrez une application d’authentification sur votre appareil et scannez le QR code suivant (ou saisissez manuellement le code ci-dessous) pour commencer à recevoir des codes :') }}
@@ -67,10 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
-import type { FieldsErrors } from '~/types/form'
-import { usePostApiWithCsrf } from '~/utils/api'
-import { renderSVG } from 'uqr'
+import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
 
 definePageMeta({
   matomoIgnore: true,
@@ -79,50 +76,31 @@ definePageMeta({
 const { t } = useTranslation()
 
 useSeoMeta({ title: t('Connexion') })
-
-const qrcode = ref('')
-const totpKey = ref('')
-const code = ref('')
-const loading = ref(false)
-const errors = ref<FieldsErrors>({})
-const me = useMe()
-
 const route = useRoute()
+
+const {
+  qrcode,
+  totpKey,
+  code,
+  loading,
+  errors,
+  fetchQRCode,
+  validateCode,
+} = useTwoFactorSetup()
+
 onMounted(async () => {
   if (route.query.next) {
     sessionStorage.setItem('next', route.query.next as string)
   }
 
-  loading.value = true
-  // Setup qrcode
-  try {
-    const { response } = await postApiWithCsrf<{ response: { tf_authr_issuer: string, tf_authr_username: string, tf_authr_key: string } }>('/tf-setup', {
-      setup: 'authenticator',
-    })
-    qrcode.value = renderSVG(`otpauth://totp/${response.tf_authr_issuer}:${response.tf_authr_username}?secret=${response.tf_authr_key}&issuer=${response.tf_authr_issuer}`)
-    totpKey.value = response.tf_authr_key
-  }
-  catch {
-    toast.error(t('Erreur de récupération du qrcode'))
-  }
-  finally {
-    loading.value = false
-  }
+  // Fetch QR code on page load
+  await fetchQRCode()
 })
 
-const postApiWithCsrf = usePostApiWithCsrf()
-const connect = async () => {
-  loading.value = true
-  errors.value = {}
+const submit = async () => {
+  const success = await validateCode()
 
-  try {
-    await postApiWithCsrf('/tf-validate', {
-      code: code.value,
-    })
-
-    toast.success(t('Vous êtes maintenant connecté.'))
-    await loadMe(me)
-
+  if (success) {
     const next = sessionStorage.getItem('next')
     if (next) {
       navigateTo(next)
@@ -130,14 +108,6 @@ const connect = async () => {
     else {
       await navigateTo('/')
     }
-  }
-  catch (e) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const fieldsErrors = (e as any)?.response?._data?.response?.field_errors
-    if (fieldsErrors) errors.value = fieldsErrors
-  }
-  finally {
-    loading.value = false
   }
 }
 
