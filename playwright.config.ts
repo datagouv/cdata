@@ -43,7 +43,7 @@ export default defineConfig({
 
     {
       name: 'chromium',
-      testIgnore: /.*\.normal-user\.spec\.ts/,
+      testIgnore: [/(.*\.normal-user\.spec\.ts|.*\.auth-2fa\.spec\.ts)/],
       use: { ...devices['Desktop Chrome'], storageState: 'playwright/.auth/user.json' },
       dependencies: ['setup'],
     },
@@ -53,6 +53,13 @@ export default defineConfig({
       testMatch: /.*\.normal-user\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], storageState: 'playwright/.auth/normal-user.json' },
       dependencies: ['setup-normal-user'],
+    },
+
+    {
+      name: 'chromium-2fa',
+      testMatch: 'tests/auth-2fa.spec.ts',
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: [],
     },
 
     {

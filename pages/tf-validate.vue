@@ -22,6 +22,7 @@
           <div>
             <InputGroup
               v-model="code"
+              data-testid="totp-code-input"
               type="text"
               :label="$t('Code d\'identification')"
               :error-text="getAllErrorsInErrorFields(errors, 'code')"

@@ -26,13 +26,17 @@
             {{ $t('Ouvrez une application d’authentification sur votre appareil et scannez le QR code suivant (ou saisissez manuellement le code ci-dessous) pour commencer à recevoir des codes :') }}
           </p>
           <div
+            data-testid="qrcode-container"
             style="max-width: 200px;"
             v-html="qrcode"
           />
-          <p>{{ totpKey }}</p>
+          <p data-testid="totp-key">
+            {{ totpKey }}
+          </p>
           <div>
             <InputGroup
               v-model="code"
+              data-testid="totp-code-input"
               type="text"
               :label="$t('Code d\'identification')"
               :error-text="getAllErrorsInErrorFields(errors, 'code')"
