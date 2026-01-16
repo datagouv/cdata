@@ -33,7 +33,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: udata
-          ref: main
+          ref: refs/pull/3620/head
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
@@ -93,6 +93,8 @@ jobs:
           SECURITY_EMAIL_VALIDATOR_ARGS = {
               "check_deliverability": False
           }
+          SECURITY_TOTP_SECRETS = {"1": "Default udata totp secret"}
+          SECURITY_TOTP_ISSUER = "udata"
 
           MONGODB_HOST = 'mongodb://mongodb:27017/udata'
           CELERY_BROKER_URL = 'redis://redis:6379'
@@ -114,6 +116,7 @@ jobs:
 
           uv run udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
           uv run udata user create --first-name "Normal" --last-name "User" --email "normal@example.com" --password "@1337Password42"
+          uv run udata user create --first-name "2FA" --last-name "User" --email "2fa@example.com" --password "@1337Password42"
 
           uv run inv i18nc
 
