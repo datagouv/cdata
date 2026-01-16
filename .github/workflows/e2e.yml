@@ -93,6 +93,8 @@ jobs:
           SECURITY_EMAIL_VALIDATOR_ARGS = {
               "check_deliverability": False
           }
+          SECURITY_TOTP_SECRETS = {"1": "Default udata totp secret"}
+          SECURITY_TOTP_ISSUER = "udata"
 
           MONGODB_HOST = 'mongodb://mongodb:27017/udata'
           CELERY_BROKER_URL = 'redis://redis:6379'

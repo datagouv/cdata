@@ -155,12 +155,13 @@ const connect = async () => {
       remember: rememberMe.value,
     })
 
-    if (response.tf_required == true)
+    if (response.tf_required == true) {
       // 2FA is required, we should either set it up if not done already or validate it
       if (response.tf_state == 'setup_from_login')
         navigateTo('/tf-setup')
       else
         navigateTo('/tf-validate')
+    }
     else {
       toast.success(t('Vous êtes maintenant connecté.'))
       await loadMe(me)
