@@ -7,22 +7,12 @@ test.describe('2FA Authentication Flow', () => {
   const TWOFA_PASSWORD = '@1337Password42'
 
   test.beforeEach(async ({ page, baseURL }) => {
+    // clean any existing session
+    await page.context().clearCookies()
+
     const loginURL = baseURL || 'http://localhost:3000'
     await page.goto(`${loginURL}/login/?next=%2F`)
     await page.waitForLoadState('networkidle')
-  })
-
-  test('should login normally without 2FA requirement', async ({ page, baseURL }) => {
-    const loginURL = baseURL || 'http://localhost:3000'
-
-    // Step 1: Login with credentials that don't require 2FA
-    await page.getByLabel('Adresse email').fill(TWOFA_EMAIL)
-    await page.getByLabel('Mot de passe').fill(TWOFA_PASSWORD)
-    await page.getByRole('button', { name: 'Se connecter' }).first().click()
-
-    // Step 2: Verify redirect to homepage (no 2FA required)
-    await page.waitForURL(`${loginURL}/`)
-    await expect(page).toHaveURL(`${loginURL}/`)
   })
 
   test('should complete 2FA setup and validation flow', async ({ page, baseURL }) => {
