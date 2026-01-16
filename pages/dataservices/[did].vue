@@ -245,7 +245,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, LoadingBlock, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, StatBox, MarkdownViewer } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, LoadingBlock, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, StatBox, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
@@ -254,7 +254,7 @@ import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
-import { useElementSize } from '@vueuse/core'
+import { computedAsync, useElementSize } from '@vueuse/core'
 
 definePageMeta({
   keepScroll: true,
@@ -275,7 +275,7 @@ const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
 const { data: dataservice, status } = await useAPI<Dataservice>(url, { redirectOn404: true, redirectOnSlug: 'did' })
 
 const title = computed(() => `API - ${dataservice.value?.title} | ${config.public.title}`)
-const description = computed(() => dataservice.value?.description)
+const description = computedAsync(async () => await getDescriptionShort(dataservice.value?.description))
 const robots = computed(() => dataservice.value && dataservice.value.archived_at ? 'noindex' : 'all')
 
 useSeoMeta({

@@ -468,6 +468,7 @@ import {
   useMetrics,
   type DatasetMetrics,
   TranslationT,
+  getDescriptionShort,
 } from '@datagouv/components-next'
 import {
   RiDeleteBinLine,
@@ -482,7 +483,7 @@ import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
-import { useElementSize } from '@vueuse/core'
+import { computedAsync, useElementSize } from '@vueuse/core'
 
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -510,7 +511,7 @@ const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
 
 const title = computed(() => t('Jeu de données - {title} | {site}', { title: dataset.value?.title ?? '', site: config.public.title }))
 const robots = computed(() => dataset.value && dataset.value.archived ? 'noindex' : 'all')
-const description = computed(() => dataset.value?.description_short)
+const description = computedAsync(async () => await getDescriptionShort(dataset.value?.description, dataset.value?.description_short))
 
 useSeoMeta({
   title,

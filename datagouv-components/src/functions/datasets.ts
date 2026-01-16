@@ -35,7 +35,7 @@ export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Datas
  */
 export async function getDescriptionShort(
   description: string | null | undefined,
-  descriptionShort: string | null | undefined,
+  descriptionShort?: string | null | undefined,
 ): Promise<string> {
   if (descriptionShort?.trim()) {
     return descriptionShort

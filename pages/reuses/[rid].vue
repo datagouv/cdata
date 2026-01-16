@@ -170,12 +170,13 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, Avatar, BrandedButton, LoadingBlock, OrganizationNameWithCertificate, ReuseDetails, type Reuse, OrganizationLogo } from '@datagouv/components-next'
+import { isOrganizationCertified, Avatar, BrandedButton, LoadingBlock, OrganizationNameWithCertificate, ReuseDetails, type Reuse, OrganizationLogo, getDescriptionShort } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
+import { computedAsync } from '@vueuse/core'
 
 definePageMeta({
   keepScroll: true,
@@ -188,7 +189,7 @@ const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
 const { data: reuse, status } = await useAPI<Reuse>(url, { redirectOn404: true, redirectOnSlug: 'rid' })
 
 const title = computed(() => `Réutilisation - ${reuse.value?.title} | ${config.public.title}`)
-const description = computed(() => reuse.value?.description ?? '')
+const description = computedAsync(async () => await getDescriptionShort(reuse.value?.description))
 const robots = computed(() => reuse.value && !reuse.value.metrics.datasets && !reuse.value.metrics.datasets ? 'noindex, nofollow' : 'all')
 
 useSeoMeta({
