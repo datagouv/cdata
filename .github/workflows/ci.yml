@@ -54,6 +54,7 @@ jobs:
           path: ${{ github.workspace }}/.output
           retention-days: 1
           if-no-files-found: error
+          include-hidden-files: true
 
   # ============================================
   # JOB 2: Quality - lint + typecheck (runs in parallel with build)
