@@ -5,7 +5,7 @@
   >
     <img
       :src="image"
-      :alt="title"
+      alt=""
       class="w-full md:w-[225px] md:h-[130px] object-cover object-left-bottom flex-shrink-0 border border-gray-default rounded-lg"
     >
     <div class="flex-1">
