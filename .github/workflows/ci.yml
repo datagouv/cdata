@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: ['*']
     tags: ['v*']
   pull_request:
 
@@ -44,14 +44,11 @@ jobs:
         env:
           NUXT_PUBLIC_COMMIT_ID: ${{ github.sha }}
 
-      - name: List build output
-        run: ls -la .output/
-
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-output
-          path: ${{ github.workspace }}/.output
+          path: .output
           retention-days: 1
           if-no-files-found: error
           include-hidden-files: true
@@ -123,7 +120,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-output
-          path: ${{ github.workspace }}/.output
+          path: .output
 
       - name: Checkout udata
         uses: actions/checkout@v4
@@ -269,9 +266,9 @@ jobs:
           retention-days: 7
 
   # ============================================
-  # JOB 4: Publish - build & push Docker image (all branches, not PRs)
+  # JOB 4: Docker - build & push Docker image (all branches, not PRs)
   # ============================================
-  publish:
+  docker:
     needs: [quality, e2e]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -288,7 +285,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-output
-          path: ${{ github.workspace }}/.output
+          path: .output
 
       - name: Set version
         id: version
@@ -336,7 +333,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-output
-          path: ${{ github.workspace }}/.output
+          path: .output
 
       - name: Set version
         id: version
