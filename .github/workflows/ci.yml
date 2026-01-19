@@ -2,9 +2,6 @@ name: CI
 
 on:
   push:
-    branches: ['*']
-    tags: ['v*']
-  pull_request:
 
 env:
   REGISTRY: ghcr.io
@@ -270,7 +267,6 @@ jobs:
   # ============================================
   docker:
     needs: [quality, e2e]
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -324,7 +320,6 @@ jobs:
   # ============================================
   sentry:
     needs: [quality, e2e]
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
