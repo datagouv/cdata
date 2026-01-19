@@ -42,10 +42,10 @@
             </a>
           </h4>
           <Suspense>
-            <AsyncTextClamp
+            <TextClamp
               class="fr-mt-1w fr-mb-2w fr-hidden fr-unhidden-sm overflow-wrap-anywhere"
               :auto-resize="true"
-              :text="removeMarkdown(organization.description)"
+              :text="removeMarkdownSync(organization.description)"
               :max-lines="2"
             />
           </Suspense>
@@ -97,7 +97,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, OrganizationLogo, PaddedContainer } from '@datagouv/components-next'
-import { removeMarkdown, SimpleBanner, type Organization } from '@datagouv/components-next'
+import { removeMarkdownSync, SimpleBanner, type Organization } from '@datagouv/components-next'
 
 defineProps<{
   organization: Organization
