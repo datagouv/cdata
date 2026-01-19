@@ -2,7 +2,7 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# Copier uniquement .output (pré-buildé par la CI)
+# Copy only .output (pre-built by CI)
 COPY .output/ .output/
 
 EXPOSE 3000

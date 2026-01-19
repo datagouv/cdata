@@ -12,7 +12,7 @@ env:
 
 jobs:
   # ============================================
-  # JOB 1: Build - génère les artifacts une seule fois
+  # JOB 1: Build - generates artifacts once
   # ============================================
   build:
     runs-on: ubuntu-latest
@@ -44,18 +44,21 @@ jobs:
         env:
           NUXT_PUBLIC_COMMIT_ID: ${{ github.sha }}
 
+      - name: List build output
+        run: ls -la .output/
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-output
           path: .output/
           retention-days: 1
+          if-no-files-found: error
 
   # ============================================
-  # JOB 2: Quality - lint + typecheck (en parallèle avec e2e)
+  # JOB 2: Quality - lint + typecheck (runs in parallel with build)
   # ============================================
   quality:
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -91,7 +94,7 @@ jobs:
         run: pnpm run lint
 
   # ============================================
-  # JOB 3: E2E Tests (en parallèle avec quality)
+  # JOB 3: E2E Tests (runs in parallel with quality)
   # ============================================
   e2e:
     needs: build
@@ -265,7 +268,7 @@ jobs:
           retention-days: 7
 
   # ============================================
-  # JOB 4: Publish - build & push Docker image (toutes les branches, pas les PRs)
+  # JOB 4: Publish - build & push Docker image (all branches, not PRs)
   # ============================================
   publish:
     needs: [quality, e2e]
@@ -319,7 +322,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   # ============================================
-  # JOB 5: Sentry - upload source maps (en parallèle avec publish)
+  # JOB 5: Sentry - upload source maps (runs in parallel with publish)
   # ============================================
   sentry:
     needs: [quality, e2e]
