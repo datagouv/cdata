@@ -254,7 +254,7 @@ import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
-import { computedAsync, useElementSize } from '@vueuse/core'
+import { useElementSize } from '@vueuse/core'
 
 definePageMeta({
   keepScroll: true,
@@ -275,7 +275,7 @@ const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
 const { data: dataservice, status } = await useAPI<Dataservice>(url, { redirectOn404: true, redirectOnSlug: 'did' })
 
 const title = computed(() => `API - ${dataservice.value?.title} | ${config.public.title}`)
-const description = computedAsync(async () => await getDescriptionShort(dataservice.value?.description))
+const description = computed(() => dataservice.value ? getDescriptionShort(dataservice.value) : '')
 const robots = computed(() => dataservice.value && dataservice.value.archived_at ? 'noindex' : 'all')
 
 useSeoMeta({

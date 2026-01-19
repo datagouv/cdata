@@ -9,10 +9,10 @@ export const DESCRIPTION_MIN_LENGTH = 200
  * If description_short is provided, it is used.
  * Otherwise, the first DESCRIPTION_SHORT_MAX_LENGTH characters of description are used.
  */
-export function getDescriptionShort(
-  description: string | null | undefined,
-  descriptionShort?: string | null | undefined,
-) {
+export function getDescriptionShort({ description, descriptionShort }: {
+  description: string | null | undefined
+  descriptionShort?: string | null | undefined
+}) {
   if (descriptionShort?.trim()) {
     return descriptionShort
   }
