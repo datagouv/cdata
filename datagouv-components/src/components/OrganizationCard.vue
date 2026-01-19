@@ -60,8 +60,8 @@
       </div>
       <p class="mt-1 mb-0">
         <TextClamp
-          v-if="description"
-          :text="description"
+          v-if="organization.description"
+          :text="removeMarkdownSync(organization.description)"
           :max-lines="3"
         />
       </p>
@@ -71,8 +71,8 @@
 
 <script setup lang="ts">
 import { RiLineChartLine, RiDatabase2Line, RiTerminalLine, RiSubtractLine } from '@remixicon/vue'
-import { computed, ref, watchEffect } from 'vue'
-import { removeMarkdown } from '../functions/markdown'
+import { computed } from 'vue'
+import { removeMarkdownSync } from '../functions/markdown'
 import { getOrganizationType } from '../functions/organizations'
 import type { Organization } from '../types/organizations'
 import OwnerType from './OwnerType.vue'
@@ -87,9 +87,4 @@ const props = defineProps<{
 const { t } = useTranslation()
 
 const type = computed(() => getOrganizationType(props.organization))
-
-const description = ref('')
-watchEffect(async () => {
-  description.value = await removeMarkdown(props.organization.description)
-})
 </script>

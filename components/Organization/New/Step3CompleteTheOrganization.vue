@@ -41,14 +41,12 @@
               <small v-if="organization.acronym">{{ organization.acronym }}</small>
             </a>
           </h4>
-          <Suspense>
-            <AsyncTextClamp
-              class="fr-mt-1w fr-mb-2w fr-hidden fr-unhidden-sm overflow-wrap-anywhere"
-              :auto-resize="true"
-              :text="removeMarkdown(organization.description)"
-              :max-lines="2"
-            />
-          </Suspense>
+          <TextClamp
+            class="fr-mt-1w fr-mb-2w fr-hidden fr-unhidden-sm overflow-wrap-anywhere"
+            :auto-resize="true"
+            :text="removeMarkdownSync(organization.description)"
+            :max-lines="2"
+          />
         </div>
       </div>
     </article>
@@ -97,7 +95,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, OrganizationLogo, PaddedContainer } from '@datagouv/components-next'
-import { removeMarkdown, SimpleBanner, type Organization } from '@datagouv/components-next'
+import { removeMarkdownSync, SimpleBanner, type Organization } from '@datagouv/components-next'
 
 defineProps<{
   organization: Organization
