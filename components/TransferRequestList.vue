@@ -7,7 +7,7 @@
       v-for="transfer in transfers"
       :key="transfer.id"
       :transfer
-      @done="refresh(); $emit('done')"
+      @done="done"
     />
   </div>
 </template>
@@ -20,9 +20,12 @@ const props = defineProps<{
   type: 'Dataset' | 'Dataservice' | 'Reuse'
   recipient: User | Organization
 }>()
-defineEmits<{
+
+const emits = defineEmits<{
   (e: 'done'): void
 }>()
+
+const { refreshNotifications } = useNotifications()
 
 const params = computed(() => {
   return {
@@ -33,4 +36,10 @@ const params = computed(() => {
   }
 })
 const { data: transfers, refresh: refresh } = await useAPI<Array<TransferRequest>>('/api/1/transfer/', { lazy: true, query: params })
+
+function done() {
+  refresh()
+  refreshNotifications()
+  emits('done')
+}
 </script>

@@ -117,23 +117,23 @@
     </div>
     <component
       :is="config.textClamp"
-      v-if="config.textClamp && description && showDescription"
+      v-if="config.textClamp && dataservice.description && showDescription"
       class="text-sm mt-2 mb-0"
       :auto-resize="true"
-      :text="description"
+      :text="removeMarkdownSync(dataservice.description)"
       :max-lines="2"
     />
   </article>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue'
+import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { RiEyeLine, RiLockLine, RiPassValidLine, RiSparklingLine, RiStarLine, RiSubtractLine, RiTerminalLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../config'
 import { useFormatDate } from '../functions/dates'
 import { summarize } from '../functions/helpers'
-import { removeMarkdown } from '../functions/markdown'
+import { removeMarkdownSync } from '../functions/markdown'
 import { getOwnerName } from '../functions/owned'
 import type { Dataservice } from '../types/dataservices'
 import { useTranslation } from '../composables/useTranslation'
@@ -172,11 +172,6 @@ const showBadge = computed(() => props.dataservice.access_type === 'restricted' 
 const config = useComponentsConfig()
 const isTabularApi = computed(() => {
   return config.tabularApiDataserviceId === props.dataservice.id
-})
-
-const description = ref('')
-watchEffect(async () => {
-  description.value = await removeMarkdown(props.dataservice.description)
 })
 </script>
 
