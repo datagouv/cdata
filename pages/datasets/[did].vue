@@ -468,6 +468,7 @@ import {
   useMetrics,
   type DatasetMetrics,
   TranslationT,
+  getDescriptionShort,
 } from '@datagouv/components-next'
 import {
   RiDeleteBinLine,
@@ -510,7 +511,7 @@ const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
 
 const title = computed(() => t('Jeu de données - {title} | {site}', { title: dataset.value?.title ?? '', site: config.public.title }))
 const robots = computed(() => dataset.value && dataset.value.archived ? 'noindex' : 'all')
-const description = computed(() => dataset.value?.description_short)
+const description = computed(() => dataset.value ? getDescriptionShort(dataset.value) : '')
 
 useSeoMeta({
   title,
