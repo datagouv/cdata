@@ -67,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
 
 definePageMeta({
   matomoIgnore: true,
@@ -76,6 +76,9 @@ definePageMeta({
 const { t } = useTranslation()
 
 useSeoMeta({ title: t('Connexion') })
+
+const me = useMe()
+
 const route = useRoute()
 
 const {
@@ -98,9 +101,10 @@ onMounted(async () => {
 })
 
 const submit = async () => {
-  const success = await validateCode()
+  validateCode(async () => {
+    toast.success(t('Vous êtes maintenant connecté.'))
+    await loadMe(me)
 
-  if (success) {
     const next = sessionStorage.getItem('next')
     if (next) {
       navigateTo(next)
@@ -108,7 +112,7 @@ const submit = async () => {
     else {
       await navigateTo('/')
     }
-  }
+  })
 }
 
 useSeoMeta({ robots: 'noindex' })
