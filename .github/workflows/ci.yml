@@ -4,8 +4,8 @@ on:
   push:
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  CONTAINER_REGISTRY_URL: ${{ vars.CONTAINER_REGISTRY_URL }}
+  APP_NAME: ${{ vars.APP_NAME }}
 
 jobs:
   # ============================================
@@ -270,7 +270,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
       version: ${{ steps.version.outputs.short }}
@@ -289,18 +288,18 @@ jobs:
           echo "short=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
           echo "long=$GITHUB_SHA" >> $GITHUB_OUTPUT
 
-      - name: Log in to GHCR
+      - name: Log in to GitLab Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ env.CONTAINER_REGISTRY_URL }}
+          username: oauth2
+          password: ${{ secrets.GITLAB_API_TOKEN }}
 
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.CONTAINER_REGISTRY_URL }}/${{ env.APP_NAME }}
           tags: |
             type=sha,format=short,prefix=
             type=sha,format=long,prefix=
