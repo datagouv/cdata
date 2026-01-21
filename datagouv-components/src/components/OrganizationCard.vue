@@ -60,7 +60,7 @@
       </div>
       <p class="mt-1 mb-0">
         <TextClamp
-          v-if="organization.description"
+          v-if="'description' in organization"
           :text="removeMarkdownSync(organization.description)"
           :max-lines="3"
         />
