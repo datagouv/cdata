@@ -17,6 +17,8 @@ test.describe('Discussions as normal user', () => {
     const dataset = await response.json()
 
     await page.goto(`/datasets/${dataset.id}/`)
+    // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
+    await page.waitForLoadState('networkidle')
 
     // Navigate to discussions tab
     await page.getByRole('link', { name: 'Discussions' }).click()

@@ -346,6 +346,8 @@
                   { name: 'ecologie', url: 'https://ecologie.data.gouv.fr' },
                   { name: 'transport', url: 'https://transport.data.gouv.fr' },
                   { name: 'météo', url: 'https://meteo.data.gouv.fr' },
+                  { name: 'culture', url: 'https://culture.data.gouv.fr' },
+                  { name: 'logistique', url: 'https://logistique.data.gouv.fr' },
                 ]"
                 :key="platform.name"
                 class="relative bg-gray-disabled p-4 space-y-2 hover:bg-gray-plain"
@@ -388,6 +390,26 @@
                 >
                   <template #name>
                     <strong>Météo-France</strong>
+                  </template>
+                </TranslationT>
+                <TranslationT
+                  v-if="platform.name === 'culture'"
+                  tag="p"
+                  class="mb-0 text-gray-silver"
+                  keypath="Les données publiques relatives à la Culture en France en partenariat avec le {name}."
+                >
+                  <template #name>
+                    <strong>Ministère de la Culture</strong>
+                  </template>
+                </TranslationT>
+                <TranslationT
+                  v-if="platform.name === 'logistique'"
+                  tag="p"
+                  class="mb-0 text-gray-silver"
+                  keypath="Les données relatives à la logistique en partenariat avec la {name}."
+                >
+                  <template #name>
+                    <strong>Direction Générale des Infrastructures, des Transports et des Mobilités</strong>
                   </template>
                 </TranslationT>
               </div>
@@ -455,7 +477,7 @@ const config = useRuntimeConfig()
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
-const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts/')
+const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts/', { params: { kind: 'news' } })
 const { data: site } = await useAPI<Site>('/api/1/site/')
 
 const lastPost = computed(() => {

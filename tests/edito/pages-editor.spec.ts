@@ -1,5 +1,22 @@
 import { test, expect } from '@playwright/test'
 
+test('can save edito page from admin without error toast', async ({ page }) => {
+  await page.goto('/admin/site/edito/datasets')
+  await page.waitForLoadState('networkidle')
+
+  // Wait for page to be loaded
+  await expect(page.getByRole('button', { name: 'Sauvegarder' })).toBeVisible()
+
+  // Save the page
+  await page.getByRole('button', { name: 'Sauvegarder' }).click()
+
+  // Wait for toast to appear - should be success, not error
+  await expect(page.getByText('Page sauvegardée')).toBeVisible({ timeout: 5000 })
+
+  // Verify error toast is NOT visible
+  await expect(page.getByText('Erreur lors de la sauvegarde')).not.toBeVisible()
+})
+
 test('can edit edito page with all bloc types', async ({ page }) => {
   // Go directly to the datasets page in edit mode
   await page.goto('/datasets?edit=true')
@@ -21,20 +38,46 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after deleting all blocs
   await page.screenshot({ path: 'tests/edito/screenshots/01b-empty-page.png', fullPage: true })
 
-  // === Step 1: Add a DatasetsListBloc with multiple datasets ===
+  // === Step 1: Add a HeroBloc ===
   await page.getByRole('button', { name: 'Ajouter un bloc' }).first().click()
+  await page.getByText('Hero').click()
+  await page.waitForTimeout(300)
+
+  // Edit the hero title (it has a default "Titre")
+  const heroTitle = page.locator('.bg-new-blue-illustration [contenteditable="true"]').first()
+  await heroTitle.click()
+  await heroTitle.fill('Bienvenue sur data.gouv.fr')
+  await page.mouse.click(1, 1)
+
+  // Add a description
+  await page.getByText('Ajouter une description').click()
+  await page.waitForTimeout(200)
+  const heroDescription = page.locator('.bg-new-blue-illustration [contenteditable="true"]').nth(1)
+  await heroDescription.click()
+  await heroDescription.fill('La plateforme ouverte des données publiques françaises')
+  await page.mouse.click(1, 1)
+
+  // Change the color to green
+  await page.locator('.bg-new-green-illustration.size-8').click()
+  await page.waitForTimeout(200)
+
+  // Debug screenshot: after adding hero bloc
+  await page.screenshot({ path: 'tests/edito/screenshots/01c-hero-bloc.png', fullPage: true })
+
+  // === Step 2: Add a DatasetsListBloc with multiple datasets ===
+  await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
   await page.getByText('Données à la une').click()
   await page.waitForTimeout(300)
 
-  // Edit the title
-  const datasetsBlocTitle = page.locator('[contenteditable="true"]').first()
+  // Edit the title (use container to avoid hero bloc)
+  const datasetsBlocTitle = page.locator('.container [contenteditable="true"]').first()
   await datasetsBlocTitle.click()
   await datasetsBlocTitle.fill('Nos jeux de données phares')
   await page.mouse.click(1, 1)
 
   // Add subtitle
   await page.getByText('Ajouter un sous-titre').first().click()
-  const datasetsSubtitle = page.locator('[contenteditable="true"]').nth(1)
+  const datasetsSubtitle = page.locator('.container [contenteditable="true"]').nth(1)
   await datasetsSubtitle.click()
   await datasetsSubtitle.fill('Découvrez les données les plus consultées')
   await page.mouse.click(1, 1)
@@ -65,7 +108,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding datasets
   await page.screenshot({ path: 'tests/edito/screenshots/02-datasets-bloc.png', fullPage: true })
 
-  // === Step 2: Add a ReusesListBloc with multiple reuses ===
+  // === Step 3: Add a ReusesListBloc with multiple reuses ===
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
   await page.getByText('Réutilisations à la une').click()
   await page.waitForTimeout(300)
@@ -102,7 +145,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding reuses
   await page.screenshot({ path: 'tests/edito/screenshots/03-reuses-bloc.png', fullPage: true })
 
-  // === Step 3: Add a DataservicesListBloc with multiple APIs ===
+  // === Step 4: Add a DataservicesListBloc with multiple APIs ===
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
   await page.getByText('APIs à la une').click()
   await page.waitForTimeout(300)
@@ -139,7 +182,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding dataservices
   await page.screenshot({ path: 'tests/edito/screenshots/04-dataservices-bloc.png', fullPage: true })
 
-  // === Step 4: Add a LinksListBloc WITH paragraph ===
+  // === Step 5: Add a LinksListBloc WITH paragraph ===
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
   await page.getByText('Liens à la une').click()
   await page.waitForTimeout(300)
@@ -188,7 +231,27 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding links bloc with paragraph
   await page.screenshot({ path: 'tests/edito/screenshots/05-links-bloc-with-paragraph.png', fullPage: true })
 
-  // === Step 5: Add a LinksListBloc WITHOUT paragraph ===
+  // === Step 5b: Add a MarkdownBloc ===
+  await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
+  await page.getByText('Bloc Markdown').click()
+  await page.waitForTimeout(300)
+
+  // Type some markdown content in the editor
+  const markdownEditor = page.locator('.milkdown').last()
+  await markdownEditor.click()
+  await page.keyboard.type('# Titre de section')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('Voici un paragraphe avec du **texte en gras** et du *texte en italique*.')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('- Premier élément')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('- Deuxième élément')
+
+  // Debug screenshot: after adding markdown bloc
+  await page.screenshot({ path: 'tests/edito/screenshots/05b-markdown-bloc.png', fullPage: true })
+
+  // === Step 6: Add a LinksListBloc WITHOUT paragraph ===
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
   await page.getByText('Liens à la une').click()
   await page.waitForTimeout(300)
@@ -228,13 +291,44 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding links bloc without paragraph
   await page.screenshot({ path: 'tests/edito/screenshots/06-links-bloc-without-paragraph.png', fullPage: true })
 
-  // === Step 6: Test bloc manipulation ===
+  // === Step 7: Add an AccordionBloc ===
+  await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
+  await page.getByText('Accordéon').click()
+  await page.waitForTimeout(300)
+
+  // Add a description
+  await page.getByText('Ajouter une description').click()
+  await page.waitForTimeout(300)
+
+  const accordionDescription = page.locator('p[contenteditable="true"]').last()
+  await accordionDescription.click()
+  await accordionDescription.fill('Questions fréquemment posées')
+  await page.mouse.click(1, 1)
+
+  // Add first accordion item by typing the title character by character
+  // This tests that spaces can be typed (they were blocked by DisclosureButton before the fix)
+  const firstItemTitle = page.getByTestId('accordion-new-item-title')
+  await firstItemTitle.click()
+  await firstItemTitle.pressSequentially('Comment acceder aux donnees ?')
+  await page.mouse.click(1, 1)
+  await page.waitForTimeout(300)
+
+  // Add second accordion item by filling the placeholder accordion title
+  const secondItemTitle = page.getByTestId('accordion-new-item-title')
+  await secondItemTitle.click()
+  await secondItemTitle.fill('Où trouver de l\'aide ?')
+  await page.mouse.click(1, 1)
+
+  // Debug screenshot: after adding accordion bloc
+  await page.screenshot({ path: 'tests/edito/screenshots/07-accordion-bloc.png', fullPage: true })
+
+  // === Step 8: Test bloc manipulation ===
   // Move the first bloc down
   await page.locator('[title="Descendre"]').first().click()
   await page.waitForTimeout(300)
 
   // Debug screenshot: after moving bloc down
-  await page.screenshot({ path: 'tests/edito/screenshots/07-bloc-moved-down.png', fullPage: true })
+  await page.screenshot({ path: 'tests/edito/screenshots/08-bloc-moved-down.png', fullPage: true })
 
   // Move it back up
   await page.locator('[title="Monter"]').nth(1).click()
@@ -245,7 +339,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.waitForTimeout(300)
 
   // Debug screenshot: after deleting reuses bloc
-  await page.screenshot({ path: 'tests/edito/screenshots/08-reuses-bloc-deleted.png', fullPage: true })
+  await page.screenshot({ path: 'tests/edito/screenshots/09-reuses-bloc-deleted.png', fullPage: true })
 
   // Re-add a reuses bloc and add some reuses to it
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
@@ -276,19 +370,19 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   }
 
   // Debug screenshot: after re-adding reuses bloc
-  await page.screenshot({ path: 'tests/edito/screenshots/09-reuses-bloc-readded.png', fullPage: true })
+  await page.screenshot({ path: 'tests/edito/screenshots/10-reuses-bloc-readded.png', fullPage: true })
 
-  // === Step 7: Save the page ===
+  // === Step 9: Save the page ===
   await page.getByRole('button', { name: 'Sauvegarder' }).click()
   await page.waitForTimeout(1000)
 
   // Debug screenshot: after saving
-  await page.screenshot({ path: 'tests/edito/screenshots/10-after-save.png', fullPage: true })
+  await page.screenshot({ path: 'tests/edito/screenshots/11-after-save.png', fullPage: true })
 
   // Wait for the toast to confirm save
   await expect(page.getByText('Page créée').or(page.getByText('Page sauvegardée'))).toBeVisible()
 
-  // === Step 8: Final screenshot for visual regression ===
+  // === Step 10: Final screenshot for visual regression ===
   await page.waitForLoadState('networkidle')
   await page.waitForTimeout(500)
 

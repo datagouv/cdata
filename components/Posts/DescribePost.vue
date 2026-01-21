@@ -37,12 +37,24 @@
       </div>
       <div class="fr-fieldset__element">
         <RadioButtons
+          v-model="form.kind"
+          :label="t('Type d\'article')"
+          class="!mb-0"
+          :options="[
+            { value: 'news', label: t('Actualité') },
+            { value: 'page', label: t('Page') },
+          ]"
+        />
+      </div>
+      <div class="fr-fieldset__element">
+        <RadioButtons
           v-model="form.body_type"
           :label="t('Type de contenu')"
           class="!mb-0"
           :options="[
             { value: 'html', label: t('HTML') },
             { value: 'markdown', label: t('Markdown') },
+            { value: 'blocs', label: t('Blocs') },
           ]"
         />
       </div>

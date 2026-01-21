@@ -229,7 +229,7 @@ const editor = useEditor(root =>
       })
 
       ctx.set(paragraphAttr.key, () => ({ class: 'text-sm' }))
-      ctx.set(linkAttr.key, () => ({ class: 'fr-link' }))
+      ctx.set(linkAttr.key, () => ({ class: 'link' }))
       ctx.get(listenerCtx).markdownUpdated((_ctx, markdown, _prevMarkdown) => onChange(markdown))
       ctx.get(listenerCtx).mounted((_ctx) => {
         emit('editorMounted')
