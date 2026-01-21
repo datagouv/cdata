@@ -5,7 +5,7 @@
     </div>
     <div class="flex-1 truncate">
       <p class="m-0 text-xs font-bold">
-        {{ $t(`Votre organisation a été certifiée`) }}
+        {{ $t(`Votre organisation a été {badge}`, { badge }) }}
       </p>
       <OrganizationOwner
         :organization="notification.details.organization as OrganizationReference"
@@ -41,18 +41,36 @@
 <script setup lang="ts">
 import { RiCheckboxCircleLine } from '@remixicon/vue'
 import type { DeepReadonly } from 'vue'
-import { AnimatedLoader, useFormatDate } from '@datagouv/components-next'
+import { AnimatedLoader, throwOnNever, useFormatDate } from '@datagouv/components-next'
 import type { OrganizationReference } from '@datagouv/components-next'
-import type { CertifiedNotification } from '~/types/notifications'
+import type { NewBadgeNotification } from '~/types/notifications'
 
 const props = defineProps<{
-  notification: DeepReadonly<CertifiedNotification>
+  notification: DeepReadonly<NewBadgeNotification>
 }>()
 
 const { refreshNotifications } = useNotifications()
 const { formatDate } = useFormatDate()
 const { $api } = useNuxtApp()
+const { t } = useTranslation()
 const loading = ref(false)
+
+const badge = computed(() => {
+  switch (props.notification.details.kind) {
+    case 'certified':
+      return t('certifiée')
+    case 'association':
+      return t('identifiée comme association')
+    case 'company':
+      return t('identifiée comme entreprise')
+    case 'local-authority':
+      return t('identifiée comme collectivité territoriale')
+    case 'public-service':
+      return t('identifiée comme service public')
+    default:
+      return throwOnNever(props.notification.details.kind, 'No other type')
+  }
+})
 
 async function markAsRead() {
   try {
