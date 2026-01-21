@@ -9,7 +9,7 @@
       <!-- Add button above the bloc (absolute positioned) -->
       <div
         v-if="edit"
-        class="absolute -top-4 left-0 right-0 flex items-center justify-center z-20"
+        class="absolute -top-4 left-0 right-0 flex items-center justify-center"
       >
         <AddBlocDropdown @new-bloc="workingPage.blocs.splice(index, 0, $event)">
           <BrandedButton
@@ -49,89 +49,32 @@
         />
       </div>
 
-      <!-- HeroBloc has its own full-width layout -->
-      <HeroBloc
-        v-if="bloc.class === 'HeroBloc'"
-        v-model="(workingPage.blocs[index] as HeroBlocType)"
+      <!-- Full-width blocs (like HeroBloc) -->
+      <component
+        :is="blocsTypes[bloc.class].component"
+        v-if="'fullWidth' in blocsTypes[bloc.class]"
+        v-model="(workingPage.blocs[index] as any)"
         :edit
+        :main-color="mainColor"
       />
 
-      <!-- Other blocs use container layout with title/subtitle -->
+      <!-- Other blocs use container layout -->
       <div
         v-else
-        class="container space-y-6"
+        class="container"
       >
-        <div class="space-y-2.5">
-          <!-- Editable title -->
-          <EditableText
-            v-if="edit"
-            v-model="bloc.title"
-            class="text-gray-title text-3xl font-extrabold"
-          />
-          <div
-            v-else
-            class="text-gray-title text-3xl font-extrabold"
-          >
-            {{ bloc.title }}
-          </div>
-
-          <!-- Editable subtitle -->
-          <EditableText
-            v-if="edit && bloc.subtitle"
-            v-model="bloc.subtitle"
-            class="text-gray-plain"
-          />
-          <div
-            v-else-if="bloc.subtitle"
-            class="text-gray-plain"
-          >
-            {{ bloc.subtitle }}
-          </div>
-          <button
-            v-else-if="edit"
-            class="text-gray-400 hover:text-gray-600 text-sm"
-            @click="bloc.subtitle = $t('Sous-titre')"
-          >
-            + {{ $t('Ajouter un sous-titre') }}
-          </button>
-        </div>
-
-        <DatasetsListBloc
-          v-if="bloc.class === 'DatasetsListBloc'"
-          v-model="(workingPage.blocs[index] as DatasetsListBlocType)"
-          :edit
-        />
-
-        <DataservicesListBloc
-          v-if="bloc.class === 'DataservicesListBloc'"
-          v-model="(workingPage.blocs[index] as DataservicesListBlocType)"
-          :edit
-        />
-
-        <ReusesListBloc
-          v-if="bloc.class === 'ReusesListBloc'"
-          v-model="(workingPage.blocs[index] as ReusesListBlocType)"
-          :edit
-        />
-
-        <LinksListBloc
-          v-if="bloc.class === 'LinksListBloc'"
-          v-model="(workingPage.blocs[index] as LinksListBlocType)"
+        <component
+          :is="blocsTypes[bloc.class].component"
+          v-model="(workingPage.blocs[index] as any)"
           :edit
           :main-color="mainColor"
-        />
-
-        <MarkdownBloc
-          v-if="bloc.class === 'MarkdownBloc'"
-          v-model="(workingPage.blocs[index] as MarkdownBlocType)"
-          :edit
         />
       </div>
 
       <!-- Add button below the last bloc -->
       <div
         v-if="edit && index === workingPage.blocs.length - 1"
-        class="absolute -bottom-4 left-0 right-0 flex items-center justify-center z-20"
+        class="absolute -bottom-4 left-0 right-0 flex items-center justify-center"
       >
         <AddBlocDropdown @new-bloc="workingPage.blocs.push($event)">
           <BrandedButton
@@ -185,23 +128,10 @@
 import type { ComponentProps } from 'vue-component-type-helpers'
 import { BrandedButton } from '@datagouv/components-next'
 import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine } from '@remixicon/vue'
-import EditableText from './EditableText.vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
-import DatasetsListBloc from './DatasetsListBloc.vue'
-import DataservicesListBloc from './DataservicesListBloc.vue'
-import ReusesListBloc from './ReusesListBloc.vue'
-import LinksListBloc from './LinksListBloc.vue'
-import MarkdownBloc from './MarkdownBloc.vue'
-import HeroBloc from './HeroBloc.vue'
-import type {
-  Page,
-  DatasetsListBloc as DatasetsListBlocType,
-  DataservicesListBloc as DataservicesListBlocType,
-  ReusesListBloc as ReusesListBlocType,
-  LinksListBloc as LinksListBlocType,
-  MarkdownBloc as MarkdownBlocType,
-  HeroBloc as HeroBlocType,
-} from '~/types/pages'
+import type { Page } from '~/types/pages'
+
+const blocsTypes = useBlocsTypes()
 
 const props = withDefaults(defineProps<{
   page: Page

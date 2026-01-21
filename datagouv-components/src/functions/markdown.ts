@@ -62,7 +62,7 @@ export function formatMarkdown(md: string, minDepth = 3) {
   return String(result)
 }
 
-export async function removeMarkdown(text: string) {
+export async function removeMarkdownAsync(text: string) {
   const file = await unified()
     // Take Markdown as input and turn it into MD syntax tree
     .use(remarkParse, { fragment: true })
@@ -72,6 +72,19 @@ export async function removeMarkdown(text: string) {
     .process(text)
   return String(file)
 }
+
+export function removeMarkdownSync(text: string) {
+  const file = unified()
+    // Take Markdown as input and turn it into MD syntax tree
+    .use(remarkParse, { fragment: true })
+    .use(remarkGfm)
+    .use(strip)
+    .use(remarkStringify)
+    .processSync(text)
+  return String(file)
+}
+
+export { removeMarkdownAsync as removeMarkdown }
 
 const prose = 'prose prose-neutral max-w-none prose-strong:text-gray-plain'
 const proseSm = 'prose-p:text-sm prose-sm'

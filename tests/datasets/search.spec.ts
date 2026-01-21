@@ -131,6 +131,8 @@ test('badge filter persists on page reload', async ({ page }) => {
 
 test('clicking dataset navigates to detail', async ({ page }) => {
   await page.goto('/datasets/search/')
+  // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   const datasetLink = page.getByRole('link', { name: /SIRENE/i }).first()
   await expect(datasetLink).toBeVisible()

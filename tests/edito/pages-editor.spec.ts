@@ -1,5 +1,22 @@
 import { test, expect } from '@playwright/test'
 
+test('can save edito page from admin without error toast', async ({ page }) => {
+  await page.goto('/admin/site/edito/datasets')
+  await page.waitForLoadState('networkidle')
+
+  // Wait for page to be loaded
+  await expect(page.getByRole('button', { name: 'Sauvegarder' })).toBeVisible()
+
+  // Save the page
+  await page.getByRole('button', { name: 'Sauvegarder' }).click()
+
+  // Wait for toast to appear - should be success, not error
+  await expect(page.getByText('Page sauvegardée')).toBeVisible({ timeout: 5000 })
+
+  // Verify error toast is NOT visible
+  await expect(page.getByText('Erreur lors de la sauvegarde')).not.toBeVisible()
+})
+
 test('can edit edito page with all bloc types', async ({ page }) => {
   // Go directly to the datasets page in edit mode
   await page.goto('/datasets?edit=true')
@@ -274,13 +291,44 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding links bloc without paragraph
   await page.screenshot({ path: 'tests/edito/screenshots/06-links-bloc-without-paragraph.png', fullPage: true })
 
-  // === Step 7: Test bloc manipulation ===
+  // === Step 7: Add an AccordionBloc ===
+  await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
+  await page.getByText('Accordéon').click()
+  await page.waitForTimeout(300)
+
+  // Add a description
+  await page.getByText('Ajouter une description').click()
+  await page.waitForTimeout(300)
+
+  const accordionDescription = page.locator('p[contenteditable="true"]').last()
+  await accordionDescription.click()
+  await accordionDescription.fill('Questions fréquemment posées')
+  await page.mouse.click(1, 1)
+
+  // Add first accordion item by typing the title character by character
+  // This tests that spaces can be typed (they were blocked by DisclosureButton before the fix)
+  const firstItemTitle = page.getByTestId('accordion-new-item-title')
+  await firstItemTitle.click()
+  await firstItemTitle.pressSequentially('Comment acceder aux donnees ?')
+  await page.mouse.click(1, 1)
+  await page.waitForTimeout(300)
+
+  // Add second accordion item by filling the placeholder accordion title
+  const secondItemTitle = page.getByTestId('accordion-new-item-title')
+  await secondItemTitle.click()
+  await secondItemTitle.fill('Où trouver de l\'aide ?')
+  await page.mouse.click(1, 1)
+
+  // Debug screenshot: after adding accordion bloc
+  await page.screenshot({ path: 'tests/edito/screenshots/07-accordion-bloc.png', fullPage: true })
+
+  // === Step 8: Test bloc manipulation ===
   // Move the first bloc down
   await page.locator('[title="Descendre"]').first().click()
   await page.waitForTimeout(300)
 
   // Debug screenshot: after moving bloc down
-  await page.screenshot({ path: 'tests/edito/screenshots/07-bloc-moved-down.png', fullPage: true })
+  await page.screenshot({ path: 'tests/edito/screenshots/08-bloc-moved-down.png', fullPage: true })
 
   // Move it back up
   await page.locator('[title="Monter"]').nth(1).click()
@@ -291,7 +339,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.waitForTimeout(300)
 
   // Debug screenshot: after deleting reuses bloc
-  await page.screenshot({ path: 'tests/edito/screenshots/08-reuses-bloc-deleted.png', fullPage: true })
+  await page.screenshot({ path: 'tests/edito/screenshots/09-reuses-bloc-deleted.png', fullPage: true })
 
   // Re-add a reuses bloc and add some reuses to it
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
@@ -322,19 +370,19 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   }
 
   // Debug screenshot: after re-adding reuses bloc
-  await page.screenshot({ path: 'tests/edito/screenshots/09-reuses-bloc-readded.png', fullPage: true })
+  await page.screenshot({ path: 'tests/edito/screenshots/10-reuses-bloc-readded.png', fullPage: true })
 
-  // === Step 8: Save the page ===
+  // === Step 9: Save the page ===
   await page.getByRole('button', { name: 'Sauvegarder' }).click()
   await page.waitForTimeout(1000)
 
   // Debug screenshot: after saving
-  await page.screenshot({ path: 'tests/edito/screenshots/10-after-save.png', fullPage: true })
+  await page.screenshot({ path: 'tests/edito/screenshots/11-after-save.png', fullPage: true })
 
   // Wait for the toast to confirm save
   await expect(page.getByText('Page créée').or(page.getByText('Page sauvegardée'))).toBeVisible()
 
-  // === Step 9: Final screenshot for visual regression ===
+  // === Step 10: Final screenshot for visual regression ===
   await page.waitForLoadState('networkidle')
   await page.waitForTimeout(500)
 

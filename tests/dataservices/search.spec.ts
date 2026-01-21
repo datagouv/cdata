@@ -26,6 +26,8 @@ test('search filters results', async ({ page }) => {
 
 test('clicking dataservice navigates to detail', async ({ page }) => {
   await page.goto('/dataservices/search')
+  // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   const dataserviceLink = page.getByRole('link', { name: /Explore API/i })
   await expect(dataserviceLink).toBeVisible()
