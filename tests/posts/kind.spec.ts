@@ -27,6 +27,7 @@ test.describe('Post kind filter', () => {
 
     // Create a news post via form
     await page.goto('/admin/posts/new')
+    await page.waitForLoadState('networkidle')
     await page.getByRole('textbox', { name: 'Titre de l\'article' }).fill(`Test News ${uniqueId}`)
     await page.getByRole('textbox', { name: 'Entête' }).fill('Une actualité de test')
     await page.getByText('Actualité', { exact: true }).click()
