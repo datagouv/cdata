@@ -11,7 +11,9 @@ async function createPostWithBlocs(page: Page, options: {
   kind?: 'news' | 'page'
 }) {
   await page.goto('/admin/posts/new')
-  await page.getByRole('textbox', { name: 'Titre de l\'article' }).fill(options.title)
+  const input = page.getByRole('textbox', { name: 'Titre de l\'article' })
+  await input.waitFor()
+  await input.fill(options.title)
   await page.getByRole('textbox', { name: 'Entête' }).fill(options.headline)
 
   if (options.kind === 'page') {
