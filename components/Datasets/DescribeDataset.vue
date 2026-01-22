@@ -721,6 +721,11 @@
             </div>
           </LinkedToAccordion>
         </fieldset>
+        <BadgeSelect
+          v-if="type === 'update'"
+          v-model="newBadges"
+          entity-type="datasets"
+        />
         <div
           class="fr-grid-row"
           :class="{ 'fr-grid-row--right': type === 'update', 'justify-between': type === 'create' }"
@@ -747,7 +752,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, Tooltip, DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
-import { SimpleBanner, type Frequency, type License } from '@datagouv/components-next'
+import { SimpleBanner, type Badge, type Frequency, type License } from '@datagouv/components-next'
 import { RiAddLine, RiStarFill, RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
@@ -763,11 +768,13 @@ const props = defineProps<{
   submitLabel: string
   type: 'create' | 'update'
   harvested?: boolean
+  badges?: Array<Badge>
 }>()
 const emit = defineEmits<{
-  feature: []
-  previous: []
-  submit: []
+  'badges-change': [badges: Array<Badge>]
+  'feature': []
+  'previous': []
+  'submit': []
 }>()
 
 const { t } = useTranslation()
@@ -791,6 +798,12 @@ const addTemporalCoverageAccordionId = useId()
 const addSpatialInformationAccordionId = useId()
 
 const isGeneratingDescriptionShort = ref(false)
+
+const newBadges = ref(props.badges ?? [])
+watch(() => props.badges, (badges) => {
+  newBadges.value = badges ?? []
+})
+watch(newBadges, badges => emit('badges-change', badges))
 
 const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies', { lazy: true })
 
