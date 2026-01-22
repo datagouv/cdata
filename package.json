@@ -32,7 +32,7 @@
     "lint-staged": "lint-staged",
     "build": "nuxt build",
     "typecheck": "nuxt typecheck",
-    "dev": "NUXT_APP_COMMIT_ID=`git rev-parse --short HEAD` nuxt dev",
+    "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
