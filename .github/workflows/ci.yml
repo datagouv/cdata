@@ -37,9 +37,7 @@ jobs:
         run: pnpm install
 
       - name: Build application
-        run: pnpm run build
-        env:
-          NUXT_PUBLIC_COMMIT_ID: ${{ github.sha }}
+        run: NUXT_APP_COMMIT_ID=$(git rev-parse --short HEAD) pnpm run build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
