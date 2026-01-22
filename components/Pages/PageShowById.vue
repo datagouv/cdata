@@ -1,8 +1,11 @@
 <template>
-  <div v-if="page">
+  <div
+    v-if="page"
+    class="relative"
+  >
     <div
       v-if="isMeAdmin() && !isEditing"
-      class="fixed top-4 right-4 z-50"
+      class="absolute top-4 right-4 z-50"
     >
       <BrandedButton
         color="warning"
