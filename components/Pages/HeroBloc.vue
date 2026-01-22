@@ -36,6 +36,15 @@
         + {{ $t('Ajouter une description') }}
       </button>
 
+      <BrandedButtonEditor
+        v-model:title="bloc.main_link_title"
+        v-model:href="bloc.main_link_url"
+        :edit
+        color="secondary"
+        class="pt-4"
+        @clear="bloc.main_link_title = null; bloc.main_link_url = null"
+      />
+
       <div
         v-if="edit"
         class="flex items-center gap-2 pt-4"
@@ -60,6 +69,7 @@
 
 <script setup lang="ts">
 import EditableText from './EditableText.vue'
+import BrandedButtonEditor from './BrandedButtonEditor.vue'
 import type { HeroBloc } from '~/types/pages'
 
 defineProps<{

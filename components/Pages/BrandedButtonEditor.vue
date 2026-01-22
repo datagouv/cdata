@@ -23,16 +23,15 @@
         role="textbox"
         class="outline-none min-w-[10ch] focus:ring-2 focus:ring-blue-300 rounded-sm"
         :aria-label="$t('Titre du bouton')"
-        @blur="$emit('update:title', ($event.target as HTMLElement).textContent || '')"
+        @blur="title = ($event.target as HTMLElement).textContent || ''"
       >{{ title || $t('Titre du bouton') }}</span>
     </div>
     <input
-      :value="href"
+      v-model="href"
       type="text"
       class="block text-sm text-gray-500 border rounded px-2 py-1 w-full max-w-xs"
       :placeholder="$t('URL du bouton')"
       :aria-label="$t('URL du bouton')"
-      @input="$emit('update:href', ($event.target as HTMLInputElement).value)"
     >
   </div>
 
@@ -54,14 +53,19 @@ import { RiDeleteBinLine } from '@remixicon/vue'
 
 const props = withDefaults(defineProps<{
   edit: boolean
-  title?: string | null
-  href?: string | null
   color?: ComponentProps<typeof BrandedButton>['color']
   class?: string
 }>(), {
   color: 'primary',
   class: '',
 })
+
+const title = defineModel<string | null>('title')
+const href = defineModel<string | null>('href')
+
+defineEmits<{
+  clear: []
+}>()
 
 const buttonColors = computed(() => {
   const colors: Record<string, string> = {
@@ -75,10 +79,4 @@ const buttonColors = computed(() => {
   }
   return colors[props.color] || colors.primary
 })
-
-defineEmits<{
-  'update:title': [value: string]
-  'update:href': [value: string]
-  'clear': []
-}>()
 </script>
