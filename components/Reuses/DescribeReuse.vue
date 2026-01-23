@@ -473,8 +473,9 @@ const accordionState = (key: keyof typeof form.value) => {
 const canGenerateTags = computed(() => {
   const hasTitle = form.value.title && form.value.title.trim().length > 0
   const hasDescription = form.value.description && form.value.description.trim().length > 0
+  const hasType = form.value.type?.label && form.value.type.label.trim().length > 0
   const hasLessThanMaxTags = form.value.tags.length < MAX_TAGS_NB
-  return hasTitle && hasDescription && hasLessThanMaxTags
+  return hasTitle && hasDescription && hasType && hasLessThanMaxTags
 })
 
 const setFiles = (files: Array<File>) => {
@@ -493,6 +494,10 @@ async function submit() {
 }
 
 async function handleAutoCompleteTags(nbTags: number) {
+  if (!form.value.type?.label) {
+    return
+  }
+
   try {
     isGeneratingTags.value = true
 
@@ -504,7 +509,7 @@ async function handleAutoCompleteTags(nbTags: number) {
       body: {
         title: form.value.title,
         description: form.value.description,
-        type: form.value.type?.label,
+        type: form.value.type.label.toLowerCase(),
         nbTags: nbTags,
       },
     })
