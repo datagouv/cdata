@@ -66,9 +66,25 @@
           :title="t('Ajouter des mots-clés')"
           :state="accordionState('tags')"
         >
-          <p class="fr-m-0">
-            {{ t("Les mots clés apparaissent sur la page de présentation et apportent un meilleur référencement lors d’une recherche utilisateur.\nÀ partir de chaque mot clé, vous pouvez obtenir la liste des réutilisations pour lesquelles le mot clé a également été assigné.") }}
-          </p>
+          <div class="prose prose-neutral m-0">
+            <p class="m-0">
+              {{ t("Les mots clés apparaissent sur la page de présentation et apportent un meilleur référencement lors d'une recherche utilisateur.\nÀ partir de chaque mot clé, vous pouvez obtenir la liste des réutilisations pour lesquelles le mot clé a également été assigné.") }}
+            </p>
+            <p class="fr-mt-3v font-bold">
+              {{ t("Suggestions automatiques") }}
+            </p>
+            <p class="m-0">
+              {{ t("Des mots-clés peuvent vous être proposés automatiquement en fonction du contenu de votre réutilisation. Vous pouvez les accepter, les modifier ou les supprimer.") }}
+            </p>
+            <p class="m-0">
+              <CdataLink
+                to="https://guides.data.gouv.fr/autres-ressources-utiles/notre-approche-de-lintelligence-artificielle-sur-data.gouv.fr"
+                target="_blank"
+              >
+                {{ t(`L'IA se base uniquement sur les informations que vous avez fournies et peut parfois se tromper : relisez toujours la proposition avant de valider.`) }}
+              </CdataLink>
+            </p>
+          </div>
         </Accordion>
         <Accordion
           :id="addImageAccordionId"
