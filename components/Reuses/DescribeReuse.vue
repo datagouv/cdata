@@ -288,6 +288,46 @@
               :error-text="getFirstError('tags')"
               :warning-text="getFirstWarning('tags')"
             />
+            <div class="flex items-center gap-4 mt-2 mb-3">
+              <Tooltip v-if="!canGenerateTags && form.tags.length >= MAX_TAGS_NB">
+                <BrandedButton
+                  type="button"
+                  color="primary"
+                  :icon="RiSparklingLine"
+                  :loading="isGeneratingTags"
+                  :disabled="true"
+                >
+                  {{ $t('Suggérer des mots clés') }}
+                </BrandedButton>
+                <template #tooltip>
+                  {{ $t('Vous avez déjà {count} mots-clés. Le maximum recommandé est de {max}.', { count: form.tags.length, max: MAX_TAGS_NB }) }}
+                </template>
+              </Tooltip>
+              <BrandedButton
+                v-else
+                type="button"
+                color="primary"
+                :icon="RiSparklingLine"
+                :loading="isGeneratingTags"
+                :disabled="!canGenerateTags"
+                @click="handleAutoCompleteTags(MAX_TAGS_NB)"
+              >
+                <template v-if="isGeneratingTags">
+                  {{ $t('Suggestion en cours...') }}
+                </template>
+                <template v-else>
+                  {{ $t('Suggérer des mots clés') }}
+                </template>
+              </BrandedButton>
+              <CdataLink
+                v-if="config.public.generateTagsFeedbackUrl"
+                :to="config.public.generateTagsFeedbackUrl"
+                target="_blank"
+                class="text-sm text-gray-medium"
+              >
+                {{ $t('Comment avez-vous trouvé cette suggestion ?') }}
+              </CdataLink>
+            </div>
             <SimpleBanner
               v-if="getFirstWarning('tags')"
               type="warning"
@@ -342,14 +382,16 @@
 </template>
 
 <script setup lang="ts">
-import { SearchableSelect, SimpleBanner, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
+import { BrandedButton, Tooltip, SimpleBanner, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
+import { RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
+import CdataLink from '~/components/CdataLink.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplanation.vue'
-import type { ReuseForm } from '~/types/types'
+import type { ReuseForm, Tag } from '~/types/types'
 
 const reuseForm = defineModel<ReuseForm>({ required: true })
 const props = defineProps<{
@@ -380,6 +422,12 @@ const ownedOptions = computed<Array<Owned>>(() => {
   return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: { ...user.value, class: 'User' }, organization: null }]
 })
 
+const MAX_TAGS_NB = 5
+
+// Track tag sources
+const isGeneratingTags = ref(false)
+const lastSuggestedTags = ref<Array<Tag>>([])
+
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(reuseForm, {
   featured: [],
   owned: [required()],
@@ -406,6 +454,13 @@ const accordionState = (key: keyof typeof form.value) => {
   return 'default'
 }
 
+const canGenerateTags = computed(() => {
+  const hasTitle = form.value.title && form.value.title.trim().length > 0
+  const hasDescription = form.value.description && form.value.description.trim().length > 0
+  const hasLessThanMaxTags = form.value.tags.length < MAX_TAGS_NB
+  return hasTitle && hasDescription && hasLessThanMaxTags
+})
+
 const setFiles = (files: Array<File>) => {
   reuseForm.value.image = files[0]
 }
@@ -418,6 +473,54 @@ const imagePreview = computed(() => {
 async function submit() {
   if (await validate()) {
     emit('submit')
+  }
+}
+
+async function handleAutoCompleteTags(nbTags: number) {
+  try {
+    isGeneratingTags.value = true
+
+    // We call our server-side API route instead of Albert API directly to avoid CORS issues.
+    // The Albert API doesn't allow direct requests from browser-side JavaScript.
+    // Our server acts as a proxy, keeping the API key secure on the server side.
+    const response = await $fetch<{ tags: string[] }>('/nuxt-api/albert/generate-reuse-tags', {
+      method: 'POST',
+      body: {
+        title: form.value.title,
+        description: form.value.description,
+        type: form.value.type?.label,
+        nbTags: nbTags,
+      },
+    })
+
+    // Remove previously suggested tags and add new ones
+    if (response.tags && response.tags.length > 0) {
+      // Filter out tags that were the last suggested tags
+      let currentTags = form.value.tags
+      if (lastSuggestedTags.value.length > 0) {
+        currentTags = form.value.tags.filter(tag =>
+          !lastSuggestedTags.value.some(lastSuggested => lastSuggested.text === tag.text),
+        )
+      }
+
+      // Create new suggested tags, filtering out duplicates with existing tags
+      const existingTagTexts = currentTags.map(tag => tag.text)
+      const newSuggestedTags = response.tags
+        .filter(tag => !existingTagTexts.includes(tag))
+        .map(tag => ({ text: tag }))
+
+      // Update form with current tags + new suggested tags
+      form.value.tags = [...currentTags, ...newSuggestedTags]
+
+      // Update the suggested tags tracking
+      lastSuggestedTags.value = newSuggestedTags
+    }
+  }
+  catch (error) {
+    console.error('Failed to generate tags:', error)
+  }
+  finally {
+    isGeneratingTags.value = false
   }
 }
 </script>
