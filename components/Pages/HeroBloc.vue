@@ -41,7 +41,7 @@
         v-model:href="bloc.main_link_url"
         :edit
         color="secondary"
-        class="pt-4"
+        class="mt-4"
         @clear="bloc.main_link_title = null; bloc.main_link_url = null"
       />
 
