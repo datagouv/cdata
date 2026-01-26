@@ -3,7 +3,7 @@
     <div class="flex-none">
       <RiUserAddLine class="size-4" />
     </div>
-    <div class="flex-1">
+    <div class="flex-1 truncate">
       <p class="m-0 text-xs font-bold">
         <NuxtLink
           class="after:absolute after:inset-0 bg-none"
@@ -13,10 +13,22 @@
         </NuxtLink>
       </p>
       <p class="m-0 text-xs">
-        {{ $t('de {name}', { name: `${notification.details.request_user.first_name} ${notification.details.request_user.last_name}` }) }}
+        {{ $t('de') }}
+        <AvatarWithName
+          :user="notification.details.request_user"
+          :with-link="false"
+        />
       </p>
-      <p class="m-0 text-xs">
-        {{ $t('à {org}', { org: notification.details.request_organization.name }) }}
+      <p class="flex items-center gap-1 m-0 text-xs">
+        {{ $t('à') }}
+        <OrganizationOwner
+          :organization="notification.details.request_organization as OrganizationReference"
+          logo-size-class="size-3"
+          :logo-no-border="true"
+          name-size="xs"
+          name-color="text-gray-plain"
+          :with-link="false"
+        />
       </p>
     </div>
     <div class="flex-none flex m-0 gap-1.5">
@@ -32,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { useFormatDate } from '@datagouv/components-next'
+import { AvatarWithName, useFormatDate, type OrganizationReference } from '@datagouv/components-next'
 import { RiUserAddLine } from '@remixicon/vue'
 import type { DeepReadonly } from 'vue'
 import type { MembershipRequestNotification } from '~/types/notifications'

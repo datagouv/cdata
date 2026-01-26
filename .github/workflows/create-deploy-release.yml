@@ -1,11 +1,13 @@
 name: Create and deploy a new release
 run-name: create and deploy ${{ github.sha }}
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
 jobs:
   trigger-gitlab-pipeline:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     env:
       # static variables and secrets to be defined
