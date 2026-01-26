@@ -1,4 +1,4 @@
-import type { DataserviceReference, DatasetReference, OrganizationReference, ReuseReference, UserReference } from '@datagouv/components-next'
+import type { CERTIFIED, PUBLIC_SERVICE, ASSOCIATION, LOCAL_AUTHORITY, COMPANY, DataserviceReference, DatasetReference, OrganizationReference, ReuseReference, UserReference } from '@datagouv/components-next'
 
 export type CommonNotification = {
   created_at: string
@@ -25,4 +25,12 @@ export type TransferRequestNotification = CommonNotification & {
   }
 }
 
-export type UserNotification = MembershipRequestNotification | TransferRequestNotification
+export type NewBadgeNotification = CommonNotification & {
+  details: {
+    class: 'NewBadgeNotificationDetails'
+    kind: typeof CERTIFIED | typeof PUBLIC_SERVICE | typeof ASSOCIATION | typeof LOCAL_AUTHORITY | typeof COMPANY
+    organization: OrganizationReference
+  }
+}
+
+export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification

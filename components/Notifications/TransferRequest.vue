@@ -7,16 +7,44 @@
       <p class="m-0 text-xs font-bold">
         <NuxtLink
           class="after:absolute after:inset-0 bg-none"
-          :to="details.link"
+          :to="link"
         >
           {{ $t(`Demande de transfert`) }}
         </NuxtLink>
       </p>
-      <p class="m-0 text-xs">
-        {{ $t('de {source}', { source: details.sourceName }) }}
+      <p class="flex items-center gap-1 m-0 text-xs">
+        {{ $t('de') }}
+        <AvatarWithName
+          v-if="notification.details.transfer_owner.class == 'User'"
+          :user="notification.details.transfer_owner"
+          :with-link="false"
+        />
+        <OrganizationOwner
+          v-else
+          :organization="notification.details.transfer_owner as OrganizationReference"
+          logo-size-class="size-3"
+          :logo-no-border="true"
+          name-size="xs"
+          name-color="text-gray-plain"
+          :with-link="false"
+        />
       </p>
-      <p class="m-0 text-xs">
-        {{ $t('à {recipient}', { recipient: details.recipientName }) }}
+      <p class="flex items-center gap-1 m-0 text-xs">
+        {{ $t('à') }}
+        <AvatarWithName
+          v-if="notification.details.transfer_recipient.class == 'User'"
+          :user="notification.details.transfer_recipient"
+          :with-link="false"
+        />
+        <OrganizationOwner
+          v-else
+          :organization="notification.details.transfer_recipient as OrganizationReference"
+          logo-size-class="size-3"
+          :logo-no-border="true"
+          name-size="xs"
+          name-color="text-gray-plain"
+          :with-link="false"
+        />
       </p>
     </div>
     <div class="flex-none flex m-0 gap-1.5">
@@ -32,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { useFormatDate } from '@datagouv/components-next'
+import { AvatarWithName, useFormatDate, type OrganizationReference } from '@datagouv/components-next'
 import { RiSendPlaneLine } from '@remixicon/vue'
 import type { DeepReadonly } from 'vue'
 import type { TransferRequestNotification } from '~/types/notifications'
@@ -43,24 +71,18 @@ const props = defineProps<{
 
 const user = useMe()
 
-const details = computed(() => {
+const link = computed(() => {
   const recipient = props.notification.details.transfer_recipient
-  const source = props.notification.details.transfer_owner
-  const sourceName = 'first_name' in source ? `${source.first_name} ${source.last_name}` : source.name
   const subject = props.notification.details.transfer_subject
-  const subjectPath = `${subject.class.toLowerCase()}s`
-  if ('first_name' in recipient) {
-    return {
-      link: user.value.id === recipient.id ? `/admin/me/${subjectPath}` : `/admin/users/${recipient.id}/${subjectPath}`,
-      recipientName: `${recipient.first_name} ${recipient.last_name}`,
-      sourceName,
-    }
+  const subjectPath = {
+    Dataset: 'datasets',
+    Reuse: 'reuses',
+    Dataservice: 'dataservices',
+  }[subject.class]
+  if (recipient.class == 'User') {
+    return user.value.id === recipient.id ? `/admin/me/${subjectPath}` : `/admin/users/${recipient.id}/${subjectPath}`
   }
-  return {
-    link: `/admin/organizations/${recipient.id}/${subjectPath}`,
-    recipientName: recipient.name,
-    sourceName,
-  }
+  return `/admin/organizations/${recipient.id}/${subjectPath}`
 })
 
 const { formatDate } = useFormatDate()
