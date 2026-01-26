@@ -31,7 +31,7 @@
                 <AdminSidebarMenu
                   v-for="organization in organizations"
                   :key="organization.id"
-                  :organization="organization"
+                  :organization="organization as OrganizationReference"
                 />
                 <AdminSidebarMenu
                   v-if="isSiteAdmin"
@@ -53,6 +53,7 @@
 <script setup lang="ts">
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import AdminSidebarMenu from '~/components/AdminSidebar/AdminSidebarMenu/AdminSidebarMenu.vue'
+import type { OrganizationReference } from '@datagouv/components-next'
 
 definePageMeta({
   layout: 'fluid',

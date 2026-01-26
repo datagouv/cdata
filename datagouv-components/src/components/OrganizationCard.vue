@@ -35,7 +35,7 @@
         </template>
         <div>
           <div
-            v-if="organization.metrics"
+            v-if="'metrics' in organization"
             class="text-gray-medium flex items-center text-sm gap-0.5"
             :aria-label="t('{datasets} jeux de données, {dataservices} API et {reuses} réutilisations', {
               datasets: organization.metrics.datasets,
@@ -60,7 +60,7 @@
       </div>
       <p class="mt-1 mb-0">
         <TextClamp
-          v-if="organization.description"
+          v-if="'description' in organization"
           :text="removeMarkdownSync(organization.description)"
           :max-lines="3"
         />
@@ -74,14 +74,14 @@ import { RiLineChartLine, RiDatabase2Line, RiTerminalLine, RiSubtractLine } from
 import { computed } from 'vue'
 import { removeMarkdownSync } from '../functions/markdown'
 import { getOrganizationType } from '../functions/organizations'
-import type { Organization } from '../types/organizations'
+import type { Organization, OrganizationReference } from '../types/organizations'
 import OwnerType from './OwnerType.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import AppLink from './AppLink.vue'
 import { useTranslation } from '../main'
 
 const props = defineProps<{
-  organization: Organization
+  organization: Organization | OrganizationReference
 }>()
 
 const { t } = useTranslation()
