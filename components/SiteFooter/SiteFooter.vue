@@ -200,11 +200,11 @@
                 </li>
                 <li>
                   <a
-                    :href="config.public.commitId ? `https://github.com/datagouv/cdata/commit/${config.public.commitId}` : 'https://github.com/datagouv/cdata/'"
-                    :title="config.public.commitId ? $t('Version {version}', { version: config.public.commitId }) : undefined"
+                    :href="appConfig.commitId ? `https://github.com/datagouv/cdata/commit/${appConfig.commitId}` : 'https://github.com/datagouv/cdata/'"
+                    :title="appConfig.commitId ? $t('Version {version}', { version: appConfig.commitId }) : undefined"
                     class="fr-footer__top-link"
                   >
-                    {{ $t('Interface utilisateur de data.gouv.fr : cdata ({version})', { version: config.public.commitId }) }}
+                    {{ $t('Interface utilisateur de data.gouv.fr : cdata ({version})', { version: appConfig.commitId }) }}
                   </a>
                 </li>
               </ul>

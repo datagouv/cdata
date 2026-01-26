@@ -38,6 +38,7 @@ export default defineNuxtConfig({
 
   appConfig: {
     isFrenchGovernment: true,
+    commitId: 'unknown',
   },
 
   runtimeConfig: {
@@ -50,7 +51,6 @@ export default defineNuxtConfig({
     albertApiKey: '',
     public: {
       baseUrl: 'https://www.data.gouv.fr/',
-      commitId: undefined,
       banner: undefined,
 
       title: 'data.gouv.fr',
