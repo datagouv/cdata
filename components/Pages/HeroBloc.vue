@@ -7,11 +7,11 @@
       <EditableText
         v-if="edit"
         v-model="bloc.title"
-        class="text-white font-extrabold text-5xl mb-0"
+        class="text-white font-extrabold text-5xl mb-2"
       />
       <h1
         v-else
-        class="text-white font-extrabold text-5xl mb-0"
+        class="text-white font-extrabold text-5xl mb-2"
       >
         {{ bloc.title }}
       </h1>

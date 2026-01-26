@@ -92,7 +92,7 @@ This project uses [pnpm](https://pnpm.io/) instead of npm mostly for security re
 **Key variables:**
 - `NUXT_PUBLIC_API_BASE`: Base URL for API calls
 - `NUXT_PUBLIC_DEV_API_KEY`: API key for development environment  
-- `NUXT_PUBLIC_COMMIT_ID`: Git commit ID (auto-generated in dev mode)
+- `NUXT_APP_COMMIT_ID`: Git commit ID (auto-generated in dev mode)
 - `NUXT_PUBLIC_SENTRY_DSN`: Sentry DSN for error tracking
 - `NUXT_TEMPLATE_CACHE_DURATION`: Duration for template caching
 - `NUXT_PUBLIC_BASE_URL`: Base URL
@@ -105,7 +105,7 @@ NUXT_PUBLIC_API_BASE=https://demo.data.gouv.fr  # Or your dedicated development 
 NUXT_PUBLIC_DEV_API_KEY=your_api_key_from_dev
 
 # Optional: Override default configuration
-NUXT_PUBLIC_COMMIT_ID=your_commit_id
+NUXT_APP_COMMIT_ID=abc1234  # defaults to 'unknown'
 ```
 
 ### 🔧 Troubleshooting

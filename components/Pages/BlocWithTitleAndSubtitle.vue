@@ -8,12 +8,12 @@
         :placeholder="$t('Titre du bloc')"
         @update:model-value="bloc.title = $event || null"
       />
-      <div
+      <h2
         v-else-if="bloc.title"
         class="text-gray-title text-3xl font-extrabold"
       >
         {{ bloc.title }}
-      </div>
+      </h2>
 
       <EditableText
         v-if="edit && secondaryText"

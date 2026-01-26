@@ -9,8 +9,10 @@
       v-model="datasetForm"
       type="update"
       :harvested
+      :badges="dataset.badges"
       :submit-label="t('Sauvegarder')"
       @feature="feature"
+      @badges-change="pendingBadges = $event"
       @submit="save"
     >
       <template #top>
@@ -127,10 +129,11 @@
 
 <script setup lang="ts">
 import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
-import type { DatasetV2WithFullObject } from '@datagouv/components-next'
+import type { Badge, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
+import { updateBadges } from '~/api/badges'
 import type { DatasetForm } from '~/types/types'
 
 const { t } = useTranslation()
@@ -149,6 +152,7 @@ const { data: dataset, status, refresh } = await useAPI<DatasetV2WithFullObject>
 
 const datasetForm = ref<DatasetForm | null>(null)
 const harvested = ref(false)
+const pendingBadges = ref<Array<Badge> | null>(null)
 watchEffect(() => {
   if (dataset.value) {
     datasetForm.value = datasetToForm(dataset.value)
@@ -170,6 +174,10 @@ async function save() {
           datasetForm.value.contact_points[contactPointKey] = await newContactPoint($api, datasetForm.value.owned?.organization, datasetForm.value.contact_points[contactPointKey])
         }
       }
+    }
+
+    if (pendingBadges.value && dataset.value) {
+      await updateBadges(dataset.value, pendingBadges.value, 'datasets')
     }
 
     await $api(`/api/1/datasets/${dataset.value?.id}/`, {

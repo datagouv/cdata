@@ -11,7 +11,7 @@ import type { Granularity, Granularities, SpatialZone } from './types/granularit
 import type { Harvest } from './types/harvest'
 import type { License } from './types/licenses'
 import type { Member, MemberRole, NewOrganization, Organization, OrganizationOrSuggest, OrganizationReference, OrganizationSuggest } from './types/organizations'
-import type { Owned, OwnedWithId } from './types/owned'
+import type { Owned, OwnedWithFullObject, OwnedWithId } from './types/owned'
 import type { ReuseReference, NewReuse, Reuse, ReuseTopic, ReuseType } from './types/reuses'
 import type { RegisteredSchema, Schema, SchemaDetails, SchemaField, SchemaPath, SchemaPublicationMode, SchemaResponseData, SchemaVersion, ValidataError } from './types/schemas'
 import type { TopicV2, TopicElement, TopicElementClass, TopicElementRel } from './types/topics'
@@ -82,6 +82,7 @@ export * from './composables/useTranslation'
 export * from './functions/activities'
 export * from './functions/datasets'
 export * from './functions/dates'
+export * from './functions/description'
 export * from './functions/helpers'
 export * from './functions/markdown'
 export * from './functions/matomo'
@@ -135,6 +136,7 @@ export type {
   OrganizationSuggest,
   OrganizationOrSuggest,
   Owned,
+  OwnedWithFullObject,
   OwnedWithId,
   PaginatedArray,
   Quality,

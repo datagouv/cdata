@@ -87,7 +87,8 @@ import { AnimatedLoader, BannerAction, BrandedButton, toast } from '@datagouv/co
 import type { Organization, Badge } from '@datagouv/components-next'
 import DescribeOrganizationFrom from '~/components/Organization/New/Step2DescribeOrganization.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
-import { updateOrganization, updateOrganizationBadges, uploadLogo } from '~/api/organizations'
+import { updateOrganization, uploadLogo } from '~/api/organizations'
+import { updateBadges } from '~/api/badges'
 
 const props = defineProps<{
   organization: Organization
@@ -141,7 +142,7 @@ async function updateCurrentOrganization(logo_file: File | null, newBadges: Arra
   try {
     await updateOrganization(organizationForm.value)
     if (newBadges && props.organization) {
-      await updateOrganizationBadges(props.organization, newBadges)
+      await updateBadges(props.organization, newBadges, 'organizations')
     }
     if (logo_file && props.organization) {
       await uploadLogo(props.organization.id, logo_file)
