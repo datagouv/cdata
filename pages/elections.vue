@@ -50,6 +50,8 @@
 </template>
 
 <script setup lang="ts">
+import ElectionCard from '~/components/Elections/ElectionCard.vue'
+
 const config = useRuntimeConfig()
 const { t } = useTranslation()
 
