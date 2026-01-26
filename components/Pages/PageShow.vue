@@ -55,7 +55,7 @@
         v-if="'fullWidth' in blocsTypes[bloc.class]"
         v-model="(workingPage.blocs[index] as any)"
         :edit
-        :main-color="mainColor"
+        v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
       />
 
       <!-- Other blocs use container layout -->
@@ -67,7 +67,7 @@
           :is="blocsTypes[bloc.class].component"
           v-model="(workingPage.blocs[index] as any)"
           :edit
-          :main-color="mainColor"
+          v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
         />
       </div>
 

@@ -66,7 +66,7 @@
       v-if="dataservice.organization || dataservice.owner"
       class="text-gray-medium overflow-hidden flex items-center gap-1 mt-1 mb-0"
     >
-      <p
+      <div
         v-if="dataservice.organization"
         class="text-sm block overflow-hidden mb-0 relative z-[2]"
       >
@@ -81,13 +81,13 @@
           v-else
           :organization="dataservice.organization"
         />
-      </p>
-      <p
+      </div>
+      <div
         v-else
         class="text-sm mb-0 truncate"
       >
         {{ ownerName }}
-      </p>
+      </div>
       <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
       <!-- This comment is only here to fix this issue https://github.com/datagouv/cdata/issues/653, it could be empty… -->
       <p class="text-sm whitespace-nowrap mb-0">
