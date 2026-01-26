@@ -104,8 +104,8 @@ async function createOrganizationAndMoveToNextStep(logo_file: File | null) {
         business_number_id: cleanSiret(organizationForm.value.business_number_id),
       }),
     })
-    organizations.value[newOrganization.value.id] = newOrganization.value
-    setCurrentOrganization(newOrganization.value)
+    organizations.value[newOrganization.value.id] = { ...newOrganization.value, class: 'Organization' }
+    setCurrentOrganization(organizations.value[newOrganization.value.id])
     moveToNextStep.value = true
   }
   catch (e) {
