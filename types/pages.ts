@@ -61,6 +61,8 @@ export type HeroBloc = {
   title: string
   description: string | null
   color: 'primary' | 'green' | 'purple'
+  main_link_title: string | null
+  main_link_url: string | null
 } & { id: string }
 
 export type PageBloc = ContentBloc | AccordionListBloc | HeroBloc
