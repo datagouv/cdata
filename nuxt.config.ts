@@ -38,7 +38,7 @@ export default defineNuxtConfig({
 
   appConfig: {
     isFrenchGovernment: true,
-    commitId: 'unknown',
+    commitId: process.env.NUXT_APP_COMMIT_ID || 'unknown',
   },
 
   runtimeConfig: {
