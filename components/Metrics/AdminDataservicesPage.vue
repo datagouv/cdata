@@ -1,13 +1,16 @@
 <template>
   <div>
-    <div
-      v-if="downloadStatsUrl"
-      class="flex justify-end -mt-14 pt-0.5 mb-5"
-    >
+    <div class="flex justify-end items-center gap-4 -mt-14 pt-0.5 mb-5">
+      <AdminInput
+        v-model="q"
+        type="search"
+        :icon="RiSearchLine"
+        :placeholder="$t('Recherche')"
+      />
       <BrandedButton
+        v-if="downloadStatsUrl"
         color="secondary"
-        :disabled="!downloadStatsUrl"
-        :href="downloadStatsUrl || ''"
+        :href="downloadStatsUrl"
         :external="true"
         download="stats.csv"
         :icon="RiDownloadLine"
@@ -134,19 +137,34 @@
         src="/illustrations/dataservice.svg"
         class="h-20"
       />
-      <p class="fr-text--bold fr-my-3v">
-        {{ $t(`Vous n'avez pas encore publié d'API`) }}
-      </p>
-      <AdminPublishButton type="dataservice" />
+      <template v-if="q">
+        <p class="fr-text--bold fr-my-3v">
+          {{ $t(`Pas de résultats pour « {q} »`, { q }) }}
+        </p>
+        <BrandedButton
+          color="primary"
+          @click="q = qDebounced = ''"
+        >
+          {{ $t('Réinitialiser les filtres') }}
+        </BrandedButton>
+      </template>
+      <template v-else>
+        <p class="fr-text--bold fr-my-3v">
+          {{ $t(`Vous n'avez pas encore publié d'API`) }}
+        </p>
+        <AdminPublishButton type="dataservice" />
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { BrandedButton, LoadingBlock, Pagination, summarize, Tooltip, type Dataservice, type Organization, type User } from '@datagouv/components-next'
-import { RiChat3Line, RiDownloadLine, RiEyeLine, RiStarSLine } from '@remixicon/vue'
+import { refDebounced } from '@vueuse/core'
+import { RiChat3Line, RiDownloadLine, RiEyeLine, RiSearchLine, RiStarSLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
+import AdminInput from '~/components/AdminInput.vue'
 import type { DataserviceSortedBy, PaginatedArray, SortDirection } from '~/types/types'
 
 const props = defineProps<{
@@ -158,6 +176,8 @@ const config = useRuntimeConfig()
 
 const page = ref(1)
 const pageSize = ref(20)
+const q = ref('')
+const qDebounced = refDebounced(q, config.public.searchDebounce)
 const sortedBy = ref<DataserviceSortedBy>('title')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
@@ -167,7 +187,7 @@ const params = computed(() => {
   return {
     organization: props.organization?.id,
     owner: props.user?.id,
-
+    q: qDebounced.value,
     sort: sortDirection.value,
     page_size: pageSize.value,
     page: page.value,
