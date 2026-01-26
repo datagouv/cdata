@@ -159,6 +159,39 @@ watchEffect(() => {
 
 const workingPage = computed(() => (props.edit ? localPage.value! : props.page))
 
+// Check if there are unsaved changes
+const hasUnsavedChanges = computed(() => {
+  if (!props.edit || !localPage.value) return false
+  return JSON.stringify(toRaw(localPage.value)) !== JSON.stringify(toRaw(props.page))
+})
+
+// Warn before leaving with unsaved changes.
+// There are two different mechanisms because:
+// - beforeunload: handles tab close, refresh, external navigation. Modern browsers ignore
+//   custom messages for security reasons and show their own generic dialog.
+// - onBeforeRouteLeave: handles internal Nuxt/Vue Router navigation. We can use
+//   window.confirm() with a custom message here.
+const { t } = useTranslation()
+
+const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+  if (props.edit && hasUnsavedChanges.value) {
+    e.preventDefault()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('beforeunload', handleBeforeUnload)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+})
+
+onBeforeRouteLeave(() => {
+  if (!props.edit || !hasUnsavedChanges.value) return true
+  return window.confirm(t('Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir quitter ?'))
+})
+
 // Bloc manipulation functions
 function moveBloc(index: number, direction: -1 | 1) {
   const newIndex = index + direction
