@@ -228,6 +228,9 @@ export default defineNuxtConfig({
 
   vite: {
     assetsInclude: ['**/*.md'],
+    resolve: {
+      dedupe: ['vue', 'vue-router'],
+    },
     optimizeDeps: {
       // Some `@datagouv/components-next` dependencies aren't scanned by Vite dev server.
       // It must optimized them to be able to handle commonjs dependencies.
