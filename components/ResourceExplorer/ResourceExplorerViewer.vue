@@ -279,39 +279,29 @@ import {
 } from '@datagouv/components-next'
 import { useResourceCapabilities } from '~/composables/useResourceCapabilities'
 
-// @ts-expect-error direct path import from monorepo workspace
 import Preview from '@datagouv/components-next/src/components/ResourceAccordion/Preview.vue'
-// @ts-expect-error direct path import from monorepo workspace
 import DataStructure from '@datagouv/components-next/src/components/ResourceAccordion/DataStructure.vue'
-// @ts-expect-error direct path import from monorepo workspace
 import Metadata from '@datagouv/components-next/src/components/ResourceAccordion/Metadata.vue'
 
 const JsonPreview = defineAsyncComponent(() =>
-  // @ts-expect-error direct path import from monorepo workspace
   import('@datagouv/components-next/src/components/ResourceAccordion/JsonPreview.client.vue'),
 )
 const PdfPreview = defineAsyncComponent(() =>
-  // @ts-expect-error direct path import from monorepo workspace
   import('@datagouv/components-next/src/components/ResourceAccordion/PdfPreview.client.vue'),
 )
 const XmlPreview = defineAsyncComponent(() =>
-  // @ts-expect-error direct path import from monorepo workspace
   import('@datagouv/components-next/src/components/ResourceAccordion/XmlPreview.client.vue'),
 )
 const DatafairPreview = defineAsyncComponent(() =>
-  // @ts-expect-error direct path import from monorepo workspace
   import('@datagouv/components-next/src/components/ResourceAccordion/Datafair.client.vue'),
 )
 const MapContainer = defineAsyncComponent(() =>
-  // @ts-expect-error direct path import from monorepo workspace
   import('@datagouv/components-next/src/components/ResourceAccordion/MapContainer.client.vue'),
 )
 const Pmtiles = defineAsyncComponent(() =>
-  // @ts-expect-error direct path import from monorepo workspace
   import('@datagouv/components-next/src/components/ResourceAccordion/Pmtiles.client.vue'),
 )
 const SwaggerClient = defineAsyncComponent(() =>
-  // @ts-expect-error direct path import from monorepo workspace
   import('@datagouv/components-next/src/components/ResourceAccordion/Swagger.client.vue'),
 )
 
