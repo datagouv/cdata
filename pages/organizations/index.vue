@@ -5,7 +5,7 @@
       subtitle=""
       :title="$t('Rechercher sur DataGouv')"
       :placeholder="$t('ex. élections présidentielles')"
-      search-url="/reuses/search"
+      search-url="/organizations"
       :default-query="searchQuery"
     />
     <SearchGlobal :config="searchConfig" />
@@ -18,7 +18,7 @@ import EditoHeader from '~/components/Pages/EditoHeader.vue'
 
 const { t } = useTranslation()
 useSeoMeta({
-  title: t('Recherche des jeux de données — data.gouv.fr'),
+  title: t('Organisations — data.gouv.fr'),
 })
 
 const route = useRoute()
