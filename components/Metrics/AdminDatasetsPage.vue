@@ -215,6 +215,7 @@ const page = ref(1)
 const pageSize = ref(20)
 const q = ref('')
 const qDebounced = refDebounced(q, config.public.searchDebounce)
+watch(qDebounced, () => page.value = 1)
 
 const sortedBy = ref<DatasetSortedBy>('created')
 const direction = ref<SortDirection>('desc')
