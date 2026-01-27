@@ -1,9 +1,6 @@
-import { test, expect } from '@playwright/test'
-import { setupConsoleTracking } from '../helpers'
+import { test, expect } from '../base'
 
 test('organizations page renders without errors', async ({ page }) => {
-  const { annotateAndCheck } = setupConsoleTracking(page)
-
   const response = await page.goto('/organizations')
   expect(response?.status()).toBeLessThan(400)
 
@@ -11,5 +8,4 @@ test('organizations page renders without errors', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Organisations', level: 1 })).toBeVisible()
 
   await page.waitForLoadState('networkidle')
-  annotateAndCheck()
 })

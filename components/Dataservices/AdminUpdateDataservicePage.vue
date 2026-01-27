@@ -144,7 +144,7 @@ const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const route = useRoute()
-const { start, finish, isLoading } = useLoadingIndicator()
+const isLoading = ref(false)
 
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
 const { data: dataservice, status, refresh } = await useAPI<Dataservice>(url, { redirectOn404: true })
@@ -160,7 +160,7 @@ async function save() {
   if (!dataserviceForm.value || !dataservice.value) throw new Error('No dataservice form')
 
   try {
-    start()
+    isLoading.value = true
 
     if (
       dataserviceForm.value.contact_points
@@ -181,7 +181,7 @@ async function save() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
@@ -189,7 +189,7 @@ async function archiveDataservice() {
   if (!dataserviceForm.value || !dataservice.value) throw new Error('No dataservice form')
 
   try {
-    start()
+    isLoading.value = true
     await $api(`/api/1/dataservices/${dataservice.value.id}/`, {
       method: 'PATCH',
       body: JSON.stringify(dataserviceToApi(dataserviceForm.value, { archived_at: dataservice.value.archived_at ? null : new Date().toISOString() })),
@@ -204,7 +204,7 @@ async function archiveDataservice() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
@@ -212,7 +212,7 @@ async function switchDataservicePrivate() {
   if (!dataserviceForm.value || !dataservice.value) throw new Error('No dataservice form')
 
   try {
-    start()
+    isLoading.value = true
     await $api(`/api/1/dataservices/${dataservice.value.id}/`, {
       method: 'PATCH',
       body: JSON.stringify(dataserviceToApi(dataserviceForm.value, { private: !dataservice.value.private })),
@@ -226,13 +226,13 @@ async function switchDataservicePrivate() {
     }
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function restoreDataservice() {
   if (!dataserviceForm.value || !dataservice.value) throw new Error('No dataset form')
-  start()
+  isLoading.value = true
   try {
     await $api(`/api/1/dataservices/${dataservice.value.id}/`, {
       method: 'PATCH',
@@ -242,7 +242,7 @@ async function restoreDataservice() {
     toast.success(t('API restaurée !'))
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
@@ -256,7 +256,7 @@ async function feature() {
   if (!dataservice.value) return
   const method = dataservice.value.featured ? 'DELETE' : 'POST'
   try {
-    start()
+    isLoading.value = true
     await $api(`/api/1/dataservices/${route.params.id}/featured`, {
       method,
     })
@@ -272,7 +272,7 @@ async function feature() {
     toast.error(t('Impossible de mettre en avant cette API'))
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 </script>

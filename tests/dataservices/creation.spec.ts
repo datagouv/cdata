@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
 
 test('can create a dataservice', async ({ page }) => {
