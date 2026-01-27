@@ -1,5 +1,5 @@
 <template>
-  <div v-if="allResources.length">
+  <div v-if="allResources.length || hasAnyResources">
     <div class="flex gap-6">
       <div class="flex-1 min-w-0">
         <ResourceExplorerViewer
@@ -8,6 +8,18 @@
           :dataset
           :resource="selectedResource"
         />
+        <div
+          v-else-if="search"
+          class="flex flex-col items-center py-12"
+        >
+          <nuxt-img
+            src="/illustrations/dataset.svg"
+            class="h-20"
+          />
+          <p class="fr-text--bold fr-my-3v">
+            {{ $t('Pas de résultats pour « {q} »', { q: search }) }}
+          </p>
+        </div>
       </div>
       <ResourceExplorerSidebar
         :resources="allResources"
@@ -15,6 +27,7 @@
         :collapsed="sidebarCollapsed"
         :search="search"
         @select="selectResource"
+        @load-more="loadMore"
         @update:collapsed="sidebarCollapsed = $event"
         @update:search="search = $event"
       />
@@ -53,6 +66,7 @@ const sidebarCollapsed = ref(false)
 const search = ref('')
 const searchDebounced = refDebounced(search, config.public.searchDebounce)
 
+const PAGE_SIZE = 10
 const url = computed(() => `/api/2/datasets/${props.dataset.id}/resources/`)
 
 const rawResourcesByTypes = await Promise.all(
@@ -60,18 +74,47 @@ const rawResourcesByTypes = await Promise.all(
     useAPI<PaginatedArray<Resource>>(url, {
       query: computed(() => ({
         type,
-        page_size: 50,
+        page_size: PAGE_SIZE,
         q: searchDebounced.value || undefined,
       })),
     }),
   ),
 )
 
+// Evaluated once at setup (before any search) — never changes afterwards
+const hasAnyResources = rawResourcesByTypes.some(r => (r.data.value?.total ?? 0) > 0)
+
+const extraResourcesByType: Ref<Resource[]>[] = RESOURCE_TYPE.map(() => ref([]))
+const pageByType: Ref<number>[] = RESOURCE_TYPE.map(() => ref(1))
+
+watch(searchDebounced, () => {
+  for (let i = 0; i < RESOURCE_TYPE.length; i++) {
+    extraResourcesByType[i].value = []
+    pageByType[i].value = 1
+  }
+})
+
+const loadMore = async (type: ResourceType) => {
+  const index = RESOURCE_TYPE.indexOf(type)
+  if (index === -1) return
+  pageByType[index].value++
+  const result = await $api<PaginatedArray<Resource>>(url.value, {
+    query: {
+      type,
+      page_size: PAGE_SIZE,
+      page: pageByType[index].value,
+      q: searchDebounced.value || undefined,
+    },
+  })
+  extraResourcesByType[index].value = [...extraResourcesByType[index].value, ...result.data]
+}
+
 const allResources = computed<ResourceGroup[]>(() => {
   return RESOURCE_TYPE
     .map((type, index) => ({
       type: type as ResourceType,
-      items: rawResourcesByTypes[index].data.value?.data ?? [],
+      total: rawResourcesByTypes[index].data.value?.total ?? 0,
+      items: [...(rawResourcesByTypes[index].data.value?.data ?? []), ...extraResourcesByType[index].value],
     }))
     .filter(group => group.items.length > 0)
 })

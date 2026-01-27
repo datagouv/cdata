@@ -61,6 +61,14 @@
             </button>
           </li>
         </ul>
+        <button
+          v-if="group.items.length < group.total"
+          type="button"
+          class="w-full text-left px-2 py-1.5 text-sm text-blue-default hover:underline"
+          @click="$emit('load-more', group.type)"
+        >
+          {{ $t('Charger plus…') }}
+        </button>
       </div>
     </div>
   </aside>
@@ -87,6 +95,7 @@ import { RiArrowRightSLine, RiArrowLeftSLine } from '@remixicon/vue'
 
 export interface ResourceGroup {
   type: ResourceType
+  total: number
   items: Resource[]
 }
 
@@ -99,6 +108,7 @@ defineProps<{
 
 defineEmits<{
   'select': [resource: Resource]
+  'load-more': [type: ResourceType]
   'update:collapsed': [value: boolean]
   'update:search': [value: string]
 }>()
