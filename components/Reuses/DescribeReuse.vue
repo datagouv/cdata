@@ -233,7 +233,7 @@
               :placeholder="$t('Rechercher un type…')"
               :get-option-id="(type) => type.label"
               :display-value="(type) => type.label"
-              :options="types ?? []"
+              :options="typesOptions"
               :multiple="false"
               :required="true"
               :error-text="getFirstError('type')"
@@ -258,7 +258,7 @@
               :placeholder="$t('Rechercher une thématique…')"
               :get-option-id="(topic) => topic.label"
               :display-value="(topic) => topic.label"
-              :options="topics ?? []"
+              :options="topicsOptions"
               :multiple="false"
               :required="true"
               :error-text="getFirstError('topic')"
@@ -433,6 +433,9 @@ const addImageAccordionId = useId()
 
 const { data: types } = await useAPI<Array<ReuseType>>('/api/1/reuses/types', { lazy: true })
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics', { lazy: true })
+
+const typesOptions = computed(() => types.value ?? [])
+const topicsOptions = computed(() => topics.value ?? [])
 
 const ownedOptions = computed<Array<Owned>>(() => {
   return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: { ...user.value, class: 'User' }, organization: null }]
