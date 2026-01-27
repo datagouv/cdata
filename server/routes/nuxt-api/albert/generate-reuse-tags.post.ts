@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
           + `🧾Normalization rules:\n`
           + `1. Use simple, concrete words (1–3 words max).\n`
           + `2. Avoid repeating the reuse title.\n`
-          + `3. Avoid generic words like "données", "open-data", or "réutilisation".\n`
+          + `3. Avoid generic words like "données" or "open-data".\n`
           + `4. Avoid technical jargon unless necessary.\n`
           + `5. Use lowercase, singular, no accents, words separated by hyphens, keywords separated by commas.\n`
           + `6. Remove duplicates or close synonyms.\n`
