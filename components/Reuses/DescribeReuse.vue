@@ -305,7 +305,7 @@
               :warning-text="getFirstWarning('tags')"
             />
             <div class="flex items-center gap-4 mt-2 mb-3">
-              <Tooltip v-if="!canGenerateTags && form.tags.length >= MAX_TAGS_NB">
+              <Tooltip v-if="!canGenerateTags && tagsSuggestionTooltip">
                 <BrandedButton
                   type="button"
                   color="primary"
@@ -316,7 +316,7 @@
                   {{ $t('Suggérer des mots clés') }}
                 </BrandedButton>
                 <template #tooltip>
-                  {{ $t('Vous avez déjà {count} mots-clés. Le maximum recommandé est de {max}.', { count: form.tags.length, max: MAX_TAGS_NB }) }}
+                  {{ tagsSuggestionTooltip }}
                 </template>
               </Tooltip>
               <BrandedButton
@@ -479,6 +479,26 @@ const canGenerateTags = computed(() => {
   const hasType = form.value.type?.label && form.value.type.label.trim().length > 0
   const hasLessThanMaxTags = form.value.tags.length < MAX_TAGS_NB
   return hasTitle && hasDescription && hasType && hasLessThanMaxTags
+})
+
+const tagsSuggestionTooltip = computed(() => {
+  if (form.value.tags.length >= MAX_TAGS_NB) {
+    return t('Vous avez déjà {count} mots-clés. Le maximum recommandé est de {max}.', { count: form.value.tags.length, max: MAX_TAGS_NB })
+  }
+  const missing = []
+  if (!form.value.title || !form.value.title.trim().length) {
+    missing.push(t('le titre'))
+  }
+  if (!form.value.description || !form.value.description.trim().length) {
+    missing.push(t('la description'))
+  }
+  if (!form.value.type?.label || !form.value.type.label.trim().length) {
+    missing.push(t('le type'))
+  }
+  if (missing.length > 0) {
+    return t('Remplissez {fields} pour utiliser cette fonctionnalité.', { fields: missing.join(', ') })
+  }
+  return ''
 })
 
 const setFiles = (files: Array<File>) => {
