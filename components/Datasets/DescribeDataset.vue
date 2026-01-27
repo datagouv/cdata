@@ -373,7 +373,7 @@
               :warning-text="getFirstWarning('tags')"
             />
             <div class="flex items-center gap-4 mt-2 mb-3">
-              <Tooltip v-if="!canGenerateTags && tagsSuggestionTooltip">
+              <Tooltip v-if="tagsSuggestionDisabledMessage">
                 <BrandedButton
                   type="button"
                   color="primary"
@@ -384,7 +384,7 @@
                   {{ $t('Suggérer des mots clés') }}
                 </BrandedButton>
                 <template #tooltip>
-                  {{ tagsSuggestionTooltip }}
+                  {{ tagsSuggestionDisabledMessage }}
                 </template>
               </Tooltip>
               <BrandedButton
@@ -393,7 +393,7 @@
                 color="primary"
                 :icon="RiSparklingLine"
                 :loading="isGeneratingTags"
-                :disabled="!canGenerateTags"
+                :disabled="!!tagsSuggestionDisabledMessage"
                 @click="handleAutoCompleteTags(MAX_TAGS_NB)"
               >
                 <template v-if="isGeneratingTags">
@@ -883,28 +883,24 @@ const accordionState = (key: keyof typeof form.value) => {
   return 'default'
 }
 
+const hasTitle = computed(() => form.value.title && form.value.title.trim().length > 0)
+const hasDescription = computed(() => form.value.description && form.value.description.trim().length > 0)
+const hasEnoughDescription = computed(() => form.value.description && form.value.description.length >= DESCRIPTION_MIN_LENGTH)
+const hasLessThanMaxTags = computed(() => form.value.tags.length < MAX_TAGS_NB)
+
 const canGenerateDescriptionShort = computed(() => {
-  const hasTitle = form.value.title && form.value.title.trim().length > 0
-  const hasEnoughDescription = form.value.description && form.value.description.length >= DESCRIPTION_MIN_LENGTH
-  return hasTitle && hasEnoughDescription
+  return hasTitle.value && hasEnoughDescription.value
 })
 
-const canGenerateTags = computed(() => {
-  const hasTitle = form.value.title && form.value.title.trim().length > 0
-  const hasDescription = form.value.description && form.value.description.trim().length > 0
-  const hasLessThanMaxTags = form.value.tags.length < MAX_TAGS_NB
-  return hasTitle && hasDescription && hasLessThanMaxTags
-})
-
-const tagsSuggestionTooltip = computed(() => {
-  if (form.value.tags.length >= MAX_TAGS_NB) {
+const tagsSuggestionDisabledMessage = computed(() => {
+  if (!hasLessThanMaxTags.value) {
     return t('Vous avez déjà {count} mots-clés. Le maximum recommandé est de {max}.', { count: form.value.tags.length, max: MAX_TAGS_NB })
   }
   const missing = []
-  if (!form.value.title || !form.value.title.trim().length) {
+  if (!hasTitle.value) {
     missing.push(t('le titre'))
   }
-  if (!form.value.description || !form.value.description.trim().length) {
+  if (!hasDescription.value) {
     missing.push(t('la description'))
   }
   if (missing.length > 0) {
