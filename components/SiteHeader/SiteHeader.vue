@@ -107,21 +107,10 @@
                           </li>
                           <li>
                             <BrandedButton
-                              v-if="config.public.enableCdataSecurityViews"
                               type="button"
                               :icon="RiLogoutBoxRLine"
                               color="tertiary"
                               @click="async () => { (await logout()); close() }"
-                            >
-                              {{ $t('Se déconnecter') }}
-                            </BrandedButton>
-                            <BrandedButton
-                              v-else
-                              :href="`${config.public.apiBase}/logout`"
-                              :icon="RiLogoutBoxRLine"
-                              :external="true"
-                              color="tertiary"
-                              @click="close"
                             >
                               {{ $t('Se déconnecter') }}
                             </BrandedButton>
@@ -360,20 +349,10 @@
                   </li>
                   <li>
                     <BrandedButton
-                      v-if="config.public.enableCdataSecurityViews"
                       type="button"
                       color="tertiary"
                       :icon="RiLogoutBoxRLine"
                       @click="logout"
-                    >
-                      {{ $t('Se déconnecter') }}
-                    </BrandedButton>
-                    <BrandedButton
-                      v-else
-                      :href="`${config.public.apiBase}/logout`"
-                      color="tertiary"
-                      :icon="RiLogoutBoxRLine"
-                      external
                     >
                       {{ $t('Se déconnecter') }}
                     </BrandedButton>
