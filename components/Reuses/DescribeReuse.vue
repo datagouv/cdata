@@ -407,6 +407,7 @@ import CdataLink from '~/components/CdataLink.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplanation.vue'
+import { humanJoin } from '~/utils/helpers'
 import type { ReuseForm, Tag } from '~/types/types'
 
 const reuseForm = defineModel<ReuseForm>({ required: true })
@@ -496,7 +497,7 @@ const tagsSuggestionTooltip = computed(() => {
     missing.push(t('le type'))
   }
   if (missing.length > 0) {
-    return t('Remplissez {fields} pour utiliser cette fonctionnalité.', { fields: missing.join(', ') })
+    return t('Remplissez {fields} pour utiliser cette fonctionnalité.', { fields: humanJoin(missing) })
   }
   return ''
 })
