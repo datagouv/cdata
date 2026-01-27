@@ -760,6 +760,7 @@ import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import SearchableSelect from '~/components/SearchableSelect.vue'
+import { humanJoin } from '~/utils/helpers'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone, Tag } from '~/types/types'
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
@@ -907,7 +908,7 @@ const tagsSuggestionTooltip = computed(() => {
     missing.push(t('la description'))
   }
   if (missing.length > 0) {
-    return t('Remplissez {fields} pour utiliser cette fonctionnalité.', { fields: missing.join(', ') })
+    return t('Remplissez {fields} pour utiliser cette fonctionnalité.', { fields: humanJoin(missing) })
   }
   return ''
 })
