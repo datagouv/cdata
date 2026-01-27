@@ -11,6 +11,10 @@ const IGNORED_MESSAGES = [
   //   })
   'Failed to load resource: the server responded with a status of 404',
   'Page not found:',
+  // Fixtures have broken image URLs (dev.local prefix baked in), see udata-fixtures v7.0.0
+  'OpaqueResponseBlocking',
+  // Firefox warning about scroll-linked positioning, not actionable
+  'scroll-linked positioning effect',
 ]
 
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
