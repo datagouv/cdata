@@ -113,9 +113,13 @@
           </div>
         </div>
         <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium">
-          <div class="fr-hidden flex-sm dash-after-sm text-gray-medium -ml-2.5">
+          <div class="fr-hidden flex-sm text-gray-medium -ml-2.5">
             <DatasetQualityInline :quality="dataset.quality" />
           </div>
+          <RiSubtractLine
+            aria-hidden="true"
+            class="hidden sm:block size-3"
+          />
           <div class="flex flex-wrap items-center gap-1">
             <p
               class="text-sm mb-0 flex items-center gap-0.5"
@@ -157,10 +161,10 @@
         </div>
         <component
           :is="config.textClamp"
-          v-if="showDescriptionShort && config && config.textClamp && descriptionShort"
+          v-if="showDescriptionShort && config && config.textClamp"
           class="fr-text--sm fr-mt-1w fr-mb-0 overflow-wrap-anywhere hidden sm:block"
           :auto-resize="true"
-          :text="descriptionShort"
+          :text="getDescriptionShort(props.dataset)"
           :max-lines="2"
         />
         <div
@@ -183,13 +187,13 @@
 
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
-import { computed, ref, watchEffect } from 'vue'
+import { computed } from 'vue'
 import { RiDownloadLine, RiEyeLine, RiLineChartLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import { summarize } from '../functions/helpers'
 import { useFormatDate } from '../functions/dates'
 import { getOwnerName } from '../functions/owned'
-import { getDescriptionShort } from '../functions/datasets'
+import { getDescriptionShort } from '../functions/description'
 import { useComponentsConfig } from '../config'
 import { useTranslation } from '../composables/useTranslation'
 import DatasetQualityInline from './DatasetQualityInline.vue'
@@ -233,12 +237,6 @@ const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
 const ownerName = computed(() => getOwnerName(props.dataset))
 const config = useComponentsConfig()
-
-const descriptionShort = ref('')
-watchEffect(async () => {
-  if (!props.showDescriptionShort) return
-  descriptionShort.value = await getDescriptionShort(props.dataset.description, props.dataset.description_short)
-})
 
 const matchingBadges = computed(() => {
   if (!props.tagIntoBadge || !props.dataset.tags) return []

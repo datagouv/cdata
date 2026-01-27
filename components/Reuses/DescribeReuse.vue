@@ -314,7 +314,7 @@
             />
             <div
               v-if="imagePreview"
-              class="text-align-center"
+              class="text-center"
             >
               <NuxtImg
                 :src="imagePreview"
@@ -377,7 +377,7 @@ const { data: types } = await useAPI<Array<ReuseType>>('/api/1/reuses/types', { 
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics', { lazy: true })
 
 const ownedOptions = computed<Array<Owned>>(() => {
-  return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: user.value, organization: null }]
+  return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: { ...user.value, class: 'User' }, organization: null }]
 })
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(reuseForm, {

@@ -133,7 +133,7 @@
           </AppLink>
         </h3>
         <div class="order-3 text-sm m-0 text-gray-medium">
-          <p class="text-sm mb-0 flex items-center">
+          <div class="text-sm mb-0 flex items-center">
             <span
               v-if="reuse.organization"
               class="relative block truncate break-all z-[2] flex-initial"
@@ -158,7 +158,7 @@
             >{{ ownerName }}</span>
             <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
             <span class="block flex-none">{{ t('publié {date}', { date: formatRelativeIfRecentDate(reuse.created_at, { dateStyle: 'medium' }) }) }}</span>
-          </p>
+          </div>
           <ReuseDetails :reuse />
         </div>
         <div

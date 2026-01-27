@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 
 const REUSE_SLUG = 'itineriz-deplacements-professionnels-jop-paris-2024'
 
 test('page loads with correct title', async ({ page }) => {
   await page.goto(`/reuses/${REUSE_SLUG}`)
 
-  await expect(page).toHaveTitle(/itineriz/i)
+  await expect(page).toHaveTitle('Réutilisation - Itineriz - Déplacements professionnels JOP Paris 2024 | data.gouv.fr')
 
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
 })
@@ -32,11 +32,13 @@ test('external link button is visible', async ({ page }) => {
 
 test('discussions tab is accessible', async ({ page }) => {
   await page.goto(`/reuses/${REUSE_SLUG}`)
+  // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   const discussionsTab = page.getByRole('link', { name: /Discussions/ })
   await expect(discussionsTab).toBeVisible()
 
   await discussionsTab.click()
 
-  await page.waitForURL(`**/reuses/${REUSE_SLUG}/discussions`)
+  await expect(page).toHaveURL(`/reuses/${REUSE_SLUG}/discussions`)
 })

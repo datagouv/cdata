@@ -3,7 +3,7 @@
     ref="containerRef"
     type="button"
     :draggable="type !== 'top-left'"
-    class="table-selector block fr-p-0 cursor-pointer hover:!bg-primary absolute bg-neutral-300"
+    class="block p-0 cursor-pointer hover:!bg-primary absolute bg-neutral-300"
     :class="className + ' ' + common"
     @click.stop="click"
     @dragstart.stop="dragStart"
@@ -35,11 +35,11 @@ const common = computed(
 )
 
 const className = computed(() => {
-  if (type === 'left') return 'w-1w h-full left-n3-5v top-0 fr-py-1v'
+  if (type === 'left') return 'w-2 h-full -left-3.5 top-0 py-1'
 
-  if (type === 'top') return 'right-px h-1w w-full left-0 top-n3-5v'
+  if (type === 'top') return 'right-px h-2 w-full left-0 -top-3.5'
 
-  return 'h-3v w-3v left-n2w top-n2w rounded-circle'
+  return 'h-3 w-3 -left-4 -top-4 rounded-full'
 })
 
 function click(_e: Event) {

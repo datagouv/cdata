@@ -9,8 +9,10 @@
       v-model="datasetForm"
       type="update"
       :harvested
+      :badges="dataset.badges"
       :submit-label="t('Sauvegarder')"
       @feature="feature"
+      @badges-change="pendingBadges = $event"
       @submit="save"
     >
       <template #top>
@@ -95,9 +97,14 @@
           {{ $t("Attention, cette action ne peut pas être annulée.") }}
 
           <template #button>
-            <ModalWithButton
+            <AdminDeleteModal
               :title="$t('Êtes-vous sûr de vouloir supprimer ce jeu de données ?')"
-              size="lg"
+              :delete-url="`/api/1/datasets/${route.params.id}`"
+              :delete-button-label="$t('Supprimer le jeu de données')"
+              :deletable-object="dataset"
+              object-type="dataset"
+              :object-title="dataset.title"
+              @deleted="onDatasetDeleted"
             >
               <template #button="{ attrs, listeners }">
                 <BrandedButton
@@ -112,18 +119,7 @@
               <p class="fr-text--bold">
                 {{ $t("Cette action est irréversible.") }}
               </p>
-              <template #footer>
-                <div class="flex-1 flex justify-end">
-                  <BrandedButton
-                    color="danger"
-                    :loading="isLoading"
-                    @click="deleteDataset"
-                  >
-                    {{ $t("Supprimer le jeu de données") }}
-                  </BrandedButton>
-                </div>
-              </template>
-            </ModalWithButton>
+            </AdminDeleteModal>
           </template>
         </BannerAction>
       </div>
@@ -133,16 +129,18 @@
 
 <script setup lang="ts">
 import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
-import type { DatasetV2WithFullObject } from '@datagouv/components-next'
+import type { Badge, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
+import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
+import { updateBadges } from '~/api/badges'
 import type { DatasetForm } from '~/types/types'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const route = useRoute()
-const { start, finish, isLoading } = useLoadingIndicator()
+const isLoading = ref(false)
 
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset, status, refresh } = await useAPI<DatasetV2WithFullObject>(url, {
@@ -154,6 +152,7 @@ const { data: dataset, status, refresh } = await useAPI<DatasetV2WithFullObject>
 
 const datasetForm = ref<DatasetForm | null>(null)
 const harvested = ref(false)
+const pendingBadges = ref<Array<Badge> | null>(null)
 watchEffect(() => {
   if (dataset.value) {
     datasetForm.value = datasetToForm(dataset.value)
@@ -165,7 +164,7 @@ async function save() {
   if (!datasetForm.value) throw new Error('No dataset form')
 
   try {
-    start()
+    isLoading.value = true
     if (
       datasetForm.value.contact_points
       && datasetForm.value.owned?.organization
@@ -175,6 +174,10 @@ async function save() {
           datasetForm.value.contact_points[contactPointKey] = await newContactPoint($api, datasetForm.value.owned?.organization, datasetForm.value.contact_points[contactPointKey])
         }
       }
+    }
+
+    if (pendingBadges.value && dataset.value) {
+      await updateBadges(dataset.value, pendingBadges.value, 'datasets')
     }
 
     await $api(`/api/1/datasets/${dataset.value?.id}/`, {
@@ -187,28 +190,19 @@ async function save() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
-async function deleteDataset() {
-  start()
-  try {
-    await $api(`/api/1/datasets/${route.params.id}`, {
-      method: 'DELETE',
-    })
-    refresh()
-    toast.success(t('Jeu de données supprimé !'))
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-  }
-  finally {
-    finish()
-  }
+function onDatasetDeleted() {
+  refresh()
+  toast.success(t('Jeu de données supprimé !'))
+  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
 }
 
 async function switchDatasetPrivate() {
   if (!datasetForm.value) throw new Error('No dataset form')
-  start()
+  isLoading.value = true
   try {
     await $api(`/api/1/datasets/${dataset.value?.id}/`, {
       method: 'PUT',
@@ -223,13 +217,13 @@ async function switchDatasetPrivate() {
     }
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function restoreDataset() {
   if (!datasetForm.value) throw new Error('No dataset form')
-  start()
+  isLoading.value = true
   try {
     await $api(`/api/1/datasets/${dataset.value?.id}/`, {
       method: 'PUT',
@@ -239,13 +233,13 @@ async function restoreDataset() {
     toast.success(t('Jeu de données restauré !'))
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function archiveDataset() {
   if (!datasetForm.value) throw new Error('No dataset form')
-  start()
+  isLoading.value = true
   try {
     await $api(`/api/1/datasets/${dataset.value?.id}/`, {
       method: 'PUT',
@@ -261,14 +255,14 @@ async function archiveDataset() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function feature() {
   const method = dataset.value?.featured ? 'DELETE' : 'POST'
   try {
-    start()
+    isLoading.value = true
     await $api(`/api/1/datasets/${route.params.id}/featured`, {
       method,
     })
@@ -284,7 +278,7 @@ async function feature() {
     toast.error(t('Impossible de mettre en avant ce jeu de données'))
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 </script>

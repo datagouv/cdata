@@ -1,7 +1,7 @@
 <template>
   <div
     class="rounded fr-p-3w flex flex-col"
-    :class="{ 'h-full': stretchHeight, 'bg-contrast-blue-cumulus': isPrimary, '!border border-gray-default bg-white': !isPrimary }"
+    :class="{ 'h-full': stretchHeight, 'bg-new-info-light': isPrimary, '!border border-gray-default bg-white': !isPrimary }"
   >
     <div
       class="flex-1 flex flex-wrap gap-4"

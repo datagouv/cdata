@@ -1,7 +1,7 @@
 <template>
   <div>
     <PostContentForm
-      v-if="postForm"
+      v-if="postForm && post?.body_type !== 'blocs'"
       :post="postForm"
       type="update"
       :submit-label="t('Sauvegarder')"
@@ -22,6 +22,12 @@ const route = useRoute()
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
 const { data: post, refresh } = await useAPI<Post>(url, { redirectOn404: true })
 const postForm = computed(() => post.value ? postToForm(post.value) : null)
+
+watchEffect(() => {
+  if (post.value?.body_type === 'blocs') {
+    navigateTo(`/posts/${post.value.slug}?edit=true`)
+  }
+})
 
 const loading = ref(false)
 

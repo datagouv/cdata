@@ -1,5 +1,5 @@
 <template>
-  <div class="editor__container px-4 py-2 rounded-t shadow-input bg-[var(--background-contrast-grey)]">
+  <div class="editor__container px-4 py-2 rounded-t shadow-input bg-gray-lower">
     <div
       class="mx-auto flex flex-wrap pb-1 gap-2 *:flex *:gap-1"
       role="menubar"
@@ -229,7 +229,7 @@ const editor = useEditor(root =>
       })
 
       ctx.set(paragraphAttr.key, () => ({ class: 'text-sm' }))
-      ctx.set(linkAttr.key, () => ({ class: 'fr-link' }))
+      ctx.set(linkAttr.key, () => ({ class: 'link' }))
       ctx.get(listenerCtx).markdownUpdated((_ctx, markdown, _prevMarkdown) => onChange(markdown))
       ctx.get(listenerCtx).mounted((_ctx) => {
         emit('editorMounted')

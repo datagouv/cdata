@@ -131,7 +131,7 @@ watchEffect(() => {
   q.value = props.initialQ
 })
 
-const qDebounced = debouncedRef(q, config.public.searchAutocompleteDebounce)
+const qDebounced = debouncedRef(q, config.public.searchDebounce)
 const sort = ref(props.sort ?? '')
 const sortParam = computed(() => sort.value ? sort.value : undefined)
 

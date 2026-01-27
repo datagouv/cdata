@@ -3,16 +3,16 @@ import type { Activity, ActivityKey } from './types/activity.js'
 import type { PaginatedArray } from './types/api.js'
 import type { ContactPoint, ContactPointRole } from './types/contact_point.js'
 import type { Badge, Badges, TranslatedBadge } from './types/badges'
-import type { Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
-import type { NewDataservice, Dataservice } from './types/dataservices'
+import type { DatasetReference, Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
+import type { DataserviceReference, NewDataservice, Dataservice } from './types/dataservices'
 import type { AccessType, AccessAudience, AccessAudienceCondition, AccessAudienceType, WithAccessType, AccessTypeForm } from './types/access_types'
 import type { Frequency, Frequencies } from './types/frequency'
 import type { Granularity, Granularities, SpatialZone } from './types/granularity'
 import type { Harvest } from './types/harvest'
 import type { License } from './types/licenses'
 import type { Member, MemberRole, NewOrganization, Organization, OrganizationOrSuggest, OrganizationReference, OrganizationSuggest } from './types/organizations'
-import type { Owned, OwnedWithId } from './types/owned'
-import type { NewReuse, Reuse, ReuseTopic, ReuseType } from './types/reuses'
+import type { Owned, OwnedWithFullObject, OwnedWithId } from './types/owned'
+import type { ReuseReference, NewReuse, Reuse, ReuseTopic, ReuseType } from './types/reuses'
 import type { RegisteredSchema, Schema, SchemaDetails, SchemaField, SchemaPath, SchemaPublicationMode, SchemaResponseData, SchemaVersion, ValidataError } from './types/schemas'
 import type { TopicV2, TopicElement, TopicElementClass, TopicElementRel } from './types/topics'
 import type { CommunityResource, FileResourceFileType, RemoteResourceFileType, ResourceFileType, ResourceType, Resource } from './types/resources'
@@ -86,6 +86,7 @@ export * from './composables/useTranslation'
 export * from './functions/activities'
 export * from './functions/datasets'
 export * from './functions/dates'
+export * from './functions/description'
 export * from './functions/helpers'
 export * from './functions/markdown'
 export * from './functions/matomo'
@@ -115,9 +116,11 @@ export type {
   CommunityResource,
   ContactPoint,
   ContactPointRole,
+  DatasetReference,
   Dataset,
   DatasetV2,
   DatasetV2WithFullObject,
+  DataserviceReference,
   Dataservice,
   NewDataservice,
   FileResourceFileType,
@@ -137,6 +140,7 @@ export type {
   OrganizationSuggest,
   OrganizationOrSuggest,
   Owned,
+  OwnedWithFullObject,
   OwnedWithId,
   PaginatedArray,
   Quality,
@@ -149,6 +153,7 @@ export type {
   Resource,
   ResourceFileType,
   ResourceType,
+  ReuseReference,
   Reuse,
   ReuseTopic,
   ReuseType,

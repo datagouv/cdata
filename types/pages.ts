@@ -37,4 +37,32 @@ export type LinksListBloc = {
   links: Array<LinkInBloc>
 } & BlocWithTitle & { id: string }
 
-export type PageBloc = DatasetsListBloc | DataservicesListBloc | ReusesListBloc | LinksListBloc
+export type MarkdownBloc = {
+  class: 'MarkdownBloc'
+  content: string
+} & BlocWithTitle & { id: string }
+
+export type ContentBloc = DatasetsListBloc | DataservicesListBloc | ReusesListBloc | LinksListBloc | MarkdownBloc
+
+export type AccordionItemBloc = {
+  title: string
+  content: Array<ContentBloc>
+}
+
+export type AccordionListBloc = {
+  class: 'AccordionListBloc'
+  title: string | null
+  description: string | null
+  items: Array<AccordionItemBloc>
+} & { id: string }
+
+export type HeroBloc = {
+  class: 'HeroBloc'
+  title: string
+  description: string | null
+  color: 'primary' | 'green' | 'purple'
+  main_link_title: string | null
+  main_link_url: string | null
+} & { id: string }
+
+export type PageBloc = ContentBloc | AccordionListBloc | HeroBloc
