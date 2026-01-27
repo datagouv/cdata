@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 import * as path from 'path'
 import { clickOutside } from '../helpers'
 
