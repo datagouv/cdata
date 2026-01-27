@@ -134,7 +134,7 @@ const selectResource = (resource: Resource) => {
   })
 }
 
-// Sélection initiale : resource_id de l'URL ou premier fichier du premier groupe (dans l'ordre RESOURCE_TYPE)
+// Initial selection: resource_id from URL, or first resource of the first group (in RESOURCE_TYPE order)
 watchEffect(async () => {
   if (selectionInitialized.value) return
 
@@ -153,11 +153,11 @@ watchEffect(async () => {
       return
     }
     catch {
-      // fallback ci-dessous
+      // fallback below
     }
   }
 
-  // Prend le 1er élément du 1er groupe non-vide (dans l'ordre RESOURCE_TYPE : main d'abord)
+  // Pick the first item of the first non-empty group (in RESOURCE_TYPE order: main first)
   if (flatResources.value.length > 0) {
     selectedResource.value = flatResources.value[0]
     selectionInitialized.value = true
