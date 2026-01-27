@@ -15,6 +15,8 @@ const IGNORED_MESSAGES = [
   'OpaqueResponseBlocking',
   // Firefox warning about scroll-linked positioning, not actionable
   'scroll-linked positioning effect',
+  // Nuxt wraps 404 errors during app init, same root cause as "Page not found:"
+  'error caught during app initialization',
 ]
 
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
