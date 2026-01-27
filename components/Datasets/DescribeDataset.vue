@@ -393,7 +393,6 @@
                 color="primary"
                 :icon="RiSparklingLine"
                 :loading="isGeneratingTags"
-                :disabled="!!tagsSuggestionDisabledMessage"
                 @click="handleAutoCompleteTags(MAX_TAGS_NB)"
               >
                 <template v-if="isGeneratingTags">
