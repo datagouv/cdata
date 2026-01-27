@@ -106,7 +106,6 @@ const props = defineProps<{
 
 const me = useMe()
 const { $api } = useNuxtApp()
-const config = useRuntimeConfig()
 const { t } = useTranslation()
 const { generateMailtoLink, mailOptions } = useDeleteMailto()
 
@@ -158,12 +157,7 @@ async function deleteUser({ spam = false }) {
 
     if (props.user.id === me.value.id) {
       toast.success(t('Votre compte a bien été supprimé. Vous êtes maintenant déconnecté.'))
-      if (config.public.enableCdataSecurityViews) {
-        await logout()
-      }
-      else {
-        await navigateTo(`${config.public.apiBase}/logout`, { external: true })
-      }
+      await logout()
     }
     else if (isAdmin && mailOption.value === 'custom' && props.user.email) {
       deleted.value = true
