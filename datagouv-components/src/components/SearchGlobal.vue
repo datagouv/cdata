@@ -1177,7 +1177,7 @@
                 v-for="post in currentResults.data"
                 :key="post.id"
                 :post="post"
-                :post-url="`http://dev.local:3000/posts/${post.id}/`"
+                :post-url="`/posts/${post.id}/`"
                 :search="true"
               />
             </template>
@@ -1212,6 +1212,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ofetch } from 'ofetch'
+import { useComponentsConfig } from '../config'
 import DatasetCard from './DatasetCard.vue'
 import ReuseCard from './ReuseCard.vue'
 import DataserviceCard from './DataserviceCard.vue'
@@ -1224,6 +1226,7 @@ import Pagination from './Pagination.vue'
 
 const route = useRoute()
 const router = useRouter()
+const componentsConfig = useComponentsConfig()
 
 /**
  * Configuration System for SearchGlobal Component
@@ -1989,14 +1992,14 @@ const displayedTopics = computed(() => {
 
 async function fetchSearchResults(type: string, params: Record<string, string | string[]> = {}, page: number = 1, includeHiddenFilters: boolean = true) {
   try {
-    const queryParams = new URLSearchParams()
-
-    if (searchQuery.value) {
-      queryParams.append('q', searchQuery.value)
+    const query: Record<string, string | string[]> = {
+      page: page.toString(),
+      page_size: pageSize.value.toString(),
     }
 
-    queryParams.append('page', page.toString())
-    queryParams.append('page_size', pageSize.value.toString())
+    if (searchQuery.value) {
+      query.q = searchQuery.value
+    }
 
     if (includeHiddenFilters) {
       hiddenFilters.value.forEach((filter) => {
@@ -2011,26 +2014,35 @@ async function fetchSearchResults(type: string, params: Record<string, string | 
           else if (filter.type === 'topic' && type === 'reuses') {
             paramName = 'topic_object'
           }
-          queryParams.append(paramName, filter.id)
+          const existing = query[paramName]
+          if (existing) {
+            query[paramName] = Array.isArray(existing) ? [...existing, filter.id] : [existing, filter.id]
+          }
+          else {
+            query[paramName] = filter.id
+          }
         }
       })
     }
 
     Object.entries(params).forEach(([key, value]) => {
       if (value && value !== 'all') {
-        if (Array.isArray(value)) {
-          value.forEach(v => queryParams.append(key, v))
+        const existing = query[key]
+        if (existing) {
+          const existingArr = Array.isArray(existing) ? existing : [existing]
+          const valueArr = Array.isArray(value) ? value : [value]
+          query[key] = [...existingArr, ...valueArr]
         }
         else {
-          queryParams.append(key, value)
+          query[key] = value
         }
       }
     })
 
-    const url = `http://dev.local:7000/api/2/${type}/search/?${queryParams.toString()}`
-    const response = await fetch(url)
-    const data = await response.json()
-    return data
+    return await ofetch(`/api/2/${type}/search/`, {
+      baseURL: componentsConfig.apiBase,
+      query,
+    })
   }
   catch (error) {
     console.error(`Error fetching ${type}:`, error)
@@ -2087,8 +2099,7 @@ async function loadAllResults() {
 async function loadMetadata() {
   loadingFormats.value = true
   try {
-    const response = await fetch('http://dev.local:7000/api/1/datasets/extensions/')
-    allowedFormats.value = await response.json()
+    allowedFormats.value = await ofetch('/api/1/datasets/extensions/', { baseURL: componentsConfig.apiBase })
   }
   catch (error) {
     console.error('Error loading formats:', error)
@@ -2099,8 +2110,7 @@ async function loadMetadata() {
 
   loadingLicenses.value = true
   try {
-    const response = await fetch('http://dev.local:7000/api/1/datasets/licenses/')
-    licenses.value = await response.json()
+    licenses.value = await ofetch('/api/1/datasets/licenses/', { baseURL: componentsConfig.apiBase })
   }
   catch (error) {
     console.error('Error loading licenses:', error)
@@ -2111,8 +2121,7 @@ async function loadMetadata() {
 
   loadingSchemas.value = true
   try {
-    const response = await fetch('http://dev.local:7000/api/1/datasets/schemas/')
-    schemas.value = await response.json()
+    schemas.value = await ofetch('/api/1/datasets/schemas/', { baseURL: componentsConfig.apiBase })
   }
   catch (error) {
     console.error('Error loading schemas:', error)
@@ -2123,8 +2132,7 @@ async function loadMetadata() {
 
   loadingGranularities.value = true
   try {
-    const response = await fetch('http://dev.local:7000/api/1/spatial/granularities/')
-    spatialGranularities.value = await response.json()
+    spatialGranularities.value = await ofetch('/api/1/spatial/granularities/', { baseURL: componentsConfig.apiBase })
   }
   catch (error) {
     console.error('Error loading granularities:', error)
@@ -2136,8 +2144,7 @@ async function loadMetadata() {
 
 async function suggestOrganizations(query: string): Promise<Organization[]> {
   try {
-    const response = await fetch(`http://dev.local:7000/api/1/organizations/suggest/?q=${encodeURIComponent(query)}&size=20`)
-    return await response.json()
+    return await ofetch('/api/1/organizations/suggest/', { baseURL: componentsConfig.apiBase, query: { q: query, size: 20 } })
   }
   catch (error) {
     console.error('Error suggesting organizations:', error)
@@ -2147,8 +2154,7 @@ async function suggestOrganizations(query: string): Promise<Organization[]> {
 
 async function suggestTags(query: string): Promise<string[]> {
   try {
-    const response = await fetch(`http://dev.local:7000/api/1/tags/suggest/?q=${encodeURIComponent(query)}&size=20`)
-    const tags: Tag[] = await response.json()
+    const tags: Tag[] = await ofetch('/api/1/tags/suggest/', { baseURL: componentsConfig.apiBase, query: { q: query, size: 20 } })
     return tags.map(tag => tag.text)
   }
   catch (error) {
@@ -2159,8 +2165,7 @@ async function suggestTags(query: string): Promise<string[]> {
 
 async function suggestSpatialCoverages(query: string): Promise<SpatialZone[]> {
   try {
-    const response = await fetch(`http://dev.local:7000/api/1/spatial/zones/suggest/?q=${encodeURIComponent(query)}&size=20`)
-    return await response.json()
+    return await ofetch('/api/1/spatial/zones/suggest/', { baseURL: componentsConfig.apiBase, query: { q: query, size: 20 } })
   }
   catch (error) {
     console.error('Error suggesting spatial coverages:', error)
@@ -2500,7 +2505,7 @@ function getDiscussionUrl(discussion: Discussion): string {
 
   const subjectPath = classToPath[subjectClass] || subjectClass.toLowerCase()
 
-  return `http://dev.local:3000/${subjectPath}/${subjectId}#/discussions/${discussion.id}`
+  return `/${subjectPath}/${subjectId}#/discussions/${discussion.id}`
 }
 
 function initFiltersFromUrl() {
