@@ -101,7 +101,7 @@
                 <MarkdownViewer
                   size="sm"
                   :content="dataset.description"
-                  :min-heading="3"
+                  :no-headings="true"
                 />
               </ReadMore>
             </div>
