@@ -434,6 +434,9 @@ const addImageAccordionId = useId()
 const { data: types } = await useAPI<Array<ReuseType>>('/api/1/reuses/types', { lazy: true })
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics', { lazy: true })
 
+const typesOptions = computed(() => types.value ?? [])
+const topicsOptions = computed(() => topics.value ?? [])
+
 const ownedOptions = computed<Array<Owned>>(() => {
   return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: { ...user.value, class: 'User' }, organization: null }]
 })
