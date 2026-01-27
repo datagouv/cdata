@@ -1,7 +1,7 @@
 <template>
   <aside
     v-if="!collapsed"
-    class="w-72 shrink-0 border-l border-gray-default pl-4"
+    class="w-72 shrink-0 pl-4"
   >
     <div class="flex items-center justify-between mb-3">
       <h3 class="text-sm font-bold uppercase mb-0">
@@ -24,16 +24,17 @@
       >{{ $t('Rechercher') }}</label>
       <input
         :id="searchId"
-        v-model="search"
+        :value="search"
         type="search"
         class="w-full border border-gray-default rounded px-2.5 py-1.5 text-sm"
         :placeholder="$t('Rechercher')"
+        @input="$emit('update:search', ($event.target as HTMLInputElement).value)"
       >
     </div>
 
     <div class="space-y-4 overflow-y-auto max-h-[60vh]">
       <div
-        v-for="group in filteredGroups"
+        v-for="group in resources"
         :key="group.type"
       >
         <div class="text-xs text-gray-plain font-bold uppercase mb-1.5 border-b border-gray-default pb-1">
@@ -80,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useId } from 'vue'
+import { useId } from 'vue'
 import { ResourceIcon, getResourceLabel, type Resource, type ResourceType } from '@datagouv/components-next'
 import { RiArrowRightSLine, RiArrowLeftSLine } from '@remixicon/vue'
 
@@ -89,30 +90,18 @@ export interface ResourceGroup {
   items: Resource[]
 }
 
-const props = defineProps<{
+defineProps<{
   resources: ResourceGroup[]
   selectedResourceId: string | null
   collapsed: boolean
+  search: string
 }>()
 
 defineEmits<{
   'select': [resource: Resource]
   'update:collapsed': [value: boolean]
+  'update:search': [value: string]
 }>()
 
 const searchId = useId()
-const search = ref('')
-
-const filteredGroups = computed(() => {
-  const q = search.value.toLowerCase().trim()
-  if (!q) return props.resources.filter(g => g.items.length > 0)
-  return props.resources
-    .map(group => ({
-      ...group,
-      items: group.items.filter(r =>
-        (r.title || '').toLowerCase().includes(q),
-      ),
-    }))
-    .filter(g => g.items.length > 0)
-})
 </script>

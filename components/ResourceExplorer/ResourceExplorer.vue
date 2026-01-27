@@ -13,15 +13,30 @@
         :resources="allResources"
         :selected-resource-id="selectedResource?.id ?? null"
         :collapsed="sidebarCollapsed"
+        :search="search"
         @select="selectResource"
         @update:collapsed="sidebarCollapsed = $event"
+        @update:search="search = $event"
       />
     </div>
+  </div>
+  <div
+    v-else
+    class="flex flex-col items-center py-12"
+  >
+    <nuxt-img
+      src="/illustrations/dataset.svg"
+      class="h-20"
+    />
+    <p class="fr-text--bold fr-my-3v">
+      {{ $t('Ce jeu de données ne contient aucune ressource.') }}
+    </p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { RESOURCE_TYPE, type DatasetV2, type Resource, type ResourceType } from '@datagouv/components-next'
+import { refDebounced } from '@vueuse/core'
 import type { PaginatedArray } from '~/types/types'
 import type { ResourceGroup } from './ResourceExplorerSidebar.vue'
 
@@ -31,16 +46,23 @@ const props = defineProps<{
 
 const route = useRoute()
 const router = useRouter()
+const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
 
 const sidebarCollapsed = ref(false)
+const search = ref('')
+const searchDebounced = refDebounced(search, config.public.searchDebounce)
 
 const url = computed(() => `/api/2/datasets/${props.dataset.id}/resources/`)
 
 const rawResourcesByTypes = await Promise.all(
   RESOURCE_TYPE.map(type =>
     useAPI<PaginatedArray<Resource>>(url, {
-      query: { type, page_size: 50 },
+      query: computed(() => ({
+        type,
+        page_size: 50,
+        q: searchDebounced.value || undefined,
+      })),
     }),
   ),
 )
