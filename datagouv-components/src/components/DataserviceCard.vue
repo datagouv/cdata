@@ -50,30 +50,12 @@
       />
     </template>
 
-    <h4 class="text-base mb-0 flex items-center gap-1">
-      <slot
-        name="dataserviceUrl"
-        :dataservice="dataservice"
-        :dataservice-url="dataserviceUrl"
-      >
-        <RiSparklingLine
-          v-if="isTabularApi"
-          aria-hidden="true"
-          class="size-4 flex-none"
-        />
-        <RiTerminalLine
-          v-else
-          aria-hidden="true"
-          class="size-4 flex-none"
-        />
-        <AppLink
-          class="truncate"
-          :to="dataserviceUrl"
-        >
-          {{ dataservice.title }}
-        </AppLink>
-      </slot>
-    </h4>
+    <ObjectCardHeader
+      :icon="isTabularApi ? RiSparklingLine : RiTerminalLine"
+      :url="dataserviceUrl || dataservice.self_web_url"
+    >
+      {{ dataservice.title }}
+    </ObjectCardHeader>
     <div
       v-if="dataservice.organization || dataservice.owner"
       class="text-gray-medium overflow-hidden flex items-center gap-1 m-0"
@@ -83,16 +65,11 @@
         class="text-sm block overflow-hidden mb-0 relative z-[2]"
       >
         <AppLink
-          v-if="organizationUrl"
           class="link text-sm overflow-hidden"
-          :to="organizationUrl"
+          :to="organizationUrl || dataservice.organization.page"
         >
           <OrganizationNameWithCertificate :organization="dataservice.organization" />
         </AppLink>
-        <OrganizationNameWithCertificate
-          v-else
-          :organization="dataservice.organization"
-        />
       </p>
       <p
         v-else
@@ -159,21 +136,12 @@ import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
+import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 
 type Props = {
   dataservice: Dataservice
-
-  /**
-     * The dataserviceUrl is a route location object to allow Vue Router to navigate to the details of a dataservice.
-     * It is used as a separate prop to allow other sites using the package to define their own dataservice pages.
-     */
   dataserviceUrl?: RouteLocationRaw
-
-  /**
-     * The organizationUrl is an optional route location object to allow Vue Router to navigate to the details of the organization linked to tha dataservice.
-     * It is used as a separate prop to allow other sites using the package to define their own organization pages.
-     */
   organizationUrl?: RouteLocationRaw
   showDescription?: boolean
 }
@@ -181,8 +149,6 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), {
   showDescription: true,
 })
-
-const dataserviceUrl = computed(() => props.dataserviceUrl || props.dataservice.self_web_url)
 
 const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()

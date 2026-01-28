@@ -3,15 +3,20 @@
     <AppLink
       :to="url"
       class="text-gray-title text-base bg-none flex items-center w-full truncate gap-1"
+      :target="target"
     >
       <component
         :is="icon"
         aria-hidden="true"
         class="size-4 flex-none"
       />
-      <span class="block truncate flex-1">
+      <span
+        class="block truncate"
+        :class="$slots.extra ? 'flex-initial' : 'flex-1'"
+      >
         <slot />
       </span>
+      <slot name="extra" />
       <span class="absolute inset-0" />
     </AppLink>
   </h4>
@@ -25,5 +30,6 @@ import AppLink from './AppLink.vue'
 defineProps<{
   icon: Component
   url: RouteLocationRaw
+  target?: string
 }>()
 </script>

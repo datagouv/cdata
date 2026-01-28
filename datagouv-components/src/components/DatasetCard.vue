@@ -32,52 +32,34 @@
         class="size-12"
       />
     </template>
-    <h4 class="w-full text-base mb-0 flex">
-      <slot
-        name="datasetUrl"
-        :dataset="dataset"
-        :dataset-url="datasetUrl"
+    <ObjectCardHeader
+      :icon="RiDatabase2Line"
+      :url="datasetUrl || dataset.page"
+      :target="datasetUrlInNewTab ? '_blank' : undefined"
+    >
+      {{ dataset.title }}
+      <template
+        v-if="dataset.acronym"
+        #extra
       >
-        <AppLink
-          :to="datasetUrl"
-          class="text-gray-title text-base bg-none flex items-center w-full truncate gap-1"
-          :target="datasetUrlInNewTab ? '_blank' : undefined"
-        >
-          <RiDatabase2Line
-            aria-hidden="true"
-            class="size-4 flex-none"
-          />
-          <span
-            class="block truncate"
-            :class="dataset.acronym ? 'flex-initial' : 'flex-1'"
-          >{{ dataset.title }}</span>
-          <small
-            v-if="dataset.acronym"
-            class="flex-1 ml-2"
-          >{{ dataset.acronym }}</small>
-          <span class="absolute inset-0" />
-        </AppLink>
-      </slot>
-    </h4>
+        <small class="flex-1 ml-2">{{ dataset.acronym }}</small>
+      </template>
+    </ObjectCardHeader>
     <div
       v-if="dataset.organization || dataset.owner"
       class="text-sm m-0 flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
     >
-      <template v-if="dataset.organization">
-        <div class="-mr-0.5 flex-initial truncate">
-          <AppLink
-            v-if="organizationUrl"
-            class="link text-sm overflow-hidden flex items-center relative z-[2] truncate"
-            :to="organizationUrl"
-          >
-            <OrganizationNameWithCertificate :organization="dataset.organization" />
-          </AppLink>
-          <OrganizationNameWithCertificate
-            v-else
-            :organization="dataset.organization"
-          />
-        </div>
-      </template>
+      <div
+        v-if="dataset.organization"
+        class="-mr-0.5 flex-initial truncate"
+      >
+        <AppLink
+          class="link text-sm overflow-hidden flex items-center relative z-[2] truncate"
+          :to="organizationUrl || dataset.organization.page"
+        >
+          <OrganizationNameWithCertificate :organization="dataset.organization" />
+        </AppLink>
+      </div>
       <div
         v-else
         class="mr-1 truncate"
@@ -161,28 +143,18 @@ import AppLink from './AppLink.vue'
 import OrganizationLogo from './OrganizationLogo.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
+import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 
 type Props = {
   dataset: Dataset | DatasetV2
-
-  /**
-     * The datasetUrl is a route location object to allow Vue Router to navigate to the details of a dataset.
-     * It is used as a separate prop to allow other sites using the package to define their own dataset pages.
-     */
-  datasetUrl: RouteLocationRaw
+  datasetUrl?: RouteLocationRaw
   datasetUrlInNewTab?: boolean
-
-  /**
-     * The organizationUrl is an optional route location object to allow Vue Router to navigate to the details of the organization linked to tha dataset.
-     * It is used as a separate prop to allow other sites using the package to define their own organization pages.
-     */
   organizationUrl?: RouteLocationRaw
   showDescriptionShort?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  style: () => ({}),
   showDescriptionShort: true,
 })
 
