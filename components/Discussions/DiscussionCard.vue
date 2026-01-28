@@ -18,7 +18,7 @@
           size-class="size-3"
         />
         <Avatar
-          v-else
+          v-else-if="thread.closed_by"
           :user="thread.closed_by"
           :rounded="true"
           class="size-3"
@@ -31,7 +31,7 @@
           {{ thread.closed_by_organization.name }}
         </CdataLink>
         <CdataLink
-          v-else
+          v-else-if="thread.closed_by"
           class="link"
           :href="thread.closed_by.page"
         >

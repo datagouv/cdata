@@ -2,42 +2,42 @@
   <ObjectCard>
     <ObjectCardHeader
       :icon="RiChat3Line"
-      :url="discussionUrl"
+      :url="discussionUrl || discussion.self_web_url || '#'"
     >
       {{ discussion.title }}
     </ObjectCardHeader>
 
-    <div class="flex items-center gap-2 text-sm">
-      <img
-        v-if="discussion.user"
-        :src="avatarUrl"
-        class="size-4 rounded-full"
-        :alt="`${discussion.user.first_name} ${discussion.user.last_name}`"
+    <div
+      v-if="discussion.organization || discussion.user"
+      class="text-sm m-0 flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
+    >
+      <div
+        v-if="discussion.organization"
+        class="-mr-0.5 flex-initial truncate"
       >
-      <div class="flex flex-wrap items-center gap-1">
         <AppLink
-          v-if="discussion.user"
-          :to="computedUserUrl"
-          class="link text-sm relative z-[2] underline"
+          class="link text-sm overflow-hidden flex items-center relative z-[2] truncate"
+          :to="organizationUrl || discussion.organization.page"
         >
-          {{ discussion.user.first_name }} {{ discussion.user.last_name }}
+          <OrganizationNameWithCertificate :organization="discussion.organization" />
         </AppLink>
-        <RiSubtractLine
-          aria-hidden="true"
-          class="size-4 flex-none fill-gray-medium"
-        />
-        <span class="text-gray-medium whitespace-nowrap">
-          {{ t('Posté {date}', { date: formatDate(discussion.created) }) }}
-        </span>
       </div>
+      <div
+        v-else-if="discussion.user"
+        class="mr-1 truncate"
+      >
+        {{ getOwnerName({ organization: null, owner: discussion.user }) }}
+      </div>
+      <RiSubtractLine
+        aria-hidden="true"
+        class="size-4 flex-none fill-gray-medium"
+      />
+      <span class="text-gray-medium whitespace-nowrap">
+        {{ t('Posté {date}', { date: formatDate(discussion.created) }) }}
+      </span>
     </div>
 
-    <p
-      v-if="firstMessageContent"
-      class="text-sm text-gray-medium line-clamp-2 m-0 mt-2"
-    >
-      {{ firstMessageContent }}
-    </p>
+    <ObjectCardShortDescription :text="firstMessageContent" />
 
     <slot />
   </ObjectCard>
@@ -48,74 +48,40 @@ import { RiChat3Line, RiSubtractLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { useFormatDate } from '../functions/dates'
+import { getOwnerName } from '../functions/owned'
 import { useTranslation } from '../composables/useTranslation'
-import { useComponentsConfig } from '../config'
+import type { OrganizationReference } from '../types/organizations'
+import type { UserReference } from '../types/users'
 import AppLink from './AppLink.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
+import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
+import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
+
+interface Message {
+  content: string
+}
 
 interface Discussion {
   id: string
   title: string
-  user?: {
-    id: string
-    first_name: string
-    last_name: string
-    slug: string
-  }
+  user: UserReference
+  organization: OrganizationReference | null
   created: string
-  discussion?: Array<{
-    content: string
-  }>
-  content?: string
+  discussion: Array<Message>
   self_web_url?: string
 }
 
 const props = defineProps<{
   discussion: Discussion
   discussionUrl?: RouteLocationRaw
-  userUrl?: RouteLocationRaw
+  organizationUrl?: RouteLocationRaw
 }>()
 
 const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
-const config = useComponentsConfig()
 
-const discussionUrl = computed(() => props.discussionUrl || props.discussion.self_web_url || '#')
-
-const avatarUrl = computed(() => {
-  if (props.discussion.user?.id) {
-    return `${config.apiBase}/api/1/avatars/${props.discussion.user.id}/80`
-  }
-  return ''
-})
-
-const computedUserUrl = computed(() => {
-  if (props.userUrl) return props.userUrl
-  if (props.discussion.user?.slug) {
-    return `/users/${props.discussion.user.slug}`
-  }
-  return ''
-})
-
-const firstMessageContent = computed(() => {
-  if (props.discussion.content && typeof props.discussion.content === 'string') {
-    const text = props.discussion.content.trim()
-    if (!text) return ''
-    return text.length > 200 ? text.substring(0, 200) + '...' : text
-  }
-
-  if (Array.isArray(props.discussion.discussion) && props.discussion.discussion.length > 0) {
-    const firstMessage = props.discussion.discussion[0]
-    if (firstMessage?.content) {
-      const text = firstMessage.content.trim()
-      if (!text) return ''
-      return text.length > 200 ? text.substring(0, 200) + '...' : text
-    }
-  }
-
-  return ''
-})
+const firstMessageContent = computed(() => props.discussion.discussion?.[0]?.content)
 
 const formatDate = (dateString: string) => {
   return formatRelativeIfRecentDate(dateString, {

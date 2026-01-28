@@ -16,7 +16,7 @@
 
     <ObjectCardHeader
       :icon="RiArticleLine"
-      :url="postUrl"
+      :url="postUrl || post.page || '#'"
     >
       {{ post.name }}
     </ObjectCardHeader>
@@ -36,7 +36,6 @@
 
 <script setup lang="ts">
 import { RiArticleLine } from '@remixicon/vue'
-import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { useFormatDate } from '../functions/dates'
 import { useTranslation } from '../composables/useTranslation'
@@ -46,15 +45,13 @@ import ObjectCard from './ObjectCard.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 
-const props = defineProps<{
+defineProps<{
   post: Post
   postUrl?: RouteLocationRaw
 }>()
 
 const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
-
-const postUrl = computed(() => props.postUrl || props.post.page || '#')
 
 const formatDate = (dateString: string) => {
   return formatRelativeIfRecentDate(dateString, {

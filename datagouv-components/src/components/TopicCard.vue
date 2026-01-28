@@ -23,7 +23,7 @@
 
     <ObjectCardHeader
       :icon="RiBookShelfLine"
-      :url="computedTopicUrl"
+      :url="topicUrl || topic.page || '#'"
     >
       {{ topic.name }}
     </ObjectCardHeader>
@@ -135,8 +135,6 @@ const props = withDefaults(defineProps<{
 
 const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
-
-const computedTopicUrl = computed(() => props.topicUrl || props.topic.page || '#')
 
 const formatDate = (dateString: string) => {
   return formatRelativeIfRecentDate(dateString, {
