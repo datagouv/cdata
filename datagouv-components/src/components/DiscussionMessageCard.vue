@@ -50,30 +50,15 @@ import type { RouteLocationRaw } from 'vue-router'
 import { useFormatDate } from '../functions/dates'
 import { getOwnerName } from '../functions/owned'
 import { useTranslation } from '../composables/useTranslation'
-import type { OrganizationReference } from '../types/organizations'
-import type { UserReference } from '../types/users'
+import type { Thread } from '../types/discussions'
 import AppLink from './AppLink.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 
-interface Message {
-  content: string
-}
-
-interface Discussion {
-  id: string
-  title: string
-  user: UserReference
-  organization: OrganizationReference | null
-  created: string
-  discussion: Array<Message>
-  self_web_url?: string
-}
-
 const props = defineProps<{
-  discussion: Discussion
+  discussion: Thread
   discussionUrl?: RouteLocationRaw
   organizationUrl?: RouteLocationRaw
 }>()

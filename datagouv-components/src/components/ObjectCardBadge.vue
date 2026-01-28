@@ -12,6 +12,8 @@
 </template>
 
 <script setup lang="ts">
+// Only one ObjectCardBadge should be rendered at a time (use v-if/v-else-if),
+// because the absolute positioning will cause multiple badges to overlap.
 import type { Component } from 'vue'
 
 defineProps<{

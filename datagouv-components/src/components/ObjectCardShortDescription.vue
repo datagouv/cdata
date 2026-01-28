@@ -18,6 +18,8 @@ const props = withDefaults(defineProps<{
   maxLength: 200,
 })
 
+// Truncate in JS to avoid sending very long markdown-cleaned text to the DOM.
+// The visual clamp is handled by CSS line-clamp-2.
 const shortDescription = computed(() => {
   if (!props.text) return ''
   const cleaned = removeMarkdownSync(props.text)

@@ -45,7 +45,7 @@
       />
       <Placeholder
         v-else
-        type="Dataset"
+        type="Dataservice"
         class="size-12"
       />
     </template>

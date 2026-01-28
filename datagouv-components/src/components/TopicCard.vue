@@ -16,7 +16,7 @@
       />
       <Placeholder
         v-else
-        type="Dataset"
+        type="Topic"
         class="size-12"
       />
     </template>

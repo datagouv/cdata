@@ -12,6 +12,7 @@ import type { Harvest } from './types/harvest'
 import type { License } from './types/licenses'
 import type { Member, MemberRole, NewOrganization, Organization, OrganizationOrSuggest, OrganizationReference, OrganizationSuggest } from './types/organizations'
 import type { Owned, OwnedWithFullObject, OwnedWithId } from './types/owned'
+import type { Comment, Thread } from './types/discussions'
 import type { Page, PageBloc, ContentBloc, BlocWithTitle, DatasetsListBloc, DataservicesListBloc, ReusesListBloc, LinkInBloc, LinksListBloc, MarkdownBloc, AccordionItemBloc, AccordionListBloc, HeroBloc } from './types/pages'
 import type { Post } from './types/posts'
 import type { ReuseReference, NewReuse, Reuse, ReuseTopic, ReuseType } from './types/reuses'
@@ -34,7 +35,7 @@ import BrandedButton from './components/BrandedButton.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
 import DatasetCard from './components/DatasetCard.vue'
-import DiscussionCard from './components/DiscussionCard.vue'
+import DiscussionMessageCard from './components/DiscussionMessageCard.vue'
 import DateRangeDetails from './components/DateRangeDetails.vue'
 import DatasetInformationPanel from './components/DatasetInformationPanel.vue'
 import DatasetQuality from './components/DatasetQuality.vue'
@@ -124,6 +125,7 @@ export type {
   DatasetV2WithFullObject,
   DataserviceReference,
   Dataservice,
+  Comment,
   NewDataservice,
   FileResourceFileType,
   Frequency,
@@ -159,6 +161,7 @@ export type {
   HeroBloc,
   PaginatedArray,
   Post,
+  Thread,
   Quality,
   RegisteredSchema,
   Rel,
@@ -219,7 +222,7 @@ export {
   DataserviceCard,
   DatasetCard,
   DatasetInformationPanel,
-  DiscussionCard,
+  DiscussionMessageCard,
   DatasetQuality,
   DatasetQualityInline,
   DatasetQualityItem,

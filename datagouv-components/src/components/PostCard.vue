@@ -27,7 +27,7 @@
       v-if="post.published || post.created_at"
       class="text-sm text-gray-medium mt-1"
     >
-      {{ t('Publié {date}', { date: formatDate(post.published || post.created_at!) }) }}
+      {{ t('Publié {date}', { date: formatDate(post.published || post.created_at) }) }}
     </div>
 
     <slot />

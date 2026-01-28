@@ -95,7 +95,7 @@
         :data="discussion"
         class="bg-transparent"
       >
-        <DiscussionCard
+        <DiscussionMessageCard
           v-if="data"
           :discussion="data"
         />
@@ -144,8 +144,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { DiscussionCard, LoadingBlock, PostCard, ReuseHorizontalCard, TopicCard, type PaginatedArray, type Post, type Reuse, type TopicV2 } from '@datagouv/components-next'
-import type { Thread } from '~/types/discussions'
+import { DiscussionMessageCard, LoadingBlock, PostCard, ReuseHorizontalCard, TopicCard, type PaginatedArray, type Post, type Reuse, type Thread, type TopicV2 } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const { data: reusesData, status: reusesHorizontalStatus } = await useAPI<PaginatedArray<Reuse>>('/api/1/reuses/', { lazy: true, server: false, query: { page_size: 2 } })
