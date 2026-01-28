@@ -105,10 +105,10 @@
 
 <script setup lang="ts">
 import { RiArchiveLine, RiLineChartLine, RiLockLine } from '@remixicon/vue'
-import { computed, ref, watchEffect } from 'vue'
+import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { getOwnerName } from '../functions/owned'
-import { removeMarkdown } from '../functions/markdown'
+import { removeMarkdownSync } from '../functions/markdown'
 import type { Reuse } from '../types/reuses'
 import { useTranslation } from '../composables/useTranslation'
 import AppLink from './AppLink.vue'
@@ -129,11 +129,9 @@ const ownerName = computed(() => getOwnerName(props.reuse))
 const reuseUrl = computed(() => props.reuseUrl || props.reuse.page)
 const organizationUrl = computed(() => props.organizationUrl || props.reuse.organization?.page)
 
-const descriptionShort = ref('')
-watchEffect(async () => {
-  if (props.reuse.description) {
-    const cleaned = await removeMarkdown(props.reuse.description)
-    descriptionShort.value = cleaned.length > 200 ? cleaned.substring(0, 200) + '...' : cleaned
-  }
+const descriptionShort = computed(() => {
+  if (!props.reuse.description) return ''
+  const cleaned = removeMarkdownSync(props.reuse.description)
+  return cleaned.length > 200 ? cleaned.substring(0, 200) + '...' : cleaned
 })
 </script>

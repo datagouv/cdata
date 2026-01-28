@@ -117,11 +117,11 @@
 
 <script setup lang="ts">
 import { RiBookShelfLine, RiDatabase2Line, RiLineChartLine, RiSubtractLine, RiTerminalLine } from '@remixicon/vue'
-import { computed, ref, watchEffect } from 'vue'
+import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { TopicV2 } from '../types/topics'
 import { useFormatDate } from '../functions/dates'
-import { removeMarkdown } from '../functions/markdown'
+import { removeMarkdownSync } from '../functions/markdown'
 import { getOwnerName } from '../functions/owned'
 import { useTranslation } from '../composables/useTranslation'
 import AppLink from './AppLink.vue'
@@ -163,11 +163,9 @@ const ownerName = computed(() => {
   return getOwnerName(props.topic)
 })
 
-const descriptionShort = ref('')
-watchEffect(async () => {
-  if (props.topic.description) {
-    const cleaned = await removeMarkdown(props.topic.description)
-    descriptionShort.value = cleaned.length > 200 ? cleaned.substring(0, 200) + '...' : cleaned
-  }
+const descriptionShort = computed(() => {
+  if (!props.topic.description) return ''
+  const cleaned = removeMarkdownSync(props.topic.description)
+  return cleaned.length > 200 ? cleaned.substring(0, 200) + '...' : cleaned
 })
 </script>

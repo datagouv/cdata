@@ -53,9 +53,9 @@
 
 <script setup lang="ts">
 import { RiArticleLine } from '@remixicon/vue'
-import { computed, ref, watchEffect } from 'vue'
+import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { removeMarkdown } from '../functions/markdown'
+import { removeMarkdownSync } from '../functions/markdown'
 import { useFormatDate } from '../functions/dates'
 import { useTranslation } from '../composables/useTranslation'
 import type { Post } from '../types/posts'
@@ -80,12 +80,10 @@ const formatDate = (dateString: string) => {
   })
 }
 
-const descriptionShort = ref('')
-watchEffect(async () => {
+const descriptionShort = computed(() => {
   const textToUse = props.post.headline || props.post.content
-  if (textToUse) {
-    const cleaned = await removeMarkdown(textToUse)
-    descriptionShort.value = cleaned.length > 160 ? cleaned.substring(0, 160) + '...' : cleaned
-  }
+  if (!textToUse) return ''
+  const cleaned = removeMarkdownSync(textToUse)
+  return cleaned.length > 160 ? cleaned.substring(0, 160) + '...' : cleaned
 })
 </script>
