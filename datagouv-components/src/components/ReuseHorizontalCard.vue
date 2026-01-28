@@ -37,29 +37,14 @@
     </ObjectCardHeader>
 
     <div
-      v-if="reuse.organization || ownerName"
+      v-if="reuse.organization || reuse.owner"
       class="text-sm m-0 flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
     >
-      <div
-        v-if="reuse.organization"
-        class="-mr-0.5 flex-initial truncate"
-      >
-        <AppLink
-          class="link text-sm overflow-hidden flex items-center relative z-[2] truncate"
-          :to="organizationUrl || reuse.organization.page"
-        >
-          <OrganizationNameWithCertificate
-            :organization="reuse.organization"
-            size="sm"
-          />
-        </AppLink>
-      </div>
-      <div
-        v-else-if="ownerName"
-        class="mr-1 truncate"
-      >
-        {{ ownerName }}
-      </div>
+      <ObjectCardOwner
+        :organization="reuse.organization"
+        :owner="reuse.owner"
+        :organization-url="organizationUrl"
+      />
     </div>
 
     <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium mt-1">
@@ -74,27 +59,22 @@
 
 <script setup lang="ts">
 import { RiArchiveLine, RiLineChartLine, RiLockLine } from '@remixicon/vue'
-import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { getOwnerName } from '../functions/owned'
 import type { Reuse } from '../types/reuses'
 import { useTranslation } from '../composables/useTranslation'
-import AppLink from './AppLink.vue'
-import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import ReuseDetails from './ReuseDetails.vue'
 import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
+import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
 
-const props = defineProps<{
+defineProps<{
   reuse: Reuse
   reuseUrl?: RouteLocationRaw
   organizationUrl?: RouteLocationRaw
 }>()
 
 const { t } = useTranslation()
-
-const ownerName = computed(() => getOwnerName(props.reuse))
 </script>

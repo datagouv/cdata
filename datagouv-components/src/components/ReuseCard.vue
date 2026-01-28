@@ -12,32 +12,11 @@
         </h3>
         <div class="order-3 text-sm m-0 text-gray-medium">
           <div class="text-sm mb-0 flex items-center">
-            <div
-              v-if="reuse.organization"
-              class="relative truncate break-all z-[2] flex-initial"
-            >
-              <AppLink
-                v-if="organizationUrl"
-                class="link overflow-hidden"
-                :to="organizationUrl"
-              >
-                <OrganizationNameWithCertificate
-                  :organization="reuse.organization"
-                  size="sm"
-                />
-              </AppLink>
-              <OrganizationNameWithCertificate
-                v-else
-                :organization="reuse.organization"
-                size="sm"
-              />
-            </div>
-            <div
-              v-else-if="ownerName"
-              class="mr-1 truncate"
-            >
-              {{ ownerName }}
-            </div>
+            <ObjectCardOwner
+              :organization="reuse.organization"
+              :owner="reuse.owner"
+              :organization-url="organizationUrl"
+            />
             <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
             <span class="block flex-none">{{ t('publié {date}', { date: formatRelativeIfRecentDate(reuse.created_at, { dateStyle: 'medium' }) }) }}</span>
           </div>
@@ -86,11 +65,10 @@ import { RiLockLine, RiSubtractLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { useFormatDate } from '../functions/dates'
-import { getOwnerName } from '../functions/owned'
 import type { Reuse } from '../types/reuses'
 import { useTranslation } from '../composables/useTranslation'
 import AppLink from './AppLink.vue'
-import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
+import ObjectCardOwner from './ObjectCardOwner.vue'
 import ReuseDetails from './ReuseDetails.vue'
 import Placeholder from './Placeholder.vue'
 
@@ -112,8 +90,6 @@ const props = defineProps<{
 
 const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
-
-const ownerName = computed(() => getOwnerName(props.reuse))
 
 const reuseUrl = computed(() => props.reuseUrl || props.reuse.page)
 </script>

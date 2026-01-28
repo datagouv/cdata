@@ -49,26 +49,11 @@
       v-if="dataset.organization || dataset.owner"
       class="text-sm m-0 flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
     >
-      <div
-        v-if="dataset.organization"
-        class="-mr-0.5 flex-initial truncate"
-      >
-        <AppLink
-          class="link text-sm overflow-hidden flex items-center relative z-[2] truncate"
-          :to="organizationUrl || dataset.organization.page"
-        >
-          <OrganizationNameWithCertificate
-            :organization="dataset.organization"
-            size="sm"
-          />
-        </AppLink>
-      </div>
-      <div
-        v-else
-        class="mr-1 truncate"
-      >
-        {{ ownerName }}
-      </div>
+      <ObjectCardOwner
+        :organization="dataset.organization"
+        :owner="dataset.owner"
+        :organization-url="organizationUrl"
+      />
       <RiSubtractLine class="hidden md:block size-4 flex-none fill-gray-medium" />
       <div class="w-full md:w-auto text-gray-medium whitespace-nowrap">
         {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataset.last_update, { dateStyle: 'medium' }) }) }}
@@ -130,20 +115,17 @@
 
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
-import { computed } from 'vue'
 import { RiArchiveLine, RiDatabase2Line, RiDownloadLine, RiEyeLine, RiLineChartLine, RiLockLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import { summarize } from '../functions/helpers'
 import { useFormatDate } from '../functions/dates'
-import { getOwnerName } from '../functions/owned'
 import { getDescriptionShort } from '../functions/description'
 import { useTranslation } from '../composables/useTranslation'
 import DatasetQualityInline from './DatasetQualityInline.vue'
 import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
-import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
-import AppLink from './AppLink.vue'
 import OrganizationLogo from './OrganizationLogo.vue'
+import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
@@ -163,5 +145,4 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
-const ownerName = computed(() => getOwnerName(props.dataset))
 </script>

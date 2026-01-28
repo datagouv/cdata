@@ -32,19 +32,10 @@
       v-if="topic.organization || topic.owner"
       class="text-sm m-0 flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
     >
-      <template v-if="topic.organization">
-        <OrganizationNameWithCertificate
-          :organization="topic.organization"
-          size="sm"
-          class="flex-shrink-0 truncate"
-        />
-      </template>
-      <span
-        v-else-if="ownerName"
-        class="flex-shrink-0 truncate"
-      >
-        {{ ownerName }}
-      </span>
+      <ObjectCardOwner
+        :organization="topic.organization"
+        :owner="topic.owner"
+      />
       <RiSubtractLine
         v-if="(topic.organization || topic.owner) && topic.last_modified"
         aria-hidden="true"
@@ -104,14 +95,12 @@
 
 <script setup lang="ts">
 import { RiBookShelfLine, RiDatabase2Line, RiLineChartLine, RiSubtractLine, RiTerminalLine } from '@remixicon/vue'
-import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { TopicV2 } from '../types/topics'
 import { useFormatDate } from '../functions/dates'
-import { getOwnerName } from '../functions/owned'
 import { useTranslation } from '../composables/useTranslation'
-import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
+import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import OrganizationLogo from './OrganizationLogo.vue'
 import Avatar from './Avatar.vue'
@@ -124,7 +113,7 @@ type TopicWithStats = TopicV2 & {
   nb_reuses?: number
 }
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   topic: TopicWithStats
   topicUrl?: RouteLocationRaw
   showLogo?: boolean
@@ -142,9 +131,4 @@ const formatDate = (dateString: string) => {
     dateStyle: 'long',
   })
 }
-
-const ownerName = computed(() => {
-  if (!props.topic.owner) return ''
-  return getOwnerName(props.topic)
-})
 </script>

@@ -11,26 +11,11 @@
       v-if="discussion.organization || discussion.user"
       class="text-sm m-0 flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
     >
-      <div
-        v-if="discussion.organization"
-        class="-mr-0.5 flex-initial truncate"
-      >
-        <AppLink
-          class="link text-sm overflow-hidden flex items-center relative z-[2] truncate"
-          :to="organizationUrl || discussion.organization.page"
-        >
-          <OrganizationNameWithCertificate
-            :organization="discussion.organization"
-            size="sm"
-          />
-        </AppLink>
-      </div>
-      <div
-        v-else-if="discussion.user"
-        class="mr-1 truncate"
-      >
-        {{ getOwnerName({ organization: null, owner: discussion.user }) }}
-      </div>
+      <ObjectCardOwner
+        :organization="discussion.organization"
+        :owner="discussion.user"
+        :organization-url="organizationUrl"
+      />
       <RiSubtractLine
         aria-hidden="true"
         class="size-4 flex-none fill-gray-medium"
@@ -51,14 +36,12 @@ import { RiChat3Line, RiSubtractLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { useFormatDate } from '../functions/dates'
-import { getOwnerName } from '../functions/owned'
 import { useTranslation } from '../composables/useTranslation'
 import type { Thread } from '../types/discussions'
-import AppLink from './AppLink.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
+import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
-import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 
 const props = defineProps<{
   discussion: Thread

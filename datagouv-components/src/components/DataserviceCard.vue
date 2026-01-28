@@ -58,28 +58,13 @@
     </ObjectCardHeader>
     <div
       v-if="dataservice.organization || dataservice.owner"
-      class="text-gray-medium overflow-hidden flex items-center gap-1 m-0"
+      class="text-sm m-0 flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
     >
-      <div
-        v-if="dataservice.organization"
-        class="text-sm overflow-hidden relative z-[2]"
-      >
-        <AppLink
-          class="link text-sm overflow-hidden"
-          :to="organizationUrl || dataservice.organization.page"
-        >
-          <OrganizationNameWithCertificate
-            :organization="dataservice.organization"
-            size="sm"
-          />
-        </AppLink>
-      </div>
-      <div
-        v-else
-        class="text-sm truncate"
-      >
-        {{ ownerName }}
-      </div>
+      <ObjectCardOwner
+        :organization="dataservice.organization"
+        :owner="dataservice.owner"
+        :organization-url="organizationUrl"
+      />
       <RiSubtractLine
         aria-hidden="true"
         class="size-4 flex-none fill-gray-medium"
@@ -129,17 +114,15 @@ import { RiArchiveLine, RiEyeLine, RiLockLine, RiPassValidLine, RiSparklingLine,
 import { useComponentsConfig } from '../config'
 import { useFormatDate } from '../functions/dates'
 import { summarize } from '../functions/helpers'
-import { getOwnerName } from '../functions/owned'
 import type { Dataservice } from '../types/dataservices'
 import { useTranslation } from '../composables/useTranslation'
-import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
-import AppLink from './AppLink.vue'
 import OrganizationLogo from './OrganizationLogo.vue'
 import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
+import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 
 type Props = {
@@ -155,7 +138,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
-const ownerName = computed(() => getOwnerName(props.dataservice))
 
 const config = useComponentsConfig()
 const isTabularApi = computed(() => {
