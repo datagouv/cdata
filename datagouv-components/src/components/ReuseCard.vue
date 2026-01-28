@@ -12,9 +12,9 @@
         </h3>
         <div class="order-3 text-sm m-0 text-gray-medium">
           <div class="text-sm mb-0 flex items-center">
-            <span
+            <div
               v-if="reuse.organization"
-              class="relative block truncate break-all z-[2] flex-initial"
+              class="relative truncate break-all z-[2] flex-initial"
             >
               <AppLink
                 v-if="organizationUrl"
@@ -29,11 +29,13 @@
                 v-else
                 :organization="reuse.organization"
               />
-            </span>
-            <span
+            </div>
+            <div
               v-else-if="ownerName"
               class="mr-1 truncate"
-            >{{ ownerName }}</span>
+            >
+              {{ ownerName }}
+            </div>
             <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
             <span class="block flex-none">{{ t('publié {date}', { date: formatRelativeIfRecentDate(reuse.created_at, { dateStyle: 'medium' }) }) }}</span>
           </div>

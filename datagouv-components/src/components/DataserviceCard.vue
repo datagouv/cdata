@@ -60,9 +60,9 @@
       v-if="dataservice.organization || dataservice.owner"
       class="text-gray-medium overflow-hidden flex items-center gap-1 m-0"
     >
-      <p
+      <div
         v-if="dataservice.organization"
-        class="text-sm block overflow-hidden mb-0 relative z-[2]"
+        class="text-sm overflow-hidden relative z-[2]"
       >
         <AppLink
           class="link text-sm overflow-hidden"
@@ -70,13 +70,13 @@
         >
           <OrganizationNameWithCertificate :organization="dataservice.organization" />
         </AppLink>
-      </p>
-      <p
+      </div>
+      <div
         v-else
-        class="text-sm mb-0 truncate"
+        class="text-sm truncate"
       >
         {{ ownerName }}
-      </p>
+      </div>
       <RiSubtractLine
         aria-hidden="true"
         class="size-4 flex-none fill-gray-medium"
