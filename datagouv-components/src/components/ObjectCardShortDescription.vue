@@ -15,7 +15,7 @@ const props = withDefaults(defineProps<{
   text?: string | null
   maxLength?: number
 }>(), {
-  maxLength: 200,
+  maxLength: 300,
 })
 
 // Truncate in JS to avoid sending very long markdown-cleaned text to the DOM.
