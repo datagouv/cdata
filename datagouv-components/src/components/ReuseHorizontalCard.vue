@@ -31,7 +31,7 @@
 
     <ObjectCardHeader
       :icon="RiLineChartLine"
-      :url="reuseUrl"
+      :url="reuseUrl || reuse.page"
     >
       {{ reuse.title }}
     </ObjectCardHeader>
@@ -40,21 +40,17 @@
       v-if="reuse.organization || ownerName"
       class="text-sm m-0 flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
     >
-      <template v-if="reuse.organization">
-        <div class="-mr-0.5 flex-initial truncate">
-          <AppLink
-            v-if="organizationUrl"
-            class="link text-sm overflow-hidden flex items-center relative z-[2] truncate"
-            :to="organizationUrl"
-          >
-            <OrganizationNameWithCertificate :organization="reuse.organization" />
-          </AppLink>
-          <OrganizationNameWithCertificate
-            v-else
-            :organization="reuse.organization"
-          />
-        </div>
-      </template>
+      <div
+        v-if="reuse.organization"
+        class="-mr-0.5 flex-initial truncate"
+      >
+        <AppLink
+          class="link text-sm overflow-hidden flex items-center relative z-[2] truncate"
+          :to="organizationUrl || reuse.organization.page"
+        >
+          <OrganizationNameWithCertificate :organization="reuse.organization" />
+        </AppLink>
+      </div>
       <div
         v-else-if="ownerName"
         class="mr-1 truncate"
@@ -98,6 +94,4 @@ const props = defineProps<{
 const { t } = useTranslation()
 
 const ownerName = computed(() => getOwnerName(props.reuse))
-const reuseUrl = computed(() => props.reuseUrl || props.reuse.page)
-const organizationUrl = computed(() => props.organizationUrl || props.reuse.organization?.page)
 </script>
