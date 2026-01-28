@@ -1,178 +1,157 @@
 <template>
-  <div class="p-4 border bg-white border-gray-default relative hover:bg-gray-some">
-    <div
-      v-if="dataset.private || dataset.archived"
-      class="absolute top-0 fr-grid-row fr-grid-row--middle fr-mt-n3v fr-ml-n1v"
+  <ObjectCard>
+    <ObjectCardBadge
+      v-if="dataset.private"
+      :icon="RiLockLine"
     >
-      <p
-        v-if="dataset.private"
-        class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
-      >
-        <span
-          class="fr-icon-lock-line fr-icon--sm"
-          aria-hidden="true"
+      {{ t('Brouillon') }}
+    </ObjectCardBadge>
+    <ObjectCardBadge
+      v-else-if="dataset.archived"
+      :icon="RiArchiveLine"
+    >
+      {{ t('Archivé') }}
+    </ObjectCardBadge>
+
+    <template #media>
+      <div class="flex justify-center items-center p-2 border border-gray-lower bg-[#fff] rounded-md overflow-hidden">
+        <OrganizationLogo
+          v-if="dataset.organization"
+          :organization="dataset.organization"
+          size-class="size-12"
         />
-        {{ t('Brouillon') }}
-      </p>
-      <p
-        v-if="dataset.archived"
-        class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
-      >
-        <span
-          class="fr-icon-archive-line fr-icon--sm"
-          aria-hidden="true"
+        <Avatar
+          v-else-if="dataset.owner"
+          :user="dataset.owner"
+          :size="48"
         />
-        {{ t('Archivé') }}
-      </p>
-    </div>
-    <div class="flex flex-wrap md:flex-nowrap gap-4 items-start">
-      <div class="flex-none">
-        <div class="flex justify-center items-center p-2 border border-gray-lower bg-[#fff] rounded-md overflow-hidden">
-          <OrganizationLogo
-            v-if="dataset.organization"
-            :organization="dataset.organization"
-            size-class="size-12"
-          />
-          <Avatar
-            v-else-if="dataset.owner"
-            :user="dataset.owner"
-            :size="48"
-          />
-          <Placeholder
-            v-else
-            type="Dataset"
-            class="size-12"
-          />
-        </div>
+        <Placeholder
+          v-else
+          type="Dataset"
+          class="size-12"
+        />
       </div>
-      <div class="flex-1 overflow-hidden">
-        <h4 class="w-full text-base mb-0 flex">
-          <slot
-            name="datasetUrl"
-            :dataset="dataset"
-            :dataset-url="datasetUrl"
-          >
-            <AppLink
-              :to="datasetUrl"
-              class="text-gray-title text-base bg-none flex items-center w-full truncate gap-1"
-              :target="datasetUrlInNewTab ? '_blank' : undefined"
-            >
-              <RiDatabase2Line
-                aria-hidden="true"
-                class="size-4 flex-none"
-              />
-              <span
-                class="block truncate"
-                :class="dataset.acronym ? 'flex-initial' : 'flex-1'"
-              >{{ dataset.title }}</span>
-              <small
-                v-if="dataset.acronym"
-                class="flex-1 ml-2"
-              >{{ dataset.acronym }}</small>
-              <span class="absolute inset-0" />
-            </AppLink>
-          </slot>
-        </h4>
-        <div
-          v-if="dataset.organization || dataset.owner"
-          class="text-sm m-0 flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
+    </template>
+    <h4 class="w-full text-base mb-0 flex">
+      <slot
+        name="datasetUrl"
+        :dataset="dataset"
+        :dataset-url="datasetUrl"
+      >
+        <AppLink
+          :to="datasetUrl"
+          class="text-gray-title text-base bg-none flex items-center w-full truncate gap-1"
+          :target="datasetUrlInNewTab ? '_blank' : undefined"
         >
-          <template v-if="dataset.organization">
-            <div class="-mr-0.5 flex-initial truncate">
-              <AppLink
-                v-if="organizationUrl"
-                class="link text-sm overflow-hidden flex items-center relative z-[2] truncate"
-                :to="organizationUrl"
-              >
-                <OrganizationNameWithCertificate :organization="dataset.organization" />
-              </AppLink>
-              <OrganizationNameWithCertificate
-                v-else
-                :organization="dataset.organization"
-              />
-            </div>
-          </template>
-          <div
-            v-else
-            class="mr-1 truncate"
-          >
-            {{ ownerName }}
-          </div>
-          <RiSubtractLine class="hidden md:block size-4 flex-none fill-gray-medium" />
-          <div class="w-full md:w-auto text-gray-medium whitespace-nowrap">
-            {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataset.last_update, { dateStyle: 'medium' }) }) }}
-          </div>
-        </div>
-        <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium">
-          <div class="fr-hidden flex-sm text-gray-medium -ml-2.5">
-            <DatasetQualityInline :quality="dataset.quality" />
-          </div>
-          <RiSubtractLine
+          <RiDatabase2Line
             aria-hidden="true"
-            class="hidden sm:block size-3"
+            class="size-4 flex-none"
           />
-          <div class="flex flex-wrap items-center gap-1">
-            <p
-              class="text-sm mb-0 flex items-center gap-0.5"
-              :aria-label="t('{n} vues | {n} vue | {n} vues', dataset.metrics.views)"
-            >
-              <RiEyeLine
-                aria-hidden="true"
-                class="size-3.5"
-              />{{ summarize(dataset.metrics.views) }}
-            </p>
-            <p
-              class="text-sm mb-0 flex items-center gap-0.5"
-              :aria-label="t('{n} téléchargements des ressources | {n} téléchargement des ressources | {n} téléchargements des ressources', dataset.metrics.resources_downloads)"
-            >
-              <RiDownloadLine
-                aria-hidden="true"
-                class="size-3.5"
-              />{{ summarize(dataset.metrics.resources_downloads) }}
-            </p>
-            <p
-              class="text-sm mb-0 flex items-center gap-0.5"
-              :aria-label="t('{n} réutilisations | {n} réutilisation | {n} réutilisations', dataset.metrics.reuses)"
-            >
-              <RiLineChartLine
-                aria-hidden="true"
-                class="size-3.5"
-              />{{ summarize(dataset.metrics.reuses) }}
-            </p>
-            <p
-              class="text-sm mb-0 flex items-center gap-0.5"
-              :aria-label="t('{n} abonnés | {n} abonné | {n} abonnés', dataset.metrics.followers)"
-            >
-              <RiStarLine
-                aria-hidden="true"
-                class="size-3.5"
-              />{{ summarize(dataset.metrics.followers) }}
-            </p>
-          </div>
+          <span
+            class="block truncate"
+            :class="dataset.acronym ? 'flex-initial' : 'flex-1'"
+          >{{ dataset.title }}</span>
+          <small
+            v-if="dataset.acronym"
+            class="flex-1 ml-2"
+          >{{ dataset.acronym }}</small>
+          <span class="absolute inset-0" />
+        </AppLink>
+      </slot>
+    </h4>
+    <div
+      v-if="dataset.organization || dataset.owner"
+      class="text-sm m-0 flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
+    >
+      <template v-if="dataset.organization">
+        <div class="-mr-0.5 flex-initial truncate">
+          <AppLink
+            v-if="organizationUrl"
+            class="link text-sm overflow-hidden flex items-center relative z-[2] truncate"
+            :to="organizationUrl"
+          >
+            <OrganizationNameWithCertificate :organization="dataset.organization" />
+          </AppLink>
+          <OrganizationNameWithCertificate
+            v-else
+            :organization="dataset.organization"
+          />
         </div>
-        <component
-          :is="config.textClamp"
-          v-if="showDescriptionShort && config && config.textClamp"
-          class="fr-text--sm fr-mt-1w fr-mb-0 overflow-wrap-anywhere hidden sm:block"
-          :auto-resize="true"
-          :text="getDescriptionShort(props.dataset)"
-          :max-lines="2"
-        />
+      </template>
+      <div
+        v-else
+        class="mr-1 truncate"
+      >
+        {{ ownerName }}
+      </div>
+      <RiSubtractLine class="hidden md:block size-4 flex-none fill-gray-medium" />
+      <div class="w-full md:w-auto text-gray-medium whitespace-nowrap">
+        {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataset.last_update, { dateStyle: 'medium' }) }) }}
       </div>
     </div>
-  </div>
+    <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium">
+      <div class="fr-hidden flex-sm text-gray-medium -ml-2.5">
+        <DatasetQualityInline :quality="dataset.quality" />
+      </div>
+      <RiSubtractLine
+        aria-hidden="true"
+        class="hidden sm:block size-3"
+      />
+      <div class="flex flex-wrap items-center gap-1">
+        <p
+          class="text-sm mb-0 flex items-center gap-0.5"
+          :aria-label="t('{n} vues | {n} vue | {n} vues', dataset.metrics.views)"
+        >
+          <RiEyeLine
+            aria-hidden="true"
+            class="size-3.5"
+          />{{ summarize(dataset.metrics.views) }}
+        </p>
+        <p
+          class="text-sm mb-0 flex items-center gap-0.5"
+          :aria-label="t('{n} téléchargements des ressources | {n} téléchargement des ressources | {n} téléchargements des ressources', dataset.metrics.resources_downloads)"
+        >
+          <RiDownloadLine
+            aria-hidden="true"
+            class="size-3.5"
+          />{{ summarize(dataset.metrics.resources_downloads) }}
+        </p>
+        <p
+          class="text-sm mb-0 flex items-center gap-0.5"
+          :aria-label="t('{n} réutilisations | {n} réutilisation | {n} réutilisations', dataset.metrics.reuses)"
+        >
+          <RiLineChartLine
+            aria-hidden="true"
+            class="size-3.5"
+          />{{ summarize(dataset.metrics.reuses) }}
+        </p>
+        <p
+          class="text-sm mb-0 flex items-center gap-0.5"
+          :aria-label="t('{n} abonnés | {n} abonné | {n} abonnés', dataset.metrics.followers)"
+        >
+          <RiStarLine
+            aria-hidden="true"
+            class="size-3.5"
+          />{{ summarize(dataset.metrics.followers) }}
+        </p>
+      </div>
+    </div>
+    <ObjectCardShortDescription
+      v-if="showDescriptionShort"
+      :text="getDescriptionShort(props.dataset)"
+    />
+  </ObjectCard>
 </template>
 
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
 import { computed } from 'vue'
-import { RiDatabase2Line, RiDownloadLine, RiEyeLine, RiLineChartLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
+import { RiArchiveLine, RiDatabase2Line, RiDownloadLine, RiEyeLine, RiLineChartLine, RiLockLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import { summarize } from '../functions/helpers'
 import { useFormatDate } from '../functions/dates'
 import { getOwnerName } from '../functions/owned'
 import { getDescriptionShort } from '../functions/description'
-import { useComponentsConfig } from '../config'
 import { useTranslation } from '../composables/useTranslation'
 import DatasetQualityInline from './DatasetQualityInline.vue'
 import Avatar from './Avatar.vue'
@@ -180,6 +159,9 @@ import Placeholder from './Placeholder.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import AppLink from './AppLink.vue'
 import OrganizationLogo from './OrganizationLogo.vue'
+import ObjectCard from './ObjectCard.vue'
+import ObjectCardBadge from './ObjectCardBadge.vue'
+import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 
 type Props = {
   dataset: Dataset | DatasetV2
@@ -207,5 +189,4 @@ const props = withDefaults(defineProps<Props>(), {
 const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
 const ownerName = computed(() => getOwnerName(props.dataset))
-const config = useComponentsConfig()
 </script>

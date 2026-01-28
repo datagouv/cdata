@@ -3,7 +3,6 @@
     class="p-4 border bg-white border-gray-default relative hover:bg-gray-some fr-enlarge-link"
     :class="articleClass"
   >
-    <slot name="badges" />
     <div class="flex flex-wrap md:flex-nowrap gap-4 items-start">
       <div
         v-if="$slots.media"

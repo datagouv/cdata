@@ -5,53 +5,30 @@
       'border-gray-default': !isTabularApi,
     }"
   >
-    <template #badges>
-      <div
-        v-if="showBadge"
-        class="absolute top-0 fr-grid-row fr-grid-row--middle fr-mt-n3v fr-ml-n1v"
-      >
-        <p
-          v-if="dataservice.access_type === 'restricted'"
-          class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
-        >
-          <RiLockLine
-            aria-hidden="true"
-            class="size-4 mr-1"
-          />
-          {{ t('Accès restreint') }}
-        </p>
-        <p
-          v-else-if="dataservice.access_type === 'open_with_account'"
-          class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
-        >
-          <RiPassValidLine
-            aria-hidden="true"
-            class="size-4 mr-1"
-          />
-          {{ t('Ouvert avec un compte') }}
-        </p>
-        <p
-          v-if="dataservice.private"
-          class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
-        >
-          <RiLockLine
-            aria-hidden="true"
-            class="size-4 mr-1"
-          />
-          {{ t('Brouillon') }}
-        </p>
-        <p
-          v-if="dataservice.archived_at"
-          class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
-        >
-          <RiArchiveLine
-            aria-hidden="true"
-            class="size-4 mr-1"
-          />
-          {{ t('Archivé') }}
-        </p>
-      </div>
-    </template>
+    <ObjectCardBadge
+      v-if="dataservice.private"
+      :icon="RiLockLine"
+    >
+      {{ t('Brouillon') }}
+    </ObjectCardBadge>
+    <ObjectCardBadge
+      v-else-if="dataservice.archived_at"
+      :icon="RiArchiveLine"
+    >
+      {{ t('Archivé') }}
+    </ObjectCardBadge>
+    <ObjectCardBadge
+      v-else-if="dataservice.access_type === 'restricted'"
+      :icon="RiLockLine"
+    >
+      {{ t('Accès restreint') }}
+    </ObjectCardBadge>
+    <ObjectCardBadge
+      v-else-if="dataservice.access_type === 'open_with_account'"
+      :icon="RiPassValidLine"
+    >
+      {{ t('Ouvert avec un compte') }}
+    </ObjectCardBadge>
 
     <template #media>
       <div class="flex justify-center items-center p-2 border border-gray-lower bg-[#fff] rounded-md overflow-hidden">
@@ -186,6 +163,7 @@ import OrganizationLogo from './OrganizationLogo.vue'
 import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
+import ObjectCardBadge from './ObjectCardBadge.vue'
 
 type Props = {
   dataservice: Dataservice
@@ -213,7 +191,6 @@ const dataserviceUrl = computed(() => props.dataserviceUrl || props.dataservice.
 const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
 const ownerName = computed(() => getOwnerName(props.dataservice))
-const showBadge = computed(() => props.dataservice.access_type === 'restricted' || props.dataservice.access_type === 'open_with_account' || props.dataservice.private || props.dataservice.archived_at)
 
 const config = useComponentsConfig()
 const isTabularApi = computed(() => {

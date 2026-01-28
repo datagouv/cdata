@@ -1,32 +1,17 @@
 <template>
   <ObjectCard>
-    <template #badges>
-      <div
-        v-if="reuse.private || reuse.archived"
-        class="absolute top-0 fr-grid-row fr-grid-row--middle fr-mt-n3v fr-ml-n1v"
-      >
-        <p
-          v-if="reuse.private"
-          class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
-        >
-          <RiLockLine
-            aria-hidden="true"
-            class="size-4 mr-1"
-          />
-          {{ t('Brouillon') }}
-        </p>
-        <p
-          v-if="reuse.archived"
-          class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
-        >
-          <RiArchiveLine
-            aria-hidden="true"
-            class="size-4 mr-1"
-          />
-          {{ t('Archivé') }}
-        </p>
-      </div>
-    </template>
+    <ObjectCardBadge
+      v-if="reuse.private"
+      :icon="RiLockLine"
+    >
+      {{ t('Brouillon') }}
+    </ObjectCardBadge>
+    <ObjectCardBadge
+      v-else-if="reuse.archived"
+      :icon="RiArchiveLine"
+    >
+      {{ t('Archivé') }}
+    </ObjectCardBadge>
 
     <template #media>
       <div
@@ -105,6 +90,7 @@ import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
+import ObjectCardBadge from './ObjectCardBadge.vue'
 
 const props = defineProps<{
   reuse: Reuse
