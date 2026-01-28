@@ -1,45 +1,78 @@
 <template>
-  <article
-    class="my-4 p-4 bg-white hover:bg-gray-some border fr-enlarge-link"
-    :class="{
+  <ObjectCard
+    :article-class="{
       'border-tabular-api': isTabularApi,
       'border-gray-default': !isTabularApi,
-      'mt-6': showBadge,
     }"
   >
-    <div
-      v-if="showBadge"
-      class="absolute top-0 fr-grid-row fr-grid-row--middle fr-mt-n3v fr-ml-n1v"
-    >
-      <p
-        v-if="dataservice.access_type === 'restricted'"
-        class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
+    <template #badges>
+      <div
+        v-if="showBadge"
+        class="absolute top-0 fr-grid-row fr-grid-row--middle fr-mt-n3v fr-ml-n1v"
       >
-        <RiLockLine class="size-4 mr-1" />
-        {{ t('Accès restreint') }}
-      </p>
-      <p
-        v-else-if="dataservice.access_type === 'open_with_account'"
-        class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
-      >
-        <RiPassValidLine class="size-4 mr-1" />
-        {{ t('Ouvert avec un compte') }}
-      </p>
-      <p
-        v-if="dataservice.private"
-        class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
-      >
-        <RiLockLine class="size-4 mr-1" />
-        {{ t('Brouillon') }}
-      </p>
-      <p
-        v-if="dataservice.archived_at"
-        class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
-      >
-        <RiLockLine class="size-4 mr-1" />
-        {{ t('Archivé') }}
-      </p>
-    </div>
+        <p
+          v-if="dataservice.access_type === 'restricted'"
+          class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
+        >
+          <RiLockLine
+            aria-hidden="true"
+            class="size-4 mr-1"
+          />
+          {{ t('Accès restreint') }}
+        </p>
+        <p
+          v-else-if="dataservice.access_type === 'open_with_account'"
+          class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
+        >
+          <RiPassValidLine
+            aria-hidden="true"
+            class="size-4 mr-1"
+          />
+          {{ t('Ouvert avec un compte') }}
+        </p>
+        <p
+          v-if="dataservice.private"
+          class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
+        >
+          <RiLockLine
+            aria-hidden="true"
+            class="size-4 mr-1"
+          />
+          {{ t('Brouillon') }}
+        </p>
+        <p
+          v-if="dataservice.archived_at"
+          class="fr-badge fr-badge--sm fr-badge--mention-grey text-gray-medium mr-2"
+        >
+          <RiArchiveLine
+            aria-hidden="true"
+            class="size-4 mr-1"
+          />
+          {{ t('Archivé') }}
+        </p>
+      </div>
+    </template>
+
+    <template #media>
+      <div class="flex justify-center items-center p-2 border border-gray-lower bg-[#fff] rounded-md overflow-hidden">
+        <OrganizationLogo
+          v-if="dataservice.organization"
+          :organization="dataservice.organization"
+          size-class="size-12"
+        />
+        <Avatar
+          v-else-if="dataservice.owner"
+          :user="dataservice.owner"
+          :size="48"
+        />
+        <Placeholder
+          v-else
+          type="Dataset"
+          class="size-12"
+        />
+      </div>
+    </template>
+
     <h4 class="text-base mb-0 flex items-center gap-1">
       <slot
         name="dataserviceUrl"
@@ -48,10 +81,12 @@
       >
         <RiSparklingLine
           v-if="isTabularApi"
+          aria-hidden="true"
           class="size-4 flex-none"
         />
         <RiTerminalLine
           v-else
+          aria-hidden="true"
           class="size-4 flex-none"
         />
         <AppLink
@@ -64,9 +99,9 @@
     </h4>
     <div
       v-if="dataservice.organization || dataservice.owner"
-      class="text-gray-medium overflow-hidden flex items-center gap-1 mt-1 mb-0"
+      class="text-gray-medium overflow-hidden flex items-center gap-1 m-0"
     >
-      <div
+      <p
         v-if="dataservice.organization"
         class="text-sm block overflow-hidden mb-0 relative z-[2]"
       >
@@ -81,19 +116,25 @@
           v-else
           :organization="dataservice.organization"
         />
-      </div>
-      <div
+      </p>
+      <p
         v-else
         class="text-sm mb-0 truncate"
       >
         {{ ownerName }}
-      </div>
-      <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
-      <!-- This comment is only here to fix this issue https://github.com/datagouv/cdata/issues/653, it could be empty… -->
+      </p>
+      <RiSubtractLine
+        aria-hidden="true"
+        class="size-4 flex-none fill-gray-medium"
+      />
+      <!-- https://github.com/datagouv/cdata/issues/653 -->
       <p class="text-sm whitespace-nowrap mb-0">
         {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataservice.metadata_modified_at, { dateStyle: 'medium' }) }) }}
       </p>
-      <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
+      <RiSubtractLine
+        aria-hidden="true"
+        class="size-4 flex-none fill-gray-medium"
+      />
       <div class="flex items-center gap-1">
         <p
           class="text-sm mb-0 flex items-center gap-0.5"
@@ -123,13 +164,15 @@
       :text="removeMarkdownSync(dataservice.description)"
       :max-lines="2"
     />
-  </article>
+
+    <slot />
+  </ObjectCard>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { RiEyeLine, RiLockLine, RiPassValidLine, RiSparklingLine, RiStarLine, RiSubtractLine, RiTerminalLine } from '@remixicon/vue'
+import { RiArchiveLine, RiEyeLine, RiLockLine, RiPassValidLine, RiSparklingLine, RiStarLine, RiSubtractLine, RiTerminalLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../config'
 import { useFormatDate } from '../functions/dates'
 import { summarize } from '../functions/helpers'
@@ -139,6 +182,10 @@ import type { Dataservice } from '../types/dataservices'
 import { useTranslation } from '../composables/useTranslation'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import AppLink from './AppLink.vue'
+import OrganizationLogo from './OrganizationLogo.vue'
+import Avatar from './Avatar.vue'
+import Placeholder from './Placeholder.vue'
+import ObjectCard from './ObjectCard.vue'
 
 type Props = {
   dataservice: Dataservice
@@ -158,7 +205,6 @@ type Props = {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  style: () => ({}),
   showDescription: true,
 })
 
@@ -175,8 +221,8 @@ const isTabularApi = computed(() => {
 })
 </script>
 
-  <style scoped>
-  .border-tabular-api {
-    border-color: #373C42 !important;
-  }
-  </style>
+<style scoped>
+.border-tabular-api {
+  border-color: #373C42 !important;
+}
+</style>

@@ -27,7 +27,7 @@
     </div>
     <div class="flex flex-wrap md:flex-nowrap gap-4 items-start">
       <div class="flex-none">
-        <div class="flex justify-center items-center p-2 border border-gray-lower bg-[#fff]">
+        <div class="flex justify-center items-center p-2 border border-gray-lower bg-[#fff] rounded-md overflow-hidden">
           <OrganizationLogo
             v-if="dataset.organization"
             :organization="dataset.organization"
@@ -54,9 +54,13 @@
           >
             <AppLink
               :to="datasetUrl"
-              class="text-gray-title text-base bg-none flex w-full truncate"
+              class="text-gray-title text-base bg-none flex items-center w-full truncate gap-1"
               :target="datasetUrlInNewTab ? '_blank' : undefined"
             >
+              <RiDatabase2Line
+                aria-hidden="true"
+                class="size-4 flex-none"
+              />
               <span
                 class="block truncate"
                 :class="dataset.acronym ? 'flex-initial' : 'flex-1'"
@@ -162,7 +166,7 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
 import { computed } from 'vue'
-import { RiDownloadLine, RiEyeLine, RiLineChartLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
+import { RiDatabase2Line, RiDownloadLine, RiEyeLine, RiLineChartLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import { summarize } from '../functions/helpers'
 import { useFormatDate } from '../functions/dates'
