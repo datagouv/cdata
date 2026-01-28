@@ -58,20 +58,10 @@ import type { RouteLocationRaw } from 'vue-router'
 import { removeMarkdown } from '../functions/markdown'
 import { useFormatDate } from '../functions/dates'
 import { useTranslation } from '../composables/useTranslation'
+import type { Post } from '../types/posts'
 import AppLink from './AppLink.vue'
 import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
-
-type Post = {
-  id: string
-  name: string
-  headline?: string
-  content?: string
-  image?: string | null
-  published?: string
-  created_at?: string
-  page?: string
-}
 
 const props = defineProps<{
   post: Post
