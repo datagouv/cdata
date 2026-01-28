@@ -21,6 +21,6 @@ const props = withDefaults(defineProps<{
 const shortDescription = computed(() => {
   if (!props.text) return ''
   const cleaned = removeMarkdownSync(props.text)
-  return cleaned.length > props.maxLength ? cleaned.substring(0, props.maxLength) + '...' : cleaned
+  return cleaned.length > props.maxLength ? cleaned.substring(0, props.maxLength) + '…' : cleaned
 })
 </script>

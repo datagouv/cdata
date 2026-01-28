@@ -133,13 +133,9 @@
         </p>
       </div>
     </div>
-    <component
-      :is="config.textClamp"
-      v-if="config.textClamp && dataservice.description && showDescription"
-      class="text-sm mt-2 mb-0"
-      :auto-resize="true"
-      :text="removeMarkdownSync(dataservice.description)"
-      :max-lines="2"
+    <ObjectCardShortDescription
+      v-if="showDescription"
+      :text="dataservice.description"
     />
 
     <slot />
@@ -153,7 +149,6 @@ import { RiArchiveLine, RiEyeLine, RiLockLine, RiPassValidLine, RiSparklingLine,
 import { useComponentsConfig } from '../config'
 import { useFormatDate } from '../functions/dates'
 import { summarize } from '../functions/helpers'
-import { removeMarkdownSync } from '../functions/markdown'
 import { getOwnerName } from '../functions/owned'
 import type { Dataservice } from '../types/dataservices'
 import { useTranslation } from '../composables/useTranslation'
@@ -164,6 +159,7 @@ import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
+import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 
 type Props = {
   dataservice: Dataservice
