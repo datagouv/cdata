@@ -7,7 +7,7 @@
         <!-- Type Section -->
         <section>
           <h2 class="font-bold text-sm leading-6 text-gray-900 mb-2 uppercase">
-            Types
+            {{ t('Types') }}
           </h2>
           <div class="flex flex-col gap-2">
             <button
@@ -144,7 +144,7 @@
         <!-- Format de données Section -->
         <section v-if="hasBasicFilter('format_family')">
           <h2 class="font-bold text-sm text-gray-900 mb-2">
-            Format de données
+            {{ t('Format de données') }}
           </h2>
           <div class="flex flex-col gap-0">
             <button
@@ -152,7 +152,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('formatFamily', 'all')"
             >
-              <span class="text-xs font-bold flex-1 text-left">Tous</span>
+              <span class="text-xs font-bold flex-1 text-left">{{ t('Tous') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('format_family', 'all')) }}
               </span>
@@ -163,7 +163,7 @@
               class="flex items-center gap-1 py-1 px-1.5 rounded"
               @click="selectFilter('formatFamily', 'tabular')"
             >
-              <span class="text-xs font-medium text-left">Tabulaires</span>
+              <span class="text-xs font-medium text-left">{{ t('Tabulaires') }}</span>
               <span
                 class="text-xs"
                 :class="filters.formatFamily === 'tabular' ? 'text-white/70' : 'text-gray-400'"
@@ -179,7 +179,7 @@
               class="flex items-center gap-1 py-1 px-1.5 rounded"
               @click="selectFilter('formatFamily', 'machine_readable')"
             >
-              <span class="text-xs font-medium text-left">Structurées</span>
+              <span class="text-xs font-medium text-left">{{ t('Structurées') }}</span>
               <span
                 class="text-xs"
                 :class="filters.formatFamily === 'machine_readable' ? 'text-white/70' : 'text-gray-400'"
@@ -195,7 +195,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('formatFamily', 'geographical')"
             >
-              <span class="text-xs font-medium text-left">Géographiques</span>
+              <span class="text-xs font-medium text-left">{{ t('Géographiques') }}</span>
               <span
                 class="text-xs"
                 :class="filters.formatFamily === 'geographical' ? 'text-white/70' : 'text-gray-400'"
@@ -211,7 +211,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('formatFamily', 'documents')"
             >
-              <span class="text-xs font-medium text-left">Documents</span>
+              <span class="text-xs font-medium text-left">{{ t('Documents') }}</span>
               <span
                 class="text-xs"
                 :class="filters.formatFamily === 'documents' ? 'text-white/70' : 'text-gray-400'"
@@ -227,7 +227,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('formatFamily', 'other')"
             >
-              <span class="text-xs font-medium flex-1 text-left">Autre</span>
+              <span class="text-xs font-medium flex-1 text-left">{{ t('Autre') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('format_family', 'other')) }}
               </span>
@@ -238,7 +238,7 @@
         <!-- Modalités d'accès Section -->
         <section v-if="hasBasicFilter('access_type')">
           <h2 class="font-bold text-sm text-gray-900 mb-2">
-            Modalités d'accès
+            {{ t("Modalités d'accès") }}
           </h2>
           <div class="flex flex-col gap-0">
             <button
@@ -246,7 +246,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('accessType', 'all')"
             >
-              <span class="text-xs font-bold flex-1 text-left">Toutes</span>
+              <span class="text-xs font-bold flex-1 text-left">{{ t('Toutes') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('access_type', 'all')) }}
               </span>
@@ -257,7 +257,7 @@
               class="flex items-center gap-1 py-1 px-1.5 rounded"
               @click="selectFilter('accessType', 'open')"
             >
-              <span class="text-xs font-medium flex-1 text-left">Téléchargement libre</span>
+              <span class="text-xs font-medium flex-1 text-left">{{ t('Téléchargement libre') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('access_type', 'open')) }}
               </span>
@@ -268,7 +268,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('accessType', 'open_with_constraint')"
             >
-              <span class="text-xs font-medium flex-1 text-left">Ouvert sous condition</span>
+              <span class="text-xs font-medium flex-1 text-left">{{ t('Ouvert sous condition') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('access_type', 'open_with_constraint')) }}
               </span>
@@ -279,7 +279,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('accessType', 'restricted')"
             >
-              <span class="text-xs font-medium flex-1 text-left">Accessible sous habilitation</span>
+              <span class="text-xs font-medium flex-1 text-left">{{ t('Accessible sous habilitation') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('access_type', 'restricted')) }}
               </span>
@@ -290,7 +290,7 @@
         <!-- Date de mise à jour Section -->
         <section v-if="hasBasicFilter('last_update_range')">
           <h2 class="font-bold text-sm text-gray-900 mb-2">
-            Date de mise à jour
+            {{ t('Date de mise à jour') }}
           </h2>
           <div class="flex flex-col gap-0">
             <button
@@ -298,7 +298,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('lastUpdate', 'all')"
             >
-              <span class="text-xs font-bold flex-1 text-left">Toutes</span>
+              <span class="text-xs font-bold flex-1 text-left">{{ t('Toutes') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('last_update', 'all')) }}
               </span>
@@ -309,7 +309,7 @@
               class="flex items-center gap-1 py-1 px-1.5 rounded"
               @click="selectFilter('lastUpdate', 'last_30_days')"
             >
-              <span class="text-xs font-medium flex-1 text-left">Les 30 derniers jours</span>
+              <span class="text-xs font-medium flex-1 text-left">{{ t('Les 30 derniers jours') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('last_update', 'last_30_days')) }}
               </span>
@@ -320,7 +320,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('lastUpdate', 'last_12_months')"
             >
-              <span class="text-xs font-medium flex-1 text-left">Les 12 derniers mois</span>
+              <span class="text-xs font-medium flex-1 text-left">{{ t('Les 12 derniers mois') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('last_update', 'last_12_months')) }}
               </span>
@@ -331,7 +331,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('lastUpdate', 'last_3_years')"
             >
-              <span class="text-xs font-medium flex-1 text-left">Les 3 dernières années</span>
+              <span class="text-xs font-medium flex-1 text-left">{{ t('Les 3 dernières années') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('last_update', 'last_3_years')) }}
               </span>
@@ -342,7 +342,7 @@
         <!-- Organisation Section -->
         <section v-if="hasBasicFilter('producer_type')">
           <h2 class="font-bold text-sm text-gray-900 mb-2">
-            Type d'organisation
+            {{ t("Type d'organisation") }}
           </h2>
           <div class="flex flex-col gap-0">
             <button
@@ -350,7 +350,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('producerType', 'all')"
             >
-              <span class="text-xs font-bold flex-1 text-left">Toutes</span>
+              <span class="text-xs font-bold flex-1 text-left">{{ t('Toutes') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('producer_type', 'all')) }}
               </span>
@@ -361,7 +361,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('producerType', 'public-service')"
             >
-              <span class="text-xs font-medium flex-1 text-left">Service public</span>
+              <span class="text-xs font-medium flex-1 text-left">{{ t('Service public') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('producer_type', 'public-service')) }}
               </span>
@@ -372,7 +372,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('producerType', 'local-authority')"
             >
-              <span class="text-xs font-medium flex-1 text-left">Collectivité territoriale</span>
+              <span class="text-xs font-medium flex-1 text-left">{{ t('Collectivité territoriale') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('producer_type', 'local-authority')) }}
               </span>
@@ -383,7 +383,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('producerType', 'company')"
             >
-              <span class="text-xs font-medium flex-1 text-left">Entreprise</span>
+              <span class="text-xs font-medium flex-1 text-left">{{ t('Entreprise') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('producer_type', 'company')) }}
               </span>
@@ -394,7 +394,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('producerType', 'association')"
             >
-              <span class="text-xs font-medium flex-1 text-left">Association</span>
+              <span class="text-xs font-medium flex-1 text-left">{{ t('Association') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('producer_type', 'association')) }}
               </span>
@@ -405,7 +405,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('producerType', 'user')"
             >
-              <span class="text-xs font-medium flex-1 text-left">Utilisateur</span>
+              <span class="text-xs font-medium flex-1 text-left">{{ t('Utilisateur') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('producer_type', 'user')) }}
               </span>
@@ -416,7 +416,7 @@
         <!-- Label de donnée Section -->
         <section v-if="hasBasicFilter('data_label')">
           <h2 class="font-bold text-sm text-gray-900 mb-2">
-            Label de donnée
+            {{ t('Label de donnée') }}
           </h2>
           <div class="flex flex-col gap-0">
             <button
@@ -424,7 +424,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('dataLabel', 'all')"
             >
-              <span class="text-xs font-bold flex-1 text-left">Tous</span>
+              <span class="text-xs font-bold flex-1 text-left">{{ t('Tous') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('badge', 'all')) }}
               </span>
@@ -435,7 +435,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('dataLabel', 'hvd')"
             >
-              <span class="text-xs font-medium flex-1 text-left">Données de forte valeur</span>
+              <span class="text-xs font-medium flex-1 text-left">{{ t('Données de forte valeur') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getBadgeFacetCount('hvd')) }}
               </span>
@@ -457,7 +457,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('dataLabel', 'spd')"
             >
-              <span class="text-xs font-medium flex-1 text-left">Service public de la donnée de référence</span>
+              <span class="text-xs font-medium flex-1 text-left">{{ t('Service public de la donnée de référence') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getBadgeFacetCount('spd')) }}
               </span>
@@ -468,7 +468,7 @@
         <!-- Type de réutilisation Section -->
         <section v-if="hasBasicFilter('type')">
           <h2 class="font-bold text-sm text-gray-900 mb-2">
-            Type de réutilisation
+            {{ t('Type de réutilisation') }}
           </h2>
           <div class="flex flex-col gap-0">
             <button
@@ -476,7 +476,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('reuseType', 'all')"
             >
-              <span class="text-xs font-bold flex-1 text-left">Tous</span>
+              <span class="text-xs font-bold flex-1 text-left">{{ t('Tous') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('type', 'all')) }}
               </span>
@@ -500,7 +500,7 @@
         <!-- Thématiques Section -->
         <section v-if="hasBasicFilter('topic')">
           <h2 class="font-bold text-sm text-gray-900 mb-2">
-            Thématiques
+            {{ t('Thématiques') }}
           </h2>
           <div class="flex flex-col gap-0">
             <button
@@ -508,7 +508,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('reuseTopic', 'all')"
             >
-              <span class="text-xs font-bold flex-1 text-left">Toutes</span>
+              <span class="text-xs font-bold flex-1 text-left">{{ t('Toutes') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('topic', 'all')) }}
               </span>
@@ -532,7 +532,7 @@
               class="text-xs text-[#000091] hover:underline py-1 px-1.5 text-left font-medium"
               @click="showAllTopics = !showAllTopics"
             >
-              {{ showAllTopics ? 'Voir moins' : `Voir plus (${getTopicFacets().length - 5})` }}
+              {{ showAllTopics ? t('Voir moins') : t('Voir plus ({n})', { n: getTopicFacets().length - 5 }) }}
             </button>
           </div>
         </section>
@@ -540,7 +540,7 @@
         <!-- Type de discussions Section -->
         <section v-if="hasBasicFilter('object_type')">
           <h2 class="font-bold text-sm text-gray-900 mb-2">
-            Type de discussions
+            {{ t('Type de discussions') }}
           </h2>
           <div class="flex flex-col gap-0">
             <button
@@ -548,7 +548,7 @@
               class="flex items-center gap-2 py-1 px-1.5 rounded"
               @click="selectFilter('discussionObjectType', 'all')"
             >
-              <span class="text-xs font-bold flex-1 text-left">Tous</span>
+              <span class="text-xs font-bold flex-1 text-left">{{ t('Tous') }}</span>
               <span class="bg-gray-200 text-gray-900 text-[10px] font-bold px-1 py-0.5 rounded">
                 {{ formatCount(getFacetCount('object_type', 'all')) }}
               </span>
@@ -589,7 +589,7 @@
               @change="applyFilters()"
             >
               <option value="">
-                Tous
+                {{ t('Tous') }}
               </option>
               <option
                 v-for="value in tagFilter.values"
@@ -628,7 +628,7 @@
               :aria-expanded="showAdvancedFilters"
               @click="showAdvancedFilters = !showAdvancedFilters"
             >
-              Filtres avancés
+              {{ t('Filtres avancés') }}
             </button>
           </h3>
 
@@ -639,12 +639,12 @@
             <!-- Organisation -->
             <template v-if="hasAdvancedFilter('organization')">
               <h2 class="font-bold text-sm text-gray-900 mb-2">
-                Organisation
+                {{ t('Organisation') }}
               </h2>
               <div class="mb-2">
                 <SearchableSelect
                   v-model="advancedFacets.organization"
-                  :placeholder="'Toutes les organisations'"
+                  :placeholder="t('Toutes les organisations')"
                   :suggest="suggestOrganizations"
                   :get-option-id="(org: Organization) => org.id"
                   :display-value="(org: Organization) => org.name"
@@ -680,7 +680,7 @@
                     class="text-xs text-[#000091] hover:underline py-1 px-1.5 text-left font-medium"
                     @click="showAllOrganizations = !showAllOrganizations"
                   >
-                    {{ showAllOrganizations ? 'Voir moins' : `Voir plus (${organizationFacets.length - 5})` }}
+                    {{ showAllOrganizations ? t('Voir moins') : t('Voir plus ({n})', { n: organizationFacets.length - 5 }) }}
                   </button>
                 </div>
               </div>
@@ -689,7 +689,7 @@
                 class="mb-6"
               >
                 <p class="text-xs text-gray-600 italic">
-                  Aucune valeur remontée
+                  {{ t('Aucune valeur remontée') }}
                 </p>
               </div>
             </template>
@@ -697,12 +697,12 @@
             <!-- Mots-clés (Tags) -->
             <template v-if="hasAdvancedFilter('tags')">
               <h2 class="font-bold text-sm text-gray-900 mb-2">
-                Mots-clés
+                {{ t('Mots-clés') }}
               </h2>
               <div class="mb-2">
                 <SearchableSelect
                   v-model="advancedFacets.tag"
-                  :placeholder="'Tous les mots clés'"
+                  :placeholder="t('Tous les mots clés')"
                   :suggest="suggestTags"
                   :allow-new-option="(query: string) => query.toLocaleLowerCase().replace(/ /g, '-')"
                   :get-option-id="(tag: string) => tag"
@@ -739,7 +739,7 @@
                     class="text-xs text-[#000091] hover:underline py-1 px-1.5 text-left font-medium"
                     @click="showAllTags = !showAllTags"
                   >
-                    {{ showAllTags ? 'Voir moins' : `Voir plus (${tagFacets.length - 5})` }}
+                    {{ showAllTags ? t('Voir moins') : t('Voir plus ({n})', { n: tagFacets.length - 5 }) }}
                   </button>
                 </div>
               </div>
@@ -748,7 +748,7 @@
                 class="mb-6"
               >
                 <p class="text-xs text-gray-600 italic">
-                  Aucune valeur remontée
+                  {{ t('Aucune valeur remontée') }}
                 </p>
               </div>
             </template>
@@ -756,12 +756,12 @@
             <!-- Formats (Only for Datasets) -->
             <template v-if="hasAdvancedFilter('format')">
               <h2 class="font-bold text-sm text-gray-900 mb-2">
-                Formats
+                {{ t('Formats') }}
               </h2>
               <div class="mb-2">
                 <SearchableSelect
                   v-model="advancedFacets.format"
-                  :placeholder="'Tous les formats'"
+                  :placeholder="t('Tous les formats')"
                   :options="allowedFormats ?? []"
                   :loading="loadingFormats"
                   :get-option-id="(format: string) => format"
@@ -798,7 +798,7 @@
                     class="text-xs text-[#000091] hover:underline py-1 px-1.5 text-left font-medium"
                     @click="showAllFormats = !showAllFormats"
                   >
-                    {{ showAllFormats ? 'Voir moins' : `Voir plus (${formatFacets.length - 5})` }}
+                    {{ showAllFormats ? t('Voir moins') : t('Voir plus ({n})', { n: formatFacets.length - 5 }) }}
                   </button>
                 </div>
               </div>
@@ -807,7 +807,7 @@
                 class="mb-6"
               >
                 <p class="text-xs text-gray-600 italic">
-                  Aucune valeur remontée
+                  {{ t('Aucune valeur remontée') }}
                 </p>
               </div>
             </template>
@@ -815,12 +815,12 @@
             <!-- Licences (Only for Datasets) -->
             <template v-if="hasAdvancedFilter('license')">
               <h2 class="font-bold text-sm text-gray-900 mb-2">
-                Licences
+                {{ t('Licences') }}
               </h2>
               <div class="mb-2">
                 <SearchableSelect
                   v-model="advancedFacets.license"
-                  :placeholder="'Toutes les licences'"
+                  :placeholder="t('Toutes les licences')"
                   :options="licenses ?? []"
                   :loading="loadingLicenses"
                   :get-option-id="(license: License) => license.id"
@@ -857,7 +857,7 @@
                     class="text-xs text-[#000091] hover:underline py-1 px-1.5 text-left font-medium"
                     @click="showAllLicenses = !showAllLicenses"
                   >
-                    {{ showAllLicenses ? 'Voir moins' : `Voir plus (${licenseFacets.length - 5})` }}
+                    {{ showAllLicenses ? t('Voir moins') : t('Voir plus ({n})', { n: licenseFacets.length - 5 }) }}
                   </button>
                 </div>
               </div>
@@ -866,7 +866,7 @@
                 class="mb-6"
               >
                 <p class="text-xs text-gray-600 italic">
-                  Aucune valeur remontée
+                  {{ t('Aucune valeur remontée') }}
                 </p>
               </div>
             </template>
@@ -874,12 +874,12 @@
             <!-- Schéma (Only for Datasets) -->
             <template v-if="hasAdvancedFilter('schema')">
               <h2 class="font-bold text-sm text-gray-900 mb-2">
-                Schéma
+                {{ t('Schéma') }}
               </h2>
               <div class="mb-2">
                 <SearchableSelect
                   v-model="advancedFacets.schema"
-                  :placeholder="'Tous les schémas'"
+                  :placeholder="t('Tous les schémas')"
                   :options="schemas ?? []"
                   :loading="loadingSchemas"
                   :get-option-id="(schema: RegisteredSchema) => schema.name"
@@ -916,7 +916,7 @@
                     class="text-xs text-[#000091] hover:underline py-1 px-1.5 text-left font-medium"
                     @click="showAllSchemas = !showAllSchemas"
                   >
-                    {{ showAllSchemas ? 'Voir moins' : `Voir plus (${schemaFacets.length - 5})` }}
+                    {{ showAllSchemas ? t('Voir moins') : t('Voir plus ({n})', { n: schemaFacets.length - 5 }) }}
                   </button>
                 </div>
               </div>
@@ -925,7 +925,7 @@
                 class="mb-6"
               >
                 <p class="text-xs text-gray-600 italic">
-                  Aucune valeur remontée
+                  {{ t('Aucune valeur remontée') }}
                 </p>
               </div>
             </template>
@@ -933,12 +933,12 @@
             <!-- Couverture spatiale (Only for Datasets) -->
             <template v-if="hasAdvancedFilter('geozone')">
               <h2 class="font-bold text-sm text-gray-900 mb-2">
-                Couverture spatiale
+                {{ t('Couverture spatiale') }}
               </h2>
               <div class="mb-2">
                 <SearchableSelect
                   v-model="advancedFacets.geozone"
-                  :placeholder="'Toutes les couvertures'"
+                  :placeholder="t('Toutes les couvertures')"
                   :suggest="suggestSpatialCoverages"
                   :get-option-id="(zone: SpatialZone) => zone.id"
                   :display-value="(zone: SpatialZone) => zone.name"
@@ -977,7 +977,7 @@
                     class="text-xs text-[#000091] hover:underline py-1 px-1.5 text-left font-medium"
                     @click="showAllGeozones = !showAllGeozones"
                   >
-                    {{ showAllGeozones ? 'Voir moins' : `Voir plus (${geozoneFacets.length - 5})` }}
+                    {{ showAllGeozones ? t('Voir moins') : t('Voir plus ({n})', { n: geozoneFacets.length - 5 }) }}
                   </button>
                 </div>
               </div>
@@ -986,7 +986,7 @@
                 class="mb-6"
               >
                 <p class="text-xs text-gray-600 italic">
-                  Aucune valeur remontée
+                  {{ t('Aucune valeur remontée') }}
                 </p>
               </div>
             </template>
@@ -994,12 +994,12 @@
             <!-- Granularité spatiale (Only for Datasets) -->
             <template v-if="hasAdvancedFilter('granularity')">
               <h2 class="font-bold text-sm text-gray-900 mb-2">
-                Granularité spatiale
+                {{ t('Granularité spatiale') }}
               </h2>
               <div class="mb-2">
                 <SearchableSelect
                   v-model="advancedFacets.granularity"
-                  :placeholder="'Toutes les granularités'"
+                  :placeholder="t('Toutes les granularités')"
                   :options="spatialGranularities ?? []"
                   :loading="loadingGranularities"
                   :get-option-id="(granularity: SpatialGranularity) => granularity.id"
@@ -1036,7 +1036,7 @@
                     class="text-xs text-[#000091] hover:underline py-1 px-1.5 text-left font-medium"
                     @click="showAllGranularities = !showAllGranularities"
                   >
-                    {{ showAllGranularities ? 'Voir moins' : `Voir plus (${granularityFacets.length - 5})` }}
+                    {{ showAllGranularities ? t('Voir moins') : t('Voir plus ({n})', { n: granularityFacets.length - 5 }) }}
                   </button>
                 </div>
               </div>
@@ -1045,7 +1045,7 @@
                 class="mb-6"
               >
                 <p class="text-xs text-gray-600 italic">
-                  Aucune valeur remontée
+                  {{ t('Aucune valeur remontée') }}
                 </p>
               </div>
             </template>
@@ -1058,7 +1058,7 @@
         <!-- Results header -->
         <div class="flex items-center justify-between gap-4">
           <p class="text-sm text-gray-900 m-0">
-            {{ totalResults }} résultats
+            {{ t('{n} résultats', { n: totalResults }) }}
           </p>
 
           <div class="flex items-center gap-2 flex-shrink-0">
@@ -1066,7 +1066,7 @@
               for="sort-search"
               class="text-sm m-0 whitespace-nowrap"
             >
-              Trier par :
+              {{ t('Trier par :') }}
             </label>
             <select
               id="sort-search"
@@ -1075,28 +1075,28 @@
               name="sort"
             >
               <option value="">
-                Pertinence
+                {{ t('Pertinence') }}
               </option>
               <option value="-created">
-                Date de création
+                {{ t('Date de création') }}
               </option>
               <option
                 v-if="selectedType === 'datasets' || selectedType === 'dataservices' || selectedType === 'topics'"
                 value="-last_update"
               >
-                Dernière mise à jour
+                {{ t('Dernière mise à jour') }}
               </option>
               <option
                 v-if="selectedType !== 'discussions' && selectedType !== 'posts' && selectedType !== 'topics'"
                 value="-followers"
               >
-                Nombre d'abonnés
+                {{ t("Nombre d'abonnés") }}
               </option>
               <option
                 v-if="selectedType === 'datasets'"
                 value="-reuses"
               >
-                Nombre de réutilisations
+                {{ t('Nombre de réutilisations') }}
               </option>
             </select>
           </div>
@@ -1109,7 +1109,7 @@
             class="text-center py-8"
           >
             <p class="text-gray-600">
-              Chargement...
+              {{ t('Chargement...') }}
             </p>
           </div>
 
@@ -1118,7 +1118,7 @@
             class="text-center py-8"
           >
             <p class="text-gray-600">
-              Aucun résultat trouvé
+              {{ t('Aucun résultat trouvé') }}
             </p>
           </div>
 
@@ -1214,6 +1214,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ofetch } from 'ofetch'
 import { useComponentsConfig } from '../config'
+import { useTranslation } from '../composables/useTranslation'
 import DatasetCard from './DatasetCard.vue'
 import ReuseCard from './ReuseCard.vue'
 import DataserviceCard from './DataserviceCard.vue'
@@ -1227,6 +1228,7 @@ import Pagination from './Pagination.vue'
 const route = useRoute()
 const router = useRouter()
 const componentsConfig = useComponentsConfig()
+const { t } = useTranslation()
 
 /**
  * Configuration System for SearchGlobal Component
@@ -1508,10 +1510,10 @@ const objectTypes = computed(() => {
     return props.config.filter(c => c.display)
   }
   const defaults: ObjectTypeConfig[] = [
-    { className: 'Jeux de données', class: 'datasets', display: true },
-    { className: 'Services de données', class: 'dataservices', display: true },
-    { className: 'Réutilisations', class: 'reuses', display: true },
-    { className: 'Organisations', class: 'organizations', display: true },
+    { className: t('Jeux de données'), class: 'datasets', display: true },
+    { className: t('Services de données'), class: 'dataservices', display: true },
+    { className: t('Réutilisations'), class: 'reuses', display: true },
+    { className: t('Organisations'), class: 'organizations', display: true },
   ]
   if (props.displayDiscussions) {
     defaults.push({ className: props.discussionsLabel, class: 'discussions', display: true })
@@ -1896,7 +1898,7 @@ function toggleTagFilterValue(filterName: string, value: string) {
   applyFilters()
 }
 
-const reuseTypeLabels: Record<string, string> = {
+const reuseTypeKeys: Record<string, string> = {
   application: 'Application',
   visualization: 'Visualisation',
   news_article: 'Article de presse',
@@ -1907,7 +1909,7 @@ const reuseTypeLabels: Record<string, string> = {
   idea: 'Idée',
 }
 
-const topicLabels: Record<string, string> = {
+const topicKeys: Record<string, string> = {
   health: 'Santé',
   transport_and_mobility: 'Transport et mobilité',
   housing_and_development: 'Logement et développement',
@@ -1926,11 +1928,13 @@ const topicLabels: Record<string, string> = {
 }
 
 function getReuseTypeLabel(type: string): string {
-  return reuseTypeLabels[type] || type
+  const key = reuseTypeKeys[type]
+  return key ? t(key) : type
 }
 
 function getTopicLabel(topic: string): string {
-  return topicLabels[topic] || topic
+  const key = topicKeys[topic]
+  return key ? t(key) : topic
 }
 
 function getFacetCount(facetName: string, value: string): number {
@@ -1971,7 +1975,7 @@ function getObjectTypeFacets(): Array<{ name: string, count: number }> {
   return facets.filter((f: Facet) => f.name !== 'all')
 }
 
-const objectTypeLabels: Record<string, string> = {
+const objectTypeKeys: Record<string, string> = {
   Dataset: 'Jeux de données',
   Reuse: 'Réutilisations',
   Dataservice: 'API',
@@ -1979,7 +1983,8 @@ const objectTypeLabels: Record<string, string> = {
 }
 
 function getObjectTypeLabel(objectType: string): string {
-  return objectTypeLabels[objectType] || objectType
+  const key = objectTypeKeys[objectType]
+  return key ? t(key) : objectType
 }
 
 const displayedTopics = computed(() => {
