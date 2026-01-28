@@ -46,7 +46,6 @@ import ExtraAccordion from './components/ExtraAccordion.vue'
 import LabelTag from './components/DatasetLabelTag.vue'
 import LoadingBlock from './components/LoadingBlock.vue'
 import MarkdownViewer from './components/MarkdownViewer.vue'
-import ObjectCard from './components/ObjectCard.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
 import OrganizationLogo from './components/OrganizationLogo.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
@@ -231,7 +230,6 @@ export {
   LabelTag,
   LoadingBlock,
   MarkdownViewer,
-  ObjectCard,
   OrganizationCard,
   OrganizationLogo,
   OrganizationNameWithCertificate,

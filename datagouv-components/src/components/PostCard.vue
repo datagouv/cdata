@@ -19,26 +19,14 @@
       </div>
     </template>
 
-    <h4 class="w-full text-base mb-0 flex">
-      <AppLink
-        :to="postUrl"
-        class="text-gray-title text-base bg-none flex items-center w-full truncate gap-1"
-      >
-        <RiArticleLine
-          aria-hidden="true"
-          class="size-4 flex-none"
-        />
-        <span class="block truncate flex-1">{{ post.name }}</span>
-        <span class="absolute inset-0" />
-      </AppLink>
-    </h4>
-
-    <p
-      v-if="descriptionShort"
-      class="fr-text--sm fr-mt-1w fr-mb-0 overflow-wrap-anywhere hidden sm:block line-clamp-2"
+    <ObjectCardHeader
+      :icon="RiArticleLine"
+      :url="postUrl"
     >
-      {{ descriptionShort }}
-    </p>
+      {{ post.name }}
+    </ObjectCardHeader>
+
+    <ObjectCardShortDescription :text="post.headline || post.content" />
 
     <div
       v-if="post.published || post.created_at"
@@ -55,13 +43,13 @@
 import { RiArticleLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { removeMarkdownSync } from '../functions/markdown'
 import { useFormatDate } from '../functions/dates'
 import { useTranslation } from '../composables/useTranslation'
 import type { Post } from '../types/posts'
-import AppLink from './AppLink.vue'
 import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
+import ObjectCardHeader from './ObjectCardHeader.vue'
+import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 
 const props = defineProps<{
   post: Post
@@ -79,11 +67,4 @@ const formatDate = (dateString: string) => {
     timeStyle: 'short',
   })
 }
-
-const descriptionShort = computed(() => {
-  const textToUse = props.post.headline || props.post.content
-  if (!textToUse) return ''
-  const cleaned = removeMarkdownSync(textToUse)
-  return cleaned.length > 160 ? cleaned.substring(0, 160) + '...' : cleaned
-})
 </script>

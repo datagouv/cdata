@@ -23,19 +23,12 @@
       </div>
     </template>
 
-    <h4 class="w-full text-base mb-0 flex items-center gap-1">
-      <AppLink
-        :to="computedTopicUrl"
-        class="text-gray-title text-base bg-none flex items-center w-full truncate gap-1"
-      >
-        <RiBookShelfLine
-          aria-hidden="true"
-          class="size-4 flex-none"
-        />
-        <span class="block truncate flex-1">{{ topic.name }}</span>
-        <span class="absolute inset-0" />
-      </AppLink>
-    </h4>
+    <ObjectCardHeader
+      :icon="RiBookShelfLine"
+      :url="computedTopicUrl"
+    >
+      {{ topic.name }}
+    </ObjectCardHeader>
 
     <div
       v-if="topic.organization || topic.owner"
@@ -66,12 +59,7 @@
       </div>
     </div>
 
-    <p
-      v-if="descriptionShort"
-      class="fr-text--sm fr-mb-0 overflow-wrap-anywhere hidden sm:block line-clamp-2 mt-1"
-    >
-      {{ descriptionShort }}
-    </p>
+    <ObjectCardShortDescription :text="topic.description" />
 
     <div
       v-if="showStats && (topic.nb_datasets || topic.nb_dataservices || topic.nb_reuses)"
@@ -121,11 +109,11 @@ import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { TopicV2 } from '../types/topics'
 import { useFormatDate } from '../functions/dates'
-import { removeMarkdownSync } from '../functions/markdown'
 import { getOwnerName } from '../functions/owned'
 import { useTranslation } from '../composables/useTranslation'
-import AppLink from './AppLink.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
+import ObjectCardHeader from './ObjectCardHeader.vue'
+import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import OrganizationLogo from './OrganizationLogo.vue'
 import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
@@ -161,11 +149,5 @@ const formatDate = (dateString: string) => {
 const ownerName = computed(() => {
   if (!props.topic.owner) return ''
   return getOwnerName(props.topic)
-})
-
-const descriptionShort = computed(() => {
-  if (!props.topic.description) return ''
-  const cleaned = removeMarkdownSync(props.topic.description)
-  return cleaned.length > 200 ? cleaned.substring(0, 200) + '...' : cleaned
 })
 </script>

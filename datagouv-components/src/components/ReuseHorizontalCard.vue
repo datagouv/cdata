@@ -47,19 +47,12 @@
       </div>
     </template>
 
-    <h4 class="w-full text-base mb-0 flex">
-      <AppLink
-        :to="reuseUrl"
-        class="text-gray-title text-base bg-none flex items-center w-full truncate gap-1"
-      >
-        <RiLineChartLine
-          aria-hidden="true"
-          class="size-4 flex-none"
-        />
-        <span class="block truncate flex-1">{{ reuse.title }}</span>
-        <span class="absolute inset-0" />
-      </AppLink>
-    </h4>
+    <ObjectCardHeader
+      :icon="RiLineChartLine"
+      :url="reuseUrl"
+    >
+      {{ reuse.title }}
+    </ObjectCardHeader>
 
     <div
       v-if="reuse.organization || ownerName"
@@ -92,12 +85,7 @@
       <ReuseDetails :reuse />
     </div>
 
-    <p
-      v-if="descriptionShort"
-      class="fr-text--sm fr-mt-1w fr-mb-0 overflow-wrap-anywhere hidden sm:block line-clamp-2"
-    >
-      {{ descriptionShort }}
-    </p>
+    <ObjectCardShortDescription :text="reuse.description" />
 
     <slot />
   </ObjectCard>
@@ -108,7 +96,6 @@ import { RiArchiveLine, RiLineChartLine, RiLockLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { getOwnerName } from '../functions/owned'
-import { removeMarkdownSync } from '../functions/markdown'
 import type { Reuse } from '../types/reuses'
 import { useTranslation } from '../composables/useTranslation'
 import AppLink from './AppLink.vue'
@@ -116,6 +103,8 @@ import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.v
 import ReuseDetails from './ReuseDetails.vue'
 import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
+import ObjectCardHeader from './ObjectCardHeader.vue'
+import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 
 const props = defineProps<{
   reuse: Reuse
@@ -128,10 +117,4 @@ const { t } = useTranslation()
 const ownerName = computed(() => getOwnerName(props.reuse))
 const reuseUrl = computed(() => props.reuseUrl || props.reuse.page)
 const organizationUrl = computed(() => props.organizationUrl || props.reuse.organization?.page)
-
-const descriptionShort = computed(() => {
-  if (!props.reuse.description) return ''
-  const cleaned = removeMarkdownSync(props.reuse.description)
-  return cleaned.length > 200 ? cleaned.substring(0, 200) + '...' : cleaned
-})
 </script>

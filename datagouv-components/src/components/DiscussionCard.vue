@@ -1,18 +1,11 @@
 <template>
   <ObjectCard>
-    <h4 class="w-full text-base mb-0 flex items-center gap-1">
-      <AppLink
-        :to="discussionUrl"
-        class="text-gray-title text-base bg-none flex items-center w-full truncate gap-1"
-      >
-        <RiChat3Line
-          aria-hidden="true"
-          class="size-4 flex-none"
-        />
-        <span class="block truncate flex-1">{{ discussion.title }}</span>
-        <span class="absolute inset-0" />
-      </AppLink>
-    </h4>
+    <ObjectCardHeader
+      :icon="RiChat3Line"
+      :url="discussionUrl"
+    >
+      {{ discussion.title }}
+    </ObjectCardHeader>
 
     <div class="flex items-center gap-2 text-sm">
       <img
@@ -59,6 +52,7 @@ import { useTranslation } from '../composables/useTranslation'
 import { useComponentsConfig } from '../config'
 import AppLink from './AppLink.vue'
 import ObjectCard from './ObjectCard.vue'
+import ObjectCardHeader from './ObjectCardHeader.vue'
 
 interface Discussion {
   id: string
