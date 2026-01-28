@@ -14,23 +14,21 @@
     </ObjectCardBadge>
 
     <template #media>
-      <div class="flex justify-center items-center p-2 border border-gray-lower bg-[#fff] rounded-md overflow-hidden">
-        <OrganizationLogo
-          v-if="dataset.organization"
-          :organization="dataset.organization"
-          size-class="size-12"
-        />
-        <Avatar
-          v-else-if="dataset.owner"
-          :user="dataset.owner"
-          :size="48"
-        />
-        <Placeholder
-          v-else
-          type="Dataset"
-          class="size-12"
-        />
-      </div>
+      <OrganizationLogo
+        v-if="dataset.organization"
+        :organization="dataset.organization"
+        size-class="size-12"
+      />
+      <Avatar
+        v-else-if="dataset.owner"
+        :user="dataset.owner"
+        :size="48"
+      />
+      <Placeholder
+        v-else
+        type="Dataset"
+        class="size-12"
+      />
     </template>
     <h4 class="w-full text-base mb-0 flex">
       <slot

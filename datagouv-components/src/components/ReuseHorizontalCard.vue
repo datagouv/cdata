@@ -1,5 +1,5 @@
 <template>
-  <ObjectCard>
+  <ObjectCard media-size="lg">
     <ObjectCardBadge
       v-if="reuse.private"
       :icon="RiLockLine"
@@ -14,22 +14,17 @@
     </ObjectCardBadge>
 
     <template #media>
-      <div
-        class="flex justify-center items-center border border-gray-lower bg-[#fff] rounded-md overflow-hidden"
-        style="width: 240px; height: 160px;"
+      <img
+        v-if="reuse.image"
+        :src="reuse.image"
+        class="w-full h-full object-cover"
+        :alt="reuse.title"
       >
-        <img
-          v-if="reuse.image"
-          :src="reuse.image"
-          class="w-full h-full object-cover"
-          :alt="reuse.title"
-        >
-        <Placeholder
-          v-else
-          type="Reuse"
-          class="w-full h-full"
-        />
-      </div>
+      <Placeholder
+        v-else
+        type="Reuse"
+        class="w-full h-full"
+      />
     </template>
 
     <ObjectCardHeader

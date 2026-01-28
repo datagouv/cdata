@@ -4,23 +4,21 @@
       v-if="showLogo"
       #media
     >
-      <div class="flex justify-center items-center p-2 border border-gray-lower bg-[#fff] rounded-md overflow-hidden">
-        <OrganizationLogo
-          v-if="topic.organization"
-          :organization="topic.organization"
-          size-class="size-12"
-        />
-        <Avatar
-          v-else-if="topic.owner"
-          :user="topic.owner"
-          :size="48"
-        />
-        <Placeholder
-          v-else
-          type="Dataset"
-          class="size-12"
-        />
-      </div>
+      <OrganizationLogo
+        v-if="topic.organization"
+        :organization="topic.organization"
+        size-class="size-12"
+      />
+      <Avatar
+        v-else-if="topic.owner"
+        :user="topic.owner"
+        :size="48"
+      />
+      <Placeholder
+        v-else
+        type="Dataset"
+        class="size-12"
+      />
     </template>
 
     <ObjectCardHeader

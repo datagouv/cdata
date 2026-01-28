@@ -31,23 +31,21 @@
     </ObjectCardBadge>
 
     <template #media>
-      <div class="flex justify-center items-center p-2 border border-gray-lower bg-[#fff] rounded-md overflow-hidden">
-        <OrganizationLogo
-          v-if="dataservice.organization"
-          :organization="dataservice.organization"
-          size-class="size-12"
-        />
-        <Avatar
-          v-else-if="dataservice.owner"
-          :user="dataservice.owner"
-          :size="48"
-        />
-        <Placeholder
-          v-else
-          type="Dataset"
-          class="size-12"
-        />
-      </div>
+      <OrganizationLogo
+        v-if="dataservice.organization"
+        :organization="dataservice.organization"
+        size-class="size-12"
+      />
+      <Avatar
+        v-else-if="dataservice.owner"
+        :user="dataservice.owner"
+        :size="48"
+      />
+      <Placeholder
+        v-else
+        type="Dataset"
+        class="size-12"
+      />
     </template>
 
     <h4 class="text-base mb-0 flex items-center gap-1">

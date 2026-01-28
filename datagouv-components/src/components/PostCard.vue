@@ -1,22 +1,17 @@
 <template>
-  <ObjectCard>
+  <ObjectCard media-size="lg">
     <template #media>
-      <div
-        class="flex justify-center items-center border border-gray-lower bg-[#fff] rounded-md overflow-hidden"
-        style="width: 240px; height: 160px;"
+      <img
+        v-if="post.image"
+        :src="post.image"
+        class="w-full h-full object-cover"
+        :alt="post.name"
       >
-        <img
-          v-if="post.image"
-          :src="post.image"
-          class="w-full h-full object-cover"
-          :alt="post.name"
-        >
-        <Placeholder
-          v-else
-          type="Dataset"
-          class="w-full h-full"
-        />
-      </div>
+      <Placeholder
+        v-else
+        type="Dataset"
+        class="w-full h-full"
+      />
     </template>
 
     <ObjectCardHeader
