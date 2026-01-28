@@ -1,7 +1,7 @@
 <template>
   <p
     v-if="shortDescription"
-    class="fr-text--sm fr-mt-1w fr-mb-0 overflow-wrap-anywhere hidden sm:block line-clamp-2"
+    class="fr-text--sm fr-mt-1w fr-mb-0 overflow-wrap-anywhere hidden sm:line-clamp-2"
   >
     {{ shortDescription }}
   </p>

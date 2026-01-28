@@ -1,17 +1,19 @@
 <template>
   <ObjectCard media-size="lg">
-    <ObjectCardBadge
-      v-if="reuse.private"
-      :icon="RiLockLine"
-    >
-      {{ t('Brouillon') }}
-    </ObjectCardBadge>
-    <ObjectCardBadge
-      v-else-if="reuse.archived"
-      :icon="RiArchiveLine"
-    >
-      {{ t('Archivé') }}
-    </ObjectCardBadge>
+    <template #badge>
+      <ObjectCardBadge
+        v-if="reuse.private"
+        :icon="RiLockLine"
+      >
+        {{ t('Brouillon') }}
+      </ObjectCardBadge>
+      <ObjectCardBadge
+        v-else-if="reuse.archived"
+        :icon="RiArchiveLine"
+      >
+        {{ t('Archivé') }}
+      </ObjectCardBadge>
+    </template>
 
     <template #media>
       <img

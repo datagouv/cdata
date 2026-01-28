@@ -5,30 +5,32 @@
       'border-gray-default': !isTabularApi,
     }"
   >
-    <ObjectCardBadge
-      v-if="dataservice.private"
-      :icon="RiLockLine"
-    >
-      {{ t('Brouillon') }}
-    </ObjectCardBadge>
-    <ObjectCardBadge
-      v-else-if="dataservice.archived_at"
-      :icon="RiArchiveLine"
-    >
-      {{ t('Archivé') }}
-    </ObjectCardBadge>
-    <ObjectCardBadge
-      v-else-if="dataservice.access_type === 'restricted'"
-      :icon="RiLockLine"
-    >
-      {{ t('Accès restreint') }}
-    </ObjectCardBadge>
-    <ObjectCardBadge
-      v-else-if="dataservice.access_type === 'open_with_account'"
-      :icon="RiPassValidLine"
-    >
-      {{ t('Ouvert avec un compte') }}
-    </ObjectCardBadge>
+    <template #badge>
+      <ObjectCardBadge
+        v-if="dataservice.private"
+        :icon="RiLockLine"
+      >
+        {{ t('Brouillon') }}
+      </ObjectCardBadge>
+      <ObjectCardBadge
+        v-else-if="dataservice.archived_at"
+        :icon="RiArchiveLine"
+      >
+        {{ t('Archivé') }}
+      </ObjectCardBadge>
+      <ObjectCardBadge
+        v-else-if="dataservice.access_type === 'restricted'"
+        :icon="RiLockLine"
+      >
+        {{ t('Accès restreint') }}
+      </ObjectCardBadge>
+      <ObjectCardBadge
+        v-else-if="dataservice.access_type === 'open_with_account'"
+        :icon="RiPassValidLine"
+      >
+        {{ t('Ouvert avec un compte') }}
+      </ObjectCardBadge>
+    </template>
 
     <template #media>
       <OrganizationLogo
