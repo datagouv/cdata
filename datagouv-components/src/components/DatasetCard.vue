@@ -57,7 +57,10 @@
           class="link text-sm overflow-hidden flex items-center relative z-[2] truncate"
           :to="organizationUrl || dataset.organization.page"
         >
-          <OrganizationNameWithCertificate :organization="dataset.organization" />
+          <OrganizationNameWithCertificate
+            :organization="dataset.organization"
+            size="sm"
+          />
         </AppLink>
       </div>
       <div

@@ -48,7 +48,10 @@
           class="link text-sm overflow-hidden flex items-center relative z-[2] truncate"
           :to="organizationUrl || reuse.organization.page"
         >
-          <OrganizationNameWithCertificate :organization="reuse.organization" />
+          <OrganizationNameWithCertificate
+            :organization="reuse.organization"
+            size="sm"
+          />
         </AppLink>
       </div>
       <div

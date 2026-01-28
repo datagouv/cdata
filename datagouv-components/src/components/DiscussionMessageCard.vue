@@ -19,7 +19,10 @@
           class="link text-sm overflow-hidden flex items-center relative z-[2] truncate"
           :to="organizationUrl || discussion.organization.page"
         >
-          <OrganizationNameWithCertificate :organization="discussion.organization" />
+          <OrganizationNameWithCertificate
+            :organization="discussion.organization"
+            size="sm"
+          />
         </AppLink>
       </div>
       <div

@@ -23,11 +23,13 @@
               >
                 <OrganizationNameWithCertificate
                   :organization="reuse.organization"
+                  size="sm"
                 />
               </AppLink>
               <OrganizationNameWithCertificate
                 v-else
                 :organization="reuse.organization"
+                size="sm"
               />
             </div>
             <div

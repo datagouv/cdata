@@ -35,6 +35,7 @@
       <template v-if="topic.organization">
         <OrganizationNameWithCertificate
           :organization="topic.organization"
+          size="sm"
           class="flex-shrink-0 truncate"
         />
       </template>

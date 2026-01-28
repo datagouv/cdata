@@ -68,7 +68,10 @@
           class="link text-sm overflow-hidden"
           :to="organizationUrl || dataservice.organization.page"
         >
-          <OrganizationNameWithCertificate :organization="dataservice.organization" />
+          <OrganizationNameWithCertificate
+            :organization="dataservice.organization"
+            size="sm"
+          />
         </AppLink>
       </div>
       <div
