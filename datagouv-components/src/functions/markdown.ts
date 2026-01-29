@@ -16,26 +16,57 @@ import remarkGfm from 'remark-gfm'
 import strip from 'strip-markdown'
 
 // Copied from https://github.com/potato4d/rehype-plugin-image-native-lazy-loading/blob/v1.2.0/src/index.ts
-function lazyLoadPlugin(this: Processor): Transformer {
-  function visitor(el: hast.Element) {
-    if (el.tagName !== 'img') {
-      return
-    }
-    el.properties = {
-      ...(el.properties || {}),
-      loading: 'lazy',
-    }
-  }
-
-  function transformer(htmlAST: Node): Node {
-    visit(htmlAST, 'element', visitor)
+function rehypeLazyLoad(this: Processor): Transformer {
+  return function transformer(htmlAST: Node): Node {
+    visit(htmlAST, 'element', function visitor(el: hast.Element) {
+      if (el.tagName !== 'img') {
+        return
+      }
+      el.properties = {
+        ...(el.properties || {}),
+        loading: 'lazy',
+      }
+    })
     return htmlAST
   }
-
-  return transformer
 }
 
-export function formatMarkdown(md: string, minDepth = 3) {
+function rehypeNoHeadings(this: Processor): Transformer {
+  return function transformer(htmlAST: Node): Node {
+    visit(htmlAST, 'element', function visitor(el: hast.Element) {
+      if (el.tagName !== 'h1' && el.tagName !== 'h2' && el.tagName !== 'h3' && el.tagName !== 'h4' && el.tagName !== 'h5' && el.tagName !== 'h6') {
+        return
+      }
+
+      const classes = {
+        h1: 'text-3xl leading-8',
+        h2: 'text-2xl leading-7',
+        h3: 'text-xl leading-6',
+        h4: 'text-base',
+        h5: 'text-sm leading-6',
+        h6: 'text-sm leading-6',
+      }[el.tagName]
+
+      el.properties = {
+        ...(el.properties || {}),
+        class: `font-extrabold ${classes}`,
+      }
+      el.tagName = 'div'
+    })
+    return htmlAST
+  }
+}
+
+export function formatMarkdown(md: string, config: number | { minDepth: number, noHeadings: boolean } = 3) {
+  let minDepth: number
+  let noHeadings = false
+  if (typeof config === 'number') {
+    minDepth = config
+  }
+  else {
+    minDepth = config.minDepth
+    noHeadings = config.noHeadings
+  }
   const result = unified()
     .use(behead, { minDepth: minDepth > 1 ? minDepth : undefined } as Options)
     // Take Markdown as input and turn it into MD syntax tree
@@ -55,7 +86,7 @@ export function formatMarkdown(md: string, minDepth = 3) {
     .use(rehypeSanitize)
     // Serialize syntax tree to HTML
     .use(rehypeStringify)
-    .use(lazyLoadPlugin)
+    .use(noHeadings ? [rehypeLazyLoad, rehypeNoHeadings] : [rehypeLazyLoad])
     // And finally, process the input
     .processSync(md)
 
