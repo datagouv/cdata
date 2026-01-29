@@ -26,6 +26,7 @@
         v-model="form.about"
         class="fr-col"
         :label="$t('Biographie')"
+        :min-heading="2"
         type="markdown"
       />
       <InputGroup
