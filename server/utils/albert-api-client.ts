@@ -85,6 +85,13 @@ async function makeAlbertRequest(
     return response
   }
   catch (error) {
+    const errorDetails: Record<string, unknown> = {
+      method,
+      url,
+      ...(error && typeof error === 'object' ? error : {}),
+    }
+
+    console.error(`[Albert API] ${method} ${url} failed:`, JSON.stringify(errorDetails, null, 2))
     throw new Error(`API request failed: ${(error as Error).message}`)
   }
 }
