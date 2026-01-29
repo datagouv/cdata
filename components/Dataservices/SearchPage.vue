@@ -11,7 +11,7 @@
       data-cy="search"
     >
       <SearchInput
-        v-model="queryString"
+        v-model="q"
         :placeholder="organization ? t(`Recherche une API de l'organisation`) : t('Ex : élection présidentielle 2022')"
       />
     </div>
@@ -24,12 +24,10 @@
           <div class="space-y-4">
             <OrganizationSelect
               v-if="!organization"
-              v-model="facets.organization"
-              :organizations="organizations?.data ?? []"
-              :loading="organizationsStatus === 'pending'"
+              v-model:id="organizationId"
             />
             <SelectGroup
-              v-model="facets.isRestricted"
+              v-model="isRestricted"
               :label="t('Accès')"
               :options="[
                 { value: undefined, label: t(`Toutes les modalités d'accès`) },
@@ -38,11 +36,10 @@
               ]"
             />
             <div
-              v-if="isFiltered"
+              v-if="hasFilters"
               class="mb-6 text-center"
             >
               <BrandedButton
-                v-if="isFiltered"
                 color="secondary"
                 :icon="RiCloseCircleLine"
                 class="w-full justify-center"
@@ -80,20 +77,14 @@
             <div class="fr-col">
               <select
                 id="sort-search"
-                v-model="searchSort"
-                class="fr-select !shadow-input-blue"
-                name="sort"
-                @change="currentPage = 1"
+                v-model="sort"
+                class="fr-select shadow-input-blue!"
               >
-                <option value="">
+                <option :value="undefined">
                   {{ t('Pertinence') }}
                 </option>
-                <option
-                  v-for="{ value, label } in sortOptions"
-                  :key="label"
-                  :value="value"
-                >
-                  {{ label }}
+                <option value="-created">
+                  {{ $t('Date de création') }}
                 </option>
               </select>
             </div>
@@ -101,14 +92,14 @@
         </div>
         <transition mode="out-in">
           <LoadingBlock
-            v-slot="{ data: searchResults }"
+            v-slot="{ data: results }"
             :status="searchResultsStatus"
             :data="searchResults"
           >
-            <div v-if="searchResults && searchResults.data.length">
+            <div v-if="results && results.data.length">
               <ul class="space-y-4 mt-2 pt-2 p-0 border-t border-gray-default relative z-2 list-none">
                 <li
-                  v-for="result in searchResults.data"
+                  v-for="result in results.data"
                   :key="result.id"
                   class="p-0"
                 >
@@ -116,10 +107,10 @@
                 </li>
               </ul>
               <Pagination
-                v-if="searchResults && searchResults.total > pageSize"
-                :page="currentPage"
-                :page-size="pageSize"
-                :total-results="searchResults.total"
+                v-if="results && results.total > pageSize"
+                :page
+                :page-size
+                :total-results="results.total"
                 class="mt-4"
                 :link="getLink"
                 @change="changePage"
@@ -127,7 +118,7 @@
               <SearchNoResults
                 v-else-if="!organization"
                 :forum-url="config.public.forumUrl"
-                @reset-filters="resetForm"
+                @reset-filters="resetFilters"
               />
             </div>
             <div
@@ -136,7 +127,7 @@
             >
               <SearchNoResults
                 :forum-url="config.public.forumUrl"
-                @reset-filters="resetForm"
+                @reset-filters="resetFilters"
               />
             </div>
           </LoadingBlock>
@@ -160,124 +151,73 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, LoadingBlock, Pagination, getLink, toast } from '@datagouv/components-next'
-import type { Dataservice, Organization, OrganizationOrSuggest, OrganizationSuggest } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination, getLink } from '@datagouv/components-next'
+import type { Dataservice, Organization } from '@datagouv/components-next'
 import { RiCloseCircleLine } from '@remixicon/vue'
-import { computedAsync, debouncedRef, useUrlSearchParams } from '@vueuse/core'
 import SearchInput from '~/components/Search/SearchInput.vue'
 import type { PaginatedArray } from '~/types/types'
-import type { DataserviceSearchParams } from '~/types/form'
 import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
+import { useRouteQuery } from '@vueuse/router'
+import { omitEmpty } from '../utils/helpers'
+import { useRouteQueryBoolean } from '../composables/useRouteQueryBoolean'
+import { useDebouncedRef } from '../composables/useDebouncedRef'
 
 const props = defineProps<{
   organization?: Organization
 }>()
 
-type Facets = {
-  isRestricted?: boolean
-  organization?: OrganizationOrSuggest | null
-}
-
-const route = useRoute()
 const { t } = useTranslation()
 const config = useRuntimeConfig()
-const { $api } = useNuxtApp()
 
-async function suggestOrganizations(q: string) {
-  return await $api<Array<OrganizationSuggest>>('/api/1/organizations/suggest/', {
-    query: {
-      q,
-      size: 20,
-    },
+const q = useRouteQuery<string>('q', '', { transform: String })
+const { debounced: qDebounced, flush: flushQ } = useDebouncedRef(q, config.public.searchDebounce)
+
+const page = useRouteQuery('page', 1, { transform: Number })
+const sort = useRouteQuery<undefined | '-created'>('sort')
+const isRestricted = useRouteQueryBoolean('is_restricted')
+const organizationId = useRouteQuery<string | undefined>('organization')
+
+const pageSize = 20
+
+const filters = computed(() => {
+  return omitEmpty({
+    q: qDebounced.value,
+    is_restricted: isRestricted.value,
+    organization: props.organization?.id ?? organizationId.value,
   })
+})
+
+watch(filters, () => page.value = 1)
+
+const hasFilters = computed(() => {
+  const keys = Object.keys(filters.value)
+  return keys.some(key => props.organization ? key !== 'organization' : true)
+})
+
+const params = computed(() => {
+  return {
+    ...filters.value,
+    sort: sort.value,
+    page: page.value,
+    page_size: pageSize,
+  }
+})
+
+watch(params, () => scrollToTop())
+
+function resetFilters() {
+  q.value = ''
+  isRestricted.value = undefined
+  organizationId.value = undefined
+  flushQ()
 }
 
-const params = useUrlSearchParams<DataserviceSearchParams>('history', {
-  initialValue: route.query,
-  removeNullishValues: true,
-  removeFalsyValues: true,
-})
-
-const nonFalsyParams = computed(() => {
-  const filteredParams = Object.entries(toValue(params)).filter(([_k, v]) => v !== undefined && v !== '')
-  const propsParams = props.organization ? { organization: props.organization.id } : {}
-  return { ...propsParams, ...Object.fromEntries(filteredParams), page_size: pageSize }
-})
-
 const { data: searchResults, status: searchResultsStatus, refresh } = await useAPI<PaginatedArray<Dataservice>>('/api/2/dataservices/search/', {
-  params: nonFalsyParams,
+  params: params,
   lazy: true,
 })
 
-const { data: organizations, status: organizationsStatus } = await useAPI<PaginatedArray<Organization>>('/api/1/organizations/?sort=-followers', { lazy: true })
-
-/**
- * Search query
- */
-const queryString = ref('')
-watchEffect(() => {
-  // We use route.query here instead of params because params doesn't change when Nuxt
-  // navigates between page (for exemple when we use the search menu to search for a dataservice
-  // while in the dataservice search page)
-  if (Array.isArray(route.query.q)) return
-  if (!route.query.q) return
-  queryString.value = route.query.q
-})
-
-const deboucedQuery = debouncedRef(queryString, config.public.searchDebounce)
-
-/**
- * Query sort
- */
-const searchSort = ref(params.sort ?? '')
-
-/**
- * Current page of results
- */
-const currentPage = ref(params.page ? parseInt(params.page) : 1)
-
-/**
- * Search page size
- */
-const pageSize = 20
-
-// Initialize facets from params
-const organizationFromParams = computed(() => organizations.value?.data.find(org => org.id === params.organization))
-
-const organizationFromSuggest = computedAsync<OrganizationOrSuggest | null>(async () => {
-  if (!props.organization && !organizationFromParams.value && params.organization) {
-    const suggested = await suggestOrganizations(params.organization)
-    if (suggested && suggested.length > 0) {
-      return suggested[0]
-    }
-  }
-  return null
-}, null)
-
-const facets = ref<Facets>({
-  organization: null,
-  isRestricted: params.is_restricted,
-})
-
-/**
- * Vue ref to results HTML
- */
 const searchRef = useTemplateRef('search')
-
-/**
- * Called when user type in search field
- */
-watch([deboucedQuery, facets], () => {
-  currentPage.value = 1
-}, { deep: true })
-
-/**
- * Change current page
- */
-function changePage(page: number) {
-  currentPage.value = page
-  scrollToTop()
-}
 
 function scrollToTop() {
   if (searchRef.value) {
@@ -285,56 +225,7 @@ function scrollToTop() {
   }
 }
 
-function reloadFilters() {
-  facets.value.organization = props.organization
-  facets.value.isRestricted = undefined
-  currentPage.value = 1
-  searchSort.value = ''
+function changePage(newPage: number) {
+  page.value = newPage
 }
-
-function resetFilters() {
-  reloadFilters()
-}
-
-function resetForm() {
-  queryString.value = ''
-  reloadFilters()
-  scrollToTop()
-}
-
-/**
- * Is any filter active ?
- * We don't count scoped search as being filtered
- */
-const isFiltered = computed(() => {
-  const keys = Object.keys(facets.value) as Array<keyof Facets>
-  return keys.some(
-    key => key in facets.value && (facets.value[key] || facets.value[key] === false) && (props.organization ? key !== 'organization' : true),
-  )
-})
-const sortOptions = [
-  { label: t('Date de création'), value: '-created' },
-]
-
-watchEffect(() => {
-  facets.value.organization = props.organization ?? organizationFromParams.value ?? organizationFromSuggest.value
-})
-
-// Update model params
-watchEffect(() => {
-  if (!props.organization) {
-    params.organization = facets.value.organization?.id ?? undefined
-  }
-  params.is_restricted = facets.value.isRestricted
-  if (currentPage.value > 1 || params.page) params.page = currentPage.value.toString()
-  params.q = deboucedQuery.value ?? undefined
-  params.sort = searchSort.value ?? null
-  return params
-})
-
-watch(searchResultsStatus, () => {
-  if (searchResultsStatus.value === 'error') {
-    toast.error(t(`La recherche a échoué`))
-  }
-})
 </script>
