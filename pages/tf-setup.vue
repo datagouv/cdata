@@ -75,7 +75,7 @@ definePageMeta({
 
 const { t } = useTranslation()
 
-useSeoMeta({ title: t('Connexion') })
+useSeoMeta({ title: t('Connexion'), robots: 'noindex' })
 
 const me = useMe()
 
@@ -114,6 +114,4 @@ const submit = async () => {
     }
   })
 }
-
-useSeoMeta({ robots: 'noindex' })
 </script>

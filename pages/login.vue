@@ -125,7 +125,7 @@ definePageMeta({
 const { t } = useTranslation()
 const config = useRuntimeConfig()
 
-useSeoMeta({ title: t('Connexion') })
+useSeoMeta({ title: t('Connexion'), robots: 'noindex' })
 
 const email = ref('')
 const password = ref('')
@@ -186,6 +186,4 @@ const connect = async () => {
 }
 
 const proconnectUrl = computed(() => `${config.public.apiBase}/api/1/proconnect/login/`)
-
-useSeoMeta({ robots: 'noindex' })
 </script>
