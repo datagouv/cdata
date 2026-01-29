@@ -1,10 +1,12 @@
 import { test, expect } from '@playwright/test'
 import { generateSync } from 'otplib'
+import { exec } from 'child_process'
+
+const TWOFA_EMAIL = '2fa@example.com'
+const TWOFA_PASSWORD = '@1337Password42'
 
 test.describe('2FA Authentication Flow', () => {
   // Test credentials for 2FA setup flow
-  const TWOFA_EMAIL = '2fa@example.com'
-  const TWOFA_PASSWORD = '@1337Password42'
 
   test.beforeEach(async ({ page, baseURL }) => {
     // clean any existing session
@@ -99,5 +101,23 @@ test.describe('2FA Authentication Flow', () => {
     // Step 15: Verify successful validation and redirect to homepage
     await page.waitForURL(`${loginURL}/`)
     await expect(page).toHaveURL(`${loginURL}/`)
+  })
+})
+
+test.afterAll(async () => {
+  await new Promise((resolve, reject) => {
+    // We need to run the udata command since a user can't unset its 2FA.
+    // Using uvx as we may not be located in the correct workspace, uses latest pypi udata version.
+    // We don't use any udata.cfg.
+    exec(`uvx --with udata udata user unset-two-factor ${TWOFA_EMAIL}`, (error, stdout) => {
+      if (error) {
+        console.error(`Error running udata command cleanup : ${error.message}`)
+        reject(error)
+      }
+      else {
+        console.log(`udata command cleanup output : ${stdout}`)
+        resolve(null)
+      }
+    })
   })
 })
