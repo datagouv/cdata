@@ -178,6 +178,7 @@ jobs:
           SECURITY_EMAIL_VALIDATOR_ARGS = {
               "check_deliverability": False
           }
+          SECURITY_TWO_FACTOR = True
 
           MONGODB_HOST = 'mongodb://mongodb:27017/udata'
           CELERY_BROKER_URL = 'redis://redis:6379'
