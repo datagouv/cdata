@@ -19,8 +19,10 @@ export async function getOwnerEmails($api: $Fetch, obj: DeletableObject): Promis
 
   // Thread or Comment (author is posted_by)
   if ('discussion' in obj || 'posted_by' in obj) {
-    const author = 'discussion' in obj ? obj.discussion[0]?.posted_by : obj.posted_by
-    return author?.email ? [author.email] : []
+    const authorRef = 'discussion' in obj ? obj.discussion[0]?.posted_by : obj.posted_by
+    if (!authorRef) return []
+    const user = await $api<User>(`/api/1/users/${authorRef.id}/`)
+    return user.email ? [user.email] : []
   }
 
   // Owned objects (Dataset, Reuse, Dataservice)
