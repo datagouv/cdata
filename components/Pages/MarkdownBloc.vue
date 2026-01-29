@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/no-v-html -->
 <template>
   <div
     v-if="edit"
@@ -6,19 +5,23 @@
   >
     <MarkdownEditor
       :id="`markdown-bloc-${bloc.id}`"
+      :heading-levels="3"
+      :min-heading="2"
       :value="bloc.content"
       @change="bloc.content = $event"
     />
   </div>
-  <div
+  <MarkdownViewer
     v-else
-    :class="markdownClasses"
-    v-html="formatMarkdown(bloc.content)"
+    class="prose-h2:text-3xl prose-h2:text-gray-title prose-h3:text-2xl prose-h3:text-gray-title"
+    :content="bloc.content"
+    :min-heading="2"
+    size="md"
   />
 </template>
 
 <script setup lang="ts">
-import { formatMarkdown, markdownClasses } from '@datagouv/components-next'
+import { MarkdownViewer } from '@datagouv/components-next'
 import MarkdownEditor from '~/components/MarkdownEditor/MarkdownEditor.vue'
 import type { MarkdownBloc } from '~/types/pages'
 

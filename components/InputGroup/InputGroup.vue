@@ -41,6 +41,8 @@
       :class="{ 'fr-input--error': hasError, 'fr-input--warning': !hasError && hasWarning, 'fr-input--valid': isValid }"
       :aria-describedby="ariaDescribedBy"
       :disabled="disabled"
+      :heading-levels="headingLevels"
+      :min-heading="minHeading"
       :value="(modelValue as string | undefined)"
       :placeholder="placeholder"
       :required="required"
@@ -111,11 +113,13 @@ const props = withDefaults(defineProps<{
   warningText?: string | null
   hasError?: boolean
   hasWarning?: boolean
+  headingLevels?: 1 | 2 | 3 | 4
   hintText?: string
   isValid?: boolean
   label: string
   hideLabel?: boolean
   showLabelInside?: boolean
+  minHeading?: 1 | 2 | 3 | 4 | 5
   modelValue?: string | Date | null
   placeholder?: string
   required?: boolean
