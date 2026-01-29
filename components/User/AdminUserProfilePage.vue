@@ -289,13 +289,12 @@ const passwordId = useId()
 const loading = ref(false)
 
 const profilePicture = ref<File | null>(null)
-const twoFactorStatus = ref<string | null>(null)
 
 const { data: allRoles } = await useAPI<Array<{ name: string }>>('/api/1/users/roles')
 const allRolesAsString = computed(() => (allRoles.value || []).map(r => r.name))
 
 const { data: twoFactorData, refresh: refreshTwoFactorStatus } = await useAPI<{ response: { tf_primary_method: string } | null }>('/tf-setup')
-twoFactorStatus.value = twoFactorData.value?.response?.tf_primary_method ?? null
+const twoFactorStatus = computed(() => twoFactorData.value?.response?.tf_primary_method ?? null)
 
 const { form } = useForm(props.user, {}, {})
 watchEffect(() => {
