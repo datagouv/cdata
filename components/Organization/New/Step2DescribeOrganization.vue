@@ -202,16 +202,10 @@
         </template>
       </FieldsetElement>
     </FormFieldset>
-    <SearchableSelect
-      v-if="isMeAdmin() && 'badges' in organization"
+    <BadgeSelect
+      v-if="'badges' in organization"
       v-model="newBadges"
-      :label="$t('Badges')"
-      :placeholder="$t(`Associer des badges à l'organisation…`)"
-      class="mb-6"
-      :options="badges"
-      :get-option-id="(badge) => (badgesLabels ?? {})[badge.kind]"
-      :display-value="(badges) => badges ? humanJoin(badges.map(b => (badgesLabels ?? {})[b.kind])) : ''"
-      :multiple="true"
+      entity-type="organizations"
     />
     <Alert
       v-if="errors.length"
@@ -294,8 +288,6 @@ const config = useRuntimeConfig()
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
-const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges/')
-const badges = computed(() => Object.keys(badgesLabels.value ?? {}).map(key => ({ kind: key })))
 const defaultValue = { data: [], total: 0 }
 const organizationsWithSameSiret = asyncComputed(async () => {
   if (!form.value.business_number_id || !getFirstWarning('business_number_id')) {

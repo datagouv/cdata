@@ -37,13 +37,11 @@
 
         <!-- Main link (in the left column when paragraph is present) -->
         <BrandedButtonEditor
+          v-model:title="bloc.main_link_title"
+          v-model:href="bloc.main_link_url"
           :edit
-          :title="bloc.main_link_title"
-          :href="bloc.main_link_url"
           :color="mainColor"
           class="mt-12"
-          @update:title="bloc.main_link_title = $event"
-          @update:href="bloc.main_link_url = $event"
           @clear="bloc.main_link_title = ''; bloc.main_link_url = ''"
         />
       </div>
@@ -137,13 +135,11 @@
         <!-- Main button (in the right column when no paragraph) -->
         <BrandedButtonEditor
           v-if="!bloc.paragraph"
+          v-model:title="bloc.main_link_title"
+          v-model:href="bloc.main_link_url"
           :edit
-          :title="bloc.main_link_title"
-          :href="bloc.main_link_url"
           :color="mainColor"
           class="mt-4"
-          @update:title="bloc.main_link_title = $event"
-          @update:href="bloc.main_link_url = $event"
           @clear="bloc.main_link_title = ''; bloc.main_link_url = ''"
         />
       </div>

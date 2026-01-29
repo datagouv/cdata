@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 
 const REUSE_SLUG = 'itineriz-deplacements-professionnels-jop-paris-2024'
 

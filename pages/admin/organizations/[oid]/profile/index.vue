@@ -87,7 +87,8 @@ import { AnimatedLoader, BannerAction, BrandedButton, toast } from '@datagouv/co
 import type { Organization, Badge } from '@datagouv/components-next'
 import DescribeOrganizationFrom from '~/components/Organization/New/Step2DescribeOrganization.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
-import { updateOrganization, updateOrganizationBadges, uploadLogo } from '~/api/organizations'
+import { updateOrganization, uploadLogo } from '~/api/organizations'
+import { updateBadges } from '~/api/badges'
 
 const props = defineProps<{
   organization: Organization
@@ -97,7 +98,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useTranslation()
-const { start, finish, isLoading } = useLoadingIndicator()
+const isLoading = ref(false)
 
 const form = ref<InstanceType<typeof DescribeOrganizationFrom> | null>(null)
 
@@ -120,7 +121,7 @@ function onOrganizationDeleted() {
 }
 
 async function restoreOrganization() {
-  start()
+  isLoading.value = true
   try {
     await updateOrganization({
       ...organizationForm.value,
@@ -132,16 +133,16 @@ async function restoreOrganization() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function updateCurrentOrganization(logo_file: File | null, newBadges: Array<Badge> | null) {
-  start()
+  isLoading.value = true
   try {
     await updateOrganization(organizationForm.value)
     if (newBadges && props.organization) {
-      await updateOrganizationBadges(props.organization, newBadges)
+      await updateBadges(props.organization, newBadges, 'organizations')
     }
     if (logo_file && props.organization) {
       await uploadLogo(props.organization.id, logo_file)
@@ -152,7 +153,7 @@ async function updateCurrentOrganization(logo_file: File | null, newBadges: Arra
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 </script>

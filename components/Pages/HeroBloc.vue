@@ -7,11 +7,11 @@
       <EditableText
         v-if="edit"
         v-model="bloc.title"
-        class="text-white font-extrabold text-5xl mb-0"
+        class="text-white font-extrabold text-5xl mb-2"
       />
       <h1
         v-else
-        class="text-white font-extrabold text-5xl mb-0"
+        class="text-white font-extrabold text-5xl mb-2"
       >
         {{ bloc.title }}
       </h1>
@@ -35,6 +35,15 @@
       >
         + {{ $t('Ajouter une description') }}
       </button>
+
+      <BrandedButtonEditor
+        v-model:title="bloc.main_link_title"
+        v-model:href="bloc.main_link_url"
+        :edit
+        color="secondary"
+        class="mt-4"
+        @clear="bloc.main_link_title = null; bloc.main_link_url = null"
+      />
 
       <div
         v-if="edit"
@@ -60,6 +69,7 @@
 
 <script setup lang="ts">
 import EditableText from './EditableText.vue'
+import BrandedButtonEditor from './BrandedButtonEditor.vue'
 import type { HeroBloc } from '~/types/pages'
 
 defineProps<{
