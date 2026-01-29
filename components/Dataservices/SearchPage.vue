@@ -188,6 +188,7 @@ const filters = computed(() => {
 })
 
 watch(filters, () => page.value = 1)
+watch(sort, () => page.value = 1)
 
 const hasFilters = computed(() => {
   const keys = Object.keys(filters.value)
