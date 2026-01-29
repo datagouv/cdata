@@ -80,7 +80,7 @@ onMounted(() => {
   }
 })
 
-const connect = () => {
+const connect = async () => {
   await validateCode(async () => {
     toast.success(t('Vous êtes maintenant connecté.'))
     await loadMe(me)
