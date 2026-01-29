@@ -101,7 +101,7 @@ onMounted(async () => {
 })
 
 const submit = async () => {
-  validateCode(async () => {
+  await validateCode(async () => {
     toast.success(t('Vous êtes maintenant connecté.'))
     await loadMe(me)
 
