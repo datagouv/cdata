@@ -1,9 +1,18 @@
 import { test, expect } from '@playwright/test'
 import { generateSync } from 'otplib'
 import { exec } from 'child_process'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 const TWOFA_EMAIL = '2fa@example.com'
 const TWOFA_PASSWORD = '@1337Password42'
+
+test.beforeAll(async () => {
+  if (!process.env.UDATA_WORKING_DIR) {
+    throw new Error('UDATA_WORKING_DIR env is required for 2FA flow cleanup')
+  }
+})
 
 test.describe('2FA Authentication Flow', () => {
   // Test credentials for 2FA setup flow
@@ -107,11 +116,12 @@ test.describe('2FA Authentication Flow', () => {
 test.afterAll(async () => {
   await new Promise((resolve, reject) => {
     // We need to run the udata command since a user can't unset its 2FA.
-    // Using uvx as we may not be located in the correct workspace, uses latest pypi udata version.
-    // We don't use any udata.cfg.
-    exec(`uvx --with udata udata user unset-two-factor ${TWOFA_EMAIL}`, (error, stdout) => {
+    // Using UDATA_WORKING_DIR to run the command in the udata context (with appropriated udata.cfg)
+    exec(`uv run udata user unset-two-factor ${TWOFA_EMAIL}`, {
+      cwd: process.env.UDATA_WORKING_DIR,
+    }, (error, stdout) => {
       if (error) {
-        console.error(`Error running udata command cleanup : ${error.message}`)
+        console.error(`Error running udata command cleanup from ${process.env.UDATA_WORKING_DIR} directory: ${error.message}`)
         reject(error)
       }
       else {
