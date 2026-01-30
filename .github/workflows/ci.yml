@@ -123,7 +123,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: ${{ env.UDATA_WORKING_DIR }}
-          ref: refs/pull/3620/head
+          ref: main
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
