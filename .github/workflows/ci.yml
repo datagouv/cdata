@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+  workflow_dispatch:
 
 env:
   CONTAINER_REGISTRY_URL: ${{ vars.CONTAINER_REGISTRY_URL }}
@@ -261,11 +262,12 @@ jobs:
           retention-days: 7
 
   # ============================================
-  # JOB 4: Docker - build & push Docker image (all branches, not PRs)
+  # JOB 4: Docker - build & push Docker image (automatic on main, manual on any branch)
   # ============================================
   docker:
     needs: [quality, e2e]
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
     outputs:
@@ -313,11 +315,12 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   # ============================================
-  # JOB 5: Sentry - upload source maps (runs in parallel with publish)
+  # JOB 5: Sentry - upload source maps (automatic on main, manual on any branch)
   # ============================================
   sentry:
     needs: [quality, e2e]
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
 
