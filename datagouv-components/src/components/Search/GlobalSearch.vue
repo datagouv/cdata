@@ -288,7 +288,7 @@ import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
 import type { Reuse } from '../../types/reuses'
 import type { GlobalSearchConfig } from '../../types/search'
-import { defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions } from '../../types/search'
+import { getDefaultGlobalSearchConfig } from '../../types/search'
 import BrandedButton from '../BrandedButton.vue'
 import LoadingBlock from '../LoadingBlock.vue'
 import Pagination from '../Pagination.vue'
@@ -315,11 +315,7 @@ const props = withDefaults(defineProps<{
   config?: GlobalSearchConfig
   placeholder?: string
 }>(), {
-  config: () => [
-    { class: 'datasets', basicFilters: ['organization', 'organization_badge'], sortOptions: defaultDatasetSortOptions },
-    { class: 'dataservices', basicFilters: ['organization', 'is_restricted'], sortOptions: defaultDataserviceSortOptions },
-    { class: 'reuses', basicFilters: ['organization'], sortOptions: defaultReuseSortOptions },
-  ],
+  config: getDefaultGlobalSearchConfig,
 })
 
 const { t } = useTranslation()
