@@ -15,9 +15,12 @@
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
-      <div class="col-span-12 md:col-span-4 lg:col-span-3 space-y-8">
-        <div>
-          <Sidemenu :button-text="t('Filtres')">
+      <div
+        v-if="showSidebar"
+        class="col-span-12 md:col-span-4 lg:col-span-3 space-y-8"
+      >
+        <div v-if="config.length > 1">
+          <Sidemenu :button-text="t('Type')">
             <template #title>
               {{ t('Type') }}
             </template>
@@ -39,7 +42,7 @@
           </Sidemenu>
         </div>
 
-        <div>
+        <div v-if="activeFilters.length > 0">
           <Sidemenu :button-text="t('Filtres')">
             <template #title>
               {{ t('Filtres') }}
@@ -127,7 +130,8 @@
       </div>
       <section
         ref="results"
-        class="col-span-12 md:col-span-8 lg:col-span-9 mt-4 md:mt-0 search-results"
+        class="col-span-12 mt-4 md:mt-0 search-results"
+        :class="showSidebar ? 'md:col-span-8 lg:col-span-9' : ''"
       >
         <div
           v-if="searchResults?.total"
@@ -343,6 +347,8 @@ const activeFilters = computed(() => [
   ...(currentTypeConfig.value?.basicFilters ?? []),
   ...(currentTypeConfig.value?.advancedFilters ?? []),
 ] as string[])
+
+const showSidebar = computed(() => props.config.length > 1 || activeFilters.value.length > 0)
 
 // URL query params
 const q = useRouteQuery<string>('q', '')
