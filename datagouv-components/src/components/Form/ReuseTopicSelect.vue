@@ -23,7 +23,7 @@ const id = defineModel<string | undefined>('id')
 
 const { t } = useTranslation()
 
-const { data: topics, status } = await useFetch<ReuseTopic[]>('/api/1/reuses/topics/')
+const { data: topics, status } = await useFetch<ReuseTopic[]>('/api/1/reuses/topics/', { lazy: true })
 
 useSelectModelSync({ model, id, items: topics, getId: topic => topic.id })
 </script>

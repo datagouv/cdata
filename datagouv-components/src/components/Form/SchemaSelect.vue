@@ -24,7 +24,7 @@ const id = defineModel<string | undefined>('id')
 
 const { t } = useTranslation()
 
-const { data: schemas, status } = await useFetch<RegisteredSchema[]>('/api/1/datasets/schemas/')
+const { data: schemas, status } = await useFetch<RegisteredSchema[]>('/api/1/datasets/schemas/', { lazy: true })
 
 useSelectModelSync({ model, id, items: schemas, getId: s => s.name })
 </script>

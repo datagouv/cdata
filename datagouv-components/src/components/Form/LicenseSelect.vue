@@ -24,7 +24,7 @@ const id = defineModel<string | undefined>('id')
 
 const { t } = useTranslation()
 
-const { data: licenses, status } = await useFetch<License[]>('/api/1/datasets/licenses/')
+const { data: licenses, status } = await useFetch<License[]>('/api/1/datasets/licenses/', { lazy: true })
 
 useSelectModelSync({ model, id, items: licenses, getId: l => l.id })
 </script>

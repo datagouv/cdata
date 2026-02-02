@@ -23,7 +23,7 @@ const id = defineModel<string | undefined>('id')
 
 const { t } = useTranslation()
 
-const { data: granularities, status } = await useFetch<Granularity[]>('/api/1/spatial/granularities/')
+const { data: granularities, status } = await useFetch<Granularity[]>('/api/1/spatial/granularities/', { lazy: true })
 
 useSelectModelSync({ model, id, items: granularities, getId: g => g.id })
 </script>

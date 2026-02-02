@@ -22,7 +22,7 @@ const id = defineModel<string | undefined>('id')
 
 const { t } = useTranslation()
 
-const { data: formats, status } = await useFetch<string[]>('/api/1/datasets/extensions/')
+const { data: formats, status } = await useFetch<string[]>('/api/1/datasets/extensions/', { lazy: true })
 
 useStringSelectSync({ model, id })
 </script>

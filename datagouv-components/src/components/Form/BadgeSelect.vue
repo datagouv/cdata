@@ -24,7 +24,7 @@ const id = defineModel<string | undefined>('id')
 
 const { t } = useTranslation()
 
-const { data: badgesRecord, status } = await useFetch<Record<string, string>>('/api/1/datasets/badges/')
+const { data: badgesRecord, status } = await useFetch<Record<string, string>>('/api/1/datasets/badges/', { lazy: true })
 
 const badges = computed<TranslatedBadge[]>(() => {
   if (!badgesRecord.value) return []
