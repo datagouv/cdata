@@ -359,7 +359,7 @@ export function getDefaultDataserviceConfig(overrides?: Partial<Omit<Dataservice
 export function getDefaultReuseConfig(overrides?: Partial<Omit<ReuseSearchConfig, 'class'>>): ReuseSearchConfig {
   return {
     class: 'reuses',
-    basicFilters: ['organization'],
+    basicFilters: ['organization', 'topic'],
     sortOptions: defaultReuseSortOptions,
     ...overrides,
   }

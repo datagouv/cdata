@@ -105,6 +105,11 @@
                 v-model:id="badge"
                 :style="{ order: getOrder('badge') }"
               />
+              <ReuseTopicSelect
+                v-if="isEnabled('topic')"
+                v-model:id="topic"
+                :style="{ order: getOrder('topic') }"
+              />
               <slot
                 name="filters"
                 :is-enabled="isEnabled"
@@ -314,6 +319,7 @@ import SchemaSelect from '../Form/SchemaSelect.vue'
 import GeozoneSelect from '../Form/GeozoneSelect.vue'
 import GranularitySelect from '../Form/GranularitySelect.vue'
 import BadgeSelect from '../Form/BadgeSelect.vue'
+import ReuseTopicSelect from '../Form/ReuseTopicSelect.vue'
 
 const props = withDefaults(defineProps<{
   config?: GlobalSearchConfig
@@ -369,6 +375,7 @@ const schema = useRouteQuery<string | undefined>('schema')
 const geozone = useRouteQuery<string | undefined>('geozone')
 const granularity = useRouteQuery<string | undefined>('granularity')
 const badge = useRouteQuery<string | undefined>('badge')
+const topic = useRouteQuery<string | undefined>('topic')
 
 const pageSize = 20
 
@@ -390,6 +397,7 @@ const allFilters: Record<string, Ref<unknown>> = {
   geozone,
   granularity,
   badge,
+  topic,
 }
 
 // Reset sort and filters when changing type if they're not valid for the new type
@@ -453,6 +461,7 @@ const filtersForReset = computed(() => ({
   geozone: geozone.value,
   granularity: granularity.value,
   badge: badge.value,
+  topic: topic.value,
 }))
 
 watch(filtersForReset, () => page.value = 1)
@@ -470,6 +479,7 @@ const hasFilters = computed(() => {
     || geozone.value
     || granularity.value
     || badge.value
+    || topic.value
 })
 
 const showForumLink = computed(() => currentType.value === 'datasets' && !!componentsConfig.forumUrl)
@@ -485,6 +495,7 @@ function resetFilters() {
   geozone.value = undefined
   granularity.value = undefined
   badge.value = undefined
+  topic.value = undefined
   q.value = ''
   flushQ()
 }
