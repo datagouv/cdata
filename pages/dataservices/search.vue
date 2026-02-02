@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { GlobalSearch, type GlobalSearchConfig } from '@datagouv/components-next'
+import { GlobalSearch, type GlobalSearchConfig, getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const { t } = useTranslation()
@@ -30,17 +30,8 @@ useSeoMeta({
 })
 
 const searchConfig: GlobalSearchConfig = [
-  {
-    class: 'dataservices',
-    basicFilters: ['organization', 'is_restricted'],
-  },
-  {
-    class: 'datasets',
-    basicFilters: ['organization', 'organization_badge'],
-  },
-  {
-    class: 'reuses',
-    basicFilters: ['organization'],
-  },
+  getDefaultDataserviceConfig(),
+  getDefaultDatasetConfig(),
+  getDefaultReuseConfig(),
 ]
 </script>

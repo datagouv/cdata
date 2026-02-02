@@ -310,3 +310,37 @@ export type ReuseSearchConfig = {
 export type SearchTypeConfig = DatasetSearchConfig | DataserviceSearchConfig | ReuseSearchConfig
 
 export type GlobalSearchConfig = SearchTypeConfig[]
+
+// Helper functions for default configs
+
+export function getDefaultDatasetConfig(overrides?: Partial<Omit<DatasetSearchConfig, 'class'>>): DatasetSearchConfig {
+  return {
+    class: 'datasets',
+    basicFilters: ['organization', 'organization_badge', 'tag', 'format', 'license', 'schema', 'geozone', 'granularity', 'badge'],
+    ...overrides,
+  }
+}
+
+export function getDefaultDataserviceConfig(overrides?: Partial<Omit<DataserviceSearchConfig, 'class'>>): DataserviceSearchConfig {
+  return {
+    class: 'dataservices',
+    basicFilters: ['organization', 'is_restricted'],
+    ...overrides,
+  }
+}
+
+export function getDefaultReuseConfig(overrides?: Partial<Omit<ReuseSearchConfig, 'class'>>): ReuseSearchConfig {
+  return {
+    class: 'reuses',
+    basicFilters: ['organization'],
+    ...overrides,
+  }
+}
+
+export function getDefaultGlobalSearchConfig(): GlobalSearchConfig {
+  return [
+    getDefaultDatasetConfig(),
+    getDefaultDataserviceConfig(),
+    getDefaultReuseConfig(),
+  ]
+}
