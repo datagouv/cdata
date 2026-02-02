@@ -122,12 +122,11 @@
 
 <script setup lang="ts">
 import { BrandedButton, toast } from '@datagouv/components-next'
-import type { ContactPoint, ContactPointRole, Organization } from '@datagouv/components-next'
+import { SelectGroup, type ContactPoint, type ContactPointRole, type Organization } from '@datagouv/components-next'
 import { RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
-import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 
 const props = defineProps<{
   contactPoints: Array<ContactPoint>
