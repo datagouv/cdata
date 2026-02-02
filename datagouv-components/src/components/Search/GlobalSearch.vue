@@ -219,18 +219,43 @@
                 :has-filters="hasFilters"
                 :reset-filters="resetFilters"
               >
-                <div class="text-center py-8 text-gray-500">
-                  <p>{{ t('Aucun résultat trouvé.') }}</p>
-                  <BrandedButton
-                    v-if="hasFilters"
-                    color="secondary"
-                    :icon="RiCloseCircleLine"
-                    class="mt-4"
-                    type="button"
-                    @click="resetFilters"
-                  >
-                    {{ t('Réinitialiser les filtres') }}
-                  </BrandedButton>
+                <div class="rounded p-6 flex flex-wrap gap-4 bg-blue-light text-datagouv">
+                  <div class="flex-none">
+                    <img
+                      class="w-20"
+                      :src="magnifyingGlassSrc"
+                      alt=""
+                    >
+                  </div>
+                  <div class="flex-1 min-w-48">
+                    <p class="font-bold mb-2">
+                      {{ t(`Vous n'avez pas trouvé ce que vous cherchez ?`) }}
+                    </p>
+                    <p class="mt-1 mb-3">
+                      {{ t("Essayez de réinitialiser les filtres pour élargir votre recherche.") }}
+                      <template v-if="showForumLink">
+                        <br>
+                        {{ t("Vous pouvez aussi regarder les demandes en cours et soumettre la vôtre sur notre forum dédié à la recherche et à l'ouverture de données.") }}
+                      </template>
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                      <BrandedButton
+                        color="secondary"
+                        type="button"
+                        @click="resetFilters"
+                      >
+                        {{ t("Réinitialiser les filtres") }}
+                      </BrandedButton>
+                      <BrandedButton
+                        v-if="showForumLink"
+                        color="tertiary"
+                        :href="componentsConfig.forumUrl"
+                        :icon="RiLightbulbLine"
+                      >
+                        {{ t("Voir le forum") }}
+                      </BrandedButton>
+                    </div>
+                  </div>
                 </div>
               </slot>
             </div>
@@ -244,7 +269,8 @@
 <script setup lang="ts">
 import { computed, ref, watch, useTemplateRef } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
-import { RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine } from '@remixicon/vue'
+import { RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine, RiLightbulbLine } from '@remixicon/vue'
+import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
 import { useTranslation } from '../../composables/useTranslation'
 import { useRouteQueryBoolean } from '../../composables/useRouteQueryBoolean'
 import { useDebouncedRef } from '../../composables/useDebouncedRef'
@@ -400,6 +426,8 @@ const hasFilters = computed(() => {
     || granularity.value
     || badge.value
 })
+
+const showForumLink = computed(() => currentType.value === 'datasets' && !!componentsConfig.forumUrl)
 
 function resetFilters() {
   organizationId.value = undefined

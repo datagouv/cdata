@@ -68,6 +68,8 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
     [q, sort, page, ...Object.values(allFilters)],
     () => {
       const newParams = buildParams()
+      // JSON.stringify comparison is safe here because buildParams() builds the object deterministically
+      // (keys are always added in the same order), avoiding the key ordering edge case.
       if (JSON.stringify(newParams) !== JSON.stringify(stableParams.value)) {
         stableParams.value = newParams
       }

@@ -57,6 +57,8 @@ app.vueApp.use(datagouv, {
   textClamp: TextClamp,
   appLink: CdataLink,
   clientOnly: ClientOnly,
+  forumUrl: runtimeConfig.public.forumUrl,
+  searchDebounce: runtimeConfig.public.searchDebounce,
 })
 
 useHeadSafe({

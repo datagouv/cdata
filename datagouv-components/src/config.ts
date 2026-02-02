@@ -28,6 +28,7 @@ export type PluginConfig = {
   appLink?: Component | null
   clientOnly?: Component | null
   searchDebounce?: number
+  forumUrl?: string
 }
 
 export const configKey = Symbol() as InjectionKey<PluginConfig>
