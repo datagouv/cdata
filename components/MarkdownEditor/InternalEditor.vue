@@ -33,14 +33,11 @@
             @click="() => call(toggleEmphasisCommand.key)"
           />
           <EditorButton
-            :icon="RiH1"
-            :title="t('Titre')"
-            @click="() => call(wrapInHeadingCommand.key, 3)"
-          />
-          <EditorButton
-            :icon="RiH2"
-            :title="t('Sous-titre')"
-            @click="() => call(wrapInHeadingCommand.key, 4)"
+            v-for="level in props.headingLevels"
+            :key="level"
+            :icon="headingIcons[props.minHeading + level - 2]"
+            :title="headingLabels[level - 1]"
+            @click="() => call(wrapInHeadingCommand.key, props.minHeading + level - 1)"
           />
         </div>
         <div
@@ -139,7 +136,7 @@ import {
   columnResizingPlugin,
 } from '@milkdown/preset-gfm'
 import { callCommand } from '@milkdown/utils'
-import { RiArrowGoBackLine, RiArrowGoForwardLine, RiBold, RiCodeSSlashLine, RiDoubleQuotesL, RiH1, RiH2, RiHtml5Line, RiItalic, RiLink, RiListOrdered, RiListUnordered, RiMarkdownLine, RiTable2 } from '@remixicon/vue'
+import { RiArrowGoBackLine, RiArrowGoForwardLine, RiBold, RiCodeSSlashLine, RiDoubleQuotesL, RiH1, RiH2, RiH3, RiH4, RiH5, RiH6, RiHtml5Line, RiItalic, RiLink, RiListOrdered, RiListUnordered, RiMarkdownLine, RiTable2 } from '@remixicon/vue'
 import { Milkdown, useEditor } from '@milkdown/vue'
 import { usePluginViewFactory, useWidgetViewFactory } from '@prosemirror-adapter/vue'
 import { useDebounceFn } from '@vueuse/core'
@@ -163,8 +160,15 @@ import 'prosemirror-tables/style/tables.css'
 
 const props = withDefaults(defineProps<MarkdownEditorProps>(), {
   disabled: false,
+  headingLevels: 2,
+  minHeading: 3,
   value: '',
 })
+
+const { t } = useTranslation()
+
+const headingIcons = [RiH1, RiH2, RiH3, RiH4, RiH5, RiH6] as const
+const headingLabels = [t('Titre'), t('Sous-titre'), t('Sous-sous-titre'), t('Sous-sous-sous-titre')]
 const emit = defineEmits<{
   (event: 'change', value: string): void
   (event: 'editorMounted'): void
@@ -172,8 +176,6 @@ const emit = defineEmits<{
 
 const raw = ref(false)
 const onChange = useDebounceFn((markdown: string) => emit('change', markdown), 300)
-
-const { t } = useTranslation()
 
 const pluginViewFactory = usePluginViewFactory()
 const widgetViewFactory = useWidgetViewFactory()
