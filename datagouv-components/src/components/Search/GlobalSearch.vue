@@ -406,6 +406,11 @@ watch(currentType, () => {
   }
 })
 
+// Check which types are enabled
+const datasetsEnabled = computed(() => props.config.some(c => c.class === 'datasets'))
+const dataservicesEnabled = computed(() => props.config.some(c => c.class === 'dataservices'))
+const reusesEnabled = computed(() => props.config.some(c => c.class === 'reuses'))
+
 // Create stable params for each type
 const stableParamsOptions = {
   allFilters,
@@ -427,6 +432,11 @@ const reusesParams = useStableQueryParams({
   ...stableParamsOptions,
   typeConfig: props.config.find(c => c.class === 'reuses'),
 })
+
+// URLs that return null when type is not enabled
+const datasetsUrl = computed(() => datasetsEnabled.value ? '/api/2/datasets/search/' : null)
+const dataservicesUrl = computed(() => dataservicesEnabled.value ? '/api/2/dataservices/search/' : null)
+const reusesUrl = computed(() => reusesEnabled.value ? '/api/2/reuses/search/' : null)
 
 // Reset page on filter/sort change
 const filtersForReset = computed(() => ({
@@ -477,17 +487,17 @@ function resetFilters() {
   flushQ()
 }
 
-// API calls for all 3 types with their specific params
+// API calls only for enabled types (useFetch skips when URL is null)
 const { data: datasetsResults, status: datasetsStatus } = await useFetch<PaginatedArray<Dataset>>(
-  '/api/2/datasets/search/',
+  datasetsUrl,
   { params: datasetsParams },
 )
 const { data: dataservicesResults, status: dataservicesStatus } = await useFetch<PaginatedArray<Dataservice>>(
-  '/api/2/dataservices/search/',
+  dataservicesUrl,
   { params: dataservicesParams },
 )
 const { data: reusesResults, status: reusesStatus } = await useFetch<PaginatedArray<Reuse>>(
-  '/api/2/reuses/search/',
+  reusesUrl,
   { params: reusesParams },
 )
 
