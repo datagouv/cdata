@@ -23,6 +23,7 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
+import type { GlobalSearchConfig } from './types/search'
 
 import ActivityList from './components/ActivityList/ActivityList.vue'
 import UserActivityList from './components/ActivityList/UserActivityList.vue'
@@ -78,6 +79,7 @@ import Tooltip from './components/Tooltip.vue'
 import Toggletip from './components/Toggletip.vue'
 import TopicCard from './components/TopicCard.vue'
 import TranslationT from './components/TranslationT.vue'
+import GlobalSearch from './components/Search/GlobalSearch.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
@@ -107,6 +109,7 @@ export * from './functions/users'
 export * from './types/access_types'
 
 export type {
+  GlobalSearchConfig,
   UseFetchFunction,
   AccessType,
   AccessAudience,
@@ -267,4 +270,5 @@ export {
   TopicCard,
   TranslationT,
   UserActivityList,
+  GlobalSearch,
 }

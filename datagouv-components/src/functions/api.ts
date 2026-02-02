@@ -1,4 +1,4 @@
-import { reactive, ref, toValue, watchEffect, type ComputedRef, type Ref } from 'vue'
+import { ref, toValue, watchEffect, type ComputedRef, type Ref } from 'vue'
 import { ofetch } from 'ofetch'
 import { useComponentsConfig } from '../config'
 import { useTranslation } from '../composables/useTranslation'
@@ -23,11 +23,13 @@ export async function useFetch<DataT, ErrorT = never>(
   const execute = async () => {
     const urlValue = toValue(url)
     if (!urlValue) return
-    const fetchOptions = reactive(options ?? {})
+    const params = toValue(options?.params)
+    const query = toValue(options?.query)
     status.value = 'pending'
     try {
       data.value = await ofetch<DataT | null>(urlValue, {
         baseURL: config.apiBase,
+        params: params ?? query,
         onRequest(param) {
           if (config.onRequest) {
             if (Array.isArray(config.onRequest)) {
@@ -55,7 +57,6 @@ export async function useFetch<DataT, ErrorT = never>(
         onRequestError: config.onRequestError,
         onResponse: config.onResponse,
         onResponseError: config.onResponseError,
-        ...fetchOptions,
       })
       status.value = 'success'
     }

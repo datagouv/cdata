@@ -7,7 +7,7 @@ import type {
   COMPANY,
   LOCAL_AUTHORITY,
   USER,
-  type OrganizationTypes } from '../functions/organizations'
+  OrganizationTypes } from '../functions/organizations'
 
 // Common types
 
@@ -276,3 +276,37 @@ export type OrganizationSearchResponse<T> = SearchResponseWithFacets<T, Organiza
 export type PostSearchResponse<T> = SearchResponseWithFacets<T, PostSearchFacets>
 export type DiscussionSearchResponse<T> = SearchResponseWithFacets<T, DiscussionSearchFacets>
 export type TopicSearchResponse<T> = SearchResponseWithFacets<T, TopicSearchFacets>
+
+// GlobalSearch configuration types
+
+export type HiddenFilter<Filters> = {
+  [K in keyof Filters]: { key: K, value: Filters[K] }
+}[keyof Filters]
+
+export type DatasetSearchConfig = {
+  class: 'datasets'
+  name?: string
+  hiddenFilters?: HiddenFilter<DatasetSearchFilters>[]
+  basicFilters?: (keyof DatasetSearchFilters)[]
+  advancedFilters?: (keyof DatasetSearchFilters)[]
+}
+
+export type DataserviceSearchConfig = {
+  class: 'dataservices'
+  name?: string
+  hiddenFilters?: HiddenFilter<DataserviceSearchFilters>[]
+  basicFilters?: (keyof DataserviceSearchFilters)[]
+  advancedFilters?: (keyof DataserviceSearchFilters)[]
+}
+
+export type ReuseSearchConfig = {
+  class: 'reuses'
+  name?: string
+  hiddenFilters?: HiddenFilter<ReuseSearchFilters>[]
+  basicFilters?: (keyof ReuseSearchFilters)[]
+  advancedFilters?: (keyof ReuseSearchFilters)[]
+}
+
+export type SearchTypeConfig = DatasetSearchConfig | DataserviceSearchConfig | ReuseSearchConfig
+
+export type GlobalSearchConfig = SearchTypeConfig[]

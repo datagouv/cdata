@@ -16,17 +16,32 @@
       {{ $t('Recherche globale') }}
     </h1>
 
-    <GlobalSearch />
+    <GlobalSearch :config="searchConfig" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { GlobalSearch, type GlobalSearchConfig } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import GlobalSearch from '~/components/GlobalSearch.vue'
 
 const { t } = useTranslation()
 useSeoMeta({
   title: t('Recherche globale'),
   robots: 'noindex',
 })
+
+const searchConfig: GlobalSearchConfig = [
+  {
+    class: 'datasets',
+    basicFilters: ['organization', 'organization_badge'],
+  },
+  {
+    class: 'dataservices',
+    basicFilters: ['organization', 'is_restricted'],
+  },
+  {
+    class: 'reuses',
+    basicFilters: ['organization'],
+  },
+]
 </script>
