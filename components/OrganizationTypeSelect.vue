@@ -15,8 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { getOrganizationTypes, OTHER, USER } from '@datagouv/components-next'
-import SearchableSelect from '~/components/SearchableSelect.vue'
+import { getOrganizationTypes, OTHER, USER, SearchableSelect } from '@datagouv/components-next'
 
 const model = defineModel<string | undefined>()
 

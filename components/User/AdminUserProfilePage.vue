@@ -233,14 +233,13 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, CopyButton, PaddedContainer, toast } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, CopyButton, PaddedContainer, toast, SearchableSelect } from '@datagouv/components-next'
 import type { User } from '@datagouv/components-next'
 import { RiDeleteBin6Line, RiEditLine, RiRecycleLine, RiSaveLine } from '@remixicon/vue'
 import DeleteUserModal from './DeleteUserModal.vue'
 import ChangePasswordModal from './ChangePasswordModal.vue'
 import ChangeEmailModal from './ChangeEmailModal.vue'
 import { uploadProfilePicture } from '~/api/users'
-import SearchableSelect from '~/components/SearchableSelect.vue'
 
 const props = defineProps<{
   user: User

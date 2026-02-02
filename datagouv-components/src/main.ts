@@ -82,6 +82,7 @@ import TopicCard from './components/TopicCard.vue'
 import TranslationT from './components/TranslationT.vue'
 import GlobalSearch from './components/Search/GlobalSearch.vue'
 import SearchInput from './components/Search/SearchInput.vue'
+import SearchableSelect from './components/Form/SearchableSelect.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
@@ -281,4 +282,5 @@ export {
   UserActivityList,
   GlobalSearch,
   SearchInput,
+  SearchableSelect,
 }
