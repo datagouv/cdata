@@ -179,7 +179,7 @@
                       name="dataset"
                       :dataset="result"
                     >
-                      <DatasetCard :dataset="(result as any)" />
+                      <DatasetCard :dataset="(result as Dataset)" />
                     </slot>
                   </template>
                   <template v-else-if="currentType === 'dataservices'">
@@ -187,7 +187,7 @@
                       name="dataservice"
                       :dataservice="result"
                     >
-                      <DataserviceCard :dataservice="(result as any)" />
+                      <DataserviceCard :dataservice="(result as Dataservice)" />
                     </slot>
                   </template>
                   <template v-else-if="currentType === 'reuses'">
@@ -195,7 +195,7 @@
                       name="reuse"
                       :reuse="result"
                     >
-                      <ReuseHorizontalCard :reuse="(result as any)" />
+                      <ReuseHorizontalCard :reuse="(result as Reuse)" />
                     </slot>
                   </template>
                 </li>
