@@ -4,7 +4,7 @@
       v-model="tags"
       :label="t('Mots clés')"
       :placeholder="t('Chercher un mot clé…')"
-      :get-option-id="(tag) => tag.text"
+      :get-option-id="(tag: Tag) => tag.text"
       :allow-new-option="toTag"
       :suggest="suggestTags"
       :multiple="true"

@@ -29,7 +29,7 @@
             label: t('Tous'),
             id: null,
           }]"
-          :display-value="(option) => option.label"
+          :display-value="(option: { label: string }) => option.label"
           :multiple="false"
           class="mb-0"
           hide-label

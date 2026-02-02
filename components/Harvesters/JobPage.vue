@@ -120,7 +120,7 @@
             :placeholder="$t('Filtrer par statut')"
             :label="$t('Filtrer par statut')"
             :options="itemStatus"
-            :display-value="(option) => option.label"
+            :display-value="(option: { label: string }) => option.label"
             :multiple="false"
             class="mb-0"
             hide-label

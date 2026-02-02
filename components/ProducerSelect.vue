@@ -6,9 +6,9 @@
       :suggest
       :label
       :placeholder="t('Rechercher…')"
-      :get-option-id="(option) => option.organization ? option.organization.id : option.owner.id"
-      :display-value="(option) => option.organization ? option.organization.name : `${option.owner.first_name} ${option.owner.last_name}`"
-      :filter="(option, query) => (option.organization ? option.organization.name : `${option.owner.first_name} ${option.owner.last_name}`).toLocaleLowerCase().includes(query.toLocaleLowerCase())"
+      :get-option-id="(option: Owned) => option.organization ? option.organization.id : option.owner.id"
+      :display-value="(option: Owned) => option.organization ? option.organization.name : `${option.owner.first_name} ${option.owner.last_name}`"
+      :filter="(option: Owned, query: string) => (option.organization ? option.organization.name : `${option.owner.first_name} ${option.owner.last_name}`).toLocaleLowerCase().includes(query.toLocaleLowerCase())"
       :multiple="false"
       :error-text
       :warning-text

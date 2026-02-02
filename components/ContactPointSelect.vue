@@ -8,8 +8,8 @@
         :suggest="suggestContactPoint"
         :label="showAttributions ? t(`Choisissez l'attribution avec laquelle vous voulez publier`) : t('Choisissez un point de contact')"
         :placeholder="showAttributions ? t('Choisissez une attribution') : t('Sélectionner un contact')"
-        :display-value="(option) => 'id' in option ? (option.name || option.email || $t('Inconnu')) : (showAttributions ? t('Nouvelle attribution') : t('Nouveau point de contact'))"
-        :get-option-id="(option) => 'id' in option ? option.id : 'new'"
+        :display-value="(option: ContactPointInForm) => 'id' in option ? (option.name || option.email || $t('Inconnu')) : (showAttributions ? t('Nouvelle attribution') : t('Nouveau point de contact'))"
+        :get-option-id="(option: ContactPointInForm) => 'id' in option ? option.id : 'new'"
         :multiple="false"
         :loading
         :error-text
