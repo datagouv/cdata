@@ -67,7 +67,12 @@
                 v-if="!organization"
                 v-model:id="organizationId"
               />
+              <OrganizationTypeSelect
+                v-if="!organization && (type === 'datasets' || type === 'reuses')"
+                v-model="organizationType"
+              />
               <SelectGroup
+                v-if="type === 'dataservices'"
                 v-model="isRestricted"
                 :label="t('Accès')"
                 :options="[
@@ -208,6 +213,7 @@ import { BrandedButton, LoadingBlock, Pagination, RadioGroup, RadioInput, getLin
 import type { Dataservice, Dataset, Organization, Reuse } from '@datagouv/components-next'
 import { RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine } from '@remixicon/vue'
 import SearchInput from '~/components/Search/SearchInput.vue'
+import OrganizationTypeSelect from '~/components/OrganizationTypeSelect.vue'
 import type { PaginatedArray } from '~/types/types'
 import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 import { useRouteQuery } from '@vueuse/router'
@@ -226,11 +232,12 @@ const type = ref<'datasets' | 'dataservices' | 'reuses'>('datasets')
 
 const q = useRouteQuery<string>('q', '', { transform: String })
 const { debounced: qDebounced, flush: flushQ } = useDebouncedRef(q, config.public.searchDebounce)
-
 const page = useRouteQuery('page', 1, { transform: Number })
 const sort = useRouteQuery<undefined | '-created'>('sort')
-const isRestricted = useRouteQueryBoolean('is_restricted')
+
 const organizationId = useRouteQuery<string | undefined>('organization')
+const organizationType = useRouteQuery<string | undefined>('organization_badge')
+const isRestricted = useRouteQueryBoolean('is_restricted')
 
 const pageSize = 20
 
@@ -239,6 +246,7 @@ const filters = computed(() => {
     q: qDebounced.value,
     is_restricted: isRestricted.value,
     organization: props.organization?.id ?? organizationId.value,
+    organization_badge: organizationType.value,
   })
 })
 
@@ -265,6 +273,7 @@ function resetFilters() {
   q.value = ''
   isRestricted.value = undefined
   organizationId.value = undefined
+  organizationType.value = undefined
   flushQ()
 }
 
