@@ -29,15 +29,10 @@
                 v-for="typeConfig in config"
                 :key="typeConfig.class"
                 :value="typeConfig.class"
-                :count="getCount(typeConfig.class)"
+                :count="typesMeta[typeConfig.class].results.value?.total"
+                :icon="typesMeta[typeConfig.class].icon"
               >
-                <template #icon>
-                  <component
-                    :is="getIcon(typeConfig.class)"
-                    class="w-4 h-4"
-                  />
-                </template>
-                {{ typeConfig.name || getDefaultName(typeConfig.class) }}
+                {{ typeConfig.name || typesMeta[typeConfig.class].name }}
               </RadioInput>
             </RadioGroup>
           </Sidemenu>
@@ -212,7 +207,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, useTemplateRef, type Component } from 'vue'
+import { computed, ref, watch, useTemplateRef } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
 import { refDebounced } from '@vueuse/core'
 import { RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine } from '@remixicon/vue'
@@ -354,44 +349,29 @@ const { data: reusesResults, status: reusesStatus } = await useFetch<PaginatedAr
   { params: reusesParams },
 )
 
-const searchResults = computed(() => ({
-  datasets: datasetsResults.value,
-  dataservices: dataservicesResults.value,
-  reuses: reusesResults.value,
-}[currentType.value]))
+const typesMeta = {
+  datasets: {
+    icon: RiDatabase2Line,
+    name: t('Jeux de données'),
+    results: datasetsResults,
+    status: datasetsStatus,
+  },
+  dataservices: {
+    icon: RiRobot2Line,
+    name: t('APIs'),
+    results: dataservicesResults,
+    status: dataservicesStatus,
+  },
+  reuses: {
+    icon: RiLineChartLine,
+    name: t('Réutilisations'),
+    results: reusesResults,
+    status: reusesStatus,
+  },
+} as const
 
-const searchResultsStatus = computed(() => ({
-  datasets: datasetsStatus.value,
-  dataservices: dataservicesStatus.value,
-  reuses: reusesStatus.value,
-}[currentType.value]))
-
-function getCount(type: string) {
-  switch (type) {
-    case 'datasets': return datasetsResults.value?.total
-    case 'dataservices': return dataservicesResults.value?.total
-    case 'reuses': return reusesResults.value?.total
-    default: return undefined
-  }
-}
-
-function getIcon(type: string): Component {
-  switch (type) {
-    case 'datasets': return RiDatabase2Line
-    case 'dataservices': return RiRobot2Line
-    case 'reuses': return RiLineChartLine
-    default: return RiDatabase2Line
-  }
-}
-
-function getDefaultName(type: string) {
-  switch (type) {
-    case 'datasets': return t('Jeux de données')
-    case 'dataservices': return t('APIs')
-    case 'reuses': return t('Réutilisations')
-    default: return type
-  }
-}
+const searchResults = computed(() => typesMeta[currentType.value].results.value)
+const searchResultsStatus = computed(() => typesMeta[currentType.value].status.value)
 
 // Scroll handling
 const searchRef = useTemplateRef('search')

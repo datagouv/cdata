@@ -11,12 +11,11 @@
       class="sr-only"
       @change="group?.select(value)"
     >
-    <span
-      v-if="$slots.icon"
-      class="w-4 h-4 flex items-center justify-center"
-    >
-      <slot name="icon" />
-    </span>
+    <component
+      :is="icon"
+      v-if="icon"
+      class="w-4 h-4"
+    />
     <span class="text-sm flex-1">
       <slot />
     </span>
@@ -30,13 +29,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed, inject, type Component } from 'vue'
 import { radioGroupInjectionKey } from './radioGroupContext'
 import { useTranslation } from '../composables/useTranslation'
 
 type Props = {
   value: string
   count?: number
+  icon?: Component
 }
 
 const props = defineProps<Props>()
