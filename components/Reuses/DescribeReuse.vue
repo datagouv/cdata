@@ -342,7 +342,7 @@
 </template>
 
 <script setup lang="ts">
-import { SimpleBanner, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
+import { SearchableSelect, SimpleBanner, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
