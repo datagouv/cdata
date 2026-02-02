@@ -30,6 +30,7 @@
                 :key="typeConfig.class"
                 :value="typeConfig.class"
                 :count="typesMeta[typeConfig.class].results.value?.total"
+                :loading="typesMeta[typeConfig.class].status.value === 'pending'"
                 :icon="typesMeta[typeConfig.class].icon"
               >
                 {{ typeConfig.name || typesMeta[typeConfig.class].name }}

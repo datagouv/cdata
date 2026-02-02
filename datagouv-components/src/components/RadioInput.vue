@@ -20,10 +20,11 @@
       <slot />
     </span>
     <span
-      v-if="count !== undefined"
+      v-if="loading || count !== undefined"
       class="bg-gray-200 text-gray-600 text-xs font-bold px-1 py-0.5 rounded"
     >
-      {{ formattedCount }}
+      <BouncingDots v-if="loading" />
+      <template v-else>{{ formattedCount }}</template>
     </span>
   </label>
 </template>
@@ -32,10 +33,12 @@
 import { computed, inject, type Component } from 'vue'
 import { radioGroupInjectionKey } from './radioGroupContext'
 import { useTranslation } from '../composables/useTranslation'
+import BouncingDots from './BouncingDots.vue'
 
 type Props = {
   value: string
   count?: number
+  loading?: boolean
   icon?: Component
 }
 
