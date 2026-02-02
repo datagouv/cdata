@@ -394,10 +394,9 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getResourceLabel, LoadingBlock, RESOURCE_TYPE, SimpleBanner, TranslationT, toast } from '@datagouv/components-next'
+import { BrandedButton, getResourceLabel, LoadingBlock, RESOURCE_TYPE, SelectGroup, SimpleBanner, TranslationT, toast } from '@datagouv/components-next'
 import type { DatasetV2, SchemaResponseData } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
-import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 import FieldsetElement from '../Form/FieldsetElement.vue'
 import HelpAccordion from '../Form/HelpAccordion.vue'
 import type { CommunityResourceForm, ResourceForm } from '~/types/types'
