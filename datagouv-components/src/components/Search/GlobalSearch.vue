@@ -26,7 +26,7 @@
               name="search-type"
             >
               <RadioInput
-                v-for="typeConfig in visibleTypeConfigs"
+                v-for="typeConfig in config"
                 :key="typeConfig.class"
                 :value="typeConfig.class"
                 :count="getCount(typeConfig.class)"
@@ -184,9 +184,23 @@
               v-else
               class="mt-4"
             >
-              <slot name="no-results">
+              <slot
+                name="no-results"
+                :has-filters="hasFilters"
+                :reset-filters="resetFilters"
+              >
                 <div class="text-center py-8 text-gray-500">
-                  {{ t('Aucun résultat trouvé.') }}
+                  <p>{{ t('Aucun résultat trouvé.') }}</p>
+                  <BrandedButton
+                    v-if="hasFilters"
+                    color="secondary"
+                    :icon="RiCloseCircleLine"
+                    class="mt-4"
+                    type="button"
+                    @click="resetFilters"
+                  >
+                    {{ t('Réinitialiser les filtres') }}
+                  </BrandedButton>
                 </div>
               </slot>
             </div>
@@ -204,6 +218,7 @@ import { refDebounced } from '@vueuse/core'
 import { RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useRouteQueryBoolean } from '../../composables/useRouteQueryBoolean'
+import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
 import { getLink } from '../../functions/pagination'
@@ -243,8 +258,6 @@ const componentsConfig = useComponentsConfig()
 
 const currentType = ref<'datasets' | 'dataservices' | 'reuses'>('datasets')
 
-const visibleTypeConfigs = computed(() => props.config)
-
 const currentTypeConfig = computed(() =>
   props.config.find(c => c.class === currentType.value),
 )
@@ -255,10 +268,6 @@ const activeBasicFilters = computed(() =>
 
 const activeAdvancedFilters = computed(() =>
   (currentTypeConfig.value?.advancedFilters ?? []) as string[],
-)
-
-const hiddenFilters = computed(() =>
-  currentTypeConfig.value?.hiddenFilters ?? [],
 )
 
 // URL query params
@@ -280,48 +289,48 @@ const restrictedOptions = [
   { value: true, label: t('Les API en accès restreint') },
 ]
 
-function omitEmpty(obj: Record<string, unknown>) {
-  return Object.fromEntries(
-    Object.entries(obj).filter(([_, v]) => v !== undefined && v !== '' && v !== null),
-  )
+// All filter values as a record
+const allFilters = {
+  organization: organizationId,
+  organization_badge: organizationType,
+  is_restricted: isRestricted,
 }
 
-const filters = computed(() => omitEmpty({
+// Create stable params for each type
+const stableParamsOptions = {
+  allFilters,
+  q: qDebounced,
+  sort,
+  page,
+  pageSize,
+}
+
+const datasetsParams = useStableQueryParams({
+  ...stableParamsOptions,
+  typeConfig: props.config.find(c => c.class === 'datasets'),
+})
+const dataservicesParams = useStableQueryParams({
+  ...stableParamsOptions,
+  typeConfig: props.config.find(c => c.class === 'dataservices'),
+})
+const reusesParams = useStableQueryParams({
+  ...stableParamsOptions,
+  typeConfig: props.config.find(c => c.class === 'reuses'),
+})
+
+// Reset page on filter/sort change
+const filtersForReset = computed(() => ({
   q: qDebounced.value,
   organization: organizationId.value,
   organization_badge: organizationType.value,
   is_restricted: isRestricted.value,
 }))
 
-const queryParams = computed(() => {
-  const baseParams: Record<string, unknown> = {
-    ...filters.value,
-    sort: sort.value,
-    page: page.value,
-    page_size: pageSize,
-  }
-  for (const hf of hiddenFilters.value) {
-    if (hf) {
-      baseParams[hf.key as string] = hf.value
-    }
-  }
-  return baseParams
-})
-
-// Reset page on filter/sort change
-watch(filters, () => {
-  page.value = 1
-})
-watch(sort, () => {
-  page.value = 1
-})
-watch(currentType, () => {
-  page.value = 1
-})
+watch(filtersForReset, () => page.value = 1)
+watch(sort, () => page.value = 1)
 
 const hasFilters = computed(() => {
-  const filterKeys = Object.keys(filters.value)
-  return filterKeys.some(key => key !== 'q' && filters.value[key] !== undefined)
+  return q.value || organizationId.value || organizationType.value || isRestricted.value !== undefined
 })
 
 function resetFilters() {
@@ -331,18 +340,18 @@ function resetFilters() {
   q.value = ''
 }
 
-// API calls for all 3 types
+// API calls for all 3 types with their specific params
 const { data: datasetsResults, status: datasetsStatus } = await useFetch<PaginatedArray<Dataset>>(
   '/api/2/datasets/search/',
-  { params: queryParams },
+  { params: datasetsParams },
 )
 const { data: dataservicesResults, status: dataservicesStatus } = await useFetch<PaginatedArray<Dataservice>>(
   '/api/2/dataservices/search/',
-  { params: queryParams },
+  { params: dataservicesParams },
 )
 const { data: reusesResults, status: reusesStatus } = await useFetch<PaginatedArray<Reuse>>(
   '/api/2/reuses/search/',
-  { params: queryParams },
+  { params: reusesParams },
 )
 
 const searchResults = computed(() => ({
@@ -386,7 +395,6 @@ function getDefaultName(type: string) {
 
 // Scroll handling
 const searchRef = useTemplateRef('search')
-watch(queryParams, () => scrollToTop())
 
 function scrollToTop() {
   searchRef.value?.scrollIntoView({ behavior: 'smooth' })
@@ -394,5 +402,6 @@ function scrollToTop() {
 
 function changePage(newPage: number) {
   page.value = newPage
+  scrollToTop()
 }
 </script>

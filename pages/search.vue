@@ -16,13 +16,16 @@
       {{ $t('Recherche globale') }}
     </h1>
 
-    <GlobalSearch :config="searchConfig" />
+    <ComponentsGlobalSearch :config="searchConfig" />
+
+    <!-- <GlobalSearch /> -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { GlobalSearch, type GlobalSearchConfig } from '@datagouv/components-next'
+import { GlobalSearch as ComponentsGlobalSearch, type GlobalSearchConfig } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+// import GlobalSearch from '~/components/GlobalSearch.vue'
 
 const { t } = useTranslation()
 useSeoMeta({
