@@ -122,7 +122,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, toast } from '@datagouv/components-next'
-import { SelectGroup, type ContactPoint, type ContactPointRole, type Organization } from '@datagouv/components-next'
+import type { ContactPoint, ContactPointRole, Organization } from '@datagouv/components-next'
 import { RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
@@ -175,6 +175,7 @@ async function updateContactPoint(closeModal: () => void) {
   }
   loading.value = true
   try {
+    // @ts-expect-error TS2321 Excessive stack depth - Nuxt route types bug
     await saveContactPoint($api, props.organization, newContactForm.value)
     emit('refresh')
     closeModal()
