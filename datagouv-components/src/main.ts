@@ -55,6 +55,8 @@ import OwnerTypeIcon from './components/OwnerTypeIcon.vue'
 import PaddedContainer from './components/PaddedContainer.vue'
 import Pagination from './components/Pagination.vue'
 import Placeholder from './components/Placeholder.vue'
+import RadioGroup from './components/RadioGroup.vue'
+import RadioInput from './components/RadioInput.vue'
 import PostCard from './components/PostCard.vue'
 import ReadMore from './components/ReadMore.vue'
 import ResourceAccordion from './components/ResourceAccordion/ResourceAccordion.vue'
@@ -242,6 +244,8 @@ export {
   Pagination,
   Placeholder,
   PostCard,
+  RadioGroup,
+  RadioInput,
   ReadMore,
   ResourceAccordion,
   ResourceIcon,
