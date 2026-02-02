@@ -1,4 +1,4 @@
-import { ref, toValue, watchEffect, type ComputedRef, type Ref } from 'vue'
+import { ref, toValue, watchEffect, onMounted, type ComputedRef, type Ref } from 'vue'
 import { ofetch } from 'ofetch'
 import { useComponentsConfig } from '../config'
 import { useTranslation } from '../composables/useTranslation'
@@ -66,9 +66,19 @@ export async function useFetch<DataT, ErrorT = never>(
     }
   }
 
-  watchEffect(async () => {
-    await execute()
-  })
+  // When server is false, only start watching after mount (client-side only)
+  if (options?.server === false) {
+    onMounted(() => {
+      watchEffect(async () => {
+        await execute()
+      })
+    })
+  }
+  else {
+    watchEffect(async () => {
+      await execute()
+    })
+  }
 
   return {
     data,

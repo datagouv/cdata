@@ -33,7 +33,7 @@
                 :key="typeConfig.class"
                 :value="typeConfig.class"
                 :count="typesMeta[typeConfig.class].results.value?.total"
-                :loading="typesMeta[typeConfig.class].status.value === 'pending'"
+                :loading="typesMeta[typeConfig.class].status.value === 'pending' || typesMeta[typeConfig.class].status.value === 'idle'"
                 :icon="typesMeta[typeConfig.class].icon"
               >
                 {{ typeConfig.name || typesMeta[typeConfig.class].name }}
@@ -325,7 +325,9 @@ const props = withDefaults(defineProps<{
 const { t } = useTranslation()
 const componentsConfig = useComponentsConfig()
 
-const currentType = ref<'datasets' | 'dataservices' | 'reuses'>(props.config[0]?.class ?? 'datasets')
+// Initial type is used to determine which fetch should be SSR (non-lazy)
+const initialType = props.config[0]?.class ?? 'datasets'
+const currentType = ref<'datasets' | 'dataservices' | 'reuses'>(initialType)
 
 const currentTypeConfig = computed(() =>
   props.config.find(c => c.class === currentType.value),
@@ -488,17 +490,18 @@ function resetFilters() {
 }
 
 // API calls only for enabled types (useFetch skips when URL is null)
+// Only the initial type is fetched during SSR, others are client-side only
 const { data: datasetsResults, status: datasetsStatus } = await useFetch<PaginatedArray<Dataset>>(
   datasetsUrl,
-  { params: datasetsParams },
+  { params: datasetsParams, server: initialType === 'datasets' },
 )
 const { data: dataservicesResults, status: dataservicesStatus } = await useFetch<PaginatedArray<Dataservice>>(
   dataservicesUrl,
-  { params: dataservicesParams },
+  { params: dataservicesParams, server: initialType === 'dataservices' },
 )
 const { data: reusesResults, status: reusesStatus } = await useFetch<PaginatedArray<Reuse>>(
   reusesUrl,
-  { params: reusesParams },
+  { params: reusesParams, server: initialType === 'reuses' },
 )
 
 const typesMeta = {
