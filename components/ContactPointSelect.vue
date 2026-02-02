@@ -142,7 +142,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { BrandedButton, SelectGroup } from '@datagouv/components-next'
+import { BrandedButton, SearchableSelect, SelectGroup } from '@datagouv/components-next'
 import type { ContactPoint, ContactPointRole, Organization, OrganizationReference } from '@datagouv/components-next'
 import { RiSaveLine } from '@remixicon/vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'

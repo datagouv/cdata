@@ -116,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, LoadingBlock, Pagination } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination, SearchableSelect } from '@datagouv/components-next'
 import type { Activity, DatasetV2, Organization, User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'

@@ -35,6 +35,7 @@
 </template>
 
 <script setup lang="ts">
+import { SearchableSelect } from '@datagouv/components-next'
 import type { Tag } from '~/types/types'
 
 defineProps<{

@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { useGetUserAvatar, BrandedButton, PaddedContainer, OrganizationLogo, type Owned, type OrganizationReference, type UserReference } from '@datagouv/components-next'
+import { useGetUserAvatar, BrandedButton, PaddedContainer, OrganizationLogo, SearchableSelect, type Owned, type OrganizationReference, type UserReference } from '@datagouv/components-next'
 
 const getUserAvatar = useGetUserAvatar()
 

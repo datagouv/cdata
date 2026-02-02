@@ -14,6 +14,7 @@
 </template>
 
 <script setup lang="ts">
+import { SearchableSelect } from '@datagouv/components-next'
 import type { Badge } from '@datagouv/components-next'
 
 const props = defineProps<{
