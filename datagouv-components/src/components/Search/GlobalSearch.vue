@@ -244,10 +244,10 @@
 <script setup lang="ts">
 import { computed, ref, watch, useTemplateRef } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
-import { refDebounced } from '@vueuse/core'
 import { RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useRouteQueryBoolean } from '../../composables/useRouteQueryBoolean'
+import { useDebouncedRef } from '../../composables/useDebouncedRef'
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
@@ -309,7 +309,7 @@ const activeAdvancedFilters = computed(() =>
 
 // URL query params
 const q = useRouteQuery<string>('q', '')
-const qDebounced = refDebounced(q, componentsConfig.searchDebounce ?? 300)
+const { debounced: qDebounced, flush: flushQ } = useDebouncedRef(q, componentsConfig.searchDebounce ?? 300)
 const page = useRouteQuery('page', 1, { transform: Number })
 const sort = useRouteQuery<string | undefined>('sort')
 
@@ -413,6 +413,7 @@ function resetFilters() {
   granularity.value = undefined
   badge.value = undefined
   q.value = ''
+  flushQ()
 }
 
 // API calls for all 3 types with their specific params

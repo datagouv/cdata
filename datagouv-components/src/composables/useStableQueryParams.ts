@@ -39,6 +39,7 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
     ]
 
     // 3. Apply user filter values (only enabled ones)
+    // Skip undefined/null/empty values so they're not sent to the API
     for (const filterName of enabledFilters) {
       const filterRef = allFilters[filterName as string]
       if (filterRef) {
