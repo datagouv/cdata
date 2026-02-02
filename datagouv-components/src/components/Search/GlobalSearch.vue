@@ -271,7 +271,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, useTemplateRef } from 'vue'
+import { computed, ref, watch, useTemplateRef, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
 import { RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine, RiLightbulbLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
@@ -342,6 +342,11 @@ const activeSortOptions = computed(() =>
   currentTypeConfig.value?.sortOptions ?? [],
 )
 
+const activeFilters = computed(() => [
+  ...(currentTypeConfig.value?.basicFilters ?? []),
+  ...(currentTypeConfig.value?.advancedFilters ?? []),
+] as string[])
+
 // URL query params
 const q = useRouteQuery<string>('q', '')
 const { debounced: qDebounced, flush: flushQ } = useDebouncedRef(q, componentsConfig.searchDebounce ?? 300)
@@ -369,7 +374,7 @@ const restrictedOptions = [
 ]
 
 // All filter values as a record
-const allFilters = {
+const allFilters: Record<string, Ref<unknown>> = {
   organization: organizationId,
   organization_badge: organizationType,
   is_restricted: isRestricted,
@@ -381,6 +386,22 @@ const allFilters = {
   granularity,
   badge,
 }
+
+// Reset sort and filters when changing type if they're not valid for the new type
+watch(currentType, () => {
+  // Reset sort if not valid
+  const validSortValues = activeSortOptions.value.map(o => o.value as string)
+  if (sort.value && !validSortValues.includes(sort.value)) {
+    sort.value = undefined
+  }
+
+  // Reset filters that are not enabled for the new type
+  for (const [filterName, filterRef] of Object.entries(allFilters)) {
+    if (filterRef.value !== undefined && !activeFilters.value.includes(filterName)) {
+      filterRef.value = undefined
+    }
+  }
+})
 
 // Create stable params for each type
 const stableParamsOptions = {
