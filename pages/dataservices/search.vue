@@ -15,22 +15,13 @@
     <h1 class="text-gray-title font-extrabold text-2xl mb-2">
       {{ $t('API') }}
     </h1>
-    <p
-      v-if="site"
-      class="block mb-3"
-    >
-      {{ $t('Rechercher parmi {count} APIs sur {site}', {
-        count: site.metrics.dataservices,
-        site: config.public.title,
-      }) }}
-    </p>
 
-    <DataservicesSearchPage />
+    <GlobalSearch :config="searchConfig" />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Site } from '@datagouv/components-next'
+import { GlobalSearch, type GlobalSearchConfig } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const { t } = useTranslation()
@@ -38,7 +29,18 @@ useSeoMeta({
   title: t('API'),
 })
 
-const config = useRuntimeConfig()
-
-const { data: site } = await useAPI<Site>('/api/1/site/')
+const searchConfig: GlobalSearchConfig = [
+  {
+    class: 'dataservices',
+    basicFilters: ['organization', 'is_restricted'],
+  },
+  {
+    class: 'datasets',
+    basicFilters: ['organization', 'organization_badge'],
+  },
+  {
+    class: 'reuses',
+    basicFilters: ['organization'],
+  },
+]
 </script>

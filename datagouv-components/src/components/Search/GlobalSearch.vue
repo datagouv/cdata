@@ -251,7 +251,7 @@ const props = withDefaults(defineProps<{
 const { t } = useTranslation()
 const componentsConfig = useComponentsConfig()
 
-const currentType = ref<'datasets' | 'dataservices' | 'reuses'>('datasets')
+const currentType = ref<'datasets' | 'dataservices' | 'reuses'>(props.config[0]?.class ?? 'datasets')
 
 const currentTypeConfig = computed(() =>
   props.config.find(c => c.class === currentType.value),
