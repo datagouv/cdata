@@ -12,8 +12,8 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
 import { useTranslation } from '../../composables/useTranslation'
+import { useStringSelectSync } from '../../composables/useSelectModelSync'
 import { useFetch } from '../../functions/api'
 import SearchableSelect from './SearchableSelect.vue'
 
@@ -24,16 +24,5 @@ const { t } = useTranslation()
 
 const { data: formats, status } = await useFetch<string[]>('/api/1/datasets/extensions/')
 
-watch(model, (newModel) => {
-  id.value = newModel ?? undefined
-})
-
-watch(id, (newId) => {
-  if (!newId) {
-    model.value = null
-    return
-  }
-  if (model.value === newId) return
-  model.value = newId
-}, { immediate: true })
+useStringSelectSync({ model, id })
 </script>

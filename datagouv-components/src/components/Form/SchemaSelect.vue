@@ -13,8 +13,8 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
 import { useTranslation } from '../../composables/useTranslation'
+import { useSelectModelSync } from '../../composables/useSelectModelSync'
 import { useFetch } from '../../functions/api'
 import type { RegisteredSchema } from '../../types/schemas'
 import SearchableSelect from './SearchableSelect.vue'
@@ -26,16 +26,5 @@ const { t } = useTranslation()
 
 const { data: schemas, status } = await useFetch<RegisteredSchema[]>('/api/1/datasets/schemas/')
 
-watch(model, (newModel) => {
-  id.value = newModel?.name
-})
-
-watch([id, schemas], ([newId]) => {
-  if (!newId) {
-    model.value = null
-    return
-  }
-  if (model.value?.name === newId) return
-  model.value = schemas.value?.find(s => s.name === newId) ?? null
-}, { immediate: true })
+useSelectModelSync({ model, id, items: schemas, getId: s => s.name })
 </script>

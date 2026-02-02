@@ -12,8 +12,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useTranslation } from '../../composables/useTranslation'
+import { useSelectModelSync } from '../../composables/useSelectModelSync'
 import { useFetch } from '../../functions/api'
 import type { TranslatedBadge } from '../../types/badges'
 import SearchableSelect from './SearchableSelect.vue'
@@ -30,16 +31,5 @@ const badges = computed<TranslatedBadge[]>(() => {
   return Object.entries(badgesRecord.value).map(([kind, label]) => ({ kind, label }))
 })
 
-watch(model, (newModel) => {
-  id.value = newModel?.kind
-})
-
-watch([id, badges], ([newId]) => {
-  if (!newId) {
-    model.value = null
-    return
-  }
-  if (model.value?.kind === newId) return
-  model.value = badges.value.find(b => b.kind === newId) ?? null
-}, { immediate: true })
+useSelectModelSync({ model, id, items: badges, getId: b => b.kind })
 </script>

@@ -12,10 +12,10 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
 import { ofetch } from 'ofetch'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
+import { useStringSelectSync } from '../../composables/useSelectModelSync'
 import SearchableSelect from './SearchableSelect.vue'
 
 const model = defineModel<string | null>({ default: null })
@@ -24,18 +24,7 @@ const id = defineModel<string | undefined>('id')
 const config = useComponentsConfig()
 const { t } = useTranslation()
 
-watch(model, (newModel) => {
-  id.value = newModel ?? undefined
-})
-
-watch(id, (newId) => {
-  if (!newId) {
-    model.value = null
-    return
-  }
-  if (model.value === newId) return
-  model.value = newId
-}, { immediate: true })
+useStringSelectSync({ model, id })
 
 type TagSuggest = { text: string }
 

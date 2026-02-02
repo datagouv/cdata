@@ -12,8 +12,8 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
 import { useTranslation } from '../../composables/useTranslation'
+import { useSelectModelSync } from '../../composables/useSelectModelSync'
 import { useFetch } from '../../functions/api'
 import type { Granularity } from '../../types/granularity'
 import SearchableSelect from './SearchableSelect.vue'
@@ -25,16 +25,5 @@ const { t } = useTranslation()
 
 const { data: granularities, status } = await useFetch<Granularity[]>('/api/1/spatial/granularities/')
 
-watch(model, (newModel) => {
-  id.value = newModel?.id
-})
-
-watch([id, granularities], ([newId]) => {
-  if (!newId) {
-    model.value = null
-    return
-  }
-  if (model.value?.id === newId) return
-  model.value = granularities.value?.find(g => g.id === newId) ?? null
-}, { immediate: true })
+useSelectModelSync({ model, id, items: granularities, getId: g => g.id })
 </script>

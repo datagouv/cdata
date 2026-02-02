@@ -25,10 +25,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
 import { ofetch } from 'ofetch'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
+import { useAsyncSelectModelSync } from '../../composables/useSelectModelSync'
 import type { Organization, OrganizationSuggest } from '../../types/organizations'
 import OrganizationLogo from '../OrganizationLogo.vue'
 import SearchableSelect from './SearchableSelect.vue'
@@ -43,32 +43,12 @@ defineProps<{
 const config = useComponentsConfig()
 const { t } = useTranslation()
 
-const fetching = ref(false)
-
-watch(model, (newModel) => {
-  id.value = newModel?.id
+const { fetching } = useAsyncSelectModelSync({
+  model,
+  id,
+  getId: org => org.id,
+  fetchById: orgId => ofetch<Organization>(`/api/1/organizations/${orgId}/`, { baseURL: config.apiBase }),
 })
-
-watch(id, async (newId) => {
-  if (!newId) {
-    model.value = null
-    return
-  }
-  if (model.value?.id === newId) return
-
-  fetching.value = true
-  try {
-    model.value = await ofetch<Organization>(`/api/1/organizations/${newId}/`, {
-      baseURL: config.apiBase,
-    })
-  }
-  catch {
-    model.value = null
-  }
-  finally {
-    fetching.value = false
-  }
-}, { immediate: true })
 
 async function suggestOrganizations(q: string): Promise<Array<Organization | OrganizationSuggest>> {
   return await ofetch<Array<OrganizationSuggest>>('/api/1/organizations/suggest/', {

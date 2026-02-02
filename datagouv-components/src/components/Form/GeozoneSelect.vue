@@ -20,10 +20,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
 import { ofetch } from 'ofetch'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
+import { useAsyncSelectModelSync } from '../../composables/useSelectModelSync'
 import type { SpatialZone } from '../../types/granularity'
 import SearchableSelect from './SearchableSelect.vue'
 
@@ -33,32 +33,15 @@ const id = defineModel<string | undefined>('id')
 const config = useComponentsConfig()
 const { t } = useTranslation()
 
-const fetching = ref(false)
-
-watch(model, (newModel) => {
-  id.value = newModel?.id
+const { fetching } = useAsyncSelectModelSync({
+  model,
+  id,
+  getId: z => z.id,
+  fetchById: async (zoneId) => {
+    const zones = await suggestGeozones(zoneId)
+    return zones.find(z => z.id === zoneId) ?? null
+  },
 })
-
-watch(id, async (newId) => {
-  if (!newId) {
-    model.value = null
-    return
-  }
-  if (model.value?.id === newId) return
-
-  // Fetch the zone by suggesting with the ID
-  fetching.value = true
-  try {
-    const zones = await suggestGeozones(newId)
-    model.value = zones.find(z => z.id === newId) ?? null
-  }
-  catch {
-    model.value = null
-  }
-  finally {
-    fetching.value = false
-  }
-}, { immediate: true })
 
 async function suggestGeozones(q: string) {
   return await ofetch<SpatialZone[]>('/api/1/spatial/zones/suggest/', {
