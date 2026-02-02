@@ -66,6 +66,41 @@
                 :style="{ order: getOrder('is_restricted') }"
                 hide-null-option
               />
+              <TagSelect
+                v-if="isEnabled('tag')"
+                v-model:id="tag"
+                :style="{ order: getOrder('tag') }"
+              />
+              <FormatSelect
+                v-if="isEnabled('format')"
+                v-model:id="format"
+                :style="{ order: getOrder('format') }"
+              />
+              <LicenseSelect
+                v-if="isEnabled('license')"
+                v-model:id="license"
+                :style="{ order: getOrder('license') }"
+              />
+              <SchemaSelect
+                v-if="isEnabled('schema')"
+                v-model:id="schema"
+                :style="{ order: getOrder('schema') }"
+              />
+              <GeozoneSelect
+                v-if="isEnabled('geozone')"
+                v-model:id="geozone"
+                :style="{ order: getOrder('geozone') }"
+              />
+              <GranularitySelect
+                v-if="isEnabled('granularity')"
+                v-model:id="granularity"
+                :style="{ order: getOrder('granularity') }"
+              />
+              <BadgeSelect
+                v-if="isEnabled('badge')"
+                v-model:id="badge"
+                :style="{ order: getOrder('badge') }"
+              />
               <slot
                 name="filters"
                 :is-enabled="isEnabled"
@@ -236,6 +271,13 @@ import DoubleFilter from './DoubleFilter.vue'
 import OrganizationSelect from '../Form/OrganizationSelect.vue'
 import OrganizationTypeSelect from '../Form/OrganizationTypeSelect.vue'
 import SelectGroup from '../Form/SelectGroup.vue'
+import TagSelect from '../Form/TagSelect.vue'
+import FormatSelect from '../Form/FormatSelect.vue'
+import LicenseSelect from '../Form/LicenseSelect.vue'
+import SchemaSelect from '../Form/SchemaSelect.vue'
+import GeozoneSelect from '../Form/GeozoneSelect.vue'
+import GranularitySelect from '../Form/GranularitySelect.vue'
+import BadgeSelect from '../Form/BadgeSelect.vue'
 
 const props = withDefaults(defineProps<{
   config?: GlobalSearchConfig
@@ -275,6 +317,13 @@ const sort = useRouteQuery<string | undefined>('sort')
 const organizationId = useRouteQuery<string | undefined>('organization')
 const organizationType = useRouteQuery<string | undefined>('organization_badge')
 const isRestricted = useRouteQueryBoolean('is_restricted')
+const tag = useRouteQuery<string | undefined>('tag')
+const format = useRouteQuery<string | undefined>('format')
+const license = useRouteQuery<string | undefined>('license')
+const schema = useRouteQuery<string | undefined>('schema')
+const geozone = useRouteQuery<string | undefined>('geozone')
+const granularity = useRouteQuery<string | undefined>('granularity')
+const badge = useRouteQuery<string | undefined>('badge')
 
 const pageSize = 20
 
@@ -289,6 +338,13 @@ const allFilters = {
   organization: organizationId,
   organization_badge: organizationType,
   is_restricted: isRestricted,
+  tag,
+  format,
+  license,
+  schema,
+  geozone,
+  granularity,
+  badge,
 }
 
 // Create stable params for each type
@@ -319,19 +375,43 @@ const filtersForReset = computed(() => ({
   organization: organizationId.value,
   organization_badge: organizationType.value,
   is_restricted: isRestricted.value,
+  tag: tag.value,
+  format: format.value,
+  license: license.value,
+  schema: schema.value,
+  geozone: geozone.value,
+  granularity: granularity.value,
+  badge: badge.value,
 }))
 
 watch(filtersForReset, () => page.value = 1)
 watch(sort, () => page.value = 1)
 
 const hasFilters = computed(() => {
-  return q.value || organizationId.value || organizationType.value || isRestricted.value !== undefined
+  return q.value
+    || organizationId.value
+    || organizationType.value
+    || isRestricted.value !== undefined
+    || tag.value
+    || format.value
+    || license.value
+    || schema.value
+    || geozone.value
+    || granularity.value
+    || badge.value
 })
 
 function resetFilters() {
   organizationId.value = undefined
   organizationType.value = undefined
   isRestricted.value = undefined
+  tag.value = undefined
+  format.value = undefined
+  license.value = undefined
+  schema.value = undefined
+  geozone.value = undefined
+  granularity.value = undefined
+  badge.value = undefined
   q.value = ''
 }
 

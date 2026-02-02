@@ -29,7 +29,7 @@ useSeoMeta({
 const searchConfig: GlobalSearchConfig = [
   {
     class: 'datasets',
-    basicFilters: ['organization', 'organization_badge'],
+    basicFilters: ['organization', 'organization_badge', 'tag', 'format', 'license', 'schema', 'geozone', 'granularity', 'badge'],
   },
   {
     class: 'dataservices',

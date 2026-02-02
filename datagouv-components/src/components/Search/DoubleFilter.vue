@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col">
     <slot
       :is-enabled="isBasicFilter"
       :get-order="getBasicOrder"
@@ -19,7 +19,7 @@
       />
       {{ t('Filtres avancés') }}
     </DisclosureButton>
-    <DisclosurePanel class="flex flex-col gap-4 mt-4">
+    <DisclosurePanel class="flex flex-col mt-4">
       <slot
         :is-enabled="isAdvancedFilter"
         :get-order="getAdvancedOrder"
