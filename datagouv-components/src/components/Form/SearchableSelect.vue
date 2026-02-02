@@ -195,9 +195,9 @@ const props = withDefaults(defineProps<{
   loading: false,
   hideLabel: false,
 
-  displayValue: (_option: ModelType): string => '',
+  displayValue: (): string => '',
 
-  groupBy: (_option: T): string => '',
+  groupBy: (): string => '',
   getOptionId: (option: T): string | number => {
     if (typeof option === 'string') return option
     if (typeof option === 'number') return option
