@@ -121,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, toast } from '@datagouv/components-next'
+import { BrandedButton, SelectGroup, toast } from '@datagouv/components-next'
 import type { ContactPoint, ContactPointRole, Organization } from '@datagouv/components-next'
 import { RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
