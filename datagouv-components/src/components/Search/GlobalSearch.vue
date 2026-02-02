@@ -154,8 +154,12 @@
                 <option :value="undefined">
                   {{ t('Pertinence') }}
                 </option>
-                <option value="-created">
-                  {{ t('Date de création') }}
+                <option
+                  v-for="option in activeSortOptions"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
                 </option>
               </select>
             </div>
@@ -283,6 +287,7 @@ import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
 import type { Reuse } from '../../types/reuses'
 import type { GlobalSearchConfig } from '../../types/search'
+import { defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions } from '../../types/search'
 import BrandedButton from '../BrandedButton.vue'
 import LoadingBlock from '../LoadingBlock.vue'
 import Pagination from '../Pagination.vue'
@@ -310,9 +315,9 @@ const props = withDefaults(defineProps<{
   placeholder?: string
 }>(), {
   config: () => [
-    { class: 'datasets', basicFilters: ['organization', 'organization_badge'] },
-    { class: 'dataservices', basicFilters: ['organization', 'is_restricted'] },
-    { class: 'reuses', basicFilters: ['organization'] },
+    { class: 'datasets', basicFilters: ['organization', 'organization_badge'], sortOptions: defaultDatasetSortOptions },
+    { class: 'dataservices', basicFilters: ['organization', 'is_restricted'], sortOptions: defaultDataserviceSortOptions },
+    { class: 'reuses', basicFilters: ['organization'], sortOptions: defaultReuseSortOptions },
   ],
 })
 
@@ -331,6 +336,10 @@ const activeBasicFilters = computed(() =>
 
 const activeAdvancedFilters = computed(() =>
   (currentTypeConfig.value?.advancedFilters ?? []) as string[],
+)
+
+const activeSortOptions = computed(() =>
+  currentTypeConfig.value?.sortOptions ?? [],
 )
 
 // URL query params

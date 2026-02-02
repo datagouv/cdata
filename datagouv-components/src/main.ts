@@ -23,8 +23,8 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
-import type { GlobalSearchConfig } from './types/search'
-import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultGlobalSearchConfig } from './types/search'
+import type { GlobalSearchConfig, SortOption } from './types/search'
+import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions } from './types/search'
 
 import ActivityList from './components/ActivityList/ActivityList.vue'
 import UserActivityList from './components/ActivityList/UserActivityList.vue'
@@ -114,6 +114,7 @@ export * from './types/access_types'
 
 export type {
   GlobalSearchConfig,
+  SortOption,
   UseFetchFunction,
   AccessType,
   AccessAudience,
@@ -211,6 +212,9 @@ export {
   getDefaultDataserviceConfig,
   getDefaultReuseConfig,
   getDefaultGlobalSearchConfig,
+  defaultDatasetSortOptions,
+  defaultDataserviceSortOptions,
+  defaultReuseSortOptions,
 }
 
 // Vue Plugin

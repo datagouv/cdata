@@ -283,12 +283,18 @@ export type HiddenFilter<Filters> = {
   [K in keyof Filters]: { key: K, value: Filters[K] }
 }[keyof Filters]
 
+export type SortOption<Sort extends string> = {
+  value: Sort
+  label: string
+}
+
 export type DatasetSearchConfig = {
   class: 'datasets'
   name?: string
   hiddenFilters?: HiddenFilter<DatasetSearchFilters>[]
   basicFilters?: (keyof DatasetSearchFilters)[]
   advancedFilters?: (keyof DatasetSearchFilters)[]
+  sortOptions?: SortOption<DatasetSearchSort>[]
 }
 
 export type DataserviceSearchConfig = {
@@ -297,6 +303,7 @@ export type DataserviceSearchConfig = {
   hiddenFilters?: HiddenFilter<DataserviceSearchFilters>[]
   basicFilters?: (keyof DataserviceSearchFilters)[]
   advancedFilters?: (keyof DataserviceSearchFilters)[]
+  sortOptions?: SortOption<DataserviceSearchSort>[]
 }
 
 export type ReuseSearchConfig = {
@@ -305,6 +312,7 @@ export type ReuseSearchConfig = {
   hiddenFilters?: HiddenFilter<ReuseSearchFilters>[]
   basicFilters?: (keyof ReuseSearchFilters)[]
   advancedFilters?: (keyof ReuseSearchFilters)[]
+  sortOptions?: SortOption<ReuseSearchSort>[]
 }
 
 export type SearchTypeConfig = DatasetSearchConfig | DataserviceSearchConfig | ReuseSearchConfig
@@ -313,10 +321,28 @@ export type GlobalSearchConfig = SearchTypeConfig[]
 
 // Helper functions for default configs
 
+export const defaultDatasetSortOptions: SortOption<DatasetSearchSort>[] = [
+  { value: '-created', label: 'Date de création' },
+  { value: '-last_update', label: 'Dernière mise à jour' },
+  { value: '-followers', label: `Nombre d'abonnés` },
+  { value: '-reuses', label: 'Nombre de réutilisations' },
+]
+
+export const defaultDataserviceSortOptions: SortOption<DataserviceSearchSort>[] = [
+  { value: '-created', label: 'Date de création' },
+]
+
+export const defaultReuseSortOptions: SortOption<ReuseSearchSort>[] = [
+  { value: '-created', label: 'Date de création' },
+  { value: '-followers', label: `Nombre d'abonnés` },
+  { value: '-datasets', label: 'Nombre de jeux de données' },
+]
+
 export function getDefaultDatasetConfig(overrides?: Partial<Omit<DatasetSearchConfig, 'class'>>): DatasetSearchConfig {
   return {
     class: 'datasets',
     basicFilters: ['organization', 'organization_badge', 'tag', 'format', 'license', 'schema', 'geozone', 'granularity', 'badge'],
+    sortOptions: defaultDatasetSortOptions,
     ...overrides,
   }
 }
@@ -325,6 +351,7 @@ export function getDefaultDataserviceConfig(overrides?: Partial<Omit<Dataservice
   return {
     class: 'dataservices',
     basicFilters: ['organization', 'is_restricted'],
+    sortOptions: defaultDataserviceSortOptions,
     ...overrides,
   }
 }
@@ -333,6 +360,7 @@ export function getDefaultReuseConfig(overrides?: Partial<Omit<ReuseSearchConfig
   return {
     class: 'reuses',
     basicFilters: ['organization'],
+    sortOptions: defaultReuseSortOptions,
     ...overrides,
   }
 }

@@ -50,12 +50,15 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
       }
     }
 
-    // 4. Always include q, sort, page, page_size
+    // 4. Always include q, sort (if valid for this type), page, page_size
     if (q.value) {
       params.q = q.value
     }
     if (sort.value) {
-      params.sort = sort.value
+      const validSortValues = typeConfig?.sortOptions?.map(o => o.value as string) ?? []
+      if (validSortValues.includes(sort.value)) {
+        params.sort = sort.value
+      }
     }
     params.page = page.value
     params.page_size = pageSize
