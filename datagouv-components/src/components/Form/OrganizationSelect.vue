@@ -33,8 +33,7 @@ import type { Organization, OrganizationSuggest } from '../../types/organization
 import OrganizationLogo from '../OrganizationLogo.vue'
 import SearchableSelect from './SearchableSelect.vue'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const model = defineModel<any>({ default: null })
+const model = defineModel<Organization | OrganizationSuggest | null>({ default: null })
 const id = defineModel<string | undefined>('id')
 
 defineProps<{
@@ -71,7 +70,7 @@ watch(id, async (newId) => {
   }
 }, { immediate: true })
 
-async function suggestOrganizations(q: string) {
+async function suggestOrganizations(q: string): Promise<Array<Organization | OrganizationSuggest>> {
   return await ofetch<Array<OrganizationSuggest>>('/api/1/organizations/suggest/', {
     baseURL: config.apiBase,
     query: {
