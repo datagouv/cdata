@@ -75,7 +75,7 @@ test('clicking dataset label navigates to filtered search', async ({
   )
 
   // Verify the badge filter is applied
-  const filter = page.getByTestId('dataset-label-filter')
+  const filter = page.getByTestId('searchable-select-label-de-donn-es')
   const filterButton = filter.locator('button').first()
   const selectedText = await filterButton.textContent()
   expect(selectedText).not.toBe('Tous les badges')
