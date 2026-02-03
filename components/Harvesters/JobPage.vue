@@ -120,7 +120,7 @@
             :placeholder="$t('Filtrer par statut')"
             :label="$t('Filtrer par statut')"
             :options="itemStatus"
-            :display-value="(option) => option.label"
+            :display-value="(option: { label: string }) => option.label"
             :multiple="false"
             class="mb-0"
             hide-label
@@ -276,7 +276,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, Tooltip, useFormatDate } from '@datagouv/components-next'
+import { Pagination, SearchableSelect, Tooltip, useFormatDate } from '@datagouv/components-next'
 import { RiAlertLine, RiArchiveLine, RiCalendarEventLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiEyeOffLine, RiInformationLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'

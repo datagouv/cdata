@@ -23,6 +23,8 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
+import type { GlobalSearchConfig, SortOption } from './types/search'
+import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions } from './types/search'
 
 import ActivityList from './components/ActivityList/ActivityList.vue'
 import UserActivityList from './components/ActivityList/UserActivityList.vue'
@@ -55,6 +57,8 @@ import OwnerTypeIcon from './components/OwnerTypeIcon.vue'
 import PaddedContainer from './components/PaddedContainer.vue'
 import Pagination from './components/Pagination.vue'
 import Placeholder from './components/Placeholder.vue'
+import RadioGroup from './components/RadioGroup.vue'
+import RadioInput from './components/RadioInput.vue'
 import PostCard from './components/PostCard.vue'
 import ReadMore from './components/ReadMore.vue'
 import ResourceAccordion from './components/ResourceAccordion/ResourceAccordion.vue'
@@ -76,6 +80,10 @@ import Tooltip from './components/Tooltip.vue'
 import Toggletip from './components/Toggletip.vue'
 import TopicCard from './components/TopicCard.vue'
 import TranslationT from './components/TranslationT.vue'
+import GlobalSearch from './components/Search/GlobalSearch.vue'
+import SearchInput from './components/Search/SearchInput.vue'
+import SearchableSelect from './components/Form/SearchableSelect.vue'
+import SelectGroup from './components/Form/SelectGroup.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
@@ -105,6 +113,8 @@ export * from './functions/users'
 export * from './types/access_types'
 
 export type {
+  GlobalSearchConfig,
+  SortOption,
   UseFetchFunction,
   AccessType,
   AccessAudience,
@@ -197,6 +207,16 @@ export type {
   WellType,
 }
 
+export {
+  getDefaultDatasetConfig,
+  getDefaultDataserviceConfig,
+  getDefaultReuseConfig,
+  getDefaultGlobalSearchConfig,
+  defaultDatasetSortOptions,
+  defaultDataserviceSortOptions,
+  defaultReuseSortOptions,
+}
+
 // Vue Plugin
 const datagouv: Plugin<PluginConfig> = {
   async install(app: App, options) {
@@ -242,6 +262,8 @@ export {
   Pagination,
   Placeholder,
   PostCard,
+  RadioGroup,
+  RadioInput,
   ReadMore,
   ResourceAccordion,
   ResourceIcon,
@@ -263,4 +285,8 @@ export {
   TopicCard,
   TranslationT,
   UserActivityList,
+  GlobalSearch,
+  SearchInput,
+  SearchableSelect,
+  SelectGroup,
 }

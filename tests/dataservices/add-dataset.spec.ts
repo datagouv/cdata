@@ -29,7 +29,7 @@ test('can add a dataset to an existing dataservice', async ({ page }) => {
   await page.goto(`/admin/dataservices/${dataservice.id}/datasets`)
 
   // Click on the dataset select dropdown
-  await page.getByTestId('searchable-select-rechercherunjeudedonnes').click()
+  await page.getByTestId('searchable-select-rechercher-un-jeu-de-donn-es').click()
 
   // Type the dataset name to search
   await page.getByPlaceholder('Rechercher un jeu de données…').fill(`Test dataset ${uniqueId}`)

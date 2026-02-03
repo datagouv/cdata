@@ -106,14 +106,14 @@ test.describe('Post kind filter', () => {
     await expect(pageRow.getByRole('cell', { name: 'Page', exact: true })).toBeVisible()
 
     // Test filter: filter by "Page" type
-    await page.getByTestId('searchable-select-filtrerpartype').click()
+    await page.getByTestId('searchable-select-filtrer-par-type').click()
     await page.getByRole('option', { name: 'Page' }).click()
 
     await expect(page.getByText(`Test Page ${uniqueId}`)).toBeVisible()
     await expect(page.getByText(`Test News ${uniqueId}`)).not.toBeVisible()
 
     // Test filter: filter by "Actualité" type
-    await page.getByTestId('searchable-select-filtrerpartype').click()
+    await page.getByTestId('searchable-select-filtrer-par-type').click()
     await page.getByRole('option', { name: 'Actualité' }).click()
 
     await expect(page.getByText(`Test News ${uniqueId}`)).toBeVisible()
