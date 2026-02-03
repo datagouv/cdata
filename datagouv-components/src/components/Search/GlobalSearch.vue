@@ -62,11 +62,6 @@
                 v-model="organizationType"
                 :style="{ order: getOrder('organization_badge') }"
               />
-              <AccessTypeSelect
-                v-if="isEnabled('is_restricted')"
-                v-model="isRestricted"
-                :style="{ order: getOrder('is_restricted') }"
-              />
               <TagSelect
                 v-if="isEnabled('tag')"
                 v-model:id="tag"
@@ -320,7 +315,6 @@ import { useRouteQuery } from '@vueuse/router'
 import { RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine, RiLightbulbLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
 import { useTranslation } from '../../composables/useTranslation'
-import { useRouteQueryBoolean } from '../../composables/useRouteQueryBoolean'
 import { useDebouncedRef } from '../../composables/useDebouncedRef'
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
@@ -344,7 +338,6 @@ import Sidemenu from './Sidemenu.vue'
 import BasicAndAdvancedFilters from './BasicAndAdvancedFilters.vue'
 import OrganizationSelect from '../Form/OrganizationSelect.vue'
 import OrganizationTypeSelect from '../Form/OrganizationTypeSelect.vue'
-import AccessTypeSelect from '../Form/AccessTypeSelect.vue'
 import TagSelect from '../Form/TagSelect.vue'
 import FormatSelect from '../Form/FormatSelect.vue'
 import LicenseSelect from '../Form/LicenseSelect.vue'
@@ -405,7 +398,6 @@ const sort = useRouteQuery<string | undefined>('sort')
 // Filter values
 const organizationId = useRouteQuery<string | undefined>('organization')
 const organizationType = useRouteQuery<string | undefined>('organization_badge')
-const isRestricted = useRouteQueryBoolean('is_restricted')
 const tag = useRouteQuery<string | undefined>('tag')
 const format = useRouteQuery<string | undefined>('format')
 const license = useRouteQuery<string | undefined>('license')
@@ -428,7 +420,6 @@ const pageSize = 20
 const allFilters: Record<string, Ref<unknown>> = {
   organization: organizationId,
   organization_badge: organizationType,
-  is_restricted: isRestricted,
   tag,
   format,
   license,
@@ -497,7 +488,6 @@ const filtersForReset = computed(() => ({
   q: qDebounced.value,
   organization: organizationId.value,
   organization_badge: organizationType.value,
-  is_restricted: isRestricted.value,
   tag: tag.value,
   format: format.value,
   license: license.value,
@@ -520,7 +510,6 @@ const hasFilters = computed(() => {
   return q.value
     || organizationId.value
     || organizationType.value
-    || isRestricted.value !== undefined
     || tag.value
     || format.value
     || license.value
@@ -541,7 +530,6 @@ const showForumLink = computed(() => currentType.value === 'datasets' && !!compo
 function resetFilters() {
   organizationId.value = undefined
   organizationType.value = undefined
-  isRestricted.value = undefined
   tag.value = undefined
   format.value = undefined
   license.value = undefined

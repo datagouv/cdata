@@ -352,7 +352,7 @@ export function getDefaultDataserviceConfig(overrides?: Partial<Omit<Dataservice
   return {
     class: 'dataservices',
     basicFilters: ['access_type', 'last_update_range', 'producer_type'],
-    advancedFilters: ['organization', 'tag', 'is_restricted'],
+    advancedFilters: ['organization', 'tag'],
     sortOptions: defaultDataserviceSortOptions,
     ...overrides,
   }
