@@ -85,7 +85,7 @@
                   v-model="inviteForm.user"
                   :label="$t('Utilisateur')"
                   :placeholder="$t('Rechercher un utilisateur')"
-                  :hint="$t(`Laissez vide si vous souhaitez inviter par email`)"
+                  :hintText="$t(`Laissez vide si vous souhaitez inviter par email`)"
                   :display-value="(user) => `${user.first_name} ${user.last_name}`"
                   :suggest="suggestUser"
                   :multiple="false"
@@ -117,7 +117,7 @@
                 <InputGroup
                   v-model="inviteForm.email"
                   :label="$t('Email')"
-                  :hint="$t(`Inviter une personne par email (même si elle n'a pas encore de compte)`)"
+                  :hintText="$t(`Inviter une personne par email (même si elle n'a pas encore de compte)`)"
                   type="email"
                   :disabled="!!inviteForm.user"
                 />
@@ -132,7 +132,7 @@
                 <InputGroup
                   v-model="inviteForm.comment"
                   :label="$t('Message (optionnel)')"
-                  :hint="$t(`Ce message sera inclus dans l'email d'invitation`)"
+                  :hintText="$t(`Ce message sera inclus dans l'email d'invitation`)"
                 />
               </div>
             </form>
