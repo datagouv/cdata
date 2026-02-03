@@ -219,6 +219,9 @@ importers:
       '@types/hast':
         specifier: ^3.0.4
         version: 3.0.4
+      '@types/leaflet':
+        specifier: ^1.9.17
+        version: 1.9.20
       '@vueuse/core':
         specifier: ^13.1.0
         version: 13.9.0(vue@3.5.22(typescript@5.9.2))
@@ -231,6 +234,9 @@ importers:
       geopf-extensions-openlayers:
         specifier: ^1.0.0-beta.5
         version: 1.0.0-beta.6
+      leaflet:
+        specifier: ^1.9.4
+        version: 1.9.4
       maplibre-gl:
         specifier: ^5.6.2
         version: 5.14.0
