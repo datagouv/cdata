@@ -108,8 +108,8 @@ export type DatasetV2 = Owned & Omit<Dataset, 'resources' | 'community_resources
  * Retrieve this version by adding the header `X-Get-Datasets-Full-Objects: True` to the request: GET /api/2/datasets/{id}/
  */
 export type DatasetV2WithFullObject = Owned & Omit<DatasetV2, 'license' | 'frequency' | 'spatial'> & {
-  license: License
-  frequency: Frequency
+  license: License | null
+  frequency: Frequency | null
   spatial: {
     zones?: Array<SpatialZone>
     granularity?: Granularity

@@ -35,12 +35,7 @@
       <div v-if="dataset.license">
         <DescriptionListTerm>{{ t('Licence') }}</DescriptionListTerm>
         <DescriptionListDetails>
-          <AppLink
-            :to="dataset.license.url"
-            class="px-1 py-[2px] font-mono bg-gray-some text-gray-medium rounded"
-          >
-            {{ dataset.license.title }}
-          </AppLink>
+          <LicenseBadge :license="dataset.license" />
         </DescriptionListDetails>
       </div>
       <slot />
@@ -57,6 +52,7 @@ import DescriptionListTerm from '../DescriptionListTerm.vue'
 import DescriptionListDetails from '../DescriptionListDetails.vue'
 import AppLink from '../AppLink.vue'
 import CopyButton from '../CopyButton.vue'
+import LicenseBadge from '../LicenseBadge.vue'
 import Tag from '../Tag.vue'
 
 const props = defineProps<{
