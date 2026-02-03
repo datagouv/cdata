@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { OrganizationOrSuggest } from '../types/organizations'
-import { throwOnNever } from '../main'
+import { throwOnNever } from '../functions/never'
 import Placeholder from './Placeholder.vue'
 
 const props = defineProps<{

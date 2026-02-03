@@ -262,11 +262,10 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, SelectGroup, SimpleBanner } from '@datagouv/components-next'
 import { RiAddLine, RiDeleteBinLine } from '@remixicon/vue'
 import HelpAccordion from '../Form/HelpAccordion.vue'
 import FieldsetElement from '../Form/FieldsetElement.vue'
-import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 import InputGroup from '../InputGroup/InputGroup.vue'
 import ToggleSwitch from '../Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'

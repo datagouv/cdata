@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 
 test('can save edito page from admin without error toast', async ({ page }) => {
   await page.goto('/admin/site/edito/datasets')

@@ -157,8 +157,7 @@
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, Pagination, BrandedButton, useFormatDate } from '@datagouv/components-next'
-import SearchableSelect from '~/components/SearchableSelect.vue'
+import { LoadingBlock, Pagination, BrandedButton, useFormatDate, SearchableSelect } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 import { RiAddLine, RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'

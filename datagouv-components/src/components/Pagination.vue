@@ -3,7 +3,7 @@
     v-if="totalResults > pageSize"
     ref="navRef"
     role="navigation"
-    class="fr-pagination fr-pagination--centered"
+    class="fr-pagination flex justify-center"
     :aria-label="t('Pagination')"
   >
     <ul class="fr-pagination__list">

@@ -231,9 +231,9 @@
               class="mb-3"
               :label="$t('Type')"
               :placeholder="$t('Rechercher un type…')"
-              :get-option-id="(type) => type.label"
-              :display-value="(type) => type.label"
-              :options="typesOptions"
+              :get-option-id="(type: { label: string }) => type.label"
+              :display-value="(type: { label: string }) => type.label"
+              :options="types ?? []"
               :multiple="false"
               :required="true"
               :error-text="getFirstError('type')"
@@ -256,9 +256,9 @@
               class="mb-3"
               :label="$t('Thématique')"
               :placeholder="$t('Rechercher une thématique…')"
-              :get-option-id="(topic) => topic.label"
-              :display-value="(topic) => topic.label"
-              :options="topicsOptions"
+              :get-option-id="(topic: { label: string }) => topic.label"
+              :display-value="(topic: { label: string }) => topic.label"
+              :options="topics ?? []"
               :multiple="false"
               :required="true"
               :error-text="getFirstError('topic')"
@@ -398,7 +398,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Tooltip, SimpleBanner, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
+import { BrandedButton, Tooltip, SearchableSelect, SimpleBanner, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
 import { RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
@@ -434,9 +434,6 @@ const addImageAccordionId = useId()
 
 const { data: types } = await useAPI<Array<ReuseType>>('/api/1/reuses/types', { lazy: true })
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics', { lazy: true })
-
-const typesOptions = computed(() => types.value ?? [])
-const topicsOptions = computed(() => topics.value ?? [])
 
 const ownedOptions = computed<Array<Owned>>(() => {
   return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: { ...user.value, class: 'User' }, organization: null }]

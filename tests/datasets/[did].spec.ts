@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 
 test('show details page', async ({ page }) => {
   await page.goto(
@@ -75,10 +75,10 @@ test('clicking dataset label navigates to filtered search', async ({
   )
 
   // Verify the badge filter is applied
-  const filter = page.getByTestId('dataset-label-filter')
-  const filterButton = filter.locator('button').first()
-  const selectedText = await filterButton.textContent()
-  expect(selectedText).not.toBe('Tous les badges')
+  const badgeFilterLabel = page.getByText('Label de données')
+  await badgeFilterLabel.scrollIntoViewIfNeeded()
+  const badgeInput = page.locator('input[placeholder="Tous les labels"]')
+  await expect(badgeInput).toHaveValue(/Service public/, { timeout: 15000 })
 })
 
 test('dataset without labels does not show label section', async ({ page }) => {

@@ -12,13 +12,13 @@
       <h2 class="!text-sm !mb-2.5">
         {{ $t(`API de l'organisation`) }} {{ organization.name }}
       </h2>
-      <DataservicesSearchPage :organization="organization" />
+      <GlobalSearch :config="getSearchConfig(organization.id)" />
     </div>
   </LoadingBlock>
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, type Organization } from '@datagouv/components-next'
+import { GlobalSearch, LoadingBlock, type GlobalSearchConfig, type Organization } from '@datagouv/components-next'
 
 const props = defineProps<{
   slug: string
@@ -26,4 +26,14 @@ const props = defineProps<{
 
 const url = computed(() => `/api/1/organizations/${props.slug}/`)
 const { data: organizationData, status } = await useAPI<Organization>(url, { lazy: true, server: false })
+
+function getSearchConfig(organizationId: string): GlobalSearchConfig {
+  return [
+    {
+      class: 'dataservices',
+      hiddenFilters: [{ key: 'organization', value: organizationId }],
+      basicFilters: ['is_restricted'],
+    },
+  ]
+}
 </script>

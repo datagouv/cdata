@@ -100,9 +100,8 @@
 
 <script setup lang="ts">
 import { RiFlagLine } from '@remixicon/vue'
-import { BrandedButton, SimpleBanner, TranslationT } from '@datagouv/components-next'
+import { BrandedButton, SelectGroup, SimpleBanner, TranslationT } from '@datagouv/components-next'
 import type { ReportReason, ReportSubject } from '@datagouv/components-next'
-import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 import CdataLink from '../CdataLink.vue'
 
 const props = defineProps<{

@@ -373,7 +373,7 @@
               :warning-text="getFirstWarning('tags')"
             />
             <div class="flex items-center gap-4 mt-2 mb-3">
-              <Tooltip v-if="!canGenerateTags && form.tags.length >= MAX_TAGS_NB">
+              <Tooltip v-if="tagsSuggestionDisabledMessage">
                 <BrandedButton
                   type="button"
                   color="primary"
@@ -384,7 +384,7 @@
                   {{ $t('Suggérer des mots clés') }}
                 </BrandedButton>
                 <template #tooltip>
-                  {{ $t('Vous avez déjà {count} mots-clés. Le maximum recommandé est de {max}.', { count: form.tags.length, max: MAX_TAGS_NB }) }}
+                  {{ tagsSuggestionDisabledMessage }}
                 </template>
               </Tooltip>
               <BrandedButton
@@ -393,7 +393,6 @@
                 color="primary"
                 :icon="RiSparklingLine"
                 :loading="isGeneratingTags"
-                :disabled="!canGenerateTags"
                 @click="handleAutoCompleteTags(MAX_TAGS_NB)"
               >
                 <template v-if="isGeneratingTags">
@@ -751,7 +750,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Tooltip, DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH } from '@datagouv/components-next'
+import { BrandedButton, Tooltip, DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH, SearchableSelect } from '@datagouv/components-next'
 import { SimpleBanner, type Badge, type Frequency, type License } from '@datagouv/components-next'
 import { RiAddLine, RiStarFill, RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
@@ -759,7 +758,7 @@ import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
-import SearchableSelect from '~/components/SearchableSelect.vue'
+import { humanJoin } from '~/utils/helpers'
 import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone, Tag } from '~/types/types'
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
@@ -882,17 +881,30 @@ const accordionState = (key: keyof typeof form.value) => {
   return 'default'
 }
 
+const hasTitle = computed(() => form.value.title && form.value.title.trim().length > 0)
+const hasDescription = computed(() => form.value.description && form.value.description.trim().length > 0)
+const hasEnoughDescription = computed(() => form.value.description && form.value.description.length >= DESCRIPTION_MIN_LENGTH)
+const hasLessThanMaxTags = computed(() => form.value.tags.length < MAX_TAGS_NB)
+
 const canGenerateDescriptionShort = computed(() => {
-  const hasTitle = form.value.title && form.value.title.trim().length > 0
-  const hasEnoughDescription = form.value.description && form.value.description.length >= DESCRIPTION_MIN_LENGTH
-  return hasTitle && hasEnoughDescription
+  return hasTitle.value && hasEnoughDescription.value
 })
 
-const canGenerateTags = computed(() => {
-  const hasTitle = form.value.title && form.value.title.trim().length > 0
-  const hasDescription = form.value.description && form.value.description.trim().length > 0
-  const hasLessThanMaxTags = form.value.tags.length < MAX_TAGS_NB
-  return hasTitle && hasDescription && hasLessThanMaxTags
+const tagsSuggestionDisabledMessage = computed(() => {
+  if (!hasLessThanMaxTags.value) {
+    return t('Vous avez déjà {count} mots-clés. Le maximum recommandé est de {max}.', { count: form.value.tags.length, max: MAX_TAGS_NB })
+  }
+  const missing = []
+  if (!hasTitle.value) {
+    missing.push(t('le titre'))
+  }
+  if (!hasDescription.value) {
+    missing.push(t('la description'))
+  }
+  if (missing.length > 0) {
+    return t('Remplissez {fields} pour utiliser cette fonctionnalité.', { fields: humanJoin(missing) })
+  }
+  return ''
 })
 
 async function handleAutoCompleteDescriptionShort() {

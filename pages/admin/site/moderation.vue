@@ -29,7 +29,7 @@
             label: t('Tous'),
             id: null,
           }]"
-          :display-value="(option) => option.label"
+          :display-value="(option: { label: string }) => option.label"
           :multiple="false"
           class="mb-0"
           hide-label
@@ -256,7 +256,7 @@
 
 <script setup lang="ts">
 import type { Report, ReportReason, ReportSubject, Activity, Dataservice, DatasetV2, Organization, Reuse } from '@datagouv/components-next'
-import { AvatarWithName, LoadingBlock, Pagination, useFormatDate, BrandedButton } from '@datagouv/components-next'
+import { AvatarWithName, LoadingBlock, Pagination, SearchableSelect, useFormatDate, BrandedButton } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'

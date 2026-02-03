@@ -1,10 +1,12 @@
 import type { ComputedRef, Ref, WatchSource } from 'vue'
 
+type MaybeRef<T> = T | Ref<T> | ComputedRef<T>
+
 export type UseFetchOptions<DataT> = {
   key?: string
   method?: string
-  query?: Record<string, unknown>
-  params?: Record<string, unknown>
+  query?: MaybeRef<Record<string, unknown>>
+  params?: MaybeRef<Record<string, unknown>>
   body?: RequestInit['body'] | Record<string, unknown>
   headers?: Record<string, string> | [key: string, value: string][] | Headers
   baseURL?: string

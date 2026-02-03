@@ -13,11 +13,27 @@
     </h1>
 
     <div class="bg-white py-4 px-4 -mx-4">
-      <DataservicesSearchPage />
+      <GlobalSearch :config="searchConfig" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { GlobalSearch, type GlobalSearchConfig } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+
+const searchConfig: GlobalSearchConfig = [
+  {
+    class: 'dataservices',
+    basicFilters: ['organization', 'is_restricted'],
+  },
+  {
+    class: 'datasets',
+    basicFilters: ['organization', 'organization_badge'],
+  },
+  {
+    class: 'reuses',
+    basicFilters: ['organization'],
+  },
+]
 </script>

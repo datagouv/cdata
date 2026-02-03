@@ -145,7 +145,7 @@ const { t } = useTranslation()
 const { $api, $fileApi } = useNuxtApp()
 
 const route = useRoute()
-const { start, finish, isLoading } = useLoadingIndicator()
+const isLoading = ref(false)
 
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
 const { data: reuse, status, refresh } = await useAPI<Reuse>(url, { redirectOn404: true })
@@ -164,7 +164,7 @@ async function save() {
   if (!reuse.value) return
 
   try {
-    start()
+    isLoading.value = true
 
     await $api(`/api/1/reuses/${reuse.value.id}/`, {
       method: 'PUT',
@@ -184,7 +184,7 @@ async function save() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
@@ -199,7 +199,7 @@ async function archiveReuse() {
   if (!reuse.value) return
 
   try {
-    start()
+    isLoading.value = true
 
     await $api(`/api/1/reuses/${reuse.value.id}/`, {
       method: 'PUT',
@@ -216,7 +216,7 @@ async function archiveReuse() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
@@ -225,7 +225,7 @@ async function switchReusePrivate() {
   if (!reuse.value) return
 
   try {
-    start()
+    isLoading.value = true
 
     await $api(`/api/1/reuses/${reuse.value.id}/`, {
       method: 'PUT',
@@ -242,7 +242,7 @@ async function switchReusePrivate() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
@@ -251,7 +251,7 @@ async function restoreReuse() {
   if (!reuse.value) return
 
   try {
-    start()
+    isLoading.value = true
 
     await $api(`/api/1/reuses/${reuse.value.id}/`, {
       method: 'PUT',
@@ -263,7 +263,7 @@ async function restoreReuse() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
@@ -271,7 +271,7 @@ async function feature() {
   if (!reuse.value) return
   const method = reuse.value.featured ? 'DELETE' : 'POST'
   try {
-    start()
+    isLoading.value = true
     await $api(`/api/1/reuses/${route.params.id}/featured`, {
       method,
     })
@@ -287,7 +287,7 @@ async function feature() {
     toast.error(t('Impossible de mettre en avant cette réutilisation'))
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 </script>

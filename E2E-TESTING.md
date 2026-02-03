@@ -46,15 +46,15 @@ Les tests E2E simulent un environnement complet avec :
 
 Pour tester localement :
 
-1. **Démarrer udata** :
-2. **Lancer les tests** :
+1. **Démarrer udata**
+2. **Rajouter les variables d'environnement nécessaires dans `.env`**:
+```
+NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES="hero_15.png"  #  to avoid homepage image randomness
+UDATA_WORKING_DIR="/path/to/udata/"  # to allow for udata commands execution (ex: in 2FA flow tests cleanup)
+```
+3. **Lancer les tests** :
 ```bash
 pnpm run test:e2e
-```
-
-Set in `.env` to avoid randomness:
-```
-NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES="hero_15.png"
 ```
 
 ## Scripts disponibles

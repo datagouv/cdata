@@ -63,9 +63,8 @@
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, Pagination, type Organization } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, SelectGroup, type Organization } from '@datagouv/components-next'
 import AdminDiscussionsTable from '../AdminTable/AdminDiscussionsTable/AdminDiscussionsTable.vue'
-import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 import type { PaginatedArray, SortDirection } from '~/types/types'
 import type { DiscussionSortedBy, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 

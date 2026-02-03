@@ -40,7 +40,7 @@
             <span>{{ $t('Statut') }}:</span>
             <DatasetBadge :dataset />
           </p>
-          <p class="space-x-1 flex items-center">
+          <div class="space-x-1 flex items-center">
             <RiPriceTag3Line class="inline size-3" />
             <span>{{ $t('Métadonnées:') }}</span>
             <Tooltip>
@@ -52,8 +52,8 @@
                 <DatasetQualityTooltipContent :quality="dataset.quality" />
               </template>
             </Tooltip>
-          </p>
-          <p class="space-x-1">
+          </div>
+          <div class="space-x-1">
             <RiBarChartBoxLine class="inline size-3" />
             <span>{{ $t('Statistiques:') }}</span>
             <span class="space-x-2">
@@ -94,7 +94,7 @@
                 </template>
               </Tooltip>
             </span>
-          </p>
+          </div>
           <p
             v-if="activities && activities.data.length"
             class="space-x-1"

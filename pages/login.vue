@@ -125,7 +125,7 @@ definePageMeta({
 const { t } = useTranslation()
 const config = useRuntimeConfig()
 
-useSeoMeta({ title: t('Connexion') })
+useSeoMeta({ title: t('Connexion'), robots: 'noindex' })
 
 const email = ref('')
 const password = ref('')
@@ -149,21 +149,30 @@ const connect = async () => {
   errors.value = {}
 
   try {
-    await postApiWithCsrf('/login/', {
+    const { response } = await postApiWithCsrf<{ response: { tf_required: boolean, tf_state: string } }>('/login/', {
       email: email.value,
       password: password.value,
       remember: rememberMe.value,
     })
 
-    toast.success(t('Vous êtes maintenant connecté.'))
-    await loadMe(me)
-
-    const next = sessionStorage.getItem('next')
-    if (next) {
-      navigateTo(next)
+    if (response.tf_required === true) {
+      // 2FA is required, we should either set it up if not done already or validate it
+      if (response.tf_state === 'setup_from_login')
+        navigateTo('/tf-setup')
+      else
+        navigateTo('/tf-validate')
     }
     else {
-      await navigateTo('/')
+      toast.success(t('Vous êtes maintenant connecté.'))
+      await loadMe(me)
+
+      const next = sessionStorage.getItem('next')
+      if (next) {
+        navigateTo(next)
+      }
+      else {
+        await navigateTo('/')
+      }
     }
   }
   catch (e) {

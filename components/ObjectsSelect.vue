@@ -106,10 +106,9 @@
 </template>
 
 <script setup lang="ts" generic="T extends { id: string, title: string }, TSuggest extends { id: string, title: string }">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, SearchableSelect } from '@datagouv/components-next'
 import { RiAddLine, RiDeleteBinLine, RiDraggable } from '@remixicon/vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
-import SearchableSelect from '~/components/SearchableSelect.vue'
 
 const props = withDefaults(defineProps<{
   single?: boolean

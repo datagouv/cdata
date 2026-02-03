@@ -9,13 +9,13 @@
       <h2 class="!text-sm !mb-2.5">
         {{ $t(`Jeux de données de l'organisation`) }} {{ organization.name }}
       </h2>
-      <DatasetsSearchPage :organization="organization" />
+      <GlobalSearch :config="getSearchConfig(organization.id)" />
     </div>
   </LoadingBlock>
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, type Organization } from '@datagouv/components-next'
+import { GlobalSearch, LoadingBlock, type GlobalSearchConfig, type Organization } from '@datagouv/components-next'
 
 const props = defineProps<{
   slug: string
@@ -23,4 +23,14 @@ const props = defineProps<{
 
 const url = computed(() => `/api/1/organizations/${props.slug}/`)
 const { data: organizationData, status } = await useAPI<Organization>(url, { lazy: true, server: false })
+
+function getSearchConfig(organizationId: string): GlobalSearchConfig {
+  return [
+    {
+      class: 'datasets',
+      hiddenFilters: [{ key: 'organization', value: organizationId }],
+      basicFilters: ['tag', 'format', 'license', 'schema', 'geozone', 'granularity', 'badge'],
+    },
+  ]
+}
 </script>

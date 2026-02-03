@@ -13,12 +13,27 @@
     </h1>
 
     <div class="bg-white py-4 px-4 -mx-4">
-      <DatasetSearchPage />
+      <GlobalSearch :config="searchConfig" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { GlobalSearch, type GlobalSearchConfig } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import DatasetSearchPage from '~/components/Datasets/SearchPage.vue'
+
+const searchConfig: GlobalSearchConfig = [
+  {
+    class: 'datasets',
+    basicFilters: ['organization', 'organization_badge', 'tag', 'format', 'license', 'schema', 'geozone', 'granularity', 'badge'],
+  },
+  {
+    class: 'dataservices',
+    basicFilters: ['organization', 'is_restricted'],
+  },
+  {
+    class: 'reuses',
+    basicFilters: ['organization'],
+  },
+]
 </script>

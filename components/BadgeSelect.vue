@@ -7,13 +7,14 @@
     class="mb-6"
     data-testid="badge-select"
     :options="badgeOptions"
-    :get-option-id="(badge) => badgesLabels?.[badge.kind] ?? badge.kind"
-    :display-value="(badges) => badges ? humanJoin(badges.map(b => badgesLabels?.[b.kind] ?? b.kind)) : ''"
+    :get-option-id="(badge: Badge) => badgesLabels?.[badge.kind] ?? badge.kind"
+    :display-value="(badges: Badge[]) => badges ? humanJoin(badges.map((b: Badge) => badgesLabels?.[b.kind] ?? b.kind)) : ''"
     :multiple="true"
   />
 </template>
 
 <script setup lang="ts">
+import { SearchableSelect } from '@datagouv/components-next'
 import type { Badge } from '@datagouv/components-next'
 
 const props = defineProps<{

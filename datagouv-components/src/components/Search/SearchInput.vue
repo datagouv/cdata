@@ -4,7 +4,7 @@
       class="sr-only"
       :for="id"
     >
-      {{ $t("Recherche") }}
+      {{ t('Recherche') }}
     </label>
     <input
       :id="id"
@@ -13,8 +13,8 @@
       type="search"
       name="q"
       class="input max-h-12 m-0 rounded-tl shadow-input-blue"
-      :aria-label="placeholder || $t('Rechercher...')"
-      :placeholder="placeholder || $t('Rechercher...')"
+      :aria-label="placeholder || t('Rechercher...')"
+      :placeholder="placeholder || t('Rechercher...')"
     >
     <BrandedButton
       class="rounded-l-none rounded-br-none rounded-tr min-h-12"
@@ -24,21 +24,27 @@
       icon-only-on-mobile
       type="submit"
     >
-      {{ $t('Recherche') }}
+      {{ t('Recherche') }}
     </BrandedButton>
   </section>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { RiSearchLine } from '@remixicon/vue'
 import { nextTick, onMounted, useId, useTemplateRef } from 'vue'
+import { RiSearchLine } from '@remixicon/vue'
+import { useTranslation } from '../../composables/useTranslation'
+import BrandedButton from '../BrandedButton.vue'
 
 const q = defineModel<string>({ required: true })
 
-defineProps<{
-  placeholder: string
-}>()
+withDefaults(defineProps<{
+  placeholder?: string
+  autoFocus?: boolean
+}>(), {
+  autoFocus: true,
+})
+
+const { t } = useTranslation()
 
 const id = useId()
 

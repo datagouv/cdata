@@ -48,8 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { SimpleBanner, type AccessTypeForm } from '@datagouv/components-next'
-import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
+import { SelectGroup, SimpleBanner, type AccessTypeForm } from '@datagouv/components-next'
 
 type AccessTypeFormKeys = 'access_type' | 'access_type_reason'
 

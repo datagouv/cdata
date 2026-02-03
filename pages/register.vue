@@ -153,7 +153,7 @@ const config = useRuntimeConfig()
 const { t } = useTranslation()
 const route = useRoute()
 
-useSeoMeta({ title: t('S\'enregistrer') })
+useSeoMeta({ title: t('S\'enregistrer'), robots: 'noindex' })
 
 const email = ref('')
 const password = ref('')

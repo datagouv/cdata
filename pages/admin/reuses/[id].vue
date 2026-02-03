@@ -39,7 +39,7 @@
           <span>{{ $t('Statut') }}:</span>
           <ReuseBadge :reuse />
         </p>
-        <p class="space-x-1">
+        <div class="space-x-1">
           <RiBarChartBoxLine class="inline size-3" />
           <span>{{ $t('Statistiques:') }}</span>
           <span class="space-x-2">
@@ -62,7 +62,7 @@
               </template>
             </Tooltip>
           </span>
-        </p>
+        </div>
         <p
           v-if="activities && activities.data.length"
           class="space-x-1"

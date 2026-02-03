@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 
 const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 

@@ -3,6 +3,7 @@
     <InputGroup
       v-model="form.content"
       type="markdown"
+      :min-heading="2"
       :label="$t('Contenu')"
       :required="true"
       :has-error="!!getFirstError('content')"

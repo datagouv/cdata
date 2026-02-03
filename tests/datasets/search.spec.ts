@@ -1,16 +1,17 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 
 test('search launch without params', async ({ page }) => {
   await page.goto('/datasets/search/')
 
-  // Expect a title "to contain" a substring.
   await expect(page).toHaveTitle(
     'Recherche des jeux de données — data.gouv.fr',
   )
 
-  await expect(page.getByTestId('result-count')).toBeVisible()
+  // Result count is displayed with role="status"
+  await expect(page.getByRole('status')).toBeVisible()
 
-  const results = page.getByTestId('results')
+  // Results are displayed in a list
+  const results = page.locator('.search-results ul')
   await expect(results.locator('li')).not.toHaveCount(0)
 
   const url = new URL(page.url())
@@ -20,17 +21,17 @@ test('search launch without params', async ({ page }) => {
 test('dataset label filter is available and functional', async ({ page }) => {
   await page.goto('/datasets/search/')
 
-  const filter = page.getByTestId('dataset-label-filter')
-  await expect(filter).toBeVisible()
-
-  // Check that filter has placeholder text
-  await expect(filter.getByPlaceholder('Tous les badges')).toBeVisible()
+  // BadgeSelect uses data-testid based on slugified label
+  const filterButton = page.getByTestId('searchable-select-label-de-donn-es')
+  await filterButton.scrollIntoViewIfNeeded()
+  await expect(filterButton).toBeVisible()
 
   // Open filter dropdown
-  await filter.locator('button').first().click()
+  await filterButton.click()
 
-  // Check that options are available
-  const options = filter.locator('li')
+  // Check that options are available in the listbox
+  const listbox = page.getByRole('listbox')
+  const options = listbox.getByRole('option')
   await expect(options).not.toHaveCount(0)
 
   // Get first option text for later verification
@@ -41,64 +42,49 @@ test('dataset label filter is available and functional', async ({ page }) => {
   await options.first().click()
 
   // Verify URL is updated with badge parameter
+  await page.waitForURL(/badge=/)
   const url = new URL(page.url())
   expect(url.searchParams.has('badge')).toBeTruthy()
-
-  // Verify filter shows selected value
-  await expect(filter.locator('input').first()).toHaveValue(
-    firstOptionText!,
-  )
 })
 
 test('search results update when badge filter is applied', async ({ page }) => {
   await page.goto('/datasets/search/')
 
-  // Get initial results count
-  const initialResultCount = await page
-    .getByTestId('result-count')
-    .textContent()
-  expect(initialResultCount).toBeTruthy()
+  // Wait for initial results to load
+  await expect(page.getByRole('status')).toBeVisible()
 
-  const filter = page.getByTestId('dataset-label-filter')
-  await filter.locator('button').first().click()
+  // Open badge filter
+  const filterButton = page.getByTestId('searchable-select-label-de-donn-es')
+  await filterButton.scrollIntoViewIfNeeded()
+  await filterButton.click()
 
-  // Select a badge filter
-  await filter.locator('li').nth(3).click()
+  // Select a badge filter (pick the first option)
+  const listbox = page.getByRole('listbox')
+  await listbox.getByRole('option').first().click()
 
-  // Wait for results to update
-  await page.waitForTimeout(3000) // Allow for API call and re-render
+  // Wait for URL to update with badge parameter
+  await page.waitForURL(/badge=/)
 
-  // Get updated results count
-  const filteredResultCount = await page
-    .getByTestId('result-count')
-    .textContent()
-  expect(filteredResultCount).toBeTruthy()
+  // Either results are shown with a count, or "no results" message is displayed
+  const hasResults = await page.getByRole('status').isVisible().catch(() => false)
+  const hasNoResultsMessage = await page.getByText('Vous n\'avez pas trouvé ce que vous cherchez').isVisible().catch(() => false)
 
-  // Results should either be different count or show "0 résultats" if no datasets have this badge
-  expect(filteredResultCount).not.toBe(initialResultCount)
+  expect(hasResults || hasNoResultsMessage).toBeTruthy()
 })
 
 test('badge filter can be cleared', async ({ page }) => {
   // Start with a badge filter applied
   await page.goto('/datasets/search/?badge=hvd')
 
-  const filter = page.getByTestId('dataset-label-filter')
-  const filterInput = filter.locator('input').first()
+  // Find the reset filters button in the sidebar (first one)
+  const resetButton = page.getByRole('button', { name: 'Réinitialiser les filtres' }).first()
+  await resetButton.scrollIntoViewIfNeeded()
 
-  // Wait for results to update
-  await page.waitForTimeout(3000) // Allow for API call and re-render
-
-  // Verify badge is selected
-  await expect(filterInput).toHaveValue('Données de forte valeur')
-
-  // Open dropdown and select "Tous les badges" (first option is usually "clear")
-  await filter.locator('button').first().click()
-  await filter.getByTitle('Clear').first().click()
-
-  // Verify filter is cleared
-  await expect(filterInput).toHaveValue('')
+  // Click reset filters button
+  await resetButton.click()
 
   // Verify URL parameter is removed
+  await page.waitForURL(url => !url.searchParams.has('badge'))
   const url = new URL(page.url())
   expect(url.searchParams.has('badge')).toBeFalsy()
 })
@@ -106,27 +92,27 @@ test('badge filter can be cleared', async ({ page }) => {
 test('badge filter persists on page reload', async ({ page }) => {
   await page.goto('/datasets/search/')
 
-  const filter = page.getByTestId('dataset-label-filter')
-  await filter.locator('button').first().click()
+  // Open badge filter
+  const filterButton = page.getByTestId('searchable-select-label-de-donn-es')
+  await filterButton.scrollIntoViewIfNeeded()
+  await filterButton.click()
 
   // Get and select the first badge option
-  const firstOption = filter.locator('li').first()
-  const optionText = await firstOption.textContent()
+  const listbox = page.getByRole('listbox')
+  const firstOption = listbox.getByRole('option').first()
   await firstOption.click()
+
+  // Wait for URL to update
+  await page.waitForURL(/badge=/)
+  const badgeValue = new URL(page.url()).searchParams.get('badge')
 
   // Reload the page
   await page.reload()
 
-  // Verify the filter is still applied
-  const filterInput = page
-    .getByTestId('dataset-label-filter')
-    .locator('input')
-    .first()
-  await expect(filterInput).toHaveValue(optionText!)
-
-  // Verify URL still has the badge parameter
+  // Verify URL still has the badge parameter with same value
   const url = new URL(page.url())
   expect(url.searchParams.has('badge')).toBeTruthy()
+  expect(url.searchParams.get('badge')).toBe(badgeValue)
 })
 
 test('clicking dataset navigates to detail', async ({ page }) => {

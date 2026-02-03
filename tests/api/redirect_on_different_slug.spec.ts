@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 
 const redirectionCases = [
   { from: '/datasets/65271c20a80b3f04010e71ff/', to: '/datasets/marches-publics-de-la-metropole-de-lyon' },
