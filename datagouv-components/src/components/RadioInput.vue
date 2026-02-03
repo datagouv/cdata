@@ -1,6 +1,6 @@
 <template>
   <label
-    class="flex items-center gap-2 p-1 rounded cursor-pointer transition"
+    class="flex items-center gap-2 p-1 rounded cursor-pointer transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-blue-500"
     :class="isSelected ? 'bg-gray-200' : 'hover:bg-gray-100'"
   >
     <input
