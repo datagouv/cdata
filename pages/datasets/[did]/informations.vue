@@ -1,9 +1,6 @@
 <template>
   <div class="divide-y">
-    <DatasetInformationSection
-      :dataset="dataset"
-      :tag-url="(tag) => `/datasets?tag=${tag}`"
-    />
+    <DatasetInformationSection :dataset="dataset" />
     <DatasetTemporalitySection :dataset="dataset" />
     <DatasetSpatialSection :dataset="dataset">
       <template #map="{ geojson }">
