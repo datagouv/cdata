@@ -52,8 +52,8 @@ const zonesDisplay = computed(() => {
 function humanJoin(source: Array<string>): string {
   const array = [...source]
   if (!array.length) return ''
-  if (array.length === 1) return array[0]
-  const last = array.pop()
+  if (array.length === 1) return array[0]!
+  const last = array.pop()!
   return `${array.join(', ')} ${t('et')} ${last}`
 }
 </script>
