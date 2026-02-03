@@ -10,7 +10,10 @@
       :class="{ 'sr-only': hideLabel }"
     >
       {{ label }}
-      <Required :required="required" />
+      <span
+        v-if="required"
+        class="text-new-primary"
+      >*</span>
       <span
         v-if="explanation"
         class="fr-icon-information-line"
@@ -64,7 +67,7 @@
               v-if="showClearButton"
               type="button"
               class="p-2"
-              :title="$t('Clear')"
+              :title="t('Effacer')"
               @click.prevent="model = null"
             >
               <RiDeleteBinLine class="size-4 text-gray-800" />
@@ -89,7 +92,7 @@
               v-if="!filteredAndGroupedOptions && query !== ''"
               class="relative cursor-default select-none px-4 py-2 text-gray-700"
             >
-              {{ $t('Aucun résultat') }}
+              {{ t('Aucun résultat') }}
             </div>
 
             <div
@@ -149,9 +152,9 @@
 </template>
 
 <script setup lang="ts" generic="T extends string | number | object, Multiple extends true | false">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, useId, toValue, useTemplateRef } from 'vue'
 import { useFloating, autoUpdate, autoPlacement } from '@floating-ui/vue'
-import { AnimatedLoader } from '@datagouv/components-next'
+import { watchDebounced } from '@vueuse/core'
 import {
   Combobox,
   ComboboxInput,
@@ -161,7 +164,8 @@ import {
   TransitionRoot,
 } from '@headlessui/vue'
 import { RiArrowDownSLine, RiCheckLine, RiDeleteBinLine } from '@remixicon/vue'
-import { watchDebounced } from '@vueuse/core'
+import { useTranslation } from '../../composables/useTranslation'
+import AnimatedLoader from '../AnimatedLoader.vue'
 
 type ModelType = Multiple extends false ? T : Array<T>
 
@@ -190,8 +194,10 @@ const props = withDefaults(defineProps<{
   required: false,
   loading: false,
   hideLabel: false,
-  displayValue: (_: ModelType): string => '',
-  groupBy: (_: T): string => '',
+
+  displayValue: (): string => '',
+
+  groupBy: (): string => '',
   getOptionId: (option: T): string | number => {
     if (typeof option === 'string') return option
     if (typeof option === 'number') return option
@@ -223,6 +229,8 @@ const props = withDefaults(defineProps<{
 })
 
 const model = defineModel<ModelType | null>()
+
+const { t } = useTranslation()
 
 const id = useId()
 const errorTextId = useId()
@@ -308,6 +316,10 @@ function compareTwoOptions(a: T | null, b: T | null) {
 
 function isActive(activeOption: T, currentOption: T) {
   return activeOption ? props.getOptionId(activeOption) === props.getOptionId(currentOption) : false
+}
+
+function simpleSlug(text: string) {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 }
 
 const referenceRef = useTemplateRef('floatingReference')

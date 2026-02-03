@@ -3,14 +3,21 @@
     <h2 class="!text-sm !mb-2.5">
       {{ $t(`Réutilisations de l'organisation`) }}
     </h2>
-    <ReusesListFromOrganization :organization />
+    <GlobalSearch :config="searchConfig" />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Organization } from '@datagouv/components-next'
+import { GlobalSearch, type GlobalSearchConfig, type Organization, getDefaultReuseConfig } from '@datagouv/components-next'
 
-defineProps<{
+const props = defineProps<{
   organization: Organization
 }>()
+
+const searchConfig: GlobalSearchConfig = [
+  getDefaultReuseConfig({
+    hiddenFilters: [{ key: 'organization', value: props.organization.id }],
+    basicFilters: [],
+  }),
+]
 </script>

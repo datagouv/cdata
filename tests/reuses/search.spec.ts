@@ -1,11 +1,12 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 
 test('page loads with results', async ({ page }) => {
   await page.goto('/reuses/search')
 
   await expect(page).toHaveTitle(/Réutilisations/)
 
-  await expect(page.getByText(/\d+ résultat/)).toBeVisible()
+  // Result count is displayed with role="status"
+  await expect(page.getByRole('status')).toBeVisible()
 
   // Verify a known reuse from seed data is displayed
   await expect(page.getByRole('link', { name: /itineriz/i })).toBeVisible()
@@ -14,8 +15,9 @@ test('page loads with results', async ({ page }) => {
 test('search filters results', async ({ page }) => {
   await page.goto('/reuses/search')
 
-  const searchInput = page.getByPlaceholder('Rechercher...')
+  const searchInput = page.getByPlaceholder('Ex : élection présidentielle 2022')
   await searchInput.fill('itineriz')
+  await searchInput.press('Enter')
 
   await expect(page).toHaveURL(/\/reuses\/search\?q=itineriz/)
 
@@ -25,10 +27,14 @@ test('search filters results', async ({ page }) => {
 test('topic filter works', async ({ page }) => {
   await page.goto('/reuses/search')
 
-  const topicButton = page.getByRole('button', { name: 'Alimentation et agriculture' })
-  await expect(topicButton).toBeVisible()
+  // Topic filter uses SearchableSelect with label "Thématique"
+  const filterButton = page.getByTestId('searchable-select-th-matique')
+  await filterButton.scrollIntoViewIfNeeded()
+  await filterButton.click()
 
-  await topicButton.click()
+  // Select "Alimentation et agriculture" from the listbox
+  const listbox = page.getByRole('listbox')
+  await listbox.getByRole('option', { name: 'Alimentation et agriculture' }).click()
 
   await expect(page).toHaveURL(/\/reuses\/search\?topic=food_and_agriculture/)
 })

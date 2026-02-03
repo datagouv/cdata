@@ -69,7 +69,7 @@ export function useBlocsTypes() {
       description: t('Bandeau d\'en-tête avec titre et description'),
       component: HeroBlocComponent,
       fullWidth: true,
-      default: (): Omit<HeroBloc, 'id'> => ({ class: 'HeroBloc', title: 'Titre', description: null, color: 'primary' }),
+      default: (): Omit<HeroBloc, 'id'> => ({ class: 'HeroBloc', title: 'Titre', description: null, color: 'primary', main_link_title: null, main_link_url: null }),
     },
   }
 }

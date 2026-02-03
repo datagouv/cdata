@@ -2,10 +2,12 @@ name: CI
 
 on:
   push:
+  workflow_dispatch:
 
 env:
   CONTAINER_REGISTRY_URL: ${{ vars.CONTAINER_REGISTRY_URL }}
   APP_NAME: ${{ vars.APP_NAME }}
+  UDATA_WORKING_DIR: udata
 
 jobs:
   # ============================================
@@ -121,14 +123,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: opendatateam/udata
-          path: udata
+          path: ${{ env.UDATA_WORKING_DIR }}
           ref: main
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.11"
-          working-directory: udata
+          working-directory: ${{ env.UDATA_WORKING_DIR }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -144,12 +146,12 @@ jobs:
         run: pnpm install
 
       - name: Install Python dependencies for udata
-        working-directory: udata
+        working-directory: ${{ env.UDATA_WORKING_DIR }}
         run: |
           uv sync --frozen
 
       - name: Configure udata
-        working-directory: udata
+        working-directory: ${{ env.UDATA_WORKING_DIR }}
         run: |
           cat << 'EOF' > udata.cfg
           from udata.settings import Defaults
@@ -178,6 +180,7 @@ jobs:
           SECURITY_EMAIL_VALIDATOR_ARGS = {
               "check_deliverability": False
           }
+          SECURITY_TWO_FACTOR = True
 
           MONGODB_HOST = 'mongodb://mongodb:27017/udata'
           CELERY_BROKER_URL = 'redis://redis:6379'
@@ -185,7 +188,7 @@ jobs:
           EOF
 
       - name: Initialize udata
-        working-directory: udata
+        working-directory: ${{ env.UDATA_WORKING_DIR }}
         run: |
           # Create fs directory
           mkdir -p fs
@@ -199,6 +202,7 @@ jobs:
 
           uv run udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
           uv run udata user create --first-name "Normal" --last-name "User" --email "normal@example.com" --password "@1337Password42"
+          uv run udata user create --first-name "2FA" --last-name "User" --email "2fa@example.com" --password "@1337Password42"
 
           uv run inv i18nc
 
@@ -225,12 +229,13 @@ jobs:
         env:
           BASE_URL: http://localhost:3000
           NUXT_PUBLIC_API_BASE: http://localhost:7000
+          UDATA_WORKING_DIR: ${{ env.UDATA_WORKING_DIR }}
           CI: true
         run: pnpm run test:e2e
 
       - name: Kill udata server
         if: always()
-        working-directory: udata
+        working-directory: ${{ env.UDATA_WORKING_DIR }}
         run: |
           # Kill udata server to release the lock so that post setup-uv can prune the cache
           pkill -f "uv run inv serve" || true
@@ -239,7 +244,7 @@ jobs:
         if: always()
         run: |
           echo "=== UDATA SERVER LOGS ==="
-          cat udata/udata.log || echo "No udata logs found"
+          cat $UDATA_WORKING_DIR/udata.log || echo "No udata logs found"
           echo ""
           echo "=== CDATA SERVER LOGS ==="
           cat cdata.log || echo "No cdata logs found"
@@ -261,11 +266,12 @@ jobs:
           retention-days: 7
 
   # ============================================
-  # JOB 4: Docker - build & push Docker image (all branches, not PRs)
+  # JOB 4: Docker - build & push Docker image (automatic on main, manual on any branch)
   # ============================================
   docker:
     needs: [quality, e2e]
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
     outputs:
@@ -313,11 +319,12 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   # ============================================
-  # JOB 5: Sentry - upload source maps (runs in parallel with publish)
+  # JOB 5: Sentry - upload source maps (automatic on main, manual on any branch)
   # ============================================
   sentry:
     needs: [quality, e2e]
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
 

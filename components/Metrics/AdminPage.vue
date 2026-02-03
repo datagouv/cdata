@@ -48,10 +48,6 @@ const props = defineProps<{
   user?: User | null
 }>()
 
-definePageMeta({
-  keepScroll: true,
-})
-
 defineEmits<{
   refresh: []
 }>()

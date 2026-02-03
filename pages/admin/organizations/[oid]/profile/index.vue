@@ -98,7 +98,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useTranslation()
-const { start, finish, isLoading } = useLoadingIndicator()
+const isLoading = ref(false)
 
 const form = ref<InstanceType<typeof DescribeOrganizationFrom> | null>(null)
 
@@ -121,7 +121,7 @@ function onOrganizationDeleted() {
 }
 
 async function restoreOrganization() {
-  start()
+  isLoading.value = true
   try {
     await updateOrganization({
       ...organizationForm.value,
@@ -133,12 +133,12 @@ async function restoreOrganization() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function updateCurrentOrganization(logo_file: File | null, newBadges: Array<Badge> | null) {
-  start()
+  isLoading.value = true
   try {
     await updateOrganization(organizationForm.value)
     if (newBadges && props.organization) {
@@ -153,7 +153,7 @@ async function updateCurrentOrganization(logo_file: File | null, newBadges: Arra
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 </script>

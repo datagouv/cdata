@@ -174,7 +174,6 @@ export default defineNuxtConfig({
       // A corresponding SVG at `datagouv-components/assets/labels` will be shown before the badge label
       datasetBadges: ['spd', 'inspire', 'hvd', 'sl', 'sr'],
 
-      enableCdataSecurityViews: false,
       requireEmailConfirmation: true,
       changeEmailPage: 'change-email',
       changePasswordPage: 'change',
@@ -199,6 +198,7 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    '/nuxt-api/oembed': { cors: true },
     // @ts-expect-error ssr option is valid but not in Nuxt types (see https://github.com/nuxt/nuxt/issues/15199)
     '/*/organizations/': { ssr: true },
     // @ts-expect-error ssr option is valid but not in Nuxt types
@@ -228,6 +228,9 @@ export default defineNuxtConfig({
 
   vite: {
     assetsInclude: ['**/*.md'],
+    resolve: {
+      dedupe: ['vue', 'vue-router'],
+    },
     optimizeDeps: {
       // Some `@datagouv/components-next` dependencies aren't scanned by Vite dev server.
       // It must optimized them to be able to handle commonjs dependencies.

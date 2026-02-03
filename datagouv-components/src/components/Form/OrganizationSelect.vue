@@ -1,0 +1,62 @@
+<template>
+  <SearchableSelect
+    v-model="model"
+    :options="[]"
+    :suggest="suggestOrganizations"
+    :label="t('Organisations')"
+    :placeholder="t('Toutes les organisations')"
+    :get-option-id="(option) => option.id"
+    :display-value="(option) => option.name"
+    :filter="(option, query) => (option.name).toLocaleLowerCase().includes(query.toLocaleLowerCase())"
+    :multiple="false"
+    :loading="loading || fetching"
+  >
+    <template #option="{ option }">
+      <div class="flex items-center space-x-2">
+        <OrganizationLogo
+          :organization="option"
+          size-class="size-8"
+          class="flex-none"
+        />
+        <span>{{ option.name }}</span>
+      </div>
+    </template>
+  </SearchableSelect>
+</template>
+
+<script setup lang="ts">
+import { ofetch } from 'ofetch'
+import { useComponentsConfig } from '../../config'
+import { useTranslation } from '../../composables/useTranslation'
+import { useAsyncSelectModelSync } from '../../composables/useSelectModelSync'
+import type { Organization, OrganizationSuggest } from '../../types/organizations'
+import OrganizationLogo from '../OrganizationLogo.vue'
+import SearchableSelect from './SearchableSelect.vue'
+
+const model = defineModel<Organization | OrganizationSuggest | null>({ default: null })
+const id = defineModel<string | undefined>('id')
+
+defineProps<{
+  loading?: boolean
+}>()
+
+const config = useComponentsConfig()
+const { t } = useTranslation()
+
+const { fetching } = useAsyncSelectModelSync({
+  model,
+  id,
+  getId: org => org.id,
+  fetchById: orgId => ofetch<Organization>(`/api/1/organizations/${orgId}/`, { baseURL: config.apiBase }),
+})
+
+async function suggestOrganizations(q: string): Promise<Array<Organization | OrganizationSuggest>> {
+  return await ofetch<Array<OrganizationSuggest>>('/api/1/organizations/suggest/', {
+    baseURL: config.apiBase,
+    query: {
+      q,
+      size: 20,
+    },
+  })
+}
+</script>

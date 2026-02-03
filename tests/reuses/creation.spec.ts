@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 import * as path from 'path'
 import { clickOutside } from '../helpers'
 
@@ -24,7 +24,7 @@ test('can create a reuse', async ({ page }) => {
   await page.getByRole('option', { name: 'Application' }).click()
   await clickOutside(page)
 
-  await page.getByTestId('searchable-select-thmatique').click()
+  await page.getByTestId('searchable-select-th-matique').click()
   await page.getByRole('option', { name: 'Culture et loisirs' }).click()
   await clickOutside(page)
 

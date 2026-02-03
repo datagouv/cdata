@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 
 test('can save edito page from admin without error toast', async ({ page }) => {
   await page.goto('/admin/site/edito/datasets')
@@ -60,6 +60,14 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Change the color to green
   await page.locator('.bg-new-green-illustration.size-8').click()
   await page.waitForTimeout(200)
+
+  // Add a CTA button
+  const heroCTATitle = page.locator('.bg-new-green-illustration [aria-label="Titre du bouton"]')
+  await heroCTATitle.click()
+  await heroCTATitle.fill('Découvrir les données')
+  await page.mouse.click(1, 1)
+  const heroCTAUrl = page.locator('.bg-new-green-illustration [aria-label="URL du bouton"]')
+  await heroCTAUrl.fill('https://www.data.gouv.fr/fr/datasets/')
 
   // Debug screenshot: after adding hero bloc
   await page.screenshot({ path: 'tests/edito/screenshots/01c-hero-bloc.png', fullPage: true })

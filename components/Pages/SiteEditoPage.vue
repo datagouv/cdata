@@ -66,10 +66,6 @@ const props = defineProps<{
   siteKey: 'datasets_page' | 'reuses_page' | 'dataservices_page'
 }>()
 
-definePageMeta({
-  keepScroll: true,
-})
-
 const { $api } = useNuxtApp()
 const { t } = useTranslation()
 
