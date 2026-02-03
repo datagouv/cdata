@@ -62,7 +62,7 @@ const emit = defineEmits<{
 function getCount(value: string): number | undefined {
   if (!props.facets) return undefined
   const facet = props.facets.find(f => f.name === value)
-  return facet?.count
+  return facet?.count ?? 0
 }
 
 const totalCount = computed(() => getCount('all'))
