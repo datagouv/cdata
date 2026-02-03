@@ -62,13 +62,10 @@
                 v-model="organizationType"
                 :style="{ order: getOrder('organization_badge') }"
               />
-              <SelectGroup
+              <AccessTypeSelect
                 v-if="isEnabled('is_restricted')"
                 v-model="isRestricted"
-                :label="t('Accès')"
-                :options="restrictedOptions"
                 :style="{ order: getOrder('is_restricted') }"
-                hide-null-option
               />
               <TagSelect
                 v-if="isEnabled('tag')"
@@ -311,7 +308,7 @@ import Sidemenu from './Sidemenu.vue'
 import BasicAndAdvancedFilters from './BasicAndAdvancedFilters.vue'
 import OrganizationSelect from '../Form/OrganizationSelect.vue'
 import OrganizationTypeSelect from '../Form/OrganizationTypeSelect.vue'
-import SelectGroup from '../Form/SelectGroup.vue'
+import AccessTypeSelect from '../Form/AccessTypeSelect.vue'
 import TagSelect from '../Form/TagSelect.vue'
 import FormatSelect from '../Form/FormatSelect.vue'
 import LicenseSelect from '../Form/LicenseSelect.vue'
@@ -378,12 +375,6 @@ const badge = useRouteQuery<string | undefined>('badge')
 const topic = useRouteQuery<string | undefined>('topic')
 
 const pageSize = 20
-
-const restrictedOptions = [
-  { value: undefined, label: t(`Toutes les modalités d'accès`) },
-  { value: false, label: t('Les API ouvertes à tous') },
-  { value: true, label: t('Les API en accès restreint') },
-]
 
 // All filter values as a record
 const allFilters: Record<string, Ref<unknown>> = {
