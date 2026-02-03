@@ -12,11 +12,7 @@
         </ClientOnly>
       </template>
     </DatasetSpatialSection>
-    <DatasetSchemaSection
-      :schemas="schemas"
-      :schemas-site-url="config.public.schemasSite.url"
-      :schemas-site-name="config.public.schemasSite.name"
-    />
+    <DatasetSchemaSection :dataset="dataset" />
     <DatasetEmbedSection :dataset="dataset" />
     <div>
       <ExtraAccordion
@@ -51,14 +47,10 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, DatasetInformationSection, DatasetTemporalitySection, DatasetSpatialSection, DatasetSchemaSection, DatasetEmbedSection, ExtraAccordion, LeafletMap, type DatasetV2WithFullObject, type Schema } from '@datagouv/components-next'
+import { BrandedButton, DatasetInformationSection, DatasetTemporalitySection, DatasetSpatialSection, DatasetSchemaSection, DatasetEmbedSection, ExtraAccordion, LeafletMap, type DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiServerLine } from '@remixicon/vue'
 
-const props = defineProps<{ dataset: DatasetV2WithFullObject }>()
+defineProps<{ dataset: DatasetV2WithFullObject }>()
 
 useSeoMeta({ robots: 'noindex' })
-
-const config = useRuntimeConfig()
-
-const { data: schemas } = await useAPI<Array<Schema>>(`/api/2/datasets/${props.dataset.id}/schemas/`)
 </script>
