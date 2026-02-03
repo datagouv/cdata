@@ -17,7 +17,7 @@
     <div class="grid grid-cols-12 mt-2 md:mt-5">
       <div
         v-if="showSidebar"
-        class="col-span-12 md:col-span-4 lg:col-span-3 space-y-8"
+        class="col-span-12 md:col-span-4 lg:col-span-3 md:space-y-8"
       >
         <div v-if="config.length > 1">
           <Sidemenu :button-text="t('Type')">

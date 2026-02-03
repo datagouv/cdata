@@ -1,8 +1,5 @@
 <template>
-  <div
-    :class="{ 'md:order-2': onRight }"
-    class="mb-4 md:mb-0"
-  >
+  <div :class="{ 'md:order-2': onRight }">
     <nav
       class="fr-sidemenu mx-0"
       :class="{ 'fr-sidemenu--right': onRight, 'fr-sidemenu--no-border': !showBorder, 'fr-sidemenu--sticky': fixed, 'fr-sidemenu--sticky-full-height': stickyFullHeight }"
@@ -19,7 +16,10 @@
         >
           {{ buttonText }}
         </DisclosureButton>
-        <DisclosurePanel ref="panelRef">
+        <DisclosurePanel
+          ref="panelRef"
+          class="pb-4 md:pb-0"
+        >
           <div
             :id="titleId"
             class="fr-sidemenu__title !text-sm !mb-3"
