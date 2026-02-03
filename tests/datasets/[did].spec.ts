@@ -75,7 +75,10 @@ test('clicking dataset label navigates to filtered search', async ({
   )
 
   // Verify the badge filter is applied
-  await expect(page.getByText('Service public de la donnée de référence')).toBeVisible()
+  const badgeFilterLabel = page.getByText('Label de données')
+  await badgeFilterLabel.scrollIntoViewIfNeeded()
+  const badgeInput = page.locator('input[placeholder="Tous les labels"]')
+  await expect(badgeInput).toHaveValue(/Service public/, { timeout: 15000 })
 })
 
 test('dataset without labels does not show label section', async ({ page }) => {
