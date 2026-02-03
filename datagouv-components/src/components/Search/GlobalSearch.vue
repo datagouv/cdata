@@ -97,15 +97,40 @@
                 v-model:id="granularity"
                 :style="{ order: getOrder('granularity') }"
               />
-              <BadgeSelect
-                v-if="isEnabled('badge')"
-                v-model:id="badge"
-                :style="{ order: getOrder('badge') }"
-              />
               <ReuseTopicSelect
                 v-if="isEnabled('topic')"
                 v-model:id="topic"
                 :style="{ order: getOrder('topic') }"
+              />
+              <FormatFamilyFilter
+                v-if="isEnabled('format_family')"
+                v-model="formatFamily"
+                :style="{ order: getOrder('format_family') }"
+              />
+              <AccessTypeFilter
+                v-if="isEnabled('access_type')"
+                v-model="accessType"
+                :style="{ order: getOrder('access_type') }"
+              />
+              <LastUpdateRangeFilter
+                v-if="isEnabled('last_update_range')"
+                v-model="lastUpdateRange"
+                :style="{ order: getOrder('last_update_range') }"
+              />
+              <ProducerTypeFilter
+                v-if="isEnabled('producer_type')"
+                v-model="producerType"
+                :style="{ order: getOrder('producer_type') }"
+              />
+              <DatasetBadgeFilter
+                v-if="isEnabled('badge')"
+                v-model="badge"
+                :style="{ order: getOrder('badge') }"
+              />
+              <ReuseTypeFilter
+                v-if="isEnabled('type')"
+                v-model="reuseType"
+                :style="{ order: getOrder('type') }"
               />
               <slot
                 name="filters"
@@ -315,8 +340,13 @@ import LicenseSelect from '../Form/LicenseSelect.vue'
 import SchemaSelect from '../Form/SchemaSelect.vue'
 import GeozoneSelect from '../Form/GeozoneSelect.vue'
 import GranularitySelect from '../Form/GranularitySelect.vue'
-import BadgeSelect from '../Form/BadgeSelect.vue'
 import ReuseTopicSelect from '../Form/ReuseTopicSelect.vue'
+import FormatFamilyFilter from './Filter/FormatFamilyFilter.vue'
+import AccessTypeFilter from './Filter/AccessTypeFilter.vue'
+import LastUpdateRangeFilter from './Filter/LastUpdateRangeFilter.vue'
+import ProducerTypeFilter from './Filter/ProducerTypeFilter.vue'
+import DatasetBadgeFilter from './Filter/DatasetBadgeFilter.vue'
+import ReuseTypeFilter from './Filter/ReuseTypeFilter.vue'
 
 const props = withDefaults(defineProps<{
   config?: GlobalSearchConfig
@@ -374,6 +404,13 @@ const granularity = useRouteQuery<string | undefined>('granularity')
 const badge = useRouteQuery<string | undefined>('badge')
 const topic = useRouteQuery<string | undefined>('topic')
 
+// New simple filters
+const formatFamily = useRouteQuery<string | undefined>('format_family')
+const accessType = useRouteQuery<string | undefined>('access_type')
+const lastUpdateRange = useRouteQuery<string | undefined>('last_update_range')
+const producerType = useRouteQuery<string | undefined>('producer_type')
+const reuseType = useRouteQuery<string | undefined>('type')
+
 const pageSize = 20
 
 // All filter values as a record
@@ -389,6 +426,11 @@ const allFilters: Record<string, Ref<unknown>> = {
   granularity,
   badge,
   topic,
+  format_family: formatFamily,
+  access_type: accessType,
+  last_update_range: lastUpdateRange,
+  producer_type: producerType,
+  type: reuseType,
 }
 
 // Reset sort and filters when changing type if they're not valid for the new type
@@ -453,6 +495,11 @@ const filtersForReset = computed(() => ({
   granularity: granularity.value,
   badge: badge.value,
   topic: topic.value,
+  format_family: formatFamily.value,
+  access_type: accessType.value,
+  last_update_range: lastUpdateRange.value,
+  producer_type: producerType.value,
+  type: reuseType.value,
 }))
 
 watch(filtersForReset, () => page.value = 1)
@@ -471,6 +518,11 @@ const hasFilters = computed(() => {
     || granularity.value
     || badge.value
     || topic.value
+    || formatFamily.value
+    || accessType.value
+    || lastUpdateRange.value
+    || producerType.value
+    || reuseType.value
 })
 
 const showForumLink = computed(() => currentType.value === 'datasets' && !!componentsConfig.forumUrl)
@@ -487,6 +539,11 @@ function resetFilters() {
   granularity.value = undefined
   badge.value = undefined
   topic.value = undefined
+  formatFamily.value = undefined
+  accessType.value = undefined
+  lastUpdateRange.value = undefined
+  producerType.value = undefined
+  reuseType.value = undefined
   q.value = ''
   flushQ()
 }
