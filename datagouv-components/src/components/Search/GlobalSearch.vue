@@ -47,7 +47,7 @@
             <template #title>
               {{ t('Filtres') }}
             </template>
-            <DoubleFilter
+            <BasicAndAdvancedFilters
               v-slot="{ isEnabled, getOrder }"
               :basic-filters="activeBasicFilters"
               :advanced-filters="activeAdvancedFilters"
@@ -115,7 +115,7 @@
                 :is-enabled="isEnabled"
                 :get-order="getOrder"
               />
-            </DoubleFilter>
+            </BasicAndAdvancedFilters>
             <div
               v-if="hasFilters"
               class="mt-6 text-center"
@@ -308,7 +308,7 @@ import DataserviceCard from '../DataserviceCard.vue'
 import ReuseHorizontalCard from '../ReuseHorizontalCard.vue'
 import SearchInput from './SearchInput.vue'
 import Sidemenu from './Sidemenu.vue'
-import DoubleFilter from './DoubleFilter.vue'
+import BasicAndAdvancedFilters from './BasicAndAdvancedFilters.vue'
 import OrganizationSelect from '../Form/OrganizationSelect.vue'
 import OrganizationTypeSelect from '../Form/OrganizationTypeSelect.vue'
 import SelectGroup from '../Form/SelectGroup.vue'
