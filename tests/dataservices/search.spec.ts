@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 
 test('page loads with results', async ({ page }) => {
   await page.goto('/dataservices/search')
@@ -19,18 +19,20 @@ test('search filters results', async ({ page }) => {
   const searchInput = page.getByPlaceholder(/élection présidentielle/)
   await searchInput.fill('explore')
 
-  await page.waitForURL('**/dataservices/search?q=explore**')
+  await expect(page).toHaveURL(/\/dataservices\/search\?q=explore/)
 
   await expect(page.getByRole('link', { name: /Explore API/i })).toBeVisible()
 })
 
 test('clicking dataservice navigates to detail', async ({ page }) => {
   await page.goto('/dataservices/search')
+  // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   const dataserviceLink = page.getByRole('link', { name: /Explore API/i })
   await expect(dataserviceLink).toBeVisible()
 
   await dataserviceLink.click()
 
-  await page.waitForURL('**/dataservices/explore-api**')
+  await expect(page).toHaveURL(/\/dataservices\/explore-api/)
 })

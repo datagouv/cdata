@@ -215,8 +215,8 @@
               class="mb-3"
               :label="$t('Type')"
               :placeholder="$t('Rechercher un type…')"
-              :get-option-id="(type) => type.label"
-              :display-value="(type) => type.label"
+              :get-option-id="(type: { label: string }) => type.label"
+              :display-value="(type: { label: string }) => type.label"
               :options="types ?? []"
               :multiple="false"
               :required="true"
@@ -240,8 +240,8 @@
               class="mb-3"
               :label="$t('Thématique')"
               :placeholder="$t('Rechercher une thématique…')"
-              :get-option-id="(topic) => topic.label"
-              :display-value="(topic) => topic.label"
+              :get-option-id="(topic: { label: string }) => topic.label"
+              :display-value="(topic: { label: string }) => topic.label"
               :options="topics ?? []"
               :multiple="false"
               :required="true"
@@ -314,7 +314,7 @@
             />
             <div
               v-if="imagePreview"
-              class="text-align-center"
+              class="text-center"
             >
               <NuxtImg
                 :src="imagePreview"
@@ -342,7 +342,7 @@
 </template>
 
 <script setup lang="ts">
-import { SimpleBanner, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
+import { SearchableSelect, SimpleBanner, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
@@ -377,7 +377,7 @@ const { data: types } = await useAPI<Array<ReuseType>>('/api/1/reuses/types', { 
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics', { lazy: true })
 
 const ownedOptions = computed<Array<Owned>>(() => {
-  return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: user.value, organization: null }]
+  return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: { ...user.value, class: 'User' }, organization: null }]
 })
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(reuseForm, {

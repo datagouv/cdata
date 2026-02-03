@@ -199,7 +199,7 @@
           </div>
         </fieldset>
         <fieldset
-          class="fr-fieldset min-width-0"
+          class="fr-fieldset min-w-0"
           aria-labelledby="description-legend"
         >
           <legend
@@ -249,7 +249,7 @@
             />
           </LinkedToAccordion>
           <LinkedToAccordion
-            class="fr-fieldset__element min-width-0"
+            class="fr-fieldset__element min-w-0"
             :accordion="addDescriptionAccordionId"
           >
             <InputGroup
@@ -402,7 +402,7 @@
           </LinkedToAccordion>
         </fieldset>
         <fieldset
-          class="fr-fieldset min-width-0"
+          class="fr-fieldset min-w-0"
           aria-labelledby="description-legend"
         >
           <legend
@@ -548,7 +548,7 @@ const availabilityDataserviceAccordionId = useId()
 const contactPointAccordionId = useId()
 
 const ownedOptions = computed<Array<Owned>>(() => {
-  return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: user.value, organization: null }]
+  return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: { ...user.value, class: 'User' as const }, organization: null }]
 })
 
 const machineDocumentationUrlWarningMessage = t(`Il est fortement recommandé d'ajouter une documentation OpenAPI ou Swagger à votre API.`)

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
 
 test('can create a dataservice', async ({ page }) => {
@@ -8,7 +8,7 @@ test('can create a dataservice', async ({ page }) => {
   await page.getByRole('button', { name: 'Publier sur data.gouv.fr' }).click()
   await expect(page.getByRole('link', { name: 'Une API' })).toBeVisible()
   await page.getByRole('link', { name: 'Une API' }).click()
-  await page.waitForURL('**/admin/dataservices/new**')
+  await expect(page).toHaveURL(/\/admin\/dataservices\/new/)
 
   // Step 1: Describe dataservice
   await page.getByTestId('producer-select').click()
@@ -38,5 +38,6 @@ test('can create a dataservice', async ({ page }) => {
   // Cleanup: delete the created dataservice
   await page.getByRole('link', { name: 'Modifier' }).click()
   await page.getByRole('button', { name: 'Supprimer' }).click()
+  await page.getByText('Envoyer un mail automatique (voies de recours)').click()
   await page.getByRole('button', { name: 'Supprimer l\'API' }).click()
 })

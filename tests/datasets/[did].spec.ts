@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 
 test('show details page', async ({ page }) => {
   await page.goto(
@@ -7,7 +7,7 @@ test('show details page', async ({ page }) => {
 
   // Expect a title "to contain" a substring.
   await expect(page).toHaveTitle(
-    'Jeu de données Base Sirene des entreprises et de leurs établissements (SIREN, SIRET) | data.gouv.fr',
+    'Jeu de données - Base Sirene des entreprises et de leurs établissements (SIREN, SIRET) | data.gouv.fr',
   )
 })
 
@@ -17,7 +17,7 @@ test('dataset with labels shows label section', async ({ page }) => {
   )
 
   await expect(page).toHaveTitle(
-    'Jeu de données Base Sirene des entreprises et de leurs établissements (SIREN, SIRET) | data.gouv.fr',
+    'Jeu de données - Base Sirene des entreprises et de leurs établissements (SIREN, SIRET) | data.gouv.fr',
   )
 
   // Check that there's a corresponding dd element with labels
@@ -34,6 +34,8 @@ test('dataset labels have proper tooltips and information', async ({
   await page.goto(
     '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
   )
+  // Wait for Vue hydration before clicking the toggletip (try fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   await page.getByTestId('label-toggletip-button').click()
   await expect(page.getByTestId('label-toggletip-content')).toBeVisible()
@@ -47,6 +49,8 @@ test('clicking dataset label navigates to filtered search', async ({
   await page.goto(
     '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
   )
+  // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   // Check if dataset has labels
   const labelsList = page.getByTestId('label-list')
@@ -62,10 +66,8 @@ test('clicking dataset label navigates to filtered search', async ({
   // Click the label
   await firstLabel.click()
 
-  await page.waitForURL('**/datasets/search*')
-
   // Should navigate to search page with badge filter
-  expect(page.url()).toContain('/datasets/search?badge=spd')
+  await expect(page).toHaveURL('/datasets/search?badge=spd')
 
   // Verify search page loads with filter applied
   await expect(page).toHaveTitle(
@@ -73,10 +75,10 @@ test('clicking dataset label navigates to filtered search', async ({
   )
 
   // Verify the badge filter is applied
-  const filter = page.getByTestId('dataset-label-filter')
-  const filterButton = filter.locator('button').first()
-  const selectedText = await filterButton.textContent()
-  expect(selectedText).not.toBe('Tous les badges')
+  const badgeFilterLabel = page.getByText('Label de données')
+  await badgeFilterLabel.scrollIntoViewIfNeeded()
+  const badgeInput = page.locator('input[placeholder="Tous les labels"]')
+  await expect(badgeInput).toHaveValue(/Service public/, { timeout: 15000 })
 })
 
 test('dataset without labels does not show label section', async ({ page }) => {
@@ -100,11 +102,13 @@ test('discussions tab navigates to discussions page', async ({ page }) => {
   await page.goto(
     '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
   )
+  // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   const discussionsTab = page.getByRole('link', { name: /Discussions/ })
   await discussionsTab.click()
 
-  await page.waitForURL('**/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/discussions')
+  await expect(page).toHaveURL('/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/discussions')
 })
 
 test('resources are displayed and accordion expands', async ({ page }) => {
@@ -133,6 +137,8 @@ test('quality tooltip displays content and link is clickable', async ({ page, co
   await page.goto(
     '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
   )
+  // Wait for Vue hydration before clicking the toggletip (try fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
 
   const qualityButton = page.getByRole('button', { name: 'Qualité des métadonnées' }).first()
   await expect(qualityButton).toBeVisible()

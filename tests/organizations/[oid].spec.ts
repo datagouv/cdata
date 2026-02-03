@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 
 const ORG_SLUG = 'sobrana'
 
 test('page loads with correct organization name', async ({ page }) => {
   await page.goto(`/organizations/${ORG_SLUG}`)
 
-  await expect(page).toHaveTitle(/sobrana/i)
+  await expect(page).toHaveTitle('Organisation - SOBRANA | data.gouv.fr')
 
   // Verify organization name in heading
   await expect(page.getByRole('heading', { level: 1, name: /SOBRANA/i })).toBeVisible()

@@ -38,16 +38,39 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
-    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    { name: 'setup', testMatch: /auth\.setup\.ts/ },
+    { name: 'setup-normal-user', testMatch: /auth-normal-user\.setup\.ts/ },
 
     {
       name: 'chromium',
+      testIgnore: [
+        /.*\.normal-user\.spec\.ts/,
+        /.*\.2fa-user\.spec\.ts/,
+      ],
       use: { ...devices['Desktop Chrome'], storageState: 'playwright/.auth/user.json' },
       dependencies: ['setup'],
     },
 
     {
+      name: 'chromium-normal-user',
+      testMatch: /.*\.normal-user\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], storageState: 'playwright/.auth/normal-user.json' },
+      dependencies: ['setup-normal-user'],
+    },
+
+    {
+      name: 'chromium-2fa-user',
+      testMatch: /.*\.2fa-user\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: [],
+    },
+
+    {
       name: 'firefox',
+      testIgnore: [
+        /.*\.normal-user\.spec\.ts/,
+        /.*\.2fa-user\.spec\.ts/,
+      ],
       use: { ...devices['Desktop Firefox'], storageState: 'playwright/.auth/user.json' },
       dependencies: ['setup'],
     },

@@ -162,7 +162,7 @@
             </div>
             <div class="fr-col-12 fr-col-sm-3">
               <h3 class="fr-footer__top-cat !text-xs !leading-5 !mb-3">
-                {{ $t('Ressources') }}
+                {{ $t('Verticales thématiques') }}
               </h3>
               <ul class="fr-footer__top-list">
                 <li
@@ -200,11 +200,11 @@
                 </li>
                 <li>
                   <a
-                    :href="config.public.commitId ? `https://github.com/datagouv/cdata/commit/${config.public.commitId}` : 'https://github.com/datagouv/cdata/'"
-                    :title="config.public.commitId ? $t('Version {version}', { version: config.public.commitId }) : undefined"
+                    :href="appConfig.commitId ? `https://github.com/datagouv/cdata/commit/${appConfig.commitId}` : 'https://github.com/datagouv/cdata/'"
+                    :title="appConfig.commitId ? $t('Version {version}', { version: appConfig.commitId }) : undefined"
                     class="fr-footer__top-link"
                   >
-                    {{ $t('Interface utilisateur de data.gouv.fr : cdata ({version})', { version: config.public.commitId }) }}
+                    {{ $t('Interface utilisateur de data.gouv.fr : cdata ({version})', { version: appConfig.commitId }) }}
                   </a>
                 </li>
               </ul>
@@ -313,6 +313,7 @@ if (config.public.csvDatasetId) {
 
 openDataLinks.push({ label: t(`Suivre l'ouverture des données`), link: 'https://ouverture.data.gouv.fr' })
 openDataLinks.push({ label: t('Portail des données européennes'), link: 'https://data.europa.eu' })
+openDataLinks.push({ label: config.public.schemasSite.name, link: config.public.schemasSite.url })
 
 const platformLinks: Array<Link> = [
   { label: t('Guides'), link: config.public.guidesUrl, external: true },
@@ -323,11 +324,12 @@ const platformLinks: Array<Link> = [
 ]
 
 const resourcesLinks: Array<Link> = [
-  { label: config.public.schemasSite.name, link: config.public.schemasSite.url },
   { label: 'meteo.data.gouv.fr', link: 'https://meteo.data.gouv.fr' },
   { label: 'transport.data.gouv.fr', link: 'https://transport.data.gouv.fr' },
   { label: 'ecologie.data.gouv.fr', link: 'https://ecologie.data.gouv.fr' },
   { label: 'defis.data.gouv.fr', link: 'https://defis.data.gouv.fr' },
+  { label: 'culture.data.gouv.fr', link: 'https://culture.data.gouv.fr' },
+  { label: 'logistique.data.gouv.fr', link: 'https://logistique.data.gouv.fr' },
 ]
 
 const footerLinks: Array<Link> = [

@@ -5,9 +5,27 @@
       <BreadcrumbItem>{{ label }}</BreadcrumbItem>
     </AdminBreadcrumb>
 
-    <h1 class="fr-h3 fr-mb-5v">
-      {{ $t("Édito") }}
-    </h1>
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+      <h1 class="fr-h3 mb-0">
+        {{ $t("Édito") }}
+      </h1>
+      <div class="flex gap-2">
+        <BrandedButton
+          color="secondary"
+          :href="publicPage"
+          :icon="RiEyeLine"
+          target="_blank"
+        >
+          {{ $t('Voir la page publique') }}
+        </BrandedButton>
+        <BrandedButton
+          :href="`${publicPage}?edit=true`"
+          :icon="RiPencilLine"
+        >
+          {{ $t('Éditer sur la page publique') }}
+        </BrandedButton>
+      </div>
+    </div>
 
     <TabLinks
       class="mb-5"
@@ -18,22 +36,28 @@
       ]"
     />
 
-    <PageForm
+    <div
       v-if="page"
-      v-model="page"
-      :loading
-      :public-page
-      @submit="savePage"
-    />
+      class="bg-white py-6"
+    >
+      <PageShow
+        :page
+        edit
+        @save="savePage"
+        @cancel="resetPage"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { toast } from '@datagouv/components-next'
+import { BrandedButton, toast } from '@datagouv/components-next'
+import { toRaw } from 'vue'
+import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import type { Site } from '@datagouv/components-next'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import PageForm from '~/components/Pages/PageForm.vue'
+import PageShow from '~/components/Pages/PageShow.vue'
 import type { Page } from '~/types/pages'
 
 const props = defineProps<{
@@ -42,15 +66,11 @@ const props = defineProps<{
   siteKey: 'datasets_page' | 'reuses_page' | 'dataservices_page'
 }>()
 
-definePageMeta({
-  keepScroll: true,
-})
-
 const { $api } = useNuxtApp()
 const { t } = useTranslation()
 
-const loading = ref(false)
 const page = ref<Page | null>(null)
+const originalPage = ref<Page | null>(null)
 const { data: site, refresh } = await useAPI<Site>('/api/1/site/')
 
 watchEffect(async () => {
@@ -58,40 +78,48 @@ watchEffect(async () => {
   if (!site.value) return
 
   if (site.value && site.value[props.siteKey]) {
-    page.value = await $api(`/api/1/pages/${site.value[props.siteKey]}/`)
+    const fetched = await $api<Page>(`/api/1/pages/${site.value[props.siteKey]}/`)
+    page.value = fetched
+    originalPage.value = structuredClone(toRaw(fetched))
   }
   else {
     page.value = { id: '', blocs: [] }
+    originalPage.value = { id: '', blocs: [] }
   }
 })
 
-const savePage = async () => {
-  if (!page.value) return
+function resetPage() {
+  if (originalPage.value) {
+    page.value = structuredClone(toRaw(originalPage.value))
+  }
+}
+
+const savePage = async (updatedPage: Page) => {
+  if (!updatedPage) return
   if (!site.value) return
 
-  loading.value = true
-
   try {
-    if (page.value.id) {
+    if (updatedPage.id) {
       page.value = await $api<Page>(`/api/1/pages/${site.value[props.siteKey]}/`, {
         method: 'PUT',
-        body: page.value,
+        body: updatedPage,
       })
     }
     else {
       page.value = await $api<Page>(`/api/1/pages/`, {
         method: 'POST',
-        body: page.value,
+        body: updatedPage,
       })
       const body = {} as Record<string, string>
       body[props.siteKey] = page.value.id
       await $api(`/api/1/site/`, { method: 'PATCH', body })
       await refresh()
     }
+    originalPage.value = structuredClone(toRaw(page.value))
     toast.success(t('Page sauvegardée'))
   }
-  finally {
-    loading.value = false
+  catch {
+    toast.error(t('Erreur lors de la sauvegarde'))
   }
 }
 </script>

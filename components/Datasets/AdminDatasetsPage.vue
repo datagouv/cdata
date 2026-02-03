@@ -30,7 +30,7 @@
           :placeholder="$t('Filtrer par statut')"
           :label="$t('Filtrer par statut')"
           :options="statusOption"
-          :display-value="(option) => option.label"
+          :display-value="(option: { label: string }) => option.label"
           :multiple="false"
           class="mb-0"
           hide-label
@@ -116,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, LoadingBlock, Pagination } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination, SearchableSelect } from '@datagouv/components-next'
 import type { Activity, DatasetV2, Organization, User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
@@ -142,7 +142,7 @@ const sortedBy = ref<DatasetSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 const q = ref('')
-const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const qDebounced = refDebounced(q, config.public.searchDebounce)
 const datasetsStatus = ref<{ label: string, id: string } | null>(null)
 const datasetActivities = ref<Record<DatasetV2['id'], Activity>>({})
 

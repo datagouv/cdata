@@ -102,6 +102,7 @@ const props = defineProps<{
 }>()
 
 const { $api } = useNuxtApp()
+const config = useRuntimeConfig()
 
 const page = ref(1)
 const pageSize = ref(20)
@@ -109,7 +110,7 @@ const sortedBy = ref<ReuseSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 const q = ref('')
-const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const qDebounced = refDebounced(q, config.public.searchDebounce)
 const reuseActivities = ref({})
 
 function sort(column: ReuseSortedBy, newDirection: SortDirection) {

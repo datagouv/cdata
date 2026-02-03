@@ -1,4 +1,4 @@
-import { DESCRIPTION_SHORT_MAX_LENGTH } from '~/datagouv-components/src/functions/datasets'
+import { DESCRIPTION_SHORT_MAX_LENGTH } from '~/datagouv-components/src/functions/description'
 import { createChatCompletion, useAlbertConfig, type ChatResponse } from '~/server/utils/albert-api-client'
 
 export default defineEventHandler(async (event) => {

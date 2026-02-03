@@ -85,7 +85,7 @@
                   v-model="inviteForm.user"
                   :label="$t('Utilisateur')"
                   :placeholder="$t('Rechercher un utilisateur')"
-                  :hintText="$t(`Laissez vide si vous souhaitez inviter par email`)"
+                  :hint-text="$t(`Laissez vide si vous souhaitez inviter par email`)"
                   :display-value="(user) => `${user.first_name} ${user.last_name}`"
                   :suggest="suggestUser"
                   :multiple="false"
@@ -117,7 +117,7 @@
                 <InputGroup
                   v-model="inviteForm.email"
                   :label="$t('Email')"
-                  :hintText="$t(`Inviter une personne par email (même si elle n'a pas encore de compte)`)"
+                  :hint-text="$t(`Inviter une personne par email (même si elle n'a pas encore de compte)`)"
                   type="email"
                   :disabled="!!inviteForm.user"
                 />
@@ -132,7 +132,7 @@
                 <InputGroup
                   v-model="inviteForm.comment"
                   :label="$t('Message (optionnel)')"
-                  :hintText="$t(`Ce message sera inclus dans l'email d'invitation`)"
+                  :hint-text="$t(`Ce message sera inclus dans l'email d'invitation`)"
                 />
               </div>
             </form>
@@ -331,16 +331,13 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BannerAction, LoadingBlock, useFormatDate, useGetUserAvatar, type Member, type Organization } from '@datagouv/components-next'
+import { Avatar, BannerAction, BrandedButton, LoadingBlock, SearchableSelect, SelectGroup, useFormatDate, useGetUserAvatar, type Member, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiEyeLine, RiLogoutBoxRLine, RiPencilLine, RiUserAddLine } from '@remixicon/vue'
-import { BrandedButton } from '@datagouv/components-next'
 import type { AdminBadgeType, MemberRole, PendingMembershipRequest, UserSuggest } from '~/types/types'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import ModalWithButton from '~/components/Modal/ModalWithButton.vue'
-import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
-import SearchableSelect from '~/components/SearchableSelect.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
 import AdminMembershipRequest from '~/components/AdminMembershipRequest/AdminMembershipRequest.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'

@@ -102,9 +102,14 @@
         >
           {{ $t("Attention, cette action ne peut pas être annulée.") }}
           <template #button>
-            <ModalWithButton
-              :title="$t('Êtes-vous sûr de vouloir supprimer cette réutilisation?')"
-              size="lg"
+            <AdminDeleteModal
+              :title="$t('Êtes-vous sûr de vouloir supprimer cette réutilisation ?')"
+              :delete-url="`/api/1/reuses/${route.params.id}`"
+              :delete-button-label="$t('Supprimer cette réutilisation')"
+              :deletable-object="reuse"
+              object-type="reuse"
+              :object-title="reuse.title"
+              @deleted="onReuseDeleted"
             >
               <template #button="{ attrs, listeners }">
                 <BrandedButton
@@ -120,18 +125,7 @@
               <p class="fr-text--bold">
                 {{ $t("Cette action ne peut pas être annulée.") }}
               </p>
-              <template #footer>
-                <div class="flex-1 flex justify-end">
-                  <BrandedButton
-                    color="danger"
-                    :loading="isLoading"
-                    @click="deleteReuse"
-                  >
-                    {{ $t("Supprimer cette réutilisation") }}
-                  </BrandedButton>
-                </div>
-              </template>
-            </ModalWithButton>
+            </AdminDeleteModal>
           </template>
         </BannerAction>
       </div>
@@ -144,13 +138,14 @@ import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '
 import type { Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
+import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import type { ReuseForm } from '~/types/types'
 
 const { t } = useTranslation()
 const { $api, $fileApi } = useNuxtApp()
 
 const route = useRoute()
-const { start, finish, isLoading } = useLoadingIndicator()
+const isLoading = ref(false)
 
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
 const { data: reuse, status, refresh } = await useAPI<Reuse>(url, { redirectOn404: true })
@@ -169,7 +164,7 @@ async function save() {
   if (!reuse.value) return
 
   try {
-    start()
+    isLoading.value = true
 
     await $api(`/api/1/reuses/${reuse.value.id}/`, {
       method: 'PUT',
@@ -189,23 +184,14 @@ async function save() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
-async function deleteReuse() {
-  start()
-  try {
-    await $api(`/api/1/reuses/${route.params.id}`, {
-      method: 'DELETE',
-    })
-    refresh()
-    toast.success(t('Réutilisation supprimée !'))
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-  }
-  finally {
-    finish()
-  }
+function onReuseDeleted() {
+  refresh()
+  toast.success(t('Réutilisation supprimée !'))
+  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
 }
 
 async function archiveReuse() {
@@ -213,7 +199,7 @@ async function archiveReuse() {
   if (!reuse.value) return
 
   try {
-    start()
+    isLoading.value = true
 
     await $api(`/api/1/reuses/${reuse.value.id}/`, {
       method: 'PUT',
@@ -230,7 +216,7 @@ async function archiveReuse() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
@@ -239,7 +225,7 @@ async function switchReusePrivate() {
   if (!reuse.value) return
 
   try {
-    start()
+    isLoading.value = true
 
     await $api(`/api/1/reuses/${reuse.value.id}/`, {
       method: 'PUT',
@@ -256,7 +242,7 @@ async function switchReusePrivate() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
@@ -265,7 +251,7 @@ async function restoreReuse() {
   if (!reuse.value) return
 
   try {
-    start()
+    isLoading.value = true
 
     await $api(`/api/1/reuses/${reuse.value.id}/`, {
       method: 'PUT',
@@ -277,7 +263,7 @@ async function restoreReuse() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
@@ -285,7 +271,7 @@ async function feature() {
   if (!reuse.value) return
   const method = reuse.value.featured ? 'DELETE' : 'POST'
   try {
-    start()
+    isLoading.value = true
     await $api(`/api/1/reuses/${route.params.id}/featured`, {
       method,
     })
@@ -301,7 +287,7 @@ async function feature() {
     toast.error(t('Impossible de mettre en avant cette réutilisation'))
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 </script>

@@ -168,12 +168,11 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, PaddedContainer, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, PaddedContainer, SimpleBanner, SearchableSelect } from '@datagouv/components-next'
 import type { Frequency } from '@datagouv/components-next'
 import { ref } from 'vue'
 import Alert from '~/components/Alert/Alert.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
-import SearchableSelect from '~/components/SearchableSelect.vue'
 import Sidemenu from '~/components/Sidemenu/Sidemenu.global.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'

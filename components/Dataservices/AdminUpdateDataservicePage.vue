@@ -101,9 +101,14 @@
         >
           {{ $t("Attention, cette action ne peut pas être annulée.") }}
           <template #button>
-            <ModalWithButton
+            <AdminDeleteModal
               :title="$t('Êtes-vous sûr de vouloir supprimer cette API ?')"
-              size="lg"
+              :delete-url="`/api/1/dataservices/${route.params.id}`"
+              :delete-button-label="$t(`Supprimer l'API`)"
+              :deletable-object="dataservice"
+              object-type="dataservice"
+              :object-title="dataservice.title"
+              @deleted="onDataserviceDeleted"
             >
               <template #button="{ attrs, listeners }">
                 <BrandedButton
@@ -119,18 +124,7 @@
               <p class="fr-text--bold">
                 {{ $t("Cette action est irréversible.") }}
               </p>
-              <template #footer>
-                <div class="flex-1 flex justify-end">
-                  <BrandedButton
-                    color="danger"
-                    :loading="isLoading"
-                    @click="deleteDataservice"
-                  >
-                    {{ $t("Supprimer l'API") }}
-                  </BrandedButton>
-                </div>
-              </template>
-            </ModalWithButton>
+            </AdminDeleteModal>
           </template>
         </BannerAction>
       </div>
@@ -143,13 +137,14 @@ import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '
 import type { Dataservice } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'
+import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import type { DataserviceForm } from '~/types/types'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const route = useRoute()
-const { start, finish, isLoading } = useLoadingIndicator()
+const isLoading = ref(false)
 
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
 const { data: dataservice, status, refresh } = await useAPI<Dataservice>(url, { redirectOn404: true })
@@ -165,7 +160,7 @@ async function save() {
   if (!dataserviceForm.value || !dataservice.value) throw new Error('No dataservice form')
 
   try {
-    start()
+    isLoading.value = true
 
     if (
       dataserviceForm.value.contact_points
@@ -186,7 +181,7 @@ async function save() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
@@ -194,7 +189,7 @@ async function archiveDataservice() {
   if (!dataserviceForm.value || !dataservice.value) throw new Error('No dataservice form')
 
   try {
-    start()
+    isLoading.value = true
     await $api(`/api/1/dataservices/${dataservice.value.id}/`, {
       method: 'PATCH',
       body: JSON.stringify(dataserviceToApi(dataserviceForm.value, { archived_at: dataservice.value.archived_at ? null : new Date().toISOString() })),
@@ -209,7 +204,7 @@ async function archiveDataservice() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
@@ -217,7 +212,7 @@ async function switchDataservicePrivate() {
   if (!dataserviceForm.value || !dataservice.value) throw new Error('No dataservice form')
 
   try {
-    start()
+    isLoading.value = true
     await $api(`/api/1/dataservices/${dataservice.value.id}/`, {
       method: 'PATCH',
       body: JSON.stringify(dataserviceToApi(dataserviceForm.value, { private: !dataservice.value.private })),
@@ -231,13 +226,13 @@ async function switchDataservicePrivate() {
     }
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function restoreDataservice() {
   if (!dataserviceForm.value || !dataservice.value) throw new Error('No dataset form')
-  start()
+  isLoading.value = true
   try {
     await $api(`/api/1/dataservices/${dataservice.value.id}/`, {
       method: 'PATCH',
@@ -247,30 +242,21 @@ async function restoreDataservice() {
     toast.success(t('API restaurée !'))
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
-async function deleteDataservice() {
-  start()
-  try {
-    await $api(`/api/1/dataservices/${route.params.id}`, {
-      method: 'DELETE',
-    })
-    refresh()
-    toast.success(t('API supprimée !'))
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-  }
-  finally {
-    finish()
-  }
+function onDataserviceDeleted() {
+  refresh()
+  toast.success(t('API supprimée !'))
+  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
 }
 
 async function feature() {
   if (!dataservice.value) return
   const method = dataservice.value.featured ? 'DELETE' : 'POST'
   try {
-    start()
+    isLoading.value = true
     await $api(`/api/1/dataservices/${route.params.id}/featured`, {
       method,
     })
@@ -286,7 +272,7 @@ async function feature() {
     toast.error(t('Impossible de mettre en avant cette API'))
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 </script>

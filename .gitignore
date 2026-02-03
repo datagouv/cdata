@@ -17,6 +17,7 @@ logs
 .DS_Store
 .fleet
 .idea
+.claude
 
 # Local env files
 .env
@@ -28,5 +29,5 @@ logs
 /playwright-report/
 /blob-report/
 /playwright/.cache/
-
 playwright/.auth
+tests/**/screenshots/

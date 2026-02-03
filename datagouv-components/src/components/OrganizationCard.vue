@@ -11,7 +11,7 @@
           loading="lazy"
         >
       </div>
-      <p class="mb-0.5 font-bold">
+      <div class="mb-0.5 font-bold">
         <AppLink
           :to="organization.page"
           class="overflow-hidden"
@@ -21,7 +21,7 @@
             :organization
           />
         </AppLink>
-      </p>
+      </div>
       <div class="mb-2 flex flex-wrap gap-1 items-center">
         <template v-if="type !== 'other'">
           <OwnerType
@@ -35,7 +35,7 @@
         </template>
         <div>
           <div
-            v-if="organization.metrics"
+            v-if="'metrics' in organization"
             class="text-gray-medium flex items-center text-sm gap-0.5"
             :aria-label="t('{datasets} jeux de données, {dataservices} API et {reuses} réutilisations', {
               datasets: organization.metrics.datasets,
@@ -58,38 +58,33 @@
           </div>
         </div>
       </div>
-      <p class="mt-1 mb-0">
+      <div class="mt-1 mb-0">
         <TextClamp
-          v-if="description"
-          :text="description"
+          v-if="'description' in organization"
+          :text="removeMarkdownSync(organization.description)"
           :max-lines="3"
         />
-      </p>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { RiLineChartLine, RiDatabase2Line, RiTerminalLine, RiSubtractLine } from '@remixicon/vue'
-import { computed, ref, watchEffect } from 'vue'
-import { removeMarkdown } from '../functions/markdown'
+import { computed } from 'vue'
+import { removeMarkdownSync } from '../functions/markdown'
 import { getOrganizationType } from '../functions/organizations'
-import type { Organization } from '../types/organizations'
+import type { Organization, OrganizationReference } from '../types/organizations'
 import OwnerType from './OwnerType.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import AppLink from './AppLink.vue'
-import { useTranslation } from '../main'
+import { useTranslation } from '../composables/useTranslation'
 
 const props = defineProps<{
-  organization: Organization
+  organization: Organization | OrganizationReference
 }>()
 
 const { t } = useTranslation()
 
 const type = computed(() => getOrganizationType(props.organization))
-
-const description = ref('')
-watchEffect(async () => {
-  description.value = await removeMarkdown(props.organization.description)
-})
 </script>

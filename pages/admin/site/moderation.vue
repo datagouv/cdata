@@ -29,7 +29,7 @@
             label: t('Tous'),
             id: null,
           }]"
-          :display-value="(option) => option.label"
+          :display-value="(option: { label: string }) => option.label"
           :multiple="false"
           class="mb-0"
           hide-label
@@ -202,18 +202,33 @@
                   >
                     —
                   </div>
-                  <BrandedButton
+                  <AdminDeleteModal
                     v-if="report.subject && getDeleteUrl(report.subject)"
-                    size="xs"
-                    color="tertiary"
-                    type="button"
-                    :icon="RiDeleteBinLine"
-                    icon-only
-                    keep-margins-even-without-borders
-                    :disabled="isSubjectDeleted(subjects[report.id].value)"
-                    :title="$t('Supprimer l\'objet')"
-                    @click="deleteSubject(report, report.subject)"
-                  />
+                    :title="$t('Êtes-vous sûr de vouloir supprimer cet objet ?')"
+                    :delete-url="getDeleteUrl(report.subject)!"
+                    :delete-button-label="$t('Supprimer')"
+                    :deletable-object="subjects[report.id].value!"
+                    :object-type="getObjectType(report.subject.class)"
+                    :object-title="getSubjectTitle(subjects[report.id]?.value)"
+                    @deleted="() => fetchFullSubject(report, report.subject!)"
+                  >
+                    <template #button="{ attrs, listeners }">
+                      <BrandedButton
+                        size="xs"
+                        color="tertiary"
+                        :icon="RiDeleteBinLine"
+                        icon-only
+                        keep-margins-even-without-borders
+                        :disabled="isSubjectDeleted(subjects[report.id].value)"
+                        :title="$t('Supprimer l\'objet')"
+                        v-bind="attrs"
+                        v-on="listeners"
+                      />
+                    </template>
+                    <p class="fr-text--bold">
+                      {{ $t("Cette action est irréversible.") }}
+                    </p>
+                  </AdminDeleteModal>
                 </div>
               </td>
             </tr>
@@ -241,14 +256,16 @@
 
 <script setup lang="ts">
 import type { Report, ReportReason, ReportSubject, Activity, Dataservice, DatasetV2, Organization, Reuse } from '@datagouv/components-next'
-import { AvatarWithName, LoadingBlock, Pagination, useFormatDate, BrandedButton } from '@datagouv/components-next'
+import { AvatarWithName, LoadingBlock, Pagination, SearchableSelect, useFormatDate, BrandedButton } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'
+import type { ObjectType } from '~/types/delete'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
+import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import type { Thread } from '~/types/discussions'
 import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
 import DataserviceBadge from '~/components/AdminBadge/DataserviceBadge.vue'
@@ -373,11 +390,20 @@ const isSubjectDeleted = (subject: RecordSubjectFullObject['value']) => {
   return false
 }
 
-const deleteSubject = async (report: Report, subject: ReportSubject) => {
-  const url = getDeleteUrl(subject)
-  if (!url) return
+const getObjectType = (subjectClass: string): ObjectType => {
+  return {
+    Dataset: 'dataset' as ObjectType,
+    Dataservice: 'dataservice' as ObjectType,
+    Reuse: 'reuse' as ObjectType,
+    Organization: 'organization' as ObjectType,
+    Discussion: 'discussion' as ObjectType,
+  }[subjectClass] || 'dataset'
+}
 
-  await $api(url, { method: 'DELETE' })
-  await fetchFullSubject(report, subject)
+const getSubjectTitle = (subject: RecordSubjectFullObject['value']): string | undefined => {
+  if (!subject) return undefined
+  if ('title' in subject) return subject.title
+  if ('name' in subject) return subject.name
+  return undefined
 }
 </script>

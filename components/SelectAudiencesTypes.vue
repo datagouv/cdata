@@ -12,9 +12,8 @@
 </template>
 
 <script setup lang="ts">
-import type { AccessAudienceCondition, AccessAudienceType } from '@datagouv/components-next'
+import { SelectGroup, type AccessAudienceCondition, type AccessAudienceType } from '@datagouv/components-next'
 import { computed } from 'vue'
-import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 
 const accessAudiences = defineModel<Record<AccessAudienceType, AccessAudienceCondition>>({ required: true })
 

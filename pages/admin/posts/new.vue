@@ -44,6 +44,7 @@ import DescribePost from '~/components/Posts/DescribePost.vue'
 import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { Post, PostForm } from '~/types/posts'
+import type { Page } from '~/types/pages'
 
 const { t } = useTranslation()
 const route = useRoute()
@@ -61,9 +62,11 @@ const postForm = useState<PostForm>(POST_FORM_STATE, () => ({
   name: '',
   body_type: 'markdown',
   content: '',
+  content_as_page: null,
   credit_to: '',
   credit_url: '',
   headline: '',
+  kind: 'news',
   published: null,
   owner: me.value,
   tags: [],
@@ -95,9 +98,20 @@ function moveToStep(step: number) {
   return navigateTo({ path: route.path, query: { ...route.query, step } })
 }
 
-function postNext(form: PostForm) {
+async function postNext(form: PostForm) {
   postForm.value = form
-  moveToStep(2)
+
+  if (form.body_type === 'blocs') {
+    const page = await $api<Page>('/api/1/pages/', {
+      method: 'POST',
+      body: { blocs: [] },
+    })
+    postForm.value.content_as_page = page.id
+    await save({ content: '' })
+  }
+  else {
+    moveToStep(2)
+  }
 }
 
 async function save(form: { content: string }) {
@@ -117,7 +131,12 @@ async function save(form: { content: string }) {
         body: formData,
       })
     }
-    await navigateTo(`/admin/posts/${newPost.value.id}`)
+    if (newPost.value.body_type === 'blocs') {
+      await navigateTo(`/posts/${newPost.value.slug}?edit=true`)
+    }
+    else {
+      await navigateTo(`/admin/posts/${newPost.value.id}`)
+    }
   }
   finally {
     clearNuxtState(POST_LOADING_STATE)

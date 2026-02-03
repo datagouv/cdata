@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 import * as path from 'path'
 import { clickOutside } from '../helpers'
 
@@ -42,7 +42,7 @@ test('can create a dataset with full information', async ({ page }) => {
   await page.getByRole('button', { name: 'Publier sur data.gouv.fr' }).click()
   await page.getByRole('link', { name: 'Un jeu de données' }).click()
   await page.getByRole('button', { name: 'Commencer la publication' }).click()
-  await page.getByTestId('searchable-select-vrifiezlidentitaveclaquellevoussouhaitezpublier').click()
+  await page.getByTestId('searchable-select-v-rifiez-l-identit-avec-laquelle-vous-souhaitez-publier').click()
   await page.getByRole('option', { name: 'Admin User' }).click()
   await page.getByRole('textbox', { name: 'Titre *' }).click()
   await page.getByRole('textbox', { name: 'Titre *' }).fill('Mon super jeu de données')
@@ -51,7 +51,7 @@ test('can create a dataset with full information', async ({ page }) => {
   await page.getByTestId('markdown-editor').fill(`Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.
 
 The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for those interested. Sections 1.10.32 and 1.10.33 from "de Finibus Bonorum et Malorum" by Cicero are also reproduced in their exact original form, accompanied by English versions from the 1914 translation by H. Rackham.`)
-  await page.getByTestId('searchable-select-motscls').click()
+  await page.getByTestId('searchable-select-mots-cl-s').click()
   await page.getByPlaceholder('Chercher un mot clé…').fill('test')
   await page.getByRole('option', { name: 'test' }).click()
   await page.getByPlaceholder('Chercher un mot clé…').fill('toto')
@@ -60,14 +60,14 @@ The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for t
   await page.getByTestId('searchable-select-licence').click()
   await page.getByText('Other (Public Domain)').click()
   await clickOutside(page)
-  await page.getByTestId('searchable-select-frquencedemisejour').click()
+  await page.getByTestId('searchable-select-fr-quence-de-mise-jour').click()
   await page.getByRole('option', { name: 'Ponctuelle' }).click()
   await page.getByRole('textbox', { name: 'début' }).fill('1994-04-14')
   await page.getByRole('textbox', { name: 'fin' }).fill('2025-10-01')
-  await page.getByTestId('searchable-select-couverturespatiale').click()
+  await page.getByTestId('searchable-select-couverture-spatiale').click()
   await page.getByPlaceholder('Rechercher une couverture').fill('france')
   await page.getByText('France Insee : fr').click()
-  await page.getByTestId('searchable-select-granularitspatiale').click()
+  await page.getByTestId('searchable-select-granularit-spatiale').click()
   await page.getByRole('option', { name: 'Pays', exact: true }).click()
   await page.getByRole('button', { name: 'Suivant' }).click()
   await page.getByRole('button', { name: 'Ajoutez des fichiers' }).click()
@@ -84,9 +84,9 @@ The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for t
   await page.getByTestId('searchable-select-format').click()
   await page.getByRole('option', { name: 'pdf' }).click()
   await clickOutside(page)
-  await page.getByTestId('searchable-select-typemime').click()
+  await page.getByTestId('searchable-select-type-mime').click()
   await page.getByRole('option', { name: 'application/pdf' }).click()
-  await page.getByTestId('searchable-select-schma').click()
+  await page.getByTestId('searchable-select-sch-ma').click()
   await page.getByPlaceholder('Rechercher un schéma référenc').fill('irve')
   await page.getByRole('option', { name: 'etalab/schema-irve-statique' }).click()
   await page.getByRole('button', { name: 'Valider' }).click()

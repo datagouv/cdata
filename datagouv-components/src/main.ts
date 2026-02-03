@@ -3,16 +3,19 @@ import type { Activity, ActivityKey } from './types/activity.js'
 import type { PaginatedArray } from './types/api.js'
 import type { ContactPoint, ContactPointRole } from './types/contact_point.js'
 import type { Badge, Badges, TranslatedBadge } from './types/badges'
-import type { Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
-import type { NewDataservice, Dataservice } from './types/dataservices'
+import type { DatasetReference, Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
+import type { DataserviceReference, NewDataservice, Dataservice } from './types/dataservices'
 import type { AccessType, AccessAudience, AccessAudienceCondition, AccessAudienceType, WithAccessType, AccessTypeForm } from './types/access_types'
 import type { Frequency, Frequencies } from './types/frequency'
 import type { Granularity, Granularities, SpatialZone } from './types/granularity'
 import type { Harvest } from './types/harvest'
 import type { License } from './types/licenses'
 import type { Member, MemberRole, NewOrganization, Organization, OrganizationOrSuggest, OrganizationReference, OrganizationSuggest } from './types/organizations'
-import type { Owned, OwnedWithId } from './types/owned'
-import type { NewReuse, Reuse, ReuseTopic, ReuseType } from './types/reuses'
+import type { Owned, OwnedWithFullObject, OwnedWithId } from './types/owned'
+import type { Comment, Thread } from './types/discussions'
+import type { Page, PageBloc, ContentBloc, BlocWithTitle, DatasetsListBloc, DataservicesListBloc, ReusesListBloc, LinkInBloc, LinksListBloc, MarkdownBloc, AccordionItemBloc, AccordionListBloc, HeroBloc } from './types/pages'
+import type { Post } from './types/posts'
+import type { ReuseReference, NewReuse, Reuse, ReuseTopic, ReuseType } from './types/reuses'
 import type { RegisteredSchema, Schema, SchemaDetails, SchemaField, SchemaPath, SchemaPublicationMode, SchemaResponseData, SchemaVersion, ValidataError } from './types/schemas'
 import type { TopicV2, TopicElement, TopicElementClass, TopicElementRel } from './types/topics'
 import type { CommunityResource, FileResourceFileType, RemoteResourceFileType, ResourceFileType, ResourceType, Resource } from './types/resources'
@@ -20,6 +23,8 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
+import type { GlobalSearchConfig, SortOption } from './types/search'
+import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions } from './types/search'
 
 import ActivityList from './components/ActivityList/ActivityList.vue'
 import UserActivityList from './components/ActivityList/UserActivityList.vue'
@@ -32,6 +37,7 @@ import BrandedButton from './components/BrandedButton.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
 import DatasetCard from './components/DatasetCard.vue'
+import DiscussionMessageCard from './components/DiscussionMessageCard.vue'
 import DateRangeDetails from './components/DateRangeDetails.vue'
 import DatasetInformationPanel from './components/DatasetInformationPanel.vue'
 import DatasetQuality from './components/DatasetQuality.vue'
@@ -51,11 +57,15 @@ import OwnerTypeIcon from './components/OwnerTypeIcon.vue'
 import PaddedContainer from './components/PaddedContainer.vue'
 import Pagination from './components/Pagination.vue'
 import Placeholder from './components/Placeholder.vue'
+import RadioGroup from './components/RadioGroup.vue'
+import RadioInput from './components/RadioInput.vue'
+import PostCard from './components/PostCard.vue'
 import ReadMore from './components/ReadMore.vue'
 import ResourceAccordion from './components/ResourceAccordion/ResourceAccordion.vue'
 import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
 import Swagger from './components/ResourceAccordion/Swagger.client.vue'
 import ReuseCard from './components/ReuseCard.vue'
+import ReuseHorizontalCard from './components/ReuseHorizontalCard.vue'
 import ReuseDetails from './components/ReuseDetails.vue'
 import SchemaCard from './components/SchemaCard.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
@@ -68,7 +78,12 @@ import TabPanel from './components/Tabs/TabPanel.vue'
 import TabPanels from './components/Tabs/TabPanels.vue'
 import Tooltip from './components/Tooltip.vue'
 import Toggletip from './components/Toggletip.vue'
+import TopicCard from './components/TopicCard.vue'
 import TranslationT from './components/TranslationT.vue'
+import GlobalSearch from './components/Search/GlobalSearch.vue'
+import SearchInput from './components/Search/SearchInput.vue'
+import SearchableSelect from './components/Form/SearchableSelect.vue'
+import SelectGroup from './components/Form/SelectGroup.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
@@ -82,6 +97,7 @@ export * from './composables/useTranslation'
 export * from './functions/activities'
 export * from './functions/datasets'
 export * from './functions/dates'
+export * from './functions/description'
 export * from './functions/helpers'
 export * from './functions/markdown'
 export * from './functions/matomo'
@@ -97,6 +113,8 @@ export * from './functions/users'
 export * from './types/access_types'
 
 export type {
+  GlobalSearchConfig,
+  SortOption,
   UseFetchFunction,
   AccessType,
   AccessAudience,
@@ -111,10 +129,13 @@ export type {
   CommunityResource,
   ContactPoint,
   ContactPointRole,
+  DatasetReference,
   Dataset,
   DatasetV2,
   DatasetV2WithFullObject,
+  DataserviceReference,
   Dataservice,
+  Comment,
   NewDataservice,
   FileResourceFileType,
   Frequency,
@@ -133,8 +154,24 @@ export type {
   OrganizationSuggest,
   OrganizationOrSuggest,
   Owned,
+  OwnedWithFullObject,
   OwnedWithId,
+  Page,
+  PageBloc,
+  ContentBloc,
+  BlocWithTitle,
+  DatasetsListBloc,
+  DataservicesListBloc,
+  ReusesListBloc,
+  LinkInBloc,
+  LinksListBloc,
+  MarkdownBloc,
+  AccordionItemBloc,
+  AccordionListBloc,
+  HeroBloc,
   PaginatedArray,
+  Post,
+  Thread,
   Quality,
   RegisteredSchema,
   Rel,
@@ -145,6 +182,7 @@ export type {
   Resource,
   ResourceFileType,
   ResourceType,
+  ReuseReference,
   Reuse,
   ReuseTopic,
   ReuseType,
@@ -167,6 +205,16 @@ export type {
   ValidataError,
   Weight,
   WellType,
+}
+
+export {
+  getDefaultDatasetConfig,
+  getDefaultDataserviceConfig,
+  getDefaultReuseConfig,
+  getDefaultGlobalSearchConfig,
+  defaultDatasetSortOptions,
+  defaultDataserviceSortOptions,
+  defaultReuseSortOptions,
 }
 
 // Vue Plugin
@@ -194,6 +242,7 @@ export {
   DataserviceCard,
   DatasetCard,
   DatasetInformationPanel,
+  DiscussionMessageCard,
   DatasetQuality,
   DatasetQualityInline,
   DatasetQualityItem,
@@ -212,11 +261,15 @@ export {
   PaddedContainer,
   Pagination,
   Placeholder,
+  PostCard,
+  RadioGroup,
+  RadioInput,
   ReadMore,
   ResourceAccordion,
   ResourceIcon,
   ReuseCard,
   ReuseDetails,
+  ReuseHorizontalCard,
   SchemaCard,
   SimpleBanner,
   SmallChart,
@@ -229,6 +282,11 @@ export {
   TabPanels,
   Tooltip,
   Toggletip,
+  TopicCard,
   TranslationT,
   UserActivityList,
+  GlobalSearch,
+  SearchInput,
+  SearchableSelect,
+  SelectGroup,
 }

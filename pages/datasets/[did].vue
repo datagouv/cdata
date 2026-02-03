@@ -101,7 +101,7 @@
                 <MarkdownViewer
                   size="sm"
                   :content="dataset.description"
-                  :min-heading="3"
+                  :no-headings="true"
                 />
               </ReadMore>
             </div>
@@ -338,6 +338,24 @@
                   </template>
                 </TranslationT>
               </SimpleBanner>
+              <SimpleBanner
+                v-if="
+                  'ecospheres-indicateurs' in dataset.extras
+                "
+                type="primary-frame"
+              >
+                <TranslationT
+                  keypath="Consulter ce jeu de données sur {link} pour bénéficier d'informations supplémentaires : métadonnées enrichies, visualisations, etc."
+                  tag="p"
+                  class="!m-0 text-sm"
+                >
+                  <template #link>
+                    <CdataLink :href="`https://${config.public.baseUrl.includes('demo') ? 'demo.': ''}ecologie.data.gouv.fr/indicators/${dataset.id}`">
+                      ecologie.data.gouv.fr
+                    </CdataLink>
+                  </template>
+                </TranslationT>
+              </SimpleBanner>
             </dl>
           </div>
         </div>
@@ -468,6 +486,7 @@ import {
   useMetrics,
   type DatasetMetrics,
   TranslationT,
+  getDescriptionShort,
 } from '@datagouv/components-next'
 import {
   RiDeleteBinLine,
@@ -508,9 +527,9 @@ const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
   redirectOnSlug: 'did',
 })
 
-const title = computed(() => t('Jeu de données {title} | {site}', { title: dataset.value?.title ?? '', site: config.public.title }))
-const robots = computed(() => dataset.value && dataset.value.archived ? 'noindex' : 'all')
-const description = computed(() => dataset.value?.description_short)
+const title = computed(() => t('Jeu de données - {title} | {site}', { title: dataset.value?.title ?? '', site: config.public.title }))
+const robots = computed(() => dataset.value && dataset.value.archived ? 'noindex' : undefined)
+const description = computed(() => dataset.value ? getDescriptionShort(dataset.value) : '')
 
 useSeoMeta({
   title,
