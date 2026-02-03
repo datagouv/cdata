@@ -7,6 +7,7 @@
     :facets="facets"
     :loading="loading"
     name="last_update_range"
+    highlight-active
     @update:model-value="emit('update:modelValue', $event)"
   />
 </template>

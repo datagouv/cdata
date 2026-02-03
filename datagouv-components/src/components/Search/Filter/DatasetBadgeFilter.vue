@@ -7,6 +7,7 @@
     :facets="facets"
     :loading="loading"
     name="badge"
+    highlight-active
     @update:model-value="emit('update:modelValue', $event)"
   />
 </template>

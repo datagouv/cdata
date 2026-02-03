@@ -7,6 +7,7 @@
     :facets="facets"
     :loading="loading"
     name="format_family"
+    highlight-active
     @update:model-value="emit('update:modelValue', $event)"
   />
 </template>

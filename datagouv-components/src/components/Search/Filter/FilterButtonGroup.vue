@@ -18,6 +18,7 @@
       :value="option.value"
       :count="getCount(option.value)"
       :loading="loading"
+      :highlighted="props.highlightActive && !!props.modelValue"
     >
       <span class="flex items-center gap-1 min-w-0 overflow-hidden">
         <span class="shrink min-w-0 truncate">{{ option.label }}</span>
@@ -52,9 +53,11 @@ const props = withDefaults(defineProps<{
   allLabel?: string
   facets?: FacetItem[]
   loading?: boolean
+  highlightActive?: boolean
 }>(), {
   allLabel: 'Tous',
   loading: false,
+  highlightActive: false,
 })
 
 const emit = defineEmits<{

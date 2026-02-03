@@ -1,7 +1,7 @@
 <template>
   <label
     class="flex items-center gap-2 p-1 rounded cursor-pointer transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-blue-500"
-    :class="isSelected ? 'bg-gray-200' : 'hover:bg-gray-100'"
+    :class="selectedClass"
   >
     <input
       type="radio"
@@ -21,7 +21,8 @@
     </span>
     <span
       v-if="loading || count !== undefined"
-      class="bg-gray-200 text-gray-600 text-xs font-bold px-1 py-0.5 rounded"
+      class="text-xs font-bold px-1 py-0.5 rounded"
+      :class="isSelected && highlighted ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'"
     >
       <BouncingDots v-if="loading" />
       <template v-else>{{ formattedCount }}</template>
@@ -40,6 +41,7 @@ type Props = {
   count?: number
   loading?: boolean
   icon?: Component
+  highlighted?: boolean
 }
 
 const props = defineProps<Props>()
@@ -48,6 +50,12 @@ const group = inject(radioGroupInjectionKey)
 const { locale } = useTranslation()
 
 const isSelected = computed(() => group?.modelValue.value === props.value)
+
+const selectedClass = computed(() => {
+  if (!isSelected.value) return 'hover:bg-gray-100'
+  if (props.highlighted) return 'bg-blue-800 text-white'
+  return 'bg-gray-200'
+})
 
 const formattedCount = computed(() => {
   if (props.count === undefined) return ''
