@@ -105,31 +105,43 @@
               <FormatFamilyFilter
                 v-if="isEnabled('format_family')"
                 v-model="formatFamily"
+                :facets="getFacets('format_family')"
+                :loading="searchResultsStatus === 'pending'"
                 :style="{ order: getOrder('format_family') }"
               />
               <AccessTypeFilter
                 v-if="isEnabled('access_type')"
                 v-model="accessType"
+                :facets="getFacets('access_type')"
+                :loading="searchResultsStatus === 'pending'"
                 :style="{ order: getOrder('access_type') }"
               />
               <LastUpdateRangeFilter
                 v-if="isEnabled('last_update_range')"
                 v-model="lastUpdateRange"
+                :facets="getFacets('last_update')"
+                :loading="searchResultsStatus === 'pending'"
                 :style="{ order: getOrder('last_update_range') }"
               />
               <ProducerTypeFilter
                 v-if="isEnabled('producer_type')"
                 v-model="producerType"
+                :facets="getFacets('producer_type')"
+                :loading="searchResultsStatus === 'pending'"
                 :style="{ order: getOrder('producer_type') }"
               />
               <DatasetBadgeFilter
                 v-if="isEnabled('badge')"
                 v-model="badge"
+                :facets="getFacets('badge')"
+                :loading="searchResultsStatus === 'pending'"
                 :style="{ order: getOrder('badge') }"
               />
               <ReuseTypeFilter
                 v-if="isEnabled('type')"
                 v-model="reuseType"
+                :facets="getFacets('type')"
+                :loading="searchResultsStatus === 'pending'"
                 :style="{ order: getOrder('type') }"
               />
               <slot
@@ -314,11 +326,10 @@ import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
 import { getLink } from '../../functions/pagination'
-import type { PaginatedArray } from '../../types/api'
 import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
 import type { Reuse } from '../../types/reuses'
-import type { GlobalSearchConfig } from '../../types/search'
+import type { GlobalSearchConfig, DatasetSearchResponse, DataserviceSearchResponse, ReuseSearchResponse, FacetItem } from '../../types/search'
 import { getDefaultGlobalSearchConfig } from '../../types/search'
 import BrandedButton from '../BrandedButton.vue'
 import LoadingBlock from '../LoadingBlock.vue'
@@ -550,15 +561,15 @@ function resetFilters() {
 
 // API calls only for enabled types (useFetch skips when URL is null)
 // Only the initial type is fetched during SSR, others are client-side only
-const { data: datasetsResults, status: datasetsStatus } = await useFetch<PaginatedArray<Dataset>>(
+const { data: datasetsResults, status: datasetsStatus } = await useFetch<DatasetSearchResponse<Dataset>>(
   datasetsUrl,
   { params: datasetsParams, server: initialType === 'datasets' },
 )
-const { data: dataservicesResults, status: dataservicesStatus } = await useFetch<PaginatedArray<Dataservice>>(
+const { data: dataservicesResults, status: dataservicesStatus } = await useFetch<DataserviceSearchResponse<Dataservice>>(
   dataservicesUrl,
   { params: dataservicesParams, server: initialType === 'dataservices' },
 )
-const { data: reusesResults, status: reusesStatus } = await useFetch<PaginatedArray<Reuse>>(
+const { data: reusesResults, status: reusesStatus } = await useFetch<ReuseSearchResponse<Reuse>>(
   reusesUrl,
   { params: reusesParams, server: initialType === 'reuses' },
 )
@@ -586,6 +597,14 @@ const typesMeta = {
 
 const searchResults = computed(() => typesMeta[currentType.value].results.value)
 const searchResultsStatus = computed(() => typesMeta[currentType.value].status.value)
+
+// Facets for filters
+const currentFacets = computed(() => searchResults.value?.facets)
+
+function getFacets(key: string): FacetItem[] | undefined {
+  if (!currentFacets.value) return undefined
+  return (currentFacets.value as Record<string, FacetItem[]>)[key]
+}
 
 // Scroll handling
 const searchRef = useTemplateRef('search')

@@ -4,17 +4,22 @@
     :options="options"
     :label="t(`Modalités d'accès`)"
     :all-label="t('Toutes')"
+    :facets="facets"
+    :loading="loading"
     name="access_type"
     @update:model-value="emit('update:modelValue', $event)"
   />
 </template>
 
 <script setup lang="ts">
+import type { FacetItem } from '../../../types/search'
 import { useTranslation } from '../../../composables/useTranslation'
 import FilterButtonGroup from './FilterButtonGroup.vue'
 
 defineProps<{
   modelValue: string | undefined
+  facets?: FacetItem[]
+  loading?: boolean
 }>()
 
 const emit = defineEmits<{

@@ -4,17 +4,22 @@
     :options="options"
     :label="t('Label de donnée')"
     :all-label="t('Tous')"
+    :facets="facets"
+    :loading="loading"
     name="badge"
     @update:model-value="emit('update:modelValue', $event)"
   />
 </template>
 
 <script setup lang="ts">
+import type { FacetItem } from '../../../types/search'
 import { useTranslation } from '../../../composables/useTranslation'
 import FilterButtonGroup from './FilterButtonGroup.vue'
 
 defineProps<{
   modelValue: string | undefined
+  facets?: FacetItem[]
+  loading?: boolean
 }>()
 
 const emit = defineEmits<{
