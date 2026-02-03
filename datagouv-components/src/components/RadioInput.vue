@@ -16,7 +16,7 @@
       v-if="icon"
       class="w-4 h-4"
     />
-    <span class="text-sm flex-1">
+    <span class="text-sm flex-1 min-w-0">
       <slot />
     </span>
     <span

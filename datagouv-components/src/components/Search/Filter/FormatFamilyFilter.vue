@@ -29,10 +29,10 @@ const emit = defineEmits<{
 const { t } = useTranslation()
 
 const options = [
-  { value: 'tabular', label: t('Tabulaires'), description: '(csv, xls, xlsx, ods, parquet...)' },
-  { value: 'machine_readable', label: t('Structurées'), description: '(json, rdf, xml, sql...)' },
-  { value: 'geographical', label: t('Géographiques'), description: '(geojson, shp, kml...)' },
-  { value: 'documents', label: t('Documents'), description: '(pdf, doc, docx, md, txt, html...)' },
+  { value: 'tabular', label: t('Tabulaires'), description: 'csv, xls, xlsx, ods, parquet...' },
+  { value: 'machine_readable', label: t('Structurées'), description: 'json, rdf, xml, sql...' },
+  { value: 'geographical', label: t('Géographiques'), description: 'geojson, shp, kml...' },
+  { value: 'documents', label: t('Documents'), description: 'pdf, doc, docx, md, txt, html...' },
   { value: 'other', label: t('Autre') },
 ]
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <fieldset class="flex flex-col gap-2">
+  <fieldset class="flex flex-col gap-2 min-w-0">
     <legend
       v-if="legend"
       class="fr-label mb-2"

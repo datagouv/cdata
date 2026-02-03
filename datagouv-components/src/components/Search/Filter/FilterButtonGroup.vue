@@ -19,12 +19,14 @@
       :count="getCount(option.value)"
       :loading="loading"
     >
-      {{ option.label }}
-      <span
-        v-if="option.description"
-        class="text-gray-400"
-      >
-        {{ option.description }}
+      <span class="flex items-center gap-1 min-w-0 overflow-hidden">
+        <span class="shrink min-w-0 truncate">{{ option.label }}</span>
+        <span
+          v-if="option.description"
+          class="flex-1 basis-0 min-w-0 text-gray-400 text-xs truncate"
+        >
+          {{ option.description }}
+        </span>
       </span>
     </RadioInput>
   </RadioGroup>
