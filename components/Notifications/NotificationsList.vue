@@ -16,13 +16,17 @@
         v-else-if="notification.details.class === 'NewBadgeNotificationDetails'"
         :notification="notification as NewBadgeNotification"
       />
+      <NotificationsDiscussion
+        v-else-if="notification.details.class === 'DiscussionNotificationDetails'"
+        :notification="notification as DiscussionNotification"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { DeepReadonly } from 'vue'
-import type { MembershipRequestNotification, NewBadgeNotification, TransferRequestNotification, UserNotification } from '~/types/notifications'
+import type { DiscussionNotification, MembershipRequestNotification, NewBadgeNotification, TransferRequestNotification, UserNotification } from '~/types/notifications'
 
 defineProps<{
   notifications: DeepReadonly<Array<UserNotification>>
