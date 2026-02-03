@@ -19,6 +19,7 @@
       <NotificationsDiscussion
         v-else-if="notification.details.class === 'DiscussionNotificationDetails'"
         :notification="notification as DiscussionNotification"
+        :subject="subjects[notification.details.discussion.subject.id]"
       />
     </div>
   </div>
@@ -26,9 +27,28 @@
 
 <script setup lang="ts">
 import type { DeepReadonly } from 'vue'
+import type { DiscussionSubjectTypes } from '~/types/discussions'
 import type { DiscussionNotification, MembershipRequestNotification, NewBadgeNotification, TransferRequestNotification, UserNotification } from '~/types/notifications'
 
-defineProps<{
+const props = defineProps<{
   notifications: DeepReadonly<Array<UserNotification>>
 }>()
+
+const subjects = ref<Record<string, DiscussionSubjectTypes | null>>({})
+const subjectsPromises = ref<Record<string, Promise<void>>>({})
+const { $api } = useNuxtApp()
+
+watchEffect(async () => {
+  for (const notification of props.notifications) {
+    if (notification.details.class !== 'DiscussionNotificationDetails' || notification.details.discussion.subject.id in subjectsPromises.value) continue
+
+    const id = notification.details.discussion.subject.id
+    subjectsPromises.value[id] = getSubject($api, notification.details.discussion.subject)
+      .then((subject) => {
+        subjects.value[id] = subject // Working because there is no conflicts between IDs from different types
+      })
+  }
+
+  await Promise.all(Object.values(subjectsPromises.value))
+})
 </script>

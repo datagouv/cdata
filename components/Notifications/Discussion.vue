@@ -38,8 +38,19 @@
           :title="notification.handled_at ? $t('Voir la discussion') : $t('Voir la discussion et la marquer comme lue')"
           @click="markAsRead(notification)"
         >
-          {{ notification.details.discussion.title }}
+          <template v-if="notification.details.status === 'new_comment'">
+            {{ getLastComment(notification.details.discussion).content }}
+          </template>
+          <template v-else>
+            {{ notification.details.discussion.title }}
+          </template>
         </CdataLink>
+      </p>
+      <p
+        v-if="subject && notification.details.status !== 'closed'"
+        class="m-0 text-xs italic truncate"
+      >
+        {{ $t('sur') }} {{ getSubjectTitle(subject) }}
       </p>
     </div>
     <div class="flex-none flex m-0 gap-1.5">
@@ -61,11 +72,12 @@
 <script setup lang="ts">
 import { AnimatedLoader, AvatarWithName, useFormatDate, type OrganizationReference } from '@datagouv/components-next'
 import { RiQuestionAnswerLine, RiChatCheckLine, RiChat4Line } from '@remixicon/vue'
-import type { DeepReadonly } from 'vue'
+import type { DiscussionSubjectTypes } from '~/types/discussions'
 import type { DiscussionNotification } from '~/types/notifications'
 
 const props = defineProps<{
-  notification: DeepReadonly<DiscussionNotification>
+  notification: DiscussionNotification
+  subject: DiscussionSubjectTypes | null
 }>()
 
 const { t } = useTranslation()

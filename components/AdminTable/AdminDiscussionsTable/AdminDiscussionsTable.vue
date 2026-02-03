@@ -142,7 +142,7 @@ import { AvatarWithName, BrandedButton, useFormatDate } from '@datagouv/componen
 import { RiEyeLine } from '@remixicon/vue'
 import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
-import type { Comment, DiscussionSortedBy, DiscussionSubjectTypes, Thread } from '~/types/discussions'
+import type { DiscussionSortedBy, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 import type { AdminBadgeType, SortDirection } from '~/types/types'
 import { getDiscussionUrl, getSubject, getSubjectTypeIcon, getSubjectTitle } from '~/utils/discussions'
 
@@ -185,10 +185,6 @@ function sorted(column: DiscussionSortedBy) {
     return props.sortDirection
   }
   return null
-}
-
-function getLastComment(discussion: Thread): Comment {
-  return discussion.discussion.slice(-1)[0]
 }
 
 function getStatus(thread: Thread): { label: string, type: AdminBadgeType } {
