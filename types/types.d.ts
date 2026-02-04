@@ -69,12 +69,7 @@ export type PendingMembershipRequest = {
 
 export type OrgInvitation = {
   id: string
-  organization: {
-    id: string
-    name: string
-    slug: string
-    logo: string | null
-  }
+  organization: OrganizationReference
   role: MemberRole
   comment: string | null
   created: string
