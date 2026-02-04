@@ -1,7 +1,14 @@
 <template>
   <div class="p-3 flex gap-3 relative hover:bg-gray-some">
     <div class="flex-none">
-      <RiUserAddLine class="size-4" />
+      <RiMailSendLine
+        v-if="notification.details.kind === 'invitation'"
+        class="size-4"
+      />
+      <RiUserAddLine
+        v-else
+        class="size-4"
+      />
     </div>
     <div class="flex-1 truncate">
       <p class="m-0 text-xs font-bold">
@@ -9,11 +16,11 @@
           class="after:absolute after:inset-0 bg-none"
           :to="`/admin/organizations/${notification.details.request_organization.id}/members`"
         >
-          {{ $t(`Demande d'adhésion`) }}
+          {{ notification.details.kind === 'invitation' ? $t('Invitation à rejoindre une organisation') : $t(`Demande d'adhésion`) }}
         </NuxtLink>
       </p>
       <p class="m-0 text-xs">
-        {{ $t('de') }}
+        {{ notification.details.kind === 'invitation' ? $t('pour') : $t('de') }}
         <AvatarWithName
           :user="notification.details.request_user"
           :with-link="false"
@@ -45,7 +52,7 @@
 
 <script setup lang="ts">
 import { AvatarWithName, useFormatDate, type OrganizationReference } from '@datagouv/components-next'
-import { RiUserAddLine } from '@remixicon/vue'
+import { RiMailSendLine, RiUserAddLine } from '@remixicon/vue'
 import type { DeepReadonly } from 'vue'
 import type { MembershipRequestNotification } from '~/types/notifications'
 
