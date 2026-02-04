@@ -119,9 +119,6 @@ const accept = async () => {
     })
     emits('refresh')
   }
-  catch {
-    // TODO: toast error
-  }
   finally {
     loading.value = false
   }
@@ -134,9 +131,6 @@ const refuse = async () => {
       method: 'POST',
     })
     emits('refresh')
-  }
-  catch {
-    // TODO: toast error
   }
   finally {
     loading.value = false

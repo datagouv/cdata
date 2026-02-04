@@ -123,6 +123,9 @@
                   :hint-text="$t(`Inviter une personne par email (même si elle n'a pas encore de compte)`)"
                   type="email"
                   :disabled="!!inviteForm.user"
+                  :has-error="!!getFirstError('email')"
+                  :error-text="getFirstError('email')"
+                  @change="touch('email')"
                 />
 
                 <SelectGroup
@@ -416,9 +419,6 @@ const removeMemberFromOrganization = async (member: Member, close: () => void) =
     await refresh()
     close()
   }
-  catch {
-    // toast.error(t('An error occurred while removing this member.'))
-  }
   finally {
     loading.value = false
   }
@@ -438,9 +438,6 @@ const updateRole = async (member: Member, close: () => void) => {
     })
     await refresh()
     close()
-  }
-  catch {
-    // toast.error(t('An error occurred while update member role.'))
   }
   finally {
     loading.value = false
@@ -533,9 +530,6 @@ const submitInvitation = async (close: () => void) => {
     await refreshAll()
     resetInviteForm()
     close()
-  }
-  catch {
-    // TODO: toast error
   }
   finally {
     loading.value = false

@@ -225,9 +225,6 @@ const accept = async () => {
     })
     emits('refresh')
   }
-  catch {
-    // TODO: toast error
-  }
   finally {
     loading.value = false
   }
@@ -240,9 +237,6 @@ const cancelInvitation = async () => {
       method: 'POST',
     })
     emits('refresh')
-  }
-  catch {
-    // TODO: toast error
   }
   finally {
     loading.value = false
@@ -260,9 +254,6 @@ const refuse = async (close: () => void) => {
     })
     emits('refresh')
     close()
-  }
-  catch {
-    // TODO: toast error
   }
   finally {
     loading.value = false
