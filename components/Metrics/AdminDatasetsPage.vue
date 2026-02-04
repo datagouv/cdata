@@ -1,13 +1,16 @@
 <template>
   <div>
-    <div
-      v-if="downloadStatsUrl"
-      class="flex justify-end -mt-14 pt-0.5 mb-5"
-    >
+    <div class="flex justify-end items-center gap-4 -mt-14 pt-0.5 mb-5">
+      <AdminInput
+        v-model="q"
+        type="search"
+        :icon="RiSearchLine"
+        :placeholder="$t('Recherche')"
+      />
       <BrandedButton
+        v-if="downloadStatsUrl"
         color="secondary"
-        :disabled="!downloadStatsUrl"
-        :href="downloadStatsUrl || ''"
+        :href="downloadStatsUrl"
         :external="true"
         download="stats.csv"
         :icon="RiDownloadLine"
@@ -172,19 +175,34 @@
         src="/illustrations/dataset.svg"
         class="h-20"
       />
-      <p class="fr-text--bold fr-my-3v">
-        {{ $t(`Vous n'avez pas encore publié de jeu de données.`) }}
-      </p>
-      <AdminPublishButton type="dataset" />
+      <template v-if="q">
+        <p class="fr-text--bold fr-my-3v">
+          {{ $t(`Pas de résultats pour « {q} »`, { q }) }}
+        </p>
+        <BrandedButton
+          color="primary"
+          @click="q = qDebounced = ''"
+        >
+          {{ $t('Réinitialiser les filtres') }}
+        </BrandedButton>
+      </template>
+      <template v-else>
+        <p class="fr-text--bold fr-my-3v">
+          {{ $t(`Vous n'avez pas encore publié de jeu de données.`) }}
+        </p>
+        <AdminPublishButton type="dataset" />
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { BrandedButton, LoadingBlock, Pagination, summarize, Tooltip, type DatasetV2, type Organization, type User } from '@datagouv/components-next'
-import { RiDownloadLine, RiEyeLine, RiLineChartLine, RiStarSLine } from '@remixicon/vue'
+import { refDebounced } from '@vueuse/core'
+import { RiDownloadLine, RiEyeLine, RiLineChartLine, RiSearchLine, RiStarSLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
+import AdminInput from '~/components/AdminInput.vue'
 import type { DatasetSortedBy, PaginatedArray, SortDirection } from '~/types/types'
 
 const props = defineProps<{
@@ -195,6 +213,9 @@ const props = defineProps<{
 const config = useRuntimeConfig()
 const page = ref(1)
 const pageSize = ref(20)
+const q = ref('')
+const qDebounced = refDebounced(q, config.public.searchDebounce)
+watch(qDebounced, () => page.value = 1)
 
 const sortedBy = ref<DatasetSortedBy>('created')
 const direction = ref<SortDirection>('desc')
@@ -206,6 +227,7 @@ const params = computed(() => {
     organization: props.organization?.id,
     owner: props.user?.id,
     user: props.user?.id,
+    q: qDebounced.value,
     sort: sortDirection.value,
     page_size: pageSize.value,
     page: page.value,
