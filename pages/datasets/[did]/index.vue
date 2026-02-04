@@ -112,7 +112,7 @@ const config = useRuntimeConfig()
 const route = useRoute()
 
 // Feature flag: ?new_explorer=1 to enable, ?new_explorer=0 to disable, persisted in cookie
-const newExplorerCookie = useCookie('new_explorer', { maxAge: 60 * 60 * 24 * 365, path: '/' })
+const newExplorerCookie = useCookie('new_explorer', { maxAge: 60 * 60 * 24 * 7, path: '/' })
 const queryFlag = route.query.new_explorer as string | undefined
 if (queryFlag === '1') {
   newExplorerCookie.value = '1'
