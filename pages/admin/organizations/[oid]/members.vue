@@ -90,6 +90,9 @@
                   :suggest="suggestUser"
                   :multiple="false"
                   :disabled="!!inviteForm.email"
+                  :has-error="!!getFirstError('user')"
+                  :error-text="getFirstError('user')"
+                  @update:model-value="touch('user')"
                 >
                   <template #option="{ option: user }">
                     <div class="flex items-center space-x-2">
@@ -344,6 +347,7 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import { useNotifications } from '~/composables/useNotifications.client'
 import { isUserOrgAdmin, useMe } from '~/utils/auth'
+import { email, required } from '~/composables/useForm'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
@@ -452,12 +456,45 @@ const suggestUser = async (query: string): Promise<Array<UserSuggest>> => {
   })
 }
 
+type InviteFormData = {
+  role: MemberRole | null
+  user: UserSuggest | null
+  email: string
+  comment: string
+}
+
+const isUserAlreadyInvitedOrMember = (user: UserSuggest | null): string | null => {
+  if (!user) return null
+  if (organization.value?.members.some(m => m.user.id === user.id)) {
+    return t('Cet utilisateur est déjà membre de l\'organisation')
+  }
+  if (pendingInvitations.value.some(i => i.user?.id === user.id)) {
+    return t('Cet utilisateur a déjà été invité')
+  }
+  return null
+}
+
+const isEmailAlreadyInvited = (emailValue: string): string | null => {
+  if (!emailValue) return null
+  if (pendingInvitations.value.some(i => i.email?.toLowerCase() === emailValue.toLowerCase())) {
+    return t('Cette adresse email a déjà été invitée')
+  }
+  if (organization.value?.members.some(m => m.user.email?.toLowerCase() === emailValue.toLowerCase())) {
+    return t('Un membre avec cette adresse email existe déjà')
+  }
+  return null
+}
+
 const inviteFormId = useId()
-const inviteForm = ref({
-  role: null as MemberRole | null,
-  user: null as UserSuggest | null,
+const { form: inviteForm, getFirstError, validate, removeErrorsAndWarnings, touch } = useForm<InviteFormData>({
+  role: null,
+  user: null,
   email: '',
   comment: '',
+}, {
+  role: [required(t('Le rôle est requis'))],
+  user: [value => isUserAlreadyInvitedOrMember(value)],
+  email: [email(), value => isEmailAlreadyInvited(value)],
 })
 
 const resetInviteForm = () => {
@@ -467,15 +504,19 @@ const resetInviteForm = () => {
     email: '',
     comment: '',
   }
+  removeErrorsAndWarnings()
 }
 
 const canSubmitInvitation = computed(() => {
   if (!inviteForm.value.role) return false
   if (!inviteForm.value.user && !inviteForm.value.email) return false
+  if (getFirstError('user') || getFirstError('email')) return false
   return true
 })
 
 const submitInvitation = async (close: () => void) => {
+  const isValid = await validate()
+  if (!isValid) return
   if (!canSubmitInvitation.value) return
 
   try {
