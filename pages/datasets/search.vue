@@ -30,7 +30,7 @@ const robots = computed(() => {
 })
 
 useSeoMeta({
-  title: t('Rechercher sur {site}', { site: config.public.title }),
+  title: t('Recherche des jeux de données — data.gouv.fr'),
   robots,
 })
 
