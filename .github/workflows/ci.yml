@@ -266,12 +266,12 @@ jobs:
           retention-days: 7
 
   # ============================================
-  # JOB 4: Docker - build & push Docker image (automatic on main, manual on any branch)
+  # JOB 4: Docker - build & push Docker image (automatic on main, manual on branches)
   # ============================================
   docker:
     needs: [quality, e2e]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    environment: ${{ github.ref != 'refs/heads/main' && 'manual-env' || '' }}
     permissions:
       contents: read
     outputs:
@@ -319,12 +319,12 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   # ============================================
-  # JOB 5: Sentry - upload source maps (automatic on main, manual on any branch)
+  # JOB 5: Sentry - upload source maps (automatic on main, manual on branches)
   # ============================================
   sentry:
     needs: [quality, e2e]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    environment: ${{ github.ref != 'refs/heads/main' && 'manual-env' || '' }}
     steps:
       - uses: actions/checkout@v4
 
