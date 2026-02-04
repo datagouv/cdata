@@ -83,6 +83,7 @@ const harvesterForm = useState(
       backend: '', // todo add most common backend
       topic: null,
       filters: [],
+      features: {},
       configs: [],
       schedule: '',
       autoarchive: true,
