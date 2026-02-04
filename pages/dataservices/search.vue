@@ -8,12 +8,12 @@
         {{ $t('Accueil') }}
       </BreadcrumbItem>
       <BreadcrumbItem>
-        {{ $t('API') }}
+        {{ $t('Recherche') }}
       </BreadcrumbItem>
     </Breadcrumb>
 
     <h1 class="text-gray-title font-extrabold text-2xl mb-2">
-      {{ $t('API') }}
+      {{ $t('Rechercher sur {site}', { site: config.public.title }) }}
     </h1>
 
     <GlobalSearch :config="searchConfig" />
@@ -24,9 +24,17 @@
 import { GlobalSearch, type GlobalSearchConfig, getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
+const config = useRuntimeConfig()
+const route = useRoute()
 const { t } = useTranslation()
+
+const robots = computed(() => {
+  return Object.keys(route.query).length > 0 ? 'noindex, nofollow' : undefined
+})
+
 useSeoMeta({
-  title: t('API'),
+  title: t('Rechercher sur {site}', { site: config.public.title }),
+  robots,
 })
 
 const searchConfig: GlobalSearchConfig = [
