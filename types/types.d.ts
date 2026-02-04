@@ -52,7 +52,7 @@ export type CommunityResourceSortedBy = 'created_at_internal' | 'last_modified_i
 
 // MEMBERS
 
-export type MembershipStatus = 'pending' | 'accepted' | 'refused'
+export type MembershipStatus = 'pending' | 'accepted' | 'refused' | 'canceled'
 
 export type MembershipRequestKind = 'request' | 'invitation'
 

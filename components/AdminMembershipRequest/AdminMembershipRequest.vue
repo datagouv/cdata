@@ -1,5 +1,5 @@
 <template>
-  <!-- Invitation envoyée (par l'organisation) -->
+  <!-- Sent invitation (by the organization) -->
   <div
     v-if="request.kind === 'invitation'"
     class="relative bg-white shadow rounded-sm p-5 mt-3"
@@ -90,7 +90,7 @@
     </div>
   </div>
 
-  <!-- Demande d'adhésion (par un utilisateur) -->
+  <!-- Membership request (by a user) -->
   <BannerNotif
     v-else
     type="primary"
@@ -236,9 +236,8 @@ const accept = async () => {
 const cancelInvitation = async () => {
   try {
     loading.value = true
-    await $api(`/api/1/organizations/${props.oid}/membership/${props.request.id}/refuse`, {
+    await $api(`/api/1/organizations/${props.oid}/membership/${props.request.id}/cancel/`, {
       method: 'POST',
-      body: JSON.stringify({ comment: 'Invitation annulée' }),
     })
     emits('refresh')
   }
