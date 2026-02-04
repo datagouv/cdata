@@ -34,6 +34,7 @@
       <DiscussionCard
         :thread="selectedDiscussion"
         :subject
+        @change="updateSelectedDiscussion"
       />
     </div>
     <div v-else>
@@ -162,6 +163,7 @@ import NewDiscussionForm from './NewDiscussionForm.vue'
 import DiscussionCard from './DiscussionCard.vue'
 import type { PaginatedArray, SortDirection } from '~/types/types'
 import type { DiscussionSortedBy, DiscussionSubject, DiscussionSubjectTypes, Thread } from '~/types/discussions'
+import { useRouteQuery } from '@vueuse/router'
 
 const props = defineProps<{
   type: DiscussionSubject['class']
@@ -247,9 +249,16 @@ const hrefWithoutDiscussionId = computed(() => {
   return { name: route.name ?? undefined, params: route.params, query: queryWithoutDiscussionId }
 })
 const selectedDiscussionBanner = useTemplateRef('selectedDiscussionBannerRef')
+const discussionId = useRouteQuery('discussion_id')
+
+async function updateSelectedDiscussion() {
+  if (discussionId.value) {
+    selectedDiscussion.value = await $api<Thread>(`/api/1/discussions/${discussionId.value}/`)
+  }
+}
 watchEffect(async () => {
-  if ('discussion_id' in route.query && route.query.discussion_id) {
-    selectedDiscussion.value = await $api<Thread>(`/api/1/discussions/${route.query.discussion_id}/`)
+  if (discussionId.value) {
+    await updateSelectedDiscussion()
     nextTick(() => {
       selectedDiscussionBanner.value?.scrollIntoView({ behavior: 'smooth' })
     })
