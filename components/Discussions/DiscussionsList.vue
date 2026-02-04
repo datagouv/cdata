@@ -249,16 +249,16 @@ const hrefWithoutDiscussionId = computed(() => {
   return { name: route.name ?? undefined, params: route.params, query: queryWithoutDiscussionId }
 })
 const selectedDiscussionBanner = useTemplateRef('selectedDiscussionBannerRef')
-const discussion_id = useRouteQuery('discussion_id')
+const discussionId = useRouteQuery('discussion_id')
 
 async function updateSelectedDiscussion() {
-  if (discussion_id.value) {
-    selectedDiscussion.value = await $api<Thread>(`/api/1/discussions/${discussion_id.value}/`)
+  if (discussionId.value) {
+    selectedDiscussion.value = await $api<Thread>(`/api/1/discussions/${discussionId.value}/`)
   }
 }
 watchEffect(async () => {
-  if (discussion_id.value) {
-    updateSelectedDiscussion()
+  if (discussionId.value) {
+    await updateSelectedDiscussion()
     nextTick(() => {
       selectedDiscussionBanner.value?.scrollIntoView({ behavior: 'smooth' })
     })
