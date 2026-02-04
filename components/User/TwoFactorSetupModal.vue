@@ -114,9 +114,9 @@ const fetchStatusAndQRCode = async () => {
   const { data: twoFactorData } = await useAPI<{ response: { tf_primary_method: string | null, reauth_required: boolean } | null }>('/tf-setup')
   isConfigured.value = !!twoFactorData.value?.response?.tf_primary_method
   if (twoFactorData.value?.response?.reauth_required) {
-    toast.error(t('Vous devez vous déconnecter et reconnecter pour pouvoir configurer l\'authentification deux facteurs.'))
+    toast.error(t('Vous devez confirmer votre mot de passe pour configurer l\'authentification deux facteurs.'))
     isOpen.value = false
-    return
+    await navigateTo({ path: '/verify', query: { next: '/admin/me/profile' } }, { replace: true })
   }
 
   await fetchQRCode()
