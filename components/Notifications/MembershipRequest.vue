@@ -14,7 +14,7 @@
       <p class="m-0 text-xs font-bold">
         <NuxtLink
           class="after:absolute after:inset-0 bg-none"
-          :to="`/admin/organizations/${notification.details.request_organization.id}/members`"
+          :to="notification.details.kind === 'invitation' ? '/admin/me/profile' : `/admin/organizations/${notification.details.request_organization.id}/members`"
         >
           {{ notification.details.kind === 'invitation' ? $t('Invitation à rejoindre une organisation') : $t(`Demande d'adhésion`) }}
         </NuxtLink>
