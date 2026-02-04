@@ -16,6 +16,11 @@ test.describe('Organization member invitations', () => {
     await expect(page.getByRole('heading', { name: 'Inviter un membre' })).not.toBeVisible({ timeout: 10000 })
 
     await expect(page.getByText('normal@example.com')).toBeVisible()
+
+    // Clean up: cancel the invitation so other browsers can re-run this test
+    const invitationRow = page.locator('.relative').filter({ hasText: 'normal@example.com' })
+    await invitationRow.getByRole('button', { name: 'Annuler l\'invitation' }).click()
+    await expect(page.getByText('normal@example.com')).not.toBeVisible({ timeout: 10000 })
   })
 
   test('can cancel a sent invitation', async ({ page }) => {
