@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 
 const DATASERVICE_SLUG = 'explore-api-v2-30'
 

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
 
 const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
@@ -29,7 +29,7 @@ test('can add a dataset to an existing dataservice', async ({ page }) => {
   await page.goto(`/admin/dataservices/${dataservice.id}/datasets`)
 
   // Click on the dataset select dropdown
-  await page.getByTestId('searchable-select-rechercherunjeudedonnes').click()
+  await page.getByTestId('searchable-select-rechercher-un-jeu-de-donn-es').click()
 
   // Type the dataset name to search
   await page.getByPlaceholder('Rechercher un jeu de données…').fill(`Test dataset ${uniqueId}`)

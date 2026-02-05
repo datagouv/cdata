@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../base'
 
 test('page loads with results', async ({ page }) => {
   await page.goto('/dataservices/search')
 
   await expect(page).toHaveTitle(/API/)
 
-  await expect(page.getByRole('heading', { name: 'API', level: 1 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Rechercher sur/, level: 1 })).toBeVisible()
 
   await expect(page.getByText(/\d+ résultat/)).toBeVisible()
 

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './base'
 
 test.describe('French translation system', () => {
   test('Should show french translations', async ({ page }) => {

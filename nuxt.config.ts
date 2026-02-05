@@ -174,7 +174,6 @@ export default defineNuxtConfig({
       // A corresponding SVG at `datagouv-components/assets/labels` will be shown before the badge label
       datasetBadges: ['spd', 'inspire', 'hvd', 'sl', 'sr'],
 
-      enableCdataSecurityViews: false,
       requireEmailConfirmation: true,
       changeEmailPage: 'change-email',
       changePasswordPage: 'change',

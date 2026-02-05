@@ -101,7 +101,7 @@
                 <MarkdownViewer
                   size="sm"
                   :content="dataset.description"
-                  :min-heading="3"
+                  :no-headings="true"
                 />
               </ReadMore>
             </div>
@@ -334,6 +334,24 @@
                       {{
                         $t("le Point d'Accès National aux données de mobilités")
                       }}
+                    </CdataLink>
+                  </template>
+                </TranslationT>
+              </SimpleBanner>
+              <SimpleBanner
+                v-if="
+                  'ecospheres-indicateurs' in dataset.extras
+                "
+                type="primary-frame"
+              >
+                <TranslationT
+                  keypath="Consulter ce jeu de données sur {link} pour bénéficier d'informations supplémentaires : métadonnées enrichies, visualisations, etc."
+                  tag="p"
+                  class="!m-0 text-sm"
+                >
+                  <template #link>
+                    <CdataLink :href="`https://${config.public.baseUrl.includes('demo') ? 'demo.': ''}ecologie.data.gouv.fr/indicators/${dataset.id}`">
+                      ecologie.data.gouv.fr
                     </CdataLink>
                   </template>
                 </TranslationT>

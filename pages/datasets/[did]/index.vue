@@ -101,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getResourceLabel, LoadingBlock, Pagination, RESOURCE_TYPE, ResourceAccordion, SimpleBanner, type DatasetV2, type Resource } from '@datagouv/components-next'
+import { BrandedButton, getResourceLabel, LoadingBlock, Pagination, RESOURCE_TYPE, ResourceAccordion, SearchInput, SimpleBanner, type DatasetV2, type Resource } from '@datagouv/components-next'
 import { RiCloseCircleLine } from '@remixicon/vue'
 import { refDebounced } from '@vueuse/core'
 import type { PaginatedArray } from '~/types/types'

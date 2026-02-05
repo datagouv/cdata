@@ -13,7 +13,6 @@ const props = defineProps<{
   reuse: Reuse
 }>()
 const closed = computed(() => props.reuse.metrics.discussions - props.reuse.metrics.discussions_open)
-console.log(closed)
 
 useSeoMeta({ robots: 'noindex' })
 </script>

@@ -1,43 +1,42 @@
 <template>
   <div class="container mb-16">
     <Breadcrumb>
-      <BreadcrumbItem
-        to="/"
-      >
+      <BreadcrumbItem to="/">
         {{ $t('Accueil') }}
       </BreadcrumbItem>
       <BreadcrumbItem>
-        {{ $t('Jeux de données') }}
+        {{ $t('Recherche') }}
       </BreadcrumbItem>
     </Breadcrumb>
 
     <h1 class="text-gray-title font-extrabold text-2xl mb-2">
-      {{ $t('Jeux de données') }}
+      {{ $t('Rechercher sur {site}', { site: config.public.title }) }}
     </h1>
-    <p
-      v-if="site"
-      class="block mb-3"
-    >
-      {{ $t('Rechercher parmi les {count} jeux de données sur {site}', {
-        count: site.metrics.datasets,
-        site: config.public.title,
-      }) }}
-    </p>
 
-    <DatasetsSearchPage />
+    <GlobalSearch :config="searchConfig" />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Site } from '@datagouv/components-next'
+import { GlobalSearch, type GlobalSearchConfig, getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
+const config = useRuntimeConfig()
+const route = useRoute()
 const { t } = useTranslation()
-useSeoMeta({
-  title: t('Recherche des jeux de données — data.gouv.fr'),
+
+const robots = computed(() => {
+  return Object.keys(route.query).length > 0 ? 'noindex, nofollow' : undefined
 })
 
-const config = useRuntimeConfig()
+useSeoMeta({
+  title: t('Recherche des jeux de données — data.gouv.fr'),
+  robots,
+})
 
-const { data: site } = await useAPI<Site>('/api/1/site/')
+const searchConfig: GlobalSearchConfig = [
+  getDefaultDatasetConfig(),
+  getDefaultDataserviceConfig(),
+  getDefaultReuseConfig(),
+]
 </script>

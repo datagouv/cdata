@@ -12,7 +12,7 @@
         v-if="notification.details.class === 'TransferRequestNotificationDetails'"
         :notification="notification as TransferRequestNotification"
       />
-      <NotificationNewBadge
+      <NotificationsNewBadge
         v-else-if="notification.details.class === 'NewBadgeNotificationDetails'"
         :notification="notification as NewBadgeNotification"
       />

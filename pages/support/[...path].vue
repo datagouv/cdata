@@ -498,7 +498,7 @@ useSeoMeta({
 function updateUrl(path: string, hash = '') {
   const params = route.params.path ? (route.params.path as Array<string>).join('/') : ''
   const pathWithoutParams = route.params.path ? route.path.slice(0, route.path.indexOf(params)) : route.path
-  const url = new URL(window.location.origin + pathWithoutParams + (path ? `${path}/` : path))
+  const url = new URL(window.location.origin + (pathWithoutParams.endsWith('/') ? pathWithoutParams : `${pathWithoutParams}/`) + (path ? `${path}/` : path))
   url.hash = `#${hash}`
   window.history.replaceState(null, '', url)
 }
