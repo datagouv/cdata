@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, watchEffect, type Ref } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRouteQuery } from '@vueuse/router'
 import { useComponentsConfig } from '../../config'
@@ -189,43 +189,41 @@ const flatResources = computed(() =>
   allResources.value.flatMap(g => g.items),
 )
 
-const selectedResource = ref<Resource | null>(null)
-const selectionInitialized = ref(false)
+// Fetch resource by ID if specified in URL (for SSR)
+const initialResourceId = resourceIdQuery.value
+const { data: fetchedResource } = initialResourceId
+  ? await useFetch<Resource>(`/api/1/datasets/${props.dataset.id}/resources/${initialResourceId}/`)
+  : { data: ref(null) }
+
+// Initial selection (synchronous for SSR hydration)
+function getInitialResource(): Resource | null {
+  const resourceId = resourceIdQuery.value
+  if (resourceId) {
+    // First check in already loaded resources
+    const existing = flatResources.value.find(r => r.id === resourceId)
+    if (existing) return existing
+    // Use fetched resource if available
+    if (fetchedResource.value) return fetchedResource.value
+  }
+  // Default to first resource
+  return flatResources.value[0] ?? null
+}
+
+const selectedResource = ref<Resource | null>(getInitialResource())
 
 const selectResource = (resource: Resource) => {
   selectedResource.value = resource
-  selectionInitialized.value = true
   router.replace({
     query: { ...router.currentRoute.value.query, resource_id: resource.id },
   })
 }
 
-// Initial selection: resource_id from URL, or first resource of the first group (in RESOURCE_TYPE order)
-watchEffect(async () => {
-  if (selectionInitialized.value) return
-
-  const resourceId = resourceIdQuery.value
-  if (resourceId) {
-    const existing = flatResources.value.find(r => r.id === resourceId)
-    if (existing) {
-      selectedResource.value = existing
-      selectionInitialized.value = true
-      return
-    }
-    // Try to fetch the resource by ID
-    const { data } = await useFetch<Resource>(`/api/1/datasets/${props.dataset.id}/resources/${resourceId}/`)
-    if (data.value) {
-      selectedResource.value = data.value
-      selectionInitialized.value = true
-      return
-    }
-  }
-
-  // Pick the first item of the first non-empty group (in RESOURCE_TYPE order: main first)
+// Update selection when resources change (e.g., after client-side fetch completes)
+watch(flatResources, () => {
+  if (selectedResource.value) return
   const firstResource = flatResources.value[0]
   if (firstResource) {
     selectedResource.value = firstResource
-    selectionInitialized.value = true
   }
 })
 </script>

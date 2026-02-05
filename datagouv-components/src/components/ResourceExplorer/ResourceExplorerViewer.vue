@@ -1,5 +1,5 @@
 <template>
-  <div class="border border-gray-default overflow-auto">
+  <div class="border border-gray-default">
     <header class="p-4 flex flex-wrap md:flex-nowrap gap-4 items-center justify-between">
       <div>
         <div class="flex items-center mb-1">
@@ -74,7 +74,7 @@
       </div>
     </header>
 
-    <section>
+    <section class="pb-4">
       <TabGroup
         size="sm"
         @change="switchTab"
