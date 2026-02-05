@@ -118,6 +118,8 @@ function sort(column: ReuseSortedBy, newDirection: SortDirection) {
   direction.value = newDirection
 }
 
+const apiUrl = computed(() => qDebounced.value ? '/api/2/reuses/search/' : '/api/1/reuses/')
+
 const params = computed(() => {
   return {
     organization: props.organization?.id,
@@ -130,7 +132,7 @@ const params = computed(() => {
   }
 })
 
-const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Reuse>>('/api/1/reuses/', { lazy: true, query: params })
+const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Reuse>>(apiUrl, { lazy: true, query: params })
 
 watchEffect(async () => {
   if (pageData.value) {

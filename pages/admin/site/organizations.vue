@@ -192,7 +192,8 @@ const q = ref('')
 const qDebounced = refDebounced(q, config.public.searchDebounce)
 
 const url = computed(() => {
-  const url = new URL(`/api/1/organizations`, config.public.apiBase)
+  const baseEndpoint = qDebounced.value ? '/api/2/organizations/search/' : '/api/1/organizations'
+  const url = new URL(baseEndpoint, config.public.apiBase)
 
   url.searchParams.set('deleted', 'true')
   url.searchParams.set('sort', sortDirection.value)

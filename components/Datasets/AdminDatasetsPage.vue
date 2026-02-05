@@ -170,6 +170,8 @@ function resetFilters() {
   datasetsStatus.value = null
 }
 
+const apiUrl = computed(() => qDebounced.value && !datasetsStatus.value ? '/api/2/datasets/search/' : '/api/2/datasets/')
+
 const params = computed(() => {
   const query: {
     organization: string | undefined
@@ -211,7 +213,7 @@ const params = computed(() => {
   return query
 })
 
-const { data: pageData, status, refresh } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/', { lazy: true, query: params })
+const { data: pageData, status, refresh } = await useAPI<PaginatedArray<DatasetV2>>(apiUrl, { lazy: true, query: params })
 
 watchEffect(async () => {
   if (pageData.value) {

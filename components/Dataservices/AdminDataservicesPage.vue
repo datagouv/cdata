@@ -126,6 +126,8 @@ function sort(column: DataserviceSortedBy, newDirection: SortDirection) {
   direction.value = newDirection
 }
 
+const apiUrl = computed(() => qDebounced.value ? '/api/2/dataservices/search/' : '/api/1/dataservices/')
+
 const params = computed(() => {
   return {
     organization: props.organization?.id,
@@ -138,7 +140,7 @@ const params = computed(() => {
   }
 })
 
-const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Dataservice>>('/api/1/dataservices/', { lazy: true, query: params })
+const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Dataservice>>(apiUrl, { lazy: true, query: params })
 
 watchEffect(async () => {
   if (pageData.value) {
