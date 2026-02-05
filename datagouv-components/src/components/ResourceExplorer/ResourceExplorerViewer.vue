@@ -12,17 +12,17 @@
               :is="config.textClamp"
               v-if="config && config.textClamp"
               :max-lines="2"
-              :text="resource.title || $t('Fichier sans nom')"
+              :text="resource.title || t('Fichier sans nom')"
             />
           </h4>
           <CopyButton
-            :label="$t('Copier le lien')"
-            :copied-label="$t('Lien copié !')"
+            :label="t('Copier le lien')"
+            :copied-label="t('Lien copié !')"
             :text="resourceExternalUrl"
           />
         </div>
         <div class="text-gray-medium text-xs flex items-center gap-1">
-          <span>{{ $t('mis à jour le {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
+          <span>{{ t('mis à jour le {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
           <RiSubtractLine
             aria-hidden="true"
             class="size-3 fill-gray-medium"
@@ -47,14 +47,14 @@
         <BrandedButton
           v-if="isResourceUrl"
           :href="resource.latest"
-          :title="$t('Lien du fichier - ouvre une nouvelle fenêtre')"
+          :title="t('Lien du fichier - ouvre une nouvelle fenêtre')"
           rel="ugc nofollow noopener"
           new-tab
           size="xs"
           external
           @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
         >
-          {{ $t('Visiter') }}
+          {{ t('Visiter') }}
         </BrandedButton>
         <BrandedButton
           v-else
@@ -69,7 +69,7 @@
           external
           @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
         >
-          {{ $t('Télécharger') }}
+          {{ t('Télécharger') }}
         </BrandedButton>
       </div>
     </header>
@@ -80,7 +80,7 @@
         @change="switchTab"
       >
         <div class="pl-4 pr-4 pb-4">
-          <TabList style="max-width: 100%; overflow-y: auto;">
+          <TabList class="max-w-full overflow-x-auto">
             <Tab
               v-for="tab in tabsOptions"
               :key="tab.key"
@@ -154,13 +154,13 @@
                   v-if="resource.format === 'url'"
                   class="font-bold fr-text--sm fr-mb-0"
                 >
-                  {{ $t("URL d'origine") }}
+                  {{ t("URL d'origine") }}
                 </dt>
                 <dt
                   v-else
                   class="font-bold fr-text--sm fr-mb-0"
                 >
-                  {{ $t('Format original') }}
+                  {{ t('Format original') }}
                 </dt>
                 <dd class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
                   <span v-if="resource.format === 'url'">
@@ -192,19 +192,19 @@
                       rel="ugc nofollow noopener"
                       @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${resource.format}`)"
                     >
-                      <span>{{ $t('Format {format}', { format: resource.format }) }}<span v-if="resourceFilesize"> - {{ filesize(resourceFilesize) }}</span></span>
+                      <span>{{ t('Format {format}', { format: resource.format }) }}<span v-if="resourceFilesize"> - {{ filesize(resourceFilesize) }}</span></span>
                     </a>
                   </span>
                   <CopyButton
-                    :label="$t('Copier le lien')"
-                    :copied-label="$t('Lien copié !')"
+                    :label="t('Copier le lien')"
+                    :copied-label="t('Lien copié !')"
                     :text="resource.latest"
                     class="relative"
                   />
                 </dd>
                 <template v-if="generatedFormats.length">
                   <dt class="font-bold fr-text--sm fr-mb-0">
-                    {{ $t('Formats générés automatiquement par {platform} (dernière mise à jour {date})', { platform: config.name, date: conversionsLastUpdate }) }}
+                    {{ t('Formats générés automatiquement par {platform} (dernière mise à jour {date})', { platform: config.name, date: conversionsLastUpdate }) }}
                   </dt>
                   <dd
                     v-for="generatedFormat in generatedFormats"
@@ -219,12 +219,12 @@
                         rel="ugc nofollow noopener"
                         @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${generatedFormat.format}`)"
                       >
-                        <span>{{ $t('Format {format}', { format: generatedFormat.format }) }}<span v-if="generatedFormat.size"> - {{ filesize(generatedFormat.size) }}</span></span>
+                        <span>{{ t('Format {format}', { format: generatedFormat.format }) }}<span v-if="generatedFormat.size"> - {{ filesize(generatedFormat.size) }}</span></span>
                       </a>
                     </span>
                     <CopyButton
-                      :label="$t('Copier le lien')"
-                      :copied-label="$t('Lien copié !')"
+                      :label="t('Copier le lien')"
+                      :copied-label="t('Lien copié !')"
                       :text="generatedFormat.url"
                       class="relative"
                     />
@@ -234,10 +234,10 @@
             </div>
             <div v-if="tab.key === 'swagger'">
               <div class="fr-mb-4w">
-                <p>{{ $t("Cette API est générée automatiquement par {platform} à partir du fichier.", { platform: config.name }) }}</p>
-                <p>{{ $t("- Si le fichier est modifié, l'API sera mise à jour et sa structure pourra changer.") }}</p>
-                <p>{{ $t("- Si le fichier est supprimé, l'API sera également supprimée.") }}</p>
-                <p>{{ $t("Pour des usages pérennes, prévoyez que cette API dépend directement du fichier source.") }}</p>
+                <p>{{ t("Cette API est générée automatiquement par {platform} à partir du fichier.", { platform: config.name }) }}</p>
+                <p>{{ t("- Si le fichier est modifié, l'API sera mise à jour et sa structure pourra changer.") }}</p>
+                <p>{{ t("- Si le fichier est supprimé, l'API sera également supprimée.") }}</p>
+                <p>{{ t("Pour des usages pérennes, prévoyez que cette API dépend directement du fichier source.") }}</p>
               </div>
               <Swagger
                 v-if="hasTabularData"
@@ -254,55 +254,50 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
 import { RiDownloadLine, RiFileWarningLine, RiSubtractLine } from '@remixicon/vue'
-import {
-  BrandedButton,
-  CopyButton,
-  MarkdownViewer,
-  ResourceIcon,
-  Swagger,
-  Tab,
-  TabGroup,
-  TabList,
-  TabPanel,
-  TabPanels,
-  filesize,
-  summarize,
-  getResourceFormatIcon,
-  getResourceExternalUrl,
-  getResourceFilesize,
-  trackEvent,
-  useComponentsConfig,
-  useFormatDate,
-  type Resource,
-  type Dataset,
-  type DatasetV2,
-} from '@datagouv/components-next'
-import { useResourceCapabilities } from '~/composables/useResourceCapabilities'
-
-import Preview from '@datagouv/components-next/src/components/ResourceAccordion/Preview.vue'
-import DataStructure from '@datagouv/components-next/src/components/ResourceAccordion/DataStructure.vue'
-import Metadata from '@datagouv/components-next/src/components/ResourceAccordion/Metadata.vue'
+import BrandedButton from '../BrandedButton.vue'
+import CopyButton from '../CopyButton.vue'
+import MarkdownViewer from '../MarkdownViewer.vue'
+import ResourceIcon from '../ResourceAccordion/ResourceIcon.vue'
+import Swagger from '../ResourceAccordion/Swagger.client.vue'
+import TabGroup from '../Tabs/TabGroup.vue'
+import TabList from '../Tabs/TabList.vue'
+import Tab from '../Tabs/Tab.vue'
+import TabPanels from '../Tabs/TabPanels.vue'
+import TabPanel from '../Tabs/TabPanel.vue'
+import Preview from '../ResourceAccordion/Preview.vue'
+import DataStructure from '../ResourceAccordion/DataStructure.vue'
+import Metadata from '../ResourceAccordion/Metadata.vue'
+import { filesize, summarize } from '../../functions/helpers'
+import { getResourceFormatIcon } from '../../functions/resources'
+import { getResourceExternalUrl, getResourceFilesize } from '../../functions/datasets'
+import { trackEvent } from '../../functions/matomo'
+import { useComponentsConfig } from '../../config'
+import { useFormatDate } from '../../functions/dates'
+import { useTranslation } from '../../composables/useTranslation'
+import { useResourceCapabilities } from '../../composables/useResourceCapabilities'
+import type { Resource } from '../../types/resources'
+import type { Dataset, DatasetV2 } from '../../types/datasets'
 
 const JsonPreview = defineAsyncComponent(() =>
-  import('@datagouv/components-next/src/components/ResourceAccordion/JsonPreview.client.vue'),
+  import('../ResourceAccordion/JsonPreview.client.vue'),
 )
 const PdfPreview = defineAsyncComponent(() =>
-  import('@datagouv/components-next/src/components/ResourceAccordion/PdfPreview.client.vue'),
+  import('../ResourceAccordion/PdfPreview.client.vue'),
 )
 const XmlPreview = defineAsyncComponent(() =>
-  import('@datagouv/components-next/src/components/ResourceAccordion/XmlPreview.client.vue'),
+  import('../ResourceAccordion/XmlPreview.client.vue'),
 )
 const DatafairPreview = defineAsyncComponent(() =>
-  import('@datagouv/components-next/src/components/ResourceAccordion/Datafair.client.vue'),
+  import('../ResourceAccordion/Datafair.client.vue'),
 )
 const MapContainer = defineAsyncComponent(() =>
-  import('@datagouv/components-next/src/components/ResourceAccordion/MapContainer.client.vue'),
+  import('../ResourceAccordion/MapContainer.client.vue'),
 )
 const Pmtiles = defineAsyncComponent(() =>
-  import('@datagouv/components-next/src/components/ResourceAccordion/Pmtiles.client.vue'),
+  import('../ResourceAccordion/Pmtiles.client.vue'),
 )
 const SwaggerClient = defineAsyncComponent(() =>
-  import('@datagouv/components-next/src/components/ResourceAccordion/Swagger.client.vue'),
+  import('../ResourceAccordion/Swagger.client.vue'),
 )
 
 const props = defineProps<{
@@ -310,6 +305,7 @@ const props = defineProps<{
   resource: Resource
 }>()
 
+const { t } = useTranslation()
 const config = useComponentsConfig()
 const { formatRelativeIfRecentDate } = useFormatDate()
 

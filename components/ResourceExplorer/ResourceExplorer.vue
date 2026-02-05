@@ -48,10 +48,17 @@
 </template>
 
 <script setup lang="ts">
-import { RESOURCE_TYPE, type DatasetV2, type Resource, type ResourceType } from '@datagouv/components-next'
+import {
+  RESOURCE_TYPE,
+  ResourceExplorerSidebar,
+  ResourceExplorerViewer,
+  type DatasetV2,
+  type Resource,
+  type ResourceGroup,
+  type ResourceType,
+} from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import type { PaginatedArray } from '~/types/types'
-import type { ResourceGroup } from './ResourceExplorerSidebar.vue'
 
 const props = defineProps<{
   dataset: DatasetV2

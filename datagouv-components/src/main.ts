@@ -54,6 +54,9 @@ import Placeholder from './components/Placeholder.vue'
 import ReadMore from './components/ReadMore.vue'
 import ResourceAccordion from './components/ResourceAccordion/ResourceAccordion.vue'
 import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
+import ResourceExplorerSidebar from './components/ResourceExplorer/ResourceExplorerSidebar.vue'
+import type { ResourceGroup } from './components/ResourceExplorer/ResourceExplorerSidebar.vue'
+import ResourceExplorerViewer from './components/ResourceExplorer/ResourceExplorerViewer.vue'
 import Swagger from './components/ResourceAccordion/Swagger.client.vue'
 import ReuseCard from './components/ReuseCard.vue'
 import ReuseDetails from './components/ReuseDetails.vue'
@@ -148,6 +151,7 @@ export type {
   ReportReason,
   Resource,
   ResourceFileType,
+  ResourceGroup,
   ResourceType,
   ReuseReference,
   Reuse,
@@ -219,6 +223,8 @@ export {
   Placeholder,
   ReadMore,
   ResourceAccordion,
+  ResourceExplorerSidebar,
+  ResourceExplorerViewer,
   ResourceIcon,
   ReuseCard,
   ReuseDetails,

@@ -5,11 +5,11 @@
   >
     <div class="flex items-center justify-between mb-3">
       <h3 class="text-sm font-bold uppercase mb-0">
-        {{ $t('Ressources') }}
+        {{ t('Ressources') }}
       </h3>
       <button
         type="button"
-        :title="$t('Masquer le panneau')"
+        :title="t('Masquer le panneau')"
         class="p-1 hover:bg-gray-100 rounded"
         @click="$emit('update:collapsed', true)"
       >
@@ -21,13 +21,13 @@
       <label
         :for="searchId"
         class="sr-only"
-      >{{ $t('Rechercher') }}</label>
+      >{{ t('Rechercher') }}</label>
       <input
         :id="searchId"
         :value="search"
         type="search"
         class="w-full border border-gray-default rounded px-2.5 py-1.5 text-sm"
-        :placeholder="$t('Rechercher')"
+        :placeholder="t('Rechercher')"
         @input="$emit('update:search', ($event.target as HTMLInputElement).value)"
       >
     </div>
@@ -38,7 +38,7 @@
         :key="group.type"
       >
         <div class="text-xs text-gray-plain font-bold uppercase mb-1.5 border-b border-gray-default pb-1">
-          {{ getResourceLabel(group.type, group.items.length) }}
+          {{ getResourceLabel(group.type, group.total) }}
         </div>
         <ul class="list-none p-0 m-0 space-y-0.5">
           <li
@@ -57,7 +57,7 @@
                 :resource
                 class="size-3.5 shrink-0"
               />
-              <span class="truncate">{{ resource.title || $t('Fichier sans nom') }}</span>
+              <span class="truncate">{{ resource.title || t('Fichier sans nom') }}</span>
             </button>
           </li>
         </ul>
@@ -67,7 +67,7 @@
           class="w-full text-left px-2 py-1.5 text-sm text-blue-default hover:underline"
           @click="$emit('load-more', group.type)"
         >
-          {{ $t('Charger plus…') }}
+          {{ t('Charger plus…') }}
         </button>
       </div>
     </div>
@@ -79,7 +79,7 @@
   >
     <button
       type="button"
-      :title="$t('Afficher le panneau des ressources')"
+      :title="t('Afficher le panneau des ressources')"
       class="p-1 hover:bg-gray-100 rounded border border-gray-default"
       @click="$emit('update:collapsed', false)"
     >
@@ -90,8 +90,13 @@
 
 <script setup lang="ts">
 import { useId } from 'vue'
-import { ResourceIcon, getResourceLabel, type Resource, type ResourceType } from '@datagouv/components-next'
 import { RiArrowRightSLine, RiArrowLeftSLine } from '@remixicon/vue'
+import ResourceIcon from '../ResourceAccordion/ResourceIcon.vue'
+import { getResourceLabel } from '../../functions/resources'
+import { useTranslation } from '../../composables/useTranslation'
+import type { Resource, ResourceType } from '../../types/resources'
+
+const { t } = useTranslation()
 
 export interface ResourceGroup {
   type: ResourceType
