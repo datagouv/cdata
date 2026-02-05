@@ -123,6 +123,7 @@ import {
   insertImageCommand,
   linkAttr,
   paragraphAttr,
+  replaceAllCommand,
   toggleEmphasisCommand,
   toggleStrongCommand,
   wrapInBlockquoteCommand,
@@ -140,6 +141,7 @@ import { RiArrowGoBackLine, RiArrowGoForwardLine, RiBold, RiCodeSSlashLine, RiDo
 import { Milkdown, useEditor } from '@milkdown/vue'
 import { usePluginViewFactory, useWidgetViewFactory } from '@prosemirror-adapter/vue'
 import { useDebounceFn } from '@vueuse/core'
+import { watch } from 'vue'
 import { clipboard } from '@milkdown/kit/plugin/clipboard'
 import type { ImageModalForm } from '~/components/MarkdownEditor/ImageModal/ImageModalButton.vue'
 import ImageModalButton from '~/components/MarkdownEditor/ImageModal/ImageModalButton.vue'
@@ -249,4 +251,20 @@ const editor = useEditor(root =>
 function call<T>(command: CmdKey<T>, payload?: T) {
   return editor.get()?.action(callCommand(command, payload))
 }
+
+// Watch for external value changes and update the editor
+watch(() => props.value, (newValue, oldValue) => {
+  if (newValue !== oldValue && editor.get()) {
+    const editorInstance = editor.get()
+    if (editorInstance) {
+      // Only update if the value actually changed and is different from current content
+      try {
+        editorInstance.action(callCommand(replaceAllCommand.key, newValue || ''))
+      }
+      catch (error) {
+        console.warn('[MarkdownEditor] Failed to update editor content:', error)
+      }
+    }
+  }
+}, { immediate: false })
 </script>
