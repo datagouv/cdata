@@ -63,6 +63,7 @@ import PostCard from './components/PostCard.vue'
 import ReadMore from './components/ReadMore.vue'
 import ResourceAccordion from './components/ResourceAccordion/ResourceAccordion.vue'
 import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
+import ResourceExplorer from './components/ResourceExplorer/ResourceExplorer.vue'
 import ResourceExplorerSidebar from './components/ResourceExplorer/ResourceExplorerSidebar.vue'
 import type { ResourceGroup } from './components/ResourceExplorer/ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './components/ResourceExplorer/ResourceExplorerViewer.vue'
@@ -270,6 +271,7 @@ export {
   RadioInput,
   ReadMore,
   ResourceAccordion,
+  ResourceExplorer,
   ResourceExplorerSidebar,
   ResourceExplorerViewer,
   ResourceIcon,
