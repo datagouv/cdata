@@ -170,13 +170,14 @@ function resetFilters() {
   datasetsStatus.value = null
 }
 
-const apiUrl = computed(() => qDebounced.value && !datasetsStatus.value ? '/api/2/datasets/search/' : '/api/2/datasets/')
+const useSearchEndpoint = computed(() => !!qDebounced.value && !datasetsStatus.value)
+const apiUrl = computed(() => useSearchEndpoint.value ? '/api/2/datasets/search/' : '/api/2/datasets/')
 
 const params = computed(() => {
   const query: {
     organization: string | undefined
     owner: string | undefined
-    sort: string
+    sort: string | undefined
     q: string
     page_size: number
     page: number
@@ -187,7 +188,7 @@ const params = computed(() => {
     organization: props.organization?.id,
     owner: props.user?.id,
 
-    sort: sortDirection.value,
+    sort: useSearchEndpoint.value ? undefined : sortDirection.value,
     q: qDebounced.value,
     page_size: pageSize.value,
     page: page.value,

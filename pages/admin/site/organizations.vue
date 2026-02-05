@@ -191,18 +191,16 @@ const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${s
 const q = ref('')
 const qDebounced = refDebounced(q, config.public.searchDebounce)
 
-const url = computed(() => {
-  const baseEndpoint = qDebounced.value ? '/api/2/organizations/search/' : '/api/1/organizations'
-  const url = new URL(baseEndpoint, config.public.apiBase)
+const useSearchEndpoint = computed(() => !!qDebounced.value)
+const apiUrl = computed(() => useSearchEndpoint.value ? '/api/2/organizations/search/' : '/api/1/organizations/')
 
-  url.searchParams.set('deleted', 'true')
-  url.searchParams.set('sort', sortDirection.value)
-  url.searchParams.set('q', qDebounced.value)
-  url.searchParams.set('page_size', pageSize.value.toString())
-  url.searchParams.set('page', page.value.toString())
+const params = computed(() => ({
+  deleted: 'true',
+  sort: useSearchEndpoint.value ? undefined : sortDirection.value,
+  q: qDebounced.value,
+  page_size: pageSize.value,
+  page: page.value,
+}))
 
-  return url.toString()
-})
-
-const { data: pageData, status } = await useAPI<PaginatedArray<Organization>>(url, { lazy: true })
+const { data: pageData, status } = await useAPI<PaginatedArray<Organization>>(apiUrl, { lazy: true, query: params })
 </script>

@@ -126,14 +126,15 @@ function sort(column: DataserviceSortedBy, newDirection: SortDirection) {
   direction.value = newDirection
 }
 
-const apiUrl = computed(() => qDebounced.value ? '/api/2/dataservices/search/' : '/api/1/dataservices/')
+const useSearchEndpoint = computed(() => !!qDebounced.value)
+const apiUrl = computed(() => useSearchEndpoint.value ? '/api/2/dataservices/search/' : '/api/1/dataservices/')
 
 const params = computed(() => {
   return {
     organization: props.organization?.id,
     owner: props.user?.id,
 
-    sort: sortDirection.value,
+    sort: useSearchEndpoint.value ? undefined : sortDirection.value,
     q: qDebounced.value,
     page_size: pageSize.value,
     page: page.value,

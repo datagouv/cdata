@@ -118,14 +118,15 @@ function sort(column: ReuseSortedBy, newDirection: SortDirection) {
   direction.value = newDirection
 }
 
-const apiUrl = computed(() => qDebounced.value ? '/api/2/reuses/search/' : '/api/1/reuses/')
+const useSearchEndpoint = computed(() => !!qDebounced.value)
+const apiUrl = computed(() => useSearchEndpoint.value ? '/api/2/reuses/search/' : '/api/1/reuses/')
 
 const params = computed(() => {
   return {
     organization: props.organization?.id,
     owner: props.user?.id,
 
-    sort: sortDirection.value,
+    sort: useSearchEndpoint.value ? undefined : sortDirection.value,
     q: qDebounced.value,
     page_size: pageSize.value,
     page: page.value,
