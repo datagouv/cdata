@@ -222,27 +222,16 @@
         v-if="user.id === me.id"
         class="fr-input-group"
       >
-        <label class="fr-label mb-2">
-          {{ $t('Authentification deux facteurs') }}
-        </label>
-        <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
-          <div class="fr-col-12 fr-col-sm-7 fr-col-lg-8 fr-col-xl-9">
-            <div class="fr-input-wrap relative">
-              <input
-                :value="twoFactorStatus === 'authenticator' ? $t('Configuré') : $t('Non configuré')"
-                class="fr-input"
-                disabled
-                type="text"
-              >
-            </div>
-          </div>
-          <div class="fr-col-auto">
-            <TwoFactorSetupModal
-              :is-configured="twoFactorStatus === 'authenticator'"
-              @setup-complete="refreshTwoFactorStatus"
-            />
-          </div>
-        </div>
+        <BannerAction
+          type="warning"
+          :title="$t('Authentification deux facteurs')"
+          class="mt-4"
+        >
+          {{ $t("Configurer l'authentification deux facteurs") }}
+          <template #button>
+            <TwoFactorSetupModal />
+          </template>
+        </BannerAction>
       </div>
       <BannerAction
         type="danger"
@@ -292,9 +281,6 @@ const profilePicture = ref<File | null>(null)
 
 const { data: allRoles } = await useAPI<Array<{ name: string }>>('/api/1/users/roles')
 const allRolesAsString = computed(() => (allRoles.value || []).map(r => r.name))
-
-const { data: twoFactorData, refresh: refreshTwoFactorStatus } = await useAPI<{ response: { tf_primary_method: string } | null }>('/tf-setup')
-const twoFactorStatus = computed(() => twoFactorData.value?.response?.tf_primary_method ?? null)
 
 const { form } = useForm(props.user, {}, {})
 watchEffect(() => {

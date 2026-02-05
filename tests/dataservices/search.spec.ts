@@ -5,7 +5,7 @@ test('page loads with results', async ({ page }) => {
 
   await expect(page).toHaveTitle(/API/)
 
-  await expect(page.getByRole('heading', { name: 'API', level: 1 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Rechercher sur/, level: 1 })).toBeVisible()
 
   await expect(page.getByText(/\d+ résultat/)).toBeVisible()
 

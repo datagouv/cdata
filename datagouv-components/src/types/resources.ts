@@ -35,3 +35,9 @@ export type Resource = {
 }
 
 export type CommunityResource = Owned & Resource & { dataset: Omit<Dataset, 'resources' | 'community_resources'>, permissions: { edit: boolean, delete: boolean } }
+
+export interface ResourceGroup {
+  type: ResourceType
+  total: number
+  items: Resource[]
+}
