@@ -253,6 +253,7 @@
             :accordion="addDescriptionAccordionId"
           >
             <InputGroup
+              :key="descriptionEditorRefreshKey"
               v-model="form.description"
               class="mb-3"
               :label="$t('Description')"
@@ -270,6 +271,49 @@
             >
               {{ getFirstWarning("description") }}
             </SimpleBanner>
+            <div class="flex items-center gap-4 mt-2 mb-3">
+              <Tooltip v-if="!canGenerateDescription">
+                <BrandedButton
+                  type="button"
+                  color="primary"
+                  :disabled="true"
+                >
+                  <div class="flex items-center space-x-2">
+                    <RiSparklingLine
+                      class="size-4"
+                      aria-hidden="true"
+                    />
+                    <span>{{ $t('Suggérer une description') }}</span>
+                  </div>
+                </BrandedButton>
+                <template #tooltip>
+                  {{ $t('Remplissez le nom de l\'API et au moins l\'un des liens (documentation technique ou documentation machine) pour utiliser cette fonctionnalité.') }}
+                </template>
+              </Tooltip>
+              <BrandedButton
+                v-else
+                type="button"
+                color="primary"
+                :icon="RiSparklingLine"
+                :loading="isGeneratingDescription"
+                @click="handleAutoCompleteDescription"
+              >
+                <template v-if="isGeneratingDescription">
+                  {{ $t('Suggestion en cours...') }}
+                </template>
+                <template v-else>
+                  {{ $t('Suggérer une description') }}
+                </template>
+              </BrandedButton>
+              <CdataLink
+                v-if="config.public.generateDescriptionFeedbackUrl"
+                :to="config.public.generateDescriptionFeedbackUrl"
+                target="_blank"
+                class="text-sm text-gray-medium"
+              >
+                {{ $t('Comment avez-vous trouvé cette suggestion ?') }}
+              </CdataLink>
+            </div>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -506,15 +550,16 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, TranslationT, type Owned } from '@datagouv/components-next'
-import { RiAddLine } from '@remixicon/vue'
-import { computed } from 'vue'
-import ModalClient from '../Modal/Modal.client.vue'
+import { BrandedButton, SimpleBanner, toast, Tooltip, TranslationT, type Owned } from '@datagouv/components-next'
+import { RiAddLine, RiSparklingLine } from '@remixicon/vue'
+import { computed, nextTick } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
-import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
+import CdataLink from '~/components/CdataLink.vue'
 import ContactPointSelect from '~/components/ContactPointSelect.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
+import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
+import ModalClient from '../Modal/Modal.client.vue'
 import type { DataserviceForm } from '~/types/types'
 
 const props = defineProps<{
@@ -553,6 +598,18 @@ const ownedOptions = computed<Array<Owned>>(() => {
 
 const machineDocumentationUrlWarningMessage = t(`Il est fortement recommandé d'ajouter une documentation OpenAPI ou Swagger à votre API.`)
 const openConfirmModal = ref(false)
+const descriptionEditorRefreshKey = ref(0)
+
+// Track description generation state
+const isGeneratingDescription = ref(false)
+
+const hasTechnicalDocumentationUrl = computed(() => form.value.technical_documentation_url && form.value.technical_documentation_url.trim().length > 0)
+const hasMachineDocumentationUrl = computed(() => form.value.machine_documentation_url && form.value.machine_documentation_url.trim().length > 0)
+const hasTitle = computed(() => form.value.title && form.value.title.trim().length > 0)
+
+const canGenerateDescription = computed(() => {
+  return hasTitle.value && (hasTechnicalDocumentationUrl.value || hasMachineDocumentationUrl.value)
+})
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(dataserviceForm, {
   featured: [],
@@ -580,6 +637,56 @@ const accordionState = (key: keyof typeof form.value) => {
   if (getFirstWarning(key)) return 'warning'
 
   return 'default'
+}
+
+async function handleAutoCompleteDescription() {
+  const title = form.value.title?.trim()
+  const technicalUrl = form.value.technical_documentation_url?.trim()
+  const machineUrl = form.value.machine_documentation_url?.trim()
+
+  if (!title || (!technicalUrl && !machineUrl)) {
+    return
+  }
+
+  try {
+    isGeneratingDescription.value = true
+
+    const requestBody: {
+      title: string
+      technicalDocumentationUrl?: string
+      machineDocumentationUrl?: string
+    } = {
+      title,
+      ...(technicalUrl && { technicalDocumentationUrl: technicalUrl }),
+      ...(machineUrl && { machineDocumentationUrl: machineUrl }),
+    }
+
+    // We call our server-side API route instead of Albert API directly to avoid CORS issues.
+    // The Albert API doesn't allow direct requests from browser-side JavaScript.
+    // Our server acts as a proxy, keeping the API key secure on the server side.
+    const response = await $fetch<{ description?: string }>('/nuxt-api/albert/generate-dataservice-description', {
+      method: 'POST',
+      body: requestBody,
+    })
+
+    if (response.description) {
+      form.value.description = response.description
+      descriptionEditorRefreshKey.value += 1
+      await nextTick()
+    }
+  }
+  catch (error) {
+    console.error('[Albert API] Failed to generate description:', error)
+    const message = error && typeof error === 'object' && 'data' in error && error.data && typeof error.data === 'object' && 'statusMessage' in error.data
+      ? String((error.data as { statusMessage: string }).statusMessage)
+      : error instanceof Error
+        ? error.message
+        : t('Impossible de générer une description. Vérifiez que les liens de documentation sont valides et accessibles.')
+    toast.error(message)
+  }
+  finally {
+    isGeneratingDescription.value = false
+  }
 }
 
 async function submit() {

@@ -140,6 +140,7 @@ import { RiArrowGoBackLine, RiArrowGoForwardLine, RiBold, RiCodeSSlashLine, RiDo
 import { Milkdown, useEditor } from '@milkdown/vue'
 import { usePluginViewFactory, useWidgetViewFactory } from '@prosemirror-adapter/vue'
 import { useDebounceFn } from '@vueuse/core'
+import { ref } from 'vue'
 import { clipboard } from '@milkdown/kit/plugin/clipboard'
 import type { ImageModalForm } from '~/components/MarkdownEditor/ImageModal/ImageModalButton.vue'
 import ImageModalButton from '~/components/MarkdownEditor/ImageModal/ImageModalButton.vue'
