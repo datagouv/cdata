@@ -64,8 +64,8 @@ import { useFetch } from '../../functions/api'
 import { RESOURCE_TYPE } from '../../functions/resources'
 import type { PaginatedArray } from '../../types/api'
 import type { DatasetV2 } from '../../types/datasets'
-import type { Resource, ResourceType } from '../../types/resources'
-import ResourceExplorerSidebar, { type ResourceGroup } from './ResourceExplorerSidebar.vue'
+import type { Resource, ResourceGroup, ResourceType } from '../../types/resources'
+import ResourceExplorerSidebar from './ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './ResourceExplorerViewer.vue'
 
 const props = withDefaults(defineProps<{

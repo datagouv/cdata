@@ -32,7 +32,7 @@
       >
     </div>
 
-    <div class="space-y-4 overflow-y-auto max-h-[60vh]">
+    <div class="space-y-4 overflow-y-auto">
       <div
         v-for="group in resources"
         :key="group.type"
@@ -94,15 +94,9 @@ import { RiArrowRightSLine, RiArrowLeftSLine } from '@remixicon/vue'
 import ResourceIcon from '../ResourceAccordion/ResourceIcon.vue'
 import { getResourceLabel } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
-import type { Resource, ResourceType } from '../../types/resources'
+import type { Resource, ResourceGroup, ResourceType } from '../../types/resources'
 
 const { t } = useTranslation()
-
-export interface ResourceGroup {
-  type: ResourceType
-  total: number
-  items: Resource[]
-}
 
 defineProps<{
   resources: ResourceGroup[]

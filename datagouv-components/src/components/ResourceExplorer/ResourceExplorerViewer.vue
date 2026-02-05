@@ -8,12 +8,7 @@
               :resource
               class="size-3.5 mr-1"
             />
-            <component
-              :is="config.textClamp"
-              v-if="config && config.textClamp"
-              :max-lines="2"
-              :text="resource.title || t('Fichier sans nom')"
-            />
+            <span class="line-clamp-2">{{ resource.title || t('Fichier sans nom') }}</span>
           </h4>
           <CopyButton
             :label="t('Copier le lien')"
@@ -55,6 +50,15 @@
           @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
         >
           {{ t('Visiter') }}
+        </BrandedButton>
+        <BrandedButton
+          v-else-if="ogcService"
+          :icon="RiFileCopyLine"
+          color="primary"
+          size="xs"
+          @click="copyResourceUrl"
+        >
+          {{ t('Copier le lien') }}
         </BrandedButton>
         <BrandedButton
           v-else
@@ -163,26 +167,20 @@
                   {{ t('Format original') }}
                 </dt>
                 <dd class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
-                  <span v-if="resource.format === 'url'">
+                  <span
+                    v-if="resource.format === 'url'"
+                    class="inline-flex items-center max-w-full"
+                  >
                     <a
                       :href="resource.latest"
-                      class="fr-link no-icon-after"
+                      class="fr-link no-icon-after truncate"
                       rel="ugc nofollow noopener"
                       target="_blank"
                       @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
                     >
-                      <component
-                        :is="config.textClamp"
-                        v-if="config && config.textClamp"
-                        :auto-resize="true"
-                        :max-lines="1"
-                        :text="resource.url"
-                      >
-                        <template #after>
-                          <span class="fr-ml-1v fr-icon-external-link-line fr-icon--sm" />
-                        </template>
-                      </component>
+                      {{ resource.url }}
                     </a>
+                    <span class="fr-ml-1v fr-icon-external-link-line fr-icon--sm shrink-0" />
                   </span>
                   <span v-else>
                     <span class="text-datagouv fr-icon-download-line fr-icon--sm fr-mr-1v fr-mt-1v" />
@@ -253,7 +251,8 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
-import { RiDownloadLine, RiFileWarningLine, RiSubtractLine } from '@remixicon/vue'
+import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiSubtractLine } from '@remixicon/vue'
+import { toast } from 'vue-sonner'
 import BrandedButton from '../BrandedButton.vue'
 import CopyButton from '../CopyButton.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
@@ -314,6 +313,7 @@ const {
   hasPmtiles,
   hasDatafairPreview,
   hasOpenAPIPreview,
+  ogcService,
   ogcWms,
   generatedFormats,
   isResourceUrl,
@@ -328,14 +328,24 @@ const availabilityChecked = computed(() => props.resource.extras && 'check:avail
 const unavailable = computed(() => availabilityChecked.value && props.resource.extras['check:available'] === false)
 const downloadButtonTitle = computed(() => {
   if (unavailable.value) {
-    return `Le robot de ${config.name} n'a pas pu accéder à ce fichier - Télécharger le fichier en ${format.value}`
+    return t('Le robot de {platform} n\'a pas pu accéder à ce fichier - Télécharger le fichier en {format}', { platform: config.name, format: format.value })
   }
-  return `Télécharger le fichier en ${format.value}`
+  return t('Télécharger le fichier en {format}', { format: format.value })
 })
 
 const conversionsLastUpdate = computed(() =>
   formatRelativeIfRecentDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined),
 )
+
+const copyResourceUrl = async () => {
+  try {
+    await navigator.clipboard.writeText(props.resource.url)
+    toast.success(t('Lien copié !'))
+  }
+  catch {
+    toast.error(t('Impossible de copier dans le presse-papier'))
+  }
+}
 
 const switchTab = (index: number) => {
   const option = tabsOptions.value[index]
