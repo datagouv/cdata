@@ -79,7 +79,7 @@ export type HarvesterForm = {
   url: string
   backend: string
   filters: Array<HarvestSourceFilter>
-  features: Map<string, boolean>
+  features: Record<string, boolean>
   configs: Array<HarvestSourceConfig>
   schedule: string
   autoarchive: boolean
@@ -115,7 +115,7 @@ export type NewHarvesterForApi = {
   active: boolean
   config: {
     filters: Array<HarvestSourceFilter>
-    features: Map<string, boolean>
+    features: Record<string, boolean>
     extra_configs: Array<HarvestSourceConfig>
   }
 }
