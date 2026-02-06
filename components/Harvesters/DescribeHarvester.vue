@@ -169,6 +169,23 @@
       </FieldsetElement>
 
       <FieldsetElement
+        v-if="backendInfo && backendInfo.features.length"
+        form-key="features"
+      >
+        <div class="space-y-2">
+          <div
+            v-for="feature in backendInfo.features"
+            :key="feature.key"
+          >
+            <ToggleSwitch
+              v-model="form.features[feature.key]"
+              :label="feature.label || feature.key"
+            />
+          </div>
+        </div>
+      </FieldsetElement>
+
+      <FieldsetElement
         v-if="backendInfo && backendInfo.extra_configs.length"
         form-key="configs"
       >
@@ -323,7 +340,10 @@ function getMissingConfigs(): HarvestBackend['extra_configs'] {
 }
 
 watchEffect(() => {
-  // On config change, remove previous configs or filters not existing anymore. (the backend fail if we send some unknown filters or config)
+  // On config change:
+  // - initialize available features
+  form.value.features = (backendInfo.value?.features || []).reduce<Record<string, boolean>>((acc, feat) => (acc[feat.key] = form.value.features[feat.key] || feat.default, acc), {})
+  // - remove previous configs or filters not existing anymore (the backend fails if we send some unknown filters or config)
   form.value.configs = form.value.configs.filter(({ key }) => !backendInfo.value || backendInfo.value.extra_configs.find(config => config.key === key))
   form.value.filters = form.value.filters.filter(({ key }) => !backendInfo.value || backendInfo.value.filters.find(filter => filter.key === key))
 })
