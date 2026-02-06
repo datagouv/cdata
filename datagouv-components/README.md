@@ -81,7 +81,7 @@ To work with [Nuxt](https://nuxt.com/), some components are doing HTTP requests 
 
 ```html
 <Suspense>
-    <DatasetInformationPanel v-if="dataset" :dataset="dataset" />
+    <ActivityList />
 </Suspense>
 ```
 

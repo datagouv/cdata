@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Component } from 'vue'
+import { computed, type Component } from 'vue'
 
 const props = defineProps<{
   icon?: Component

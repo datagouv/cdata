@@ -50,6 +50,8 @@ app.vueApp.use(datagouv, {
   pmtilesViewerBaseUrl: null,
   schemaValidataUrl: runtimeConfig.public.schemaValidataUrl,
   schemaDocumentationUrl: runtimeConfig.public.schemasSite.url,
+  schemasSiteUrl: runtimeConfig.public.schemasSite.url,
+  schemasSiteName: runtimeConfig.public.schemasSite.name,
   tabularApiUrl: runtimeConfig.public.tabularApiUrl,
   tabularApiDataserviceId: runtimeConfig.public.tabularApiDataserviceId,
   tabularAllowRemote: true,

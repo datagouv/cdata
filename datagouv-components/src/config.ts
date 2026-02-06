@@ -15,6 +15,8 @@ export type PluginConfig = {
   metricsApiUrl?: string
   schemaValidataUrl?: string
   schemaDocumentationUrl?: string
+  schemasSiteUrl?: string
+  schemasSiteName?: string
   tabularApiUrl?: string
   tabularApiPageSize?: number
   tabularAllowRemote?: boolean

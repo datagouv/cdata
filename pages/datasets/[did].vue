@@ -176,7 +176,7 @@
                   {{ $t("Licence") }}
                 </dt>
                 <dd class="p-0 text-sm">
-                  <License :license="dataset.license" />
+                  <LicenseBadge :license="dataset.license" />
                 </dd>
               </div>
 
@@ -481,6 +481,7 @@ import {
   Toggletip,
   type TranslatedBadge,
   LabelTag,
+  LicenseBadge,
   AppLink,
   MarkdownViewer,
   useMetrics,
