@@ -21,25 +21,18 @@ test('search launch without params', async ({ page }) => {
 test('dataset label filter is available and functional', async ({ page }) => {
   await page.goto('/datasets/search/')
 
-  // BadgeSelect uses data-testid based on slugified label
-  const filterButton = page.getByTestId('searchable-select-label-de-donn-es')
-  await filterButton.scrollIntoViewIfNeeded()
-  await expect(filterButton).toBeVisible()
+  // Badge filter is now a RadioGroup with legend "Label de donnée"
+  const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
+  await badgeFieldset.scrollIntoViewIfNeeded()
+  await expect(badgeFieldset).toBeVisible()
 
-  // Open filter dropdown
-  await filterButton.click()
+  // Check that radio options are available
+  const radioOptions = badgeFieldset.locator('input[type="radio"]')
+  await expect(radioOptions).not.toHaveCount(0)
 
-  // Check that options are available in the listbox
-  const listbox = page.getByRole('listbox')
-  const options = listbox.getByRole('option')
-  await expect(options).not.toHaveCount(0)
-
-  // Get first option text for later verification
-  const firstOptionText = await options.first().textContent()
-  expect(firstOptionText).toBeTruthy()
-
-  // Click on first option
-  await options.first().click()
+  // Click on first non-default option (skip "Tous")
+  const firstBadgeOption = badgeFieldset.getByText('Données de forte valeur')
+  await firstBadgeOption.click()
 
   // Verify URL is updated with badge parameter
   await page.waitForURL(/badge=/)
@@ -53,14 +46,12 @@ test('search results update when badge filter is applied', async ({ page }) => {
   // Wait for initial results to load
   await expect(page.getByRole('status')).toBeVisible()
 
-  // Open badge filter
-  const filterButton = page.getByTestId('searchable-select-label-de-donn-es')
-  await filterButton.scrollIntoViewIfNeeded()
-  await filterButton.click()
+  // Badge filter is now a RadioGroup
+  const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
+  await badgeFieldset.scrollIntoViewIfNeeded()
 
-  // Select a badge filter (pick the first option)
-  const listbox = page.getByRole('listbox')
-  await listbox.getByRole('option').first().click()
+  // Click on a badge option
+  await badgeFieldset.getByText('Données de forte valeur').click()
 
   // Wait for URL to update with badge parameter
   await page.waitForURL(/badge=/)
@@ -92,15 +83,12 @@ test('badge filter can be cleared', async ({ page }) => {
 test('badge filter persists on page reload', async ({ page }) => {
   await page.goto('/datasets/search/')
 
-  // Open badge filter
-  const filterButton = page.getByTestId('searchable-select-label-de-donn-es')
-  await filterButton.scrollIntoViewIfNeeded()
-  await filterButton.click()
+  // Badge filter is now a RadioGroup
+  const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
+  await badgeFieldset.scrollIntoViewIfNeeded()
 
-  // Get and select the first badge option
-  const listbox = page.getByRole('listbox')
-  const firstOption = listbox.getByRole('option').first()
-  await firstOption.click()
+  // Click on a badge option
+  await badgeFieldset.getByText('Données de forte valeur').click()
 
   // Wait for URL to update
   await page.waitForURL(/badge=/)

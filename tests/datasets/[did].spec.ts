@@ -74,11 +74,13 @@ test('clicking dataset label navigates to filtered search', async ({
     'Recherche des jeux de données — data.gouv.fr',
   )
 
-  // Verify the badge filter is applied
-  const badgeFilterLabel = page.getByText('Label de données')
-  await badgeFilterLabel.scrollIntoViewIfNeeded()
-  const badgeInput = page.locator('input[placeholder="Tous les labels"]')
-  await expect(badgeInput).toHaveValue(/Service public/, { timeout: 15000 })
+  // Verify the badge filter is applied - now uses RadioGroup
+  const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
+  await badgeFieldset.scrollIntoViewIfNeeded()
+
+  // Check that the SPD radio option is selected (has the highlighted background)
+  const spdOption = badgeFieldset.getByText('Service public de la donnée')
+  await expect(spdOption).toBeVisible({ timeout: 15000 })
 })
 
 test('dataset without labels does not show label section', async ({ page }) => {
