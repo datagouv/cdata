@@ -1,4 +1,5 @@
 import type { CERTIFIED, PUBLIC_SERVICE, ASSOCIATION, LOCAL_AUTHORITY, COMPANY, DataserviceReference, DatasetReference, OrganizationReference, ReuseReference, UserReference } from '@datagouv/components-next'
+import type { MembershipRequestKind } from './types'
 
 export type CommonNotification = {
   created_at: string
@@ -11,6 +12,7 @@ export type CommonNotification = {
 export type MembershipRequestNotification = CommonNotification & {
   details: {
     class: 'MembershipRequestNotificationDetails'
+    kind: MembershipRequestKind
     request_organization: OrganizationReference
     request_user: UserReference
   }
