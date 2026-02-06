@@ -1,6 +1,6 @@
 import { throwOnNever, type Dataservice, type DatasetV2, type Reuse } from '@datagouv/components-next'
 import { RiArticleLine, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
-import type { Comment, DiscussionSubject, DiscussionSubjectTypes } from '~/types/discussions'
+import type { Comment, DiscussionSubject, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 import type { ApiFetch } from '~/types/types'
 
 export async function getSubject(api: ApiFetch, subject: DiscussionSubject): Promise<DiscussionSubjectTypes | null> {
@@ -72,4 +72,8 @@ export function isProducerOfSubject(subject: DiscussionSubjectTypes, comment: Co
   }
 
   return false
+}
+
+export function getLastComment(discussion: Thread): Comment {
+  return discussion.discussion.slice(-1)[0]
 }
