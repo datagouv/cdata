@@ -66,9 +66,25 @@
           :title="t('Ajouter des mots-clés')"
           :state="accordionState('tags')"
         >
-          <p class="fr-m-0">
-            {{ t("Les mots clés apparaissent sur la page de présentation et apportent un meilleur référencement lors d’une recherche utilisateur.\nÀ partir de chaque mot clé, vous pouvez obtenir la liste des réutilisations pour lesquelles le mot clé a également été assigné.") }}
-          </p>
+          <div class="prose prose-neutral m-0">
+            <p class="m-0">
+              {{ t("Les mots clés apparaissent sur la page de présentation et apportent un meilleur référencement lors d'une recherche utilisateur.\nÀ partir de chaque mot clé, vous pouvez obtenir la liste des réutilisations pour lesquelles le mot clé a également été assigné.") }}
+            </p>
+            <p class="fr-mt-3v font-bold">
+              {{ t("Suggestions automatiques") }}
+            </p>
+            <p class="m-0">
+              {{ t("Des mots-clés peuvent vous être proposés automatiquement en fonction du contenu de votre réutilisation. Vous pouvez les accepter, les modifier ou les supprimer.") }}
+            </p>
+            <p class="m-0">
+              <CdataLink
+                to="https://guides.data.gouv.fr/autres-ressources-utiles/notre-approche-de-lintelligence-artificielle-sur-data.gouv.fr"
+                target="_blank"
+              >
+                {{ t(`L'IA se base uniquement sur les informations que vous avez fournies et peut parfois se tromper : relisez toujours la proposition avant de valider.`) }}
+              </CdataLink>
+            </p>
+          </div>
         </Accordion>
         <Accordion
           :id="addImageAccordionId"
@@ -288,6 +304,46 @@
               :error-text="getFirstError('tags')"
               :warning-text="getFirstWarning('tags')"
             />
+            <div class="flex items-center gap-4 mt-2 mb-3">
+              <Tooltip v-if="tagsSuggestionDisabledMessage">
+                <BrandedButton
+                  type="button"
+                  color="primary"
+                  :icon="RiSparklingLine"
+                  :loading="isGeneratingTags"
+                  :disabled="true"
+                >
+                  {{ $t('Suggérer des mots clés') }}
+                </BrandedButton>
+                <template #tooltip>
+                  {{ tagsSuggestionDisabledMessage }}
+                </template>
+              </Tooltip>
+              <BrandedButton
+                v-else
+                type="button"
+                color="primary"
+                :icon="RiSparklingLine"
+                :loading="isGeneratingTags"
+                :disabled="!!tagsSuggestionDisabledMessage"
+                @click="handleAutoCompleteTags(MAX_TAGS_NB)"
+              >
+                <template v-if="isGeneratingTags">
+                  {{ $t('Suggestion en cours...') }}
+                </template>
+                <template v-else>
+                  {{ $t('Suggérer des mots clés') }}
+                </template>
+              </BrandedButton>
+              <CdataLink
+                v-if="config.public.generateTagsFeedbackUrl"
+                :to="config.public.generateTagsFeedbackUrl"
+                target="_blank"
+                class="text-sm text-gray-medium"
+              >
+                {{ $t('Comment avez-vous trouvé cette suggestion ?') }}
+              </CdataLink>
+            </div>
             <SimpleBanner
               v-if="getFirstWarning('tags')"
               type="warning"
@@ -342,14 +398,17 @@
 </template>
 
 <script setup lang="ts">
-import { SearchableSelect, SimpleBanner, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
+import { BrandedButton, Tooltip, SearchableSelect, SimpleBanner, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
+import { RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
+import CdataLink from '~/components/CdataLink.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplanation.vue'
-import type { ReuseForm } from '~/types/types'
+import { humanJoin } from '~/utils/helpers'
+import type { ReuseForm, Tag } from '~/types/types'
 
 const reuseForm = defineModel<ReuseForm>({ required: true })
 const props = defineProps<{
@@ -380,6 +439,12 @@ const ownedOptions = computed<Array<Owned>>(() => {
   return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: { ...user.value, class: 'User' }, organization: null }]
 })
 
+const MAX_TAGS_NB = 5
+
+// Track tag sources
+const isGeneratingTags = ref(false)
+const lastSuggestedTags = ref<Array<Tag>>([])
+
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(reuseForm, {
   featured: [],
   owned: [required()],
@@ -406,6 +471,31 @@ const accordionState = (key: keyof typeof form.value) => {
   return 'default'
 }
 
+const hasTitle = computed(() => form.value.title && form.value.title.trim().length > 0)
+const hasDescription = computed(() => form.value.description && form.value.description.trim().length > 0)
+const hasType = computed(() => form.value.type?.label && form.value.type.label.trim().length > 0)
+const hasLessThanMaxTags = computed(() => form.value.tags.length < MAX_TAGS_NB)
+
+const tagsSuggestionDisabledMessage = computed(() => {
+  if (!hasLessThanMaxTags.value) {
+    return t('Vous avez déjà {count} mots-clés. Le maximum recommandé est de {max}.', { count: form.value.tags.length, max: MAX_TAGS_NB })
+  }
+  const missing = []
+  if (!hasTitle.value) {
+    missing.push(t('le titre'))
+  }
+  if (!hasDescription.value) {
+    missing.push(t('la description'))
+  }
+  if (!hasType.value) {
+    missing.push(t('le type'))
+  }
+  if (missing.length > 0) {
+    return t('Remplissez {fields} pour utiliser cette fonctionnalité.', { fields: humanJoin(missing) })
+  }
+  return ''
+})
+
 const setFiles = (files: Array<File>) => {
   reuseForm.value.image = files[0]
 }
@@ -418,6 +508,58 @@ const imagePreview = computed(() => {
 async function submit() {
   if (await validate()) {
     emit('submit')
+  }
+}
+
+async function handleAutoCompleteTags(nbTags: number) {
+  if (!form.value.type?.label) {
+    return
+  }
+
+  try {
+    isGeneratingTags.value = true
+
+    // We call our server-side API route instead of Albert API directly to avoid CORS issues.
+    // The Albert API doesn't allow direct requests from browser-side JavaScript.
+    // Our server acts as a proxy, keeping the API key secure on the server side.
+    const response = await $fetch<{ tags: string[] }>('/nuxt-api/albert/generate-reuse-tags', {
+      method: 'POST',
+      body: {
+        title: form.value.title,
+        description: form.value.description,
+        type: form.value.type.label.toLowerCase(),
+        nbTags: nbTags,
+      },
+    })
+
+    // Remove previously suggested tags and add new ones
+    if (response.tags && response.tags.length > 0) {
+      // Filter out tags that were the last suggested tags
+      let currentTags = form.value.tags
+      if (lastSuggestedTags.value.length > 0) {
+        currentTags = form.value.tags.filter(tag =>
+          !lastSuggestedTags.value.some(lastSuggested => lastSuggested.text === tag.text),
+        )
+      }
+
+      // Create new suggested tags, filtering out duplicates with existing tags
+      const existingTagTexts = currentTags.map(tag => tag.text)
+      const newSuggestedTags = response.tags
+        .filter(tag => !existingTagTexts.includes(tag))
+        .map(tag => ({ text: tag }))
+
+      // Update form with current tags + new suggested tags
+      form.value.tags = [...currentTags, ...newSuggestedTags]
+
+      // Update the suggested tags tracking
+      lastSuggestedTags.value = newSuggestedTags
+    }
+  }
+  catch (error) {
+    console.error('Failed to generate tags:', error)
+  }
+  finally {
+    isGeneratingTags.value = false
   }
 }
 </script>
