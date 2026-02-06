@@ -8,37 +8,38 @@
         {{ $t('Accueil') }}
       </BreadcrumbItem>
       <BreadcrumbItem>
-        {{ $t('API') }}
+        {{ $t('Recherche') }}
       </BreadcrumbItem>
     </Breadcrumb>
 
     <h1 class="text-gray-title font-extrabold text-2xl mb-2">
-      {{ $t('API') }}
+      {{ $t('Rechercher sur {site}', { site: config.public.title }) }}
     </h1>
-    <p
-      v-if="site"
-      class="block mb-3"
-    >
-      {{ $t('Rechercher parmi {count} APIs sur {site}', {
-        count: site.metrics.dataservices,
-        site: config.public.title,
-      }) }}
-    </p>
 
-    <DataservicesSearchPage />
+    <GlobalSearch :config="searchConfig" />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Site } from '@datagouv/components-next'
+import { GlobalSearch, type GlobalSearchConfig, getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
+const config = useRuntimeConfig()
+const route = useRoute()
 const { t } = useTranslation()
-useSeoMeta({
-  title: t('API'),
+
+const robots = computed(() => {
+  return Object.keys(route.query).length > 0 ? 'noindex, nofollow' : undefined
 })
 
-const config = useRuntimeConfig()
+useSeoMeta({
+  title: t('API'),
+  robots,
+})
 
-const { data: site } = await useAPI<Site>('/api/1/site/')
+const searchConfig: GlobalSearchConfig = [
+  getDefaultDataserviceConfig(),
+  getDefaultDatasetConfig(),
+  getDefaultReuseConfig(),
+]
 </script>

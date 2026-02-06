@@ -9,7 +9,10 @@
       :for="id"
     >
       {{ label }}
-      <Required :required="required" />
+      <span
+        v-if="required"
+        class="text-new-primary"
+      >*</span>
       <span
         v-if="hintText"
         class="fr-hint-text"
@@ -31,7 +34,7 @@
         disabled
         hidden
       >
-        {{ $t("Sélectionner une option") }}
+        {{ t('Sélectionner une option') }}
       </option>
       <option
         v-for="option in options"
@@ -60,16 +63,13 @@
   </div>
 </template>
 
-<script lang="ts">
-</script>
-
 <script setup lang="ts">
-import { computed } from 'vue'
-import Required from '~/components/Required/Required.vue'
+import { computed, useId } from 'vue'
+import { useTranslation } from '../../composables/useTranslation'
 
-export type Option = {
+export type SelectOption = {
   label: string
-  value?: string | boolean | null
+  value?: string | boolean | null | undefined
   disabled?: boolean
   hidden?: boolean
   selected?: boolean
@@ -84,7 +84,7 @@ export type SelectGroupProps = {
   label: string
   hideLabel?: boolean
   modelValue?: string | boolean | null
-  options: Array<Option>
+  options: Array<SelectOption>
   required?: boolean
   validText?: string
   hideNullOption?: boolean
@@ -104,6 +104,8 @@ const props = withDefaults(defineProps<SelectGroupProps>(), {
   hideLabel: false,
   hideNullOption: false,
 })
+
+const { t } = useTranslation()
 
 const id = useId()
 

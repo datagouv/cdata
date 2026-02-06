@@ -78,7 +78,7 @@ import type { Organization, OrganizationReference } from '../types/organizations
 import OwnerType from './OwnerType.vue'
 import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
 import AppLink from './AppLink.vue'
-import { useTranslation } from '../main'
+import { useTranslation } from '../composables/useTranslation'
 
 const props = defineProps<{
   organization: Organization | OrganizationReference
