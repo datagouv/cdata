@@ -39,7 +39,7 @@ test.describe('2FA Authentication Flow', () => {
     await expect(page).toHaveURL(`${loginURL}/`)
 
     // Step 3: Navigate to 2FA setup page
-    await page.goto(`${loginURL}/tf-setup`)
+    await page.goto(`${loginURL}/setup-two-factor`)
     await expect(page.getByRole('heading', { name: 'Authentification deux facteurs' })).toBeVisible()
 
     // Step 4: Wait for QR code to be generated and displayed
@@ -83,7 +83,7 @@ test.describe('2FA Authentication Flow', () => {
     await page.getByRole('button', { name: 'Se connecter' }).first().click()
 
     // Should now redirect to validation page since 2FA is configured
-    await expect(page).toHaveURL(`${loginURL}/tf-validate`)
+    await expect(page).toHaveURL(`${loginURL}/validate-two-factor`)
     await expect(page.getByRole('heading', { name: 'Authentification deux facteurs' })).toBeVisible()
 
     // Step 11: Submit invalid TOTP code
@@ -95,7 +95,7 @@ test.describe('2FA Authentication Flow', () => {
     await expect(page.locator('[data-testid="totp-code-input"]').getByText('Code invalide')).toBeVisible()
 
     // Should still be on the validation page after failed attempt
-    await expect(page).toHaveURL(`${loginURL}/tf-validate`)
+    await expect(page).toHaveURL(`${loginURL}/validate-two-factor`)
 
     // Step 13: Verify validation form is present (no QR code on validation page)
     await expect(page.locator('[data-testid="totp-code-input"]')).toBeVisible()
