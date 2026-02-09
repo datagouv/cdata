@@ -45,7 +45,12 @@ export default defineNuxtPlugin({
           }
 
           if (response.status === 401) {
-            await nuxtApp.runWithContext(() => navigateTo({ path: '/login', query: { next: route.fullPath } }))
+            if (response._data?.response && typeof response._data.response === 'object' && response._data.response?.reauth_required === true) {
+              await nuxtApp.runWithContext(() => navigateTo({ path: '/verify', query: { next: route.fullPath } }))
+            }
+            else {
+              await nuxtApp.runWithContext(() => navigateTo({ path: '/login', query: { next: route.fullPath } }))
+            }
           }
 
           if (response.status === 429) {
@@ -69,6 +74,9 @@ export default defineNuxtPlugin({
               }
               else if ('errors' in response._data && typeof response._data.errors === 'object') {
                 message = Object.entries(response._data.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
+              }
+              else if ('response' in response._data && 'errors' in response._data.response && Array.isArray(response._data.response.errors)) {
+                message = response._data.response.errors.join(' ; ')
               }
             }
             catch (e) {

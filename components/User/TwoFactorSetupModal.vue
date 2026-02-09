@@ -111,15 +111,12 @@ const {
 } = useTwoFactorSetup()
 
 const fetchStatusAndQRCode = async () => {
-  const { data: twoFactorData } = await useAPI<{ response: { tf_primary_method: string | null, reauth_required: boolean } | null }>('/tf-setup')
-  isConfigured.value = !!twoFactorData.value?.response?.tf_primary_method
-  if (twoFactorData.value?.response?.reauth_required) {
-    toast.error(t('Vous devez vous déconnecter et reconnecter pour pouvoir configurer l\'authentification deux facteurs.'))
-    isOpen.value = false
-    return
+  // fetch two factor status. If freshness is required, a 401 is returned with automatic handling and redirection to /verify
+  const { data: twoFactorData, status } = await useAPI<{ response: { tf_primary_method: string | null, reauth_required: boolean } | null }>('/tf-setup')
+  if (status.value !== 'error') {
+    isConfigured.value = !!twoFactorData.value?.response?.tf_primary_method
+    await fetchQRCode()
   }
-
-  await fetchQRCode()
 }
 
 const submit = async (close: () => void) => {
