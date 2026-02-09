@@ -45,7 +45,7 @@ export default defineNuxtPlugin({
           }
 
           if (response.status === 401) {
-            if (response._data?.response && typeof response._data.response === 'object' && 'reauth_required' in response._data.response) {
+            if (response._data?.response && typeof response._data.response === 'object' && response._data.response?.reauth_required === true) {
               await nuxtApp.runWithContext(() => navigateTo({ path: '/verify', query: { next: route.fullPath } }))
             }
             else {
