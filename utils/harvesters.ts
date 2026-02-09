@@ -21,6 +21,7 @@ export function harvesterToForm(harvester: HarvesterSource): HarvesterForm {
     url: harvester.url,
     backend: harvester.backend,
     filters: harvester.config.filters as Array<HarvestSourceFilter> || [],
+    features: harvester.config.features as Record<string, boolean> || {},
     configs: harvester.config.extra_configs as Array<HarvestSourceConfig> || [],
     schedule: harvester.schedule,
     autoarchive: harvester.autoarchive,
@@ -40,6 +41,7 @@ export function harvesterToApi(form: HarvesterForm): NewHarvesterForApi {
     active: form.active,
     config: {
       filters: form.filters,
+      features: form.features,
       extra_configs: form.configs,
     },
   }

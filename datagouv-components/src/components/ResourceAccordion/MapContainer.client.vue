@@ -18,22 +18,6 @@
 import { onMounted, ref, useTemplateRef } from 'vue'
 import { RiErrorWarningLine } from '@remixicon/vue'
 
-import View from 'ol/View'
-import Map from 'ol/Map'
-import ScaleLine from 'ol/control/ScaleLine'
-import TileLayer from 'ol/layer/Tile'
-import OSM from 'ol/source/OSM'
-
-import {
-  CRS,
-  GeoportalAttribution,
-  GeoportalFullScreen,
-  GeoportalZoom,
-  LayerImport,
-  LayerSwitcher,
-  // @ts-expect-error no types provided
-} from 'geopf-extensions-openlayers'
-
 import SimpleBanner from '../SimpleBanner.vue'
 import type { Resource } from '../../types/resources'
 import { useTranslation } from '../../composables/useTranslation'
@@ -47,6 +31,26 @@ const mapRef = useTemplateRef('mapRef')
 const hasError = ref(false)
 
 async function displayMap() {
+  // Dynamic imports for client-only libraries
+  const [
+    { default: View },
+    { default: Map },
+    { default: ScaleLine },
+    { default: TileLayer },
+    { default: OSM },
+    geopf,
+  ] = await Promise.all([
+    import('ol/View'),
+    import('ol/Map'),
+    import('ol/control/ScaleLine'),
+    import('ol/layer/Tile'),
+    import('ol/source/OSM'),
+    // @ts-expect-error no types provided
+    import('geopf-extensions-openlayers'),
+  ])
+
+  const { CRS, GeoportalAttribution, GeoportalFullScreen, GeoportalZoom, LayerImport, LayerSwitcher } = geopf
+
   await import('ol/ol.css')
   await import('@gouvfr/dsfr/dist/dsfr.css')
   await import('@gouvfr/dsfr/dist/utility/icons/icons.css')
