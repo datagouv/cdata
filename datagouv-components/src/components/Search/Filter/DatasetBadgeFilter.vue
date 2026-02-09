@@ -13,7 +13,9 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { FacetItem } from '../../../types/search'
+import { useFetch } from '../../../functions/api'
 import { useTranslation } from '../../../composables/useTranslation'
 import FilterButtonGroup from './FilterButtonGroup.vue'
 
@@ -29,9 +31,10 @@ const emit = defineEmits<{
 
 const { t } = useTranslation()
 
-const options = [
-  { value: 'hvd', label: t('Données de forte valeur (HVD)') },
-  { value: 'inspire', label: 'INSPIRE' },
-  { value: 'spd', label: t('Service public de la donnée (SPD)') },
-]
+const { data: badgesRecord } = await useFetch<Record<string, string>>('/api/1/datasets/badges/', { lazy: true })
+
+const options = computed(() => {
+  if (!badgesRecord.value) return []
+  return Object.entries(badgesRecord.value).map(([value, label]) => ({ value, label }))
+})
 </script>
