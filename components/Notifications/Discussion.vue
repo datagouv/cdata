@@ -15,18 +15,18 @@
         class="flex items-center gap-1 m-0 text-xs"
       >
         <span class="text-gray-medium">{{ $t('de') }}</span>
-        <AvatarWithName
-          v-if="notification.details.discussion.user"
-          :user="notification.details.discussion.user"
-          :with-link="false"
-        />
         <OrganizationOwner
-          v-else-if="notification.details.discussion.organization"
-          :organization="notification.details.discussion.organization as OrganizationReference"
+          v-if="message?.posted_by_organization"
+          :organization="message.posted_by_organization"
           logo-size-class="size-3"
           :logo-no-border="true"
           name-size="xs"
           name-color="text-gray-plain"
+          :with-link="false"
+        />
+        <AvatarWithName
+          v-else-if="message"
+          :user="message.posted_by"
           :with-link="false"
         />
       </p>
@@ -70,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { AnimatedLoader, AvatarWithName, useFormatDate, type OrganizationReference } from '@datagouv/components-next'
+import { AnimatedLoader, AvatarWithName, useFormatDate } from '@datagouv/components-next'
 import { RiQuestionAnswerLine, RiChatCheckLine, RiChat4Line } from '@remixicon/vue'
 import type { DiscussionSubjectTypes } from '~/types/discussions'
 import type { DiscussionNotification } from '~/types/notifications'
