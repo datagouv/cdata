@@ -39,6 +39,7 @@ export type DiscussionNotification = CommonNotification & {
     class: 'DiscussionNotificationDetails'
     status: 'new_discussion' | 'new_comment' | 'closed'
     discussion: Thread
+    message_id: string | null
     title: string
   }
 }

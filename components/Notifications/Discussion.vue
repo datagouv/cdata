@@ -38,8 +38,8 @@
           :title="notification.handled_at ? $t('Voir la discussion') : $t('Voir la discussion et la marquer comme lue')"
           @click="markAsRead(notification)"
         >
-          <template v-if="notification.details.status === 'new_comment'">
-            {{ getLastComment(notification.details.discussion).content }}
+          <template v-if="message">
+            {{ message.content }}
           </template>
           <template v-else>
             {{ notification.details.discussion.title }}
@@ -83,6 +83,8 @@ const props = defineProps<{
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const { loading, markAsRead } = useMarkAsRead()
+
+const message = computed(() => props.notification.details.message_id ? props.notification.details.discussion.discussion.find(message => props.notification.details.message_id === message.id) : null)
 
 const icon = computed(() => {
   return {
