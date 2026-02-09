@@ -92,7 +92,7 @@ test.describe('2FA Authentication Flow', () => {
 
     // Step 12: Verify error message is displayed
     await expect(page.locator('.fr-error-text')).toBeVisible()
-    await expect(page.getByText('Code invalide')).toBeVisible()
+    await expect(page.locator('[data-testid="totp-code-input"]').getByText('Code invalide')).toBeVisible()
 
     // Should still be on the validation page after failed attempt
     await expect(page).toHaveURL(`${loginURL}/tf-validate`)
