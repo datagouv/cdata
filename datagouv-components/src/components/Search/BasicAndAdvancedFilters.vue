@@ -1,5 +1,6 @@
 <template>
-  <div class="flex flex-col">
+  <!-- [&_.fr-input-group]:!mb-0 disables DSFR margin-bottom since we use gap for spacing -->
+  <div class="flex flex-col gap-4 [&_.fr-input-group]:!mb-0">
     <slot
       :is-enabled="isBasicFilter"
       :get-order="getBasicOrder"
@@ -19,7 +20,7 @@
       />
       {{ t('Filtres avancés') }}
     </DisclosureButton>
-    <DisclosurePanel class="flex flex-col mt-4">
+    <DisclosurePanel class="flex flex-col gap-4 mt-4 [&_.fr-input-group]:!mb-0">
       <slot
         :is-enabled="isAdvancedFilter"
         :get-order="getAdvancedOrder"
