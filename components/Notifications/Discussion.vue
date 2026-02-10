@@ -11,7 +11,7 @@
         {{ title }}
       </p>
       <p
-        v-if="notification.details.status === 'new_comment'"
+        v-if="notification.details.status === 'new_comment' && message"
         class="flex items-center gap-1 m-0 text-xs"
       >
         <span class="text-gray-medium">{{ $t('de') }}</span>
@@ -38,11 +38,11 @@
           :title="notification.handled_at ? $t('Voir la discussion') : $t('Voir la discussion et la marquer comme lue')"
           @click="markAsRead(notification)"
         >
-          <template v-if="message">
-            {{ message.content }}
-          </template>
-          <template v-else>
+          <template v-if="notification.details.status === 'new_discussion'">
             {{ notification.details.discussion.title }}
+          </template>
+          <template v-else-if="message">
+            {{ message.content }}
           </template>
         </CdataLink>
       </p>
