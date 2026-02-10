@@ -33,7 +33,7 @@
       v-if="!notification.handled_at"
       class="after:absolute after:inset-0 bg-none"
       :title="$t('Marquer la notification comme lue')"
-      @click="markAsRead"
+      @click="markAsRead(notification)"
     />
   </div>
 </template>
@@ -49,11 +49,10 @@ const props = defineProps<{
   notification: DeepReadonly<NewBadgeNotification>
 }>()
 
-const { refreshNotifications } = useNotifications()
 const { formatDate } = useFormatDate()
-const { $api } = useNuxtApp()
 const { t } = useTranslation()
-const loading = ref(false)
+
+const { loading, markAsRead } = useMarkAsRead()
 
 const badge = computed(() => {
   switch (props.notification.details.kind) {
@@ -71,15 +70,4 @@ const badge = computed(() => {
       return throwOnNever(props.notification.details.kind, 'No other type')
   }
 })
-
-async function markAsRead() {
-  try {
-    loading.value = true
-    await $api(`/api/1/notifications/${props.notification.id}/read/`, { method: 'POST' })
-    await refreshNotifications()
-  }
-  finally {
-    loading.value = false
-  }
-}
 </script>
