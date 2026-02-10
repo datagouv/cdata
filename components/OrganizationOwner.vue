@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center space-x-2">
+  <div class="flex items-center space-x-2 truncate">
     <div :class="logoNoBorder ? '': 'shrink-0 p-1.5 border'">
       <OrganizationLogo
         :organization

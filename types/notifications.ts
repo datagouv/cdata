@@ -44,4 +44,18 @@ export type DiscussionNotification = CommonNotification & {
   }
 }
 
-export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification | DiscussionNotification
+export type MembershipAcceptedNotification = CommonNotification & {
+  details: {
+    class: 'MembershipAcceptedNotificationDetails'
+    organization: OrganizationReference
+  }
+}
+
+export type MembershipRefusedNotification = CommonNotification & {
+  details: {
+    class: 'MembershipRefusedNotificationDetails'
+    organization: OrganizationReference
+  }
+}
+
+export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification | DiscussionNotification | MembershipAcceptedNotification | MembershipRefusedNotification

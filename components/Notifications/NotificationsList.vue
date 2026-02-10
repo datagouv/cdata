@@ -21,6 +21,14 @@
         :notification="notification as DiscussionNotification"
         :subject="subjects[notification.details.discussion.subject.id]"
       />
+      <NotificationsMembershipAccepted
+        v-else-if="notification.details.class === 'MembershipAcceptedNotificationDetails'"
+        :notification="notification as MembershipAcceptedNotification"
+      />
+      <NotificationsMembershipRefused
+        v-else-if="notification.details.class === 'MembershipRefusedNotificationDetails'"
+        :notification="notification as MembershipRefusedNotification"
+      />
     </div>
   </div>
 </template>
@@ -28,7 +36,7 @@
 <script setup lang="ts">
 import type { DeepReadonly } from 'vue'
 import type { DiscussionSubjectTypes } from '~/types/discussions'
-import type { DiscussionNotification, MembershipRequestNotification, NewBadgeNotification, TransferRequestNotification, UserNotification } from '~/types/notifications'
+import type { DiscussionNotification, MembershipAcceptedNotification, MembershipRefusedNotification, MembershipRequestNotification, NewBadgeNotification, TransferRequestNotification, UserNotification } from '~/types/notifications'
 
 const props = defineProps<{
   notifications: DeepReadonly<Array<UserNotification>>
