@@ -61,6 +61,13 @@ const certifiedOrganization: Organization = {
     'siretisation:collectivite_territoriale:code_insee': 'nan',
     'siretisation:collectivite_territoriale:niveau': 'nan',
   },
+  permissions: {
+    delete: false,
+    edit: false,
+    harvest: false,
+    members: false,
+    private: false,
+  },
 }
 const nonCertifiedOrganization: Organization = {
   id: '646b7187b50b2a93b1ae3d45',
@@ -98,6 +105,13 @@ const nonCertifiedOrganization: Organization = {
     'siretisation:est_collectivite_territoriale': 'False',
     'siretisation:collectivite_territoriale:code_insee': 'nan',
     'siretisation:collectivite_territoriale:niveau': 'nan',
+  },
+  permissions: {
+    delete: false,
+    edit: false,
+    harvest: false,
+    members: false,
+    private: false,
   },
 }
 </script>
