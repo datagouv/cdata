@@ -551,15 +551,15 @@ function resetFilters() {
 // Only the initial type is fetched during SSR, others are client-side only
 const { data: datasetsResults, status: datasetsStatus } = await useFetch<DatasetSearchResponse<Dataset>>(
   datasetsUrl,
-  { params: datasetsParams, server: initialType === 'datasets' },
+  { params: datasetsParams, lazy: true, server: initialType === 'datasets' },
 )
 const { data: dataservicesResults, status: dataservicesStatus } = await useFetch<DataserviceSearchResponse<Dataservice>>(
   dataservicesUrl,
-  { params: dataservicesParams, server: initialType === 'dataservices' },
+  { params: dataservicesParams, lazy: true, server: initialType === 'dataservices' },
 )
 const { data: reusesResults, status: reusesStatus } = await useFetch<ReuseSearchResponse<Reuse>>(
   reusesUrl,
-  { params: reusesParams, server: initialType === 'reuses' },
+  { params: reusesParams, lazy: true, server: initialType === 'reuses' },
 )
 
 const typesMeta = {
