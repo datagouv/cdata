@@ -106,8 +106,7 @@ const route = useRoute()
 const { formatDate } = useFormatDate()
 
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
-// lazy on client only: preserves SSR data fetching (SEO) while making client-side navigation instant
-const { data: post, status } = await useAPI<Post>(url, { redirectOn404: true, lazy: import.meta.client })
+const { data: post, status } = await useAPI<Post>(url, { redirectOn404: true, lazy: true })
 
 const name = computed(() => post.value?.name)
 const robots = computed(() => !post.value?.published ? 'noindex, nofollow' : 'all')
