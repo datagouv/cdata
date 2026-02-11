@@ -247,6 +247,7 @@
       <BrandedButton
         type="submit"
         color="primary"
+        :disabled="'permissions' in organization ? !organization.permissions.edit : false"
       >
         {{ submitLabel }}
       </BrandedButton>

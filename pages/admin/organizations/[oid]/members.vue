@@ -37,7 +37,7 @@
         </h2>
       </div>
       <div
-        v-if="isOrgAdmin"
+        v-if="organization.permissions.members"
         class="flex-none"
       >
         <ModalWithButton
@@ -202,7 +202,7 @@
                   {{ $t('Voir la page publique') }}
                 </BrandedButton>
                 <ModalWithButton
-                  v-if="isOrgAdmin"
+                  v-if="organization.permissions.members"
                   :title="$t('Modifier le membre')"
                   size="lg"
                   @open="newRole = member.role"
@@ -302,13 +302,13 @@ import SearchableSelect from '~/components/SearchableSelect.vue'
 import AdminMembershipRequest from '~/components/AdminMembershipRequest/AdminMembershipRequest.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import { useNotifications } from '~/composables/useNotifications.client'
 
 const config = useRuntimeConfig()
 const { t } = useI18n()
 const { formatDate, formatFromNow } = useFormatDate()
 const { $api } = useNuxtApp()
-
-const me = useMe()
+const getUserAvatar = useGetUserAvatar()
 
 const { currentOrganization } = useCurrentOwned()
 
@@ -332,8 +332,6 @@ const refreshAll = async () => {
     refreshMembershipRequests(),
   ])
 }
-
-const isOrgAdmin = computed(() => isMeAdmin() || (organization && organization.value.members.some(member => member.user.id === me.value.id && member.role === 'admin')))
 
 const newRole = ref<MemberRole | null>(null)
 const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })

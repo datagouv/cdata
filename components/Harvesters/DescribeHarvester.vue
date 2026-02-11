@@ -36,7 +36,7 @@
           :label="t(`Sélectionnez votre organisation`)"
           :required="true"
           :organizations-only="true"
-          :admin-only="true"
+          :permission-need="'harvest'"
           :error-text="getFirstError('owned')"
           :warning-text="getFirstWarning('owned')"
         />

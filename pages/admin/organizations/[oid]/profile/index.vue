@@ -40,7 +40,7 @@
       </template>
       <template #default>
         <BannerAction
-          v-if="!organization.deleted"
+          v-if="organization.permissions.delete && !organization.deleted"
           class="mt-12"
           type="danger"
           :title="$t('Supprimer l’organisation')"

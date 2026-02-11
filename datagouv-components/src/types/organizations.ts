@@ -21,6 +21,31 @@ export type NewOrganization = {
 
 export type Organization = NewOrganization & {
   id: string
+  name: string
+  acronym: string | null
+  slug: string
+  uri: string
+  page: string
+  logo: string
+  logo_thumbnail: string
+  badges: Badges
+  permissions: { delete: boolean, edit: boolean, harvest: boolean, members: boolean, private: boolean }
+}
+
+export type Organization = {
+  id: OrganizationReference['id']
+  name: OrganizationReference['name']
+  acronym: OrganizationReference['acronym']
+  slug: OrganizationReference['slug']
+  uri: OrganizationReference['uri']
+  page: OrganizationReference['page']
+  logo: OrganizationReference['logo']
+  logo_thumbnail: OrganizationReference['logo_thumbnail']
+  badges: OrganizationReference['badges']
+  permissions: OrganizationReference['permissions']
+  url: string // URL of the org website
+  description: string
+  business_number_id: string
   created_at: string
   last_modified: string
   last_update: string
