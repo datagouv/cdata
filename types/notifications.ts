@@ -1,5 +1,6 @@
 import type { CERTIFIED, PUBLIC_SERVICE, ASSOCIATION, LOCAL_AUTHORITY, COMPANY, DataserviceReference, DatasetReference, OrganizationReference, ReuseReference, UserReference } from '@datagouv/components-next'
 import type { MembershipRequestKind } from './types'
+import type { Thread } from './discussions'
 
 export type CommonNotification = {
   created_at: string
@@ -35,4 +36,14 @@ export type NewBadgeNotification = CommonNotification & {
   }
 }
 
-export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification
+export type DiscussionNotification = CommonNotification & {
+  details: {
+    class: 'DiscussionNotificationDetails'
+    status: 'new_discussion' | 'new_comment' | 'closed'
+    discussion: Thread
+    message_id: string | null
+    title: string
+  }
+}
+
+export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification | DiscussionNotification

@@ -21,6 +21,7 @@
       <RiCheckboxCircleLine
         class="flex-none"
         :class="{
+          'size-3': size === 'xs',
           'size-4': size === 'sm',
           'size-5': size === 'base',
         }"

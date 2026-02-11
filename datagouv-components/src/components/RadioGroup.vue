@@ -1,8 +1,8 @@
 <template>
-  <fieldset class="flex flex-col gap-2">
+  <fieldset class="flex flex-col gap-2 min-w-0">
     <legend
       v-if="legend"
-      class="font-bold text-sm leading-6 text-gray-900 mb-2 uppercase"
+      class="fr-label mb-2"
     >
       {{ legend }}
     </legend>

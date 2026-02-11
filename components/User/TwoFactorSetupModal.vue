@@ -1,10 +1,11 @@
 <template>
   <ModalWithButton
+    v-model="isOpen"
     :title="$t('Authentification deux facteurs')"
     size="lg"
     form
     @submit.prevent="($el, _close) => submit(_close)"
-    @open="fetchQRCode"
+    @open="fetchStatusAndQRCode"
   >
     <template #button="{ attrs, listeners }">
       <BrandedButton
@@ -90,12 +91,10 @@ import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
 import { RiShieldCheckLine } from '@remixicon/vue'
 import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplanation.vue'
 
-const props = defineProps<{
-  isConfigured?: boolean
-}>()
-
 const { t } = useTranslation()
 const me = useMe()
+const isConfigured = ref(false)
+const isOpen = ref(false)
 
 const emit = defineEmits<{
   setupComplete: []
@@ -111,6 +110,15 @@ const {
   validateCode,
 } = useTwoFactorSetup()
 
+const fetchStatusAndQRCode = async () => {
+  // fetch two factor status. If freshness is required, a 401 is returned with automatic handling and redirection to /verify
+  const { data: twoFactorData, status } = await useAPI<{ response: { tf_primary_method: string | null, reauth_required: boolean } | null }>('/tf-setup')
+  if (status.value !== 'error') {
+    isConfigured.value = !!twoFactorData.value?.response?.tf_primary_method
+    await fetchQRCode()
+  }
+}
+
 const submit = async (close: () => void) => {
   const success = await validateCode(async () => {
     await loadMe(me)
@@ -119,7 +127,8 @@ const submit = async (close: () => void) => {
   })
 
   if (success) {
-    toast.success(props.isConfigured ? t('L\'authentification deux facteurs a été reconfigurée avec succès.') : t('L\'authentification deux facteurs a été configurée avec succès.'))
+    toast.success(isConfigured.value ? t('L\'authentification deux facteurs a été reconfigurée avec succès.') : t('L\'authentification deux facteurs a été configurée avec succès.'))
+    isConfigured.value = true
   }
 }
 </script>
