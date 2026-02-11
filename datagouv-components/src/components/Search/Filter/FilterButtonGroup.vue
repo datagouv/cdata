@@ -23,11 +23,12 @@
       <span class="flex items-center gap-1 min-w-0 overflow-hidden">
         <span
           class="shrink min-w-0 truncate"
-          :title="option.label"
+          :title="option.description ? `${option.label} (${option.description})` : option.label"
         >{{ option.label }}</span>
         <span
           v-if="option.description"
           class="flex-1 basis-0 min-w-0 text-gray-400 text-xs truncate"
+          :title="option.description"
         >
           {{ option.description }}
         </span>
