@@ -17,7 +17,7 @@
           />
         </div>
         <div class="text-gray-medium text-xs flex items-center gap-1">
-          <span>{{ t('mis à jour le {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
+          <span>{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
           <RiSubtractLine
             aria-hidden="true"
             class="size-3 fill-gray-medium"
