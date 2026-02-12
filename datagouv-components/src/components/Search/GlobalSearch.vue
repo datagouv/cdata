@@ -165,7 +165,7 @@
       <section
         ref="results"
         class="col-span-12 mt-4 md:mt-0 search-results"
-        :class="showSidebar ? 'md:col-span-8 lg:col-span-9' : ''"
+        :class="showSidebar ? 'md:col-span-8 lg:col-span-9 md:pl-8' : ''"
       >
         <div
           v-if="searchResults?.total"

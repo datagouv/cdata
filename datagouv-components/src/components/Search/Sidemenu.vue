@@ -1,66 +1,38 @@
 <template>
-  <div :class="{ 'md:order-2': onRight }">
-    <nav
-      class="fr-sidemenu mx-0"
-      :class="{ 'fr-sidemenu--right': onRight, 'fr-sidemenu--no-border': !showBorder, 'fr-sidemenu--sticky': fixed, 'fr-sidemenu--sticky-full-height': stickyFullHeight }"
-      :aria-labelledby="titleId"
+  <nav :aria-labelledby="titleId">
+    <button
+      class="flex w-[calc(100%+2rem)] items-center justify-between -mx-4 px-4 py-3 font-bold md:hidden"
+      :aria-expanded="open"
+      @click="open = !open"
     >
-      <Disclosure
-        as="div"
-        class="fr-sidemenu__inner"
-        :default-open="defaultOpen"
+      {{ buttonText }}
+      <RiArrowDownSLine
+        class="size-4 transition-transform"
+        :class="{ 'rotate-180': open }"
+      />
+    </button>
+    <div v-if="open || !isMobile">
+      <p
+        :id="titleId"
+        class="text-lg mb-6 font-bold hidden md:block"
       >
-        <DisclosureButton
-          ref="buttonRef"
-          class="fr-sidemenu__btn"
-        >
-          {{ buttonText }}
-        </DisclosureButton>
-        <DisclosurePanel
-          ref="panelRef"
-          class="pb-4 md:pb-0"
-        >
-          <div
-            :id="titleId"
-            class="fr-sidemenu__title !text-sm !mb-3"
-          >
-            <slot name="title" />
-          </div>
-          <slot />
-        </DisclosurePanel>
-      </Disclosure>
-    </nav>
-  </div>
+        <slot name="title" />
+      </p>
+      <slot />
+    </div>
+  </nav>
 </template>
 
 <script setup lang="ts">
-import { computed, useId, useTemplateRef } from 'vue'
-import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
-import { useWindowSize, watchDebounced } from '@vueuse/core'
+import { ref, useId } from 'vue'
+import { RiArrowDownSLine } from '@remixicon/vue'
+import { useMediaQuery } from '@vueuse/core'
 
-withDefaults(defineProps<{
-  fixed?: boolean
-  stickyFullHeight?: boolean
-  showBorder?: boolean
-  onRight?: boolean
+defineProps<{
   buttonText: string
-}>(), {
-  fixed: false,
-  showBorder: true,
-  onRight: false,
-})
+}>()
 
 const titleId = useId()
-const buttonRef = useTemplateRef('buttonRef')
-const panelRef = useTemplateRef('panelRef')
-const { width } = useWindowSize()
-const openedAt = 48 * 16 // 48em is the sidemenu breakpoint from the DSFR
-
-const defaultOpen = computed(() => width.value > openedAt)
-
-watchDebounced(width, () => {
-  if (defaultOpen.value && panelRef.value && !panelRef.value?.$el) {
-    buttonRef.value?.$el.click()
-  }
-}, { debounce: 200 })
+const isMobile = useMediaQuery('(max-width: 767px)')
+const open = ref(false)
 </script>
