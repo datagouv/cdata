@@ -211,7 +211,7 @@
             :data="searchResults"
           >
             <div v-if="results && results.data.length">
-              <ul class="space-y-4 mt-2 pt-2 p-0 border-t border-gray-default relative z-2 list-none">
+              <ul class="space-y-4 mt-2 p-0 relative z-2 list-none">
                 <li
                   v-for="result in results.data"
                   :key="result.id"
