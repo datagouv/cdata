@@ -61,10 +61,15 @@ const { t } = useTranslation()
 const user = useMe()
 const { $api } = useNuxtApp()
 
-const organizations = props.organizationPermissionNeed ? user.value.organizations.filter(org => org.permissions[props.organizationPermissionNeed!]) : user.value.organizations
+const organizations = computed(() => {
+  if (props.organizationPermissionNeed) {
+    return user.value.organizations.filter(org => org.permissions[props.organizationPermissionNeed!])
+  }
+  return user.value.organizations
+})
 
 const ownedOptions = computed<Array<Owned>>(() => {
-  const orgs = organizations.map(organization => ({ organization, owner: null }))
+  const orgs = organizations.value.map(organization => ({ organization, owner: null }))
   if (props.organizationsOnly) {
     return orgs
   }
