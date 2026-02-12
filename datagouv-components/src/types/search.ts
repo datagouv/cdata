@@ -317,6 +317,8 @@ export type ReuseSearchConfig = {
 
 export type SearchTypeConfig = DatasetSearchConfig | DataserviceSearchConfig | ReuseSearchConfig
 
+export type SearchType = SearchTypeConfig['class']
+
 export type GlobalSearchConfig = SearchTypeConfig[]
 
 // Helper functions for default configs
