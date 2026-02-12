@@ -37,7 +37,6 @@
 
 <script setup lang="ts">
 import { useGetUserAvatar, BrandedButton, PaddedContainer, OrganizationLogo, SearchableSelect, type Owned, type OrganizationReference, type UserReference } from '@datagouv/components-next'
-import { useMe } from '~/utils/auth'
 
 const getUserAvatar = useGetUserAvatar()
 
