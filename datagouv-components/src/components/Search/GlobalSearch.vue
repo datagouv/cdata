@@ -188,7 +188,7 @@
               <select
                 id="sort-search"
                 v-model="sort"
-                class="fr-select shadow-input-blue!"
+                class="fr-select text-sm shadow-input-blue!"
               >
                 <option :value="undefined">
                   {{ t('Pertinence') }}
