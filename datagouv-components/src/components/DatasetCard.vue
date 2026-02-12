@@ -60,7 +60,7 @@
       </div>
     </div>
     <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium">
-      <div class="fr-hidden flex-sm text-gray-medium -ml-2.5">
+      <div class="hidden sm:flex text-gray-medium -ml-2.5">
         <DatasetQualityInline :quality="dataset.quality" />
       </div>
       <RiSubtractLine
