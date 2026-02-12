@@ -28,6 +28,7 @@
             :error-text="getAllErrorsInErrorFields(errors, 'email')"
             :has-error="!! getAllErrorsInErrorFields(errors, 'email')"
             class="w-full !mb-0"
+            :disabled="!!route.query.email"
             required
           />
         </div>
