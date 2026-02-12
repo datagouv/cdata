@@ -115,10 +115,7 @@ const { data: post, status } = await useAPI<Post>(url, { redirectOn404: true, la
 const name = computed(() => post.value?.name)
 const robots = computed(() => !post.value?.published ? 'noindex, nofollow' : 'all')
 
-const contentPage = computed(() => {
-  if (!post.value?.content_as_page || typeof post.value.content_as_page === 'string') return null
-  return post.value.content_as_page
-})
+const contentPage = computed(() => post.value?.content_as_page ?? null)
 
 const isFullPageBlocs = computed(() => post.value?.kind === 'page' && post.value?.body_type === 'blocs')
 
