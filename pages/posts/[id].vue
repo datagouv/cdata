@@ -1,6 +1,10 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <div v-if="post">
+  <LoadingBlock
+    v-slot="{ data: post }"
+    :status="status"
+    :data="post"
+  >
     <!-- Full page blocs mode: no header, no breadcrumb, just the blocs -->
     <PageShowById
       v-if="isFullPageBlocs && pageId"
@@ -87,11 +91,11 @@
         </template>
       </div>
     </div>
-  </div>
+  </LoadingBlock>
 </template>
 
 <script setup lang="ts">
-import { markdownClasses, MarkdownViewer, useFormatDate } from '@datagouv/components-next'
+import { markdownClasses, MarkdownViewer, LoadingBlock, useFormatDate } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import PageShowById from '~/components/Pages/PageShowById.vue'
@@ -102,7 +106,7 @@ const route = useRoute()
 const { formatDate } = useFormatDate()
 
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
-const { data: post } = await useAPI<Post>(url, { redirectOn404: true })
+const { data: post, status } = await useAPI<Post>(url, { redirectOn404: true, lazy: true })
 
 const name = computed(() => post.value?.name)
 const robots = computed(() => !post.value?.published ? 'noindex, nofollow' : 'all')
