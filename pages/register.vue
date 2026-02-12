@@ -155,7 +155,7 @@ const route = useRoute()
 
 useSeoMeta({ title: t('S\'enregistrer'), robots: 'noindex' })
 
-const email = ref('')
+const email = ref((route.query.email as string) || '')
 const password = ref('')
 const passwordConfirmation = ref('')
 const firstname = ref('')
