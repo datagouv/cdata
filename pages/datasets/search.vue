@@ -51,9 +51,9 @@ const robots = computed(() => {
 
 useSeoMeta({
   title: computed(() => ({
-    datasets: t('Recherche des jeux de données'),
-    dataservices: t('API'),
-    reuses: t('Réutilisations'),
+    datasets: t('Recherche des jeux de données — data.gouv.fr'),
+    dataservices: t('API — data.gouv.fr'),
+    reuses: t('Réutilisations — data.gouv.fr'),
   })[currentType.value]),
   robots,
 })
