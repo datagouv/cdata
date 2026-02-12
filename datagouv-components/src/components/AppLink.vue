@@ -6,6 +6,9 @@
   >
     <slot />
   </component>
+  <span v-else-if="!to">
+    <slot />
+  </span>
   <a
     v-else-if="isExternal"
     :href="(to as string)"
@@ -29,7 +32,7 @@ const config = useComponentsConfig()
 const { locale } = useTranslation()
 
 const props = defineProps<{
-  to: string | RouteLocationRaw
+  to: string | RouteLocationRaw | null | undefined
 }>()
 
 const isExternal = computed(() => {

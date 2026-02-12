@@ -6,20 +6,21 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import type { GeoJsonObject } from 'geojson'
 
 const props = defineProps<{
   geojson: GeoJsonObject
 }>()
 
-const container = useTemplateRef('containerRef')
+const containerRef = ref<HTMLElement | null>(null)
 
 onMounted(async () => {
   await import('leaflet/dist/leaflet.css')
   const L = await import('leaflet')
 
-  if (!container.value) return
-  const map = L.map(container.value)
+  if (!containerRef.value) return
+  const map = L.map(containerRef.value)
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',

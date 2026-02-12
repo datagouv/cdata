@@ -37,9 +37,14 @@ import BrandedButton from './components/BrandedButton.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
 import DatasetCard from './components/DatasetCard.vue'
+import DescriptionListTerm from './components/DescriptionListTerm.vue'
+import DescriptionListDetails from './components/DescriptionListDetails.vue'
 import DiscussionMessageCard from './components/DiscussionMessageCard.vue'
 import DateRangeDetails from './components/DateRangeDetails.vue'
-import DatasetInformationPanel from './components/DatasetInformationPanel.vue'
+import { DatasetInformationSection, DatasetTemporalitySection, DatasetSpatialSection, DatasetSchemaSection, DatasetEmbedSection } from './components/DatasetInformation'
+import LeafletMap from './components/LeafletMap.vue'
+import LicenseBadge from './components/LicenseBadge.vue'
+import Tag from './components/Tag.vue'
 import DatasetQuality from './components/DatasetQuality.vue'
 import DatasetQualityInline from './components/DatasetQualityInline.vue'
 import DatasetQualityItem from './components/DatasetQualityItem.vue'
@@ -245,7 +250,13 @@ export {
   CopyButton,
   DataserviceCard,
   DatasetCard,
-  DatasetInformationPanel,
+  DatasetInformationSection,
+  DatasetTemporalitySection,
+  DatasetSpatialSection,
+  DatasetSchemaSection,
+  DatasetEmbedSection,
+  DescriptionListTerm,
+  DescriptionListDetails,
   DiscussionMessageCard,
   DatasetQuality,
   DatasetQualityInline,
@@ -255,7 +266,10 @@ export {
   DateRangeDetails,
   ExtraAccordion,
   LabelTag,
+  LeafletMap,
+  LicenseBadge,
   LoadingBlock,
+  Tag,
   MarkdownViewer,
   OrganizationCard,
   OrganizationLogo,
