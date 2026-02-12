@@ -322,25 +322,20 @@ const url = computed(() => {
 
 const { data: organization, status, refresh } = await useAPI<Organization>(url, { redirectOn404: true })
 const membershipRequests = ref<Array<PendingMembershipRequest> | null>(null)
-let refreshMembershipRequests: (() => Promise<void>) | null = null
 
-watch(organization, async () => {
+async function fetchPendingMembershipRequests() {
   if (!organization.value?.permissions.members) return
-
-  const { data: membershipData, refresh: refreshData } = await useAPI<Array<PendingMembershipRequest>>(`/api/1/organizations/${currentOrganization.value?.id}/membership/`, {
-    lazy: true,
+  membershipRequests.value = await $api<Array<PendingMembershipRequest>>(`/api/1/organizations/${currentOrganization.value?.id}/membership/`, {
     query: { status: 'pending' },
   })
-  membershipRequests.value = membershipData.value
-  refreshMembershipRequests = refreshData
+}
+
+watch(organization, () => {
+  fetchPendingMembershipRequests()
 }, { immediate: true })
 
 const refreshAll = async () => {
-  const refreshes = [refresh(), refreshNotifications()]
-  if (refreshMembershipRequests) {
-    refreshes.push(refreshMembershipRequests())
-  }
-  await Promise.all(refreshes)
+  await Promise.all([refresh(), refreshNotifications(), fetchPendingMembershipRequests()])
 }
 
 const newRole = ref<MemberRole | null>(null)
