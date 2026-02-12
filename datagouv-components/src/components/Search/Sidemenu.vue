@@ -14,7 +14,7 @@
     <div v-if="open || !isMobile">
       <p
         :id="titleId"
-        class="text-lg mb-6 font-bold hidden md:block"
+        class="text-sm font-bold leading-tight mb-6 hidden md:block"
       >
         <slot name="title" />
       </p>
