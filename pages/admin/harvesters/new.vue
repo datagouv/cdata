@@ -3,7 +3,6 @@
     <Breadcrumb>
       <BreadcrumbItem
         to="/"
-        external
       >
         {{ $t('Accueil') }}
       </BreadcrumbItem>
@@ -61,7 +60,7 @@ import PreviewStep from '~/components/Harvesters/PreviewStep.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { HarvesterForm, HarvesterSource } from '~/types/harvesters'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const route = useRoute()
 const { $api } = useNuxtApp()
 
@@ -84,6 +83,7 @@ const harvesterForm = useState(
       backend: '', // todo add most common backend
       topic: null,
       filters: [],
+      features: {},
       configs: [],
       schedule: '',
       autoarchive: true,

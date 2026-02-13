@@ -20,12 +20,12 @@
         type="button"
         :title="$t('Modifier le lien')"
         size="xs"
-        color="primary-soft"
+        color="secondary"
         :icon="RiPencilLine"
         @click="editLink"
       />
       <BrandedButton
-        color="primary-soft"
+        color="secondary"
         size="xs"
         :title="t('Supprimer le lien')"
         :icon="RiLinkUnlink"
@@ -38,7 +38,6 @@
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
 import { ref, toRaw } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { usePluginViewContext } from '@prosemirror-adapter/vue'
 import { useInstance } from '@milkdown/vue'
 import { TextSelection } from '@milkdown/prose/state'
@@ -51,7 +50,7 @@ import { insertLink } from '~/components/MarkdownEditor/Milkdown/LinkEdit/insert
 import { useLinkPreview } from '~/components/MarkdownEditor/Milkdown/LinkPreview/useLinkPreview'
 import { linkPreviewTooltipCtx } from '~/components/MarkdownEditor/Milkdown/LinkPreview/linkPreviewTooltipCtx'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const toolTipRef = ref<InstanceType<typeof EditorTooltip> | null>(null)
 const { tooltipProvider } = makeTooltipProvider(linkPreviewTooltipCtx.key, toolTipRef)
 const { view } = usePluginViewContext()

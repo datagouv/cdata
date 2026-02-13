@@ -8,7 +8,7 @@
         class="fr-icon-warning-line"
         aria-hidden="true"
       />
-      {{ $t("La structure de données de ce fichier n'a pas pu être chargée.") }}
+      {{ t("La structure de données de ce fichier n'a pas pu être chargée.") }}
     </p>
   </div>
   <PreviewLoader v-else-if="loading" />
@@ -25,7 +25,7 @@
           class="fr-icon-warning-line"
           aria-hidden="true"
         />
-        {{ $t("Aucune structure de données détectée pour ce fichier.") }}
+        {{ t("Aucune structure de données détectée pour ce fichier.") }}
       </p>
     </div>
     <template v-if="hasColumnInfo">
@@ -37,7 +37,10 @@
         <h5 class="fr-text--sm fr-text--bold fr-mt-0 fr-mb-1v">
           {{ column }}
         </h5>
-        <code class="code">
+        <code
+          v-if="columnsInfo[column]"
+          class="code"
+        >
           {{ columnsInfo[column].format }}
         </code>
       </div>
@@ -48,10 +51,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import type { Resource } from '../../types/resources'
-import { getProfile } from '../../functions/tabularApi'
+import { useGetProfile } from '../../functions/tabularApi'
+import { useTranslation } from '../../composables/useTranslation'
 import PreviewLoader from './PreviewLoader.vue'
 
 const props = defineProps<{ resource: Resource }>()
+const getProfile = useGetProfile()
+const { t } = useTranslation()
 
 type ColumnInfo = {
   score: number

@@ -4,9 +4,10 @@
       v-if="showType"
       :type="getOrganizationType(organization)"
     />
-    <div
-      class="mb-0 truncate flex-initial"
-      :class="{ 'text-sm': size === 'sm' }"
+    <component
+      :is="as"
+      class="mb-0 truncate flex-initial font-normal"
+      :class="[colorClass, { 'text-xs': size === 'xs', 'text-sm': size === 'sm', 'text-base': size === 'base' }]"
     >
       {{ organization.name }}
       <small
@@ -15,11 +16,12 @@
       >
         {{ organization.acronym }}
       </small>
-    </div>
+    </component>
     <Tooltip v-if="isOrganizationCertified(organization)">
       <RiCheckboxCircleLine
         class="flex-none"
         :class="{
+          'size-3': size === 'xs',
           'size-4': size === 'sm',
           'size-5': size === 'base',
         }"
@@ -37,24 +39,28 @@
 
 <script setup lang="ts">
 import { RiCheckboxCircleLine } from '@remixicon/vue'
-import { useI18n } from 'vue-i18n'
 import { getOrganizationType, isOrganizationCertified } from '../functions/organizations'
-import type { Organization } from '../types/organizations'
+import type { Organization, OrganizationReference } from '../types/organizations'
 import { useComponentsConfig } from '../config'
+import { useTranslation } from '../composables/useTranslation'
 import OwnerTypeIcon from './OwnerTypeIcon.vue'
 import Tooltip from './Tooltip.vue'
 
 const config = useComponentsConfig()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 withDefaults(defineProps<{
-  organization: Organization
+  organization: Organization | OrganizationReference
   showAcronym?: boolean
   showType?: boolean
-  size?: 'base' | 'sm'
+  size?: 'base' | 'sm' | 'xs'
+  colorClass?: string
+  as?: string
 }>(), {
   showAcronym: false,
   showType: true,
   size: 'base',
+  colorClass: 'text-new-primary',
+  as: 'div',
 })
 </script>

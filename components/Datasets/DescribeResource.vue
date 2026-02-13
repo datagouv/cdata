@@ -48,7 +48,11 @@
         v-if="form.filetype === 'file' || !form.filetype"
         form-key="file"
       >
-        <LoadingBlock :status>
+        <LoadingBlock
+          v-slot="{ data: extensions }"
+          :status
+          :data="extensions"
+        >
           <div v-if="extensions">
             <div v-if="newFile">
               <label
@@ -65,6 +69,9 @@
                   type: 'main',
                   description: '',
                   schema: null,
+                  schema_url: null,
+                  checksum_type: null,
+                  checksum_value: null,
                   file: {
                     raw: newFile,
                     state: { status: 'waiting' },
@@ -127,7 +134,7 @@
     <template v-if="form.filetype === 'remote'">
       <BrandedButton
         v-if="! showChecksum"
-        color="secondary-softer"
+        color="tertiary"
         :icon="RiAddLine"
         class="-mt-6 mb-6"
         @click="addChecksum = true"
@@ -267,9 +274,9 @@
           v-model="form.format"
           :label="$t('Format')"
           :placeholder="$t('Rechercher un format…')"
-          :display-value="(option) => option"
-          :allow-new-option="(query) => query"
-          :options="extensions"
+          :display-value="(option: string) => option"
+          :allow-new-option="(query: string) => query"
+          :options="extensions ?? []"
           :multiple="false"
           class="mb-6"
           required
@@ -301,9 +308,9 @@
           v-model="form.mime"
           :label="$t('Type mime')"
           :placeholder="$t('Rechercher un type mime…')"
-          :display-value="(option) => option.text"
-          :get-option-id="(option) => option.text"
-          :allow-new-option="(query) => ({ text: query })"
+          :display-value="(option: { text: string }) => option.text"
+          :get-option-id="(option: { text: string }) => option.text"
+          :allow-new-option="(query: string) => ({ text: query })"
           :suggest="suggestMime"
           :multiple="false"
 
@@ -327,46 +334,50 @@
         form-key="schema"
         class="space-y-2"
       >
-        <LoadingBlock :status="schemaStatus">
-          <SearchableSelect
-            v-model="form.schema"
-            :label="$t('Schéma')"
-            :placeholder="$t('Rechercher un schéma référencé sur {site}…', { site: config.public.schemasSite.name })"
-            :display-value="(option) => option.name"
-            :get-option-id="(option) => option.name"
-            :options="schemas"
-            :multiple="false"
+        <LoadingBlock
+          :status="schemaStatus"
+          :data="schemasData"
+        >
+          <template #default="{ data: schemas }">
+            <SearchableSelect
+              v-model="form.schema"
+              :label="$t('Schéma')"
+              :placeholder="$t('Rechercher un schéma référencé sur {site}…', { site: config.public.schemasSite.name })"
+              :display-value="(option: { name: string }) => option.name"
+              :get-option-id="(option: { name: string }) => option.name"
+              :options="schemas ?? []"
+              :multiple="false"
 
-            :error-text="getFirstError('schema')"
-            :warning-text="getFirstWarning('schema')"
-          />
-          <Divider v-if="!form.schema">
-            {{ $t('ou') }}
-          </Divider>
-          <InputGroup
-            v-if="!form.schema"
-            v-model="form.schema_url"
-            :label="t('Ajouter un lien vers le schéma')"
-            :placeholder="'https://...'"
-            :error-text="getFirstError('schema_url')"
-            :warning-text="getFirstWarning('schema_url')"
-            class="w-full !mb-0"
-          />
-
-          <template #accordion>
-            <HelpAccordion :title="$t('Sélectionner un schéma')">
-              <i18n-t
-                keypath="Il est possible d'identifier un schéma de données existant en visitant le site web {schema}, qui référence une liste de schémas de données existants."
-                tag="p"
-                class="fr-m-0 fr-mb-1w"
-              >
-                <template #schema>
-                  <a :href="config.public.schemasSite.url">{{ config.public.schemasSite.name }}</a>
-                </template>
-              </i18n-t>
-            </HelpAccordion>
+              :error-text="getFirstError('schema')"
+              :warning-text="getFirstWarning('schema')"
+            />
+            <Divider v-if="!form.schema">
+              {{ $t('ou') }}
+            </Divider>
+            <InputGroup
+              v-if="!form.schema"
+              v-model="form.schema_url"
+              :label="t('Ajouter un lien vers le schéma')"
+              :placeholder="'https://...'"
+              :error-text="getFirstError('schema_url')"
+              :warning-text="getFirstWarning('schema_url')"
+              class="w-full !mb-0"
+            />
           </template>
         </LoadingBlock>
+        <template #accordion>
+          <HelpAccordion :title="$t('Sélectionner un schéma')">
+            <TranslationT
+              keypath="Il est possible d'identifier un schéma de données existant en visitant le site web {schema}, qui référence une liste de schémas de données existants."
+              tag="p"
+              class="fr-m-0 fr-mb-1w"
+            >
+              <template #schema>
+                <a :href="config.public.schemasSite.url">{{ config.public.schemasSite.name }}</a>
+              </template>
+            </TranslationT>
+          </HelpAccordion>
+        </template>
       </FieldsetElement>
     </FormFieldset>
 
@@ -383,15 +394,14 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getResourceLabel, RESOURCE_TYPE, SimpleBanner } from '@datagouv/components-next'
-import type { SchemaResponseData } from '@datagouv/components-next'
+import { BrandedButton, getResourceLabel, LoadingBlock, RESOURCE_TYPE, SearchableSelect, SelectGroup, SimpleBanner, TranslationT, toast } from '@datagouv/components-next'
+import type { DatasetV2, SchemaResponseData } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
-import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 import FieldsetElement from '../Form/FieldsetElement.vue'
 import HelpAccordion from '../Form/HelpAccordion.vue'
 import type { CommunityResourceForm, ResourceForm } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
 
@@ -409,8 +419,19 @@ const emit = defineEmits<{
 const resourceForm = defineModel<ResourceForm | CommunityResourceForm>({ required: true })
 const { form, getFirstError, getFirstWarning, validate, formInfo } = useResourceForm(resourceForm)
 
-const datasets = ref([])
+const datasets = ref<Array<DatasetV2>>([])
 const newFile = ref<File | null>(null)
+
+const route = useRoute()
+onMounted(async () => {
+  if (props.type !== 'create-community' || !('dataset' in form.value)) return
+  if (!route.query.dataset_id) return
+
+  const dataset = await $api<DatasetV2>(`/api/2/datasets/${route.query.dataset_id}/`)
+  if (!datasets.value.some(d => d.id === dataset.id)) {
+    datasets.value.push(dataset)
+  }
+})
 
 const isRemote = computed(() => resourceForm.value.filetype === 'remote')
 const nameAFile = computed(() => isRemote.value ? t('Nommer un lien') : t('Nommer un fichier'))
@@ -430,9 +451,17 @@ const setFiles = (files: Array<File>) => {
 }
 
 const { data: extensions, status } = await useAPI<Array<string>>('/api/1/datasets/extensions/', { lazy: true })
-const { data: schemas, status: schemaStatus } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/', { lazy: true })
+const { data: schemasData, status: schemaStatus } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/', { lazy: true })
 
-const { toast } = useToast()
+watch(newFile, (file) => {
+  // console.log('[DescribeResource] newFile changed:', file ? file.name : 'null')
+  if (file && form.value.filetype === 'file') {
+    form.value.file = {
+      raw: file,
+      state: { status: 'waiting' },
+    }
+  }
+})
 
 const submit = async () => {
   if (await validate()) {

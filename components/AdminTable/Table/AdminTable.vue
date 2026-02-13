@@ -5,7 +5,7 @@
     </table>
     <div
       v-if="loading"
-      class="container fr-p-4w text-align-center"
+      class="container fr-p-4w text-center"
     >
       <AnimatedLoader />
     </div>

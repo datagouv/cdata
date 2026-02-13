@@ -4,20 +4,21 @@
       <div class="fr-container">
         <div class="flex flex-wrap divide-y md:divide-y-0 md:divide-x divide-gray-default">
           <div class="w-full pb-6 md:pb-0 md:pr-[6%] md:w-2/3 flex flex-wrap">
-            <div class="flex-none flex items-center mr-5">
+            <div class="flex-none hidden sm:flex items-center mr-5">
               <NuxtImg
-                src="/img/newspaper.svg"
+                src="/illustrations/newspaper-black.svg"
+                aria-hidden="true"
                 loading="lazy"
                 width="71"
                 height="55"
               />
             </div>
             <div class="w-full !flex-none sm:!flex-1">
-              <div>
+              <div class="mb-4">
                 <p class="font-extrabold text-2xl text-gray-title leading-8 mb-1">
                   {{ $t("Abonnez-vous à notre lettre d'information") }}
                 </p>
-                <p class="mb-4">
+                <p class="hidden sm:block mb-4">
                   {{
                     $t("Pour ne rien manquer de l’actualité de {site} et de l’open data, inscrivez-vous à notre infolettre et suivez nos événements.",
                        { site: config.public.title })
@@ -36,7 +37,7 @@
                 <BrandedButton
                   color="secondary"
                   :title="$t(`Abonnez-vous à notre lettre d'information`)"
-                  href="/pages/webinaires/"
+                  href="/events/rentree-data-gouv"
                 >
                   {{ $t("Voir nos prochains évènements") }}
                 </BrandedButton>
@@ -49,7 +50,7 @@
                 {{ $t("Suivez-nous") }}
                 <br> {{ $t("sur les réseaux sociaux") }}
               </p>
-              <ul class="flex justify-between list-none m-0 p-0 *:p-0 -ml-4">
+              <ul class="flex flex-wrap list-none m-0 p-0 *:p-0 -ml-4">
                 <li>
                   <a
                     class="link !inline-flex after:!content-none mx-2 !p-2 min-h-10 mh-10 mw-10 !no-underline hover:!bg-gray-some"
@@ -57,7 +58,7 @@
                     href="https://www.linkedin.com/company/data-gouv-fr/"
                     target="_blank"
                   >
-                    <RiLinkedinBoxLine />
+                    <RiLinkedinBoxLine aria-hidden="true" />
                   </a>
                 </li>
                 <li>
@@ -67,7 +68,7 @@
                     href="https://social.numerique.gouv.fr/@datagouvfr"
                     target="_blank"
                   >
-                    <RiMastodonLine />
+                    <RiMastodonLine aria-hidden="true" />
                   </a>
                 </li>
                 <li>
@@ -77,7 +78,17 @@
                     href="https://bsky.app/profile/datagouvfr.bsky.social"
                     target="_blank"
                   >
-                    <RiBlueskyLine />
+                    <RiBlueskyLine aria-hidden="true" />
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="link !inline-flex after:!content-none mx-2 !p-2 min-h-10 mh-10 mw-10 !no-underline hover:!bg-gray-some"
+                    :title="$t('Youtube - nouvel onglet')"
+                    href="https://www.youtube.com/@data-gouv-fr"
+                    target="_blank"
+                  >
+                    <RiYoutubeLine aria-hidden="true" />
                   </a>
                 </li>
                 <li>
@@ -87,7 +98,7 @@
                     href="https://github.com/datagouv/data.gouv.fr"
                     target="_blank"
                   >
-                    <RiGithubLine />
+                    <RiGithubLine aria-hidden="true" />
                   </a>
                 </li>
                 <li>
@@ -98,7 +109,7 @@
                     :external="true"
                     target="_blank"
                   >
-                    <RiRssLine />
+                    <RiRssLine aria-hidden="true" />
                   </CdataLink>
                 </li>
               </ul>
@@ -151,7 +162,7 @@
             </div>
             <div class="fr-col-12 fr-col-sm-3">
               <h3 class="fr-footer__top-cat !text-xs !leading-5 !mb-3">
-                {{ $t('Ressources') }}
+                {{ $t('Verticales thématiques') }}
               </h3>
               <ul class="fr-footer__top-list">
                 <li
@@ -182,17 +193,18 @@
                   <a
                     href="https://github.com/opendatateam/udata/"
                     class="fr-footer__top-link"
+                    :title="site && site.version ? $t('Version {version}', { version: site.version }) : undefined"
                   >
-                    {{ $t('Moteur open source : udata') }}
+                    {{ $t('Moteur open source : udata ({version})', { version: site?.version ?? '' }) }}
                   </a>
                 </li>
                 <li>
                   <a
-                    :href="config.public.commitId ? `https://github.com/datagouv/cdata/commit/${config.public.commitId}` : 'https://github.com/datagouv/cdata/'"
-                    :title="config.public.commitId ? $t('Version {version}', { version: config.public.commitId }) : undefined"
+                    :href="appConfig.commitId ? `https://github.com/datagouv/cdata/commit/${appConfig.commitId}` : 'https://github.com/datagouv/cdata/'"
+                    :title="appConfig.commitId ? $t('Version {version}', { version: appConfig.commitId }) : undefined"
                     class="fr-footer__top-link"
                   >
-                    {{ $t('Interface utilisateur de data.gouv.fr : cdata') }}
+                    {{ $t('Interface utilisateur de data.gouv.fr : cdata ({version})', { version: appConfig.commitId }) }}
                   </a>
                 </li>
               </ul>
@@ -204,18 +216,22 @@
         <div class="fr-footer__body">
           <div class="fr-footer__brand fr-enlarge-link">
             <p
+              v-if="appConfig.isFrenchGovernment"
               class="fr-logo"
               title="république française"
             >
               république
               <br>française
             </p>
+            <p v-else>
+              Add Your logo
+            </p>
             <a
               class="fr-footer__brand-link"
               href="/"
               :title="$t(`Retourner à l'accueil du site - data.gouv.fr - République Française`)"
             >
-              <SiteLogo class="text-gray-logo text-xl tracking-wide" />
+              <LogoImage class="h-12" />
             </a>
           </div>
           <div class="fr-footer__content">
@@ -272,12 +288,13 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { RiBlueskyLine, RiGithubLine, RiLinkedinBoxLine, RiMastodonLine, RiRssLine } from '@remixicon/vue'
+import { BrandedButton, type Site } from '@datagouv/components-next'
+import { RiBlueskyLine, RiGithubLine, RiLinkedinBoxLine, RiMastodonLine, RiRssLine, RiYoutubeLine } from '@remixicon/vue'
 
 const config = useRuntimeConfig()
+const appConfig = useAppConfig()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 type Link = {
   label: string
@@ -296,21 +313,23 @@ if (config.public.csvDatasetId) {
 
 openDataLinks.push({ label: t(`Suivre l'ouverture des données`), link: 'https://ouverture.data.gouv.fr' })
 openDataLinks.push({ label: t('Portail des données européennes'), link: 'https://data.europa.eu' })
+openDataLinks.push({ label: config.public.schemasSite.name, link: config.public.schemasSite.url })
 
 const platformLinks: Array<Link> = [
   { label: t('Guides'), link: config.public.guidesUrl, external: true },
-  { label: t('Feuille de route et nouveautés'), link: '/pages/roadmap' },
+  { label: t('Feuille de route et nouveautés'), link: '/products/datagouv?tab=roadmap' },
   { label: t('Nous écrire'), link: '/support' },
-  { label: t('Donnez votre avis'), link: config.public.feedbackFormUrl, external: true },
+  { label: t('Échangez avec la communauté'), link: config.public.forumUrl, external: true },
   { label: t('Statistiques'), link: '/dashboard' },
 ]
 
 const resourcesLinks: Array<Link> = [
-  { label: config.public.schemasSite.name, link: config.public.schemasSite.url },
   { label: 'meteo.data.gouv.fr', link: 'https://meteo.data.gouv.fr' },
   { label: 'transport.data.gouv.fr', link: 'https://transport.data.gouv.fr' },
   { label: 'ecologie.data.gouv.fr', link: 'https://ecologie.data.gouv.fr' },
   { label: 'defis.data.gouv.fr', link: 'https://defis.data.gouv.fr' },
+  { label: 'culture.data.gouv.fr', link: 'https://culture.data.gouv.fr' },
+  { label: 'logistique.data.gouv.fr', link: 'https://logistique.data.gouv.fr' },
 ]
 
 const footerLinks: Array<Link> = [
@@ -326,4 +345,6 @@ const networkLinks: Array<Link> = [
   { label: 'info.gouv.fr', link: 'https://www.info.gouv.fr' },
   { label: 'service-public.fr', link: 'https://www.service-public.fr' },
 ]
+
+const { data: site } = await useAPI<Site>('/api/1/site/')
 </script>

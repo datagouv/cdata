@@ -4,7 +4,6 @@
       <div class="container">
         <Breadcrumb>
           <BreadcrumbItem
-            :external="true"
             to="/"
           >
             {{ $t('Accueil') }}
@@ -42,7 +41,7 @@
           type="brand"
           :border="true"
           :use-static-image="true"
-          :image-src="card.imageUrl"
+          :image-src="card.image_url"
           :image-alt="card.product"
           :title="card.product"
         />
@@ -83,7 +82,7 @@ onMounted(async () => {
     description: r.fields.description,
     tagline: r.fields.tagline,
     title: r.fields.product,
-    imageUrl: r.fields.image_url,
+    image_url: r.fields.image_url,
     phase: r.fields.phase,
   }))
   loading.value = false

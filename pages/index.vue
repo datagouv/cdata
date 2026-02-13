@@ -1,30 +1,45 @@
 <template>
   <div>
-    <section class="py-8 sm:py-[200px] bg-cover bg-[url(''),radial-gradient(rgba(255,255,255,0.8),rgba(217,217,217,0)),url('/nuxt_images/homepage/hero.png')]">
-      <div class="max-w-[800px] mx-auto px-6 flex flex-col items-center space-y-8">
+    <section
+      class="relative py-8 sm:py-[200px] bg-cover bg-center"
+      :style="`background-image: url(''), radial-gradient(rgba(255,255,255,1.0), rgba(255,255,255,0.7), rgba(217,217,217,0)), url('/nuxt_images/homepage/${randomHeroImage}')`"
+    >
+      <div class="absolute inset-0 backdrop-blur-[1px]" />
+      <div class="relative max-w-[800px] mx-auto px-6 flex flex-col items-center space-y-8">
         <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-5 items-center">
           <CdataLink
             v-if="lastPost"
-            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-primary border  border-primary rounded-lg bg-white"
-            :to="`/posts/${lastPost.slug}`"
+            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
+            :to="lastPost.page"
           >
-            <RiBardLine class="size-4 shrink-0" />
+            <RiBardLine
+              aria-hidden="true"
+              class="size-4 shrink-0"
+            />
             <span class="truncate"><span class="font-bold">{{ $t('Actualités') }}</span><span>&nbsp;: {{ lastPost.name }}</span></span>
           </CdataLink>
           <CdataLink
             v-if="config.public.homepageRightNow"
-            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-primary border  border-primary rounded-lg bg-white"
+            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
             :to="config.public.homepageRightNow.url"
           >
-            <RiBardLine class="size-4 shrink-0" />
-            <span class="truncate"><span class="font-bold">{{ $t('En ce moment') }}</span><span>&nbsp;: {{ config.public.homepageRightNow.title }}</span></span>
+            <RiBardLine
+              aria-hidden="true"
+              class="size-4 shrink-0"
+            />
+            <span class="truncate">
+              <span class="font-bold">
+                {{ $t('En ce moment') }}
+              </span>
+              <span>&nbsp;: {{ config.public.homepageRightNow.title }}</span>
+            </span>
           </CdataLink>
         </div>
         <div class="space-y-4">
-          <h1 class="text-6xl font-extrabold text-primary text-center">
+          <h1 class="text-6xl font-extrabold text-new-primary text-center">
             {{ $t('La plateforme des données publiques françaises') }}
           </h1>
-          <p class="font-spectral italic text-2xl text-center text-primary">
+          <p class="font-spectral italic text-2xl text-center text-new-primary">
             {{ $t('Utilisez, partagez et améliorez les données publiques') }}
           </p>
         </div>
@@ -32,13 +47,15 @@
           <BrandedButton
             href="/datasets"
             class="w-full sm:w-auto"
+            @click="$matomo.trackEvent('Homepage', `Découvrir les données`, 'Bouton : découvrez les jeux de données')"
           >
             {{ $t('Découvrez les jeux de données') }}
           </BrandedButton>
           <BrandedButton
             href="/reuses"
-            color="primary-soft"
+            color="secondary"
             class="w-full sm:w-auto"
+            @click="$matomo.trackEvent('Homepage', `Découvrir les réutilisation`, 'Bouton : explorez les réutilisations de données')"
           >
             {{ $t('Explorez les réutilisations de données') }}
           </BrandedButton>
@@ -50,6 +67,7 @@
         <div class="w-full max-w-lg space-y-8">
           <div class="space-y-2">
             <nuxt-img
+              aria-hidden="true"
               src="/illustrations/dataset.svg"
               class="h-16 grayscale"
             />
@@ -74,7 +92,7 @@
           </div>
 
           <div class="space-y-2.5">
-            <p class="uppercase font-bold text-gray-low">
+            <p class="uppercase font-bold text-gray-medium">
               {{ $t('Ils publient des données sur {name}', { name: config.public.title }) }}
             </p>
             <div class="grid grid-cols-2 sm:grid-cols-4 justify-between">
@@ -103,7 +121,7 @@
             </BrandedButton>
             <BrandedButton
               :href="config.public.homepagePublishDatasetOnboarding"
-              color="primary-soft"
+              color="secondary"
               class="w-full sm:w-auto"
             >
               {{ $t('Comment publier des données ?') }}
@@ -113,25 +131,27 @@
       </div>
       <div class="hidden sm:flex px-6 justify-center pt-8 sm:pt-10 overflow-hidden bg-gray-some">
         <figure class="w-full max-w-lg flex flex-col items-center">
-          <figcaption class="uppercase font-bold text-gray-low mb-6">
+          <figcaption class="uppercase font-bold text-gray-medium mb-6">
             {{ $t('Jeux de données') }}
           </figcaption>
           <nuxt-img
             src="/nuxt_images/homepage/datasets.png"
             srcset="/nuxt_images/homepage/datasets.png, /nuxt_images/homepage/datasets@2x.png 2x, /nuxt_images/homepage/datasets@3x.png 3x"
             class="w-full sm:-mb-16"
+            alt=""
           />
         </figure>
       </div>
       <div class="hidden sm:flex px-6 justify-center py-8 sm:pt-10 sm:pb-20 bg-gray-some">
         <figure class="w-full max-w-lg flex flex-col items-center">
-          <figcaption class="uppercase font-bold text-gray-low mb-6">
+          <figcaption class="uppercase font-bold text-gray-medium mb-6">
             {{ $t('Réutilisations') }}
           </figcaption>
           <nuxt-img
             src="/nuxt_images/homepage/reuses.png"
             srcset="/nuxt_images/homepage/reuses.png, /nuxt_images/homepage/reuses@2x.png 2x, /nuxt_images/homepage/reuses@3x.png 3x"
             class="w-full"
+            alt=""
           />
         </figure>
       </div>
@@ -141,6 +161,7 @@
             <nuxt-img
               src="/illustrations/discussion.svg"
               class="h-16 grayscale"
+              aria-hidden="true"
             />
             <h2 class="text-3xl text-gray-title font-extrabold">
               {{ $t('Une communauté dynamique et engagée') }}
@@ -163,7 +184,7 @@
           </div>
 
           <div class="space-y-2.5">
-            <p class="uppercase font-bold text-gray-low">
+            <p class="uppercase font-bold text-gray-medium">
               {{ $t('Ils réutilisent les données de {name}', { name: config.public.title }) }}
             </p>
             <div class="grid grid-cols-2 sm:grid-cols-4 justify-between">
@@ -192,7 +213,7 @@
             </BrandedButton>
             <BrandedButton
               :href="config.public.homepagePublishReuseOnboarding"
-              color="primary-soft"
+              color="secondary"
               class="w-full sm:w-auto"
             >
               {{ $t('Comment réutiliser des données ?') }}
@@ -204,10 +225,10 @@
     <section class="bg-gray-dark text-white">
       <div class="max-w-7xl mx-auto px-6 py-16 space-y-8">
         <div>
-          <h2 class="text-3xl font-normal mb-0">
+          <h2 class="text-white text-3xl font-normal mb-0">
             {{ $t('La mission {site}', { site: config.public.title }) }}
           </h2>
-          <h3 class="text-3xl mb-0 font-extrabold">
+          <h3 class="text-white text-3xl mb-0 font-extrabold">
             {{ $t('Simplifier l’accès aux données publiques') }}
           </h3>
         </div>
@@ -220,7 +241,7 @@
           </p>
         </div>
         <div>
-          <h4 class="text-base uppercase font-bold text-gray-low">
+          <h4 class="text-base uppercase font-bold text-gray-silver">
             {{ $t('Nos objectifs') }}
           </h4>
           <div class="grid grid-cols-1 sm:grid-cols-3 space-y-6 sm:space-y-0">
@@ -236,6 +257,7 @@
               <component
                 :is="icon"
                 class="size-6"
+                aria-hidden="true"
               />
               <p class="text-2xl font-bold mb-0">
                 {{ label }}
@@ -253,11 +275,11 @@
           </BrandedButton>
         </div>
         <div class="space-y-8">
-          <h3 class="text-3xl font-extrabold">
+          <h3 class="text-white text-3xl font-extrabold">
             {{ $t('Produire de l’information à partir des données') }}
           </h3>
           <div>
-            <h4 class="text-base uppercase font-bold text-gray-low">
+            <h4 class="text-base uppercase font-bold text-gray-silver">
               {{ $t('Nos explorations de données') }}
             </h4>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -273,9 +295,10 @@
                   :src="`/nuxt_images/homepage/${exploration.image}.png`"
                   :srcset="`/nuxt_images/homepage/${exploration.image}.png, /nuxt_images/homepage/${exploration.image}@2x.png 2x`"
                   class="w-full h-[300px] object-cover"
+                  alt=""
                 />
                 <div class="p-4 space-y-2.5">
-                  <p class="text-sm uppercase font-bold text-gray-low">
+                  <p class="text-sm uppercase font-bold text-gray-medium">
                     {{ exploration.title }}
                   </p>
                   <p class="text-base text-gray-title font-bold">
@@ -285,10 +308,13 @@
                     <CdataLink
                       :to="exploration.url"
                       external
-                      class="inline-flex items-center text-primary space-x-1"
+                      class="inline-flex items-center text-new-primary space-x-1"
                     >
                       <span>{{ $t('En savoir plus') }}</span>
-                      <RiArrowRightLine class="size-3" />
+                      <RiArrowRightLine
+                        aria-hidden="true"
+                        class="size-3"
+                      />
                     </CdataLink>
                   </div>
                 </div>
@@ -307,11 +333,11 @@
           </BrandedButton>
         </div>
         <div class="space-y-8">
-          <h3 class="text-3xl font-extrabold">
+          <h3 class="text-white text-3xl font-extrabold">
             {{ $t('Fédérer un écosystème') }}
           </h3>
           <div>
-            <h4 class="text-base uppercase font-bold text-gray-low">
+            <h4 class="text-base uppercase font-bold text-gray-silver">
               {{ $t('Nos plateformes thématiques') }}
             </h4>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
@@ -320,11 +346,13 @@
                   { name: 'ecologie', url: 'https://ecologie.data.gouv.fr' },
                   { name: 'transport', url: 'https://transport.data.gouv.fr' },
                   { name: 'météo', url: 'https://meteo.data.gouv.fr' },
+                  { name: 'culture', url: 'https://culture.data.gouv.fr' },
+                  { name: 'logistique', url: 'https://logistique.data.gouv.fr' },
                 ]"
                 :key="platform.name"
                 class="relative bg-gray-disabled p-4 space-y-2 hover:bg-gray-plain"
               >
-                <h5 class="text-xl">
+                <h5 class="text-white text-xl">
                   <CdataLink
                     :to="platform.url"
                     external
@@ -334,39 +362,56 @@
                     <div class="absolute inset-0" />
                   </CdataLink>
                 </h5>
-                <i18n-t
+                <TranslationT
                   v-if="platform.name === 'ecologie'"
                   tag="p"
                   class="mb-0 text-gray-silver"
                   keypath="Les données de la transition écologique portées par le {name}."
-                  scope="global"
                 >
                   <template #name>
                     <strong>Ministère de la Transition écologique et de la Cohésion des territoires</strong>
                   </template>
-                </i18n-t>
-                <i18n-t
+                </TranslationT>
+                <TranslationT
                   v-if="platform.name === 'transport'"
                   tag="p"
                   class="mb-0 text-gray-silver"
                   keypath="Les données de mobilité en partenariat avec la {name}."
-                  scope="global"
                 >
                   <template #name>
                     <strong>Direction Générale des Infrastructures, des Transports et des Mobilités</strong>
                   </template>
-                </i18n-t>
-                <i18n-t
+                </TranslationT>
+                <TranslationT
                   v-if="platform.name === 'météo'"
                   tag="p"
                   class="mb-0 text-gray-silver"
                   keypath="Les données publiques relatives à la météorologie et à la climatologie produites par {name}."
-                  scope="global"
                 >
                   <template #name>
                     <strong>Météo-France</strong>
                   </template>
-                </i18n-t>
+                </TranslationT>
+                <TranslationT
+                  v-if="platform.name === 'culture'"
+                  tag="p"
+                  class="mb-0 text-gray-silver"
+                  keypath="Les données publiques relatives à la Culture en France en partenariat avec le {name}."
+                >
+                  <template #name>
+                    <strong>Ministère de la Culture</strong>
+                  </template>
+                </TranslationT>
+                <TranslationT
+                  v-if="platform.name === 'logistique'"
+                  tag="p"
+                  class="mb-0 text-gray-silver"
+                  keypath="Les données relatives à la logistique en partenariat avec la {name}."
+                >
+                  <template #name>
+                    <strong>Direction Générale des Infrastructures, des Transports et des Mobilités</strong>
+                  </template>
+                </TranslationT>
               </div>
             </div>
           </div>
@@ -375,7 +420,7 @@
     </section>
     <section v-if="lastPost">
       <div class="max-w-7xl mx-auto px-6 py-16 space-y-8">
-        <h2 class="text-base uppercase font-bold text-gray-low mb-6">
+        <h2 class="text-base uppercase font-bold text-gray-medium mb-6">
           {{ $t("L'actualité {name}", { name: config.public.title }) }}
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-8">
@@ -383,6 +428,7 @@
             v-if="lastPost.image"
             :src="lastPost.image"
             class="sm:col-span-5"
+            alt=""
           >
           <div class="sm:col-span-7 flex flex-col justify-center space-y-8">
             <div class="space-y-2">
@@ -404,7 +450,7 @@
                 {{ $t("Consulter l'article") }}
               </BrandedButton>
               <BrandedButton
-                color="primary-soft"
+                color="secondary"
                 href="/posts"
                 class="w-full sm:w-auto"
               >
@@ -421,17 +467,18 @@
 <script setup lang="ts">
 import { BrandedButton, summarize, useFormatDate, type Site } from '@datagouv/components-next'
 import { RiArrowRightLine, RiBardLine, RiLineChartLine, RiSearchLine, RiVipDiamondLine } from '@remixicon/vue'
+import { TranslationT } from '@datagouv/components-next'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 
 useSeoMeta({ title: 'Accueil — data.gouv.fr' })
 
 const config = useRuntimeConfig()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
-const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts')
-const { data: site } = await useAPI<Site>('/api/1/site')
+const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts/', { params: { kind: 'news' } })
+const { data: site } = await useAPI<Site>('/api/1/site/')
 
 const lastPost = computed(() => {
   if (!posts.value || !posts.value.data.length) return null
@@ -453,4 +500,9 @@ const reusesMetrics = computed(() => {
     { label: t('Discussions'), value: site.value ? site.value.metrics.discussions : 0 },
   ]
 })
+
+// Cannot send arrays in .env so we support sending a single string for a single image (for E2E testing snapshots)s
+const heroImages = Array.isArray(config.public.homepageHeroImages) ? config.public.homepageHeroImages : [config.public.homepageHeroImages]
+
+const randomHeroImage = heroImages[Math.floor(Math.random() * heroImages.length)]
 </script>

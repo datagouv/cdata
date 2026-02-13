@@ -26,6 +26,7 @@
         :links="[
           { href: getReuseAdminUrl(reuse), label: t('Métadonnées') },
           { href: `${getReuseAdminUrl(reuse)}/datasets`, label: t('Jeux de données associés') },
+          { href: `${getReuseAdminUrl(reuse)}/dataservices`, label: t('APIs associées') },
         ]"
       />
 
@@ -45,7 +46,11 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 
-const { t } = useI18n()
+definePageMeta({
+  keepScroll: true,
+})
+
+const { t } = useTranslation()
 
 const route = useRoute()
 const url = computed(() => `/api/1/reuses/${route.params.id}`)

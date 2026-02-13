@@ -1,4 +1,13 @@
-import type { Dataset, CommunityResource, Dataservice, DataserviceAccessAudience, Reuse, User, Frequency, Organization, License, ReuseType, RegisteredSchema, Resource, DataserviceAccessAudienceType, DataserviceAccessAudienceCondition, ContactPoint } from '@datagouv/components-next'
+import type { AccessTypeForm, WithAccessType, Dataset, DatasetV2, DatasetV2WithFullObject, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, OrganizationReference, UserReference, License, ReuseType, Resource, ResourceType, ResourceFileType, Schema, ContactPoint, PaginatedArray, Owned } from '@datagouv/components-next'
+import type { NitroFetchRequest, NitroFetchOptions } from 'nitropack'
+import type { Thread } from './discussions'
+
+// Some types from @datagouv/components-next are exported here to avoid 50+ files refactors
+export type {
+  PaginatedArray,
+}
+
+export type ApiFetch = <T>(url: string, options?: NitroFetchOptions<NitroFetchRequest>) => Promise<T>
 
 export type AxisAlignment = 'start' | 'center' | 'end'
 
@@ -29,16 +38,7 @@ export type AccordionState = DSFRFormDefaultState | AccordionFunctionalState | D
 
 export type AdminBadgeState = DSFRFormDefaultState | FormFunctionalState | DSFRInfoState
 
-export type AdminBadgeType = 'primary' | 'secondary' | 'warning' | 'danger' | 'success' | 'default'
-
-export type PaginatedArray<T> = {
-  data: Array<T>
-  next_page: string | null
-  page: number
-  page_size: number
-  previous_page: string | null
-  total: number
-}
+export type AdminBadgeType = 'primary' | 'secondary' | 'warning' | 'danger' | 'success' | 'default' | 'pink'
 
 export type DatasetSortedBy = 'title' | 'created' | 'last_update' | 'reuses' | 'followers' | 'views'
 
@@ -52,14 +52,27 @@ export type CommunityResourceSortedBy = 'created_at_internal' | 'last_modified_i
 
 // MEMBERS
 
-export type MembershipStatus = 'pending' | 'accepted' | 'refused'
+export type MembershipStatus = 'pending' | 'accepted' | 'refused' | 'canceled'
+
+export type MembershipRequestKind = 'request' | 'invitation'
 
 export type PendingMembershipRequest = {
   id: string
-  user: User & { email: string }
+  user: (User & { email: string }) | null
+  email: string | null
+  kind: MembershipRequestKind
   status: MembershipStatus
   created: string
-  comment: string
+  comment: string | null
+  role: MemberRole
+}
+
+export type OrgInvitation = {
+  id: string
+  organization: OrganizationReference
+  role: MemberRole
+  comment: string | null
+  created: string
 }
 
 export type MembershipRequest = PendingMembershipRequest & {
@@ -100,9 +113,8 @@ export type MultiSelectOption = {
   recommended?: string
 }
 
-type UserSuggest = Omit<User, 'avatar' | 'avatar_thumbnail' | 'roles' | 'pages'> & { avatar_url: string | null }
-type DatasetSuggest = Pick<Dataset, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
-type DatasetReference = Dataservice['datasets'][0]
+export type UserSuggest = Omit<User, 'avatar' | 'avatar_thumbnail' | 'roles' | 'pages'> & { avatar_url: string | null }
+export type DatasetSuggest = Pick<Dataset, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
 export type SpatialZone = {
   code: string
   id: string
@@ -120,15 +132,14 @@ export type Tag = {
   text: string
 }
 
-type Owned = { organization: Organization, owner: null } | { owner: User, organization: null }
-
 export type DatasetForm = {
   owned: Owned | null
   title: string
   acronym: string
   description: string
+  description_short?: string
   tags: Array<Tag>
-  license: License | null
+  license: License | EnrichedLicense | null
   contact_points: Array<NewContactPoint | ContactPoint | null>
   temporal_coverage: { start: null | string, end: null | string }
   frequency: Frequency | null
@@ -136,7 +147,7 @@ export type DatasetForm = {
   spatial_granularity: SpatialGranularity | null
   private: boolean
   featured: boolean
-}
+} & AccessTypeForm
 
 export type NewDatasetForApi = {
   title: string
@@ -145,6 +156,7 @@ export type NewDatasetForApi = {
   deleted?: null
   acronym?: string
   description: string
+  description_short?: string
   organization?: string
   owner?: string
   tags: Array<string>
@@ -154,11 +166,12 @@ export type NewDatasetForApi = {
   frequency?: string
   spatial?: {
     granularity?: string
-    zones?: Array<string>
+    zones?: Array<string> | null
   }
-}
+  extras?: Record<string, unknown>
+} & WithAccessType
 
-type ReuseSuggest = Pick<Reuse, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
+export type ReuseSuggest = Pick<Reuse, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
 
 export type ReuseForm = {
   featured: boolean
@@ -183,6 +196,7 @@ export type NewReuseForApi = {
   deleted?: null
   description: string
   datasets: Array<string> | undefined
+  dataservices: Array<string> | undefined
   url: string
   type: string | null
   topic: string | null
@@ -190,22 +204,20 @@ export type NewReuseForApi = {
 }
 
 export type DataserviceForm = {
+  featured: boolean
   owned: Owned | null
   title: string
   acronym: string
   description: string
   contact_points: Array<NewContactPoint | ContactPoint | null>
   base_api_url: string
-  authorization_request_url: string
   machine_documentation_url: string | null
   technical_documentation_url: string | null
   business_documentation_url: string | null
-  access_type: 'open' | 'restricted' | 'open_with_account'
-  access_audiences: Record<DataserviceAccessAudienceType, DataserviceAccessAudienceCondition>
   rate_limiting: string
   availability: string
   private: boolean
-}
+} & AccessTypeForm
 
 export type NewDataserviceForApi = {
   organization?: string
@@ -218,18 +230,15 @@ export type NewDataserviceForApi = {
   description: string
   datasets?: Array<string>
   contact_points?: Array<string> | null
-  access_type: 'open' | 'open_with_account' | 'restricted'
-  access_audiences: Array<DataserviceAccessAudience>
   base_api_url: string | null
-  authorization_request_url: string | null
   machine_documentation_url: string | null
   technical_documentation_url: string | null
   business_documentation_url: string | null
   rate_limiting: string
   availability: number | null
-}
+} & WithAccessType
 
-type EnrichedLicense = License & { group: string, recommended?: boolean, code?: string, description?: string }
+export type EnrichedLicense = License & { group: string, recommended?: boolean, code?: string, description?: string }
 
 export type RemoteResourceFileType = 'remote'
 
@@ -242,7 +251,7 @@ export type BaseResourceForm = {
   title: string
   type: ResourceType
   description: string
-  schema: RegisteredSchema | null
+  schema: Schema | RegisteredSchema | null
   schema_url: string | null
 
   checksum_type: string | null
@@ -275,10 +284,30 @@ export type ResourceForm = ResourceFormRemote | ResourceFormLocal
 
 export type AdditionalDataForCommunityResourceForm = {
   owned: Owned | null
-  dataset: Dataset | DatasetV2 | DatasetSuggest | null
+  dataset: Dataset | DatasetV2 | DatasetSuggest | Omit<Dataset, 'resources' | 'community_resources'> | null
 }
 // Useful to be able to exclude by resource.type = 'remote' | 'file' some data
 export type CommunityResourceForm = (ResourceFormRemote & AdditionalDataForCommunityResourceForm) | (ResourceFormLocal & AdditionalDataForCommunityResourceForm) | (UnknownResourceForm & AdditionalDataForCommunityResourceForm)
+
+// Types for API submissions (without server-generated fields)
+export type NewResourceForApi = {
+  filetype: ResourceFileType
+  title: string
+  type: ResourceType
+  description: string
+  schema: Schema | null
+  checksum: { type: string, value: string } | null
+  // Remote-specific fields
+  url?: string
+  format?: string
+  mime?: string
+}
+
+export type NewCommunityResourceForApi = NewResourceForApi & {
+  organization: OrganizationReference | null
+  owner: UserReference | null
+  dataset: Dataset | DatasetV2 | DatasetSuggest | Omit<Dataset, 'resources' | 'community_resources'> | null
+}
 
 export type NewOrganization = {
   acronym: string | null
@@ -292,16 +321,15 @@ export type NewOrganization = {
 export type NewContactPoint = Omit<ContactPoint, 'id'>
 export type ContactPointInForm = ContactPoint | NewContactPoint
 
-export type LinkToSubject = {
-  title: string
-} & ({ page: string, self_web_url?: undefined } | { self_web_url: string, page?: undefined })
+export type LinkToSubjectFallback = { customTitle: string, customUrl: string | undefined }
+export type LinkToSubject = Dataset | DatasetV2 | DatasetV2WithFullObject | Omit<Dataset, 'resources' | 'community_resources'> | Reuse | Dataservice | Organization | Thread | LinkToSubjectFallback
 
 export type TransferRequest = {
   id: string
-  user: User | null // TODO add this in API
+  user: User
   owner: (User & { class: 'User' }) | (Organization & { class: 'Organization' })
   recipient: (User & { class: 'User' }) | (Organization & { class: 'Organization' })
-  subject: (Dataset & { class: 'Dataset' }) | (Reuse & { class: 'Reuse' }) | (LinkToSubject & Dataservice & { class: 'Dataservice' })
+  subject: (Dataset & { class: 'Dataset' }) | (Reuse & { class: 'Reuse' }) | (Dataservice & { class: 'Dataservice' })
   comment: string
   created: string
   status: 'pending' | 'accepted' | 'refused'

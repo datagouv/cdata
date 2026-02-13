@@ -6,14 +6,13 @@
     @focusout="show = false"
     @mouseleave="show = false"
   >
-    <p
+    <span
       ref="reference"
       v-bind="$attrs"
       :aria-describedby="id"
-      class="!mb-0"
     >
       <slot />
-    </p>
+    </span>
 
     <div
       v-if="show"
@@ -49,6 +48,7 @@ const floatingRef = useTemplateRef('floating')
 const { floatingStyles } = useFloating(referenceRef, floatingRef, {
   middleware: [autoPlacement({
     allowedPlacements: ['bottom-start', 'bottom', 'bottom-end'],
+    crossAxis: true,
   })],
   whileElementsMounted: autoUpdate,
 })

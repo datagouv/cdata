@@ -2,8 +2,8 @@
   <!-- 46 42 32 -->
   <component
     :is="href ? AppLink: 'button'"
-    class="inline-flex items-center justify-center rounded-full font-medium border !bg-none !no-underline after:content-none"
-    :class="[colors, sizes, removePaddingsIfNoBorders, isDisabled ? '!opacity-50' : '', iconRight && !newTab ? 'flex-row-reverse space-x-reverse' : '']"
+    class="inline-flex items-center justify-center font-marianne font-medium border !bg-none !no-underline after:content-none outline-none focus-visible:ring-2 focus-visible:ring-new-focus focus-visible:ring-offset-2"
+    :class="[colors, sizes, removePaddingsIfNoBorders, isDisabled && color !== 'primary' && color !== 'secondary' ? '!opacity-50' : '', iconRight && !newTab ? 'flex-row-reverse space-x-reverse' : '']"
     :disabled="isDisabled"
     :aria-disabled="isDisabled"
     :role="href ? 'link' : ''"
@@ -21,14 +21,16 @@
       v-else-if="icon"
       :class="iconSize"
       v-bind="iconAttrs"
+      aria-hidden="true"
     />
     <span
       v-if="hasText"
       class="whitespace-nowrap"
-      :class="iconOnly ? 'sr-only' : ''"
+      :class="{ 'sr-only': iconOnly, 'sr-only sm:not-sr-only': iconOnlyOnMobile }"
     ><slot /></span>
     <RiExternalLinkLine
       v-if="newTab"
+      aria-hidden="true"
       :class="iconSize"
     />
   </component>
@@ -48,12 +50,12 @@ import {
   useSlots,
 } from 'vue'
 import { RiExternalLinkLine } from '@remixicon/vue'
-import type { RouteLocation } from 'vue-router'
+import type { RouteLocationRaw } from 'vue-router'
 import AppLink from './AppLink.vue'
 import { bannerActionTypeKey } from './BannerAction.vue'
 import AnimatedLoader from './AnimatedLoader.vue'
 
-type ColorType = 'primary' | 'primary-soft' | 'primary-softer' | 'secondary' | 'secondary-softer' | 'warning' | 'danger' | 'tertiary'
+export type ColorType = 'primary' | 'secondary' | 'tertiary' | 'warning' | 'danger' | 'brown-illustration' | 'green-illustration' | 'white-flat'
 
 const props = withDefaults(defineProps<{
   size?: '2xs' | 'xs' | 'sm' | 'lg' | 'xl'
@@ -62,9 +64,10 @@ const props = withDefaults(defineProps<{
   loading?: boolean
   icon?: Component
   iconAttrs?: Record<string, string>
-  href?: string | RouteLocation
+  href?: string | RouteLocationRaw
   newTab?: boolean
   iconOnly?: boolean
+  iconOnlyOnMobile?: boolean
   iconRight?: boolean
   keepMarginsEvenWithoutBorders?: boolean
   type?: 'submit' | 'button'
@@ -94,7 +97,7 @@ const color = computed<ColorType>(() => {
   if (props.color) return props.color
   if (bannerActionType) {
     return {
-      primary: 'primary-soft' as ColorType,
+      primary: 'secondary' as ColorType,
       warning: 'warning' as ColorType,
       danger: 'danger' as ColorType,
     }[bannerActionType]
@@ -111,29 +114,34 @@ const isDisabled = computed(() => props.disabled || props.loading)
 
 const colors = computed(() => {
   return {
-    'primary': `text-white bg-datagouv-dark !border-datagouv-dark ${!isDisabled.value ? 'hover:!bg-datagouv-hover hover:!border-datagouv-hover' : ''}`,
-    'primary-soft': `text-datagouv-dark bg-white !border-datagouv-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'primary-softer': `text-datagouv-dark bg-transparent !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'secondary': `text-gray-plain bg-white !border-gray-plain ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'secondary-softer': `text-gray-plain !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'warning': `text-warning-dark bg-white !border-warning-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'danger': `!text-danger-dark bg-white !border-danger-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'tertiary': `!border-none bg-transparent text-datagouv-dark ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'primary': isDisabled.value
+      ? 'text-new-disabled-text bg-new-disabled-background !border-new-disabled-background'
+      : 'text-white bg-new-primary !border-new-primary hover:!bg-new-primary-hover hover:!border-new-primary-hover',
+    'secondary': isDisabled.value
+      ? 'text-new-disabled-text bg-white !border-new-disabled-background'
+      : 'text-new-gray-dark bg-white !border-new-gray-dark [&&]:hover:!bg-gray-some',
+    'tertiary': `text-gray-plain !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'warning': `text-new-warning bg-white !border-new-warning ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'danger': `!text-new-error bg-white !border-new-error ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'brown-illustration': `!border-none bg-new-brown-illustration text-white ${!isDisabled.value ? '[&&]:hover:!bg-new-brown-illustration/90' : ''}`,
+    'green-illustration': `!border-none bg-new-green-illustration text-white ${!isDisabled.value ? '[&&]:hover:!bg-new-green-illustration/90' : ''}`,
+    'blue-illustration': `!border-none bg-new-blue-illustration text-white ${!isDisabled.value ? '[&&]:hover:!bg-new-blue-illustration/90' : ''}`,
+    'white-flat': `!border-none bg-white ${!isDisabled.value ? '[&&]:hover:!bg-white/90' : ''}`,
   }[color.value]
 })
 
 const sizes = computed(() => {
   return {
-    'xl': `text-xl h-16 ${hasText.value ? 'px-4 space-x-2' : 'w-16 px-3'}`,
-    'lg': `text-lg h-12 ${hasText.value ? 'px-4 space-x-2' : 'w-12 px-3'}`,
-    'sm': `text-sm h-10 leading-none ${hasText.value ? 'px-4 space-x-1' : 'w-10 px-2.5'}`,
-    'xs': `text-xs h-8 leading-[0.875rem] ${hasText.value ? 'px-4 space-x-1' : 'w-8 px-2'}`,
-    '2xs': `text-xs leading-[0.875rem] p-1 space-x-1`,
+    'xl': `text-xl h-16 ${hasText.value ? 'px-4 gap-x-2' : 'w-16 px-3'}`,
+    'lg': `text-lg h-12 ${hasText.value ? 'px-4 gap-x-2' : 'w-12 px-3'}`,
+    'sm': `text-sm h-10 leading-none ${hasText.value ? 'px-4 gap-x-1' : 'w-10 px-2.5'}`,
+    'xs': `text-xs h-8 leading-[0.875rem] ${hasText.value ? 'px-4 gap-x-1' : 'w-8 px-2'}`,
+    '2xs': `text-xs leading-[0.875rem] p-1 gap-x-1`,
   }[size.value]
 })
 
 const hasBorders = computed(() => {
-  return props.color !== 'primary-softer' && props.color !== 'secondary-softer'
+  return props.color !== 'tertiary'
 })
 
 const removePaddingsIfNoBorders = computed(() => {

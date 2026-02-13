@@ -23,11 +23,10 @@
           </p>
         </template>
         <template v-else-if="organization">
-          <div class="logo logo--sm">
-            <Placeholder
-              type="organization"
-              :src="organization.logo_thumbnail"
-              :size="20"
+          <div class="border border-gray-default rounded p-0.5 bg-white">
+            <OrganizationLogo
+              :organization
+              size-class="size-5"
             />
           </div>
           <p class="mx-2 fr-col text-ellipsis whitespace-nowrap overflow-hidden">
@@ -71,6 +70,12 @@
               :icon="RiUserLine"
               :label="$t('Profil')"
               :to="me.id === user.id ? `/admin/me/profile` : `/admin/users/${user.id}/profile`"
+            />
+            <AdminSidebarLink
+              :icon="RiBarChartBoxLine"
+              :label="$t('Statistiques')"
+              :to="me.id === user.id ? `/admin/me/metrics` : `/admin/users/${user.id}/metrics`"
+              @click="$emit('click')"
             />
           </template>
           <template v-else-if="organization">
@@ -175,6 +180,16 @@
               :label="$t('Articles')"
               to="/admin/site/posts"
             />
+            <AdminSidebarLink
+              :icon="RiAwardLine"
+              :label="$t('Édito')"
+              to="/admin/site/edito/datasets"
+            />
+            <AdminSidebarLink
+              :icon="RiAlarmWarningLine"
+              :label="$t('Modération')"
+              to="/admin/site/moderation"
+            />
           </template>
         </ul>
       </DisclosurePanel>
@@ -183,10 +198,10 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar } from '@datagouv/components-next'
-import type { Organization, User } from '@datagouv/components-next'
+import { Avatar, OrganizationLogo } from '@datagouv/components-next'
+import type { OrganizationReference, User } from '@datagouv/components-next'
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
-import { RiArticleLine, RiBarChartBoxLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiGitPullRequestLine, RiGroup3Line, RiLineChartLine, RiParentLine, RiPlanetLine, RiRobot2Line, RiServerLine, RiUserLine } from '@remixicon/vue'
+import { RiAlarmWarningLine, RiArticleLine, RiAwardLine, RiBarChartBoxLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiGitPullRequestLine, RiGroup3Line, RiLineChartLine, RiParentLine, RiPlanetLine, RiRobot2Line, RiServerLine, RiUserLine } from '@remixicon/vue'
 import { key, type AccordionRegister } from '~/components/Accordion/injectionKey'
 import AdminSidebarLink from '~/components/AdminSidebar/AdminSidebarLink/AdminSidebarLink.vue'
 
@@ -198,7 +213,7 @@ const props = defineProps<{
   /**
    * An organization, to show a menu with its logo and name
    */
-  organization?: Organization
+  organization?: OrganizationReference
 }>()
 
 defineEmits<{

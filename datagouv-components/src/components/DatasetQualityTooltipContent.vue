@@ -1,6 +1,6 @@
 <template>
   <h5 class="text-sm text-gray-plain font-bold">
-    {{ t("Qualité des métadonnées:") }}
+    {{ t("Qualité des métadonnées :") }}
   </h5>
   <ul class="list-none pl-0 space-y-2">
     <DatasetQualityItem
@@ -52,7 +52,7 @@
       class="pb-0"
     />
   </ul>
-  <div class="fr-grid-row fr-grid-row--right not-enlarged">
+  <div class="fr-grid-row fr-grid-row--right">
     <a
       :href="config.datasetQualityGuideUrl"
       target="_blank"
@@ -65,15 +65,15 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import type { Quality } from '../types/datasets'
 import { useComponentsConfig } from '../config'
+import { useTranslation } from '../composables/useTranslation'
 import DatasetQualityItem from './DatasetQualityItem.vue'
 
 defineProps<{
   quality: Quality
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useComponentsConfig()
 </script>

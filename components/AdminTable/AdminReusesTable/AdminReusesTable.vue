@@ -51,12 +51,7 @@
           </AdminContentWithTooltip>
         </td>
         <td>
-          <AdminBadge
-            size="xs"
-            :type="getReuseStatus(reuse).type"
-          >
-            {{ getReuseStatus(reuse).label }}
-          </AdminBadge>
+          <ReuseBadge :reuse />
         </td>
         <td>
           <div v-if="reuse.id in activities">
@@ -79,25 +74,22 @@
         <td>
           <BrandedButton
             size="xs"
-            color="secondary-softer"
+            color="tertiary"
             :href="reuse.page"
             :icon="RiEyeLine"
+            :title="$t('Voir la page publique')"
             icon-only
-            external
             keep-margins-even-without-borders
-          >
-            {{ $t('Voir la page publique') }}
-          </BrandedButton>
+          />
           <BrandedButton
             size="xs"
-            color="secondary-softer"
+            color="tertiary"
             :href="getReuseAdminUrl(reuse)"
             :icon="RiPencilLine"
+            :title="$t('Modifier')"
             icon-only
             keep-margins-even-without-borders
-          >
-            {{ $t('Modifier') }}
-          </BrandedButton>
+          />
           <slot
             name="actions"
             :reuse
@@ -110,30 +102,29 @@
 
 <script setup lang="ts">
 import { AvatarWithName, BrandedButton, summarize, useFormatDate } from '@datagouv/components-next'
-import type { Reuse } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
+import type { Activity, Reuse } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
-import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
-import type { Activity } from '~/types/activity'
 import type { ReuseSortedBy, SortDirection } from '~/types/types'
+import ReuseBadge from '~/components/AdminBadge/ReuseBadge.vue'
 
-const props = defineProps<{
-  activities: Record<string, Activity>
+const props = withDefaults(defineProps<{
+  activities?: Record<string, Activity>
   reuses: Array<Reuse>
   sortedBy: ReuseSortedBy
   sortDirection: SortDirection
-}>()
+}>(), {
+  activities: () => ({}),
+})
 
 defineEmits<{
   (event: 'sort', column: ReuseSortedBy, direction: SortDirection): void
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
-const { getReuseStatus } = useReuseStatus()
 
 function sorted(column: ReuseSortedBy) {
   if (props.sortedBy === column) {

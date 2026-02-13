@@ -48,7 +48,7 @@
         </BrandedButton>
         <UploadResourceModal
           v-if="! reorder"
-          :extensions
+          :extensions="extensions ?? []"
           @new-files="addFiles"
         />
       </div>
@@ -66,13 +66,18 @@
     />
 
     <FileEditModalFromQueryStringClient
-      :schemas
+      v-if="dataset"
+      :schemas="schemas ?? []"
       :dataset
       @submit="updateResource"
       @delete="refreshResources"
     />
 
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: resourcesPage }"
+      :status
+      :data="resourcesPage"
+    >
       <AdminTable v-if="resourcesPage && resourcesPage.data.length">
         <thead>
           <tr>
@@ -121,25 +126,23 @@
               <div class="flex items-center">
                 <BrandedButton
                   :icon="RiArrowUpLine"
-                  color="secondary-softer"
+                  color="tertiary"
                   keep-margins-even-without-borders
                   :disabled="index === 0"
                   icon-only
+                  :title="$t('Déplacer vers le haut')"
                   @click="moveFile(index, index - 1)"
-                >
-                  {{ $t('Déplacer vers le haut') }}
-                </BrandedButton>
+                />
                 <RiDraggable class="handle" />
                 <BrandedButton
                   :icon="RiArrowDownLine"
-                  color="secondary-softer"
+                  color="tertiary"
                   keep-margins-even-without-borders
                   :disabled="index === files.length - 1"
                   icon-only
+                  :title="$t('Déplacer vers le bas')"
                   @click="moveFile(index, index + 1)"
-                >
-                  {{ $t('Déplacer vers le bas') }}
-                </BrandedButton>
+                />
               </div>
             </td>
             <td>
@@ -171,9 +174,9 @@
             </td>
             <td>
               <FileEditModal
-                :dataset
+                :dataset="dataset ?? undefined"
                 :loading
-                :resource="resourceToForm(resource, schemas || [])"
+                :resource="resourceToForm(resource, schemas ?? [])"
                 @submit="updateResource"
                 @delete="refreshResources"
               />
@@ -193,8 +196,7 @@
 </template>
 
 <script setup lang="ts">
-import { getResourceLabel, BrandedButton, Pagination, Tooltip, useFormatDate, type DatasetV2, type Resource, type SchemaResponseData } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
+import { getResourceLabel, BrandedButton, LoadingBlock, Pagination, Tooltip, useFormatDate, type DatasetV2, type Resource, type SchemaResponseData, toast } from '@datagouv/components-next'
 import { RiArrowDownLine, RiArrowUpLine, RiCheckLine, RiDraggable } from '@remixicon/vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { useTemplateRef } from 'vue'
@@ -206,7 +208,6 @@ import FileEditModalFromQueryStringClient from './FileEditModalFromQueryString.c
 import type { AdminBadgeType, CommunityResourceForm, PaginatedArray, ResourceForm } from '~/types/types'
 
 const route = useRoute()
-const { toast } = useToast()
 const { $api } = useNuxtApp()
 const { formatDate } = useFormatDate()
 
@@ -232,7 +233,7 @@ const refreshResources = async () => {
 }
 watchEffect(async () => await refreshResources())
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const resourceForms = ref<Array<ResourceForm>>([])
 const loading = ref(false)
@@ -244,6 +245,7 @@ const removeFirstNewFile = () => {
   resourceForms.value = [...resourceForms.value.slice(1)]
 }
 const saveFirstNewFile = async (closeModal: () => void, form: ResourceForm | CommunityResourceForm) => {
+  if (!dataset.value) return
   loading.value = true
   try {
     await saveResourceForm(dataset.value, form)
@@ -258,6 +260,7 @@ const saveFirstNewFile = async (closeModal: () => void, form: ResourceForm | Com
   refreshResources()
 }
 const updateResource = async (closeModal: () => void, resourceForm: ResourceForm | CommunityResourceForm) => {
+  if (!dataset.value) return
   loading.value = true
 
   try {
@@ -320,6 +323,7 @@ const cancelReorder = () => {
 }
 
 const saveReorder = async () => {
+  if (!dataset.value) return
   try {
     loadingForOrdering.value = true
 

@@ -16,6 +16,7 @@
         </h1>
         <BrandedButton
           :href="post.page"
+          new-tab
           :icon="RiEyeLine"
           size="xs"
           color="secondary"
@@ -45,7 +46,11 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 import type { Post } from '~/types/posts'
 
-const { t } = useI18n()
+definePageMeta({
+  keepScroll: true,
+})
+
+const { t } = useTranslation()
 
 const route = useRoute()
 const url = computed(() => `/api/1/posts/${route.params.id}`)

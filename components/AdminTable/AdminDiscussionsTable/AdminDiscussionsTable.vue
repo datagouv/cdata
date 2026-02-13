@@ -63,9 +63,9 @@
             />
           </p>
           <p v-if="!subject && subjects[discussion.subject.id]">
-            <a
-              class="fr-link inline-flex"
-              :href="getSubjectPage(subjects[discussion.subject.id])"
+            <CdataLink
+              class="link inline-flex gap-1"
+              :to="getSubjectPage(subjects[discussion.subject.id]!)"
             >
               <component
                 :is="getSubjectTypeIcon(discussion.subject.class)"
@@ -74,11 +74,11 @@
               />
               <TextClamp
                 class="overflow-wrap-anywhere"
-                :text="getSubjectTitle(subjects[discussion.subject.id])"
+                :text="getSubjectTitle(subjects[discussion.subject.id]!)"
                 :auto-resize="true"
                 :max-lines="1"
               />
-            </a>
+            </CdataLink>
           </p>
         </td>
         <td>
@@ -116,15 +116,14 @@
           <template v-if="subject || subjects[discussion.subject.id]">
             <BrandedButton
               size="xs"
-              color="secondary-softer"
+              color="tertiary"
               :href="getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id])"
               :icon="RiEyeLine"
+              :title="$t('Voir la discussion')"
+              :aria-label="$t('Voir la discussion {title}', { title: discussion.title })"
               icon-only
-              external
               keep-margins-even-without-borders
-            >
-              {{ getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id]) }}
-            </BrandedButton>
+            />
 
             <DiscussionsRespondModal
               :thread="discussion"
@@ -140,11 +139,10 @@
 
 <script setup lang="ts">
 import { AvatarWithName, BrandedButton, useFormatDate } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
 import { RiEyeLine } from '@remixicon/vue'
 import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
-import type { Comment, DiscussionSortedBy, DiscussionSubjectTypes, Thread } from '~/types/discussions'
+import type { DiscussionSortedBy, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 import type { AdminBadgeType, SortDirection } from '~/types/types'
 import { getDiscussionUrl, getSubject, getSubjectTypeIcon, getSubjectTitle } from '~/utils/discussions'
 
@@ -160,7 +158,7 @@ defineEmits<{
   (event: 'refresh'): void
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const { $api } = useNuxtApp()
 
@@ -187,10 +185,6 @@ function sorted(column: DiscussionSortedBy) {
     return props.sortDirection
   }
   return null
-}
-
-function getLastComment(discussion: Thread): Comment {
-  return discussion.discussion.slice(-1)[0]
 }
 
 function getStatus(thread: Thread): { label: string, type: AdminBadgeType } {

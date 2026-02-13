@@ -27,7 +27,11 @@
       </div>
     </div>
 
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: pageData }"
+      :status
+      :data="pageData"
+    >
       <div v-if="pageData && pageData.total > 0">
         <AdminTable>
           <thead>
@@ -119,14 +123,13 @@
               <td>
                 <BrandedButton
                   size="xs"
-                  color="secondary-softer"
+                  color="tertiary"
                   :href="getHarvesterAdminUrl(harvester)"
                   :icon="RiPencilLine"
                   icon-only
                   keep-margins-even-without-borders
-                >
-                  {{ $t('Modifier') }}
-                </BrandedButton>
+                  :title="$t('Modifier')"
+                />
               </td>
             </tr>
           </tbody>
@@ -178,10 +181,9 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, BrandedButton, type Organization, useFormatDate } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, BrandedButton, type Organization, useFormatDate } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiPencilLine, RiSearchLine } from '@remixicon/vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
@@ -195,7 +197,7 @@ import { getHarvesterAdminUrl } from '~/utils/harvesters'
 const props = defineProps<{
   organization?: Organization | null
 }>()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
@@ -203,7 +205,7 @@ const { $api } = useNuxtApp()
 const page = ref(1)
 const pageSize = ref(20)
 const q = ref('')
-const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const qDebounced = refDebounced(q, config.public.searchDebounce)
 
 const url = computed(() => {
   const url = new URL(`/api/1/harvest/sources/`, config.public.apiBase)

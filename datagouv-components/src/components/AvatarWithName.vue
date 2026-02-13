@@ -6,25 +6,29 @@
       :size
       :rounded="true"
     />
-    <AppLink
-      :to="user.page"
-      class="fr-text--bold"
+    <component
+      :is="withLink ? AppLink : 'span'"
+      :to="withLink ? user.page : undefined"
+      class="truncate"
+      :class="{ 'font-bold': withLink }"
     >
       {{ user.first_name }}
       {{ user.last_name }}
-    </AppLink>
+    </component>
   </span>
 </template>
 
 <script setup lang="ts">
-import type { User } from '../types/users'
+import type { User, UserReference } from '../types/users'
 import AppLink from './AppLink.vue'
 import Avatar from './Avatar.vue'
 
 withDefaults(defineProps<{
-  user: User
+  user: User | UserReference
   size?: number
+  withLink?: boolean
 }>(), {
   size: 12,
+  withLink: true,
 })
 </script>

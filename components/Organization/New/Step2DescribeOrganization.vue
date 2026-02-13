@@ -70,11 +70,11 @@
         <ClientOnly>
           <div
             v-if="checkOrga.exists !== null"
-            class="fr-col mx-2 mb-2 bg-contrast-grey text-align-center p-4"
+            class="fr-col mx-2 mb-2 bg-gray-lower text-center p-4"
           >
             <div v-if="checkOrga.exists">
               <p class="m-0 text-sm font-bold">
-                {{ t('Le SIRET n°{number} correspond', { number: organization.business_number_id }) }}
+                {{ t('Le SIRET n°{number} correspond', { number: organization.business_number_id ?? '' }) }}
               </p>
               <p class="m-0 text-xs">
                 {{ checkOrga.name }}
@@ -99,7 +99,7 @@
           >
             <div class="flex items-center gap-1">
               <RiAlertLine class="size-4" /> <span>{{
-                t('Une organisation avec ce SIRET existe déjà sur {site} | {n} organisations avec ce SIRET existe déjà sur {site}', { site: config.public.title, n: organizationsWithSameSiret.total })
+                t('Une organisation avec ce SIRET existe déjà sur {site} | {n} organisations avec ce SIRET existent déjà sur {site}', { site: config.public.title, n: organizationsWithSameSiret.total })
               }}</span>
             </div>
             <ul class="text-sm list-none p-0">
@@ -126,7 +126,7 @@
               {{ t("Un numéro SIRET nous permettra d’attribuer un type à votre organisation (administrations, collectivités, entreprises etc.) et facilitera votre certification. Le numéro doit faire 14 chiffres.") }} <br>
               {{ t("Veuillez noter que toutes les administrations ont un numéro SIRET.") }} <br>
               {{ t("Vous pouvez trouver votre SIRET sur ") }}<a
-                class="text-decoration-underline"
+                class="underline"
                 href="https://annuaire-entreprises.data.gouv.fr/"
                 target="_blank"
               >{{ t("l’Annuaire des Entreprises.") }}</a>
@@ -202,16 +202,10 @@
         </template>
       </FieldsetElement>
     </FormFieldset>
-    <SearchableSelect
-      v-if="isMeAdmin() && 'badges' in organization"
+    <BadgeSelect
+      v-if="'badges' in organization"
       v-model="newBadges"
-      :label="$t('Badges')"
-      :placeholder="$t(`Associer des badges à l'organisation…`)"
-      class="mb-6"
-      :options="badges"
-      :get-option-id="(badge) => badgesLabels[badge.kind]"
-      :display-value="(badges) => badges ? humanJoin(badges.map(b => badgesLabels[b.kind])) : ''"
-      :multiple="true"
+      entity-type="organizations"
     />
     <Alert
       v-if="errors.length"
@@ -262,7 +256,6 @@ import type { Badge, NewOrganization, Organization, OrganizationTypes } from '@d
 import { RiAlertLine } from '@remixicon/vue'
 import { asyncComputed } from '@vueuse/core'
 import { computed, ref, watchEffect } from 'vue'
-import { useI18n } from 'vue-i18n'
 import Alert from '~/components/Alert/Alert.vue'
 import FieldsetElement from '~/components/Form/FieldsetElement.vue'
 import FormFieldset from '~/components/Form/FormFieldset.vue'
@@ -293,11 +286,9 @@ const emit = defineEmits<{
 }>()
 
 const config = useRuntimeConfig()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
-const { data: badgesLabels } = await useAPI<Record<string, string>>('/api/1/organizations/badges/')
-const badges = computed(() => Object.keys(badgesLabels.value || {}).map(key => ({ kind: key })))
 const defaultValue = { data: [], total: 0 }
 const organizationsWithSameSiret = asyncComputed(async () => {
   if (!form.value.business_number_id || !getFirstWarning('business_number_id')) {

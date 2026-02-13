@@ -101,18 +101,35 @@
     </div>
 
     <div>
-      <div class="mb-2.5">
-        <h2 class="inline text-sm font-bold uppercase mb-0">
-          {{ $t('{n} éléments | {n} élément | {n} éléments', job.items.length) }}
-        </h2>
-        <span
-          v-if="preview && job.items.length >= config.public.harvesterPreviewMaxItems"
-          class="ml-3 text-gray-medium"
-        >{{ $t('Seuls les {n} premiers éléments sont affichés dans la prévisualisation.', config.public.harvesterPreviewMaxItems) }}</span>
+      <div class="flex flex-wrap gap-x-4 gap-y-2 items-center">
+        <div class="w-full flex-none md:flex-1">
+          <h2 class="inline text-sm font-bold uppercase mb-0">
+            {{ $t('{n} éléments | {n} élément | {n} éléments', job.items.length) }}
+          </h2>
+          <span
+            v-if="preview && job.items.length >= config.public.harvesterPreviewMaxItems"
+            class="ml-3 text-gray-medium"
+          >{{ $t('Seuls les {n} premiers éléments sont affichés dans la prévisualisation.', config.public.harvesterPreviewMaxItems) }}</span>
+        </div>
+        <div
+          v-if="!preview"
+          class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2"
+        >
+          <SearchableSelect
+            v-model="selectedItemStatus"
+            :placeholder="$t('Filtrer par statut')"
+            :label="$t('Filtrer par statut')"
+            :options="itemStatus"
+            :display-value="(option: { label: string }) => option.label"
+            :multiple="false"
+            class="mb-0"
+            hide-label
+          />
+        </div>
       </div>
       <AdminTable
         v-if="job.items.length"
-        class="!pt-0"
+        class="fr-mb-2w"
       >
         <thead>
           <tr>
@@ -124,7 +141,10 @@
             </AdminTableTh>
             <AdminTableTh scope="col">
               <span v-if="preview">{{ $t("Nom") }}</span>
-              <span v-else>{{ $t("Lien") }}</span>
+              <span v-else>{{ $t("Lien data.gouv.fr") }}</span>
+            </AdminTableTh>
+            <AdminTableTh scope="col">
+              {{ $t("Lien source") }}
             </AdminTableTh>
             <AdminTableTh scope="col">
               <Tooltip class="ml-auto">
@@ -169,10 +189,28 @@
                 />
               </div>
             </td>
+            <td>
+              <CdataLink
+                v-if="item.remote_url"
+                class="link"
+                :to="item.remote_url"
+                external
+              >
+                <TextClamp
+                  :text="item.remote_url"
+                  :auto-resize="true"
+                  :max-lines="1"
+                />
+              </CdataLink>
+            </td>
             <td class="font-mono !text-right">
-              <span v-if="!(item.logs.length + item.errors.length)">{{ item.logs.length + item.errors.length }}</span>
+              <span
+                v-if="!(item.logs.length + item.errors.length)"
+                class="px-2"
+              >-</span>
               <button
                 v-else
+                class="text-danger-dark bg-danger-lightest text-xs/6 px-2"
                 type="button"
                 @click="openItemErrors(item)"
               >
@@ -185,7 +223,7 @@
       <Pagination
         :page="page"
         :page-size="pageSize"
-        :total-results="job.items.length"
+        :total-results="currentItems.length"
         @change="(changedPage: number) => page = changedPage"
       />
     </div>
@@ -238,7 +276,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, Tooltip, useFormatDate } from '@datagouv/components-next'
+import { Pagination, SearchableSelect, Tooltip, useFormatDate } from '@datagouv/components-next'
 import { RiAlertLine, RiArchiveLine, RiCalendarEventLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiEyeOffLine, RiInformationLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
@@ -247,7 +285,7 @@ import type { HarvesterJob, HarvestItem } from '~/types/harvesters'
 import type { AdminBadgeType } from '~/types/types'
 
 const config = useRuntimeConfig()
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const props = withDefaults(defineProps<{
@@ -259,20 +297,35 @@ const props = withDefaults(defineProps<{
 
 const page = ref(1)
 const pageSize = ref(15)
+const currentItems = ref<Array<HarvestItem>>(props.job.items)
 
-const paginatedItems = computed(() => {
-  return props.job.items.slice((page.value - 1) * pageSize.value, page.value * pageSize.value)
+const selectedItemStatus = ref<{ id: string, label: string, type: AdminBadgeType } | null>(null)
+
+watch(selectedItemStatus, () => {
+  page.value = 1
+  currentItems.value = props.job.items
+  const status = selectedItemStatus.value
+  if (status)
+    currentItems.value = currentItems.value.filter(item => item.status == status.id)
 })
 
+const paginatedItems = computed(() => {
+  return currentItems.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value)
+})
+
+const itemStatusMap: Record<HarvestItem['status'], { label: string, type: AdminBadgeType }> = {
+  pending: { label: t('En attente'), type: 'secondary' },
+  started: { label: t('Commencé'), type: 'primary' },
+  done: { label: t('Terminé'), type: 'success' },
+  failed: { label: t('Échoué'), type: 'danger' },
+  skipped: { label: t('Ignoré'), type: 'secondary' },
+  archived: { label: t('Archivé'), type: 'secondary' },
+}
+
+const itemStatus = Object.entries(itemStatusMap).map(([id, status]) => ({ id, ...status }))
+
 function getStatus(item: HarvestItem): { label: string, type: AdminBadgeType } {
-  return {
-    pending: { label: t('En attente'), type: 'secondary' as AdminBadgeType },
-    started: { label: t('Started'), type: 'primary' as AdminBadgeType },
-    done: { label: t('Terminé'), type: 'success' as AdminBadgeType },
-    failed: { label: t('Échoué'), type: 'danger' as AdminBadgeType },
-    skipped: { label: t('Ignoré'), type: 'secondary' as AdminBadgeType },
-    archived: { label: t('Archivé'), type: 'secondary' as AdminBadgeType },
-  }[item.status]
+  return itemStatusMap[item.status]
 }
 
 const showItemErrors = ref(false)

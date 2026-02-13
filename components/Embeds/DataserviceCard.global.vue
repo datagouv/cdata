@@ -1,6 +1,8 @@
 <template>
   <LoadingBlock
+    v-slot="{ data }"
     :status
+    :data="apiData"
     class="bg-transparent"
   >
     <DataservicesCard
@@ -11,10 +13,10 @@
 </template>
 
 <script setup lang="ts">
-import type { Dataservice } from '@datagouv/components-next'
+import { LoadingBlock, type Dataservice } from '@datagouv/components-next'
 
 const props = defineProps<{
   slug: string
 }>()
-const { data, status } = await useAPI<Dataservice>(`/api/1/dataservices/${props.slug}/`, { lazy: true, server: false })
+const { data: apiData, status } = await useAPI<Dataservice>(`/api/1/dataservices/${props.slug}/`, { lazy: true, server: false })
 </script>

@@ -68,10 +68,9 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, PaddedContainer } from '@datagouv/components-next'
 import { computed } from 'vue'
 import { useDropZone } from '@vueuse/core'
-import PaddedContainer from '~/components/PaddedContainer/PaddedContainer.vue'
 import Required from '~/components/Required/Required.vue'
 
 const props = withDefaults(defineProps<{

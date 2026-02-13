@@ -10,7 +10,7 @@
     <TransferRequestList
       v-if="props.organization || props.user"
       type="Reuse"
-      :recipient="props.organization || props.user"
+      :recipient="(props.organization || props.user)!"
       @done="refresh"
     />
     <div
@@ -32,7 +32,11 @@
       </div>
     </div>
 
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: pageData }"
+      :status
+      :data="pageData"
+    >
       <div v-if="pageData && pageData.total > 0">
         <AdminReusesTable
           :activities="reuseActivities"
@@ -80,10 +84,9 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, type Organization, type Reuse, type User } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, type Organization, type Reuse, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiSearchLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import AdminReusesTable from '../AdminTable/AdminReusesTable/AdminReusesTable.vue'
@@ -91,7 +94,7 @@ import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
 import type { PaginatedArray, ReuseSortedBy, SortDirection } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const props = defineProps<{
   organization?: Organization | null
@@ -99,6 +102,7 @@ const props = defineProps<{
 }>()
 
 const { $api } = useNuxtApp()
+const config = useRuntimeConfig()
 
 const page = ref(1)
 const pageSize = ref(20)
@@ -106,7 +110,7 @@ const sortedBy = ref<ReuseSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 const q = ref('')
-const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const qDebounced = refDebounced(q, config.public.searchDebounce)
 const reuseActivities = ref({})
 
 function sort(column: ReuseSortedBy, newDirection: SortDirection) {
@@ -130,7 +134,7 @@ const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Reuse>>(
 
 watchEffect(async () => {
   if (pageData.value) {
-    const activities = await getActitiesForObjects($api, pageData.value.data, 'created_at')
+    const activities = await getLatestActivitiesForObjects($api, pageData.value.data, 'created_at')
     reuseActivities.value = { ...reuseActivities.value, ...activities }
   }
 })

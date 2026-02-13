@@ -2,13 +2,16 @@ import type { FieldsErrors } from '~/types/form'
 
 export function useAbsoluteUrlToRelative() {
   const currentUrl = useRequestURL()
+  const config = useRuntimeConfig()
+  // Normalize without trailing slash so url.slice(apiBase.length) always gives a path starting with "/"
+  const apiBase = (config.public.apiBase as string | undefined)?.replace(/\/$/, '')
 
   return (url: string): string => {
     try {
       const baseUrl = `${currentUrl.protocol}//${currentUrl.host}`
 
-      if (!url.startsWith(baseUrl)) return url
-      return url.slice(baseUrl.length)
+      if (url.startsWith(baseUrl)) return url.slice(baseUrl.length)
+      if (apiBase && url.startsWith(apiBase)) return url.slice(apiBase.length) || '/'
     }
     catch {
       // This is not an absolute URL, return the raw one
@@ -34,12 +37,12 @@ export function useIsCurrentUrl() {
 export function humanJoin(source: Array<string>): string {
   const array = [...source]
 
-  const nuxtApp = useNuxtApp()
+  const { t } = useTranslation()
   if (!array.length) return ''
   if (array.length === 1) return array[0]
 
   const last = array.pop()
-  return `${array.join(', ')} ${nuxtApp.$i18n.t('et')} ${last}`
+  return `${array.join(', ')} ${t('et')} ${last}`
 }
 
 export async function redirectLegacyHashes(instructions: Array<{ from: string, to: string, queryParam?: string }>): Promise<void> {
@@ -64,6 +67,11 @@ export async function redirectLegacyHashes(instructions: Array<{ from: string, t
       return
     }
   }
+}
+
+export function capitalizeFirstLetter(str: string): string {
+  if (!str) return ''
+  return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
 export async function useJsonLd(type: 'dataset' | 'dataservice' | 'organization', id: string) {
@@ -108,4 +116,8 @@ export function getAllErrorsInErrorFields(errors: FieldsErrors, key: string): st
 
 export function removeLangPrefix(url: string): string {
   return url.replace(/^\/(fr)|(en)/, '')
+}
+
+export function simpleSlug(str: string): string {
+  return str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
 }

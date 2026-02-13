@@ -36,10 +36,9 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
+import { BrandedButton, PaddedContainer } from '@datagouv/components-next'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 defineEmits<{
   (event: 'start'): void

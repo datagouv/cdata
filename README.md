@@ -7,58 +7,64 @@
 
 **cdata** is the frontend application for [data.gouv.fr](https://www.data.gouv.fr), France's Open Data platform.
 
+## Legal
+
+cdata uses the Official french government's design system ([DSFR](https://github.com/GouvernementFR/dsfr)). Some of its content is only available for French public services.
+If you aren't a French public service, you must not use :
+- the marianne font, it isn't an open-source font
+- the identity elements provided by the DSFR, colors, logos, etc.
+You can find more details in the [DSFR README](https://github.com/GouvernementFR/dsfr/tree/main?tab=readme-ov-file#licence-et-droit-dutilisation).
+
+These elements are removed from cdata when the global configuration `isFrenchGovernment` is `false`.
+
+cdata includes its own set of private illustrations and images. They aren't available with the MIT license and shouldn't be used by other entities.
+They are located in the `public` directory.
+
+If you want to fork cdata, you must :
+- set `isFrenchGovernment` in `nuxt.config.ts` to false
+- replace the illustration and images used in your fork
+- use a different color scheme of the one used by data.gouv.fr
+- remove all reference to French public services 
+
 ## 📋 Prerequisites
 
 Before setting up the project, make sure you have the following installed:
 
 - **Node.js** (version 18 or higher) - [Download here](https://nodejs.org/)
-- **npm** (comes with Node.js)
+- **pnpm** (see [installation methods](https://pnpm.io/installation))
 
 You can check your versions with:
 ```bash
 node --version
-npm --version
+pnpm --version
 ```
 
 ## ⚙️ Setup
 
-Make sure to install datagouv-components and cdata dependencies:
-
-There is two installations paths, one is working on some machine and one on another, we recommand to try both for the time being. But we would like to fix these problems.
+Make sure to install cdata dependencies:
 
 ```bash
-npm install
-cd ./datagouv-components
+pnpm install
 ```
 
-If this first option is not working on your local environment, try the second one (maybe delete and re-clone the repository to be sure)
-
-```bash
-cd ./datagouv-components
-npm install
-
-cd ..
-npm install
-```
-
-> **Note:** If you encounter issues, try deleting `node_modules` folders and `package-lock.json` files, then reinstall.
+> **Note:** If you encounter issues, try deleting `node_modules` folders.
 
 ## 🚀 Development Server
 
 Start the development server on `http://localhost:3000`:
 
 ```bash
-# npm
-npm run dev
+# pnpm
+pnpm run dev
 ```
 
 ### Common Commands
 ```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run preview      # Preview production build
-npm run lint         # Check for code style violations
-npm run lint:fix     # Automatically fix ESLint issues and format code
+pnpm run dev          # Start development server
+pnpm run build        # Build for production
+pnpm run preview      # Preview production build
+pnpm run lint         # Check for code style violations
+pnpm run lint:fix     # Automatically fix ESLint issues and format code
 ```
 
 ## 🛠️ Technology Stack
@@ -67,19 +73,29 @@ npm run lint:fix     # Automatically fix ESLint issues and format code
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) + [DSFR](https://www.systeme-de-design.gouv.fr/)
 - **State Management**: Vue 3 Composition API
-- **Internationalization**: [@nuxtjs/i18n](https://i18n.nuxtjs.org/)
 - **Build Tool**: [Vite](https://vitejs.dev/)
 - **Linting**: [ESLint](https://eslint.org/) + [Prettier](https://prettier.io/)
+
+### Why pnpm ?
+
+This project uses [pnpm](https://pnpm.io/) instead of npm mostly for security reasons:
+
+- prevents install scripts by default (except for Cypress and Husky with `onlyBuiltDependencies`),
+- 4 days cooldown (`minimum-release-age`) before installing new packages, leaving time for the community to detect malware versions,
+- install based on lockfile by default (`npm ci` like),
+- ... and other default configurations that are saner than npm.
+
+`pnpm` also promises to be fast and disk space efficient.
 
 ### 🔧 Environment Variables
 
 **Key variables:**
 - `NUXT_PUBLIC_API_BASE`: Base URL for API calls
 - `NUXT_PUBLIC_DEV_API_KEY`: API key for development environment  
-- `NUXT_PUBLIC_COMMIT_ID`: Git commit ID (auto-generated in dev mode)
+- `NUXT_APP_COMMIT_ID`: Git commit ID (auto-generated in dev mode)
 - `NUXT_PUBLIC_SENTRY_DSN`: Sentry DSN for error tracking
 - `NUXT_TEMPLATE_CACHE_DURATION`: Duration for template caching
-- `NUXT_PUBLIC_I18N_BASE_URL`: Base URL for internationalization
+- `NUXT_PUBLIC_BASE_URL`: Base URL
 
 You can work on `cdata` without a local `udata` backend by pointing to https://demo.data.gouv.fr directly. Create a `.env` file at the root of the project:
 
@@ -89,7 +105,7 @@ NUXT_PUBLIC_API_BASE=https://demo.data.gouv.fr  # Or your dedicated development 
 NUXT_PUBLIC_DEV_API_KEY=your_api_key_from_dev
 
 # Optional: Override default configuration
-NUXT_PUBLIC_COMMIT_ID=your_commit_id
+NUXT_APP_COMMIT_ID=abc1234  # defaults to 'unknown'
 ```
 
 ### 🔧 Troubleshooting
@@ -123,20 +139,30 @@ If you encounter `EBADF` errors, you may be affected by [this chokidar issue](ht
    }
    ```
 
+### Analytics
+
+cdata uses Matomo to track page visits. It can be disable on a per-page basis with the meta `matomoIgnore`.
+
+```ts
+definePageMeta({
+  matomoIgnore: true,
+})
+```
+
 ## 🏭 Production
 
 Build the application for production:
 
 ```bash
-# npm
-npm run build
+# pnpm
+pnpm run build
 ```
 
 Locally preview production build:
 
 ```bash
-# npm
-npm run preview
+# pnpm
+pnpm run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
@@ -170,8 +196,8 @@ The application will be available at `http://localhost:3000`.
 The project uses [ESLint](https://eslint.org/) for code linting and formatting to maintain consistent code style. **Running these commands is required before submitting contributions.**
 
 ```bash
-npm run lint          # Check for code style violations and potential issues
-npm run lint:fix      # Automatically fix ESLint issues and format code
+pnpm run lint          # Check for code style violations and potential issues
+pnpm run lint:fix      # Automatically fix ESLint issues and format code
 ```
 
 **Note:** Prettier is only used in the `datagouv-components` subdirectory. The main project relies on ESLint's built-in formatting capabilities.

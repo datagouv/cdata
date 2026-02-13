@@ -3,7 +3,6 @@
     <div class="container">
       <Breadcrumb>
         <BreadcrumbItem
-          :external="true"
           to="/"
         >
           Accueil
@@ -26,7 +25,8 @@
       </h2>
       <div class="grid gap-5 md:grid-cols-2">
         <SupportCard
-          image="/img/guides.svg"
+          class="min-w-0"
+          image="/nuxt_images/guides.svg"
           title="Guides"
           description="Les guides vous accompagnent pas à pas pour publier, explorer et réutiliser les données ouvertes en toute simplicité."
         >
@@ -63,7 +63,8 @@
           </template>
         </SupportCard>
         <SupportCard
-          image="/img/forum.svg"
+          class="min-w-0"
+          image="/nuxt_images/forum.svg"
           title="Forum"
           description="Echangez avec la communauté, partagez vos retours sur la plateforme et demandez l'ouverture de données."
         >
@@ -220,6 +221,37 @@
               href="https://guides.data.gouv.fr/reutiliser-des-donnees/autour-du-cadastre"
               target="_blank"
             >le guide dédié</a>.
+          </p>
+        </Accordion>
+        <Accordion
+          title="Je constate une erreur dans le plan cadastral, comment la faire corriger ?"
+          heading="h4"
+        >
+          <p class="mb-0">
+            Ce type de correction doit être demandé au Centre des impôts fonciers de votre département,
+            dont vous trouverez les coordonnées sur <a
+              href="https://www.service-public.fr/particuliers/recherche?keyword=centre%20des%20impots%20fonciers&rubricFilter=annuaire"
+              target="_blank"
+            >service-public.fr</a>.
+          </p>
+        </Accordion>
+        <Accordion
+          title="Que puis-je faire avec les données ?"
+          heading="h4"
+        >
+          <p>
+            Les données cadastrales diffusées sur ce site sont disponibles sous <a
+              href="https://www.etalab.gouv.fr/wp-content/uploads/2017/04/ETALAB-Licence-Ouverte-v2.0.pdf"
+              target="_blank"
+            >Licence Ouverte 2.0
+            </a>.
+          </p>
+          <p>
+            Elles peuvent être utilisées librement, y compris exploitées commercialement, tant que
+            la source et la date de mise à jour sont citées.
+          </p>
+          <p class="mb-0">
+            N’hésitez pas à vous référer au texte de la Licence Ouverte 2.0 pour plus de précision.
           </p>
         </Accordion>
         <Accordion
@@ -429,7 +461,7 @@
       >
         <SupportTitle
           v-if="question.title"
-          :id="question.title"
+          :id="question.id"
         >
           {{ question.title }}
         </SupportTitle>
@@ -457,7 +489,7 @@ const firstQuestion: Question = { id, title, choices }
 const questions = ref<Array<Question>>([firstQuestion])
 const answers = ref<Array<string>>([])
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 useSeoMeta({
   title: t('Support'),
@@ -466,7 +498,7 @@ useSeoMeta({
 function updateUrl(path: string, hash = '') {
   const params = route.params.path ? (route.params.path as Array<string>).join('/') : ''
   const pathWithoutParams = route.params.path ? route.path.slice(0, route.path.indexOf(params)) : route.path
-  const url = new URL(window.location.origin + pathWithoutParams + (path ? `${path}/` : path))
+  const url = new URL(window.location.origin + (pathWithoutParams.endsWith('/') ? pathWithoutParams : `${pathWithoutParams}/`) + (path ? `${path}/` : path))
   url.hash = `#${hash}`
   window.history.replaceState(null, '', url)
 }

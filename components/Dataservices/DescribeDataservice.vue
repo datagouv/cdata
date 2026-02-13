@@ -156,6 +156,24 @@
 
         <RequiredExplanation />
         <fieldset
+          v-if="isMeAdmin() && type === 'update'"
+          class="fr-fieldset"
+        >
+          <legend
+            id="featured-legend"
+            class="fr-fieldset__legend"
+          >
+            <h2 class="text-sm font-bold uppercase mb-3">
+              {{ $t("Mis en avant") }}
+            </h2>
+          </legend>
+          <ToggleSwitch
+            v-model="form.featured"
+            :label="$t('Mettre en avant')"
+            @update:model-value="$emit('feature')"
+          />
+        </fieldset>
+        <fieldset
           v-if="type === 'create'"
           class="fr-fieldset"
           aria-labelledby="description-legend"
@@ -181,7 +199,7 @@
           </div>
         </fieldset>
         <fieldset
-          class="fr-fieldset min-width-0"
+          class="fr-fieldset min-w-0"
           aria-labelledby="description-legend"
         >
           <legend
@@ -231,7 +249,7 @@
             />
           </LinkedToAccordion>
           <LinkedToAccordion
-            class="fr-fieldset__element min-width-0"
+            class="fr-fieldset__element min-w-0"
             :accordion="addDescriptionAccordionId"
           >
             <InputGroup
@@ -374,7 +392,7 @@
             <BrandedButton
               class="mt-3"
               type="button"
-              color="primary-soft"
+              color="secondary"
               size="xs"
               :icon="RiAddLine"
               @click="form.contact_points.push({ ...defaultContactForm })"
@@ -384,7 +402,7 @@
           </LinkedToAccordion>
         </fieldset>
         <fieldset
-          class="fr-fieldset min-width-0"
+          class="fr-fieldset min-w-0"
           aria-labelledby="description-legend"
         >
           <legend
@@ -400,36 +418,11 @@
             :accordion="accessTypeAccordionId"
             @blur="touch('access_type')"
           >
-            <RadioButtons
-              v-model="form.access_type"
-              class="!mb-0"
-              :label="t(`Type d'accès`)"
-              :options="[
-                { value: 'open', label: t('Ouvert') },
-                { value: 'open_with_account', label: t('Ouvert avec compte') },
-                { value: 'restricted', label: t('Restreint') },
-              ]"
+            <AccessTypeForm
+              v-model="form"
+              :get-first-warning
+              :get-first-error
             />
-            <SimpleBanner
-              v-if="getFirstWarning('access_type')"
-              class="mt-2"
-              type="warning"
-            >
-              {{ getFirstWarning("access_type") }}
-            </SimpleBanner>
-            <div
-              v-if="form.access_type === 'restricted'"
-              class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 items-end"
-            >
-              <SelectGroup
-                v-for="accessAudienceType in accessAudienceTypes"
-                :key="accessAudienceType"
-                v-model="form.access_audiences[accessAudienceType]"
-                class="mb-0"
-                :label="getAccessAudienceType(accessAudienceType)"
-                :options="accessAudienceConditionOptions"
-              />
-            </div>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -472,7 +465,7 @@
             size="lg"
             :opened="openConfirmModal"
           >
-            <i18n-t
+            <TranslationT
               keypath="Une documentation OpenAPI/swagger est un standard attendu par les utilisateurs d'API. Ce format est facile à mettre en place, vous pouvez utiliser l'éditeur officiel : {editor}."
               tag="p"
             >
@@ -482,7 +475,7 @@
                   class="whitespace-nowrap"
                 > https://editor.swagger.io/</a>
               </template>
-            </i18n-t>
+            </TranslationT>
 
             <p>{{ $t(`Si néanmoins vous souhaitez tout de même publier votre API sans ce standard, celle-ci sera moins mise en avant par le moteur de recherche de {site}.`, { site: config.public.title }) }}</p>
 
@@ -513,16 +506,16 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, type DataserviceAccessAudienceCondition, type DataserviceAccessAudienceType } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, TranslationT, type Owned } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import ModalClient from '../Modal/Modal.client.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
+import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import ContactPointSelect from '~/components/ContactPointSelect.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
-import type { DataserviceForm, Owned } from '~/types/types'
-import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
+import type { DataserviceForm } from '~/types/types'
 
 const props = defineProps<{
   harvested?: boolean
@@ -531,10 +524,10 @@ const props = defineProps<{
 const dataserviceForm = defineModel<DataserviceForm>({ required: true })
 
 const emit = defineEmits<{
-  (event: 'submit'): void
+  (event: 'feature' | 'submit'): void
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const formId = useId()
 
@@ -554,25 +547,15 @@ const rateLimitingDataserviceAccordionId = useId()
 const availabilityDataserviceAccordionId = useId()
 const contactPointAccordionId = useId()
 
-const { getAccessAudienceCondition, getAccessAudienceType } = useAccessAudience()
-
 const ownedOptions = computed<Array<Owned>>(() => {
-  return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: user.value, organization: null }]
+  return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: { ...user.value, class: 'User' as const }, organization: null }]
 })
-
-const accessAudienceConditions: Array<DataserviceAccessAudienceCondition> = ['yes', 'no', 'under_condition']
-
-const accessAudienceTypes: Array<DataserviceAccessAudienceType> = ['local_authority_and_administration', 'company_and_association', 'private']
-
-const accessAudienceConditionOptions = computed(() => accessAudienceConditions.map(condition => ({
-  value: condition,
-  label: getAccessAudienceCondition(condition).label,
-})))
 
 const machineDocumentationUrlWarningMessage = t(`Il est fortement recommandé d'ajouter une documentation OpenAPI ou Swagger à votre API.`)
 const openConfirmModal = ref(false)
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(dataserviceForm, {
+  featured: [],
   owned: [required()],
   title: [required()],
   description: [required()],

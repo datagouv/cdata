@@ -7,6 +7,7 @@ import type { ContactPoint } from './contact_point'
 import type { License } from './licenses'
 import type { Frequency } from './frequency'
 import type { Granularity, SpatialZone } from './granularity'
+import type { WithAccessType } from './access_types'
 
 export type Quality = {
   all_resources_available: boolean
@@ -22,11 +23,21 @@ export type Quality = {
   update_fulfilled_in_time: boolean
 }
 
-export type BaseDataset = Owned & {
-  title: string
+export type DatasetReference = {
+  class: 'Dataset'
+  id: string
   acronym: string
+  page: string
+  title: string
+  uri: string
+}
+
+export type BaseDataset = Owned & WithAccessType & {
+  title: DatasetReference['title']
+  acronym: DatasetReference['acronym']
   archived: boolean
   description: string
+  description_short: string
   tags: Array<string> | null
   license: string
   frequency: string
@@ -56,19 +67,24 @@ export type Rel = {
 }
 
 export type Dataset = BaseDataset & {
-  id: string
+  id: DatasetReference['id']
   badges: Badges
   deleted: string | null
-  page: string
+  page: DatasetReference['page']
   resources: Array<Resource>
   community_resources: Array<Resource>
   created_at: string
   last_modified: string
   last_update: string
-  uri: string
+  internal: {
+    created_at_internal: string
+    last_modified_internal: string
+  }
+  uri: DatasetReference['uri']
   slug: string
   quality: Quality
   metrics: {
+    dataservices: number
     discussions: number
     discussions_open: number
     followers: number
@@ -87,9 +103,13 @@ export type DatasetV2 = Owned & Omit<Dataset, 'resources' | 'community_resources
   community_resources: Rel
 }
 
-export type DatasetV2WithFullObject = Omit<DatasetV2, 'license' | 'frequency' | 'spatial'> & {
-  license: License
-  frequency: Frequency
+/**
+ * Dataset with fully populated nested objects (license, frequency, spatial).
+ * Retrieve this version by adding the header `X-Get-Datasets-Full-Objects: True` to the request: GET /api/2/datasets/{id}/
+ */
+export type DatasetV2WithFullObject = Owned & Omit<DatasetV2, 'license' | 'frequency' | 'spatial'> & {
+  license: License | null
+  frequency: Frequency | null
   spatial: {
     zones?: Array<SpatialZone>
     granularity?: Granularity

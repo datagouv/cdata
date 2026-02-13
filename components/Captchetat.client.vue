@@ -12,24 +12,22 @@
         <BrandedButton
           type="button"
           :icon="RiVolumeUpLine"
+          :title="$t('Énoncer le code du captcha')"
           icon-only
           size="xl"
-          color="secondary-softer"
+          color="tertiary"
           keep-margins-even-without-borders
           @click="playSound"
-        >
-          {{ $t('Énoncer le code du captcha') }}
-        </BrandedButton>
+        />
         <BrandedButton
           :icon="RiRefreshLine"
-          color="secondary-softer"
+          :title="$t('Générer un nouveau captcha')"
+          color="tertiary"
           size="xl"
           icon-only
           keep-margins-even-without-borders
           @click="() => refresh()"
-        >
-          {{ $t('Générer un nouveau captcha') }}
-        </BrandedButton>
+        />
       </div>
     </div>
     <InputGroup
@@ -72,6 +70,7 @@ watchEffect(() => {
 })
 
 const playSound = async () => {
+  if (!data.value) return
   const query = new URLSearchParams({ get: 'sound', c: config.public.captcheta.style, t: data.value.uuid })
   await new Audio(`${config.public.apiBase}/api/2/captchetat?${query.toString()}`).play()
 }

@@ -93,7 +93,7 @@ import ModalWithButton from '../Modal/ModalWithButton.vue'
 import UploadGroup from '../UploadGroup/UploadGroup.vue'
 import type { ResourceForm } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const formId = useId()
 
 defineProps<{
@@ -117,6 +117,9 @@ const setFiles = (newFiles: Array<File>) => {
       type: 'main',
       description: '',
       schema: null,
+      schema_url: null,
+      checksum_type: null,
+      checksum_value: null,
       file: {
         raw: file,
         state: { status: 'waiting' },
@@ -134,7 +137,9 @@ const submit = (close: () => void) => {
       type: 'main',
       description: '',
       schema: null,
-
+      schema_url: null,
+      checksum_type: null,
+      checksum_value: null,
       url: url.value,
       format: '',
       mime: null,

@@ -90,7 +90,7 @@
         </SimpleBanner>
 
         <fieldset
-          class="fr-fieldset min-width-0"
+          class="fr-fieldset min-w-0"
           aria-labelledby="description-legend"
         >
           <legend
@@ -102,7 +102,7 @@
             </h2>
           </legend>
           <LinkedToAccordion
-            class="fr-fieldset__element min-width-0"
+            class="fr-fieldset__element min-w-0"
             :accordion="publishFileAccordionId"
           >
             <PaddedContainer
@@ -115,7 +115,7 @@
               </h3>
               <UploadResourceModal
                 :error-text="getFirstError('resources')"
-                :extensions
+                :extensions="extensions ?? []"
                 @new-files="addResourceForms"
               />
             </PaddedContainer>
@@ -125,12 +125,12 @@
                 :key="index"
                 v-model="form.resources[index]"
                 class="fr-mb-3v"
-                :extensions
+                :extensions="extensions ?? []"
                 @delete="removeFile(index)"
               />
               <div class="fr-grid-row fr-grid-row--center">
                 <UploadResourceModal
-                  :extensions
+                  :extensions="extensions ?? []"
                   @new-files="addResourceForms"
                 />
               </div>
@@ -178,13 +178,14 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, PaddedContainer, SimpleBanner } from '@datagouv/components-next'
 import UploadResourceModal from '../UploadResourceModal.vue'
-import type { ResourceForm } from '~/types/types'
+import type { DatasetForm, ResourceForm } from '~/types/types'
 
 const props = defineProps<{
   loading: boolean
   resources: Array<ResourceForm>
+  datasetForm: DatasetForm
 }>()
 
 const emit = defineEmits<{
@@ -194,18 +195,20 @@ const emit = defineEmits<{
 
 const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extensions/')
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const publishFileAccordionId = useId()
 const addDescriptionAccordionId = useId()
+
+const isDatasetOpen = computed(() => props.datasetForm.access_type === 'open')
 
 const { form, getFirstError, getFirstWarning, touch, validate, errorsAsList: errors } = useForm({
   resources: props.resources,
   hasDocumentation: false,
 }, {
-  resources: [required(t('Au moins un fichier est requis.'))],
+  resources: [ruleIf(isDatasetOpen, required(t('Au moins un fichier est requis.')))],
 }, {
-  resources: [resources => resources.find(resource => !isClosedFormat(resource, extensions.value)) ? null : t('Vous n\'avez pas ajouté de fichier dans un format ouvert.')],
+  resources: [resources => resources.find(resource => !isClosedFormat(resource, extensions.value ?? [])) ? null : t('Vous n\'avez pas ajouté de fichier dans un format ouvert.')],
   hasDocumentation: [hasDocumentation => !hasDocumentation ? t('Vous n\'avez pas ajouté de fichier de documentation ni décrit vos fichiers.') : null],
 })
 

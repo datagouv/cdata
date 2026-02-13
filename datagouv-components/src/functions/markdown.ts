@@ -16,26 +16,57 @@ import remarkGfm from 'remark-gfm'
 import strip from 'strip-markdown'
 
 // Copied from https://github.com/potato4d/rehype-plugin-image-native-lazy-loading/blob/v1.2.0/src/index.ts
-function lazyLoadPlugin(this: Processor): Transformer {
-  function visitor(el: hast.Element) {
-    if (el.tagName !== 'img') {
-      return
-    }
-    el.properties = {
-      ...(el.properties || {}),
-      loading: 'lazy',
-    }
-  }
-
-  function transformer(htmlAST: Node): Node {
-    visit(htmlAST, 'element', visitor)
+function rehypeLazyLoad(this: Processor): Transformer {
+  return function transformer(htmlAST: Node): Node {
+    visit(htmlAST, 'element', function visitor(el: hast.Element) {
+      if (el.tagName !== 'img') {
+        return
+      }
+      el.properties = {
+        ...(el.properties || {}),
+        loading: 'lazy',
+      }
+    })
     return htmlAST
   }
-
-  return transformer
 }
 
-export function formatMarkdown(md: string, minDepth = 3) {
+function rehypeNoHeadings(this: Processor): Transformer {
+  return function transformer(htmlAST: Node): Node {
+    visit(htmlAST, 'element', function visitor(el: hast.Element) {
+      if (el.tagName !== 'h1' && el.tagName !== 'h2' && el.tagName !== 'h3' && el.tagName !== 'h4' && el.tagName !== 'h5' && el.tagName !== 'h6') {
+        return
+      }
+
+      const classes = {
+        h1: 'text-3xl leading-8',
+        h2: 'text-2xl leading-7',
+        h3: 'text-xl leading-6',
+        h4: 'text-base',
+        h5: 'text-sm leading-6',
+        h6: 'text-sm leading-6',
+      }[el.tagName]
+
+      el.properties = {
+        ...(el.properties || {}),
+        class: `font-extrabold ${classes}`,
+      }
+      el.tagName = 'div'
+    })
+    return htmlAST
+  }
+}
+
+export function formatMarkdown(md: string, config: number | { minDepth: number, noHeadings: boolean } = 3) {
+  let minDepth: number
+  let noHeadings = false
+  if (typeof config === 'number') {
+    minDepth = config
+  }
+  else {
+    minDepth = config.minDepth
+    noHeadings = config.noHeadings
+  }
   const result = unified()
     .use(behead, { minDepth: minDepth > 1 ? minDepth : undefined } as Options)
     // Take Markdown as input and turn it into MD syntax tree
@@ -55,14 +86,14 @@ export function formatMarkdown(md: string, minDepth = 3) {
     .use(rehypeSanitize)
     // Serialize syntax tree to HTML
     .use(rehypeStringify)
-    .use(lazyLoadPlugin)
+    .use(noHeadings ? [rehypeLazyLoad, rehypeNoHeadings] : [rehypeLazyLoad])
     // And finally, process the input
     .processSync(md)
 
   return String(result)
 }
 
-export async function removeMarkdown(text: string) {
+export async function removeMarkdownAsync(text: string) {
   const file = await unified()
     // Take Markdown as input and turn it into MD syntax tree
     .use(remarkParse, { fragment: true })
@@ -72,3 +103,28 @@ export async function removeMarkdown(text: string) {
     .process(text)
   return String(file)
 }
+
+export function removeMarkdownSync(text: string) {
+  const file = unified()
+    // Take Markdown as input and turn it into MD syntax tree
+    .use(remarkParse, { fragment: true })
+    .use(remarkGfm)
+    .use(strip)
+    .use(remarkStringify)
+    .processSync(text)
+  return String(file)
+}
+
+export { removeMarkdownAsync as removeMarkdown }
+
+const prose = 'prose prose-neutral max-w-none prose-strong:text-gray-plain'
+const proseSm = 'prose-p:text-sm prose-sm'
+const proseTable = 'prose-table:bg-gray-some prose-table:overflow-visible prose-thead:border-b-2 prose-thead:border-black prose-tr:data-[is-header=true]:border-b-2 prose-tr:data-[is-header=true]:border-black prose-tr:even:bg-gray-lower prose-tr:border-b-0 *:prose-th:m-0 *:prose-td:m-0 prose-th:p-4 prose-td:p-4'
+const proseHeading = 'prose-h2:text-2xl prose-h2:leading-7 prose-h3:text-xl prose-h3:leading-6 prose-h4:text-base prose-h5:text-sm prose-h5:leading-6 prose-headings:font-extrabold'
+const proseList = 'prose-ul:list-disc'
+const proseCode = 'prose-pre:font-mono prose-pre:bg-neutral-200 prose-pre:text-neutral-600'
+const proseOthers = 'prose-blockquote:border-neutral-800 prose-a:no-underline prose-a:text-gray-plain prose-a:font-[number:inherit] prose-li:p-0 *:prose-li:m-0'
+
+export const markdownClasses = [prose, proseTable, proseHeading, proseList, proseCode, proseOthers].join(' ')
+export const markdownSmClasses = [markdownClasses, proseSm].join(' ')
+export const markdownTableEditorClasses = 'prose-table:bg-neutral-200 prose-tr:data-[is-header=true]:border-b-2 prose-tr:data-[is-header=true]:border-black prose-tr:even:bg-neutral-200 prose-tr:odd:bg-neutral-300'

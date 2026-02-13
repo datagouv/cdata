@@ -1,7 +1,7 @@
 <template>
   <div>
     <BannerAction
-      v-for="type in ['primary', 'warning', 'danger']"
+      v-for="type in (['primary', 'warning', 'danger'] as const)"
       :key="type"
       :type
       class="mb-4"

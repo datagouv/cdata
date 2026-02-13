@@ -1,7 +1,7 @@
 <template>
   <FileEditModalFromQueryStringClient
-    :schemas
-    @submit="(closeModal, resourceForm) => updateResource(resourceForm.resource, closeModal, resourceForm)"
+    :schemas="schemas ?? []"
+    @submit="(closeModal: () => void, resourceForm: CommunityResourceForm) => updateResource(resourceForm.resource, closeModal, resourceForm)"
   />
 
   <AdminTable>
@@ -79,7 +79,7 @@
           <FileEditModal
             :dataset="communityResource.dataset"
             :loading
-            :resource="resourceToForm(communityResource, schemas || [])"
+            :resource="resourceToForm(communityResource, schemas ?? [])"
             @submit="(closeModal, resourceForm) => updateResource(communityResource, closeModal, resourceForm)"
             @delete="$emit('refresh')"
           />
@@ -90,8 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { useFormatDate, type CommunityResource, type SchemaResponseData } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
+import { useFormatDate, type CommunityResource, type Resource, type SchemaResponseData, toast } from '@datagouv/components-next'
 import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
@@ -111,9 +110,8 @@ const emit = defineEmits<{
   (event: 'refresh'): void
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
-const { toast } = useToast()
 
 const { data: schemas } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/')
 
@@ -147,7 +145,15 @@ function getStatus(communityResource: CommunityResource): { label: string, type:
 }
 
 const loading = ref(false)
-const updateResource = async (communityResource: CommunityResource, closeModal: () => void, resourceForm: ResourceForm | CommunityResourceForm) => {
+const updateResource = async (communityResource: CommunityResource | Resource | null, closeModal: () => void, resourceForm: ResourceForm | CommunityResourceForm) => {
+  if (!communityResource) {
+    console.error('[AdminCommunityResourcesTable] Cannot update resource: resource is null')
+    return
+  }
+  if (!('dataset' in communityResource)) {
+    console.error('[AdminCommunityResourcesTable] Cannot update resource: expected a CommunityResource with dataset property')
+    return
+  }
   loading.value = true
 
   try {

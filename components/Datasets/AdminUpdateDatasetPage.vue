@@ -1,12 +1,18 @@
 <template>
-  <div>
+  <LoadingBlock
+    v-slot="{ data: dataset }"
+    :status
+    :data="dataset"
+  >
     <DescribeDataset
       v-if="datasetForm"
       v-model="datasetForm"
       type="update"
       :harvested
+      :badges="dataset.badges"
       :submit-label="t('Sauvegarder')"
       @feature="feature"
+      @badges-change="pendingBadges = $event"
       @submit="save"
     >
       <template #top>
@@ -16,22 +22,22 @@
           type="primary"
           :title="$t('Modifier la visibilité du jeu de données')"
         >
-          <i18n-t
+          <TranslationT
             v-if="dataset.private"
             keypath="Ce jeu de données est actuellement {status}. Seul vous ou les membres de votre organisation pouvez le voir et y contribuer."
           >
             <template #status>
               <strong>{{ $t('privé') }}</strong>
             </template>
-          </i18n-t>
-          <i18n-t
+          </TranslationT>
+          <TranslationT
             v-else
             keypath="Ce jeu de données est actuellement {status}. N'importe qui sur Internet peut voir ce jeu de données."
           >
             <template #status>
               <strong>{{ $t('public') }}</strong>
             </template>
-          </i18n-t>
+          </TranslationT>
 
           <template #button>
             <BrandedButton
@@ -91,9 +97,14 @@
           {{ $t("Attention, cette action ne peut pas être annulée.") }}
 
           <template #button>
-            <ModalWithButton
+            <AdminDeleteModal
               :title="$t('Êtes-vous sûr de vouloir supprimer ce jeu de données ?')"
-              size="lg"
+              :delete-url="`/api/1/datasets/${route.params.id}`"
+              :delete-button-label="$t('Supprimer le jeu de données')"
+              :deletable-object="dataset"
+              object-type="dataset"
+              :object-title="dataset.title"
+              @deleted="onDatasetDeleted"
             >
               <template #button="{ attrs, listeners }">
                 <BrandedButton
@@ -108,71 +119,43 @@
               <p class="fr-text--bold">
                 {{ $t("Cette action est irréversible.") }}
               </p>
-              <template #footer>
-                <div class="flex-1 flex justify-end">
-                  <BrandedButton
-                    color="danger"
-                    :loading="isLoading"
-                    @click="deleteDataset"
-                  >
-                    {{ $t("Supprimer le jeu de données") }}
-                  </BrandedButton>
-                </div>
-              </template>
-            </ModalWithButton>
+            </AdminDeleteModal>
           </template>
         </BannerAction>
       </div>
     </DescribeDataset>
-  </div>
+  </LoadingBlock>
 </template>
 
 <script setup lang="ts">
-import type { DatasetV2, Frequency, License } from '@datagouv/components-next'
-import { BannerAction, BrandedButton } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
+import type { Badge, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
-import type { DatasetForm, EnrichedLicense, SpatialGranularity } from '~/types/types'
+import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
+import { updateBadges } from '~/api/badges'
+import type { DatasetForm } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const config = useRuntimeConfig()
 
 const route = useRoute()
-const { start, finish, isLoading } = useLoadingIndicator()
-
-const { toast } = useToast()
-
-const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies', { lazy: true })
-
-const { data: allLicenses } = await useAPI<Array<License>>('/api/1/datasets/licenses', { lazy: true })
-
-// Merge some information between database (all licenses) and config (selectable license, some recommanded, codes…)
-// Maybe all these information could be better stored in database too…
-const licenses = computed(() => {
-  if (!allLicenses.value) return []
-
-  const licenses = [] as Array<EnrichedLicense>
-  const licensesChoices = config.public.licenses as unknown as Record<string, Array<{ value: string, recommended?: boolean, code?: string, description?: string }>>
-  for (const [group, licensesInGroup] of Object.entries(licensesChoices)) {
-    for (const license of licensesInGroup) {
-      const found = allLicenses.value.find(({ id }) => license.value === id)
-      if (!found) continue
-      licenses.push({ ...found, ...license, group })
-    }
-  }
-  return licenses
-})
-const { data: granularities } = await useAPI<Array<SpatialGranularity>>('/api/1/spatial/granularities/', { lazy: true })
+const isLoading = ref(false)
 
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
-const { data: dataset, refresh } = await useAPI<DatasetV2>(url, { redirectOn404: true })
+const { data: dataset, status, refresh } = await useAPI<DatasetV2WithFullObject>(url, {
+  headers: {
+    'X-Get-Datasets-Full-Objects': 'True',
+  },
+  redirectOn404: true,
+})
 
 const datasetForm = ref<DatasetForm | null>(null)
 const harvested = ref(false)
+const pendingBadges = ref<Array<Badge> | null>(null)
 watchEffect(() => {
-  if (dataset.value && licenses.value && frequencies.value && granularities.value) {
-    datasetForm.value = datasetToForm(dataset.value, licenses.value, frequencies.value, [], granularities.value)
+  if (dataset.value) {
+    datasetForm.value = datasetToForm(dataset.value)
     harvested.value = isHarvested(dataset.value)
   }
 })
@@ -181,7 +164,7 @@ async function save() {
   if (!datasetForm.value) throw new Error('No dataset form')
 
   try {
-    start()
+    isLoading.value = true
     if (
       datasetForm.value.contact_points
       && datasetForm.value.owned?.organization
@@ -193,98 +176,93 @@ async function save() {
       }
     }
 
-    await $api(`/api/1/datasets/${dataset.value.id}/`, {
+    if (pendingBadges.value && dataset.value) {
+      await updateBadges(dataset.value, pendingBadges.value, 'datasets')
+    }
+
+    await $api(`/api/1/datasets/${dataset.value?.id}/`, {
       method: 'PUT',
       body: JSON.stringify(datasetToApi(datasetForm.value, { private: datasetForm.value.private })),
     })
 
-    refresh()
+    await refresh()
     toast.success(t('Jeu de données mis à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
-async function deleteDataset() {
-  start()
-  try {
-    await $api(`/api/1/datasets/${route.params.id}`, {
-      method: 'DELETE',
-    })
-    refresh()
-    toast.success(t('Jeu de données supprimé !'))
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-  }
-  finally {
-    finish()
-  }
+function onDatasetDeleted() {
+  refresh()
+  toast.success(t('Jeu de données supprimé !'))
+  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
 }
 
 async function switchDatasetPrivate() {
   if (!datasetForm.value) throw new Error('No dataset form')
-  start()
+  isLoading.value = true
   try {
-    await $api(`/api/1/datasets/${dataset.value.id}/`, {
+    await $api(`/api/1/datasets/${dataset.value?.id}/`, {
       method: 'PUT',
       body: JSON.stringify(datasetToApi(datasetForm.value, { private: !datasetForm.value.private })),
     })
-    refresh()
-    if (datasetForm.value.private) {
-      toast.success(t('Jeu de données publié !'))
+    await refresh()
+    if (dataset.value?.private) {
+      toast.success(t('Jeu de données passé en brouillon !'))
     }
     else {
-      toast.success(t('Jeu de données passé en brouillon !'))
+      toast.success(t('Jeu de données publié !'))
     }
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function restoreDataset() {
   if (!datasetForm.value) throw new Error('No dataset form')
-  start()
+  isLoading.value = true
   try {
-    await $api(`/api/1/datasets/${dataset.value.id}/`, {
+    await $api(`/api/1/datasets/${dataset.value?.id}/`, {
       method: 'PUT',
       body: JSON.stringify(datasetToApi(datasetForm.value, { deleted: null })),
     })
-    refresh()
+    await refresh()
     toast.success(t('Jeu de données restauré !'))
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function archiveDataset() {
   if (!datasetForm.value) throw new Error('No dataset form')
-  start()
+  isLoading.value = true
   try {
-    await $api(`/api/1/datasets/${dataset.value.id}/`, {
+    await $api(`/api/1/datasets/${dataset.value?.id}/`, {
       method: 'PUT',
-      body: JSON.stringify(datasetToApi(datasetForm.value, { archived: dataset.value.archived ? null : new Date().toISOString() })),
+      body: JSON.stringify(datasetToApi(datasetForm.value, { archived: dataset.value?.archived ? null : new Date().toISOString() })),
     })
-    refresh()
-    if (dataset.value.archived) {
-      toast.success(t('Jeu de données désarchivé !'))
+    await refresh()
+    if (dataset.value?.archived) {
+      toast.success(t('Jeu de données archivé !'))
     }
     else {
-      toast.success(t('Jeu de données archivé !'))
+      toast.success(t('Jeu de données désarchivé !'))
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function feature() {
-  const method = dataset.value.featured ? 'DELETE' : 'POST'
+  const method = dataset.value?.featured ? 'DELETE' : 'POST'
   try {
-    start()
+    isLoading.value = true
     await $api(`/api/1/datasets/${route.params.id}/featured`, {
       method,
     })
@@ -300,7 +278,7 @@ async function feature() {
     toast.error(t('Impossible de mettre en avant ce jeu de données'))
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 </script>

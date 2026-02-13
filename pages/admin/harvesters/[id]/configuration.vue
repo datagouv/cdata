@@ -1,6 +1,6 @@
 <template>
   <DescribeHarvester
-    v-if="harvesterForm"
+    v-if="harvester && harvesterForm"
     v-model="harvesterForm"
     type="update"
     @submit="save"
@@ -8,6 +8,7 @@
     <template #button>
       <div class="flex items-center space-x-4">
         <ModalWithButton
+          v-if="harvester.permissions.preview"
           :title="$t('Prévisualiser')"
           size="fullscreen"
           @open="preview"
@@ -41,12 +42,14 @@
         <BrandedButton
           type="submit"
           :loading
+          :disabled="!harvester.permissions.edit"
         >
           {{ $t("Sauvegarder") }}
         </BrandedButton>
       </div>
     </template>
     <BannerAction
+      v-if="harvester.permissions.delete"
       class="mt-5"
       type="danger"
       :title="$t('Supprimer le moissonneur')"
@@ -90,7 +93,7 @@
 
 <script setup lang="ts">
 import { RiDeleteBin6Line } from '@remixicon/vue'
-import { BannerAction, BrandedButton, type Organization } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, toast } from '@datagouv/components-next'
 import DescribeHarvester from '~/components/Harvesters/DescribeHarvester.vue'
 import JobPage from '~/components/Harvesters/JobPage.vue'
 import PreviewLoader from '~/components/Harvesters/PreviewLoader.vue'
@@ -98,26 +101,22 @@ import type { HarvesterForm, HarvesterJob, HarvesterSource } from '~/types/harve
 
 const route = useRoute()
 const { $api } = useNuxtApp()
-const { t } = useI18n()
-const { toast } = useToast()
+const { t } = useTranslation()
 
 const sourceUrl = computed(() => `/api/1/harvest/source/${route.params.id}`)
 const { data: harvester, refresh } = await useAPI<HarvesterSource>(sourceUrl, { redirectOn404: true })
-
-// we fetch full organization object if exists because we need members details for isOrgAdmin
-const organization = harvester.value.organization ? (await useAPI<Organization>(`/api/1/organizations/${harvester.value.organization.id}`)).data : null
-
-const isOrgAdmin = computed(() => !harvester.value.organization || isUserOrgAdmin(me.value, organization?.value))
 
 const loading = ref(false)
 
 const harvesterForm = ref<HarvesterForm | null>(null)
 watchEffect(() => {
+  if (!harvester.value) return
   harvesterForm.value = harvesterToForm(harvester.value)
 })
 
 const save = async () => {
   if (!harvesterForm.value) throw new Error('No harvester form')
+  if (!harvester.value) return
 
   try {
     loading.value = true
@@ -137,6 +136,11 @@ const save = async () => {
       else {
         await $api(`/api/1/harvest/source/${harvester.value.id}/schedule`, { method: 'DELETE' })
       }
+
+      // Update harvester.value with the new schedule
+      // It could be better to be able to do `harvester.value = await $api…` above since
+      // the API returns the updated value…
+      await refresh()
     }
 
     toast.success(t('Moissonneur mis à jour !'))
@@ -157,8 +161,9 @@ const preview = async () => {
   })
 }
 
-const localePath = useLocalePath()
 const deleteHarvester = async () => {
+  if (!harvester.value) return
+
   loading.value = true
   try {
     await $api(`/api/1/harvest/source/${harvester.value.id}`, {
@@ -166,10 +171,10 @@ const deleteHarvester = async () => {
     })
 
     if (harvester.value.organization) {
-      await navigateTo(localePath(`/admin/organizations/${harvester.value.organization.id}/harvesters`), { replace: true })
+      await navigateTo(`/admin/organizations/${harvester.value.organization.id}/harvesters`, { replace: true })
     }
     else {
-      await navigateTo(localePath(`/admin/me/datasets`), { replace: true })
+      await navigateTo(`/admin/me/datasets`, { replace: true })
     }
   }
   finally {

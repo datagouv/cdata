@@ -8,8 +8,8 @@
         :suggest="suggestContactPoint"
         :label="showAttributions ? t(`Choisissez l'attribution avec laquelle vous voulez publier`) : t('Choisissez un point de contact')"
         :placeholder="showAttributions ? t('Choisissez une attribution') : t('Sélectionner un contact')"
-        :display-value="(option) => 'id' in option ? (option.name || option.email || $t('Inconnu')) : (showAttributions ? t('Nouvelle attribution') : t('Nouveau point de contact'))"
-        :get-option-id="(option) => 'id' in option ? option.id : 'new'"
+        :display-value="(option: ContactPointInForm) => 'id' in option ? (option.name || option.email || $t('Inconnu')) : (showAttributions ? t('Nouvelle attribution') : t('Nouveau point de contact'))"
+        :get-option-id="(option: ContactPointInForm) => 'id' in option ? option.id : 'new'"
         :multiple="false"
         :loading
         :error-text
@@ -142,26 +142,24 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { BrandedButton } from '@datagouv/components-next'
-import type { ContactPoint, ContactPointRole, Organization } from '@datagouv/components-next'
+import { BrandedButton, SearchableSelect, SelectGroup } from '@datagouv/components-next'
+import type { ContactPoint, ContactPointRole, Organization, OrganizationReference } from '@datagouv/components-next'
 import { RiSaveLine } from '@remixicon/vue'
-import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
 import type { ContactPointInForm, NewContactPoint, PaginatedArray } from '~/types/types'
 
 const contact = defineModel<ContactPointInForm | null>()
 
 const props = defineProps<{
-  organization: Organization
+  organization: Organization | OrganizationReference
   showAttributions?: boolean
   errorText?: string | null
   warningText?: string | null
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { isLoading, start, finish } = useLoadingIndicator()
+const isLoading = ref(false)
 
 const contactSelectRef = useTemplateRef('contactSelect')
 
@@ -225,7 +223,15 @@ function touchEmailAndForm() {
 
 async function save() {
   if (!validate()) return
-  start()
+  if (!contact.value) {
+    console.error('[ContactPointSelect] Cannot save: contact is null or undefined')
+    return
+  }
+  if ('id' in contact.value) {
+    console.error('[ContactPointSelect] Cannot save: contact already has an id, expected a new contact')
+    return
+  }
+  isLoading.value = true
   try {
     const newContact = await newContactPoint($api, props.organization, contact.value)
     if (contactSelectRef.value) {
@@ -234,7 +240,7 @@ async function save() {
     }
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 </script>

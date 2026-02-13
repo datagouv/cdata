@@ -9,7 +9,7 @@
         :key="size"
       >
         <AdminBadge
-          v-for="type in ['primary', 'secondary', 'danger', 'warning', 'success']"
+          v-for="type in ['primary', 'secondary', 'warning', 'danger', 'success', 'default', 'pink']"
           :key="type"
           class="mb-4 mr-4"
           :size

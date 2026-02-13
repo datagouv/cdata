@@ -8,14 +8,14 @@
       <BrandedButton
         :icon="RiChatNewLine"
         size="xs"
-        color="secondary-softer"
+        color="tertiary"
         icon-only
         keep-margins-even-without-borders
+        :title="$t('Répondre à la discussion')"
+        :aria-label="$t('Répondre à la discussion {title}', { title: thread.title })"
         v-bind="attrs"
         v-on="listeners"
-      >
-        {{ $t('Répondre à la discussion') }}
-      </BrandedButton>
+      />
     </template>
     <template #default="{ close }">
       <DiscussionCard

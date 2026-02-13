@@ -4,7 +4,7 @@
       v-model="tags"
       :label="t('Mots clés')"
       :placeholder="t('Chercher un mot clé…')"
-      :get-option-id="(tag) => tag.text"
+      :get-option-id="(tag: Tag) => tag.text"
       :allow-new-option="toTag"
       :suggest="suggestTags"
       :multiple="true"
@@ -35,6 +35,7 @@
 </template>
 
 <script setup lang="ts">
+import { SearchableSelect } from '@datagouv/components-next'
 import type { Tag } from '~/types/types'
 
 defineProps<{
@@ -43,7 +44,7 @@ defineProps<{
 }>()
 const tags = defineModel<Array<Tag>>({ required: true })
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 async function suggestTags(query: string) {

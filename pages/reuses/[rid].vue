@@ -9,7 +9,6 @@
         <Breadcrumb class="md:mb-0 md:mt-0">
           <BreadcrumbItem
             to="/"
-            :external="true"
           >
             {{ $t('Accueil') }}
           </BreadcrumbItem>
@@ -25,11 +24,15 @@
             v-if="reuse"
             :url="`/api/1/reuses/${reuse.id}/followers/`"
           />
-          <div v-if="!reuse.archived">
+          <div
+            v-if="!reuse.archived"
+            class="hidden md:block"
+          >
             <BrandedButton
               :href="reuse.url"
               :new-tab="true"
               size="xs"
+              @click="$matomo.trackEvent('Réutilisation', `Voir la réutilisation`, 'Bouton :  voir la reutilisation')"
             >
               {{ $t('Voir la réutilisation') }}
             </BrandedButton>
@@ -48,10 +51,12 @@
     </div>
     <LoadingBlock
       v-if="reuse"
+      v-slot="{ data: reuse }"
       :status
+      :data="reuse"
     >
       <div class="container py-10 min-h-32">
-        <div class="grid md:grid-cols-12 md:gap-4">
+        <div class="grid md:grid-cols-12 gap-4">
           <div class="md:col-span-5 flex flex-col justify-center">
             <div class="flex gap-3 mb-2">
               <AdminBadge
@@ -83,19 +88,19 @@
               v-if="reuse.organization"
               class="flex gap-2 items-center"
             >
-              <Placeholder
-                :src="reuse.organization.logo_thumbnail"
-                type="organization"
-                alt=""
-                :size="32"
-                class="bg-white p-1 rounded-xs border border-gray-default object-contain"
-              />
+              <div class="bg-white p-1 rounded-xs border border-gray-default object-contain">
+                <OrganizationLogo
+                  :organization="reuse.organization"
+                  size-class="size-8"
+                />
+              </div>
               <CdataLink
                 class="link block"
-                :to="`/organizations/${reuse.organization.slug}/`"
+                :to="reuse.organization.page"
               >
                 <OrganizationNameWithCertificate
                   :organization="reuse.organization"
+                  as="h2"
                 />
               </CdataLink>
             </div>
@@ -110,8 +115,7 @@
               />
               <CdataLink
                 class="link block"
-                :to="`/users/${reuse.owner.slug}/`"
-                :external="true"
+                :to="reuse.owner.page"
               >
                 {{ reuse.owner.first_name }} {{ reuse.owner.last_name }}
               </CdataLink>
@@ -131,6 +135,7 @@
                 size="xs"
                 :href="reuse.url"
                 :new-tab="true"
+                @click="$matomo.trackEvent('Réutilisation', `Voir la réutilisation`, 'Bouton : voir la reutilisation')"
               >
                 {{ $t('Voir la réutilisation') }}
               </BrandedButton>
@@ -146,8 +151,8 @@
       </div>
       <FullPageTabs
         :links="[
-          { label: $t('Description'), href: `/reuses/${route.params.rid}/` },
-          { label: $t('Discussions'), href: `/reuses/${route.params.rid}/discussions/`, count: reuse.metrics.discussions ?? 0 },
+          { label: $t('Description'), href: `/reuses/${route.params.rid}` },
+          { label: $t('Discussions'), href: `/reuses/${route.params.rid}/discussions`, count: reuse.metrics.discussions ?? 0 },
         ]"
       />
       <div
@@ -165,31 +170,37 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, Avatar, BrandedButton, OrganizationNameWithCertificate, type Reuse } from '@datagouv/components-next'
+import { isOrganizationCertified, Avatar, BrandedButton, LoadingBlock, OrganizationNameWithCertificate, ReuseDetails, type Reuse, OrganizationLogo, getDescriptionShort } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
-import ReuseDetails from '~/datagouv-components/src/components/ReuseDetails.vue'
+
+definePageMeta({
+  keepScroll: true,
+})
 
 const route = useRoute()
+const config = useRuntimeConfig()
 
 const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
-const { data: reuse, status } = await useAPI<Reuse>(url, { redirectOn404: true })
+const { data: reuse, status } = await useAPI<Reuse>(url, { redirectOn404: true, redirectOnSlug: 'rid' })
 
-const title = computed(() => reuse.value?.title)
+const title = computed(() => `Réutilisation - ${reuse.value?.title} | ${config.public.title}`)
+const description = computed(() => reuse.value ? getDescriptionShort(reuse.value) : '')
 const robots = computed(() => reuse.value && !reuse.value.metrics.datasets && !reuse.value.metrics.datasets ? 'noindex, nofollow' : 'all')
 
 useSeoMeta({
   title,
+  description,
   robots,
 })
 
 onMounted(async () => {
   await redirectLegacyHashes([
-    { from: 'discussions', to: `/reuses/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
-    { from: 'discussion', to: `/reuses/${route.params.did}/discussions/`, queryParam: 'discussion_id' },
+    { from: 'discussions', to: `/reuses/${route.params.did}/discussions`, queryParam: 'discussion_id' },
+    { from: 'discussion', to: `/reuses/${route.params.did}/discussions`, queryParam: 'discussion_id' },
   ])
 })
 </script>

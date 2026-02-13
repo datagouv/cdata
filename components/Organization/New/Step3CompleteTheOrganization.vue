@@ -26,17 +26,9 @@
     <article class="my-6 p-6 !border border-neutral-200 fr-enlarge-link">
       <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--top">
         <div class="fr-col-auto">
-          <Placeholder
-            v-if="organization.logo_thumbnail"
-            type="organization"
-            :src="organization.logo_thumbnail"
-            alt=""
-            :size="60"
-          />
-          <Placeholder
-            v-else
-            type="organization"
-            :size="60"
+          <OrganizationLogo
+            :organization
+            size-class="size-16"
           />
         </div>
         <div class="fr-col">
@@ -49,14 +41,12 @@
               <small v-if="organization.acronym">{{ organization.acronym }}</small>
             </a>
           </h4>
-          <Suspense>
-            <AsyncTextClamp
-              class="fr-mt-1w fr-mb-2w fr-hidden fr-unhidden-sm overflow-wrap-anywhere"
-              :auto-resize="true"
-              :text="removeMarkdown(organization.description)"
-              :max-lines="2"
-            />
-          </Suspense>
+          <TextClamp
+            class="fr-mt-1w fr-mb-2w fr-hidden fr-unhidden-sm overflow-wrap-anywhere"
+            :auto-resize="true"
+            :text="removeMarkdownSync(organization.description)"
+            :max-lines="2"
+          />
         </div>
       </div>
     </article>
@@ -104,8 +94,8 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { removeMarkdown, SimpleBanner, type Organization } from '@datagouv/components-next'
+import { BrandedButton, OrganizationLogo, PaddedContainer } from '@datagouv/components-next'
+import { removeMarkdownSync, SimpleBanner, type Organization } from '@datagouv/components-next'
 
 defineProps<{
   organization: Organization

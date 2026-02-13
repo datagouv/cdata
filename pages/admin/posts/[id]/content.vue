@@ -1,7 +1,7 @@
 <template>
   <div>
     <PostContentForm
-      v-if="post"
+      v-if="postForm && post?.body_type !== 'blocs'"
       :post="postForm"
       type="update"
       :submit-label="t('Sauvegarder')"
@@ -11,21 +11,29 @@
 </template>
 
 <script setup lang="ts">
+import { toast } from '@datagouv/components-next'
 import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import type { Post } from '~/types/posts'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { toast } = useToast()
 
 const route = useRoute()
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
 const { data: post, refresh } = await useAPI<Post>(url, { redirectOn404: true })
-const postForm = computed(() => postToForm(post.value))
+const postForm = computed(() => post.value ? postToForm(post.value) : null)
+
+watchEffect(() => {
+  if (post.value?.body_type === 'blocs') {
+    navigateTo(`/posts/${post.value.slug}?edit=true`)
+  }
+})
 
 const loading = ref(false)
 
 const save = async (form: { content: string }) => {
+  if (!post.value) return
+
   try {
     loading.value = true
 

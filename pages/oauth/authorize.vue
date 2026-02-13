@@ -2,16 +2,17 @@
   <div class="bg-gray-some py-6 space-y-6">
     <div class="container bg-white max-w-xl p-6 border border-gray-lower">
       <LoadingBlock
+        v-slot="{ data }"
         :status
+        :data="apiData"
       >
         <div
           v-if="data"
           class="space-y-8"
         >
           <h1 class="text-2xl font-normal">
-            <i18n-t
+            <TranslationT
               keypath="{external} voudrait accéder à votre compte {site}."
-              scope="global"
             >
               <template #external>
                 <strong class="font-bold">{{ data.client.name }}</strong>
@@ -19,7 +20,7 @@
               <template #site>
                 <strong class="font-bold">{{ config.public.title }}</strong>
               </template>
-            </i18n-t>
+            </TranslationT>
           </h1>
 
           <hr>
@@ -54,6 +55,12 @@
             method="POST"
           >
             <input
+              v-if="csrf_response"
+              type="hidden"
+              name="csrf_token"
+              :value="csrf_response.response.csrf_token"
+            >
+            <input
               type="hidden"
               name="scope"
               :value="data.scopes.join(' ')"
@@ -83,19 +90,25 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, TranslationT } from '@datagouv/components-next'
 
-const { t } = useI18n()
+definePageMeta({
+  matomoIgnore: true,
+})
+
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 
 useSeoMeta({ title: t('Connexion') })
 
 const route = useRoute()
 
-const { data, status } = await useAPI<{ client: { name: string }, scopes: Array<string> }>('/fr/oauth/client_info', { query: route.query })
+const { data: apiData, status } = await useAPI<{ client: { name: string }, scopes: Array<string> }>('/oauth/client_info', { query: route.query })
+
+const { data: csrf_response } = await useAPI<{ response: { csrf_token: string } }>('/get-csrf', { lazy: true, server: false })
 
 const authorizeUrl = computed(() => {
-  const queryString = new URLSearchParams(route.query).toString()
-  return `${config.public.apiBase}/fr/oauth/authorize?${queryString}`
+  const queryString = new URLSearchParams(route.query as Record<string, string>).toString()
+  return `${config.public.apiBase}/oauth/authorize?${queryString}`
 })
 </script>

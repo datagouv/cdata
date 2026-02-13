@@ -1,7 +1,7 @@
 <template>
   <div>
     <Breadcrumb>
-      <BreadcrumbItem to="/design/">
+      <BreadcrumbItem to="/design">
         {{ $t('Système de design') }}
       </BreadcrumbItem>
       <BreadcrumbItem to="/design/oembeds">
@@ -44,7 +44,7 @@ useHead({
     {
       'data-udata': config.public.frontBase,
       'src': '/oembed.js',
-      'body': true,
+      'tagPosition': 'bodyClose',
     },
   ],
 })

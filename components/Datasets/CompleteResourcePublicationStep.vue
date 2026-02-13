@@ -21,16 +21,15 @@
     </SimpleBanner>
 
     <FileCard
-      :model-value="resourceToForm(resource, schemas)"
+      :model-value="resourceToForm(resource, schemas ?? [])"
       :show-edit-and-warning="false"
-      :extensions
+      :extensions="extensions ?? []"
     />
 
     <div class="flex justify-end">
       <BrandedButton
         color="primary"
         :href="getResourceExternalUrl(resource.dataset, resource)"
-        external
       >
         {{ $t("Voir la page publique") }}
       </BrandedButton>

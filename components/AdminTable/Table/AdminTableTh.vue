@@ -12,7 +12,7 @@
       <slot />
       <BrandedButton
         v-if="sortable"
-        color="secondary-softer"
+        color="tertiary"
         size="2xs"
         class="shrink-0 ml-2"
         icon-only
@@ -20,9 +20,7 @@
         :class="sorted ? '' : 'opacity-50'"
         :title="t('Trier')"
         @click="toggleSort"
-      >
-        {{ t("Trier") }}
-      </BrandedButton>
+      />
     </div>
   </th>
 </template>
@@ -31,7 +29,6 @@
 import { BrandedButton } from '@datagouv/components-next'
 import { RiArrowDownLine, RiArrowUpLine } from '@remixicon/vue'
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type { SortDirection } from '~/types/types'
 </script>
 
@@ -47,7 +44,7 @@ const emit = defineEmits<{
   (event: 'sort', direction: SortDirection): void
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const sortable = computed(() => props.sorted !== undefined)
 

@@ -1,30 +1,45 @@
 <template>
   <div class="flex items-center space-x-2">
-    <div class="shrink-0 p-1.5 border">
-      <Placeholder
-        type="organization"
-        :src="organization.logo_thumbnail"
-        class="shrink-0 size-8"
-        :size="32"
+    <div :class="logoNoBorder ? '': 'shrink-0 p-1.5 border'">
+      <OrganizationLogo
+        :organization
+        :size-class="logoSizeClass"
       />
     </div>
-    <!-- :size=32 is the same as size-8, should remove the size prop to use Tailwind… -->
-    <CdataLink
-      :to="organization.page"
-      class="link flex-1 min-w-0"
+    <component
+      :is="withLink ? CdataLink : 'span'"
+      :to="withLink ? organization.page : undefined"
+      class="flex-1 min-w-0"
+      :class="{ 'link font-bold': withLink }"
     >
       <OrganizationNameWithCertificate
         class="w-full"
+        :as
+        :color-class="nameColor"
         :organization
+        :size="nameSize"
       />
-    </CdataLink>
+    </component>
   </div>
 </template>
 
 <script setup lang="ts">
-import { OrganizationNameWithCertificate, Placeholder, type Organization } from '@datagouv/components-next'
+import { OrganizationLogo, OrganizationNameWithCertificate, type Organization, type OrganizationReference } from '@datagouv/components-next'
+import CdataLink from './CdataLink.vue'
 
-defineProps<{
-  organization: Organization
-}>()
+withDefaults(defineProps<{
+  organization: Organization | OrganizationReference
+  logoSizeClass?: string
+  nameSize?: 'base' | 'sm' | 'xs'
+  nameColor?: string
+  logoNoBorder?: boolean
+  as?: string
+  withLink?: boolean
+}>(), {
+  logoSizeClass: 'size-8',
+  logoNoBorder: false,
+  withLink: true,
+  nameColor: 'text-new-primary',
+  nameSize: 'base',
+})
 </script>

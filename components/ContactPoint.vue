@@ -1,15 +1,22 @@
 <template>
-  <div class="text-sm space-x-2">
-    <component
-      :is="link ? 'a' : 'span'"
-      :href="link"
-      rel="ugc nofollow noopener"
-      :target="link ? '_blank' : undefined"
-      class="text-grey-title truncate overflow-hidden"
+  <div>
+    <div
+      class="text-sm space-x-2"
+      :class="{ inline: !link, flex: link }"
     >
-      {{ label }}
-    </component>
-    <small class="text-grey-medium italic">({{ role }})</small>
+      <component
+        :is="link ? 'a' : 'span'"
+        :href="link"
+        :rel="link ? 'ugc nofollow noopener' : undefined"
+        :target="link ? '_blank' : undefined"
+        :title="label"
+        class="text-gray-title"
+        :class="{ truncate: link }"
+      >
+        {{ label }}
+      </component>
+      <small class="text-gray-medium italic">({{ role }})</small>
+    </div>
   </div>
 </template>
 
@@ -20,7 +27,7 @@ const props = defineProps<{
   contact: ContactPoint
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const link = computed(() => {
   if (props.contact.email) {
@@ -43,6 +50,14 @@ const role = computed(() => {
     contact: t('Contact'),
     creator: t('Créateur'),
     publisher: t('Éditeur'),
+    rightsHolder: t('Détenteur des droits'),
+    custodian: t('Gestionnaire'),
+    distributor: t('Distributeur'),
+    originator: t('Producteur'),
+    principalInvestigator: t('Investigateur principal'),
+    processor: t('Exécutant'),
+    resourceProvider: t('Fournisseur'),
+    user: t('Utilisateur'),
   }[props.contact.role]
 })
 </script>

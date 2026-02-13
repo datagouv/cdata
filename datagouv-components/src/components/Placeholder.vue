@@ -1,29 +1,28 @@
 <template>
-  <img
-    loading="lazy"
-    :src="path"
-    :alt="alternativeTextForDefinedImageOnly"
-    :width="size"
-    :height="size"
-    v-bind="$attrs"
-  >
+  <div class="bg-gray-lower flex items-center justify-center">
+    <component
+      :is="icon"
+      class="size-1/2 text-gray-plain"
+      aria-hidden="true"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { computedAsync } from '@vueuse/core'
+import { RiBookShelfLine, RiBuilding2Line, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
 
 const props = defineProps<{
-  type: 'author' | 'dataset' | 'news' | 'organization' | 'reuse'
-  src?: string | null
-  alt?: string
-  size: number
+  type: 'Dataset' | 'Dataservice' | 'Reuse' | 'Organization' | 'Topic'
 }>()
-const placeholderUrl = async () => {
-  const module = await import(`../../assets/placeholders/${props.type}.png`)
-  return props.src ? props.src : module.default
-}
 
-const alternativeTextForDefinedImageOnly = computed(() => props.src ? props.alt : '')
-const path = computedAsync(() => placeholderUrl())
+const icon = computed(() => {
+  return {
+    Dataset: RiDatabase2Line,
+    Dataservice: RiTerminalLine,
+    Reuse: RiLineChartLine,
+    Organization: RiBuilding2Line,
+    Topic: RiBookShelfLine,
+  }[props.type]
+})
 </script>

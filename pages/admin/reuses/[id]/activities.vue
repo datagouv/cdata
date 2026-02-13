@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Reuse } from '@datagouv/components-next'
+import { ActivityList, type Reuse } from '@datagouv/components-next'
 
 definePageMeta({
   requiredRole: 'admin',

@@ -3,7 +3,6 @@
     <Breadcrumb>
       <BreadcrumbItem
         to="/"
-        external
       >
         {{ $t('Accueil') }}
       </BreadcrumbItem>
@@ -35,6 +34,7 @@
     <Step3AddResources
       v-if="currentStep === 3"
       :resources
+      :dataset-form
       :loading
       @previous="moveToStep(2)"
       @next="filesNext"
@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Dataset, Frequency, Owned, Resource } from '@datagouv/components-next'
+import { defaultAccessTypeForm, type Dataset, type Frequency, type Owned, type Resource } from '@datagouv/components-next'
 import Step1PublishingType from '~/components/Datasets/New/Step1PublishingType.vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import Step3AddResources from '~/components/Datasets/New/Step3AddResources.vue'
@@ -60,7 +60,7 @@ import type { DatasetForm, EnrichedLicense, ResourceForm, SpatialGranularity, Sp
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const route = useRoute()
 const { $api } = useNuxtApp()
@@ -91,6 +91,8 @@ const datasetForm = useState(DATASET_FORM_STATE, () => ({
   spatial_granularity: null as SpatialGranularity | null,
   contact_points: [],
   private: true,
+  featured: false,
+  ...defaultAccessTypeForm(),
 } as DatasetForm))
 const resources = useState<Array<ResourceForm>>(DATASET_FILES_STATE, () => [])
 const newDataset = useState<Dataset | null>('new-dataset', () => null)
@@ -132,7 +134,9 @@ async function save() {
 
     const dataset = newDataset.value = newDataset.value || await $api<Dataset>('/api/1/datasets/', {
       method: 'POST',
-      body: JSON.stringify(datasetToApi(datasetForm.value, { private: true })),
+      body: JSON.stringify(datasetToApi(datasetForm.value, { private: true, extras: {
+        publish_source: `${config.public.title}:new`,
+      } })),
     })
 
     let results: Array<PromiseSettledResult<Resource>> = []

@@ -17,13 +17,12 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, toast } from '@datagouv/components-next'
 import type { Dataset, DatasetV2, Reuse } from '@datagouv/components-next'
 import type { DatasetSuggest } from '~/types/types'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { toast } = useToast()
 
 const route = useRoute()
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
@@ -35,6 +34,7 @@ watchEffect(async () => {
 })
 
 const submit = async () => {
+  if (!reuse.value) return
   await $api(`/api/1/reuses/${reuse.value.id}/`, {
     method: 'PUT',
     body: JSON.stringify({

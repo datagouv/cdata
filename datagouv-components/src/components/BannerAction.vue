@@ -3,9 +3,9 @@
     class="group flex items-center justify-between gap-2 rounded border p-2.5"
     :data-banner-action-type="type"
     :class="{
-      '!border-datagouv bg-datagouv-lightest text-datagouv-dark': type === 'primary',
-      '!border-danger-dark bg-danger-lightest text-danger-dark': type === 'danger',
-      '!border-warning-dark bg-warning-lightest text-warning-dark': type === 'warning',
+      '!border-new-info bg-new-info-light text-new-info': type === 'primary',
+      '!border-new-error bg-new-error-light text-new-error': type === 'danger',
+      '!border-new-warning bg-new-warning-light text-new-warning': type === 'warning',
     }"
   >
     <div>

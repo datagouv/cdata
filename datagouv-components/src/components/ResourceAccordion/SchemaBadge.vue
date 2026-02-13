@@ -4,21 +4,28 @@
     class="inline-flex mb-0 items-baseline text-xs"
   >
     <Toggletip
-      position="right"
+      :button-props="{ class: 'relative z-2 -ml-3 top-1 -my-3', title: t('Schéma de données') }"
       no-margin
-      class="relative z-2 -ml-3 top-1 -my-3"
     >
+      <RiInformationLine class="size-4" />
       <template #toggletip="{ close }">
-        <div class="flex justify-between border-bottom">
-          <h5 class="fr-text--sm fr-my-0 fr-p-2v">{{ $t("Schéma de données") }}</h5>
+        <div class="flex justify-between border-b">
+          <h5 class="fr-text--sm fr-my-0 fr-p-2v">{{ t("Schéma de données") }}</h5>
           <button
             type="button"
             :title="t('Fermer')"
-            class="border-left close-button flex items-center justify-center"
+            class="border-l close-button flex items-center justify-center"
             @click="close"
           >&times;</button>
         </div>
         <div class="p-3">
+          <div v-if="validataStatus === 'none'">
+            {{ t("Ce fichier indique suivre le schéma :") }} <component
+              :is="documentationUrl ? 'a' : 'span'"
+              :href="documentationUrl"
+              class="fr-link fr-text--sm"
+            >{{ title }}</component>.
+          </div>
           <div v-if="validataStatus === 'ok'">
             {{ t("Ce fichier est valide pour le schéma :") }} <component
               :is="documentationUrl ? 'a' : 'span'"
@@ -64,7 +71,7 @@
           </div>
 
           <div
-            v-if="validationUrl"
+            v-if="validationUrl && validataStatus !== 'none'"
             class="w-full text-right mt-5"
             target="_blank"
           >
@@ -74,7 +81,7 @@
       </template>
     </Toggletip>
     <span class="mr-1 text-gray-medium">{{ t("Schéma:") }}</span>
-    <span class="flex items-center bg-danger-lightest rounded-sm">
+    <span class="flex items-center bg-danger-lightest rounded-xl">
       <span class="fr-tag fr-tag--sm">{{ title }}</span>
       <span
         v-if="validataStatus === 'warnings'"
@@ -95,18 +102,22 @@
 </template>
 
 <script setup lang="ts">
+import { RiInformationLine } from '@remixicon/vue'
 import { computed, onMounted, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type { Resource } from '../../types/resources'
 import Toggletip from '../Toggletip.vue'
-import type { RegisteredSchema, ValidataError } from '../../functions/schemas'
-import { findSchemaInCatalog, getCatalog, getSchemaDocumentation, getSchemaValidationUrl } from '../../functions/schemas'
+import { findSchemaInCatalog, useGetCatalog, useGetSchemaDocumentation, useGetSchemaValidationUrl } from '../../functions/schemas'
+import { useTranslation } from '../../composables/useTranslation'
+import type { RegisteredSchema, ValidataError } from '../../types/schemas'
 
 const props = defineProps<{
   resource: Resource
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
+const getSchemaValidationUrl = useGetSchemaValidationUrl()
+const getSchemaDocumentation = useGetSchemaDocumentation()
+const getCatalog = useGetCatalog()
 
 const catalog = ref<Array<RegisteredSchema> | null>(null)
 onMounted(async () => {
@@ -126,7 +137,8 @@ const validataWarnings = computed(() => validataErrors.value.filter(error => [''
 const validataBodyErrors = computed(() => validataErrors.value.filter(error => ['#body', '#cell', '#content', '#row', '#table'].some(tag => error.tags.includes(tag))))
 const validataStructureErrors = computed(() => validataErrors.value.filter(error => ['#head', '#structure', '#header'].some(tag => error.tags.includes(tag))))
 
-const validataStatus = computed<'ok' | 'warnings' | 'ko'>(() => {
+const validataStatus = computed<'none' | 'ok' | 'warnings' | 'ko'>(() => {
+  if (!('validation-report:errors' in props.resource.extras)) return 'none'
   if (validataErrors.value.length === 0) return 'ok'
   if (validataErrors.value.length === validataWarnings.value.length) return 'warnings'
   return 'ko'
@@ -134,15 +146,7 @@ const validataStatus = computed<'ok' | 'warnings' | 'ko'>(() => {
 </script>
 
 <style scoped>
-.close-button {
-    width: 40px;
-    font-size: 1.2rem;
-    line-height: 0;
-}
-.rounded-sm {
-    border-radius: 0.75rem;
-}
 .padding-sm {
-    padding: .125rem .5rem .125rem .25rem;
+  padding: .125rem .5rem .125rem .25rem;
 }
 </style>

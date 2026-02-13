@@ -11,7 +11,7 @@
     <TransferRequestList
       v-if="props.organization || props.user"
       type="Dataset"
-      :recipient="props.organization || props.user"
+      :recipient="(props.organization || props.user)!"
       @done="refresh"
     />
 
@@ -19,18 +19,18 @@
       v-if="pageData"
       class="flex flex-wrap gap-x-4 gap-y-2 items-center"
     >
-      <div class="w-full flex-none md:flex-1">
+      <div class="w-full flex-1">
         <h2 class="text-sm font-bold uppercase m-0">
           {{ t('{n} jeux de données', pageData.total) }}
         </h2>
       </div>
-      <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
+      <div class="flex flex-wrap items-center md:gap-x-6 gap-4">
         <SearchableSelect
           v-model="datasetsStatus"
           :placeholder="$t('Filtrer par statut')"
           :label="$t('Filtrer par statut')"
           :options="statusOption"
-          :display-value="(option) => option.label"
+          :display-value="(option: { label: string }) => option.label"
           :multiple="false"
           class="mb-0"
           hide-label
@@ -41,19 +41,25 @@
           :icon="RiSearchLine"
           :placeholder="$t('Recherche')"
         />
-        <BrandedButton
-          v-if="organization"
-          :href="pageData.total ? `${config.public.apiBase}/api/1/organizations/${organization.id}/datasets.csv` : undefined"
-          size="xs"
-          :external="true"
-          :icon="RiDownloadLine"
-        >
-          {{ t('Télécharger le catalogue') }}
-        </BrandedButton>
+        <div>
+          <BrandedButton
+            v-if="organization"
+            :href="pageData.total ? `${config.public.apiBase}/api/1/organizations/${organization.id}/datasets.csv` : undefined"
+            size="xs"
+            :external="true"
+            :icon="RiDownloadLine"
+          >
+            {{ t('Télécharger le catalogue') }}
+          </BrandedButton>
+        </div>
       </div>
     </div>
 
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: pageData }"
+      :status
+      :data="pageData"
+    >
       <div v-if="pageData && pageData.total > 0">
         <AdminDatasetsTable
           :activities="datasetActivities"
@@ -73,7 +79,7 @@
 
     <div
       v-if="status != 'pending' && pageData && !pageData.total"
-      class="flex flex-col items-center fr-my-3v"
+      class="flex flex-col items-center mt-6 mb-3"
     >
       <nuxt-img
         src="/illustrations/dataset.svg"
@@ -82,7 +88,7 @@
       <template v-if="q || datasetsStatus">
         <p
           v-if="q"
-          class="fr-text--bold fr-my-3v"
+          class="font-bold my-3"
         >
           {{ t(`Pas de résultats pour « {q} »`, { q }) }}
         </p>
@@ -110,23 +116,22 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type DatasetV2, Pagination, type Organization, type User } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination, SearchableSelect } from '@datagouv/components-next'
+import type { Activity, DatasetV2, Organization, User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiDownloadLine, RiSearchLine } from '@remixicon/vue'
 import TransferRequestList from '../TransferRequestList.vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
 import AdminDatasetsTable from '~/components/AdminTable/AdminDatasetsTable/AdminDatasetsTable.vue'
 import type { DatasetSortedBy, PaginatedArray, SortDirection } from '~/types/types'
-import type { Activity } from '~/types/activity'
 
 const props = defineProps<{
   organization?: Organization | null
   user?: User | null
 }>()
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
@@ -137,7 +142,7 @@ const sortedBy = ref<DatasetSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 const q = ref('')
-const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const qDebounced = refDebounced(q, config.public.searchDebounce)
 const datasetsStatus = ref<{ label: string, id: string } | null>(null)
 const datasetActivities = ref<Record<DatasetV2['id'], Activity>>({})
 
@@ -162,12 +167,21 @@ function sort(column: DatasetSortedBy, newDirection: SortDirection) {
 
 function resetFilters() {
   q.value = ''
-  qDebounced.value = ''
   datasetsStatus.value = null
 }
 
 const params = computed(() => {
-  const query = {
+  const query: {
+    organization: string | undefined
+    owner: string | undefined
+    sort: string
+    q: string
+    page_size: number
+    page: number
+    archived?: string
+    deleted?: string
+    private?: string
+  } = {
     organization: props.organization?.id,
     owner: props.user?.id,
 
@@ -179,18 +193,18 @@ const params = computed(() => {
 
   if (datasetsStatus.value) {
     if (datasetsStatus.value.id === 'public') {
-      query['archived'] = 'false'
-      query['deleted'] = 'false'
-      query['private'] = 'false'
+      query.archived = 'false'
+      query.deleted = 'false'
+      query.private = 'false'
     }
     if (datasetsStatus.value.id === 'deleted') {
-      query['deleted'] = 'true'
+      query.deleted = 'true'
     }
     if (datasetsStatus.value.id === 'archived') {
-      query['archived'] = 'true'
+      query.archived = 'true'
     }
     if (datasetsStatus.value.id === 'private') {
-      query['private'] = 'true'
+      query.private = 'true'
     }
   }
 
@@ -201,7 +215,7 @@ const { data: pageData, status, refresh } = await useAPI<PaginatedArray<DatasetV
 
 watchEffect(async () => {
   if (pageData.value) {
-    const activities = await getActitiesForObjects($api, pageData.value.data)
+    const activities = await getLatestActivitiesForObjects($api, pageData.value.data)
     datasetActivities.value = { ...datasetActivities.value, ...activities }
   }
 })

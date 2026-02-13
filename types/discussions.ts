@@ -1,4 +1,4 @@
-import type { Dataservice, Dataset, DatasetV2, Organization, Reuse, User } from '@datagouv/components-next'
+import type { Dataservice, DatasetV2, OrganizationReference, Reuse, UserReference } from '@datagouv/components-next'
 import type { Post } from './posts'
 
 export type DiscussionSortedBy = 'title' | 'created' | 'closed'
@@ -12,7 +12,7 @@ export type Subject = {
   class: string
 }
 
-export type DiscussionSubjectTypes = Dataservice | Dataset | DatasetV2 | Reuse | Post
+export type DiscussionSubjectTypes = Dataservice | DatasetV2 | Reuse | Post
 
 export type DiscussionSubject = {
   class: 'Dataservice' | 'Dataset' | 'Reuse' | 'Post' | 'Topic' | 'Organization'
@@ -27,23 +27,27 @@ export type NewDiscussion = {
 
 export type Thread = {
   id: string
-  discussion: Discussion
   title: string
-  url: string
+  user: UserReference
+  organization: OrganizationReference | null
   created: string
   closed: string
-  closed_by: User
-  closed_by_organization: Organization | null
+  closed_by: UserReference | null
+  closed_by_organization: OrganizationReference | null
+  discussion: Discussion
+  url: string
+  self_web_url: string
   spam?: Spam
   subject: DiscussionSubject
   permissions: { delete: boolean, edit: boolean, close: boolean }
 }
 
 export type Comment = {
+  id: string
   content: string
-  posted_by: User
+  posted_by: UserReference
   posted_on: string
-  posted_by_organization: Organization | null
+  posted_by_organization: OrganizationReference | null
   last_modified_at?: string | null
   spam?: Spam
   permissions: { delete: boolean, edit: boolean }

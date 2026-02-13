@@ -15,7 +15,7 @@
       v-else-if="loading"
       class="text-gray-medium"
     >
-      {{ $t("Chargement de l'aperçu JSON...") }}
+      {{ t("Chargement de l'aperçu JSON...") }}
     </div>
     <SimpleBanner
       v-else-if="fileTooLarge"
@@ -24,8 +24,8 @@
     >
       <RiErrorWarningLine class="shink-0 size-6" />
       <span>{{ fileSizeBytes
-        ? $t("Fichier JSON trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
-        : $t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
+        ? t("Fichier JSON trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
+        : t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
       }}</span>
     </SimpleBanner>
     <SimpleBanner
@@ -34,7 +34,7 @@
       class="flex items-center space-x-2"
     >
       <RiErrorWarningLine class="shink-0 size-6" />
-      <span>{{ $t("Ce fichier JSON ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
+      <span>{{ t("Ce fichier JSON ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
     </SimpleBanner>
     <SimpleBanner
       v-else-if="error"
@@ -42,7 +42,7 @@
       class="flex items-center space-x-2"
     >
       <RiErrorWarningLine class="shink-0 size-6" />
-      <span>{{ $t("Erreur lors du chargement de l'aperçu JSON.") }}</span>
+      <span>{{ t("Erreur lors du chargement de l'aperçu JSON.") }}</span>
     </SimpleBanner>
   </div>
 </template>
@@ -54,6 +54,8 @@ import { RiErrorWarningLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../../config'
 import SimpleBanner from '../SimpleBanner.vue'
 import type { Resource } from '../../types/resources'
+import { useTranslation } from '../../composables/useTranslation'
+import { getResourceFilesize } from '../../functions/datasets'
 
 const JsonViewer = defineAsyncComponent(() =>
   import('vue3-json-viewer').then((module) => {
@@ -68,26 +70,14 @@ const props = defineProps<{
 }>()
 
 const config = useComponentsConfig()
+const { t } = useTranslation()
 
 const jsonData = ref<unknown>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const fileTooLarge = ref(false)
 
-const fileSizeBytes = computed(() => {
-  // Check if resource has filesize
-  if (props.resource.filesize) {
-    return props.resource.filesize
-  }
-
-  // Check if resource has content-length in extras (from API metadata)
-  const contentLength = props.resource.extras?.['analysis:content-length']
-  if (contentLength && typeof contentLength === 'number') {
-    return contentLength
-  }
-
-  return null
-})
+const fileSizeBytes = computed(() => getResourceFilesize(props.resource))
 
 const shouldLoadJson = computed(() => {
   const size = fileSizeBytes.value

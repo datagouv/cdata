@@ -12,14 +12,13 @@
     >
       {{ $t('Discussion close par ') }}
       <span class="inline-flex items-center space-x-1 text-mention-grey">
-        <Placeholder
+        <OrganizationLogo
           v-if="thread.closed_by_organization"
-          type="organization"
-          :src="thread.closed_by_organization.logo_thumbnail"
-          class="size-3"
+          :organization="thread.closed_by_organization"
+          size-class="size-3"
         />
         <Avatar
-          v-else
+          v-else-if="thread.closed_by"
           :user="thread.closed_by"
           :rounded="true"
           class="size-3"
@@ -32,7 +31,7 @@
           {{ thread.closed_by_organization.name }}
         </CdataLink>
         <CdataLink
-          v-else
+          v-else-if="thread.closed_by"
           class="link"
           :href="thread.closed_by.page"
         >
@@ -93,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, ReadMore, useFormatDate } from '@datagouv/components-next'
+import { Avatar, BrandedButton, OrganizationLogo, ReadMore, useFormatDate } from '@datagouv/components-next'
 import ThreadHeader from './ThreadHeader.vue'
 import CommentBlock from './CommentBlock.vue'
 import RespondForm from './RespondForm.vue'
@@ -109,7 +108,6 @@ defineEmits<{
 
 const openDiscussionIfClosed = ref(false)
 const showRespondForm = ref(false)
-const localePath = useLocalePath()
 const { formatDate } = useFormatDate()
 const me = useMaybeMe()
 const route = useRoute()
@@ -119,7 +117,7 @@ const showRespondFormIfConnected = () => {
     showRespondForm.value = true
   }
   else {
-    navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true })
+    navigateTo({ path: '/login', query: { next: route.fullPath } }, { external: true })
   }
 }
 </script>

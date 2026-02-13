@@ -10,7 +10,6 @@
       <Breadcrumb>
         <BreadcrumbItem
           to="/"
-          :external="true"
         >
           {{ $t('Accueil') }}
         </BreadcrumbItem>
@@ -212,7 +211,8 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, OrganizationCard, Pagination, ReuseCard, type DatasetV2, type Reuse, type User } from '@datagouv/components-next'
+import { Avatar, BrandedButton, MarkdownViewer, OrganizationCard, Pagination, ReuseCard, getLink } from '@datagouv/components-next'
+import type { DatasetV2, Reuse, User } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 import { DatasetCardLg } from '#components'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -224,7 +224,7 @@ const me = useMaybeMe()
 
 const route = useRoute()
 const url = computed(() => `/api/1/users/${route.params.id}`)
-const { data: user } = await useAPI<User>(url, { redirectOn404: true })
+const { data: user } = await useAPI<User>(url, { redirectOn404: true, redirectOnSlug: 'id' })
 
 const title = computed(() => user.value ? `${user.value.first_name} ${user.value.last_name}` : null)
 useSeoMeta({
@@ -237,7 +237,7 @@ const datasetsParams = computed(() => {
   return {
     page: datasetsPage.value,
     page_size: 3,
-    owner: user.value.id,
+    owner: user.value?.id,
   }
 })
 const { data: datasets } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/datasets`, { query: datasetsParams })
@@ -247,7 +247,7 @@ const reusesParams = computed(() => {
   return {
     page: reusesPage.value,
     page_size: 6,
-    owner: user.value.id,
+    owner: user.value?.id,
   }
 })
 const { data: reuses } = await useAPI<PaginatedArray<Reuse>>(`/api/1/reuses`, { query: reusesParams })
@@ -257,7 +257,7 @@ const followedDatasetsParams = computed(() => {
   return {
     page: followedDatasetsPage.value,
     page_size: 6,
-    followed_by: user.value.id,
+    followed_by: user.value?.id,
   }
 })
 const { data: followedDatasets } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/datasets`, { query: followedDatasetsParams })

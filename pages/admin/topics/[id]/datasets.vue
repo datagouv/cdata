@@ -10,7 +10,8 @@
         </h2>
       </div>
       <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
-        <ModalWithButton
+        <!-- TODO: re-enable when elements are properly handled -->
+        <!-- <ModalWithButton
           :title="$t('Ajouter des jeux de données')"
           size="xl"
         >
@@ -41,19 +42,24 @@
               </BrandedButton>
             </div>
           </template>
-        </ModalWithButton>
+        </ModalWithButton> -->
       </div>
     </div>
 
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: pageData }"
+      :status
+      :data="pageData"
+    >
       <div v-if="pageData && pageData.total > 0">
         <AdminDatasetsTable
           :datasets="pageData ? pageData.data : []"
         >
-          <template #actions="{ dataset }">
+          <!-- TODO: re-enable when elements are properly handled -->
+          <!-- <template #actions="{ dataset }">
             <BrandedButton
               icon-only
-              color="secondary-softer"
+              color="tertiary"
               keep-margins-even-without-borders
               :icon="RiDeleteBinLine"
               size="xs"
@@ -61,7 +67,7 @@
             >
               {{ $t('Supprimer le jeu de données') }}
             </BrandedButton>
-          </template>
+          </template> -->
         </AdminDatasetsTable>
         <Pagination
           :page="page"
@@ -74,43 +80,18 @@
 </template>
 
 <script setup lang="ts">
-import type { Dataset, DatasetV2, TopicV2 } from '@datagouv/components-next'
-import { BrandedButton } from '@datagouv/components-next'
-import { RiAddLine, RiDeleteBinLine } from '@remixicon/vue'
+import type { DatasetV2, TopicV2 } from '@datagouv/components-next'
+import { LoadingBlock, Pagination } from '@datagouv/components-next'
 import AdminDatasetsTable from '~/components/AdminTable/AdminDatasetsTable/AdminDatasetsTable.vue'
-import Pagination from '~/datagouv-components/src/components/Pagination.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{
   topic: TopicV2
 }>()
 
-const datasets = ref<Array<Dataset | DatasetV2>>([])
-
 const page = ref(1)
 const params = computed(() => {
-  return { page: page.value }
+  return { page: page.value, topic: props.topic.id }
 })
-const { data: pageData, status, refresh } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/topics/${props.topic.id}/datasets/`, { lazy: true, query: params })
-
-const { $api } = useNuxtApp()
-const { toast } = useToast()
-const { t } = useI18n()
-const save = async (close: () => void) => {
-  await $api(`/api/2/topics/${props.topic.id}/datasets/`, {
-    method: 'POST',
-    body: datasets.value,
-  })
-
-  toast.success(t('Sauvegardé.'))
-  close()
-  datasets.value = []
-  await refresh()
-}
-const removeDataset = async (dataset: Dataset | DatasetV2) => {
-  await $api(`/api/2/topics/${props.topic.id}/datasets/${dataset.id}/`, { method: 'DELETE' })
-
-  toast.success(t('Supprimé.'))
-  await refresh()
-}
+const { data: pageData, status } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/datasets/`, { lazy: true, query: params })
 </script>

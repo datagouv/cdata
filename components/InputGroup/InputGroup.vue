@@ -2,6 +2,7 @@
   <div
     class="fr-input-group"
     :class="inputGroupClass"
+    @focusin="$emit('focusin')"
     @focusout="$emit('blur')"
   >
     <label
@@ -30,6 +31,7 @@
       :placeholder
       :required
       :spellcheck
+      :rows="rows"
       @change="change"
     />
     <MarkdownEditor
@@ -39,6 +41,8 @@
       :class="{ 'fr-input--error': hasError, 'fr-input--warning': !hasError && hasWarning, 'fr-input--valid': isValid }"
       :aria-describedby="ariaDescribedBy"
       :disabled="disabled"
+      :heading-levels="headingLevels"
+      :min-heading="minHeading"
       :value="(modelValue as string | undefined)"
       :placeholder="placeholder"
       :required="required"
@@ -95,6 +99,7 @@ export type InputValue = string | undefined | null
 export type AllowedInputType = 'markdown' | 'textarea' | InputTypeHTMLAttribute
 
 const emit = defineEmits<{
+  'focusin': []
   'blur': []
   'change': [value: InputValue]
   'update:modelValue': [value: InputValue]
@@ -108,17 +113,20 @@ const props = withDefaults(defineProps<{
   warningText?: string | null
   hasError?: boolean
   hasWarning?: boolean
+  headingLevels?: 1 | 2 | 3 | 4
   hintText?: string
   isValid?: boolean
   label: string
   hideLabel?: boolean
   showLabelInside?: boolean
+  minHeading?: 1 | 2 | 3 | 4 | 5
   modelValue?: string | Date | null
   placeholder?: string
   required?: boolean
   spellcheck?: boolean
   type?: AllowedInputType
   validText?: string
+  rows?: number
 }>(), {
   ariaDescribedby: '',
   autocomplete: undefined,

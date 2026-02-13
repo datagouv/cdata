@@ -19,14 +19,14 @@
       @click.stop="toggle"
     >
       <BrandedButton
-        color="primary-softer"
+        color="tertiary"
         @click.stop="toggle"
       >
         <template v-if="expanded">
-          {{ $t("Lire moins") }}
+          {{ t("Lire moins") }}
         </template>
         <template v-else>
-          {{ $t("Lire plus") }}
+          {{ t("Lire plus") }}
         </template>
       </BrandedButton>
     </div>
@@ -34,34 +34,40 @@
 </template>
 
 <script setup lang="ts">
-import { templateRef, useElementSize } from '@vueuse/core'
-import { ref, watch } from 'vue'
-import { easing, tween, styler } from 'popmotion'
+import { useElementSize } from '@vueuse/core'
+import { ref, useTemplateRef, watch } from 'vue'
+import { animate } from 'popmotion'
+import styler from 'stylefire'
 import BrandedButton from './BrandedButton.vue'
+import { useTranslation } from '../composables/useTranslation'
 
 const props = withDefaults(defineProps<{
+  wantedHeight?: number
   maxHeight?: string
 }>(), {
+  wantedHeight: 284,
   maxHeight: '',
 })
 
-const DEFAULT_HEIGHT = 284
+const { t } = useTranslation()
+
 const expanded = ref(false)
 const readMoreRequired = ref(false)
-const containerRef = templateRef<HTMLElement | null>('containerRef')
-const readMoreRef = templateRef<HTMLElement | null>('readMoreRef')
+const containerRef = useTemplateRef<HTMLElement | null>('containerRef')
+const readMoreRef = useTemplateRef<HTMLElement | null>('readMoreRef')
 const { height } = useElementSize(containerRef)
-const containerHeight = ref(DEFAULT_HEIGHT)
+const containerHeight = ref(props.wantedHeight)
 const getHeight = (elt: Element) => {
   const style = getComputedStyle(elt)
   return parseFloat(style.getPropertyValue('height'))
     + parseFloat(style.getPropertyValue('margin-top'))
     + parseFloat(style.getPropertyValue('margin-bottom'))
 }
+
 const getDefaultHeight = () => {
   const elementMaxHeight = document.querySelector(`[data-read-more-max-height="${props.maxHeight}"]`)
   if (!elementMaxHeight) {
-    return DEFAULT_HEIGHT
+    return props.wantedHeight
   }
   return Array.from(elementMaxHeight.children)
     .map(getHeight)
@@ -74,31 +80,31 @@ const updateReadMoreHeight = (height: number) => {
     containerHeight.value = height
   }
 }
+
+watch(() => props.wantedHeight, () => {
+  updateReadMoreHeight(height.value)
+})
 const toggle = () => {
   if (!readMoreRef.value) {
     return
   }
   const divStyler = styler(readMoreRef.value)
   if (expanded.value) {
-    tween({
+    animate({
       from: { height: readMoreRef.value.scrollHeight },
       to: { height: getDefaultHeight() },
       duration: 300,
-      ease: easing.anticipate,
-    }).start({
-      update: divStyler.set,
-      complete: () => readMoreRef.value?.scrollIntoView({ behavior: 'smooth' }),
+      onComplete: () => readMoreRef.value?.scrollIntoView({ behavior: 'smooth' }),
+      onUpdate: divStyler.set,
     })
   }
   else {
-    tween({
+    animate({
       from: { height: getDefaultHeight() },
       to: { height: readMoreRef.value.scrollHeight },
       duration: 300,
-      ease: easing.anticipate,
-    }).start({
-      update: divStyler.set,
-      complete: () => divStyler.set({ height: 'auto' }),
+      onUpdate: divStyler.set,
+      onComplete: () => divStyler.set({ height: 'auto' }),
     })
   }
   expanded.value = !expanded.value

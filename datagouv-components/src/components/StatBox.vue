@@ -46,7 +46,7 @@
         />
       </ContentLoader>
       <div
-        v-else-if="changesThisYear"
+        v-else-if="data && changesThisYear"
         class="ml-2"
       >
         <SmallChart
@@ -60,8 +60,12 @@
       </div>
     </div>
     <template v-if="lastValue && lastMonth">
-      <p class="mt-1 mb-0 text-xs">
-        {{ $t('depuis juillet 2022') }}
+      <p
+        v-if="since"
+        class="mt-1 mb-0 text-xs"
+      >
+        {{ t("depuis ") }}
+        {{ formatDate(since, { dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }) }}
       </p>
       <p class="mt-1 mb-0 text-xs text-success-darkest">
         <strong>
@@ -124,7 +128,7 @@
         />
       </ContentLoader>
       <div
-        v-else-if="changesThisYear"
+        v-else-if="data && changesThisYear"
         class="ml-2"
       >
         <SmallChart
@@ -136,7 +140,7 @@
     </div>
     <p
       v-if="lastValue && lastMonth"
-      class="mt-2 font-normal text-transform-none fr-badge fr-badge--no-icon fr-badge--success"
+      class="mt-2 font-normal normal-case fr-badge fr-badge--no-icon fr-badge--success"
     >
       <strong class="mr-1">
         + {{ summarize(lastValue, 2) }}
@@ -149,21 +153,22 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { ContentLoader } from 'vue-content-loader'
 import { useFormatDate } from '../functions/dates'
 import { summarize } from '../functions/helpers'
+import { useTranslation } from '../composables/useTranslation'
 import SmallChart from './SmallChart.vue'
 
 const props = defineProps<{
   title: string
-  data: Record<string, number> | null
+  data?: Record<string, number> | null
   type: 'line' | 'bar'
   size?: 'sm'
   summary?: number | null
+  since?: string | null
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const months = computed(() => props.data ? Object.keys(props.data) : [])

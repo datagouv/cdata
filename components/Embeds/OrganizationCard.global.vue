@@ -1,6 +1,8 @@
 <template>
   <LoadingBlock
+    v-slot="{ data }"
     :status
+    :data="apiData"
     class="bg-transparent overflow-hidden"
   >
     <OrganizationCard
@@ -11,10 +13,10 @@
 </template>
 
 <script setup lang="ts">
-import { OrganizationCard, type Organization } from '@datagouv/components-next'
+import { LoadingBlock, OrganizationCard, type Organization } from '@datagouv/components-next'
 
 const props = defineProps<{
   slug: string
 }>()
-const { data, status } = await useAPI<Organization>(`/api/1/organizations/${props.slug}/`, { lazy: true, server: false })
+const { data: apiData, status } = await useAPI<Organization>(`/api/1/organizations/${props.slug}/`, { lazy: true, server: false })
 </script>

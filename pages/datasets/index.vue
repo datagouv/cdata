@@ -1,44 +1,65 @@
 <template>
-  <div class="container mb-16">
-    <Breadcrumb>
-      <BreadcrumbItem
-        to="/"
-        :external="true"
-      >
-        {{ $t('Accueil') }}
-      </BreadcrumbItem>
-      <BreadcrumbItem>
-        {{ $t('Jeux de données') }}
-      </BreadcrumbItem>
-    </Breadcrumb>
-
-    <h1 class="text-gray-title font-extrabold text-2xl mb-2">
-      {{ $t('Jeux de données') }}
-    </h1>
-    <p
-      v-if="site"
-      class="block mb-3"
-    >
-      {{ $t('Rechercher parmi les {count} jeux de données sur {site}', {
-        count: site.metrics.datasets,
+  <div>
+    <EditoHeader
+      color="primary"
+      :title="$t('Jeux de données')"
+      :subtitle="$t('Rechercher parmi les {count} jeux de données sur {site}', {
+        count: site?.metrics.datasets ?? 0,
         site: config.public.title,
-      }) }}
-    </p>
-
-    <DatasetsSearchPage />
+      })"
+      :placeholder="$t('ex. élections présidentielles')"
+      search-url="/datasets/search"
+      :link-label="$t(`Qu'est-ce qu'un jeu de données ?`)"
+      :link-url="config.public.guideDatasets"
+    />
+    <PageShowById
+      v-if="site?.datasets_page"
+      :page-id="site.datasets_page"
+    />
+    <PageShowNew
+      v-else-if="isEditing"
+      site-key="datasets_page"
+      @created="onPageCreated"
+    />
+    <EditoFooter
+      color="primary"
+      search-url="/datasets/search"
+      :search-label="$t(`Voir tous les jeux de données`)"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Site } from '@datagouv/components-next'
-import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import EditoFooter from '~/components/Pages/EditoFooter.vue'
+import EditoHeader from '~/components/Pages/EditoHeader.vue'
+import PageShowById from '~/components/Pages/PageShowById.vue'
+import PageShowNew from '~/components/Pages/PageShowNew.vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 useSeoMeta({
-  title: t('Jeux de données'),
+  title: t('Jeux de données - data.gouv.fr'),
 })
 
 const config = useRuntimeConfig()
+const route = useRoute()
 
-const { data: site } = await useAPI<Site>('/api/1/site')
+onMounted(async () => {
+  const hasFacets = Object.keys(route.query).some(key =>
+    ['q', 'tag', 'format', 'license', 'organization', 'organization_badge',
+      'geozone', 'granularity', 'schema', 'sort', 'page'].includes(key),
+  )
+
+  if (hasFacets) {
+    await navigateTo({ path: '/datasets/search', query: route.query })
+  }
+})
+
+const { data: site, refresh: refreshSite } = await useAPI<Site>('/api/1/site/')
+
+const isEditing = computed(() => route.query.edit === 'true')
+
+async function onPageCreated() {
+  await refreshSite()
+}
 </script>

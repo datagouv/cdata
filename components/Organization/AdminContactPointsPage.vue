@@ -1,6 +1,10 @@
 <template>
   <div>
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: pageData }"
+      :status
+      :data="pageData"
+    >
       <div v-if="pageData && pageData.total > 0">
         <AdminContactPointsTable
           :contact-points="pageData ? pageData.data : []"
@@ -35,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, type ContactPoint, type Organization } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, type ContactPoint, type Organization } from '@datagouv/components-next'
 import AdminContactPointsTable from '~/components/AdminTable/AdminContactPointsTable/AdminContactPointsTable.vue'
 import type { PaginatedArray, SortDirection } from '~/types/types'
 
@@ -43,7 +47,7 @@ const props = defineProps<{
   organization: Organization
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const page = ref(1)
 const pageSize = ref(20)

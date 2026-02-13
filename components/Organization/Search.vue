@@ -21,7 +21,7 @@
         autocomplete="off"
         data-cy="search-input"
         name="q"
-        @keydown.enter="moveToOrganization(activeOption.page)"
+        @keydown.enter="moveToOrganization(activeOption.slug)"
         @change="q = $event.target.value"
       />
     </div>
@@ -35,13 +35,23 @@
         class="marker:hidden p-0"
         :value="option"
       >
-        <OrganizationSearchOption
-          :active
-          :logo="option.image_url"
-          :name="option.name"
-          :link="option.page"
-          @mousedown.left="moveToOrganization(option.page)"
-        />
+        <div
+          class="relative flex items-center py-2 fr-enlarge-link border-neutral-200 border-b"
+          :class="{ 'bg-indigo-100 outline outline-primary outline-offset-[-2px]': active }"
+          @mousedown.left="moveToOrganization(option.slug)"
+        >
+          <OrganizationLogo
+            :organization="option"
+            class="flex-none mx-2"
+            size-class="size-8"
+          />
+          <CdataLink
+            class="flex-1"
+            :to="`/organizations/${option.slug}`"
+          >
+            <span class="font-bold">{{ option.name }}</span>
+          </CdataLink>
+        </div>
       </ComboboxOption>
     </ComboboxOptions>
   </Combobox>
@@ -49,14 +59,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import type { Organization } from '@datagouv/components-next'
+import { OrganizationLogo, type Organization, toast } from '@datagouv/components-next'
 import { watchDebounced } from '@vueuse/core'
 import { RiSearch2Line } from '@remixicon/vue'
 import { Combobox, ComboboxInput, ComboboxLabel, ComboboxOption, ComboboxOptions } from '@headlessui/vue'
 
-const { t } = useI18n()
-const { toast } = useToast()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const q = ref('')
 const { $api } = useNuxtApp()
@@ -66,20 +74,15 @@ const options = ref<Array<Organization>>([])
 async function fetchOptions() {
   try {
     const data = await $api<Array<Organization>>('/api/1/organizations/suggest/', { params: { q: q.value, size: 50 } })
-    options.value = data.map((option: Organization) => ({
-      ...option,
-      id: option.id,
-      page: `${option.page}#/information/membres`,
-      link: option.page,
-    }))
+    options.value = data
   }
   catch {
     toast.error(t(`Une erreur s'est produite lors de la mise à jour des options.`))
   }
 }
 
-async function moveToOrganization(page: string) {
-  await navigateTo(page, { external: true })
+async function moveToOrganization(slug: string) {
+  await navigateTo(`/organizations/${slug}`)
 }
 
 watchDebounced(q, async (newValue, oldValue) => {

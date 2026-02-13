@@ -1,5 +1,6 @@
 import { inject, type Component, type InjectionKey } from 'vue'
 import type { UseFetchFunction } from './functions/api.types'
+import type { FetchOptions } from 'ofetch'
 
 export type PluginConfig = {
   name: string // Name of the application (ex: data.gouv.fr)
@@ -11,15 +12,25 @@ export type PluginConfig = {
   maxPdfPreviewByteSize?: number // Maximum size of PDF to preview in bytes
   maxXmlPreviewCharSize?: number // Maximum size of XML to preview in characters. XML preview module can NOT be collapsed by default so we should not have a preview for large files.
   pmtilesViewerBaseUrl?: string | null // Base URL of a pmtiles viewer (ex: https://pmtiles.io/#url=)
+  metricsApiUrl?: string
   schemaValidataUrl?: string
   schemaDocumentationUrl?: string
+  schemasSiteUrl?: string
+  schemasSiteName?: string
   tabularApiUrl?: string
   tabularApiPageSize?: number
   tabularAllowRemote?: boolean
   tabularApiDataserviceId?: string
   customUseFetch?: UseFetchFunction | null
+  onRequest?: FetchOptions['onRequest']
+  onRequestError?: FetchOptions['onRequestError']
+  onResponse?: FetchOptions['onResponse']
+  onResponseError?: FetchOptions['onResponseError']
   textClamp?: string | Component | null
   appLink?: Component | null
+  clientOnly?: Component | null
+  searchDebounce?: number
+  forumUrl?: string
 }
 
 export const configKey = Symbol() as InjectionKey<PluginConfig>

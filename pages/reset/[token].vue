@@ -55,14 +55,15 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 
-const { $api } = useNuxtApp()
-const { toast } = useToast()
-const { t } = useI18n()
+definePageMeta({
+  matomoIgnore: true,
+})
+
+const { t } = useTranslation()
 const route = useRoute()
-const localePath = useLocalePath()
 const me = useMaybeMe()
 
 useSeoMeta({ title: t('Réinitialiser le mot de passe') })
@@ -70,7 +71,7 @@ useSeoMeta({ title: t('Réinitialiser le mot de passe') })
 watchEffect(async () => {
   if (me.value) {
     toast.success(t('Vous êtes déjà connecté.'))
-    await navigateTo(localePath('/'))
+    await navigateTo('/')
   }
 })
 
@@ -80,22 +81,20 @@ const passwordConfirmation = ref('')
 const loading = ref(false)
 const errors = ref<FieldsErrors>({})
 
+const postApiWithCsrf = usePostApiWithCsrf()
 const reset = async () => {
   loading.value = true
   errors.value = {}
 
   try {
-    await $api(`/fr/reset/${route.params.token}/`, {
-      method: 'POST',
-      body: {
-        password: password.value,
-        password_confirm: passwordConfirmation.value,
-      },
+    await postApiWithCsrf(`/reset/${route.params.token}/`, {
+      password: password.value,
+      password_confirm: passwordConfirmation.value,
     })
 
     toast.success(t('Votre mot de passe a bien été réinitialisé. Vous êtes maintenant connecté.'))
     await loadMe(me)
-    await navigateTo(localePath('/'))
+    await navigateTo('/')
   }
   catch (e) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

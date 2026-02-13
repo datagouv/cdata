@@ -1,26 +1,42 @@
 <template>
-  <AdminUserProfilePage
+  <div
     v-if="user"
-    :user
-    @refresh="refresh"
-  />
+    class="space-y-5"
+  >
+    <AdminUserProfileHeader
+      :user="user"
+    />
+
+    <TabLinks
+      :links="[
+        { href: `/admin/users/${user.id}/profile`, label: $t('Profil') },
+        { href: `/admin/users/${user.id}/profile/activities`, label: $t('Activités') },
+      ]"
+    />
+
+    <NuxtPage
+      :page-key="route => route.fullPath"
+      :user="user"
+      @refresh="refresh"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
-import AdminUserProfilePage from '~/components/User/AdminUserProfilePage.vue'
+import type { User } from '@datagouv/components-next'
+import AdminUserProfileHeader from '~/components/User/AdminUserProfileHeader.vue'
 
-const { currentUser: user } = useCurrentOwned()
+definePageMeta({
+  keepScroll: true,
+})
+
+const { currentUser: user, setCurrentUser } = useCurrentOwned()
+const { $api } = useNuxtApp()
 
 const refresh = async () => {
   if (!user.value) return
-  // const newUser = await $api<User>(`/api/1/users/${user.value.id}/`)
+  const newUser = await $api<User>(`/api/1/users/${user.value.id}/`)
 
-  // This doesn't work I don't know why…
-  // users.value[user.value.id] = newUser
-
-  // This doesn't work because of useComponentConfig outside @datagouv/components in
-  // <Avatar />
-  // user.value.avatar = newUser.avatar
-  // user.value.avatar_thumbnail = newUser.avatar_thumbnail
+  setCurrentUser(newUser)
 }
 </script>

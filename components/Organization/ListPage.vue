@@ -22,6 +22,7 @@
     <BrandedButton
       class="rounded-none rounded-tr"
       :icon="RiSearch2Line"
+      icon-only-on-mobile
       size="lg"
     >
       {{ $t('Rechercher') }}
@@ -59,7 +60,11 @@
       </select>
     </div>
   </div>
-  <LoadingBlock :status>
+  <LoadingBlock
+    v-slot="{ data: organizations }"
+    :status
+    :data="organizations"
+  >
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 mb-16">
       <OrganizationCard
         v-for="organization in organizations.data"
@@ -79,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, OrganizationCard, Pagination } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, OrganizationCard, Pagination } from '@datagouv/components-next'
 import type { Organization } from '@datagouv/components-next'
 import { RiSearch2Line } from '@remixicon/vue'
 import { debouncedRef } from '@vueuse/core'
@@ -126,7 +131,7 @@ watchEffect(() => {
   q.value = props.initialQ
 })
 
-const qDebounced = debouncedRef(q, config.public.searchAutocompleteDebounce)
+const qDebounced = debouncedRef(q, config.public.searchDebounce)
 const sort = ref(props.sort ?? '')
 const sortParam = computed(() => sort.value ? sort.value : undefined)
 

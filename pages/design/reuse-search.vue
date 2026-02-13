@@ -1,7 +1,7 @@
 <template>
   <div>
     <Breadcrumb>
-      <BreadcrumbItem to="/design/">
+      <BreadcrumbItem to="/design">
         {{ $t('Système de design') }}
       </BreadcrumbItem>
       <BreadcrumbItem to="/design/reuse-search">
@@ -15,13 +15,13 @@
     <div class="bg-white py-4 px-4 -mx-4">
       <ReusesListPage
         :link="getLink"
-        :reuses
+        :reuses="reuses ?? { data: [], total: 0, page: 1, page_size: 21, next_page: null, previous_page: null }"
         :initial-q="q"
         :sort
         :status
         :topic
-        :topics
-        :total-reuses="site.metrics.reuses"
+        :topics="topics ?? []"
+        :total-reuses="site?.metrics.reuses ?? 0"
         @change="change"
       />
     </div>
@@ -29,6 +29,7 @@
 </template>
 
 <script setup lang="ts">
+import { getLink } from '@datagouv/components-next'
 import type { Reuse, ReuseTopic, Site } from '@datagouv/components-next'
 import type { LocationQueryValue } from 'vue-router'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -65,7 +66,7 @@ function change(newQs: string, newTopic: string | undefined, newSort: string | u
   })
 }
 
-const { data: site } = await useAPI<Site>('/api/1/site')
+const { data: site } = await useAPI<Site>('/api/1/site/')
 
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
 

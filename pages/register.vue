@@ -81,17 +81,17 @@
 
         <div class="fr-checkbox-group fr-checkbox-group--sm">
           <input
-            id="checkboxes-hint-el-sm-1"
+            :id="acceptConditionsId"
             v-model="acceptConditions"
-            name="checkboxes-hint-el-sm-1"
             type="checkbox"
-            aria-describedby="checkboxes-hint-el-sm-1-messages"
+            :aria-describedby="getAllErrorsInErrorFields(errors, 'accept_conditions') ? acceptConditionsErrorId : undefined"
+            required
           >
           <label
             class="fr-label"
-            for="checkboxes-hint-el-sm-1"
+            :for="acceptConditionsId"
           >
-            <i18n-t
+            <TranslationT
               keypath="J'ai lu et j'accepte {link}"
               tag="p"
               class="fr-m-0 fr-mb-1w"
@@ -99,12 +99,20 @@
               <template #link>
                 <CdataLink to="/pages/legal/cgu">{{ $t('les conditions générales d\'utilisation du service') }}</CdataLink>
               </template>
-            </i18n-t>
+            </TranslationT>
           </label>
+          <p
+            v-if="getAllErrorsInErrorFields(errors, 'accept_conditions')"
+            :id="acceptConditionsErrorId"
+            class="fr-error-text"
+          >
+            {{ getAllErrorsInErrorFields(errors, 'accept_conditions') }}
+          </p>
         </div>
 
         <div>
           <Captchetat
+            v-if="config.public.captcheta.enabled"
             v-model:uuid="captchaUuid"
             v-model:code="captchaCode"
             :errors="getAllErrorsInErrorFields(errors, 'captcha_code')"
@@ -134,15 +142,18 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, TranslationT, toast } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 
+definePageMeta({
+  matomoIgnore: true,
+})
+
 const config = useRuntimeConfig()
-const { $api } = useNuxtApp()
-const { t } = useI18n()
+const { t } = useTranslation()
 const route = useRoute()
 
-useSeoMeta({ title: t('S\'enregistrer') })
+useSeoMeta({ title: t('S\'enregistrer'), robots: 'noindex' })
 
 const email = ref('')
 const password = ref('')
@@ -150,6 +161,8 @@ const passwordConfirmation = ref('')
 const firstname = ref('')
 const lastname = ref('')
 const acceptConditions = ref(false)
+const acceptConditionsId = useId()
+const acceptConditionsErrorId = useId()
 const captchaCode = ref('')
 const captchaUuid = ref('')
 const loading = ref(false)
@@ -162,6 +175,9 @@ onMounted(() => {
   }
 })
 
+const postApiWithCsrf = usePostApiWithCsrf()
+const me = useMe()
+
 const connect = async () => {
   if (success.value) return
 
@@ -169,23 +185,23 @@ const connect = async () => {
   errors.value = {}
 
   try {
-    await $api('/fr/register/', {
-      method: 'POST',
-      body: {
-        email: email.value,
-        password: password.value,
-        password_confirm: passwordConfirmation.value,
-        first_name: firstname.value,
-        last_name: lastname.value,
-        captcha_uuid: captchaUuid.value,
-        captcha_code: captchaCode.value,
-      },
+    await postApiWithCsrf('/register/', {
+      email: email.value,
+      password: password.value,
+      password_confirm: passwordConfirmation.value,
+      first_name: firstname.value,
+      last_name: lastname.value,
+      captcha_uuid: captchaUuid.value,
+      captcha_code: captchaCode.value,
+      accept_conditions: acceptConditions.value,
     })
 
     if (config.public.requireEmailConfirmation) {
       success.value = true
     }
     else {
+      toast.success(t('Votre compte a bien été créé. Vous êtes maintenant connecté.'))
+      await loadMe(me)
       const next = sessionStorage.getItem('next')
       if (next) {
         navigateTo(next)

@@ -26,7 +26,11 @@
       </div>
     </div>
 
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: pageData }"
+      :status
+      :data="pageData"
+    >
       <div v-if="pageData && pageData.total > 0">
         <AdminTable>
           <thead>
@@ -61,10 +65,9 @@
             >
               <td>
                 <div class="flex items-center space-x-2">
-                  <Placeholder
-                    type="organization"
-                    :src="organization.logo_thumbnail"
-                    :size="20"
+                  <OrganizationLogo
+                    :organization
+                    size-class="size-5"
                   />
                   <AdminContentWithTooltip>
                     <CdataLink
@@ -104,25 +107,22 @@
               <td>
                 <BrandedButton
                   size="xs"
-                  color="secondary-softer"
+                  color="tertiary"
                   :href="organization.page"
                   :icon="RiEyeLine"
                   icon-only
-                  external
                   keep-margins-even-without-borders
-                >
-                  {{ $t('Voir la page publique') }}
-                </BrandedButton>
+                  :title="$t('Voir la page publique')"
+                />
                 <BrandedButton
                   size="xs"
-                  color="secondary-softer"
+                  color="tertiary"
                   :href="`/admin/organizations/${organization.id}/profile`"
                   :icon="RiPencilLine"
                   icon-only
                   keep-margins-even-without-borders
-                >
-                  {{ $t('Modifier') }}
-                </BrandedButton>
+                  :title="$t('Modifier')"
+                />
               </td>
             </tr>
           </tbody>
@@ -166,11 +166,10 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, useFormatDate } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, OrganizationLogo, useFormatDate } from '@datagouv/components-next'
 import { Pagination, type Organization } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
 import type { DiscussionSortedBy } from '~/types/discussions'
 import type { PaginatedArray, SortDirection } from '~/types/types'
@@ -178,10 +177,9 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
-import Placeholder from '~/components/Placeholder/Placeholder.vue'
 import AdminInput from '~/components/AdminInput.vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
 
@@ -191,7 +189,7 @@ const sortedBy = ref<DiscussionSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 const q = ref('')
-const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const qDebounced = refDebounced(q, config.public.searchDebounce)
 
 const url = computed(() => {
   const url = new URL(`/api/1/organizations`, config.public.apiBase)

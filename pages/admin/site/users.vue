@@ -26,7 +26,11 @@
       </div>
     </div>
 
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: pageData }"
+      :status
+      :data="pageData"
+    >
       <div v-if="pageData && pageData.total">
         <AdminTable>
           <thead>
@@ -70,25 +74,22 @@
               <td>
                 <BrandedButton
                   size="xs"
-                  color="secondary-softer"
+                  color="tertiary"
                   :href="user.page"
                   :icon="RiEyeLine"
                   icon-only
-                  external
                   keep-margins-even-without-borders
-                >
-                  {{ $t('Voir la page publique') }}
-                </BrandedButton>
+                  :title="$t('Voir la page publique')"
+                />
                 <BrandedButton
                   size="xs"
-                  color="secondary-softer"
+                  color="tertiary"
                   :href="`/admin/users/${user.id}/profile`"
                   :icon="RiPencilLine"
                   icon-only
                   keep-margins-even-without-borders
-                >
-                  {{ $t('Modifier') }}
-                </BrandedButton>
+                  :title="$t('Modifier')"
+                />
               </td>
             </tr>
           </tbody>
@@ -132,10 +133,9 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, useFormatDate, type User } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, useFormatDate, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
 import { BrandedButton } from '@datagouv/components-next'
 import type { DiscussionSortedBy } from '~/types/discussions'
@@ -146,7 +146,7 @@ import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import AdminInput from '~/components/AdminInput.vue'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const { formatDate } = useFormatDate()
 
@@ -156,13 +156,15 @@ const sortedBy = ref<DiscussionSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 const q = ref('')
-const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const qDebounced = refDebounced(q, config.public.searchDebounce)
 
 const url = computed(() => {
-  const url = new URL(`/api/1/users`, config.public.apiBase)
+  const url = new URL(`/api/1/users/`, config.public.apiBase)
 
   url.searchParams.set('deleted', 'true')
-  url.searchParams.set('sort', sortDirection.value)
+  if (!qDebounced.value || sortDirection.value !== '-created') {
+    url.searchParams.set('sort', sortDirection.value)
+  }
   url.searchParams.set('q', qDebounced.value)
   url.searchParams.set('page_size', pageSize.value.toString())
   url.searchParams.set('page', page.value.toString())

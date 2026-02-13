@@ -1,5 +1,5 @@
 <template>
-  <article class="fr-enlarge-link group/reuse-card bg-white border border-gray-default flex flex-col relative">
+  <article class="fr-enlarge-link group/reuse-card bg-white border border-gray-default hover:bg-gray-some flex flex-col relative">
     <div class="flex flex-col h-full flex-1 order-2 px-8">
       <div class="order-1 flex flex-col px-4 py-1 h-full -mx-8">
         <h3 class="font-bold text-base mt-1 mb-0 truncate">
@@ -11,45 +11,33 @@
           </AppLink>
         </h3>
         <div class="order-3 text-sm m-0 text-gray-medium">
-          <p class="text-sm mb-0 flex items-center">
-            <span
-              v-if="reuse.organization"
-              class="relative block truncate break-all z-[2] flex-initial"
-            >
-              <AppLink
-                v-if="organizationUrl"
-                class="link overflow-hidden"
-                :to="organizationUrl"
-              >
-                <OrganizationNameWithCertificate
-                  :organization="reuse.organization"
-                />
-              </AppLink>
-              <OrganizationNameWithCertificate
-                v-else
-                :organization="reuse.organization"
-              />
-            </span>
-            <span
-              v-else-if="ownerName"
-              class="mr-1 truncate"
-            >{{ ownerName }}</span>
+          <div class="text-sm mb-0 flex items-center">
+            <ObjectCardOwner
+              :organization="reuse.organization"
+              :owner="reuse.owner"
+              :organization-url="organizationUrl"
+            />
             <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
             <span class="block flex-none">{{ t('publié {date}', { date: formatRelativeIfRecentDate(reuse.created_at, { dateStyle: 'medium' }) }) }}</span>
-          </p>
+          </div>
           <ReuseDetails :reuse />
         </div>
       </div>
     </div>
     <div class="order-1 relative flex-auto">
       <div class="group-hover/reuse-card:brightness-90">
-        <Placeholder
-          class="object-cover block object-center w-full h-auto aspect-[1.4]"
-          alt=""
-          type="reuse"
-          :src="reuse.image"
-          :size="320"
-        />
+        <div class="object-cover block w-full h-auto aspect-[1.4]">
+          <img
+            v-if="reuse.image"
+            :src="reuse.image"
+            class="size-full object-cover"
+          >
+          <Placeholder
+            v-else
+            type="Reuse"
+            class="w-full"
+          />
+        </div>
       </div>
       <ul
         v-if="reuse.private || reuse.archived"
@@ -75,14 +63,14 @@
 <script setup lang="ts">
 import { RiLockLine, RiSubtractLine } from '@remixicon/vue'
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type { RouteLocationRaw } from 'vue-router'
 import { useFormatDate } from '../functions/dates'
-import { getOwnerName } from '../functions/owned'
 import type { Reuse } from '../types/reuses'
+import { useTranslation } from '../composables/useTranslation'
 import AppLink from './AppLink.vue'
-import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
+import ObjectCardOwner from './ObjectCardOwner.vue'
 import ReuseDetails from './ReuseDetails.vue'
+import Placeholder from './Placeholder.vue'
 
 const props = defineProps<{
   reuse: Reuse
@@ -100,10 +88,8 @@ const props = defineProps<{
   organizationUrl?: RouteLocationRaw
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
-
-const ownerName = computed(() => getOwnerName(props.reuse))
 
 const reuseUrl = computed(() => props.reuseUrl || props.reuse.page)
 </script>

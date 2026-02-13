@@ -25,6 +25,7 @@
         </h1>
         <BrandedButton
           :href="dataservice.self_web_url"
+          new-tab
           color="secondary"
           size="xs"
           :icon="RiEyeLine"
@@ -36,14 +37,9 @@
       <div class="text-sm text-mentionGrey space-y-1.5 mb-5">
         <p class="space-x-1">
           <span>{{ $t('Statut') }}:</span>
-          <AdminBadge
-            size="xs"
-            :type="getDataserviceStatus(dataservice).type"
-          >
-            {{ getDataserviceStatus(dataservice).label }}
-          </AdminBadge>
+          <DataserviceBadge :dataservice />
         </p>
-        <p class="space-x-1">
+        <div class="space-x-1">
           <RiBarChartBoxLine class="inline size-3" />
           <span>{{ $t('Statistiques:') }}</span>
           <span class="space-x-2">
@@ -66,7 +62,7 @@
               </template>
             </Tooltip>
           </span>
-        </p>
+        </div>
         <p
           v-if="activities && activities.data.length"
           class="space-x-1"
@@ -105,19 +101,22 @@
 </template>
 
 <script setup lang="ts">
-import { AvatarWithName, BrandedButton, summarize, Tooltip, useFormatDate } from '@datagouv/components-next'
-import type { Dataservice } from '@datagouv/components-next'
+import { AvatarWithName, BrandedButton, summarize, Tooltip, useFormatDate, getActivityTranslation } from '@datagouv/components-next'
+import type { Activity, Dataservice } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiEyeLine, RiStarLine } from '@remixicon/vue'
+import DataserviceBadge from '~/components/AdminBadge/DataserviceBadge.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
-import type { Activity } from '~/types/activity'
 import type { PaginatedArray } from '~/types/types'
 
-const { t } = useI18n()
+definePageMeta({
+  keepScroll: true,
+})
+
+const { t } = useTranslation()
 
 const route = useRoute()
-const { getDataserviceStatus } = useDataserviceStatus()
 const { formatDate } = useFormatDate()
 const me = useMe()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)

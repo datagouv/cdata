@@ -51,11 +51,11 @@
             :title="$t('Éditer le point de contact')"
             size="lg"
             @open="newContactForm = contactPoint"
-            @close="newContactForm = null"
+            @close="newContactForm = { ...defaultContactForm, id: '' }"
           >
             <template #button="{ attrs, listeners }">
               <BrandedButton
-                color="secondary-softer"
+                color="tertiary"
                 :icon="RiPencilLine"
                 icon-only
                 size="xs"
@@ -63,9 +63,7 @@
                 keep-margins-even-without-borders
                 v-bind="attrs"
                 v-on="listeners"
-              >
-                {{ $t('Modifier') }}
-              </BrandedButton>
+              />
             </template>
             <form class="block space-y-4">
               <RequiredExplanation />
@@ -123,13 +121,12 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, SelectGroup, toast } from '@datagouv/components-next'
 import type { ContactPoint, ContactPointRole, Organization } from '@datagouv/components-next'
 import { RiPencilLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
-import SelectGroup from '~/components/Form/SelectGroup/SelectGroup.vue'
 
 const props = defineProps<{
   contactPoints: Array<ContactPoint>
@@ -142,8 +139,7 @@ const emit = defineEmits<{
 
 const { $api } = useNuxtApp()
 
-const { t } = useI18n()
-const { toast } = useToast()
+const { t } = useTranslation()
 
 const { form: newContactForm, getFirstError, touch, validate } = useForm({
   ...defaultContactForm,
@@ -179,6 +175,7 @@ async function updateContactPoint(closeModal: () => void) {
   }
   loading.value = true
   try {
+    // @ts-expect-error TS2321 Excessive stack depth - Nuxt route types bug
     await saveContactPoint($api, props.organization, newContactForm.value)
     emit('refresh')
     closeModal()

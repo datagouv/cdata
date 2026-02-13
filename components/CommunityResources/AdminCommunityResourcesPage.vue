@@ -14,7 +14,11 @@
       {{ t('{n} ressources communautaires', pageData.total) }}
     </h2>
 
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: pageData }"
+      :status
+      :data="pageData"
+    >
       <div v-if="pageData && pageData.total > 0">
         <AdminCommunityResourcesTable
           :community-resources="pageData ? pageData.data : []"
@@ -48,10 +52,9 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, type CommunityResource, type Organization, type User } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, type CommunityResource, type Organization, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import AdminCommunityResourcesTable from '../AdminTable/AdminCommunityResourcesTable/AdminCommunityResourcesTable.vue'
 import AdminBreadcrumb from '../Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '../Breadcrumbs/BreadcrumbItem.vue'
@@ -61,7 +64,7 @@ const props = defineProps<{
   organization?: Organization | null
   user?: User | null
 }>()
-const { t } = useI18n()
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 
 const page = ref(1)
@@ -70,7 +73,7 @@ const sortedBy = ref<CommunityResourceSortedBy>('created_at_internal')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 const q = ref('')
-const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const qDebounced = refDebounced(q, config.public.searchDebounce)
 
 function sort(column: CommunityResourceSortedBy, newDirection: SortDirection) {
   sortedBy.value = column

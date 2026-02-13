@@ -2,7 +2,7 @@
   <div
     class="flex flex-wrap gap-2"
     role="listbox"
-    :aria-labelledby="question.title"
+    :aria-labelledby="question.id"
     tabindex="0"
     :aria-activedescendant="active"
     @keydown="handleKeyPressForActiveDescendant"
@@ -99,9 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
-import MarkdownViewer from '~/components/MarkdownViewer/MarkdownViewer.vue'
-import useActiveDescendant from '~/datagouv-components/src/composables/useActiveDescendant'
+import { useActiveDescendant, BrandedButton, MarkdownViewer, SimpleBanner, toast } from '@datagouv/components-next'
 import type { Question, QuestionWithSegment } from '~/types/support'
 
 const emit = defineEmits<{
@@ -116,8 +114,6 @@ const props = defineProps<{
 const answerResponse = ref('')
 const loading = ref(false)
 const messageSent = ref(false)
-
-const { toast } = useToast()
 
 const { isActive, active, focusOut, handleKeyPressForActiveDescendant } = useActiveDescendant('choices' in props.question ? props.question.choices : [], 'horizontal')
 

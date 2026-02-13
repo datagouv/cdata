@@ -2,7 +2,8 @@
   <div>
     <div class="flex flex-wrap mb-6">
       <h2 class="text-sm w-full flex-none sm:flex-1 mb-0">
-        {{ $t('Statistiques à partir de juillet 2022') }}
+        {{ $t('Statistiques à partir de ') }}
+        {{ formatDate(config.public.metricsSince, { dateStyle: undefined, year: 'numeric', month: 'long', day: undefined }) }}.
       </h2>
       <div>
         <BrandedButton
@@ -51,27 +52,27 @@
       <ClientOnly>
         <StatBox
           :title="$t('Vues')"
-          :data="metricsDatasetsViews"
+          :data="metrics?.datasetsViews"
           type="line"
-          :summary="metricsDatasetsViewsTotal"
+          :summary="metrics?.datasetsViewsTotal"
         />
         <StatBox
           :title="$t('Téléchargements des données')"
-          :data="metricsDownloads"
+          :data="metrics?.downloads"
           type="line"
-          :summary="metricsDownloadsTotal"
+          :summary="metrics?.downloadsTotal"
         />
         <StatBox
           :title="$t('Nombre de visites des API')"
-          :data="metricsDataservicesViews"
+          :data="metrics?.dataservicesViews"
           type="line"
-          :summary="metricsDataservicesViewsTotal"
+          :summary="metrics?.dataservicesViewsTotal"
         />
         <StatBox
           :title="$t('Nombre de visites des réutilisations')"
-          :data="metricsReuses"
+          :data="metrics?.reusesViews"
           type="line"
-          :summary="metricsReusesTotal"
+          :summary="metrics?.reusesViewsTotal"
         />
       </ClientOnly>
     </section>
@@ -111,13 +112,13 @@
           <p class="!mb-4">
             {{ $t(`L'administrateur de l'organisation doit accepter votre demande.`) }}
           </p>
-          <p class="flex items-center gap-2 !mb-4 text-sm">
-            <Placeholder
-              :src="organization.logo_thumbnail"
-              type="organization"
-              :size="28"
-              class=" flex-none p-1 border rounded-sm border-gray-default"
-            />
+          <div class="flex items-center gap-2 !mb-4 text-sm">
+            <div class="flex-none p-1 border rounded-sm border-gray-default">
+              <OrganizationLogo
+                :organization
+                size-class="size-full"
+              />
+            </div>
             <OrganizationNameWithCertificate
               :organization
               :certifier="config.public.title"
@@ -125,7 +126,7 @@
               class="truncate"
               size="sm"
             />
-          </p>
+          </div>
           <InputGroup
             v-model="reason"
             :label="$t('Motif de la demande')"
@@ -217,7 +218,7 @@
       :title="$t('Intégrer sur votre site')"
       :button-text="$t('Voir les oembeds')"
     >
-      <h3 class="subtitle fr-mb-1v">
+      <h3 class="subtitle mb-1">
         {{ $t('La recherche de jeux de données de l\'organisation') }}
         <CopyButton
           :hide-label="true"
@@ -235,7 +236,7 @@
           rows="1"
         />
       </div>
-      <h3 class="subtitle fr-mb-1v">
+      <h3 class="subtitle mb-1">
         {{ $t('La recherche des API de l\'organisation') }}
         <CopyButton
           :hide-label="true"
@@ -253,7 +254,7 @@
           rows="1"
         />
       </div>
-      <h3 class="subtitle fr-mb-1v">
+      <h3 class="subtitle mb-1">
         {{ $t('La liste des réutilisations de l\'organisation') }}
         <CopyButton
           :hide-label="true"
@@ -276,51 +277,33 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, CopyButton, OrganizationNameWithCertificate, StatBox, useFormatDate, type Organization } from '@datagouv/components-next'
+import { Avatar, BrandedButton, CopyButton, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, useFormatDate, useMetrics, createOrganizationMetricsUrl, type Organization, type OrganizationMetrics, toast } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
-import getOrganizationOEmbedHtml from '~/datagouv-components/src/functions/organizations'
 
 const props = defineProps<{
   organization: Organization
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
-const { toast } = useToast()
 const me = useMaybeMe()
 
-const metricsDataservicesViews = ref<null | Record<string, number>>(null)
-const metricsDataservicesViewsTotal = ref<null | number>(null)
-const metricsDatasetsViews = ref<null | Record<string, number>>(null)
-const metricsDatasetsViewsTotal = ref<null | number>(null)
-const metricsDownloads = ref<null | Record<string, number>>(null)
-const metricsDownloadsTotal = ref<null | number>(null)
-const metricsReuses = ref<null | Record<string, number>>(null)
-const metricsReusesTotal = ref<null | number>(null)
+const { getOrganizationMetrics } = useMetrics()
+const metrics = ref<OrganizationMetrics | null>(null)
 
 watchEffect(async () => {
-  const metrics = await getOrganizationMetrics(props.organization.id)
-  metricsDownloads.value = metrics.downloads
-  metricsDownloadsTotal.value = metrics.downloadsTotal
-  metricsReuses.value = metrics.reusesViews
-  metricsReusesTotal.value = metrics.reusesViewsTotal
-  metricsDataservicesViews.value = metrics.dataservicesViews
-  metricsDataservicesViewsTotal.value = metrics.dataservicesViewsTotal
-  metricsDatasetsViews.value = metrics.datasetsViews
-  metricsDatasetsViewsTotal.value = metrics.datasetsViewsTotal
+  metrics.value = await getOrganizationMetrics(props.organization.id)
 })
 
 const downloadStatsUrl = computed(() => {
-  if (!metricsDatasetsViews.value || !metricsDownloads.value || !metricsDataservicesViews.value || !metricsReuses.value) {
-    return null
-  }
+  if (!metrics.value) return null
 
-  return createOrganizationMetricsUrl(metricsDatasetsViews.value, metricsDownloads.value, metricsDataservicesViews.value, metricsReuses.value)
+  return createOrganizationMetricsUrl(metrics.value.datasetsViews, metrics.value.downloads, metrics.value.dataservicesViews, metrics.value.reusesViews)
 })
 
 const reason = ref('')

@@ -1,12 +1,15 @@
 <template>
   <div class="max-w-[38rem] hover:bg-neutral-200 fr-enlarge-link">
     <div v-if="post.image">
-      <img :src="post.image">
+      <img
+        :src="post.image"
+        alt=""
+      >
     </div>
     <div class="p-4">
       <p class="text-lg mb-2.5 font-bold">
         <CdataLink
-          :to="`/posts/${post.slug}/`"
+          :to="post.page"
         >
           {{ post.name }}
         </CdataLink>

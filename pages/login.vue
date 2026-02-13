@@ -45,15 +45,13 @@
 
           <div class="fr-checkbox-group fr-checkbox-group--sm">
             <input
-              id="checkboxes-hint-el-sm-1"
+              :id="rememberMeId"
               v-model="rememberMe"
-              name="checkboxes-hint-el-sm-1"
               type="checkbox"
-              aria-describedby="checkboxes-hint-el-sm-1-messages"
             >
             <label
               class="fr-label"
-              for="checkboxes-hint-el-sm-1"
+              :for="rememberMeId"
             >
               {{ $t('Se souvenir de moi') }}
             </label>
@@ -78,7 +76,7 @@
           v-if="config.public.requireEmailConfirmation"
           class="text-center text-gray-plain text-sm"
         >
-          {{ $t('Instructions de confirmation non reçues ?') }} <CdataLink to="/confirm">
+          {{ $t('Instructions de confirmation non reçues ?') }} <CdataLink to="/resend-confirm-email">
             {{ $t('Renvoyer les instructions') }}
           </CdataLink>
         </div>
@@ -116,20 +114,23 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
+import { usePostApiWithCsrf } from '~/utils/api'
 
-const { $api } = useNuxtApp()
-const { t } = useI18n()
-const { toast } = useToast()
-const localePath = useLocalePath()
+definePageMeta({
+  matomoIgnore: true,
+})
+
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 
-useSeoMeta({ title: t('Connexion') })
+useSeoMeta({ title: t('Connexion'), robots: 'noindex' })
 
 const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
+const rememberMeId = useId()
 const loading = ref(false)
 const errors = ref<FieldsErrors>({})
 const me = useMe()
@@ -142,29 +143,36 @@ onMounted(() => {
   }
 })
 
+const postApiWithCsrf = usePostApiWithCsrf()
 const connect = async () => {
   loading.value = true
   errors.value = {}
 
   try {
-    await $api('/fr/login/', {
-      method: 'POST',
-      body: {
-        email: email.value,
-        password: password.value,
-        remember: rememberMe.value,
-      },
+    const { response } = await postApiWithCsrf<{ response: { tf_required: boolean, tf_state: string } }>('/login/', {
+      email: email.value,
+      password: password.value,
+      remember: rememberMe.value,
     })
 
-    toast.success(t('Vous êtes maintenant connecté.'))
-    await loadMe(me)
-
-    const next = sessionStorage.getItem('next')
-    if (next) {
-      navigateTo(next)
+    if (response.tf_required === true) {
+      // 2FA is required, we should either set it up if not done already or validate it
+      if (response.tf_state === 'setup_from_login')
+        navigateTo('/setup-two-factor')
+      else
+        navigateTo('/validate-two-factor')
     }
     else {
-      await navigateTo(localePath('/'))
+      toast.success(t('Vous êtes maintenant connecté.'))
+      await loadMe(me)
+
+      const next = sessionStorage.getItem('next')
+      if (next) {
+        navigateTo(next)
+      }
+      else {
+        await navigateTo('/')
+      }
     }
   }
   catch (e) {

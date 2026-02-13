@@ -9,7 +9,7 @@
       </div>
       <BrandedButton
         :icon="RiCloseLine"
-        color="secondary-softer"
+        color="tertiary"
         size="xs"
         @click="$emit('close')"
       >
@@ -74,7 +74,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const loading = ref(false)

@@ -8,15 +8,14 @@
         color="secondary"
         size="xs"
         :icon="RiFlagLine"
+        :title="$t('Signalement')"
         icon-only
         v-bind="attrs"
         v-on="listeners"
-      >
-        {{ $t('Signalement') }}
-      </BrandedButton>
+      />
     </template>
 
-    <i18n-t
+    <TranslationT
       v-if="reported"
       keypath="L’équipe de {site} examinera le contenu pour déterminer si celui-ci enfreint {terms}. Merci pour votre aide."
       tag="p"
@@ -27,12 +26,11 @@
       <template #terms>
         <CdataLink
           to="/pages/legal/cgu/"
-          external
         >
           {{ $t("nos modalités d'utilisation") }}
         </CdataLink>
       </template>
-    </i18n-t>
+    </TranslationT>
     <div v-else>
       <SimpleBanner
         type="warning"
@@ -41,7 +39,6 @@
         {{ $t("Merci de ne signaler qu’en cas d’inquiétude sérieuse.") }}
         <CdataLink
           to="/pages/legal/cgu/"
-          external
         >
           {{ $t("Voir nos modalités d'utilisation.") }}
         </CdataLink>
@@ -103,12 +100,12 @@
 
 <script setup lang="ts">
 import { RiFlagLine } from '@remixicon/vue'
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
-import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
+import { BrandedButton, SelectGroup, SimpleBanner, TranslationT } from '@datagouv/components-next'
+import type { ReportReason, ReportSubject } from '@datagouv/components-next'
 import CdataLink from '../CdataLink.vue'
 
 const props = defineProps<{
-  subject: { id: string, class: string }
+  subject: ReportSubject
 }>()
 const emit = defineEmits<{
   (e: 'reported'): void
@@ -127,9 +124,9 @@ const { form, getFirstError, getFirstWarning } = useForm({
   message: [required()],
 })
 
-const reasons = ref([] as Array<{ label: string, value: string }>)
+const reasons = ref([] as Array<ReportReason>)
 onMounted(async () => {
-  reasons.value = await $api<Array<{ label: string, value: string }>>('/api/1/reports/reasons/')
+  reasons.value = await $api<Array<ReportReason>>('/api/1/reports/reasons/')
 })
 
 const send = async () => {

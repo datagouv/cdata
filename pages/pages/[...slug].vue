@@ -3,7 +3,6 @@
   <div class="container mb-7">
     <Breadcrumb>
       <BreadcrumbItem
-        :external="true"
         to="/"
       >
         Accueil
@@ -12,7 +11,11 @@
         {{ data.data.title }}
       </BreadcrumbItem>
     </Breadcrumb>
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data }"
+      :status
+      :data="data"
+    >
       <div
         v-if="status === 'success' && data"
         :class="markdownClasses"
@@ -39,6 +42,7 @@
 </template>
 
 <script setup lang="ts">
+import { LoadingBlock, markdownClasses, MarkdownViewer } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
@@ -52,7 +56,7 @@ const { data, status } = useFetch<{
   }
   extension: string
   content: string
-}>(`/nuxt-api/pages/${route.params.slug ? route.params.slug.join('/') : ''}`)
+}>(`/nuxt-api/pages/${route.params.slug ? (route.params.slug as string[]).join('/') : ''}`)
 
 const title = computed(() => data.value?.data.title)
 const description = computed(() => data.value?.data.description)
@@ -67,7 +71,7 @@ useHead({
     {
       'data-udata': config.public.frontBase,
       'src': '/oembed.js',
-      'body': true,
+      'tagPosition': 'bodyClose',
     },
   ],
 })

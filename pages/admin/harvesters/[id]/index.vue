@@ -14,7 +14,11 @@
       </div>
     </div>
 
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: pageData }"
+      :status
+      :data="pageData"
+    >
       <div v-if="pageData && pageData.total > 0">
         <AdminTable>
           <thead>
@@ -97,6 +101,7 @@
               <td>
                 <AdminContentWithTooltip>
                   <CdataLink
+                    v-if="harvester"
                     class="fr-link fr-reset-link"
                     :href="getHarvesterJobAdminUrl(harvester, job)"
                   >
@@ -151,6 +156,7 @@
         {{ $t(`Aucun job pour l'instant.`) }}
       </p>
       <BrandedButton
+        v-if="harvester"
         color="primary"
         size="xs"
         :href="`/admin/harvesters/${harvester.id}/configuration`"
@@ -162,7 +168,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, BrandedButton, useFormatDate, Tooltip } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, BrandedButton, useFormatDate, Tooltip } from '@datagouv/components-next'
 import { RiArchiveLine, RiCheckLine, RiCloseLine, RiEyeOffLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'

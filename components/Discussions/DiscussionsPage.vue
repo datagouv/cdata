@@ -1,7 +1,7 @@
 <template>
   <div>
     <div
-      v-if="status === 'success' && pageData.total"
+      v-if="status === 'success' && pageData?.total"
       class="flex flex-wrap justify-between items-center"
     >
       <h2 class="text-sm font-bold uppercase m-0">
@@ -24,7 +24,11 @@
       </div>
     </div>
 
-    <LoadingBlock :status>
+    <LoadingBlock
+      v-slot="{ data: pageData }"
+      :status
+      :data="pageData"
+    >
       <div v-if="pageData && pageData.total > 0">
         <AdminDiscussionsTable
           :discussions="pageData.data"
@@ -59,10 +63,8 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, type Organization } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
+import { LoadingBlock, Pagination, SelectGroup, type Organization } from '@datagouv/components-next'
 import AdminDiscussionsTable from '../AdminTable/AdminDiscussionsTable/AdminDiscussionsTable.vue'
-import SelectGroup from '../Form/SelectGroup/SelectGroup.vue'
 import type { PaginatedArray, SortDirection } from '~/types/types'
 import type { DiscussionSortedBy, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
@@ -71,7 +73,7 @@ const props = defineProps<{
   subject?: DiscussionSubjectTypes
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const isClosed = ref(null as null | true | false)
 

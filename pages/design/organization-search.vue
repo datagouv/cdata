@@ -1,7 +1,7 @@
 <template>
   <div>
     <Breadcrumb>
-      <BreadcrumbItem to="/design/">
+      <BreadcrumbItem to="/design">
         {{ $t('Système de design') }}
       </BreadcrumbItem>
       <BreadcrumbItem to="/design/organization-search">
@@ -27,6 +27,7 @@
 </template>
 
 <script setup lang="ts">
+import { getLink } from '@datagouv/components-next'
 import type { Organization } from '@datagouv/components-next'
 import type { LocationQueryValue } from 'vue-router'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'

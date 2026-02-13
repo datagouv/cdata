@@ -1,8 +1,8 @@
-import { ref, toValue, watchEffect, type ComputedRef, type Ref } from 'vue'
+import { ref, toValue, watchEffect, onMounted, type ComputedRef, type Ref } from 'vue'
 import { ofetch } from 'ofetch'
-import { useI18n } from 'vue-i18n'
 import { useComponentsConfig } from '../config'
-import type { AsyncData, AsyncDataExecuteOptions, AsyncDataRequestStatus, UseFetchOptions } from './api.types'
+import { useTranslation } from '../composables/useTranslation'
+import type { AsyncData, AsyncDataRequestStatus, UseFetchOptions } from './api.types'
 
 export async function useFetch<DataT, ErrorT = never>(
   url: string | Request | Ref<string | Request> | ComputedRef<string | null> | (() => string | Request),
@@ -10,7 +10,7 @@ export async function useFetch<DataT, ErrorT = never>(
 ): Promise<AsyncData<DataT, ErrorT>> {
   const config = useComponentsConfig()
 
-  const { locale } = useI18n()
+  const { locale } = useTranslation()
 
   if (config.customUseFetch) {
     return await config.customUseFetch(url, options)
@@ -20,14 +20,26 @@ export async function useFetch<DataT, ErrorT = never>(
   const error: Ref<ErrorT | null> = ref(null)
   const status = ref<AsyncDataRequestStatus>('idle')
 
-  const execute = async (_opts?: AsyncDataExecuteOptions) => {
+  const execute = async () => {
     const urlValue = toValue(url)
     if (!urlValue) return
+    const params = toValue(options?.params)
+    const query = toValue(options?.query)
     status.value = 'pending'
     try {
-      data.value = await ofetch(urlValue, {
+      data.value = await ofetch<DataT | null>(urlValue, {
         baseURL: config.apiBase,
-        onRequest({ options }) {
+        params: params ?? query,
+        onRequest(param) {
+          if (config.onRequest) {
+            if (Array.isArray(config.onRequest)) {
+              config.onRequest.forEach(r => r(param))
+            }
+            else {
+              config.onRequest(param)
+            }
+          }
+          const { options } = param
           options.headers.set('Content-Type', 'application/json')
           options.headers.set('Accept', 'application/json')
           options.credentials = 'include'
@@ -35,38 +47,16 @@ export async function useFetch<DataT, ErrorT = never>(
             options.headers.set('X-API-KEY', config.devApiKey)
           }
 
-          if (locale.value) {
+          if (locale) {
             if (!options.params) {
               options.params = {}
             }
-            options.params['lang'] = locale.value
+            options.params['lang'] = locale
           }
         },
-        async onResponseError() {
-          // TODO redirect to login outside Nuxt?
-          // if (response.status === 401) {
-          //   await nuxtApp.runWithContext(() => navigateTo(localePath('/login')))
-          // }
-
-          // let message
-          // try {
-          //   if ('error' in response._data) {
-          //     message = response._data.error
-          //   }
-          //   else if ('message' in response._data) {
-          //     message = response._data.message
-          //   }
-          // }
-          // catch (e) {
-          //   console.error(e)
-          //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          //   message = t(`L'API a retourné une erreur inattendue`)
-          // }
-
-          // TODO Toast outside Nuxt
-          // toast.error(message)
-        },
-        ...options,
+        onRequestError: config.onRequestError,
+        onResponse: config.onResponse,
+        onResponseError: config.onResponseError,
       })
       status.value = 'success'
     }
@@ -76,13 +66,23 @@ export async function useFetch<DataT, ErrorT = never>(
     }
   }
 
-  watchEffect(async () => {
-    await execute()
-  })
+  // When server is false, only start watching after mount (client-side only)
+  if (options?.server === false) {
+    onMounted(() => {
+      watchEffect(async () => {
+        await execute()
+      })
+    })
+  }
+  else {
+    watchEffect(async () => {
+      await execute()
+    })
+  }
 
   return {
     data,
-    refresh: async (_opts?: AsyncDataExecuteOptions) => {
+    refresh: async () => {
       execute()
     },
     execute,

@@ -10,17 +10,17 @@
 
     <DiscussionsPage
       v-if="currentOrganization"
-      :organization="currentOrganization"
+      :organization="currentOrganization as Organization"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import type { Organization } from '@datagouv/components-next'
 
-const { t } = useI18n()
+const { t } = useTranslation()
 
 const { currentOrganization } = useCurrentOwned()
 </script>

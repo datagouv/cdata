@@ -1,4 +1,4 @@
-:root {
+/* :root {
   --blue-france-975-75: var(--blue-cumulus-975-75);
   --blue-france-975-75-hover: var(--blue-cumulus-975-75-hover);
   --blue-france-975-75-active: var(--blue-cumulus-975-75-active);
@@ -14,7 +14,7 @@
   --blue-france-975-sun-113: var(--blue-cumulus-975-75);
   --blue-france-main-525: var(--blue-cumulus-main-526);
   --blue-france-850-200: var(--blue-cumulus-850-200);
-}
+} */
 
 .ProseMirror .selectedCell:after {
   @apply bg-primary;
@@ -27,9 +27,13 @@
 }
 
 .link {
-  @apply !bg-none underline underline-offset-4 hover:decoration-2 text-datagouv-dark;
+  @apply !bg-none underline underline-offset-4 hover:decoration-2 text-new-primary;
 }
 
 .input {
   @apply block w-full rounded-t text-base leading-6 py-2 px-4 text-gray-plain bg-gray-lower placeholder:opacity-100 placeholder:italic placeholder:text-gray-medium;
+}
+
+.close-button {
+  @apply w-10 leading-0 text-lg;
 }

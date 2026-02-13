@@ -10,6 +10,10 @@ export type Member = {
   since: string | null
 }
 
+export type OrganizationSuggest = { id: string, image_url: string, name: string }
+
+export type OrganizationOrSuggest = Organization | OrganizationReference | OrganizationSuggest
+
 export type NewOrganization = {
   acronym: string | null
   name: string
@@ -19,7 +23,8 @@ export type NewOrganization = {
   logo: string
 }
 
-export type Organization = NewOrganization & {
+export type OrganizationReference = {
+  class: 'Organization'
   id: string
   name: string
   acronym: string | null
@@ -48,11 +53,9 @@ export type Organization = {
   business_number_id: string
   created_at: string
   last_modified: string
-  last_update: string
   deleted: string | null
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   extras: Record<string, any>
-  logo_thumbnail: string
   members: Array<Member>
   metrics: {
     dataservices: number
@@ -65,8 +68,4 @@ export type Organization = {
     reuses_by_months: Record<string, number>
     views: number
   }
-  page: string
-  slug: string
-  uri: string
-  badges: Badges
 }

@@ -23,7 +23,7 @@
             <p class="fr-text--bold fr-m-0">
               {{ t("Explorer les données en détail") }}
             </p>
-            <p class="fr-text--sm fr-m-0 f-italic">
+            <p class="fr-text--sm fr-m-0 italic">
               {{ t("Utiliser notre outil pour obtenir un aperçu des données, en savoir plus sur les différentes colonnes ou réaliser des filtres et des tris.") }}
             </p>
           </div>
@@ -32,6 +32,7 @@
               :href="resource.preview_url"
               :icon="RiExternalLinkFill"
               icon-right
+              @click="trackEvent('Jeux de données', 'Explorer les données', 'Bouton : explorer les données')"
             >
               {{ t("Explorer les données") }}
             </BrandedButton>
@@ -51,7 +52,7 @@
                 scope="col"
               >
                 <BrandedButton
-                  color="secondary-softer"
+                  color="tertiary"
                   :icon="isSortedBy(col) && sortConfig && sortConfig.type == 'asc' ? RiArrowUpLine : RiArrowDownLine"
                   icon-right
                   size="xs"
@@ -104,21 +105,22 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { RiArrowDownLine, RiArrowUpLine, RiErrorWarningLine, RiExternalLinkFill } from '@remixicon/vue'
 import Pagination from '../Pagination.vue'
 import { getData, type SortConfig } from '../../functions/tabularApi'
 import { useFormatDate } from '../../functions/dates'
+import { trackEvent } from '../../functions/matomo'
 import type { Resource } from '../../types/resources'
 import { useComponentsConfig } from '../../config'
 import BrandedButton from '../BrandedButton.vue'
 import SimpleBanner from '../SimpleBanner.vue'
+import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
 import PreviewLoader from './PreviewLoader.vue'
 
 const props = defineProps<{ resource: Resource }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const rows = ref<Array<Record<string, unknown>>>([])

@@ -1,5 +1,5 @@
-import type { Schema } from '../functions/schemas'
 import type { RESOURCE_TYPE } from '../functions/resources'
+import type { Schema } from '../types/schemas'
 import type { Dataset } from './datasets'
 import type { Harvest } from './harvest'
 import type { Owned } from './owned'
@@ -35,3 +35,9 @@ export type Resource = {
 }
 
 export type CommunityResource = Owned & Resource & { dataset: Omit<Dataset, 'resources' | 'community_resources'>, permissions: { edit: boolean, delete: boolean } }
+
+export interface ResourceGroup {
+  type: ResourceType
+  total: number
+  items: Resource[]
+}

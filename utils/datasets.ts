@@ -1,12 +1,13 @@
-import { type Dataset, type DatasetV2, type Frequency, type License, type RegisteredSchema, type Resource, type CommunityResource, type Schema, throwOnNever } from '@datagouv/components-next'
+import type { Dataset, DatasetV2, RegisteredSchema, Resource, CommunityResource, Schema, DatasetV2WithFullObject } from '@datagouv/components-next'
+import { accessTypeToForm, accessTypeToApi, throwOnNever, DESCRIPTION_MIN_LENGTH, getResourceFilesize } from '@datagouv/components-next'
 import type { FetchError } from 'ofetch'
 import { v4 as uuidv4 } from 'uuid'
 
-import type { CommunityResourceForm, DatasetForm, DatasetSuggest, FileInfo, NewDatasetForApi, ResourceForm, SpatialGranularity, SpatialZone } from '~/types/types'
+import type { CommunityResourceForm, NewCommunityResourceForApi, NewResourceForApi, DatasetForm, DatasetSuggest, FileInfo, NewDatasetForApi, ResourceForm } from '~/types/types'
 
 export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceForm>) {
   const isRemote = computed(() => toValue(file).filetype === 'remote')
-  const { t } = useI18n()
+  const { t } = useTranslation()
   const config = useRuntimeConfig()
 
   return useForm(file, {
@@ -15,7 +16,7 @@ export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceF
     url: [ruleIf(isRemote, required())],
     format: [ruleIf(isRemote, required())],
   }, {
-    description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
+    description: [minLength(DESCRIPTION_MIN_LENGTH, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: DESCRIPTION_MIN_LENGTH }))],
     title: [testNotAllowed(config.public.demoServer?.name)],
   })
 }
@@ -37,26 +38,29 @@ export function getDatasetAdminUrl(dataset: Dataset | DatasetV2): string {
   return `/admin/datasets/${dataset.id}`
 }
 
-export function datasetToForm(dataset: Dataset | DatasetV2, licenses: Array<License>, frequencies: Array<Frequency>, zones: Array<SpatialZone>, granularities: Array<SpatialGranularity>): DatasetForm {
+export function datasetToForm(dataset: DatasetV2WithFullObject): DatasetForm {
   return {
     owned: dataset.organization ? { organization: dataset.organization, owner: null } : { owner: dataset.owner, organization: null },
     title: dataset.title,
     description: dataset.description,
+    description_short: dataset.description_short,
     acronym: dataset.acronym,
     tags: dataset.tags?.map(text => ({ text })) || [],
-    license: licenses.find(l => l.id === dataset.license) || null,
+    ...accessTypeToForm(dataset),
+    license: dataset.license || null,
     contact_points: dataset.contact_points ?? [],
-    frequency: frequencies.find(f => f.id === dataset.frequency) || null,
+    frequency: dataset.frequency || null,
     temporal_coverage: dataset.temporal_coverage ? { start: dataset.temporal_coverage.start, end: dataset.temporal_coverage.end } : { start: null, end: null }, // TODO fix this type, the API returns an object not a string
-    spatial_zones: dataset.spatial?.zones?.map(id => zones.find(z => z.id === id)).filter(z => z !== undefined) || [],
-    spatial_granularity: granularities.find(g => g.id === dataset.spatial?.granularity) || null,
+    spatial_zones: dataset.spatial?.zones || [],
+    spatial_granularity: dataset.spatial?.granularity || null,
     private: dataset.private,
     featured: dataset.featured,
   }
 }
 
-export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, private?: boolean, archived?: string | null } = {}): NewDatasetForApi {
+export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, private?: boolean, archived?: string | null, extras?: Record<string, unknown> } = {}): NewDatasetForApi {
   const contactPoints = form.contact_points?.filter(cp => cp !== null && 'id' in cp).map(cp => cp.id) ?? []
+
   return {
     organization: form.owned?.organization?.id,
     owner: form.owned?.owner?.id,
@@ -65,11 +69,14 @@ export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, pri
     archived: overrides.archived,
     deleted: overrides.deleted,
     description: form.description,
+    description_short: form.description_short,
     acronym: form.acronym,
     tags: form.tags.map(t => t.text),
     license: form.license?.id || '',
+    ...accessTypeToApi(form),
     contact_points: form.contact_points ? (contactPoints.length ? contactPoints : null) : undefined, // The udata API doesn't delete the last contact point if sending an empty array, we need to send `null` to remove all contact points (see :RemoveAllContactPoints in udata)
     frequency: form.frequency?.id || '',
+    extras: overrides.extras,
     temporal_coverage: form.temporal_coverage.start
       ? {
           start: new Date(form.temporal_coverage.start).toISOString(),
@@ -78,7 +85,7 @@ export function datasetToApi(form: DatasetForm, overrides: { deleted?: null, pri
       : undefined,
     spatial: (form.spatial_granularity || form.spatial_zones)
       ? {
-          zones: form.spatial_zones.length ? form.spatial_zones.map(z => z.id) : undefined,
+          zones: form.spatial_zones.length ? form.spatial_zones.map(z => z.id) : Array.isArray(form.spatial_zones) ? null : undefined,
           granularity: form.spatial_granularity ? form.spatial_granularity.id : undefined,
         }
       : undefined,
@@ -134,11 +141,20 @@ export function resourceToForm(resource: Resource | CommunityResource, schemas: 
   }
 }
 
-export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resource | CommunityResource {
+export function resourceToApi(form: ResourceForm | CommunityResourceForm): NewResourceForApi | NewCommunityResourceForApi {
   let schema = null as Schema | null
   if (form.schema) {
-    const latestVersion = form.schema.versions[form.schema.versions.length - 1]
-    schema = { name: form.schema.name, url: latestVersion.schema_url, version: latestVersion.version_name }
+    if ('version' in form.schema && typeof form.schema.version === 'string') {
+      schema = {
+        name: form.schema.name ?? null,
+        url: form.schema.url ?? null,
+        version: form.schema.version,
+      }
+    }
+    else if ('versions' in form.schema && Array.isArray(form.schema.versions) && form.schema.versions.length > 0) {
+      const latestVersion = form.schema.versions[form.schema.versions.length - 1]
+      schema = { name: form.schema.name, url: latestVersion.schema_url, version: latestVersion.version_name }
+    }
   }
   else if (form.schema_url) {
     schema = { name: null, url: form.schema_url, version: null }
@@ -151,7 +167,7 @@ export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resou
     description: form.description,
 
     schema,
-  } as Resource
+  } as NewResourceForApi
 
   if (form.checksum_type && form.checksum_value) {
     resource.checksum = {
@@ -190,14 +206,15 @@ export function resourceToApi(form: ResourceForm | CommunityResourceForm): Resou
       ...resource,
       dataset: form.dataset,
       ...form.owned.organization ? { organization: form.owned.organization, owner: null } : { owner: form.owned.owner, organization: null },
-    } satisfies CommunityResource
+    } satisfies NewCommunityResourceForApi
   }
 
   return resource
 }
 
 export async function sendFile(url: string, resourceForm: ResourceForm | CommunityResourceForm, fileInfo: FileInfo): Promise<Resource | CommunityResource> {
-  const { $fileApi, $i18n } = useNuxtApp()
+  const { $fileApi } = useNuxtApp()
+  const { t } = useTranslation()
   const config = useRuntimeConfig()
 
   if (resourceForm.filetype !== 'file') {
@@ -272,7 +289,7 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
     return resource
   }
   catch (e) {
-    const notificationMessage = $i18n.t('Échec du téléchargement du fichier {title}', { title: resourceForm.title })
+    const notificationMessage = t('Échec du téléchargement du fichier {title}', { title: resourceForm.title })
     let formError = notificationMessage
     const fetchError = e as unknown as FetchError
     if ('data' in fetchError && fetchError.data && 'message' in fetchError.data) {
@@ -423,7 +440,7 @@ export function getFilesize(resourceForm: ResourceForm | CommunityResourceForm):
   }
 
   if (resourceForm.resource) {
-    return resourceForm.resource.filesize
+    return getResourceFilesize(resourceForm.resource)
   }
 
   return null

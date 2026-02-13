@@ -20,6 +20,7 @@ export type HarvestLog = {
 
 export type HarvestItem = {
   remote_id: string
+  remote_url: string | null
   dataset: Dataset | null
   dataservice: Dataservice | null
   status: 'pending' | 'started' | 'done' | 'failed' | 'skipped' | 'archived'
@@ -45,6 +46,15 @@ export type HarvesterJob = {
   source: string
 }
 
+export type HarvesterSourcePermissions = {
+  edit: boolean
+  delete: boolean
+  run: boolean
+  preview: boolean
+  validate: boolean
+  schedule: boolean
+}
+
 export type HarvesterSource = Owned & {
   id: string
   name: string
@@ -59,6 +69,7 @@ export type HarvesterSource = Owned & {
   last_job: HarvesterJob | null
   deleted: string | null
   schedule: string
+  permissions: HarvesterSourcePermissions
 }
 
 export type HarvesterForm = {
@@ -68,6 +79,7 @@ export type HarvesterForm = {
   url: string
   backend: string
   filters: Array<HarvestSourceFilter>
+  features: Record<string, boolean>
   configs: Array<HarvestSourceConfig>
   schedule: string
   autoarchive: boolean
@@ -88,6 +100,22 @@ export type HarvestBackend = {
   id: string
   label: string
   filters: Array<{ label: string, key: string, type: string, description: string }>
-  features: Array<{ label: string, key: string, default: string, description: string }>
+  features: Array<{ label: string, key: string, default: boolean, description: string }>
   extra_configs: Array<{ label: string, key: string, default: string, description: string }>
+}
+
+export type NewHarvesterForApi = {
+  organization: string | null
+  owner: string | null
+  name: string
+  description: string
+  url: string
+  backend: string
+  autoarchive: boolean
+  active: boolean
+  config: {
+    filters: Array<HarvestSourceFilter>
+    features: Record<string, boolean>
+    extra_configs: Array<HarvestSourceConfig>
+  }
 }

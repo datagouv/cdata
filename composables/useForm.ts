@@ -1,8 +1,9 @@
+import type { TranslationFunction } from '@datagouv/components-next'
 import type { PaginatedArray } from '~/types/types'
 
 export type KeysOfUnion<T> = T extends T ? keyof T : never
 
-export type ValidationFunction<T, K extends KeysOfUnion<T>, V extends T[K]> = (value: V, key: K, form: T, t: (key: string, values?: Record<string, unknown>) => string) => string | null | Promise<string | null>
+export type ValidationFunction<T, K extends KeysOfUnion<T>, V extends T[K]> = (value: V, key: K, form: T, t: TranslationFunction) => string | null | Promise<string | null>
 
 export type ValidationsRules<Type> = {
   [Property in KeysOfUnion<Type>]?: Array<ValidationFunction<Type, Property, Type[Property]>>;
@@ -14,9 +15,10 @@ export type ValidationsMessages<Type> = {
 export type FormInfo<T> = ReturnType<typeof useForm<T>>['formInfo']
 
 export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsRules<T> = {}, warningsRules: ValidationsRules<T> = {}) {
-  const { t } = useI18n()
+  const { t } = useTranslation()
 
   const form = toRef(initialValues)
+  const touched = computed(() => Object.keys(errors.value))
   const errors = ref({} as ValidationsMessages<T>)
   const warnings = ref({} as ValidationsMessages<T>)
 
@@ -46,6 +48,7 @@ export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsR
 
     return bag[key][0]
   }
+  const isTouched = (key: KeysOfUnion<T>): boolean => touched.value.includes(key as string)
   const getFirstError = (key: KeysOfUnion<T>): string | null => getFirst(errors.value, key)
   const getFirstWarning = (key: KeysOfUnion<T>): string | null => getFirst(warnings.value, key)
 
@@ -67,7 +70,7 @@ export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsR
     return true
   }
 
-  const formInfo = { errors, warnings, touch, getFirstError, getFirstWarning, validate, removeErrorsAndWarnings, warningsAsList, errorsAsList }
+  const formInfo = { touched, errors, warnings, touch, isTouched, getFirstError, getFirstWarning, validate, removeErrorsAndWarnings, warningsAsList, errorsAsList }
   return { form, formInfo, ...formInfo }
 }
 
@@ -94,7 +97,7 @@ export function required<T, K extends KeysOfUnion<T>, V extends T[K]>(message: s
 export function ruleIf<T, K extends KeysOfUnion<T>, V extends T[K]>(condition: Ref<boolean>, rule: ValidationFunction<T, K, V>): ValidationFunction<T, K, V> {
   return (value: T[keyof T], key: K, form: T, t) => {
     if (!condition.value) return null
-    return rule(value, key, form, t)
+    return rule(value as V, key, form, t)
   }
 }
 
@@ -111,6 +114,14 @@ export function minLength<T, K extends KeysOfUnion<T>, V extends (string | undef
     if (value && value.length >= min) return null
 
     return message || t('Le champ doit être de {min} caractères minimum', { min })
+  }
+}
+
+export function maxLength<T, K extends KeysOfUnion<T>, V extends (string | undefined) & T[K]>(max: number, message: string | null = null): ValidationFunction<T, K, V> {
+  return (value: V, key: K, form: T, t) => {
+    if (!value || value.length <= max) return null
+
+    return message || t('Le champ doit être de {max} caractères maximum', { max })
   }
 }
 

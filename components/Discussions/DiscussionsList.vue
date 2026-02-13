@@ -23,10 +23,10 @@
           }) }}
         </p>
         <BrandedButton
-          color="secondary-softer"
+          color="tertiary"
           keep-margins-even-without-borders
           :icon="RiCloseCircleLine"
-          :href="{ name: route.name, params: route.params, query: { ...route.query, discussion_id: undefined } }"
+          :href="hrefWithoutDiscussionId"
         >
           {{ $t("Voir toutes les discussions") }}
         </BrandedButton>
@@ -34,9 +34,30 @@
       <DiscussionCard
         :thread="selectedDiscussion"
         :subject
+        @change="updateSelectedDiscussion"
       />
     </div>
     <div v-else>
+      <SimpleBanner
+        type="primary"
+        class="flex items-center gap-1 mb-5"
+      >
+        <RiInformationLine class="size-4" />
+        <TranslationT
+          keypath="Votre question porte sur autre chose que {type} ? {link}"
+          tag="span"
+        >
+          <template #type>
+            {{ translatedType }}
+          </template>
+          <template #link>
+            <a
+              target="_blank"
+              :href="config.public.forumUrl"
+            >Visiter notre forum</a>
+          </template>
+        </TranslationT>
+      </SimpleBanner>
       <div class="flex flex-wrap justify-between items-center mb-5 gap-2">
         <h2
           v-if="pageData"
@@ -76,7 +97,11 @@
         @close="newDiscussion = false"
       />
 
-      <LoadingBlock :status>
+      <LoadingBlock
+        v-slot="{ data: pageData }"
+        :status
+        :data="pageData"
+      >
         <div
           v-if="pageData && pageData.total > 0"
           class="space-y-5"
@@ -131,14 +156,14 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Pagination, SimpleBanner } from '@datagouv/components-next'
-import { useI18n } from 'vue-i18n'
-import { RiAddLine, RiCloseCircleLine, RiSearchLine } from '@remixicon/vue'
+import { BrandedButton, LoadingBlock, Pagination, SimpleBanner, TranslationT } from '@datagouv/components-next'
+import { RiAddLine, RiCloseCircleLine, RiInformationLine, RiSearchLine } from '@remixicon/vue'
 import { refDebounced } from '@vueuse/core'
 import NewDiscussionForm from './NewDiscussionForm.vue'
 import DiscussionCard from './DiscussionCard.vue'
 import type { PaginatedArray, SortDirection } from '~/types/types'
 import type { DiscussionSortedBy, DiscussionSubject, DiscussionSubjectTypes, Thread } from '~/types/discussions'
+import { useRouteQuery } from '@vueuse/router'
 
 const props = defineProps<{
   type: DiscussionSubject['class']
@@ -146,7 +171,8 @@ const props = defineProps<{
   closed?: number
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
+const config = useRuntimeConfig()
 
 const isClosed = ref(null as null | true | false)
 
@@ -156,26 +182,43 @@ const sortedBy = ref<DiscussionSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
 const q = ref('')
-const qDebounced = refDebounced(q, 500) // TODO add 500 in config
+const qDebounced = refDebounced(q, config.public.searchDebounce)
 
 const me = useMaybeMe()
-const localePath = useLocalePath()
 
 const newDiscussion = ref(false)
 
-const resetFilters = () => {
+function resetFilters() {
   q.value = ''
-  qDebounced.value = ''
 }
 
-const showDiscussionForm = () => {
+function showDiscussionForm() {
   if (me.value) {
     newDiscussion.value = true
   }
   else {
-    navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true })
+    navigateTo({ path: '/login', query: { next: route.fullPath } }, { external: true })
   }
 }
+
+const translatedType = computed(() => {
+  switch (props.type) {
+    case 'Dataservice':
+      return t('cette api')
+    case 'Dataset':
+      return t('ce jeu de données')
+    case 'Reuse':
+      return t('cette réutilisation')
+    case 'Post':
+      return t('cet article')
+    case 'Topic':
+      return t('cette thématique')
+    case 'Organization':
+      return t('cette organisation')
+    default:
+      return ''
+  }
+})
 
 const params = computed(() => {
   const query = {
@@ -201,10 +244,21 @@ const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Thread>>
 const route = useRoute()
 const { $api } = useNuxtApp()
 const selectedDiscussion = ref<Thread | null>(null)
+const hrefWithoutDiscussionId = computed(() => {
+  const { discussion_id: _, ...queryWithoutDiscussionId } = route.query
+  return { name: route.name ?? undefined, params: route.params, query: queryWithoutDiscussionId }
+})
 const selectedDiscussionBanner = useTemplateRef('selectedDiscussionBannerRef')
+const discussionId = useRouteQuery('discussion_id')
+
+async function updateSelectedDiscussion() {
+  if (discussionId.value) {
+    selectedDiscussion.value = await $api<Thread>(`/api/1/discussions/${discussionId.value}/`)
+  }
+}
 watchEffect(async () => {
-  if ('discussion_id' in route.query && route.query.discussion_id) {
-    selectedDiscussion.value = await $api<Thread>(`/api/1/discussions/${route.query.discussion_id}/`)
+  if (discussionId.value) {
+    await updateSelectedDiscussion()
     nextTick(() => {
       selectedDiscussionBanner.value?.scrollIntoView({ behavior: 'smooth' })
     })

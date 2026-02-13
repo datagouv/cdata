@@ -31,17 +31,17 @@
       v-else-if="loading"
       class="text-gray-medium"
     >
-      {{ $t("Chargement de l'aperçu PDF...") }}
+      {{ t("Chargement de l'aperçu PDF...") }}
     </div>
     <SimpleBanner
       v-else-if="fileTooLarge"
       type="warning"
       class="flex items-center space-x-2"
     >
-      <RiErrorWarningLine class="shink-0 size-6" />
+      <RiErrorWarningLine class="flex-none size-6" />
       <span>{{ fileSizeBytes
-        ? $t("Fichier PDF trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
-        : $t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
+        ? t("Fichier PDF trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
+        : t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
       }}</span>
     </SimpleBanner>
     <SimpleBanner
@@ -49,16 +49,16 @@
       type="warning"
       class="flex items-center space-x-2"
     >
-      <RiErrorWarningLine class="shink-0 size-6" />
-      <span>{{ $t("Ce fichier PDF ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
+      <RiErrorWarningLine class="flex-none size-6" />
+      <span>{{ t("Ce fichier PDF ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
     </SimpleBanner>
     <SimpleBanner
       v-else-if="error"
       type="warning"
       class="flex items-center space-x-2"
     >
-      <RiErrorWarningLine class="shink-0 size-6" />
-      <span>{{ $t("Erreur lors du chargement de l'aperçu PDF. Pour consulter le fichier, téléchargez-le depuis l'onglet Téléchargements.") }}</span>
+      <RiErrorWarningLine class="flex-none size-6" />
+      <span>{{ t("Erreur lors du chargement de l'aperçu PDF. Pour consulter le fichier, téléchargez-le depuis l'onglet Téléchargements.") }}</span>
     </SimpleBanner>
   </div>
 </template>
@@ -69,6 +69,8 @@ import { RiErrorWarningLine } from '@remixicon/vue'
 import SimpleBanner from '../SimpleBanner.vue'
 import { useComponentsConfig } from '../../config'
 import type { Resource } from '../../types/resources'
+import { useTranslation } from '../../composables/useTranslation'
+import { getResourceFilesize } from '../../functions/datasets'
 
 const PDF = defineAsyncComponent(() =>
   import('pdf-vue3').then((module) => {
@@ -81,26 +83,14 @@ const props = defineProps<{
 }>()
 
 const config = useComponentsConfig()
+const { t } = useTranslation()
 
 const pdfData = ref<boolean>(false)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const fileTooLarge = ref(false)
 
-const fileSizeBytes = computed(() => {
-  // Check if resource has filesize
-  if (props.resource.filesize) {
-    return props.resource.filesize
-  }
-
-  // Check if resource has content-length in extras (from API metadata)
-  const contentLength = props.resource.extras?.['analysis:content-length']
-  if (contentLength && typeof contentLength === 'number') {
-    return contentLength
-  }
-
-  return null
-})
+const fileSizeBytes = computed(() => getResourceFilesize(props.resource))
 
 const shouldLoadPdf = computed(() => {
   const size = fileSizeBytes.value

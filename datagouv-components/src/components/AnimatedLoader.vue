@@ -12,7 +12,7 @@ withDefaults(defineProps<{
   <RiLoader5Line
     class=" text-7xl animate-spin"
     :class="{
-      'text-primary': color === 'primary',
+      'text-new-primary': color === 'primary',
       'text-white': color === 'white',
     }"
   />

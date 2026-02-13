@@ -43,18 +43,22 @@
           v-if="organization.permissions.delete && !organization.deleted"
           class="mt-12"
           type="danger"
-          :title="$t('Supprimer l’organisation')"
+          :title="$t(`Supprimer l'organisation`)"
         >
           {{ t("Attention, cette action ne peut pas être annulée.") }}
           <template #button>
-            <ModalWithButton
+            <AdminDeleteModal
               :title="t('Êtes-vous sûrs de vouloir supprimer cette organisation ?')"
-              size="lg"
+              :delete-url="`/api/1/organizations/${organization.id}/`"
+              :delete-button-label="t(`Supprimer l'organisation`)"
+              :deletable-object="organization"
+              object-type="organization"
+              :object-title="organization.name"
+              @deleted="onOrganizationDeleted"
             >
               <template #button="{ attrs, listeners }">
                 <BrandedButton
                   :loading="isLoading"
-                  color="danger"
                   :icon="RiDeleteBin6Line"
                   v-bind="attrs"
                   v-on="listeners"
@@ -66,22 +70,10 @@
                 <p class="fr-text--bold">
                   {{ t("Cette action est irréversible.") }}
                 </p>
-                <p>{{ t("Tous les contenus publiés par cette organisation resteront en ligne, aux mêmes URL, mais sous forme anonyme, c’est-à-dire sans être rattachés à un producteur de données.") }}</p>
+                <p>{{ t("Tous les contenus publiés par cette organisation resteront en ligne, aux mêmes URL, mais sous forme anonyme, c'est-à-dire sans être rattachés à un producteur de données.") }}</p>
                 <p>{{ t("Si vous souhaitez aussi supprimer les contenus publiées que vous avez publiés, commencez par supprimer les contenus avant de supprimer votre compte.") }}</p>
               </template>
-              <template #footer>
-                <div class="flex-1 fr-btns-group fr-btns-group--right fr-btns-group--inline-reverse fr-btns-group--inline-lg fr-btns-group--icon-left">
-                  <button
-                    class="fr-btn fr-btn--secondary rounded-full !text-red-600 !border border-solid !border-red-600 !shadow-none"
-                    role="button"
-                    :loading="isLoading"
-                    @click="deleteCurrentOrganization"
-                  >
-                    {{ t("Supprimer l’organisation") }}
-                  </button>
-                </div>
-              </template>
-            </ModalWithButton>
+            </AdminDeleteModal>
           </template>
         </BannerAction>
       </template>
@@ -90,12 +82,13 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
-import { AnimatedLoader, BannerAction, BrandedButton } from '@datagouv/components-next'
+import { AnimatedLoader, BannerAction, BrandedButton, toast } from '@datagouv/components-next'
 import type { Organization, Badge } from '@datagouv/components-next'
 import DescribeOrganizationFrom from '~/components/Organization/New/Step2DescribeOrganization.vue'
-import { updateOrganization, updateOrganizationBadges, uploadLogo } from '~/api/organizations'
+import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
+import { updateOrganization, uploadLogo } from '~/api/organizations'
+import { updateBadges } from '~/api/badges'
 
 const props = defineProps<{
   organization: Organization
@@ -104,11 +97,8 @@ const emit = defineEmits<{
   refresh: []
 }>()
 
-const { t } = useI18n()
-const { toast } = useToast()
-const { $api } = useNuxtApp()
-const { start, finish, isLoading } = useLoadingIndicator()
-const localPath = useLocalePath()
+const { t } = useTranslation()
+const isLoading = ref(false)
 
 const form = ref<InstanceType<typeof DescribeOrganizationFrom> | null>(null)
 
@@ -118,25 +108,20 @@ watchEffect(() => {
   organizationForm.value = props.organization
 })
 
-async function deleteCurrentOrganization() {
-  if (props.organization) {
-    start()
-    await $api(`api/1/organizations/${props.organization.id}/`, { method: 'DELETE' })
-    finish()
-    if (isMeAdmin()) {
-      emit('refresh')
-      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-    }
-    else {
-      reloadNuxtApp({
-        path: localPath('/admin/me/profile'),
-      })
-    }
+function onOrganizationDeleted() {
+  if (isMeAdmin()) {
+    emit('refresh')
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+  }
+  else {
+    reloadNuxtApp({
+      path: '/admin/me/profile',
+    })
   }
 }
 
 async function restoreOrganization() {
-  start()
+  isLoading.value = true
   try {
     await updateOrganization({
       ...organizationForm.value,
@@ -148,16 +133,16 @@ async function restoreOrganization() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 
 async function updateCurrentOrganization(logo_file: File | null, newBadges: Array<Badge> | null) {
-  start()
+  isLoading.value = true
   try {
     await updateOrganization(organizationForm.value)
     if (newBadges && props.organization) {
-      await updateOrganizationBadges(props.organization, newBadges)
+      await updateBadges(props.organization, newBadges, 'organizations')
     }
     if (logo_file && props.organization) {
       await uploadLogo(props.organization.id, logo_file)
@@ -168,7 +153,7 @@ async function updateCurrentOrganization(logo_file: File | null, newBadges: Arra
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
   finally {
-    finish()
+    isLoading.value = false
   }
 }
 </script>

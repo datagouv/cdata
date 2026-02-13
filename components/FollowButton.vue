@@ -1,5 +1,9 @@
 <template>
-  <LoadingBlock :status="followStatus">
+  <LoadingBlock
+    v-slot="{ data: follower }"
+    :status="followStatus"
+    :data="follower"
+  >
     <BrandedButton
       v-if="me"
       type="button"
@@ -22,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock } from '@datagouv/components-next'
 import { RiStarFill, RiStarLine } from '@remixicon/vue'
 import { ref } from 'vue'
 import type { PaginatedArray } from '~/types/types'
@@ -53,7 +57,7 @@ const loading = ref(false)
 const readOnlyEnabled = config.public.readOnlyMode
 
 watchEffect(() => {
-  following.value = follower && follower.value.total > 0
+  following.value = !!(follower && follower.value && follower.value.total > 0)
 })
 
 const iconAttrs = computed(() => ({
@@ -63,8 +67,7 @@ const iconAttrs = computed(() => ({
 async function toggleFollow() {
   const me = useMaybeMe()
   if (!me.value) {
-    const localePath = useLocalePath()
-    navigateTo(localePath({ path: '/login', query: { next: route.fullPath } }), { external: true })
+    navigateTo({ path: '/login', query: { next: route.fullPath } }, { external: true })
   }
   loading.value = true
   try {

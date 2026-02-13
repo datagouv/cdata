@@ -9,17 +9,16 @@
       class="mb-6"
     >
       <span
-        class="fr-icon-info-line fr-mr-1w"
+        class="fr-icon-info-line mr-2"
         aria-hidden="true"
       />
-      <i18n-t
+      <TranslationT
         keypath="Si vous souhaitez faire des tests, utilisez plutôt {demo_server}."
-        scope="global"
       >
         <template #demo_server>
           <a :href="config.public.demoServer.url">{{ config.public.demoServer.name }}</a>
         </template>
-      </i18n-t>
+      </TranslationT>
     </SimpleBanner>
 
     <div class="fr-grid-row fr-grid-row--gutters">
@@ -44,7 +43,7 @@
       <div class="fr-col-12 fr-col-md-6">
         <ActionCard
           :title="$t('Publier avec un schéma')"
-          :content="$t('Vos données suivent-elles un schéma de référence ? Validez, corrigez et publiez vos données sur {site} !', { site: config.public.title })"
+          :content="$t('Vos données suivent-elles un schéma de référence ? Sélectionnez un schéma et créez vos données structurées !')"
           icon="/illustrations/schema.svg"
           actions-alignment="end"
           :stretch-height="true"
@@ -52,9 +51,9 @@
           <template #actions>
             <BrandedButton
               color="secondary"
-              :href="config.public.schemaPublishingUrl"
+              :href="schemaPublishingUrl"
             >
-              {{ $t("Utiliser notre outil dédié") }}
+              {{ $t("Publier avec un schéma") }}
             </BrandedButton>
           </template>
         </ActionCard>
@@ -62,41 +61,41 @@
     </div>
   </div>
   <section
-    class="fr-mt-3w"
+    class="mt-6"
     aria-labelledby="documentation-links"
   >
     <h2
       id="documentation-links"
-      class="fr-m-0 fr-mb-3v fr-text--md fr-text--bold"
+      class="m-0 mb-3 text-base text-bold"
     >
       {{ $t("Êtes-vous une administration et voulez-vous automatiser la publication de vos données ?") }}
     </h2>
-    <p class="fr-m-0 fr-mb-3v">
+    <p class="m-0 mb-3">
       {{ $t("Vous pouvez publier automatiquement via API ou en liant votre portail de données ouvertes à {site} avec un moissonneur.", { site: config.public.title }) }}
     </p>
     <div class="fr-grid-row fr-grid-row--gutters">
       <div class="fr-col-auto">
-        <p class="fr-m-0">
+        <p class="m-0">
           <a
-            class="fr-link"
+            class="link"
             :href="config.public.apiDocExternalLink"
             target="_blank"
           >{{ $t("Voir la documentation API") }}</a>
         </p>
       </div>
       <div class="fr-col-auto">
-        <p class="fr-m-0">
+        <p class="m-0">
           <a
-            class="fr-link"
+            class="link"
             :href="config.public.guidesHarvestingUrl"
             target="_blank"
           >{{ $t("En savoir plus sur le moissonnage") }}</a>
         </p>
       </div>
       <div class="fr-col-auto">
-        <p class="fr-m-0">
+        <p class="m-0">
           <a
-            class="fr-link"
+            class="link"
             :href="config.public.supportUrl"
             target="_blank"
           >{{ $t("Nous écrire") }}</a>
@@ -105,21 +104,21 @@
     </div>
   </section>
   <section
-    class="fr-mt-5w"
+    class="mt-10"
     aria-labelledby="cataloging-links"
   >
     <h2
       id="cataloging-links"
-      class="fr-m-0 fr-mb-3v fr-text--md fr-text--bold"
+      class="m-0 mb-3 text-base text-bold"
     >
       {{ $t("Êtes-vous une administration et voulez-vous cataloguer vos données ?") }}
     </h2>
-    <p class="fr-m-0 fr-mb-3v">
+    <p class="m-0 mb-3">
       {{ $t("Vous pouvez utiliser le service pour les administrations centrales pour gérer et ouvrir leur catalogue de données.", { site: config.public.title }) }}
     </p>
-    <p class="fr-m-0">
+    <p class="m-0">
       <a
-        class="fr-link"
+        class="link"
         :href="config.public.catalogUrl"
         target="_blank"
       >{{ $t("Aller à l'espace de catalogage") }}</a>
@@ -128,7 +127,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, TranslationT } from '@datagouv/components-next'
 import ActionCard from '~/components/ActionCard/ActionCard.vue'
 
 defineEmits<{
@@ -136,4 +135,10 @@ defineEmits<{
 }>()
 
 const config = useRuntimeConfig()
+
+const schemaPublishingUrl = computed(() => {
+  return config.public.enableStructuredDatasetForm
+    ? '/admin/datasets/structured?step=1'
+    : config.public.schemaPublishingUrl
+})
 </script>

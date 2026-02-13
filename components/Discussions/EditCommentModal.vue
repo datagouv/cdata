@@ -11,12 +11,11 @@
         size="xs"
         :icon="RiPencilLine"
         icon-only
+        :title="$t('Modifier')"
         v-bind="attrs"
         :loading
         v-on="listeners"
-      >
-        {{ $t('Modifier') }}
-      </BrandedButton>
+      />
     </template>
 
     <template #default>
@@ -88,7 +87,7 @@ const emit = defineEmits<{
   edited: []
 }>()
 
-const { t } = useI18n()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const { form, getFirstError, getFirstWarning } = useForm({

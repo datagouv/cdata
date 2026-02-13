@@ -4,12 +4,12 @@
     as="div"
   >
     <header
-      class="flex flex-wrap items-center pb-6 mb-6 border-bottom border-gray-default"
+      class="flex flex-wrap items-center pb-6 mb-6 border-b border-gray-default"
     >
       <div class="fr-col">
         <component
           :is="titleLevel"
-          class="subtitle subtitle--uppercase fr-m-0"
+          class="subtitle uppercase m-0"
         >
           {{ titleText }}
         </component>
@@ -18,7 +18,7 @@
         <slot name="buttons" />
         <DisclosureButton
           :as="BrandedButton"
-          color="secondary-softer"
+          color="tertiary"
           keep-margins-even-without-borders
           :icon="open ? RiArrowUpSLine : RiArrowDownSLine"
         >
@@ -28,16 +28,13 @@
             v-if="open"
             class="sr-only"
           >
-            {{ $t('Fermer les détails') }}
+            {{ t('Fermer les détails') }}
           </span>
         </DisclosureButton>
       </div>
     </header>
-    <DisclosurePanel
-      :id="accordionId"
-      class="accordion-content"
-    >
-      <div class="pb-6 mb-6 border-bottom border-gray-default">
+    <DisclosurePanel :id="accordionId">
+      <div class="pb-6 mb-6 border-b border-gray-default">
         <div
           class="fr-grid-row fr-grid-row--gutters fr-text--sm fr-m-0"
           data-testid="extra-list"
@@ -47,7 +44,7 @@
             :key="key"
             class="fr-col-12 fr-col-sm-6 fr-col-md-4"
           >
-            <h3 class="subtitle fr-mb-1v">
+            <h3 class="subtitle mb-1">
               {{ key }}
             </h3>
             <p class="text-sm m-0 text-gray-medium break-all">
@@ -69,8 +66,10 @@ import {
 } from '@headlessui/vue'
 import { RiArrowDownSLine, RiArrowUpSLine } from '@remixicon/vue'
 import BrandedButton from './BrandedButton.vue'
+import { useTranslation } from '../composables/useTranslation'
 
 const accordionId = useId()
+const { t } = useTranslation()
 
 defineProps<{
   buttonText: string
