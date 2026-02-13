@@ -34,6 +34,7 @@ export type OrganizationReference = {
   logo: string
   logo_thumbnail: string
   badges: Badges
+  permissions: { delete: boolean, edit: boolean, harvest: boolean, members: boolean, private: boolean }
 }
 
 export type Organization = {
@@ -46,6 +47,7 @@ export type Organization = {
   logo: OrganizationReference['logo']
   logo_thumbnail: OrganizationReference['logo_thumbnail']
   badges: OrganizationReference['badges']
+  permissions: OrganizationReference['permissions']
   url: string // URL of the org website
   description: string
   business_number_id: string

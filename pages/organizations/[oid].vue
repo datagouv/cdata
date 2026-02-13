@@ -21,7 +21,7 @@
         </Breadcrumb>
         <div class="flex gap-3 items-center">
           <EditButton
-            v-if="isMeAdmin() || isMember"
+            v-if="organization.permissions.edit"
             :id="organization.id"
             type="organizations"
           />
@@ -96,7 +96,6 @@ import ReportModal from '~/components/Spam/ReportModal.vue'
 
 const config = useRuntimeConfig()
 const route = useRoute()
-const me = useMaybeMe()
 
 const url = computed(() => `/api/1/organizations/${route.params.oid}/`)
 const { data: organization, status } = await useAPI<Organization>(url, { redirectOn404: true, redirectOnSlug: 'oid' })
@@ -111,5 +110,4 @@ useSeoMeta({
 await useJsonLd('organization', route.params.oid as string)
 
 const type = computed(() => organization.value ? getOrganizationType(organization.value) : 'other')
-const isMember = computed(() => organization.value?.members.some(member => member.user.id === me.value?.id) ?? false)
 </script>

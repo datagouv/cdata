@@ -56,7 +56,7 @@
         </h2>
       </div>
       <div
-        v-if="isOrgAdmin"
+        v-if="organization.permissions.members"
         class="flex-none"
       >
         <ModalWithButton
@@ -252,7 +252,7 @@
                   :title="$t('Voir la page publique')"
                 />
                 <ModalWithButton
-                  v-if="isOrgAdmin"
+                  v-if="organization.permissions.members"
                   :title="$t('Modifier le membre')"
                   size="lg"
                   @open="newRole = member.role"
@@ -349,7 +349,6 @@ import AdminMembershipRequest from '~/components/AdminMembershipRequest/AdminMem
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import { useNotifications } from '~/composables/useNotifications.client'
-import { isUserOrgAdmin, useMe } from '~/utils/auth'
 import { email, required } from '~/composables/useForm'
 
 const config = useRuntimeConfig()
@@ -357,7 +356,6 @@ const { t } = useTranslation()
 const { formatDate, formatFromNow } = useFormatDate()
 const { $api } = useNuxtApp()
 const getUserAvatar = useGetUserAvatar()
-const me = useMe()
 
 const { currentOrganization } = useCurrentOwned()
 
@@ -371,10 +369,18 @@ const url = computed(() => {
 
 const { refreshNotifications } = useNotifications()
 const { data: organization, status, refresh } = await useAPI<Organization>(url, { redirectOn404: true })
-const { data: membershipRequests, refresh: refreshMembershipRequests } = await useAPI<Array<PendingMembershipRequest>>(`/api/1/organizations/${currentOrganization.value?.id}/membership/`, {
-  lazy: true,
-  query: { status: 'pending' },
-})
+const membershipRequests = ref<Array<PendingMembershipRequest> | null>(null)
+
+async function fetchPendingMembershipRequests() {
+  if (!organization.value?.permissions.members) return
+  membershipRequests.value = await $api<Array<PendingMembershipRequest>>(`/api/1/organizations/${currentOrganization.value?.id}/membership/`, {
+    query: { status: 'pending' },
+  })
+}
+
+watch(organization, () => {
+  fetchPendingMembershipRequests()
+}, { immediate: true })
 
 const pendingRequests = computed(() => {
   if (!membershipRequests.value) return []
@@ -387,14 +393,8 @@ const pendingInvitations = computed(() => {
 })
 
 const refreshAll = async () => {
-  await Promise.all([
-    refresh(),
-    refreshMembershipRequests(),
-    refreshNotifications(),
-  ])
+  await Promise.all([refresh(), refreshNotifications(), fetchPendingMembershipRequests()])
 }
-
-const isOrgAdmin = computed(() => isUserOrgAdmin(me.value, organization.value))
 
 const newRole = ref<MemberRole | null>(null)
 const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })
