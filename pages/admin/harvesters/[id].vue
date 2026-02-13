@@ -166,6 +166,7 @@ const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const { currentOrganization } = useCurrentOwned()
+const { refreshNotifications } = useNotifications()
 
 const route = useRoute()
 const url = computed(() => `/api/1/harvest/source/${route.params.id}`)
@@ -208,6 +209,7 @@ const validate = async (close: () => void, state: 'accepted' | 'refused') => {
     close()
 
     await refresh()
+    await refreshNotifications()
   }
   finally {
     loading.value = false
