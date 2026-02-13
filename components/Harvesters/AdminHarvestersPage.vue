@@ -154,7 +154,13 @@
         <p class="fr-text--bold fr-my-3v">
           {{ t(`Vous n'avez pas encore publié de moissonneur`) }}
         </p>
-        <AdminPublishButton type="harvester" />
+        <AdminPublishButton
+          v-if="organization.permissions.harvest"
+          type="harvester"
+        />
+        <p v-else>
+          {{ t(`Vous n'avez pas les droits pour créer un moissonneur au sein de cette organisation`) }}
+        </p>
       </template>
       <template v-else-if="q">
         <p class="fr-text--bold fr-my-3v">
