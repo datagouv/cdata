@@ -310,7 +310,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, useTemplateRef, type Ref } from 'vue'
+import { computed, watch, useTemplateRef, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
 import { RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine, RiLightbulbLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
@@ -323,7 +323,7 @@ import { getLink } from '../../functions/pagination'
 import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
 import type { Reuse } from '../../types/reuses'
-import type { GlobalSearchConfig, DatasetSearchResponse, DataserviceSearchResponse, ReuseSearchResponse, FacetItem } from '../../types/search'
+import type { GlobalSearchConfig, SearchType, DatasetSearchResponse, DataserviceSearchResponse, ReuseSearchResponse, FacetItem } from '../../types/search'
 import { getDefaultGlobalSearchConfig } from '../../types/search'
 import BrandedButton from '../BrandedButton.vue'
 import LoadingBlock from '../LoadingBlock.vue'
@@ -359,12 +359,15 @@ const props = withDefaults(defineProps<{
   config: getDefaultGlobalSearchConfig,
 })
 
+// defineModel's default is static and can't depend on props, so we cast and initialize manually
+const currentType = defineModel<SearchType>('type') as Ref<SearchType>
+if (!currentType.value) currentType.value = props.config[0]?.class ?? 'datasets'
+
 const { t } = useTranslation()
 const componentsConfig = useComponentsConfig()
 
 // Initial type is used to determine which fetch should be SSR (non-lazy)
-const initialType = props.config[0]?.class ?? 'datasets'
-const currentType = ref<'datasets' | 'dataservices' | 'reuses'>(initialType)
+const initialType = currentType.value
 
 const currentTypeConfig = computed(() =>
   props.config.find(c => c.class === currentType.value),

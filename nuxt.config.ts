@@ -1,3 +1,4 @@
+import { resolve } from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import toml from './rollup-plugin-smol-toml'
 
@@ -270,6 +271,28 @@ export default defineNuxtConfig({
 
   typescript: {
     typeCheck: false,
+  },
+
+  hooks: {
+    'pages:extend'(pages) {
+      const searchRoute = pages.find(p => p.path === '/datasets/search')
+      if (searchRoute) {
+        pages.push(
+          {
+            name: 'dataservices-search',
+            path: '/dataservices/search',
+            file: resolve(__dirname, 'pages/datasets/search.vue'),
+            meta: { key: 'search' },
+          },
+          {
+            name: 'reuses-search',
+            path: '/reuses/search',
+            file: resolve(__dirname, 'pages/datasets/search.vue'),
+            meta: { key: 'search' },
+          },
+        )
+      }
+    },
   },
   eslint: {
     config: {
