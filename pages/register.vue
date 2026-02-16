@@ -28,6 +28,7 @@
             :error-text="getAllErrorsInErrorFields(errors, 'email')"
             :has-error="!! getAllErrorsInErrorFields(errors, 'email')"
             class="w-full !mb-0"
+            :disabled="!!route.query.email"
             required
           />
         </div>
@@ -155,7 +156,7 @@ const route = useRoute()
 
 useSeoMeta({ title: t('S\'enregistrer'), robots: 'noindex' })
 
-const email = ref('')
+const email = ref((route.query.email as string) || '')
 const password = ref('')
 const passwordConfirmation = ref('')
 const firstname = ref('')
