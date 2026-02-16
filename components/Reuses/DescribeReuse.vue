@@ -398,7 +398,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Tooltip, SimpleBanner, AI_SUGGESTION_MIN_DESCRIPTION_LENGTH, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
+import { BrandedButton, Tooltip, SimpleBanner, SearchableSelect, AI_SUGGESTION_MIN_DESCRIPTION_LENGTH, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
 import { RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
