@@ -24,7 +24,7 @@
           </p>
           <BrandedButton
             color="primary"
-            @click="search = ''"
+            @click="updateSearch('')"
           >
             {{ t('Réinitialiser la recherche') }}
           </BrandedButton>
@@ -38,7 +38,7 @@
         @select="selectResource"
         @load-more="loadMore"
         @update:collapsed="sidebarCollapsed = $event"
-        @update:search="search = $event"
+        @update:search="updateSearch($event)"
       />
     </div>
   </div>
@@ -88,7 +88,7 @@ const config = useComponentsConfig()
 
 const sidebarCollapsed = ref(false)
 const search = ref('')
-const { debounced: searchDebounced } = useDebouncedRef(search, config.searchDebounce ?? 300)
+const { debounced: searchDebounced, flush } = useDebouncedRef(search, config.searchDebounce ?? 300)
 
 const PAGE_SIZE = 10
 const url = computed(() => `/api/2/datasets/${props.dataset.id}/resources/`)
@@ -219,6 +219,11 @@ function getInitialResource(): Resource | null {
 }
 
 const selectedResource = ref<Resource | null>(getInitialResource())
+
+function updateSearch(newSearch: string) {
+  search.value = newSearch
+  flush()
+}
 
 const selectResource = (resource: Resource) => {
   selectedResource.value = resource
