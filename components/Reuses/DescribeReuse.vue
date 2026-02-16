@@ -398,7 +398,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Tooltip, SimpleBanner, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
+import { BrandedButton, Tooltip, SimpleBanner, AI_SUGGESTION_MIN_DESCRIPTION_LENGTH, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
 import { RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
@@ -476,6 +476,9 @@ const accordionState = (key: keyof typeof form.value) => {
 
 const hasTitle = computed(() => form.value.title && form.value.title.trim().length > 0)
 const hasDescription = computed(() => form.value.description && form.value.description.trim().length > 0)
+const hasEnoughDescription = computed(() => {
+  return (form.value.description?.trim().length ?? 0) >= AI_SUGGESTION_MIN_DESCRIPTION_LENGTH
+})
 const hasType = computed(() => form.value.type?.label && form.value.type.label.trim().length > 0)
 const hasLessThanMaxTags = computed(() => form.value.tags.length < MAX_TAGS_NB)
 
@@ -496,6 +499,11 @@ const tagsSuggestionDisabledMessage = computed(() => {
   if (missing.length > 0) {
     return t('Remplissez {fields} pour utiliser cette fonctionnalité.', { fields: humanJoin(missing) })
   }
+  if (!hasEnoughDescription.value) {
+    return t('Ajoutez une description plus détaillée (au moins {min} caractères) pour obtenir des suggestions pertinentes.', {
+      min: AI_SUGGESTION_MIN_DESCRIPTION_LENGTH,
+    })
+  }
   return ''
 })
 
@@ -515,6 +523,10 @@ async function submit() {
 }
 
 async function handleAutoCompleteTags(nbTags: number) {
+  if (tagsSuggestionDisabledMessage.value) {
+    return
+  }
+
   if (!form.value.type?.label) {
     return
   }

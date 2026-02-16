@@ -3,6 +3,8 @@ import { removeMarkdownSync } from './markdown'
 // Dataset description constants
 export const DESCRIPTION_SHORT_MAX_LENGTH = 200
 export const DESCRIPTION_MIN_LENGTH = 200
+// Minimum description length required to enable AI-powered suggestions.
+export const AI_SUGGESTION_MIN_DESCRIPTION_LENGTH = 200
 
 /**
  * Returns the short description to display.
