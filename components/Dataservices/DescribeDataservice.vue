@@ -40,6 +40,12 @@
           <p class="fr-m-0">
             {{ t("Rédigez une description claire et précise de l'API. Les usagers ont besoin de comprendre l'objectif de l'API, les données délivrées, le périmètre couvert (la donnée est-elle exhaustive, y-a t'il des manques ?), la fréquence d'actualisation de la donnée, ainsi que les paramètres avec lesquels ils peuvent effectuer un appel.") }}
           </p>
+          <p class="fr-mt-3v font-bold">
+            {{ $t("Suggestions automatiques") }}
+          </p>
+          <p class="fr-m-0">
+            {{ $t(`Une première version peut être générée automatiquement si vous avez rempli le nom de l'API et au moins un lien fonctionnel vers la documentation (technique ou machine), puis adaptée selon vos besoins.`) }}
+          </p>
         </Accordion>
         <Accordion
           :id="addBaseUrlAccordionId"
