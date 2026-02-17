@@ -165,7 +165,7 @@
       <section
         ref="results"
         class="col-span-12 mt-4 md:mt-0 search-results"
-        :class="showSidebar ? 'md:col-span-8 lg:col-span-9' : ''"
+        :class="showSidebar ? 'md:col-span-8 lg:col-span-9 md:pl-8' : ''"
       >
         <div
           v-if="searchResults?.total"
@@ -188,7 +188,7 @@
               <select
                 id="sort-search"
                 v-model="sort"
-                class="fr-select shadow-input-blue!"
+                class="fr-select text-sm shadow-input-blue!"
               >
                 <option :value="undefined">
                   {{ t('Pertinence') }}
@@ -211,7 +211,7 @@
             :data="searchResults"
           >
             <div v-if="results && results.data.length">
-              <ul class="space-y-4 mt-2 pt-2 p-0 border-t border-gray-default relative z-2 list-none">
+              <ul class="space-y-4 mt-2 p-0 relative z-2 list-none">
                 <li
                   v-for="result in results.data"
                   :key="result.id"
