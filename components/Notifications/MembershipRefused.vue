@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { useFormatDate, type OrganizationReference } from '@datagouv/components-next'
+import { AnimatedLoader, useFormatDate, type OrganizationReference } from '@datagouv/components-next'
 import { RiCloseCircleLine } from '@remixicon/vue'
 import type { DeepReadonly } from 'vue'
 import type { MembershipRefusedNotification } from '~/types/notifications'

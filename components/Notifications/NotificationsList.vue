@@ -9,7 +9,7 @@
         :notification="notification as MembershipRequestNotification"
       />
       <NotificationsTransferRequest
-        v-if="notification.details.class === 'TransferRequestNotificationDetails'"
+        v-else-if="notification.details.class === 'TransferRequestNotificationDetails'"
         :notification="notification as TransferRequestNotification"
       />
       <NotificationsNewBadge
