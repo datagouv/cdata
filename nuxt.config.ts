@@ -125,7 +125,7 @@ export default defineNuxtConfig({
       datasetRestrictedGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-juridique/producteurs-de-donnees/quelles-sont-les-obligations',
       dataSearchFeedbackFormUrl: 'https://tally.so/r/mDKv1N',
       forumUrl: 'https://forum.data.gouv.fr/',
-      generateShortDescriptionFeedbackUrl: 'https://tally.so/r/wbbRxo',
+      generateDescriptionFeedbackUrl: 'https://tally.so/r/wbbRxo',
       generateTagsFeedbackUrl: 'https://tally.so/r/w80JNP',
       publishingDatasetFeedbackUrl: 'https://tally.so/r/nGo0yO',
       publishingDataserviceFeedbackUrl: 'https://tally.so/r/w2J7lL',
