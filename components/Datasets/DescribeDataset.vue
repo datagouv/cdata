@@ -360,6 +360,13 @@
                 {{ $t('Comment avez-vous trouvé cette suggestion ?') }}
               </CdataLink>
             </div>
+            <SimpleBanner
+              v-if="descriptionShortGenerationError"
+              type="danger"
+              class="mb-3"
+            >
+              {{ $t("Une erreur est survenue lors de la génération de la description courte. Veuillez réessayer ou signaler le problème.") }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -804,6 +811,7 @@ const addTemporalCoverageAccordionId = useId()
 const addSpatialInformationAccordionId = useId()
 
 const isGeneratingDescriptionShort = ref(false)
+const descriptionShortGenerationError = ref(false)
 
 const newBadges = ref(props.badges ?? [])
 watch(() => props.badges, (badges) => {
@@ -918,6 +926,7 @@ const tagsSuggestionDisabledMessage = computed(() => {
 async function handleAutoCompleteDescriptionShort() {
   try {
     isGeneratingDescriptionShort.value = true
+    descriptionShortGenerationError.value = false
 
     // We call our server-side API route instead of Albert API directly to avoid CORS issues.
     // The Albert API doesn't allow direct requests from browser-side JavaScript.
@@ -935,6 +944,7 @@ async function handleAutoCompleteDescriptionShort() {
   }
   catch (error) {
     console.error('Failed to generate short description:', error)
+    descriptionShortGenerationError.value = true
   }
   finally {
     isGeneratingDescriptionShort.value = false
