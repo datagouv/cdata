@@ -72,7 +72,7 @@
               {{ $t("Suggestions automatiques") }}
             </p>
             <p class="m-0">
-              {{ $t(`Une première version peut être générée automatiquement si vous avez déjà rempli le titre et une description d'au moins {min} caractères, puis adaptée selon vos besoins.`, { min: DESCRIPTION_MIN_LENGTH }) }}
+              {{ $t(`Une première version peut être générée automatiquement si vous avez déjà rempli le titre et une description d'au moins {min} caractères, puis adaptée selon vos besoins.`, { min: AI_SUGGESTION_MIN_DESCRIPTION_LENGTH }) }}
             </p>
             <p class="m-0">
               <CdataLink
@@ -333,7 +333,7 @@
                   </div>
                 </BrandedButton>
                 <template #tooltip>
-                  {{ $t('Remplissez le titre et une description d\'au moins {min} caractères pour utiliser cette fonctionnalité.', { min: DESCRIPTION_MIN_LENGTH }) }}
+                  {{ $t('Remplissez le titre et une description d\'au moins {min} caractères pour utiliser cette fonctionnalité.', { min: AI_SUGGESTION_MIN_DESCRIPTION_LENGTH }) }}
                 </template>
               </Tooltip>
               <BrandedButton
@@ -750,7 +750,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Tooltip, DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH, SearchableSelect } from '@datagouv/components-next'
+import { BrandedButton, Tooltip, AI_SUGGESTION_MIN_DESCRIPTION_LENGTH, DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH, SearchableSelect } from '@datagouv/components-next'
 import { SimpleBanner, type Badge, type Frequency, type License } from '@datagouv/components-next'
 import { RiAddLine, RiStarFill, RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
@@ -883,7 +883,7 @@ const accordionState = (key: keyof typeof form.value) => {
 
 const hasTitle = computed(() => form.value.title && form.value.title.trim().length > 0)
 const hasDescription = computed(() => form.value.description && form.value.description.trim().length > 0)
-const hasEnoughDescription = computed(() => form.value.description && form.value.description.length >= DESCRIPTION_MIN_LENGTH)
+const hasEnoughDescription = computed(() => form.value.description && form.value.description.trim().length >= AI_SUGGESTION_MIN_DESCRIPTION_LENGTH)
 const hasLessThanMaxTags = computed(() => form.value.tags.length < MAX_TAGS_NB)
 
 const canGenerateDescriptionShort = computed(() => {
@@ -904,6 +904,11 @@ const tagsSuggestionDisabledMessage = computed(() => {
   if (missing.length > 0) {
     return t('Remplissez {fields} pour utiliser cette fonctionnalité.', { fields: humanJoin(missing) })
   }
+  if (!hasEnoughDescription.value) {
+    return t('Ajoutez une description plus détaillée (au moins {min} caractères) pour obtenir des suggestions pertinentes.', {
+      min: AI_SUGGESTION_MIN_DESCRIPTION_LENGTH,
+    })
+  }
   return ''
 })
 
@@ -914,7 +919,7 @@ async function handleAutoCompleteDescriptionShort() {
     // We call our server-side API route instead of Albert API directly to avoid CORS issues.
     // The Albert API doesn't allow direct requests from browser-side JavaScript.
     // Our server acts as a proxy, keeping the API key secure on the server side.
-    const response = await $fetch<{ descriptionShort?: string }>('/nuxt-api/albert/generate-short-description', {
+    const response = await $fetch<{ descriptionShort?: string }>('/nuxt-api/albert/generate-dataset-short-description', {
       method: 'POST',
       body: {
         title: form.value.title,
@@ -940,13 +945,17 @@ async function submit() {
 }
 
 async function handleAutoCompleteTags(nbTags: number) {
+  if (tagsSuggestionDisabledMessage.value) {
+    return
+  }
+
   try {
     isGeneratingTags.value = true
 
     // We call our server-side API route instead of Albert API directly to avoid CORS issues.
     // The Albert API doesn't allow direct requests from browser-side JavaScript.
     // Our server acts as a proxy, keeping the API key secure on the server side.
-    const response = await $fetch<{ tags: string[] }>('/nuxt-api/albert/generate-tags', {
+    const response = await $fetch<{ tags: string[] }>('/nuxt-api/albert/generate-dataset-tags', {
       method: 'POST',
       body: {
         title: form.value.title,
