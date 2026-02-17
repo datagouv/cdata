@@ -1,4 +1,4 @@
-import { validateAlbertConfig, callAlbertAPI } from './utils/albert-helpers'
+import { validateAlbertConfig, callAlbertAPI, parseTags } from './utils/albert-helpers'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -73,11 +73,7 @@ export default defineEventHandler(async (event) => {
   const generatedTags = await callAlbertAPI(messages, 'openweight-small')
 
   // Parse the comma-separated tags and clean them
-  const tags = generatedTags
-    .split(',')
-    .map((tag: string) => tag.trim())
-    .filter((tag: string) => tag.length > 0)
-    .slice(0, nbTags)
+  const tags = parseTags(generatedTags, nbTags)
 
   return { tags }
 })

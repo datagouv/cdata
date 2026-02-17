@@ -38,3 +38,17 @@ export async function callAlbertAPI(
     })
   }
 }
+
+/**
+ * Parses comma-separated tags from Albert API response
+ * @param raw - Raw comma-separated string from Albert API
+ * @param max - Maximum number of tags to return
+ * @returns Array of cleaned tags
+ */
+export function parseTags(raw: string, max: number): string[] {
+  return raw
+    .split(',')
+    .map((tag: string) => tag.trim())
+    .filter((tag: string) => tag.length > 0)
+    .slice(0, max)
+}
