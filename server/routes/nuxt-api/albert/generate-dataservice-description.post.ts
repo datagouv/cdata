@@ -123,7 +123,10 @@ Output:
     { role: 'user', content: userContent },
   ]
 
-  // openweight-small: 128k tokens; openweight-medium: 128k tokens; openweight-large: 256k tokens
+  // Models available for text generation:
+  // - openweight-small (replaces albert-small): 128k tokens
+  // - openweight-medium (replaces albert-large): 128k tokens
+  // - openweight-large: 256k tokens
   const generatedDescription = (await callAlbertAPI(messages, 'openweight-small')).trim()
 
   if (generatedDescription.length < DESCRIPTION_MIN_LENGTH) {
