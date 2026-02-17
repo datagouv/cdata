@@ -26,7 +26,7 @@
             <strong class="font-bold">{{ $t('Croiser les données électorales') }}</strong>{{ $t(' avec d\'autres jeux de données territoriales') }}
           </li>
           <li>
-            <strong class="font-bold">{{ $t('Suggérer l\'ouverture de données') }}</strong>{{ $t(' associées à des thématiques') }}
+            <strong class="font-bold">{{ $t('Suggérer l\'ouverture de données') }}</strong>{{ $t(' relatives aux élections') }}
           </li>
         </ul>
 
@@ -71,7 +71,7 @@ const elections = [
   {
     slug: 'legislatives',
     title: t('Données des élections législatives'),
-    description: t('Cette page rassemble l\'ensemble des données relatives aux élections législatives : résultats par circonscription, nuances politiques et toutes les données permettant de saisir les enjeux propres à la représentation des territoires à l\'Assemblée nationale.'),
+    description: t('Cette page rassemble l\'ensemble des données relatives aux élections législatives : résultats par circonscription et données sur le fonctionnement et la transparence du pouvoir législatif, afin d\'éclairer les enjeux de l\'Assemblée nationale.'),
     to: '/posts/donnees-liees-aux-elections-legislatives',
     image: '/nuxt_images/legislative.png',
   },
