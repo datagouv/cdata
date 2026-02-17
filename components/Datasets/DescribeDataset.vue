@@ -883,7 +883,7 @@ const accordionState = (key: keyof typeof form.value) => {
 
 const hasTitle = computed(() => form.value.title && form.value.title.trim().length > 0)
 const hasDescription = computed(() => form.value.description && form.value.description.trim().length > 0)
-const hasEnoughDescription = computed(() => form.value.description && form.value.description.length >= AI_SUGGESTION_MIN_DESCRIPTION_LENGTH)
+const hasEnoughDescription = computed(() => form.value.description && form.value.description.trim().length >= AI_SUGGESTION_MIN_DESCRIPTION_LENGTH)
 const hasLessThanMaxTags = computed(() => form.value.tags.length < MAX_TAGS_NB)
 
 const canGenerateDescriptionShort = computed(() => {
