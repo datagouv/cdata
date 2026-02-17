@@ -413,7 +413,7 @@
             </div>
             <SimpleBanner
               v-if="tagsGenerationError"
-              type="error"
+              type="danger"
               class="mb-3"
             >
               {{ $t("Une erreur est survenue lors de la génération des mots-clés. Veuillez réessayer ou signaler le problème.") }}
