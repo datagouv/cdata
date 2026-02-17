@@ -24,8 +24,8 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-          cache: 'pnpm'
+          node-version: "20.x"
+          cache: "pnpm"
 
       - name: Install datagouv-components dependencies
         working-directory: ./datagouv-components
@@ -64,8 +64,8 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-          cache: 'pnpm'
+          node-version: "20.x"
+          cache: "pnpm"
 
       - name: Install cdata dependencies
         run: pnpm install
@@ -347,8 +347,8 @@ jobs:
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
           SENTRY_URL: ${{ secrets.SENTRY_URL }}
         with:
-          sourcemaps: '.output/public/_nuxt'
-          url_prefix: '~/_nuxt'
+          sourcemaps: ".output/public/_nuxt"
+          url_prefix: "~/_nuxt"
           environment: ${{ github.ref_name }}
           version: ${{ steps.version.outputs.short }}
           ignore_missing: true

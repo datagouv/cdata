@@ -2,13 +2,16 @@ import type { FieldsErrors } from '~/types/form'
 
 export function useAbsoluteUrlToRelative() {
   const currentUrl = useRequestURL()
+  const config = useRuntimeConfig()
+  // Normalize without trailing slash so url.slice(apiBase.length) always gives a path starting with "/"
+  const apiBase = (config.public.apiBase as string | undefined)?.replace(/\/$/, '')
 
   return (url: string): string => {
     try {
       const baseUrl = `${currentUrl.protocol}//${currentUrl.host}`
 
-      if (!url.startsWith(baseUrl)) return url
-      return url.slice(baseUrl.length)
+      if (url.startsWith(baseUrl)) return url.slice(baseUrl.length)
+      if (apiBase && url.startsWith(apiBase)) return url.slice(apiBase.length) || '/'
     }
     catch {
       // This is not an absolute URL, return the raw one

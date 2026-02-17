@@ -1,10 +1,15 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <div v-if="post">
+  <LoadingBlock
+    v-slot="{ data: post }"
+    :status="status"
+    :data="post"
+  >
     <!-- Full page blocs mode: no header, no breadcrumb, just the blocs -->
-    <PageShowById
-      v-if="isFullPageBlocs && pageId"
-      :page-id="pageId"
+    <PageShow
+      v-if="isFullPageBlocs && contentPage"
+      :page="contentPage"
+      editable
     />
 
     <!-- Standard news mode -->
@@ -59,8 +64,11 @@
             :src="post.image"
             class="w-full h-auto mb-2"
           >
-          <template v-if="post.body_type === 'blocs' && pageId">
-            <PageShowById :page-id="pageId" />
+          <template v-if="post.body_type === 'blocs' && contentPage">
+            <PageShow
+              :page="contentPage"
+              editable
+            />
           </template>
           <template v-else-if="post.body_type === 'markdown'">
             <MarkdownViewer
@@ -87,14 +95,14 @@
         </template>
       </div>
     </div>
-  </div>
+  </LoadingBlock>
 </template>
 
 <script setup lang="ts">
-import { markdownClasses, MarkdownViewer, useFormatDate } from '@datagouv/components-next'
+import { markdownClasses, MarkdownViewer, LoadingBlock, useFormatDate } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
-import PageShowById from '~/components/Pages/PageShowById.vue'
+import PageShow from '~/components/Pages/PageShow.vue'
 import type { Post } from '~/types/posts'
 
 const config = useRuntimeConfig()
@@ -102,17 +110,12 @@ const route = useRoute()
 const { formatDate } = useFormatDate()
 
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
-const { data: post } = await useAPI<Post>(url, { redirectOn404: true })
+const { data: post, status } = await useAPI<Post>(url, { redirectOn404: true, lazy: true })
 
 const name = computed(() => post.value?.name)
 const robots = computed(() => !post.value?.published ? 'noindex, nofollow' : 'all')
 
-const pageId = computed(() => {
-  if (!post.value?.content_as_page) return null
-  return typeof post.value.content_as_page === 'string'
-    ? post.value.content_as_page
-    : post.value.content_as_page.id
-})
+const contentPage = computed(() => post.value?.content_as_page ?? null)
 
 const isFullPageBlocs = computed(() => post.value?.kind === 'page' && post.value?.body_type === 'blocs')
 

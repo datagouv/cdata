@@ -62,11 +62,6 @@
                 v-model="organizationType"
                 :style="{ order: getOrder('organization_badge') }"
               />
-              <AccessTypeSelect
-                v-if="isEnabled('is_restricted')"
-                v-model="isRestricted"
-                :style="{ order: getOrder('is_restricted') }"
-              />
               <TagSelect
                 v-if="isEnabled('tag')"
                 v-model:id="tag"
@@ -97,15 +92,52 @@
                 v-model:id="granularity"
                 :style="{ order: getOrder('granularity') }"
               />
-              <BadgeSelect
-                v-if="isEnabled('badge')"
-                v-model:id="badge"
-                :style="{ order: getOrder('badge') }"
-              />
               <ReuseTopicSelect
                 v-if="isEnabled('topic')"
                 v-model:id="topic"
                 :style="{ order: getOrder('topic') }"
+              />
+              <FormatFamilyFilter
+                v-if="isEnabled('format_family')"
+                v-model="formatFamily"
+                :facets="getFacets('format_family')"
+                :loading="searchResultsStatus === 'pending'"
+                :style="{ order: getOrder('format_family') }"
+              />
+              <AccessTypeFilter
+                v-if="isEnabled('access_type')"
+                v-model="accessType"
+                :facets="getFacets('access_type')"
+                :loading="searchResultsStatus === 'pending'"
+                :style="{ order: getOrder('access_type') }"
+              />
+              <LastUpdateRangeFilter
+                v-if="isEnabled('last_update_range')"
+                v-model="lastUpdateRange"
+                :facets="getFacets('last_update')"
+                :loading="searchResultsStatus === 'pending'"
+                :style="{ order: getOrder('last_update_range') }"
+              />
+              <ProducerTypeFilter
+                v-if="isEnabled('producer_type')"
+                v-model="producerType"
+                :facets="getFacets('producer_type')"
+                :loading="searchResultsStatus === 'pending'"
+                :style="{ order: getOrder('producer_type') }"
+              />
+              <DatasetBadgeFilter
+                v-if="isEnabled('badge')"
+                v-model="badge"
+                :facets="getFacets('badge')"
+                :loading="searchResultsStatus === 'pending'"
+                :style="{ order: getOrder('badge') }"
+              />
+              <ReuseTypeFilter
+                v-if="isEnabled('type')"
+                v-model="reuseType"
+                :facets="getFacets('type')"
+                :loading="searchResultsStatus === 'pending'"
+                :style="{ order: getOrder('type') }"
               />
               <slot
                 name="filters"
@@ -278,22 +310,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, useTemplateRef, type Ref } from 'vue'
+import { computed, watch, useTemplateRef, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
 import { RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine, RiLightbulbLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
 import { useTranslation } from '../../composables/useTranslation'
-import { useRouteQueryBoolean } from '../../composables/useRouteQueryBoolean'
 import { useDebouncedRef } from '../../composables/useDebouncedRef'
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
 import { getLink } from '../../functions/pagination'
-import type { PaginatedArray } from '../../types/api'
 import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
 import type { Reuse } from '../../types/reuses'
-import type { GlobalSearchConfig } from '../../types/search'
+import type { GlobalSearchConfig, SearchType, DatasetSearchResponse, DataserviceSearchResponse, ReuseSearchResponse, FacetItem } from '../../types/search'
 import { getDefaultGlobalSearchConfig } from '../../types/search'
 import BrandedButton from '../BrandedButton.vue'
 import LoadingBlock from '../LoadingBlock.vue'
@@ -308,15 +338,19 @@ import Sidemenu from './Sidemenu.vue'
 import BasicAndAdvancedFilters from './BasicAndAdvancedFilters.vue'
 import OrganizationSelect from '../Form/OrganizationSelect.vue'
 import OrganizationTypeSelect from '../Form/OrganizationTypeSelect.vue'
-import AccessTypeSelect from '../Form/AccessTypeSelect.vue'
 import TagSelect from '../Form/TagSelect.vue'
 import FormatSelect from '../Form/FormatSelect.vue'
 import LicenseSelect from '../Form/LicenseSelect.vue'
 import SchemaSelect from '../Form/SchemaSelect.vue'
 import GeozoneSelect from '../Form/GeozoneSelect.vue'
 import GranularitySelect from '../Form/GranularitySelect.vue'
-import BadgeSelect from '../Form/BadgeSelect.vue'
 import ReuseTopicSelect from '../Form/ReuseTopicSelect.vue'
+import FormatFamilyFilter from './Filter/FormatFamilyFilter.vue'
+import AccessTypeFilter from './Filter/AccessTypeFilter.vue'
+import LastUpdateRangeFilter from './Filter/LastUpdateRangeFilter.vue'
+import ProducerTypeFilter from './Filter/ProducerTypeFilter.vue'
+import DatasetBadgeFilter from './Filter/DatasetBadgeFilter.vue'
+import ReuseTypeFilter from './Filter/ReuseTypeFilter.vue'
 
 const props = withDefaults(defineProps<{
   config?: GlobalSearchConfig
@@ -325,12 +359,15 @@ const props = withDefaults(defineProps<{
   config: getDefaultGlobalSearchConfig,
 })
 
+// defineModel's default is static and can't depend on props, so we cast and initialize manually
+const currentType = defineModel<SearchType>('type') as Ref<SearchType>
+if (!currentType.value) currentType.value = props.config[0]?.class ?? 'datasets'
+
 const { t } = useTranslation()
 const componentsConfig = useComponentsConfig()
 
 // Initial type is used to determine which fetch should be SSR (non-lazy)
-const initialType = props.config[0]?.class ?? 'datasets'
-const currentType = ref<'datasets' | 'dataservices' | 'reuses'>(initialType)
+const initialType = currentType.value
 
 const currentTypeConfig = computed(() =>
   props.config.find(c => c.class === currentType.value),
@@ -364,7 +401,6 @@ const sort = useRouteQuery<string | undefined>('sort')
 // Filter values
 const organizationId = useRouteQuery<string | undefined>('organization')
 const organizationType = useRouteQuery<string | undefined>('organization_badge')
-const isRestricted = useRouteQueryBoolean('is_restricted')
 const tag = useRouteQuery<string | undefined>('tag')
 const format = useRouteQuery<string | undefined>('format')
 const license = useRouteQuery<string | undefined>('license')
@@ -374,13 +410,19 @@ const granularity = useRouteQuery<string | undefined>('granularity')
 const badge = useRouteQuery<string | undefined>('badge')
 const topic = useRouteQuery<string | undefined>('topic')
 
+// New simple filters
+const formatFamily = useRouteQuery<string | undefined>('format_family')
+const accessType = useRouteQuery<string | undefined>('access_type')
+const lastUpdateRange = useRouteQuery<string | undefined>('last_update_range')
+const producerType = useRouteQuery<string | undefined>('producer_type')
+const reuseType = useRouteQuery<string | undefined>('type')
+
 const pageSize = 20
 
 // All filter values as a record
 const allFilters: Record<string, Ref<unknown>> = {
   organization: organizationId,
   organization_badge: organizationType,
-  is_restricted: isRestricted,
   tag,
   format,
   license,
@@ -389,6 +431,11 @@ const allFilters: Record<string, Ref<unknown>> = {
   granularity,
   badge,
   topic,
+  format_family: formatFamily,
+  access_type: accessType,
+  last_update_range: lastUpdateRange,
+  producer_type: producerType,
+  type: reuseType,
 }
 
 // Reset sort and filters when changing type if they're not valid for the new type
@@ -444,7 +491,6 @@ const filtersForReset = computed(() => ({
   q: qDebounced.value,
   organization: organizationId.value,
   organization_badge: organizationType.value,
-  is_restricted: isRestricted.value,
   tag: tag.value,
   format: format.value,
   license: license.value,
@@ -453,6 +499,11 @@ const filtersForReset = computed(() => ({
   granularity: granularity.value,
   badge: badge.value,
   topic: topic.value,
+  format_family: formatFamily.value,
+  access_type: accessType.value,
+  last_update_range: lastUpdateRange.value,
+  producer_type: producerType.value,
+  type: reuseType.value,
 }))
 
 watch(filtersForReset, () => page.value = 1)
@@ -462,7 +513,6 @@ const hasFilters = computed(() => {
   return q.value
     || organizationId.value
     || organizationType.value
-    || isRestricted.value !== undefined
     || tag.value
     || format.value
     || license.value
@@ -471,6 +521,11 @@ const hasFilters = computed(() => {
     || granularity.value
     || badge.value
     || topic.value
+    || formatFamily.value
+    || accessType.value
+    || lastUpdateRange.value
+    || producerType.value
+    || reuseType.value
 })
 
 const showForumLink = computed(() => currentType.value === 'datasets' && !!componentsConfig.forumUrl)
@@ -478,7 +533,6 @@ const showForumLink = computed(() => currentType.value === 'datasets' && !!compo
 function resetFilters() {
   organizationId.value = undefined
   organizationType.value = undefined
-  isRestricted.value = undefined
   tag.value = undefined
   format.value = undefined
   license.value = undefined
@@ -487,23 +541,28 @@ function resetFilters() {
   granularity.value = undefined
   badge.value = undefined
   topic.value = undefined
+  formatFamily.value = undefined
+  accessType.value = undefined
+  lastUpdateRange.value = undefined
+  producerType.value = undefined
+  reuseType.value = undefined
   q.value = ''
   flushQ()
 }
 
 // API calls only for enabled types (useFetch skips when URL is null)
 // Only the initial type is fetched during SSR, others are client-side only
-const { data: datasetsResults, status: datasetsStatus } = await useFetch<PaginatedArray<Dataset>>(
+const { data: datasetsResults, status: datasetsStatus } = await useFetch<DatasetSearchResponse<Dataset>>(
   datasetsUrl,
-  { params: datasetsParams, server: initialType === 'datasets' },
+  { params: datasetsParams, lazy: true, server: initialType === 'datasets' },
 )
-const { data: dataservicesResults, status: dataservicesStatus } = await useFetch<PaginatedArray<Dataservice>>(
+const { data: dataservicesResults, status: dataservicesStatus } = await useFetch<DataserviceSearchResponse<Dataservice>>(
   dataservicesUrl,
-  { params: dataservicesParams, server: initialType === 'dataservices' },
+  { params: dataservicesParams, lazy: true, server: initialType === 'dataservices' },
 )
-const { data: reusesResults, status: reusesStatus } = await useFetch<PaginatedArray<Reuse>>(
+const { data: reusesResults, status: reusesStatus } = await useFetch<ReuseSearchResponse<Reuse>>(
   reusesUrl,
-  { params: reusesParams, server: initialType === 'reuses' },
+  { params: reusesParams, lazy: true, server: initialType === 'reuses' },
 )
 
 const typesMeta = {
@@ -529,6 +588,14 @@ const typesMeta = {
 
 const searchResults = computed(() => typesMeta[currentType.value].results.value)
 const searchResultsStatus = computed(() => typesMeta[currentType.value].status.value)
+
+// Facets for filters
+const currentFacets = computed(() => searchResults.value?.facets)
+
+function getFacets(key: string): FacetItem[] | undefined {
+  if (!currentFacets.value) return undefined
+  return (currentFacets.value as Record<string, FacetItem[]>)[key]
+}
 
 // Scroll handling
 const searchRef = useTemplateRef('search')

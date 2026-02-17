@@ -21,10 +21,7 @@
           </CdataLink>
         </div>
       </div>
-      <form
-        method="GET"
-        :action="searchUrl"
-      >
+      <form @submit.prevent="onSubmit">
         <label
           :for="id"
           class="italic font-spectral text-2xl text-white"
@@ -34,7 +31,7 @@
         <div class="w-full flex rounded-t overflow-hidden">
           <input
             :id="id"
-            name="q"
+            v-model="query"
             class="w-full text-2xl bg-white/80 border-b-4 border-white px-4 text-black placeholder:text-gray-plain"
             :placeholder
           >
@@ -81,4 +78,13 @@ const textColor = computed(() => ({
   green: 'text-new-green-illustration',
   purple: 'text-new-brown-illustration',
 }[props.color]))
+
+const query = ref('')
+
+function onSubmit() {
+  navigateTo({
+    path: props.searchUrl,
+    query: query.value ? { q: query.value } : undefined,
+  })
+}
 </script>

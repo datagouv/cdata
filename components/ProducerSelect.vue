@@ -67,10 +67,12 @@ const props = withDefaults(defineProps<{
   all?: boolean
   required?: boolean
   organizationsOnly?: boolean
+  organizationPermissionNeed?: 'delete' | 'edit' | 'harvest' | 'members' | 'private' | null
 }>(), {
   all: false,
   required: false,
   organizationsOnly: false,
+  organizationPermissionNeed: null,
 })
 const model = defineModel<Owned | null>({ required: true })
 
@@ -78,13 +80,19 @@ const { t } = useTranslation()
 const user = useMe()
 const { $api } = useNuxtApp()
 
-const ownedOptions = computed<Array<Owned>>(() => {
-  const organizations = user.value.organizations.map(organization => ({ organization, owner: null }))
-
-  if (props.organizationsOnly) {
-    return organizations
+const organizations = computed(() => {
+  if (props.organizationPermissionNeed) {
+    return user.value.organizations.filter(org => org.permissions[props.organizationPermissionNeed!])
   }
-  return [...organizations, { owner: { ...user.value, class: 'User' }, organization: null }]
+  return user.value.organizations
+})
+
+const ownedOptions = computed<Array<Owned>>(() => {
+  const orgs = organizations.value.map(organization => ({ organization, owner: null }))
+  if (props.organizationsOnly) {
+    return orgs
+  }
+  return [...orgs, { owner: { ...user.value, class: 'User' }, organization: null }]
 })
 
 const hasOrganizations = computed(() => {

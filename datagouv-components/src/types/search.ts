@@ -317,6 +317,8 @@ export type ReuseSearchConfig = {
 
 export type SearchTypeConfig = DatasetSearchConfig | DataserviceSearchConfig | ReuseSearchConfig
 
+export type SearchType = SearchTypeConfig['class']
+
 export type GlobalSearchConfig = SearchTypeConfig[]
 
 // Helper functions for default configs
@@ -341,7 +343,8 @@ export const defaultReuseSortOptions: SortOption<ReuseSearchSort>[] = [
 export function getDefaultDatasetConfig(overrides?: Partial<Omit<DatasetSearchConfig, 'class'>>): DatasetSearchConfig {
   return {
     class: 'datasets',
-    basicFilters: ['organization', 'organization_badge', 'tag', 'format', 'license', 'schema', 'geozone', 'granularity', 'badge'],
+    basicFilters: ['format_family', 'access_type', 'last_update_range', 'producer_type', 'badge'],
+    advancedFilters: ['organization', 'organization_badge', 'tag', 'format', 'license', 'schema', 'geozone', 'granularity'],
     sortOptions: defaultDatasetSortOptions,
     ...overrides,
   }
@@ -350,7 +353,8 @@ export function getDefaultDatasetConfig(overrides?: Partial<Omit<DatasetSearchCo
 export function getDefaultDataserviceConfig(overrides?: Partial<Omit<DataserviceSearchConfig, 'class'>>): DataserviceSearchConfig {
   return {
     class: 'dataservices',
-    basicFilters: ['organization', 'is_restricted'],
+    basicFilters: ['access_type', 'last_update_range', 'producer_type'],
+    advancedFilters: ['organization', 'tag'],
     sortOptions: defaultDataserviceSortOptions,
     ...overrides,
   }
@@ -359,7 +363,8 @@ export function getDefaultDataserviceConfig(overrides?: Partial<Omit<Dataservice
 export function getDefaultReuseConfig(overrides?: Partial<Omit<ReuseSearchConfig, 'class'>>): ReuseSearchConfig {
   return {
     class: 'reuses',
-    basicFilters: ['organization', 'topic'],
+    basicFilters: ['type', 'topic', 'last_update_range', 'producer_type'],
+    advancedFilters: ['organization', 'organization_badge', 'tag'],
     sortOptions: defaultReuseSortOptions,
     ...overrides,
   }

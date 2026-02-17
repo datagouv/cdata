@@ -3,7 +3,7 @@
     <div class="flex gap-6">
       <div class="flex-1 min-w-0">
         <ResourceExplorerViewer
-          v-if="selectedResource"
+          v-if="selectedResource && allResources.length"
           :key="selectedResource.id"
           :dataset
           :resource="selectedResource"
@@ -22,17 +22,23 @@
           <p class="fr-text--bold fr-my-3v">
             {{ t('Pas de résultats pour « {q} »', { q: search }) }}
           </p>
+          <BrandedButton
+            color="primary"
+            @click="updateSearch('')"
+          >
+            {{ t('Réinitialiser la recherche') }}
+          </BrandedButton>
         </div>
       </div>
       <ResourceExplorerSidebar
         :resources="allResources"
         :selected-resource-id="selectedResource?.id ?? null"
         :collapsed="sidebarCollapsed"
-        :search="search"
+        :search
         @select="selectResource"
         @load-more="loadMore"
         @update:collapsed="sidebarCollapsed = $event"
-        @update:search="search = $event"
+        @update:search="updateSearch($event)"
       />
     </div>
   </div>
@@ -67,6 +73,7 @@ import type { DatasetV2 } from '../../types/datasets'
 import type { Resource, ResourceGroup, ResourceType } from '../../types/resources'
 import ResourceExplorerSidebar from './ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './ResourceExplorerViewer.vue'
+import BrandedButton from '../BrandedButton.vue'
 
 const props = withDefaults(defineProps<{
   dataset: DatasetV2
@@ -81,7 +88,7 @@ const config = useComponentsConfig()
 
 const sidebarCollapsed = ref(false)
 const search = ref('')
-const { debounced: searchDebounced } = useDebouncedRef(search, config.searchDebounce ?? 300)
+const { debounced: searchDebounced, flush } = useDebouncedRef(search, config.searchDebounce ?? 300)
 
 const PAGE_SIZE = 10
 const url = computed(() => `/api/2/datasets/${props.dataset.id}/resources/`)
@@ -138,7 +145,9 @@ const rawResourcesByTypes = [
 ]
 
 // Evaluated once at setup (before any search) — never changes afterwards
-const hasAnyResources = computed(() => rawResourcesByTypes.some(r => (r.data.value?.total ?? 0) > 0))
+const hasAnyResources = computed(() => {
+  return props.dataset.resources.total > 0
+})
 
 const extraResourcesByType: Ref<Resource[]>[] = RESOURCE_TYPE.map(() => ref<Resource[]>([]))
 const pageByType: Ref<number>[] = RESOURCE_TYPE.map(() => ref(1))
@@ -210,6 +219,11 @@ function getInitialResource(): Resource | null {
 }
 
 const selectedResource = ref<Resource | null>(getInitialResource())
+
+function updateSearch(newSearch: string) {
+  search.value = newSearch
+  flush()
+}
 
 const selectResource = (resource: Resource) => {
   selectedResource.value = resource
