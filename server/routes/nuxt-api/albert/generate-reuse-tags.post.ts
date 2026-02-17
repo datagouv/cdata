@@ -27,16 +27,17 @@ export default defineEventHandler(async (event) => {
       {
         role: 'system',
         content: `You are an assistant integrated into data.gouv.fr, the French open data platform.\n`
-          + `Your task is to identify and synthesize the main topics of a ${type} as five normalized keywords.\n`
+          + `Your task is to identify and synthesize the main topics of a reuse (a digital resource created from open data) as five normalized keywords.\n`
+          + `The reuse you're analyzing is of type "${type}".\n`
           + `\n`
           + `Task goal:\n`
-          + `Generate exactly ${nbTags} keywords that best represent the ${type}'s content.\n`
+          + `Generate exactly ${nbTags} keywords that best represent this reuse's content.\n`
           + `Your goal is to improve search and discoverability through clear, consistent terms.\n`
           + `\n`
           + `Semantic guidance:\n`
           + `- Respond in French only.\n`
           + `- When possible, align the keywords with existing EuroVoc concepts in French (invisibly).\n`
-          + `- Focus on the ${type}'s topics, not its context or technical structure.\n`
+          + `- Focus on the reuse's topics, not its context or technical structure.\n`
           + `\n`
           + `🧾Normalization rules:\n`
           + `1. Use simple, concrete words (1–3 words max).\n`
@@ -55,14 +56,14 @@ export default defineEventHandler(async (event) => {
       },
       {
         role: 'user',
-        content: `You are asked to generate ${nbTags} keywords for the following ${type}.\n`
+        content: `You are asked to generate ${nbTags} keywords for the following reuse.\n`
           + `\n`
           + `The title describes the main topic, the description explains the content.\n`
           + `\n`
           + `Goal:\n`
-          + `→ Suggest ${nbTags} normalized French keywords representing the ${type}'s content.\n`
+          + `→ Suggest ${nbTags} normalized French keywords representing this reuse's content.\n`
           + `→ When possible, use wording aligned with EuroVoc concepts in French.\n`
-          + `→ Focus on what the ${type} is about, not on its context or structure.\n`
+          + `→ Focus on what the reuse is about, not on its context or structure.\n`
           + `\n`
           + `Input context:\n`
           + `- Title: ${title}\n`
