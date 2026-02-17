@@ -412,6 +412,13 @@
               </CdataLink>
             </div>
             <SimpleBanner
+              v-if="tagsGenerationError"
+              type="error"
+              class="mb-3"
+            >
+              {{ $t("Une erreur est survenue lors de la génération des mots-clés. Veuillez réessayer ou signaler le problème.") }}
+            </SimpleBanner>
+            <SimpleBanner
               v-if="getFirstWarning('tags')"
               type="warning"
             >
@@ -843,6 +850,7 @@ const getGranularityName = (zone: SpatialZone): string | undefined => {
 // Track tag sources
 const isGeneratingTags = ref(false)
 const lastSuggestedTags = ref<Array<Tag>>([])
+const tagsGenerationError = ref(false)
 
 const { $api } = useNuxtApp()
 
@@ -942,6 +950,7 @@ async function submit() {
 async function handleAutoCompleteTags(nbTags: number) {
   try {
     isGeneratingTags.value = true
+    tagsGenerationError.value = false
 
     // We call our server-side API route instead of Albert API directly to avoid CORS issues.
     // The Albert API doesn't allow direct requests from browser-side JavaScript.
@@ -981,6 +990,7 @@ async function handleAutoCompleteTags(nbTags: number) {
   }
   catch (error) {
     console.error('Failed to generate tags:', error)
+    tagsGenerationError.value = true
   }
   finally {
     isGeneratingTags.value = false
