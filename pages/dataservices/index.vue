@@ -2,8 +2,8 @@
   <div>
     <EditoHeader
       color="purple"
-      :title="$t('API')"
-      :subtitle="$t('Rechercher parmi les {count} API sur {site}', {
+      :title="$t('Rechercher une API')"
+      :subtitle="$t('parmi les {count} API sur {site}', {
         count: site?.metrics.dataservices || 0,
         site: config.public.title,
       })"
@@ -253,7 +253,8 @@ import PageShowNew from '~/components/Pages/PageShowNew.vue'
 
 const { t } = useTranslation()
 useSeoMeta({
-  title: t('API'),
+  title: t('Catalogue des API publiques - data.gouv.fr'),
+  description: t('Vous recherchez une API publique pour automatiser des tâches depuis vos serveurs ? Explorez le catalogue de data.gouv.fr alimenté par l\'administration et la société civile.'),
 })
 
 const config = useRuntimeConfig()
