@@ -2,8 +2,8 @@
   <div>
     <EditoHeader
       color="green"
-      :title="$t('Réutilisations')"
-      :subtitle="$t('Rechercher parmi les {count} réutilisations sur {site}', {
+      :title="$t('Rechercher une réutilisation')"
+      :subtitle="$t('parmi les {count} réutilisations sur {site}', {
         count: site?.metrics.reuses ?? 0,
         site: config.public.title,
       })"
@@ -168,7 +168,8 @@ import PageShowNew from '~/components/Pages/PageShowNew.vue'
 
 const { t } = useTranslation()
 useSeoMeta({
-  title: t('Réutilisations'),
+  title: t('Catalogue des réutilisations publiques - data.gouv.fr'),
+  description: t('Vous recherchez des exemples concrets d\'exploitation des données publiques ? Explorez le catalogue des réutilisations de data.gouv.fr alimenté par l\'administration et la société civile.'),
 })
 
 const config = useRuntimeConfig()
