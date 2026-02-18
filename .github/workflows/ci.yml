@@ -231,7 +231,7 @@ jobs:
           NUXT_PUBLIC_API_BASE: http://localhost:7000
           UDATA_WORKING_DIR: ${{ env.UDATA_WORKING_DIR }}
           CI: true
-        run: pnpm run test:e2e
+        run: pnpm run test:e2e:update-screenshots
 
       - name: Kill udata server
         if: always()
