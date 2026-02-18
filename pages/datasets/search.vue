@@ -10,7 +10,7 @@
     </Breadcrumb>
 
     <h1 class="text-gray-title font-extrabold text-2xl mb-2">
-      {{ currentType === 'datasets' ? $t('Recherche avancée d\'un jeu de données') : currentType === 'dataservices' ? $t('Recherche avancée d\'une API') : $t('Recherche avancée d\'une réutilisation') }}
+      {{ heading }}
     </h1>
 
     <GlobalSearch
@@ -47,6 +47,17 @@ const currentType = computed<SearchType>({
 
 const robots = computed(() => {
   return Object.keys(route.query).length > 0 ? 'noindex, nofollow' : undefined
+})
+
+const heading = computed(() => {
+  switch (currentType.value) {
+    case 'dataservices':
+      return t('Recherche avancée d\'une API')
+    case 'reuses':
+      return t('Recherche avancée d\'une réutilisation')
+    default:
+      return t('Recherche avancée d\'un jeu de données')
+  }
 })
 
 const title = computed(() => {
