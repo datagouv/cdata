@@ -60,7 +60,7 @@
               <td class="text-center">
                 <input
                   type="checkbox"
-                  :checked="modelValue.has(dataset.id)"
+                  :checked="selectedIds.has(dataset.id)"
                   class="size-4 cursor-pointer"
                   @click.stop="toggle(dataset.id)"
                 >
@@ -98,9 +98,9 @@
     </LoadingBlock>
 
     <p class="text-sm text-gray-medium mt-2">
-      {{ modelValue.size === 0
+      {{ selectedIds.size === 0
         ? t('Aucun jeu de données sélectionné')
-        : t('{n} jeu de données sélectionné | {n} jeu de données sélectionné | {n} jeux de données sélectionnés', { n: modelValue.size })
+        : t('{n} jeu de données sélectionné | {n} jeu de données sélectionné | {n} jeux de données sélectionnés', { n: selectedIds.size })
       }}
     </p>
   </div>
@@ -119,12 +119,9 @@ import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{
   organizationId: string
-  modelValue: Set<string>
 }>()
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: Set<string>): void
-}>()
+const selectedIds = defineModel<Set<string>>({ required: true })
 
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
@@ -153,13 +150,13 @@ const { data: pageData, status } = await useAPI<PaginatedArray<DatasetV2>>('/api
 })
 
 function toggle(datasetId: string) {
-  const next = new Set(props.modelValue)
+  const next = new Set(selectedIds.value)
   if (next.has(datasetId)) {
     next.delete(datasetId)
   }
   else {
     next.add(datasetId)
   }
-  emit('update:modelValue', next)
+  selectedIds.value = next
 }
 </script>

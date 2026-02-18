@@ -430,20 +430,19 @@ function getStatusType(role: MemberRole): AdminBadgeType {
 }
 
 const editSelectedDatasetIds = ref<Set<string>>(new Set())
-const editOriginalDatasetIds = ref<Set<string>>(new Set())
+const editOriginalAssignments = ref<Array<Assignment>>([])
 
 const openEditModal = async (member: Member) => {
   newRole.value = member.role
   editSelectedDatasetIds.value = new Set()
-  editOriginalDatasetIds.value = new Set()
+  editOriginalAssignments.value = []
 
   if (member.role === 'partial_editor' && currentOrganization.value) {
     const assignments = await $api<Array<Assignment>>(`/api/1/organizations/${currentOrganization.value.id}/assignments/`, {
       query: { user: member.user.id },
     })
-    const ids = new Set(assignments.map(a => a.subject.id))
-    editSelectedDatasetIds.value = ids
-    editOriginalDatasetIds.value = new Set(ids)
+    editOriginalAssignments.value = assignments.filter(a => a.subject.class === 'Dataset')
+    editSelectedDatasetIds.value = new Set(editOriginalAssignments.value.map(a => a.subject.id))
   }
 }
 
@@ -461,8 +460,9 @@ const removeMemberFromOrganization = async (member: Member, close: () => void) =
 
 const syncAssignments = async (member: Member) => {
   const orgId = currentOrganization.value!.id
-  const added = [...editSelectedDatasetIds.value].filter(id => !editOriginalDatasetIds.value.has(id))
-  const removed = [...editOriginalDatasetIds.value].filter(id => !editSelectedDatasetIds.value.has(id))
+  const originalIds = new Set(editOriginalAssignments.value.map(a => a.subject.id))
+  const added = [...editSelectedDatasetIds.value].filter(id => !originalIds.has(id))
+  const removed = editOriginalAssignments.value.filter(a => !editSelectedDatasetIds.value.has(a.subject.id))
 
   const createPromises = added.map(id =>
     $api(`/api/1/organizations/${orgId}/assignments/`, {
@@ -471,16 +471,9 @@ const syncAssignments = async (member: Member) => {
     }),
   )
 
-  let deletePromises: Array<Promise<unknown>> = []
-  if (removed.length > 0) {
-    const assignments = await $api<Array<Assignment>>(`/api/1/organizations/${orgId}/assignments/`, {
-      query: { user: member.user.id },
-    })
-    deletePromises = removed
-      .map(id => assignments.find(a => a.subject.id === id))
-      .filter((a): a is Assignment => !!a)
-      .map(a => $api(`/api/1/organizations/${orgId}/assignments/${a.id}/`, { method: 'DELETE' }))
-  }
+  const deletePromises = removed.map(a =>
+    $api(`/api/1/organizations/${orgId}/assignments/${a.id}/`, { method: 'DELETE' }),
+  )
 
   await Promise.all([...createPromises, ...deletePromises])
 }
@@ -488,10 +481,8 @@ const syncAssignments = async (member: Member) => {
 const updateRole = async (member: Member, close: () => void) => {
   const roleChanged = member.role !== newRole.value
   const isPartialEditor = newRole.value === 'partial_editor'
-  const assignmentsChanged = isPartialEditor && (
-    editSelectedDatasetIds.value.size !== editOriginalDatasetIds.value.size
-    || [...editSelectedDatasetIds.value].some(id => !editOriginalDatasetIds.value.has(id))
-  )
+  const originalIds = new Set(editOriginalAssignments.value.map(a => a.subject.id))
+  const assignmentsChanged = isPartialEditor && !setsEqual(editSelectedDatasetIds.value, originalIds)
 
   if (!roleChanged && !assignmentsChanged) {
     close()
