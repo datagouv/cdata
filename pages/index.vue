@@ -471,7 +471,10 @@ import { TranslationT } from '@datagouv/components-next'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 
-useSeoMeta({ title: 'Accueil — data.gouv.fr' })
+useSeoMeta({
+  title: 'data.gouv.fr : Plateforme ouverte des données publiques françaises',
+  description: 'L\'administration met à disposition les données publiques françaises. Téléchargez, partagez et réutilisez les données ouvertes de l\'État et des collectivités.',
+})
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
