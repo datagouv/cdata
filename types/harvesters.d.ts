@@ -1,7 +1,9 @@
 import type { Dataservice, Dataset, Owned, User } from '@datagouv/components-next'
 
+export type HarvesterValidationStatus = 'accepted' | 'refused' | 'pending'
+
 export type HarvesterValidation = {
-  state: 'accepted' | 'refused' | 'pending'
+  state: HarvesterValidationStatus
   by: User
   on: string
   comment: string

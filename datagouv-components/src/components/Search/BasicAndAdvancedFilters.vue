@@ -13,12 +13,12 @@
     as="div"
     class="mt-4"
   >
-    <DisclosureButton class="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800">
+    <DisclosureButton class="flex w-[calc(100%+2rem)] items-center justify-between -mx-4 px-4 py-3 font-bold md:w-full md:mx-0 md:px-0 md:text-sm md:leading-tight md:mb-2">
+      {{ t('Filtres avancés') }}
       <RiArrowDownSLine
-        class="w-4 h-4 transition-transform"
+        class="size-4 transition-transform"
         :class="{ 'rotate-180': open }"
       />
-      {{ t('Filtres avancés') }}
     </DisclosureButton>
     <DisclosurePanel class="flex flex-col gap-4 mt-4 [&_.fr-input-group]:!mb-0">
       <slot

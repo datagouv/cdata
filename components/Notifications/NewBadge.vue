@@ -40,13 +40,12 @@
 
 <script setup lang="ts">
 import { RiCheckboxCircleLine } from '@remixicon/vue'
-import type { DeepReadonly } from 'vue'
 import { AnimatedLoader, throwOnNever, useFormatDate } from '@datagouv/components-next'
 import type { OrganizationReference } from '@datagouv/components-next'
 import type { NewBadgeNotification } from '~/types/notifications'
 
 const props = defineProps<{
-  notification: DeepReadonly<NewBadgeNotification>
+  notification: NewBadgeNotification
 }>()
 
 const { formatDate } = useFormatDate()
