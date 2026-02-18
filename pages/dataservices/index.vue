@@ -251,13 +251,18 @@ import EditoHeader from '~/components/Pages/EditoHeader.vue'
 import PageShowById from '~/components/Pages/PageShowById.vue'
 import PageShowNew from '~/components/Pages/PageShowNew.vue'
 
-const { t } = useTranslation()
-useSeoMeta({
-  title: t('Catalogue des API publiques - data.gouv.fr'),
-  description: t('Vous recherchez une API publique pour automatiser des tâches depuis vos serveurs ? Explorez le catalogue de data.gouv.fr alimenté par l\'administration et la société civile.'),
-})
-
 const config = useRuntimeConfig()
+const { t } = useTranslation()
+
+const title = t('Catalogue des API publiques - {site}', { site: config.public.title })
+const description = t('Vous recherchez une API publique pour automatiser des tâches depuis vos serveurs ? Explorez le catalogue de {site} alimenté par l\'administration et la société civile.', { site: config.public.title })
+
+useSeoMeta({
+  title,
+  description,
+  ogTitle: title,
+  ogDescription: description,
+})
 const route = useRoute()
 
 onMounted(async () => {

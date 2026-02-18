@@ -3,13 +3,13 @@
     <header class="p-4 flex flex-wrap md:flex-nowrap gap-4 items-center justify-between">
       <div>
         <div class="flex items-center mb-1">
-          <h4 class="m-0 flex items-baseline text-base font-bold leading-tight">
+          <h3 class="m-0 flex items-baseline text-base font-bold leading-tight">
             <ResourceIcon
               :resource
               class="size-3.5 mr-1"
             />
             <span class="line-clamp-2">{{ resource.title || t('Fichier sans nom') }}</span>
-          </h4>
+          </h3>
           <CopyButton
             :label="t('Copier le lien')"
             :copied-label="t('Lien copié !')"

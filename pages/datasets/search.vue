@@ -10,7 +10,7 @@
     </Breadcrumb>
 
     <h1 class="text-gray-title font-extrabold text-2xl mb-2">
-      {{ $t('Rechercher sur {site}', { site: config.public.title }) }}
+      {{ currentType === 'datasets' ? $t('Recherche avancée d\'un jeu de données') : currentType === 'dataservices' ? $t('Recherche avancée d\'une API') : $t('Recherche avancée d\'une réutilisation') }}
     </h1>
 
     <GlobalSearch
@@ -49,12 +49,33 @@ const robots = computed(() => {
   return Object.keys(route.query).length > 0 ? 'noindex, nofollow' : undefined
 })
 
+const title = computed(() => {
+  switch (currentType.value) {
+    case 'dataservices':
+      return t('Moteur de recherche des API - {site}', { site: config.public.title })
+    case 'reuses':
+      return t('Moteur de recherche des réutilisations - {site}', { site: config.public.title })
+    default:
+      return t('Moteur de recherche des jeux de données - {site}', { site: config.public.title })
+  }
+})
+
+const description = computed(() => {
+  switch (currentType.value) {
+    case 'dataservices':
+      return t('Recherchez une API publique par mot-clé et filtrez les résultats grâce à plusieurs filtres.')
+    case 'reuses':
+      return t('Recherchez une réutilisation par mot-clé et filtrez les résultats grâce à plusieurs filtres.')
+    default:
+      return t('Recherchez un jeu de données par mot-clé et filtrez les résultats grâce à plusieurs filtres (organisation, licence, format, schéma, couverture, label…).')
+  }
+})
+
 useSeoMeta({
-  title: computed(() => ({
-    datasets: t('Recherche des jeux de données — data.gouv.fr'),
-    dataservices: t('API — data.gouv.fr'),
-    reuses: t('Réutilisations — data.gouv.fr'),
-  })[currentType.value]),
+  title,
+  description,
+  ogTitle: title,
+  ogDescription: description,
   robots,
 })
 
