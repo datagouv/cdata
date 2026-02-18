@@ -137,19 +137,3 @@ const { formatDate } = useFormatDate()
     </div>
   </div>
 </template>
-
-<style scoped>
-.gap-3rem {
-  gap: 3rem;
-}
-
-.gap-3rem dl {
-  padding-inline-start: 0;
-}
-
-@container (max-width: 600px) {
-  .flex-col-on-small {
-    flex-direction: column
-  }
-}
-</style>
