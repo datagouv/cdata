@@ -2,8 +2,8 @@
   <div>
     <EditoHeader
       color="primary"
-      :title="$t('Jeux de données')"
-      :subtitle="$t('Rechercher parmi les {count} jeux de données sur {site}', {
+      :title="$t('Rechercher un jeu de données')"
+      :subtitle="$t('parmi les {count} jeux de données sur {site}', {
         count: site?.metrics.datasets ?? 0,
         site: config.public.title,
       })"
@@ -38,7 +38,8 @@ import PageShowNew from '~/components/Pages/PageShowNew.vue'
 
 const { t } = useTranslation()
 useSeoMeta({
-  title: t('Jeux de données - data.gouv.fr'),
+  title: t('Catalogue des jeux de données publics - data.gouv.fr'),
+  description: t('Vous recherchez des données publiques sur un sujet précis ? Explorez le catalogue de data.gouv.fr alimenté par l\'administration et la société civile.'),
 })
 
 const config = useRuntimeConfig()
