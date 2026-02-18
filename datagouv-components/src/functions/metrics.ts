@@ -1,3 +1,5 @@
+import { escapeCsvValue } from './helpers'
+
 export type OrganizationMetrics = {
   downloads: Record<string, number>
   downloadsTotal: number
@@ -112,6 +114,36 @@ export async function getDatasetMetrics(datasetId: string, metricsApi: string): 
     downloads,
     downloadsTotal,
   }
+}
+
+export async function createDatasetsForOrganizationMetricsUrl(organizationId: string, metricsApi: string, apiBase: string) {
+  let data = 'dataset_title,dataset_id,month,monthly_visit,monthly_download_resource\n'
+
+  // fetch datasets info from organization datasets
+  const datasets: Record<string, Record<string, string>> = {}
+  let datasets_url = `${apiBase}/api/2/datasets/?organization=${organizationId}&page_size=200`
+  do {
+    const response = await fetch(datasets_url)
+    const body = await response.json()
+    datasets_url = body.next_page
+    for (const row of body.data) {
+      datasets[row.id] = { title: row.title }
+    }
+  } while (datasets_url)
+
+  // fetch datasets metrics for the organization
+  let metrics_url = `${metricsApi}/api/datasets/data/?organization_id__exact=${organizationId}&metric_month__sort=desc&page_size=50`
+  do {
+    const response = await fetch(metrics_url)
+    const body = await response.json()
+    metrics_url = body.links.next
+    for (const row of body.data) {
+      const datasetTitle = datasets[row.dataset_id]?.title || ''
+      data += `${escapeCsvValue(datasetTitle)},${escapeCsvValue(String(row.dataset_id))},${escapeCsvValue(row.metric_month)},${row.monthly_visit},${row.monthly_download_resource}\n`
+    }
+  } while (metrics_url)
+
+  return URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
 }
 
 export async function getDataserviceMetrics(dataserviceId: string, metricsApi: string): Promise<DataserviceMetrics> {

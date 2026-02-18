@@ -8,9 +8,18 @@
         :placeholder="$t('Recherche')"
       />
       <BrandedButton
-        v-if="downloadStatsUrl"
+        v-if="organization"
+        size="xs"
+        :icon="RiDownloadLine"
+        :loading="isDownloadingStats"
+        @click="downloadStats"
+      >
+        {{ isDownloadingStats ? $t('Téléchargement de l\'évolution par mois...') : $t('Télécharger l\'évolution par mois') }}
+      </BrandedButton>
+      <BrandedButton
+        v-if="downloadCatalogsUrl"
         color="secondary"
-        :href="downloadStatsUrl"
+        :href="downloadCatalogsUrl"
         :external="true"
         download="stats.csv"
         :icon="RiDownloadLine"
@@ -197,7 +206,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, LoadingBlock, Pagination, summarize, Tooltip, type DatasetV2, type Organization, type User } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination, summarize, Tooltip, useMetrics, type DatasetV2, type Organization, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { RiDownloadLine, RiEyeLine, RiLineChartLine, RiSearchLine, RiStarSLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
@@ -211,6 +220,8 @@ const props = defineProps<{
 }>()
 
 const config = useRuntimeConfig()
+const { createDatasetsForOrganizationMetricsUrl } = useMetrics()
+
 const page = ref(1)
 const pageSize = ref(20)
 const q = ref('')
@@ -220,7 +231,7 @@ watch(qDebounced, () => page.value = 1)
 const sortedBy = ref<DatasetSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
-const downloadStatsUrl = computed(() => props.organization ? `/api/1/organizations/${props.organization.id}/datasets.csv` : null)
+const downloadCatalogsUrl = computed(() => props.organization ? `/api/1/organizations/${props.organization.id}/datasets.csv` : null)
 
 const params = computed(() => {
   const query = {
@@ -255,5 +266,24 @@ function sorted(column: DatasetSortedBy) {
     return direction.value
   }
   return null
+}
+
+const isDownloadingStats = ref(false)
+
+const downloadStats = async () => {
+  if (!props.organization) return
+  isDownloadingStats.value = true
+  try {
+    const url = await createDatasetsForOrganizationMetricsUrl(props.organization.id)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${props.organization.slug}-datasets-traffic.csv`
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+  finally {
+    isDownloadingStats.value = false
+  }
 }
 </script>
