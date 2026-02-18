@@ -53,11 +53,10 @@
 <script setup lang="ts">
 import { AvatarWithName, useFormatDate, type OrganizationReference } from '@datagouv/components-next'
 import { RiMailSendLine, RiUserAddLine } from '@remixicon/vue'
-import type { DeepReadonly } from 'vue'
 import type { MembershipRequestNotification } from '~/types/notifications'
 
 defineProps<{
-  notification: DeepReadonly<MembershipRequestNotification>
+  notification: MembershipRequestNotification
 }>()
 
 const { formatDate } = useFormatDate()

@@ -1,6 +1,7 @@
 import type { CERTIFIED, PUBLIC_SERVICE, ASSOCIATION, LOCAL_AUTHORITY, COMPANY, DataserviceReference, DatasetReference, OrganizationReference, ReuseReference, UserReference } from '@datagouv/components-next'
 import type { MembershipRequestKind } from './types'
 import type { Thread } from './discussions'
+import type { HarvesterSource, HarvesterValidationStatus } from './harvesters'
 
 export type CommonNotification = {
   created_at: string
@@ -46,4 +47,12 @@ export type DiscussionNotification = CommonNotification & {
   }
 }
 
-export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification | DiscussionNotification
+export type ValidateHarvesterNotification = CommonNotification & {
+  details: {
+    class: 'ValidateHarvesterNotificationDetails'
+    source: HarvesterSource
+    status: HarvesterValidationStatus
+  }
+}
+
+export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification | DiscussionNotification | ValidateHarvesterNotification
