@@ -52,7 +52,7 @@
               {{ t('Rôle proposé :') }}
               <AdminBadge
                 size="xs"
-                :type="request.role === 'admin' ? 'primary' : 'secondary'"
+                :type="request.role === 'admin' ? 'primary' : request.role === 'partial_editor' ? 'default' : 'secondary'"
               >
                 {{ roleLabel }}
               </AdminBadge>
