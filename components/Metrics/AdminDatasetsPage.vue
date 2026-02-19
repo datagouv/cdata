@@ -206,7 +206,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, LoadingBlock, Pagination, summarize, Tooltip, useMetrics, type DatasetV2, type Organization, type User } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination, summarize, toast, Tooltip, useMetrics, type DatasetV2, type Organization, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { RiDownloadLine, RiEyeLine, RiLineChartLine, RiSearchLine, RiStarSLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
@@ -219,6 +219,7 @@ const props = defineProps<{
   user?: User
 }>()
 
+const { t } = useTranslation()
 const config = useRuntimeConfig()
 const { createDatasetsForOrganizationMetricsUrl } = useMetrics()
 
@@ -280,6 +281,9 @@ const downloadStats = async () => {
     link.download = `${props.organization.slug}-datasets-traffic.csv`
     link.click()
     URL.revokeObjectURL(url)
+  }
+  catch {
+    toast.error(t(`Erreur de téléchargement des statistiques par mois !`))
   }
   finally {
     isDownloadingStats.value = false
