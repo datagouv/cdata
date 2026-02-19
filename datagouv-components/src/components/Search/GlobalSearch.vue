@@ -123,6 +123,7 @@
                 v-model="producerType"
                 :facets="getFacets('producer_type')"
                 :loading="searchResultsStatus === 'pending'"
+                :exclude="currentType === 'organizations' ? ['user'] : []"
                 :style="{ order: getOrder('producer_type') }"
               />
               <DatasetBadgeFilter
