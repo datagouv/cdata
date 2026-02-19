@@ -1,4 +1,7 @@
 import { escapeCsvValue } from './helpers'
+import { ofetch } from 'ofetch'
+import type { DatasetV2 } from '../types/datasets'
+import type { PaginatedArray } from '../types/api'
 
 export type OrganizationMetrics = {
   downloads: Record<string, number>
@@ -121,27 +124,25 @@ export async function createDatasetsForOrganizationMetricsUrl(organizationId: st
 
   // fetch datasets info from organization datasets
   const datasets: Record<string, Record<string, string>> = {}
-  let datasetsUrl = `${apiBase}/api/2/datasets/?organization=${organizationId}&page_size=200`
-  do {
-    const response = await fetch(datasetsUrl)
-    const body = await response.json()
+  let datasetsUrl: string | null = `/api/2/datasets/?organization=${organizationId}&page_size=200`
+  while (datasetsUrl) {
+    const body: PaginatedArray<DatasetV2> = await ofetch(datasetsUrl, { baseURL: apiBase, credentials: 'include' })
     datasetsUrl = body.next_page
     for (const row of body.data) {
       datasets[row.id] = { title: row.title }
     }
-  } while (datasetsUrl)
+  }
 
   // fetch datasets metrics for the organization
-  let metricsUrl = `${metricsApi}/api/datasets/data/?organization_id__exact=${organizationId}&metric_month__sort=desc&page_size=50`
-  do {
-    const response = await fetch(metricsUrl)
-    const body = await response.json()
+  let metricsUrl: string | null = `${metricsApi}/api/datasets/data/?organization_id__exact=${organizationId}&metric_month__sort=desc&page_size=50`
+  while (metricsUrl) {
+    const body: { links: { next: string | null }, data: Array<{ dataset_id: string, metric_month: string, monthly_visit: number, monthly_download_resource: number }> } = await ofetch(metricsUrl)
     metricsUrl = body.links.next
     for (const row of body.data) {
       const datasetTitle = datasets[row.dataset_id]?.title || ''
       data += `${escapeCsvValue(datasetTitle)},${escapeCsvValue(row.dataset_id)},${escapeCsvValue(row.metric_month)},${row.monthly_visit},${row.monthly_download_resource}\n`
     }
-  } while (metricsUrl)
+  }
 
   return URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
 }
