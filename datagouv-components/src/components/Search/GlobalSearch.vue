@@ -177,31 +177,43 @@
           >
             {{ t("{count} résultats | {count} résultat | {count} résultats", searchResults.total) }}
           </p>
-          <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
-            <label
-              for="sort-search"
-              class="fr-col-auto text-sm m-0 mr-2"
-            >
-              {{ t('Trier par :') }}
-            </label>
-            <div class="fr-col">
-              <select
-                id="sort-search"
-                v-model="sort"
-                class="fr-select text-sm shadow-input-blue!"
+          <div class="fr-col-auto fr-grid-row fr-grid-row--middle gap-4">
+            <div class="flex items-center">
+              <label
+                for="sort-search"
+                class="fr-col-auto text-sm m-0 mr-2"
               >
-                <option :value="undefined">
-                  {{ t('Pertinence') }}
-                </option>
-                <option
-                  v-for="option in activeSortOptions"
-                  :key="option.value"
-                  :value="option.value"
+                {{ t('Trier par :') }}
+              </label>
+              <div class="fr-col">
+                <select
+                  id="sort-search"
+                  v-model="sort"
+                  class="fr-select text-sm shadow-input-blue!"
                 >
-                  {{ option.label }}
-                </option>
-              </select>
+                  <option :value="undefined">
+                    {{ t('Pertinence') }}
+                  </option>
+                  <option
+                    v-for="option in activeSortOptions"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
             </div>
+            <BrandedButton
+              v-if="rssUrl"
+              :href="rssUrl"
+              :title="t('Flux RSS')"
+              color="secondary"
+              size="sm"
+              :icon="RiRssLine"
+              icon-only
+              target="_blank"
+            />
           </div>
         </div>
         <transition mode="out-in">
@@ -312,7 +324,7 @@
 <script setup lang="ts">
 import { computed, watch, useTemplateRef, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
-import { RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine, RiLightbulbLine } from '@remixicon/vue'
+import { RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine, RiLightbulbLine, RiRssLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
 import { useTranslation } from '../../composables/useTranslation'
 import { useDebouncedRef } from '../../composables/useDebouncedRef'
@@ -588,6 +600,41 @@ const typesMeta = {
 
 const searchResults = computed(() => typesMeta[currentType.value].results.value)
 const searchResultsStatus = computed(() => typesMeta[currentType.value].status.value)
+
+// RSS feed URL for datasets
+const rssUrl = computed(() => {
+  if (currentType.value !== 'datasets') return null
+
+  const params = new URLSearchParams()
+  const datasetsConfig = props.config.find(c => c.class === 'datasets')
+
+  // Add hidden filters first
+  if (datasetsConfig?.hiddenFilters) {
+    for (const hf of datasetsConfig.hiddenFilters) {
+      if (hf?.value) params.set(hf.key as string, String(hf.value))
+    }
+  }
+
+  // Add active filters
+  if (qDebounced.value) params.set('q', qDebounced.value)
+  if (organizationId.value) params.set('organization', organizationId.value)
+  if (organizationType.value) params.set('organization_badge', organizationType.value)
+  if (tag.value) params.set('tag', tag.value)
+  if (format.value) params.set('format', format.value)
+  if (license.value) params.set('license', license.value)
+  if (schema.value) params.set('schema', schema.value)
+  if (geozone.value) params.set('geozone', geozone.value)
+  if (granularity.value) params.set('granularity', granularity.value)
+  if (badge.value) params.set('badge', badge.value)
+  if (topic.value) params.set('topic', topic.value)
+
+  // Add sort if set
+  if (sort.value) params.set('sort', sort.value)
+
+  const queryString = params.toString()
+  const basePath = '/api/1/datasets/recent.atom'
+  return `${componentsConfig.apiBase}${basePath}${queryString ? '?' + queryString : ''}`
+})
 
 // Facets for filters
 const currentFacets = computed(() => searchResults.value?.facets)
