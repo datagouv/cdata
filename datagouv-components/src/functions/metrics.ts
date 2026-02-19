@@ -121,27 +121,27 @@ export async function createDatasetsForOrganizationMetricsUrl(organizationId: st
 
   // fetch datasets info from organization datasets
   const datasets: Record<string, Record<string, string>> = {}
-  let datasets_url = `${apiBase}/api/2/datasets/?organization=${organizationId}&page_size=200`
+  let datasetsUrl = `${apiBase}/api/2/datasets/?organization=${organizationId}&page_size=200`
   do {
-    const response = await fetch(datasets_url)
+    const response = await fetch(datasetsUrl)
     const body = await response.json()
-    datasets_url = body.next_page
+    datasetsUrl = body.next_page
     for (const row of body.data) {
       datasets[row.id] = { title: row.title }
     }
-  } while (datasets_url)
+  } while (datasetsUrl)
 
   // fetch datasets metrics for the organization
-  let metrics_url = `${metricsApi}/api/datasets/data/?organization_id__exact=${organizationId}&metric_month__sort=desc&page_size=50`
+  let metricsUrl = `${metricsApi}/api/datasets/data/?organization_id__exact=${organizationId}&metric_month__sort=desc&page_size=50`
   do {
-    const response = await fetch(metrics_url)
+    const response = await fetch(metricsUrl)
     const body = await response.json()
-    metrics_url = body.links.next
+    metricsUrl = body.links.next
     for (const row of body.data) {
       const datasetTitle = datasets[row.dataset_id]?.title || ''
       data += `${escapeCsvValue(datasetTitle)},${escapeCsvValue(row.dataset_id)},${escapeCsvValue(row.metric_month)},${row.monthly_visit},${row.monthly_download_resource}\n`
     }
-  } while (metrics_url)
+  } while (metricsUrl)
 
   return URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
 }
