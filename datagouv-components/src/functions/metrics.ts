@@ -139,7 +139,7 @@ export async function createDatasetsForOrganizationMetricsUrl(organizationId: st
     metrics_url = body.links.next
     for (const row of body.data) {
       const datasetTitle = datasets[row.dataset_id]?.title || ''
-      data += `${escapeCsvValue(datasetTitle)},${escapeCsvValue(String(row.dataset_id))},${escapeCsvValue(row.metric_month)},${row.monthly_visit},${row.monthly_download_resource}\n`
+      data += `${escapeCsvValue(datasetTitle)},${escapeCsvValue(row.dataset_id)},${escapeCsvValue(row.metric_month)},${row.monthly_visit},${row.monthly_download_resource}\n`
     }
   } while (metrics_url)
 
