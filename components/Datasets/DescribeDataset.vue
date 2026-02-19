@@ -352,8 +352,8 @@
                 </template>
               </BrandedButton>
               <CdataLink
-                v-if="config.public.generateShortDescriptionFeedbackUrl"
-                :to="config.public.generateShortDescriptionFeedbackUrl"
+                v-if="config.public.generateDescriptionFeedbackUrl"
+                :to="config.public.generateDescriptionFeedbackUrl"
                 target="_blank"
                 class="text-sm text-gray-medium"
               >
