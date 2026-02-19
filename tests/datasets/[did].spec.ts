@@ -71,7 +71,7 @@ test('clicking dataset label navigates to filtered search', async ({
 
   // Verify search page loads with filter applied
   await expect(page).toHaveTitle(
-    'Recherche des jeux de données — data.gouv.fr',
+    'Moteur de recherche des jeux de données - data.gouv.fr',
   )
 
   // Verify the badge filter is applied - now uses RadioGroup

@@ -3,9 +3,9 @@ import { test, expect } from '../base'
 test('page loads with results', async ({ page }) => {
   await page.goto('/dataservices/search')
 
-  await expect(page).toHaveTitle(/API/)
+  await expect(page).toHaveTitle(/Moteur de recherche des API/)
 
-  await expect(page.getByRole('heading', { name: /Rechercher sur/, level: 1 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Recherche avancée/, level: 1 })).toBeVisible()
 
   await expect(page.getByText(/\d+ résultat/)).toBeVisible()
 

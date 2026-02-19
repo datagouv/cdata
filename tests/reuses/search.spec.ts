@@ -3,7 +3,7 @@ import { test, expect } from '../base'
 test('page loads with results', async ({ page }) => {
   await page.goto('/reuses/search')
 
-  await expect(page).toHaveTitle(/Réutilisations/)
+  await expect(page).toHaveTitle(/Moteur de recherche des réutilisations/)
 
   // Result count is displayed with role="status"
   await expect(page.getByRole('status')).toBeVisible()

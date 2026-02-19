@@ -126,9 +126,9 @@
         <div class="fr-container">
           <div class="fr-grid-row fr-grid-row--start fr-grid-row--gutters">
             <div class="fr-col-12 fr-col-sm-3">
-              <h3 class="fr-footer__top-cat !text-xs !leading-5 !mb-3">
+              <p class="fr-footer__top-cat !text-xs !leading-5 !mb-3">
                 {{ $t('Données ouvertes') }}
-              </h3>
+              </p>
               <ul class="fr-footer__top-list">
                 <li
                   v-for="item in openDataLinks"
@@ -142,9 +142,9 @@
               </ul>
             </div>
             <div class="fr-col-12 fr-col-sm-3">
-              <h3 class="fr-footer__top-cat !text-xs !leading-5 !mb-3">
+              <p class="fr-footer__top-cat !text-xs !leading-5 !mb-3">
                 {{ $t('Plateforme') }}
-              </h3>
+              </p>
               <ul class="fr-footer__top-list">
                 <li
                   v-for="item in platformLinks"
@@ -161,9 +161,9 @@
               </ul>
             </div>
             <div class="fr-col-12 fr-col-sm-3">
-              <h3 class="fr-footer__top-cat !text-xs !leading-5 !mb-3">
+              <p class="fr-footer__top-cat !text-xs !leading-5 !mb-3">
                 {{ $t('Verticales thématiques') }}
-              </h3>
+              </p>
               <ul class="fr-footer__top-list">
                 <li
                   v-for="item in resourcesLinks"
@@ -177,9 +177,9 @@
               </ul>
             </div>
             <div class="fr-col-12 fr-col-sm-3">
-              <h3 class="fr-footer__top-cat !text-xs !leading-5 !mb-3">
+              <p class="fr-footer__top-cat !text-xs !leading-5 !mb-3">
                 {{ $t('Développement') }}
-              </h3>
+              </p>
               <ul class="fr-footer__top-list">
                 <li>
                   <a
