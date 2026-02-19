@@ -201,6 +201,7 @@ export type OrganizationSearchSort = 'reuses' | 'datasets' | 'followers' | 'view
 
 export type OrganizationSearchFilters = {
   badge?: OrganizationBadgeFilter
+  producer_type?: ProducerType
 }
 
 export type OrganizationSearchQueryParams = BaseSearchQueryParams<OrganizationSearchSort> & OrganizationSearchFilters
@@ -315,7 +316,16 @@ export type ReuseSearchConfig = {
   sortOptions?: SortOption<ReuseSearchSort>[]
 }
 
-export type SearchTypeConfig = DatasetSearchConfig | DataserviceSearchConfig | ReuseSearchConfig
+export type OrganizationSearchConfig = {
+  class: 'organizations'
+  name?: string
+  hiddenFilters?: HiddenFilter<OrganizationSearchFilters>[]
+  basicFilters?: (keyof OrganizationSearchFilters)[]
+  advancedFilters?: (keyof OrganizationSearchFilters)[]
+  sortOptions?: SortOption<OrganizationSearchSort>[]
+}
+
+export type SearchTypeConfig = DatasetSearchConfig | DataserviceSearchConfig | ReuseSearchConfig | OrganizationSearchConfig
 
 export type SearchType = SearchTypeConfig['class']
 
@@ -338,6 +348,13 @@ export const defaultReuseSortOptions: SortOption<ReuseSearchSort>[] = [
   { value: '-created', label: 'Date de création' },
   { value: '-followers', label: `Nombre d'abonnés` },
   { value: '-datasets', label: 'Nombre de jeux de données' },
+]
+
+export const defaultOrganizationSortOptions: SortOption<OrganizationSearchSort>[] = [
+  { value: '-created', label: 'Date de création' },
+  { value: '-followers', label: `Nombre d'abonnés` },
+  { value: '-datasets', label: 'Nombre de jeux de données' },
+  { value: '-reuses', label: 'Nombre de réutilisations' },
 ]
 
 export function getDefaultDatasetConfig(overrides?: Partial<Omit<DatasetSearchConfig, 'class'>>): DatasetSearchConfig {
@@ -370,10 +387,21 @@ export function getDefaultReuseConfig(overrides?: Partial<Omit<ReuseSearchConfig
   }
 }
 
+export function getDefaultOrganizationConfig(overrides?: Partial<Omit<OrganizationSearchConfig, 'class'>>): OrganizationSearchConfig {
+  return {
+    class: 'organizations',
+    basicFilters: ['producer_type'],
+    advancedFilters: [],
+    sortOptions: defaultOrganizationSortOptions,
+    ...overrides,
+  }
+}
+
 export function getDefaultGlobalSearchConfig(): GlobalSearchConfig {
   return [
     getDefaultDatasetConfig(),
     getDefaultDataserviceConfig(),
     getDefaultReuseConfig(),
+    getDefaultOrganizationConfig(),
   ]
 }

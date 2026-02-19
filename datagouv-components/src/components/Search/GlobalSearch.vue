@@ -241,6 +241,14 @@
                       <ReuseHorizontalCard :reuse="(result as Reuse)" />
                     </slot>
                   </template>
+                  <template v-else-if="currentType === 'organizations'">
+                    <slot
+                      name="organization"
+                      :organization="result"
+                    >
+                      <OrganizationHorizontalCard :organization="(result as Organization)" />
+                    </slot>
+                  </template>
                 </li>
               </ul>
               <Pagination
@@ -312,7 +320,7 @@
 <script setup lang="ts">
 import { computed, watch, useTemplateRef, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
-import { RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine, RiLightbulbLine } from '@remixicon/vue'
+import { RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine, RiLightbulbLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
 import { useTranslation } from '../../composables/useTranslation'
 import { useDebouncedRef } from '../../composables/useDebouncedRef'
@@ -322,8 +330,9 @@ import { useFetch } from '../../functions/api'
 import { getLink } from '../../functions/pagination'
 import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
+import type { Organization } from '../../types/organizations'
 import type { Reuse } from '../../types/reuses'
-import type { GlobalSearchConfig, SearchType, DatasetSearchResponse, DataserviceSearchResponse, ReuseSearchResponse, FacetItem } from '../../types/search'
+import type { GlobalSearchConfig, SearchType, DatasetSearchResponse, DataserviceSearchResponse, ReuseSearchResponse, OrganizationSearchResponse, FacetItem } from '../../types/search'
 import { getDefaultGlobalSearchConfig } from '../../types/search'
 import BrandedButton from '../BrandedButton.vue'
 import LoadingBlock from '../LoadingBlock.vue'
@@ -332,6 +341,7 @@ import RadioGroup from '../RadioGroup.vue'
 import RadioInput from '../RadioInput.vue'
 import DatasetCard from '../DatasetCard.vue'
 import DataserviceCard from '../DataserviceCard.vue'
+import OrganizationHorizontalCard from '../OrganizationHorizontalCard.vue'
 import ReuseHorizontalCard from '../ReuseHorizontalCard.vue'
 import SearchInput from './SearchInput.vue'
 import Sidemenu from './Sidemenu.vue'
@@ -458,6 +468,7 @@ watch(currentType, () => {
 const datasetsEnabled = computed(() => props.config.some(c => c.class === 'datasets'))
 const dataservicesEnabled = computed(() => props.config.some(c => c.class === 'dataservices'))
 const reusesEnabled = computed(() => props.config.some(c => c.class === 'reuses'))
+const organizationsEnabled = computed(() => props.config.some(c => c.class === 'organizations'))
 
 // Create stable params for each type
 const stableParamsOptions = {
@@ -480,11 +491,16 @@ const reusesParams = useStableQueryParams({
   ...stableParamsOptions,
   typeConfig: props.config.find(c => c.class === 'reuses'),
 })
+const organizationsParams = useStableQueryParams({
+  ...stableParamsOptions,
+  typeConfig: props.config.find(c => c.class === 'organizations'),
+})
 
 // URLs that return null when type is not enabled
 const datasetsUrl = computed(() => datasetsEnabled.value ? '/api/2/datasets/search/' : null)
 const dataservicesUrl = computed(() => dataservicesEnabled.value ? '/api/2/dataservices/search/' : null)
 const reusesUrl = computed(() => reusesEnabled.value ? '/api/2/reuses/search/' : null)
+const organizationsUrl = computed(() => organizationsEnabled.value ? '/api/2/organizations/search/' : null)
 
 // Reset page on filter/sort change
 const filtersForReset = computed(() => ({
@@ -564,6 +580,10 @@ const { data: reusesResults, status: reusesStatus } = await useFetch<ReuseSearch
   reusesUrl,
   { params: reusesParams, lazy: true, server: initialType === 'reuses' },
 )
+const { data: organizationsResults, status: organizationsStatus } = await useFetch<OrganizationSearchResponse<Organization>>(
+  organizationsUrl,
+  { params: organizationsParams, lazy: true, server: initialType === 'organizations' },
+)
 
 const typesMeta = {
   datasets: {
@@ -583,6 +603,12 @@ const typesMeta = {
     name: t('Réutilisations'),
     results: reusesResults,
     status: reusesStatus,
+  },
+  organizations: {
+    icon: RiBuilding2Line,
+    name: t('Organisations'),
+    results: organizationsResults,
+    status: organizationsStatus,
   },
 } as const
 

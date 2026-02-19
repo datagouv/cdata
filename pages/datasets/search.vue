@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { GlobalSearch, type GlobalSearchConfig, type SearchType, getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig } from '@datagouv/components-next'
+import { GlobalSearch, type GlobalSearchConfig, type SearchType, getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 definePageMeta({
@@ -35,13 +35,21 @@ const { t } = useTranslation()
 function typeFromPath(path: string): SearchType {
   if (path.startsWith('/dataservices')) return 'dataservices'
   if (path.startsWith('/reuses')) return 'reuses'
+  if (path.startsWith('/organizations')) return 'organizations'
   return 'datasets'
+}
+
+const searchPaths: Record<SearchType, string> = {
+  datasets: '/datasets/search',
+  dataservices: '/dataservices/search',
+  reuses: '/reuses/search',
+  organizations: '/organizations',
 }
 
 const currentType = computed<SearchType>({
   get: () => typeFromPath(route.path),
   set: (newType) => {
-    navigateTo({ path: `/${newType}/search`, query: route.query })
+    navigateTo({ path: searchPaths[newType], query: route.query })
   },
 })
 
@@ -54,6 +62,7 @@ useSeoMeta({
     datasets: t('Recherche des jeux de données — data.gouv.fr'),
     dataservices: t('API — data.gouv.fr'),
     reuses: t('Réutilisations — data.gouv.fr'),
+    organizations: t('Organisations — data.gouv.fr'),
   })[currentType.value]),
   robots,
 })
@@ -62,5 +71,6 @@ const searchConfig: GlobalSearchConfig = [
   getDefaultDatasetConfig(),
   getDefaultDataserviceConfig(),
   getDefaultReuseConfig(),
+  getDefaultOrganizationConfig(),
 ]
 </script>
