@@ -1,7 +1,7 @@
 import type { User } from './users'
 import type { Badges } from './badges'
 
-export type MemberRole = 'admin' | 'editor'
+export type MemberRole = 'admin' | 'editor' | 'partial_editor'
 
 export type Member = {
   role: MemberRole
