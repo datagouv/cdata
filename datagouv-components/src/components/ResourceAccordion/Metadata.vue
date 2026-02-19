@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import type { Resource } from '../../types/resources'
 import CopyButton from '../CopyButton.vue'
 import DescriptionDetails from '../DescriptionDetails.vue'
-import DescriptionList from '../DescriptionList.vue'
 import DescriptionTerm from '../DescriptionTerm.vue'
 import { useFormatDate } from '../../functions/dates'
 import { filesize } from '../../functions/helpers'
@@ -27,7 +26,7 @@ const { formatDate } = useFormatDate()
 <template>
   <div>
     <div class="flex flex-wrap gap-12 flex-col md:flex-row overflow-hidden">
-      <DescriptionList class="flex-1 max-w-full">
+      <dl class="flex-1 max-w-full p-0 m-0">
         <DescriptionTerm>
           {{ t('URL') }}
           <CopyButton
@@ -90,8 +89,10 @@ const { formatDate } = useFormatDate()
             </code>
           </DescriptionDetails>
         </template>
-      </DescriptionList>
-      <DescriptionList style="flex-shrink: 0;">
+      </dl>
+      <dl
+        class="p-0 m-0 shrink-0"
+      >
         <DescriptionTerm>{{ t('Créée le') }}</DescriptionTerm>
         <DescriptionDetails>
           {{ formatDate(resource.created_at) }}
@@ -100,8 +101,10 @@ const { formatDate } = useFormatDate()
         <DescriptionDetails>
           {{ formatDate(resource.last_modified) }}
         </DescriptionDetails>
-      </DescriptionList>
-      <DescriptionList style="flex-shrink: 0;">
+      </dl>
+      <dl
+        class="p-0 m-0 shrink-0"
+      >
         <template v-if="resourceFilesize">
           <DescriptionTerm>{{ t('Taille') }}</DescriptionTerm>
           <DescriptionDetails>
@@ -120,7 +123,7 @@ const { formatDate } = useFormatDate()
             <code class="code truncate">{{ resource.mime }}</code>
           </DescriptionDetails>
         </template>
-      </DescriptionList>
+      </dl>
     </div>
     <div>
       <ExtraAccordion
@@ -134,19 +137,3 @@ const { formatDate } = useFormatDate()
     </div>
   </div>
 </template>
-
-<style scoped>
-.gap-3rem {
-  gap: 3rem;
-}
-
-.gap-3rem dl {
-  padding-inline-start: 0;
-}
-
-@container (max-width: 600px) {
-  .flex-col-on-small {
-    flex-direction: column
-  }
-}
-</style>

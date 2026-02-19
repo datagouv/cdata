@@ -64,17 +64,19 @@
         >
           <!-- Display mode -->
           <template v-if="!edit">
-            <CdataLink
-              class="hyphens-auto inline-flex items-start relative font-extrabold text-[var(--link-color)] no-underline hover:underline fr-raw-link"
-              :class="[bloc.paragraph ? 'text-6xl' : 'text-7xl']"
-              :style="{
-                '--link-color': link.color,
-              }"
-              :href="link.url"
-            >
-              {{ link.title }}
-              <RiArrowRightUpLine class="size-9" />
-            </CdataLink>
+            <h3>
+              <CdataLink
+                class="hyphens-auto inline-flex items-start relative font-extrabold text-(--link-color) no-underline hover:underline fr-raw-link"
+                :class="[bloc.paragraph ? 'text-6xl' : 'text-7xl']"
+                :style="{
+                  '--link-color': link.color,
+                }"
+                :href="link.url"
+              >
+                {{ link.title }}
+                <RiArrowRightUpLine class="size-9" />
+              </CdataLink>
+            </h3>
           </template>
 
           <!-- Edit mode -->

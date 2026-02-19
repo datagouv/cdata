@@ -2,8 +2,8 @@
   <div>
     <EditoHeader
       color="purple"
-      :title="$t('API')"
-      :subtitle="$t('Rechercher parmi les {count} API sur {site}', {
+      :title="$t('Rechercher une API')"
+      :subtitle="$t('parmi les {count} API sur {site}', {
         count: site?.metrics.dataservices || 0,
         site: config.public.title,
       })"
@@ -251,12 +251,18 @@ import EditoHeader from '~/components/Pages/EditoHeader.vue'
 import PageShowById from '~/components/Pages/PageShowById.vue'
 import PageShowNew from '~/components/Pages/PageShowNew.vue'
 
-const { t } = useTranslation()
-useSeoMeta({
-  title: t('API'),
-})
-
 const config = useRuntimeConfig()
+const { t } = useTranslation()
+
+const title = t('Catalogue des API publiques - {site}', { site: config.public.title })
+const description = t('Vous recherchez une API publique pour automatiser des tâches depuis vos serveurs ? Explorez le catalogue de {site} alimenté par l\'administration et la société civile.', { site: config.public.title })
+
+useSeoMeta({
+  title,
+  description,
+  ogTitle: title,
+  ogDescription: description,
+})
 const route = useRoute()
 
 onMounted(async () => {

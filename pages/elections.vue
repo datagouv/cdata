@@ -57,7 +57,6 @@ const { t } = useTranslation()
 
 useSeoMeta({
   title: t('Données élections - {site}', { site: config.public.title }),
-  robots: 'noindex, nofollow',
 })
 
 const elections = [

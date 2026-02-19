@@ -9,7 +9,7 @@
     >
       <div>
         <div class="flex items-center fr-mb-1v">
-          <h4
+          <h3
             :id="resourceTitleId"
             class="fr-m-0"
           >
@@ -43,7 +43,7 @@
               /></span>
               <span class="absolute inset-0 z-1" />
             </button>
-          </h4>
+          </h3>
           <CopyButton
             :label="t('Copier le lien')"
             :copied-label="t('Lien copié !')"

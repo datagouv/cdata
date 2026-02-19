@@ -2,8 +2,8 @@
   <div>
     <EditoHeader
       color="green"
-      :title="$t('Réutilisations')"
-      :subtitle="$t('Rechercher parmi les {count} réutilisations sur {site}', {
+      :title="$t('Rechercher une réutilisation')"
+      :subtitle="$t('parmi les {count} réutilisations sur {site}', {
         count: site?.metrics.reuses ?? 0,
         site: config.public.title,
       })"
@@ -166,12 +166,18 @@ import EditoHeader from '~/components/Pages/EditoHeader.vue'
 import PageShowById from '~/components/Pages/PageShowById.vue'
 import PageShowNew from '~/components/Pages/PageShowNew.vue'
 
-const { t } = useTranslation()
-useSeoMeta({
-  title: t('Réutilisations'),
-})
-
 const config = useRuntimeConfig()
+const { t } = useTranslation()
+
+const title = t('Catalogue des réutilisations publiques - {site}', { site: config.public.title })
+const description = t('Vous recherchez des exemples concrets d\'exploitation des données publiques ? Explorez le catalogue des réutilisations de {site} alimenté par l\'administration et la société civile.', { site: config.public.title })
+
+useSeoMeta({
+  title,
+  description,
+  ogTitle: title,
+  ogDescription: description,
+})
 const route = useRoute()
 
 onMounted(async () => {
