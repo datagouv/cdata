@@ -7,7 +7,10 @@ test('page loads with results', async ({ page }) => {
 
   await expect(page.getByRole('heading', { name: 'Organisations', level: 1 })).toBeVisible()
 
-  await expect(page.getByText(/\d+ résultat/)).toBeVisible()
+  await expect(page.getByRole('status')).toBeVisible()
+
+  const results = page.locator('.search-results ul')
+  await expect(results.locator('li')).not.toHaveCount(0)
 
   // Verify known organization from seed data
   await expect(page.getByRole('link', { name: /sobrana/i })).toBeVisible()
@@ -16,10 +19,10 @@ test('page loads with results', async ({ page }) => {
 test('search filters results', async ({ page }) => {
   await page.goto('/organizations')
 
-  const searchInput = page.getByPlaceholder(/Rechercher/)
+  const searchInput = page.getByRole('searchbox')
   await searchInput.fill('sobrana')
 
-  await expect(page).toHaveURL(/\/organizations\?q=sobrana/)
+  await page.waitForURL(/\/organizations\?q=sobrana/)
 
   await expect(page.getByRole('link', { name: /sobrana/i })).toBeVisible()
 })
