@@ -279,7 +279,6 @@ const downloadStats = async () => {
     link.href = url
     link.download = `${props.organization.slug}-datasets-traffic.csv`
     link.click()
-    document.body.removeChild(link)
     URL.revokeObjectURL(url)
   }
   finally {
