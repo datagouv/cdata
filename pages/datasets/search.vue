@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { GlobalSearch, type GlobalSearchConfig, type SearchType, getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig } from '@datagouv/components-next'
+import { GlobalSearch, type GlobalSearchConfig, type SearchType, getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 definePageMeta({
@@ -35,13 +35,21 @@ const { t } = useTranslation()
 function typeFromPath(path: string): SearchType {
   if (path.startsWith('/dataservices')) return 'dataservices'
   if (path.startsWith('/reuses')) return 'reuses'
+  if (path.startsWith('/organizations')) return 'organizations'
   return 'datasets'
+}
+
+const searchPaths: Record<SearchType, string> = {
+  datasets: '/datasets/search',
+  dataservices: '/dataservices/search',
+  reuses: '/reuses/search',
+  organizations: '/organizations',
 }
 
 const currentType = computed<SearchType>({
   get: () => typeFromPath(route.path),
   set: (newType) => {
-    navigateTo({ path: `/${newType}/search`, query: route.query })
+    navigateTo({ path: searchPaths[newType], query: route.query })
   },
 })
 
@@ -55,6 +63,8 @@ const heading = computed(() => {
       return t('Recherche avancée d\'une API')
     case 'reuses':
       return t('Recherche avancée d\'une réutilisation')
+    case 'organizations':
+      return t('Organisations')
     default:
       return t('Recherche avancée d\'un jeu de données')
   }
@@ -66,6 +76,8 @@ const title = computed(() => {
       return t('Moteur de recherche des API - {site}', { site: config.public.title })
     case 'reuses':
       return t('Moteur de recherche des réutilisations - {site}', { site: config.public.title })
+    case 'organizations':
+      return t('Organisations - {site}', { site: config.public.title })
     default:
       return t('Moteur de recherche des jeux de données - {site}', { site: config.public.title })
   }
@@ -77,6 +89,8 @@ const description = computed(() => {
       return t('Recherchez une API publique par mot-clé et filtrez les résultats grâce à plusieurs filtres.')
     case 'reuses':
       return t('Recherchez une réutilisation par mot-clé et filtrez les résultats grâce à plusieurs filtres.')
+    case 'organizations':
+      return t('Recherchez une organisation par mot-clé.')
     default:
       return t('Recherchez un jeu de données par mot-clé et filtrez les résultats grâce à plusieurs filtres (organisation, licence, format, schéma, couverture, label…).')
   }
@@ -94,5 +108,6 @@ const searchConfig: GlobalSearchConfig = [
   getDefaultDatasetConfig(),
   getDefaultDataserviceConfig(),
   getDefaultReuseConfig(),
+  getDefaultOrganizationConfig(),
 ]
 </script>
