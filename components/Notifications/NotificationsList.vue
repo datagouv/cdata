@@ -9,7 +9,7 @@
         :notification="notification as MembershipRequestNotification"
       />
       <NotificationsTransferRequest
-        v-if="notification.details.class === 'TransferRequestNotificationDetails'"
+        v-else-if="notification.details.class === 'TransferRequestNotificationDetails'"
         :notification="notification as TransferRequestNotification"
       />
       <NotificationsNewBadge
@@ -21,6 +21,13 @@
         :notification="notification as DiscussionNotification"
         :subject="subjects[notification.details.discussion.subject.id]"
       />
+      <NotificationsMembershipAccepted
+        v-else-if="notification.details.class === 'MembershipAcceptedNotificationDetails'"
+        :notification="notification as MembershipAcceptedNotification"
+      />
+      <NotificationsMembershipRefused
+        v-else-if="notification.details.class === 'MembershipRefusedNotificationDetails'"
+        :notification="notification as MembershipRefusedNotification"
       <NotificationsValidateHarvester
         v-else-if="notification.details.class === 'ValidateHarvesterNotificationDetails'"
         :notification="notification as ValidateHarvesterNotification"
@@ -32,7 +39,7 @@
 <script setup lang="ts">
 import type { DeepReadonly } from 'vue'
 import type { DiscussionSubjectTypes } from '~/types/discussions'
-import type { DiscussionNotification, MembershipRequestNotification, NewBadgeNotification, TransferRequestNotification, UserNotification, ValidateHarvesterNotification } from '~/types/notifications'
+import type { DiscussionNotification, MembershipAcceptedNotification, MembershipRefusedNotification, MembershipRequestNotification, NewBadgeNotification, TransferRequestNotification, UserNotification, ValidateHarvesterNotification } from '~/types/notifications'
 
 const props = defineProps<{
   notifications: DeepReadonly<Array<UserNotification>>
