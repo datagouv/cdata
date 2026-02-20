@@ -2,8 +2,8 @@
   <div>
     <EditoHeader
       color="primary"
-      :title="$t('Jeux de données')"
-      :subtitle="$t('Rechercher parmi les {count} jeux de données sur {site}', {
+      :title="$t('Rechercher un jeu de données')"
+      :subtitle="$t('parmi les {count} jeux de données sur {site}', {
         count: site?.metrics.datasets ?? 0,
         site: config.public.title,
       })"
@@ -36,12 +36,18 @@ import EditoHeader from '~/components/Pages/EditoHeader.vue'
 import PageShowById from '~/components/Pages/PageShowById.vue'
 import PageShowNew from '~/components/Pages/PageShowNew.vue'
 
-const { t } = useTranslation()
-useSeoMeta({
-  title: t('Jeux de données - data.gouv.fr'),
-})
-
 const config = useRuntimeConfig()
+const { t } = useTranslation()
+
+const title = t('Catalogue des jeux de données publics - {site}', { site: config.public.title })
+const description = t('Vous recherchez des données publiques sur un sujet précis ? Explorez le catalogue de {site} alimenté par l\'administration et la société civile.', { site: config.public.title })
+
+useSeoMeta({
+  title,
+  description,
+  ogTitle: title,
+  ogDescription: description,
+})
 const route = useRoute()
 
 onMounted(async () => {
