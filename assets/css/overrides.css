@@ -37,3 +37,9 @@
 .close-button {
   @apply w-10 leading-0 text-lg;
 }
+
+.fr-sidemenu .fr-sidemenu__item:first-child:before,
+.fr-sidemenu .fr-sidemenu__item:last-child:before,
+.fr-sidemenu .fr-sidemenu__item:before {
+  box-shadow: none;
+}

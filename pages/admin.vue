@@ -90,7 +90,4 @@ html, body {
   flex-direction: column;
   height: 100%;
 }
-.fr-sidemenu .fr-sidemenu__item:first-child:before, .fr-sidemenu .fr-sidemenu__item:last-child:before, .fr-sidemenu .fr-sidemenu__item:before {
-  box-shadow: none;
-}
 </style>

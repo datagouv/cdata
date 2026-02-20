@@ -11,5 +11,7 @@
 </template>
 
 <script setup lang="ts">
+import { SearchInput } from '@datagouv/components-next'
+
 const model = ref('')
 </script>
