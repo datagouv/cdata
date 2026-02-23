@@ -13,15 +13,19 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { FacetItem } from '../../../types/search'
 import { useTranslation } from '../../../composables/useTranslation'
 import FilterButtonGroup from './FilterButtonGroup.vue'
 
-defineProps<{
+const props = withDefaults(defineProps<{
   modelValue: string | undefined
   facets?: FacetItem[]
   loading?: boolean
-}>()
+  exclude?: string[]
+}>(), {
+  exclude: () => [],
+})
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | undefined]
@@ -29,11 +33,17 @@ const emit = defineEmits<{
 
 const { t } = useTranslation()
 
-const options = [
+const allOptions = [
   { value: 'public-service', label: t('Service public') },
   { value: 'local-authority', label: t('Collectivité territoriale') },
   { value: 'company', label: t('Entreprise') },
   { value: 'association', label: t('Association') },
   { value: 'user', label: t('Utilisateur') },
 ]
+
+const options = computed(() =>
+  props.exclude.length > 0
+    ? allOptions.filter(o => !props.exclude.includes(o.value))
+    : allOptions,
+)
 </script>
