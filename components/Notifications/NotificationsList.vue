@@ -28,6 +28,7 @@
       <NotificationsMembershipRefused
         v-else-if="notification.details.class === 'MembershipRefusedNotificationDetails'"
         :notification="notification as MembershipRefusedNotification"
+      />
       <NotificationsValidateHarvester
         v-else-if="notification.details.class === 'ValidateHarvesterNotificationDetails'"
         :notification="notification as ValidateHarvesterNotification"
