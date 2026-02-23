@@ -84,7 +84,15 @@ export type RefusedMembershipRequest = MembershipRequest & {
   refusal_comment: string
 }
 
-export type MemberRole = 'admin' | 'editor'
+export type MemberRole = 'admin' | 'editor' | 'partial_editor'
+
+export type Assignment = {
+  id: string
+  user: User
+  subject: { class: string, id: string }
+  organization: string
+  created_at: string
+}
 
 // In org endpoint we get these two private information if we have edit rights on the org.
 export type MemberUser = User & {

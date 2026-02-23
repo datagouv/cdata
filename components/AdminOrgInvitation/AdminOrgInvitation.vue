@@ -39,7 +39,7 @@
               {{ t('Rôle proposé :') }}
               <AdminBadge
                 size="xs"
-                :type="invitation.role === 'admin' ? 'primary' : 'secondary'"
+                :type="invitation.role === 'admin' ? 'primary' : invitation.role === 'partial_editor' ? 'default' : 'secondary'"
               >
                 {{ roleLabel }}
               </AdminBadge>
