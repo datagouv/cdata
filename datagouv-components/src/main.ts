@@ -24,7 +24,7 @@ import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
 import type { GlobalSearchConfig, SearchType, SortOption } from './types/search'
-import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions } from './types/search'
+import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 
 import ActivityList from './components/ActivityList/ActivityList.vue'
 import UserActivityList from './components/ActivityList/UserActivityList.vue'
@@ -55,6 +55,7 @@ import LabelTag from './components/DatasetLabelTag.vue'
 import LoadingBlock from './components/LoadingBlock.vue'
 import MarkdownViewer from './components/MarkdownViewer.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
+import OrganizationHorizontalCard from './components/OrganizationHorizontalCard.vue'
 import OrganizationLogo from './components/OrganizationLogo.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
@@ -221,10 +222,12 @@ export {
   getDefaultDatasetConfig,
   getDefaultDataserviceConfig,
   getDefaultReuseConfig,
+  getDefaultOrganizationConfig,
   getDefaultGlobalSearchConfig,
   defaultDatasetSortOptions,
   defaultDataserviceSortOptions,
   defaultReuseSortOptions,
+  defaultOrganizationSortOptions,
 }
 
 // Vue Plugin
@@ -273,6 +276,7 @@ export {
   Tag,
   MarkdownViewer,
   OrganizationCard,
+  OrganizationHorizontalCard,
   OrganizationLogo,
   OrganizationNameWithCertificate,
   OwnerType,

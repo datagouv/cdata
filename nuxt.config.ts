@@ -291,6 +291,13 @@ export default defineNuxtConfig({
             meta: { key: 'search' },
           },
         )
+
+        // Replace the existing /organizations page with the unified search page
+        const orgRoute = pages.find(p => p.path === '/organizations')
+        if (orgRoute) {
+          orgRoute.file = resolve(__dirname, 'pages/datasets/search.vue')
+          orgRoute.meta = { ...orgRoute.meta, key: 'search' }
+        }
       }
     },
   },
