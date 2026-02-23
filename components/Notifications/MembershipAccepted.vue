@@ -44,11 +44,10 @@
 <script setup lang="ts">
 import { AnimatedLoader, useFormatDate, type OrganizationReference } from '@datagouv/components-next'
 import { RiCheckboxCircleLine } from '@remixicon/vue'
-import type { DeepReadonly } from 'vue'
 import type { MembershipAcceptedNotification } from '~/types/notifications'
 
 defineProps<{
-  notification: DeepReadonly<MembershipAcceptedNotification>
+  notification: MembershipAcceptedNotification
 }>()
 
 const { formatDate } = useFormatDate()
