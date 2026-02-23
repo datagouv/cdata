@@ -21,12 +21,20 @@
       }}</span>
     </SimpleBanner>
     <SimpleBanner
+      v-else-if="error === 'cors'"
+      type="warning"
+      class="flex items-center space-x-2"
+    >
+      <RiErrorWarningLine class="shrink-0 size-6" />
+      <span>{{ t("Ce fichier XML ne peut pas être prévisualisé car il est hébergé sur un site distant qui restreint l'accès (CORS).") }}</span>
+    </SimpleBanner>
+    <SimpleBanner
       v-else-if="error === 'network'"
       type="warning"
       class="flex items-center space-x-2"
     >
-      <RiErrorWarningLine class="shink-0 size-6" />
-      <span>{{ t("Ce fichier XML ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
+      <RiErrorWarningLine class="shrink-0 size-6" />
+      <span>{{ t("Impossible de charger l'aperçu. Vérifiez votre connexion ou l'accessibilité du fichier.") }}</span>
     </SimpleBanner>
     <SimpleBanner
       v-else-if="error"
@@ -46,6 +54,7 @@ import { RiErrorWarningLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../../config'
 import SimpleBanner from '../SimpleBanner.vue'
 import type { Resource } from '../../types/resources'
+import { isResourceCorsEnabled } from '../../functions/datasets'
 import { useTranslation } from '../../composables/useTranslation'
 import '../../types/vue3-xml-viewer.d'
 import { getResourceFilesize } from '../../main'
@@ -70,36 +79,37 @@ const fileTooLarge = ref(false)
 
 const fileSizeBytes = computed(() => getResourceFilesize(props.resource))
 
-const shouldLoadXml = computed(() => {
+const isCorsAllowed = computed(() => isResourceCorsEnabled(props.resource))
+
+const isSizeAllowed = computed(() => {
   const size = fileSizeBytes.value
-  if (!size) {
-    // If we don't know the size, don't risk loading a potentially huge file
-    return false
-  }
-
-  // Check if maxXmlPreviewCharSize is configured
-  if (!config.maxXmlPreviewCharSize) {
-    // If no limit is set, don't load unknown files
-    return false
-  }
-
   // Convert maxXmlPreviewCharSize from characters to bytes (rough estimate)
   // Assuming average 1 byte per character for XML
   const maxByteSize = config.maxXmlPreviewCharSize
+
+  // If we don't know the size or the max size, don't risk loading a potentially huge file
+  if (!size || !maxByteSize) return false
 
   return size <= maxByteSize
 })
 
 const fetchXmlData = async () => {
-  // Check if file is too large or size is unknown before making the request
-  if (!shouldLoadXml.value) {
+  error.value = null
+  fileTooLarge.value = false
+
+  // If CORS is blocked, don't even try
+  if (!isCorsAllowed.value) {
+    error.value = 'cors'
+    return
+  }
+
+  // Check if file is too large or size is unknown
+  if (!isSizeAllowed.value) {
     fileTooLarge.value = true
     return
   }
 
   loading.value = true
-  error.value = null
-
   try {
     const response = await fetch(props.resource.url)
     // const response = await fetch('/test-data.xml') // For testing locally without CORS issues

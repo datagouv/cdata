@@ -29,3 +29,35 @@ export function getResourceFilesize(resource: Resource): null | number {
 
   return null
 }
+
+export const isResourceCorsEnabled = (resource: Resource): boolean => {
+  const extras = resource.extras
+  if (!extras) return false
+
+  const status = extras['check:status'] as number | undefined
+  const allowOrigin = extras['check:cors:allow-origin'] as string | undefined
+  const rawMethods = extras['check:cors:allow-methods'] as string | undefined
+
+  // Verify the last cors probe was successful (HTTP 200)
+  const isHealthy = status === 200
+  if (!isHealthy) return false
+
+  // Validate Origin (Wildcard OR specific domain)
+  const trustedDomains = ['data.gouv.fr', 'www.data.gouv.fr']
+
+  // Check if allow-origin is '*' or contains one of our trusted domains
+  const hasPublicCors = allowOrigin === '*'
+  const hasSpecificCors = allowOrigin
+    ? trustedDomains.some(domain => allowOrigin.includes(domain))
+    : false
+
+  const isOriginAllowed = hasPublicCors || hasSpecificCors
+
+  // Ensure GET method is allowed
+  const allowedMethods = rawMethods
+    ? rawMethods.split(',').map(m => m.trim().toUpperCase())
+    : []
+  const supportsGet = allowedMethods.length === 0 || allowedMethods.includes('GET')
+
+  return isOriginAllowed && supportsGet
+}
