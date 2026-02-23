@@ -18,6 +18,48 @@ export type FetchTabularDataOptions = {
   sort?: SortConfig
 }
 
+export type TabularProfileResponse = {
+  profile: {
+    header: Array<string>
+    columns: Record<string, {
+      score: number
+      format: string
+      python_type: string
+    }>
+    formats: Record<string, Array<string>>
+    profile: Record<string, {
+      tops: Array<{ count: number, value: string }>
+      nb_distinct: number
+      nb_missing_values: number
+      min?: number
+      max?: number
+      std?: number
+      mean?: number
+    }>
+    encoding: string
+    separator: string
+    categorical: Array<string>
+    total_lines: number
+    nb_duplicates: number
+    columns_fields: Record<string, {
+      score: number
+      format: string
+      python_type: string
+    }>
+    columns_labels: Record<string, {
+      score: number
+      format: string
+      python_type: string
+    }>
+    header_row_idx: number
+    heading_columns: number
+    trailing_columns: number
+  }
+  deleted_at: string | null
+  dataset_id: string
+  indexes: null
+}
+
 /**
  * Call Tabular-api to get table content with options object
  */
@@ -45,5 +87,5 @@ export function getData(config: PluginConfig, id: string, page: number, sortConf
  */
 export function useGetProfile() {
   const config = useComponentsConfig()
-  return (id: string) => ofetch(`${config.tabularApiUrl}/api/resources/${id}/profile/`)
+  return (id: string) => ofetch<TabularProfileResponse>(`${config.tabularApiUrl}/api/resources/${id}/profile/`)
 }

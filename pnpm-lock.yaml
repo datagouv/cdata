@@ -323,7 +323,7 @@ importers:
         version: 4.5.1(vue@3.5.22(typescript@5.9.2))
       vue-sonner:
         specifier: ^2.0.9
-        version: 2.0.9(@nuxt/kit@4.1.2(magicast@0.3.5))(nuxt@3.16.2(@parcel/watcher@2.5.1)(@types/node@20.19.18)(db0@0.3.2)(eslint@9.36.0(jiti@2.6.1))(ioredis@5.8.0)(lightningcss@1.30.2)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.52.3)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.44.0)(typescript@5.9.2)(vite@7.1.7(@types/node@20.19.18)(jiti@2.6.1)(lightningcss@1.30.2)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.44.0)(yaml@2.8.1))(vue-tsc@3.1.0(typescript@5.9.2))(yaml@2.8.1))
+        version: 2.0.9(@nuxt/kit@4.1.2(magicast@0.3.5))
       vue3-json-viewer:
         specifier: ^2.4.1
         version: 2.4.1(vue@3.5.22(typescript@5.9.2))
@@ -15962,10 +15962,9 @@ snapshots:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.22(typescript@5.9.2)
 
-  vue-sonner@2.0.9(@nuxt/kit@4.1.2(magicast@0.3.5))(nuxt@3.16.2(@parcel/watcher@2.5.1)(@types/node@20.19.18)(db0@0.3.2)(eslint@9.36.0(jiti@2.6.1))(ioredis@5.8.0)(lightningcss@1.30.2)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.52.3)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.44.0)(typescript@5.9.2)(vite@7.1.7(@types/node@20.19.18)(jiti@2.6.1)(lightningcss@1.30.2)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.44.0)(yaml@2.8.1))(vue-tsc@3.1.0(typescript@5.9.2))(yaml@2.8.1)):
+  vue-sonner@2.0.9(@nuxt/kit@4.1.2(magicast@0.3.5)):
     optionalDependencies:
       '@nuxt/kit': 4.1.2(magicast@0.3.5)
-      nuxt: 3.16.2(@parcel/watcher@2.5.1)(@types/node@20.19.18)(db0@0.3.2)(eslint@9.36.0(jiti@2.6.1))(ioredis@5.8.0)(lightningcss@1.30.2)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.52.3)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.44.0)(typescript@5.9.2)(vite@7.1.7(@types/node@20.19.18)(jiti@2.6.1)(lightningcss@1.30.2)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.44.0)(yaml@2.8.1))(vue-tsc@3.1.0(typescript@5.9.2))(yaml@2.8.1)
 
   vue-template-compiler@2.7.16:
     dependencies:
