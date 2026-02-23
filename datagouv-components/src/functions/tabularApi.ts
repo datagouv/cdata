@@ -6,15 +6,38 @@ export type SortConfig = {
   type: string
 } | null
 
+export type TabularDataResponse = {
+  data: Array<Record<string, unknown>>
+  meta: { total: number }
+}
+
+export type FetchTabularDataOptions = {
+  resourceId: string
+  page?: number
+  pageSize?: number
+  sort?: SortConfig
+}
+
+/**
+ * Call Tabular-api to get table content with options object
+ */
+export async function fetchTabularData(config: PluginConfig, options: FetchTabularDataOptions): Promise<TabularDataResponse> {
+  const resourceId = options.resourceId
+  const page = options.page ?? 1
+  const pageSize = options.pageSize ?? config.tabularApiPageSize ?? 15
+  const sort = options.sort
+  let url = `${config.tabularApiUrl}/api/resources/${resourceId}/data/?page=${page}&page_size=${pageSize}`
+  if (sort) {
+    url += `&${sort.column}__sort=${sort.type}`
+  }
+  return await ofetch<TabularDataResponse>(url)
+}
+
 /**
  * Call Tabular-api to get table content
  */
-export async function getData(config: PluginConfig, id: string, page: number, sortConfig?: SortConfig) {
-  let url = `${config.tabularApiUrl}/api/resources/${id}/data/?page=${page}&page_size=${config.tabularApiPageSize || 15}`
-  if (sortConfig) {
-    url = url + `&${sortConfig.column}__sort=${sortConfig.type}`
-  }
-  return await ofetch(url)
+export function getData(config: PluginConfig, id: string, page: number, sortConfig?: SortConfig) {
+  return fetchTabularData(config, { resourceId: id, page, sort: sortConfig })
 }
 
 /**

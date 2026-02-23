@@ -1,7 +1,7 @@
 <template>
-  <div class="grid lg:grid-cols-2 gap-8">
+  <div class="grid lg:grid-cols-2 gap-4">
     <!-- Live preview -->
-    <div class="border border-gray-light rounded-lg p-4">
+    <div class="border border-gray-light rounded-lg p-6">
       <h3 class="text-lg font-bold mb-4">
         Aperçu
       </h3>
@@ -11,7 +11,7 @@
     </div>
 
     <!-- Form -->
-    <div class="space-y-6">
+    <div class="space-y-6 lg:pl-4">
       <h3 class="text-lg font-bold">
         Configuration
       </h3>
