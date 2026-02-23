@@ -77,7 +77,7 @@ import { RiErrorWarningLine } from '@remixicon/vue'
 import SimpleBanner from '../SimpleBanner.vue'
 import { useComponentsConfig } from '../../config'
 import type { Resource } from '../../types/resources'
-import { isResourceCorsEnabled, getResourceFilesize } from '../../functions/datasets'
+import { getResourceFilesize, isResourceCorsEnabled } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
 
 const PDF = defineAsyncComponent(() =>

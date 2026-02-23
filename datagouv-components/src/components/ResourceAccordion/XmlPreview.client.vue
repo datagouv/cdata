@@ -54,10 +54,9 @@ import { RiErrorWarningLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../../config'
 import SimpleBanner from '../SimpleBanner.vue'
 import type { Resource } from '../../types/resources'
-import { isResourceCorsEnabled } from '../../functions/datasets'
+import { getResourceFilesize, isResourceCorsEnabled } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
 import '../../types/vue3-xml-viewer.d'
-import { getResourceFilesize } from '../../main'
 
 const XmlViewer = defineAsyncComponent(() =>
   import('vue3-xml-viewer').then((module) => {

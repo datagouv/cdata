@@ -62,7 +62,7 @@ import { RiErrorWarningLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../../config'
 import SimpleBanner from '../SimpleBanner.vue'
 import type { Resource } from '../../types/resources'
-import { isResourceCorsEnabled, getResourceFilesize } from '../../functions/datasets'
+import { getResourceFilesize, isResourceCorsEnabled } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
 
 const JsonViewer = defineAsyncComponent(() =>
