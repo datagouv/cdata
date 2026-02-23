@@ -1,30 +1,15 @@
 <template>
   <div class="text-xs">
-    <div v-if="pdfData">
-      <!--
-      We use props.resource.url instead of props.resource.latest
-      because the PDF component raises an error otherwise.
-      See https://github.com/datagouv/cdata/pull/611
-      -->
-      <PDF
-        :src="props.resource.url"
-        :show-progress="true"
-        progress-color="#0063cb"
-        :show-page-tooltip="true"
-        :show-back-to-top-btn="true"
-        :scroll-threshold="300"
-        pdf-width="100%"
-        :row-gap="12"
-        :use-system-fonts="true"
-        :disable-range="false"
-        :disable-stream="false"
-        :disable-auto-fetch="false"
+    <div
+      v-if="pdfReady"
+      ref="containerRef"
+      class="w-full overflow-y-auto max-h-[80vh] space-y-3"
+    >
+      <canvas
+        v-for="page in totalPages"
+        :key="page"
+        :ref="(el) => setCanvasRef(el as HTMLCanvasElement, page)"
         class="w-full"
-        @on-progress="handleProgress"
-        @on-complete="handleComplete"
-        @on-page-change="handlePageChange"
-        @on-pdf-init="handlePdfInit"
-        @on-error="handleError"
       />
     </div>
     <div
@@ -64,19 +49,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RiErrorWarningLine } from '@remixicon/vue'
+import * as pdfjsLib from 'pdfjs-dist'
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
+import type { PDFDocumentProxy } from 'pdfjs-dist'
 import SimpleBanner from '../SimpleBanner.vue'
 import { useComponentsConfig } from '../../config'
 import type { Resource } from '../../types/resources'
 import { useTranslation } from '../../composables/useTranslation'
 import { getResourceFilesize } from '../../functions/datasets'
 
-const PDF = defineAsyncComponent(() =>
-  import('pdf-vue3').then((module) => {
-    return module.default
-  }),
-)
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
 const props = defineProps<{
   resource: Resource
@@ -85,10 +69,47 @@ const props = defineProps<{
 const config = useComponentsConfig()
 const { t } = useTranslation()
 
-const pdfData = ref<boolean>(false)
+const containerRef = ref<HTMLElement | null>(null)
+const pdfReady = ref(false)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const fileTooLarge = ref(false)
+const totalPages = ref(0)
+
+let pdfDoc: PDFDocumentProxy | null = null
+const canvasRefs = new Map<number, HTMLCanvasElement>()
+
+function setCanvasRef(el: HTMLCanvasElement | null, pageNum: number) {
+  if (el) canvasRefs.set(pageNum, el)
+}
+
+async function renderPage(pageNum: number) {
+  if (!pdfDoc) return
+
+  const canvas = canvasRefs.get(pageNum)
+  if (!canvas) return
+
+  const page = await pdfDoc.getPage(pageNum)
+
+  const containerWidth = containerRef.value?.clientWidth ?? 800
+  const unscaledViewport = page.getViewport({ scale: 1 })
+  const scale = containerWidth / unscaledViewport.width
+  const viewport = page.getViewport({ scale })
+
+  const dpr = window.devicePixelRatio || 1
+  canvas.width = viewport.width * dpr
+  canvas.height = viewport.height * dpr
+  canvas.style.width = `${viewport.width}px`
+  canvas.style.height = `${viewport.height}px`
+
+  const context = canvas.getContext('2d')!
+  context.scale(dpr, dpr)
+
+  await page.render({
+    canvasContext: context,
+    viewport,
+  }).promise
+}
 
 const fileSizeBytes = computed(() => getResourceFilesize(props.resource))
 
@@ -105,7 +126,6 @@ const shouldLoadPdf = computed(() => {
 })
 
 const loadPdf = async () => {
-  // Check if file is too large or size is unknown before loading
   if (!shouldLoadPdf.value) {
     fileTooLarge.value = true
     return
@@ -115,19 +135,23 @@ const loadPdf = async () => {
   error.value = null
 
   try {
-    // Test if the PDF URL is accessible
-    const response = await fetch(props.resource.url, { method: 'HEAD' })
-    // const response = await fetch('/test-data.pdf') // For testing locally without CORS issues
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
+    const loadingTask = pdfjsLib.getDocument({
+      url: props.resource.url,
+      isEvalSupported: false,
+    })
 
-    // If the URL is accessible, set pdfData to true
-    // The PDF component will handle the actual loading
-    pdfData.value = true
+    pdfDoc = await loadingTask.promise
+    totalPages.value = pdfDoc.numPages
+    pdfReady.value = true
+
+    await nextTick()
+
+    for (let i = 1; i <= pdfDoc.numPages; i++) {
+      await renderPage(i)
+    }
   }
   catch (err) {
-    console.error('Error testing PDF URL:', err)
+    console.error('Error loading PDF:', err)
 
     if (err instanceof TypeError) {
       error.value = 'network'
@@ -135,45 +159,17 @@ const loadPdf = async () => {
     else {
       error.value = 'generic'
     }
-
-    pdfData.value = false
   }
   finally {
     loading.value = false
   }
 }
 
-// Event handlers for PDF component
-const handleProgress = (loadRatio: number) => {
-  console.log(`PDF loading progress: ${loadRatio}%`)
-}
-
-const handleComplete = () => {
-  console.log('PDF download completed')
-}
-
-const handlePageChange = (page: number) => {
-  console.log(`PDF page changed to: ${page}`)
-}
-
-const handlePdfInit = (pdf: unknown) => {
-  console.log('PDF initialized:', pdf)
-}
-
-const handleError = (err: unknown) => {
-  console.error('PDF loading error:', err)
-
-  if (err instanceof TypeError) {
-    error.value = 'network'
-  }
-  else {
-    error.value = 'generic'
-  }
-
-  pdfData.value = false
-}
-
 onMounted(() => {
   loadPdf()
+})
+
+onBeforeUnmount(() => {
+  pdfDoc?.destroy()
 })
 </script>
