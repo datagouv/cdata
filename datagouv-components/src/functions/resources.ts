@@ -149,10 +149,8 @@ export const isResourceCorsEnabled = (resource: Resource): boolean => {
   const isHealthy = status === 200
   if (!isHealthy) return false
 
-  // Validate Origin (Wildcard OR specific domain)
-  const trustedDomains = ['data.gouv.fr', 'www.data.gouv.fr']
-
   // Check if allow-origin is '*' or contains one of our trusted domains
+  const trustedDomains = ['data.gouv.fr', 'www.data.gouv.fr'] // TODO: get from config
   const hasPublicCors = allowOrigin === '*'
   const hasSpecificCors = allowOrigin
     ? trustedDomains.some(domain => allowOrigin.includes(domain))
