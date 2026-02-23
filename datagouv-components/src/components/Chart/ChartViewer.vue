@@ -13,29 +13,14 @@ import { LineChart, BarChart } from 'echarts/charts'
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { computed } from 'vue'
-import type { Chart, DataSeries, XAxis, YAxis } from '../types/visualizations'
+import type { Chart, DataSeries, XAxis, YAxis } from '../../types/visualizations'
 
 use([CanvasRenderer, LineChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent])
 
 const props = defineProps<{
   chart: Chart
+  seriesData: Record<string, Array<Array<unknown>>>
 }>()
-
-const DUMMY_SOURCE = [
-  ['category', 'Série 1', 'Série 2'],
-  ['Jan', 120, 80],
-  ['Fév', 132, 95],
-  ['Mar', 101, 110],
-  ['Avr', 134, 87],
-  ['Mai', 90, 125],
-  ['Juin', 230, 145],
-  ['Juil', 210, 160],
-  ['Août', 182, 130],
-  ['Sep', 191, 140],
-  ['Oct', 234, 155],
-  ['Nov', 260, 170],
-  ['Déc', 300, 190],
-]
 
 function mapSeriesType(type: DataSeries['type']): 'line' | 'bar' {
   return type === 'histogram' ? 'bar' : 'line'
@@ -55,22 +40,27 @@ function buildYAxisFormatter(yAxis?: YAxis): ((value: number) => string) | undef
 }
 
 const echartsOption = computed(() => {
-  const series = (props.chart.series ?? []).map((s, i) => ({
-    type: mapSeriesType(s.type),
-    name: s.column_x_name_override ?? `Série ${i + 1}`,
-    encode: {
-      x: 'category',
-      y: s.column_y ?? DUMMY_SOURCE[0]![i + 1],
-    },
-  }))
+  if (!props.chart.series || props.chart.series.length === 0) return
 
-  // Default to a single line series if none defined
-  if (series.length === 0) {
-    series.push({ type: 'line', name: 'Série 1', encode: { x: 'category', y: 'Série 1' } })
-  }
+  // Create series configuration with data mapping
+  const series = (props.chart.series).map((s) => {
+    return {
+      type: mapSeriesType(s.type),
+      name: s.column_x_name_override ?? props.chart.x_axis.column_x,
+      encode: {
+        x: 'category',
+        y: s.column_y,
+      },
+    }
+  })
+
+  // Use the first dataset as the primary source if available
+  const primarySource = Object.values(props.seriesData ?? {})[0]
 
   return {
-    dataset: { source: DUMMY_SOURCE },
+    dataset: {
+      source: primarySource,
+    },
     title: {
       text: props.chart.title,
       left: 'center',

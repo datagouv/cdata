@@ -24,8 +24,8 @@ export type SortDirection = 'asc' | 'desc'
 
 export type XAxis = {
   column_x: string
-  sort_x_by?: XAxisSortBy
-  sort_x_direction?: SortDirection
+  sort_x_by: XAxisSortBy
+  sort_x_direction: SortDirection
   type: XAxisType
 }
 
@@ -46,9 +46,9 @@ export type AggregateType = 'sum' | 'median'
 
 export type DataSeries = {
   type: DataSeriesType
-  column_y?: string
-  aggregate_y?: AggregateType
-  resource_id?: string
+  column_y: string
+  aggregate_y: AggregateType
+  resource_id: string
   column_x_name_override?: string
   filters?: GenericFilter
 }
@@ -57,11 +57,11 @@ export type DataSeries = {
 export type ChartForm = OwnedWithId & {
   title: string
   description: string
-  private?: boolean
-  x_axis?: XAxis
-  y_axis?: YAxis
-  series?: Array<DataSeries>
-  extras?: Record<string, unknown>
+  private: boolean
+  x_axis: XAxis
+  y_axis: YAxis
+  series: Array<DataSeries>
+  extras: Record<string, unknown>
 }
 
 // Chart read fields (API responses)
@@ -76,9 +76,9 @@ export type Chart = Owned & {
   deleted_at: string | null
   uri: string
   page: string
-  x_axis?: XAxis
-  y_axis?: YAxis
-  series?: Array<DataSeries>
+  x_axis: XAxis
+  y_axis: YAxis
+  series: Array<DataSeries>
   extras: Record<string, unknown>
   permissions: { delete: boolean, edit: boolean, read: boolean }
   metrics: {
