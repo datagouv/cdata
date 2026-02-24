@@ -389,6 +389,7 @@ import { getOwnerName } from '../../functions/owned'
 import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
 import { useTranslation } from '../../composables/useTranslation'
+import { useHasTabularData } from '../../composables/useHasTabularData'
 import Metadata from './Metadata.vue'
 import SchemaBadge from './SchemaBadge.vue'
 import ResourceIcon from './ResourceIcon.vue'
@@ -425,6 +426,7 @@ const DatafairPreview = defineAsyncComponent(() => import('./Datafair.client.vue
 
 const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
+const checkTabularData = useHasTabularData()
 
 const hasPreview = computed(() => {
   // For JSON, PDF, and XML files, show preview.
@@ -434,13 +436,7 @@ const hasPreview = computed(() => {
   return format === 'json' || format === 'pdf' || format === 'xml'
 })
 
-const hasTabularData = computed(() => {
-  // Determines if we should show the "Données" tab for tabular files AND the "Structure des données" tab (for tabular data structure)
-  return config.tabularApiUrl
-    && props.resource.extras['analysis:parsing:parsing_table']
-    && !props.resource.extras['analysis:parsing:error']
-    && (config.tabularAllowRemote || props.resource.filetype === 'file')
-})
+const hasTabularData = computed(() => checkTabularData(props.resource))
 
 const hasPmtiles = computed(() => {
   return props.resource.extras['analysis:parsing:pmtiles_url'] || props.resource.format === 'pmtiles'
