@@ -413,6 +413,16 @@
                     <strong>Direction Générale des Infrastructures, des Transports et des Mobilités</strong>
                   </template>
                 </TranslationT>
+                 <TranslationT
+                  v-if="platform.name === 'simplifions'"
+                  tag="p"
+                  class="mb-0 text-gray-silver"
+                  keypath="Les données utiles par cas d'usages pour {name}."
+                >
+                  <template #name>
+                    <strong>aider les administrations à mettre en oeuvre le Dîtes-le nous une fois</strong>
+                  </template>
+                </TranslationT>
               </div>
             </div>
           </div>
