@@ -291,11 +291,13 @@
 </template>
 
 <script setup lang="ts">
-import type { Chart, XAxisType, XAxisSortBy, SortDirection, UnitPosition, DataSeries, Resource, PaginatedArray } from '@datagouv/components-next'
-import { SearchableSelect } from '@datagouv/components-next'
+import type { XAxisType, XAxisSortBy, SortDirection, UnitPosition, DataSeries, Resource, PaginatedArray, ChartForm } from '@datagouv/components-next'
+import { SearchableSelect, useHasTabularData } from '@datagouv/components-next'
+
 import { computed, defineAsyncComponent, reactive, watch, ref } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
 
+const { hasTabularData } = useHasTabularData()
 const ChartViewerWrapper = defineAsyncComponent(() => import('../datagouv-components/src/components/Chart/ChartViewerWrapper.vue'))
 const columns = ref<Record<string, Array<string>>>({})
 const flattenedColumns = computed(() => Object.values(columns.value).flat())
@@ -319,7 +321,7 @@ watch(dataset, async (newDataset) => {
   if (newDataset) {
     try {
       const fetchedResources = await $api<PaginatedArray<Resource>>(`/api/2/datasets/${newDataset.id}/resources/`)
-      resources.value = fetchedResources.data
+      resources.value = fetchedResources.data.filter(resource => hasTabularData(resource))
     }
     catch (error) {
       console.error('Failed to fetch resources:', error)
@@ -366,19 +368,14 @@ const form = reactive<{
   series: [dummySerie],
 })
 
-const chartPreview = computed<Chart>(() => ({
-  id: 'preview',
+const user = useMaybeMe()
+
+const chartPreview = computed<ChartForm>(() => ({
+  organization: null,
+  owner: user.value ? user.value.id : 'dummyForDS',
   title: form.title,
-  slug: 'preview',
   description: form.description,
   private: false,
-  organization: null,
-  owner: { class: 'User', id: 'preview', first_name: 'Preview', last_name: 'User', slug: 'preview', uri: '', page: '', avatar: '', avatar_thumbnail: '' },
-  created_at: new Date().toISOString(),
-  last_modified: new Date().toISOString(),
-  deleted_at: null,
-  uri: '',
-  page: '',
   x_axis: {
     column_x: form.xAxisColumn,
     type: form.xAxisType,
@@ -393,7 +390,5 @@ const chartPreview = computed<Chart>(() => ({
   },
   series: form.series,
   extras: {},
-  permissions: { delete: false, edit: true, read: true },
-  metrics: { views: 0 },
-} satisfies Chart))
+} satisfies ChartForm))
 </script>
