@@ -1,7 +1,7 @@
 <template>
   <div class="grid lg:grid-cols-12 gap-4">
     <!-- Live preview -->
-    <div class="col-span-7 space-y-4">
+    <div class="col-span-7 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
       <!-- Title -->
       <div>
         <label
@@ -29,10 +29,7 @@
           rows="2"
         />
       </div>
-      <div class="border border-gray-light rounded-lg p-6">
-        <h3 class="text-lg font-bold mb-4">
-          Aperçu
-        </h3>
+      <div class="mt-4">
         <ClientOnly>
           <ChartViewerWrapper
             v-model="chartPreview"
@@ -43,14 +40,11 @@
     </div>
 
     <!-- Form -->
-    <div class="col-span-5 space-y-6 lg:pl-4">
-      <h3 class="text-lg font-bold">
-        Configuration
-      </h3>
-      <fieldset class="border border-gray-light rounded-lg p-4 space-y-4">
-        <legend class="text-sm font-bold px-2">
+    <div class="col-span-5 space-y-6 lg:ml-4 py-4 rounded-lg bg-white border border-new-gray-light">
+      <fieldset class="px-6 space-y-4">
+        <p class="mb-2 font-bold">
           Ressources
-        </legend>
+        </p>
         <SearchableSelect
           v-model="dataset"
           :label="$t('Jeu de données')"
@@ -62,42 +56,40 @@
           class="mb-4"
         />
         <!-- Resources select -->
-        <div class="fr-fieldset__element">
-          <label
-            for="resource-select"
-            class="block text-sm font-medium mb-1"
-          >Choix de la ressource</label>
-          <select
-            id="resource-select"
-            v-model="selectedResource"
-            class="w-full fr-select"
-            :disabled="!dataset"
+        <label
+          for="resource-select"
+          class="mb-1"
+        >Choix de la ressource</label>
+        <select
+          id="resource-select"
+          v-model="selectedResource"
+          class="w-full fr-select"
+          :disabled="!dataset"
+        >
+          <option
+            value=""
+            disabled
           >
-            <option
-              value=""
-              disabled
-            >
-              {{ dataset ? 'Sélectionnez une ressource' : 'Sélectionnez d\'abord un jeu de données' }}
-            </option>
-            <option
-              v-for="resource in resources"
-              :key="resource.id"
-              :value="resource.id"
-            >
-              {{ resource.title }}
-            </option>
-          </select>
-        </div>
+            {{ dataset ? 'Sélectionnez une ressource' : 'Sélectionnez d\'abord un jeu de données' }}
+          </option>
+          <option
+            v-for="resource in resources"
+            :key="resource.id"
+            :value="resource.id"
+          >
+            {{ resource.title }}
+          </option>
+        </select>
       </fieldset>
       <!-- X Axis -->
-      <fieldset class="border border-gray-light rounded-lg p-4 space-y-4">
-        <legend class="text-sm font-bold px-2">
+      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+        <p class="font-bold mb-2">
           Axe X
-        </legend>
-        <div class="fr-fieldset__element">
+        </p>
+        <div>
           <label
             for="x-axis-column"
-            class="block text-sm font-medium mb-1"
+            class="mb-1"
           >Column</label>
           <select
             id="x-axis-column"
@@ -113,10 +105,10 @@
             </option>
           </select>
         </div>
-        <div class="fr-fieldset__element">
+        <div>
           <label
             for="x-axis-type"
-            class="block text-sm font-medium mb-1"
+            class="mb-1"
           >Type</label>
           <select
             id="x-axis-type"
@@ -131,10 +123,10 @@
             </option>
           </select>
         </div>
-        <div class="fr-fieldset__element">
+        <div>
           <label
             for="x-axis-sort-by"
-            class="block text-sm font-medium mb-1"
+            class="mb-1"
           >Trier par</label>
           <select
             id="x-axis-sort-by"
@@ -152,10 +144,10 @@
             </option>
           </select>
         </div>
-        <div class="fr-fieldset__element">
+        <div>
           <label
             for="x-axis-sort-direction"
-            class="block text-sm font-medium mb-1"
+            class="mb-1"
           >Direction du tri</label>
           <select
             id="x-axis-sort-direction"
@@ -173,14 +165,14 @@
       </fieldset>
 
       <!-- Y Axis -->
-      <fieldset class="border border-gray-light rounded-lg p-4 space-y-4">
-        <legend class="text-sm font-bold px-2">
+      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+        <p class="font-bold mb-2">
           Axe Y
-        </legend>
+        </p>
         <div>
           <label
             for="y-axis-label"
-            class="block text-sm font-medium mb-1"
+            class="mb-1"
           >Label</label>
           <input
             id="y-axis-label"
@@ -251,33 +243,82 @@
       </fieldset>
 
       <!-- Series -->
-      <fieldset class="border border-gray-light rounded-lg p-4 space-y-4">
-        <legend class="text-sm font-bold px-2">
+      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+        <p class="font-bold mb-2">
           Séries
-        </legend>
+        </p>
         <div
           v-for="(serie, index) in form.series"
           :key="index"
-          class="flex items-center gap-4"
+          class="border rounded-lg p-4 mb-2 space-y-4"
         >
-          <span class="text-sm text-gray-medium">{{ index + 1 }}.</span>
-          <select
-            v-model="serie.type"
-            class="flex-1 fr-select"
-          >
-            <option value="line">
-              Ligne
-            </option>
-            <option value="histogram">
-              Histogramme
-            </option>
-          </select>
-          <button
-            class="text-danger-dark text-sm"
-            @click="form.series.splice(index, 1)"
-          >
-            Supprimer
-          </button>
+          <div class="flex items-center gap-2 mb-2">
+            <select
+              v-model="serie.type"
+              class="flex-1 fr-select"
+            >
+              <option value="line">
+                Ligne
+              </option>
+              <option value="histogram">
+                Histogramme
+              </option>
+            </select>
+            <button
+              title="Supprimer la série"
+              class="text-new-error rounded-full p-2 border border-new-error"
+              @click="form.series.splice(index, 1)"
+            >
+              <RiDeleteBinLine class="size-4" />
+            </button>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Ressource</label>
+            <select
+              v-model="serie.resource_id"
+              class="w-full fr-select"
+            >
+              <option
+                v-for="resource in resources"
+                :key="resource.id"
+                :value="resource.id"
+              >
+                {{ resource.title }}
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Colonne Y</label>
+            <select
+              v-model="serie.column_y"
+              class="w-full fr-select"
+            >
+              <option
+                v-for="column in flattenedColumns"
+                :key="column"
+                :value="column"
+              >
+                {{ column }}
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Agrégation</label>
+            <select
+              v-model="serie.aggregate_y"
+              class="w-full fr-select"
+            >
+              <option value="sum">
+                Somme
+              </option>
+              <option value="median">
+                Médianne
+              </option>
+            </select>
+          </div>
         </div>
         <button
           class="text-sm text-datagouv underline"
@@ -293,23 +334,25 @@
 <script setup lang="ts">
 import type { XAxisType, XAxisSortBy, SortDirection, UnitPosition, DataSeries, Resource, PaginatedArray, ChartForm } from '@datagouv/components-next'
 import { SearchableSelect, useHasTabularData } from '@datagouv/components-next'
+import { RiDeleteBinLine } from '@remixicon/vue'
 
 import { computed, defineAsyncComponent, reactive, watch, ref } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
 
-const { hasTabularData } = useHasTabularData()
+const hasTabularData = useHasTabularData()
 const ChartViewerWrapper = defineAsyncComponent(() => import('../datagouv-components/src/components/Chart/ChartViewerWrapper.vue'))
 const columns = ref<Record<string, Array<string>>>({})
 const flattenedColumns = computed(() => Object.values(columns.value).flat())
 
 const dataset = ref<DatasetSuggest>()
 const resources = ref<Array<Resource>>([])
+const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref('')
 
 const { $api } = useNuxtApp()
 
 const suggestDataset = async (q: string): Promise<Array<DatasetSuggest>> => {
-  return await $api<Array<DatasetSuggest>>('/api/1/datasets/suggest/', {
+  return await $api<Array<DatasetSuggest>>('https://www.data.gouv.fr/api/1/datasets/suggest/', {
     query: {
       q,
       size: 5,
@@ -320,8 +363,11 @@ const suggestDataset = async (q: string): Promise<Array<DatasetSuggest>> => {
 watch(dataset, async (newDataset) => {
   if (newDataset) {
     try {
-      const fetchedResources = await $api<PaginatedArray<Resource>>(`/api/2/datasets/${newDataset.id}/resources/`)
+      const fetchedResources = await $api<PaginatedArray<Resource>>(`https://www.data.gouv.fr/api/2/datasets/${newDataset.id}/resources/`)
       resources.value = fetchedResources.data.filter(resource => hasTabularData(resource))
+      for (const r of resources.value) {
+        savedResources[r.id] = r
+      }
     }
     catch (error) {
       console.error('Failed to fetch resources:', error)
@@ -331,7 +377,7 @@ watch(dataset, async (newDataset) => {
   else {
     resources.value = []
   }
-}, { immediate: false })
+})
 
 const dummySerie: DataSeries = {
   type: 'histogram',
