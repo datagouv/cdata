@@ -105,15 +105,15 @@ const fetchJsonData = async () => {
   error.value = null
   fileTooLarge.value = false
 
-  // If CORS is blocked, don't even try
-  if (!isCorsAllowed.value) {
-    error.value = 'cors'
-    return
-  }
-
   // Check if file is too large or size is unknown
   if (!isSizeAllowed.value) {
     fileTooLarge.value = true
+    return
+  }
+
+  // Check if CORS is allowed
+  if (!isCorsAllowed.value) {
+    error.value = 'cors'
     return
   }
 
