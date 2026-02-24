@@ -1,24 +1,7 @@
 <template>
   <div class="grid lg:grid-cols-12 gap-4">
     <!-- Live preview -->
-    <div class="col-span-7 border border-gray-light rounded-lg p-6">
-      <h3 class="text-lg font-bold mb-4">
-        Aperçu
-      </h3>
-      <ClientOnly>
-        <ChartViewerWrapper
-          v-model="chartPreview"
-          @columns="columns = $event"
-        />
-      </ClientOnly>
-    </div>
-
-    <!-- Form -->
-    <div class="col-span-5 space-y-6 lg:pl-4">
-      <h3 class="text-lg font-bold">
-        Configuration
-      </h3>
-
+    <div class="col-span-7 space-y-4">
       <!-- Title -->
       <div>
         <label
@@ -46,7 +29,66 @@
           rows="2"
         />
       </div>
+      <div class="border border-gray-light rounded-lg p-6">
+        <h3 class="text-lg font-bold mb-4">
+          Aperçu
+        </h3>
+        <ClientOnly>
+          <ChartViewerWrapper
+            v-model="chartPreview"
+            @columns="columns = $event"
+          />
+        </ClientOnly>
+      </div>
+    </div>
 
+    <!-- Form -->
+    <div class="col-span-5 space-y-6 lg:pl-4">
+      <h3 class="text-lg font-bold">
+        Configuration
+      </h3>
+      <fieldset class="border border-gray-light rounded-lg p-4 space-y-4">
+        <legend class="text-sm font-bold px-2">
+          Ressources
+        </legend>
+        <SearchableSelect
+          v-model="dataset"
+          :label="$t('Jeu de données')"
+          :placeholder="$t('Recherchez un jeu de données...')"
+          :display-value="(option: DatasetSuggest) => option.title"
+          :get-option-id="(option: DatasetSuggest) => option.id"
+          :multiple="false"
+          :suggest="suggestDataset"
+          class="mb-4"
+        />
+        <!-- Resources select -->
+        <div class="fr-fieldset__element">
+          <label
+            for="resource-select"
+            class="block text-sm font-medium mb-1"
+          >Choix de la ressource</label>
+          <select
+            id="resource-select"
+            v-model="selectedResource"
+            class="w-full fr-select"
+            :disabled="!dataset"
+          >
+            <option
+              value=""
+              disabled
+            >
+              {{ dataset ? 'Sélectionnez une ressource' : 'Sélectionnez d\'abord un jeu de données' }}
+            </option>
+            <option
+              v-for="resource in resources"
+              :key="resource.id"
+              :value="resource.id"
+            >
+              {{ resource.title }}
+            </option>
+          </select>
+        </div>
+      </fieldset>
       <!-- X Axis -->
       <fieldset class="border border-gray-light rounded-lg p-4 space-y-4">
         <legend class="text-sm font-bold px-2">
@@ -249,12 +291,45 @@
 </template>
 
 <script setup lang="ts">
-import type { Chart, XAxisType, XAxisSortBy, SortDirection, UnitPosition, DataSeries } from '@datagouv/components-next'
-import { computed, defineAsyncComponent, reactive } from 'vue'
+import type { Chart, XAxisType, XAxisSortBy, SortDirection, UnitPosition, DataSeries, Resource, PaginatedArray } from '@datagouv/components-next'
+import { SearchableSelect } from '@datagouv/components-next'
+import { computed, defineAsyncComponent, reactive, watch, ref } from 'vue'
+import type { DatasetSuggest } from '~/types/types'
 
 const ChartViewerWrapper = defineAsyncComponent(() => import('../datagouv-components/src/components/Chart/ChartViewerWrapper.vue'))
 const columns = ref<Record<string, Array<string>>>({})
 const flattenedColumns = computed(() => Object.values(columns.value).flat())
+
+const dataset = ref<DatasetSuggest>()
+const resources = ref<Array<Resource>>([])
+const selectedResource = ref('')
+
+const { $api } = useNuxtApp()
+
+const suggestDataset = async (q: string): Promise<Array<DatasetSuggest>> => {
+  return await $api<Array<DatasetSuggest>>('/api/1/datasets/suggest/', {
+    query: {
+      q,
+      size: 5,
+    },
+  })
+}
+
+watch(dataset, async (newDataset) => {
+  if (newDataset) {
+    try {
+      const fetchedResources = await $api<PaginatedArray<Resource>>(`/api/2/datasets/${newDataset.id}/resources/`)
+      resources.value = fetchedResources.data
+    }
+    catch (error) {
+      console.error('Failed to fetch resources:', error)
+      resources.value = []
+    }
+  }
+  else {
+    resources.value = []
+  }
+}, { immediate: false })
 
 const dummySerie: DataSeries = {
   type: 'histogram',
