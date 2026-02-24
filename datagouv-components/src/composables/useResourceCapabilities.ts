@@ -16,7 +16,7 @@ export function useResourceCapabilities(
 ) {
   const config = useComponentsConfig()
   const { t } = useTranslation()
-  const { hasTabularData: hasTabularDataFromComposable } = useHasTabularData()
+  const { hasTabularData: checkTabularData } = useHasTabularData()
 
   const hasPreview = computed(() => {
     const format = toValue(resource).format?.toLowerCase()
@@ -25,7 +25,7 @@ export function useResourceCapabilities(
 
   const hasTabularData = computed(() => {
     const r = toValue(resource)
-    return hasTabularDataFromComposable(r)
+    return checkTabularData(r)
   })
 
   const hasPmtiles = computed(() => {
