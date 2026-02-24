@@ -233,7 +233,7 @@ const { hasTabularData } = useHasTabularData()
 
 // Check if resource has tabular API
 const hasTabularApi = computed(() => {
-  return hasTabularData(props.resource.resource || { extras: {}, filetype: undefined })
+  return props.resource.resource ? hasTabularData(props.resource.resource) : false
 })
 
 // Watch for file changes
