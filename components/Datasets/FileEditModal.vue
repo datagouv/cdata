@@ -228,8 +228,7 @@ const resourceForm = ref(cloneDeep(props.resource))
 const open = ref(false)
 const hasFileChanged = ref(false)
 
-// Use the composable for tabular data detection
-const { hasTabularData } = useHasTabularData()
+const hasTabularData = useHasTabularData()
 
 // Check if resource has tabular API
 const hasTabularApi = computed(() => {
