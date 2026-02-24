@@ -154,7 +154,7 @@ export const isResourceCorsEnabled = (resource: Resource): boolean => {
   const allowOrigin = extras['check:cors:allow-origin'] as string | undefined
   const rawMethods = extras['check:cors:allow-methods'] as string | undefined
 
-  // Verify the last cors probe was successful (HTTP 200)
+  // Verify the last check was successful (HTTP 200)
   const isHealthy = status === 200
   if (!isHealthy) return false
 
