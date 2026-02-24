@@ -426,7 +426,7 @@ const DatafairPreview = defineAsyncComponent(() => import('./Datafair.client.vue
 
 const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
-const { hasTabularData: checkTabularData } = useHasTabularData()
+const checkTabularData = useHasTabularData()
 
 const hasPreview = computed(() => {
   // For JSON, PDF, and XML files, show preview.
