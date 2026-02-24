@@ -23,9 +23,9 @@ import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
 import { useComponentsConfig } from '../../config'
 import { fetchTabularData, useGetProfile } from '../../functions/tabularApi'
-import type { Chart } from '../../types/visualizations'
+import type { Chart, ChartForm } from '../../types/visualizations'
 
-const chart = defineModel<Chart>({ required: true })
+const chart = defineModel<Chart | ChartForm>({ required: true })
 
 const emit = defineEmits<{
   columns: [columns: Record<string, Array<string>>]

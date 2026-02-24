@@ -15,12 +15,12 @@ import VChart from 'vue-echarts'
 import { computed } from 'vue'
 import { summarize } from '../../functions/helpers'
 import { throwOnNever } from '../../functions/never'
-import type { Chart, DataSeries, XAxis, YAxis, AggregateType } from '../../types/visualizations'
+import type { Chart, DataSeries, XAxis, YAxis, AggregateType, ChartForm } from '../../types/visualizations'
 
 use([CanvasRenderer, LineChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent])
 
 const props = defineProps<{
-  chart: Chart
+  chart: Chart | ChartForm
   series: {
     data: Record<string, Array<Record<string, unknown>>>
     columns: Record<string, Array<string>>
@@ -159,8 +159,6 @@ const echartsOption = computed(() => {
       },
     }
   })
-
-  console.log(transformedData)
 
   return {
     dataset: {
