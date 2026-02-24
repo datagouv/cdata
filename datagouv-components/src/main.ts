@@ -101,6 +101,7 @@ export * from './composables/useActiveDescendant'
 export * from './composables/useMetrics'
 export * from './composables/useReuseType'
 export * from './composables/useTranslation'
+export * from './composables/useHasTabularData'
 
 export * from './functions/activities'
 export * from './functions/datasets'

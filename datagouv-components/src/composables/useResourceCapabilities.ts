@@ -1,6 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useComponentsConfig } from '../config'
 import { useTranslation } from './useTranslation'
+import { useHasTabularData } from './useHasTabularData'
 import { detectOgcService } from '../functions/resources'
 import { isOrganizationCertified } from '../functions/organizations'
 import type { Resource } from '../types/resources'
@@ -15,6 +16,7 @@ export function useResourceCapabilities(
 ) {
   const config = useComponentsConfig()
   const { t } = useTranslation()
+  const { hasTabularData: hasTabularDataFromComposable } = useHasTabularData()
 
   const hasPreview = computed(() => {
     const format = toValue(resource).format?.toLowerCase()
@@ -23,10 +25,7 @@ export function useResourceCapabilities(
 
   const hasTabularData = computed(() => {
     const r = toValue(resource)
-    return config.tabularApiUrl
-      && r.extras['analysis:parsing:parsing_table']
-      && !r.extras['analysis:parsing:error']
-      && (config.tabularAllowRemote || r.filetype === 'file')
+    return hasTabularDataFromComposable(r)
   })
 
   const hasPmtiles = computed(() => {
