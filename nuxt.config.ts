@@ -12,8 +12,9 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
+    'nuxt-og-image',
   ],
-  devtools: { enabled: false, componentInspector: false },
+  devtools: { enabled: true, componentInspector: false },
 
   app: {
     head: {
@@ -221,6 +222,7 @@ export default defineNuxtConfig({
   features: {
     inlineStyles: false,
   },
+
   compatibilityDate: '2024-04-03',
 
   nitro: {
@@ -314,6 +316,22 @@ export default defineNuxtConfig({
       lg: 992,
       xl: 1248,
     },
+  },
+  ogImage: {
+    // @ts-expect-error zeroConfig exists in nuxt-og-image runtime but not in beta types
+    zeroConfig: false,
+    fonts: [
+      {
+        name: 'Marianne',
+        weight: 500,
+        path: './node_modules/@gouvfr/dsfr/dist/fonts/Marianne-Medium.woff2',
+      },
+      {
+        name: 'Marianne',
+        weight: 700,
+        path: './node_modules/@gouvfr/dsfr/dist/fonts/Marianne-Bold.woff2',
+      },
+    ],
   },
 
   sentry: {
