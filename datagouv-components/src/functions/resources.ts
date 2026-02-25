@@ -1,6 +1,7 @@
 import { readonly, type Component } from 'vue'
 
 import { RiEarthLine, RiMap2Line } from '@remixicon/vue'
+import { useComponentsConfig } from '../config'
 import Archive from '../components/Icons/Archive.vue'
 import Code from '../components/Icons/Code.vue'
 import type { Dataset, DatasetV2 } from '../types/datasets'
@@ -10,6 +11,8 @@ import Link from '../components/Icons/Link.vue'
 import Table from '../components/Icons/Table.vue'
 import type { CommunityResource, Resource } from '../types/resources'
 import { useTranslation } from '../composables/useTranslation'
+
+const config = useComponentsConfig()
 
 export function getResourceFormatIcon(format: string): Component | null {
   switch (format?.trim()?.toLowerCase()) {
@@ -154,7 +157,7 @@ export const isResourceCorsEnabled = (resource: Resource): boolean => {
   const rawMethods = extras['check:cors:allow-methods'] as string | undefined
 
   // Check if allow-origin is '*' or contains one of our trusted domains
-  const trustedDomains = ['data.gouv.fr', 'www.data.gouv.fr'] // TODO: get from config
+  const trustedDomains = config.trustedDomains
   const hasPublicCors = allowOrigin === '*'
   const hasSpecificCors = allowOrigin
     ? trustedDomains.some(domain => allowOrigin.includes(domain))
