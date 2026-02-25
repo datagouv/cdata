@@ -335,10 +335,6 @@ export default defineNuxtConfig({
       xl: 1248,
     },
   },
-  ogImage: {
-    // @ts-expect-error zeroConfig exists in nuxt-og-image runtime but not in beta types
-    zeroConfig: false,
-  },
 
   sentry: {
     sourceMapsUploadOptions: {
