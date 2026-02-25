@@ -488,7 +488,6 @@ import {
   type DatasetMetrics,
   TranslationT,
   getDescriptionShort,
-  summarize,
 } from '@datagouv/components-next'
 import {
   RiDeleteBinLine,
@@ -543,10 +542,10 @@ defineOgImage('Dataset.takumi', {
   title: dataset.value?.title,
   orgName: dataset.value?.organization?.name,
   orgLogo: dataset.value?.organization?.logo_thumbnail,
-  views: summarize(dataset.value?.metrics?.views ?? 0),
-  downloads: summarize(dataset.value?.metrics?.resources_downloads ?? 0),
-  reuses: summarize(dataset.value?.metrics?.reuses ?? 0),
-  followers: summarize(dataset.value?.metrics?.followers ?? 0),
+  views: dataset.value?.metrics?.views ?? 0,
+  downloads: dataset.value?.metrics?.resources_downloads ?? 0,
+  reuses: dataset.value?.metrics?.reuses ?? 0,
+  followers: dataset.value?.metrics?.followers ?? 0,
 })
 
 const hideWarnings = computed(() => {
