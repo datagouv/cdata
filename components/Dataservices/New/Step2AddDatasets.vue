@@ -4,7 +4,7 @@
       type="primary"
       class="mb-4 flex items-center space-x-2"
     >
-      <RiInformationLine class="shink-0 size-6" />
+      <RiInformationLine class="shrink-0 size-6" />
       <p class="w-full mb-0">
         {{ t('Il est important d’associer tous les jeux de données utilisés, car cela permet de comprendre les croisements qui ont été nécessaires et d’améliorer la visibilité de votre réutilisation.') }}
       </p>
