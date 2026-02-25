@@ -42,6 +42,19 @@
           <span>{{ $t('Créé {date}', { date: formatRelativeIfRecentDate(token.created_at) }) }}</span>
           <span v-if="token.last_used_at"> · {{ $t('Utilisé {date}', { date: formatRelativeIfRecentDate(token.last_used_at) }) }}</span>
           <span v-else> · {{ $t('Jamais utilisé') }}</span>
+          <template v-if="token.user_agents.length === 1">
+            · {{ token.user_agents[0] }}
+          </template>
+          <template v-else-if="token.user_agents.length > 1">
+            ·
+            <button
+              class="underline hover:text-gray-700"
+              type="button"
+              @click="userAgentsModalList = token.user_agents"
+            >
+              {{ $t('{n} user agents', { n: token.user_agents.length }) }}
+            </button>
+          </template>
         </div>
       </div>
       <BrandedButton
@@ -58,6 +71,23 @@
     <div class="mt-4">
       <CreateApiTokenModal @created="onTokenCreated" />
     </div>
+
+    <ModalClient
+      :opened="!!userAgentsModalList"
+      :title="$t('User agents')"
+      size="lg"
+      @close="userAgentsModalList = null"
+    >
+      <ul class="list-disc pl-5 space-y-1">
+        <li
+          v-for="(ua, i) in userAgentsModalList"
+          :key="i"
+          class="text-sm break-all"
+        >
+          {{ ua }}
+        </li>
+      </ul>
+    </ModalClient>
   </div>
 </template>
 
@@ -66,6 +96,7 @@ import { BrandedButton, CopyButton, SimpleBanner, toast, useFormatDate } from '@
 import { RiDeleteBin6Line } from '@remixicon/vue'
 import type { ApiToken, ApiTokenCreated } from '~/types/api-tokens'
 import CreateApiTokenModal from './CreateApiTokenModal.vue'
+import ModalClient from '~/components/Modal/Modal.client.vue'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
@@ -74,6 +105,7 @@ const { formatRelativeIfRecentDate } = useFormatDate()
 const tokens = ref<ApiToken[]>([])
 const newlyCreatedToken = ref<string | null>(null)
 const revoking = ref<string | null>(null)
+const userAgentsModalList = ref<string[] | null>(null)
 
 async function fetchTokens() {
   tokens.value = await $api<ApiToken[]>('/api/1/me/tokens/')
