@@ -12,6 +12,7 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
+    '@nuxt/fonts',
     'nuxt-og-image',
   ],
   devtools: { enabled: true, componentInspector: false },
@@ -308,6 +309,23 @@ export default defineNuxtConfig({
       stylistic: true,
     },
   },
+
+  fonts: {
+    families: [
+      {
+        name: 'Marianne',
+        local: 'Marianne',
+        src: './node_modules/@gouvfr/dsfr/dist/fonts/Marianne-Medium.woff2',
+        weight: 500,
+      },
+      {
+        name: 'Marianne',
+        local: 'Marianne',
+        src: './node_modules/@gouvfr/dsfr/dist/fonts/Marianne-Bold.woff2',
+        weight: 700,
+      },
+    ],
+  },
   image: {
     screens: {
       xs: 320,
@@ -320,18 +338,6 @@ export default defineNuxtConfig({
   ogImage: {
     // @ts-expect-error zeroConfig exists in nuxt-og-image runtime but not in beta types
     zeroConfig: false,
-    fonts: [
-      {
-        name: 'Marianne',
-        weight: 500,
-        path: './node_modules/@gouvfr/dsfr/dist/fonts/Marianne-Medium.woff2',
-      },
-      {
-        name: 'Marianne',
-        weight: 700,
-        path: './node_modules/@gouvfr/dsfr/dist/fonts/Marianne-Bold.woff2',
-      },
-    ],
   },
 
   sentry: {

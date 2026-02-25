@@ -97,6 +97,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
     "@nuxt/eslint": "^1.9",
+    "@nuxt/fonts": "^0.14.0",
     "@parcel/watcher": "^2.5.1",
     "@playwright/test": "^1.57.0",
     "@tailwindcss/oxide": "^4.0.15",
