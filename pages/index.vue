@@ -413,7 +413,7 @@
                     <strong>Direction Générale des Infrastructures, des Transports et des Mobilités</strong>
                   </template>
                 </TranslationT>
-                 <TranslationT
+                <TranslationT
                   v-if="platform.name === 'simplifions'"
                   tag="p"
                   class="mb-0 text-gray-silver"
