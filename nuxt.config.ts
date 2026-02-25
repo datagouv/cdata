@@ -52,6 +52,7 @@ export default defineNuxtConfig({
     albertApiKey: '',
     public: {
       baseUrl: 'https://www.data.gouv.fr/',
+      trustedDomains: ['data.gouv.fr', 'www.data.gouv.fr'],
       banner: undefined,
 
       title: 'data.gouv.fr',

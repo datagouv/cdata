@@ -45,12 +45,20 @@
       }}</span>
     </SimpleBanner>
     <SimpleBanner
+      v-else-if="error === 'cors'"
+      type="warning"
+      class="flex items-center space-x-2"
+    >
+      <RiErrorWarningLine class="shrink-0 size-6" />
+      <span>{{ t("Ce fichier PDF ne peut pas être prévisualisé car il est hébergé sur un site distant qui restreint l'accès (CORS).") }}</span>
+    </SimpleBanner>
+    <SimpleBanner
       v-else-if="error === 'network'"
       type="warning"
       class="flex items-center space-x-2"
     >
-      <RiErrorWarningLine class="flex-none size-6" />
-      <span>{{ t("Ce fichier PDF ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
+      <RiErrorWarningLine class="shrink-0 size-6" />
+      <span>{{ t("Impossible de charger l'aperçu. Vérifiez votre connexion ou l'accessibilité du fichier.") }}</span>
     </SimpleBanner>
     <SimpleBanner
       v-else-if="error"
@@ -69,8 +77,8 @@ import { RiErrorWarningLine } from '@remixicon/vue'
 import SimpleBanner from '../SimpleBanner.vue'
 import { useComponentsConfig } from '../../config'
 import type { Resource } from '../../types/resources'
+import { getResourceFilesize, getResourceCorsStatus } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
-import { getResourceFilesize } from '../../functions/datasets'
 
 const PDF = defineAsyncComponent(() =>
   import('pdf-vue3').then((module) => {
@@ -92,28 +100,36 @@ const fileTooLarge = ref(false)
 
 const fileSizeBytes = computed(() => getResourceFilesize(props.resource))
 
-const shouldLoadPdf = computed(() => {
-  const size = fileSizeBytes.value
-  if (!size) {
-    // If we don't know the size, don't risk loading a potentially huge file
-    return false
-  }
+const corsStatus = computed(() => getResourceCorsStatus(props.resource))
 
+const isSizeAllowed = computed(() => {
+  const size = fileSizeBytes.value
   // Use maxPdfPreviewByteSize from config, fallback to 10 MB if not set
   const maxByteSize = config.maxPdfPreviewByteSize ?? 10_000_000
+
+  // If we don't know the size, don't risk loading a potentially huge file
+  if (!size) return false
+
   return size <= maxByteSize
 })
 
 const loadPdf = async () => {
-  // Check if file is too large or size is unknown before loading
-  if (!shouldLoadPdf.value) {
+  error.value = null
+  fileTooLarge.value = false
+
+  // Check if file is too large or size is unknown
+  if (!isSizeAllowed.value) {
     fileTooLarge.value = true
     return
   }
 
-  loading.value = true
-  error.value = null
+  // Check if CORS is allowed
+  if (corsStatus.value === 'blocked') {
+    error.value = 'cors'
+    return
+  }
 
+  loading.value = true
   try {
     // Test if the PDF URL is accessible
     const response = await fetch(props.resource.url, { method: 'HEAD' })

@@ -7,9 +7,8 @@ import DescriptionTerm from '../DescriptionTerm.vue'
 import { useFormatDate } from '../../functions/dates'
 import { filesize } from '../../functions/helpers'
 import ExtraAccordion from '../ExtraAccordion.vue'
-import { getResourceTitleId, getResourceLabel } from '../../functions/resources'
+import { getResourceTitleId, getResourceLabel, getResourceFilesize } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
-import { getResourceFilesize } from '../../functions/datasets'
 
 const props = defineProps<{
   resource: Resource

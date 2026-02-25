@@ -29,12 +29,20 @@
       }}</span>
     </SimpleBanner>
     <SimpleBanner
+      v-else-if="error === 'cors'"
+      type="warning"
+      class="flex items-center space-x-2"
+    >
+      <RiErrorWarningLine class="shrink-0 size-6" />
+      <span>{{ t("Ce fichier JSON ne peut pas être prévisualisé car il est hébergé sur un site distant qui restreint l'accès (CORS).") }}</span>
+    </SimpleBanner>
+    <SimpleBanner
       v-else-if="error === 'network'"
       type="warning"
       class="flex items-center space-x-2"
     >
       <RiErrorWarningLine class="shrink-0 size-6" />
-      <span>{{ t("Ce fichier JSON ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
+      <span>{{ t("Impossible de charger l'aperçu. Vérifiez votre connexion ou l'accessibilité du fichier.") }}</span>
     </SimpleBanner>
     <SimpleBanner
       v-else-if="error"
@@ -54,8 +62,8 @@ import { RiErrorWarningLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../../config'
 import SimpleBanner from '../SimpleBanner.vue'
 import type { Resource } from '../../types/resources'
+import { getResourceFilesize, getResourceCorsStatus } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
-import { getResourceFilesize } from '../../functions/datasets'
 
 const JsonViewer = defineAsyncComponent(() =>
   import('vue3-json-viewer').then((module) => {
@@ -79,36 +87,37 @@ const fileTooLarge = ref(false)
 
 const fileSizeBytes = computed(() => getResourceFilesize(props.resource))
 
-const shouldLoadJson = computed(() => {
+const corsStatus = computed(() => getResourceCorsStatus(props.resource))
+
+const isSizeAllowed = computed(() => {
   const size = fileSizeBytes.value
-  if (!size) {
-    // If we don't know the size, don't risk loading a potentially huge file
-    return false
-  }
-
-  // Check if maxJsonPreviewCharSize is configured
-  if (!config.maxJsonPreviewCharSize) {
-    // If no limit is set, don't load unknown files
-    return false
-  }
-
   // Convert maxJsonPreviewCharSize from characters to bytes (rough estimate)
   // Assuming average 1 byte per character for JSON
   const maxByteSize = config.maxJsonPreviewCharSize
+
+  // If we don't know the size or the max size, don't risk loading a potentially huge file
+  if (!size || !maxByteSize) return false
 
   return size <= maxByteSize
 })
 
 const fetchJsonData = async () => {
-  // Check if file is too large or size is unknown before making the request
-  if (!shouldLoadJson.value) {
+  error.value = null
+  fileTooLarge.value = false
+
+  // Check if file is too large or size is unknown
+  if (!isSizeAllowed.value) {
     fileTooLarge.value = true
     return
   }
 
-  loading.value = true
-  error.value = null
+  // Check if CORS is allowed
+  if (corsStatus.value === 'blocked') {
+    error.value = 'cors'
+    return
+  }
 
+  loading.value = true
   try {
     const response = await fetch(props.resource.url)
     // const response = await fetch('/test-data.json') // For testing locally without CORS issues
