@@ -324,6 +324,7 @@ const platformLinks: Array<Link> = [
 ]
 
 const resourcesLinks: Array<Link> = [
+  { label: 'simplifions.data.gouv.fr', link: 'https://simplifions.data.gouv.fr' },
   { label: 'meteo.data.gouv.fr', link: 'https://meteo.data.gouv.fr' },
   { label: 'transport.data.gouv.fr', link: 'https://transport.data.gouv.fr' },
   { label: 'ecologie.data.gouv.fr', link: 'https://ecologie.data.gouv.fr' },
