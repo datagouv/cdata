@@ -149,9 +149,13 @@ export function getResourceFilesize(resource: Resource): null | number {
   return null
 }
 
-export const isResourceCorsEnabled = (resource: Resource): boolean => {
+type CorsStatus = 'allowed' | 'blocked' | 'unknown'
+
+export const getResourceCorsStatus = (resource: Resource): CorsStatus => {
   const extras = resource.extras
-  if (!extras) return false
+  if (!extras || !('check:cors:allow-origin' in extras)) {
+    return 'unknown'
+  }
 
   const allowOrigin = extras['check:cors:allow-origin'] as string | undefined
   const rawMethods = extras['check:cors:allow-methods'] as string | undefined
@@ -171,5 +175,5 @@ export const isResourceCorsEnabled = (resource: Resource): boolean => {
     : []
   const supportsGet = allowedMethods.length === 0 || allowedMethods.includes('GET')
 
-  return isOriginAllowed && supportsGet
+  return isOriginAllowed && supportsGet ? 'allowed' : 'blocked'
 }

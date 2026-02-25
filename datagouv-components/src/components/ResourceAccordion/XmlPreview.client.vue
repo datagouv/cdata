@@ -54,7 +54,7 @@ import { RiErrorWarningLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../../config'
 import SimpleBanner from '../SimpleBanner.vue'
 import type { Resource } from '../../types/resources'
-import { getResourceFilesize, isResourceCorsEnabled } from '../../functions/resources'
+import { getResourceFilesize, getResourceCorsStatus } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
 import '../../types/vue3-xml-viewer.d'
 
@@ -78,7 +78,7 @@ const fileTooLarge = ref(false)
 
 const fileSizeBytes = computed(() => getResourceFilesize(props.resource))
 
-const isCorsAllowed = computed(() => isResourceCorsEnabled(props.resource))
+const corsStatus = computed(() => getResourceCorsStatus(props.resource))
 
 const isSizeAllowed = computed(() => {
   const size = fileSizeBytes.value
@@ -103,7 +103,7 @@ const fetchXmlData = async () => {
   }
 
   // Check if CORS is allowed
-  if (!isCorsAllowed.value) {
+  if (corsStatus.value === 'blocked') {
     error.value = 'cors'
     return
   }
