@@ -150,13 +150,8 @@ export const isResourceCorsEnabled = (resource: Resource): boolean => {
   const extras = resource.extras
   if (!extras) return false
 
-  const status = extras['check:status'] as number | undefined
   const allowOrigin = extras['check:cors:allow-origin'] as string | undefined
   const rawMethods = extras['check:cors:allow-methods'] as string | undefined
-
-  // Verify the last check was successful (HTTP 200)
-  const isHealthy = status === 200
-  if (!isHealthy) return false
 
   // Check if allow-origin is '*' or contains one of our trusted domains
   const trustedDomains = ['data.gouv.fr', 'www.data.gouv.fr'] // TODO: get from config
