@@ -28,7 +28,7 @@
     <div
       v-for="token in tokens"
       :key="token.id"
-      class="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0"
+      class="flex items-center justify-between gap-4 py-3 border-b border-gray-200 last:border-b-0"
     >
       <div class="min-w-0">
         <div class="text-sm truncate">
@@ -61,16 +61,43 @@
         color="danger"
         size="xs"
         :icon="RiDeleteBin6Line"
-        :loading="revoking === token.id"
         :disabled="!!revoking"
         icon-only
-        @click="revokeToken(token)"
+        @click="tokenToRevoke = token"
       />
     </div>
 
     <div class="mt-4">
       <CreateApiTokenModal @created="onTokenCreated" />
     </div>
+
+    <ModalClient
+      :opened="!!tokenToRevoke"
+      :title="$t('Révoquer ce token ?')"
+      size="lg"
+      @close="tokenToRevoke = null"
+    >
+      {{ $t('Le token {name} sera définitivement révoqué. Les applications qui l\'utilisent ne pourront plus accéder à l\'API.', { name: tokenToRevoke?.name || `${tokenToRevoke?.token_prefix}…` }) }}
+      <template #footer>
+        <div class="w-full flex justify-end gap-2">
+          <BrandedButton
+            color="secondary"
+            :disabled="!!revoking"
+            @click="tokenToRevoke = null"
+          >
+            {{ $t('Annuler') }}
+          </BrandedButton>
+          <BrandedButton
+            color="danger"
+            :icon="RiDeleteBin6Line"
+            :loading="!!revoking"
+            @click="revokeToken(tokenToRevoke!)"
+          >
+            {{ $t('Révoquer') }}
+          </BrandedButton>
+        </div>
+      </template>
+    </ModalClient>
 
     <ModalClient
       :opened="!!userAgentsModalList"
@@ -105,6 +132,7 @@ const { formatRelativeIfRecentDate } = useFormatDate()
 const tokens = ref<ApiToken[]>([])
 const newlyCreatedToken = ref<string | null>(null)
 const revoking = ref<string | null>(null)
+const tokenToRevoke = ref<ApiToken | null>(null)
 const userAgentsModalList = ref<string[] | null>(null)
 
 async function fetchTokens() {
@@ -123,6 +151,7 @@ async function revokeToken(token: ApiToken) {
       method: 'DELETE',
     })
     toast.success(t('Token révoqué.'))
+    tokenToRevoke.value = null
     await fetchTokens()
   }
   finally {
