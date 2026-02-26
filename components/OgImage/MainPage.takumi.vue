@@ -22,7 +22,7 @@ const uri = computed(() => props.uri.replace(/^\/+/, ''))
         {{ title }}
       </h1>
       <div
-        style="font-family: 'Inconsolata'"
+        style="font-family: 'Inconsolata';"
         class="font-light text-6xl"
       >
         <span class="text-[#9FC3FC]">data.gouv.fr/</span><span class="text-[#272747]">{{ uri }}</span>

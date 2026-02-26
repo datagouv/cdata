@@ -538,7 +538,7 @@ useSeoMeta({
   description,
 })
 
-defineOgImage('Dataset.takumi', {
+defineOgImage('ObjectPage.takumi', {
   title: dataset.value?.title,
   orgName: dataset.value?.organization?.name,
   orgLogo: dataset.value?.organization?.logo_thumbnail,
