@@ -12,7 +12,7 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart, BarChart, type BarSeriesOption, type LineSeriesOption } from 'echarts/charts'
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { computed } from 'vue'
+import { computed, watchEffect } from 'vue'
 import { summarize } from '../../functions/helpers'
 import type { Chart, DataSeries, XAxis, YAxis, ChartForm } from '../../types/visualizations'
 
@@ -45,27 +45,47 @@ function buildYAxisFormatter(yAxis: YAxis): ((value: number) => string) | undefi
 }
 
 const echartsOption = computed(() => {
-  if (!props.chart.series || props.chart.series.length === 0) return
+  const seriesCount = props.chart.series.length
+  if (!props.chart.series || seriesCount === 0) return
 
   // Create series configuration with data mapping
-  const series = (props.chart.series).map((s) => {
+  const { data, series } = props.chart.series.map((s) => {
     const xColumn = s.column_x_name_override ?? props.chart.x_axis.column_x
     const yColumn = s.aggregate_y ? `${s.column_y}__${s.aggregate_y}` : s.column_y
+    // const sortColumn = xColumn && props.chart.x_axis.sort_x_by && (props.chart.x_axis.sort_x_by === 'axis_x' || yColumn) ? {
+    // 'axis_x': xColumn,
+    // 'axis_y': yColumn
+    // }[props.chart.x_axis.sort_x_by] : undefined
     return {
-      type: mapSeriesType(s.type),
-      dimensions: s.aggregate_y ? [xColumn, yColumn] : props.series.columns[s.resource_id],
-      name: s.column_y,
-      encode: {
-        x: xColumn,
-        y: yColumn,
+      series: {
+        type: mapSeriesType(s.type),
+        dimensions: s.aggregate_y ? [xColumn, yColumn] : props.series.columns[s.resource_id],
+        name: s.column_y,
+        encode: {
+          x: xColumn,
+          y: yColumn,
+        },
+        // datasetIndex: props.chart.x_axis.sort_x_by ? seriesCount + i : i,
+      },
+      data: {
+        source: props.series.data[s.resource_id],
+        // dimensions: s.aggregate_y ? [xColumn, yColumn] : props.series.columns[s.resource_id],
+        // transform: sortColumn ? {
+        //  type: 'sort',
+        //  config: { dimension: xColumn, order: props.chart.x_axis.sort_x_direction }
+        // } : {},
       },
     }
+  }).reduce((acc, curr) => {
+    acc.series.push(curr.series)
+    acc.data.push(curr.data)
+    return acc
+  }, {
+    series: [],
+    data: [],
   })
-  const sources = Object.values(props.series.data).map(data => ({
-    source: data,
-  }))
   return {
-    dataset: sources,
+    dataset: data,
     title: {
       text: props.chart.title,
       left: 'center',

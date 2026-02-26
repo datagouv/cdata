@@ -11,16 +11,19 @@ export type TabularDataResponse = {
   meta: { total: number }
 }
 
+export type TabularAggregateType = 'avg' | 'sum' | 'count' | 'min' | 'max'
+
 export type FetchTabularDataOptions = {
   resourceId: string
   page?: number
   pageSize?: number
+  columns?: Array<string> | undefined
   sort?: SortConfig
-  groupBy?: string
+  groupBy?: string | undefined
   aggregation?: {
     column: string
-    type: 'svg' | 'avg' | 'sum' | 'count' | 'min' | 'max'
-  }
+    type: TabularAggregateType
+  } | undefined
 }
 
 export type TabularProfileResponse = {
@@ -72,6 +75,9 @@ export async function fetchTabularData(config: PluginConfig, options: FetchTabul
   const page = options.page ?? 1
   const pageSize = options.pageSize ?? config.tabularApiPageSize ?? 15
   let url = `${config.tabularApiUrl}/api/resources/${options.resourceId}/data/?page=${page}&page_size=${pageSize}`
+  if (options.columns) {
+    url += `&columns=${options.columns.join(',')}`
+  }
   if (options.sort) {
     url += `&${options.sort.column}__sort=${options.sort.type}`
   }
