@@ -32,7 +32,7 @@
       :links="[
         { href: '/admin/site/edito/datasets', label: t('Jeux de données') },
         { href: '/admin/site/edito/reuses', label: t('Réutilisations') },
-        { href: '/admin/site/edito/dataservices', label: t('APIs') },
+        { href: '/admin/site/edito/dataservices', label: t('API') },
       ]"
     />
 

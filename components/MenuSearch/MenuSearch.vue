@@ -126,7 +126,7 @@ const menu = computed(() => {
     },
     {
       icon: RiRobot2Line,
-      type: t('APIs'),
+      type: t('API'),
       to: {
         path: '/dataservices/search',
         query: { q: query.value.trim() },

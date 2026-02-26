@@ -595,7 +595,7 @@ const typesMeta = {
   },
   dataservices: {
     icon: RiRobot2Line,
-    name: t('APIs'),
+    name: t('API'),
     results: dataservicesResults,
     status: dataservicesStatus,
   },

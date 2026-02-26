@@ -21,10 +21,10 @@ export function useContentBlocsTypes() {
     },
     DataservicesListBloc: {
       icon: RiRobot2Line,
-      name: t('APIs à la une'),
-      description: t('Mettre en avant jusqu\'à 4 APIs'),
+      name: t('API à la une'),
+      description: t('Mettre en avant jusqu\'à 4 API'),
       component: DataservicesListBlocComponent,
-      default: (): Omit<DataservicesListBloc, 'id'> => ({ class: 'DataservicesListBloc', title: t('Mes APIs'), subtitle: null, dataservices: [] }),
+      default: (): Omit<DataservicesListBloc, 'id'> => ({ class: 'DataservicesListBloc', title: t('Mes API'), subtitle: null, dataservices: [] }),
     },
     ReusesListBloc: {
       icon: RiLineChartLine,

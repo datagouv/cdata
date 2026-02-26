@@ -1,6 +1,6 @@
 <template>
   <SiteEditoPage
-    :label="$t('APIs')"
+    :label="$t('API')"
     site-key="dataservices_page"
     public-page="/dataservices"
   />
