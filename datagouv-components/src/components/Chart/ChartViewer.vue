@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { use, type ComposeOption } from 'echarts/core'
+import { format, use, type ComposeOption } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart, BarChart, type BarSeriesOption, type LineSeriesOption } from 'echarts/charts'
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent } from 'echarts/components'
@@ -72,6 +72,16 @@ const echartsOption = computed(() => {
     },
     tooltip: {
       trigger: 'axis',
+      formatter: (params) => {
+        let tooltip = ''
+        for (const param of params) {
+          const keys = Object.keys(param.value)
+          const col = keys.find(key => key.startsWith(param.seriesName))!
+          const formatter = new Intl.NumberFormat('fr-FR')
+          tooltip += `${format.encodeHTML(param.axisValueLabel)}: <strong>${formatter.format(param.value[col])}</strong><br>`
+        }
+        return tooltip
+      },
     },
     legend: {
       bottom: 0,
