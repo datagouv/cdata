@@ -48,7 +48,7 @@ const series = reactive<{
 })
 
 // Fetch data for all series
-const fetchSeriesData = async () => {
+async function fetchSeriesData() {
   status.value = 'pending'
   error.value = null
 
@@ -69,6 +69,11 @@ const fetchSeriesData = async () => {
           resourceId: serie.resource_id,
           page: 1,
           pageSize: 100,
+          groupBy: serie.column_x_name_override ?? chart.value.x_axis.column_x,
+          aggregation: {
+            column: serie.column_y,
+            type: serie.aggregate_y,
+          },
         }),
       }
     })

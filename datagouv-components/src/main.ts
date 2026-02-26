@@ -120,6 +120,7 @@ export * from './functions/resources'
 export * from './functions/reuses'
 export * from './functions/schemas'
 export * from './functions/users'
+export * from './functions/tabularApi'
 export * from './types/access_types'
 
 export type {
