@@ -90,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { RiArrowRightSLine, RiDatabase2Line, RiBuilding2Line, RiLineChartLine, RiRobot2Line, RiSearchLine } from '@remixicon/vue'
+import { RiArrowRightSLine, RiDatabase2Line, RiBuilding2Line, RiLineChartLine, RiTerminalLine, RiSearchLine } from '@remixicon/vue'
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions, TransitionRoot } from '@headlessui/vue'
 import type { Component } from 'vue'
 import { TranslationT } from '@datagouv/components-next'
@@ -125,7 +125,7 @@ const menu = computed(() => {
       },
     },
     {
-      icon: RiRobot2Line,
+      icon: RiTerminalLine,
       type: t('API'),
       to: {
         path: '/dataservices/search',
