@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 import toml from './rollup-plugin-smol-toml'
 
 const nbSitemapsDatasets = 10
+const isFrenchGovernment = true
 // const swrDuration = process.env.NUXT_TEMPLATE_CACHE_DURATION ? parseInt(process.env.NUXT_TEMPLATE_CACHE_DURATION) : 60
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -40,7 +41,7 @@ export default defineNuxtConfig({
   },
 
   appConfig: {
-    isFrenchGovernment: true,
+    isFrenchGovernment,
     commitId: process.env.NUXT_APP_COMMIT_ID || 'unknown',
   },
 
@@ -312,13 +313,15 @@ export default defineNuxtConfig({
 
   fonts: {
     families: [
-      {
-        name: 'Marianne',
-        provider: 'local',
-        weights: [300, 400, 500, 700, 800],
-        global: true,
-      },
-      { name: 'Inconsolata', provider: 'google', weights: [300], global: true },
+      ...isFrenchGovernment
+        ? [{
+            name: 'Marianne',
+            provider: 'local' as const,
+            weights: [300, 400, 500, 700, 800],
+            global: true,
+          }]
+        : [],
+      { name: 'Inconsolata', provider: 'google' as const, weights: [300], global: true },
       {
         name: 'Spectral',
         provider: 'local',
