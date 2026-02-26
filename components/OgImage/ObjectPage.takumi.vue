@@ -38,11 +38,11 @@ const {
     <div class="gap-[12px] flex flex-col">
       <div
         v-if="orgLogo"
-        class="flex items-center justify-center rounded-lg border border-gray-200 size-25 p-2.5"
+        class="flex items-center justify-center rounded-lg border border-gray-200 size-25 p-2.5 mb-3"
       >
         <img
           :src="orgLogo"
-          class="max-w-20 max-h-20 object-contain"
+          class="size-25 object-contain"
         >
       </div>
       <div
@@ -56,17 +56,18 @@ const {
       </div>
       <p
         v-if="orgName || ownerName"
-        class="text-5xl font-extrabold text-[#161616]"
+        class="text-4xl font-extrabold text-[#161616] leading-tight text-balance"
+        style="line-clamp: 2; text-overflow: ellipsis; overflow: hidden"
       >
         {{ orgName || ownerName }}
       </p>
       <h1
-        class="text-6xl font-light leading-tight overflow-hidden text-[#161616]"
-        style="line-clamp: 2; text-overflow: ellipsis;"
+        class="text-6xl font-light text-[#161616] leading-tight text-balance"
+        style="line-clamp: 2; text-overflow: ellipsis; overflow: hidden"
       >
         {{ title }}
       </h1>
-      <div class="flex items-center gap-[32px] mt-6">
+      <div class="flex items-center gap-[32px]">
         <div
           v-if="views !== undefined"
           class="flex items-center gap-[8px]"
