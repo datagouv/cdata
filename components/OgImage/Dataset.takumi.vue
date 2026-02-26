@@ -46,13 +46,14 @@ const {
       </div>
       <p
         v-if="orgName"
-        class="text-[32px] font-bold mb-2 text-[#000091] font-['Marianne']"
+        class="text-[32px] font-bold mb-2 text-[#000091]"
+        style="font-family: 'MarianneBold'"
       >
         {{ orgName }}
       </p>
       <h1
-        class="text-[60px] font-medium leading-tight overflow-hidden text-[#161616] font-['Marianne']"
-        style="line-clamp: 2; text-overflow: ellipsis;"
+        class="text-[60px] font-medium leading-tight overflow-hidden text-[#161616]"
+        style="font-family: 'MarianneMedium'; line-clamp: 2; text-overflow: ellipsis;"
       >
         {{ title }}
       </h1>
@@ -65,28 +66,40 @@ const {
           size="32"
           color="#000091"
         />
-        <span class="text-[24px] font-bold text-[#000091]">{{ summarize(views) }}</span>
+        <span
+          class="text-[24px] font-bold text-[#000091]"
+          style="font-family: 'MarianneBold'"
+        >{{ summarize(views) }}</span>
       </div>
       <div class="flex items-center gap-[4px]">
         <RiDownloadLine
           size="32"
           color="#000091"
         />
-        <span class="text-[24px] font-bold text-[#000091]">{{ summarize(downloads) }}</span>
+        <span
+          class="text-[24px] font-bold text-[#000091]"
+          style="font-family: 'MarianneBold'"
+        >{{ summarize(downloads) }}</span>
       </div>
       <div class="flex items-center gap-[4px]">
         <RiLineChartLine
           size="32"
           color="#000091"
         />
-        <span class="text-[24px] font-bold text-[#000091]">{{ summarize(reuses) }}</span>
+        <span
+          class="text-[24px] font-bold text-[#000091]"
+          style="font-family: 'MarianneBold'"
+        >{{ summarize(reuses) }}</span>
       </div>
       <div class="flex items-center gap-[4px]">
         <RiStarLine
           size="32"
           color="#000091"
         />
-        <span class="text-[24px] font-bold text-[#000091]">{{ summarize(followers) }}</span>
+        <span
+          class="text-[24px] font-bold text-[#000091]"
+          style="font-family: 'MarianneBold'"
+        >{{ summarize(followers) }}</span>
       </div>
     </div>
   </div>

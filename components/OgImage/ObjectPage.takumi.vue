@@ -32,7 +32,7 @@ const {
 <template>
   <div
     class="flex flex-col justify-between w-full h-full bg-white p-12"
-    style="font-family: 'Marianne'"
+    style="font-family: 'MarianneRegular'"
   >
     <img
       src="/nuxt_images/logo_horizontal.svg"
@@ -62,14 +62,14 @@ const {
         v-if="orgName || ownerName"
         :class="objectTitle ? 'text-4xl' : 'text-[60px]'"
         class="font-extrabold text-[#161616] leading-tight text-balance"
-        style="line-clamp: 2; text-overflow: ellipsis; overflow: hidden"
+        style="font-family: 'MarianneExtraBold'; line-clamp: 2; text-overflow: ellipsis; overflow: hidden"
       >
         {{ orgName || ownerName }}
       </p>
       <h1
         v-if="objectTitle"
         class="text-6xl font-light text-[#161616] leading-tight text-balance mb-3"
-        style="line-clamp: 2; text-overflow: ellipsis; overflow: hidden"
+        style="font-family: 'MarianneLight'; line-clamp: 2; text-overflow: ellipsis; overflow: hidden"
       >
         {{ objectTitle }}
       </h1>

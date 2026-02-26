@@ -10,7 +10,7 @@
     >
     <h1
       class="text-7xl/tight font-light text-[#161616]"
-      style="font-family: 'Marianne'"
+      style="font-family: 'MarianneLight'"
     >
       La plateforme des données publiques françaises
     </h1>

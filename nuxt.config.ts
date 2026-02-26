@@ -314,17 +314,32 @@ export default defineNuxtConfig({
   fonts: {
     families: [
       ...isFrenchGovernment
-        ? [{
-            name: 'Marianne',
-            provider: 'local' as const,
-            weights: [300, 400, 500, 700, 800],
-            global: true,
-          }]
+        ? [
+            { name: 'Marianne', provider: 'local' as const, global: true },
+            // Workaround: nuxt-og-image Takumi renderer ignores font-weight and always uses
+            // the first loaded font for a family. We declare each weight as a separate family
+            // so the correct weight is used in OG image templates.
+            { name: 'MarianneLight', provider: 'none' as const, weight: 300, global: true, src: [
+              { url: '/fonts/Marianne-300.woff2', format: 'woff2' },
+            ] },
+            { name: 'MarianneRegular', provider: 'none' as const, weight: 400, global: true, src: [
+              { url: '/fonts/Marianne-400.woff2', format: 'woff2' },
+            ] },
+            { name: 'MarianneMedium', provider: 'none' as const, weight: 500, global: true, src: [
+              { url: '/fonts/Marianne-500.woff2', format: 'woff2' },
+            ] },
+            { name: 'MarianneBold', provider: 'none' as const, weight: 700, global: true, src: [
+              { url: '/fonts/Marianne-700.woff2', format: 'woff2' },
+            ] },
+            { name: 'MarianneExtraBold', provider: 'none' as const, weight: 800, global: true, src: [
+              { url: '/fonts/Marianne-800.woff2', format: 'woff2' },
+            ] },
+          ]
         : [],
       { name: 'Inconsolata', provider: 'google' as const, weights: [300], global: true },
       {
         name: 'Spectral',
-        provider: 'local',
+        provider: 'none',
         weights: [600],
         styles: ['italic'],
         global: true,
@@ -335,7 +350,7 @@ export default defineNuxtConfig({
       },
       {
         name: 'URW Gothic',
-        provider: 'local',
+        provider: 'none',
         weights: [600],
         global: true,
         src: [
