@@ -319,8 +319,27 @@ export default defineNuxtConfig({
         global: true,
       },
       { name: 'Inconsolata', provider: 'google', weights: [300], global: true },
-      { name: 'Spectral', provider: 'local', weights: [600], styles: ['italic'], global: true },
-      { name: 'URW Gothic', provider: 'local', weights: [600], global: true },
+      {
+        name: 'Spectral',
+        provider: 'local',
+        weights: [600],
+        styles: ['italic'],
+        global: true,
+        src: [
+          { url: '/fonts/Spectral-SemiBoldItalic.woff2', format: 'woff2' },
+          { url: '/fonts/Spectral-SemiBoldItalic.woff', format: 'woff' },
+        ],
+      },
+      {
+        name: 'URW Gothic',
+        provider: 'local',
+        weights: [600],
+        global: true,
+        src: [
+          { url: '/fonts/URWGothic-SemiBold.woff2', format: 'woff2' },
+          { url: '/fonts/URWGothic-SemiBold.woff', format: 'woff' },
+        ],
+      },
     ],
   },
   image: {
