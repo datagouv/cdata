@@ -314,19 +314,9 @@ export default defineNuxtConfig({
     families: [
       {
         name: 'Marianne',
-        src: [
-          { name: 'Marianne' },
-          './node_modules/@gouvfr/dsfr/dist/fonts/Marianne-Medium.woff2',
-        ],
-        weight: 500,
-      },
-      {
-        name: 'Marianne',
-        src: [
-          { name: 'Marianne' },
-          './node_modules/@gouvfr/dsfr/dist/fonts/Marianne-Bold.woff2',
-        ],
-        weight: 700,
+        provider: 'local',
+        weights: [300, 500, 700],
+        global: true,
       },
     ],
   },
