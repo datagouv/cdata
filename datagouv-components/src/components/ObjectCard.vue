@@ -16,7 +16,7 @@
           <slot name="media" />
         </div>
       </div>
-      <div class="flex-1 overflow-hidden">
+      <div class="flex-1 overflow-hidden space-y-1">
         <slot />
       </div>
     </div>
