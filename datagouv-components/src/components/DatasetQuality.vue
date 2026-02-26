@@ -1,20 +1,26 @@
 <template>
-  <div class="flex items-center">
-    <Toggletip
-      :button-props="{ class: '-ml-2 mt-px', title: t('Qualité des métadonnées') }"
-    >
-      <template #toggletip>
-        <DatasetQualityTooltipContent :quality />
-      </template>
-    </Toggletip>
-    <div class="text-sm text-gray-plain font-bold">
-      {{ t('Qualité des métadonnées:') }}
-    </div>
-  </div>
-  <DatasetQualityScore
-    :score="quality.score"
-    class="w-full"
-  />
+  <Toggletip
+    :styled-button="false"
+    button-class="flex flex-col gap-1 rounded-sm p-1.5 -m-1.5 border-transparent -outline-offset-2 hover:bg-gray-some transition-colors w-full text-left"
+    :button-props="{ title: t('Qualité des métadonnées') }"
+  >
+    <span class="flex items-center gap-1">
+      <RiInformationLine
+        class="size-5 shrink-0"
+        aria-hidden="true"
+      />
+      <span class="text-sm text-gray-plain font-bold">
+        {{ t('Qualité des métadonnées:') }}
+      </span>
+    </span>
+    <DatasetQualityScore
+      :score="quality.score"
+      class="w-full"
+    />
+    <template #toggletip>
+      <DatasetQualityTooltipContent :quality />
+    </template>
+  </Toggletip>
   <template v-if="!hideWarnings">
     <ul class="list-none pl-0">
       <DatasetQualityItemWarning
@@ -54,6 +60,7 @@
 </template>
 
 <script setup lang="ts">
+import { RiInformationLine } from '@remixicon/vue'
 import type { Quality } from '../types/datasets'
 import DatasetQualityItemWarning from './DatasetQualityItemWarning.vue'
 import DatasetQualityScore from './DatasetQualityScore.vue'
