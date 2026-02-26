@@ -22,7 +22,7 @@ import { reactive, ref, watch } from 'vue'
 import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
 import { useComponentsConfig } from '../../config'
-import { fetchTabularData, useGetProfile } from '../../functions/tabularApi'
+import { fetchTabularData, useGetProfile, type TabularDataResponse, type TabularProfileResponse } from '../../functions/tabularApi'
 import type { Chart, ChartForm } from '../../types/visualizations'
 
 const chart = defineModel<Chart | ChartForm>({ required: true })
@@ -47,8 +47,7 @@ const series = reactive<{
   columns: {},
 })
 
-// Fetch data for all series
-async function fetchSeriesData() {
+async function fetchSeriesProfile() {
   status.value = 'pending'
   error.value = null
 
@@ -62,21 +61,76 @@ async function fetchSeriesData() {
 
     // Fetch data for all series in parallel
     const fetchPromises = chart.value.series.map(async (serie) => {
+      if (!serie.resource_id) return
+      return {
+        id: serie.resource_id,
+        profile: await getProfile(serie.resource_id),
+      }
+    }).filter(Boolean) as Array<Promise<{
+      id: string
+      profile: TabularProfileResponse
+    }>>
+
+    const results = (await Promise.allSettled(fetchPromises))
+      .filter(r => r.status === 'fulfilled')
+      .map(r => r.value)
+    series.columns = Object.fromEntries(results.map(result => [
+      result.id,
+      result.profile.profile.header,
+    ]))
+    if (results.length > 0) {
+      const columns = results[0]?.profile.profile.header ?? []
+      const firstColumn = columns.filter(c => c !== '__id')[0]
+      if (!chart.value.x_axis.column_x && firstColumn) {
+        chart.value.x_axis.column_x = firstColumn
+      }
+    }
+    status.value = 'success'
+  }
+  catch (err) {
+    error.value = err instanceof Error ? err : new Error('Failed to fetch series profile')
+    status.value = 'error'
+    console.log(err)
+    series.columns = {}
+  }
+}
+
+async function fetchSeriesData() {
+  status.value = 'pending'
+  error.value = null
+
+  try {
+    if (chart.value.series.length === 0 || !chart.value.x_axis.column_x) {
+      status.value = 'success'
+      series.data = {}
+      return
+    }
+
+    // Fetch data for all series in parallel
+    const fetchPromises = chart.value.series.map(async (serie) => {
+      const xColumn = serie.column_x_name_override ?? chart.value.x_axis.column_x
+      if (!xColumn || !serie.resource_id || !serie.column_y) return
       return {
         id: serie.resource_id,
         profile: await getProfile(serie.resource_id),
         data: await fetchTabularData(config, {
+          columns: serie.aggregate_y ? undefined : [xColumn, serie.column_y],
           resourceId: serie.resource_id,
           page: 1,
           pageSize: 100,
-          groupBy: serie.column_x_name_override ?? chart.value.x_axis.column_x,
-          aggregation: {
-            column: serie.column_y,
-            type: serie.aggregate_y,
-          },
+          groupBy: xColumn,
+          aggregation: serie.column_y && serie.aggregate_y
+            ? {
+                column: serie.column_y,
+                type: serie.aggregate_y,
+              }
+            : undefined,
         }),
       }
-    })
+    }).filter(Boolean) as Array<Promise<{
+      id: string
+      data: TabularDataResponse
+    }>>
 
     const results = (await Promise.allSettled(fetchPromises))
       .filter(r => r.status === 'fulfilled')
@@ -86,30 +140,22 @@ async function fetchSeriesData() {
       result.id,
       result.data.data,
     ]))
-    series.columns = Object.fromEntries(results.map(result => [
-      result.id,
-      result.profile.profile.header,
-    ]))
-    if (results.length > 0) {
-      const columns = Object.keys(results[0]?.data.data[0] ?? [])
-      const firstColumn = columns.filter(c => c !== '__id')[0]
-      if (!chart.value.x_axis.column_x && firstColumn) {
-        chart.value.x_axis.column_x = firstColumn
-      }
-    }
     status.value = 'success'
   }
   catch (err) {
     error.value = err instanceof Error ? err : new Error('Failed to fetch series data')
     status.value = 'error'
-    console.log(err)
     series.data = {}
-    series.columns = {}
   }
 }
 
 // Watch for changes in the chart or its series
 watch(() => chart.value.series, async () => {
+  await fetchSeriesProfile()
+}, { immediate: true, deep: true })
+
+// Watch for changes in the chart or its series
+watch([() => chart.value.series, () => chart.value.x_axis.column_x], async () => {
   await fetchSeriesData()
 }, { immediate: true, deep: true })
 

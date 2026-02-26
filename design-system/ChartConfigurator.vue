@@ -235,7 +235,7 @@
             <select
               id="y-axis-unit-position"
               v-model="form.yAxisUnitPosition"
-              class="w-full fr-input"
+              class="w-full fr-select"
             >
               <option value="suffix">
                 Suffixe
@@ -373,8 +373,10 @@ const dummyDataset = { id: '6170ae10981edd7b132f28a0', title: 'Logements et loge
 const dummySerie: DataSeries = {
   type: 'histogram',
   column_y: 'Nombre de logements',
-  aggregate_y: 'sum',
+  aggregate_y: null,
   resource_id: '14dba482-41e3-4c54-b82a-d8c11d1d80eb',
+  filters: null,
+  column_x_name_override: null,
 }
 
 onMounted(() => {

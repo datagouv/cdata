@@ -1,3 +1,4 @@
+import type { TabularAggregateType } from '../functions/tabularApi'
 import type { Owned, OwnedWithId } from './owned'
 
 // Filter types
@@ -24,8 +25,8 @@ export type SortDirection = 'asc' | 'desc'
 
 export type XAxis = {
   column_x: string
-  sort_x_by: XAxisSortBy
-  sort_x_direction: SortDirection
+  sort_x_by?: XAxisSortBy
+  sort_x_direction?: SortDirection
   type: XAxisType
 }
 
@@ -42,15 +43,13 @@ export type YAxis = {
 // Data series types
 export type DataSeriesType = 'line' | 'histogram'
 
-export type AggregateType = 'sum' | 'median'
-
 export type DataSeries = {
   type: DataSeriesType
   column_y: string
-  aggregate_y: AggregateType
+  aggregate_y: TabularAggregateType | null
   resource_id: string
-  column_x_name_override?: string
-  filters?: GenericFilter
+  column_x_name_override: string | null
+  filters: GenericFilter | null
 }
 
 // Chart form fields (for POST/PATCH requests)

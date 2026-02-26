@@ -69,7 +69,7 @@ export default defineNuxtConfig({
       maxPdfPreviewByteSize: 10000000, // (10 MB)
       maxXmlPreviewCharSize: 100000, // (~100KB)
       schemaValidataUrl: 'https://validata.fr',
-      tabularApiUrl: 'https://tabular-api.data.gouv.fr',
+      tabularApiUrl: 'https://tabular-api.preprod.data.gouv.fr',
       tabularApiDataserviceId: undefined,
 
       qualityDescriptionLength: 100,
