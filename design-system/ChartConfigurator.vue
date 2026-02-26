@@ -96,13 +96,19 @@
             v-model="form.xAxisColumn"
             class="w-full fr-select"
           >
-            <option
-              v-for="column in flattenedColumns"
-              :key="column"
-              :value="column"
+            <optgroup
+              v-for="{ key, value } in flattenedColumns"
+              :key="key"
+              :label="key"
             >
-              {{ column }}
-            </option>
+              <option
+                v-for="column in value"
+                :key="column"
+                :value="column"
+              >
+                {{ column }}
+              </option>
+            </optgroup>
           </select>
         </div>
         <div>
@@ -296,7 +302,7 @@
               class="w-full fr-select"
             >
               <option
-                v-for="column in flattenedColumns"
+                v-for="column in columns[serie.resource_id]"
                 :key="column"
                 :value="column"
               >
@@ -333,16 +339,16 @@
 
 <script setup lang="ts">
 import type { XAxisType, XAxisSortBy, SortDirection, UnitPosition, DataSeries, Resource, PaginatedArray, ChartForm } from '@datagouv/components-next'
-import { SearchableSelect, useHasTabularData } from '@datagouv/components-next'
+import { SearchableSelect, useGetProfile, useHasTabularData } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
-
 import { computed, defineAsyncComponent, reactive, watch, ref } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
 
 const hasTabularData = useHasTabularData()
+const getProfile = useGetProfile()
 const ChartViewerWrapper = defineAsyncComponent(() => import('../datagouv-components/src/components/Chart/ChartViewerWrapper.vue'))
 const columns = ref<Record<string, Array<string>>>({})
-const flattenedColumns = computed(() => Object.values(columns.value).flat())
+const flattenedColumns = computed(() => Object.entries(columns.value).map(([key, value]) => ({ key, value })).flat())
 
 const dataset = ref<DatasetSuggest>()
 const resources = ref<Array<Resource>>([])
@@ -352,7 +358,7 @@ const selectedResource = ref('')
 const { $api } = useNuxtApp()
 
 const suggestDataset = async (q: string): Promise<Array<DatasetSuggest>> => {
-  return await $api<Array<DatasetSuggest>>('https://www.data.gouv.fr/api/1/datasets/suggest/', {
+  return await $api<Array<DatasetSuggest>>('https://demo.data.gouv.fr/api/1/datasets/suggest/', {
     query: {
       q,
       size: 5,
@@ -360,10 +366,22 @@ const suggestDataset = async (q: string): Promise<Array<DatasetSuggest>> => {
   })
 }
 
+const dummyDataset = { id: '6170ae10981edd7b132f28a0', title: 'Logements et logements sociaux dans les EPCI' }
+const dummySerie: DataSeries = {
+  type: 'histogram',
+  column_y: 'Nombre de logements',
+  aggregate_y: 'sum',
+  resource_id: '14dba482-41e3-4c54-b82a-d8c11d1d80eb',
+}
+
+onMounted(() => {
+  dataset.value = dummyDataset
+})
+
 watch(dataset, async (newDataset) => {
   if (newDataset) {
     try {
-      const fetchedResources = await $api<PaginatedArray<Resource>>(`https://www.data.gouv.fr/api/2/datasets/${newDataset.id}/resources/`)
+      const fetchedResources = await $api<PaginatedArray<Resource>>(`https://demo.data.gouv.fr/api/2/datasets/${newDataset.id}/resources/`)
       resources.value = fetchedResources.data.filter(resource => hasTabularData(resource))
       for (const r of resources.value) {
         savedResources[r.id] = r
@@ -379,12 +397,15 @@ watch(dataset, async (newDataset) => {
   }
 })
 
-const dummySerie: DataSeries = {
-  type: 'histogram',
-  column_y: 'Nombre de logements',
-  aggregate_y: 'sum',
-  resource_id: '14dba482-41e3-4c54-b82a-d8c11d1d80eb',
-}
+watch([selectedResource], async ([r]) => {
+  if (r) {
+    if (columns.value[r]) {
+      return
+    }
+    const profile = await getProfile(r)
+    columns.value[r] = profile.profile.header
+  }
+})
 
 const form = reactive<{
   title: string

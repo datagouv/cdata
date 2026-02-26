@@ -16,6 +16,11 @@ export type FetchTabularDataOptions = {
   page?: number
   pageSize?: number
   sort?: SortConfig
+  groupBy?: string
+  aggregation?: {
+    column: string
+    type: 'svg' | 'avg' | 'sum' | 'count' | 'min' | 'max'
+  }
 }
 
 export type TabularProfileResponse = {
@@ -64,13 +69,17 @@ export type TabularProfileResponse = {
  * Call Tabular-api to get table content with options object
  */
 export async function fetchTabularData(config: PluginConfig, options: FetchTabularDataOptions): Promise<TabularDataResponse> {
-  const resourceId = options.resourceId
   const page = options.page ?? 1
   const pageSize = options.pageSize ?? config.tabularApiPageSize ?? 15
-  const sort = options.sort
-  let url = `${config.tabularApiUrl}/api/resources/${resourceId}/data/?page=${page}&page_size=${pageSize}`
-  if (sort) {
-    url += `&${sort.column}__sort=${sort.type}`
+  let url = `${config.tabularApiUrl}/api/resources/${options.resourceId}/data/?page=${page}&page_size=${pageSize}`
+  if (options.sort) {
+    url += `&${options.sort.column}__sort=${options.sort.type}`
+  }
+  if (options.groupBy) {
+    url += `&${options.groupBy}__groupby`
+  }
+  if (options.aggregation) {
+    url += `&${options.aggregation.column}__${options.aggregation.type}`
   }
   return await ofetch<TabularDataResponse>(url)
 }
