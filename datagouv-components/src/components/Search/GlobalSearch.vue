@@ -303,6 +303,7 @@
                         color="tertiary"
                         :href="componentsConfig.forumUrl"
                         :icon="RiLightbulbLine"
+                        keep-margins-even-without-borders
                       >
                         {{ t("Voir le forum") }}
                       </BrandedButton>
@@ -545,7 +546,7 @@ const hasFilters = computed(() => {
     || reuseType.value
 })
 
-const showForumLink = computed(() => currentType.value === 'datasets' && !!componentsConfig.forumUrl)
+const showForumLink = computed(() => (currentType.value === 'datasets' || currentType.value === 'dataservices') && !!componentsConfig.forumUrl)
 
 function resetFilters() {
   organizationId.value = undefined
