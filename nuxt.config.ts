@@ -315,9 +315,10 @@ export default defineNuxtConfig({
       {
         name: 'Marianne',
         provider: 'local',
-        weights: [300, 500, 700],
+        weights: [300, 500, 800],
         global: true,
       },
+      { name: 'Inconsolata', provider: 'google', weights: [300], global: true },
     ],
   },
   image: {
