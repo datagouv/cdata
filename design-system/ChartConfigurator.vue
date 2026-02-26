@@ -317,6 +317,9 @@
               v-model="serie.aggregate_y"
               class="w-full fr-select"
             >
+              <option value="">
+                Non
+              </option>
               <option value="sum">
                 Somme
               </option>

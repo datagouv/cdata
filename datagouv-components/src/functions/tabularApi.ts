@@ -75,11 +75,8 @@ export async function fetchTabularData(config: PluginConfig, options: FetchTabul
   if (options.sort) {
     url += `&${options.sort.column}__sort=${options.sort.type}`
   }
-  if (options.groupBy) {
-    url += `&${options.groupBy}__groupby`
-  }
-  if (options.aggregation) {
-    url += `&${options.aggregation.column}__${options.aggregation.type}`
+  if (options.groupBy && options.aggregation?.type) {
+    url += `&${options.groupBy}__groupby&${options.aggregation.column}__${options.aggregation.type}`
   }
   return await ofetch<TabularDataResponse>(url)
 }
