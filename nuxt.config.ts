@@ -315,7 +315,7 @@ export default defineNuxtConfig({
     families: [
       ...isFrenchGovernment
         ? [
-            { name: 'Marianne', provider: 'local' as const, global: true },
+            { name: 'Marianne', provider: 'local' as const, weights: [300, 400, 500, 700, 800], global: true },
             // Workaround: nuxt-og-image Takumi renderer ignores font-weight and always uses
             // the first loaded font for a family. We declare each weight as a separate family
             // so the correct weight is used in OG image templates.
