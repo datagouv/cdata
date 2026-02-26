@@ -197,7 +197,7 @@ useSeoMeta({
   robots,
 })
 defineOgImage('ObjectPage.takumi', {
-  title: reuse.value?.title,
+  objectTitle: reuse.value?.title,
   orgName: reuse.value?.organization?.name,
   orgLogo: reuse.value?.organization?.logo_thumbnail,
   ownerName: reuse.value?.owner ? `${reuse.value.owner.first_name} ${reuse.value.owner.last_name}` : null,

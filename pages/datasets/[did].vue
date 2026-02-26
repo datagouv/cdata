@@ -539,7 +539,7 @@ useSeoMeta({
 })
 
 defineOgImage('ObjectPage.takumi', {
-  title: dataset.value?.title,
+  objectTitle: dataset.value?.title,
   orgName: dataset.value?.organization?.name,
   orgLogo: dataset.value?.organization?.logo_thumbnail,
   ownerName: dataset.value?.owner ? `${dataset.value.owner.first_name} ${dataset.value.owner.last_name}` : null,

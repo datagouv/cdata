@@ -1,23 +1,27 @@
 <script setup lang="ts">
-import { RiEyeLine, RiDownloadLine, RiLineChartLine, RiStarLine } from '@remixicon/vue'
+import { RiEyeLine, RiDownloadLine, RiLineChartLine, RiStarLine, RiDatabase2Line, RiTerminalLine } from '@remixicon/vue'
 import { summarize } from '@datagouv/components-next'
 
 const {
-  title = 'Titre du jeu de données',
+  objectTitle,
   orgName = null,
   orgLogo = null,
   ownerName = null,
   ownerAvatar = null,
+  datasets,
+  dataservices,
   views,
   downloads,
   reuses,
   followers,
 } = defineProps<{
-  title?: string
+  objectTitle?: string
   orgName?: string | null
   orgLogo?: string | null
   ownerName?: string | null
   ownerAvatar?: string | null
+  datasets?: number
+  dataservices?: number
   views?: number
   downloads?: number
   reuses?: number
@@ -56,18 +60,40 @@ const {
       </div>
       <p
         v-if="orgName || ownerName"
-        class="text-4xl font-extrabold text-[#161616] leading-tight text-balance"
+        :class="objectTitle ? 'text-4xl' : 'text-[60px]'"
+        class="font-extrabold text-[#161616] leading-tight text-balance"
         style="line-clamp: 2; text-overflow: ellipsis; overflow: hidden"
       >
         {{ orgName || ownerName }}
       </p>
       <h1
-        class="text-6xl font-light text-[#161616] leading-tight text-balance"
+        v-if="objectTitle"
+        class="text-6xl font-light text-[#161616] leading-tight text-balance mb-3"
         style="line-clamp: 2; text-overflow: ellipsis; overflow: hidden"
       >
-        {{ title }}
+        {{ objectTitle }}
       </h1>
       <div class="flex items-center gap-[32px]">
+        <div
+          v-if="datasets !== undefined"
+          class="flex items-center gap-[8px]"
+        >
+          <span class="text-4xl font-normal text-[#666666]">{{ summarize(datasets) }}</span>
+          <RiDatabase2Line
+            class="size-10"
+            color="#666666"
+          />
+        </div>
+        <div
+          v-if="dataservices !== undefined"
+          class="flex items-center gap-[8px]"
+        >
+          <span class="text-4xl font-normal text-[#666666]">{{ summarize(dataservices) }}</span>
+          <RiTerminalLine
+            class="size-10"
+            color="#666666"
+          />
+        </div>
         <div
           v-if="views !== undefined"
           class="flex items-center gap-[8px]"

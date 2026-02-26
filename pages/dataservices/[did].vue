@@ -284,7 +284,7 @@ useSeoMeta({
   description,
 })
 defineOgImage('ObjectPage.takumi', {
-  title: dataservice.value?.title,
+  objectTitle: dataservice.value?.title,
   orgName: dataservice.value?.organization?.name,
   orgLogo: dataservice.value?.organization?.logo_thumbnail,
   ownerName: dataservice.value?.owner ? `${dataservice.value.owner.first_name} ${dataservice.value.owner.last_name}` : null,
