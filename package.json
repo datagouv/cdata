@@ -111,7 +111,7 @@
     "husky": "^9.1.7",
     "lightningcss": "^1.29.3",
     "lint-staged": "^16.1.2",
-    "nuxt-og-image": "6.0.0-beta.39",
+    "nuxt-og-image": "6.0.0-beta.34",
     "otplib": "^13.0.2",
     "sass-embedded": "^1.86.0",
     "tailwindcss": "^4.0.7",
