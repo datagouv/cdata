@@ -283,6 +283,16 @@ useSeoMeta({
   robots,
   description,
 })
+defineOgImage('ObjectPage.takumi', {
+  title: dataservice.value?.title,
+  orgName: dataservice.value?.organization?.name,
+  orgLogo: dataservice.value?.organization?.logo_thumbnail,
+  ownerName: dataservice.value?.owner ? `${dataservice.value.owner.first_name} ${dataservice.value.owner.last_name}` : null,
+  ownerAvatar: dataservice.value?.owner?.avatar_thumbnail ?? null,
+  views: dataservice.value?.metrics?.views ?? 0,
+  reuses: dataservice.value?.metrics?.reuses ?? 0,
+  followers: dataservice.value?.metrics?.followers ?? 0,
+})
 await useJsonLd('dataservice', route.params.did as string)
 
 const openSwagger = ref(false)
