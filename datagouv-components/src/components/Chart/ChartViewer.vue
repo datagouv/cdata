@@ -35,10 +35,10 @@ function mapXAxisType(xAxis?: XAxis): 'category' | 'value' {
   return xAxis.type === 'continuous' ? 'value' : 'category'
 }
 
-function buildYAxisFormatter(yAxis?: YAxis): ((value: number) => string) | undefined {
-  if (!yAxis?.unit) return undefined
+function buildYAxisFormatter(yAxis: YAxis): ((value: number) => string) | undefined {
   return (value: number) => {
     const v = summarize(value)
+    if (!yAxis.unit) return v
     if (yAxis.unit_position === 'prefix') return `${yAxis.unit} ${v}`
     return `${v} ${yAxis.unit}`
   }
