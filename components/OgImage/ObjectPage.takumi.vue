@@ -6,14 +6,18 @@ const {
   title = 'Titre du jeu de données',
   orgName = null,
   orgLogo = null,
-  views = 0,
-  downloads = 0,
-  reuses = 0,
-  followers = 0,
+  ownerName = null,
+  ownerAvatar = null,
+  views,
+  downloads,
+  reuses,
+  followers,
 } = defineProps<{
   title?: string
   orgName?: string | null
   orgLogo?: string | null
+  ownerName?: string | null
+  ownerAvatar?: string | null
   views?: number
   downloads?: number
   reuses?: number
@@ -41,11 +45,20 @@ const {
           class="max-w-20 max-h-20 object-contain"
         >
       </div>
+      <div
+        v-else-if="ownerAvatar"
+        class="size-25 rounded-full overflow-hidden mb-3"
+      >
+        <img
+          :src="ownerAvatar"
+          class="size-25 object-cover"
+        >
+      </div>
       <p
-        v-if="orgName"
+        v-if="orgName || ownerName"
         class="text-5xl font-extrabold text-[#161616]"
       >
-        {{ orgName }}
+        {{ orgName || ownerName }}
       </p>
       <h1
         class="text-6xl font-light leading-tight overflow-hidden text-[#161616]"
@@ -54,29 +67,43 @@ const {
         {{ title }}
       </h1>
       <div class="flex items-center gap-[32px] mt-6">
-        <div class="flex items-center gap-[8px]">
-          <span class="text-4xl font-light text-[#666666]">{{ summarize(views) }}</span>
+        <div
+          v-if="views !== undefined"
+          class="flex items-center gap-[8px]"
+        >
+          <span class="text-4xl font-normal text-[#666666]">{{ summarize(views) }}</span>
           <RiEyeLine
             class="size-10"
             color="#666666"
           />
         </div>
-        <div class="flex items-center gap-[8px]">
-          <span class="text-4xl font-light text-[#666666]">{{ summarize(downloads) }}</span>
+        <div
+          v-if="downloads !== undefined"
+          class="flex items-center gap-[8px]"
+        >
+          <span
+            class="text-4xl font-normal text-[#666666]"
+          >{{ summarize(downloads) }}</span>
           <RiDownloadLine
             class="size-10"
             color="#666666"
           />
         </div>
-        <div class="flex items-center gap-[8px]">
-          <span class="text-4xl font-light text-[#666666]">{{ summarize(reuses) }}</span>
+        <div
+          v-if="reuses !== undefined"
+          class="flex items-center gap-[8px]"
+        >
+          <span class="text-4xl font-normal text-[#666666]">{{ summarize(reuses) }}</span>
           <RiLineChartLine
             class="size-10"
             color="#666666"
           />
         </div>
-        <div class="flex items-center gap-[8px]">
-          <span class="text-4xl font-light text-[#666666]">{{ summarize(followers) }}</span>
+        <div
+          v-if="followers !== undefined"
+          class="flex items-center gap-[8px]"
+        >
+          <span class="text-4xl font-normal text-[#666666]">{{ summarize(followers) }}</span>
           <RiStarLine
             class="size-10"
             color="#666666"
