@@ -319,6 +319,8 @@ export default defineNuxtConfig({
         global: true,
       },
       { name: 'Inconsolata', provider: 'google', weights: [300], global: true },
+      { name: 'Spectral', provider: 'local', weights: [600], styles: ['italic'], global: true },
+      { name: 'URW Gothic', provider: 'local', weights: [600], global: true },
     ],
   },
   image: {
