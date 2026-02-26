@@ -320,8 +320,8 @@
               <option value="sum">
                 Somme
               </option>
-              <option value="median">
-                Médianne
+              <option value="avg">
+                Moyenne
               </option>
             </select>
           </div>
