@@ -58,6 +58,10 @@ const { t } = useTranslation()
 useSeoMeta({
   title: t('Données élections - {site}', { site: config.public.title }),
 })
+defineOgImage('MainPage.takumi', {
+  title: 'Élections',
+  uri: '/elections',
+})
 
 const elections = [
   {

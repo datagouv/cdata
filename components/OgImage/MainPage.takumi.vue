@@ -16,7 +16,8 @@ const uri = computed(() => props.uri.replace(/^\/+/, ''))
     >
     <div class="gap-[12px] flex flex-col">
       <h1
-        class="text-[120px] font-extrabold text-[#161616]"
+        :class="title.length > 16 ? 'text-[80px]' : 'text-[120px]'"
+        class="font-extrabold text-[#161616]"
         style="font-family: 'Marianne'"
       >
         {{ title }}

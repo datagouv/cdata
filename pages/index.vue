@@ -496,6 +496,10 @@ useSeoMeta({
   ogTitle: title,
   ogDescription: description,
 })
+defineOgImage('MainPage.takumi', {
+  title: 'data.gouv.fr',
+  uri: '/',
+})
 
 const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts/', { params: { kind: 'news' } })
 const { data: site } = await useAPI<Site>('/api/1/site/')
