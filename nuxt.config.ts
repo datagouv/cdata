@@ -337,21 +337,11 @@ export default defineNuxtConfig({
           ]
         : [],
       { name: 'Inconsolata', provider: 'google' as const, weights: [300], global: true },
-      {
-        name: 'Spectral',
-        provider: 'none',
-        weights: [600],
-        styles: ['italic'],
-        global: true,
-        src: [
-          { url: '/fonts/Spectral-SemiBoldItalic.woff2', format: 'woff2' },
-          { url: '/fonts/Spectral-SemiBoldItalic.woff', format: 'woff' },
-        ],
-      },
+      { name: 'Spectral', provider: 'local' as const, weights: [300, 400, 500, 700, 800], global: true },
       {
         name: 'URW Gothic',
         provider: 'none',
-        weights: [600],
+        weight: 600,
         global: true,
         src: [
           { url: '/fonts/URWGothic-SemiBold.woff2', format: 'woff2' },
