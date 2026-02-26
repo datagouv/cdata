@@ -11,7 +11,7 @@
     >
       <SearchInput
         v-model="q"
-        :placeholder="placeholder || t('Ex : élection présidentielle 2022')"
+        :placeholder="placeholder || typesMeta[currentType].placeholder"
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
@@ -590,24 +590,28 @@ const typesMeta = {
   datasets: {
     icon: RiDatabase2Line,
     name: t('Jeux de données'),
+    placeholder: t('ex. élections présidentielles'),
     results: datasetsResults,
     status: datasetsStatus,
   },
   dataservices: {
     icon: RiRobot2Line,
     name: t('APIs'),
+    placeholder: t('ex: SIRENE'),
     results: dataservicesResults,
     status: dataservicesStatus,
   },
   reuses: {
     icon: RiLineChartLine,
     name: t('Réutilisations'),
+    placeholder: t('Rechercher une réutilisation de données'),
     results: reusesResults,
     status: reusesStatus,
   },
   organizations: {
     icon: RiBuilding2Line,
     name: t('Organisations'),
+    placeholder: t('Rechercher une organisation'),
     results: organizationsResults,
     status: organizationsStatus,
   },
