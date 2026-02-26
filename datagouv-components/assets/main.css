@@ -188,34 +188,6 @@
   .code {
       @apply p-1! font-mono! bg-gray-lower! text-sm! text-gray-medium! rounded!;
   }
-  meter.quality-score {
-    background: none;
-    border: 1px solid var(--color-gray-default);
-    border-radius: 8px;
-    height: 10px;
-    vertical-align: baseline;
-  }
-  meter.quality-score::-webkit-meter-bar {
-    height: 10px;
-    background: whiteSmoke;
-    border-radius: 8px;
-  }
-  meter.quality-score::-moz-meter-bar {
-    background: whiteSmoke;
-    border-radius: 8px;
-  }
-  meter.quality-score::-webkit-meter-suboptimum-value {
-    background-color: var(--color-gray-low);
-  }
-  meter.quality-score:-moz-meter-sub-optimum::-moz-meter-bar {
-    background-color: var(--color-gray-low);
-  }
-  meter.quality-score::-webkit-meter-optimum-value {
-    background-color: #27A658;
-  }
-  meter.quality-score:-moz-meter-optimum::-moz-meter-bar {
-    background-color: #27A658;
-  }
 
   /* Vue Sonner Toast custom colors */
   [data-sonner-toast][data-type="success"] {
