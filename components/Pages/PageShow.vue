@@ -67,7 +67,7 @@
       <!-- Full-width blocs (like HeroBloc) -->
       <component
         :is="blocsTypes[bloc.class].component"
-        v-if="blocsTypes[bloc.class]?.fullWidth && blocsTypes[bloc.class]?.component"
+        v-if="blocsTypes[bloc.class] && 'fullWidth' in blocsTypes[bloc.class] && blocsTypes[bloc.class].component"
         v-model="(workingPage.blocs[index] as any)"
         :edit="isEditing"
         v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
