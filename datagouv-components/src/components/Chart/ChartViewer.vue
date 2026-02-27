@@ -12,7 +12,7 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart, BarChart, type BarSeriesOption, type LineSeriesOption } from 'echarts/charts'
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { computed, watchEffect } from 'vue'
+import { computed } from 'vue'
 import { summarize } from '../../functions/helpers'
 import type { Chart, DataSeries, XAxis, YAxis, ChartForm } from '../../types/visualizations'
 
@@ -27,12 +27,12 @@ const props = defineProps<{
 }>()
 
 function mapSeriesType(type: DataSeries['type']): 'line' | 'bar' {
-  return type === 'histogram' ? 'bar' : 'line'
+  return (type ?? 'line') === 'histogram' ? 'bar' : 'line'
 }
 
-function mapXAxisType(xAxis?: XAxis): 'category' | 'value' {
+function mapXAxisType(xAxis?: XAxis | Partial<XAxis>): 'category' | 'value' {
   if (!xAxis) return 'category'
-  return xAxis.type === 'continuous' ? 'value' : 'category'
+  return (xAxis.type ?? 'discrete') === 'continuous' ? 'value' : 'category'
 }
 
 function buildYAxisFormatter(yAxis: YAxis): ((value: number) => string) | undefined {
@@ -49,56 +49,73 @@ const echartsOption = computed(() => {
   if (!props.chart.series || seriesCount === 0) return
 
   // Create series configuration with data mapping
-  const { data, series } = props.chart.series.map((s) => {
+  const seriesData = props.chart.series.map((s) => {
     const xColumn = s.column_x_name_override ?? props.chart.x_axis.column_x
     const yColumn = s.aggregate_y ? `${s.column_y}__${s.aggregate_y}` : s.column_y
-    // const sortColumn = xColumn && props.chart.x_axis.sort_x_by && (props.chart.x_axis.sort_x_by === 'axis_x' || yColumn) ? {
-    // 'axis_x': xColumn,
-    // 'axis_y': yColumn
-    // }[props.chart.x_axis.sort_x_by] : undefined
+    const resourceId = s.resource_id
+    const seriesType = s.type
+
+    if (!xColumn || !yColumn || !resourceId || !seriesType || !props.series.data[resourceId] || !props.series.columns[resourceId]) {
+      return null
+    }
+
+    // Sort data before passing to ECharts to avoid transform issues
+    const sortedData = [...props.series.data[resourceId]]
+    const sortBy = props.chart.x_axis.sort_x_by
+    const sortDirection = props.chart.x_axis.sort_x_direction ?? 'asc'
+
+    if (sortBy && sortDirection && props.chart.x_axis.column_x) {
+      const sortKey = sortBy === 'axis_x' ? xColumn : yColumn
+      sortedData.sort((a, b) => {
+        const valA = a[sortKey] as number
+        const valB = b[sortKey] as number
+        if (valA < valB) return sortDirection === 'asc' ? -1 : 1
+        if (valA > valB) return sortDirection === 'asc' ? 1 : -1
+        return 0
+      })
+    }
+
     return {
       series: {
-        type: mapSeriesType(s.type),
-        dimensions: s.aggregate_y ? [xColumn, yColumn] : props.series.columns[s.resource_id],
+        type: mapSeriesType(seriesType),
+        dimensions: s.aggregate_y ? [xColumn, yColumn] : props.series.columns[resourceId],
         name: s.column_y,
         encode: {
           x: xColumn,
           y: yColumn,
         },
-        // datasetIndex: props.chart.x_axis.sort_x_by ? seriesCount + i : i,
-      },
+      } as LineSeriesOption | BarSeriesOption,
       data: {
-        source: props.series.data[s.resource_id],
-        // dimensions: s.aggregate_y ? [xColumn, yColumn] : props.series.columns[s.resource_id],
-        // transform: sortColumn ? {
-        //  type: 'sort',
-        //  config: { dimension: xColumn, order: props.chart.x_axis.sort_x_direction }
-        // } : {},
+        source: sortedData,
+        dimensions: s.aggregate_y ? [xColumn, yColumn] : props.series.columns[resourceId],
       },
     }
-  }).reduce((acc, curr) => {
-    acc.series.push(curr.series)
-    acc.data.push(curr.data)
+  }).filter(Boolean).reduce((acc: { series: Array<LineSeriesOption | BarSeriesOption>, data: Array<Record<string, unknown>> }, curr) => {
+    if (curr) {
+      acc.series.push(curr.series)
+      acc.data.push(curr.data)
+    }
     return acc
   }, {
     series: [],
     data: [],
   })
+
   return {
-    dataset: data,
+    dataset: [...seriesData.data],
     title: {
       text: props.chart.title,
       left: 'center',
     },
     tooltip: {
-      trigger: 'axis',
-      formatter: (params) => {
+      trigger: 'axis' as const,
+      formatter: (params: Array<{ value: Record<string, unknown>, axisValueLabel: string, seriesName: string }>) => {
         let tooltip = ''
         for (const param of params) {
           const keys = Object.keys(param.value)
           const col = keys.find(key => key.startsWith(param.seriesName))!
           const formatter = new Intl.NumberFormat('fr-FR')
-          tooltip += `${format.encodeHTML(param.axisValueLabel)}: <strong>${formatter.format(param.value[col])}</strong><br>`
+          tooltip += `${format.encodeHTML(param.axisValueLabel)}: <strong>${formatter.format(Number(param.value[col]))}</strong><br>`
         }
         return tooltip
       },
@@ -115,24 +132,21 @@ const echartsOption = computed(() => {
     },
     xAxis: {
       type: mapXAxisType(props.chart.x_axis),
-      name: props.chart.x_axis?.column_x,
+      name: (props.chart.x_axis as XAxis).column_x,
     },
     yAxis: {
-      type: 'value',
-      name: props.chart.y_axis?.label,
-      min: props.chart.y_axis?.min ?? undefined,
-      max: props.chart.y_axis?.max ?? undefined,
+      type: 'value' as const,
+      name: props.chart.y_axis.label ?? undefined,
+      min: props.chart.y_axis.min ?? undefined,
+      max: props.chart.y_axis.max ?? undefined,
       axisLabel: {
         formatter: buildYAxisFormatter(props.chart.y_axis),
       },
     },
-    series,
+    series: seriesData.series,
   } satisfies ComposeOption<
     | BarSeriesOption
     | LineSeriesOption
   >
-})
-watchEffect(() => {
-  console.log(echartsOption.value)
 })
 </script>
