@@ -152,15 +152,6 @@ import { isMeAdmin } from '~/utils/auth'
 
 const blocsTypes = useBlocsTypes()
 
-watchEffect(() => {
-  // TODO: Temporary log any unknown/unregistered blocs for debugging. It should not happen (except following a backend update).
-  for (const bloc of props.page.blocs) {
-    if (!blocsTypes[bloc.class]) {
-      Sentry.captureMessage(`Unknown bloc type: "${bloc.class}" in page "${props.page.id}"`, 'warning')
-    }
-  }
-})
-
 const props = withDefaults(defineProps<{
   page: Page
   edit?: boolean
@@ -170,6 +161,15 @@ const props = withDefaults(defineProps<{
   edit: false,
   editable: false,
   mainColor: 'primary',
+})
+
+watchEffect(() => {
+  // TODO: Temporary log any unknown/unregistered blocs for debugging. It should not happen (except following a backend update).
+  for (const bloc of props.page.blocs) {
+    if (!blocsTypes[bloc.class]) {
+      Sentry.captureMessage(`Unknown bloc type: "${bloc.class}" in page "${props.page.id}"`, 'warning')
+    }
+  }
 })
 
 const emit = defineEmits<{
