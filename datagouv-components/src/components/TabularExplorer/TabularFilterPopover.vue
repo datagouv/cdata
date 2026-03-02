@@ -92,13 +92,10 @@
 
           <!-- Null filter -->
           <div
-            v-if="columnProfile"
+            v-if="columnProfile && columnProfile.nb_missing_values > 0"
             class="px-3 py-2 border-b border-black/10 space-y-1.5"
           >
-            <p
-              v-if="columnProfile.nb_missing_values > 0"
-              class="text-[11px] text-gray-medium mb-0"
-            >
+            <p class="text-[11px] text-gray-medium mb-0">
               {{ columnProfile.nb_missing_values }} null ({{ nullPercent }})
             </p>
             <div class="flex items-center gap-1">
