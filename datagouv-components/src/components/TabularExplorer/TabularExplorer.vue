@@ -464,7 +464,7 @@ function showAllColumns() {
 
 // Column resize
 const columnWidths = ref<Record<string, number>>({})
-const resizing = ref<{ column: string, startX: number, startWidth: number, startScrollLeft: number } | null>(null)
+const resizing = ref<{ column: string, startX: number, startWidth: number } | null>(null)
 
 function initColumnWidths() {
   const ths = scrollContainerRef.value?.querySelectorAll('th')
@@ -479,7 +479,7 @@ function initColumnWidths() {
 
 function startResize(col: string, e: MouseEvent) {
   if (!Object.keys(columnWidths.value).length) initColumnWidths()
-  resizing.value = { column: col, startX: e.clientX, startWidth: columnWidths.value[col] ?? 100, startScrollLeft: scrollContainerRef.value?.scrollLeft ?? 0 }
+  resizing.value = { column: col, startX: e.clientX, startWidth: columnWidths.value[col] ?? 100 }
   // Disable smooth scroll during resize
   if (scrollContainerRef.value) scrollContainerRef.value.style.scrollBehavior = 'auto'
   document.addEventListener('mousemove', onResize)
@@ -489,22 +489,23 @@ function startResize(col: string, e: MouseEvent) {
 function onResize(e: MouseEvent) {
   if (!resizing.value) return
   const container = scrollContainerRef.value
-  // Auto-scroll when mouse approaches the right edge of the container
+  // Auto-scroll when mouse approaches the right edge, and adjust startX to compensate
   if (container) {
     const rect = container.getBoundingClientRect()
     const distFromRight = rect.right - e.clientX
     if (distFromRight < 50) {
+      const oldScroll = container.scrollLeft
       container.scrollLeft += Math.max(1, (50 - distFromRight) * 0.5)
+      resizing.value.startX -= container.scrollLeft - oldScroll
     }
   }
-  // Account for scroll changes in the delta
-  const scrollDelta = (container?.scrollLeft ?? 0) - resizing.value.startScrollLeft
-  const delta = (e.clientX - resizing.value.startX) + scrollDelta
+  const delta = e.clientX - resizing.value.startX
   const newWidth = Math.max(60, resizing.value.startWidth + delta)
   columnWidths.value = { ...columnWidths.value, [resizing.value.column]: newWidth }
 }
 
 function stopResize() {
+  if (scrollContainerRef.value) scrollContainerRef.value.style.scrollBehavior = ''
   resizing.value = null
   document.removeEventListener('mousemove', onResize)
   document.removeEventListener('mouseup', stopResize)
@@ -643,24 +644,19 @@ function isTruthy(value: unknown): boolean {
 }
 
 const BADGE_PALETTE = [
-  // Sobres mais colorées (valeurs fréquentes)
-  { bg: '#DBEAFE', text: '#1E40AF' },
-  { bg: '#D1FAE5', text: '#065F46' },
-  { bg: '#E8E3DB', text: '#6A6156' },
-  { bg: '#E0E7FF', text: '#3730A3' },
-  // Flash (valeurs moyennement fréquentes)
-  { bg: '#FCE164', text: '#695240' },
-  { bg: '#FEE7FC', text: '#6E445A' },
-  { bg: '#BAFAEE', text: '#297254' },
-  { bg: '#FECACA', text: '#991B1B' },
-  // Fades (valeurs rares)
-  { bg: '#F0F0F0', text: '#666666' },
-  { bg: '#E8E8E8', text: '#737373' },
-  { bg: '#F5F5F5', text: '#8B8B8B' },
-  { bg: '#EBEBEB', text: '#7A7A7A' },
+  { bg: '#E6EEFE', text: '#3558A2' }, // blue-cumulus
+  { bg: '#E8E3DB', text: '#6A6156' }, // beige-gris-galet
+  { bg: '#FEECC2', text: '#695240' }, // yellow-tournesol
+  { bg: '#C7F6FC', text: '#006A6F' }, // green-archipel
+  { bg: '#E9EDFE', text: '#2323FF' }, // blue-ecume
+  { bg: '#FFE0C7', text: '#885B40' }, // orange-terre-battue
+  { bg: '#F2E9DB', text: '#6B4C35' }, // brown-cafe-creme
+  { bg: '#BAFAEE', text: '#297254' }, // green-menthe
+  { bg: '#FEE0EB', text: '#8D5368' }, // pink-macaron
+  { bg: '#FCE164', text: '#695240' }, // yellow-moutarde
 ] as const
 
-const BADGE_FALLBACK = { bg: '#F5F5F5', text: '#666666' }
+const BADGE_FALLBACK = { bg: '#F0E0CF', text: '#745B47' } // brown-opera
 
 const badgeColorMap = computed(() => {
   const map = new Map<string, { bg: string, text: string }>()
