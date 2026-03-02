@@ -156,9 +156,11 @@ async function copyValue() {
 function onClickOutside(e: MouseEvent) {
   if (!cell.value) return
   const panel = panelRef.value
-  if (panel && !panel.contains(e.target as Node)) {
-    close()
-  }
+  if (panel && panel.contains(e.target as Node)) return
+  // Don't close if clicking on the active cell's td (let the parent handle toggle)
+  const clickedTd = (e.target as HTMLElement).closest('td')
+  if (clickedTd && clickedTd === cell.value.element) return
+  close()
 }
 
 onMounted(() => {

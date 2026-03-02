@@ -149,13 +149,14 @@
         ref="scrollContainer"
         class="hidden md:block overflow-auto max-h-[70vh]"
       >
-        <table class="w-full text-sm border-collapse table-fixed">
+        <table class="text-sm border-collapse">
           <thead class="sticky top-0 bg-white z-10 shadow-[inset_0_-1px_0_0_#E5E5E5]">
             <tr class="border-b border-[#E5E5E5]">
               <th
                 v-for="col in displayedColumns"
                 :key="col"
-                class="h-14 px-2 text-left align-middle whitespace-nowrap border-r border-[#E5E5E5] last:border-r-0"
+                class="group/th relative h-14 px-2 text-left align-middle whitespace-nowrap border-r border-[#E5E5E5] last:border-r-0"
+                :style="columnWidths[col] ? { width: columnWidths[col] + 'px', minWidth: columnWidths[col] + 'px', maxWidth: columnWidths[col] + 'px' } : undefined"
               >
                 <div class="flex items-center gap-0.5 min-w-0">
                   <span
@@ -191,6 +192,16 @@
                   />
                   <span class="mt-px">{{ columnTypeLabel(col) }}</span>
                 </span>
+                <!-- Resize handle: wide hit zone, thin visible bar -->
+                <div
+                  class="absolute -right-1.5 top-0 bottom-0 w-3 z-20 cursor-col-resize group/resize"
+                  @mousedown.prevent="startResize(col, $event)"
+                >
+                  <div
+                    class="absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 rounded-full bg-[#3558A2]/40 opacity-0 group-hover/resize:opacity-100"
+                    :class="{ '!opacity-100': resizing?.column === col }"
+                  />
+                </div>
               </th>
             </tr>
           </thead>
@@ -205,6 +216,7 @@
                 :key="col"
                 class="p-2 align-middle whitespace-nowrap border-r border-[#E5E5E5] last:border-r-0 overflow-hidden cursor-pointer hover:bg-gray-200/50"
                 :class="{ 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' }"
+                :style="columnWidths[col] ? { maxWidth: columnWidths[col] + 'px' } : undefined"
                 @click="onCellClick(col, row[col], $event)"
               >
                 <span
@@ -215,7 +227,7 @@
                 <span v-else-if="getColumnType(col) === 'date'">{{ row[col] }}</span>
                 <span
                   v-else-if="getColumnType(col) === 'categorical'"
-                  class="inline-flex items-center rounded-[4px] font-medium px-2 py-0.5 text-xs"
+                  class="inline-block rounded-[4px] font-medium px-2 py-0.5 text-xs max-w-full truncate"
                   :style="getCategoryBadgeStyle(col, String(row[col]))"
                 >{{ row[col] }}</span>
                 <span
@@ -285,7 +297,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, useTemplateRef, type Component } from 'vue'
+import { computed, onUnmounted, ref, watch, useTemplateRef, type Component } from 'vue'
 import { ofetch } from 'ofetch'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
@@ -438,12 +450,62 @@ function showAllColumns() {
   visibleColumns.value = new Set(allColumns.value)
 }
 
+// Column resize
+const columnWidths = ref<Record<string, number>>({})
+const resizing = ref<{ column: string, startX: number, startWidth: number } | null>(null)
+
+function initColumnWidths() {
+  const ths = scrollContainerRef.value?.querySelectorAll('th')
+  console.log('[resize] initColumnWidths, ths found:', ths?.length, 'scrollContainer:', scrollContainerRef.value)
+  if (!ths) return
+  const widths: Record<string, number> = {}
+  ths.forEach((th, i) => {
+    const col = displayedColumns.value[i]
+    if (col) widths[col] = th.offsetWidth
+  })
+  console.log('[resize] initial widths:', JSON.stringify(widths))
+  columnWidths.value = widths
+}
+
+function startResize(col: string, e: MouseEvent) {
+  console.log('[resize] startResize col:', col, 'current widths:', JSON.stringify(columnWidths.value))
+  if (!Object.keys(columnWidths.value).length) initColumnWidths()
+  resizing.value = { column: col, startX: e.clientX, startWidth: columnWidths.value[col] ?? 100 }
+  console.log('[resize] resizing started:', JSON.stringify(resizing.value))
+  document.addEventListener('mousemove', onResize)
+  document.addEventListener('mouseup', stopResize)
+}
+
+function onResize(e: MouseEvent) {
+  if (!resizing.value) return
+  const delta = e.clientX - resizing.value.startX
+  const newWidth = Math.max(60, resizing.value.startWidth + delta)
+  console.log('[resize] onResize delta:', delta, 'newWidth:', newWidth, 'col:', resizing.value.column)
+  columnWidths.value = { ...columnWidths.value, [resizing.value.column]: newWidth }
+}
+
+function stopResize() {
+  console.log('[resize] stopResize, final widths:', JSON.stringify(columnWidths.value))
+  resizing.value = null
+  document.removeEventListener('mousemove', onResize)
+  document.removeEventListener('mouseup', stopResize)
+}
+
+onUnmounted(() => {
+  document.removeEventListener('mousemove', onResize)
+  document.removeEventListener('mouseup', stopResize)
+})
+
 // Cell popover
 const activeCell = ref<CellInfo | null>(null)
 
 function onCellClick(col: string, value: unknown, event: MouseEvent) {
   const td = (event.target as HTMLElement).closest('td') as HTMLElement | null
   if (!td) return
+  if (activeCell.value && activeCell.value.element === td) {
+    activeCell.value = null
+    return
+  }
   activeCell.value = { column: col, columnType: getColumnType(col), value, element: td }
 }
 

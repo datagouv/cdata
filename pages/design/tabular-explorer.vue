@@ -56,5 +56,5 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import { TabularExplorer } from '@datagouv/components-next'
 
 const key = ref(1)
-const resourceId = ref('d0574a19-9005-4fff-92db-050b5fb2c72c')
+const resourceId = ref('79e2c14d-8278-4407-84b5-e8c279fc578c')
 </script>

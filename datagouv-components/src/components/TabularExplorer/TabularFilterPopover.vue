@@ -1,28 +1,27 @@
 <template>
-  <Popover
-    v-slot="{ open }"
-    ref="popover"
+  <div
+    ref="anchor"
     class="relative shrink-0"
   >
-    <PopoverButton
+    <button
       class="p-0.5 rounded focus:outline-none"
       :class="hasColumnFilter ? 'bg-[#3558A2] text-white' : 'hover:bg-gray-100'"
+      @click.stop="togglePopover"
     >
       <RiFilter2Line
         class="size-3.5"
         aria-hidden="true"
       />
       <span class="sr-only">{{ t('Filtrer') }} {{ column }}</span>
-    </PopoverButton>
+    </button>
 
     <ClientOnly>
       <Teleport to="#tooltips">
-        <PopoverPanel
-          v-show="open"
+        <div
+          v-show="isOpen"
           ref="panel"
           class="bg-white border border-black/10 rounded-lg shadow-md w-64 absolute z-[800]"
           :style="floatingStyles"
-          static
         >
           <!-- Title -->
           <div class="px-3 py-2 border-b border-black/10">
@@ -91,12 +90,15 @@
             </label>
           </div>
 
-          <!-- Null stats -->
+          <!-- Null filter -->
           <div
-            v-if="columnProfile && columnProfile.nb_missing_values > 0"
+            v-if="columnProfile"
             class="px-3 py-2 border-b border-black/10 space-y-1.5"
           >
-            <p class="text-[11px] text-gray-medium mb-0">
+            <p
+              v-if="columnProfile.nb_missing_values > 0"
+              class="text-[11px] text-gray-medium mb-0"
+            >
               {{ columnProfile.nb_missing_values }} null ({{ nullPercent }})
             </p>
             <div class="flex items-center gap-1">
@@ -165,16 +167,15 @@
               </div>
             </div>
           </template>
-        </PopoverPanel>
+        </div>
       </Teleport>
     </ClientOnly>
-  </Popover>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useTemplateRef, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
-import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import {
   RiFilter2Line,
   RiArrowUpLine,
@@ -195,6 +196,32 @@ const props = defineProps<{
 
 const sort = defineModel<SortConfig | null>('sort')
 const filters = defineModel<Record<string, ColumnFilters>>('filters', { default: () => ({}) })
+
+const isOpen = ref(false)
+
+function togglePopover() {
+  isOpen.value = !isOpen.value
+}
+
+// Click outside
+const anchorRef = useTemplateRef<HTMLElement>('anchor')
+const panelRef = useTemplateRef<HTMLElement>('panel')
+
+function onClickOutside(e: MouseEvent) {
+  if (!isOpen.value) return
+  const anchor = anchorRef.value
+  const panel = panelRef.value
+  if (anchor && anchor.contains(e.target as Node)) return
+  if (panel && panel.contains(e.target as Node)) return
+  isOpen.value = false
+}
+
+onMounted(() => {
+  document.addEventListener('mousedown', onClickOutside)
+})
+onUnmounted(() => {
+  document.removeEventListener('mousedown', onClickOutside)
+})
 
 const search = ref('')
 
@@ -309,10 +336,7 @@ function toggleSort(direction: SortDirection) {
 
 const { t } = useTranslation()
 
-const popoverRef = useTemplateRef<InstanceType<typeof Popover>>('popover')
-const panelRef = useTemplateRef<InstanceType<typeof PopoverPanel>>('panel')
-
-const { floatingStyles } = useFloating(popoverRef, panelRef, {
+const { floatingStyles } = useFloating(anchorRef, panelRef, {
   placement: 'bottom-start',
   middleware: [flip(), shift()],
   whileElementsMounted: autoUpdate,
