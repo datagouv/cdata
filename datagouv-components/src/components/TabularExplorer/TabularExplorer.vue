@@ -192,10 +192,10 @@
                   />
                   <span class="mt-px">{{ columnTypeLabel(col) }}</span>
                 </span>
-                <!-- Resize handle: wide hit zone, thin visible bar (skip last column to avoid scrollbar overlap) -->
+                <!-- Resize handle: wide hit zone, thin visible bar -->
                 <div
-                  v-if="col !== displayedColumns[displayedColumns.length - 1]"
-                  class="absolute -right-1.5 top-0 bottom-0 w-3 z-20 cursor-col-resize group/resize"
+                  class="absolute top-0 bottom-0 w-3 z-20 cursor-col-resize group/resize"
+                  :class="col === displayedColumns[displayedColumns.length - 1] ? 'right-3' : '-right-1.5'"
                   @mousedown.prevent="startResize(col, $event)"
                 >
                   <div
@@ -464,7 +464,7 @@ function showAllColumns() {
 
 // Column resize
 const columnWidths = ref<Record<string, number>>({})
-const resizing = ref<{ column: string, startX: number, startWidth: number } | null>(null)
+const resizing = ref<{ column: string, startX: number, startWidth: number, startScrollLeft: number } | null>(null)
 
 function initColumnWidths() {
   const ths = scrollContainerRef.value?.querySelectorAll('th')
@@ -479,14 +479,27 @@ function initColumnWidths() {
 
 function startResize(col: string, e: MouseEvent) {
   if (!Object.keys(columnWidths.value).length) initColumnWidths()
-  resizing.value = { column: col, startX: e.clientX, startWidth: columnWidths.value[col] ?? 100 }
+  resizing.value = { column: col, startX: e.clientX, startWidth: columnWidths.value[col] ?? 100, startScrollLeft: scrollContainerRef.value?.scrollLeft ?? 0 }
+  // Disable smooth scroll during resize
+  if (scrollContainerRef.value) scrollContainerRef.value.style.scrollBehavior = 'auto'
   document.addEventListener('mousemove', onResize)
   document.addEventListener('mouseup', stopResize)
 }
 
 function onResize(e: MouseEvent) {
   if (!resizing.value) return
-  const delta = e.clientX - resizing.value.startX
+  const container = scrollContainerRef.value
+  // Auto-scroll when mouse approaches the right edge of the container
+  if (container) {
+    const rect = container.getBoundingClientRect()
+    const distFromRight = rect.right - e.clientX
+    if (distFromRight < 50) {
+      container.scrollLeft += Math.max(1, (50 - distFromRight) * 0.5)
+    }
+  }
+  // Account for scroll changes in the delta
+  const scrollDelta = (container?.scrollLeft ?? 0) - resizing.value.startScrollLeft
+  const delta = (e.clientX - resizing.value.startX) + scrollDelta
   const newWidth = Math.max(60, resizing.value.startWidth + delta)
   columnWidths.value = { ...columnWidths.value, [resizing.value.column]: newWidth }
 }
