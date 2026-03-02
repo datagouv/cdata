@@ -65,6 +65,8 @@ export interface ColumnFilters {
   in?: string[]
   min?: number
   max?: number
+  contains?: string
+  null?: 'only' | 'exclude'
 }
 
 export type SortDirection = 'asc' | 'desc'

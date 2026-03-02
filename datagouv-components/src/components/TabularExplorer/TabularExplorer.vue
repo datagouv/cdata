@@ -83,7 +83,7 @@
               aria-hidden="true"
             />
             <span class="font-bold">{{ t('Lignes') }}</span>
-            <span class="font-mono tabular-nums">{{ allRows.length.toLocaleString() }}/{{ tableData.meta.total.toLocaleString() }}</span>
+            <span class="font-mono tabular-nums">{{ tableData.meta.total.toLocaleString() }}/{{ totalLines.toLocaleString() }}</span>
           </span>
         </div>
       </div>
@@ -175,7 +175,7 @@
                   <TabularFilterPopover
                     v-model:sort="sort"
                     v-model:filters="filters"
-                    class="mt-1.5"
+                    class="mt-1"
                     :column="col"
                     :column-type="getColumnType(col)"
                     :column-profile="getColumnProfile(col)"
@@ -203,7 +203,7 @@
               <td
                 v-for="col in displayedColumns"
                 :key="col"
-                class="p-2 align-middle whitespace-nowrap border-r border-[#E5E5E5] last:border-r-0 overflow-hidden cursor-pointer"
+                class="p-2 align-middle whitespace-nowrap border-r border-[#E5E5E5] last:border-r-0 overflow-hidden cursor-pointer hover:bg-gray-200/50"
                 :class="{ 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' }"
                 @click="onCellClick(col, row[col], $event)"
               >
@@ -358,6 +358,15 @@ const dataQuery = computed(() => {
     if (typeof filter.max === 'number' && Number.isFinite(filter.max)) {
       q[`${col}__less`] = filter.max
     }
+    if (filter.contains) {
+      q[`${col}__contains`] = filter.contains
+    }
+    if (filter.null === 'only') {
+      q[`${col}__isnull`] = ''
+    }
+    else if (filter.null === 'exclude') {
+      q[`${col}__isnotnull`] = ''
+    }
   }
   return q
 })
@@ -396,6 +405,8 @@ async function loadNextPage() {
     loadingMore.value = false
   }
 }
+
+const totalLines = computed(() => profileData.value?.profile?.total_lines ?? tableData.value?.meta.total ?? 0)
 
 const allColumns = computed(() => {
   if (!tableData.value?.data?.length) return []
@@ -448,6 +459,15 @@ const activeFilters = computed<ActiveFilter[]>(() => {
     const parts: string[] = []
     if (filter.in?.length) {
       parts.push(`= ${filter.in.join(', ')}`)
+    }
+    if (filter.contains) {
+      parts.push(`contient "${filter.contains}"`)
+    }
+    if (filter.null === 'only') {
+      parts.push('null uniquement')
+    }
+    else if (filter.null === 'exclude') {
+      parts.push('sans null')
     }
     if (filter.min != null && filter.max != null) {
       parts.push(`${filter.min} – ${filter.max}`)

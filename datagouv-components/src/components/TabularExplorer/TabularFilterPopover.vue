@@ -4,7 +4,10 @@
     ref="popover"
     class="relative shrink-0"
   >
-    <PopoverButton class="p-0.5 rounded hover:bg-gray-100 focus:outline-none">
+    <PopoverButton
+      class="p-0.5 rounded focus:outline-none"
+      :class="hasColumnFilter ? 'bg-[#3558A2] text-white' : 'hover:bg-gray-100'"
+    >
       <RiFilter2Line
         class="size-3.5"
         aria-hidden="true"
@@ -51,13 +54,69 @@
             </BrandedButton>
           </div>
 
+          <!-- Search (contains) -->
+          <div class="px-3 py-2 border-b border-black/10">
+            <div class="relative">
+              <RiSearchLine
+                class="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-medium"
+                aria-hidden="true"
+              />
+              <input
+                v-model="search"
+                type="text"
+                class="w-full h-8 text-sm border border-transparent rounded-lg py-1 pl-8 pr-3 bg-[#f3f3f5] focus:outline-none focus:border-blue-main"
+                :placeholder="t('Rechercher...')"
+              >
+            </div>
+          </div>
+
+          <!-- Categorical values -->
+          <div
+            v-if="columnType === 'categorical' && columnProfile?.tops && filteredTops.length"
+            class="max-h-56 overflow-auto p-1"
+          >
+            <label
+              v-for="top in filteredTops"
+              :key="top.value"
+              class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-gray-50 cursor-pointer text-xs"
+            >
+              <input
+                type="checkbox"
+                class="size-4 rounded shrink-0 accent-blue-main"
+                :checked="isValueSelected(top.value)"
+                @change="toggleValue(top.value)"
+              >
+              <span class="truncate font-medium">{{ top.value ?? 'null' }}</span>
+              <span class="ml-auto text-[#717182] font-medium shrink-0">{{ top.count }}</span>
+            </label>
+          </div>
+
           <!-- Null stats -->
           <div
             v-if="columnProfile && columnProfile.nb_missing_values > 0"
-            class="px-3 py-2 border-b border-black/10 text-[11px] text-gray-medium"
+            class="px-3 py-2 border-b border-black/10 space-y-1.5"
           >
-            {{ columnProfile.nb_missing_values }} null
-            ({{ nullPercent }})
+            <p class="text-[11px] text-gray-medium mb-0">
+              {{ columnProfile.nb_missing_values }} null ({{ nullPercent }})
+            </p>
+            <div class="flex items-center gap-1">
+              <BrandedButton
+                :color="nullFilter === 'only' ? 'primary' : 'tertiary'"
+                size="2xs"
+                keep-margins-even-without-borders
+                @click="toggleNullFilter('only')"
+              >
+                {{ t('Null uniquement') }}
+              </BrandedButton>
+              <BrandedButton
+                :color="nullFilter === 'exclude' ? 'primary' : 'tertiary'"
+                size="2xs"
+                keep-margins-even-without-borders
+                @click="toggleNullFilter('exclude')"
+              >
+                {{ t('Exclure null') }}
+              </BrandedButton>
+            </div>
           </div>
 
           <!-- Number range -->
@@ -106,40 +165,6 @@
               </div>
             </div>
           </template>
-
-          <!-- Categorical values -->
-          <template v-if="columnType === 'categorical' && columnProfile?.tops">
-            <div class="px-3 py-2 border-b border-black/10">
-              <div class="relative">
-                <RiSearchLine
-                  class="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-medium"
-                  aria-hidden="true"
-                />
-                <input
-                  v-model="search"
-                  type="text"
-                  class="w-full h-8 text-sm border border-transparent rounded-lg py-1 pl-8 pr-3 bg-[#f3f3f5] focus:outline-none focus:border-blue-main"
-                  :placeholder="t('Rechercher...')"
-                >
-              </div>
-            </div>
-            <div class="max-h-56 overflow-auto p-1">
-              <label
-                v-for="top in filteredTops"
-                :key="top.value"
-                class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-gray-50 cursor-pointer text-xs"
-              >
-                <input
-                  type="checkbox"
-                  class="size-4 rounded shrink-0 accent-blue-main"
-                  :checked="isValueSelected(top.value)"
-                  @change="toggleValue(top.value)"
-                >
-                <span class="truncate font-medium">{{ top.value ?? 'null' }}</span>
-                <span class="ml-auto text-[#717182] font-medium shrink-0">{{ top.count }}</span>
-              </label>
-            </div>
-          </template>
         </PopoverPanel>
       </Teleport>
     </ClientOnly>
@@ -147,7 +172,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import {
@@ -172,6 +197,43 @@ const sort = defineModel<SortConfig | null>('sort')
 const filters = defineModel<Record<string, ColumnFilters>>('filters', { default: () => ({}) })
 
 const search = ref('')
+
+// Sync search text → contains filter on the column
+let debounceTimeout: ReturnType<typeof setTimeout> | null = null
+
+watch(search, (q) => {
+  if (debounceTimeout) clearTimeout(debounceTimeout)
+  debounceTimeout = setTimeout(() => {
+    const existing = filters.value[props.column] ?? {}
+    if (q) {
+      filters.value = { ...filters.value, [props.column]: { ...existing, contains: q } }
+    }
+    else {
+      const { contains: _, ...rest } = existing
+      filters.value = { ...filters.value, [props.column]: rest }
+    }
+  }, 300)
+})
+
+const hasColumnFilter = computed(() => {
+  const f = filters.value[props.column]
+  if (!f) return false
+  return !!(f.in?.length || f.contains || f.null || f.min != null || f.max != null)
+})
+
+// Null filter helpers
+const nullFilter = computed(() => filters.value[props.column]?.null ?? null)
+
+function toggleNullFilter(mode: 'only' | 'exclude') {
+  const existing = filters.value[props.column] ?? {}
+  if (existing.null === mode) {
+    const { null: _, ...rest } = existing
+    filters.value = { ...filters.value, [props.column]: rest }
+  }
+  else {
+    filters.value = { ...filters.value, [props.column]: { ...existing, null: mode } }
+  }
+}
 
 // Categorical filter helpers
 const selectedValues = computed(() => filters.value[props.column]?.in ?? [])
