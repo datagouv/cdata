@@ -58,7 +58,7 @@
     </ObjectCardHeader>
     <div
       v-if="dataservice.organization || dataservice.owner"
-      class="text-sm m-0 flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
+      class="text-sm flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
     >
       <ObjectCardOwner
         :organization="dataservice.organization"
@@ -70,14 +70,14 @@
         class="size-4 flex-none fill-gray-medium"
       />
       <!-- https://github.com/datagouv/cdata/issues/653 -->
-      <p class="text-sm whitespace-nowrap mb-0">
+      <p class="text-sm whitespace-nowrap mb-0 text-gray-medium">
         {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataservice.metadata_modified_at, { dateStyle: 'medium' }) }) }}
       </p>
       <RiSubtractLine
         aria-hidden="true"
         class="size-4 flex-none fill-gray-medium"
       />
-      <div class="flex items-center gap-1">
+      <div class="flex items-center gap-1 text-gray-medium">
         <p
           class="text-sm mb-0 flex items-center gap-0.5"
           :aria-label="t('{n} vues | {n} vue | {n} vues', dataservice.metrics.views)"
