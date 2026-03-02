@@ -336,13 +336,22 @@
           + Ajouter une série
         </button>
       </fieldset>
+
+      <div class="px-6">
+        <!-- Save button -->
+        <BrandedButton
+          @click="saveChart"
+        >
+          Sauvegarder le graphique
+        </BrandedButton>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { XAxisType, XAxisSortBy, SortDirection, UnitPosition, DataSeries, Resource, PaginatedArray, ChartForm } from '@datagouv/components-next'
-import { SearchableSelect, useGetProfile, useHasTabularData } from '@datagouv/components-next'
+import type { XAxisType, XAxisSortBy, SortDirection, UnitPosition, DataSeries, Resource, PaginatedArray, ChartForm, Chart } from '@datagouv/components-next'
+import { SearchableSelect, useGetProfile, useHasTabularData, toast, BrandedButton } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
 import { computed, defineAsyncComponent, reactive, watch, ref } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
@@ -357,6 +366,7 @@ const dataset = ref<DatasetSuggest>()
 const resources = ref<Array<Resource>>([])
 const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref('')
+const savedChart = ref<Chart | null>(null)
 
 const { $api } = useNuxtApp()
 
@@ -463,4 +473,26 @@ const chartPreview = computed<ChartForm>(() => ({
   series: form.series,
   extras: {},
 } satisfies ChartForm))
+
+const saveChart = async () => {
+  try {
+    if (savedChart.value?.id) {
+      savedChart.value = await $api<Chart>(`/api/1/visualizations/${savedChart.value.id}/`, {
+        method: 'PATCH',
+        body: JSON.stringify(chartPreview.value),
+      })
+    }
+    else {
+      savedChart.value = await $api<Chart>('/api/1/visualizations/', {
+        method: 'POST',
+        body: JSON.stringify(chartPreview.value),
+      })
+    }
+
+    toast.success(savedChart.value?.id ? 'Graphique mis à jour !' : 'Graphique sauvegardé !')
+  }
+  catch (error) {
+    console.error('Failed to save chart:', error)
+  }
+}
 </script>
