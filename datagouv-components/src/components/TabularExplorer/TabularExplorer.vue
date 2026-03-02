@@ -192,8 +192,9 @@
                   />
                   <span class="mt-px">{{ columnTypeLabel(col) }}</span>
                 </span>
-                <!-- Resize handle: wide hit zone, thin visible bar -->
+                <!-- Resize handle: wide hit zone, thin visible bar (skip last column to avoid scrollbar overlap) -->
                 <div
+                  v-if="col !== displayedColumns[displayedColumns.length - 1]"
                   class="absolute -right-1.5 top-0 bottom-0 w-3 z-20 cursor-col-resize group/resize"
                   @mousedown.prevent="startResize(col, $event)"
                 >
@@ -221,10 +222,21 @@
               >
                 <span
                   v-if="row[col] == null || row[col] === ''"
-                  class="text-gray-medium italic text-sm"
-                >–</span>
+                  class="font-[Inconsolata,monospace] text-[#929292] italic text-sm"
+                >null</span>
                 <span v-else-if="getColumnType(col) === 'number'">{{ formatNumber(row[col]) }}</span>
-                <span v-else-if="getColumnType(col) === 'date'">{{ row[col] }}</span>
+                <span v-else-if="getColumnType(col) === 'date'">{{ formatDate(row[col]) }}</span>
+                <span
+                  v-else-if="getColumnType(col) === 'boolean'"
+                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[12px]"
+                  :class="isTruthy(row[col]) ? 'bg-[#B8FEC9] text-[#18753C]' : 'bg-[#FFE9E6] text-[#CE0500]'"
+                >
+                  <span
+                    class="size-2 rounded-full"
+                    :class="isTruthy(row[col]) ? 'bg-[#18753C]' : 'bg-[#CE0500]'"
+                  />
+                  {{ isTruthy(row[col]) ? t('Vrai') : t('Faux') }}
+                </span>
                 <span
                   v-else-if="getColumnType(col) === 'categorical'"
                   class="inline-block rounded-[4px] font-medium px-2 py-0.5 text-xs max-w-full truncate"
@@ -456,22 +468,18 @@ const resizing = ref<{ column: string, startX: number, startWidth: number } | nu
 
 function initColumnWidths() {
   const ths = scrollContainerRef.value?.querySelectorAll('th')
-  console.log('[resize] initColumnWidths, ths found:', ths?.length, 'scrollContainer:', scrollContainerRef.value)
   if (!ths) return
   const widths: Record<string, number> = {}
   ths.forEach((th, i) => {
     const col = displayedColumns.value[i]
     if (col) widths[col] = th.offsetWidth
   })
-  console.log('[resize] initial widths:', JSON.stringify(widths))
   columnWidths.value = widths
 }
 
 function startResize(col: string, e: MouseEvent) {
-  console.log('[resize] startResize col:', col, 'current widths:', JSON.stringify(columnWidths.value))
   if (!Object.keys(columnWidths.value).length) initColumnWidths()
   resizing.value = { column: col, startX: e.clientX, startWidth: columnWidths.value[col] ?? 100 }
-  console.log('[resize] resizing started:', JSON.stringify(resizing.value))
   document.addEventListener('mousemove', onResize)
   document.addEventListener('mouseup', stopResize)
 }
@@ -480,12 +488,10 @@ function onResize(e: MouseEvent) {
   if (!resizing.value) return
   const delta = e.clientX - resizing.value.startX
   const newWidth = Math.max(60, resizing.value.startWidth + delta)
-  console.log('[resize] onResize delta:', delta, 'newWidth:', newWidth, 'col:', resizing.value.column)
   columnWidths.value = { ...columnWidths.value, [resizing.value.column]: newWidth }
 }
 
 function stopResize() {
-  console.log('[resize] stopResize, final widths:', JSON.stringify(columnWidths.value))
   resizing.value = null
   document.removeEventListener('mousemove', onResize)
   document.removeEventListener('mouseup', stopResize)
@@ -608,6 +614,19 @@ function formatNumber(value: unknown): string {
   const num = Number(value)
   if (Number.isNaN(num)) return String(value)
   return num.toLocaleString('fr-FR')
+}
+
+function formatDate(value: unknown): string {
+  if (value == null || value === '') return '–'
+  const d = new Date(String(value))
+  if (Number.isNaN(d.getTime())) return String(value)
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
+function isTruthy(value: unknown): boolean {
+  if (typeof value === 'boolean') return value
+  if (typeof value === 'string') return value.toLowerCase() === 'true'
+  return Boolean(value)
 }
 
 const BADGE_PALETTE = [
