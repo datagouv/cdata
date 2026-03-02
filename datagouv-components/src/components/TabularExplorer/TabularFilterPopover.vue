@@ -204,16 +204,26 @@ const profileMax = computed(() => props.columnProfile?.max ?? 100)
 const rangeMin = ref<number | undefined>(undefined)
 const rangeMax = ref<number | undefined>(undefined)
 
+function isValidNumber(v: unknown): v is number {
+  return typeof v === 'number' && Number.isFinite(v)
+}
+
 function applyRange() {
   const existing = filters.value[props.column] ?? {}
-  filters.value = {
-    ...filters.value,
-    [props.column]: {
-      ...existing,
-      min: rangeMin.value,
-      max: rangeMax.value,
-    },
+  const next = { ...existing }
+  if (isValidNumber(rangeMin.value)) {
+    next.min = rangeMin.value
   }
+  else {
+    delete next.min
+  }
+  if (isValidNumber(rangeMax.value)) {
+    next.max = rangeMax.value
+  }
+  else {
+    delete next.max
+  }
+  filters.value = { ...filters.value, [props.column]: next }
 }
 
 function clearRange() {

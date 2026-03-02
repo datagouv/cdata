@@ -29,6 +29,18 @@
           class="fr-input w-full"
           placeholder="Resource ID"
         >
+        <button
+          type="button"
+          @click="resourceId = '79e2c14d-8278-4407-84b5-e8c279fc578c'"
+        >
+          indicateurs data.gouv
+        </button>
+        <button
+          type="button"
+          @click="resourceId = 'd0574a19-9005-4fff-92db-050b5fb2c72c'"
+        >
+          données véhicules
+        </button>
       </form>
     </div>
 
