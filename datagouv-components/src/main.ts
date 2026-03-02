@@ -93,6 +93,7 @@ import GlobalSearch from './components/Search/GlobalSearch.vue'
 import SearchInput from './components/Search/SearchInput.vue'
 import SearchableSelect from './components/Form/SearchableSelect.vue'
 import SelectGroup from './components/Form/SelectGroup.vue'
+import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
@@ -316,4 +317,5 @@ export {
   SearchInput,
   SearchableSelect,
   SelectGroup,
+  TabularExplorer,
 }

@@ -18,29 +18,32 @@ export async function useAPI<T, U = T>(
 
   const redirectOn404 = options && 'redirectOn404' in options && options.redirectOn404
   const redirectOnSlug = options && 'redirectOnSlug' in options && options.redirectOnSlug
+  const isRaw = options && 'raw' in options && options.raw
   const response = await useFetch(url, {
     ...options,
-    $fetch: redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api,
+    ...(!isRaw && { $fetch: redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api }),
   })
 
-  const data = toValue(response.data) || {}
+  if (!isRaw) {
+    const data = toValue(response.data) || {}
 
-  if (redirectOnSlug && redirectOnSlug in route.params && 'slug' in data && route.params[redirectOnSlug] !== data.slug) {
-    const newParams = { ...route.params }
-    newParams[redirectOnSlug] = data.slug as string
+    if (redirectOnSlug && redirectOnSlug in route.params && 'slug' in data && route.params[redirectOnSlug] !== data.slug) {
+      const newParams = { ...route.params }
+      newParams[redirectOnSlug] = data.slug as string
 
-    await nuxtApp.runWithContext(() => navigateTo({ name: route.name, params: newParams, query: route.query, hash: route.hash }, { redirectCode: 301 }))
-  }
-
-  if (isAdmin) {
-    // Check the response to see if an `organization` or an `owner` is present
-    // to add this organization/user to the menu.
-    if ('organization' in data && data.organization) {
-      setCurrentOrganization(data.organization as OrganizationReference)
+      await nuxtApp.runWithContext(() => navigateTo({ name: route.name, params: newParams, query: route.query, hash: route.hash }, { redirectCode: 301 }))
     }
 
-    if ('owner' in data && data.owner) {
-      setCurrentUser(data.owner as User)
+    if (isAdmin) {
+      // Check the response to see if an `organization` or an `owner` is present
+      // to add this organization/user to the menu.
+      if ('organization' in data && data.organization) {
+        setCurrentOrganization(data.organization as OrganizationReference)
+      }
+
+      if ('owner' in data && data.owner) {
+        setCurrentUser(data.owner as User)
+      }
     }
   }
 
