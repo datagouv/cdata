@@ -61,6 +61,12 @@ export interface TabularTopValue {
 
 export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean'
 
+export interface ColumnFilters {
+  in?: string[]
+  min?: number
+  max?: number
+}
+
 export type SortDirection = 'asc' | 'desc'
 
 export interface SortConfig {

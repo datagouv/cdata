@@ -125,6 +125,7 @@
                   />
                   <TabularFilterPopover
                     v-model:sort="sort"
+                    v-model:filters="filters"
                     class="mt-1.5"
                     :column="col"
                     :column-type="getColumnType(col)"
@@ -248,7 +249,7 @@ import { useTranslation } from '../../composables/useTranslation'
 import ClientOnly from '../ClientOnly.vue'
 import SimpleBanner from '../SimpleBanner.vue'
 import TabularFilterPopover from './TabularFilterPopover.vue'
-import type { TabularDataResponse, TabularProfileResponse, ColumnType, SortConfig } from './types'
+import type { TabularDataResponse, TabularProfileResponse, ColumnType, SortConfig, ColumnFilters } from './types'
 
 const props = defineProps<{
   resourceId: string
@@ -274,13 +275,25 @@ const profileUrl = computed(() =>
   `/tabular/resources/${props.resourceId}/profile`,
 )
 
-// Sort state
+// Sort & filter state
 const sort = ref<SortConfig | null>(null)
+const filters = ref<Record<string, ColumnFilters>>({})
 
 const dataQuery = computed(() => {
   const q: Record<string, string | number> = { page: 1, page_size: 20 }
   if (sort.value) {
     q[`${sort.value.column}__sort`] = sort.value.direction
+  }
+  for (const [col, filter] of Object.entries(filters.value)) {
+    if (filter.in?.length) {
+      q[`${col}__in`] = filter.in.join(',')
+    }
+    if (filter.min != null) {
+      q[`${col}__greater`] = filter.min
+    }
+    if (filter.max != null) {
+      q[`${col}__less`] = filter.max
+    }
   }
   return q
 })
