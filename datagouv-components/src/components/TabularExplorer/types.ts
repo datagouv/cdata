@@ -60,3 +60,10 @@ export interface TabularTopValue {
 }
 
 export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean'
+
+export type SortDirection = 'asc' | 'desc'
+
+export interface SortConfig {
+  column: string
+  direction: SortDirection
+}

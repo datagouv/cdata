@@ -113,7 +113,18 @@
               >
                 <div class="flex items-center gap-0.5 min-w-0">
                   <span class="font-extrabold text-sm truncate">{{ col }}</span>
+                  <RiArrowUpLine
+                    v-if="sort?.column === col && sort.direction === 'asc'"
+                    class="size-3.5 shrink-0 text-blue-main"
+                    aria-hidden="true"
+                  />
+                  <RiArrowDownLine
+                    v-else-if="sort?.column === col && sort.direction === 'desc'"
+                    class="size-3.5 shrink-0 text-blue-main"
+                    aria-hidden="true"
+                  />
                   <TabularFilterPopover
+                    v-model:sort="sort"
                     class="mt-1.5"
                     :column="col"
                     :column-type="getColumnType(col)"
@@ -224,6 +235,8 @@ import {
   RiLayoutColumnLine,
   RiLayoutRowLine,
   RiArrowDownSLine,
+  RiArrowUpLine,
+  RiArrowDownLine,
   RiPriceTag3Line,
   RiText,
   RiCalendarLine,
@@ -235,7 +248,7 @@ import { useTranslation } from '../../composables/useTranslation'
 import ClientOnly from '../ClientOnly.vue'
 import SimpleBanner from '../SimpleBanner.vue'
 import TabularFilterPopover from './TabularFilterPopover.vue'
-import type { TabularDataResponse, TabularProfileResponse, ColumnType } from './types'
+import type { TabularDataResponse, TabularProfileResponse, ColumnType, SortConfig } from './types'
 
 const props = defineProps<{
   resourceId: string
@@ -261,7 +274,18 @@ const profileUrl = computed(() =>
   `/tabular/resources/${props.resourceId}/profile`,
 )
 
-const { data: tableData, error } = await useFetch<TabularDataResponse>(dataUrl, { raw: true, query: { page: 1, page_size: 20 } })
+// Sort state
+const sort = ref<SortConfig | null>(null)
+
+const dataQuery = computed(() => {
+  const q: Record<string, string | number> = { page: 1, page_size: 20 }
+  if (sort.value) {
+    q[`${sort.value.column}__sort`] = sort.value.direction
+  }
+  return q
+})
+
+const { data: tableData, error } = await useFetch<TabularDataResponse>(dataUrl, { raw: true, query: dataQuery })
 
 const { data: profileData, error: profileError } = await useFetch<TabularProfileResponse>(profileUrl, { raw: true })
 

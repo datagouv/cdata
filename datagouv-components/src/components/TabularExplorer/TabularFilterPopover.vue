@@ -32,18 +32,20 @@
           <div class="flex items-center gap-1 px-2 py-1.5 border-b border-black/10 text-xs">
             <span class="text-[#3A3A3A]">{{ t('Trier') }}</span>
             <BrandedButton
-              color="tertiary"
+              :color="sort?.column === column && sort?.direction === 'asc' ? 'primary' : 'tertiary'"
               size="2xs"
               :icon="RiArrowUpLine"
               keep-margins-even-without-borders
+              @click="toggleSort('asc')"
             >
               {{ t('Croissant') }}
             </BrandedButton>
             <BrandedButton
-              color="tertiary"
+              :color="sort?.column === column && sort?.direction === 'desc' ? 'primary' : 'tertiary'"
               size="2xs"
               :icon="RiArrowDownLine"
               keep-margins-even-without-borders
+              @click="toggleSort('desc')"
             >
               {{ t('Décroissant') }}
             </BrandedButton>
@@ -107,14 +109,25 @@ import {
 import { useTranslation } from '../../composables/useTranslation'
 import BrandedButton from '../BrandedButton.vue'
 import ClientOnly from '../ClientOnly.vue'
-import type { TabularColumnProfile, ColumnType } from './types'
+import type { TabularColumnProfile, ColumnType, SortConfig, SortDirection } from './types'
 
-defineProps<{
+const props = defineProps<{
   column: string
   columnType: ColumnType
   columnProfile: TabularColumnProfile | null
   nullPercent: string
 }>()
+
+const sort = defineModel<SortConfig | null>('sort')
+
+function toggleSort(direction: SortDirection) {
+  if (sort.value?.column === props.column && sort.value.direction === direction) {
+    sort.value = null
+  }
+  else {
+    sort.value = { column: props.column, direction }
+  }
+}
 
 const { t } = useTranslation()
 
