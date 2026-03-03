@@ -4,7 +4,6 @@ import { usePostApiWithCsrf } from './api'
 export type Me = User & {
   about: string | null
   active: boolean
-  apikey: string | null
   email: string
   metrics: {
     datasets: number
