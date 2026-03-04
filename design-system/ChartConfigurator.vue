@@ -41,6 +41,39 @@
 
     <!-- Form -->
     <div class="col-span-5 space-y-6 lg:ml-4 py-4 rounded-lg bg-white border border-new-gray-light">
+      <!-- Chart selection -->
+      <fieldset class="px-6 space-y-4">
+        <p class="mb-2 font-bold">
+          Graphiques existants
+        </p>
+        <div class="flex gap-2">
+          <select
+            v-model="selectedChartId"
+            class="flex-1 fr-select"
+          >
+            <option
+              value=""
+              disabled
+            >
+              Sélectionnez un graphique
+            </option>
+            <option
+              v-for="chart in charts?.data"
+              :key="chart.id"
+              :value="chart.id"
+            >
+              {{ chart.title }}
+            </option>
+          </select>
+          <button
+            class="fr-btn"
+            :disabled="!selectedChartId"
+            @click="loadSelectedChart"
+          >
+            Charger
+          </button>
+        </div>
+      </fieldset>
       <fieldset class="px-6 space-y-4">
         <p class="mb-2 font-bold">
           Ressources
@@ -355,6 +388,7 @@ import { SearchableSelect, useGetProfile, useHasTabularData, toast, BrandedButto
 import { RiDeleteBinLine } from '@remixicon/vue'
 import { computed, defineAsyncComponent, reactive, watch, ref } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
+import { useAPI } from '~/utils/api'
 
 const hasTabularData = useHasTabularData()
 const getProfile = useGetProfile()
@@ -363,21 +397,14 @@ const columns = ref<Record<string, Array<string>>>({})
 const flattenedColumns = computed(() => Object.entries(columns.value).map(([key, value]) => ({ key, value })).flat())
 
 const dataset = ref<DatasetSuggest>()
-const resources = ref<Array<Resource>>([])
 const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref('')
 const savedChart = ref<Chart | null>(null)
+const selectedChartId = ref('')
+
+const resources = computed(() => Object.values(savedResources))
 
 const { $api } = useNuxtApp()
-
-const suggestDataset = async (q: string): Promise<Array<DatasetSuggest>> => {
-  return await $api<Array<DatasetSuggest>>('https://demo.data.gouv.fr/api/1/datasets/suggest/', {
-    query: {
-      q,
-      size: 5,
-    },
-  })
-}
 
 const dummyDataset = { id: '6170ae10981edd7b132f28a0', title: 'Logements et logements sociaux dans les EPCI' }
 const dummySerie: DataSeries = {
@@ -389,40 +416,11 @@ const dummySerie: DataSeries = {
   column_x_name_override: null,
 }
 
-onMounted(() => {
-  dataset.value = dummyDataset
-})
+const { data: charts, refresh: refresh } = await useAPI<PaginatedArray<Chart>>('/api/1/visualizations/', { lazy: true })
 
-watch(dataset, async (newDataset) => {
-  if (newDataset) {
-    try {
-      const fetchedResources = await $api<PaginatedArray<Resource>>(`https://demo.data.gouv.fr/api/2/datasets/${newDataset.id}/resources/`)
-      resources.value = fetchedResources.data.filter(resource => hasTabularData(resource))
-      for (const r of resources.value) {
-        savedResources[r.id] = r
-      }
-    }
-    catch (error) {
-      console.error('Failed to fetch resources:', error)
-      resources.value = []
-    }
-  }
-  else {
-    resources.value = []
-  }
-})
+dataset.value = dummyDataset
 
-watch([selectedResource], async ([r]) => {
-  if (r) {
-    if (columns.value[r]) {
-      return
-    }
-    const profile = await getProfile(r)
-    columns.value[r] = profile.profile.header
-  }
-})
-
-const form = reactive<{
+const form = ref<{
   title: string
   description: string
   xAxisColumn: string
@@ -455,24 +453,111 @@ const user = useMaybeMe()
 const chartPreview = computed<ChartForm>(() => ({
   organization: null,
   owner: user.value ? user.value.id : 'dummyForDS',
-  title: form.title,
-  description: form.description,
+  title: form.value.title,
+  description: form.value.description,
   private: false,
   x_axis: {
-    column_x: form.xAxisColumn,
-    type: form.xAxisType,
-    ...(form.xAxisSortBy ? { sort_x_by: form.xAxisSortBy, sort_x_direction: form.xAxisSortDirection } : {}),
+    column_x: form.value.xAxisColumn,
+    type: form.value.xAxisType,
+    ...(form.value.xAxisSortBy ? { sort_x_by: form.value.xAxisSortBy, sort_x_direction: form.value.xAxisSortDirection } : {}),
   },
   y_axis: {
-    label: form.yAxisLabel || undefined,
-    min: form.yAxisMin,
-    max: form.yAxisMax,
-    unit: form.yAxisUnit || undefined,
-    unit_position: form.yAxisUnitPosition,
+    label: form.value.yAxisLabel || undefined,
+    min: form.value.yAxisMin,
+    max: form.value.yAxisMax,
+    unit: form.value.yAxisUnit || undefined,
+    unit_position: form.value.yAxisUnitPosition,
   },
-  series: form.series,
+  series: form.value.series,
   extras: {},
 } satisfies ChartForm))
+
+watch(dataset, async (newDataset) => {
+  if (newDataset) {
+    try {
+      const fetchedResources = await $api<PaginatedArray<Resource>>(`https://demo.data.gouv.fr/api/2/datasets/${newDataset.id}/resources/`)
+      for (const r of fetchedResources.data.filter(resource => hasTabularData(resource))) {
+        savedResources[r.id] = r
+      }
+    }
+    catch (error) {
+      console.error('Failed to fetch resources:', error)
+    }
+  }
+})
+
+const loadMissingResourcesForChart = async (resourceIds: Set<string>) => {
+  for (const id of resourceIds) {
+    if (savedResources[id]) continue
+
+    try {
+      const resource = await $api<Resource>(`https://demo.data.gouv.fr/api/2/datasets/resources/${id}/`)
+      savedResources[id] = resource
+    }
+    catch (error) {
+      console.error(`Failed to fetch resource ${id}:`, error)
+    }
+  }
+}
+
+watch([selectedResource], async ([r]) => {
+  if (r) {
+    if (columns.value[r]) {
+      return
+    }
+    const profile = await getProfile(r)
+    columns.value[r] = profile.profile.header
+  }
+})
+
+const suggestDataset = async (q: string): Promise<Array<DatasetSuggest>> => {
+  return await $api<Array<DatasetSuggest>>('https://demo.data.gouv.fr/api/1/datasets/suggest/', {
+    query: { q, size: 5 },
+  })
+}
+
+const loadChart = async (id: string) => {
+  try {
+    const { data } = await useAPI<Chart>(`/api/1/visualizations/${id}/`)
+    if (data.value) {
+      savedChart.value = data.value
+
+      const chartResources = new Set<string>()
+      for (const serie of data.value.series) {
+        if (serie.resource_id) {
+          chartResources.add(serie.resource_id)
+        }
+      }
+
+      form.value = {
+        ...data.value,
+        xAxisType: data.value.x_axis.type,
+        xAxisColumn: data.value.x_axis.column_x,
+        xAxisSortBy: data.value.x_axis.sort_x_by || '',
+        xAxisSortDirection: data.value.x_axis.sort_x_direction || 'asc',
+        yAxisLabel: data.value.y_axis.label || '',
+        yAxisMin: data.value.y_axis.min,
+        yAxisMax: data.value.y_axis.max,
+        yAxisUnit: data.value.y_axis.unit || '',
+        yAxisUnitPosition: data.value.y_axis.unit_position || 'suffix',
+      }
+
+      await loadMissingResourcesForChart(chartResources)
+
+      toast.success('Graphique chargé !')
+    }
+  }
+  catch (error) {
+    console.error('Failed to load chart:', error)
+    toast.error('Erreur lors du chargement du graphique')
+  }
+}
+
+const loadSelectedChart = () => {
+  if (selectedChartId.value) {
+    loadChart(selectedChartId.value)
+  }
+}
 
 const saveChart = async () => {
   try {
@@ -490,6 +575,7 @@ const saveChart = async () => {
     }
 
     toast.success(savedChart.value?.id ? 'Graphique mis à jour !' : 'Graphique sauvegardé !')
+    await refresh()
   }
   catch (error) {
     console.error('Failed to save chart:', error)
