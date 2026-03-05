@@ -41,3 +41,11 @@ export interface ResourceGroup {
   total: number
   items: Resource[]
 }
+
+export type WfsMetadata = {
+  format: string
+  layers: { name: string, default_crs: string }
+  version: string
+  detected_layer: { name: string, default_crs: string }
+  output_formats: Array<string>
+}

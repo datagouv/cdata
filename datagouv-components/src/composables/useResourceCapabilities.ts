@@ -4,7 +4,7 @@ import { useTranslation } from './useTranslation'
 import { useHasTabularData } from './useHasTabularData'
 import { detectOgcService } from '../functions/resources'
 import { isOrganizationCertified } from '../functions/organizations'
-import type { Resource } from '../types/resources'
+import type { Resource, WfsMetadata } from '../types/resources'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
@@ -107,7 +107,7 @@ export function useResourceCapabilities(
 
   const wfsFormats = computed(() => {
     const r = toValue(resource)
-    const wfsMetadata = r.extras['analysis:parsing:ogc_metadata']
+    const wfsMetadata = r.extras['analysis:parsing:ogc_metadata'] as WfsMetadata | null
     if (!wfsMetadata || wfsMetadata.format !== `wfs`) return []
     const outputFormats = wfsMetadata.output_formats.map((format: string) => format.toLowerCase())
     const layer = wfsMetadata.detected_layer
@@ -122,7 +122,7 @@ export function useResourceCapabilities(
 
   const defaultWfsProjection = computed<string | null>(() => {
     const r = toValue(resource)
-    const wfsMetadata = r.extras['analysis:parsing:ogc_metadata']
+    const wfsMetadata = r.extras['analysis:parsing:ogc_metadata'] as WfsMetadata | null
     if (!wfsMetadata || wfsMetadata.format !== `wfs`) return null
     return wfsMetadata?.detected_layer?.default_crs ?? null
   })
