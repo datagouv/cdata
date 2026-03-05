@@ -50,7 +50,7 @@
     "maplibre-gl": "^5.6.2",
     "ofetch": "^1.4.1",
     "ol": "^10.6.1",
-    "pdf-vue3": "^1.0.12",
+    "pdfjs-dist": "^4.10.38",
     "pmtiles": "^4.3.0",
     "popmotion": "^11.0",
     "rehype-highlight": "^7.0.2",
