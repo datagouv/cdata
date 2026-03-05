@@ -8,6 +8,32 @@ import type { Resource } from '../types/resources'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
+const WFS_EXPORT_FORMATS = [
+  {
+    name: 'csv',
+    mimetype: 'csv',
+  },
+  {
+    name: 'json',
+    mimetype: 'application/json',
+  },
+  {
+    name: 'shp',
+    mimetype: 'SHAPE-ZIP',
+  },
+  {
+    name: 'gml',
+    mimetype: 'application/gml+xml',
+  },
+  {
+    name: 'kml',
+    mimetype: 'KML',
+  },
+  {
+    name: 'gpkg',
+    mimetype: 'application/geopackage+sqlite3',
+  },
+]
 const URL_FORMATS = ['url', 'doi', 'www:link', 'www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
 
 export function useResourceCapabilities(
@@ -67,6 +93,40 @@ export function useResourceCapabilities(
     return formats
   })
 
+  function buildWfsDownloadUrl(baseUrl: string, wfsMetadata: { version?: string }, format: { name: string, mimetype: string }, layer: { name: string, default_crs: string }) {
+    const version = wfsMetadata.version ?? '2.0.0'
+    const query = new URLSearchParams({
+      REQUEST: 'GetFeature',
+      VERSION: version,
+      TYPENAME: layer.name,
+      OUTPUTFORMAT: format.mimetype,
+      SRSNAME: layer.default_crs,
+    })
+    return `${baseUrl.split('?')[0]}?${query.toString()}`
+  }
+
+  const wfsFormats = computed(() => {
+    const r = toValue(resource)
+    const wfsMetadata = r.extras['analysis:parsing:ogc_metadata']
+    if (!wfsMetadata || wfsMetadata.format !== `wfs`) return []
+    const outputFormats = wfsMetadata.output_formats.map((format: string) => format.toLowerCase())
+    const layer = wfsMetadata.detected_layer
+    if (!layer) return []
+    const formats = WFS_EXPORT_FORMATS.filter(format => outputFormats.indexOf(format.mimetype.toLowerCase()) >= 0)
+      .map(format => ({
+        url: buildWfsDownloadUrl(r.url, wfsMetadata, format, layer),
+        format: format.name,
+      }))
+    return formats
+  })
+
+  const defaultWfsProjection = computed<string | null>(() => {
+    const r = toValue(resource)
+    const wfsMetadata = r.extras['analysis:parsing:ogc_metadata']
+    if (!wfsMetadata || wfsMetadata.format !== `wfs`) return null
+    return wfsMetadata?.detected_layer?.default_crs ?? null
+  })
+
   const isResourceUrl = computed(() => URL_FORMATS.includes(toValue(resource).format))
 
   const tabsOptions = computed(() => {
@@ -111,6 +171,8 @@ export function useResourceCapabilities(
     ogcService,
     ogcWms,
     generatedFormats,
+    wfsFormats,
+    defaultWfsProjection,
     isResourceUrl,
     tabsOptions,
   }
