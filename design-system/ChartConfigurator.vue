@@ -463,7 +463,7 @@ const chartPreview = computed<ChartForm>(() => ({
   },
   series: form.value.series,
   extras: {},
-}))
+} satisfies ChartForm))
 
 watch(dataset, async (newDataset) => {
   if (newDataset) {
