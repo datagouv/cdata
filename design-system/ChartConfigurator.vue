@@ -1,8 +1,6 @@
 <template>
   <div class="grid lg:grid-cols-12 gap-4">
-    <!-- Live preview -->
     <div class="col-span-7 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
-      <!-- Title -->
       <div>
         <label
           for="chart-title"
@@ -10,13 +8,12 @@
         >Titre</label>
         <input
           id="chart-title"
-          v-model="form.title"
+          v-model="titleRef"
           type="text"
           class="w-full fr-input"
         >
       </div>
 
-      <!-- Description -->
       <div>
         <label
           for="chart-description"
@@ -24,7 +21,7 @@
         >Description</label>
         <textarea
           id="chart-description"
-          v-model="form.description"
+          v-model="descRef"
           class="w-full fr-input"
           rows="2"
         />
@@ -38,10 +35,7 @@
         </ClientOnly>
       </div>
     </div>
-
-    <!-- Form -->
     <div class="col-span-5 space-y-6 lg:ml-4 py-4 rounded-lg bg-white border border-new-gray-light">
-      <!-- Chart selection -->
       <fieldset class="px-6 space-y-4">
         <p class="mb-2 font-bold">
           Graphiques existants
@@ -88,7 +82,6 @@
           :suggest="suggestDataset"
           class="mb-4"
         />
-        <!-- Resources select -->
         <label
           for="resource-select"
           class="mb-1"
@@ -114,7 +107,6 @@
           </option>
         </select>
       </fieldset>
-      <!-- X Axis -->
       <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
         <p class="font-bold mb-2">
           Axe X
@@ -281,7 +273,6 @@
         </div>
       </fieldset>
 
-      <!-- Series -->
       <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
         <p class="font-bold mb-2">
           Séries
@@ -371,7 +362,6 @@
       </fieldset>
 
       <div class="px-6">
-        <!-- Save button -->
         <BrandedButton
           @click="saveChart"
         >
@@ -384,14 +374,12 @@
 
 <script setup lang="ts">
 import type { XAxisType, XAxisSortBy, SortDirection, UnitPosition, DataSeries, Resource, PaginatedArray, ChartForm, Chart } from '@datagouv/components-next'
-import { SearchableSelect, useGetProfile, useHasTabularData, toast, BrandedButton } from '@datagouv/components-next'
+import { SearchableSelect, useGetProfile, useHasTabularData, toast, BrandedButton, useDebouncedRef } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
-import { computed, defineAsyncComponent, reactive, watch, ref } from 'vue'
+import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
 import { useAPI } from '~/utils/api'
 
-const hasTabularData = useHasTabularData()
-const getProfile = useGetProfile()
 const ChartViewerWrapper = defineAsyncComponent(() => import('../datagouv-components/src/components/Chart/ChartViewerWrapper.vue'))
 const columns = ref<Record<string, Array<string>>>({})
 const flattenedColumns = computed(() => Object.entries(columns.value).map(([key, value]) => ({ key, value })).flat())
@@ -405,8 +393,10 @@ const selectedChartId = ref('')
 const resources = computed(() => Object.values(savedResources))
 
 const { $api } = useNuxtApp()
+const hasTabularData = useHasTabularData()
+const getProfile = useGetProfile()
 
-const dummyDataset = { id: '6170ae10981edd7b132f28a0', title: 'Logements et logements sociaux dans les EPCI' }
+const dummyDataset = { id: '6170ae10981edd7b132f28a0', title: 'Logements et logements sociaux dans les EPCI' } as DatasetSuggest
 const dummySerie: DataSeries = {
   type: 'histogram',
   column_y: 'Nombre de logements',
@@ -421,8 +411,6 @@ const { data: charts, refresh: refresh } = await useAPI<PaginatedArray<Chart>>('
 dataset.value = dummyDataset
 
 const form = ref<{
-  title: string
-  description: string
   xAxisColumn: string
   xAxisType: XAxisType
   xAxisSortBy: XAxisSortBy | ''
@@ -434,8 +422,6 @@ const form = ref<{
   yAxisUnitPosition: UnitPosition
   series: Array<DataSeries>
 }>({
-  title: 'Mon graphique',
-  description: '',
   xAxisColumn: 'nom_region',
   xAxisType: 'discrete',
   xAxisSortBy: '',
@@ -450,11 +436,18 @@ const form = ref<{
 
 const user = useMaybeMe()
 
+const debounceMs = 300
+const titleRef = ref('Mon graphique')
+const descRef = ref('')
+
+const titleDebounced = useDebouncedRef(titleRef, debounceMs)
+const descDebounced = useDebouncedRef(descRef, debounceMs)
+
 const chartPreview = computed<ChartForm>(() => ({
   organization: null,
   owner: user.value ? user.value.id : 'dummyForDS',
-  title: form.value.title,
-  description: form.value.description,
+  title: titleDebounced.debounced.value,
+  description: descDebounced.debounced.value,
   private: false,
   x_axis: {
     column_x: form.value.xAxisColumn,
@@ -470,7 +463,7 @@ const chartPreview = computed<ChartForm>(() => ({
   },
   series: form.value.series,
   extras: {},
-} satisfies ChartForm))
+}))
 
 watch(dataset, async (newDataset) => {
   if (newDataset) {
@@ -541,6 +534,8 @@ const loadChart = async (id: string) => {
         yAxisUnit: data.value.y_axis.unit || '',
         yAxisUnitPosition: data.value.y_axis.unit_position || 'suffix',
       }
+      titleRef.value = data.value.title
+      descRef.value = data.value.description
 
       await loadMissingResourcesForChart(chartResources)
 
