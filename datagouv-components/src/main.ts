@@ -99,6 +99,7 @@ import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 export { Toaster, toast } from 'vue-sonner'
 
 export * from './composables/useActiveDescendant'
+export * from './composables/useDebouncedRef'
 export * from './composables/useMetrics'
 export * from './composables/useReuseType'
 export * from './composables/useTranslation'
