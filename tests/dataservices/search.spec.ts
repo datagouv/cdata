@@ -5,7 +5,7 @@ test('page loads with results', async ({ page }) => {
 
   await expect(page).toHaveTitle(/Moteur de recherche des API/)
 
-  await expect(page.getByRole('heading', { name: /Recherche avancée/, level: 1 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Recherche d'une API/, level: 1 })).toBeVisible()
 
   await expect(page.getByText(/\d+ résultat/)).toBeVisible()
 
@@ -16,7 +16,7 @@ test('page loads with results', async ({ page }) => {
 test('search filters results', async ({ page }) => {
   await page.goto('/dataservices/search')
 
-  const searchInput = page.getByPlaceholder(/élection présidentielle/)
+  const searchInput = page.getByPlaceholder('ex: SIRENE')
   await searchInput.fill('explore')
 
   await expect(page).toHaveURL(/\/dataservices\/search\?q=explore/)
