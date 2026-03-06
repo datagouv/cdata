@@ -6,34 +6,9 @@ import { detectOgcService } from '../functions/resources'
 import { isOrganizationCertified } from '../functions/organizations'
 import type { Resource, WfsMetadata } from '../types/resources'
 import type { Dataset, DatasetV2 } from '../types/datasets'
+import { getWfsExportFormats } from '../functions/resourceCapabilities'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
-const WFS_EXPORT_FORMATS = [
-  {
-    name: 'csv',
-    mimetype: 'csv',
-  },
-  {
-    name: 'json',
-    mimetype: 'application/json',
-  },
-  {
-    name: 'shp',
-    mimetype: 'SHAPE-ZIP',
-  },
-  {
-    name: 'gml',
-    mimetype: 'application/gml+xml',
-  },
-  {
-    name: 'kml',
-    mimetype: 'KML',
-  },
-  {
-    name: 'gpkg',
-    mimetype: 'application/geopackage+sqlite3',
-  },
-]
 const URL_FORMATS = ['url', 'doi', 'www:link', 'www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
 
 export function useResourceCapabilities(
@@ -93,32 +68,8 @@ export function useResourceCapabilities(
     return formats
   })
 
-  function buildWfsDownloadUrl(baseUrl: string, wfsMetadata: { version?: string }, format: { name: string, mimetype: string }, layer: { name: string, default_crs: string }) {
-    const version = wfsMetadata.version ?? '2.0.0'
-    const query = new URLSearchParams({
-      SERVICE: 'WFS',
-      REQUEST: 'GetFeature',
-      VERSION: version,
-      ...(Number(version.split('.')[0]) >= 2 ? { TYPENAME: layer.name } : { TYPENAMES: layer.name }),
-      OUTPUTFORMAT: format.mimetype,
-      SRSNAME: layer.default_crs,
-    })
-    return `${baseUrl.split('?')[0]}?${query.toString()}`
-  }
-
   const wfsFormats = computed(() => {
-    const r = toValue(resource)
-    const wfsMetadata = r.extras['analysis:parsing:ogc_metadata'] as WfsMetadata | null
-    if (!wfsMetadata || wfsMetadata.format !== `wfs`) return []
-    const outputFormats = wfsMetadata.output_formats.map((format: string) => format.toLowerCase())
-    const layer = wfsMetadata.detected_layer
-    if (!layer) return []
-    const formats = WFS_EXPORT_FORMATS.filter(format => outputFormats.includes(format.mimetype.toLowerCase()))
-      .map(format => ({
-        url: buildWfsDownloadUrl(r.url, wfsMetadata, format, layer),
-        format: format.name,
-      }))
-    return formats
+    return getWfsExportFormats(toValue(resource))
   })
 
   const defaultWfsProjection = computed<string | null>(() => {
