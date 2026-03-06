@@ -35,7 +35,7 @@ const props = withDefaults(defineProps<{
 
 const mediaContainerClass = computed(() => {
   if (props.mediaSize === 'lg') {
-    return 'w-[240px] h-[160px]'
+    return 'w-[225px] h-[120px]'
   }
   return 'p-2'
 })
