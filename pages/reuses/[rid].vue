@@ -196,6 +196,15 @@ useSeoMeta({
   description,
   robots,
 })
+defineOgImage('ObjectPage.takumi', {
+  objectTitle: reuse.value?.title,
+  orgName: reuse.value?.organization?.name,
+  orgLogo: reuse.value?.organization?.logo_thumbnail,
+  ownerName: reuse.value?.owner ? `${reuse.value.owner.first_name} ${reuse.value.owner.last_name}` : null,
+  ownerAvatar: reuse.value?.owner?.avatar_thumbnail ?? null,
+  views: reuse.value?.metrics?.views ?? 0,
+  followers: reuse.value?.metrics?.followers ?? 0,
+})
 
 onMounted(async () => {
   await redirectLegacyHashes([

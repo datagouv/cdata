@@ -538,6 +538,18 @@ useSeoMeta({
   description,
 })
 
+defineOgImage('ObjectPage.takumi', {
+  objectTitle: dataset.value?.title,
+  orgName: dataset.value?.organization?.name,
+  orgLogo: dataset.value?.organization?.logo_thumbnail,
+  ownerName: dataset.value?.owner ? `${dataset.value.owner.first_name} ${dataset.value.owner.last_name}` : null,
+  ownerAvatar: dataset.value?.owner?.avatar_thumbnail ?? null,
+  views: dataset.value?.metrics?.views ?? 0,
+  downloads: dataset.value?.metrics?.resources_downloads ?? 0,
+  reuses: dataset.value?.metrics?.reuses ?? 0,
+  followers: dataset.value?.metrics?.followers ?? 0,
+})
+
 const hideWarnings = computed(() => {
   if (!dataset.value?.harvest) return false
   if (!dataset.value.harvest.backend) return false

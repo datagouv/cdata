@@ -178,6 +178,11 @@ useSeoMeta({
   ogTitle: title,
   ogDescription: description,
 })
+defineOgImage('MainPage.takumi', {
+  title: 'Réutilisations',
+  uri: '/reuses',
+})
+
 const route = useRoute()
 
 onMounted(async () => {

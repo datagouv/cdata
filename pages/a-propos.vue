@@ -137,4 +137,8 @@ const { t } = useTranslation()
 useSeoMeta({
   title: t('À propos - {site}', { site: config.public.title }),
 })
+defineOgImage('MainPage.takumi', {
+  title: 'À propos',
+  uri: '/a-propos',
+})
 </script>

@@ -107,6 +107,13 @@ useSeoMeta({
   title,
   robots,
 })
+defineOgImage('ObjectPage.takumi', {
+  orgName: organization.value?.name,
+  orgLogo: organization.value?.logo_thumbnail,
+  datasets: organization.value?.metrics?.datasets ?? 0,
+  dataservices: organization.value?.metrics?.dataservices ?? 0,
+  reuses: organization.value?.metrics?.reuses ?? 0,
+})
 await useJsonLd('organization', route.params.oid as string)
 
 const type = computed(() => organization.value ? getOrganizationType(organization.value) : 'other')

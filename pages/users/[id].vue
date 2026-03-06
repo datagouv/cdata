@@ -231,6 +231,13 @@ useSeoMeta({
   robots: 'noindex, nofollow',
   title,
 })
+defineOgImage('ObjectPage.takumi', {
+  ownerName: user.value ? `${user.value.first_name} ${user.value.last_name}` : null,
+  ownerAvatar: user.value?.avatar_thumbnail ?? null,
+  datasets: user.value?.metrics?.datasets ?? 0,
+  dataservices: user.value?.metrics?.dataservices ?? 0,
+  reuses: user.value?.metrics?.reuses ?? 0,
+})
 
 const datasetsPage = ref(1)
 const datasetsParams = computed(() => {

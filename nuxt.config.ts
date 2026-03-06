@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 import toml from './rollup-plugin-smol-toml'
 
 const nbSitemapsDatasets = 10
+const isFrenchGovernment = true
 // const swrDuration = process.env.NUXT_TEMPLATE_CACHE_DURATION ? parseInt(process.env.NUXT_TEMPLATE_CACHE_DURATION) : 60
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -12,8 +13,10 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
+    '@nuxt/fonts',
+    'nuxt-og-image',
   ],
-  devtools: { enabled: false, componentInspector: false },
+  devtools: { enabled: true, componentInspector: false },
 
   app: {
     head: {
@@ -38,7 +41,7 @@ export default defineNuxtConfig({
   },
 
   appConfig: {
-    isFrenchGovernment: true,
+    isFrenchGovernment,
     commitId: process.env.NUXT_APP_COMMIT_ID || 'unknown',
   },
 
@@ -221,6 +224,7 @@ export default defineNuxtConfig({
   features: {
     inlineStyles: false,
   },
+
   compatibilityDate: '2024-04-03',
 
   nitro: {
@@ -305,6 +309,46 @@ export default defineNuxtConfig({
     config: {
       stylistic: true,
     },
+  },
+
+  fonts: {
+    families: [
+      ...isFrenchGovernment
+        ? [
+            { name: 'Marianne', provider: 'local' as const, weights: [300, 400, 500, 700, 800], global: true },
+            // Workaround: nuxt-og-image Takumi renderer ignores font-weight and always uses
+            // the first loaded font for a family. We declare each weight as a separate family
+            // so the correct weight is used in OG image templates.
+            { name: 'MarianneLight', provider: 'none' as const, weight: 300, global: true, src: [
+              { url: '/fonts/Marianne-300.woff2', format: 'woff2' },
+            ] },
+            { name: 'MarianneRegular', provider: 'none' as const, weight: 400, global: true, src: [
+              { url: '/fonts/Marianne-400.woff2', format: 'woff2' },
+            ] },
+            { name: 'MarianneMedium', provider: 'none' as const, weight: 500, global: true, src: [
+              { url: '/fonts/Marianne-500.woff2', format: 'woff2' },
+            ] },
+            { name: 'MarianneBold', provider: 'none' as const, weight: 700, global: true, src: [
+              { url: '/fonts/Marianne-700.woff2', format: 'woff2' },
+            ] },
+            { name: 'MarianneExtraBold', provider: 'none' as const, weight: 800, global: true, src: [
+              { url: '/fonts/Marianne-800.woff2', format: 'woff2' },
+            ] },
+          ]
+        : [],
+      { name: 'Inconsolata', provider: 'google' as const, weights: [300], global: true },
+      { name: 'Spectral', provider: 'local' as const, weights: [300, 400, 500, 700, 800], global: true },
+      {
+        name: 'URW Gothic',
+        provider: 'none',
+        weight: 600,
+        global: true,
+        src: [
+          { url: '/fonts/URWGothic-SemiBold.woff2', format: 'woff2' },
+          { url: '/fonts/URWGothic-SemiBold.woff', format: 'woff' },
+        ],
+      },
+    ],
   },
   image: {
     screens: {
