@@ -112,7 +112,7 @@ export function useResourceCapabilities(
     const outputFormats = wfsMetadata.output_formats.map((format: string) => format.toLowerCase())
     const layer = wfsMetadata.detected_layer
     if (!layer) return []
-    const formats = WFS_EXPORT_FORMATS.filter(format => outputFormats.indexOf(format.mimetype.toLowerCase()) >= 0)
+    const formats = WFS_EXPORT_FORMATS.filter(format => outputFormats.includes(format.mimetype.toLowerCase()))
       .map(format => ({
         url: buildWfsDownloadUrl(r.url, wfsMetadata, format, layer),
         format: format.name,

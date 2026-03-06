@@ -236,7 +236,7 @@
                       <Tooltip>
                         <RiCheckboxCircleLine
                           class="flex-none size-4"
-                          :aria-label="t(`Le lien de téléchargement tape directement sur le flux WFS à la source. Le nombre de feature téléchargé peut être limité.`)"
+                          :aria-label="t(`Le lien de téléchargement interroge directement le flux WFS distant. Le nombre de features téléchargées peut être limité.`)"
                           aria-hidden="true"
                         />
                         <template #tooltip>
@@ -244,7 +244,7 @@
                             {{ t(`Le lien de téléchargement tape directement sur le flux WFS à la source.`) }}
                           </p>
                           <p class="text-sm font-normal mb-0">
-                            {{ t(`Le nombre de feature téléchargé peut être non exhaustive.`) }}
+                            {{ t(`Le nombre de features téléchargées peut être limité.`) }}
                           </p>
                         </template>
                       </Tooltip>
