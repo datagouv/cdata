@@ -1,0 +1,55 @@
+import type { Resource, WfsMetadata } from '../types/resources'
+
+const WFS_EXPORT_FORMATS = [
+  {
+    name: 'csv',
+    mimetype: 'csv',
+  },
+  {
+    name: 'json',
+    mimetype: 'application/json',
+  },
+  {
+    name: 'shp',
+    mimetype: 'SHAPE-ZIP',
+  },
+  {
+    name: 'gml',
+    mimetype: 'application/gml+xml',
+  },
+  {
+    name: 'kml',
+    mimetype: 'KML',
+  },
+  {
+    name: 'gpkg',
+    mimetype: 'application/geopackage+sqlite3',
+  },
+]
+
+function buildWfsDownloadUrl(baseUrl: string, wfsMetadata: { version?: string }, format: { name: string, mimetype: string }, layer: { name: string, default_crs: string }) {
+  const version = wfsMetadata.version ?? '2.0.0'
+  const query = new URLSearchParams({
+    SERVICE: 'WFS',
+    REQUEST: 'GetFeature',
+    VERSION: version,
+    ...(Number(version.split('.')[0]) >= 2 ? { TYPENAME: layer.name } : { TYPENAMES: layer.name }),
+    OUTPUTFORMAT: format.mimetype,
+    SRSNAME: layer.default_crs,
+  })
+  return `${baseUrl.split('?')[0]}?${query.toString()}`
+}
+
+export function getWfsExportFormats(resource: Pick<Resource, 'extras' | 'url'>) {
+  const wfsMetadata = resource.extras['analysis:parsing:ogc_metadata'] as WfsMetadata | null
+  if (!wfsMetadata || wfsMetadata.format !== `wfs`) return []
+  const outputFormats = wfsMetadata.output_formats.map((format: string) => format.toLowerCase())
+  const layer = wfsMetadata.detected_layer
+  if (!layer) return []
+  const formats = WFS_EXPORT_FORMATS.filter(format => outputFormats.includes(format.mimetype.toLowerCase()))
+    .map(format => ({
+      url: buildWfsDownloadUrl(resource.url, wfsMetadata, format, layer),
+      format: format.name,
+    }))
+  return formats
+}
