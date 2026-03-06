@@ -96,9 +96,10 @@ export function useResourceCapabilities(
   function buildWfsDownloadUrl(baseUrl: string, wfsMetadata: { version?: string }, format: { name: string, mimetype: string }, layer: { name: string, default_crs: string }) {
     const version = wfsMetadata.version ?? '2.0.0'
     const query = new URLSearchParams({
+      SERVICE: 'WFS',
       REQUEST: 'GetFeature',
       VERSION: version,
-      TYPENAME: layer.name,
+      ...(Number(version.split('.')[0]) >= 2 ? { TYPENAME: layer.name } : { TYPENAMES: layer.name }),
       OUTPUTFORMAT: format.mimetype,
       SRSNAME: layer.default_crs,
     })
