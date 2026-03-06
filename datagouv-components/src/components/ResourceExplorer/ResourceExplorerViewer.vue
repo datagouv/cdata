@@ -241,7 +241,7 @@
                         />
                         <template #tooltip>
                           <p class="text-sm font-normal mb-0">
-                            {{ t(`Le lien de téléchargement tape directement sur le flux WFS à la source.`) }}
+                            {{ t(`Le lien de téléchargement interroge directement le flux WFS distant.`) }}
                           </p>
                           <p class="text-sm font-normal mb-0">
                             {{ t(`Le nombre de features téléchargées peut être limité.`) }}
