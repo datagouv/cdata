@@ -30,7 +30,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint-staged": "lint-staged",
-    "build": "nuxt build",
+    "build": "nuxt build && npx tsx scripts/copy-native-bindings.ts",
     "typecheck": "nuxt typecheck",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
@@ -92,7 +92,8 @@
     "vue": "^3.5",
     "vue-content-loader": "^2.0.1",
     "vue-router": "^4.4",
-    "vue3-text-clamp": "^0.1.2"
+    "vue3-text-clamp": "^0.1.2",
+    "@takumi-rs/core": "^0.68.17"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
@@ -102,7 +103,6 @@
     "@playwright/test": "^1.57.0",
     "@tailwindcss/oxide": "^4.0.15",
     "@tailwindcss/typography": "^0.5.15",
-    "@takumi-rs/core": "^0.68.17",
     "@types/geojson": "^7946.0.16",
     "@types/leaflet": "^1.9.17",
     "@types/lodash-es": "^4.17.12",
