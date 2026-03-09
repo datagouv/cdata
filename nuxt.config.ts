@@ -54,6 +54,7 @@ export default defineNuxtConfig({
     albertApiBaseUrl: 'https://albert.api.etalab.gouv.fr/',
     albertApiKey: '',
     public: {
+      isProduction: true,
       baseUrl: 'https://www.data.gouv.fr/',
       banner: undefined,
 

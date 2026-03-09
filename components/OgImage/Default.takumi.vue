@@ -1,8 +1,16 @@
 <script setup lang="ts">
+const { isProduction } = useRuntimeConfig().public
 </script>
 
 <template>
   <div class="flex flex-col justify-end w-full h-full bg-white p-12 gap-[24px]">
+    <div
+      v-if="! isProduction"
+      class="ml-auto self-start text-4xl py-2 px-4 uppercase tracking-wide bg-[#FFE9E6] text-[#B34000] font-extrabold"
+      style="font-family: 'MarianneExtraBold'"
+    >
+      Version de test
+    </div>
     <img
       src="/nuxt_images/logo_horizontal.svg"
       alt=""

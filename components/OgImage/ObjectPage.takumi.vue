@@ -27,6 +27,8 @@ const {
   reuses?: number
   followers?: number
 }>()
+
+const { isProduction } = useRuntimeConfig().public
 </script>
 
 <template>
@@ -34,11 +36,20 @@ const {
     class="flex flex-col justify-between w-full h-full bg-white p-12"
     style="font-family: 'MarianneRegular'"
   >
-    <img
-      src="/nuxt_images/logo_horizontal.svg"
-      alt=""
-      class="w-40 aspect-[433/113]"
-    >
+    <div class="flex items-start">
+      <img
+        src="/nuxt_images/logo_horizontal.svg"
+        alt=""
+        class="w-40 min-w-40 aspect-[433/113]"
+      >
+      <div
+        v-if="! isProduction"
+        class="ml-auto self-start text-4xl py-2 px-4 uppercase tracking-wide bg-[#FFE9E6] text-[#B34000] font-extrabold"
+        style="font-family: 'MarianneExtraBold'"
+      >
+        Version de test
+      </div>
+    </div>
     <div class="gap-[12px] flex flex-col">
       <div
         v-if="orgLogo"
