@@ -9,7 +9,7 @@
 
     <div
       v-if="discussion.organization || discussion.user"
-      class="text-sm m-0 flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
+      class="text-sm flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
     >
       <ObjectCardOwner
         :organization="discussion.organization"
