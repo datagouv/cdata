@@ -27,13 +27,13 @@ const WFS_EXPORT_FORMATS = [
   },
 ]
 
-function buildWfsDownloadUrl(baseUrl: string, wfsMetadata: { version?: string }, format: { name: string, mimetype: string }, layer: { name: string, default_crs: string }) {
-  const version = wfsMetadata.version ?? '2.0.0'
+function buildWfsDownloadUrl(baseUrl: string, wfsMetadata: WfsMetadata, format: { name: string, mimetype: string }, layer: { name: string, default_crs: string }) {
+  const version = wfsMetadata.version
   const query = new URLSearchParams({
     SERVICE: 'WFS',
     REQUEST: 'GetFeature',
     VERSION: version,
-    ...(Number(version.split('.')[0]) >= 2 ? { TYPENAME: layer.name } : { TYPENAMES: layer.name }),
+    ...(Number(version.split('.')[0]) >= 2 ? { TYPENAMES: layer.name } : { TYPENAME: layer.name }),
     OUTPUTFORMAT: format.mimetype,
     SRSNAME: layer.default_crs,
   })

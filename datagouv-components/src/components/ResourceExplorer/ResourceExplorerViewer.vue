@@ -234,7 +234,7 @@
                       {{ t('Formats exportés depuis le service WFS') }}
                       <span v-if="defaultWfsProjection"> ({{ t('projection {crs}', { crs: defaultWfsProjection }) }})</span>
                       <Tooltip>
-                        <RiCheckboxCircleLine
+                        <RiInformationLine
                           class="flex-none size-4"
                           :aria-label="t(`Le lien de téléchargement interroge directement le flux WFS distant. Le nombre de features téléchargées peut être limité.`)"
                           aria-hidden="true"
@@ -297,7 +297,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
-import { RiCheckboxCircleLine, RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiSubtractLine } from '@remixicon/vue'
+import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiInformationLine, RiSubtractLine } from '@remixicon/vue'
 import { toast } from 'vue-sonner'
 import BrandedButton from '../BrandedButton.vue'
 import CopyButton from '../CopyButton.vue'

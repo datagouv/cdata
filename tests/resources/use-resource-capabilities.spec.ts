@@ -18,11 +18,11 @@ test('WFS format download URLs generation', async () => {
 
   expect(wfsFormats).toEqual([
     {
-      url: `https://example.com/wfs?SERVICE=WFS&REQUEST=GetFeature&VERSION=2.0.0&TYPENAME=my_layer&OUTPUTFORMAT=${encodeURIComponent('application/json')}&SRSNAME=${encodeURIComponent('EPSG:4326')}`,
+      url: `https://example.com/wfs?SERVICE=WFS&REQUEST=GetFeature&VERSION=2.0.0&TYPENAMES=my_layer&OUTPUTFORMAT=${encodeURIComponent('application/json')}&SRSNAME=${encodeURIComponent('EPSG:4326')}`,
       format: 'json',
     },
     {
-      url: `https://example.com/wfs?SERVICE=WFS&REQUEST=GetFeature&VERSION=2.0.0&TYPENAME=my_layer&OUTPUTFORMAT=SHAPE-ZIP&SRSNAME=${encodeURIComponent('EPSG:4326')}`,
+      url: `https://example.com/wfs?SERVICE=WFS&REQUEST=GetFeature&VERSION=2.0.0&TYPENAMES=my_layer&OUTPUTFORMAT=SHAPE-ZIP&SRSNAME=${encodeURIComponent('EPSG:4326')}`,
       format: 'shp',
     },
   ])
@@ -45,11 +45,11 @@ test('WFS format download URLs generation with version 1.0.0', async () => {
 
   expect(wfsFormats).toEqual([
     {
-      url: `https://example.com/wfs?SERVICE=WFS&REQUEST=GetFeature&VERSION=1.1.0&TYPENAMES=my_layer&OUTPUTFORMAT=${encodeURIComponent('application/json')}&SRSNAME=${encodeURIComponent('EPSG:4326')}`,
+      url: `https://example.com/wfs?SERVICE=WFS&REQUEST=GetFeature&VERSION=1.1.0&TYPENAME=my_layer&OUTPUTFORMAT=${encodeURIComponent('application/json')}&SRSNAME=${encodeURIComponent('EPSG:4326')}`,
       format: 'json',
     },
     {
-      url: `https://example.com/wfs?SERVICE=WFS&REQUEST=GetFeature&VERSION=1.1.0&TYPENAMES=my_layer&OUTPUTFORMAT=SHAPE-ZIP&SRSNAME=${encodeURIComponent('EPSG:4326')}`,
+      url: `https://example.com/wfs?SERVICE=WFS&REQUEST=GetFeature&VERSION=1.1.0&TYPENAME=my_layer&OUTPUTFORMAT=SHAPE-ZIP&SRSNAME=${encodeURIComponent('EPSG:4326')}`,
       format: 'shp',
     },
   ])
@@ -61,6 +61,23 @@ test('WFS format download URLs generation with no detected layer', async () => {
     extras: {
       'analysis:parsing:ogc_metadata': {
         format: 'wfs',
+        version: '1.1.0',
+        output_formats: ['application/json', 'SHAPE-ZIP'],
+      },
+    },
+  }
+
+  const wfsFormats = getWfsExportFormats(resource)
+
+  expect(wfsFormats).toEqual([])
+})
+
+test('WMS service don\'t expose WFS export formats', async () => {
+  const resource = {
+    url: 'https://example.com/wfs?service=WFS',
+    extras: {
+      'analysis:parsing:ogc_metadata': {
+        format: 'wms',
         version: '1.1.0',
         output_formats: ['application/json', 'SHAPE-ZIP'],
       },
