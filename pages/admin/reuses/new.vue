@@ -73,7 +73,7 @@ const { $api, $fileApi } = useNuxtApp()
 
 const steps = computed(() => [
   t('Décrivez votre réutilisation'),
-  t('Lier des jeux de données et des APIs'),
+  t('Lier des jeux de données et des API'),
   t('Finalisez la publication'),
 ])
 

@@ -7,7 +7,7 @@
         {{ $t('Accueil') }}
       </BreadcrumbItem>
       <BreadcrumbItem to="/dataservices">
-        {{ $t('APIs') }}
+        {{ $t('API') }}
       </BreadcrumbItem>
       <BreadcrumbItem>
         {{ $t('Formulaire de publication') }}

@@ -1,4 +1,4 @@
-**Quelles sont les limitations en vigueur sur les APIs ?**
+**Quelles sont les limitations en vigueur sur les API ?**
 
 10 requêtes par seconde et par IP pour l’API Découpage administratif ;
 50 requêtes par seconde et par IP pour le géocodage simple via l’API Adresse ;
