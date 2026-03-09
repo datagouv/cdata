@@ -322,7 +322,7 @@
 <script setup lang="ts">
 import { computed, watch, useTemplateRef, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
-import { RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine, RiLightbulbLine } from '@remixicon/vue'
+import { RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiTerminalLine, RiLineChartLine, RiLightbulbLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
 import { useTranslation } from '../../composables/useTranslation'
 import { useDebouncedRef } from '../../composables/useDebouncedRef'
@@ -596,8 +596,8 @@ const typesMeta = {
     status: datasetsStatus,
   },
   dataservices: {
-    icon: RiRobot2Line,
-    name: t('APIs'),
+    icon: RiTerminalLine,
+    name: t('API'),
     placeholder: t('ex: SIRENE'),
     results: dataservicesResults,
     status: dataservicesStatus,

@@ -504,7 +504,7 @@
 <script setup lang="ts">
 import { NuxtImg } from '#components'
 import { AnimatedLoader, BrandedButton, Toggletip, useGetUserAvatar, toast } from '@datagouv/components-next'
-import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
+import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiTerminalLine, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
 import LogoAsText from '../LogoAsText.vue'
@@ -545,7 +545,7 @@ const menu = [
 
 const publishMenu = [
   { label: t('Un jeu de données'), icon: RiDatabase2Line, link: '/admin/datasets/new' },
-  { label: t('Une API'), icon: RiRobot2Line, link: '/admin/dataservices/new' },
+  { label: t('Une API'), icon: RiTerminalLine, link: '/admin/dataservices/new' },
   { label: t('Une réutilisation'), icon: RiLineChartLine, link: '/admin/reuses/new' },
   { label: t('Un moissonneur'), icon: RiServerLine, link: '/admin/harvesters/new' },
   { label: t('Une organisation'), icon: RiBuilding2Line, link: '/admin/organizations/new' },

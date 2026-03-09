@@ -37,7 +37,7 @@
 
   <ModalWithButton
     v-model="isSelectorOpen"
-    :title="$t('Sélectionner des APIs')"
+    :title="$t('Sélectionner des API')"
     size="lg"
   >
     <DataservicesSelect v-model="selectedDataservices" />

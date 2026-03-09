@@ -266,9 +266,9 @@
           </p>
         </Accordion>
 
-        <!-- ⚙️ APIs publiques -->
+        <!-- ⚙️ API publiques -->
         <h3 class="text-2xl font-bold text-gray-title mt-10 mb-4">
-          APIs publiques
+          API publiques
         </h3>
         <Accordion
           title="Vous avez une question sur les limites d'appels de l’API découpage administratif (API Geo) ?"

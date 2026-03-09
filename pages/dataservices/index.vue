@@ -238,7 +238,7 @@
     <EditoFooter
       color="purple"
       search-url="/dataservices/search"
-      :search-label="$t(`Voir toutes les APIs`)"
+      :search-label="$t(`Voir toutes les API`)"
     />
   </div>
 </template>

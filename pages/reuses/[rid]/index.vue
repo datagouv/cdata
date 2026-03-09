@@ -128,7 +128,7 @@
     <section v-if="dataservices">
       <template v-if="dataservices.total">
         <h2 class="uppercase text-sm mb-2.5">
-          {{ $t('aucune API associée | {n} API associée | {n} APIs associées', { n: dataservices.total }) }}
+          {{ $t('aucune API associée | {n} API associée | {n} API associées', { n: dataservices.total }) }}
         </h2>
         <div
           class="grid gap-5"
