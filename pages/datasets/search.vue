@@ -60,13 +60,13 @@ const robots = computed(() => {
 const heading = computed(() => {
   switch (currentType.value) {
     case 'dataservices':
-      return t('Recherche d\'une API')
+      return t('Recherche avancée d\'une API')
     case 'reuses':
-      return t('Recherche d\'une réutilisation')
+      return t('Recherche avancée d\'une réutilisation')
     case 'organizations':
       return t('Recherche d\'une organisation')
     default:
-      return t('Recherche d\'un jeu de données')
+      return t('Recherche avancée d\'un jeu de données')
   }
 })
 
