@@ -231,9 +231,11 @@ useSeoMeta({
   robots: 'noindex, nofollow',
   title,
 })
+// Workaround: encode the dot before file extension to prevent nuxt-og-image from stripping `.png` in prop values
+// See https://github.com/nuxt-modules/og-image/pull/493
 defineOgImage('ObjectPage.takumi', {
   ownerName: user.value ? `${user.value.first_name} ${user.value.last_name}` : null,
-  ownerAvatar: user.value?.avatar_thumbnail ?? null,
+  ownerAvatar: user.value?.avatar_thumbnail?.replace(/\.(\w+)$/, '%2E$1') ?? null,
   datasets: user.value?.metrics?.datasets ?? 0,
   dataservices: user.value?.metrics?.dataservices ?? 0,
   reuses: user.value?.metrics?.reuses ?? 0,
