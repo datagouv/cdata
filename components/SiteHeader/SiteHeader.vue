@@ -221,14 +221,16 @@
                                       :key="item.link"
                                     >
                                       <CdataLink
-                                        class="fr-nav__link flex items-center space-x-1"
+                                        class="fr-nav__link"
                                         :to="item.link"
                                       >
-                                        <component
-                                          :is="item.icon"
-                                          class="inline size-4"
-                                        />
-                                        <span>{{ item.label }}</span>
+                                        <span class="flex items-center space-x-1">
+                                          <component
+                                            :is="item.icon"
+                                            class="inline size-4"
+                                          />
+                                          <span>{{ item.label }}</span>
+                                        </span>
                                       </CdataLink>
                                     </li>
                                   </ul>
@@ -478,15 +480,17 @@
                         :key="item.link"
                       >
                         <CdataLink
-                          class="fr-nav__link flex items-center space-x-1"
+                          class="fr-nav__link"
                           :to="item.link"
                           @click="close()"
                         >
-                          <component
-                            :is="item.icon"
-                            class="size-4 -mt-1"
-                          />
-                          <span>{{ item.label }}</span>
+                          <span class="flex items-center space-x-1">
+                            <component
+                              :is="item.icon"
+                              class="size-4 -mt-1"
+                            />
+                            <span>{{ item.label }}</span>
+                          </span>
                         </CdataLink>
                       </li>
                     </ul>
