@@ -230,6 +230,9 @@ export default defineNuxtConfig({
 
   nitro: {
     compressPublicAssets: true,
+    rollupConfig: {
+      external: ['crisp-api'],
+    },
   },
 
   vite: {
