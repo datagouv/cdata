@@ -1,7 +1,6 @@
 import type { TabularAggregateType } from '../functions/tabularApi'
 import type { Owned, OwnedWithId } from './owned'
 
-// Filter types
 export type FilterCondition = 'equal' | 'greater'
 
 export type Filter = {
@@ -16,7 +15,6 @@ export type AndFilters = {
 
 export type GenericFilter = Filter | AndFilters
 
-// Axis types
 export type XAxisType = 'discrete' | 'continuous'
 
 export type XAxisSortBy = 'axis_x' | 'axis_y'
@@ -25,22 +23,23 @@ export type SortDirection = 'asc' | 'desc'
 
 export type XAxis = {
   column_x: string
-  sort_x_by?: XAxisSortBy
-  sort_x_direction?: SortDirection
+  sort_x_by: XAxisSortBy | null
+  sort_x_direction: SortDirection | null
   type: XAxisType
 }
+
+export type XAxisForm = Omit<XAxis, 'sort_x_by'> & { sort_x_by: XAxisSortBy | '' | null }
 
 export type UnitPosition = 'prefix' | 'suffix'
 
 export type YAxis = {
-  min?: number
-  max?: number
-  label?: string
-  unit?: string
-  unit_position?: UnitPosition
+  min: number | null
+  max: number | null
+  label: string | null
+  unit: string | null
+  unit_position: UnitPosition | null
 }
 
-// Data series types
 export type DataSeriesType = 'line' | 'histogram'
 
 export type DataSeries = {
@@ -52,18 +51,9 @@ export type DataSeries = {
   filters: GenericFilter | null
 }
 
-// Chart form fields (for POST/PATCH requests)
-export type ChartForm = OwnedWithId & {
-  title: string
-  description: string
-  private: boolean
-  x_axis: Partial<XAxis>
-  y_axis: Partial<YAxis>
-  series: Array<Partial<DataSeries>>
-  extras: Record<string, unknown>
-}
+// Type for form where aggregate_y can be empty string for select binding
+export type DataSeriesForm = Omit<DataSeries, 'aggregate_y'> & { aggregate_y: TabularAggregateType | '' | null }
 
-// Chart read fields (API responses)
 export type Chart = Owned & {
   id: string
   title: string
@@ -83,4 +73,12 @@ export type Chart = Owned & {
   metrics: {
     views: number
   }
+}
+
+export type ChartForApi = OwnedWithId & Pick<Chart, 'title' | 'description' | 'private' | 'x_axis' | 'y_axis' | 'series' | 'extras'>
+
+export type ChartForm = Omit<ChartForApi, 'x_axis' | 'series' | 'owner' | 'organization'> & {
+  owned: OwnedWithId
+  x_axis: XAxisForm
+  series: Array<DataSeriesForm>
 }
