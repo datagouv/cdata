@@ -502,7 +502,8 @@
 </template>
 
 <script setup lang="ts">
-import { NuxtImg } from '#components'
+import { NuxtImg as _NuxtImg } from '#components'
+import type { Component } from 'vue'
 import { AnimatedLoader, BrandedButton, Toggletip, useGetUserAvatar, toast } from '@datagouv/components-next'
 import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiTerminalLine, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
@@ -511,6 +512,9 @@ import LogoAsText from '../LogoAsText.vue'
 import LogoImage from '../LogoImage.vue'
 import { useNotifications } from '~/composables/useNotifications.client'
 import { useLogout, useMaybeMe } from '~/utils/auth'
+
+// @ts-expect-error @nuxt/image v2 types mark the default slot as required (only used with `custom` prop), making NuxtImg incompatible with Component
+const NuxtImg: Component = _NuxtImg
 
 defineProps<{
   fluid?: boolean
