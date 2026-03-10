@@ -196,9 +196,10 @@
                     {{ t('Pertinence') }}
                   </option>
                   <option
-                    v-for="option in activeSortOptions"
+                    v-for="option in allSortOptions"
                     :key="option.value"
                     :value="option.value"
+                    :hidden="!activeSortValues.has(option.value)"
                   >
                     {{ option.label }}
                   </option>
@@ -346,7 +347,7 @@ import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
 import type { Organization } from '../../types/organizations'
 import type { Reuse } from '../../types/reuses'
-import type { GlobalSearchConfig, SearchType, DatasetSearchResponse, DataserviceSearchResponse, ReuseSearchResponse, OrganizationSearchResponse, FacetItem } from '../../types/search'
+import type { GlobalSearchConfig, SearchType, SortOption, DatasetSearchResponse, DataserviceSearchResponse, ReuseSearchResponse, OrganizationSearchResponse, FacetItem } from '../../types/search'
 import { getDefaultGlobalSearchConfig } from '../../types/search'
 import BrandedButton from '../BrandedButton.vue'
 import LoadingBlock from '../LoadingBlock.vue'
@@ -408,6 +409,22 @@ const activeAdvancedFilters = computed(() =>
 const activeSortOptions = computed(() =>
   currentTypeConfig.value?.sortOptions ?? [],
 )
+
+const activeSortValues = computed(() =>
+  new Set(activeSortOptions.value.map(o => o.value as string)),
+)
+
+// Deduplicated union of all sort options across all search types.
+// Rendered as hidden <option> elements so the <select> always has a stable
+// intrinsic width regardless of which type is currently active.
+const allSortOptions = computed(() => {
+  const seen = new Set<string>()
+  return props.config.flatMap(c => (c.sortOptions ?? []) as SortOption<string>[]).filter((o) => {
+    if (seen.has(o.value)) return false
+    seen.add(o.value)
+    return true
+  })
+})
 
 const activeFilters = computed(() => [
   ...(currentTypeConfig.value?.basicFilters ?? []),
