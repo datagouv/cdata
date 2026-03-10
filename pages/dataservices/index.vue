@@ -263,6 +263,11 @@ useSeoMeta({
   ogTitle: title,
   ogDescription: description,
 })
+defineOgImage('MainPage.takumi', {
+  title: 'API',
+  uri: '/dataservices',
+})
+
 const route = useRoute()
 
 onMounted(async () => {

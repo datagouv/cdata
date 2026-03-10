@@ -104,6 +104,20 @@ useSeoMeta({
   robots,
 })
 
+const ogTitles: Record<SearchType, string> = {
+  datasets: 'Jeux de données',
+  dataservices: 'API',
+  reuses: 'Réutilisations',
+  organizations: 'Organisations',
+}
+
+const ogTitle = computed(() => ogTitles[currentType.value])
+
+defineOgImage('MainPage.takumi', {
+  title: ogTitle,
+  uri: computed(() => searchPaths[currentType.value]),
+})
+
 const searchConfig: GlobalSearchConfig = [
   getDefaultDatasetConfig(),
   getDefaultDataserviceConfig(),
