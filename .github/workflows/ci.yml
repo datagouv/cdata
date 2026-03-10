@@ -180,6 +180,7 @@ jobs:
           URLS_ALLOW_PRIVATE = True
           URLS_ALLOW_LOCAL = True
           URLS_ALLOWED_TLDS = Defaults.URLS_ALLOWED_TLDS | set(['local'])
+          URLS_RESOLVE_HOSTNAME = False
 
           PLUGINS = []
           FS_ROOT = 'fs'
