@@ -199,7 +199,6 @@
                   :key="option.value"
                   :value="option.value"
                   :hidden="!activeSortValues.has(option.value)"
-                  :disabled="!activeSortValues.has(option.value)"
                 >
                   {{ option.label }}
                 </option>
