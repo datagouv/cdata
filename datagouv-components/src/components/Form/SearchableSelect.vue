@@ -325,7 +325,6 @@ function simpleSlug(text: string) {
 
 const referenceRef = useTemplateRef('floatingReference')
 const floatingRef = useTemplateRef<InstanceType<typeof ComboboxOptions>>('popover')
-// @ts-expect-error @floating-ui/vue types don't accept ShallowRef returned by useTemplateRef
 const { floatingStyles } = useFloating(referenceRef, floatingRef, {
   middleware: [autoPlacement({
     allowedPlacements: ['bottom-start', 'bottom', 'bottom-end'],
