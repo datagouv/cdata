@@ -69,6 +69,7 @@ withDefaults(defineProps<{
 const popoverRef = useTemplateRef<InstanceType<typeof Popover>>('popover')
 const panelRef = useTemplateRef<InstanceType<typeof PopoverPanel>>('panel')
 
+// @ts-expect-error @floating-ui/vue types don't accept ShallowRef returned by useTemplateRef
 const { floatingStyles } = useFloating(popoverRef, panelRef, {
   middleware: [autoPlacement({
     alignment: 'end',
