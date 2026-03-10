@@ -1,4 +1,4 @@
-import type { Resource, WfsMetadata } from '../types/resources'
+import type { Resource, WfsMetadata, OgcLayerInfo } from '../types/resources'
 
 const WFS_EXPORT_FORMATS = [
   {
@@ -27,7 +27,7 @@ const WFS_EXPORT_FORMATS = [
   },
 ]
 
-function buildWfsDownloadUrl(baseUrl: string, wfsMetadata: WfsMetadata, format: { name: string, mimetype: string }, layer: { name: string, default_crs: string }) {
+function buildWfsDownloadUrl(baseUrl: string, wfsMetadata: WfsMetadata, format: { name: string, mimetype: string }, layer: OgcLayerInfo) {
   const version = wfsMetadata.version
   const query = new URLSearchParams({
     SERVICE: 'WFS',
@@ -35,7 +35,7 @@ function buildWfsDownloadUrl(baseUrl: string, wfsMetadata: WfsMetadata, format: 
     VERSION: version,
     ...(Number(version.split('.')[0]) >= 2 ? { TYPENAMES: layer.name } : { TYPENAME: layer.name }),
     OUTPUTFORMAT: format.mimetype,
-    SRSNAME: layer.default_crs,
+    ...(layer.default_crs ? { SRSNAME: layer.default_crs } : {}),
   })
   return `${baseUrl.split('?')[0]}?${query.toString()}`
 }

@@ -88,3 +88,26 @@ test('WMS service don\'t expose WFS export formats', async () => {
 
   expect(wfsFormats).toEqual([])
 })
+
+test('WFS format download URLs generation with null default_crs', async () => {
+  const resource = {
+    url: 'https://example.com/wfs?service=WFS',
+    extras: {
+      'analysis:parsing:ogc_metadata': {
+        format: 'wfs',
+        version: '1.1.0',
+        output_formats: ['application/json'],
+        detected_layer: { name: 'my_layer', default_crs: null },
+      },
+    },
+  }
+
+  const wfsFormats = getWfsExportFormats(resource)
+
+  expect(wfsFormats).toEqual([
+    {
+      url: `https://example.com/wfs?SERVICE=WFS&REQUEST=GetFeature&VERSION=1.1.0&TYPENAME=my_layer&OUTPUTFORMAT=${encodeURIComponent('application/json')}`,
+      format: 'json',
+    },
+  ])
+})

@@ -42,10 +42,12 @@ export interface ResourceGroup {
   items: Resource[]
 }
 
+export type OgcLayerInfo = { name: string, default_crs: string | null }
+
 export type WfsMetadata = {
   format: string
-  layers: Array<{ name: string, default_crs: string }>
+  layers: Array<OgcLayerInfo>
   version: string
-  detected_layer: { name: string, default_crs: string }
+  detected_layer: OgcLayerInfo | null
   output_formats: Array<string>
 }
