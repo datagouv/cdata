@@ -127,6 +127,10 @@ const { t } = useTranslation()
 useSeoMeta({
   title: t('Réutilisateurs de données - {site}', { site: config.public.title }),
 })
+defineOgImage('MainPage.takumi', {
+  title: 'Réutilisateurs',
+  uri: '/reutilisateurs',
+})
 
 const reuserLogos = [
   { name: 'infoclimat', label: 'Infoclimat' },

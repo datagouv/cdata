@@ -113,6 +113,7 @@
             rel="ugc nofollow noopener"
             new-tab
             size="xs"
+            color="secondary"
             external
             @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
           >
@@ -127,7 +128,7 @@
             :id="resource.id + '-copy'"
             :data-clipboard-text="resource.url"
             :aria-describedby="resourceTitleId"
-            color="primary"
+            color="secondary"
             size="xs"
             :icon="RiFileCopyLine"
           >

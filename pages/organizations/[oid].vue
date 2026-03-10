@@ -107,6 +107,15 @@ useSeoMeta({
   title,
   robots,
 })
+// Workaround: encode the dot before file extension to prevent nuxt-og-image from stripping `.png` in prop values
+// See https://github.com/nuxt-modules/og-image/pull/493
+defineOgImage('ObjectPage.takumi', {
+  orgName: organization.value?.name,
+  orgLogo: organization.value?.logo_thumbnail?.replace(/\.(\w+)$/, '%2E$1') ?? null,
+  datasets: organization.value?.metrics?.datasets ?? 0,
+  dataservices: organization.value?.metrics?.dataservices ?? 0,
+  reuses: organization.value?.metrics?.reuses ?? 0,
+})
 await useJsonLd('organization', route.params.oid as string)
 
 const type = computed(() => organization.value ? getOrganizationType(organization.value) : 'other')

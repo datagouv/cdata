@@ -52,7 +52,7 @@
               :to="me.id === user.id ? `/admin/me/datasets` : `/admin/users/${user.id}/datasets`"
             />
             <AdminSidebarLink
-              :icon="RiRobot2Line"
+              :icon="RiTerminalLine"
               :label="$t('API')"
               :to="me.id === user.id ? `/admin/me/dataservices` : `/admin/users/${user.id}/dataservices`"
             />
@@ -86,7 +86,7 @@
               @click="$emit('click')"
             />
             <AdminSidebarLink
-              :icon="RiRobot2Line"
+              :icon="RiTerminalLine"
               :label="$t('API')"
               :to="`/admin/organizations/${organization.id}/dataservices`"
               @click="$emit('click')"
@@ -141,7 +141,7 @@
               to="/admin/site/datasets"
             />
             <AdminSidebarLink
-              :icon="RiRobot2Line"
+              :icon="RiTerminalLine"
               :label="$t('API')"
               to="/admin/site/dataservices"
             />
@@ -201,7 +201,7 @@
 import { Avatar, OrganizationLogo } from '@datagouv/components-next'
 import type { OrganizationReference, User } from '@datagouv/components-next'
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
-import { RiAlarmWarningLine, RiArticleLine, RiAwardLine, RiBarChartBoxLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiGitPullRequestLine, RiGroup3Line, RiLineChartLine, RiParentLine, RiPlanetLine, RiRobot2Line, RiServerLine, RiUserLine } from '@remixicon/vue'
+import { RiAlarmWarningLine, RiArticleLine, RiAwardLine, RiBarChartBoxLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiGitPullRequestLine, RiGroup3Line, RiLineChartLine, RiParentLine, RiPlanetLine, RiTerminalLine, RiServerLine, RiUserLine } from '@remixicon/vue'
 import { key, type AccordionRegister } from '~/components/Accordion/injectionKey'
 import AdminSidebarLink from '~/components/AdminSidebar/AdminSidebarLink/AdminSidebarLink.vue'
 

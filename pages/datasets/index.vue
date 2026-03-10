@@ -36,6 +36,11 @@ import EditoHeader from '~/components/Pages/EditoHeader.vue'
 import PageShowById from '~/components/Pages/PageShowById.vue'
 import PageShowNew from '~/components/Pages/PageShowNew.vue'
 
+defineOgImage('MainPage.takumi', {
+  title: 'Jeux de données',
+  uri: '/datasets',
+})
+
 const config = useRuntimeConfig()
 const { t } = useTranslation()
 
