@@ -226,6 +226,7 @@ jobs:
         env:
           NUXT_PUBLIC_API_BASE: http://localhost:7000
           NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "hero_15.png"
+          NUXT_SITE_URL: http://localhost:3000
         run: |
           # Start cdata server in background using pre-built artifacts
           PORT=3000 node .output/server/index.mjs > cdata.log 2>&1 &
