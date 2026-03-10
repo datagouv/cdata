@@ -16,7 +16,7 @@
           <slot name="media" />
         </div>
       </div>
-      <div class="flex-1 overflow-hidden">
+      <div class="flex-1 overflow-hidden space-y-1">
         <slot />
       </div>
     </div>
@@ -35,7 +35,7 @@ const props = withDefaults(defineProps<{
 
 const mediaContainerClass = computed(() => {
   if (props.mediaSize === 'lg') {
-    return 'w-[240px] h-[160px]'
+    return 'w-[225px] h-[120px]'
   }
   return 'p-2'
 })

@@ -64,7 +64,7 @@ const heading = computed(() => {
     case 'reuses':
       return t('Recherche avancée d\'une réutilisation')
     case 'organizations':
-      return t('Organisations')
+      return t('Recherche d\'une organisation')
     default:
       return t('Recherche avancée d\'un jeu de données')
   }

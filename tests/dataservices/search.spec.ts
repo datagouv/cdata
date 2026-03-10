@@ -16,7 +16,7 @@ test('page loads with results', async ({ page }) => {
 test('search filters results', async ({ page }) => {
   await page.goto('/dataservices/search')
 
-  const searchInput = page.getByPlaceholder(/élection présidentielle/)
+  const searchInput = page.getByPlaceholder('ex: SIRENE')
   await searchInput.fill('explore')
 
   await expect(page).toHaveURL(/\/dataservices\/search\?q=explore/)

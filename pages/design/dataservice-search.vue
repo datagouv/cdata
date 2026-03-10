@@ -5,7 +5,7 @@
         {{ $t('Système de design') }}
       </BreadcrumbItem>
       <BreadcrumbItem to="/design/dataservice-search">
-        {{ $t('Recherche d\'APIs') }}
+        {{ $t('Recherche d\'API') }}
       </BreadcrumbItem>
     </Breadcrumb>
     <h1 class="mb-3">

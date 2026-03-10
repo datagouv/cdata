@@ -1,5 +1,5 @@
 <template>
-  <h3 class="w-full text-base mb-0 flex">
+  <h3 class="w-full text-base flex">
     <AppLink
       :to="url"
       class="text-gray-title text-base bg-none flex items-center w-full truncate gap-1"
