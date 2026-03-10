@@ -72,11 +72,7 @@ useSeoMeta({
   ogUrl: runtimeConfig.public.baseUrl,
   ogSiteName: runtimeConfig.public.title,
   ogLocale: 'fr_FR',
-  ogImage: `${runtimeConfig.public.baseUrl}nuxt_images/og-image.png`,
-  ogImageWidth: 1200,
-  ogImageHeight: 630,
   twitterCard: 'summary_large_image',
   twitterSite: '@datagouvfr',
-  twitterImage: `${runtimeConfig.public.baseUrl}nuxt_images/og-image.png`,
 })
 </script>
