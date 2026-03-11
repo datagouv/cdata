@@ -113,6 +113,7 @@
             keep-margins-even-without-borders
           />
           <BrandedButton
+            v-if="dataset.permissions.edit"
             size="xs"
             color="tertiary"
             :href="getDatasetAdminUrl(dataset)"

@@ -91,6 +91,7 @@
             keep-margins-even-without-borders
           />
           <BrandedButton
+            v-if="dataservice.permissions.edit"
             size="xs"
             color="tertiary"
             :href="getDataserviceAdminUrl(dataservice)"

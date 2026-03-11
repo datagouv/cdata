@@ -26,8 +26,20 @@
       </SimpleBanner>
     </div>
     <div v-else>
-      <DatasetsSelect v-model="datasets" />
-      <div class="fr-grid-row fr-grid-row--right">
+      <DatasetsSelect
+        v-model="datasets"
+        :read-only="!canEdit"
+      >
+        <template #empty>
+          <p class="text-sm text-gray-medium">
+            {{ t('Aucun jeu de données associé.') }}
+          </p>
+        </template>
+      </DatasetsSelect>
+      <div
+        v-if="canEdit"
+        class="fr-grid-row fr-grid-row--right"
+      >
         <BrandedButton
           color="primary"
           @click="submit"
@@ -52,6 +64,7 @@ const { $api } = useNuxtApp()
 const route = useRoute()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
 const { data: dataservice } = await useAPI<Dataservice>(url, { redirectOn404: true })
+const canEdit = computed(() => dataservice.value?.permissions.edit ?? false)
 
 const tooManyDatasets = computed(() => (dataservice.value?.datasets.total ?? 0) > config.public.maxNumberOfDatasetsForDataserviceUpdate)
 const datasets = ref<Array<DatasetV2 | DatasetSuggest>>([])

@@ -1,6 +1,6 @@
 <template>
   <fieldset
-    class="fr-fieldset min-w-0"
+    class="fr-fieldset min-w-0 space-y-8 mb-0"
     :aria-labelledby="mainLabel ? legendId : undefined"
   >
     <legend
@@ -15,7 +15,7 @@
     <div
       v-if="selected.length"
       ref="sortableRoot"
-      class="w-full mb-8 space-y-4"
+      class="w-full space-y-4"
     >
       <div
         v-for="(object, index) in selected"
@@ -23,7 +23,7 @@
         class="flex items-center space-x-2"
       >
         <div
-          v-if="! single && allowReorder"
+          v-if="!readOnly && !single && allowReorder"
           class="shrink-0"
         >
           <BrandedButton
@@ -38,7 +38,10 @@
           v-if="object.id in objectsByIds"
           :object="objectsByIds[object.id]"
         />
-        <div class="shrink-0">
+        <div
+          v-if="!readOnly"
+          class="shrink-0"
+        >
           <BrandedButton
             color="tertiary"
             :title="t('Supprimer {objectType}', { objectType: theLabel })"
@@ -52,7 +55,13 @@
     </div>
 
     <div
-      v-if="!selectedSuggest.length || !single"
+      v-if="readOnly && !selected.length"
+      class="w-full text-center"
+    >
+      <slot name="empty" />
+    </div>
+    <div
+      v-if="!readOnly && (!selectedSuggest.length || !single)"
       class="fr-fieldset__element"
     >
       <SearchableSelect
@@ -117,6 +126,7 @@ const props = withDefaults(defineProps<{
   aLabel: string
   thisLabel: string
   allowReorder?: boolean
+  readOnly?: boolean
   objectImageUrl?: (object: T | TSuggest) => string
   suggest: (query: Record<string, string | number>) => Promise<Array<TSuggest>>
   fetch: (id: string) => Promise<T>
@@ -125,6 +135,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   single: false,
   allowReorder: true,
+  readOnly: false,
 })
 
 const legendId = useId()

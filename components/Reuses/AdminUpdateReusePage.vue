@@ -11,7 +11,10 @@
       @feature="feature"
       @submit="save"
     >
-      <template #top>
+      <template
+        v-if="reuse.permissions.edit"
+        #top
+      >
         <BannerAction
           v-if="!reuse.deleted && !reuse.archived"
           class="mb-4"
@@ -64,71 +67,82 @@
         </BannerAction>
       </template>
       <template #button>
-        <BrandedButton
-          type="submit"
-          color="primary"
-          :loading="isLoading"
-        >
-          {{ t("Sauvegarder") }}
-        </BrandedButton>
+        <div class="flex items-center gap-3">
+          <p
+            v-if="!reuse.permissions.edit"
+            class="text-sm text-gray-medium m-0"
+          >
+            {{ t('Vous n\'avez pas la permission de modifier cette réutilisation.') }}
+          </p>
+          <BrandedButton
+            type="submit"
+            color="primary"
+            :loading="isLoading"
+            :disabled="!reuse.permissions.edit"
+          >
+            {{ t("Sauvegarder") }}
+          </BrandedButton>
+        </div>
       </template>
-      <div class="mt-5 space-y-5">
-        <TransferBanner
-          type="Reuse"
-          :subject="reuse"
-          :label="$t('Transférer cette réutilisation')"
-        />
-        <BannerAction
-          type="warning"
-          :title="reuse.archived ? $t('Désarchiver la réutilisation') : $t('Archiver la réutilisation')"
-        >
-          {{ $t("Une réutilisation archivée n'est plus indexée mais reste accessible aux utilisateurs avec un lien direct.") }}
+      <template v-if="reuse.permissions.edit">
+        <div class="mt-5 space-y-5">
+          <TransferBanner
+            type="Reuse"
+            :subject="reuse"
+            :label="$t('Transférer cette réutilisation')"
+          />
+          <BannerAction
+            type="warning"
+            :title="reuse.archived ? $t('Désarchiver la réutilisation') : $t('Archiver la réutilisation')"
+          >
+            {{ $t("Une réutilisation archivée n'est plus indexée mais reste accessible aux utilisateurs avec un lien direct.") }}
 
-          <template #button>
-            <BrandedButton
-              :icon="RiArchiveLine"
-              :loading="isLoading"
-              @click="archiveReuse"
-            >
-              {{ reuse.archived ? $t('Désarchiver') : $t('Archiver') }}
-            </BrandedButton>
-          </template>
-        </BannerAction>
-        <BannerAction
-          v-if="!reuse.deleted"
-          class="mt-5"
-          type="danger"
-          :title="$t('Supprimer cette réutilisation')"
-        >
-          {{ $t("Attention, cette action ne peut pas être annulée.") }}
-          <template #button>
-            <AdminDeleteModal
-              :title="$t('Êtes-vous sûr de vouloir supprimer cette réutilisation ?')"
-              :delete-url="`/api/1/reuses/${route.params.id}`"
-              :delete-button-label="$t('Supprimer cette réutilisation')"
-              :deletable-object="reuse"
-              object-type="reuse"
-              :object-title="reuse.title"
-              @deleted="onReuseDeleted"
-            >
-              <template #button="{ attrs, listeners }">
-                <BrandedButton
-                  color="danger"
-                  size="xs"
-                  :icon="RiDeleteBin6Line"
-                  v-bind="attrs"
-                  v-on="listeners"
-                >
-                  {{ $t('Supprimer') }}
-                </BrandedButton>
-              </template>
-              <p class="fr-text--bold">
-                {{ $t("Cette action ne peut pas être annulée.") }}
-              </p>
-            </AdminDeleteModal>
-          </template>
-        </BannerAction>
-      </div>
+            <template #button>
+              <BrandedButton
+                :icon="RiArchiveLine"
+                :loading="isLoading"
+                @click="archiveReuse"
+              >
+                {{ reuse.archived ? $t('Désarchiver') : $t('Archiver') }}
+              </BrandedButton>
+            </template>
+          </BannerAction>
+          <BannerAction
+            v-if="!reuse.deleted"
+            class="mt-5"
+            type="danger"
+            :title="$t('Supprimer cette réutilisation')"
+          >
+            {{ $t("Attention, cette action ne peut pas être annulée.") }}
+            <template #button>
+              <AdminDeleteModal
+                :title="$t('Êtes-vous sûr de vouloir supprimer cette réutilisation ?')"
+                :delete-url="`/api/1/reuses/${route.params.id}`"
+                :delete-button-label="$t('Supprimer cette réutilisation')"
+                :deletable-object="reuse"
+                object-type="reuse"
+                :object-title="reuse.title"
+                @deleted="onReuseDeleted"
+              >
+                <template #button="{ attrs, listeners }">
+                  <BrandedButton
+                    color="danger"
+                    size="xs"
+                    :icon="RiDeleteBin6Line"
+                    v-bind="attrs"
+                    v-on="listeners"
+                  >
+                    {{ $t('Supprimer') }}
+                  </BrandedButton>
+                </template>
+                <p class="fr-text--bold">
+                  {{ $t("Cette action ne peut pas être annulée.") }}
+                </p>
+              </AdminDeleteModal>
+            </template>
+          </BannerAction>
+        </div>
+      </template>
     </DescribeReuse>
   </LoadingBlock>
 </template>

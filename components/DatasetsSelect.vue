@@ -7,6 +7,7 @@
     :a-label="$t('un jeu de données')"
     :this-label="$t('ce jeu de données')"
     :allow-reorder
+    :read-only
     :suggest="suggestDataset"
     :fetch="fetchDataset"
     :object-image-url="(dataset) => ('image_url' in dataset && dataset.image_url) ? dataset.image_url : ''"
@@ -18,6 +19,12 @@
         class="flex-1 min-w-0"
         :dataset
       />
+    </template>
+    <template
+      v-if="$slots.empty"
+      #empty
+    >
+      <slot name="empty" />
     </template>
   </ObjectsSelect>
 </template>
@@ -31,10 +38,12 @@ const props = withDefaults(defineProps<{
   single?: boolean
   label?: string
   allowReorder?: boolean
+  readOnly?: boolean
   organizationId?: string
 }>(), {
   single: false,
   allowReorder: true,
+  readOnly: false,
 })
 
 const { $api } = useNuxtApp()

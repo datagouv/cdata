@@ -750,12 +750,21 @@
           >
             {{ $t('Précédent') }}
           </BrandedButton>
-          <BrandedButton
-            color="primary"
-            @click="submit"
-          >
-            {{ submitLabel }}
-          </BrandedButton>
+          <div class="flex items-center gap-3">
+            <p
+              v-if="props.canEdit === false"
+              class="text-sm text-gray-medium m-0"
+            >
+              {{ readOnlyMessage }}
+            </p>
+            <BrandedButton
+              color="primary"
+              :disabled="props.canEdit === false"
+              @click="submit"
+            >
+              {{ submitLabel }}
+            </BrandedButton>
+          </div>
         </div>
         <slot />
       </div>
@@ -782,6 +791,8 @@ const props = defineProps<{
   type: 'create' | 'update'
   harvested?: boolean
   badges?: Array<Badge>
+  canEdit?: boolean
+  readOnlyMessage?: string
 }>()
 const emit = defineEmits<{
   'badges-change': [badges: Array<Badge>]
