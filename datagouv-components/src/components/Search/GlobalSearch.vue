@@ -11,7 +11,7 @@
     >
       <SearchInput
         v-model="q"
-        :placeholder="placeholder || t('Ex : élection présidentielle 2022')"
+        :placeholder="placeholder || typesMeta[currentType].placeholder"
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
@@ -123,6 +123,7 @@
                 v-model="producerType"
                 :facets="getFacets('producer_type')"
                 :loading="searchResultsStatus === 'pending'"
+                :exclude="currentType === 'organizations' ? ['user'] : []"
                 :style="{ order: getOrder('producer_type') }"
               />
               <DatasetBadgeFilter
@@ -177,31 +178,44 @@
           >
             {{ t("{count} résultats | {count} résultat | {count} résultats", searchResults.total) }}
           </p>
-          <div class="fr-col-auto fr-grid-row fr-grid-row--middle">
-            <label
-              for="sort-search"
-              class="fr-col-auto text-sm m-0 mr-2"
-            >
-              {{ t('Trier par :') }}
-            </label>
-            <div class="fr-col">
-              <select
-                id="sort-search"
-                v-model="sort"
-                class="fr-select text-sm shadow-input-blue!"
+          <div class="fr-col-auto fr-grid-row fr-grid-row--middle gap-4">
+            <div class="flex items-center">
+              <label
+                for="sort-search"
+                class="fr-col-auto text-sm m-0 mr-2"
               >
-                <option :value="undefined">
-                  {{ t('Pertinence') }}
-                </option>
-                <option
-                  v-for="option in activeSortOptions"
-                  :key="option.value"
-                  :value="option.value"
+                {{ t('Trier par :') }}
+              </label>
+              <div class="fr-col">
+                <select
+                  id="sort-search"
+                  v-model="sort"
+                  class="fr-select text-sm shadow-input-blue!"
                 >
-                  {{ option.label }}
-                </option>
-              </select>
+                  <option :value="undefined">
+                    {{ t('Pertinence') }}
+                  </option>
+                  <option
+                    v-for="option in allSortOptions"
+                    :key="option.value"
+                    :value="option.value"
+                    :hidden="!activeSortValues.has(option.value)"
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
             </div>
+            <BrandedButton
+              v-if="rssUrl"
+              :href="rssUrl"
+              :title="t('Flux RSS')"
+              color="secondary"
+              size="sm"
+              :icon="RiRssLine"
+              icon-only
+              target="_blank"
+            />
           </div>
         </div>
         <transition mode="out-in">
@@ -239,6 +253,14 @@
                       :reuse="result"
                     >
                       <ReuseHorizontalCard :reuse="(result as Reuse)" />
+                    </slot>
+                  </template>
+                  <template v-else-if="currentType === 'organizations'">
+                    <slot
+                      name="organization"
+                      :organization="result"
+                    >
+                      <OrganizationHorizontalCard :organization="(result as Organization)" />
                     </slot>
                   </template>
                 </li>
@@ -294,6 +316,7 @@
                         color="tertiary"
                         :href="componentsConfig.forumUrl"
                         :icon="RiLightbulbLine"
+                        keep-margins-even-without-borders
                       >
                         {{ t("Voir le forum") }}
                       </BrandedButton>
@@ -312,7 +335,7 @@
 <script setup lang="ts">
 import { computed, watch, useTemplateRef, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
-import { RiCloseCircleLine, RiDatabase2Line, RiRobot2Line, RiLineChartLine, RiLightbulbLine } from '@remixicon/vue'
+import { RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiLightbulbLine, RiLineChartLine, RiRssLine, RiTerminalLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
 import { useTranslation } from '../../composables/useTranslation'
 import { useDebouncedRef } from '../../composables/useDebouncedRef'
@@ -322,8 +345,9 @@ import { useFetch } from '../../functions/api'
 import { getLink } from '../../functions/pagination'
 import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
+import type { Organization } from '../../types/organizations'
 import type { Reuse } from '../../types/reuses'
-import type { GlobalSearchConfig, SearchType, DatasetSearchResponse, DataserviceSearchResponse, ReuseSearchResponse, FacetItem } from '../../types/search'
+import type { GlobalSearchConfig, SearchType, SortOption, DatasetSearchResponse, DataserviceSearchResponse, ReuseSearchResponse, OrganizationSearchResponse, FacetItem } from '../../types/search'
 import { getDefaultGlobalSearchConfig } from '../../types/search'
 import BrandedButton from '../BrandedButton.vue'
 import LoadingBlock from '../LoadingBlock.vue'
@@ -332,6 +356,7 @@ import RadioGroup from '../RadioGroup.vue'
 import RadioInput from '../RadioInput.vue'
 import DatasetCard from '../DatasetCard.vue'
 import DataserviceCard from '../DataserviceCard.vue'
+import OrganizationHorizontalCard from '../OrganizationHorizontalCard.vue'
 import ReuseHorizontalCard from '../ReuseHorizontalCard.vue'
 import SearchInput from './SearchInput.vue'
 import Sidemenu from './Sidemenu.vue'
@@ -384,6 +409,22 @@ const activeAdvancedFilters = computed(() =>
 const activeSortOptions = computed(() =>
   currentTypeConfig.value?.sortOptions ?? [],
 )
+
+const activeSortValues = computed(() =>
+  new Set(activeSortOptions.value.map(o => o.value as string)),
+)
+
+// Deduplicated union of all sort options across all search types.
+// Rendered as hidden <option> elements so the <select> always has a stable
+// intrinsic width regardless of which type is currently active.
+const allSortOptions = computed(() => {
+  const seen = new Set<string>()
+  return props.config.flatMap(c => (c.sortOptions ?? []) as SortOption<string>[]).filter((o) => {
+    if (seen.has(o.value)) return false
+    seen.add(o.value)
+    return true
+  })
+})
 
 const activeFilters = computed(() => [
   ...(currentTypeConfig.value?.basicFilters ?? []),
@@ -458,6 +499,7 @@ watch(currentType, () => {
 const datasetsEnabled = computed(() => props.config.some(c => c.class === 'datasets'))
 const dataservicesEnabled = computed(() => props.config.some(c => c.class === 'dataservices'))
 const reusesEnabled = computed(() => props.config.some(c => c.class === 'reuses'))
+const organizationsEnabled = computed(() => props.config.some(c => c.class === 'organizations'))
 
 // Create stable params for each type
 const stableParamsOptions = {
@@ -480,11 +522,16 @@ const reusesParams = useStableQueryParams({
   ...stableParamsOptions,
   typeConfig: props.config.find(c => c.class === 'reuses'),
 })
+const organizationsParams = useStableQueryParams({
+  ...stableParamsOptions,
+  typeConfig: props.config.find(c => c.class === 'organizations'),
+})
 
 // URLs that return null when type is not enabled
 const datasetsUrl = computed(() => datasetsEnabled.value ? '/api/2/datasets/search/' : null)
 const dataservicesUrl = computed(() => dataservicesEnabled.value ? '/api/2/dataservices/search/' : null)
 const reusesUrl = computed(() => reusesEnabled.value ? '/api/2/reuses/search/' : null)
+const organizationsUrl = computed(() => organizationsEnabled.value ? '/api/2/organizations/search/' : null)
 
 // Reset page on filter/sort change
 const filtersForReset = computed(() => ({
@@ -528,7 +575,7 @@ const hasFilters = computed(() => {
     || reuseType.value
 })
 
-const showForumLink = computed(() => currentType.value === 'datasets' && !!componentsConfig.forumUrl)
+const showForumLink = computed(() => (currentType.value === 'datasets' || currentType.value === 'dataservices') && !!componentsConfig.forumUrl)
 
 function resetFilters() {
   organizationId.value = undefined
@@ -564,30 +611,79 @@ const { data: reusesResults, status: reusesStatus } = await useFetch<ReuseSearch
   reusesUrl,
   { params: reusesParams, lazy: true, server: initialType === 'reuses' },
 )
+const { data: organizationsResults, status: organizationsStatus } = await useFetch<OrganizationSearchResponse<Organization>>(
+  organizationsUrl,
+  { params: organizationsParams, lazy: true, server: initialType === 'organizations' },
+)
 
 const typesMeta = {
   datasets: {
     icon: RiDatabase2Line,
     name: t('Jeux de données'),
+    placeholder: t('ex. élections présidentielles'),
     results: datasetsResults,
     status: datasetsStatus,
   },
   dataservices: {
-    icon: RiRobot2Line,
-    name: t('APIs'),
+    icon: RiTerminalLine,
+    name: t('API'),
+    placeholder: t('ex: SIRENE'),
     results: dataservicesResults,
     status: dataservicesStatus,
   },
   reuses: {
     icon: RiLineChartLine,
     name: t('Réutilisations'),
+    placeholder: t('Rechercher une réutilisation de données'),
     results: reusesResults,
     status: reusesStatus,
+  },
+  organizations: {
+    icon: RiBuilding2Line,
+    name: t('Organisations'),
+    placeholder: t('Rechercher une organisation'),
+    results: organizationsResults,
+    status: organizationsStatus,
   },
 } as const
 
 const searchResults = computed(() => typesMeta[currentType.value].results.value)
 const searchResultsStatus = computed(() => typesMeta[currentType.value].status.value)
+
+// RSS feed URL for datasets
+const rssUrl = computed(() => {
+  if (currentType.value !== 'datasets') return null
+
+  const params = new URLSearchParams()
+  const datasetsConfig = props.config.find(c => c.class === 'datasets')
+
+  // Add hidden filters first
+  if (datasetsConfig?.hiddenFilters) {
+    for (const hf of datasetsConfig.hiddenFilters) {
+      if (hf?.value) params.set(hf.key as string, String(hf.value))
+    }
+  }
+
+  // Add active filters
+  if (qDebounced.value) params.set('q', qDebounced.value)
+  if (organizationId.value) params.set('organization', organizationId.value)
+  if (organizationType.value) params.set('organization_badge', organizationType.value)
+  if (tag.value) params.set('tag', tag.value)
+  if (format.value) params.set('format', format.value)
+  if (license.value) params.set('license', license.value)
+  if (schema.value) params.set('schema', schema.value)
+  if (geozone.value) params.set('geozone', geozone.value)
+  if (granularity.value) params.set('granularity', granularity.value)
+  if (badge.value) params.set('badge', badge.value)
+  if (topic.value) params.set('topic', topic.value)
+
+  // Add sort if set
+  if (sort.value) params.set('sort', sort.value)
+
+  const queryString = params.toString()
+  const basePath = '/api/1/datasets/recent.atom'
+  return `${componentsConfig.apiBase}${basePath}${queryString ? '?' + queryString : ''}`
+})
 
 // Facets for filters
 const currentFacets = computed(() => searchResults.value?.facets)

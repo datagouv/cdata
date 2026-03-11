@@ -348,6 +348,7 @@
                   { name: 'météo', url: 'https://meteo.data.gouv.fr' },
                   { name: 'culture', url: 'https://culture.data.gouv.fr' },
                   { name: 'logistique', url: 'https://logistique.data.gouv.fr' },
+                  { name: 'simplifions', url: 'https://simplifions.data.gouv.fr' },
                 ]"
                 :key="platform.name"
                 class="relative bg-gray-disabled p-4 space-y-2 hover:bg-gray-plain"
@@ -412,6 +413,16 @@
                     <strong>Direction Générale des Infrastructures, des Transports et des Mobilités</strong>
                   </template>
                 </TranslationT>
+                <TranslationT
+                  v-if="platform.name === 'simplifions'"
+                  tag="p"
+                  class="mb-0 text-gray-silver"
+                  keypath="Les données utiles par cas d'usages pour {name}."
+                >
+                  <template #name>
+                    <strong>aider les administrations à mettre en oeuvre le Dîtes-le nous une fois</strong>
+                  </template>
+                </TranslationT>
               </div>
             </div>
           </div>
@@ -471,11 +482,20 @@ import { TranslationT } from '@datagouv/components-next'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 
-useSeoMeta({ title: 'Accueil — data.gouv.fr' })
-
 const config = useRuntimeConfig()
 const { t } = useTranslation()
+
 const { formatDate } = useFormatDate()
+
+const title = t('{site} : Plateforme ouverte des données publiques françaises', { site: config.public.title })
+const description = t('L\'administration met à disposition les données publiques françaises. Téléchargez, partagez et réutilisez les données ouvertes de l\'État et des collectivités.')
+
+useSeoMeta({
+  title,
+  description,
+  ogTitle: title,
+  ogDescription: description,
+})
 
 const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts/', { params: { kind: 'news' } })
 const { data: site } = await useAPI<Site>('/api/1/site/')

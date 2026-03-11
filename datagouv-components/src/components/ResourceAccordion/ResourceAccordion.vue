@@ -9,7 +9,7 @@
     >
       <div>
         <div class="flex items-center fr-mb-1v">
-          <h4
+          <h3
             :id="resourceTitleId"
             class="fr-m-0"
           >
@@ -43,7 +43,7 @@
               /></span>
               <span class="absolute inset-0 z-1" />
             </button>
-          </h4>
+          </h3>
           <CopyButton
             :label="t('Copier le lien')"
             :copied-label="t('Lien copié !')"
@@ -113,6 +113,7 @@
             rel="ugc nofollow noopener"
             new-tab
             size="xs"
+            color="secondary"
             external
             @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
           >
@@ -127,7 +128,7 @@
             :id="resource.id + '-copy'"
             :data-clipboard-text="resource.url"
             :aria-describedby="resourceTitleId"
-            color="primary"
+            color="secondary"
             size="xs"
             :icon="RiFileCopyLine"
           >
@@ -390,6 +391,7 @@ import { getResourceFormatIcon, getResourceTitleId, detectOgcService } from '../
 import BrandedButton from '../BrandedButton.vue'
 import { getResourceExternalUrl, getResourceFilesize } from '../../functions/datasets'
 import { useTranslation } from '../../composables/useTranslation'
+import { useHasTabularData } from '../../composables/useHasTabularData'
 import Metadata from './Metadata.vue'
 import SchemaBadge from './SchemaBadge.vue'
 import ResourceIcon from './ResourceIcon.vue'
@@ -426,6 +428,7 @@ const DatafairPreview = defineAsyncComponent(() => import('./Datafair.client.vue
 
 const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()
+const checkTabularData = useHasTabularData()
 
 const hasPreview = computed(() => {
   // For JSON, PDF, and XML files, show preview.
@@ -435,13 +438,7 @@ const hasPreview = computed(() => {
   return format === 'json' || format === 'pdf' || format === 'xml'
 })
 
-const hasTabularData = computed(() => {
-  // Determines if we should show the "Données" tab for tabular files AND the "Structure des données" tab (for tabular data structure)
-  return config.tabularApiUrl
-    && props.resource.extras['analysis:parsing:parsing_table']
-    && !props.resource.extras['analysis:parsing:error']
-    && (config.tabularAllowRemote || props.resource.filetype === 'file')
-})
+const hasTabularData = computed(() => checkTabularData(props.resource))
 
 const hasPmtiles = computed(() => {
   return props.resource.extras['analysis:parsing:pmtiles_url'] || props.resource.format === 'pmtiles'

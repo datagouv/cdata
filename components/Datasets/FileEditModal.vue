@@ -192,7 +192,7 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, isCommunityResource } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, isCommunityResource, useHasTabularData } from '@datagouv/components-next'
 import type { Dataset, DatasetV2, Resource } from '@datagouv/components-next'
 import { cloneDeep } from 'lodash-es'
 import { RiDeleteBin6Line, RiPencilLine } from '@remixicon/vue'
@@ -228,10 +228,11 @@ const resourceForm = ref(cloneDeep(props.resource))
 const open = ref(false)
 const hasFileChanged = ref(false)
 
+const hasTabularData = useHasTabularData()
+
 // Check if resource has tabular API
 const hasTabularApi = computed(() => {
-  return props.resource.resource?.extras?.['analysis:parsing:parsing_table']
-    && !props.resource.resource?.extras?.['analysis:parsing:error']
+  return props.resource.resource ? hasTabularData(props.resource.resource) : false
 })
 
 // Watch for file changes

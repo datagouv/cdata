@@ -1,26 +1,23 @@
 <template>
-  <meter
-    class="quality-score"
-    :class="props.class"
-    min="0"
-    low="0"
-    :high="high"
-    :max="quality_max_score"
-    :optimum="quality_max_score"
+  <ProgressBar
     :value="score"
+    :max="quality_max_score"
+    :aria-label="score >= high ? t('Bon') : t('À améliorer')"
+    :bar-class="score >= high ? 'bg-success-dark' : 'bg-gray-low'"
+    :class="props.class"
   >
-    <template v-if="score >= high">
-      {{ t('Bon') }}
-    </template>
-    <template v-else>
-      {{ t('À améliorer') }}
-    </template>({{ calculatedScore }})
-  </meter>
+    <span class="sr-only">
+      <template v-if="score >= high">{{ t('Bon') }}</template>
+      <template v-else>{{ t('À améliorer') }}</template>
+      ({{ calculatedScore }})
+    </span>
+  </ProgressBar>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useTranslation } from '../composables/useTranslation'
+import ProgressBar from './ProgressBar.vue'
 
 const props = withDefaults(defineProps<{
   score: number

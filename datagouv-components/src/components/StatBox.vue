@@ -1,8 +1,8 @@
 <template>
   <div v-if="size === 'sm'">
-    <h3 class="text-sm font-bold m-0">
+    <p class="text-sm font-bold m-0">
       {{ title }}
-    </h3>
+    </p>
     <div class="flex flex-wrap items-center">
       <ContentLoader
         v-if="summary === null"
@@ -82,9 +82,9 @@
       'text-gray-medium': !changesThisYear && !summary,
     }"
   >
-    <h3 class="text-sm m-0">
+    <p class="text-sm m-0">
       {{ title }}
-    </h3>
+    </p>
     <div class="flex flex-wrap items-center">
       <ContentLoader
         v-if="summary === null"

@@ -21,7 +21,8 @@ function detectLanguage(): string {
     const acceptLanguage = header
     if (acceptLanguage) {
       const primaryLang = acceptLanguage.split(';')[0]!.split(',')[0]!.split('-')[0]!.toLowerCase()
-      return primaryLang
+      // Ignore wildcard * language, that should fallback to client side detection or default language
+      if (primaryLang !== '*') return primaryLang
     }
   }
   catch {

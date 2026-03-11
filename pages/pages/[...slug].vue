@@ -47,7 +47,7 @@ import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const route = useRoute()
-const config = useRuntimeConfig()
+const siteConfig = useSiteConfig()
 
 const { data, status } = useFetch<{
   data: {
@@ -69,7 +69,7 @@ useSeoMeta({
 useHead({
   script: [
     {
-      'data-udata': config.public.frontBase,
+      'data-udata': siteConfig.url,
       'src': '/oembed.js',
       'tagPosition': 'bodyClose',
     },

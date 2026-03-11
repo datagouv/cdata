@@ -1,7 +1,7 @@
 <template>
-  <h5 class="text-sm text-gray-plain font-bold">
+  <p class="text-sm text-gray-plain font-bold mb-0">
     {{ t("Qualité des métadonnées :") }}
-  </h5>
+  </p>
   <ul class="list-none pl-0 space-y-2">
     <DatasetQualityItem
       :passed="quality.dataset_description_quality"

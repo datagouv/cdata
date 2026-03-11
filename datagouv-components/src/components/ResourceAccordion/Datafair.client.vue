@@ -14,7 +14,7 @@
       type="warning"
       class="flex items-center space-x-2"
     >
-      <RiErrorWarningLine class="shink-0 size-6" />
+      <RiErrorWarningLine class="shrink-0 size-6" />
       <span>{{ t("Erreur lors de l'affichage de l'aperçu.") }}</span>
     </SimpleBanner>
   </div>

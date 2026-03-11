@@ -47,6 +47,20 @@ export type DiscussionNotification = CommonNotification & {
   }
 }
 
+export type MembershipAcceptedNotification = CommonNotification & {
+  details: {
+    class: 'MembershipAcceptedNotificationDetails'
+    organization: OrganizationReference
+  }
+}
+
+export type MembershipRefusedNotification = CommonNotification & {
+  details: {
+    class: 'MembershipRefusedNotificationDetails'
+    organization: OrganizationReference
+  }
+}
+
 export type ValidateHarvesterNotification = CommonNotification & {
   details: {
     class: 'ValidateHarvesterNotificationDetails'
@@ -55,4 +69,4 @@ export type ValidateHarvesterNotification = CommonNotification & {
   }
 }
 
-export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification | DiscussionNotification | ValidateHarvesterNotification
+export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification | DiscussionNotification | MembershipAcceptedNotification | MembershipRefusedNotification | ValidateHarvesterNotification

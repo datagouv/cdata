@@ -37,3 +37,14 @@ export const summarize = (val: number, fractionDigits = 0) => {
   }
   return `${toFixedIfNotZero(val)}Y`
 }
+
+export const escapeCsvValue = (value: string | number | null | undefined): string => {
+  if (value === null || value === undefined || value === '') {
+    return ''
+  }
+  const stringValue = String(value)
+  if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+    return `"${stringValue.replace(/"/g, '""')}"`
+  }
+  return stringValue
+}

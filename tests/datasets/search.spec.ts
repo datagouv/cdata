@@ -4,7 +4,7 @@ test('search launch without params', async ({ page }) => {
   await page.goto('/datasets/search/')
 
   await expect(page).toHaveTitle(
-    'Recherche des jeux de données — data.gouv.fr',
+    'Moteur de recherche des jeux de données - data.gouv.fr',
   )
 
   // Result count is displayed with role="status"

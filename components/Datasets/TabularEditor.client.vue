@@ -161,7 +161,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, type RegisteredSchema, type SchemaDetails, type SchemaField } from '@datagouv/components-next'
+import { BrandedButton, escapeCsvValue, SimpleBanner, type RegisteredSchema, type SchemaDetails, type SchemaField } from '@datagouv/components-next'
 import { RiAddLine, RiCheckLine, RiDownloadLine, RiInformationLine } from '@remixicon/vue'
 import { ofetch } from 'ofetch'
 import paparse from 'papaparse'
@@ -325,17 +325,6 @@ async function validateData() {
   finally {
     validating.value = false
   }
-}
-
-function escapeCsvValue(value: string | number | null | undefined): string {
-  if (value === null || value === undefined || value === '') {
-    return ''
-  }
-  const stringValue = String(value)
-  if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
-    return `"${stringValue.replace(/"/g, '""')}"`
-  }
-  return stringValue
 }
 
 async function initializeTable() {

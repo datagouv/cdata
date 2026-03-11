@@ -119,13 +119,12 @@ test.afterAll(async () => {
     // Using UDATA_WORKING_DIR to run the command in the udata context (with appropriated udata.cfg)
     exec(`uv run udata user unset-two-factor ${TWOFA_EMAIL}`, {
       cwd: process.env.UDATA_WORKING_DIR,
-    }, (error, stdout) => {
+    }, (error, _stdout) => {
       if (error) {
         console.error(`Error running udata command cleanup from ${process.env.UDATA_WORKING_DIR} directory: ${error.message}`)
         reject(error)
       }
       else {
-        console.log(`udata command cleanup output : ${stdout}`)
         resolve(null)
       }
     })

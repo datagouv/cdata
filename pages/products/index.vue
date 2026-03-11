@@ -95,6 +95,10 @@ definePageMeta({
 useSeoMeta({
   title: 'Produits',
 })
+defineOgImage('MainPage.takumi', {
+  title: 'Produits',
+  uri: '/products',
+})
 const route = useRoute()
 const page = ref(route.query.page ?? 1)
 

@@ -67,7 +67,7 @@
       <!-- Full-width blocs (like HeroBloc) -->
       <component
         :is="blocsTypes[bloc.class].component"
-        v-if="'fullWidth' in blocsTypes[bloc.class]"
+        v-if="blocsTypes[bloc.class] && 'fullWidth' in blocsTypes[bloc.class] && blocsTypes[bloc.class].component"
         v-model="(workingPage.blocs[index] as any)"
         :edit="isEditing"
         v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
@@ -80,6 +80,7 @@
       >
         <component
           :is="blocsTypes[bloc.class].component"
+          v-if="blocsTypes[bloc.class]?.component"
           v-model="(workingPage.blocs[index] as any)"
           :edit="isEditing"
           v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
@@ -141,6 +142,7 @@
 
 <script setup lang="ts">
 import type { ComponentProps } from 'vue-component-type-helpers'
+import * as Sentry from '@sentry/nuxt'
 import { BrandedButton } from '@datagouv/components-next'
 import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine, RiEdit2Line } from '@remixicon/vue'
 import { toast } from 'vue-sonner'
@@ -159,6 +161,15 @@ const props = withDefaults(defineProps<{
   edit: false,
   editable: false,
   mainColor: 'primary',
+})
+
+watchEffect(() => {
+  // TODO: Temporary log any unknown/unregistered blocs for debugging. It should not happen (except following a backend update).
+  for (const bloc of props.page.blocs) {
+    if (!blocsTypes[bloc.class]) {
+      Sentry.captureMessage(`Unknown bloc type: "${bloc.class}" in page "${props.page.id}"`, 'warning')
+    }
+  }
 })
 
 const emit = defineEmits<{
