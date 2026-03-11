@@ -14,7 +14,7 @@ const { isProduction } = useRuntimeConfig().public
     <img
       src="/nuxt_images/logo_horizontal.svg"
       alt=""
-      class="w-96 aspect-[433/113]"
+      class="w-96 h-[calc(var(--spacing)*96*113/433)]"
     >
     <h1
       class="text-7xl/tight font-light text-[#161616]"

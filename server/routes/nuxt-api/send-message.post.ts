@@ -17,13 +17,13 @@ export default defineEventHandler(async (event) => {
   const CrispClient = new Crisp()
 
   const config = useRuntimeConfig(event)
-  const websiteId = config.crispWebsiteId
-  CrispClient.authenticateTier('plugin', config.crispIdentifier, config.crispKey)
+  const websiteId = config.crispWebsiteId as string
+  CrispClient.authenticateTier('plugin', config.crispIdentifier as string, config.crispKey as string)
 
   const message = {
-    type: 'text',
-    from: 'user',
-    origin: 'email',
+    type: 'text' as const,
+    from: 'user' as const,
+    origin: 'email' as const,
     content: `**${body.subject}**\n\n${body.body}`,
   }
 
@@ -46,6 +46,7 @@ export default defineEventHandler(async (event) => {
   }
   try {
     const { session_id: sessionId } = await CrispClient.website.createNewConversation(websiteId)
+    if (!sessionId) throw new Error('Crisp conversation creation returned no session_id')
     await CrispClient.website.updateConversationMetas(websiteId, sessionId, {
       email,
       nickname: getNicknameFromEmail(email),
