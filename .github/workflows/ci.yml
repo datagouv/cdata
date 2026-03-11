@@ -363,3 +363,45 @@ jobs:
           environment: ${{ github.ref_name }}
           version: ${{ steps.version.outputs.short }}
           ignore_missing: true
+
+
+  # ============================================
+  # JOB 6: Publish datagouv-components (automatic on main, manual on any branch)
+  # ============================================
+  publish-datagouv-components:
+    needs: e2e
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js with npm auth
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+          scope: "@datagouv"
+          auth-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Install datagouv-components dependencies
+        working-directory: ./datagouv-components
+        run: pnpm install
+
+      - name: Publish datagouv-components
+        working-directory: ./datagouv-components
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          LATEST=$(npm view @datagouv/components-next@dev version 2>/dev/null \
+            || npm view @datagouv/components-next version 2>/dev/null \
+            || echo "0.0.0")
+          echo "Using base version $LATEST"
+          pnpm version "$LATEST" --no-git-tag-version
+          # Then, we increment the preprelease version number
+          pnpm version prerelease --preid=dev --no-git-tag-version
+          pnpm run publish-dev
