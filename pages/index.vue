@@ -488,13 +488,12 @@ const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const title = t('{site} : Plateforme ouverte des données publiques françaises', { site: config.public.title })
-const description = t('L\'administration met à disposition les données publiques françaises. Téléchargez, partagez et réutilisez les données ouvertes de l\'État et des collectivités.')
 
 useSeoMeta({
   title,
-  description,
+  description: config.public.description,
   ogTitle: title,
-  ogDescription: description,
+  ogDescription: config.public.description,
 })
 
 const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts/', { params: { kind: 'news' } })
