@@ -5,22 +5,11 @@
       :style="`background-image: url(''), radial-gradient(rgba(255,255,255,1.0), rgba(255,255,255,0.7), rgba(217,217,217,0)), url('/nuxt_images/homepage/${randomHeroImage}')`"
     >
       <div class="absolute inset-0 backdrop-blur-[1px]" />
-      <div class="relative max-w-[800px] mx-auto px-6 flex flex-col items-center space-y-8">
-        <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-5 items-center">
-          <CdataLink
-            v-if="lastPost"
-            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
-            :to="lastPost.page"
-          >
-            <RiBardLine
-              aria-hidden="true"
-              class="size-4 shrink-0"
-            />
-            <span class="truncate"><span class="font-bold">{{ $t('Actualités') }}</span><span>&nbsp;: {{ lastPost.name }}</span></span>
-          </CdataLink>
+      <div class="relative max-w-4xl mx-auto px-6 flex flex-col items-center space-y-8">
+        <div class="flex flex-col gap-5 items-center">
           <CdataLink
             v-if="config.public.homepageRightNow"
-            class="flex items-center space-x-2.5 w-full sm:max-w-[340px] px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
+            class="flex items-center space-x-2.5 max-w-full px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
             :to="config.public.homepageRightNow.url"
           >
             <RiBardLine
@@ -34,9 +23,20 @@
               <span>&nbsp;: {{ config.public.homepageRightNow.title }}</span>
             </span>
           </CdataLink>
+          <CdataLink
+            v-if="lastPost"
+            class="flex items-center space-x-2.5 max-w-full px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
+            :to="lastPost.page"
+          >
+            <RiNewspaperLine
+              aria-hidden="true"
+              class="size-4 shrink-0"
+            />
+            <span class="truncate"><span class="font-bold">{{ $t('Actualités') }}</span><span>&nbsp;: {{ lastPost.name }}</span></span>
+          </CdataLink>
         </div>
         <div class="space-y-4">
-          <h1 class="text-6xl font-extrabold text-new-primary text-center">
+          <h1 class="max-w-3xl text-[54px] leading-[125%] font-extrabold text-new-primary text-center">
             {{ $t('La plateforme des données publiques françaises') }}
           </h1>
           <p class="font-spectral italic text-2xl text-center text-new-primary">
@@ -477,7 +477,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, summarize, useFormatDate, type Site } from '@datagouv/components-next'
-import { RiArrowRightLine, RiBardLine, RiLineChartLine, RiSearchLine, RiVipDiamondLine } from '@remixicon/vue'
+import { RiArrowRightLine, RiBardLine, RiLineChartLine, RiNewspaperLine, RiSearchLine, RiVipDiamondLine } from '@remixicon/vue'
 import { TranslationT } from '@datagouv/components-next'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
