@@ -28,10 +28,12 @@ const app = useNuxtApp()
 
 const { locale } = useTranslation()
 const runtimeConfig = useRuntimeConfig()
+const route = useRoute()
+const siteConfig = useSiteConfig()
 
 app.vueApp.use(datagouv, {
   name: runtimeConfig.public.title,
-  baseUrl: runtimeConfig.public.baseUrl,
+  baseUrl: siteConfig.url,
   apiBase: runtimeConfig.public.apiBase,
   devApiKey: runtimeConfig.public.devApiKey,
   datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
@@ -69,7 +71,7 @@ useSeoMeta({
   ogTitle: runtimeConfig.public.title,
   ogDescription: runtimeConfig.public.description,
   ogType: 'website',
-  ogUrl: runtimeConfig.public.baseUrl,
+  ogUrl: () => `${siteConfig.url}${route.path}`,
   ogSiteName: runtimeConfig.public.title,
   ogLocale: 'fr_FR',
   twitterCard: 'summary_large_image',

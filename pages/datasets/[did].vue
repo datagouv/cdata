@@ -350,7 +350,7 @@
                   class="!m-0 text-sm"
                 >
                   <template #link>
-                    <CdataLink :href="`https://${config.public.baseUrl.includes('demo') ? 'demo.': ''}ecologie.data.gouv.fr/indicators/${dataset.id}`">
+                    <CdataLink :href="`https://${siteConfig.url.includes('demo') ? 'demo.': ''}ecologie.data.gouv.fr/indicators/${dataset.id}`">
                       ecologie.data.gouv.fr
                     </CdataLink>
                   </template>
@@ -505,6 +505,7 @@ import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import { useElementSize } from '@vueuse/core'
 
 const config = useRuntimeConfig()
+const siteConfig = useSiteConfig()
 const route = useRoute()
 const { formatDate } = useFormatDate()
 const { t } = useTranslation()
