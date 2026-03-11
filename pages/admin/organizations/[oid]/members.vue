@@ -430,19 +430,20 @@ function getStatusType(role: MemberRole): AdminBadgeType {
 }
 
 const editSelectedDatasetIds = ref<Set<string>>(new Set())
-const editOriginalAssignments = ref<Array<Assignment>>([])
+const editInitialDatasetIds = ref<Set<string>>(new Set())
 
 const openEditModal = async (member: Member) => {
   newRole.value = member.role
   editSelectedDatasetIds.value = new Set()
-  editOriginalAssignments.value = []
+  editInitialDatasetIds.value = new Set()
 
   if (member.role === 'partial_editor' && currentOrganization.value) {
-    const assignments = await $api<Array<Assignment>>(`/api/1/organizations/${currentOrganization.value.id}/assignments/`, {
-      query: { user: member.user.id },
-    })
-    editOriginalAssignments.value = assignments.filter(a => a.subject.class === 'Dataset')
-    editSelectedDatasetIds.value = new Set(editOriginalAssignments.value.map(a => a.subject.id))
+    const assignments = await $api<Array<Assignment>>(`/api/1/organizations/${currentOrganization.value.id}/assignments/`)
+    const userDatasetIds = assignments
+      .filter(a => a.user.id === member.user.id && a.subject.class === 'Dataset')
+      .map(a => a.subject.id)
+    editSelectedDatasetIds.value = new Set(userDatasetIds)
+    editInitialDatasetIds.value = new Set(userDatasetIds)
   }
 }
 
@@ -460,29 +461,18 @@ const removeMemberFromOrganization = async (member: Member, close: () => void) =
 
 const syncAssignments = async (member: Member) => {
   const orgId = currentOrganization.value!.id
-  const originalIds = new Set(editOriginalAssignments.value.map(a => a.subject.id))
-  const added = [...editSelectedDatasetIds.value].filter(id => !originalIds.has(id))
-  const removed = editOriginalAssignments.value.filter(a => !editSelectedDatasetIds.value.has(a.subject.id))
-
-  const createPromises = added.map(id =>
-    $api(`/api/1/organizations/${orgId}/assignments/`, {
-      method: 'POST',
-      body: JSON.stringify({ user: member.user.id, subject: { class: 'Dataset', id } }),
-    }),
-  )
-
-  const deletePromises = removed.map(a =>
-    $api(`/api/1/organizations/${orgId}/assignments/${a.id}/`, { method: 'DELETE' }),
-  )
-
-  await Promise.all([...createPromises, ...deletePromises])
+  await $api(`/api/1/organizations/${orgId}/member/${member.user.id}/assignments/`, {
+    method: 'PUT',
+    body: JSON.stringify(
+      [...editSelectedDatasetIds.value].map(id => ({ class: 'Dataset', id })),
+    ),
+  })
 }
 
 const updateRole = async (member: Member, close: () => void) => {
   const roleChanged = member.role !== newRole.value
   const isPartialEditor = newRole.value === 'partial_editor'
-  const originalIds = new Set(editOriginalAssignments.value.map(a => a.subject.id))
-  const assignmentsChanged = isPartialEditor && !setsEqual(editSelectedDatasetIds.value, originalIds)
+  const assignmentsChanged = isPartialEditor && !setsEqual(editSelectedDatasetIds.value, editInitialDatasetIds.value)
 
   if (!roleChanged && !assignmentsChanged) {
     close()
