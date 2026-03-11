@@ -37,12 +37,12 @@
 <script setup lang="ts">
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
-const config = useRuntimeConfig()
+const siteConfig = useSiteConfig()
 
 useHead({
   script: [
     {
-      'data-udata': config.public.frontBase,
+      'data-udata': siteConfig.url,
       'src': '/oembed.js',
       'tagPosition': 'bodyClose',
     },
