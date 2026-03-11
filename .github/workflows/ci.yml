@@ -103,7 +103,7 @@ jobs:
           - browser: chromium
             projects: "--project=setup --project=setup-normal-user --project=chromium --project=chromium-normal-user --project=chromium-2fa-user"
           - browser: firefox
-            projects: "--project=setup --project=firefox"
+            projects: "--project=setup --project=setup-normal-user --project=firefox"
     container:
       image: mcr.microsoft.com/playwright:v1.57.0-noble
       options: --user 1001

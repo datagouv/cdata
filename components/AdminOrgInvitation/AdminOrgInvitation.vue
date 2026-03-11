@@ -61,7 +61,7 @@
           {{ formatDate(new Date(invitation.created), { dateStyle: 'long', timeStyle: 'short' }) }}
         </div>
       </div>
-      <div class="flex flex-col gap-2.5 items-end">
+      <div class="flex gap-2.5 items-start">
         <BrandedButton
           color="primary"
           size="xs"
