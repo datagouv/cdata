@@ -269,6 +269,14 @@ export default defineNuxtConfig({
     plugins: [toml(), tailwindcss()],
     server: {
       allowedHosts: ['dev.local'],
+      warmup: {
+        clientFiles: [
+          './pages/**/*.vue',
+          './components/**/*.vue',
+          './layouts/**/*.vue',
+          './composables/**/*.ts',
+        ],
+      },
     },
   },
 
