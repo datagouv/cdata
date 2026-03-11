@@ -348,6 +348,7 @@
                   { name: 'météo', url: 'https://meteo.data.gouv.fr' },
                   { name: 'culture', url: 'https://culture.data.gouv.fr' },
                   { name: 'logistique', url: 'https://logistique.data.gouv.fr' },
+                  { name: 'simplifions', url: 'https://simplifions.data.gouv.fr' },
                 ]"
                 :key="platform.name"
                 class="relative bg-gray-disabled p-4 space-y-2 hover:bg-gray-plain"
@@ -410,6 +411,16 @@
                 >
                   <template #name>
                     <strong>Direction Générale des Infrastructures, des Transports et des Mobilités</strong>
+                  </template>
+                </TranslationT>
+                <TranslationT
+                  v-if="platform.name === 'simplifions'"
+                  tag="p"
+                  class="mb-0 text-gray-silver"
+                  keypath="Les données utiles par cas d'usages pour {name}."
+                >
+                  <template #name>
+                    <strong>aider les administrations à mettre en oeuvre le Dîtes-le nous une fois</strong>
                   </template>
                 </TranslationT>
               </div>

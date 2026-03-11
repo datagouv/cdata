@@ -55,6 +55,10 @@ const { t } = useTranslation()
 useSeoMeta({
   title: t('Articles'),
 })
+defineOgImage('MainPage.takumi', {
+  title: 'Articles',
+  uri: '/posts',
+})
 const route = useRoute()
 const page = ref(route.query.page ?? 1)
 

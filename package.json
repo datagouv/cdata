@@ -30,7 +30,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint-staged": "lint-staged",
-    "build": "nuxt build",
+    "build": "nuxt build && npx tsx scripts/copy-native-bindings.ts",
     "typecheck": "nuxt typecheck",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
@@ -92,11 +92,13 @@
     "vue": "^3.5",
     "vue-content-loader": "^2.0.1",
     "vue-router": "^4.4",
-    "vue3-text-clamp": "^0.1.2"
+    "vue3-text-clamp": "^0.1.2",
+    "@takumi-rs/core": "^0.68.17"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
     "@nuxt/eslint": "^1.9",
+    "@nuxt/fonts": "^0.14.0",
     "@parcel/watcher": "^2.5.1",
     "@playwright/test": "^1.57.0",
     "@tailwindcss/oxide": "^4.0.15",
@@ -109,6 +111,7 @@
     "husky": "^9.1.7",
     "lightningcss": "^1.29.3",
     "lint-staged": "^16.1.2",
+    "nuxt-og-image": "6.0.0-beta.34",
     "otplib": "^13.0.2",
     "sass-embedded": "^1.86.0",
     "tailwindcss": "^4.0.7",

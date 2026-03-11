@@ -15,7 +15,7 @@ test('page loads with results', async ({ page }) => {
 test('search filters results', async ({ page }) => {
   await page.goto('/reuses/search')
 
-  const searchInput = page.getByPlaceholder('Ex : élection présidentielle 2022')
+  const searchInput = page.getByPlaceholder('Rechercher une réutilisation de données')
   await searchInput.fill('itineriz')
   await searchInput.press('Enter')
 

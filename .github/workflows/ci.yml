@@ -95,6 +95,15 @@ jobs:
     needs: build
     timeout-minutes: 30
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox]
+        include:
+          - browser: chromium
+            projects: "--project=setup --project=setup-normal-user --project=chromium --project=chromium-normal-user --project=chromium-2fa-user"
+          - browser: firefox
+            projects: "--project=setup --project=firefox"
     container:
       image: mcr.microsoft.com/playwright:v1.57.0-noble
       options: --user 1001
@@ -171,6 +180,7 @@ jobs:
           URLS_ALLOW_PRIVATE = True
           URLS_ALLOW_LOCAL = True
           URLS_ALLOWED_TLDS = Defaults.URLS_ALLOWED_TLDS | set(['local'])
+          URLS_RESOLVE_HOSTNAME = False
 
           PLUGINS = []
           FS_ROOT = 'fs'
@@ -217,6 +227,7 @@ jobs:
         env:
           NUXT_PUBLIC_API_BASE: http://localhost:7000
           NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "hero_15.png"
+          NUXT_SITE_URL: http://localhost:3000
         run: |
           # Start cdata server in background using pre-built artifacts
           PORT=3000 node .output/server/index.mjs > cdata.log 2>&1 &
@@ -231,7 +242,7 @@ jobs:
           NUXT_PUBLIC_API_BASE: http://localhost:7000
           UDATA_WORKING_DIR: ${{ env.UDATA_WORKING_DIR }}
           CI: true
-        run: pnpm run test:e2e
+        run: pnpm run test:e2e ${{ matrix.projects }}
 
       - name: Kill udata server
         if: always()
@@ -253,7 +264,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-screenshots
+          name: playwright-screenshots-${{ matrix.browser }}
           path: tests/**/*-snapshots
           retention-days: 7
 
@@ -261,7 +272,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.browser }}
           path: playwright-report/
           retention-days: 7
 

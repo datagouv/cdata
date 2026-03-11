@@ -1,4 +1,4 @@
-import { RiDatabase2Line, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiRobot2Line, RiWindow2Line } from '@remixicon/vue'
+import { RiDatabase2Line, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine, RiWindow2Line } from '@remixicon/vue'
 import type { AccordionListBloc, DataservicesListBloc, DatasetsListBloc, HeroBloc, LinksListBloc, MarkdownBloc, ReusesListBloc } from '~/types/pages'
 import DatasetsListBlocComponent from '~/components/Pages/DatasetsListBloc.vue'
 import DataservicesListBlocComponent from '~/components/Pages/DataservicesListBloc.vue'
@@ -20,11 +20,11 @@ export function useContentBlocsTypes() {
       default: (): Omit<DatasetsListBloc, 'id'> => ({ class: 'DatasetsListBloc', title: t('Mes jeux de données'), subtitle: null, datasets: [] }),
     },
     DataservicesListBloc: {
-      icon: RiRobot2Line,
-      name: t('APIs à la une'),
-      description: t('Mettre en avant jusqu\'à 4 APIs'),
+      icon: RiTerminalLine,
+      name: t('API à la une'),
+      description: t('Mettre en avant jusqu\'à 4 API'),
       component: DataservicesListBlocComponent,
-      default: (): Omit<DataservicesListBloc, 'id'> => ({ class: 'DataservicesListBloc', title: t('Mes APIs'), subtitle: null, dataservices: [] }),
+      default: (): Omit<DataservicesListBloc, 'id'> => ({ class: 'DataservicesListBloc', title: t('Mes API'), subtitle: null, dataservices: [] }),
     },
     ReusesListBloc: {
       icon: RiLineChartLine,

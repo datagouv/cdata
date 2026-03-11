@@ -6,7 +6,7 @@
     />
     <component
       :is="as"
-      class="mb-0 truncate flex-initial font-normal"
+      class="mb-0 truncate flex-initial"
       :class="[colorClass, { 'text-xs': size === 'xs', 'text-sm': size === 'sm', 'text-base': size === 'base' }]"
     >
       {{ organization.name }}

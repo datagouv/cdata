@@ -123,6 +123,10 @@ useSeoMeta({
   title: name,
   robots: robots,
 })
+defineOgImage('MainPage.takumi', {
+  title: post.value?.name ?? 'Articles',
+  uri: '/posts',
+})
 useHead({
   script: [
     {

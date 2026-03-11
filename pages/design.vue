@@ -40,7 +40,7 @@
         />
         <AdminSidebarLink
           :icon="RiSearch2Line"
-          :label="$t('Recherche d\'APIs')"
+          :label="$t('Recherche d\'API')"
           to="/design/dataservice-search"
         />
         <AdminSidebarLink

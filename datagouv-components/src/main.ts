@@ -25,7 +25,7 @@ import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
 import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm } from './types/visualizations'
 import type { GlobalSearchConfig, SearchType, SortOption } from './types/search'
-import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions } from './types/search'
+import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 
 import ActivityList from './components/ActivityList/ActivityList.vue'
 import UserActivityList from './components/ActivityList/UserActivityList.vue'
@@ -50,12 +50,14 @@ import DatasetQuality from './components/DatasetQuality.vue'
 import DatasetQualityInline from './components/DatasetQualityInline.vue'
 import DatasetQualityItem from './components/DatasetQualityItem.vue'
 import DatasetQualityScore from './components/DatasetQualityScore.vue'
+import ProgressBar from './components/ProgressBar.vue'
 import DatasetQualityTooltipContent from './components/DatasetQualityTooltipContent.vue'
 import ExtraAccordion from './components/ExtraAccordion.vue'
 import LabelTag from './components/DatasetLabelTag.vue'
 import LoadingBlock from './components/LoadingBlock.vue'
 import MarkdownViewer from './components/MarkdownViewer.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
+import OrganizationHorizontalCard from './components/OrganizationHorizontalCard.vue'
 import OrganizationLogo from './components/OrganizationLogo.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
@@ -242,10 +244,12 @@ export {
   getDefaultDatasetConfig,
   getDefaultDataserviceConfig,
   getDefaultReuseConfig,
+  getDefaultOrganizationConfig,
   getDefaultGlobalSearchConfig,
   defaultDatasetSortOptions,
   defaultDataserviceSortOptions,
   defaultReuseSortOptions,
+  defaultOrganizationSortOptions,
 }
 
 // Vue Plugin
@@ -294,6 +298,7 @@ export {
   Tag,
   MarkdownViewer,
   OrganizationCard,
+  OrganizationHorizontalCard,
   OrganizationLogo,
   OrganizationNameWithCertificate,
   OwnerType,
@@ -301,6 +306,7 @@ export {
   PaddedContainer,
   Pagination,
   Placeholder,
+  ProgressBar,
   PostCard,
   RadioGroup,
   RadioInput,

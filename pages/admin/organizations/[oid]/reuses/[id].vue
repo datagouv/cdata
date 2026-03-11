@@ -26,7 +26,7 @@
         :links="[
           { href: getReuseAdminUrl(reuse), label: t('Métadonnées') },
           { href: `${getReuseAdminUrl(reuse)}/datasets`, label: t('Jeux de données associés') },
-          { href: `${getReuseAdminUrl(reuse)}/dataservices`, label: t('APIs associées') },
+          { href: `${getReuseAdminUrl(reuse)}/dataservices`, label: t('API associées') },
         ]"
       />
 
