@@ -142,22 +142,9 @@
                 v-else-if="hasTabularData"
                 :resource="resource"
               />
-              <div
-                v-else
-                class="flex flex-col items-center py-12"
-              >
-                <img
-                  :src="microscopeSrc"
-                  class="h-20 mb-3"
-                  alt=""
-                >
-                <p class="fr-text--bold mb-1">
-                  {{ t("Aucun aperçu disponible") }}
-                </p>
-                <p class="text-sm text-gray-medium mb-0">
-                  {{ t("Ce fichier ne peut pas être prévisualisé.") }}
-                </p>
-              </div>
+              <PreviewUnavailable v-else>
+                {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+              </PreviewUnavailable>
             </div>
             <div v-if="tab.key === 'description'">
               <MarkdownViewer
@@ -320,7 +307,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
 import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiInformationLine, RiSubtractLine } from '@remixicon/vue'
-import microscopeSrc from '../../../assets/illustrations/microscope.svg?url'
+import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import { toast } from 'vue-sonner'
 import BrandedButton from '../BrandedButton.vue'
 import CopyButton from '../CopyButton.vue'
