@@ -113,8 +113,8 @@
               class="size-3.5"
               aria-hidden="true"
             />
-            <span class="text-[11px] text-gray-plain">{{ t('Filtres actifs') }}</span>
-            <span class="inline-flex items-center justify-center rounded-full bg-new-primary/10 text-new-primary text-[10px] tabular-nums min-w-5 h-5 px-1.5">
+            <span class="text-xs text-gray-plain">{{ t('Filtres actifs') }}</span>
+            <span class="inline-flex items-center justify-center rounded-full bg-new-primary/10 text-new-primary text-xs tabular-nums min-w-5 h-5 px-1.5">
               {{ activeFilters.length }}
             </span>
           </div>
@@ -132,7 +132,7 @@
           <span
             v-for="af in activeFilters"
             :key="af.column"
-            class="inline-flex items-center gap-1.5 bg-white border border-gray-silver rounded-lg pl-2 pr-1 py-1 text-[11px]"
+            class="inline-flex items-center gap-1.5 bg-white border border-gray-silver rounded-lg pl-2 pr-1 py-1 text-xs"
           >
             <component
               :is="columnTypeIcon(af.column)"
@@ -198,7 +198,7 @@
                   />
                 </div>
                 <!-- Column type -->
-                <span class="font-mono text-[11px] text-gray-plain -mt-0.5 inline-flex items-center gap-1">
+                <span class="font-mono text-xs text-gray-plain -mt-0.5 inline-flex items-center gap-1">
                   <component
                     :is="columnTypeIcon(col)"
                     class="size-3"
@@ -311,7 +311,7 @@
                 aria-hidden="true"
               />
               <span
-                class="text-[11px] text-gray-plain truncate"
+                class="text-xs text-gray-plain truncate"
                 :title="col"
               >{{ col }}</span>
             </div>
@@ -355,7 +355,7 @@
           </div>
           <button
             v-if="displayedColumns.length > 4"
-            class="text-[11px] text-gray-title hover:underline pt-1 flex items-center gap-1"
+            class="text-xs text-gray-title hover:underline pt-1 flex items-center gap-1"
             @click="toggleMobileExpand(i)"
           >
             <RiArrowDownSLine
@@ -406,7 +406,7 @@
                   <DialogTitle class="text-sm font-bold">
                     {{ t('Filtres & tri par colonne') }}
                   </DialogTitle>
-                  <p class="text-[11px] text-gray-low">
+                  <p class="text-xs text-gray-low">
                     {{ allColumns.length }} {{ t('colonnes') }} · {{ activeFilters.length }} {{ t('filtre') }}{{ activeFilters.length !== 1 ? 's' : '' }}
                   </p>
                 </div>
@@ -427,7 +427,7 @@
                         class="size-3.5 text-gray-low shrink-0"
                         aria-hidden="true"
                       />
-                      <span class="flex-1 text-[13px] text-gray-title truncate">{{ col }}</span>
+                      <span class="flex-1 text-sm text-gray-title truncate">{{ col }}</span>
                       <RiArrowUpLine
                         v-if="sort?.column === col && sort.direction === 'asc'"
                         class="size-3 text-new-primary shrink-0"

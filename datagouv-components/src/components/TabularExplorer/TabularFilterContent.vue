@@ -28,7 +28,7 @@
       v-if="columnProfile && columnProfile.nb_missing_values > 0"
       class="flex items-center gap-2 px-3 py-2 border-b border-black/10"
     >
-      <span class="text-[11px] text-gray-plain whitespace-nowrap">
+      <span class="text-xs text-gray-plain whitespace-nowrap">
         <span class="font-mono tabular-nums">{{ columnProfile.nb_missing_values }}</span>
         null
         <span class="text-gray-low">({{ nullPercent }})</span>
@@ -107,7 +107,7 @@
             {{ top.value ?? 'null' }}
           </template>
         </span>
-        <span class="font-mono text-[11px] text-gray-low tabular-nums shrink-0">{{ top.count }}</span>
+        <span class="font-mono text-xs text-gray-low tabular-nums shrink-0">{{ top.count }}</span>
       </button>
     </div>
 
@@ -128,7 +128,7 @@
         <span class="flex-1 text-left">{{ t('Vrai') }}</span>
         <span
           v-if="booleanCounts"
-          class="font-mono tabular-nums text-[11px]"
+          class="font-mono tabular-nums text-xs"
           :class="booleanFilter === true ? 'text-white/70' : 'text-gray-low'"
         >{{ booleanCounts.trueCount }}</span>
       </button>
@@ -144,7 +144,7 @@
         <span class="flex-1 text-left">{{ t('Faux') }}</span>
         <span
           v-if="booleanCounts"
-          class="font-mono tabular-nums text-[11px]"
+          class="font-mono tabular-nums text-xs"
           :class="booleanFilter === false ? 'text-white/70' : 'text-gray-low'"
         >{{ booleanCounts.falseCount }}</span>
       </button>
