@@ -11,11 +11,16 @@
       :harvested
       :badges="dataset.badges"
       :submit-label="t('Sauvegarder')"
+      :can-edit="dataset.permissions.edit"
+      :read-only-message="t('Vous n\'avez pas la permission de modifier ce jeu de données.')"
       @feature="feature"
       @badges-change="pendingBadges = $event"
       @submit="save"
     >
-      <template #top>
+      <template
+        v-if="dataset.permissions.edit"
+        #top
+      >
         <BannerAction
           v-if="!dataset.deleted && !dataset.archived"
           class="mb-4"
@@ -67,62 +72,64 @@
           </template>
         </BannerAction>
       </template>
-      <div class="mt-5 space-y-5">
-        <TransferBanner
-          type="Dataset"
-          :subject="dataset"
-          :label="$t('Transférer  le jeu de données')"
-        />
-        <BannerAction
-          type="warning"
-          :title="dataset.archived ? $t('Désarchiver le jeu de données') : $t('Archiver le jeu de données')"
-        >
-          {{ $t("Un jeu de données archivé n'est plus indexé mais reste accessible aux utilisateurs avec un lien direct.") }}
+      <template v-if="dataset.permissions.edit">
+        <div class="mt-5 space-y-5">
+          <TransferBanner
+            type="Dataset"
+            :subject="dataset"
+            :label="$t('Transférer  le jeu de données')"
+          />
+          <BannerAction
+            type="warning"
+            :title="dataset.archived ? $t('Désarchiver le jeu de données') : $t('Archiver le jeu de données')"
+          >
+            {{ $t("Un jeu de données archivé n'est plus indexé mais reste accessible aux utilisateurs avec un lien direct.") }}
 
-          <template #button>
-            <BrandedButton
-              :icon="RiArchiveLine"
-              :loading="isLoading"
-              @click="archiveDataset"
-            >
-              {{ dataset.archived ? $t('Désarchiver') : $t('Archiver') }}
-            </BrandedButton>
-          </template>
-        </BannerAction>
-        <BannerAction
-          v-if="!dataset.deleted"
-          type="danger"
-          :title="$t('Supprimer le jeu de données')"
-        >
-          {{ $t("Attention, cette action ne peut pas être annulée.") }}
+            <template #button>
+              <BrandedButton
+                :icon="RiArchiveLine"
+                :loading="isLoading"
+                @click="archiveDataset"
+              >
+                {{ dataset.archived ? $t('Désarchiver') : $t('Archiver') }}
+              </BrandedButton>
+            </template>
+          </BannerAction>
+          <BannerAction
+            v-if="!dataset.deleted"
+            type="danger"
+            :title="$t('Supprimer le jeu de données')"
+          >
+            {{ $t("Attention, cette action ne peut pas être annulée.") }}
 
-          <template #button>
-            <AdminDeleteModal
-              :title="$t('Êtes-vous sûr de vouloir supprimer ce jeu de données ?')"
-              :delete-url="`/api/1/datasets/${route.params.id}`"
-              :delete-button-label="$t('Supprimer le jeu de données')"
-              :deletable-object="dataset"
-              object-type="dataset"
-              :object-title="dataset.title"
-              @deleted="onDatasetDeleted"
-            >
-              <template #button="{ attrs, listeners }">
-                <BrandedButton
-                  :icon="RiDeleteBin6Line"
-                  :loading="isLoading"
-                  v-bind="attrs"
-                  v-on="listeners"
-                >
-                  {{ $t('Supprimer') }}
-                </BrandedButton>
-              </template>
-              <p class="fr-text--bold">
-                {{ $t("Cette action est irréversible.") }}
-              </p>
-            </AdminDeleteModal>
-          </template>
-        </BannerAction>
-      </div>
+            <template #button>
+              <AdminDeleteModal
+                :title="$t('Êtes-vous sûr de vouloir supprimer ce jeu de données ?')"
+                :delete-url="`/api/1/datasets/${route.params.id}`"
+                :delete-button-label="$t('Supprimer le jeu de données')"
+                :deletable-object="dataset"
+                object-type="dataset"
+                :object-title="dataset.title"
+                @deleted="onDatasetDeleted"
+              >
+                <template #button="{ attrs, listeners }">
+                  <BrandedButton
+                    :icon="RiDeleteBin6Line"
+                    :loading="isLoading"
+                    v-bind="attrs"
+                    v-on="listeners"
+                  >
+                    {{ $t('Supprimer') }}
+                  </BrandedButton>
+                </template>
+                <p class="fr-text--bold">
+                  {{ $t("Cette action est irréversible.") }}
+                </p>
+              </AdminDeleteModal>
+            </template>
+          </BannerAction>
+        </div>
+      </template>
     </DescribeDataset>
   </LoadingBlock>
 </template>
