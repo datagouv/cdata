@@ -48,11 +48,17 @@
             class="flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-xs font-medium hover:bg-gray-50"
             @click="copyValue"
           >
+            <RiCheckLine
+              v-if="copied"
+              class="size-4 text-green-500"
+              aria-hidden="true"
+            />
             <RiFileCopyLine
+              v-else
               class="size-4 text-[#3A3A3A]"
               aria-hidden="true"
             />
-            {{ t('Copier la valeur') }}
+            {{ copied ? t('Copié !') : t('Copier la valeur') }}
           </button>
         </div>
       </div>
@@ -66,12 +72,14 @@ import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
 import {
   RiFilter2Line,
   RiFileCopyLine,
+  RiCheckLine,
   RiHashtag,
   RiPriceTag3Line,
   RiText,
   RiCalendarLine,
   RiCheckboxLine,
 } from '@remixicon/vue'
+import { toast } from 'vue-sonner'
 import { useTranslation } from '../../composables/useTranslation'
 import ClientOnly from '../ClientOnly.vue'
 import type { ColumnType, ColumnFilters } from './types'
@@ -143,14 +151,19 @@ function filterByValue() {
   close()
 }
 
+const copied = ref(false)
+
 async function copyValue() {
   try {
     await navigator.clipboard.writeText(displayValue.value)
+    copied.value = true
+    setTimeout(() => {
+      copied.value = false
+    }, 1500)
   }
   catch {
-    // Fallback silencieux
+    toast.error(t('Impossible de copier dans le presse-papier'))
   }
-  close()
 }
 
 function onClickOutside(e: MouseEvent) {

@@ -288,23 +288,6 @@
         </div>
       </div>
     </template>
-
-    <!-- Debug: Profile -->
-    <details class="mt-8 border border-gray-default rounded p-4">
-      <summary class="cursor-pointer font-medium text-sm mb-2">
-        Debug: Profile API response
-      </summary>
-      <pre
-        v-if="profileData"
-        class="text-xs overflow-auto max-h-[600px] bg-gray-50 p-3 rounded"
-      >{{ JSON.stringify(profileData, null, 2) }}</pre>
-      <div
-        v-else
-        class="text-sm text-gray-medium"
-      >
-        {{ profileError ? 'Erreur lors du chargement du profil.' : 'Chargement…' }}
-      </div>
-    </details>
   </div>
 </template>
 
@@ -397,7 +380,7 @@ const dataQuery = computed(() => {
 
 const { data: tableData, error } = await useFetch<TabularDataResponse>(dataUrl, { raw: true, query: dataQuery })
 
-const { data: profileData, error: profileError } = await useFetch<TabularProfileResponse>(profileUrl, { raw: true })
+const { data: profileData } = await useFetch<TabularProfileResponse>(profileUrl, { raw: true })
 
 // Infinite scroll state
 const allRows = ref<TabularRow[]>([])
@@ -543,13 +526,13 @@ const activeFilters = computed<ActiveFilter[]>(() => {
       parts.push(`= ${filter.in.join(', ')}`)
     }
     if (filter.contains) {
-      parts.push(`contient "${filter.contains}"`)
+      parts.push(`${t('contient')} "${filter.contains}"`)
     }
     if (filter.null === 'only') {
-      parts.push('null uniquement')
+      parts.push(t('null uniquement'))
     }
     else if (filter.null === 'exclude') {
-      parts.push('sans null')
+      parts.push(t('sans null'))
     }
     if (filter.min != null && filter.max != null) {
       parts.push(`${filter.min} – ${filter.max}`)
@@ -608,11 +591,11 @@ function getNullPercent(col: string) {
 }
 
 const typeConfig: Record<ColumnType, { icon: Component, label: string }> = {
-  number: { icon: RiHashtag, label: 'Nombre' },
-  categorical: { icon: RiPriceTag3Line, label: 'Catégoriel' },
-  text: { icon: RiText, label: 'Texte' },
-  date: { icon: RiCalendarLine, label: 'Date' },
-  boolean: { icon: RiCheckboxLine, label: 'Booléen' },
+  number: { icon: RiHashtag, label: t('Nombre') },
+  categorical: { icon: RiPriceTag3Line, label: t('Catégoriel') },
+  text: { icon: RiText, label: t('Texte') },
+  date: { icon: RiCalendarLine, label: t('Date') },
+  boolean: { icon: RiCheckboxLine, label: t('Booléen') },
 }
 
 function columnTypeIcon(col: string): Component {
