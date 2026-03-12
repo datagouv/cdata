@@ -97,7 +97,7 @@
             aria-hidden="true"
           />
         </span>
-        <span class="flex-1 truncate text-left text-[12px]">
+        <span class="flex-1 truncate text-left text-xs">
           <span
             v-if="categoryBadgeStyles?.[top.value]"
             class="inline-block rounded font-medium px-2 py-0.5 text-xs"
@@ -117,7 +117,7 @@
       class="px-3 py-3 space-y-1.5"
     >
       <button
-        class="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-colors"
+        class="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-xs transition-colors"
         :class="booleanFilter === true ? 'bg-new-primary text-white' : 'bg-gray-some text-gray-title hover:bg-gray-default'"
         @click="toggleBooleanFilter(true)"
       >
@@ -133,7 +133,7 @@
         >{{ booleanCounts.trueCount }}</span>
       </button>
       <button
-        class="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-colors"
+        class="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-xs transition-colors"
         :class="booleanFilter === false ? 'bg-new-primary text-white' : 'bg-gray-some text-gray-title hover:bg-gray-default'"
         @click="toggleBooleanFilter(false)"
       >
