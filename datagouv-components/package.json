@@ -33,6 +33,7 @@
     "format": "prettier --write src/",
     "css": "tailwindcss -i ./assets/main.css -o ./dist/components.css --minify --optimize",
     "preversion": "pnpm run build && pnpm run css",
+    "publish-dev": "pnpm publish --tag dev --access public",
     "publish-stable": "pnpm publish --access public"
   },
   "dependencies": {
