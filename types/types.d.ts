@@ -1,4 +1,4 @@
-import type { AccessTypeForm, WithAccessType, Dataset, DatasetV2, DatasetV2WithFullObject, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, OrganizationReference, UserReference, License, ReuseType, Resource, ResourceType, ResourceFileType, Schema, ContactPoint, PaginatedArray, Owned } from '@datagouv/components-next'
+import type { AccessTypeForm, WithAccessType, Dataset, DatasetV2, DatasetV2WithFullObject, CommunityResource, Dataservice, MemberRole, Reuse, User, Frequency, Organization, OrganizationReference, UserReference, License, ReuseType, Resource, ResourceType, ResourceFileType, Schema, ContactPoint, PaginatedArray, Owned } from '@datagouv/components-next'
 import type { NitroFetchRequest, NitroFetchOptions } from 'nitropack'
 import type { Thread } from './discussions'
 
@@ -83,8 +83,6 @@ export type MembershipRequest = PendingMembershipRequest & {
 export type RefusedMembershipRequest = MembershipRequest & {
   refusal_comment: string
 }
-
-export type MemberRole = 'admin' | 'editor' | 'partial_editor'
 
 export type Assignment = {
   id: string

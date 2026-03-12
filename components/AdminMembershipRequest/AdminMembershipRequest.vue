@@ -193,7 +193,8 @@ import { RiCheckLine, RiMailLine, RiMailSendLine, RiUserAddLine } from '@remixic
 import InputGroup from '../InputGroup/InputGroup.vue'
 import ModalWithButton from '../Modal/ModalWithButton.vue'
 import AdminBadge from '../AdminBadge/AdminBadge.vue'
-import type { MemberRole, PendingMembershipRequest } from '~/types/types'
+import type { MemberRole } from '@datagouv/components-next'
+import type { PendingMembershipRequest } from '~/types/types'
 
 const props = defineProps<{
   oid: string

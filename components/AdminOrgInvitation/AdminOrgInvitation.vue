@@ -89,7 +89,8 @@ import { BrandedButton, useFormatDate } from '@datagouv/components-next'
 import { ref } from 'vue'
 import { RiBuilding2Line, RiCheckLine, RiUserAddLine } from '@remixicon/vue'
 import AdminBadge from '../AdminBadge/AdminBadge.vue'
-import type { MemberRole, OrgInvitation } from '~/types/types'
+import type { MemberRole } from '@datagouv/components-next'
+import type { OrgInvitation } from '~/types/types'
 
 const props = defineProps<{
   invitation: OrgInvitation

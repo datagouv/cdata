@@ -752,14 +752,14 @@
           </BrandedButton>
           <div class="flex items-center gap-3">
             <p
-              v-if="props.canEdit === false"
+              v-if="!canEdit"
               class="text-sm text-gray-medium m-0"
             >
               {{ readOnlyMessage }}
             </p>
             <BrandedButton
               color="primary"
-              :disabled="props.canEdit === false"
+              :disabled="!canEdit"
               @click="submit"
             >
               {{ submitLabel }}
