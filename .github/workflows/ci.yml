@@ -401,7 +401,7 @@ jobs:
             || npm view @datagouv/components-next version 2>/dev/null \
             || echo "0.0.0")
           echo "Using base version $LATEST"
-          pnpm version "$LATEST" --no-git-tag-version
+          pnpm version "$LATEST" --no-git-tag-version --allow-same-version
           # Then, we increment the preprelease version number
           pnpm version prerelease --preid=dev --no-git-tag-version
           pnpm run publish-dev
