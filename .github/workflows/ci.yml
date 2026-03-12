@@ -373,9 +373,9 @@ jobs:
   # JOB 6: Publish datagouv-components (automatic on main, manual on any branch)
   # ============================================
   publish-datagouv-components:
-    needs: e2e
+    needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    if: github.ref == 'refs/heads/feat/publish-datagouv-components' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
