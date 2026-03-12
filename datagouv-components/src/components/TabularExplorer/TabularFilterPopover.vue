@@ -5,7 +5,7 @@
   >
     <button
       class="p-0.5 rounded focus:outline-none"
-      :class="hasColumnFilter ? 'bg-[#3558A2] text-white' : 'hover:bg-gray-100'"
+      :class="hasColumnFilter ? 'bg-primary text-white' : 'hover:bg-gray-100'"
       @click.stop="togglePopover"
     >
       <RiFilter2Line
@@ -28,17 +28,15 @@
             <p class="text-sm font-medium mb-0">
               {{ t('Filtrer') }} : {{ column }}
             </p>
-            <button
+            <BrandedButton
               v-if="hasColumnFilter"
-              class="flex items-center gap-1 text-xs text-[#929292] hover:text-[#3A3A3A]"
+              color="tertiary"
+              size="2xs"
+              :icon="RiCloseLine"
               @click="clearColumnFilter"
             >
-              <RiCloseLine
-                class="size-3"
-                aria-hidden="true"
-              />
               {{ t('Effacer') }}
-            </button>
+            </BrandedButton>
           </div>
 
           <TabularFilterContent
@@ -63,6 +61,7 @@ import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
 import { RiFilter2Line, RiCloseLine } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
+import BrandedButton from '../BrandedButton.vue'
 import ClientOnly from '../ClientOnly.vue'
 import TabularFilterContent from './TabularFilterContent.vue'
 import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig } from './types'

@@ -2,7 +2,7 @@
   <div>
     <!-- Sort -->
     <div class="flex items-center gap-1 px-2 py-1.5 border-b border-black/10 text-xs">
-      <span class="text-[#3A3A3A]">{{ t('Trier') }}</span>
+      <span class="text-gray-plain">{{ t('Trier') }}</span>
       <BrandedButton
         :color="sort?.column === column && sort?.direction === 'asc' ? 'primary' : 'tertiary'"
         size="2xs"
@@ -28,32 +28,34 @@
       v-if="columnProfile && columnProfile.nb_missing_values > 0"
       class="flex items-center gap-2 px-3 py-2 border-b border-black/10"
     >
-      <span class="text-[11px] text-[#3A3A3A] whitespace-nowrap">
+      <span class="text-[11px] text-gray-plain whitespace-nowrap">
         <span class="font-mono tabular-nums">{{ columnProfile.nb_missing_values }}</span>
         null
-        <span class="text-[#929292]">({{ nullPercent }})</span>
+        <span class="text-gray-low">({{ nullPercent }})</span>
       </span>
       <ProgressBar
         :value="columnProfile.nb_missing_values"
         :max="totalLines"
-        bar-class="bg-[#929292]"
-        class="flex-1 !h-1.5 !min-w-0 !border-0 !bg-[#E5E5E5]"
+        bar-class="bg-gray-low"
+        class="flex-1 !h-1.5 !min-w-0 !border-0 !bg-gray-default"
       />
       <div class="flex items-center gap-0.5">
-        <button
-          class="px-1.5 py-0.5 rounded text-[10px] transition-colors"
-          :class="nullFilter === 'only' ? 'bg-blue-main text-white' : 'text-[#3A3A3A] hover:bg-[#E5E5E5]'"
+        <BrandedButton
+          :color="nullFilter === 'only' ? 'primary' : 'tertiary'"
+          size="2xs"
+          keep-margins-even-without-borders
           @click="toggleNullFilter('only')"
         >
           {{ t('seul.') }}
-        </button>
-        <button
-          class="px-1.5 py-0.5 rounded text-[10px] transition-colors"
-          :class="nullFilter === 'exclude' ? 'bg-blue-main text-white' : 'text-[#3A3A3A] hover:bg-[#E5E5E5]'"
+        </BrandedButton>
+        <BrandedButton
+          :color="nullFilter === 'exclude' ? 'primary' : 'tertiary'"
+          size="2xs"
+          keep-margins-even-without-borders
           @click="toggleNullFilter('exclude')"
         >
           {{ t('exclure') }}
-        </button>
+        </BrandedButton>
       </div>
     </div>
 
@@ -67,7 +69,7 @@
         <input
           v-model="search"
           type="text"
-          class="w-full h-8 text-sm border border-transparent rounded-lg py-1 pl-8 pr-3 bg-[#f3f3f5] focus:outline-none focus:border-blue-main"
+          class="w-full h-8 text-sm border border-transparent rounded-lg py-1 pl-8 pr-3 bg-[#f3f3f5] focus:outline-none focus:border-new-primary"
           :placeholder="t('Rechercher...')"
         >
       </div>
@@ -87,7 +89,7 @@
       >
         <span
           class="flex size-4 shrink-0 items-center justify-center rounded border"
-          :class="isValueSelected(top.value) ? 'border-blue-main bg-blue-main text-white' : 'border-[#929292]'"
+          :class="isValueSelected(top.value) ? 'border-new-primary bg-new-primary text-white' : 'border-gray-low'"
         >
           <RiCheckLine
             v-if="isValueSelected(top.value)"
@@ -98,14 +100,14 @@
         <span class="flex-1 truncate text-left text-[12px]">
           <span
             v-if="categoryBadgeStyles?.[top.value]"
-            class="inline-block rounded-[4px] font-medium px-2 py-0.5 text-xs"
+            class="inline-block rounded font-medium px-2 py-0.5 text-xs"
             :style="categoryBadgeStyles[top.value]"
           >{{ top.value }}</span>
           <template v-else>
             {{ top.value ?? 'null' }}
           </template>
         </span>
-        <span class="font-mono text-[11px] text-[#929292] tabular-nums shrink-0">{{ top.count }}</span>
+        <span class="font-mono text-[11px] text-gray-low tabular-nums shrink-0">{{ top.count }}</span>
       </button>
     </div>
 
@@ -116,34 +118,34 @@
     >
       <button
         class="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-colors"
-        :class="booleanFilter === true ? 'bg-new-primary text-white' : 'bg-[#F6F6F6] text-[#161616] hover:bg-[#E5E5E5]'"
+        :class="booleanFilter === true ? 'bg-new-primary text-white' : 'bg-gray-some text-gray-title hover:bg-gray-default'"
         @click="toggleBooleanFilter(true)"
       >
         <span
           class="size-2.5 rounded-full shrink-0"
-          :class="booleanFilter === true ? 'bg-[#B8FEC9]' : 'bg-[#18753C]'"
+          :class="booleanFilter === true ? 'bg-new-success-light' : 'bg-new-success'"
         />
         <span class="flex-1 text-left">{{ t('Vrai') }}</span>
         <span
           v-if="booleanCounts"
           class="font-mono tabular-nums text-[11px]"
-          :class="booleanFilter === true ? 'text-white/70' : 'text-[#929292]'"
+          :class="booleanFilter === true ? 'text-white/70' : 'text-gray-low'"
         >{{ booleanCounts.trueCount }}</span>
       </button>
       <button
         class="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-colors"
-        :class="booleanFilter === false ? 'bg-new-primary text-white' : 'bg-[#F6F6F6] text-[#161616] hover:bg-[#E5E5E5]'"
+        :class="booleanFilter === false ? 'bg-new-primary text-white' : 'bg-gray-some text-gray-title hover:bg-gray-default'"
         @click="toggleBooleanFilter(false)"
       >
         <span
           class="size-2.5 rounded-full shrink-0"
-          :class="booleanFilter === false ? 'bg-[#FFE9E6]' : 'bg-[#CE0500]'"
+          :class="booleanFilter === false ? 'bg-new-warning-light' : 'bg-new-error'"
         />
         <span class="flex-1 text-left">{{ t('Faux') }}</span>
         <span
           v-if="booleanCounts"
           class="font-mono tabular-nums text-[11px]"
-          :class="booleanFilter === false ? 'text-white/70' : 'text-[#929292]'"
+          :class="booleanFilter === false ? 'text-white/70' : 'text-gray-low'"
         >{{ booleanCounts.falseCount }}</span>
       </button>
     </div>
@@ -151,7 +153,7 @@
     <!-- Number range -->
     <template v-if="columnType === 'number' && columnProfile">
       <div class="px-3 py-2 border-b border-black/10 space-y-2">
-        <div class="flex items-center gap-2 text-xs text-[#3A3A3A]">
+        <div class="flex items-center gap-2 text-xs text-gray-plain">
           <span class="tabular-nums">{{ profileMin.toLocaleString('fr-FR') }}</span>
           <span class="text-gray-medium">—</span>
           <span class="tabular-nums">{{ profileMax.toLocaleString('fr-FR') }}</span>
@@ -160,7 +162,7 @@
           <input
             v-model.number="rangeMin"
             type="number"
-            class="w-full h-7 text-xs border border-black/10 rounded px-2 bg-[#f3f3f5] focus:outline-none focus:border-blue-main tabular-nums"
+            class="w-full h-7 text-xs border border-black/10 rounded px-2 bg-[#f3f3f5] focus:outline-none focus:border-new-primary tabular-nums"
             :placeholder="String(profileMin)"
             :min="profileMin"
             :max="profileMax"
@@ -169,7 +171,7 @@
           <input
             v-model.number="rangeMax"
             type="number"
-            class="w-full h-7 text-xs border border-black/10 rounded px-2 bg-[#f3f3f5] focus:outline-none focus:border-blue-main tabular-nums"
+            class="w-full h-7 text-xs border border-black/10 rounded px-2 bg-[#f3f3f5] focus:outline-none focus:border-new-primary tabular-nums"
             :placeholder="String(profileMax)"
             :min="profileMin"
             :max="profileMax"

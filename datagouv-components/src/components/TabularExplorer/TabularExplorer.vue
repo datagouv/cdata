@@ -60,13 +60,14 @@
                     <span class="text-xs font-medium text-gray-title">
                       {{ visibleColumns.size }} {{ t('sur') }} {{ allColumns.length }} {{ t('colonnes visibles') }}
                     </span>
-                    <button
+                    <BrandedButton
                       v-if="hiddenCount"
-                      class="text-xs text-blue-main hover:underline"
+                      color="tertiary"
+                      size="2xs"
                       @click="showAllColumns"
                     >
                       {{ t('Tout afficher') }}
-                    </button>
+                    </BrandedButton>
                   </div>
                   <div class="max-h-64 overflow-auto p-1">
                     <label
@@ -77,7 +78,7 @@
                       <input
                         type="checkbox"
                         :checked="visibleColumns.has(col)"
-                        class="size-3.5 accent-blue-main"
+                        class="size-3.5 accent-new-primary"
                         @change="toggleColumn(col)"
                       >
                       <span class="truncate">{{ col }}</span>
@@ -113,20 +114,18 @@
               aria-hidden="true"
             />
             <span class="text-[11px] text-gray-plain">{{ t('Filtres actifs') }}</span>
-            <span class="inline-flex items-center justify-center rounded-full bg-blue-main/10 text-blue-main text-[10px] tabular-nums min-w-5 h-5 px-1.5">
+            <span class="inline-flex items-center justify-center rounded-full bg-new-primary/10 text-new-primary text-[10px] tabular-nums min-w-5 h-5 px-1.5">
               {{ activeFilters.length }}
             </span>
           </div>
-          <button
-            class="flex items-center gap-1 text-[10px] font-medium text-gray-plain hover:text-gray-title"
+          <BrandedButton
+            color="tertiary"
+            size="2xs"
+            :icon="RiCloseLine"
             @click="clearAllFilters"
           >
-            <RiCloseLine
-              class="size-3"
-              aria-hidden="true"
-            />
             {{ t('Tout effacer') }}
-          </button>
+          </BrandedButton>
         </div>
         <!-- Chips -->
         <div class="flex flex-wrap gap-1.5">
@@ -177,12 +176,12 @@
                   >{{ col }}</span>
                   <RiArrowUpLine
                     v-if="sort?.column === col && sort.direction === 'asc'"
-                    class="size-3.5 shrink-0 text-blue-main"
+                    class="size-3.5 shrink-0 text-new-primary"
                     aria-hidden="true"
                   />
                   <RiArrowDownLine
                     v-else-if="sort?.column === col && sort.direction === 'desc'"
-                    class="size-3.5 shrink-0 text-blue-main"
+                    class="size-3.5 shrink-0 text-new-primary"
                     aria-hidden="true"
                   />
                   <TabularFilterPopover
@@ -420,7 +419,7 @@
                   >
                     <button
                       class="flex items-center gap-2 w-full px-3 py-2.5 text-left"
-                      :class="hasFilterForColumn(col) ? 'bg-blue-main/5' : ''"
+                      :class="hasFilterForColumn(col) ? 'bg-new-primary/5' : ''"
                       @click="toggleMobileFilterColumn(col)"
                     >
                       <component
@@ -431,17 +430,17 @@
                       <span class="flex-1 text-[13px] text-gray-title truncate">{{ col }}</span>
                       <RiArrowUpLine
                         v-if="sort?.column === col && sort.direction === 'asc'"
-                        class="size-3 text-blue-main shrink-0"
+                        class="size-3 text-new-primary shrink-0"
                         aria-hidden="true"
                       />
                       <RiArrowDownLine
                         v-if="sort?.column === col && sort.direction === 'desc'"
-                        class="size-3 text-blue-main shrink-0"
+                        class="size-3 text-new-primary shrink-0"
                         aria-hidden="true"
                       />
                       <span
                         v-if="hasFilterForColumn(col)"
-                        class="size-2 rounded-full bg-blue-main shrink-0"
+                        class="size-2 rounded-full bg-new-primary shrink-0"
                       />
                       <RiArrowDownSLine
                         class="size-3.5 text-gray-low shrink-0 transition-transform"
@@ -472,12 +471,14 @@
                   v-if="activeFilters.length > 0 || sort"
                   class="border-t border-gray-default px-4 py-3"
                 >
-                  <button
-                    class="w-full py-2 rounded bg-gray-some text-xs text-gray-plain hover:bg-gray-default"
+                  <BrandedButton
+                    color="secondary"
+                    size="xs"
+                    class="w-full"
                     @click="clearAllFilters(); sort = null; mobileFilterOpen = false"
                   >
                     {{ t('Tout réinitialiser') }}
-                  </button>
+                  </BrandedButton>
                 </div>
               </DialogPanel>
             </div>
