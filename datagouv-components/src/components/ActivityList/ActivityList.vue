@@ -141,7 +141,7 @@ const { data: activities, status } = await useFetch<PaginatedArray<Activity>>('/
   query: {
     related_to: props.id ?? undefined,
     user: props.user ?? undefined,
-    page,
+    page: page.value,
   },
 })
 
