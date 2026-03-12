@@ -1,5 +1,5 @@
 <template>
-  <div class="tabular-explorer">
+  <div>
     <SimpleBanner
       v-if="error"
       type="warning"
@@ -11,7 +11,19 @@
 
     <template v-else-if="tableData && tableData.data.length">
       <!-- Toolbar -->
-      <div class="flex items-center py-3">
+      <div class="flex items-center py-3 gap-2">
+        <!-- Mobile: filter & sort button -->
+        <BrandedButton
+          class="md:hidden"
+          color="tertiary"
+          size="2xs"
+          :icon="RiFilter2Line"
+          keep-margins-even-without-borders
+          @click="mobileFilterOpen = true"
+        >
+          {{ t('Filtres & tri') }}
+        </BrandedButton>
+
         <div class="flex-1" />
 
         <!-- Right: Stats -->
@@ -27,7 +39,7 @@
                 class="size-3"
                 aria-hidden="true"
               />
-              <span class="font-bold">{{ t('Colonnes') }}</span>
+              <span class="font-bold hidden md:inline">{{ t('Colonnes') }}</span>
               <span class="font-mono tabular-nums">{{ visibleColumns.size }}/{{ allColumns.length }}</span>
               <RiArrowDownSLine
                 class="size-3 opacity-50"
@@ -82,7 +94,7 @@
               class="size-3 text-[#666]"
               aria-hidden="true"
             />
-            <span class="font-bold">{{ t('Lignes') }}</span>
+            <span class="font-bold hidden md:inline">{{ t('Lignes') }}</span>
             <span class="font-mono tabular-nums">{{ tableData.meta.total.toLocaleString() }}/{{ totalLines.toLocaleString() }}</span>
           </span>
         </div>
@@ -264,29 +276,194 @@
       />
 
       <!-- Mobile: card layout -->
-      <div class="md:hidden space-y-3">
+      <div class="md:hidden space-y-2 px-1">
         <div
           v-for="(row, i) in allRows"
           :key="row.__id ?? i"
-          class="border border-gray-default rounded p-3 space-y-1"
+          class="border border-[#E5E5E5] rounded-lg p-3 space-y-2"
+          :class="i % 2 === 1 ? 'bg-[#FCFCFC]' : 'bg-white'"
         >
           <div
-            v-for="col in displayedColumns"
+            v-for="col in mobileVisibleFields(row, i)"
             :key="col"
-            class="flex justify-between gap-2 text-xs"
+            class="flex flex-col gap-0.5 min-w-0"
           >
-            <span class="font-medium text-gray-title shrink-0">{{ col }}</span>
-            <span
-              v-if="row[col] == null || row[col] === ''"
-              class="text-gray-medium italic text-right"
-            >–</span>
-            <span
-              v-else
-              class="text-right truncate"
-            >{{ row[col] }}</span>
+            <div class="flex items-center gap-1 min-w-0">
+              <component
+                :is="columnTypeIcon(col)"
+                class="size-3 text-[#929292] shrink-0"
+                aria-hidden="true"
+              />
+              <span
+                class="text-[11px] text-[#3A3A3A] truncate"
+                :title="col"
+              >{{ col }}</span>
+            </div>
+            <div
+              class="min-w-0 pl-4 cursor-pointer"
+              @click="onCellClick(col, row[col], $event)"
+            >
+              <span
+                v-if="row[col] == null || row[col] === ''"
+                class="font-[Inconsolata,monospace] text-[#929292] italic text-xs"
+              >null</span>
+              <span
+                v-else-if="getColumnType(col) === 'boolean'"
+                class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[12px]"
+                :class="isTruthy(row[col]) ? 'bg-[#B8FEC9] text-[#18753C]' : 'bg-[#FFE9E6] text-[#CE0500]'"
+              >
+                <span
+                  class="size-2 rounded-full"
+                  :class="isTruthy(row[col]) ? 'bg-[#18753C]' : 'bg-[#CE0500]'"
+                />
+                {{ isTruthy(row[col]) ? t('Vrai') : t('Faux') }}
+              </span>
+              <span
+                v-else-if="getColumnType(col) === 'categorical'"
+                class="inline-block rounded-[4px] font-medium px-2 py-0.5 text-xs max-w-full truncate"
+                :style="getCategoryBadgeStyle(col, String(row[col]))"
+              >{{ row[col] }}</span>
+              <span
+                v-else-if="getColumnType(col) === 'number'"
+                class="font-mono tabular-nums text-xs text-[#161616]"
+              >{{ formatNumber(row[col]) }}</span>
+              <span
+                v-else-if="getColumnType(col) === 'date'"
+                class="font-mono tabular-nums text-xs text-[#161616]"
+              >{{ formatDate(row[col]) }}</span>
+              <span
+                v-else
+                class="text-[#161616] text-xs truncate block"
+              >{{ row[col] }}</span>
+            </div>
           </div>
+          <button
+            v-if="displayedColumns.length > 4"
+            class="text-[11px] text-[#161616] hover:underline pt-1 flex items-center gap-1"
+            @click="toggleMobileExpand(i)"
+          >
+            <RiArrowDownSLine
+              class="size-3 transition-transform"
+              :class="{ 'rotate-180': mobileExpandedRows.has(i) }"
+              aria-hidden="true"
+            />
+            {{ mobileExpandedRows.has(i) ? t('Moins') : `+${displayedColumns.length - 4} ${t('champs')}` }}
+          </button>
         </div>
       </div>
+
+      <!-- Mobile: filter bottom sheet -->
+      <TransitionRoot
+        :show="mobileFilterOpen"
+        as="template"
+      >
+        <Dialog
+          class="relative z-[900]"
+          @close="mobileFilterOpen = false"
+        >
+          <!-- Backdrop -->
+          <TransitionChild
+            as="template"
+            enter="ease-out duration-300"
+            enter-from="opacity-0"
+            enter-to="opacity-100"
+            leave="ease-in duration-200"
+            leave-from="opacity-100"
+            leave-to="opacity-0"
+          >
+            <div class="fixed inset-0 bg-black/30" />
+          </TransitionChild>
+          <!-- Panel -->
+          <TransitionChild
+            as="template"
+            enter="ease-out duration-300"
+            enter-from="translate-y-full"
+            enter-to="translate-y-0"
+            leave="ease-in duration-200"
+            leave-from="translate-y-0"
+            leave-to="translate-y-full"
+          >
+            <div class="fixed inset-x-0 bottom-0 max-h-[80vh] flex flex-col bg-white rounded-t-2xl shadow-xl">
+              <!-- Header -->
+              <DialogPanel class="flex flex-col max-h-[80vh]">
+                <div class="px-4 pt-4 pb-2 border-b border-[#E5E5E5]">
+                  <DialogTitle class="text-sm font-bold">
+                    {{ t('Filtres & tri par colonne') }}
+                  </DialogTitle>
+                  <p class="text-[11px] text-[#929292]">
+                    {{ allColumns.length }} {{ t('colonnes') }} · {{ activeFilters.length }} {{ t('filtre') }}{{ activeFilters.length !== 1 ? 's' : '' }}
+                  </p>
+                </div>
+                <!-- Column list -->
+                <div class="flex-1 overflow-y-auto">
+                  <div
+                    v-for="col in allColumns"
+                    :key="col"
+                    class="border-b border-[#E5E5E5] last:border-b-0"
+                  >
+                    <button
+                      class="flex items-center gap-2 w-full px-3 py-2.5 text-left"
+                      :class="hasFilterForColumn(col) ? 'bg-blue-main/5' : ''"
+                      @click="toggleMobileFilterColumn(col)"
+                    >
+                      <component
+                        :is="columnTypeIcon(col)"
+                        class="size-3.5 text-[#929292] shrink-0"
+                        aria-hidden="true"
+                      />
+                      <span class="flex-1 text-[13px] text-[#161616] truncate">{{ col }}</span>
+                      <RiArrowUpLine
+                        v-if="sort?.column === col && sort.direction === 'asc'"
+                        class="size-3 text-blue-main shrink-0"
+                        aria-hidden="true"
+                      />
+                      <RiArrowDownLine
+                        v-if="sort?.column === col && sort.direction === 'desc'"
+                        class="size-3 text-blue-main shrink-0"
+                        aria-hidden="true"
+                      />
+                      <span
+                        v-if="hasFilterForColumn(col)"
+                        class="size-2 rounded-full bg-blue-main shrink-0"
+                      />
+                      <RiArrowDownSLine
+                        class="size-3.5 text-[#929292] shrink-0 transition-transform"
+                        :class="{ 'rotate-180': mobileFilterExpandedCol === col }"
+                        aria-hidden="true"
+                      />
+                    </button>
+                    <div
+                      v-if="mobileFilterExpandedCol === col"
+                      class="pb-1"
+                    >
+                      <TabularFilterContent
+                        v-model:sort="sort"
+                        v-model:filters="filters"
+                        :column="col"
+                        :column-type="getColumnType(col)"
+                        :column-profile="getColumnProfile(col)"
+                        :null-percent="getNullPercent(col)"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <!-- Reset all -->
+                <div
+                  v-if="activeFilters.length > 0 || sort"
+                  class="border-t border-[#E5E5E5] px-4 py-3"
+                >
+                  <button
+                    class="w-full py-2 rounded bg-[#f6f6f6] text-xs text-[#3A3A3A] hover:bg-[#E5E5E5]"
+                    @click="clearAllFilters(); sort = null; mobileFilterOpen = false"
+                  >
+                    {{ t('Tout réinitialiser') }}
+                  </button>
+                </div>
+              </DialogPanel>
+            </div>
+          </TransitionChild>
+        </Dialog>
+      </TransitionRoot>
     </template>
   </div>
 </template>
@@ -295,7 +472,7 @@
 import { computed, onUnmounted, ref, watch, useTemplateRef, type Component } from 'vue'
 import { ofetch } from 'ofetch'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
-import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
+import { Dialog, DialogPanel, DialogTitle, Popover, PopoverButton, PopoverPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import {
   RiLayoutColumnLine,
   RiLayoutRowLine,
@@ -314,9 +491,11 @@ import { useFetch } from '../../functions/api'
 import { useTranslation } from '../../composables/useTranslation'
 import ClientOnly from '../ClientOnly.vue'
 import SimpleBanner from '../SimpleBanner.vue'
+import BrandedButton from '../BrandedButton.vue'
 import InfiniteLoader from '../InfiniteLoader.vue'
 import TabularCellPopover from './TabularCellPopover.vue'
 import type { CellInfo } from './TabularCellPopover.vue'
+import TabularFilterContent from './TabularFilterContent.vue'
 import TabularFilterPopover from './TabularFilterPopover.vue'
 import type { TabularDataResponse, TabularProfileResponse, TabularRow, ColumnType, SortConfig, ColumnFilters } from './types'
 
@@ -559,6 +738,35 @@ function removeFilter(column: string) {
 
 function clearAllFilters() {
   filters.value = {}
+}
+
+function hasFilterForColumn(col: string): boolean {
+  const f = filters.value[col]
+  if (!f) return false
+  return !!(f.in?.length || f.contains || f.null || f.min != null || f.max != null)
+}
+
+// Mobile state
+const mobileFilterOpen = ref(false)
+const mobileExpandedRows = ref(new Set<number>())
+const mobileFilterExpandedCol = ref<string | null>(null)
+
+function mobileVisibleFields(row: TabularRow, index: number): string[] {
+  if (displayedColumns.value.length <= 4 || mobileExpandedRows.value.has(index)) {
+    return displayedColumns.value
+  }
+  return displayedColumns.value.slice(0, 4)
+}
+
+function toggleMobileExpand(index: number) {
+  const next = new Set(mobileExpandedRows.value)
+  if (next.has(index)) next.delete(index)
+  else next.add(index)
+  mobileExpandedRows.value = next
+}
+
+function toggleMobileFilterColumn(col: string) {
+  mobileFilterExpandedCol.value = mobileFilterExpandedCol.value === col ? null : col
 }
 
 // Column type helpers
