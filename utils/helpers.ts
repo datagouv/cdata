@@ -1,4 +1,5 @@
 import type { FieldsErrors } from '~/types/form'
+import type { AdminBadgeType, MemberRole } from '~/types/types'
 
 export function useAbsoluteUrlToRelative() {
   const currentUrl = useRequestURL()
@@ -124,4 +125,10 @@ export function simpleSlug(str: string): string {
 
 export function setsEqual<T>(a: Set<T>, b: Set<T>): boolean {
   return a.size === b.size && [...a].every(v => b.has(v))
+}
+
+export function getRoleBadgeType(role: MemberRole): AdminBadgeType {
+  if (role === 'admin') return 'primary'
+  if (role === 'partial_editor') return 'default'
+  return 'secondary'
 }

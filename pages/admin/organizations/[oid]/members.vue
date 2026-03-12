@@ -239,7 +239,7 @@
             <td>
               <AdminBadge
                 size="xs"
-                :type="getStatusType(member.role)"
+                :type="getRoleBadgeType(member.role)"
               >
                 {{ member.label }}
               </AdminBadge>
@@ -317,12 +317,12 @@
                           {{ t("Valider") }}
                         </BrandedButton>
                       </div>
+                      <DatasetAssignmentSelector
+                        v-if="newRole === 'partial_editor' && currentOrganization"
+                        v-model="editSelectedDatasetIds"
+                        :organization-id="currentOrganization.id"
+                      />
                     </form>
-                    <DatasetAssignmentSelector
-                      v-if="newRole === 'partial_editor' && currentOrganization"
-                      v-model="editSelectedDatasetIds"
-                      :organization-id="currentOrganization.id"
-                    />
 
                     <BannerAction
                       class="mt-4"
@@ -355,7 +355,7 @@
 import { Avatar, BannerAction, BrandedButton, LoadingBlock, SearchableSelect, SelectGroup, useFormatDate, useGetUserAvatar, type Member, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiEyeLine, RiLogoutBoxRLine, RiPencilLine, RiUserAddLine } from '@remixicon/vue'
-import type { AdminBadgeType, Assignment, MemberRole, PendingMembershipRequest, UserSuggest } from '~/types/types'
+import type { Assignment, MemberRole, PendingMembershipRequest, UserSuggest } from '~/types/types'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import ModalWithButton from '~/components/Modal/ModalWithButton.vue'
@@ -422,12 +422,6 @@ const rolesOptions = computed(() => {
   }))
 })
 const loading = ref(false)
-
-function getStatusType(role: MemberRole): AdminBadgeType {
-  if (role === 'admin') return 'primary'
-  if (role === 'partial_editor') return 'default'
-  return 'secondary'
-}
 
 const editSelectedDatasetIds = ref<Set<string>>(new Set())
 const editInitialDatasetIds = ref<Set<string>>(new Set())
