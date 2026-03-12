@@ -24,6 +24,7 @@ export async function useFetch<DataT, ErrorT = never>(
     return await config.customUseFetch(url, options)
   }
 
+  const isRaw = options?.raw
   const data: Ref<DataT | null> = ref(null)
   const error: Ref<ErrorT | null> = ref(null)
   const status = ref<AsyncDataRequestStatus>('idle')
@@ -36,35 +37,37 @@ export async function useFetch<DataT, ErrorT = never>(
     status.value = 'pending'
     try {
       data.value = await ofetch<DataT | null>(urlValue, {
-        baseURL: config.apiBase,
+        ...(!isRaw && { baseURL: config.apiBase }),
         params: params ?? query,
-        onRequest(param) {
-          if (config.onRequest) {
-            if (Array.isArray(config.onRequest)) {
-              config.onRequest.forEach(r => r(param))
+        ...(!isRaw && {
+          onRequest(param) {
+            if (config.onRequest) {
+              if (Array.isArray(config.onRequest)) {
+                config.onRequest.forEach(r => r(param))
+              }
+              else {
+                config.onRequest(param)
+              }
             }
-            else {
-              config.onRequest(param)
+            const { options } = param
+            options.headers.set('Content-Type', 'application/json')
+            options.headers.set('Accept', 'application/json')
+            options.credentials = 'include'
+            if (config.devApiKey) {
+              options.headers.set('X-API-KEY', config.devApiKey)
             }
-          }
-          const { options } = param
-          options.headers.set('Content-Type', 'application/json')
-          options.headers.set('Accept', 'application/json')
-          options.credentials = 'include'
-          if (config.devApiKey) {
-            options.headers.set('X-API-KEY', config.devApiKey)
-          }
 
-          if (locale) {
-            if (!options.params) {
-              options.params = {}
+            if (locale) {
+              if (!options.params) {
+                options.params = {}
+              }
+              options.params['lang'] = locale
             }
-            options.params['lang'] = locale
-          }
-        },
-        onRequestError: config.onRequestError,
-        onResponse: config.onResponse,
-        onResponseError: config.onResponseError,
+          },
+          onRequestError: config.onRequestError,
+          onResponse: config.onResponse,
+          onResponseError: config.onResponseError,
+        }),
       })
       status.value = 'success'
     }
