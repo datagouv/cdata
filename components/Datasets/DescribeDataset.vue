@@ -786,14 +786,16 @@ import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone, Tag
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   submitLabel: string
   type: 'create' | 'update'
   harvested?: boolean
   badges?: Array<Badge>
   canEdit?: boolean
   readOnlyMessage?: string
-}>()
+}>(), {
+  canEdit: true,
+})
 const emit = defineEmits<{
   'badges-change': [badges: Array<Badge>]
   'feature': []
