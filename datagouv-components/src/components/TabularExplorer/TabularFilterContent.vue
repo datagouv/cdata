@@ -116,7 +116,7 @@
     >
       <button
         class="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-colors"
-        :class="booleanFilter === true ? 'bg-[#000091] text-white' : 'bg-[#F6F6F6] text-[#161616] hover:bg-[#E5E5E5]'"
+        :class="booleanFilter === true ? 'bg-new-primary text-white' : 'bg-[#F6F6F6] text-[#161616] hover:bg-[#E5E5E5]'"
         @click="toggleBooleanFilter(true)"
       >
         <span
@@ -132,7 +132,7 @@
       </button>
       <button
         class="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-colors"
-        :class="booleanFilter === false ? 'bg-blue-main text-white' : 'bg-[#F6F6F6] text-[#161616] hover:bg-[#E5E5E5]'"
+        :class="booleanFilter === false ? 'bg-new-primary text-white' : 'bg-[#F6F6F6] text-[#161616] hover:bg-[#E5E5E5]'"
         @click="toggleBooleanFilter(false)"
       >
         <span
