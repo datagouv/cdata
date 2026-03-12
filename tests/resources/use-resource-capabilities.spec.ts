@@ -80,6 +80,7 @@ test('WMS service don\'t expose WFS export formats', async () => {
         format: 'wms',
         version: '1.1.0',
         output_formats: ['application/json', 'SHAPE-ZIP'],
+        detected_layer: null,
       },
     },
   }
