@@ -352,7 +352,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MemberRole, Avatar, BannerAction, BrandedButton, LoadingBlock, SearchableSelect, SelectGroup, useFormatDate, useGetUserAvatar, type Member, type Organization } from '@datagouv/components-next'
+import { Avatar, BannerAction, BrandedButton, LoadingBlock, SearchableSelect, SelectGroup, useFormatDate, useGetUserAvatar, type Member, type MemberRole, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiEyeLine, RiLogoutBoxRLine, RiPencilLine, RiUserAddLine } from '@remixicon/vue'
 import type { Assignment, PendingMembershipRequest, UserSuggest } from '~/types/types'
