@@ -23,6 +23,40 @@
       </BrandedButton>
     </div>
 
+    <!-- Null filter with progress bar -->
+    <div
+      v-if="columnProfile && columnProfile.nb_missing_values > 0"
+      class="flex items-center gap-2 px-3 py-2 border-b border-black/10"
+    >
+      <span class="text-[11px] text-[#3A3A3A] whitespace-nowrap">
+        <span class="font-mono tabular-nums">{{ columnProfile.nb_missing_values }}</span>
+        null
+        <span class="text-[#929292]">({{ nullPercent }})</span>
+      </span>
+      <ProgressBar
+        :value="columnProfile.nb_missing_values"
+        :max="totalLines"
+        bar-class="bg-[#929292]"
+        class="flex-1 !h-1.5 !min-w-0 !border-0 !bg-[#E5E5E5]"
+      />
+      <div class="flex items-center gap-0.5">
+        <button
+          class="px-1.5 py-0.5 rounded text-[10px] transition-colors"
+          :class="nullFilter === 'only' ? 'bg-blue-main text-white' : 'text-[#3A3A3A] hover:bg-[#E5E5E5]'"
+          @click="toggleNullFilter('only')"
+        >
+          {{ t('seul.') }}
+        </button>
+        <button
+          class="px-1.5 py-0.5 rounded text-[10px] transition-colors"
+          :class="nullFilter === 'exclude' ? 'bg-blue-main text-white' : 'text-[#3A3A3A] hover:bg-[#E5E5E5]'"
+          @click="toggleNullFilter('exclude')"
+        >
+          {{ t('exclure') }}
+        </button>
+      </div>
+    </div>
+
     <!-- Search (contains) -->
     <div class="px-3 py-2 border-b border-black/10">
       <div class="relative">
@@ -42,50 +76,76 @@
     <!-- Categorical values -->
     <div
       v-if="columnType === 'categorical' && columnProfile?.tops && filteredTops.length"
-      class="overflow-auto p-1"
+      class="max-h-56 overflow-auto p-1"
     >
-      <label
+      <button
         v-for="top in filteredTops"
         :key="top.value"
-        class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-gray-50 cursor-pointer text-xs"
+        class="flex w-full items-center gap-2 px-2 py-1.5 rounded-md hover:bg-gray-50 cursor-pointer text-xs select-none"
+        :class="isValueSelected(top.value) && 'bg-gray-50'"
+        @click="toggleValue(top.value)"
       >
-        <input
-          type="checkbox"
-          class="size-4 rounded shrink-0 accent-blue-main"
-          :checked="isValueSelected(top.value)"
-          @change="toggleValue(top.value)"
+        <span
+          class="flex size-4 shrink-0 items-center justify-center rounded border"
+          :class="isValueSelected(top.value) ? 'border-blue-main bg-blue-main text-white' : 'border-[#929292]'"
         >
-        <span class="truncate font-medium">{{ top.value ?? 'null' }}</span>
-        <span class="ml-auto text-[#717182] font-medium shrink-0">{{ top.count }}</span>
-      </label>
+          <RiCheckLine
+            v-if="isValueSelected(top.value)"
+            class="size-3"
+            aria-hidden="true"
+          />
+        </span>
+        <span class="flex-1 truncate text-left text-[12px]">
+          <span
+            v-if="categoryBadgeStyles?.[top.value]"
+            class="inline-block rounded-[4px] font-medium px-2 py-0.5 text-xs"
+            :style="categoryBadgeStyles[top.value]"
+          >{{ top.value }}</span>
+          <template v-else>
+            {{ top.value ?? 'null' }}
+          </template>
+        </span>
+        <span class="font-mono text-[11px] text-[#929292] tabular-nums shrink-0">{{ top.count }}</span>
+      </button>
     </div>
 
-    <!-- Null filter -->
+    <!-- Boolean filter -->
     <div
-      v-if="columnProfile && columnProfile.nb_missing_values > 0"
-      class="px-3 py-2 border-b border-black/10 space-y-1.5"
+      v-if="columnType === 'boolean'"
+      class="px-3 py-3 space-y-1.5"
     >
-      <p class="text-[11px] text-gray-medium mb-0">
-        {{ columnProfile.nb_missing_values }} null ({{ nullPercent }})
-      </p>
-      <div class="flex items-center gap-1">
-        <BrandedButton
-          :color="nullFilter === 'only' ? 'primary' : 'tertiary'"
-          size="2xs"
-          keep-margins-even-without-borders
-          @click="toggleNullFilter('only')"
-        >
-          {{ t('Null uniquement') }}
-        </BrandedButton>
-        <BrandedButton
-          :color="nullFilter === 'exclude' ? 'primary' : 'tertiary'"
-          size="2xs"
-          keep-margins-even-without-borders
-          @click="toggleNullFilter('exclude')"
-        >
-          {{ t('Exclure null') }}
-        </BrandedButton>
-      </div>
+      <button
+        class="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-colors"
+        :class="booleanFilter === true ? 'bg-[#000091] text-white' : 'bg-[#F6F6F6] text-[#161616] hover:bg-[#E5E5E5]'"
+        @click="toggleBooleanFilter(true)"
+      >
+        <span
+          class="size-2.5 rounded-full shrink-0"
+          :class="booleanFilter === true ? 'bg-[#B8FEC9]' : 'bg-[#18753C]'"
+        />
+        <span class="flex-1 text-left">{{ t('Vrai') }}</span>
+        <span
+          v-if="booleanCounts"
+          class="font-mono tabular-nums text-[11px]"
+          :class="booleanFilter === true ? 'text-white/70' : 'text-[#929292]'"
+        >{{ booleanCounts.trueCount }}</span>
+      </button>
+      <button
+        class="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-colors"
+        :class="booleanFilter === false ? 'bg-blue-main text-white' : 'bg-[#F6F6F6] text-[#161616] hover:bg-[#E5E5E5]'"
+        @click="toggleBooleanFilter(false)"
+      >
+        <span
+          class="size-2.5 rounded-full shrink-0"
+          :class="booleanFilter === false ? 'bg-[#FFE9E6]' : 'bg-[#CE0500]'"
+        />
+        <span class="flex-1 text-left">{{ t('Faux') }}</span>
+        <span
+          v-if="booleanCounts"
+          class="font-mono tabular-nums text-[11px]"
+          :class="booleanFilter === false ? 'text-white/70' : 'text-[#929292]'"
+        >{{ booleanCounts.falseCount }}</span>
+      </button>
     </div>
 
     <!-- Number range -->
@@ -143,9 +203,11 @@ import {
   RiArrowUpLine,
   RiArrowDownLine,
   RiSearchLine,
+  RiCheckLine,
 } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
 import BrandedButton from '../BrandedButton.vue'
+import ProgressBar from '../ProgressBar.vue'
 import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig, SortDirection } from './types'
 
 const props = defineProps<{
@@ -153,6 +215,9 @@ const props = defineProps<{
   columnType: ColumnType
   columnProfile: TabularColumnProfile | null
   nullPercent: string
+  totalLines: number
+  categoryBadgeStyles?: Record<string, { backgroundColor: string, color: string }>
+  booleanCounts?: { trueCount: number, falseCount: number }
 }>()
 
 const sort = defineModel<SortConfig | null>('sort')
@@ -252,6 +317,25 @@ function clearRange() {
   if (existing) {
     const { min: _min, max: _max, ...rest } = existing
     filters.value = { ...filters.value, [props.column]: rest }
+  }
+}
+
+// Boolean filter helpers
+const booleanFilter = computed<boolean | null>(() => {
+  const f = filters.value[props.column]
+  if (!f || f.exact == null) return null
+  return f.exact === 'true'
+})
+
+function toggleBooleanFilter(value: boolean) {
+  const existing = filters.value[props.column] ?? {}
+  const strValue = String(value)
+  if (existing.exact === strValue) {
+    const { exact: _, ...rest } = existing
+    filters.value = { ...filters.value, [props.column]: rest }
+  }
+  else {
+    filters.value = { ...filters.value, [props.column]: { ...existing, exact: strValue } }
   }
 }
 

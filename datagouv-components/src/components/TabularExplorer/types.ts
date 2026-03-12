@@ -63,6 +63,7 @@ export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean'
 
 export interface ColumnFilters {
   in?: string[]
+  exact?: string
   min?: number
   max?: number
   contains?: string

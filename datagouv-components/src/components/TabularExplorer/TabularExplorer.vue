@@ -9,7 +9,7 @@
       <pre class="text-xs mt-2">{{ error }}</pre>
     </SimpleBanner>
 
-    <template v-else-if="tableData && tableData.data.length">
+    <template v-else-if="tableData">
       <!-- Toolbar -->
       <div class="flex items-center py-3 gap-2">
         <!-- Mobile: filter & sort button -->
@@ -34,7 +34,7 @@
             ref="columnPopover"
             class="relative"
           >
-            <PopoverButton class="flex items-center gap-1.5 text-xs text-[#3A3A3A] rounded px-2 py-1 hover:bg-gray-50 focus:outline-none">
+            <PopoverButton class="flex items-center gap-1.5 text-xs text-gray-plain rounded px-2 py-1 hover:bg-gray-50 focus:outline-none">
               <RiLayoutColumnLine
                 class="size-3"
                 aria-hidden="true"
@@ -89,9 +89,9 @@
           </Popover>
 
           <!-- Lignes -->
-          <span class="flex items-center gap-1.5 text-xs text-[#3A3A3A]">
+          <span class="flex items-center gap-1.5 text-xs text-gray-plain">
             <RiLayoutRowLine
-              class="size-3 text-[#666]"
+              class="size-3 text-mention-grey"
               aria-hidden="true"
             />
             <span class="font-bold hidden md:inline">{{ t('Lignes') }}</span>
@@ -103,7 +103,7 @@
       <!-- Active filters -->
       <div
         v-if="hasActiveFilters"
-        class="bg-[#f6f6f6] border border-[#E5E5E5] rounded-[10px] px-3 py-2.5 mb-3 space-y-2.5"
+        class="bg-gray-some border border-gray-default rounded-xl px-3 py-2.5 mb-3 space-y-2.5"
       >
         <!-- Header -->
         <div class="flex items-center justify-between">
@@ -112,13 +112,13 @@
               class="size-3.5"
               aria-hidden="true"
             />
-            <span class="text-[11px] text-[#3A3A3A]">{{ t('Filtres actifs') }}</span>
-            <span class="size-5 rounded-full bg-black/10 flex items-center justify-center text-[10px] text-[#030213]">
+            <span class="text-[11px] text-gray-plain">{{ t('Filtres actifs') }}</span>
+            <span class="inline-flex items-center justify-center rounded-full bg-blue-main/10 text-blue-main text-[10px] tabular-nums min-w-5 h-5 px-1.5">
               {{ activeFilters.length }}
             </span>
           </div>
           <button
-            class="flex items-center gap-1 text-[10px] font-medium text-[#3A3A3A] hover:text-[#161616]"
+            class="flex items-center gap-1 text-[10px] font-medium text-gray-plain hover:text-gray-title"
             @click="clearAllFilters"
           >
             <RiCloseLine
@@ -133,17 +133,17 @@
           <span
             v-for="af in activeFilters"
             :key="af.column"
-            class="inline-flex items-center gap-1.5 bg-white border border-[#CCC] rounded-lg pl-2 pr-1 py-1 text-[11px]"
+            class="inline-flex items-center gap-1.5 bg-white border border-gray-silver rounded-lg pl-2 pr-1 py-1 text-[11px]"
           >
             <component
               :is="columnTypeIcon(af.column)"
-              class="size-3 text-[#030213]"
+              class="size-3 text-gray-title"
               aria-hidden="true"
             />
-            <span class="text-[#161616]">{{ af.column }}</span>
-            <span class="text-[#3A3A3A]">{{ af.label }}</span>
+            <span class="text-gray-title">{{ af.column }}</span>
+            <span class="text-gray-plain">{{ af.label }}</span>
             <button
-              class="rounded p-0.5 text-[#929292] hover:text-[#3A3A3A] hover:bg-gray-100"
+              class="rounded p-0.5 text-gray-low hover:text-gray-plain hover:bg-gray-100"
               @click="removeFilter(af.column)"
             >
               <RiCloseLine
@@ -163,11 +163,11 @@
       >
         <table class="text-sm border-collapse">
           <thead class="sticky top-0 bg-white z-10 shadow-[inset_0_-1px_0_0_#E5E5E5]">
-            <tr class="border-b border-[#E5E5E5]">
+            <tr class="border-b border-gray-default">
               <th
                 v-for="col in displayedColumns"
                 :key="col"
-                class="group/th relative h-14 px-2 text-left align-middle whitespace-nowrap border-r border-[#E5E5E5] last:border-r-0"
+                class="group/th relative h-14 px-2 text-left align-middle whitespace-nowrap border-r border-gray-default last:border-r-0"
                 :style="columnWidths[col] ? { width: columnWidths[col] + 'px', minWidth: columnWidths[col] + 'px', maxWidth: columnWidths[col] + 'px' } : undefined"
               >
                 <div class="flex items-center gap-0.5 min-w-0">
@@ -193,10 +193,13 @@
                     :column-type="getColumnType(col)"
                     :column-profile="getColumnProfile(col)"
                     :null-percent="getNullPercent(col)"
+                    :total-lines="totalLines"
+                    :category-badge-styles="getColumnType(col) === 'categorical' ? getCategoryBadgeStylesForColumn(col) : undefined"
+                    :boolean-counts="getColumnType(col) === 'boolean' ? getBooleanCounts(col) : undefined"
                   />
                 </div>
                 <!-- Column type -->
-                <span class="font-mono text-[11px] text-[#3A3A3A] -mt-0.5 inline-flex items-center gap-1">
+                <span class="font-mono text-[11px] text-gray-plain -mt-0.5 inline-flex items-center gap-1">
                   <component
                     :is="columnTypeIcon(col)"
                     class="size-3"
@@ -211,7 +214,7 @@
                   @mousedown.prevent="startResize(col, $event)"
                 >
                   <div
-                    class="absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 rounded-full bg-[#3558A2]/40 opacity-0 group-hover/resize:opacity-100"
+                    class="absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 rounded-full bg-primary/40 opacity-0 group-hover/resize:opacity-100"
                     :class="{ '!opacity-100': resizing?.column === col }"
                   />
                 </div>
@@ -219,44 +222,52 @@
             </tr>
           </thead>
           <tbody>
+            <tr v-if="allRows.length === 0">
+              <td
+                :colspan="displayedColumns.length"
+                class="py-16 text-center text-sm text-gray-low"
+              >
+                {{ t('Aucun résultat trouvé.') }}
+              </td>
+            </tr>
             <tr
               v-for="(row, i) in allRows"
               :key="row.__id ?? i"
-              class="border-b border-[#E5E5E5] even:bg-[#FCFCFC] hover:bg-gray-100"
+              class="border-b border-gray-default even:bg-gray-lowest-2 hover:bg-gray-100"
             >
               <td
                 v-for="col in displayedColumns"
                 :key="col"
-                class="p-2 align-middle whitespace-nowrap border-r border-[#E5E5E5] last:border-r-0 overflow-hidden cursor-pointer hover:bg-gray-200/50"
+                class="p-2 align-middle whitespace-nowrap border-r border-gray-default last:border-r-0 overflow-hidden cursor-pointer hover:bg-gray-200/50"
                 :class="{ 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' }"
                 :style="columnWidths[col] ? { maxWidth: columnWidths[col] + 'px' } : undefined"
                 @click="onCellClick(col, row[col], $event)"
               >
                 <span
                   v-if="row[col] == null || row[col] === ''"
-                  class="font-[Inconsolata,monospace] text-[#929292] italic text-sm"
+                  class="font-[Inconsolata,monospace] text-gray-low italic text-sm"
                 >null</span>
                 <span v-else-if="getColumnType(col) === 'number'">{{ formatNumber(row[col]) }}</span>
                 <span v-else-if="getColumnType(col) === 'date'">{{ formatDate(row[col]) }}</span>
                 <span
                   v-else-if="getColumnType(col) === 'boolean'"
-                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[12px]"
-                  :class="isTruthy(row[col]) ? 'bg-[#B8FEC9] text-[#18753C]' : 'bg-[#FFE9E6] text-[#CE0500]'"
+                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs"
+                  :class="isTruthy(row[col]) ? 'bg-new-success-light text-new-success' : 'bg-new-warning-light text-new-error'"
                 >
                   <span
                     class="size-2 rounded-full"
-                    :class="isTruthy(row[col]) ? 'bg-[#18753C]' : 'bg-[#CE0500]'"
+                    :class="isTruthy(row[col]) ? 'bg-new-success' : 'bg-new-error'"
                   />
                   {{ isTruthy(row[col]) ? t('Vrai') : t('Faux') }}
                 </span>
                 <span
                   v-else-if="getColumnType(col) === 'categorical'"
-                  class="inline-block rounded-[4px] font-medium px-2 py-0.5 text-xs max-w-full truncate"
+                  class="inline-block rounded font-medium px-2 py-0.5 text-xs max-w-full truncate"
                   :style="getCategoryBadgeStyle(col, String(row[col]))"
                 >{{ row[col] }}</span>
                 <span
                   v-else
-                  class="text-[#161616] truncate block text-xs"
+                  class="text-gray-title truncate block text-xs"
                 >{{ row[col] }}</span>
               </td>
             </tr>
@@ -278,10 +289,16 @@
       <!-- Mobile: card layout -->
       <div class="md:hidden space-y-2 px-1">
         <div
+          v-if="allRows.length === 0"
+          class="py-16 text-center text-sm text-gray-low"
+        >
+          {{ t('Aucun résultat trouvé.') }}
+        </div>
+        <div
           v-for="(row, i) in allRows"
           :key="row.__id ?? i"
-          class="border border-[#E5E5E5] rounded-lg p-3 space-y-2"
-          :class="i % 2 === 1 ? 'bg-[#FCFCFC]' : 'bg-white'"
+          class="border border-gray-default rounded-lg p-3 space-y-2"
+          :class="i % 2 === 1 ? 'bg-gray-lowest-2' : 'bg-white'"
         >
           <div
             v-for="col in mobileVisibleFields(row, i)"
@@ -291,11 +308,11 @@
             <div class="flex items-center gap-1 min-w-0">
               <component
                 :is="columnTypeIcon(col)"
-                class="size-3 text-[#929292] shrink-0"
+                class="size-3 text-gray-low shrink-0"
                 aria-hidden="true"
               />
               <span
-                class="text-[11px] text-[#3A3A3A] truncate"
+                class="text-[11px] text-gray-plain truncate"
                 :title="col"
               >{{ col }}</span>
             </div>
@@ -305,41 +322,41 @@
             >
               <span
                 v-if="row[col] == null || row[col] === ''"
-                class="font-[Inconsolata,monospace] text-[#929292] italic text-xs"
+                class="font-[Inconsolata,monospace] text-gray-low italic text-xs"
               >null</span>
               <span
                 v-else-if="getColumnType(col) === 'boolean'"
-                class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[12px]"
-                :class="isTruthy(row[col]) ? 'bg-[#B8FEC9] text-[#18753C]' : 'bg-[#FFE9E6] text-[#CE0500]'"
+                class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs"
+                :class="isTruthy(row[col]) ? 'bg-new-success-light text-new-success' : 'bg-new-warning-light text-new-error'"
               >
                 <span
                   class="size-2 rounded-full"
-                  :class="isTruthy(row[col]) ? 'bg-[#18753C]' : 'bg-[#CE0500]'"
+                  :class="isTruthy(row[col]) ? 'bg-new-success' : 'bg-new-error'"
                 />
                 {{ isTruthy(row[col]) ? t('Vrai') : t('Faux') }}
               </span>
               <span
                 v-else-if="getColumnType(col) === 'categorical'"
-                class="inline-block rounded-[4px] font-medium px-2 py-0.5 text-xs max-w-full truncate"
+                class="inline-block rounded font-medium px-2 py-0.5 text-xs max-w-full truncate"
                 :style="getCategoryBadgeStyle(col, String(row[col]))"
               >{{ row[col] }}</span>
               <span
                 v-else-if="getColumnType(col) === 'number'"
-                class="font-mono tabular-nums text-xs text-[#161616]"
+                class="font-mono tabular-nums text-xs text-gray-title"
               >{{ formatNumber(row[col]) }}</span>
               <span
                 v-else-if="getColumnType(col) === 'date'"
-                class="font-mono tabular-nums text-xs text-[#161616]"
+                class="font-mono tabular-nums text-xs text-gray-title"
               >{{ formatDate(row[col]) }}</span>
               <span
                 v-else
-                class="text-[#161616] text-xs truncate block"
+                class="text-gray-title text-xs truncate block"
               >{{ row[col] }}</span>
             </div>
           </div>
           <button
             v-if="displayedColumns.length > 4"
-            class="text-[11px] text-[#161616] hover:underline pt-1 flex items-center gap-1"
+            class="text-[11px] text-gray-title hover:underline pt-1 flex items-center gap-1"
             @click="toggleMobileExpand(i)"
           >
             <RiArrowDownSLine
@@ -386,11 +403,11 @@
             <div class="fixed inset-x-0 bottom-0 max-h-[80vh] flex flex-col bg-white rounded-t-2xl shadow-xl">
               <!-- Header -->
               <DialogPanel class="flex flex-col max-h-[80vh]">
-                <div class="px-4 pt-4 pb-2 border-b border-[#E5E5E5]">
+                <div class="px-4 pt-4 pb-2 border-b border-gray-default">
                   <DialogTitle class="text-sm font-bold">
                     {{ t('Filtres & tri par colonne') }}
                   </DialogTitle>
-                  <p class="text-[11px] text-[#929292]">
+                  <p class="text-[11px] text-gray-low">
                     {{ allColumns.length }} {{ t('colonnes') }} · {{ activeFilters.length }} {{ t('filtre') }}{{ activeFilters.length !== 1 ? 's' : '' }}
                   </p>
                 </div>
@@ -399,7 +416,7 @@
                   <div
                     v-for="col in allColumns"
                     :key="col"
-                    class="border-b border-[#E5E5E5] last:border-b-0"
+                    class="border-b border-gray-default last:border-b-0"
                   >
                     <button
                       class="flex items-center gap-2 w-full px-3 py-2.5 text-left"
@@ -408,10 +425,10 @@
                     >
                       <component
                         :is="columnTypeIcon(col)"
-                        class="size-3.5 text-[#929292] shrink-0"
+                        class="size-3.5 text-gray-low shrink-0"
                         aria-hidden="true"
                       />
-                      <span class="flex-1 text-[13px] text-[#161616] truncate">{{ col }}</span>
+                      <span class="flex-1 text-[13px] text-gray-title truncate">{{ col }}</span>
                       <RiArrowUpLine
                         v-if="sort?.column === col && sort.direction === 'asc'"
                         class="size-3 text-blue-main shrink-0"
@@ -427,7 +444,7 @@
                         class="size-2 rounded-full bg-blue-main shrink-0"
                       />
                       <RiArrowDownSLine
-                        class="size-3.5 text-[#929292] shrink-0 transition-transform"
+                        class="size-3.5 text-gray-low shrink-0 transition-transform"
                         :class="{ 'rotate-180': mobileFilterExpandedCol === col }"
                         aria-hidden="true"
                       />
@@ -443,6 +460,9 @@
                         :column-type="getColumnType(col)"
                         :column-profile="getColumnProfile(col)"
                         :null-percent="getNullPercent(col)"
+                        :total-lines="totalLines"
+                        :category-badge-styles="getColumnType(col) === 'categorical' ? getCategoryBadgeStylesForColumn(col) : undefined"
+                        :boolean-counts="getColumnType(col) === 'boolean' ? getBooleanCounts(col) : undefined"
                       />
                     </div>
                   </div>
@@ -450,10 +470,10 @@
                 <!-- Reset all -->
                 <div
                   v-if="activeFilters.length > 0 || sort"
-                  class="border-t border-[#E5E5E5] px-4 py-3"
+                  class="border-t border-gray-default px-4 py-3"
                 >
                   <button
-                    class="w-full py-2 rounded bg-[#f6f6f6] text-xs text-[#3A3A3A] hover:bg-[#E5E5E5]"
+                    class="w-full py-2 rounded bg-gray-some text-xs text-gray-plain hover:bg-gray-default"
                     @click="clearAllFilters(); sort = null; mobileFilterOpen = false"
                   >
                     {{ t('Tout réinitialiser') }}
@@ -538,6 +558,9 @@ const dataQuery = computed(() => {
     if (filter.in?.length) {
       q[`${col}__in`] = filter.in.join(',')
     }
+    if (filter.exact != null) {
+      q[`${col}__exact`] = filter.exact
+    }
     if (typeof filter.min === 'number' && Number.isFinite(filter.min)) {
       q[`${col}__greater`] = filter.min
     }
@@ -594,10 +617,7 @@ async function loadNextPage() {
 
 const totalLines = computed(() => profileData.value?.profile?.total_lines ?? tableData.value?.meta.total ?? 0)
 
-const allColumns = computed(() => {
-  if (!tableData.value?.data?.length) return []
-  return Object.keys(tableData.value.data[0]).filter(key => key !== '__id')
-})
+const allColumns = computed(() => profileData.value?.profile?.header ?? [])
 
 const visibleColumns = ref(new Set(allColumns.value))
 
@@ -704,6 +724,9 @@ const activeFilters = computed<ActiveFilter[]>(() => {
     if (filter.in?.length) {
       parts.push(`= ${filter.in.join(', ')}`)
     }
+    if (filter.exact != null) {
+      parts.push(`= ${filter.exact === 'true' ? t('Vrai') : t('Faux')}`)
+    }
     if (filter.contains) {
       parts.push(`${t('contient')} "${filter.contains}"`)
     }
@@ -743,7 +766,7 @@ function clearAllFilters() {
 function hasFilterForColumn(col: string): boolean {
   const f = filters.value[col]
   if (!f) return false
-  return !!(f.in?.length || f.contains || f.null || f.min != null || f.max != null)
+  return !!(f.in?.length || f.exact != null || f.contains || f.null || f.min != null || f.max != null)
 }
 
 // Mobile state
@@ -855,7 +878,7 @@ const badgeColorMap = computed(() => {
   if (!profile) return map
   for (const col of profile.categorical) {
     getTopsEntries(col).forEach((top, i) => {
-      map.set(`${col}::${top.value}`, BADGE_PALETTE[i % BADGE_PALETTE.length])
+      map.set(`${col}::${top.value}`, BADGE_PALETTE[i % BADGE_PALETTE.length]!)
     })
   }
   return map
@@ -864,5 +887,26 @@ const badgeColorMap = computed(() => {
 function getCategoryBadgeStyle(col: string, value: string): { backgroundColor: string, color: string } {
   const colors = badgeColorMap.value.get(`${col}::${value}`) ?? BADGE_FALLBACK
   return { backgroundColor: colors.bg, color: colors.text }
+}
+
+function getCategoryBadgeStylesForColumn(col: string): Record<string, { backgroundColor: string, color: string }> {
+  const styles: Record<string, { backgroundColor: string, color: string }> = {}
+  for (const top of getTopsEntries(col)) {
+    styles[top.value] = getCategoryBadgeStyle(col, top.value)
+  }
+  return styles
+}
+
+function getBooleanCounts(col: string): { trueCount: number, falseCount: number } {
+  const profile = getColumnProfile(col)
+  if (!profile?.tops) return { trueCount: 0, falseCount: 0 }
+  let trueCount = 0
+  let falseCount = 0
+  for (const top of profile.tops) {
+    const v = (top.value ?? '').toLowerCase()
+    if (v === 'true' || v === '1' || v === 'oui' || v === 'yes') trueCount += top.count
+    else if (v === 'false' || v === '0' || v === 'non' || v === 'no') falseCount += top.count
+  }
+  return { trueCount, falseCount }
 }
 </script>

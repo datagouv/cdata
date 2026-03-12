@@ -24,10 +24,21 @@
           :style="floatingStyles"
         >
           <!-- Title -->
-          <div class="px-3 py-2 border-b border-black/10">
+          <div class="flex items-center justify-between px-3 py-2 border-b border-black/10">
             <p class="text-sm font-medium mb-0">
               {{ t('Filtrer') }} : {{ column }}
             </p>
+            <button
+              v-if="hasColumnFilter"
+              class="flex items-center gap-1 text-xs text-[#929292] hover:text-[#3A3A3A]"
+              @click="clearColumnFilter"
+            >
+              <RiCloseLine
+                class="size-3"
+                aria-hidden="true"
+              />
+              {{ t('Effacer') }}
+            </button>
           </div>
 
           <TabularFilterContent
@@ -37,6 +48,9 @@
             :column-type="columnType"
             :column-profile="columnProfile"
             :null-percent="nullPercent"
+            :total-lines="totalLines"
+            :category-badge-styles="categoryBadgeStyles"
+            :boolean-counts="booleanCounts"
           />
         </div>
       </Teleport>
@@ -47,7 +61,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
-import { RiFilter2Line } from '@remixicon/vue'
+import { RiFilter2Line, RiCloseLine } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
 import ClientOnly from '../ClientOnly.vue'
 import TabularFilterContent from './TabularFilterContent.vue'
@@ -58,6 +72,9 @@ const props = defineProps<{
   columnType: ColumnType
   columnProfile: TabularColumnProfile | null
   nullPercent: string
+  totalLines: number
+  categoryBadgeStyles?: Record<string, { backgroundColor: string, color: string }>
+  booleanCounts?: { trueCount: number, falseCount: number }
 }>()
 
 const sort = defineModel<SortConfig | null>('sort')
@@ -93,8 +110,13 @@ onUnmounted(() => {
 const hasColumnFilter = computed(() => {
   const f = filters.value[props.column]
   if (!f) return false
-  return !!(f.in?.length || f.contains || f.null || f.min != null || f.max != null)
+  return !!(f.in?.length || f.exact != null || f.contains || f.null || f.min != null || f.max != null)
 })
+
+function clearColumnFilter() {
+  const { [props.column]: _, ...rest } = filters.value
+  filters.value = rest
+}
 
 const { floatingStyles } = useFloating(anchorRef, panelRef, {
   placement: 'bottom-start',
