@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { RiBuilding2Line, RiChat2Line, RiDatabase2Line, RiLineChartLine, RiRobot2Line } from '@remixicon/vue'
+import { RiBuilding2Line, RiChat2Line, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
 import { throwOnNever } from '@datagouv/components-next'
 import type { LinkToSubject } from '~/types/types'
 
@@ -39,7 +39,7 @@ const title = computed(() => {
 
 const icon = computed(() => {
   if (props.type === 'Dataset') return RiDatabase2Line
-  if (props.type === 'Dataservice') return RiRobot2Line
+  if (props.type === 'Dataservice') return RiTerminalLine
   if (props.type === 'Reuse') return RiLineChartLine
   if (props.type === 'Organization') return RiBuilding2Line
   if (props.type === 'Discussion') return RiChat2Line

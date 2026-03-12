@@ -36,5 +36,5 @@ export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
 export type UseFetchFunction = (<DataT, ErrorT>(
   url: string | Request | Ref<string | Request> | ComputedRef<string | null> | (() => string | Request),
-  options?: UseFetchOptions<DataT>
+  options?: UseFetchOptions<DataT>,
 ) => Promise<AsyncData<DataT, ErrorT>>)

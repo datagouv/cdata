@@ -36,6 +36,10 @@ const { t } = useTranslation()
 useSeoMeta({
   title: t('Organisations'),
 })
+defineOgImage('MainPage.takumi', {
+  title: 'Organisations',
+  uri: '/organizations',
+})
 const route = useRoute()
 const params = useUrlSearchParams<OrganizationSearchParams>('history', {
   initialValue: route.query,

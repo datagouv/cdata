@@ -49,6 +49,7 @@ import DatasetQuality from './components/DatasetQuality.vue'
 import DatasetQualityInline from './components/DatasetQualityInline.vue'
 import DatasetQualityItem from './components/DatasetQualityItem.vue'
 import DatasetQualityScore from './components/DatasetQualityScore.vue'
+import ProgressBar from './components/ProgressBar.vue'
 import DatasetQualityTooltipContent from './components/DatasetQualityTooltipContent.vue'
 import ExtraAccordion from './components/ExtraAccordion.vue'
 import LabelTag from './components/DatasetLabelTag.vue'
@@ -287,6 +288,7 @@ export {
   PaddedContainer,
   Pagination,
   Placeholder,
+  ProgressBar,
   PostCard,
   RadioGroup,
   RadioInput,
