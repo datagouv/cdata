@@ -17,6 +17,12 @@
           />
         </div>
         <div class="text-gray-medium text-xs flex items-center gap-1">
+          <SchemaBadge :resource />
+          <RiSubtractLine
+            v-if="resource.schema"
+            aria-hidden="true"
+            class="size-3 fill-gray-medium"
+          />
           <span>{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
           <RiSubtractLine
             aria-hidden="true"
@@ -313,6 +319,7 @@ import Tooltip from '../Tooltip.vue'
 import Preview from '../ResourceAccordion/Preview.vue'
 import DataStructure from '../ResourceAccordion/DataStructure.vue'
 import Metadata from '../ResourceAccordion/Metadata.vue'
+import SchemaBadge from '../ResourceAccordion/SchemaBadge.vue'
 import { filesize, summarize } from '../../functions/helpers'
 import { getResourceFormatIcon } from '../../functions/resources'
 import { getResourceExternalUrl, getResourceFilesize } from '../../functions/datasets'
