@@ -404,4 +404,4 @@ jobs:
           pnpm version "$LATEST" --no-git-tag-version --allow-same-version
           # Then, we increment the preprelease version number
           pnpm version prerelease --preid=dev --no-git-tag-version
-          pnpm run publish-dev
+          pnpm run publish-dev --no-git-checks
