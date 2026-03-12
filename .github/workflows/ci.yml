@@ -9,6 +9,10 @@ env:
   APP_NAME: ${{ vars.APP_NAME }}
   UDATA_WORKING_DIR: udata
 
+permissions:
+  id-token: write  # Required for OIDC for npm publication
+  contents: read
+
 jobs:
   # ============================================
   # JOB 1: Build - generates artifacts once
@@ -379,14 +383,12 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
 
-      - name: Set up Node.js with npm auth
+      - name: Set up Node.js with OIDC auth
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version: "24"
           cache: "pnpm"
           registry-url: "https://registry.npmjs.org"
-          scope: "@datagouv"
-          auth-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Install datagouv-components dependencies
         working-directory: ./datagouv-components
@@ -394,8 +396,6 @@ jobs:
 
       - name: Publish datagouv-components
         working-directory: ./datagouv-components
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           LATEST=$(npm view @datagouv/components-next@dev version 2>/dev/null \
             || npm view @datagouv/components-next version 2>/dev/null \
