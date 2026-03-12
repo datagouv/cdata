@@ -88,7 +88,7 @@ export function useResourceCapabilities(
     if (hasTabularData.value) {
       options.push({ key: 'data', label: t('Données') })
     }
-    else if (hasPreview.value || hasDatafairPreview.value || hasOpenAPIPreview.value) {
+    else {
       options.push({ key: 'data', label: t('Aperçu') })
     }
 

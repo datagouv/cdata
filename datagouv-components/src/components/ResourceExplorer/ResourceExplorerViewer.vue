@@ -17,6 +17,12 @@
           />
         </div>
         <div class="text-gray-medium text-xs flex items-center gap-1">
+          <SchemaBadge :resource />
+          <RiSubtractLine
+            v-if="resource.schema"
+            aria-hidden="true"
+            class="size-3 fill-gray-medium"
+          />
           <span>{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
           <RiSubtractLine
             aria-hidden="true"
@@ -133,9 +139,12 @@
                 :url="resource.extras['apidocUrl'] as string"
               />
               <Preview
-                v-else
+                v-else-if="hasTabularData"
                 :resource="resource"
               />
+              <PreviewUnavailable v-else>
+                {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+              </PreviewUnavailable>
             </div>
             <div v-if="tab.key === 'description'">
               <MarkdownViewer
@@ -298,6 +307,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
 import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiInformationLine, RiSubtractLine } from '@remixicon/vue'
+import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import { toast } from 'vue-sonner'
 import BrandedButton from '../BrandedButton.vue'
 import CopyButton from '../CopyButton.vue'
@@ -313,6 +323,7 @@ import Tooltip from '../Tooltip.vue'
 import Preview from '../ResourceAccordion/Preview.vue'
 import DataStructure from '../ResourceAccordion/DataStructure.vue'
 import Metadata from '../ResourceAccordion/Metadata.vue'
+import SchemaBadge from '../ResourceAccordion/SchemaBadge.vue'
 import { filesize, summarize } from '../../functions/helpers'
 import { getResourceFormatIcon } from '../../functions/resources'
 import { getResourceExternalUrl, getResourceFilesize } from '../../functions/datasets'
