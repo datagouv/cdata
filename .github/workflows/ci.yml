@@ -373,7 +373,7 @@ jobs:
   # JOB 6: Publish datagouv-components (automatic on main, manual on any branch)
   # ============================================
   publish-datagouv-components:
-    needs: e2e
+    needs: [quality, e2e]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
