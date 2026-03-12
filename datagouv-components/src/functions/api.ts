@@ -1,8 +1,16 @@
-import { ref, toValue, watchEffect, onMounted, type ComputedRef, type Ref } from 'vue'
+import { ref, toValue, watchEffect, onMounted, type ComputedRef, type MaybeRefOrGetter, type Ref } from 'vue'
 import { ofetch } from 'ofetch'
 import { useComponentsConfig } from '../config'
 import { useTranslation } from '../composables/useTranslation'
 import type { AsyncData, AsyncDataRequestStatus, UseFetchOptions } from './api.types'
+
+function deepToValue(obj: MaybeRefOrGetter<Record<string, unknown> | undefined>): Record<string, unknown> | undefined {
+  const val = toValue(obj)
+  if (!val || typeof val !== 'object') return val
+  return Object.fromEntries(
+    Object.entries(val).map(([k, v]) => [k, toValue(v as MaybeRefOrGetter<unknown>)]),
+  )
+}
 
 export async function useFetch<DataT, ErrorT = never>(
   url: string | Request | Ref<string | Request> | ComputedRef<string | null> | (() => string | Request),
@@ -24,8 +32,8 @@ export async function useFetch<DataT, ErrorT = never>(
   const execute = async () => {
     const urlValue = toValue(url)
     if (!urlValue) return
-    const params = toValue(options?.params)
-    const query = toValue(options?.query)
+    const params = deepToValue(options?.params)
+    const query = deepToValue(options?.query)
     status.value = 'pending'
     try {
       data.value = await ofetch<DataT | null>(urlValue, {
