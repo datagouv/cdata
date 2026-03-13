@@ -4,8 +4,9 @@ import { useTranslation } from './useTranslation'
 import { useHasTabularData } from './useHasTabularData'
 import { detectOgcService } from '../functions/resources'
 import { isOrganizationCertified } from '../functions/organizations'
-import type { Resource } from '../types/resources'
+import type { Resource, WfsMetadata } from '../types/resources'
 import type { Dataset, DatasetV2 } from '../types/datasets'
+import { getWfsExportFormats } from '../functions/resourceCapabilities'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 const URL_FORMATS = ['url', 'doi', 'www:link', 'www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
@@ -67,6 +68,17 @@ export function useResourceCapabilities(
     return formats
   })
 
+  const wfsFormats = computed(() => {
+    return getWfsExportFormats(toValue(resource))
+  })
+
+  const defaultWfsProjection = computed<string | null>(() => {
+    const r = toValue(resource)
+    const wfsMetadata = r.extras['analysis:parsing:ogc_metadata'] as WfsMetadata | null
+    if (!wfsMetadata || wfsMetadata.format !== `wfs`) return null
+    return wfsMetadata?.detected_layer?.default_crs ?? null
+  })
+
   const isResourceUrl = computed(() => URL_FORMATS.includes(toValue(resource).format))
 
   const tabsOptions = computed(() => {
@@ -111,6 +123,8 @@ export function useResourceCapabilities(
     ogcService,
     ogcWms,
     generatedFormats,
+    wfsFormats,
+    defaultWfsProjection,
     isResourceUrl,
     tabsOptions,
   }

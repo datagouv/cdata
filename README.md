@@ -95,7 +95,7 @@ This project uses [pnpm](https://pnpm.io/) instead of npm mostly for security re
 - `NUXT_APP_COMMIT_ID`: Git commit ID (auto-generated in dev mode)
 - `NUXT_PUBLIC_SENTRY_DSN`: Sentry DSN for error tracking
 - `NUXT_TEMPLATE_CACHE_DURATION`: Duration for template caching
-- `NUXT_PUBLIC_BASE_URL`: Base URL
+- `NUXT_SITE_URL`: Site URL (used for OG tags, sitemap, etc.)
 
 You can work on `cdata` without a local `udata` backend by pointing to https://demo.data.gouv.fr directly. Create a `.env` file at the root of the project:
 
