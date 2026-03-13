@@ -1,7 +1,7 @@
 <template>
-  <div class="flex">
+  <div class="flex flex-col md:flex-row">
     <Sidemenu
-      class="w-4/12 mx-2"
+      class="mx-2 md:w-4/12 lg:w-3/12 shrink-0"
       :button-text="$t('Menu')"
       :fixed="true"
     >
@@ -68,16 +68,21 @@
           :label="$t('Traductions')"
           to="/design/translations"
         />
+        <AdminSidebarLink
+          :icon="RiLineChartLine"
+          :label="$t('Charts')"
+          to="/design/chart"
+        />
       </ul>
     </Sidemenu>
-    <div class="w-8/12 space-y-8 px-8 bg-gray-50 pb-32">
+    <div class="w-full md:flex-1 space-y-8 px-4 md:px-8 bg-gray-50 pb-32 min-w-0">
       <NuxtPage />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { RiEyeLine, RiExternalLinkLine, RiFileSearchLine, RiIdCardLine, RiListView, RiRadioButtonLine, RiSearch2Line, RiSearchEyeLine, RiTranslate, RiUserSearchLine } from '@remixicon/vue'
+import { RiEyeLine, RiExternalLinkLine, RiFileSearchLine, RiIdCardLine, RiLineChartLine, RiListView, RiRadioButtonLine, RiSearch2Line, RiSearchEyeLine, RiTranslate, RiUserSearchLine } from '@remixicon/vue'
 import AdminSidebarLink from '~/components/AdminSidebar/AdminSidebarLink/AdminSidebarLink.vue'
 import LogoOnly from '~/components/LogoOnly.vue'
 import Sidemenu from '~/components/Sidemenu/Sidemenu.global.vue'

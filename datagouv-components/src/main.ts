@@ -23,6 +23,7 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
+import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm } from './types/visualizations'
 import type { GlobalSearchConfig, SearchType, SortOption } from './types/search'
 import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 
@@ -100,6 +101,7 @@ import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 export { Toaster, toast } from 'vue-sonner'
 
 export * from './composables/useActiveDescendant'
+export * from './composables/useDebouncedRef'
 export * from './composables/useMetrics'
 export * from './composables/useReuseType'
 export * from './composables/useTranslation'
@@ -121,6 +123,7 @@ export * from './functions/resources'
 export * from './functions/reuses'
 export * from './functions/schemas'
 export * from './functions/users'
+export * from './functions/tabularApi'
 export * from './types/access_types'
 
 export type {
@@ -218,6 +221,23 @@ export type {
   ValidataError,
   Weight,
   WellType,
+  Chart,
+  ChartForm,
+  ChartForApi,
+  FilterCondition,
+  Filter,
+  AndFilters,
+  GenericFilter,
+  XAxisType,
+  XAxisSortBy,
+  SortDirection,
+  XAxis,
+  XAxisForm,
+  UnitPosition,
+  YAxis,
+  DataSeriesType,
+  DataSeries,
+  DataSeriesForm,
 }
 
 export {
