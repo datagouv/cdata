@@ -80,73 +80,6 @@
         class="fr-input-group"
       >
         <label
-          class="fr-label"
-          :for="apiKeyId"
-        >
-          {{ $t(`Clé d'API`) }}
-          <span
-            v-if="user.apikey"
-            class="fr-hint-text"
-          >
-            {{ $t(`Attention: Si vous supprimez votre clé d'API vous risquez de perdre l'accès aux services de {site}`, { site: config.public.title }) }}
-          </span>
-        </label>
-        <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
-          <div class="fr-col-12 fr-col-sm">
-            <div class="relative">
-              <input
-                :id="apiKeyId"
-                :value="user.apikey"
-                type="password"
-                class="fr-input !pr-8"
-                disabled
-              >
-              <div class="absolute right-1 top-1 !mt-0.5 !mr-0.5">
-                <CopyButton
-                  v-if="user.apikey"
-                  :label="$t(`Copier la clé d'API`)"
-                  :copied-label="$t('Clé API copiée')"
-                  :text="user.apikey"
-                  reverse
-                />
-              </div>
-            </div>
-          </div>
-          <div class="fr-col-auto flex gap-4">
-            <div class="flex-none">
-              <BrandedButton
-                color="secondary"
-                size="xs"
-                :disabled="loading"
-                :icon="RiRecycleLine"
-                @click="regenerateApiKey"
-              >
-                <span v-if="user.apikey">{{ $t('Regénérer') }}</span>
-                <span v-else>{{ $t('Générer') }}</span>
-              </BrandedButton>
-            </div>
-            <div
-              v-if="user.apikey"
-              class="flex-none"
-            >
-              <BrandedButton
-                color="danger"
-                size="xs"
-                :disabled="loading"
-                :icon="RiDeleteBin6Line"
-                @click="deleteApiKey"
-              >
-                {{ $t('Supprimer') }}
-              </BrandedButton>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        v-if="user.id === me.id"
-        class="fr-input-group"
-      >
-        <label
           class="fr-label mb-2"
           :for="emailId"
         >
@@ -245,17 +178,26 @@
         </template>
       </BannerAction>
     </PaddedContainer>
+    <template v-if="user.id === me.id">
+      <h2 class="uppercase !text-sm !my-5">
+        {{ $t("Clés d'API") }}
+      </h2>
+      <PaddedContainer class="!p-5">
+        <ApiTokensSection />
+      </PaddedContainer>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, CopyButton, PaddedContainer, toast, SearchableSelect } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, PaddedContainer, toast, SearchableSelect } from '@datagouv/components-next'
 import type { User } from '@datagouv/components-next'
-import { RiDeleteBin6Line, RiEditLine, RiRecycleLine, RiSaveLine } from '@remixicon/vue'
+import { RiEditLine, RiSaveLine } from '@remixicon/vue'
 import DeleteUserModal from './DeleteUserModal.vue'
 import ChangePasswordModal from './ChangePasswordModal.vue'
 import ChangeEmailModal from './ChangeEmailModal.vue'
 import TwoFactorSetupModal from './TwoFactorSetupModal.vue'
+import ApiTokensSection from './ApiTokensSection.vue'
 import { uploadProfilePicture } from '~/api/users'
 
 const props = defineProps<{
@@ -271,7 +213,6 @@ const config = useNuxtApp().$config
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
-const apiKeyId = useId()
 const emailId = useId()
 const passwordId = useId()
 
@@ -324,32 +265,6 @@ async function updateUser() {
     toast.success(t('Profil mis à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
     emits('refresh')
-  }
-  finally {
-    loading.value = false
-  }
-}
-
-async function regenerateApiKey() {
-  loading.value = true
-  try {
-    await $api<{ apikey: string }>('/api/1/me/apikey', {
-      method: 'POST',
-    })
-    loadMe(me)
-  }
-  finally {
-    loading.value = false
-  }
-}
-
-async function deleteApiKey() {
-  loading.value = true
-  try {
-    await $api('/api/1/me/apikey', {
-      method: 'DELETE',
-    })
-    loadMe(me)
   }
   finally {
     loading.value = false
