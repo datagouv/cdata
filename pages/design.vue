@@ -85,4 +85,5 @@ import Sidemenu from '~/components/Sidemenu/Sidemenu.global.vue'
 definePageMeta({
   layout: 'fluid',
 })
+useSeoMeta({ robots: 'noindex' })
 </script>
