@@ -10,7 +10,7 @@
       <div
         v-for="(dataset, i) in bloc.datasets"
         :key="dataset.id"
-        class="relative"
+        class="relative min-w-0"
         :class="{ 'cursor-grab active:cursor-grabbing': edit }"
       >
         <button
