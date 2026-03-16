@@ -252,6 +252,7 @@ export default defineNuxtConfig({
         'maplibre-gl',
         'geopf-extensions-openlayers',
         'vue3-xml-viewer',
+        'uqr',
       ],
       // `@datagouv/components-next` shouldn't be optimize otherwise its vue instance is not the same
       // as the one used in udata-front-kit. This cause errors with the `provide` / `inject` functions
