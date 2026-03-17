@@ -7,6 +7,7 @@
     :a-label="$t('une API')"
     :this-label="$t('cette API')"
     :allow-reorder
+    :read-only
     :suggest="(query) => $api<PaginatedArray<Dataservice>>('/api/1/dataservices/', { query }).then(({ data }) => data)"
     :fetch="(id) => $api<Dataservice>(`/api/1/dataservices/${id}/`)"
     :object-image-url="(dataservice) => ''"
@@ -19,6 +20,12 @@
         class="w-full"
       />
     </template>
+    <template
+      v-if="$slots.empty"
+      #empty
+    >
+      <slot name="empty" />
+    </template>
   </ObjectsSelect>
 </template>
 
@@ -30,9 +37,11 @@ withDefaults(defineProps<{
   single?: boolean
   label?: string
   allowReorder?: boolean
+  readOnly?: boolean
 }>(), {
   single: false,
   allowReorder: true,
+  readOnly: false,
 })
 
 const selectedDataservices = defineModel<Array<Dataservice>>({ required: true })

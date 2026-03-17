@@ -39,7 +39,7 @@
               {{ t('Rôle proposé :') }}
               <AdminBadge
                 size="xs"
-                :type="invitation.role === 'admin' ? 'primary' : 'secondary'"
+                :type="getRoleBadgeType(invitation.role)"
               >
                 {{ roleLabel }}
               </AdminBadge>
@@ -61,7 +61,7 @@
           {{ formatDate(new Date(invitation.created), { dateStyle: 'long', timeStyle: 'short' }) }}
         </div>
       </div>
-      <div class="flex flex-col gap-2.5 items-end">
+      <div class="flex gap-2.5 items-start">
         <BrandedButton
           color="primary"
           size="xs"
@@ -89,7 +89,8 @@ import { BrandedButton, useFormatDate } from '@datagouv/components-next'
 import { ref } from 'vue'
 import { RiBuilding2Line, RiCheckLine, RiUserAddLine } from '@remixicon/vue'
 import AdminBadge from '../AdminBadge/AdminBadge.vue'
-import type { MemberRole, OrgInvitation } from '~/types/types'
+import type { MemberRole } from '@datagouv/components-next'
+import type { OrgInvitation } from '~/types/types'
 
 const props = defineProps<{
   invitation: OrgInvitation

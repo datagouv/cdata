@@ -82,6 +82,7 @@
             keep-margins-even-without-borders
           />
           <BrandedButton
+            v-if="reuse.permissions.edit"
             size="xs"
             color="tertiary"
             :href="getReuseAdminUrl(reuse)"

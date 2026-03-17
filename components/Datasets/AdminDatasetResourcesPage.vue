@@ -8,55 +8,63 @@
         {{ t('{n} fichiers | {n} fichier | {n} fichiers', resourcesPage.total) }}
       </h2>
       <div class="flex items-center space-x-3">
-        <component :is="resourcesPage && resourcesPage.total > config.public.maxSortableFiles ? Tooltip : 'div' ">
+        <template v-if="canEdit">
+          <component :is="resourcesPage && resourcesPage.total > config.public.maxSortableFiles ? Tooltip : 'div' ">
+            <BrandedButton
+              v-if="! reorder"
+              color="secondary"
+              size="xs"
+              :icon="RiDraggable"
+              :loading="loadingForOrdering"
+              :disabled="!!resourcesPage && resourcesPage.total > config.public.maxSortableFiles"
+              @click="startReorder()"
+            >
+              {{ $t('Réordonner les fichiers') }}
+            </BrandedButton>
+
+            <template #tooltip>
+              {{ $t(`Impossible de réordonner les fichiers quand il y a plus de {max} fichiers`, { max: config.public.maxSortableFiles }) }}
+            </template>
+          </component>
           <BrandedButton
-            v-if="! reorder"
+            v-if="reorder"
+            color="primary"
+            size="xs"
+            :icon="RiCheckLine"
+            :disabled="!didSort"
+            :loading="loadingForOrdering"
+            @click="saveReorder()"
+          >
+            {{ $t('Sauvegarder le nouvel ordre') }}
+          </BrandedButton>
+          <BrandedButton
+            v-if="reorder"
             color="secondary"
             size="xs"
-            :icon="RiDraggable"
+            :icon="RiCheckLine"
             :loading="loadingForOrdering"
-            :disabled="!!resourcesPage && resourcesPage.total > config.public.maxSortableFiles"
-            @click="startReorder()"
+            @click="cancelReorder()"
           >
-            {{ $t('Réordonner les fichiers') }}
+            {{ $t("Annuler le changement d'ordre") }}
           </BrandedButton>
-
-          <template #tooltip>
-            {{ $t(`Impossible de réordonner les fichiers quand il y a plus de {max} fichiers`, { max: config.public.maxSortableFiles }) }}
-          </template>
-        </component>
-        <BrandedButton
-          v-if="reorder"
-          color="primary"
-          size="xs"
-          :icon="RiCheckLine"
-          :disabled="!didSort"
-          :loading="loadingForOrdering"
-          @click="saveReorder()"
+          <UploadResourceModal
+            v-if="! reorder"
+            :extensions="extensions ?? []"
+            @new-files="addFiles"
+          />
+        </template>
+        <p
+          v-else
+          class="text-sm text-gray-medium m-0"
         >
-          {{ $t('Sauvegarder le nouvel ordre') }}
-        </BrandedButton>
-        <BrandedButton
-          v-if="reorder"
-          color="secondary"
-          size="xs"
-          :icon="RiCheckLine"
-          :loading="loadingForOrdering"
-          @click="cancelReorder()"
-        >
-          {{ $t("Annuler le changement d'ordre") }}
-        </BrandedButton>
-        <UploadResourceModal
-          v-if="! reorder"
-          :extensions="extensions ?? []"
-          @new-files="addFiles"
-        />
+          {{ t('Vous n\'avez pas la permission de modifier les fichiers de ce jeu de données.') }}
+        </p>
       </div>
     </div>
 
     <!-- :key is here to force re-render when length change and then re-call onMounted -->
     <FileEditModal
-      v-if="resourceForms.length"
+      v-if="canEdit && resourceForms.length"
       :key="resourceForms.length"
       :resource="resourceForms[0]"
       open-on-mounted
@@ -66,7 +74,7 @@
     />
 
     <FileEditModalFromQueryStringClient
-      v-if="dataset"
+      v-if="canEdit && dataset"
       :schemas="schemas ?? []"
       :dataset
       @submit="updateResource"
@@ -111,6 +119,7 @@
               {{ t('Mis à jour le') }}
             </AdminTableTh>
             <AdminTableTh
+              v-if="canEdit"
               scope="col"
             >
               {{ t("Action") }}
@@ -172,7 +181,7 @@
             <td>
               {{ formatDate(resource.last_modified) }}
             </td>
-            <td>
+            <td v-if="canEdit">
               <FileEditModal
                 :dataset="dataset ?? undefined"
                 :loading
@@ -216,6 +225,7 @@ const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extens
 
 const datasetUrl = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset, status } = await useAPI<DatasetV2>(datasetUrl, { redirectOn404: true })
+const canEdit = computed(() => dataset.value?.permissions.edit_resources ?? false)
 const resourcesPage = ref<PaginatedArray<Resource> | null>(null)
 const page = ref(1)
 const pageSize = ref(20)
