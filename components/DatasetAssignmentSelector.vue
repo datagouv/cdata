@@ -128,7 +128,7 @@ const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
 
 const page = ref(1)
-const pageSize = 20
+const pageSize = 10
 const q = ref('')
 const qDebounced = refDebounced(q, config.public.searchDebounce)
 

@@ -298,48 +298,60 @@
                       </p>
                     </div>
                     <form
-                      class="flex flex-wrap gap-4 items-end"
+                      :id="editFormId"
                       @submit.prevent="updateRole(member, close)"
                     >
-                      <div class="flex-1">
-                        <SelectGroup
-                          v-if="roles && roles.length > 0"
-                          v-model="newRole"
-                          :label="t('Rôle du membre')"
-                          :options="rolesOptions"
-                        />
-                      </div>
-                      <div>
-                        <BrandedButton
-                          type="submit"
-                          :disabled="loading"
-                        >
-                          {{ t("Valider") }}
-                        </BrandedButton>
-                      </div>
+                      <SelectGroup
+                        v-if="roles && roles.length > 0"
+                        v-model="newRole"
+                        :label="t('Rôle du membre')"
+                        :options="rolesOptions"
+                      />
                       <DatasetAssignmentSelector
                         v-if="newRole === 'partial_editor' && currentOrganization"
                         v-model="editSelectedDatasetIds"
                         :organization-id="currentOrganization.id"
                       />
                     </form>
+                  </template>
 
-                    <BannerAction
-                      class="mt-4"
-                      type="danger"
-                      :title="$t(`Retirer le membre de l'organisation`)"
-                    >
-                      {{ t("Attention, cette action ne peut pas être annulée.") }}
-                      <template #button>
+                  <template #footer="{ close }">
+                    <div class="space-y-4 w-full">
+                      <div class="space-x-4">
                         <BrandedButton
-                          :loading
-                          :icon="RiLogoutBoxRLine"
-                          @click="removeMemberFromOrganization(member, close)"
+                          color="secondary"
+                          size="xs"
+                          :disabled="loading"
+                          @click="close"
                         >
-                          {{ t('Retirer le membre') }}
+                          {{ t("Annuler") }}
                         </BrandedButton>
-                      </template>
-                    </BannerAction>
+                        <BrandedButton
+                          color="primary"
+                          size="xs"
+                          type="submit"
+                          :form="editFormId"
+                          :disabled="loading"
+                        >
+                          {{ t("Valider") }}
+                        </BrandedButton>
+                      </div>
+                      <BannerAction
+                        type="danger"
+                        :title="$t(`Retirer le membre de l'organisation`)"
+                      >
+                        {{ t("Attention, cette action ne peut pas être annulée.") }}
+                        <template #button>
+                          <BrandedButton
+                            :loading
+                            :icon="RiLogoutBoxRLine"
+                            @click="removeMemberFromOrganization(member, close)"
+                          >
+                            {{ t('Retirer le membre') }}
+                          </BrandedButton>
+                        </template>
+                      </BannerAction>
+                    </div>
                   </template>
                 </ModalWithButton>
               </div>
@@ -530,6 +542,7 @@ const isEmailAlreadyInvited = (emailValue: string): string | null => {
   return null
 }
 
+const editFormId = useId()
 const inviteFormId = useId()
 const { form: inviteForm, getFirstError, validate, removeErrorsAndWarnings, touch } = useForm<InviteFormData>({
   role: null,
