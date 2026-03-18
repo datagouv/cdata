@@ -3,7 +3,7 @@
     <div
       ref="readMoreRef"
       class="overflow-hidden"
-      :style="{ height: containerHeight + 'px' }"
+      :style="{ height: readMoreRequired ? containerHeight + 'px' : 'auto' }"
     >
       <div ref="containerRef">
         <slot />
