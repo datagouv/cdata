@@ -160,7 +160,7 @@ const connect = async () => {
       if (response.tf_state === 'setup_from_login')
         navigateTo('/setup-two-factor')
       else
-        navigateTo('/validate-two-factor')
+        navigateTo('/tf-validate')
     }
     else {
       toast.success(t('Vous êtes maintenant connecté.'))

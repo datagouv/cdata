@@ -1,5 +1,5 @@
 const UNLOGGED_SECURITY_ROUTES = [
-  'login', 'register', 'reset', 'validate-two-factor',
+  'login', 'register', 'reset', 'tf-validate',
 ]
 
 export default defineNuxtRouteMiddleware((to, _from) => {
