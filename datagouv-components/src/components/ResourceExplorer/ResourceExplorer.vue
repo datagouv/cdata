@@ -159,6 +159,22 @@ watch(searchDebounced, () => {
   }
 })
 
+// Separate useFetch for loadMore, initialized at setup time with immediate: false
+// so that it doesn't fetch until execute() is called from the event handler.
+const loadMoreType = ref<ResourceType>('main')
+const loadMorePage = ref(1)
+const loadMoreParams = computed(() => ({
+  type: loadMoreType.value,
+  page_size: PAGE_SIZE,
+  page: loadMorePage.value,
+  q: searchDebounced.value || undefined,
+}))
+const { data: loadMoreData, execute: executeLoadMore } = await useFetch<PaginatedArray<Resource>>(url, {
+  params: loadMoreParams,
+  immediate: false,
+  watch: false,
+})
+
 const loadMore = async (type: ResourceType) => {
   const index = RESOURCE_TYPE.indexOf(type)
   if (index === -1) return
@@ -166,17 +182,12 @@ const loadMore = async (type: ResourceType) => {
   const extraRef = extraResourcesByType[index]!
   pageRef.value++
 
-  const { data } = await useFetch<PaginatedArray<Resource>>(url, {
-    params: {
-      type,
-      page_size: PAGE_SIZE,
-      page: pageRef.value,
-      q: searchDebounced.value || undefined,
-    },
-  })
+  loadMoreType.value = type
+  loadMorePage.value = pageRef.value
+  await executeLoadMore()
 
-  if (data.value) {
-    extraRef.value = [...extraRef.value, ...data.value.data]
+  if (loadMoreData.value) {
+    extraRef.value = [...extraRef.value, ...loadMoreData.value.data]
   }
 }
 

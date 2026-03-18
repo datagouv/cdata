@@ -1,12 +1,7 @@
 <template>
-  <SimpleBanner
-    v-if="hasError"
-    type="warning"
-    class="flex items-center space-x-2"
-  >
-    <RiErrorWarningLine class="shrink-0 size-6" />
-    <span>{{ t("L'aperçu cartographique de ce fichier n'a pas pu être chargé.") }}</span>
-  </SimpleBanner>
+  <PreviewUnavailable v-if="hasError">
+    {{ t("L'aperçu cartographique de ce fichier n'a pas pu être chargé.") }}
+  </PreviewUnavailable>
   <div
     v-else
     id="map"
@@ -16,9 +11,7 @@
 
 <script setup lang = "ts">
 import { onMounted, ref, useTemplateRef } from 'vue'
-import { RiErrorWarningLine } from '@remixicon/vue'
-
-import SimpleBanner from '../SimpleBanner.vue'
+import PreviewUnavailable from './PreviewUnavailable.vue'
 import type { Resource } from '../../types/resources'
 import { useTranslation } from '../../composables/useTranslation'
 
