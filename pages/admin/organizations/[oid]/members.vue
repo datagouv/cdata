@@ -61,7 +61,7 @@
       >
         <ModalWithButton
           :title="t(`Inviter un membre`)"
-          size="lg"
+          size="xl"
           @open="resetInviteForm"
         >
           <template #button="{ attrs, listeners }">
@@ -141,6 +141,12 @@
                   :hint-text="$t(`Ce message sera inclus dans l'email d'invitation`)"
                 />
               </div>
+
+              <DatasetAssignmentSelector
+                v-if="inviteForm.role === 'partial_editor' && currentOrganization"
+                v-model="inviteSelectedDatasetIds"
+                :organization-id="currentOrganization.id"
+              />
             </form>
           </template>
 
@@ -200,7 +206,10 @@
             >
               {{ t("Dernière connexion") }}
             </AdminTableTh>
-            <AdminTableTh scope="col">
+            <AdminTableTh
+              scope="col"
+              class="w-0"
+            >
               {{ t("Actions") }}
             </AdminTableTh>
           </tr>
@@ -230,7 +239,7 @@
             <td>
               <AdminBadge
                 size="xs"
-                :type="getStatusType(member.role)"
+                :type="getRoleBadgeType(member.role)"
               >
                 {{ member.label }}
               </AdminBadge>
@@ -254,8 +263,8 @@
                 <ModalWithButton
                   v-if="organization.permissions.members"
                   :title="$t('Modifier le membre')"
-                  size="lg"
-                  @open="newRole = member.role"
+                  size="xl"
+                  @open="openEditModal(member)"
                 >
                   <template #button="{ attrs, listeners }">
                     <BrandedButton
@@ -289,42 +298,60 @@
                       </p>
                     </div>
                     <form
-                      class="flex flex-wrap gap-4 items-end"
+                      :id="editFormId"
                       @submit.prevent="updateRole(member, close)"
                     >
-                      <div class="flex-1">
-                        <SelectGroup
-                          v-if="roles && roles.length > 0"
-                          v-model="newRole"
-                          :label="t('Rôle du membre')"
-                          :options="rolesOptions"
-                        />
-                      </div>
-                      <div>
+                      <SelectGroup
+                        v-if="roles && roles.length > 0"
+                        v-model="newRole"
+                        :label="t('Rôle du membre')"
+                        :options="rolesOptions"
+                      />
+                      <DatasetAssignmentSelector
+                        v-if="newRole === 'partial_editor' && currentOrganization"
+                        v-model="editSelectedDatasetIds"
+                        :organization-id="currentOrganization.id"
+                      />
+                    </form>
+                  </template>
+
+                  <template #footer="{ close }">
+                    <div class="space-y-4 w-full">
+                      <div class="space-x-4">
                         <BrandedButton
+                          color="secondary"
+                          size="xs"
+                          :disabled="loading"
+                          @click="close"
+                        >
+                          {{ t("Annuler") }}
+                        </BrandedButton>
+                        <BrandedButton
+                          color="primary"
+                          size="xs"
                           type="submit"
+                          :form="editFormId"
                           :disabled="loading"
                         >
                           {{ t("Valider") }}
                         </BrandedButton>
                       </div>
-                    </form>
-                    <BannerAction
-                      class="mt-4"
-                      type="danger"
-                      :title="$t(`Retirer le membre de l'organisation`)"
-                    >
-                      {{ t("Attention, cette action ne peut pas être annulée.") }}
-                      <template #button>
-                        <BrandedButton
-                          :loading
-                          :icon="RiLogoutBoxRLine"
-                          @click="removeMemberFromOrganization(member, close)"
-                        >
-                          {{ t('Retirer le membre') }}
-                        </BrandedButton>
-                      </template>
-                    </BannerAction>
+                      <BannerAction
+                        type="danger"
+                        :title="$t(`Retirer le membre de l'organisation`)"
+                      >
+                        {{ t("Attention, cette action ne peut pas être annulée.") }}
+                        <template #button>
+                          <BrandedButton
+                            :loading
+                            :icon="RiLogoutBoxRLine"
+                            @click="removeMemberFromOrganization(member, close)"
+                          >
+                            {{ t('Retirer le membre') }}
+                          </BrandedButton>
+                        </template>
+                      </BannerAction>
+                    </div>
                   </template>
                 </ModalWithButton>
               </div>
@@ -337,10 +364,10 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BannerAction, BrandedButton, LoadingBlock, SearchableSelect, SelectGroup, useFormatDate, useGetUserAvatar, type Member, type Organization } from '@datagouv/components-next'
+import { Avatar, BannerAction, BrandedButton, LoadingBlock, SearchableSelect, SelectGroup, useFormatDate, useGetUserAvatar, type Member, type MemberRole, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiEyeLine, RiLogoutBoxRLine, RiPencilLine, RiUserAddLine } from '@remixicon/vue'
-import type { AdminBadgeType, MemberRole, PendingMembershipRequest, UserSuggest } from '~/types/types'
+import type { Assignment, PendingMembershipRequest, UserSuggest } from '~/types/types'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import ModalWithButton from '~/components/Modal/ModalWithButton.vue'
@@ -408,8 +435,22 @@ const rolesOptions = computed(() => {
 })
 const loading = ref(false)
 
-function getStatusType(role: MemberRole): AdminBadgeType {
-  return role === 'admin' ? 'primary' : 'secondary'
+const editSelectedDatasetIds = ref<Set<string>>(new Set())
+const editInitialDatasetIds = ref<Set<string>>(new Set())
+
+const openEditModal = async (member: Member) => {
+  newRole.value = member.role
+  editSelectedDatasetIds.value = new Set()
+  editInitialDatasetIds.value = new Set()
+
+  if (member.role === 'partial_editor' && currentOrganization.value) {
+    const assignments = await $api<Array<Assignment>>(`/api/1/organizations/${currentOrganization.value.id}/assignments/`)
+    const userDatasetIds = assignments
+      .filter(a => a.user.id === member.user.id && a.subject.class === 'Dataset')
+      .map(a => a.subject.id)
+    editSelectedDatasetIds.value = new Set(userDatasetIds)
+    editInitialDatasetIds.value = new Set(userDatasetIds)
+  }
 }
 
 const removeMemberFromOrganization = async (member: Member, close: () => void) => {
@@ -424,18 +465,37 @@ const removeMemberFromOrganization = async (member: Member, close: () => void) =
   }
 }
 
+const syncAssignments = async (member: Member) => {
+  const orgId = currentOrganization.value!.id
+  await $api(`/api/1/organizations/${orgId}/member/${member.user.id}/assignments/`, {
+    method: 'PUT',
+    body: JSON.stringify(
+      [...editSelectedDatasetIds.value].map(id => ({ class: 'Dataset', id })),
+    ),
+  })
+}
+
 const updateRole = async (member: Member, close: () => void) => {
-  if (member.role === newRole.value) {
+  const roleChanged = member.role !== newRole.value
+  const isPartialEditor = newRole.value === 'partial_editor'
+  const assignmentsChanged = isPartialEditor && !setsEqual(editSelectedDatasetIds.value, editInitialDatasetIds.value)
+
+  if (!roleChanged && !assignmentsChanged) {
     close()
     return
   }
 
   try {
     loading.value = true
-    await $api(`/api/1/organizations/${currentOrganization.value!.id}/member/${member.user.id}`, {
-      method: 'PUT',
-      body: JSON.stringify({ role: newRole.value }),
-    })
+    if (roleChanged) {
+      await $api(`/api/1/organizations/${currentOrganization.value!.id}/member/${member.user.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ role: newRole.value }),
+      })
+    }
+    if (isPartialEditor && assignmentsChanged) {
+      await syncAssignments(member)
+    }
     await refresh()
     close()
   }
@@ -482,6 +542,7 @@ const isEmailAlreadyInvited = (emailValue: string): string | null => {
   return null
 }
 
+const editFormId = useId()
 const inviteFormId = useId()
 const { form: inviteForm, getFirstError, validate, removeErrorsAndWarnings, touch } = useForm<InviteFormData>({
   role: null,
@@ -494,6 +555,12 @@ const { form: inviteForm, getFirstError, validate, removeErrorsAndWarnings, touc
   email: [email(), value => isEmailAlreadyInvited(value)],
 })
 
+const inviteSelectedDatasetIds = ref<Set<string>>(new Set())
+
+watch(() => inviteForm.value.role, () => {
+  inviteSelectedDatasetIds.value = new Set()
+})
+
 const resetInviteForm = () => {
   inviteForm.value = {
     role: null,
@@ -501,6 +568,7 @@ const resetInviteForm = () => {
     email: '',
     comment: '',
   }
+  inviteSelectedDatasetIds.value = new Set()
   removeErrorsAndWarnings()
 }
 
@@ -525,6 +593,9 @@ const submitInvitation = async (close: () => void) => {
         email: inviteForm.value.email || undefined,
         role: inviteForm.value.role,
         comment: inviteForm.value.comment || undefined,
+        assignments: inviteForm.value.role === 'partial_editor'
+          ? [...inviteSelectedDatasetIds.value].map(id => ({ class: 'Dataset', id }))
+          : undefined,
       }),
     })
     await refreshAll()

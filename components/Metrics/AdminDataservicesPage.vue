@@ -182,7 +182,7 @@ watch(qDebounced, () => page.value = 1)
 const sortedBy = ref<DataserviceSortedBy>('title')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
-const downloadStatsUrl = computed(() => props.organization ? `/api/1/organizations/${props.organization.id}/dataservices.csv` : null)
+const downloadStatsUrl = computed(() => props.organization ? `${config.public.apiBase}/api/1/organizations/${props.organization.id}/dataservices.csv` : null)
 
 const params = computed(() => {
   return {

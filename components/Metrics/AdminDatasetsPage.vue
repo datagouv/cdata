@@ -232,7 +232,7 @@ watch(qDebounced, () => page.value = 1)
 const sortedBy = ref<DatasetSortedBy>('created')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
-const downloadCatalogsUrl = computed(() => props.organization ? `/api/1/organizations/${props.organization.id}/datasets.csv` : null)
+const downloadCatalogsUrl = computed(() => props.organization ? `${config.public.apiBase}/api/1/organizations/${props.organization.id}/datasets.csv` : null)
 
 const params = computed(() => {
   const query = {
