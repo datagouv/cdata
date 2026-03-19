@@ -1,3 +1,9 @@
+<script setup lang="ts">
+if (import.meta.server) {
+  defineOgImage('Default.takumi')
+}
+</script>
+
 <template>
   <div
     class="group/layout"
