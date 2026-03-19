@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="flex justify-end items-center gap-4 -mt-14 pt-0.5 mb-5">
+    <Teleport to="#metrics-actions">
       <AdminInput
         v-model="q"
         type="search"
@@ -18,7 +18,7 @@
       >
         {{ $t('Télécharger le catalogue') }}
       </BrandedButton>
-    </div>
+    </Teleport>
     <LoadingBlock
       v-slot="{ data: pageData }"
       :status
