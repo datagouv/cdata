@@ -133,14 +133,24 @@
               </div>
 
               <div
-                v-if="dataservice.rate_limiting "
+                v-if="dataservice.rate_limiting || dataservice.rate_limiting_url"
                 class="space-y-1"
               >
                 <dt class="text-gray-plain font-bold">
                   {{ $t(`Limite d'appels`) }}
                 </dt>
                 <dd class="p-0">
-                  {{ dataservice.rate_limiting }}
+                  <span v-if="dataservice.rate_limiting">{{ dataservice.rate_limiting }}</span>
+                  <a
+                    v-if="dataservice.rate_limiting_url"
+                    :href="dataservice.rate_limiting_url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-1"
+                  >
+                    {{ dataservice.rate_limiting ? $t("En savoir plus") : dataservice.rate_limiting_url }}
+                    <RiExternalLinkLine class="size-3.5" />
+                  </a>
                 </dd>
               </div>
 

@@ -97,6 +97,7 @@ const dataserviceForm = useState(
       license: null,
       private: true,
       rate_limiting: '',
+      rate_limiting_url: '',
       contact_points: [],
       featured: false,
       ...defaultAccessTypeForm(),
