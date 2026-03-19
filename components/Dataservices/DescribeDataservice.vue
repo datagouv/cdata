@@ -473,7 +473,7 @@
             />
           </LinkedToAccordion>
           <LinkedToAccordion
-            v-if="showRateLimitingUrl || getFirstWarning('rate_limiting')"
+            v-if="showRateLimitingUrl || form.rate_limiting_url || getFirstWarning('rate_limiting')"
             class="fr-fieldset__element"
             :accordion="rateLimitingDataserviceAccordionId"
             @blur="touch('rate_limiting_url')"
@@ -491,7 +491,7 @@
             />
           </LinkedToAccordion>
           <div
-            v-if="!showRateLimitingUrl && !getFirstWarning('rate_limiting')"
+            v-if="!showRateLimitingUrl && !form.rate_limiting_url && !getFirstWarning('rate_limiting')"
             class="fr-fieldset__element"
           >
             <BrandedButton
@@ -599,7 +599,7 @@ const ownedOptions = computed<Array<Owned>>(() => {
 
 const machineDocumentationUrlWarningMessage = t(`Il est fortement recommandé d'ajouter une documentation OpenAPI ou Swagger à votre API.`)
 const openConfirmModal = ref(false)
-const showRateLimitingUrl = ref(!!dataserviceForm.value.rate_limiting_url)
+const showRateLimitingUrl = ref(false)
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(dataserviceForm, {
   featured: [],
