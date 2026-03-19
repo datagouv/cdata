@@ -491,7 +491,7 @@
             />
           </LinkedToAccordion>
           <div
-            v-if="!showRateLimitingUrl && !form.rate_limiting_url && !getFirstWarning('rate_limiting')"
+            v-else
             class="fr-fieldset__element"
           >
             <BrandedButton

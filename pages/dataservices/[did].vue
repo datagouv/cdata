@@ -149,7 +149,6 @@
                     class="inline-flex items-center gap-1"
                   >
                     {{ dataservice.rate_limiting ? $t("En savoir plus") : dataservice.rate_limiting_url }}
-                    <RiExternalLinkLine class="size-3.5" />
                   </a>
                 </dd>
               </div>
