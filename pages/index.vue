@@ -6,10 +6,10 @@
     >
       <div class="absolute inset-0 backdrop-blur-[1px]" />
       <div class="relative max-w-4xl mx-auto px-6 flex flex-col items-center space-y-8">
-        <div class="flex flex-col gap-5 items-center">
+        <div class="flex flex-col gap-5 items-center min-w-0 max-w-full">
           <CdataLink
             v-if="config.public.homepageRightNow"
-            class="flex items-center space-x-2.5 max-w-full px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
+            class="flex items-center space-x-2.5 max-w-full overflow-hidden px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
             :to="config.public.homepageRightNow.url"
           >
             <RiBardLine
@@ -25,7 +25,7 @@
           </CdataLink>
           <CdataLink
             v-if="lastPost"
-            class="flex items-center space-x-2.5 max-w-full px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
+            class="flex items-center space-x-2.5 max-w-full overflow-hidden px-3 py-0.5 fr-raw-link text-new-primary border border-new-primary rounded-lg bg-white"
             :to="lastPost.page"
           >
             <RiNewspaperLine
