@@ -221,6 +221,18 @@
                 />
               </div>
 
+              <SimpleBanner
+                v-if="hideWarnings"
+                type="primary-frame"
+                class="text-sm"
+              >
+                {{
+                  $t(
+                    "La qualité des métadonnées peut être trompeuse car les métadonnées de la source originale peuvent avoir été perdues lors de leur récupération. Nous travaillons actuellement à améliorer la situation.",
+                  )
+                }}
+              </SimpleBanner>
+
               <div v-if="badges.length > 0">
                 <dt
                   class="text-sm text-gray-plain font-bold flex items-center pb-0"
@@ -289,18 +301,6 @@
                   />
                 </dd>
               </div>
-
-              <SimpleBanner
-                v-if="hideWarnings"
-                type="primary-frame"
-                class="text-sm"
-              >
-                {{
-                  $t(
-                    "La qualité des métadonnées peut être trompeuse car les métadonnées de la source originale peuvent avoir été perdues lors de leur récupération. Nous travaillons actuellement à améliorer la situation.",
-                  )
-                }}
-              </SimpleBanner>
 
               <SimpleBanner
                 v-if="dataset.harvest && 'remote_url' in dataset.harvest"
