@@ -70,7 +70,7 @@
       </fieldset>
       <fieldset class="px-6 space-y-4">
         <p class="mb-2 font-bold">
-          Ressources
+          {{ $t('Source de données') }}
         </p>
         <SearchableSelect
           v-model="dataset"
