@@ -42,6 +42,7 @@ const chart = ref<ChartForm>({
     unit: '',
     unit_position: 'suffix',
   },
+  chart_type: 'histogram',
   series: [{
     type: 'histogram',
     column_y: 'Nombre de logements',
