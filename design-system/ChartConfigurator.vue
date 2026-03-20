@@ -275,12 +275,12 @@
 
       <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
         <p class="font-bold mb-2">
-          Séries
+          Série
         </p>
         <div
           v-for="(serie, index) in form.series"
           :key="index"
-          class="border rounded-lg p-4 mb-2 space-y-4"
+          class="space-y-4"
         >
           <div class="flex items-center gap-2 mb-2">
             <select
@@ -294,13 +294,6 @@
                 Histogramme
               </option>
             </select>
-            <button
-              title="Supprimer la série"
-              class="text-new-error rounded-full p-2 border border-new-error"
-              @click="form.series.splice(index, 1)"
-            >
-              <RiDeleteBinLine class="size-4" />
-            </button>
           </div>
 
           <div>
@@ -355,19 +348,6 @@
             </select>
           </div>
         </div>
-        <button
-          class="text-sm text-datagouv underline"
-          @click="form.series.push({
-            type: 'histogram',
-            column_y: '',
-            resource_id: selectedResource,
-            column_x_name_override: null,
-            filters: null,
-            aggregate_y: null,
-          })"
-        >
-          + Ajouter une série
-        </button>
       </fieldset>
 
       <div class="px-6">
@@ -384,7 +364,6 @@
 <script setup lang="ts">
 import type { Resource, PaginatedArray, ChartForm, Chart } from '@datagouv/components-next'
 import { SearchableSelect, useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton } from '@datagouv/components-next'
-import { RiDeleteBinLine } from '@remixicon/vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
 import { useAPI } from '~/utils/api'
