@@ -24,6 +24,7 @@ export function toChartForm(chart: Chart) {
       aggregate_y: serie.aggregate_y || '',
     })),
     extras: chart.extras,
+    chart_type: chart.series.length > 0 ? chart.series[0].type : null,
   } satisfies ChartForm
 }
 
@@ -46,8 +47,9 @@ export function toChartApi(chartForm: ChartForm): ChartForApi {
       unit: chartForm.y_axis.unit ?? null,
       unit_position: chartForm.y_axis.unit_position ?? null,
     },
-    series: chartForm.series.map(serie => ({
+    series: chartForm.series.map((serie, index) => ({
       ...serie,
+      type: index === 0 && chartForm.chart_type ? chartForm.chart_type : serie.type,
       aggregate_y: serie.aggregate_y || null,
     })),
     extras: chartForm.extras,

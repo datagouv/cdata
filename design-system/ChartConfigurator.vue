@@ -5,7 +5,7 @@
         <label
           for="chart-title"
           class="block text-sm font-medium mb-1"
-        >Titre</label>
+        >{{ $t('Titre') }}</label>
         <input
           id="chart-title"
           v-model="title"
@@ -18,7 +18,7 @@
         <label
           for="chart-description"
           class="block text-sm font-medium mb-1"
-        >Description</label>
+        >{{ $t('Description') }}</label>
         <textarea
           id="chart-description"
           v-model="desc"
@@ -38,7 +38,7 @@
     <div class="col-span-5 space-y-6 lg:ml-4 py-4 rounded-lg bg-white border border-new-gray-light">
       <fieldset class="px-6 space-y-4">
         <p class="mb-2 font-bold">
-          Graphiques existants
+          {{ $t('Graphiques existants') }}
         </p>
         <div class="flex gap-2">
           <select
@@ -49,7 +49,7 @@
               value=""
               disabled
             >
-              Sélectionnez un graphique
+              {{ $t('Sélectionnez un graphique') }}
             </option>
             <option
               v-for="chart in charts?.data"
@@ -64,7 +64,7 @@
             :disabled="!selectedChartId"
             @click="loadSelectedChart"
           >
-            Charger
+            {{ $t('Charger') }}
           </button>
         </div>
       </fieldset>
@@ -85,7 +85,7 @@
         <label
           for="resource-select"
           class="mb-1"
-        >Choix de la ressource</label>
+        >{{ $t('Choix de la ressource') }}</label>
         <select
           id="resource-select"
           v-model="selectedResource"
@@ -96,7 +96,7 @@
             value=""
             disabled
           >
-            {{ dataset ? 'Sélectionnez une ressource' : 'Sélectionnez d\'abord un jeu de données' }}
+            {{ dataset ? $t('Sélectionnez une ressource') : $t('Sélectionnez d\'abord un jeu de données') }}
           </option>
           <option
             v-for="resource in resources"
@@ -109,13 +109,31 @@
       </fieldset>
       <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
         <p class="font-bold mb-2">
-          Axe X
+          {{ $t('Type de graphique') }}
+        </p>
+        <div>
+          <select
+            v-model="form.chart_type"
+            class="w-full fr-select"
+          >
+            <option value="line">
+              {{ $t('Ligne') }}
+            </option>
+            <option value="histogram">
+              {{ $t('Histogramme') }}
+            </option>
+          </select>
+        </div>
+      </fieldset>
+      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+        <p class="font-bold mb-2">
+          {{ $t('Axe X') }}
         </p>
         <div>
           <label
             for="x-axis-column"
             class="mb-1"
-          >Column</label>
+          >{{ $t('Column') }}</label>
           <select
             id="x-axis-column"
             v-model="form.x_axis.column_x"
@@ -140,17 +158,17 @@
           <label
             for="x-axis-type"
             class="mb-1"
-          >Type</label>
+          >{{ $t('Type') }}</label>
           <select
             id="x-axis-type"
             v-model="form.x_axis.type"
             class="w-full fr-select"
           >
             <option value="discrete">
-              Discret (catégories)
+              {{ $t('Discret (catégories)') }}
             </option>
             <option value="continuous">
-              Continu (valeurs)
+              {{ $t('Continu (valeurs)') }}
             </option>
           </select>
         </div>
@@ -158,20 +176,20 @@
           <label
             for="x-axis-sort-by"
             class="mb-1"
-          >Trier par</label>
+          >{{ $t('Trier par') }}</label>
           <select
             id="x-axis-sort-by"
             v-model="form.x_axis.sort_x_by"
             class="w-full fr-select"
           >
             <option value="">
-              Aucun
+              {{ $t('Aucun') }}
             </option>
             <option value="axis_x">
-              Axe X
+              {{ $t('Axe X') }}
             </option>
             <option value="axis_y">
-              Axe Y
+              {{ $t('Axe Y') }}
             </option>
           </select>
         </div>
@@ -179,17 +197,17 @@
           <label
             for="x-axis-sort-direction"
             class="mb-1"
-          >Direction du tri</label>
+          >{{ $t('Direction du tri') }}</label>
           <select
             id="x-axis-sort-direction"
             v-model="form.x_axis.sort_x_direction"
             class="w-full fr-select"
           >
             <option value="asc">
-              Ascendant
+              {{ $t('Ascendant') }}
             </option>
             <option value="desc">
-              Descendant
+              {{ $t('Descendant') }}
             </option>
           </select>
         </div>
@@ -198,13 +216,13 @@
       <!-- Y Axis -->
       <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
         <p class="font-bold mb-2">
-          Axe Y
+          {{ $t('Axe Y') }}
         </p>
         <div>
           <label
             for="y-axis-label"
             class="mb-1"
-          >Label</label>
+          >{{ $t('Label') }}</label>
           <input
             id="y-axis-label"
             v-model="form.y_axis.label"
@@ -217,7 +235,7 @@
             <label
               for="y-axis-min"
               class="block text-sm font-medium mb-1"
-            >Min</label>
+            >{{ $t('Min') }}</label>
             <input
               id="y-axis-min"
               v-model.number="form.y_axis.min"
@@ -229,7 +247,7 @@
             <label
               for="y-axis-max"
               class="block text-sm font-medium mb-1"
-            >Max</label>
+            >{{ $t('Max') }}</label>
             <input
               id="y-axis-max"
               v-model.number="form.y_axis.max"
@@ -243,30 +261,30 @@
             <label
               for="y-axis-unit"
               class="block text-sm font-medium mb-1"
-            >Unité</label>
+            >{{ $t('Unité') }}</label>
             <input
               id="y-axis-unit"
               v-model="form.y_axis.unit"
               type="text"
               class="w-full fr-input"
-              placeholder="ex: €, %, kg"
+              :placeholder="$t('ex: €, %, kg')"
             >
           </div>
           <div>
             <label
               for="y-axis-unit-position"
               class="block text-sm font-medium mb-1"
-            >Position unité</label>
+            >{{ $t('Position unité') }}</label>
             <select
               id="y-axis-unit-position"
               v-model="form.y_axis.unit_position"
               class="w-full fr-select"
             >
               <option value="suffix">
-                Suffixe
+                {{ $t('Suffixe') }}
               </option>
               <option value="prefix">
-                Préfixe
+                {{ $t('Préfixe') }}
               </option>
             </select>
           </div>
@@ -275,29 +293,15 @@
 
       <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
         <p class="font-bold mb-2">
-          Série
+          {{ $t('Série') }}
         </p>
         <div
           v-for="(serie, index) in form.series"
           :key="index"
           class="space-y-4"
         >
-          <div class="flex items-center gap-2 mb-2">
-            <select
-              v-model="serie.type"
-              class="flex-1 fr-select"
-            >
-              <option value="line">
-                Ligne
-              </option>
-              <option value="histogram">
-                Histogramme
-              </option>
-            </select>
-          </div>
-
           <div>
-            <label class="block text-sm font-medium mb-1">Ressource</label>
+            <label class="block text-sm font-medium mb-1">{{ $t('Ressource') }}</label>
             <select
               v-model="serie.resource_id"
               class="w-full fr-select"
@@ -313,7 +317,7 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">Colonne Y</label>
+            <label class="block text-sm font-medium mb-1">{{ $t('Colonne Y') }}</label>
             <select
               v-model="serie.column_y"
               class="w-full fr-select"
@@ -331,19 +335,19 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">Agrégation</label>
+            <label class="block text-sm font-medium mb-1">{{ $t('Agrégation') }}</label>
             <select
               v-model="serie.aggregate_y"
               class="w-full fr-select"
             >
               <option :value="null">
-                Non
+                {{ $t('Non') }}
               </option>
               <option value="sum">
-                Somme
+                {{ $t('Somme') }}
               </option>
               <option value="avg">
-                Moyenne
+                {{ $t('Moyenne') }}
               </option>
             </select>
           </div>
@@ -354,7 +358,7 @@
         <BrandedButton
           @click="saveChart"
         >
-          Sauvegarder le graphique
+          {{ $t('Sauvegarder le graphique') }}
         </BrandedButton>
       </div>
     </div>
@@ -373,6 +377,8 @@ const ChartViewerWrapper = defineAsyncComponent(() => import('../datagouv-compon
 const form = defineModel<ChartForm>({
   required: true,
 })
+
+const { t } = useTranslation()
 
 const columns = ref<Record<string, Array<string>>>({})
 const flattenedColumns = computed(() => Object.entries(columns.value).map(([key, value]) => ({ key, value })).flat())
@@ -466,12 +472,12 @@ async function loadChart(id: string) {
 
       await loadMissingResourcesForChart(chartResources)
 
-      toast.success('Graphique chargé !')
+      toast.success(t('Graphique chargé !'))
     }
   }
   catch (error) {
     console.error('Failed to load chart:', error)
-    toast.error('Erreur lors du chargement du graphique')
+    toast.error(t('Erreur lors du chargement du graphique'))
   }
 }
 
@@ -483,20 +489,21 @@ function loadSelectedChart() {
 
 async function saveChart() {
   try {
+    const chartForApi = toChartApi(form.value)
     if (savedChart.value?.id) {
       savedChart.value = await $api<Chart>(`/api/1/visualizations/${savedChart.value.id}/`, {
         method: 'PATCH',
-        body: JSON.stringify(form.value),
+        body: JSON.stringify(chartForApi),
       })
     }
     else {
       savedChart.value = await $api<Chart>('/api/1/visualizations/', {
         method: 'POST',
-        body: JSON.stringify(form.value),
+        body: JSON.stringify(chartForApi),
       })
     }
 
-    toast.success(savedChart.value?.id ? 'Graphique mis à jour !' : 'Graphique sauvegardé !')
+    toast.success(savedChart.value?.id ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
     await refresh()
   }
   catch (error) {
