@@ -161,12 +161,10 @@
             <ProducerSelect
               v-model="form.owned"
               :label="t(`Vérifiez l'identité avec laquelle vous souhaitez publier`)"
-              :options="ownedOptions"
               :required="true"
               :error-text="getFirstError('owned')"
               :warning-text="getFirstWarning('owned')"
               :all="isMeAdmin()"
-              @focusout="touch('owned')"
             />
           </div>
         </fieldset>
@@ -405,7 +403,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Tooltip, SimpleBanner, SearchableSelect, AI_SUGGESTION_MIN_DESCRIPTION_LENGTH, type ReuseTopic, type ReuseType, type Owned } from '@datagouv/components-next'
+import { BrandedButton, Tooltip, SimpleBanner, SearchableSelect, AI_SUGGESTION_MIN_DESCRIPTION_LENGTH, type ReuseTopic, type ReuseType } from '@datagouv/components-next'
 import { RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
@@ -428,7 +426,6 @@ const emit = defineEmits<{
 
 const { t } = useTranslation()
 
-const user = useMe()
 const config = useRuntimeConfig()
 
 const nameReuseAccordionId = useId()
@@ -441,10 +438,6 @@ const addImageAccordionId = useId()
 
 const { data: types } = await useAPI<Array<ReuseType>>('/api/1/reuses/types', { lazy: true })
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics', { lazy: true })
-
-const ownedOptions = computed<Array<Owned>>(() => {
-  return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: { ...user.value, class: 'User' }, organization: null }]
-})
 
 const MAX_TAGS_NB = 5
 

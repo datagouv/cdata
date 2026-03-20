@@ -190,11 +190,9 @@
             <ProducerSelect
               v-model="form.owned"
               :label="t(`Vérifiez l'identité avec laquelle vous souhaitez publier`)"
-              :options="ownedOptions"
               :error-text="getFirstError('owned')"
               :warning-text="getFirstWarning('owned')"
               :all="isMeAdmin()"
-              @focusout="touch('owned')"
             />
           </div>
         </fieldset>
@@ -506,9 +504,8 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, TranslationT, type Owned } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, TranslationT } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
-import { computed } from 'vue'
 import ModalClient from '../Modal/Modal.client.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
@@ -531,7 +528,6 @@ const { t } = useTranslation()
 
 const formId = useId()
 
-const user = useMe()
 const config = useRuntimeConfig()
 
 const nameDataserviceAccordionId = useId()
@@ -546,10 +542,6 @@ const addBusinessUrlAccordionId = useId()
 const rateLimitingDataserviceAccordionId = useId()
 const availabilityDataserviceAccordionId = useId()
 const contactPointAccordionId = useId()
-
-const ownedOptions = computed<Array<Owned>>(() => {
-  return [...user.value.organizations.map(organization => ({ organization, owner: null })), { owner: { ...user.value, class: 'User' as const }, organization: null }]
-})
 
 const machineDocumentationUrlWarningMessage = t(`Il est fortement recommandé d'ajouter une documentation OpenAPI ou Swagger à votre API.`)
 const openConfirmModal = ref(false)
