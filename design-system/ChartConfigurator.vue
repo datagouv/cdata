@@ -301,30 +301,14 @@
           class="space-y-4"
         >
           <div>
-            <label class="block text-sm font-medium mb-1">{{ $t('Ressource') }}</label>
-            <select
-              v-model="serie.resource_id"
-              class="w-full fr-select"
-            >
-              <option
-                v-for="resource in resources"
-                :key="resource.id"
-                :value="resource.id"
-              >
-                {{ resource.title }}
-              </option>
-            </select>
-          </div>
-
-          <div>
             <label class="block text-sm font-medium mb-1">{{ $t('Colonne Y') }}</label>
             <select
               v-model="serie.column_y"
               class="w-full fr-select"
             >
-              <template v-if="serie.resource_id">
+              <template v-if="selectedResource">
                 <option
-                  v-for="column in columns[serie.resource_id]"
+                  v-for="column in columns[selectedResource]"
                   :key="column"
                   :value="column"
                 >
