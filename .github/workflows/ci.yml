@@ -172,6 +172,7 @@ jobs:
           DEBUG = True
           TESTING = True
           SECRET_KEY = 'test-secret-key-for-ci'
+          API_TOKEN_SECRET = 'test-api-token-secret-for-ci'
           SEND_MAIL = False
           SERVER_NAME = 'localhost:7000'
           CDATA_BASE_URL="http://localhost:3000"
