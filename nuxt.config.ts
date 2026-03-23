@@ -275,10 +275,10 @@ export default defineNuxtConfig({
       allowedHosts: ['dev.local'],
       warmup: {
         clientFiles: [
-          './pages/**/*.vue',
-          './components/**/*.vue',
-          './layouts/**/*.vue',
-          './composables/**/*.ts',
+          './app/pages/**/*.vue',
+          './app/components/**/*.vue',
+          './app/layouts/**/*.vue',
+          './app/composables/**/*.ts',
         ],
       },
     },
