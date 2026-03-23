@@ -41,8 +41,17 @@ export function formatCellDate(value: unknown): string {
   return formatDate(d, { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
+const TRUTHY_VALUES = ['true', '1', 'oui', 'yes']
+const FALSY_VALUES = ['false', '0', 'non', 'no']
+
 export function isTruthy(value: unknown): boolean {
   if (typeof value === 'boolean') return value
-  if (typeof value === 'string') return value.toLowerCase() === 'true'
+  if (typeof value === 'string') return TRUTHY_VALUES.includes(value.toLowerCase())
   return Boolean(value)
+}
+
+export function isFalsy(value: unknown): boolean {
+  if (typeof value === 'boolean') return !value
+  if (typeof value === 'string') return FALSY_VALUES.includes(value.toLowerCase())
+  return !value
 }

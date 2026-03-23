@@ -157,9 +157,9 @@
       @submit.prevent="applyRange"
     >
       <div class="flex items-center gap-2 text-xs text-gray-plain">
-        <span class="tabular-nums">{{ profileMin.toLocaleString('fr-FR') }}</span>
+        <span class="tabular-nums">{{ formatNumber(profileMin) }}</span>
         <span class="text-gray-medium">—</span>
-        <span class="tabular-nums">{{ profileMax.toLocaleString('fr-FR') }}</span>
+        <span class="tabular-nums">{{ formatNumber(profileMax) }}</span>
       </div>
       <div class="flex items-center gap-2">
         <input
@@ -212,6 +212,7 @@ import {
   RiCheckLine,
 } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
+import { formatNumber } from '../../functions/tabular'
 import BrandedButton from '../BrandedButton.vue'
 import ProgressBar from '../ProgressBar.vue'
 import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig, SortDirection, BadgeStyle } from './types'
@@ -289,20 +290,16 @@ const profileMax = computed(() => props.columnProfile?.max ?? 100)
 const rangeMin = ref<number | undefined>(undefined)
 const rangeMax = ref<number | undefined>(undefined)
 
-function isValidNumber(v: unknown): v is number {
-  return typeof v === 'number' && Number.isFinite(v)
-}
-
 function applyRange() {
   const existing = filters.value[props.column] ?? {}
   const next = { ...existing }
-  if (isValidNumber(rangeMin.value)) {
+  if (Number.isFinite(rangeMin.value)) {
     next.min = rangeMin.value
   }
   else {
     delete next.min
   }
-  if (isValidNumber(rangeMax.value)) {
+  if (Number.isFinite(rangeMax.value)) {
     next.max = rangeMax.value
   }
   else {

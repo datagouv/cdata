@@ -135,7 +135,7 @@
             class="inline-flex items-center gap-1.5 bg-white border border-gray-silver rounded-lg pl-2 pr-1 py-1 text-xs"
           >
             <component
-              :is="columnTypeIcon(af.column)"
+              :is="getTypeConfig(af.column).icon"
               class="size-3 text-gray-title"
               aria-hidden="true"
             />
@@ -200,11 +200,11 @@
                 <!-- Column type -->
                 <span class="font-mono text-xs text-gray-plain -mt-0.5 inline-flex items-center gap-1">
                   <component
-                    :is="columnTypeIcon(col)"
+                    :is="getTypeConfig(col).icon"
                     class="size-3"
                     aria-hidden="true"
                   />
-                  <span class="mt-px">{{ columnTypeLabel(col) }}</span>
+                  <span class="mt-px">{{ getTypeConfig(col).label }}</span>
                 </span>
                 <!-- Resize handle: wide hit zone, thin visible bar -->
                 <div
@@ -243,6 +243,7 @@
               <td
                 v-for="col in displayedColumns"
                 :key="col"
+                data-cell
                 class="p-2 align-middle whitespace-nowrap border-r border-gray-default last:border-r-0 overflow-hidden cursor-pointer hover:bg-gray-200/50"
                 :class="{ 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' }"
                 :style="columnWidths[col] ? { maxWidth: columnWidths[col] + 'px' } : undefined"
@@ -297,7 +298,7 @@
           >
             <div class="flex items-center gap-1 min-w-0">
               <component
-                :is="columnTypeIcon(col)"
+                :is="getTypeConfig(col).icon"
                 class="size-3 text-gray-low shrink-0"
                 aria-hidden="true"
               />
@@ -307,6 +308,7 @@
               >{{ col }}</span>
             </div>
             <div
+              data-cell
               class="min-w-0 pl-4 cursor-pointer"
               @click="onCellClick(col, row[col], $event)"
             >
@@ -388,7 +390,7 @@
                       @click="toggleMobileFilterColumn(col)"
                     >
                       <component
-                        :is="columnTypeIcon(col)"
+                        :is="getTypeConfig(col).icon"
                         class="size-3.5 text-gray-low shrink-0"
                         aria-hidden="true"
                       />
@@ -455,7 +457,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch, useTemplateRef, type Component } from 'vue'
+import { computed, onUnmounted, ref, watch, useTemplateRef } from 'vue'
 import { ofetch } from 'ofetch'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
 import { Dialog, DialogPanel, DialogTitle, Popover, PopoverButton, PopoverPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
@@ -471,7 +473,7 @@ import {
 } from '@remixicon/vue'
 import { useFetch } from '../../functions/api'
 import { useTranslation } from '../../composables/useTranslation'
-import { buildTypeConfig, hasFilterForColumn as _hasFilterForColumn } from '../../functions/tabular'
+import { buildTypeConfig, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy } from '../../functions/tabular'
 import ClientOnly from '../ClientOnly.vue'
 import SimpleBanner from '../SimpleBanner.vue'
 import BrandedButton from '../BrandedButton.vue'
@@ -525,11 +527,11 @@ const dataQuery = computed(() => {
     if (filter.exact != null) {
       q[`${col}__exact`] = filter.exact
     }
-    if (typeof filter.min === 'number' && Number.isFinite(filter.min)) {
-      q[`${col}__greater`] = filter.min
+    if (Number.isFinite(filter.min)) {
+      q[`${col}__greater`] = filter.min!
     }
-    if (typeof filter.max === 'number' && Number.isFinite(filter.max)) {
-      q[`${col}__less`] = filter.max
+    if (Number.isFinite(filter.max)) {
+      q[`${col}__less`] = filter.max!
     }
     if (filter.contains) {
       q[`${col}__contains`] = filter.contains
@@ -677,13 +679,13 @@ onUnmounted(() => {
 const activeCell = ref<CellInfo | null>(null)
 
 function onCellClick(col: string, value: unknown, event: MouseEvent) {
-  const td = (event.target as HTMLElement).closest('td') as HTMLElement | null
-  if (!td) return
-  if (activeCell.value && activeCell.value.element === td) {
+  const el = (event.target as HTMLElement).closest('[data-cell]') as HTMLElement | null
+  if (!el) return
+  if (activeCell.value && activeCell.value.element === el) {
     activeCell.value = null
     return
   }
-  activeCell.value = { column: col, columnType: getColumnType(col), value, element: td }
+  activeCell.value = { column: col, columnType: columnTypesMap.value[col] ?? 'text', value, element: el }
 }
 
 // Active filters
@@ -764,7 +766,7 @@ function toggleMobileFilterColumn(col: string) {
 }
 
 // Column type helpers
-function getColumnType(col: string): ColumnType {
+function resolveColumnType(col: string): ColumnType {
   const profile = profileData.value?.profile
   if (!profile) return 'text'
   const colInfo = profile.columns[col]
@@ -775,6 +777,18 @@ function getColumnType(col: string): ColumnType {
   if (colInfo.python_type === 'bool') return 'boolean'
   if (profile.categorical.includes(col)) return 'categorical'
   return 'text'
+}
+
+const columnTypesMap = computed(() => {
+  const map: Record<string, ColumnType> = {}
+  for (const col of allColumns.value) {
+    map[col] = resolveColumnType(col)
+  }
+  return map
+})
+
+function getColumnType(col: string): ColumnType {
+  return columnTypesMap.value[col] ?? 'text'
 }
 
 function getColumnProfile(col: string) {
@@ -794,12 +808,8 @@ function getNullPercent(col: string) {
 
 const typeConfig = buildTypeConfig(t)
 
-function columnTypeIcon(col: string): Component {
-  return typeConfig[getColumnType(col)].icon
-}
-
-function columnTypeLabel(col: string): string {
-  return typeConfig[getColumnType(col)].label
+function getTypeConfig(col: string) {
+  return typeConfig[getColumnType(col)]
 }
 
 const BADGE_PALETTE = [
@@ -848,9 +858,8 @@ function getBooleanCounts(col: string): { trueCount: number, falseCount: number 
   let trueCount = 0
   let falseCount = 0
   for (const top of profile.tops) {
-    const v = (top.value ?? '').toLowerCase()
-    if (v === 'true' || v === '1' || v === 'oui' || v === 'yes') trueCount += top.count
-    else if (v === 'false' || v === '0' || v === 'non' || v === 'no') falseCount += top.count
+    if (isTruthy(top.value ?? '')) trueCount += top.count
+    else if (isFalsy(top.value ?? '')) falseCount += top.count
   }
   return { trueCount, falseCount }
 }

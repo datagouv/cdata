@@ -8,19 +8,19 @@
         :style="floatingStyles"
       >
         <!-- Value -->
-        <div class="px-3 pt-3 pb-2 border-b border-[#E5E5E5]">
-          <p class="text-[10px] text-[#3A3A3A] mb-0">
+        <div class="px-3 pt-3 pb-2 border-b border-gray-default">
+          <p class="text-[10px] text-gray-plain mb-0">
             {{ t('Valeur brute') }}
           </p>
-          <p class="text-xs text-[#161616] mb-0">
+          <p class="text-xs text-gray-title mb-0">
             {{ displayValue }}
           </p>
         </div>
 
         <!-- Type -->
-        <div class="flex items-center gap-2 px-3 py-2 border-b border-[#E5E5E5]">
-          <span class="text-[10px] text-[#3A3A3A]">{{ t('Type') }}</span>
-          <span class="inline-flex items-center gap-1 bg-[#f6f6f6] rounded px-1.5 py-0.5 text-xs text-[#3A3A3A]">
+        <div class="flex items-center gap-2 px-3 py-2 border-b border-gray-default">
+          <span class="text-[10px] text-gray-plain">{{ t('Type') }}</span>
+          <span class="inline-flex items-center gap-1 bg-gray-some rounded px-1.5 py-0.5 text-xs text-gray-plain">
             <component
               :is="typeIcon"
               class="size-3"
@@ -28,8 +28,8 @@
             />
             {{ typeLabel }}
           </span>
-          <span class="text-[10px] text-[#3A3A3A] shrink-0">·</span>
-          <span class="text-[10px] text-[#3A3A3A] truncate min-w-0">{{ cell.column }}</span>
+          <span class="text-[10px] text-gray-plain shrink-0">·</span>
+          <span class="text-[10px] text-gray-plain truncate min-w-0">{{ cell.column }}</span>
         </div>
 
         <!-- Actions -->
@@ -55,7 +55,7 @@
             />
             <RiFileCopyLine
               v-else
-              class="size-4 text-[#3A3A3A]"
+              class="size-4 text-gray-plain"
               aria-hidden="true"
             />
             {{ copied ? t('Copié !') : t('Copier la valeur') }}
@@ -127,7 +127,7 @@ function filterByValue() {
   const val = String(cell.value.value ?? '')
   const col = cell.value.column
   const existing = filters.value[col] ?? {}
-  if (cell.value.columnType === 'categorical' || cell.value.columnType === 'text') {
+  if (cell.value.columnType === 'categorical' || cell.value.columnType === 'text' || cell.value.columnType === 'date') {
     const current = existing.in ?? []
     if (!current.includes(val)) {
       filters.value = { ...filters.value, [col]: { ...existing, in: [...current, val] } }
@@ -141,12 +141,6 @@ function filterByValue() {
   }
   else if (cell.value.columnType === 'boolean') {
     filters.value = { ...filters.value, [col]: { ...existing, exact: val } }
-  }
-  else if (cell.value.columnType === 'date') {
-    const current = existing.in ?? []
-    if (!current.includes(val)) {
-      filters.value = { ...filters.value, [col]: { ...existing, in: [...current, val] } }
-    }
   }
   close()
 }
@@ -168,8 +162,8 @@ async function copyValue() {
 
 onClickOutside(panelRef, (e) => {
   if (!cell.value) return
-  const clickedTd = (e.target as HTMLElement).closest('td')
-  if (clickedTd && clickedTd === cell.value.element) return
+  const clickedCell = (e.target as HTMLElement).closest('[data-cell]')
+  if (clickedCell && clickedCell === cell.value.element) return
   close()
 })
 </script>
