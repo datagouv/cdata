@@ -28,7 +28,9 @@ export type XAxis = {
   type: XAxisType
 }
 
-export type XAxisForm = Omit<XAxis, 'sort_x_by'> & { sort_x_by: XAxisSortBy | '' | null }
+export type CombinedSort = '' | 'axis_x-asc' | 'axis_x-desc' | 'axis_y-asc' | 'axis_y-desc'
+
+export type XAxisForm = Omit<XAxis, 'sort_x_by' | 'sort_x_direction'> & { sort_combined: CombinedSort }
 
 export type UnitPosition = 'prefix' | 'suffix'
 
