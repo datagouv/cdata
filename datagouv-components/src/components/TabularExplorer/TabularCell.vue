@@ -31,7 +31,7 @@
   <span
     v-else
     class="text-gray-title truncate block text-xs"
-  >{{ value }}</span>
+  >{{ typeof value === 'object' ? JSON.stringify(value) : value }}</span>
 </template>
 
 <script setup lang="ts">

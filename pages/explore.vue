@@ -47,7 +47,7 @@
       </form>
 
       <p
-        v-if="status === 'pending'"
+        v-show="status === 'pending'"
         class="text-sm text-gray-500"
       >
         Chargement...

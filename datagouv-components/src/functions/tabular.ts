@@ -7,7 +7,6 @@ import {
   RiCheckboxLine,
 } from '@remixicon/vue'
 import { useTranslation } from '../composables/useTranslation'
-import { useFormatDate } from './dates'
 import type { ColumnFilters, ColumnType } from '../components/TabularExplorer/types'
 
 export function hasFilterForColumn(filters: Record<string, ColumnFilters>, column: string): boolean {
@@ -28,7 +27,6 @@ export function buildTypeConfig(t: (s: string) => string): Record<ColumnType, { 
 
 export function useFormatTabular() {
   const { locale } = useTranslation()
-  const { formatDate } = useFormatDate()
 
   function formatNumber(value: unknown): string {
     const num = Number(value)
@@ -40,7 +38,7 @@ export function useFormatTabular() {
     if (value == null || value === '') return '–'
     const d = new Date(String(value))
     if (Number.isNaN(d.getTime())) return String(value)
-    return formatDate(d, { day: '2-digit', month: '2-digit', year: 'numeric' })
+    return new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(d)
   }
 
   return { formatNumber, formatCellDate }

@@ -110,6 +110,7 @@ const displayValue = computed(() => {
   if (!cell.value) return ''
   const v = cell.value.value
   if (v == null || v === '') return '–'
+  if (typeof v === 'object') return JSON.stringify(v)
   return String(v)
 })
 
