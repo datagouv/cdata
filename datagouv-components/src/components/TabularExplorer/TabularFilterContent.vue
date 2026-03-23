@@ -165,6 +165,7 @@
         <input
           v-model.number="rangeMin"
           type="number"
+          step="any"
           class="w-full h-7 text-xs border border-black/10 rounded px-2 bg-[#f3f3f5] focus:outline-none focus:border-new-primary tabular-nums"
           :placeholder="String(profileMin)"
           :min="profileMin"
@@ -174,6 +175,7 @@
         <input
           v-model.number="rangeMax"
           type="number"
+          step="any"
           class="w-full h-7 text-xs border border-black/10 rounded px-2 bg-[#f3f3f5] focus:outline-none focus:border-new-primary tabular-nums"
           :placeholder="String(profileMax)"
           :min="profileMin"
