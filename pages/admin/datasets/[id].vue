@@ -135,7 +135,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, DatasetQualityTooltipContent, DatasetQualityScore, summarize, useFormatDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
-import type { Activity, DatasetV2 } from '@datagouv/components-next'
+import type { Activity, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiDownloadLine, RiEyeLine, RiLineChartLine, RiPriceTag3Line, RiStarLine } from '@remixicon/vue'
 import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
@@ -153,7 +153,12 @@ const me = useMe()
 const route = useRoute()
 const { formatDate } = useFormatDate()
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
-const { data: dataset } = await useAPI<DatasetV2>(url, { redirectOn404: true })
+const { data: dataset } = await useAPI<DatasetV2WithFullObject>(url, {
+  redirectOn404: true,
+  headers: {
+    'X-Get-Datasets-Full-Objects': 'True',
+  },
+})
 const { data: activities } = await useAPI<PaginatedArray<Activity>>('/api/1/activity/', {
   params: {
     related_to: route.params.id,
