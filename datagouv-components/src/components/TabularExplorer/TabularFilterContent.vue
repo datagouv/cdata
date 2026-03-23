@@ -101,7 +101,7 @@
           <span
             v-if="categoryBadgeStyles?.[top.value]"
             class="inline-block rounded font-medium px-2 py-0.5 text-xs"
-            :style="{ backgroundColor: categoryBadgeStyles[top.value].backgroundColor, color: categoryBadgeStyles[top.value].color }"
+            :style="{ backgroundColor: categoryBadgeStyles![top.value]!.backgroundColor, color: categoryBadgeStyles![top.value]!.color }"
           >{{ top.value }}</span>
           <template v-else>
             {{ top.value ?? 'null' }}
