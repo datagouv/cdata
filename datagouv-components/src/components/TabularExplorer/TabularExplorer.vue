@@ -472,6 +472,7 @@ import {
   RiSearchLine,
 } from '@remixicon/vue'
 import { useFetch } from '../../functions/api'
+import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { buildTypeConfig, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy } from '../../functions/tabular'
 import ClientOnly from '../ClientOnly.vue'
@@ -490,6 +491,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useTranslation()
+const config = useComponentsConfig()
 
 // Column selector popover positioning
 const columnAnchorComponent = useTemplateRef<InstanceType<typeof Popover>>('columnAnchor')
@@ -504,11 +506,11 @@ const { floatingStyles: columnFloatingStyles } = useFloating(columnAnchorEl, col
 })
 
 const dataUrl = computed(() =>
-  `/tabular/resources/${props.resourceId}/data`,
+  `${config.tabularApiUrl}/api/resources/${props.resourceId}/data/`,
 )
 
 const profileUrl = computed(() =>
-  `/tabular/resources/${props.resourceId}/profile`,
+  `${config.tabularApiUrl}/api/resources/${props.resourceId}/profile/`,
 )
 
 // Sort & filter state
