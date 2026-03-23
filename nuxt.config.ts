@@ -224,7 +224,7 @@ export default defineNuxtConfig({
     inlineStyles: false,
   },
 
-  compatibilityDate: '2024-04-03',
+  compatibilityDate: '2025-01-01',
 
   nitro: {
     compressPublicAssets: true,
