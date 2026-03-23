@@ -72,10 +72,8 @@ const name = ref('')
 async function submit(close: () => void) {
   loading.value = true
   try {
-    const body: Record<string, string> = {}
-    if (name.value.trim()) {
-      body.name = name.value.trim()
-    }
+    const trimmed = name.value.trim()
+    const body = trimmed ? { name: trimmed } : {}
     const result = await $api<ApiTokenCreated>('/api/1/me/tokens/', {
       method: 'POST',
       body,
@@ -84,6 +82,9 @@ async function submit(close: () => void) {
     name.value = ''
     close()
     emit('created', result)
+  }
+  catch {
+    toast.error(t('Impossible de créer le token.'))
   }
   finally {
     loading.value = false

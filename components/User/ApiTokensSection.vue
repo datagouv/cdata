@@ -131,7 +131,7 @@ const { formatRelativeIfRecentDate } = useFormatDate()
 
 const tokens = ref<ApiToken[]>([])
 const newlyCreatedToken = ref<string | null>(null)
-const revoking = ref<string | null>(null)
+const revoking = ref(false)
 const tokenToRevoke = ref<ApiToken | null>(null)
 const userAgentsModalList = ref<string[] | null>(null)
 
@@ -145,7 +145,7 @@ async function onTokenCreated(created: ApiTokenCreated) {
 }
 
 async function revokeToken(token: ApiToken) {
-  revoking.value = token.id
+  revoking.value = true
   try {
     await $api(`/api/1/me/tokens/${token.id}/`, {
       method: 'DELETE',
@@ -154,8 +154,11 @@ async function revokeToken(token: ApiToken) {
     tokenToRevoke.value = null
     await fetchTokens()
   }
+  catch {
+    toast.error(t('Impossible de révoquer le token.'))
+  }
   finally {
-    revoking.value = null
+    revoking.value = false
   }
 }
 
