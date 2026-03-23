@@ -17,6 +17,12 @@
           />
         </div>
         <div class="text-gray-medium text-xs flex items-center gap-1">
+          <SchemaBadge :resource />
+          <RiSubtractLine
+            v-if="resource.schema"
+            aria-hidden="true"
+            class="size-3 fill-gray-medium"
+          />
           <span>{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
           <RiSubtractLine
             aria-hidden="true"
@@ -133,9 +139,12 @@
                 :url="resource.extras['apidocUrl'] as string"
               />
               <Preview
-                v-else
+                v-else-if="hasTabularData"
                 :resource="resource"
               />
+              <PreviewUnavailable v-else>
+                {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+              </PreviewUnavailable>
             </div>
             <div v-if="tab.key === 'description'">
               <MarkdownViewer
@@ -228,6 +237,52 @@
                     />
                   </dd>
                 </template>
+                <template v-if="wfsFormats.length">
+                  <dt class="font-bold fr-text--sm fr-mb-0">
+                    <div class="flex gap-1 items-center">
+                      {{ t('Formats exportés depuis le service WFS') }}
+                      <span v-if="defaultWfsProjection"> ({{ t('projection {crs}', { crs: defaultWfsProjection }) }})</span>
+                      <Tooltip>
+                        <RiInformationLine
+                          class="flex-none size-4"
+                          :aria-label="t(`Le lien de téléchargement interroge directement le flux WFS distant. Le nombre de features téléchargées peut être limité.`)"
+                          aria-hidden="true"
+                        />
+                        <template #tooltip>
+                          <p class="text-sm font-normal mb-0">
+                            {{ t(`Le lien de téléchargement interroge directement le flux WFS distant.`) }}
+                          </p>
+                          <p class="text-sm font-normal mb-0">
+                            {{ t(`Le nombre de features téléchargées peut être limité.`) }}
+                          </p>
+                        </template>
+                      </Tooltip>
+                    </div>
+                  </dt>
+                  <dd
+                    v-for="wfsFormat in wfsFormats"
+                    :key="wfsFormat.format"
+                    class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center"
+                  >
+                    <span>
+                      <span class="text-datagouv fr-icon-download-line fr-icon--sm fr-mr-1v fr-mt-1v" />
+                      <a
+                        :href="wfsFormat.url"
+                        class="fr-link"
+                        rel="ugc nofollow noopener"
+                        @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${wfsFormat.format}`)"
+                      >
+                        <span>{{ t('Format {format}', { format: wfsFormat.format }) }}</span>
+                      </a>
+                    </span>
+                    <CopyButton
+                      :label="t('Copier le lien')"
+                      :copied-label="t('Lien copié !')"
+                      :text="wfsFormat.url"
+                      class="relative"
+                    />
+                  </dd>
+                </template>
               </dl>
             </div>
             <div v-if="tab.key === 'swagger'">
@@ -251,7 +306,8 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
-import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiSubtractLine } from '@remixicon/vue'
+import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiInformationLine, RiSubtractLine } from '@remixicon/vue'
+import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import { toast } from 'vue-sonner'
 import BrandedButton from '../BrandedButton.vue'
 import CopyButton from '../CopyButton.vue'
@@ -263,9 +319,11 @@ import TabList from '../Tabs/TabList.vue'
 import Tab from '../Tabs/Tab.vue'
 import TabPanels from '../Tabs/TabPanels.vue'
 import TabPanel from '../Tabs/TabPanel.vue'
+import Tooltip from '../Tooltip.vue'
 import Preview from '../ResourceAccordion/Preview.vue'
 import DataStructure from '../ResourceAccordion/DataStructure.vue'
 import Metadata from '../ResourceAccordion/Metadata.vue'
+import SchemaBadge from '../ResourceAccordion/SchemaBadge.vue'
 import { filesize, summarize } from '../../functions/helpers'
 import { getResourceFormatIcon } from '../../functions/resources'
 import { getResourceExternalUrl, getResourceFilesize } from '../../functions/datasets'
@@ -316,6 +374,8 @@ const {
   ogcService,
   ogcWms,
   generatedFormats,
+  wfsFormats,
+  defaultWfsProjection,
   isResourceUrl,
   tabsOptions,
 } = useResourceCapabilities(() => props.resource, () => props.dataset)

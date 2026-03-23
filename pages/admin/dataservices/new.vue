@@ -7,7 +7,7 @@
         {{ $t('Accueil') }}
       </BreadcrumbItem>
       <BreadcrumbItem to="/dataservices">
-        {{ $t('APIs') }}
+        {{ $t('API') }}
       </BreadcrumbItem>
       <BreadcrumbItem>
         {{ $t('Formulaire de publication') }}
@@ -97,6 +97,7 @@ const dataserviceForm = useState(
       license: null,
       private: true,
       rate_limiting: '',
+      rate_limiting_url: '',
       contact_points: [],
       featured: false,
       ...defaultAccessTypeForm(),

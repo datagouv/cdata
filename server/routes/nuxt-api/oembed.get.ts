@@ -10,7 +10,7 @@ function isValidUrl(url: string): boolean {
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
-  const config = useRuntimeConfig()
+  const siteConfig = getSiteConfig(event)
 
   // Manual validation
   const url = query.url ? String(query.url).trim() : ''
@@ -45,14 +45,14 @@ export default defineEventHandler(async (event) => {
 
   // Remove empty string from array
   const splitted = url.split('/').filter(Boolean)
-  const slug = splitted.pop()
-  const object = splitted.pop()
+  const slug = splitted.pop() ?? ''
+  const object = splitted.pop() ?? ''
   const width = maxwidth ? `${maxwidth}px` : '100%'
   const height = `${maxheight ? maxheight : '180'}px`
 
   return {
     version: '1.0',
     type: 'rich',
-    html: `<div><iframe style="width:${width};height:${height};" src="${config.public.frontBase}/embeds/${object}/${slug}"></iframe></div>`,
+    html: `<div><iframe style="width:${width};height:${height};" src="${siteConfig.url}/embeds/${encodeURIComponent(object)}/${encodeURIComponent(slug)}"></iframe></div>`,
   }
 })

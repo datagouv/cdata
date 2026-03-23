@@ -1,4 +1,4 @@
-import type { AccessTypeForm, WithAccessType, Dataset, DatasetV2, DatasetV2WithFullObject, CommunityResource, Dataservice, Reuse, User, Frequency, Organization, OrganizationReference, UserReference, License, ReuseType, Resource, ResourceType, ResourceFileType, Schema, ContactPoint, PaginatedArray, Owned } from '@datagouv/components-next'
+import type { AccessTypeForm, WithAccessType, Dataset, DatasetV2, DatasetV2WithFullObject, CommunityResource, Dataservice, MemberRole, Reuse, User, Frequency, Organization, OrganizationReference, UserReference, License, ReuseType, Resource, ResourceType, ResourceFileType, Schema, ContactPoint, PaginatedArray, Owned } from '@datagouv/components-next'
 import type { NitroFetchRequest, NitroFetchOptions } from 'nitropack'
 import type { Thread } from './discussions'
 
@@ -84,7 +84,13 @@ export type RefusedMembershipRequest = MembershipRequest & {
   refusal_comment: string
 }
 
-export type MemberRole = 'admin' | 'editor'
+export type Assignment = {
+  id: string
+  user: User
+  subject: { class: string, id: string }
+  organization: string
+  created_at: string
+}
 
 // In org endpoint we get these two private information if we have edit rights on the org.
 export type MemberUser = User & {
@@ -215,6 +221,7 @@ export type DataserviceForm = {
   technical_documentation_url: string | null
   business_documentation_url: string | null
   rate_limiting: string
+  rate_limiting_url: string | null
   availability: string
   private: boolean
 } & AccessTypeForm
@@ -235,6 +242,7 @@ export type NewDataserviceForApi = {
   technical_documentation_url: string | null
   business_documentation_url: string | null
   rate_limiting: string
+  rate_limiting_url: string | null
   availability: number | null
 } & WithAccessType
 

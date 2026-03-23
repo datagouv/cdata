@@ -221,6 +221,18 @@
                 />
               </div>
 
+              <SimpleBanner
+                v-if="hideWarnings"
+                type="primary-frame"
+                class="text-sm"
+              >
+                {{
+                  $t(
+                    "La qualité des métadonnées peut être trompeuse car les métadonnées de la source originale peuvent avoir été perdues lors de leur récupération. Nous travaillons actuellement à améliorer la situation.",
+                  )
+                }}
+              </SimpleBanner>
+
               <div v-if="badges.length > 0">
                 <dt
                   class="text-sm text-gray-plain font-bold flex items-center pb-0"
@@ -291,18 +303,6 @@
               </div>
 
               <SimpleBanner
-                v-if="hideWarnings"
-                type="primary-frame"
-                class="text-sm"
-              >
-                {{
-                  $t(
-                    "La qualité des métadonnées peut être trompeuse car les métadonnées de la source originale peuvent avoir été perdues lors de leur récupération. Nous travaillons actuellement à améliorer la situation.",
-                  )
-                }}
-              </SimpleBanner>
-
-              <SimpleBanner
                 v-if="dataset.harvest && 'remote_url' in dataset.harvest"
                 type="primary-frame"
                 class="text-sm"
@@ -350,7 +350,7 @@
                   class="!m-0 text-sm"
                 >
                   <template #link>
-                    <CdataLink :href="`https://${config.public.baseUrl.includes('demo') ? 'demo.': ''}ecologie.data.gouv.fr/indicators/${dataset.id}`">
+                    <CdataLink :href="`https://${siteConfig.url.includes('demo') ? 'demo.': ''}ecologie.data.gouv.fr/indicators/${dataset.id}`">
                       ecologie.data.gouv.fr
                     </CdataLink>
                   </template>
@@ -505,6 +505,7 @@ import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import { useElementSize } from '@vueuse/core'
 
 const config = useRuntimeConfig()
+const siteConfig = useSiteConfig()
 const route = useRoute()
 const { formatDate } = useFormatDate()
 const { t } = useTranslation()
@@ -536,6 +537,20 @@ useSeoMeta({
   title,
   robots,
   description,
+})
+
+// Workaround: encode the dot before file extension to prevent nuxt-og-image from stripping `.png` in prop values
+// See https://github.com/nuxt-modules/og-image/pull/493
+defineOgImage('ObjectPage.takumi', {
+  objectTitle: dataset.value?.title,
+  orgName: dataset.value?.organization?.name,
+  orgLogo: dataset.value?.organization?.logo_thumbnail?.replace(/\.(\w+)$/, '%2E$1') ?? null,
+  ownerName: dataset.value?.owner ? `${dataset.value.owner.first_name} ${dataset.value.owner.last_name}` : null,
+  ownerAvatar: dataset.value?.owner?.avatar_thumbnail?.replace(/\.(\w+)$/, '%2E$1') ?? null,
+  views: dataset.value?.metrics?.views ?? 0,
+  downloads: dataset.value?.metrics?.resources_downloads ?? 0,
+  reuses: dataset.value?.metrics?.reuses ?? 0,
+  followers: dataset.value?.metrics?.followers ?? 0,
 })
 
 const hideWarnings = computed(() => {

@@ -10,7 +10,7 @@
       <div
         v-for="(reuse, i) in bloc.reuses"
         :key="reuse.id"
-        class="relative"
+        class="relative min-w-0"
         :class="{ 'cursor-grab active:cursor-grabbing': edit }"
       >
         <button

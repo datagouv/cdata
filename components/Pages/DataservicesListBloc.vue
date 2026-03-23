@@ -10,7 +10,7 @@
       <div
         v-for="(dataservice, i) in bloc.dataservices"
         :key="dataservice.id"
-        class="relative"
+        class="relative min-w-0"
         :class="{ 'cursor-grab active:cursor-grabbing': edit }"
       >
         <button
@@ -37,7 +37,7 @@
 
   <ModalWithButton
     v-model="isSelectorOpen"
-    :title="$t('Sélectionner des APIs')"
+    :title="$t('Sélectionner des API')"
     size="lg"
   >
     <DataservicesSelect v-model="selectedDataservices" />

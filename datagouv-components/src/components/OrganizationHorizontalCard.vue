@@ -17,7 +17,7 @@
         color-class="text-gray-title"
       />
     </ObjectCardHeader>
-    <div class="text-sm m-0 flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate">
+    <div class="text-sm flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate">
       <template v-if="type !== 'other'">
         <OwnerType
           class="mb-0"

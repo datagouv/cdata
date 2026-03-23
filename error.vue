@@ -169,6 +169,7 @@ const app = useNuxtApp()
 
 const { locale } = useTranslation()
 const runtimeConfig = useRuntimeConfig()
+const siteConfig = useSiteConfig()
 
 // Computed properties to avoid repeating error checks
 const statusCode = computed(() => error.value?.statusCode as number)
@@ -176,7 +177,7 @@ const errorMessage = computed(() => error.value?.message)
 
 app.vueApp.use(datagouv, {
   name: runtimeConfig.public.title,
-  baseUrl: runtimeConfig.public.baseUrl,
+  baseUrl: siteConfig.url,
   apiBase: runtimeConfig.public.apiBase,
   devApiKey: runtimeConfig.public.devApiKey,
   tabularApiUrl: runtimeConfig.public.tabularApiUrl,

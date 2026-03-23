@@ -1,13 +1,8 @@
 <template>
   <div>
-    <SimpleBanner
-      v-if="hasError"
-      type="warning"
-      class="flex items-center space-x-2"
-    >
-      <RiErrorWarningLine class="shrink-0 size-6" />
-      <span>{{ t("L'aperçu cartographique de ce fichier n'a pas pu être chargé.") }}</span>
-    </SimpleBanner>
+    <PreviewUnavailable v-if="hasError">
+      {{ t("L'aperçu cartographique de ce fichier n'a pas pu être chargé.") }}
+    </PreviewUnavailable>
     <div
       v-else
       class="-mx-4"
@@ -53,7 +48,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, useTemplateRef } from 'vue'
-import { RiErrorWarningLine, RiExternalLinkFill } from '@remixicon/vue'
+import { RiExternalLinkFill } from '@remixicon/vue'
 import { Protocol, PMTiles } from 'pmtiles'
 import maplibregl from 'maplibre-gl'
 import DOMPurify from 'dompurify'
@@ -64,7 +59,7 @@ import type { Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 import BrandedButton from '../BrandedButton.vue'
 import styleVector from '../../../assets/json/vector.json'
-import SimpleBanner from '../SimpleBanner.vue'
+import PreviewUnavailable from './PreviewUnavailable.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
 import { getOwnerName, getOwnerPage } from '../../functions/owned'

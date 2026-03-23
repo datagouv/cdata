@@ -20,15 +20,20 @@
       <span v-else>{{ $t('Mises à jour hier.') }}</span>
     </p>
 
-    <TabLinks
-      class="mb-5"
-      :links="[
-        { href: metricsUrl, label: organization ? $t('Organisation') : $t('Utilisateur') },
-        { href: `${metricsUrl}/datasets/`, label: $t('Jeux de données') },
-        { href: `${metricsUrl}/dataservices/`, label: $t('API') },
-        { href: `${metricsUrl}/reuses/`, label: $t('Réutilisations') },
-      ]"
-    />
+    <div class="flex flex-wrap items-center gap-4 mb-5">
+      <TabLinks
+        :links="[
+          { href: metricsUrl, label: organization ? $t('Organisation') : $t('Utilisateur') },
+          { href: `${metricsUrl}/datasets/`, label: $t('Jeux de données') },
+          { href: `${metricsUrl}/dataservices/`, label: $t('API') },
+          { href: `${metricsUrl}/reuses/`, label: $t('Réutilisations') },
+        ]"
+      />
+      <div
+        id="metrics-actions"
+        class="flex flex-wrap items-center gap-4 ml-auto"
+      />
+    </div>
 
     <NuxtPage
       :page-key="route => route.fullPath"

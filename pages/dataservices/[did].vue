@@ -133,14 +133,27 @@
               </div>
 
               <div
-                v-if="dataservice.rate_limiting "
+                v-if="dataservice.rate_limiting || dataservice.rate_limiting_url"
                 class="space-y-1"
               >
                 <dt class="text-gray-plain font-bold">
                   {{ $t(`Limite d'appels`) }}
                 </dt>
                 <dd class="p-0">
-                  {{ dataservice.rate_limiting }}
+                  <span
+                    v-if="dataservice.rate_limiting"
+                    class="mr-1"
+                  >{{ dataservice.rate_limiting }}</span>
+                  <a
+                    v-if="dataservice.rate_limiting_url"
+                    :href="dataservice.rate_limiting_url"
+                    :title="$t(`En savoir plus sur les limites d'appels`)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    :class="dataservice.rate_limiting ? 'inline-flex items-center gap-1' : 'block truncate'"
+                  >
+                    {{ dataservice.rate_limiting ? $t("En savoir plus") : dataservice.rate_limiting_url }}
+                  </a>
                 </dd>
               </div>
 
@@ -282,6 +295,18 @@ useSeoMeta({
   title,
   robots,
   description,
+})
+// Workaround: encode the dot before file extension to prevent nuxt-og-image from stripping `.png` in prop values
+// See https://github.com/nuxt-modules/og-image/pull/493
+defineOgImage('ObjectPage.takumi', {
+  objectTitle: dataservice.value?.title,
+  orgName: dataservice.value?.organization?.name,
+  orgLogo: dataservice.value?.organization?.logo_thumbnail?.replace(/\.(\w+)$/, '%2E$1') ?? null,
+  ownerName: dataservice.value?.owner ? `${dataservice.value.owner.first_name} ${dataservice.value.owner.last_name}` : null,
+  ownerAvatar: dataservice.value?.owner?.avatar_thumbnail?.replace(/\.(\w+)$/, '%2E$1') ?? null,
+  views: dataservice.value?.metrics?.views ?? 0,
+  reuses: dataservice.value?.metrics?.reuses ?? 0,
+  followers: dataservice.value?.metrics?.followers ?? 0,
 })
 await useJsonLd('dataservice', route.params.did as string)
 

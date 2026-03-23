@@ -24,6 +24,7 @@ export type BaseDataservice = Owned & WithAccessType & {
   license: string | null
   private: boolean
   rate_limiting: string
+  rate_limiting_url: string | null
   title: DataserviceReference['title']
   contact_points: Array<ContactPoint>
 }
@@ -65,6 +66,7 @@ export type Dataservice = Owned & WithAccessType & {
   permissions: { edit: boolean, delete: boolean }
   private: boolean
   rate_limiting: string
+  rate_limiting_url: string | null
   self_api_url: DataserviceReference['self_api_url']
   self_web_url: DataserviceReference['self_web_url']
   slug: string

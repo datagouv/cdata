@@ -1,21 +1,17 @@
 <template>
-  <div class="m-0 flex flex-wrap items-center text-sm text-gray-medium">
-    <div class="fr-grid-row fr-grid-row--middle">
-      <Toggletip
-        :button-props="{ class: 'relative z-2 ml-0.5', title: t('Qualité des métadonnées') }"
-      >
-        <RiInformationLine class="size-4" />
-        <template #toggletip>
-          <DatasetQualityTooltipContent :quality />
-        </template>
-      </Toggletip>
-      <p class="my-0 mr-1 text-gray-medium text-sm">
-        {{ t('Métadonnées :') }}
-      </p>
-      <div class="fr-grid-row fr-grid-row--middle fr-mr-1v">
-        <DatasetQualityScore :score="quality.score" />
-      </div>
-    </div>
+  <div class="m-0 text-sm text-gray-medium">
+    <Toggletip
+      :styled-button="false"
+      button-class="border-transparent -outline-offset-2 inline-flex items-center justify-center hover:bg-gray-lower transition-colors"
+      :button-props="{ class: 'relative z-2 gap-1 rounded-sm px-1 -mx-1 group/quality', title: t('Qualité des métadonnées') }"
+    >
+      <RiInformationLine class="size-3.5 shrink-0" />
+      <span class="text-gray-medium text-sm group-hover/quality:underline">{{ t('Métadonnées :') }}</span>
+      <DatasetQualityScore :score="quality.score" />
+      <template #toggletip>
+        <DatasetQualityTooltipContent :quality />
+      </template>
+    </Toggletip>
   </div>
 </template>
 

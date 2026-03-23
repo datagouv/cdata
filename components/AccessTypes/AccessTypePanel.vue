@@ -38,7 +38,7 @@
         >
           <template
             v-for="audience in accessAudiences"
-            :key="audience"
+            :key="`${audience.role}-${audience.condition}`"
           >
             <DataservicesAccessAudienceCondition
               :condition="audience.condition"

@@ -64,7 +64,7 @@ const heading = computed(() => {
     case 'reuses':
       return t('Recherche avancée d\'une réutilisation')
     case 'organizations':
-      return t('Organisations')
+      return t('Recherche d\'une organisation')
     default:
       return t('Recherche avancée d\'un jeu de données')
   }
@@ -102,6 +102,20 @@ useSeoMeta({
   ogTitle: title,
   ogDescription: description,
   robots,
+})
+
+const ogTitles: Record<SearchType, string> = {
+  datasets: 'Jeux de données',
+  dataservices: 'API',
+  reuses: 'Réutilisations',
+  organizations: 'Organisations',
+}
+
+const ogTitle = computed(() => ogTitles[currentType.value])
+
+defineOgImage('MainPage.takumi', {
+  title: ogTitle,
+  uri: computed(() => searchPaths[currentType.value]),
 })
 
 const searchConfig: GlobalSearchConfig = [

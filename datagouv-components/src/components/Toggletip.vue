@@ -13,8 +13,10 @@
     />
     <PopoverButton
       v-bind="buttonProps"
-      class="border-transparent -outline-offset-2 inline-flex items-center justify-center hover:bg-gray-some"
-      :class="{ 'w-8 h-8 rounded-full bg-transparent': styledButton }"
+      :class="[
+        buttonClass ?? 'border-transparent -outline-offset-2 inline-flex items-center justify-center hover:bg-gray-some',
+        { 'w-8 h-8 rounded-full bg-transparent': styledButton && !buttonClass },
+      ]"
     >
       <slot>
         <RiInformationLine
@@ -57,6 +59,7 @@ import ValueWatcher from './ValueWatcher.vue'
 
 withDefaults(defineProps<{
   buttonProps?: object
+  buttonClass?: string
   noMargin?: boolean
   styledButton?: boolean
 }>(), {

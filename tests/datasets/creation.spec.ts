@@ -98,5 +98,5 @@ The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for t
   await expect(page.locator('dl')).toContainText('Other (Public Domain)')
   await expect(page.locator('dl')).toContainText('Formats de fichiers non standards')
   await page.getByTestId('expand-button').click()
-  await expect(page.getByLabel('Aperçu').locator('span')).toContainText('L\'aperçu n\'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l\'onglet Téléchargements.')
+  await expect(page.getByLabel('Aperçu')).toContainText('La taille du fichier est inconnue, l\'aperçu n\'est pas disponible. Téléchargez-le depuis l\'onglet Téléchargements.')
 })
