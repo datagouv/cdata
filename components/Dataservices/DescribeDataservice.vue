@@ -69,15 +69,6 @@
           </p>
         </Accordion>
         <Accordion
-          :id="rateLimitingDataserviceAccordionId"
-          :title="t(`Indiquer la limite d'appels`)"
-          :state="accordionState('rate_limiting')"
-        >
-          <p class="fr-m-0">
-            {{ t(`Si le nombre d'appels à votre API est contraint, veuillez définir ici le nombre maximal d'appels par minute, voire par IP et/ou jeton. Vous pouvez également ajouter un lien vers la page décrivant les conditions d'utilisation.`) }}
-          </p>
-        </Accordion>
-        <Accordion
           :id="availabilityDataserviceAccordionId"
           :title="t('Indiquer la disponibilité')"
           :state="accordionState('availability')"
@@ -121,6 +112,15 @@
         >
           <p class="fr-m-0">
             {{ t("La documentation métier de votre API explique son périmètre et ses cas d'usages. Elle vient en complément de la documentation technique.") }}
+          </p>
+        </Accordion>
+        <Accordion
+          :id="rateLimitingDataserviceAccordionId"
+          :title="t(`Indiquer la limite d'appels`)"
+          :state="accordionState('rate_limiting')"
+        >
+          <p class="fr-m-0">
+            {{ t(`Si le nombre d'appels à votre API est contraint, veuillez définir ici le nombre maximal d'appels par minute, voire par IP et/ou jeton. Vous pouvez également ajouter un lien vers la page décrivant les conditions d'utilisation.`) }}
           </p>
         </Accordion>
       </AccordionGroup>
