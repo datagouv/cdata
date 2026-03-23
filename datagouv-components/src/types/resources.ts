@@ -1,5 +1,5 @@
 import type { RESOURCE_TYPE } from '../functions/resources'
-import type { Schema } from '../types/schemas'
+import type { Schema } from './schemas'
 import type { Dataset } from './datasets'
 import type { Harvest } from './harvest'
 import type { Owned } from './owned'
