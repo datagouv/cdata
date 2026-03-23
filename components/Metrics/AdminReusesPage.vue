@@ -1,24 +1,13 @@
 <template>
   <div>
-    <div class="flex justify-end items-center gap-4 -mt-14 pt-0.5 mb-5">
+    <Teleport to="#metrics-actions">
       <AdminInput
         v-model="q"
         type="search"
         :icon="RiSearchLine"
         :placeholder="$t('Recherche')"
       />
-      <BrandedButton
-        v-if="downloadStatsUrl"
-        color="secondary"
-        :href="downloadStatsUrl"
-        :external="true"
-        download="stats.csv"
-        :icon="RiDownloadLine"
-        size="xs"
-      >
-        {{ $t('Télécharger le catalogue') }}
-      </BrandedButton>
-    </div>
+    </Teleport>
     <LoadingBlock
       v-slot="{ data: pageData }"
       :status
@@ -183,8 +172,6 @@ const props = defineProps<{
 }>()
 
 const config = useRuntimeConfig()
-
-const downloadStatsUrl = computed(() => props.organization ? `/api/1/organizations/${props.organization.id}/reuses.csv` : null)
 
 const page = ref(1)
 const pageSize = ref(20)

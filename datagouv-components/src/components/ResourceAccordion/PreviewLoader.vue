@@ -1,7 +1,6 @@
 <template>
   <ContentLoader
-    :width="1124"
-    :height="300"
+    viewBox="0 0 1124 300"
     :speed="2"
     primary-color="#f3f3f3"
     secondary-color="#ecebeb"

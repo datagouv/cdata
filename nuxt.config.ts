@@ -58,7 +58,7 @@ export default defineNuxtConfig({
       banner: undefined,
 
       title: 'data.gouv.fr',
-      description: 'Plateforme ouverte des données publiques françaises : téléchargez, partagez et réutilisez les données ouvertes de l\'État et des collectivités',
+      description: 'Plateforme des données publiques françaises : télécharger, partager et réutiliser les données de l\'État et des collectivités',
       apiBase: 'http://dev.local:7000',
       metricsApi: 'https://metric-api.data.gouv.fr',
       metricsSince: '2022-07-01',
@@ -228,6 +228,9 @@ export default defineNuxtConfig({
 
   nitro: {
     compressPublicAssets: true,
+    rollupConfig: {
+      external: ['crisp-api'],
+    },
   },
 
   vite: {
@@ -252,6 +255,7 @@ export default defineNuxtConfig({
         'maplibre-gl',
         'geopf-extensions-openlayers',
         'vue3-xml-viewer',
+        'uqr',
       ],
       // `@datagouv/components-next` shouldn't be optimize otherwise its vue instance is not the same
       // as the one used in udata-front-kit. This cause errors with the `provide` / `inject` functions
@@ -269,6 +273,14 @@ export default defineNuxtConfig({
     plugins: [toml(), tailwindcss()],
     server: {
       allowedHosts: ['dev.local'],
+      warmup: {
+        clientFiles: [
+          './pages/**/*.vue',
+          './components/**/*.vue',
+          './layouts/**/*.vue',
+          './composables/**/*.ts',
+        ],
+      },
     },
   },
 

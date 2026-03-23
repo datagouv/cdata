@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div
+    <Teleport
       v-if="downloadStatsUrl"
-      class="flex justify-end -mt-14 pt-0.5 mb-5"
+      to="#metrics-actions"
     >
       <BrandedButton
         color="secondary"
@@ -15,7 +15,7 @@
       >
         {{ $t('Télécharger les statistiques agrégées') }}
       </BrandedButton>
-    </div>
+    </Teleport>
     <PaddedContainer class="mb-5">
       <section
         class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 pb-4"

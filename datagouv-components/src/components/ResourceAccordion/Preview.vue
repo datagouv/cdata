@@ -1,13 +1,8 @@
 <template>
   <div>
-    <SimpleBanner
-      v-if="hasError"
-      type="warning"
-      class="flex items-center space-x-2"
-    >
-      <RiErrorWarningLine class="shrink-0 size-6" />
-      <span>{{ t("L'aperçu de ce fichier n'a pas pu être chargé.") }}</span>
-    </SimpleBanner>
+    <PreviewUnavailable v-if="hasError">
+      {{ t("L'aperçu de ce fichier n'a pas pu être chargé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+    </PreviewUnavailable>
     <PreviewLoader v-else-if="loading" />
     <div
       v-else
@@ -105,7 +100,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { RiArrowDownLine, RiArrowUpLine, RiErrorWarningLine, RiExternalLinkFill } from '@remixicon/vue'
+import { RiArrowDownLine, RiArrowUpLine, RiExternalLinkFill } from '@remixicon/vue'
 import Pagination from '../Pagination.vue'
 import { getData, type SortConfig } from '../../functions/tabularApi'
 import { useFormatDate } from '../../functions/dates'
@@ -113,7 +108,7 @@ import { trackEvent } from '../../functions/matomo'
 import type { Resource } from '../../types/resources'
 import { useComponentsConfig } from '../../config'
 import BrandedButton from '../BrandedButton.vue'
-import SimpleBanner from '../SimpleBanner.vue'
+import PreviewUnavailable from './PreviewUnavailable.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
 import PreviewLoader from './PreviewLoader.vue'

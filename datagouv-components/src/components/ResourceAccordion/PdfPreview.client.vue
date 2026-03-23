@@ -18,43 +18,27 @@
     >
       {{ t("Chargement de l'aperçu PDF...") }}
     </div>
-    <SimpleBanner
-      v-else-if="fileTooLarge"
-      type="warning"
-      class="flex items-center space-x-2"
-    >
-      <RiErrorWarningLine class="flex-none size-6" />
-      <span>{{ fileSizeBytes
-        ? t("Fichier PDF trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
-        : t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
-      }}</span>
-    </SimpleBanner>
-    <SimpleBanner
-      v-else-if="error === 'network'"
-      type="warning"
-      class="flex items-center space-x-2"
-    >
-      <RiErrorWarningLine class="flex-none size-6" />
-      <span>{{ t("Ce fichier PDF ne peut pas être prévisualisé, peut-être parce qu'il est hébergé sur un autre site qui ne l'autorise pas. Pour le consulter, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.") }}</span>
-    </SimpleBanner>
-    <SimpleBanner
-      v-else-if="error"
-      type="warning"
-      class="flex items-center space-x-2"
-    >
-      <RiErrorWarningLine class="flex-none size-6" />
-      <span>{{ t("Erreur lors du chargement de l'aperçu PDF. Pour consulter le fichier, téléchargez-le depuis l'onglet Téléchargements.") }}</span>
-    </SimpleBanner>
+    <PreviewUnavailable v-else-if="fileTooLarge">
+      {{ fileSizeBytes
+        ? t("Le fichier PDF est trop volumineux pour être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.")
+        : t("La taille du fichier est inconnue, l'aperçu n'est pas disponible. Téléchargez-le depuis l'onglet Téléchargements.")
+      }}
+    </PreviewUnavailable>
+    <PreviewUnavailable v-else-if="error === 'network'">
+      {{ t("Ce fichier est hébergé sur un site externe qui ne permet pas la prévisualisation. Téléchargez-le depuis l'onglet Téléchargements.") }}
+    </PreviewUnavailable>
+    <PreviewUnavailable v-else-if="error">
+      {{ t("L'aperçu de ce fichier n'a pas pu être chargé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+    </PreviewUnavailable>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { RiErrorWarningLine } from '@remixicon/vue'
 import * as pdfjsLib from 'pdfjs-dist'
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
-import SimpleBanner from '../SimpleBanner.vue'
+import PreviewUnavailable from './PreviewUnavailable.vue'
 import { useComponentsConfig } from '../../config'
 import type { Resource } from '../../types/resources'
 import { useTranslation } from '../../composables/useTranslation'

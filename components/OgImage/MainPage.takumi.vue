@@ -14,7 +14,7 @@ const { isProduction } = useRuntimeConfig().public
       <img
         src="/nuxt_images/logo_horizontal.svg"
         alt=""
-        class="w-80 aspect-[433/113]"
+        class="w-80 h-[calc(var(--spacing)*80*113/433)]"
       >
       <div
         v-if="! isProduction"

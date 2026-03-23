@@ -133,14 +133,27 @@
               </div>
 
               <div
-                v-if="dataservice.rate_limiting "
+                v-if="dataservice.rate_limiting || dataservice.rate_limiting_url"
                 class="space-y-1"
               >
                 <dt class="text-gray-plain font-bold">
                   {{ $t(`Limite d'appels`) }}
                 </dt>
                 <dd class="p-0">
-                  {{ dataservice.rate_limiting }}
+                  <span
+                    v-if="dataservice.rate_limiting"
+                    class="mr-1"
+                  >{{ dataservice.rate_limiting }}</span>
+                  <a
+                    v-if="dataservice.rate_limiting_url"
+                    :href="dataservice.rate_limiting_url"
+                    :title="$t(`En savoir plus sur les limites d'appels`)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    :class="dataservice.rate_limiting ? 'inline-flex items-center gap-1' : 'block truncate'"
+                  >
+                    {{ dataservice.rate_limiting ? $t("En savoir plus") : dataservice.rate_limiting_url }}
+                  </a>
                 </dd>
               </div>
 

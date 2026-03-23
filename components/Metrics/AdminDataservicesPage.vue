@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="flex justify-end items-center gap-4 -mt-14 pt-0.5 mb-5">
+    <Teleport to="#metrics-actions">
       <AdminInput
         v-model="q"
         type="search"
@@ -18,7 +18,7 @@
       >
         {{ $t('Télécharger le catalogue') }}
       </BrandedButton>
-    </div>
+    </Teleport>
     <LoadingBlock
       v-slot="{ data: pageData }"
       :status
@@ -182,7 +182,7 @@ watch(qDebounced, () => page.value = 1)
 const sortedBy = ref<DataserviceSortedBy>('title')
 const direction = ref<SortDirection>('desc')
 const sortDirection = computed(() => `${direction.value === 'asc' ? '' : '-'}${sortedBy.value}`)
-const downloadStatsUrl = computed(() => props.organization ? `/api/1/organizations/${props.organization.id}/dataservices.csv` : null)
+const downloadStatsUrl = computed(() => props.organization ? `${config.public.apiBase}/api/1/organizations/${props.organization.id}/dataservices.csv` : null)
 
 const params = computed(() => {
   return {

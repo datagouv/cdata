@@ -9,21 +9,15 @@
           border: none;"
       />
     </div>
-    <SimpleBanner
-      v-else
-      type="warning"
-      class="flex items-center space-x-2"
-    >
-      <RiErrorWarningLine class="shrink-0 size-6" />
-      <span>{{ t("Erreur lors de l'affichage de l'aperçu.") }}</span>
-    </SimpleBanner>
+    <PreviewUnavailable v-else>
+      {{ t("L'aperçu de ce fichier n'a pas pu être chargé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+    </PreviewUnavailable>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RiErrorWarningLine } from '@remixicon/vue'
-import SimpleBanner from '../SimpleBanner.vue'
+import PreviewUnavailable from './PreviewUnavailable.vue'
 import type { Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 import { useTranslation } from '../../composables/useTranslation'

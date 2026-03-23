@@ -82,16 +82,19 @@ test.describe('Post kind filter', () => {
 
     // Go to homepage and verify the latest news appears in the news section (not the page)
     await page.goto('/')
+    await page.waitForLoadState('networkidle')
     await expect(page.getByRole('heading', { level: 3, name: `Test News ${uniqueId}` })).toBeVisible()
     await expect(page.getByText(`Test Page ${uniqueId}`)).not.toBeVisible()
 
     // Go to public news page and verify only news appears
     await page.goto('/posts')
+    await page.waitForLoadState('networkidle')
     await expect(page.getByText(`Test News ${uniqueId}`)).toBeVisible()
     await expect(page.getByText(`Test Page ${uniqueId}`)).not.toBeVisible()
 
     // Go to admin posts page
     await page.goto('/admin/site/posts')
+    await page.waitForLoadState('networkidle')
 
     // Verify both posts appear with correct types
     await expect(page.getByText(`Test News ${uniqueId}`)).toBeVisible()

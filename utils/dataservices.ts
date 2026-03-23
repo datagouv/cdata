@@ -18,6 +18,7 @@ export function dataserviceToForm(dataservice: Dataservice): DataserviceForm {
     technical_documentation_url: dataservice.technical_documentation_url || '',
     business_documentation_url: dataservice.business_documentation_url || '',
     rate_limiting: dataservice.rate_limiting,
+    rate_limiting_url: dataservice.rate_limiting_url || '',
     availability: dataservice.availability?.toString() || '',
     private: dataservice.private,
     featured: dataservice.featured,
@@ -43,6 +44,7 @@ export function dataserviceToApi(form: DataserviceForm, overrides: { archived_at
     machine_documentation_url: form.machine_documentation_url || null,
     business_documentation_url: form.business_documentation_url || null,
     rate_limiting: form.rate_limiting,
+    rate_limiting_url: form.rate_limiting_url || null,
     availability: form.availability ? parseFloat(form.availability) : null,
   }
 }
