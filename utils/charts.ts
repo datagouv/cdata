@@ -9,8 +9,9 @@ export function toChartForm(chart: Chart) {
     x_axis: {
       column_x: chart.x_axis.column_x,
       type: chart.x_axis.type,
-      sort_x_by: chart.x_axis.sort_x_by || '',
-      sort_x_direction: chart.x_axis.sort_x_direction || 'asc',
+      sort_combined: chart.x_axis.sort_x_by && chart.x_axis.sort_x_direction
+        ? `${chart.x_axis.sort_x_by}-${chart.x_axis.sort_x_direction}`
+        : '',
     },
     y_axis: {
       label: chart.y_axis.label || '',
@@ -37,8 +38,12 @@ export function toChartApi(chartForm: ChartForm): ChartForApi {
     x_axis: {
       column_x: chartForm.x_axis.column_x,
       type: chartForm.x_axis.type,
-      sort_x_by: chartForm.x_axis.sort_x_by || null,
-      sort_x_direction: chartForm.x_axis.sort_x_direction || null,
+      sort_x_by: chartForm.x_axis.sort_combined
+        ? (chartForm.x_axis.sort_combined.split('-')[0] as 'axis_x' | 'axis_y')
+        : null,
+      sort_x_direction: chartForm.x_axis.sort_combined
+        ? (chartForm.x_axis.sort_combined.split('-')[1] as 'asc' | 'desc')
+        : null,
     },
     y_axis: {
       label: chartForm.y_axis.label ?? null,
