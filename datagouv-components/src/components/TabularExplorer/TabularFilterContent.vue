@@ -101,7 +101,7 @@
           <span
             v-if="categoryBadgeStyles?.[top.value]"
             class="inline-block rounded font-medium px-2 py-0.5 text-xs"
-            :style="categoryBadgeStyles[top.value]"
+            :style="{ backgroundColor: categoryBadgeStyles[top.value].backgroundColor, color: categoryBadgeStyles[top.value].color }"
           >{{ top.value }}</span>
           <template v-else>
             {{ top.value ?? 'null' }}
@@ -151,56 +151,60 @@
     </div>
 
     <!-- Number range -->
-    <template v-if="columnType === 'number' && columnProfile">
-      <div class="px-3 py-2 border-b border-black/10 space-y-2">
-        <div class="flex items-center gap-2 text-xs text-gray-plain">
-          <span class="tabular-nums">{{ profileMin.toLocaleString('fr-FR') }}</span>
-          <span class="text-gray-medium">—</span>
-          <span class="tabular-nums">{{ profileMax.toLocaleString('fr-FR') }}</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <input
-            v-model.number="rangeMin"
-            type="number"
-            class="w-full h-7 text-xs border border-black/10 rounded px-2 bg-[#f3f3f5] focus:outline-none focus:border-new-primary tabular-nums"
-            :placeholder="String(profileMin)"
-            :min="profileMin"
-            :max="profileMax"
-          >
-          <span class="text-gray-medium text-xs">–</span>
-          <input
-            v-model.number="rangeMax"
-            type="number"
-            class="w-full h-7 text-xs border border-black/10 rounded px-2 bg-[#f3f3f5] focus:outline-none focus:border-new-primary tabular-nums"
-            :placeholder="String(profileMax)"
-            :min="profileMin"
-            :max="profileMax"
-          >
-        </div>
-        <div class="flex items-center gap-2">
-          <BrandedButton
-            color="primary"
-            size="2xs"
-            @click="applyRange"
-          >
-            {{ t('Appliquer') }}
-          </BrandedButton>
-          <BrandedButton
-            color="tertiary"
-            size="2xs"
-            keep-margins-even-without-borders
-            @click="clearRange"
-          >
-            {{ t('Effacer') }}
-          </BrandedButton>
-        </div>
+    <form
+      v-if="columnType === 'number' && columnProfile"
+      class="px-3 py-2 border-b border-black/10 space-y-2"
+      @submit.prevent="applyRange"
+    >
+      <div class="flex items-center gap-2 text-xs text-gray-plain">
+        <span class="tabular-nums">{{ profileMin.toLocaleString('fr-FR') }}</span>
+        <span class="text-gray-medium">—</span>
+        <span class="tabular-nums">{{ profileMax.toLocaleString('fr-FR') }}</span>
       </div>
-    </template>
+      <div class="flex items-center gap-2">
+        <input
+          v-model.number="rangeMin"
+          type="number"
+          class="w-full h-7 text-xs border border-black/10 rounded px-2 bg-[#f3f3f5] focus:outline-none focus:border-new-primary tabular-nums"
+          :placeholder="String(profileMin)"
+          :min="profileMin"
+          :max="profileMax"
+        >
+        <span class="text-gray-medium text-xs">–</span>
+        <input
+          v-model.number="rangeMax"
+          type="number"
+          class="w-full h-7 text-xs border border-black/10 rounded px-2 bg-[#f3f3f5] focus:outline-none focus:border-new-primary tabular-nums"
+          :placeholder="String(profileMax)"
+          :min="profileMin"
+          :max="profileMax"
+        >
+      </div>
+      <div class="flex items-center gap-2">
+        <BrandedButton
+          color="primary"
+          size="2xs"
+          type="submit"
+        >
+          {{ t('Appliquer') }}
+        </BrandedButton>
+        <BrandedButton
+          color="tertiary"
+          size="2xs"
+          type="button"
+          keep-margins-even-without-borders
+          @click="clearRange"
+        >
+          {{ t('Effacer') }}
+        </BrandedButton>
+      </div>
+    </form>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
+import { watchDebounced } from '@vueuse/core'
 import {
   RiArrowUpLine,
   RiArrowDownLine,
@@ -210,7 +214,7 @@ import {
 import { useTranslation } from '../../composables/useTranslation'
 import BrandedButton from '../BrandedButton.vue'
 import ProgressBar from '../ProgressBar.vue'
-import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig, SortDirection } from './types'
+import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig, SortDirection, BadgeStyle } from './types'
 
 const props = defineProps<{
   column: string
@@ -218,7 +222,7 @@ const props = defineProps<{
   columnProfile: TabularColumnProfile | null
   nullPercent: string
   totalLines: number
-  categoryBadgeStyles?: Record<string, { backgroundColor: string, color: string }>
+  categoryBadgeStyles?: Record<string, BadgeStyle>
   booleanCounts?: { trueCount: number, falseCount: number }
 }>()
 
@@ -229,21 +233,16 @@ const { t } = useTranslation()
 
 const search = ref('')
 
-let debounceTimeout: ReturnType<typeof setTimeout> | null = null
-
-watch(search, (q) => {
-  if (debounceTimeout) clearTimeout(debounceTimeout)
-  debounceTimeout = setTimeout(() => {
-    const existing = filters.value[props.column] ?? {}
-    if (q) {
-      filters.value = { ...filters.value, [props.column]: { ...existing, contains: q } }
-    }
-    else {
-      const { contains: _, ...rest } = existing
-      filters.value = { ...filters.value, [props.column]: rest }
-    }
-  }, 300)
-})
+watchDebounced(search, (q) => {
+  const existing = filters.value[props.column] ?? {}
+  if (q) {
+    filters.value = { ...filters.value, [props.column]: { ...existing, contains: q } }
+  }
+  else {
+    const { contains: _, ...rest } = existing
+    filters.value = { ...filters.value, [props.column]: rest }
+  }
+}, { debounce: 300 })
 
 // Null filter helpers
 const nullFilter = computed(() => filters.value[props.column]?.null ?? null)

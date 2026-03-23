@@ -224,9 +224,15 @@
             <tr v-if="allRows.length === 0">
               <td
                 :colspan="displayedColumns.length"
-                class="py-16 text-center text-sm text-gray-low"
+                class="py-16 text-center"
               >
-                {{ t('Aucun résultat trouvé.') }}
+                <div class="flex flex-col items-center gap-2">
+                  <RiSearchLine
+                    class="size-8 text-gray-low"
+                    aria-hidden="true"
+                  />
+                  <span class="text-sm text-gray-low">{{ t('Aucun résultat trouvé.') }}</span>
+                </div>
               </td>
             </tr>
             <tr
@@ -268,9 +274,15 @@
       <div class="md:hidden space-y-2 px-1">
         <div
           v-if="allRows.length === 0"
-          class="py-16 text-center text-sm text-gray-low"
+          class="py-16 text-center"
         >
-          {{ t('Aucun résultat trouvé.') }}
+          <div class="flex flex-col items-center gap-2">
+            <RiSearchLine
+              class="size-8 text-gray-low"
+              aria-hidden="true"
+            />
+            <span class="text-sm text-gray-low">{{ t('Aucun résultat trouvé.') }}</span>
+          </div>
         </div>
         <div
           v-for="(row, i) in allRows"
@@ -455,6 +467,7 @@ import {
   RiArrowDownLine,
   RiFilter2Line,
   RiCloseLine,
+  RiSearchLine,
 } from '@remixicon/vue'
 import { useFetch } from '../../functions/api'
 import { useTranslation } from '../../composables/useTranslation'
@@ -468,7 +481,7 @@ import TabularCellPopover from './TabularCellPopover.vue'
 import type { CellInfo } from './TabularCellPopover.vue'
 import TabularFilterContent from './TabularFilterContent.vue'
 import TabularFilterPopover from './TabularFilterPopover.vue'
-import type { TabularDataResponse, TabularProfileResponse, TabularRow, ColumnType, SortConfig, ColumnFilters } from './types'
+import type { TabularDataResponse, TabularProfileResponse, TabularRow, ColumnType, SortConfig, ColumnFilters, BadgeStyle } from './types'
 
 const props = defineProps<{
   resourceId: string
@@ -816,13 +829,13 @@ const badgeColorMap = computed(() => {
   return map
 })
 
-function getCategoryBadgeStyle(col: string, value: string): { backgroundColor: string, color: string } {
+function getCategoryBadgeStyle(col: string, value: string): BadgeStyle {
   const colors = badgeColorMap.value.get(`${col}::${value}`) ?? BADGE_FALLBACK
   return { backgroundColor: colors.bg, color: colors.text }
 }
 
-function getCategoryBadgeStylesForColumn(col: string): Record<string, { backgroundColor: string, color: string }> {
-  const styles: Record<string, { backgroundColor: string, color: string }> = {}
+function getCategoryBadgeStylesForColumn(col: string): Record<string, BadgeStyle> {
+  const styles: Record<string, BadgeStyle> = {}
   for (const top of getTopsEntries(col)) {
     styles[top.value] = getCategoryBadgeStyle(col, top.value)
   }

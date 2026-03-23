@@ -66,7 +66,7 @@ import { hasFilterForColumn as _hasFilterForColumn } from '../../functions/tabul
 import BrandedButton from '../BrandedButton.vue'
 import ClientOnly from '../ClientOnly.vue'
 import TabularFilterContent from './TabularFilterContent.vue'
-import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig } from './types'
+import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig, BadgeStyle } from './types'
 
 const props = defineProps<{
   column: string
@@ -74,7 +74,7 @@ const props = defineProps<{
   columnProfile: TabularColumnProfile | null
   nullPercent: string
   totalLines: number
-  categoryBadgeStyles?: Record<string, { backgroundColor: string, color: string }>
+  categoryBadgeStyles?: Record<string, BadgeStyle>
   booleanCounts?: { trueCount: number, falseCount: number }
 }>()
 

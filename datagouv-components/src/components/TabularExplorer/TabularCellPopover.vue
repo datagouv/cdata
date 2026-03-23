@@ -139,6 +139,15 @@ function filterByValue() {
       filters.value = { ...filters.value, [col]: { ...existing, min: num, max: num } }
     }
   }
+  else if (cell.value.columnType === 'boolean') {
+    filters.value = { ...filters.value, [col]: { ...existing, exact: val } }
+  }
+  else if (cell.value.columnType === 'date') {
+    const current = existing.in ?? []
+    if (!current.includes(val)) {
+      filters.value = { ...filters.value, [col]: { ...existing, in: [...current, val] } }
+    }
+  }
   close()
 }
 

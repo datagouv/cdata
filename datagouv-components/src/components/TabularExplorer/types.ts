@@ -76,3 +76,8 @@ export interface SortConfig {
   column: string
   direction: SortDirection
 }
+
+export interface BadgeStyle {
+  backgroundColor: string
+  color: string
+}

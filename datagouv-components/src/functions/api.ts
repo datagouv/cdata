@@ -93,9 +93,7 @@ export async function useFetch<DataT, ErrorT = never>(
 
   return {
     data,
-    refresh: async () => {
-      execute()
-    },
+    refresh: () => execute(),
     execute,
     clear: () => {
       data.value = null
