@@ -57,10 +57,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
+import { onClickOutside } from '@vueuse/core'
 import { RiFilter2Line, RiCloseLine } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
+import { hasFilterForColumn as _hasFilterForColumn } from '../../functions/tabular'
 import BrandedButton from '../BrandedButton.vue'
 import ClientOnly from '../ClientOnly.vue'
 import TabularFilterContent from './TabularFilterContent.vue'
@@ -90,27 +92,11 @@ function togglePopover() {
 const anchorRef = useTemplateRef<HTMLElement>('anchor')
 const panelRef = useTemplateRef<HTMLElement>('panel')
 
-function onClickOutside(e: MouseEvent) {
-  if (!isOpen.value) return
-  const anchor = anchorRef.value
-  const panel = panelRef.value
-  if (anchor && anchor.contains(e.target as Node)) return
-  if (panel && panel.contains(e.target as Node)) return
+onClickOutside(panelRef, () => {
   isOpen.value = false
-}
+}, { ignore: [anchorRef] })
 
-onMounted(() => {
-  document.addEventListener('mousedown', onClickOutside)
-})
-onUnmounted(() => {
-  document.removeEventListener('mousedown', onClickOutside)
-})
-
-const hasColumnFilter = computed(() => {
-  const f = filters.value[props.column]
-  if (!f) return false
-  return !!(f.in?.length || f.exact != null || f.contains || f.null || f.min != null || f.max != null)
-})
+const hasColumnFilter = computed(() => _hasFilterForColumn(filters.value, props.column))
 
 function clearColumnFilter() {
   const { [props.column]: _, ...rest } = filters.value

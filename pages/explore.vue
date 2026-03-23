@@ -92,7 +92,7 @@
                 v-if="resource.filesize"
                 class="text-gray-400 text-xs ml-auto"
               >
-                {{ formatFilesize(resource.filesize) }}
+                {{ filesize(resource.filesize) }}
               </span>
             </button>
           </div>
@@ -129,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { TabularExplorer } from '@datagouv/components-next'
+import { TabularExplorer, filesize } from '@datagouv/components-next'
 import type { Dataset } from '@datagouv/components-next'
 import type { PaginatedArray } from '~/types/types'
 
@@ -150,12 +150,5 @@ function search() {
 
 function selectResource(id: string) {
   resourceId.value = id
-}
-
-function formatFilesize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} o`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} Ko`
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} Go`
 }
 </script>

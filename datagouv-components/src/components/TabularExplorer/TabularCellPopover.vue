@@ -67,20 +67,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch, type Component as VueComponent } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
+import { onClickOutside } from '@vueuse/core'
 import {
   RiFilter2Line,
   RiFileCopyLine,
   RiCheckLine,
-  RiHashtag,
-  RiPriceTag3Line,
-  RiText,
-  RiCalendarLine,
-  RiCheckboxLine,
 } from '@remixicon/vue'
 import { toast } from 'vue-sonner'
 import { useTranslation } from '../../composables/useTranslation'
+import { buildTypeConfig } from '../../functions/tabular'
 import ClientOnly from '../ClientOnly.vue'
 import type { ColumnType, ColumnFilters } from './types'
 
@@ -116,15 +113,9 @@ const displayValue = computed(() => {
   return String(v)
 })
 
-const typeConfig: Record<ColumnType, { icon: VueComponent, label: string }> = {
-  number: { icon: RiHashtag, label: 'Number' },
-  categorical: { icon: RiPriceTag3Line, label: 'Categorical' },
-  text: { icon: RiText, label: 'Text' },
-  date: { icon: RiCalendarLine, label: 'Date' },
-  boolean: { icon: RiCheckboxLine, label: 'Boolean' },
-}
+const typeConfig = buildTypeConfig(t)
 
-const typeIcon = computed(() => cell.value ? typeConfig[cell.value.columnType].icon : RiText)
+const typeIcon = computed(() => cell.value ? typeConfig[cell.value.columnType].icon : typeConfig.text.icon)
 const typeLabel = computed(() => cell.value ? typeConfig[cell.value.columnType].label : '')
 
 function close() {
@@ -166,20 +157,10 @@ async function copyValue() {
   }
 }
 
-function onClickOutside(e: MouseEvent) {
+onClickOutside(panelRef, (e) => {
   if (!cell.value) return
-  const panel = panelRef.value
-  if (panel && panel.contains(e.target as Node)) return
-  // Don't close if clicking on the active cell's td (let the parent handle toggle)
   const clickedTd = (e.target as HTMLElement).closest('td')
   if (clickedTd && clickedTd === cell.value.element) return
   close()
-}
-
-onMounted(() => {
-  document.addEventListener('mousedown', onClickOutside)
-})
-onUnmounted(() => {
-  document.removeEventListener('mousedown', onClickOutside)
 })
 </script>

@@ -28,7 +28,7 @@
 
         <!-- Right: Stats -->
         <div class="flex items-center gap-4">
-          <!-- Colonnes (clickable, opens column popover) -->
+          <!-- Columns (clickable, opens column popover) -->
           <Popover
             v-slot="{ open }"
             ref="columnPopover"
@@ -89,7 +89,7 @@
             </ClientOnly>
           </Popover>
 
-          <!-- Lignes -->
+          <!-- Rows -->
           <span class="flex items-center gap-1.5 text-xs text-gray-plain">
             <RiLayoutRowLine
               class="size-3 text-mention-grey"
@@ -103,7 +103,7 @@
 
       <!-- Active filters -->
       <div
-        v-if="hasActiveFilters"
+        v-if="activeFilters.length > 0"
         class="bg-gray-some border border-gray-default rounded-xl px-3 py-2.5 mb-3 space-y-2.5"
       >
         <!-- Header -->
@@ -242,32 +242,11 @@
                 :style="columnWidths[col] ? { maxWidth: columnWidths[col] + 'px' } : undefined"
                 @click="onCellClick(col, row[col], $event)"
               >
-                <span
-                  v-if="row[col] == null || row[col] === ''"
-                  class="font-[Inconsolata,monospace] text-gray-low italic text-sm"
-                >null</span>
-                <span v-else-if="getColumnType(col) === 'number'">{{ formatNumber(row[col]) }}</span>
-                <span v-else-if="getColumnType(col) === 'date'">{{ formatDate(row[col]) }}</span>
-                <span
-                  v-else-if="getColumnType(col) === 'boolean'"
-                  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs"
-                  :class="isTruthy(row[col]) ? 'bg-new-success-light text-new-success' : 'bg-new-warning-light text-new-error'"
-                >
-                  <span
-                    class="size-2 rounded-full"
-                    :class="isTruthy(row[col]) ? 'bg-new-success' : 'bg-new-error'"
-                  />
-                  {{ isTruthy(row[col]) ? t('Vrai') : t('Faux') }}
-                </span>
-                <span
-                  v-else-if="getColumnType(col) === 'categorical'"
-                  class="inline-block rounded font-medium px-2 py-0.5 text-xs max-w-full truncate"
-                  :style="getCategoryBadgeStyle(col, String(row[col]))"
-                >{{ row[col] }}</span>
-                <span
-                  v-else
-                  class="text-gray-title truncate block text-xs"
-                >{{ row[col] }}</span>
+                <TabularCell
+                  :value="row[col]"
+                  :column-type="getColumnType(col)"
+                  :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
+                />
               </td>
             </tr>
           </tbody>
@@ -319,38 +298,12 @@
               class="min-w-0 pl-4 cursor-pointer"
               @click="onCellClick(col, row[col], $event)"
             >
-              <span
-                v-if="row[col] == null || row[col] === ''"
-                class="font-[Inconsolata,monospace] text-gray-low italic text-xs"
-              >null</span>
-              <span
-                v-else-if="getColumnType(col) === 'boolean'"
-                class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs"
-                :class="isTruthy(row[col]) ? 'bg-new-success-light text-new-success' : 'bg-new-warning-light text-new-error'"
-              >
-                <span
-                  class="size-2 rounded-full"
-                  :class="isTruthy(row[col]) ? 'bg-new-success' : 'bg-new-error'"
-                />
-                {{ isTruthy(row[col]) ? t('Vrai') : t('Faux') }}
-              </span>
-              <span
-                v-else-if="getColumnType(col) === 'categorical'"
-                class="inline-block rounded font-medium px-2 py-0.5 text-xs max-w-full truncate"
-                :style="getCategoryBadgeStyle(col, String(row[col]))"
-              >{{ row[col] }}</span>
-              <span
-                v-else-if="getColumnType(col) === 'number'"
-                class="font-mono tabular-nums text-xs text-gray-title"
-              >{{ formatNumber(row[col]) }}</span>
-              <span
-                v-else-if="getColumnType(col) === 'date'"
-                class="font-mono tabular-nums text-xs text-gray-title"
-              >{{ formatDate(row[col]) }}</span>
-              <span
-                v-else
-                class="text-gray-title text-xs truncate block"
-              >{{ row[col] }}</span>
+              <TabularCell
+                :value="row[col]"
+                :column-type="getColumnType(col)"
+                :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
+                compact
+              />
             </div>
           </div>
           <button
@@ -500,20 +453,17 @@ import {
   RiArrowDownSLine,
   RiArrowUpLine,
   RiArrowDownLine,
-  RiPriceTag3Line,
-  RiText,
-  RiCalendarLine,
-  RiCheckboxLine,
-  RiHashtag,
   RiFilter2Line,
   RiCloseLine,
 } from '@remixicon/vue'
 import { useFetch } from '../../functions/api'
 import { useTranslation } from '../../composables/useTranslation'
+import { buildTypeConfig, hasFilterForColumn as _hasFilterForColumn } from '../../functions/tabular'
 import ClientOnly from '../ClientOnly.vue'
 import SimpleBanner from '../SimpleBanner.vue'
 import BrandedButton from '../BrandedButton.vue'
 import InfiniteLoader from '../InfiniteLoader.vue'
+import TabularCell from './TabularCell.vue'
 import TabularCellPopover from './TabularCellPopover.vue'
 import type { CellInfo } from './TabularCellPopover.vue'
 import TabularFilterContent from './TabularFilterContent.vue'
@@ -590,9 +540,11 @@ const allRows = ref<TabularRow[]>([])
 const currentPage = ref(1)
 const hasMore = ref(false)
 const loadingMore = ref(false)
+const generation = ref(0)
 const scrollContainerRef = useTemplateRef<HTMLElement>('scrollContainer')
 
 watch(() => tableData.value, (data) => {
+  generation.value++
   if (data) {
     allRows.value = [...data.data]
     currentPage.value = 1
@@ -603,10 +555,13 @@ watch(() => tableData.value, (data) => {
 async function loadNextPage() {
   if (loadingMore.value || !hasMore.value || !tableData.value) return
   loadingMore.value = true
+  const gen = generation.value
   try {
     const nextPage = currentPage.value + 1
     const query = { ...dataQuery.value, page: nextPage }
     const data = await ofetch<TabularDataResponse>(dataUrl.value, { params: query })
+    // Discard stale response if filters/sort changed during the fetch
+    if (gen !== generation.value) return
     allRows.value = [...allRows.value, ...data.data]
     currentPage.value = nextPage
     hasMore.value = allRows.value.length < tableData.value.meta.total
@@ -621,6 +576,12 @@ const totalLines = computed(() => profileData.value?.profile?.total_lines ?? tab
 const allColumns = computed(() => profileData.value?.profile?.header ?? [])
 
 const visibleColumns = ref(new Set(allColumns.value))
+
+watch(allColumns, (cols) => {
+  if (cols.length > 0 && visibleColumns.value.size === 0) {
+    visibleColumns.value = new Set(cols)
+  }
+})
 
 const displayedColumns = computed(() =>
   allColumns.value.filter(col => visibleColumns.value.has(col)),
@@ -753,8 +714,6 @@ const activeFilters = computed<ActiveFilter[]>(() => {
   return result
 })
 
-const hasActiveFilters = computed(() => activeFilters.value.length > 0)
-
 function removeFilter(column: string) {
   const { [column]: _, ...rest } = filters.value
   filters.value = rest
@@ -765,9 +724,7 @@ function clearAllFilters() {
 }
 
 function hasFilterForColumn(col: string): boolean {
-  const f = filters.value[col]
-  if (!f) return false
-  return !!(f.in?.length || f.exact != null || f.contains || f.null || f.min != null || f.max != null)
+  return _hasFilterForColumn(filters.value, col)
 }
 
 // Mobile state
@@ -822,13 +779,7 @@ function getNullPercent(col: string) {
   return `${((colProfile.nb_missing_values / total) * 100).toFixed(1)}%`
 }
 
-const typeConfig: Record<ColumnType, { icon: Component, label: string }> = {
-  number: { icon: RiHashtag, label: t('Nombre') },
-  categorical: { icon: RiPriceTag3Line, label: t('Catégoriel') },
-  text: { icon: RiText, label: t('Texte') },
-  date: { icon: RiCalendarLine, label: t('Date') },
-  boolean: { icon: RiCheckboxLine, label: t('Booléen') },
-}
+const typeConfig = buildTypeConfig(t)
 
 function columnTypeIcon(col: string): Component {
   return typeConfig[getColumnType(col)].icon
@@ -836,26 +787,6 @@ function columnTypeIcon(col: string): Component {
 
 function columnTypeLabel(col: string): string {
   return typeConfig[getColumnType(col)].label
-}
-
-// Cell rendering helpers
-function formatNumber(value: unknown): string {
-  const num = Number(value)
-  if (Number.isNaN(num)) return String(value)
-  return num.toLocaleString('fr-FR')
-}
-
-function formatDate(value: unknown): string {
-  if (value == null || value === '') return '–'
-  const d = new Date(String(value))
-  if (Number.isNaN(d.getTime())) return String(value)
-  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
-}
-
-function isTruthy(value: unknown): boolean {
-  if (typeof value === 'boolean') return value
-  if (typeof value === 'string') return value.toLowerCase() === 'true'
-  return Boolean(value)
 }
 
 const BADGE_PALETTE = [

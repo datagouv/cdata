@@ -19,10 +19,11 @@ export async function useAPI<T, U = T>(
   const redirectOn404 = options && 'redirectOn404' in options && options.redirectOn404
   const redirectOnSlug = options && 'redirectOnSlug' in options && options.redirectOnSlug
   const isRaw = options && 'raw' in options && options.raw
-  const response = await useFetch(url, {
-    ...options,
-    ...(!isRaw && { $fetch: redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api }),
-  })
+  const fetchOptions = { ...options }
+  if (!isRaw) {
+    fetchOptions.$fetch = redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api
+  }
+  const response = await useFetch(url, fetchOptions)
 
   if (!isRaw) {
     const data = toValue(response.data) || {}
