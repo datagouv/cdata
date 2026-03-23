@@ -29,65 +29,65 @@
         <!-- Right: Stats -->
         <div class="flex items-center gap-4">
           <!-- Columns (clickable, opens column popover) -->
-          <Popover
-            v-slot="{ open }"
-            ref="columnPopover"
+          <div
+            ref="columnAnchor"
             class="relative"
           >
-            <PopoverButton class="flex items-center gap-1.5 text-xs text-gray-plain rounded px-2 py-1 hover:bg-gray-50 focus:outline-none">
-              <RiLayoutColumnLine
-                class="size-3"
-                aria-hidden="true"
-              />
-              <span class="font-bold hidden md:inline">{{ t('Colonnes') }}</span>
-              <span class="font-mono tabular-nums">{{ visibleColumns.size }}/{{ allColumns.length }}</span>
-              <RiArrowDownSLine
-                class="size-3 opacity-50"
-                aria-hidden="true"
-              />
-            </PopoverButton>
+            <Popover v-slot="{ open }">
+              <PopoverButton class="flex items-center gap-1.5 text-xs text-gray-plain rounded px-2 py-1 hover:bg-gray-50 focus:outline-none">
+                <RiLayoutColumnLine
+                  class="size-3"
+                  aria-hidden="true"
+                />
+                <span class="font-bold hidden md:inline">{{ t('Colonnes') }}</span>
+                <span class="font-mono tabular-nums">{{ visibleColumns.size }}/{{ allColumns.length }}</span>
+                <RiArrowDownSLine
+                  class="size-3 opacity-50"
+                  aria-hidden="true"
+                />
+              </PopoverButton>
 
-            <ClientOnly>
-              <Teleport to="#tooltips">
-                <PopoverPanel
-                  v-show="open"
-                  ref="columnPanel"
-                  class="bg-white border border-gray-default rounded shadow-lg w-72 absolute z-[800]"
-                  :style="columnFloatingStyles"
-                  static
-                >
-                  <div class="flex items-center justify-between px-3 py-2 border-b border-gray-default">
-                    <span class="text-xs font-medium text-gray-title">
-                      {{ visibleColumns.size }} {{ t('sur') }} {{ allColumns.length }} {{ t('colonnes visibles') }}
-                    </span>
-                    <BrandedButton
-                      v-if="hiddenCount"
-                      color="tertiary"
-                      size="2xs"
-                      @click="showAllColumns"
-                    >
-                      {{ t('Tout afficher') }}
-                    </BrandedButton>
-                  </div>
-                  <div class="max-h-64 overflow-auto p-1">
-                    <label
-                      v-for="col in allColumns"
-                      :key="col"
-                      class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer text-xs"
-                    >
-                      <input
-                        type="checkbox"
-                        :checked="visibleColumns.has(col)"
-                        class="size-3.5 accent-new-primary"
-                        @change="toggleColumn(col)"
+              <ClientOnly>
+                <Teleport to="#tooltips">
+                  <div
+                    v-show="open"
+                    ref="columnPanel"
+                    class="bg-white border border-gray-default rounded shadow-lg w-72 absolute z-[800]"
+                    :style="columnFloatingStyles"
+                  >
+                    <div class="flex items-center justify-between px-3 py-2 border-b border-gray-default">
+                      <span class="text-xs font-medium text-gray-title">
+                        {{ visibleColumns.size }} {{ t('sur') }} {{ allColumns.length }} {{ t('colonnes visibles') }}
+                      </span>
+                      <BrandedButton
+                        v-if="hiddenCount"
+                        color="tertiary"
+                        size="2xs"
+                        @click="showAllColumns"
                       >
-                      <span class="truncate">{{ col }}</span>
-                    </label>
+                        {{ t('Tout afficher') }}
+                      </BrandedButton>
+                    </div>
+                    <div class="max-h-64 overflow-auto p-1">
+                      <label
+                        v-for="col in allColumns"
+                        :key="col"
+                        class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer text-xs"
+                      >
+                        <input
+                          type="checkbox"
+                          :checked="visibleColumns.has(col)"
+                          class="size-3.5 accent-new-primary"
+                          @change="toggleColumn(col)"
+                        >
+                        <span class="truncate">{{ col }}</span>
+                      </label>
+                    </div>
                   </div>
-                </PopoverPanel>
-              </Teleport>
-            </ClientOnly>
-          </Popover>
+                </Teleport>
+              </ClientOnly>
+            </Popover>
+          </div>
 
           <!-- Rows -->
           <span class="flex items-center gap-1.5 text-xs text-gray-plain">
@@ -460,7 +460,7 @@
 import { computed, onUnmounted, ref, watch, useTemplateRef } from 'vue'
 import { ofetch } from 'ofetch'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
-import { Dialog, DialogPanel, DialogTitle, Popover, PopoverButton, PopoverPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
+import { Dialog, DialogPanel, DialogTitle, Popover, PopoverButton, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import {
   RiLayoutColumnLine,
   RiLayoutRowLine,
@@ -492,10 +492,10 @@ const props = defineProps<{
 const { t } = useTranslation()
 
 // Column selector popover positioning
-const columnPopoverRef = useTemplateRef<InstanceType<typeof Popover>>('columnPopover')
-const columnPanelRef = useTemplateRef<InstanceType<typeof PopoverPanel>>('columnPanel')
+const columnAnchorRef = useTemplateRef<HTMLElement>('columnAnchor')
+const columnPanelRef = useTemplateRef<HTMLElement>('columnPanel')
 
-const { floatingStyles: columnFloatingStyles } = useFloating(columnPopoverRef, columnPanelRef, {
+const { floatingStyles: columnFloatingStyles } = useFloating(columnAnchorRef, columnPanelRef, {
   placement: 'bottom-start',
   middleware: [flip(), shift()],
   whileElementsMounted: autoUpdate,
