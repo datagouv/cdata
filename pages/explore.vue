@@ -11,15 +11,9 @@
       <div class="flex flex-wrap gap-2">
         <button
           class="fr-btn fr-btn--secondary fr-btn--sm"
-          @click="selectResource('79e2c14d-8278-4407-84b5-e8c279fc578c')"
+          @click="selectResource('eaa95292-072d-4353-a6b8-1be65be0ab0f')"
         >
-          Indicateurs data.gouv
-        </button>
-        <button
-          class="fr-btn fr-btn--secondary fr-btn--sm"
-          @click="selectResource('d0574a19-9005-4fff-92db-050b5fb2c72c')"
-        >
-          Données véhicules
+          Petitions du Sénat
         </button>
       </div>
 

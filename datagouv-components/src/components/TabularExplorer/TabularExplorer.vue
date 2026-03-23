@@ -167,7 +167,7 @@
                 v-for="col in displayedColumns"
                 :key="col"
                 class="group/th relative h-14 px-2 text-left align-middle whitespace-nowrap border-r border-gray-default last:border-r-0"
-                :style="columnWidths[col] ? { width: columnWidths[col] + 'px', minWidth: columnWidths[col] + 'px', maxWidth: columnWidths[col] + 'px' } : undefined"
+                :style="columnWidths[col] ? { width: columnWidths[col] + 'px', minWidth: columnWidths[col] + 'px', maxWidth: columnWidths[col] + 'px' } : { maxWidth: '300px' }"
               >
                 <div class="flex items-center gap-0.5 min-w-0">
                   <span
@@ -246,7 +246,7 @@
                 data-cell
                 class="p-2 align-middle whitespace-nowrap border-r border-gray-default last:border-r-0 overflow-hidden cursor-pointer hover:bg-gray-200/50"
                 :class="{ 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' }"
-                :style="columnWidths[col] ? { maxWidth: columnWidths[col] + 'px' } : undefined"
+                :style="columnWidths[col] ? { maxWidth: columnWidths[col] + 'px' } : { maxWidth: '300px' }"
                 @click="onCellClick(col, row[col], $event)"
               >
                 <TabularCell
