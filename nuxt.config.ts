@@ -296,13 +296,13 @@ export default defineNuxtConfig({
           {
             name: 'dataservices-search',
             path: '/dataservices/search',
-            file: resolve(__dirname, 'pages/datasets/search.vue'),
+            file: resolve(__dirname, 'app/pages/datasets/search.vue'),
             meta: { key: 'search' },
           },
           {
             name: 'reuses-search',
             path: '/reuses/search',
-            file: resolve(__dirname, 'pages/datasets/search.vue'),
+            file: resolve(__dirname, 'app/pages/datasets/search.vue'),
             meta: { key: 'search' },
           },
         )
@@ -310,7 +310,7 @@ export default defineNuxtConfig({
         // Replace the existing /organizations page with the unified search page
         const orgRoute = pages.find(p => p.path === '/organizations')
         if (orgRoute) {
-          orgRoute.file = resolve(__dirname, 'pages/datasets/search.vue')
+          orgRoute.file = resolve(__dirname, 'app/pages/datasets/search.vue')
           orgRoute.meta = { ...orgRoute.meta, key: 'search' }
         }
       }
