@@ -361,6 +361,7 @@ export default defineNuxtConfig({
       },
     ],
   },
+
   image: {
     screens: {
       xs: 320,
@@ -368,6 +369,13 @@ export default defineNuxtConfig({
       md: 768,
       lg: 992,
       xl: 1248,
+    },
+  },
+  ogImage: {
+    defaults: {
+      takumi: {
+        devicePixelRatio: 2,
+      },
     },
   },
 
