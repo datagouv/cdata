@@ -174,40 +174,28 @@
         </div>
         <div>
           <label
-            for="x-axis-sort-by"
+            for="x-axis-sort-combined"
             class="mb-1"
           >{{ $t('Trier par') }}</label>
           <select
-            id="x-axis-sort-by"
-            v-model="form.x_axis.sort_x_by"
+            id="x-axis-sort-combined"
+            v-model="form.x_axis.sort_combined"
             class="w-full fr-select"
           >
             <option value="">
               {{ $t('Aucun') }}
             </option>
-            <option value="axis_x">
-              {{ $t('Axe X') }}
+            <option value="axis_x-asc">
+              {{ $t('Axe X - Ascendant') }}
             </option>
-            <option value="axis_y">
-              {{ $t('Axe Y') }}
+            <option value="axis_x-desc">
+              {{ $t('Axe X - Descendant') }}
             </option>
-          </select>
-        </div>
-        <div>
-          <label
-            for="x-axis-sort-direction"
-            class="mb-1"
-          >{{ $t('Direction du tri') }}</label>
-          <select
-            id="x-axis-sort-direction"
-            v-model="form.x_axis.sort_x_direction"
-            class="w-full fr-select"
-          >
-            <option value="asc">
-              {{ $t('Ascendant') }}
+            <option value="axis_y-asc">
+              {{ $t('Axe Y - Ascendant') }}
             </option>
-            <option value="desc">
-              {{ $t('Descendant') }}
+            <option value="axis_y-desc">
+              {{ $t('Axe Y - Descendant') }}
             </option>
           </select>
         </div>

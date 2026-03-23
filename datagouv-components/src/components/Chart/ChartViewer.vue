@@ -61,8 +61,19 @@ const echartsOption = computed(() => {
 
     // Sort data before passing to ECharts to avoid transform issues
     const sortedData = [...props.series.data[resourceId]]
-    const sortBy = props.chart.x_axis.sort_x_by
-    const sortDirection = props.chart.x_axis.sort_x_direction ?? 'asc'
+    // Handle both old format (sort_x_by, sort_x_direction) and new format (sort_combined)
+    const sortCombined = (props.chart.x_axis as XAxis | XAxisForm).sort_combined
+    let sortBy: string | null = null
+    let sortDirection: 'asc' | 'desc' = 'asc'
+    if (sortCombined) {
+      const [sort, direction] = sortCombined.split('-')
+      sortBy = sort
+      sortDirection = direction as 'asc' | 'desc'
+    }
+    else {
+      sortBy = (props.chart.x_axis as XAxis).sort_x_by
+      sortDirection = (props.chart.x_axis as XAxis).sort_x_direction ?? 'asc'
+    }
 
     if (sortBy && sortDirection && props.chart.x_axis.column_x) {
       const sortKey = sortBy === 'axis_x' ? xColumn : yColumn

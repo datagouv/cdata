@@ -32,8 +32,7 @@ const chart = ref<ChartForm>({
   x_axis: {
     column_x: 'libellé_EPCI',
     type: 'discrete',
-    sort_x_by: null,
-    sort_x_direction: null,
+    sort_combined: '',
   },
   y_axis: {
     label: '',
