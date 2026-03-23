@@ -221,6 +221,7 @@ export type DataserviceForm = {
   technical_documentation_url: string | null
   business_documentation_url: string | null
   rate_limiting: string
+  rate_limiting_url: string | null
   availability: string
   private: boolean
 } & AccessTypeForm
@@ -241,6 +242,7 @@ export type NewDataserviceForApi = {
   technical_documentation_url: string | null
   business_documentation_url: string | null
   rate_limiting: string
+  rate_limiting_url: string | null
   availability: number | null
 } & WithAccessType
 

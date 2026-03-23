@@ -146,6 +146,19 @@ export function url<T, K extends KeysOfUnion<T>, V extends (string | undefined |
   }
 }
 
+export function looksLikeUrl<T, K extends KeysOfUnion<T>, V extends (string | undefined) & T[K]>(message: string | null = null): ValidationFunction<T, K, V> {
+  return (value: V, key: K, form: T, t) => {
+    if (!value) return null
+    try {
+      new URL(value)
+      return message || t('Ce champ semble contenir un lien.')
+    }
+    catch {
+      return null
+    }
+  }
+}
+
 export function email<T, K extends KeysOfUnion<T>, V extends (string | undefined) & T[K]>(message: string | null = null): ValidationFunction<T, K, V> {
   return (value: V, key: K, form: T, t) => {
     if (!value) return null

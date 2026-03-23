@@ -69,15 +69,6 @@
           </p>
         </Accordion>
         <Accordion
-          :id="rateLimitingDataserviceAccordionId"
-          :title="t(`Indiquer la limite d'appels`)"
-          :state="accordionState('rate_limiting')"
-        >
-          <p class="fr-m-0">
-            {{ t(`Si le nombre d'appels à votre API est contraint, veuillez définir ici le nombre maximal d'appels par minute, voire par IP et/ou jeton.`) }}
-          </p>
-        </Accordion>
-        <Accordion
           :id="availabilityDataserviceAccordionId"
           :title="t('Indiquer la disponibilité')"
           :state="accordionState('availability')"
@@ -121,6 +112,15 @@
         >
           <p class="fr-m-0">
             {{ t("La documentation métier de votre API explique son périmètre et ses cas d'usages. Elle vient en complément de la documentation technique.") }}
+          </p>
+        </Accordion>
+        <Accordion
+          :id="rateLimitingDataserviceAccordionId"
+          :title="t(`Indiquer la limite d'appels`)"
+          :state="accordionState('rate_limiting')"
+        >
+          <p class="fr-m-0">
+            {{ t(`Si le nombre d'appels à votre API est contraint, veuillez définir ici le nombre maximal d'appels par minute, voire par IP et/ou jeton. Vous pouvez également ajouter un lien vers la page décrivant les conditions d'utilisation.`) }}
           </p>
         </Accordion>
       </AccordionGroup>
@@ -323,21 +323,6 @@
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
-            :accordion="rateLimitingDataserviceAccordionId"
-            @blur="touch('rate_limiting')"
-          >
-            <InputGroup
-              v-model="form.rate_limiting"
-              :aria-describedby="rateLimitingDataserviceAccordionId"
-              :label="t(`Limite d'appels`)"
-              :required="false"
-              :has-error="!!getFirstError('rate_limiting')"
-              :has-warning="!!getFirstWarning('rate_limiting')"
-              :error-text="getFirstError('rate_limiting')"
-            />
-          </LinkedToAccordion>
-          <LinkedToAccordion
-            class="fr-fieldset__element"
             :accordion="availabilityDataserviceAccordionId"
             @blur="touch('availability')"
           >
@@ -457,6 +442,67 @@
             />
           </LinkedToAccordion>
         </fieldset>
+        <fieldset
+          class="fr-fieldset"
+          aria-labelledby="rate-limiting-legend"
+        >
+          <legend
+            id="rate-limiting-legend"
+            class="fr-fieldset__legend"
+          >
+            <h2 class="text-sm font-bold uppercase mb-3">
+              {{ t("Conditions d'utilisation") }}
+            </h2>
+          </legend>
+          <LinkedToAccordion
+            class="fr-fieldset__element"
+            :accordion="rateLimitingDataserviceAccordionId"
+            @blur="touch('rate_limiting')"
+          >
+            <InputGroup
+              v-model="form.rate_limiting"
+              :aria-describedby="rateLimitingDataserviceAccordionId"
+              :label="t(`Limite d'appels`)"
+              :required="false"
+              :has-error="!!getFirstError('rate_limiting')"
+              :has-warning="!!getFirstWarning('rate_limiting')"
+              :error-text="getFirstError('rate_limiting')"
+              :warning-text="getFirstWarning('rate_limiting')"
+            />
+          </LinkedToAccordion>
+          <LinkedToAccordion
+            v-if="showRateLimitingUrl || form.rate_limiting_url || getFirstWarning('rate_limiting')"
+            class="fr-fieldset__element"
+            :accordion="rateLimitingDataserviceAccordionId"
+            @blur="touch('rate_limiting_url')"
+          >
+            <InputGroup
+              v-model="form.rate_limiting_url"
+              :aria-describedby="rateLimitingDataserviceAccordionId"
+              :label="t(`Lien vers la documentation des limites d'appels`)"
+              type="url"
+              placeholder="https://..."
+              :required="false"
+              :has-error="!!getFirstError('rate_limiting_url')"
+              :has-warning="!!getFirstWarning('rate_limiting_url')"
+              :error-text="getFirstError('rate_limiting_url')"
+            />
+          </LinkedToAccordion>
+          <div
+            v-else
+            class="fr-fieldset__element"
+          >
+            <BrandedButton
+              type="button"
+              color="secondary"
+              size="xs"
+              :icon="RiAddLine"
+              @click="showRateLimitingUrl = true"
+            >
+              {{ t(`Ajouter un lien vers la documentation des limites d'appels`) }}
+            </BrandedButton>
+          </div>
+        </fieldset>
         <div class="fr-grid-row fr-grid-row--right">
           <ModalClient
             :title="$t(`Êtes vous-sûr de vouloir publier cette API sans documentation OpenAPI/Swagger ?`)"
@@ -545,6 +591,7 @@ const contactPointAccordionId = useId()
 
 const machineDocumentationUrlWarningMessage = t(`Il est fortement recommandé d'ajouter une documentation OpenAPI ou Swagger à votre API.`)
 const openConfirmModal = ref(false)
+const showRateLimitingUrl = ref(false)
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(dataserviceForm, {
   featured: [],
@@ -556,11 +603,13 @@ const { form, touch, getFirstError, getFirstWarning, validate } = useForm(datase
   technical_documentation_url: [url()],
   machine_documentation_url: [url()],
   business_documentation_url: [url()],
+  rate_limiting_url: [url()],
   private: [],
 }, {
   title: [testNotAllowed(config.public.demoServer?.name)],
   description: [minLength(200, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: 200 }))],
   machine_documentation_url: [required(machineDocumentationUrlWarningMessage)],
+  rate_limiting: [looksLikeUrl(t(`Ce champ semble contenir un lien. Utilisez plutôt le champ « Lien vers la documentation des limites d'appels » ci-dessous.`))],
 })
 
 onMounted(() => {
