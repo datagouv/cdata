@@ -224,7 +224,12 @@ const { data: schemas } = await useAPI<SchemaResponseData>('/api/1/datasets/sche
 const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extensions/')
 
 const datasetUrl = computed(() => `/api/2/datasets/${route.params.id}/`)
-const { data: dataset, status } = await useAPI<DatasetV2>(datasetUrl, { redirectOn404: true })
+const { data: dataset, status } = await useAPI<DatasetV2>(datasetUrl, {
+  redirectOn404: true,
+  headers: {
+    'X-Get-Datasets-Full-Objects': 'True',
+  },
+})
 const canEdit = computed(() => dataset.value?.permissions.edit_resources ?? false)
 const resourcesPage = ref<PaginatedArray<Resource> | null>(null)
 const page = ref(1)
