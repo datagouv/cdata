@@ -26,19 +26,24 @@ export function buildTypeConfig(t: (s: string) => string): Record<ColumnType, { 
   }
 }
 
-export function formatNumber(value: unknown): string {
+export function useFormatTabular() {
   const { locale } = useTranslation()
-  const num = Number(value)
-  if (Number.isNaN(num)) return String(value)
-  return num.toLocaleString(locale)
-}
-
-export function formatCellDate(value: unknown): string {
-  if (value == null || value === '') return '–'
-  const d = new Date(String(value))
-  if (Number.isNaN(d.getTime())) return String(value)
   const { formatDate } = useFormatDate()
-  return formatDate(d, { day: '2-digit', month: '2-digit', year: 'numeric' })
+
+  function formatNumber(value: unknown): string {
+    const num = Number(value)
+    if (Number.isNaN(num)) return String(value)
+    return num.toLocaleString(locale)
+  }
+
+  function formatCellDate(value: unknown): string {
+    if (value == null || value === '') return '–'
+    const d = new Date(String(value))
+    if (Number.isNaN(d.getTime())) return String(value)
+    return formatDate(d, { day: '2-digit', month: '2-digit', year: 'numeric' })
+  }
+
+  return { formatNumber, formatCellDate }
 }
 
 const TRUTHY_VALUES = ['true', '1', 'oui', 'yes']

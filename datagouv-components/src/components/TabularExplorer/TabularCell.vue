@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { useTranslation } from '../../composables/useTranslation'
-import { formatNumber, formatCellDate, isTruthy } from '../../functions/tabular'
+import { useFormatTabular, isTruthy } from '../../functions/tabular'
 import type { ColumnType, BadgeStyle } from './types'
 
 defineProps<{
@@ -47,4 +47,5 @@ defineProps<{
 }>()
 
 const { t } = useTranslation()
+const { formatNumber, formatCellDate } = useFormatTabular()
 </script>

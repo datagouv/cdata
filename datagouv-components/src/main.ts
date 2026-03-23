@@ -122,6 +122,7 @@ export * from './functions/pagination'
 export * from './functions/resources'
 export * from './functions/reuses'
 export * from './functions/schemas'
+export * from './functions/tabular'
 export * from './functions/users'
 export * from './types/access_types'
 

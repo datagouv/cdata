@@ -212,7 +212,7 @@ import {
   RiCheckLine,
 } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
-import { formatNumber } from '../../functions/tabular'
+import { useFormatTabular } from '../../functions/tabular'
 import BrandedButton from '../BrandedButton.vue'
 import ProgressBar from '../ProgressBar.vue'
 import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig, SortDirection, BadgeStyle } from './types'
@@ -231,6 +231,7 @@ const sort = defineModel<SortConfig | null>('sort')
 const filters = defineModel<Record<string, ColumnFilters>>('filters', { default: () => ({}) })
 
 const { t } = useTranslation()
+const { formatNumber } = useFormatTabular()
 
 const search = ref('')
 
