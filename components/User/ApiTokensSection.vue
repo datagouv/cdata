@@ -42,6 +42,7 @@
           <span>{{ $t('Créé {date}', { date: formatRelativeIfRecentDate(token.created_at) }) }}</span>
           <span v-if="token.last_used_at"> · {{ $t('Utilisé {date}', { date: formatRelativeIfRecentDate(token.last_used_at) }) }}</span>
           <span v-else> · {{ $t('Jamais utilisé') }}</span>
+          <span v-if="token.expires_at"> · {{ $t('Expire le {date}', { date: formatDate(token.expires_at) }) }}</span>
           <template v-if="token.user_agents.length === 1">
             · {{ token.user_agents[0] }}
           </template>
@@ -61,7 +62,7 @@
         color="danger"
         size="xs"
         :icon="RiDeleteBin6Line"
-        :disabled="!!revoking"
+        :disabled="revoking"
         icon-only
         @click="tokenToRevoke = token"
       />
@@ -82,7 +83,7 @@
         <div class="w-full flex justify-end gap-2">
           <BrandedButton
             color="secondary"
-            :disabled="!!revoking"
+            :disabled="revoking"
             @click="tokenToRevoke = null"
           >
             {{ $t('Annuler') }}
@@ -90,7 +91,7 @@
           <BrandedButton
             color="danger"
             :icon="RiDeleteBin6Line"
-            :loading="!!revoking"
+            :loading="revoking"
             @click="revokeToken(tokenToRevoke!)"
           >
             {{ $t('Révoquer') }}
@@ -127,7 +128,7 @@ import ModalClient from '~/components/Modal/Modal.client.vue'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { formatRelativeIfRecentDate } = useFormatDate()
+const { formatDate, formatRelativeIfRecentDate } = useFormatDate()
 
 const tokens = ref<ApiToken[]>([])
 const newlyCreatedToken = ref<string | null>(null)

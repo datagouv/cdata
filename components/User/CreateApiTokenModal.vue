@@ -25,6 +25,12 @@
         :label="$t('Nom (optionnel)')"
         :hint-text="$t('Un nom pour identifier ce token, par exemple « CI/CD » ou « Mon script »')"
       />
+      <InputGroup
+        v-model="expiresAt"
+        type="date"
+        class="mt-4"
+        :label="$t('Date d\'expiration (optionnel)')"
+      />
     </template>
 
     <template #footer="{ close: _close }">
@@ -68,18 +74,21 @@ const emit = defineEmits<{
 const isOpen = ref(false)
 const loading = ref(false)
 const name = ref('')
+const expiresAt = ref('')
 
 async function submit(close: () => void) {
   loading.value = true
   try {
-    const trimmed = name.value.trim()
-    const body = trimmed ? { name: trimmed } : {}
     const result = await $api<ApiTokenCreated>('/api/1/me/api_tokens/', {
       method: 'POST',
-      body,
+      body: {
+        name: name.value.trim(),
+        expires_at: expiresAt.value,
+      },
     })
     toast.success(t('Token créé avec succès.'))
     name.value = ''
+    expiresAt.value = ''
     close()
     emit('created', result)
   }
