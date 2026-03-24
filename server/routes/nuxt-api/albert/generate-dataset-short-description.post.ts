@@ -1,4 +1,4 @@
-import { DESCRIPTION_SHORT_MAX_LENGTH } from '~/datagouv-components/src/functions/description'
+import { DESCRIPTION_SHORT_MAX_LENGTH } from '@datagouv/components-next'
 import { validateAlbertConfig, callAlbertAPI } from './utils/albert-helpers'
 
 export default defineEventHandler(async (event) => {

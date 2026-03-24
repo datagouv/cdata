@@ -1,4 +1,4 @@
-import { type ChatResponse, createChatCompletion, useAlbertConfig } from '~/server/utils/albert-api-client'
+import { type ChatResponse, createChatCompletion, useAlbertConfig } from '../../../../utils/albert-api-client'
 
 /**
  * Validates that Albert API is properly configured

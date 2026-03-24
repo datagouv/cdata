@@ -184,7 +184,7 @@ app.vueApp.use(datagouv, {
   tabularApiDataserviceId: runtimeConfig.public.tabularApiDataserviceId,
   tabularAllowRemote: true,
   datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
-  customUseFetch: useAPI as UseFetchFunction, // Why this `as` is required?
+  customUseFetch: useAPI as unknown as UseFetchFunction,
   textClamp: TextClamp,
   appLink: CdataLink,
   clientOnly: ClientOnly,

@@ -4,9 +4,9 @@ import type { ApiFetch, PaginatedArray } from '~/types/types'
 /*
   Example : const { data: datasets } = await useAPI<PaginatedArray<Dataset>>('/api/1/datasets')
 */
-export async function useAPI<T, U = T>(
+export async function useAPI<T>(
   url: MaybeRefOrGetter<string>,
-  options?: UseFetchOptions<T, U> & { redirectOn404?: boolean, redirectOnSlug?: string },
+  options?: UseFetchOptions<T> & { redirectOn404?: boolean, redirectOnSlug?: string },
 ) {
   const { setCurrentOrganization, setCurrentUser } = useCurrentOwned()
   const isAdmin = isMeAdmin()
@@ -18,8 +18,9 @@ export async function useAPI<T, U = T>(
 
   const redirectOn404 = options && 'redirectOn404' in options && options.redirectOn404
   const redirectOnSlug = options && 'redirectOnSlug' in options && options.redirectOnSlug
-  const response = await useFetch(url, {
-    ...options,
+  const response = await useFetch<T>(url, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Nuxt 4 UseFetchOptions has 6 generic params that don't match our simplified wrapper
+    ...options as any,
     $fetch: redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api,
   })
 
