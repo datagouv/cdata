@@ -74,7 +74,7 @@ async function submit(close: () => void) {
   try {
     const trimmed = name.value.trim()
     const body = trimmed ? { name: trimmed } : {}
-    const result = await $api<ApiTokenCreated>('/api/1/me/tokens/', {
+    const result = await $api<ApiTokenCreated>('/api/1/me/api_tokens/', {
       method: 'POST',
       body,
     })

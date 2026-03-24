@@ -136,7 +136,7 @@ const tokenToRevoke = ref<ApiToken | null>(null)
 const userAgentsModalList = ref<string[] | null>(null)
 
 async function fetchTokens() {
-  tokens.value = await $api<ApiToken[]>('/api/1/me/tokens/')
+  tokens.value = await $api<ApiToken[]>('/api/1/me/api_tokens/')
 }
 
 async function onTokenCreated(created: ApiTokenCreated) {
@@ -147,7 +147,7 @@ async function onTokenCreated(created: ApiTokenCreated) {
 async function revokeToken(token: ApiToken) {
   revoking.value = true
   try {
-    await $api(`/api/1/me/tokens/${token.id}/`, {
+    await $api(`/api/1/me/api_tokens/${token.id}/`, {
       method: 'DELETE',
     })
     toast.success(t('Token révoqué.'))
