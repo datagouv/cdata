@@ -21,7 +21,6 @@ export type User = {
   page: UserReference['page']
   avatar: UserReference['avatar']
   avatar_thumbnail: UserReference['avatar_thumbnail']
-  apikey?: string
   email?: string
   about: string
   website?: string
