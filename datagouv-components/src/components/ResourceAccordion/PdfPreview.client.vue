@@ -25,7 +25,7 @@
       }}
     </PreviewUnavailable>
     <PreviewUnavailable v-else-if="error === 'cors'">
-      {{ t("Ce fichier PDF ne peut pas être prévisualisé car il est hébergé sur un site distant qui restreint l'accès (CORS).") }}
+      {{ t("Ce fichier PDF ne peut pas être prévisualisé car il est hébergé sur un site distant qui restreint l'accès (CORS). Téléchargez-le depuis l'onglet Téléchargements.") }}
     </PreviewUnavailable>
     <PreviewUnavailable v-else-if="error === 'network'">
       {{ t("Ce fichier est hébergé sur un site externe qui ne permet pas la prévisualisation. Téléchargez-le depuis l'onglet Téléchargements.") }}
