@@ -12,7 +12,7 @@ export interface Endpoint {
 }
 
 export function resolveRef<T>(spec: OpenAPIV3.Document, obj: T | OpenAPIV3.ReferenceObject): T | null {
-  if (!obj) return null
+  if (!obj || typeof obj !== 'object') return obj as T | null
   if (!('$ref' in obj)) return obj as T
   const path = (obj as OpenAPIV3.ReferenceObject).$ref.replace('#/', '').split('/')
   let resolved: unknown = spec
