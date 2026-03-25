@@ -21,18 +21,21 @@
           <span v-if="spec.info?.version">
             {{ t("Version") }} <span class="font-mono">{{ spec.info.version }}</span>
           </span>
-          <span
+          <div
             v-if="baseUrl"
-            class="inline-flex items-center"
+            class="flex flex-col md:flex-row md:items-center gap-0.5 md:gap-0"
           >
-            {{ t("Base URL") }} <span class="font-mono break-all ml-1">{{ baseUrl }}</span>
-            <CopyButton
-              :label="t('Copier le lien')"
-              :copied-label="t('Lien copié !')"
-              :text="baseUrl"
-              class="shrink-0"
-            />
-          </span>
+            <span>{{ t("Base URL") }}</span>
+            <span class="inline-flex items-center">
+              <span class="font-mono break-all md:ml-1">{{ baseUrl }}</span>
+              <CopyButton
+                :label="t('Copier le lien')"
+                :copied-label="t('Lien copié !')"
+                :text="baseUrl"
+                class="shrink-0 hidden md:inline-flex"
+              />
+            </span>
+          </div>
         </div>
         <a
           :href="swaggerUiUrl"
@@ -69,9 +72,9 @@
               v-slot="{ open: endpointOpen }"
               as="div"
             >
-              <DisclosureButton class="flex items-baseline gap-3 py-3 px-1 w-full text-left">
+              <DisclosureButton class="flex items-baseline gap-2 md:gap-3 py-3 px-1 w-full text-left">
                 <span
-                  class="shrink-0 w-16 inline-flex items-center justify-center rounded px-1.5 py-0.5 text-xs font-bold uppercase font-mono leading-none"
+                  class="shrink-0 w-12 md:w-16 inline-flex items-center justify-center rounded px-1.5 py-0.5 text-xs font-bold uppercase font-mono leading-none"
                   :class="methodColor(endpoint.method)"
                 >
                   {{ endpoint.method }}
@@ -83,13 +86,13 @@
                       :label="t('Copier le lien')"
                       :copied-label="t('Lien copié !')"
                       :text="endpointFullUrl(endpoint)"
-                      class="shrink-0"
+                      class="shrink-0 hidden md:inline-flex"
                       @click.stop
                     />
                   </span>
                   <p
                     v-if="endpoint.summary"
-                    class="text-sm text-gray-medium mt-0.5 mb-0"
+                    class="hidden md:block text-sm text-gray-medium mt-0.5 mb-0"
                   >
                     {{ endpoint.summary }}
                   </p>

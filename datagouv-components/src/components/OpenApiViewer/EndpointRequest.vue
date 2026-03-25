@@ -36,54 +36,56 @@
             v-if="tab.key === 'query'"
             class="p-3"
           >
-            <table class="w-full text-xs">
-              <tbody>
-                <tr
-                  v-for="param in queryParams"
-                  :key="param.name"
-                  class="border-b border-gray-100 last:border-0"
-                >
-                  <td class="py-1.5 pr-3 font-mono text-gray-title whitespace-nowrap align-top">
+            <div class="space-y-0 divide-y divide-gray-100">
+              <div
+                v-for="param in queryParams"
+                :key="param.name"
+                class="py-2"
+              >
+                <div class="flex items-baseline gap-2">
+                  <span class="font-mono text-xs text-gray-title">
                     {{ param.name }}
                     <span
                       v-if="param.required"
                       class="text-red-600"
                     >*</span>
-                  </td>
-                  <td class="py-1.5 pr-3 font-mono text-gray-medium whitespace-nowrap align-top">
-                    {{ getSchemaType(endpoint.spec, param.schema) }}
-                  </td>
-                  <td class="py-1.5 text-gray-medium align-top">
-                    {{ param.description }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </span>
+                  <span class="font-mono text-xs text-gray-medium">{{ getSchemaType(endpoint.spec, param.schema) }}</span>
+                </div>
+                <p
+                  v-if="param.description"
+                  class="text-xs text-gray-medium mt-0.5 mb-0"
+                >
+                  {{ param.description }}
+                </p>
+              </div>
+            </div>
           </div>
           <div
             v-if="tab.key === 'path'"
             class="p-3"
           >
-            <table class="w-full text-xs">
-              <tbody>
-                <tr
-                  v-for="param in pathParams"
-                  :key="param.name"
-                  class="border-b border-gray-100 last:border-0"
-                >
-                  <td class="py-1.5 pr-3 font-mono text-gray-title whitespace-nowrap align-top">
+            <div class="space-y-0 divide-y divide-gray-100">
+              <div
+                v-for="param in pathParams"
+                :key="param.name"
+                class="py-2"
+              >
+                <div class="flex items-baseline gap-2">
+                  <span class="font-mono text-xs text-gray-title">
                     {{ param.name }}
                     <span class="text-red-600">*</span>
-                  </td>
-                  <td class="py-1.5 pr-3 font-mono text-gray-medium whitespace-nowrap align-top">
-                    {{ getSchemaType(endpoint.spec, param.schema) }}
-                  </td>
-                  <td class="py-1.5 text-gray-medium align-top">
-                    {{ param.description }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </span>
+                  <span class="font-mono text-xs text-gray-medium">{{ getSchemaType(endpoint.spec, param.schema) }}</span>
+                </div>
+                <p
+                  v-if="param.description"
+                  class="text-xs text-gray-medium mt-0.5 mb-0"
+                >
+                  {{ param.description }}
+                </p>
+              </div>
+            </div>
           </div>
           <div
             v-if="tab.key === 'body'"

@@ -1,11 +1,11 @@
 <template>
-  <div class="text-xs">
+  <div class="text-xs overflow-hidden">
     <div
       v-for="prop in properties"
       :key="prop.name"
       class="border-b border-gray-100 last:border-0"
     >
-      <div class="flex items-baseline gap-2 py-1.5">
+      <div class="flex items-baseline gap-2 py-1.5 min-w-0">
         <button
           v-if="hasNestedProperties(spec, prop.schema)"
           type="button"
