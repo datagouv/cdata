@@ -13,6 +13,7 @@ export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceF
   return useForm(file, {
     title: [required()],
     type: [required()],
+    owned: [required()],
     url: [ruleIf(isRemote, required())],
     format: [ruleIf(isRemote, required())],
   }, {

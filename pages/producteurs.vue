@@ -132,6 +132,10 @@ const { t } = useTranslation()
 useSeoMeta({
   title: t('Producteurs de données - {site}', { site: config.public.title }),
 })
+defineOgImage('MainPage.takumi', {
+  title: 'Producteurs',
+  uri: '/producteurs',
+})
 
 const producerLogos = [
   { name: 'ina', label: 'INA' },

@@ -80,7 +80,7 @@
     <p
       v-else-if="props.hasWarning && warningText"
       :id="warningTextId"
-      class="text-default-warning text-sm mt-2"
+      class="text-default-warning text-sm mt-2 mb-0"
     >
       <RiErrorWarningLine class="inline size-4 -translate-y-0.5 mr-1" />
       <span>{{ warningText }}</span>

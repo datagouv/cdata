@@ -28,18 +28,12 @@ const app = useNuxtApp()
 
 const { locale } = useTranslation()
 const runtimeConfig = useRuntimeConfig()
-const appConfig = useAppConfig()
-
-if (appConfig.isFrenchGovernment) {
-  import('./assets/css/fonts.css')
-}
-else {
-  import('./assets/css/fonts-without-marianne.css')
-}
+const route = useRoute()
+const siteConfig = useSiteConfig()
 
 app.vueApp.use(datagouv, {
   name: runtimeConfig.public.title,
-  baseUrl: runtimeConfig.public.baseUrl,
+  baseUrl: siteConfig.url,
   trustedDomains: runtimeConfig.public.trustedDomains,
   apiBase: runtimeConfig.public.apiBase,
   devApiKey: runtimeConfig.public.devApiKey,
@@ -78,14 +72,10 @@ useSeoMeta({
   ogTitle: runtimeConfig.public.title,
   ogDescription: runtimeConfig.public.description,
   ogType: 'website',
-  ogUrl: runtimeConfig.public.baseUrl,
+  ogUrl: () => `${siteConfig.url}${route.path}`,
   ogSiteName: runtimeConfig.public.title,
   ogLocale: 'fr_FR',
-  ogImage: `${runtimeConfig.public.baseUrl}nuxt_images/og-image.png`,
-  ogImageWidth: 1200,
-  ogImageHeight: 630,
   twitterCard: 'summary_large_image',
   twitterSite: '@datagouvfr',
-  twitterImage: `${runtimeConfig.public.baseUrl}nuxt_images/og-image.png`,
 })
 </script>

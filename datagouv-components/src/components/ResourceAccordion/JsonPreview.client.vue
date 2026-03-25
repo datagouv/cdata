@@ -17,50 +17,28 @@
     >
       {{ t("Chargement de l'aperçu JSON...") }}
     </div>
-    <SimpleBanner
-      v-else-if="fileTooLarge"
-      type="warning"
-      class="flex items-center space-x-2"
-    >
-      <RiErrorWarningLine class="shrink-0 size-6" />
-      <span>{{ fileSizeBytes
-        ? t("Fichier JSON trop volumineux pour l'aperçu. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
-        : t("L'aperçu n'est pas disponible car la taille du fichier est inconnue. Pour consulter le fichier complet, téléchargez-le en cliquant sur le bouton bleu ou depuis l'onglet Téléchargements.")
-      }}</span>
-    </SimpleBanner>
-    <SimpleBanner
-      v-else-if="error === 'cors'"
-      type="warning"
-      class="flex items-center space-x-2"
-    >
-      <RiErrorWarningLine class="shrink-0 size-6" />
-      <span>{{ t("Ce fichier JSON ne peut pas être prévisualisé car il est hébergé sur un site distant qui restreint l'accès (CORS).") }}</span>
-    </SimpleBanner>
-    <SimpleBanner
-      v-else-if="error === 'network'"
-      type="warning"
-      class="flex items-center space-x-2"
-    >
-      <RiErrorWarningLine class="shrink-0 size-6" />
-      <span>{{ t("Impossible de charger l'aperçu. Vérifiez votre connexion ou l'accessibilité du fichier.") }}</span>
-    </SimpleBanner>
-    <SimpleBanner
-      v-else-if="error"
-      type="warning"
-      class="flex items-center space-x-2"
-    >
-      <RiErrorWarningLine class="shrink-0 size-6" />
-      <span>{{ t("Erreur lors du chargement de l'aperçu JSON.") }}</span>
-    </SimpleBanner>
+    <PreviewUnavailable v-else-if="fileTooLarge">
+      {{ fileSizeBytes
+        ? t("Le fichier JSON est trop volumineux pour être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.")
+        : t("La taille du fichier est inconnue, l'aperçu n'est pas disponible. Téléchargez-le depuis l'onglet Téléchargements.")
+      }}
+    </PreviewUnavailable>
+    <PreviewUnavailable v-else-if="error === 'cors'">
+      {{ t("Ce fichier JSON ne peut pas être prévisualisé car il est hébergé sur un site distant qui restreint l'accès (CORS).") }}
+    </PreviewUnavailable>
+    <PreviewUnavailable v-else-if="error === 'network'">
+      {{ t("Ce fichier est hébergé sur un site externe qui ne permet pas la prévisualisation. Téléchargez-le depuis l'onglet Téléchargements.") }}
+    </PreviewUnavailable>
+    <PreviewUnavailable v-else-if="error">
+      {{ t("L'aperçu de ce fichier n'a pas pu être chargé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+    </PreviewUnavailable>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
-import { RiErrorWarningLine } from '@remixicon/vue'
-
 import { useComponentsConfig } from '../../config'
-import SimpleBanner from '../SimpleBanner.vue'
+import PreviewUnavailable from './PreviewUnavailable.vue'
 import type { Resource } from '../../types/resources'
 import { getResourceFilesize, getResourceCorsStatus } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'

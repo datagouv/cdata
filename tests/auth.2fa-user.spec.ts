@@ -83,7 +83,7 @@ test.describe('2FA Authentication Flow', () => {
     await page.getByRole('button', { name: 'Se connecter' }).first().click()
 
     // Should now redirect to validation page since 2FA is configured
-    await expect(page).toHaveURL(`${loginURL}/validate-two-factor`)
+    await expect(page).toHaveURL(`${loginURL}/tf-validate`)
     await expect(page.getByRole('heading', { name: 'Authentification deux facteurs' })).toBeVisible()
 
     // Step 11: Submit invalid TOTP code
@@ -95,7 +95,7 @@ test.describe('2FA Authentication Flow', () => {
     await expect(page.locator('[data-testid="totp-code-input"]').getByText('Code invalide')).toBeVisible()
 
     // Should still be on the validation page after failed attempt
-    await expect(page).toHaveURL(`${loginURL}/validate-two-factor`)
+    await expect(page).toHaveURL(`${loginURL}/tf-validate`)
 
     // Step 13: Verify validation form is present (no QR code on validation page)
     await expect(page.locator('[data-testid="totp-code-input"]')).toBeVisible()
@@ -119,13 +119,12 @@ test.afterAll(async () => {
     // Using UDATA_WORKING_DIR to run the command in the udata context (with appropriated udata.cfg)
     exec(`uv run udata user unset-two-factor ${TWOFA_EMAIL}`, {
       cwd: process.env.UDATA_WORKING_DIR,
-    }, (error, stdout) => {
+    }, (error, _stdout) => {
       if (error) {
         console.error(`Error running udata command cleanup from ${process.env.UDATA_WORKING_DIR} directory: ${error.message}`)
         reject(error)
       }
       else {
-        console.log(`udata command cleanup output : ${stdout}`)
         resolve(null)
       }
     })

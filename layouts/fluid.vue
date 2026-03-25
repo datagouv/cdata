@@ -1,3 +1,7 @@
+<script setup lang="ts">
+defineOgImage('Default.takumi')
+</script>
+
 <template>
   <div
     class="group/layout flex flex-col"

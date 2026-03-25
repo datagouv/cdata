@@ -750,12 +750,21 @@
           >
             {{ $t('Précédent') }}
           </BrandedButton>
-          <BrandedButton
-            color="primary"
-            @click="submit"
-          >
-            {{ submitLabel }}
-          </BrandedButton>
+          <div class="flex items-center gap-3">
+            <p
+              v-if="!canEdit"
+              class="text-sm text-gray-medium m-0"
+            >
+              {{ readOnlyMessage }}
+            </p>
+            <BrandedButton
+              color="primary"
+              :disabled="!canEdit"
+              @click="submit"
+            >
+              {{ submitLabel }}
+            </BrandedButton>
+          </div>
         </div>
         <slot />
       </div>
@@ -777,12 +786,16 @@ import type { DatasetForm, EnrichedLicense, SpatialGranularity, SpatialZone, Tag
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   submitLabel: string
   type: 'create' | 'update'
   harvested?: boolean
   badges?: Array<Badge>
-}>()
+  canEdit?: boolean
+  readOnlyMessage?: string
+}>(), {
+  canEdit: true,
+})
 const emit = defineEmits<{
   'badges-change': [badges: Array<Badge>]
   'feature': []

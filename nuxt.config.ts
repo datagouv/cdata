@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 import toml from './rollup-plugin-smol-toml'
 
 const nbSitemapsDatasets = 10
+const isFrenchGovernment = true
 // const swrDuration = process.env.NUXT_TEMPLATE_CACHE_DURATION ? parseInt(process.env.NUXT_TEMPLATE_CACHE_DURATION) : 60
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -12,8 +13,10 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
+    '@nuxt/fonts',
+    'nuxt-og-image',
   ],
-  devtools: { enabled: false, componentInspector: false },
+  devtools: { enabled: true, componentInspector: false },
 
   app: {
     head: {
@@ -38,7 +41,7 @@ export default defineNuxtConfig({
   },
 
   appConfig: {
-    isFrenchGovernment: true,
+    isFrenchGovernment,
     commitId: process.env.NUXT_APP_COMMIT_ID || 'unknown',
   },
 
@@ -51,14 +54,13 @@ export default defineNuxtConfig({
     albertApiBaseUrl: 'https://albert.api.etalab.gouv.fr/',
     albertApiKey: '',
     public: {
-      baseUrl: 'https://www.data.gouv.fr/',
+      isProduction: true,
       trustedDomains: ['data.gouv.fr', 'www.data.gouv.fr'],
       banner: undefined,
 
       title: 'data.gouv.fr',
-      description: 'Plateforme ouverte des données publiques françaises : téléchargez, partagez et réutilisez les données ouvertes de l\'État et des collectivités',
+      description: 'Plateforme des données publiques françaises : télécharger, partager et réutiliser les données de l\'État et des collectivités',
       apiBase: 'http://dev.local:7000',
-      frontBase: 'http://dev.local:3000',
       metricsApi: 'https://metric-api.data.gouv.fr',
       metricsSince: '2022-07-01',
       devApiKey: undefined,
@@ -222,10 +224,14 @@ export default defineNuxtConfig({
   features: {
     inlineStyles: false,
   },
+
   compatibilityDate: '2024-04-03',
 
   nitro: {
     compressPublicAssets: true,
+    rollupConfig: {
+      external: ['crisp-api'],
+    },
   },
 
   vite: {
@@ -250,6 +256,7 @@ export default defineNuxtConfig({
         'maplibre-gl',
         'geopf-extensions-openlayers',
         'vue3-xml-viewer',
+        'uqr',
       ],
       // `@datagouv/components-next` shouldn't be optimize otherwise its vue instance is not the same
       // as the one used in udata-front-kit. This cause errors with the `provide` / `inject` functions
@@ -267,6 +274,14 @@ export default defineNuxtConfig({
     plugins: [toml(), tailwindcss()],
     server: {
       allowedHosts: ['dev.local'],
+      warmup: {
+        clientFiles: [
+          './pages/**/*.vue',
+          './components/**/*.vue',
+          './layouts/**/*.vue',
+          './composables/**/*.ts',
+        ],
+      },
     },
   },
 
@@ -307,6 +322,29 @@ export default defineNuxtConfig({
       stylistic: true,
     },
   },
+
+  fonts: {
+    families: [
+      ...isFrenchGovernment
+        ? [
+            { name: 'Marianne', provider: 'local' as const, weights: [300, 400, 500, 700, 800], global: true },
+          ]
+        : [],
+      { name: 'Inconsolata', provider: 'google' as const, weights: [300], global: true },
+      { name: 'Spectral', provider: 'local' as const, weights: [300, 400, 500, 700, 800], global: true },
+      {
+        name: 'URW Gothic',
+        provider: 'none',
+        weight: 600,
+        global: true,
+        src: [
+          { url: '/fonts/URWGothic-SemiBold.woff2', format: 'woff2' },
+          { url: '/fonts/URWGothic-SemiBold.woff', format: 'woff' },
+        ],
+      },
+    ],
+  },
+
   image: {
     screens: {
       xs: 320,
@@ -314,6 +352,13 @@ export default defineNuxtConfig({
       md: 768,
       lg: 992,
       xl: 1248,
+    },
+  },
+  ogImage: {
+    defaults: {
+      takumi: {
+        devicePixelRatio: 2,
+      },
     },
   },
 

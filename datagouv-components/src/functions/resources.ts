@@ -161,7 +161,7 @@ export const getResourceCorsStatus = (resource: Resource): CorsStatus => {
   const rawMethods = extras['check:cors:allow-methods'] as string | undefined
 
   // Check if allow-origin is '*' or contains one of our trusted domains
-  const trustedDomains = config.trustedDomains
+  const trustedDomains = config.trustedDomains ?? []
   const hasPublicCors = allowOrigin === '*'
   const hasSpecificCors = allowOrigin
     ? trustedDomains.some(domain => allowOrigin.includes(domain))

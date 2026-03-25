@@ -153,15 +153,15 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // Debug screenshot: after adding reuses
   await page.screenshot({ path: 'tests/edito/screenshots/03-reuses-bloc.png', fullPage: true })
 
-  // === Step 4: Add a DataservicesListBloc with multiple APIs ===
+  // === Step 4: Add a DataservicesListBloc with multiple API ===
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
-  await page.getByText('APIs à la une').click()
+  await page.getByText('API à la une').click()
   await page.waitForTimeout(300)
 
-  // Edit the title - default is "Mes APIs"
-  const dataservicesBlocTitle = page.getByText('Mes APIs')
+  // Edit the title - default is "Mes API"
+  const dataservicesBlocTitle = page.getByText('Mes API')
   await dataservicesBlocTitle.click()
-  await dataservicesBlocTitle.fill('APIs essentielles')
+  await dataservicesBlocTitle.fill('API essentielles')
   await page.mouse.click(1, 1)
 
   // Add multiple dataservices (3 available in fixtures: Sirene, Explore, BAN)
@@ -396,7 +396,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
 
   // Take the final screenshot for visual regression testing
   await expect(page).toHaveScreenshot('edito-page-final.png', {
-    mask: [page.getByTestId('user-avatar')],
+    mask: [page.getByTestId('user-avatar'), page.getByTestId('commit-version')],
     fullPage: true,
     maxDiffPixelRatio: 0.01, // Allow 1% pixel difference for minor rendering variations
   })

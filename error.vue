@@ -8,31 +8,31 @@
         <div class="w-37 h-35 flex items-center justify-center md:w-25 md:h-24">
           <img
             v-if="statusCode === 404"
-            src="/nuxt_images/errors/404.svg"
+            :src="error404Svg"
             alt="Erreur 404"
             class="w-full h-full object-contain"
           >
           <img
             v-else-if="statusCode === 403"
-            src="/nuxt_images/errors/403.svg"
+            :src="error403Svg"
             alt="Erreur 403"
             class="w-full h-full object-contain"
           >
           <img
             v-else-if="statusCode === 410"
-            src="/nuxt_images/errors/410.svg"
+            :src="error410Svg"
             alt="Erreur 410"
             class="w-full h-full object-contain"
           >
           <img
             v-else-if="statusCode >= 500"
-            src="/nuxt_images/errors/500.svg"
+            :src="error500Svg"
             alt="Erreur serveur"
             class="w-full h-full object-contain"
           >
           <img
             v-else
-            src="/nuxt_images/errors/500.svg"
+            :src="error500Svg"
             alt="Erreur"
             class="w-full h-full object-contain"
           >
@@ -162,6 +162,10 @@ import { datagouv, BrandedButton, CopyButton } from '@datagouv/components-next'
 import type { UseFetchFunction } from '@datagouv/components-next'
 import CdataLink from './components/CdataLink.vue'
 import { ClientOnly, TextClamp } from '#components'
+import error404Svg from '~/public/nuxt_images/errors/404.svg'
+import error403Svg from '~/public/nuxt_images/errors/403.svg'
+import error410Svg from '~/public/nuxt_images/errors/410.svg'
+import error500Svg from '~/public/nuxt_images/errors/500.svg'
 
 const error = useError()
 
@@ -169,6 +173,7 @@ const app = useNuxtApp()
 
 const { locale } = useTranslation()
 const runtimeConfig = useRuntimeConfig()
+const siteConfig = useSiteConfig()
 
 // Computed properties to avoid repeating error checks
 const statusCode = computed(() => error.value?.statusCode as number)
@@ -176,7 +181,7 @@ const errorMessage = computed(() => error.value?.message)
 
 app.vueApp.use(datagouv, {
   name: runtimeConfig.public.title,
-  baseUrl: runtimeConfig.public.baseUrl,
+  baseUrl: siteConfig.url,
   apiBase: runtimeConfig.public.apiBase,
   devApiKey: runtimeConfig.public.devApiKey,
   tabularApiUrl: runtimeConfig.public.tabularApiUrl,

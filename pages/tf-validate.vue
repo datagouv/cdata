@@ -54,6 +54,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
+import { useAbsoluteUrlToRelative } from '~/utils/helpers'
 
 definePageMeta({
   matomoIgnore: true,
@@ -66,6 +67,7 @@ useSeoMeta({ title: t('Connexion'), robots: 'noindex' })
 const me = useMe()
 
 const route = useRoute()
+const absoluteToRelative = useAbsoluteUrlToRelative()
 
 const {
   code,
@@ -87,7 +89,9 @@ const connect = async () => {
 
     const next = sessionStorage.getItem('next')
     if (next) {
-      navigateTo(next)
+      // ProConnect returns a next url as absolute, we turn it to relative.
+      // We don't want to allow any external URL here.
+      await navigateTo(absoluteToRelative(next))
     }
     else {
       await navigateTo('/')

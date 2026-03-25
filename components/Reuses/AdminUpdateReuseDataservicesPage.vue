@@ -3,8 +3,20 @@
     v-if="dataservices"
     class="fr-p-3w bg-white"
   >
-    <DataservicesSelect v-model="dataservices" />
-    <div class="fr-grid-row fr-grid-row--right">
+    <DataservicesSelect
+      v-model="dataservices"
+      :read-only="!canEdit"
+    >
+      <template #empty>
+        <p class="text-sm text-gray-medium">
+          {{ t('Aucune API associée.') }}
+        </p>
+      </template>
+    </DataservicesSelect>
+    <div
+      v-if="canEdit"
+      class="fr-grid-row fr-grid-row--right"
+    >
       <BrandedButton
         color="primary"
         @click="submit"
@@ -26,6 +38,7 @@ const { $api } = useNuxtApp()
 const route = useRoute()
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
 const { data: reuse } = await useAPI<Reuse>(url, { redirectOn404: true })
+const canEdit = computed(() => reuse.value?.permissions.edit ?? false)
 const dataservices = ref<Array<Dataservice>>([])
 watchEffect(async () => {
   if (!reuse.value) return

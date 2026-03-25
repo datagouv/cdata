@@ -9,6 +9,10 @@ env:
   APP_NAME: ${{ vars.APP_NAME }}
   UDATA_WORKING_DIR: udata
 
+permissions:
+  id-token: write  # Required for OIDC for npm publication
+  contents: read
+
 jobs:
   # ============================================
   # JOB 1: Build - generates artifacts once
@@ -24,7 +28,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version: "24.x"
           cache: "pnpm"
 
       - name: Install datagouv-components dependencies
@@ -64,7 +68,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version: "24.x"
           cache: "pnpm"
 
       - name: Install cdata dependencies
@@ -95,8 +99,17 @@ jobs:
     needs: build
     timeout-minutes: 30
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox]
+        include:
+          - browser: chromium
+            projects: "--project=setup --project=setup-normal-user --project=chromium --project=chromium-normal-user --project=chromium-2fa-user"
+          - browser: firefox
+            projects: "--project=setup --project=setup-normal-user --project=firefox"
     container:
-      image: mcr.microsoft.com/playwright:v1.57.0-noble
+      image: mcr.microsoft.com/playwright:v1.58.2-noble
       options: --user 1001
 
     services:
@@ -159,6 +172,7 @@ jobs:
           DEBUG = True
           TESTING = True
           SECRET_KEY = 'test-secret-key-for-ci'
+          API_TOKEN_SECRET = 'test-api-token-secret-for-ci'
           SEND_MAIL = False
           SERVER_NAME = 'localhost:7000'
           CDATA_BASE_URL="http://localhost:3000"
@@ -171,6 +185,7 @@ jobs:
           URLS_ALLOW_PRIVATE = True
           URLS_ALLOW_LOCAL = True
           URLS_ALLOWED_TLDS = Defaults.URLS_ALLOWED_TLDS | set(['local'])
+          URLS_RESOLVE_HOSTNAME = False
 
           PLUGINS = []
           FS_ROOT = 'fs'
@@ -217,6 +232,7 @@ jobs:
         env:
           NUXT_PUBLIC_API_BASE: http://localhost:7000
           NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "hero_15.png"
+          NUXT_SITE_URL: http://localhost:3000
         run: |
           # Start cdata server in background using pre-built artifacts
           PORT=3000 node .output/server/index.mjs > cdata.log 2>&1 &
@@ -231,7 +247,7 @@ jobs:
           NUXT_PUBLIC_API_BASE: http://localhost:7000
           UDATA_WORKING_DIR: ${{ env.UDATA_WORKING_DIR }}
           CI: true
-        run: pnpm run test:e2e
+        run: pnpm run test:e2e ${{ matrix.projects }}
 
       - name: Kill udata server
         if: always()
@@ -253,7 +269,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-screenshots
+          name: playwright-screenshots-${{ matrix.browser }}
           path: tests/**/*-snapshots
           retention-days: 7
 
@@ -261,7 +277,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.browser }}
           path: playwright-report/
           retention-days: 7
 
@@ -352,3 +368,41 @@ jobs:
           environment: ${{ github.ref_name }}
           version: ${{ steps.version.outputs.short }}
           ignore_missing: true
+
+
+  # ============================================
+  # JOB 6: Publish datagouv-components (automatic on main, manual on any branch)
+  # ============================================
+  publish-datagouv-components:
+    needs: [quality, e2e]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js with OIDC auth
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install datagouv-components dependencies
+        working-directory: ./datagouv-components
+        run: pnpm install
+
+      - name: Publish datagouv-components
+        working-directory: ./datagouv-components
+        run: |
+          LATEST=$(npm view @datagouv/components-next@dev version 2>/dev/null \
+            || npm view @datagouv/components-next version 2>/dev/null \
+            || echo "0.0.0")
+          echo "Using base version $LATEST"
+          pnpm version "$LATEST" --no-git-tag-version --allow-same-version
+          # Then, we increment the preprelease version number
+          pnpm version prerelease --preid=dev --no-git-tag-version
+          pnpm run publish-dev --no-git-checks

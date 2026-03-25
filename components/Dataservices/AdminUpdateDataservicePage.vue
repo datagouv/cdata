@@ -12,7 +12,10 @@
       @feature="feature"
       @submit="save"
     >
-      <template #top>
+      <template
+        v-if="dataservice.permissions.edit"
+        #top
+      >
         <BannerAction
           v-if="!dataservice.deleted_at && !dataservice.archived_at"
           class="mb-4"
@@ -65,69 +68,80 @@
         </BannerAction>
       </template>
       <template #button="attrs">
-        <BrandedButton
-          type="submit"
-          v-bind="attrs"
-          :loading="isLoading"
-        >
-          {{ t("Sauvegarder") }}
-        </BrandedButton>
+        <div class="flex items-center gap-3">
+          <p
+            v-if="!dataservice.permissions.edit"
+            class="text-sm text-gray-medium m-0"
+          >
+            {{ t('Vous n\'avez pas la permission de modifier cette API.') }}
+          </p>
+          <BrandedButton
+            type="submit"
+            v-bind="attrs"
+            :loading="isLoading"
+            :disabled="!dataservice.permissions.edit"
+          >
+            {{ t("Sauvegarder") }}
+          </BrandedButton>
+        </div>
       </template>
-      <div class="mt-5 space-y-5">
-        <TransferBanner
-          type="Dataservice"
-          :subject="dataservice"
-          :label="$t(`Transférer l'API`)"
-        />
-        <BannerAction
-          type="warning"
-          :title="dataservice.archived_at ? $t('Désarchiver cette API') : $t('Archiver cette API')"
-        >
-          {{ $t("Une API archivée n'est plus indexée mais reste accessible aux utilisateurs avec un lien direct.") }}
+      <template v-if="dataservice.permissions.edit">
+        <div class="mt-5 space-y-5">
+          <TransferBanner
+            type="Dataservice"
+            :subject="dataservice"
+            :label="$t(`Transférer l'API`)"
+          />
+          <BannerAction
+            type="warning"
+            :title="dataservice.archived_at ? $t('Désarchiver cette API') : $t('Archiver cette API')"
+          >
+            {{ $t("Une API archivée n'est plus indexée mais reste accessible aux utilisateurs avec un lien direct.") }}
 
-          <template #button>
-            <BrandedButton
-              :icon="RiArchiveLine"
-              @click="archiveDataservice"
-            >
-              {{ dataservice.archived_at ? $t('Désarchiver') : $t('Archiver') }}
-            </BrandedButton>
-          </template>
-        </BannerAction>
-        <BannerAction
-          v-if="!dataservice.deleted_at"
-          type="danger"
-          :title="$t(`Supprimer l'API`)"
-        >
-          {{ $t("Attention, cette action ne peut pas être annulée.") }}
-          <template #button>
-            <AdminDeleteModal
-              :title="$t('Êtes-vous sûr de vouloir supprimer cette API ?')"
-              :delete-url="`/api/1/dataservices/${route.params.id}`"
-              :delete-button-label="$t(`Supprimer l'API`)"
-              :deletable-object="dataservice"
-              object-type="dataservice"
-              :object-title="dataservice.title"
-              @deleted="onDataserviceDeleted"
-            >
-              <template #button="{ attrs, listeners }">
-                <BrandedButton
-                  color="danger"
-                  size="xs"
-                  :icon="RiDeleteBin6Line"
-                  v-bind="attrs"
-                  v-on="listeners"
-                >
-                  {{ $t('Supprimer') }}
-                </BrandedButton>
-              </template>
-              <p class="fr-text--bold">
-                {{ $t("Cette action est irréversible.") }}
-              </p>
-            </AdminDeleteModal>
-          </template>
-        </BannerAction>
-      </div>
+            <template #button>
+              <BrandedButton
+                :icon="RiArchiveLine"
+                @click="archiveDataservice"
+              >
+                {{ dataservice.archived_at ? $t('Désarchiver') : $t('Archiver') }}
+              </BrandedButton>
+            </template>
+          </BannerAction>
+          <BannerAction
+            v-if="!dataservice.deleted_at"
+            type="danger"
+            :title="$t(`Supprimer l'API`)"
+          >
+            {{ $t("Attention, cette action ne peut pas être annulée.") }}
+            <template #button>
+              <AdminDeleteModal
+                :title="$t('Êtes-vous sûr de vouloir supprimer cette API ?')"
+                :delete-url="`/api/1/dataservices/${route.params.id}`"
+                :delete-button-label="$t(`Supprimer l'API`)"
+                :deletable-object="dataservice"
+                object-type="dataservice"
+                :object-title="dataservice.title"
+                @deleted="onDataserviceDeleted"
+              >
+                <template #button="{ attrs, listeners }">
+                  <BrandedButton
+                    color="danger"
+                    size="xs"
+                    :icon="RiDeleteBin6Line"
+                    v-bind="attrs"
+                    v-on="listeners"
+                  >
+                    {{ $t('Supprimer') }}
+                  </BrandedButton>
+                </template>
+                <p class="fr-text--bold">
+                  {{ $t("Cette action est irréversible.") }}
+                </p>
+              </AdminDeleteModal>
+            </template>
+          </BannerAction>
+        </div>
+      </template>
     </DescribeDataservice>
   </LoadingBlock>
 </template>

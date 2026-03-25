@@ -106,6 +106,7 @@ import PageShow from '~/components/Pages/PageShow.vue'
 import type { Post } from '~/types/posts'
 
 const config = useRuntimeConfig()
+const siteConfig = useSiteConfig()
 const route = useRoute()
 const { formatDate } = useFormatDate()
 
@@ -123,10 +124,14 @@ useSeoMeta({
   title: name,
   robots: robots,
 })
+defineOgImage('MainPage.takumi', {
+  title: post.value?.name ?? 'Articles',
+  uri: '/posts',
+})
 useHead({
   script: [
     {
-      'data-udata': config.public.frontBase,
+      'data-udata': siteConfig.url,
       'src': '/oembed.js',
       'tagPosition': 'bodyClose',
     },

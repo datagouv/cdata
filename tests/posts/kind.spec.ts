@@ -11,13 +11,11 @@ test.describe('Post kind filter', () => {
   test.afterEach(async ({ request }) => {
     // Cleanup created posts to avoid affecting other tests (like homepage screenshot)
     if (newsPostId) {
-      const res = await request.delete(`${API_BASE_URL}/api/1/posts/${newsPostId}/`)
-      console.log(`DELETE news post ${newsPostId}: ${res.status()}`)
+      await request.delete(`${API_BASE_URL}/api/1/posts/${newsPostId}/`)
       newsPostId = undefined
     }
     if (pagePostId) {
-      const res = await request.delete(`${API_BASE_URL}/api/1/posts/${pagePostId}/`)
-      console.log(`DELETE page post ${pagePostId}: ${res.status()}`)
+      await request.delete(`${API_BASE_URL}/api/1/posts/${pagePostId}/`)
       pagePostId = undefined
     }
   })
@@ -84,16 +82,19 @@ test.describe('Post kind filter', () => {
 
     // Go to homepage and verify the latest news appears in the news section (not the page)
     await page.goto('/')
+    await page.waitForLoadState('networkidle')
     await expect(page.getByRole('heading', { level: 3, name: `Test News ${uniqueId}` })).toBeVisible()
     await expect(page.getByText(`Test Page ${uniqueId}`)).not.toBeVisible()
 
     // Go to public news page and verify only news appears
     await page.goto('/posts')
+    await page.waitForLoadState('networkidle')
     await expect(page.getByText(`Test News ${uniqueId}`)).toBeVisible()
     await expect(page.getByText(`Test Page ${uniqueId}`)).not.toBeVisible()
 
     // Go to admin posts page
     await page.goto('/admin/site/posts')
+    await page.waitForLoadState('networkidle')
 
     // Verify both posts appear with correct types
     await expect(page.getByText(`Test News ${uniqueId}`)).toBeVisible()

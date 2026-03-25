@@ -10,8 +10,9 @@
       :class="{ 'sr-only': hideLabel }"
     >
       {{ label }}
+      <!-- $props needed: in generic components, vue-tsc resolves `required` to the Nuxt auto-imported function instead of the prop -->
       <span
-        v-if="required"
+        v-if="$props.required"
         class="text-new-primary"
       >*</span>
       <span

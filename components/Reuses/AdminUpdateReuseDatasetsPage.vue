@@ -3,8 +3,20 @@
     v-if="datasets"
     class="fr-p-3w bg-white"
   >
-    <DatasetsSelect v-model="datasets" />
-    <div class="fr-grid-row fr-grid-row--right">
+    <DatasetsSelect
+      v-model="datasets"
+      :read-only="!canEdit"
+    >
+      <template #empty>
+        <p class="text-sm text-gray-medium">
+          {{ t('Aucun jeu de données associé.') }}
+        </p>
+      </template>
+    </DatasetsSelect>
+    <div
+      v-if="canEdit"
+      class="fr-grid-row fr-grid-row--right"
+    >
       <BrandedButton
         color="primary"
         :disabled="!datasets.length"
@@ -27,6 +39,7 @@ const { $api } = useNuxtApp()
 const route = useRoute()
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
 const { data: reuse } = await useAPI<Reuse>(url, { redirectOn404: true })
+const canEdit = computed(() => reuse.value?.permissions.edit ?? false)
 const datasets = ref<Array<Dataset | DatasetV2 | DatasetSuggest>>([])
 watchEffect(async () => {
   if (!reuse.value) return

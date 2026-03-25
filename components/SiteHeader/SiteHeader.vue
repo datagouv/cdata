@@ -221,14 +221,16 @@
                                       :key="item.link"
                                     >
                                       <CdataLink
-                                        class="fr-nav__link flex items-center space-x-1"
+                                        class="fr-nav__link"
                                         :to="item.link"
                                       >
-                                        <component
-                                          :is="item.icon"
-                                          class="inline size-4"
-                                        />
-                                        <span>{{ item.label }}</span>
+                                        <span class="flex items-center space-x-1">
+                                          <component
+                                            :is="item.icon"
+                                            class="inline size-4"
+                                          />
+                                          <span>{{ item.label }}</span>
+                                        </span>
                                       </CdataLink>
                                     </li>
                                   </ul>
@@ -478,15 +480,17 @@
                         :key="item.link"
                       >
                         <CdataLink
-                          class="fr-nav__link flex items-center space-x-1"
+                          class="fr-nav__link"
                           :to="item.link"
                           @click="close()"
                         >
-                          <component
-                            :is="item.icon"
-                            class="size-4 -mt-1"
-                          />
-                          <span>{{ item.label }}</span>
+                          <span class="flex items-center space-x-1">
+                            <component
+                              :is="item.icon"
+                              class="size-4 -mt-1"
+                            />
+                            <span>{{ item.label }}</span>
+                          </span>
                         </CdataLink>
                       </li>
                     </ul>
@@ -502,15 +506,19 @@
 </template>
 
 <script setup lang="ts">
-import { NuxtImg } from '#components'
+import { NuxtImg as _NuxtImg } from '#components'
+import type { Component } from 'vue'
 import { AnimatedLoader, BrandedButton, Toggletip, useGetUserAvatar, toast } from '@datagouv/components-next'
-import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiRobot2Line, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
+import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiTerminalLine, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
 import LogoAsText from '../LogoAsText.vue'
 import LogoImage from '../LogoImage.vue'
 import { useNotifications } from '~/composables/useNotifications.client'
 import { useLogout, useMaybeMe } from '~/utils/auth'
+
+// @ts-expect-error @nuxt/image v2 types mark the default slot as required (only used with `custom` prop), making NuxtImg incompatible with Component
+const NuxtImg: Component = _NuxtImg
 
 defineProps<{
   fluid?: boolean
@@ -545,7 +553,7 @@ const menu = [
 
 const publishMenu = [
   { label: t('Un jeu de données'), icon: RiDatabase2Line, link: '/admin/datasets/new' },
-  { label: t('Une API'), icon: RiRobot2Line, link: '/admin/dataservices/new' },
+  { label: t('Une API'), icon: RiTerminalLine, link: '/admin/dataservices/new' },
   { label: t('Une réutilisation'), icon: RiLineChartLine, link: '/admin/reuses/new' },
   { label: t('Un moissonneur'), icon: RiServerLine, link: '/admin/harvesters/new' },
   { label: t('Une organisation'), icon: RiBuilding2Line, link: '/admin/organizations/new' },
