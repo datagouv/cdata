@@ -271,7 +271,7 @@ const endpoints = computed<Endpoint[]>(() => {
 const groupedEndpoints = computed(() => {
   const groups = new Map<string, Endpoint[]>()
   for (const endpoint of endpoints.value) {
-    const tags = endpoint.tags.length ? endpoint.tags : [t('Sans tag')]
+    const tags = endpoint.tags.length ? endpoint.tags : [t('Endpoints')]
     for (const tag of tags) {
       if (!groups.has(tag)) {
         groups.set(tag, [])
