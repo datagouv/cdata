@@ -166,7 +166,7 @@
               <th
                 v-for="col in displayedColumns"
                 :key="col"
-                class="group/th relative h-14 px-2 text-left align-middle whitespace-nowrap border-r border-gray-default last:border-r-0"
+                class="group/th relative h-14 px-2 last:pr-5 text-left align-middle whitespace-nowrap border-r border-gray-default last:border-r-0"
                 :style="columnWidths[col] ? { width: columnWidths[col] + 'px', minWidth: columnWidths[col] + 'px', maxWidth: columnWidths[col] + 'px' } : { maxWidth: '300px' }"
               >
                 <div class="flex items-center gap-0.5 min-w-0">
