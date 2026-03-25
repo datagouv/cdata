@@ -73,7 +73,7 @@ import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
 import ResourceExplorer from './components/ResourceExplorer/ResourceExplorer.vue'
 import ResourceExplorerSidebar from './components/ResourceExplorer/ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './components/ResourceExplorer/ResourceExplorerViewer.vue'
-import Swagger from './components/ResourceAccordion/Swagger.client.vue'
+import OpenApiViewer from './components/OpenApiViewer/OpenApiViewer.vue'
 import ReuseCard from './components/ReuseCard.vue'
 import ReuseHorizontalCard from './components/ReuseHorizontalCard.vue'
 import ReuseDetails from './components/ReuseDetails.vue'
@@ -303,7 +303,7 @@ export {
   SimpleBanner,
   SmallChart,
   StatBox,
-  Swagger,
+  OpenApiViewer,
   Tab,
   TabGroup,
   TabList,

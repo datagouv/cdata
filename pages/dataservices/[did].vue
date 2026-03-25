@@ -231,7 +231,7 @@
                 class="size-6 text-gray-title"
               />
             </button>
-            <Swagger
+            <OpenApiViewer
               v-if="openSwagger"
               :url="dataservice.machine_documentation_url"
             />
@@ -258,7 +258,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, LoadingBlock, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, StatBox, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, StatBox, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
