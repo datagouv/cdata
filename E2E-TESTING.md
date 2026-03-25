@@ -12,7 +12,7 @@ Voir **e2e.yml**.
 
 Les tests E2E simulent un environnement complet avec :
 - **Base de données** : MongoDB (via Docker)
-- **Cache/Queue** : Redis (via Docker)  
+- **Cache/Queue** : Redis (via Docker)
 - **Backend API** : udata (Flask) qui fournit l'API
 - **Frontend** : cdata (Nuxt.js) qui consomme l'API
 

@@ -182,20 +182,12 @@
             v-model="form.x_axis.sort_combined"
             class="w-full fr-select"
           >
-            <option value="">
-              {{ $t('Aucun') }}
-            </option>
-            <option value="axis_x-asc">
-              {{ $t('Axe X - Ascendant') }}
-            </option>
-            <option value="axis_x-desc">
-              {{ $t('Axe X - Descendant') }}
-            </option>
-            <option value="axis_y-asc">
-              {{ $t('Axe Y - Ascendant') }}
-            </option>
-            <option value="axis_y-desc">
-              {{ $t('Axe Y - Descendant') }}
+            <option
+              v-for="(label, value) in sortOptionLabels"
+              :key="value"
+              :value
+            >
+              {{ label }}
             </option>
           </select>
         </div>
@@ -289,8 +281,12 @@
           class="space-y-4"
         >
           <div>
-            <label class="block text-sm font-medium mb-1">{{ $t('Colonne Y') }}</label>
+            <label
+              :for="`column-y-${index}`"
+              class=" block text-sm font-medium mb-1"
+            >{{ $t('Colonne Y') }}</label>
             <select
+              :id="`column-y-${index}`"
               v-model="serie.column_y"
               class="w-full fr-select"
             >
@@ -307,8 +303,12 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">{{ $t('Agrégation') }}</label>
+            <label
+              :for="`aggregate-y-${index}`"
+              class="block text-sm font-medium mb-1"
+            >{{ $t('Agrégation') }}</label>
             <select
+              :id="`aggregate-y-${index}`"
               v-model="serie.aggregate_y"
               class="w-full fr-select"
             >
@@ -327,9 +327,7 @@
       </fieldset>
 
       <div class="px-6">
-        <BrandedButton
-          @click="saveChart"
-        >
+        <BrandedButton @click="saveChart">
           {{ $t('Sauvegarder le graphique') }}
         </BrandedButton>
       </div>
@@ -369,6 +367,18 @@ const { debounced: titleDebounced } = useDebouncedRef(title, debounceMs)
 const { debounced: descDebounced } = useDebouncedRef(desc, debounceMs)
 
 const resources = computed(() => Object.values(savedResources))
+
+const sortOptionLabels = computed(() => {
+  const xAxisColumn = form.value.x_axis.column_x
+  const yAxisColumn = form.value.series[0]?.column_y
+  return {
+    '': t('Aucun'),
+    'axis_x-asc': xAxisColumn ? `${xAxisColumn} - ${t('Ascendant')}` : t('Axe X - Ascendant'),
+    'axis_x-desc': xAxisColumn ? `${xAxisColumn} - ${t('Descendant')}` : t('Axe X - Descendant'),
+    'axis_y-asc': yAxisColumn ? `${yAxisColumn} - ${t('Ascendant')}` : t('Axe Y - Ascendant'),
+    'axis_y-desc': yAxisColumn ? `${yAxisColumn} - ${t('Descendant')}` : t('Axe Y - Descendant'),
+  }
+})
 
 const { $api } = useNuxtApp()
 const hasTabularData = useHasTabularData()
