@@ -10,7 +10,7 @@ env:
   UDATA_WORKING_DIR: udata
 
 permissions:
-  id-token: write  # Required for OIDC for npm publication
+  id-token: write # Required for OIDC for npm publication
   contents: read
 
 jobs:
@@ -137,7 +137,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: ${{ env.UDATA_WORKING_DIR }}
-          ref: main
+          ref: remove_pages_keep_blocs_alone
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
@@ -368,7 +368,6 @@ jobs:
           environment: ${{ github.ref_name }}
           version: ${{ steps.version.outputs.short }}
           ignore_missing: true
-
 
   # ============================================
   # JOB 6: Publish datagouv-components (automatic on main, manual on any branch)
