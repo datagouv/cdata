@@ -1,12 +1,12 @@
 import type { Dataset } from './datasets'
-import type { Page } from './pages'
+import type { PageBloc } from './pages'
 import type { Reuse } from './reuses'
 import type { User } from './users'
 
 export type Post = {
   body_type: 'markdown' | 'html' | 'blocs'
+  blocs: Array<PageBloc>
   content: string
-  content_as_page: Page | null
   created_at: string
   credit_to: string
   credit_url: string

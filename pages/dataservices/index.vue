@@ -12,16 +12,12 @@
       :link-label="$t(`Qu'est-ce qu'une API ?`)"
       :link-url="config.public.guideDataservices"
     />
-    <PageShowById
-      v-if="site?.dataservices_page"
-      :page-id="site.dataservices_page"
+    <PageShow
+      v-if="siteBlocs.length > 0 || isEditing"
+      :blocs="siteBlocs"
+      editable
       main-color="brown-illustration"
-    />
-    <PageShowNew
-      v-else-if="isEditing"
-      site-key="dataservices_page"
-      main-color="brown-illustration"
-      @created="onPageCreated"
+      @save="saveBlocs"
     />
     <section class="container w-full pt-16">
       <div>
@@ -244,12 +240,12 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type Site } from '@datagouv/components-next'
+import { BrandedButton, toast, type Site } from '@datagouv/components-next'
 import { RiExternalLinkFill, RiArrowRightLine } from '@remixicon/vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
-import PageShowById from '~/components/Pages/PageShowById.vue'
-import PageShowNew from '~/components/Pages/PageShowNew.vue'
+import PageShow from '~/components/Pages/PageShow.vue'
+import type { PageBloc } from '~/types/pages'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
@@ -280,11 +276,28 @@ onMounted(async () => {
   }
 })
 
-const { data: site, refresh: refreshSite } = await useAPI<Site>('/api/1/site/')
+const { $api } = useNuxtApp()
+
+const { data: site, refresh: refreshSite } = await useAPI<Site>('/api/1/site/', {
+  key: 'site-dataservices-blocs',
+  headers: { 'X-Fields': '{metrics,dataservices_blocs}' },
+})
+
+const siteBlocs = computed(() => site.value?.dataservices_blocs ?? [])
 
 const isEditing = computed(() => route.query.edit === 'true')
 
-async function onPageCreated() {
-  await refreshSite()
+async function saveBlocs(blocs: Array<PageBloc>) {
+  try {
+    await $api('/api/1/site/', {
+      method: 'PATCH',
+      body: { dataservices_blocs: blocs },
+    })
+    await refreshSite()
+    toast.success(t('Page sauvegardée'))
+  }
+  catch {
+    toast.error(t('Erreur lors de la sauvegarde'))
+  }
 }
 </script>

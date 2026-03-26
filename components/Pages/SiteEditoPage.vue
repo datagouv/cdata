@@ -36,15 +36,12 @@
       ]"
     />
 
-    <div
-      v-if="page"
-      class="bg-white py-6"
-    >
+    <div class="bg-white py-6">
       <PageShow
-        :page
+        :blocs="blocs"
         edit
-        @save="savePage"
-        @cancel="resetPage"
+        @save="saveBlocs"
+        @cancel="resetBlocs"
       />
     </div>
   </div>
@@ -58,64 +55,49 @@ import type { Site } from '@datagouv/components-next'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import PageShow from '~/components/Pages/PageShow.vue'
-import type { Page } from '~/types/pages'
+import type { PageBloc } from '~/types/pages'
 
 const props = defineProps<{
   label: string
   publicPage: string
-  siteKey: 'datasets_page' | 'reuses_page' | 'dataservices_page'
+  siteKey: 'datasets_blocs' | 'reuses_blocs' | 'dataservices_blocs'
 }>()
 
 const { $api } = useNuxtApp()
 const { t } = useTranslation()
 
-const page = ref<Page | null>(null)
-const originalPage = ref<Page | null>(null)
-const { data: site, refresh } = await useAPI<Site>('/api/1/site/')
-
-watchEffect(async () => {
-  if (page.value) return
-  if (!site.value) return
-
-  if (site.value && site.value[props.siteKey]) {
-    const fetched = await $api<Page>(`/api/1/pages/${site.value[props.siteKey]}/`)
-    page.value = fetched
-    originalPage.value = structuredClone(toRaw(fetched))
-  }
-  else {
-    page.value = { id: '', blocs: [] }
-    originalPage.value = { id: '', blocs: [] }
-  }
+const { data: site, refresh } = await useAPI<Site>('/api/1/site/', {
+  key: `site-edito-${props.siteKey}`,
+  headers: { 'X-Fields': `{${props.siteKey}}` },
 })
 
-function resetPage() {
-  if (originalPage.value) {
-    page.value = structuredClone(toRaw(originalPage.value))
-  }
+const blocs = ref<Array<PageBloc>>([])
+const originalBlocs = ref<Array<PageBloc>>([])
+
+watchEffect(() => {
+  if (blocs.value.length > 0) return
+  if (!site.value) return
+
+  const siteBlocs = site.value[props.siteKey] ?? []
+  blocs.value = siteBlocs
+  originalBlocs.value = structuredClone(toRaw(siteBlocs))
+})
+
+function resetBlocs() {
+  blocs.value = structuredClone(toRaw(originalBlocs.value))
 }
 
-const savePage = async (updatedPage: Page) => {
-  if (!updatedPage) return
+const saveBlocs = async (updatedBlocs: Array<PageBloc>) => {
   if (!site.value) return
 
   try {
-    if (updatedPage.id) {
-      page.value = await $api<Page>(`/api/1/pages/${site.value[props.siteKey]}/`, {
-        method: 'PUT',
-        body: updatedPage,
-      })
-    }
-    else {
-      page.value = await $api<Page>(`/api/1/pages/`, {
-        method: 'POST',
-        body: updatedPage,
-      })
-      const body = {} as Record<string, string>
-      body[props.siteKey] = page.value.id
-      await $api(`/api/1/site/`, { method: 'PATCH', body })
-      await refresh()
-    }
-    originalPage.value = structuredClone(toRaw(page.value))
+    await $api(`/api/1/site/`, {
+      method: 'PATCH',
+      body: { [props.siteKey]: updatedBlocs },
+    })
+    blocs.value = updatedBlocs
+    originalBlocs.value = structuredClone(toRaw(updatedBlocs))
+    await refresh()
     toast.success(t('Page sauvegardée'))
   }
   catch {

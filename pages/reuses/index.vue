@@ -27,16 +27,12 @@
         </li>
       </ul>
     </EditoHeader>
-    <PageShowById
-      v-if="site?.reuses_page"
-      :page-id="site.reuses_page"
+    <PageShow
+      v-if="siteBlocs.length > 0 || isEditing"
+      :blocs="siteBlocs"
+      editable
       main-color="green-illustration"
-    />
-    <PageShowNew
-      v-else-if="isEditing"
-      site-key="reuses_page"
-      main-color="green-illustration"
-      @created="onPageCreated"
+      @save="saveBlocs"
     />
     <div class="overflow-hidden container flex flex-col md:flex-row items-center py-16 md:py-0">
       <div class="w-full">
@@ -159,12 +155,12 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type ReuseTopic, type Site } from '@datagouv/components-next'
+import { BrandedButton, toast, type ReuseTopic, type Site } from '@datagouv/components-next'
 import CdataLink from '~/components/CdataLink.vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
-import PageShowById from '~/components/Pages/PageShowById.vue'
-import PageShowNew from '~/components/Pages/PageShowNew.vue'
+import PageShow from '~/components/Pages/PageShow.vue'
+import type { PageBloc } from '~/types/pages'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
@@ -197,11 +193,28 @@ onMounted(async () => {
 
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
 
-const { data: site, refresh: refreshSite } = await useAPI<Site>('/api/1/site/')
+const { $api } = useNuxtApp()
+
+const { data: site, refresh: refreshSite } = await useAPI<Site>('/api/1/site/', {
+  key: 'site-reuses-blocs',
+  headers: { 'X-Fields': '{metrics,reuses_blocs}' },
+})
+
+const siteBlocs = computed(() => site.value?.reuses_blocs ?? [])
 
 const isEditing = computed(() => route.query.edit === 'true')
 
-async function onPageCreated() {
-  await refreshSite()
+async function saveBlocs(blocs: Array<PageBloc>) {
+  try {
+    await $api('/api/1/site/', {
+      method: 'PATCH',
+      body: { reuses_blocs: blocs },
+    })
+    await refreshSite()
+    toast.success(t('Page sauvegardée'))
+  }
+  catch {
+    toast.error(t('Erreur lors de la sauvegarde'))
+  }
 }
 </script>

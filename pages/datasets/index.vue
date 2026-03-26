@@ -12,14 +12,11 @@
       :link-label="$t(`Qu'est-ce qu'un jeu de données ?`)"
       :link-url="config.public.guideDatasets"
     />
-    <PageShowById
-      v-if="site?.datasets_page"
-      :page-id="site.datasets_page"
-    />
-    <PageShowNew
-      v-else-if="isEditing"
-      site-key="datasets_page"
-      @created="onPageCreated"
+    <PageShow
+      v-if="siteBlocs.length > 0 || isEditing"
+      :blocs="siteBlocs"
+      editable
+      @save="saveBlocs"
     />
     <EditoFooter
       color="primary"
@@ -30,11 +27,11 @@
 </template>
 
 <script setup lang="ts">
-import type { Site } from '@datagouv/components-next'
+import { toast, type Site } from '@datagouv/components-next'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
-import PageShowById from '~/components/Pages/PageShowById.vue'
-import PageShowNew from '~/components/Pages/PageShowNew.vue'
+import PageShow from '~/components/Pages/PageShow.vue'
+import type { PageBloc } from '~/types/pages'
 
 defineOgImage('MainPage.takumi', {
   title: 'Jeux de données',
@@ -66,11 +63,28 @@ onMounted(async () => {
   }
 })
 
-const { data: site, refresh: refreshSite } = await useAPI<Site>('/api/1/site/')
+const { $api } = useNuxtApp()
+
+const { data: site, refresh: refreshSite } = await useAPI<Site>('/api/1/site/', {
+  key: 'site-datasets-blocs',
+  headers: { 'X-Fields': '{metrics,datasets_blocs}' },
+})
+
+const siteBlocs = computed(() => site.value?.datasets_blocs ?? [])
 
 const isEditing = computed(() => route.query.edit === 'true')
 
-async function onPageCreated() {
-  await refreshSite()
+async function saveBlocs(blocs: Array<PageBloc>) {
+  try {
+    await $api('/api/1/site/', {
+      method: 'PATCH',
+      body: { datasets_blocs: blocs },
+    })
+    await refreshSite()
+    toast.success(t('Page sauvegardée'))
+  }
+  catch {
+    toast.error(t('Erreur lors de la sauvegarde'))
+  }
 }
 </script>
