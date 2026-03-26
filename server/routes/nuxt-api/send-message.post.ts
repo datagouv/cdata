@@ -1,8 +1,24 @@
-import { Crisp } from 'crisp-api'
+const CRISP_API_BASE = 'https://api.crisp.chat/v1'
 
 export function getNicknameFromEmail(email: string) {
   const nicknameParts = email.split('@')[0].split('.')
   return nicknameParts.map(part => part.toLowerCase()).join(' ')
+}
+
+function crispFetch(path: string, { identifier, key, method = 'GET', body }: {
+  identifier: string
+  key: string
+  method?: 'GET' | 'POST' | 'PATCH' | 'HEAD'
+  body?: unknown
+}) {
+  return $fetch(`${CRISP_API_BASE}${path}`, {
+    method,
+    headers: {
+      'Authorization': `Basic ${Buffer.from(`${identifier}:${key}`).toString('base64')}`,
+      'X-Crisp-Tier': 'plugin',
+    },
+    body: body ?? undefined,
+  })
 }
 
 export default defineEventHandler(async (event) => {
@@ -14,11 +30,10 @@ export default defineEventHandler(async (event) => {
     })
   }
   const body = await readBody(event)
-  const CrispClient = new Crisp()
 
   const config = useRuntimeConfig(event)
   const websiteId = config.crispWebsiteId as string
-  CrispClient.authenticateTier('plugin', config.crispIdentifier as string, config.crispKey as string)
+  const auth = { identifier: config.crispIdentifier as string, key: config.crispKey as string }
 
   const message = {
     type: 'text' as const,
@@ -31,28 +46,41 @@ export default defineEventHandler(async (event) => {
 
   let newPeople = false
   try {
-    await CrispClient.website.checkPeopleProfileExists(websiteId, email)
+    await crispFetch(`/website/${websiteId}/people/profile/${email}`, { ...auth, method: 'HEAD' })
   }
   catch {
     newPeople = true
   }
   if (newPeople) {
-    CrispClient.website.addNewPeopleProfile(websiteId, {
-      email,
-      person: {
-        nickname: getNicknameFromEmail(email),
+    await crispFetch(`/website/${websiteId}/people/profile`, {
+      ...auth,
+      method: 'POST',
+      body: {
+        email,
+        person: {
+          nickname: getNicknameFromEmail(email),
+        },
       },
     })
   }
   try {
-    const { session_id: sessionId } = await CrispClient.website.createNewConversation(websiteId)
+    const { data } = await crispFetch(`/website/${websiteId}/conversation`, { ...auth, method: 'POST' }) as { data: { session_id?: string } }
+    const sessionId = data.session_id
     if (!sessionId) throw new Error('Crisp conversation creation returned no session_id')
-    await CrispClient.website.updateConversationMetas(websiteId, sessionId, {
-      email,
-      nickname: getNicknameFromEmail(email),
-      segments: ['support.data.gouv.fr', body.segment],
+    await crispFetch(`/website/${websiteId}/conversation/${sessionId}/meta`, {
+      ...auth,
+      method: 'PATCH',
+      body: {
+        email,
+        nickname: getNicknameFromEmail(email),
+        segments: ['support.data.gouv.fr', body.segment],
+      },
     })
-    CrispClient.website.sendMessageInConversation(websiteId, sessionId, message)
+    await crispFetch(`/website/${websiteId}/conversation/${sessionId}/message`, {
+      ...auth,
+      method: 'POST',
+      body: message,
+    })
   }
   catch (e) {
     console.error(e)
