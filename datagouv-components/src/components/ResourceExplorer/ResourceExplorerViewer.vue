@@ -3,10 +3,10 @@
     <header class="p-4 flex flex-wrap md:flex-nowrap gap-4 items-center justify-between">
       <div>
         <div class="flex items-center mb-1">
-          <h3 class="m-0 flex items-center text-base font-bold leading-tight">
+          <h3 class="m-0 flex items-baseline text-base font-bold leading-tight">
             <ResourceIcon
               :resource
-              class="size-3.5 mr-1"
+              class="size-3.5 mr-1 shrink-0 translate-y-px"
             />
             <span class="line-clamp-2">{{ resource.title || t('Fichier sans nom') }}</span>
           </h3>
