@@ -3,7 +3,7 @@
     <header class="p-4 flex flex-wrap md:flex-nowrap gap-4 items-center justify-between">
       <div>
         <div class="flex items-center mb-1">
-          <h3 class="m-0 flex items-baseline text-base font-bold leading-tight">
+          <h3 class="m-0 flex items-center text-base font-bold leading-tight">
             <ResourceIcon
               :resource
               class="size-3.5 mr-1"
@@ -14,12 +14,13 @@
             :label="t('Copier le lien')"
             :copied-label="t('Lien copié !')"
             :text="resourceExternalUrl"
+            class="hidden md:inline-flex"
           />
         </div>
-        <div class="text-gray-medium text-xs flex items-center gap-1">
+        <div class="text-gray-medium text-xs flex items-center gap-1 flex-wrap">
           <SchemaBadge :resource />
           <RiSubtractLine
-            v-if="resource.schema"
+            v-if="resource.schema?.name || resource.schema?.url"
             aria-hidden="true"
             class="size-3 fill-gray-medium"
           />

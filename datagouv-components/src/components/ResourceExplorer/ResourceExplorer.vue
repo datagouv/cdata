@@ -2,6 +2,19 @@
   <div v-if="allResources.length || hasAnyResources">
     <div class="flex gap-6">
       <div class="flex-1 min-w-0">
+        <div
+          v-if="dataset.resources.total > 1"
+          class="md:hidden flex justify-end mb-3"
+        >
+          <BrandedButton
+            size="xs"
+            color="secondary"
+            :icon="RiListUnordered"
+            @click="mobileSidebarOpen = true"
+          >
+            {{ t('Ressources ({count})', { count: dataset.resources.total }) }}
+          </BrandedButton>
+        </div>
         <ResourceExplorerViewer
           v-if="selectedResource && allResources.length"
           :key="selectedResource.id"
@@ -30,16 +43,41 @@
           </BrandedButton>
         </div>
       </div>
-      <ResourceExplorerSidebar
-        :resources="allResources"
-        :selected-resource-id="selectedResource?.id ?? null"
-        :collapsed="sidebarCollapsed"
-        :search
-        @select="selectResource"
-        @load-more="loadMore"
-        @update:collapsed="sidebarCollapsed = $event"
-        @update:search="updateSearch($event)"
+      <div class="hidden md:block">
+        <ResourceExplorerSidebar
+          :resources="allResources"
+          :selected-resource-id="selectedResource?.id ?? null"
+          :collapsed="sidebarCollapsed"
+          :search
+          @select="selectResource"
+          @load-more="loadMore"
+          @update:collapsed="sidebarCollapsed = $event"
+          @update:search="updateSearch($event)"
+        />
+      </div>
+    </div>
+
+    <!-- Mobile sidebar overlay -->
+    <div
+      v-if="mobileSidebarOpen"
+      class="md:hidden fixed inset-0 z-50 flex justify-end"
+    >
+      <div
+        class="absolute inset-0 bg-black/30"
+        @click="mobileSidebarOpen = false"
       />
+      <div class="relative w-80 max-w-[85vw] bg-white shadow-lg overflow-y-auto">
+        <ResourceExplorerSidebar
+          :resources="allResources"
+          :selected-resource-id="selectedResource?.id ?? null"
+          :collapsed="false"
+          :search
+          @select="selectResource"
+          @load-more="loadMore"
+          @update:collapsed="mobileSidebarOpen = false"
+          @update:search="updateSearch($event)"
+        />
+      </div>
     </div>
   </div>
   <div
@@ -73,6 +111,7 @@ import type { DatasetV2 } from '../../types/datasets'
 import type { Resource, ResourceGroup, ResourceType } from '../../types/resources'
 import ResourceExplorerSidebar from './ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './ResourceExplorerViewer.vue'
+import { RiListUnordered } from '@remixicon/vue'
 import BrandedButton from '../BrandedButton.vue'
 
 const props = withDefaults(defineProps<{
@@ -211,6 +250,7 @@ const flatResources = computed(() =>
 
 // Fetch resource by ID if specified in URL (for SSR)
 const initialResourceId = resourceIdQuery.value
+const mobileSidebarOpen = ref(false)
 const { data: fetchedResource } = initialResourceId
   ? await useFetch<Resource>(`/api/1/datasets/${props.dataset.id}/resources/${initialResourceId}/`)
   : { data: ref(null) }
@@ -238,6 +278,7 @@ function updateSearch(newSearch: string) {
 
 const selectResource = (resource: Resource) => {
   selectedResource.value = resource
+  mobileSidebarOpen.value = false
   router.replace({
     query: { ...router.currentRoute.value.query, resource_id: resource.id },
   })
