@@ -12,8 +12,6 @@ import Table from '../components/Icons/Table.vue'
 import type { CommunityResource, Resource } from '../types/resources'
 import { useTranslation } from '../composables/useTranslation'
 
-const config = useComponentsConfig()
-
 export function getResourceFormatIcon(format: string): Component | null {
   switch (format?.trim()?.toLowerCase()) {
     case 'txt':
@@ -161,6 +159,7 @@ export const getResourceCorsStatus = (resource: Resource): CorsStatus => {
   const rawMethods = extras['check:cors:allow-methods'] as string | undefined
 
   // Check if allow-origin is '*' or contains one of our trusted domains
+  const config = useComponentsConfig()
   const trustedDomains = config.trustedDomains ?? []
   const hasPublicCors = allowOrigin === '*'
   const hasSpecificCors = allowOrigin
