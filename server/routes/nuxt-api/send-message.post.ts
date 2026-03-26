@@ -64,7 +64,7 @@ export default defineEventHandler(async (event) => {
     })
   }
   try {
-    const { data } = await crispFetch(`/website/${websiteId}/conversation`, { ...auth, method: 'POST' }) as { data: { session_id?: string } }
+    const { data } = await crispFetch(`/website/${websiteId}/conversation`, { ...auth, method: 'POST', body: {} }) as { data: { session_id?: string } }
     const sessionId = data.session_id
     if (!sessionId) throw new Error('Crisp conversation creation returned no session_id')
     await crispFetch(`/website/${websiteId}/conversation/${sessionId}/meta`, {
