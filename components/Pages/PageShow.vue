@@ -171,9 +171,8 @@ watchEffect(() => {
 })
 
 const emit = defineEmits<{
-  'update:blocs': [Array<PageBloc>]
-  'save': [Array<PageBloc>]
-  'cancel': []
+  save: [Array<PageBloc>]
+  cancel: []
 }>()
 
 const route = useRoute()
@@ -251,8 +250,11 @@ function exitEditMode() {
 async function save() {
   if (!localBlocs.value) return
 
-  emit('update:blocs', localBlocs.value)
   emit('save', localBlocs.value)
+  localBlocs.value = null
+  if (props.editable) {
+    exitEditMode()
+  }
 }
 
 function cancel() {
