@@ -57,28 +57,24 @@
       </div>
     </div>
 
-    <!-- Mobile sidebar overlay -->
-    <div
-      v-if="mobileSidebarOpen"
-      class="md:hidden fixed inset-0 z-50 flex justify-end"
+    <!-- Mobile sidebar panel -->
+    <dialog
+      ref="mobileSidebarDialog"
+      class="mobile-sidebar md:hidden fixed inset-0 m-0 ml-auto p-0 h-dvh max-h-dvh w-80 max-w-[85vw] bg-white shadow-lg overflow-y-auto overscroll-contain backdrop:bg-black/30"
+      @close="mobileSidebarOpen = false"
+      @click.self="closeMobileSidebar"
     >
-      <div
-        class="absolute inset-0 bg-black/30"
-        @click="mobileSidebarOpen = false"
+      <ResourceExplorerSidebar
+        :resources="allResources"
+        :selected-resource-id="selectedResource?.id ?? null"
+        :collapsed="false"
+        :search
+        @select="selectResource"
+        @load-more="loadMore"
+        @update:collapsed="closeMobileSidebar"
+        @update:search="updateSearch($event)"
       />
-      <div class="relative w-80 max-w-[85vw] bg-white shadow-lg overflow-y-auto">
-        <ResourceExplorerSidebar
-          :resources="allResources"
-          :selected-resource-id="selectedResource?.id ?? null"
-          :collapsed="false"
-          :search
-          @select="selectResource"
-          @load-more="loadMore"
-          @update:collapsed="mobileSidebarOpen = false"
-          @update:search="updateSearch($event)"
-        />
-      </div>
-    </div>
+    </dialog>
   </div>
   <div
     v-else
@@ -251,6 +247,20 @@ const flatResources = computed(() =>
 // Fetch resource by ID if specified in URL (for SSR)
 const initialResourceId = resourceIdQuery.value
 const mobileSidebarOpen = ref(false)
+const mobileSidebarDialog = ref<HTMLDialogElement | null>(null)
+
+watch(mobileSidebarOpen, (open) => {
+  if (open) {
+    mobileSidebarDialog.value?.showModal()
+  }
+  else {
+    mobileSidebarDialog.value?.close()
+  }
+})
+
+function closeMobileSidebar() {
+  mobileSidebarOpen.value = false
+}
 const { data: fetchedResource } = initialResourceId
   ? await useFetch<Resource>(`/api/1/datasets/${props.dataset.id}/resources/${initialResourceId}/`)
   : { data: ref(null) }
@@ -293,3 +303,9 @@ watch(flatResources, () => {
   }
 })
 </script>
+
+<style>
+html:has(dialog.mobile-sidebar[open]) {
+  overflow: hidden;
+}
+</style>
