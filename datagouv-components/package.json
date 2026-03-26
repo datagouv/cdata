@@ -37,7 +37,7 @@
     "publish-stable": "pnpm publish --access public"
   },
   "dependencies": {
-    "@floating-ui/vue": "^1.1.8",
+    "@floating-ui/vue": "^1.1.11",
     "@headlessui/vue": "^1.7.23",
     "@remixicon/vue": "^4.5.0",
     "@types/hast": "^3.0.4",
@@ -95,7 +95,7 @@
     "typescript": "^5.7.3",
     "vite": "^7.0",
     "vite-plugin-vue-devtools": "^8.0",
-    "vue": "^3.5.29",
+    "vue": "^3.5.30",
     "vue-router": "^4.6.4",
     "vue-tsc": "^3.0"
   },

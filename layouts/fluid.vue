@@ -1,7 +1,5 @@
 <script setup lang="ts">
-if (import.meta.server) {
-  defineOgImage('Default.takumi')
-}
+defineOgImage('Default.takumi')
 </script>
 
 <template>
