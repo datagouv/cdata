@@ -392,12 +392,14 @@
               >
                 {{ dataset.access_type_reason }}
               </p>
-              <p
-                v-else-if="category"
-                class="text-sm"
-              >
-                {{ category.label }}
-              </p>
+              <template v-else-if="category">
+                <p class="font-bold text-sm mb-1">
+                  {{ category.label }}
+                </p>
+                <p class="text-sm">
+                  {{ category.definition }}
+                </p>
+              </template>
               <p
                 v-if="config.public.datasetRestrictedGuideUrl"
                 class="mb-0"
