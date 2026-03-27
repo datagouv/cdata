@@ -193,7 +193,61 @@
         </div>
       </fieldset>
 
-      <!-- Y Axis -->
+      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+        <p class="font-bold mb-2">
+          {{ $t('Série') }}
+        </p>
+        <div
+          v-for="(serie, index) in form.series"
+          :key="index"
+          class="space-y-4"
+        >
+          <div>
+            <label
+              :for="`column-y-${index}`"
+              class=" block text-sm font-medium mb-1"
+            >{{ $t('Colonne Y') }}</label>
+            <select
+              :id="`column-y-${index}`"
+              v-model="serie.column_y"
+              class="w-full fr-select"
+            >
+              <template v-if="selectedResource">
+                <option
+                  v-for="column in columns[selectedResource]"
+                  :key="column"
+                  :value="column"
+                >
+                  {{ column }}
+                </option>
+              </template>
+            </select>
+          </div>
+
+          <div>
+            <label
+              :for="`aggregate-y-${index}`"
+              class="block text-sm font-medium mb-1"
+            >{{ $t('Agrégation') }}</label>
+            <select
+              :id="`aggregate-y-${index}`"
+              v-model="serie.aggregate_y"
+              class="w-full fr-select"
+            >
+              <option :value="null">
+                {{ $t('Non') }}
+              </option>
+              <option value="sum">
+                {{ $t('Somme') }}
+              </option>
+              <option value="avg">
+                {{ $t('Moyenne') }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
       <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
         <p class="font-bold mb-2">
           {{ $t('Axe Y') }}
@@ -265,61 +319,6 @@
               </option>
               <option value="prefix">
                 {{ $t('Préfixe') }}
-              </option>
-            </select>
-          </div>
-        </div>
-      </fieldset>
-
-      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
-        <p class="font-bold mb-2">
-          {{ $t('Série') }}
-        </p>
-        <div
-          v-for="(serie, index) in form.series"
-          :key="index"
-          class="space-y-4"
-        >
-          <div>
-            <label
-              :for="`column-y-${index}`"
-              class=" block text-sm font-medium mb-1"
-            >{{ $t('Colonne Y') }}</label>
-            <select
-              :id="`column-y-${index}`"
-              v-model="serie.column_y"
-              class="w-full fr-select"
-            >
-              <template v-if="selectedResource">
-                <option
-                  v-for="column in columns[selectedResource]"
-                  :key="column"
-                  :value="column"
-                >
-                  {{ column }}
-                </option>
-              </template>
-            </select>
-          </div>
-
-          <div>
-            <label
-              :for="`aggregate-y-${index}`"
-              class="block text-sm font-medium mb-1"
-            >{{ $t('Agrégation') }}</label>
-            <select
-              :id="`aggregate-y-${index}`"
-              v-model="serie.aggregate_y"
-              class="w-full fr-select"
-            >
-              <option :value="null">
-                {{ $t('Non') }}
-              </option>
-              <option value="sum">
-                {{ $t('Somme') }}
-              </option>
-              <option value="avg">
-                {{ $t('Moyenne') }}
               </option>
             </select>
           </div>

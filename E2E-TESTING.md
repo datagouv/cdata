@@ -6,7 +6,7 @@ Ce document explique comment les tests E2E sont configurés pour tester l'intég
 
 ### GitHub Actions
 
-Voir **e2e.yml**.
+Voir **.github/workflows/ci.yml**.
 
 ### Architecture des tests
 
@@ -62,3 +62,7 @@ pnpm run test:e2e
 - `pnpm run test:e2e` : Lance les tests E2E en mode headless
 - `pnpm run test:e2e:ui` : Lance les tests avec l'interface Playwright
 - `pnpm run test:e2e:headed` : Lance les tests en mode visible
+
+## Paramètres fréquemment utilisés
+- `--project firefox`: Lance uniquement les tests pour firefox (existe aussi avec `--project chromium`)
+- `--only-changed`: Lance uniquement les tests modifiés depuis le dernier commit, et les tests qui importent un fichier modifié
