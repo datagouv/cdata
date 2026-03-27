@@ -651,7 +651,7 @@ const datasetDownloadsResources = computed(() => datasetMetrics.value?.downloads
 const datasetVisitsTotal = computed(() => datasetMetrics.value?.visitsTotal ?? 0)
 const datasetDownloadsResourcesTotal = computed(() => datasetMetrics.value?.downloadsTotal ?? 0)
 
-const { data: categories } = await useAPI<Array<{ value: string, label: string }>>('/api/1/access_type/reason_categories')
+const { data: categories } = await useAPI<Array<{ value: string, label: string, definition: string }>>('/api/1/access_type/reason_categories')
 const category = computed(() => {
   if (!dataset.value?.access_type_reason_category) return null
   return categories.value?.find(c => c.value === dataset.value?.access_type_reason_category)
