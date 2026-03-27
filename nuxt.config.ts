@@ -55,7 +55,7 @@ export default defineNuxtConfig({
     albertApiKey: '',
     public: {
       isProduction: true,
-      trustedDomains: ['data.gouv.fr', 'www.data.gouv.fr'],
+      trustedDomains: ['data.gouv.fr'], // Hostnames allowed in Access-Control-Allow-Origin for resource preview CORS checks (includes subdomains)
       banner: undefined,
 
       title: 'data.gouv.fr',

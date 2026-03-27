@@ -163,7 +163,15 @@ export const getResourceCorsStatus = (resource: Resource): CorsStatus => {
   const trustedDomains = config.trustedDomains ?? []
   const hasPublicCors = allowOrigin === '*'
   const hasSpecificCors = allowOrigin
-    ? trustedDomains.some(domain => allowOrigin.includes(domain))
+    ? trustedDomains.some((domain) => {
+        try {
+          const hostname = new URL(allowOrigin).hostname
+          return hostname === domain || hostname.endsWith(`.${domain}`)
+        }
+        catch {
+          return false
+        }
+      })
     : false
 
   const isOriginAllowed = hasPublicCors || hasSpecificCors
