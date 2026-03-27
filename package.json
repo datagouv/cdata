@@ -76,7 +76,6 @@
     "@vueuse/integrations": "^14.2.1",
     "@vueuse/nuxt": "^14.2.1",
     "@vueuse/router": "^14.2.1",
-    "crisp-api": "^10.9.1",
     "gray-matter": "^4.0.3",
     "leaflet": "^1.9.4",
     "lodash-es": "^4.17.23",
