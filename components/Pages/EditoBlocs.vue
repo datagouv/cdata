@@ -156,6 +156,7 @@ const props = withDefaults(defineProps<{
   edit?: boolean
   editable?: boolean
   mainColor?: ComponentProps<typeof BrandedButton>['color']
+  onSave: (blocs: Array<PageBloc>) => Promise<void>
 }>(), {
   edit: false,
   editable: false,
@@ -171,7 +172,6 @@ watchEffect(() => {
 })
 
 const emit = defineEmits<{
-  save: [Array<PageBloc>]
   cancel: []
 }>()
 
@@ -243,7 +243,7 @@ function exitEditMode() {
 async function save() {
   if (!localBlocs.value) return
 
-  emit('save', localBlocs.value)
+  await props.onSave(localBlocs.value)
   localBlocs.value = null
   if (props.editable) {
     exitEditMode()

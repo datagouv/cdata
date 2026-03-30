@@ -17,7 +17,7 @@
       :blocs="siteBlocs"
       editable
       main-color="brown-illustration"
-      @save="saveBlocs"
+      :on-save="saveBlocs"
     />
     <section class="container w-full pt-16">
       <div>

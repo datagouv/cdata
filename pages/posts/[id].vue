@@ -10,7 +10,7 @@
       v-if="isFullPageBlocs"
       :blocs="post.blocs ?? []"
       editable
-      @save="saveBlocs"
+      :on-save="saveBlocs"
     />
 
     <!-- Standard news mode -->
@@ -69,7 +69,7 @@
             <EditoBlocs
               :blocs="post.blocs ?? []"
               editable
-              @save="saveBlocs"
+              :on-save="saveBlocs"
             />
           </template>
           <template v-else-if="post.body_type === 'markdown'">

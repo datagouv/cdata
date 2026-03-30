@@ -16,7 +16,7 @@
       v-if="siteBlocs.length > 0 || isEditing"
       :blocs="siteBlocs"
       editable
-      @save="saveBlocs"
+      :on-save="saveBlocs"
     />
     <EditoFooter
       color="primary"

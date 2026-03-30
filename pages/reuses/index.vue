@@ -32,7 +32,7 @@
       :blocs="siteBlocs"
       editable
       main-color="green-illustration"
-      @save="saveBlocs"
+      :on-save="saveBlocs"
     />
     <div class="overflow-hidden container flex flex-col md:flex-row items-center py-16 md:py-0">
       <div class="w-full">

@@ -40,7 +40,7 @@
       <EditoBlocs
         :blocs="blocs"
         edit
-        @save="saveBlocs"
+        :on-save="saveBlocs"
         @cancel="resetBlocs"
       />
     </div>
