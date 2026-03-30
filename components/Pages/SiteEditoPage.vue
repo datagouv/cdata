@@ -74,14 +74,12 @@ const { data: site, refresh } = await useAPI<Site>('/api/1/site/', {
 const blocs = ref<Array<PageBloc>>([])
 const originalBlocs = ref<Array<PageBloc>>([])
 
-watchEffect(() => {
-  if (blocs.value.length > 0) return
-  if (!site.value) return
-
-  const siteBlocs = site.value[props.siteKey] ?? []
+watch(() => site.value, (siteValue) => {
+  if (!siteValue) return
+  const siteBlocs = siteValue[props.siteKey] ?? []
   blocs.value = siteBlocs
   originalBlocs.value = structuredClone(toRaw(siteBlocs))
-})
+}, { immediate: true })
 
 function resetBlocs() {
   blocs.value = structuredClone(toRaw(originalBlocs.value))
@@ -95,8 +93,6 @@ const saveBlocs = async (updatedBlocs: Array<PageBloc>) => {
       method: 'PATCH',
       body: { [props.siteKey]: updatedBlocs },
     })
-    blocs.value = updatedBlocs
-    originalBlocs.value = structuredClone(toRaw(updatedBlocs))
     await refresh()
     toast.success(t('Page sauvegardée'))
   }
