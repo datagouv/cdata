@@ -12,7 +12,7 @@
       :link-label="$t(`Qu'est-ce qu'un jeu de données ?`)"
       :link-url="config.public.guideDatasets"
     />
-    <PageShow
+    <EditoBlocs
       v-if="siteBlocs.length > 0 || isEditing"
       :blocs="siteBlocs"
       editable
@@ -30,7 +30,7 @@
 import { toast, type Site } from '@datagouv/components-next'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
-import PageShow from '~/components/Pages/PageShow.vue'
+import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 import type { PageBloc } from '~/types/pages'
 
 defineOgImage('MainPage.takumi', {

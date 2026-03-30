@@ -27,7 +27,7 @@
         </li>
       </ul>
     </EditoHeader>
-    <PageShow
+    <EditoBlocs
       v-if="siteBlocs.length > 0 || isEditing"
       :blocs="siteBlocs"
       editable
@@ -159,7 +159,7 @@ import { BrandedButton, toast, type ReuseTopic, type Site } from '@datagouv/comp
 import CdataLink from '~/components/CdataLink.vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
-import PageShow from '~/components/Pages/PageShow.vue'
+import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 import type { PageBloc } from '~/types/pages'
 
 const config = useRuntimeConfig()

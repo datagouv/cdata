@@ -12,7 +12,7 @@
       :link-label="$t(`Qu'est-ce qu'une API ?`)"
       :link-url="config.public.guideDataservices"
     />
-    <PageShow
+    <EditoBlocs
       v-if="siteBlocs.length > 0 || isEditing"
       :blocs="siteBlocs"
       editable
@@ -244,7 +244,7 @@ import { BrandedButton, toast, type Site } from '@datagouv/components-next'
 import { RiExternalLinkFill, RiArrowRightLine } from '@remixicon/vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
-import PageShow from '~/components/Pages/PageShow.vue'
+import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 import type { PageBloc } from '~/types/pages'
 
 const config = useRuntimeConfig()

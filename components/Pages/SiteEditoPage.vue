@@ -37,7 +37,7 @@
     />
 
     <div class="bg-white py-6">
-      <PageShow
+      <EditoBlocs
         :blocs="blocs"
         edit
         @save="saveBlocs"
@@ -54,7 +54,7 @@ import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import type { Site } from '@datagouv/components-next'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import PageShow from '~/components/Pages/PageShow.vue'
+import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 import type { PageBloc } from '~/types/pages'
 
 const props = defineProps<{

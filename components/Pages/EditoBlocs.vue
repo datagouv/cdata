@@ -180,28 +180,21 @@ const router = useRouter()
 
 const isEditing = computed(() => props.edit || (props.editable && route.query.edit === 'true'))
 
-// When editable, keep an internal copy that gets updated after save
-const internalBlocs = ref<Array<PageBloc>>(props.blocs)
-watch(() => props.blocs, (newBlocs) => {
-  internalBlocs.value = newBlocs
-})
-const displayBlocs = computed(() => props.editable ? internalBlocs.value : props.blocs)
-
 // In edit mode, we work on a reactive copy
 const localBlocs = ref<Array<PageBloc> | null>(null)
 
 watchEffect(() => {
   if (isEditing.value && !localBlocs.value) {
-    localBlocs.value = structuredClone(toRaw(displayBlocs.value))
+    localBlocs.value = structuredClone(toRaw(props.blocs))
   }
 })
 
-const workingBlocs = computed(() => (isEditing.value && localBlocs.value ? localBlocs.value : displayBlocs.value))
+const workingBlocs = computed(() => (isEditing.value && localBlocs.value ? localBlocs.value : props.blocs))
 
 // Check if there are unsaved changes
 const hasUnsavedChanges = computed(() => {
   if (!isEditing.value || !localBlocs.value) return false
-  return JSON.stringify(toRaw(localBlocs.value)) !== JSON.stringify(toRaw(displayBlocs.value))
+  return JSON.stringify(toRaw(localBlocs.value)) !== JSON.stringify(toRaw(props.blocs))
 })
 
 // Warn before leaving with unsaved changes.

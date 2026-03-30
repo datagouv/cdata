@@ -6,7 +6,7 @@
     :data="post"
   >
     <!-- Full page blocs mode: no header, no breadcrumb, just the blocs -->
-    <PageShow
+    <EditoBlocs
       v-if="isFullPageBlocs"
       :blocs="post.blocs ?? []"
       editable
@@ -66,7 +66,7 @@
             class="w-full h-auto mb-2"
           >
           <template v-if="post.body_type === 'blocs'">
-            <PageShow
+            <EditoBlocs
               :blocs="post.blocs ?? []"
               editable
               @save="saveBlocs"
@@ -104,7 +104,7 @@
 import { markdownClasses, MarkdownViewer, LoadingBlock, toast, useFormatDate } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
-import PageShow from '~/components/Pages/PageShow.vue'
+import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 import type { PageBloc } from '~/types/pages'
 import type { Post } from '~/types/posts'
 
