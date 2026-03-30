@@ -7,8 +7,8 @@
   >
     <!-- Full page blocs mode: no header, no breadcrumb, just the blocs -->
     <PageShow
-      v-if="isFullPageBlocs && post.blocs?.length"
-      :blocs="post.blocs"
+      v-if="isFullPageBlocs"
+      :blocs="post.blocs ?? []"
       editable
       @save="saveBlocs"
     />
@@ -65,9 +65,9 @@
             :src="post.image"
             class="w-full h-auto mb-2"
           >
-          <template v-if="post.body_type === 'blocs' && post.blocs?.length">
+          <template v-if="post.body_type === 'blocs'">
             <PageShow
-              :blocs="post.blocs"
+              :blocs="post.blocs ?? []"
               editable
               @save="saveBlocs"
             />
