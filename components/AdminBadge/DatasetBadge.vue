@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { Dataset, DatasetV2 } from '@datagouv/components-next'
+import type { Dataset, DatasetV2, DatasetV2WithFullObject } from '@datagouv/components-next'
 import type { AdminBadgeType } from '~/types/types'
 
 const props = defineProps<{
-  dataset: Dataset | DatasetV2
+  dataset: Dataset | DatasetV2 | DatasetV2WithFullObject
 }>()
 
 const { t } = useTranslation()

@@ -35,7 +35,7 @@ export function isClosedFormat(resource: ResourceForm, extensions: Array<string>
   return includeInSubtype(CLOSED_FORMATS, format)
 }
 
-export function getDatasetAdminUrl(dataset: Dataset | DatasetV2): string {
+export function getDatasetAdminUrl(dataset: Dataset | DatasetV2 | DatasetV2WithFullObject): string {
   return `/admin/datasets/${dataset.id}`
 }
 
