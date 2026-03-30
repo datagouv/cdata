@@ -24,6 +24,9 @@
         : t("La taille du fichier est inconnue, l'aperçu n'est pas disponible. Téléchargez-le depuis l'onglet Téléchargements.")
       }}
     </PreviewUnavailable>
+    <PreviewUnavailable v-else-if="error === 'cors'">
+      {{ t("Ce fichier PDF ne peut pas être prévisualisé car il est hébergé sur un site distant qui restreint l'accès (CORS). Téléchargez-le depuis l'onglet Téléchargements.") }}
+    </PreviewUnavailable>
     <PreviewUnavailable v-else-if="error === 'network'">
       {{ t("Ce fichier est hébergé sur un site externe qui ne permet pas la prévisualisation. Téléchargez-le depuis l'onglet Téléchargements.") }}
     </PreviewUnavailable>
@@ -41,8 +44,8 @@ import type { PDFDocumentProxy } from 'pdfjs-dist'
 import PreviewUnavailable from './PreviewUnavailable.vue'
 import { useComponentsConfig } from '../../config'
 import type { Resource } from '../../types/resources'
+import { getResourceFilesize, getResourceCorsStatus } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
-import { getResourceFilesize } from '../../functions/datasets'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
@@ -97,6 +100,8 @@ async function renderPage(pageNum: number) {
 
 const fileSizeBytes = computed(() => getResourceFilesize(props.resource))
 
+const corsStatus = computed(() => getResourceCorsStatus(props.resource))
+
 const shouldLoadPdf = computed(() => {
   const size = fileSizeBytes.value
   if (!size) {
@@ -110,14 +115,21 @@ const shouldLoadPdf = computed(() => {
 })
 
 const loadPdf = async () => {
+  error.value = null
+  fileTooLarge.value = false
+
   if (!shouldLoadPdf.value) {
     fileTooLarge.value = true
     return
   }
 
-  loading.value = true
-  error.value = null
+  // Check if CORS is allowed
+  if (corsStatus.value === 'blocked') {
+    error.value = 'cors'
+    return
+  }
 
+  loading.value = true
   try {
     const loadingTask = pdfjsLib.getDocument({
       url: props.resource.url,

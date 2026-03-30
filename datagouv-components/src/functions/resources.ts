@@ -1,13 +1,15 @@
 import { readonly, type Component } from 'vue'
 
 import { RiEarthLine, RiMap2Line } from '@remixicon/vue'
+import { useComponentsConfig } from '../config'
 import Archive from '../components/Icons/Archive.vue'
 import Code from '../components/Icons/Code.vue'
+import type { Dataset, DatasetV2 } from '../types/datasets'
 import Documentation from '../components/Icons/Documentation.vue'
 import Image from '../components/Icons/Image.vue'
 import Link from '../components/Icons/Link.vue'
 import Table from '../components/Icons/Table.vue'
-import type { Resource } from '../types/resources'
+import type { CommunityResource, Resource } from '../types/resources'
 import { useTranslation } from '../composables/useTranslation'
 
 export function getResourceFormatIcon(format: string): Component | null {
@@ -128,4 +130,57 @@ export const detectOgcService = (resource: Resource) => {
       }
   }
   return false
+}
+
+export function isCommunityResource(resource: Resource | CommunityResource): boolean {
+  return 'organization' in resource || 'owner' in resource
+}
+
+export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource | CommunityResource): string {
+  return `${dataset.page}${isCommunityResource(resource) ? '/community-resources' : ''}?resource_id=${resource.id}`
+}
+
+export function getResourceFilesize(resource: Resource): null | number {
+  if (resource.filesize) return resource.filesize
+  if ('analysis:content-length' in resource.extras) return resource.extras['analysis:content-length'] as number
+
+  return null
+}
+
+type CorsStatus = 'allowed' | 'blocked' | 'unknown'
+
+export const getResourceCorsStatus = (resource: Resource): CorsStatus => {
+  const extras = resource.extras
+  if (!extras || !('check:cors:allow-origin' in extras)) {
+    return 'unknown'
+  }
+
+  const allowOrigin = extras['check:cors:allow-origin'] as string | undefined
+  const rawMethods = extras['check:cors:allow-methods'] as string | undefined
+
+  // Check if allow-origin is '*' or contains one of our trusted domains
+  const config = useComponentsConfig()
+  const trustedDomains = config.trustedDomains ?? []
+  const hasPublicCors = allowOrigin === '*'
+  const hasSpecificCors = allowOrigin
+    ? trustedDomains.some((domain) => {
+        try {
+          const hostname = new URL(allowOrigin).hostname
+          return hostname === domain || hostname.endsWith(`.${domain}`)
+        }
+        catch {
+          return false
+        }
+      })
+    : false
+
+  const isOriginAllowed = hasPublicCors || hasSpecificCors
+
+  // Ensure GET method is allowed
+  const allowedMethods = rawMethods
+    ? rawMethods.split(',').map(m => m.trim().toUpperCase())
+    : []
+  const supportsGet = allowedMethods.length === 0 || allowedMethods.includes('GET')
+
+  return isOriginAllowed && supportsGet ? 'allowed' : 'blocked'
 }
