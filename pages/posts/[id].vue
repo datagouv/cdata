@@ -127,10 +127,9 @@ const isFullPageBlocs = computed(() => post.value?.kind === 'page' && post.value
 async function saveBlocs(blocs: Array<PageBloc>) {
   if (!post.value) return
   try {
-    const { id, last_modified, created_at, datasets, reuses, page, slug, url, ...postData } = post.value
-    await $api(`/api/1/posts/${id}/`, {
+    await $api(`/api/1/posts/${post.value.id}/`, {
       method: 'PUT',
-      body: { ...postData, blocs },
+      body: { blocs },
     })
     toast.success(t('Page sauvegardée'))
   }
