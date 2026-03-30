@@ -240,12 +240,11 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, toast, type Site } from '@datagouv/components-next'
+import { BrandedButton } from '@datagouv/components-next'
 import { RiExternalLinkFill, RiArrowRightLine } from '@remixicon/vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
 import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
-import type { PageBloc } from '~/types/pages'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
@@ -276,28 +275,7 @@ onMounted(async () => {
   }
 })
 
-const { $api } = useNuxtApp()
-
-const { data: site, refresh: refreshSite } = await useAPI<Site>('/api/1/site/', {
-  key: 'site-dataservices-blocs',
-  headers: { 'X-Fields': '{metrics,dataservices_blocs}' },
-})
-
-const siteBlocs = computed(() => site.value?.dataservices_blocs ?? [])
+const { site, blocs: siteBlocs, saveBlocs } = await useSiteBlocs('dataservices_blocs', ['metrics'])
 
 const isEditing = computed(() => route.query.edit === 'true')
-
-async function saveBlocs(blocs: Array<PageBloc>) {
-  try {
-    await $api('/api/1/site/', {
-      method: 'PATCH',
-      body: { dataservices_blocs: blocs },
-    })
-    await refreshSite()
-    toast.success(t('Page sauvegardée'))
-  }
-  catch {
-    toast.error(t('Erreur lors de la sauvegarde'))
-  }
-}
 </script>

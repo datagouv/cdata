@@ -189,7 +189,7 @@ watchEffect(() => {
   }
 })
 
-const workingBlocs = computed(() => (isEditing.value && localBlocs.value ? localBlocs.value : props.blocs))
+const workingBlocs = computed(() => localBlocs.value ?? props.blocs)
 
 // Check if there are unsaved changes
 const hasUnsavedChanges = computed(() => {
@@ -251,7 +251,7 @@ async function save() {
 }
 
 function cancel() {
-  localBlocs.value = null
+  localBlocs.value = structuredClone(toRaw(props.blocs))
   if (props.editable) {
     exitEditMode()
   }

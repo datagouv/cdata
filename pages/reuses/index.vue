@@ -155,12 +155,11 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, toast, type ReuseTopic, type Site } from '@datagouv/components-next'
+import { BrandedButton, type ReuseTopic } from '@datagouv/components-next'
 import CdataLink from '~/components/CdataLink.vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
 import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
-import type { PageBloc } from '~/types/pages'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
@@ -193,28 +192,7 @@ onMounted(async () => {
 
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
 
-const { $api } = useNuxtApp()
-
-const { data: site, refresh: refreshSite } = await useAPI<Site>('/api/1/site/', {
-  key: 'site-reuses-blocs',
-  headers: { 'X-Fields': '{metrics,reuses_blocs}' },
-})
-
-const siteBlocs = computed(() => site.value?.reuses_blocs ?? [])
+const { site, blocs: siteBlocs, saveBlocs } = await useSiteBlocs('reuses_blocs', ['metrics'])
 
 const isEditing = computed(() => route.query.edit === 'true')
-
-async function saveBlocs(blocs: Array<PageBloc>) {
-  try {
-    await $api('/api/1/site/', {
-      method: 'PATCH',
-      body: { reuses_blocs: blocs },
-    })
-    await refreshSite()
-    toast.success(t('Page sauvegardée'))
-  }
-  catch {
-    toast.error(t('Erreur lors de la sauvegarde'))
-  }
-}
 </script>

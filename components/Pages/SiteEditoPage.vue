@@ -41,21 +41,17 @@
         :blocs="blocs"
         edit
         :on-save="saveBlocs"
-        @cancel="resetBlocs"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, toast } from '@datagouv/components-next'
-import { toRaw } from 'vue'
+import { BrandedButton } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
-import type { Site } from '@datagouv/components-next'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
-import type { PageBloc } from '~/types/pages'
 
 const props = defineProps<{
   label: string
@@ -63,41 +59,7 @@ const props = defineProps<{
   siteKey: 'datasets_blocs' | 'reuses_blocs' | 'dataservices_blocs'
 }>()
 
-const { $api } = useNuxtApp()
 const { t } = useTranslation()
 
-const { data: site, refresh } = await useAPI<Site>('/api/1/site/', {
-  key: `site-edito-${props.siteKey}`,
-  headers: { 'X-Fields': `{${props.siteKey}}` },
-})
-
-const blocs = ref<Array<PageBloc>>([])
-const originalBlocs = ref<Array<PageBloc>>([])
-
-watch(() => site.value, (siteValue) => {
-  if (!siteValue) return
-  const siteBlocs = siteValue[props.siteKey] ?? []
-  blocs.value = siteBlocs
-  originalBlocs.value = structuredClone(toRaw(siteBlocs))
-}, { immediate: true })
-
-function resetBlocs() {
-  blocs.value = structuredClone(toRaw(originalBlocs.value))
-}
-
-const saveBlocs = async (updatedBlocs: Array<PageBloc>) => {
-  if (!site.value) return
-
-  try {
-    await $api(`/api/1/site/`, {
-      method: 'PATCH',
-      body: { [props.siteKey]: updatedBlocs },
-    })
-    await refresh()
-    toast.success(t('Page sauvegardée'))
-  }
-  catch {
-    toast.error(t('Erreur lors de la sauvegarde'))
-  }
-}
+const { blocs, saveBlocs } = await useSiteBlocs(props.siteKey)
 </script>
