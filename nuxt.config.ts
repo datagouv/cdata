@@ -203,14 +203,9 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/nuxt-api/oembed': { cors: true },
-    // @ts-expect-error ssr option is valid but not in Nuxt types (see https://github.com/nuxt/nuxt/issues/15199)
     '/*/organizations/': { ssr: true },
-    // @ts-expect-error ssr option is valid but not in Nuxt types
     '/*/posts/': { ssr: true },
-    // @ts-expect-error ssr option is valid but not in Nuxt types
     '/*/posts/**': { ssr: true },
-    // Admin dashboard renders only on server-side
-    // @ts-expect-error ssr option is valid but not in Nuxt types
     '/*/admin/**': { ssr: true },
   },
 
