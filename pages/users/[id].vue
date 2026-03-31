@@ -150,7 +150,7 @@
           :total-results="datasets.total"
           :page-size="datasets.page_size"
           :page="datasets.page"
-          :link="getLink"
+
           @change="(newPage) => datasetsPage = newPage"
         />
       </div>
@@ -176,7 +176,7 @@
           :total-results="reuses.total"
           :page-size="reuses.page_size"
           :page="reuses.page"
-          :link="getLink"
+
           @change="(newPage) => reusesPage = newPage"
         />
       </div>
@@ -202,7 +202,7 @@
           :total-results="followedDatasets.total"
           :page-size="followedDatasets.page_size"
           :page="followedDatasets.page"
-          :link="getLink"
+
           @change="(newPage) => followedDatasetsPage = newPage"
         />
       </div>
@@ -211,7 +211,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, MarkdownViewer, OrganizationCard, Pagination, ReuseCard, getLink } from '@datagouv/components-next'
+import { Avatar, BrandedButton, MarkdownViewer, OrganizationCard, Pagination, ReuseCard } from '@datagouv/components-next'
 import type { DatasetV2, Reuse, User } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 import { DatasetCardLg } from '#components'
