@@ -21,10 +21,12 @@ import type { ChartForm } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ChartConfigurator from '~/design-system/ChartConfigurator.vue'
 
+const me = useMaybeMe()
+
 const chart = ref<ChartForm>({
   owned: {
     organization: null,
-    owner: 'dummyForDS',
+    owner: me.value ? me.value.id : 'dummyForDS',
   },
   title: 'Mon graphique',
   description: '',

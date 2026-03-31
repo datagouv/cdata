@@ -4,7 +4,7 @@
       <div>
         <label
           for="chart-title"
-          class="block text-sm font-medium mb-1"
+          class="font-bold fr-label"
         >{{ $t('Titre') }}</label>
         <input
           id="chart-title"
@@ -17,7 +17,7 @@
       <div>
         <label
           for="chart-description"
-          class="block text-sm font-medium mb-1"
+          class="font-bold fr-label"
         >{{ $t('Description') }}</label>
         <textarea
           id="chart-description"
@@ -37,11 +37,15 @@
     </div>
     <div class="col-span-5 space-y-6 lg:ml-4 py-4 rounded-lg bg-white border border-new-gray-light">
       <fieldset class="px-6 space-y-4">
-        <p class="mb-2 font-bold">
+        <label
+          for="existing-charts"
+          class="mb-2 font-bold"
+        >
           {{ $t('Graphiques existants') }}
-        </p>
+        </label>
         <div class="flex gap-2">
           <select
+            id="existing-charts"
             v-model="selectedChartId"
             class="flex-1 fr-select"
           >
@@ -68,7 +72,7 @@
           </button>
         </div>
       </fieldset>
-      <fieldset class="px-6 space-y-4">
+      <fieldset class="px-6">
         <p class="mb-2 font-bold">
           {{ $t('Source de données') }}
         </p>
@@ -84,7 +88,7 @@
         />
         <label
           for="resource-select"
-          class="mb-1"
+          class="fr-label"
         >{{ $t('Choix de la ressource') }}</label>
         <select
           id="resource-select"
@@ -108,11 +112,15 @@
         </select>
       </fieldset>
       <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
-        <p class="font-bold mb-2">
+        <label
+          for="chart-type"
+          class="fr-label font-bold"
+        >
           {{ $t('Type de graphique') }}
-        </p>
+        </label>
         <div>
           <select
+            id="chart-type"
             v-model="form.chart_type"
             class="w-full fr-select"
           >
@@ -132,8 +140,8 @@
         <div>
           <label
             for="x-axis-column"
-            class="mb-1"
-          >{{ $t('Column') }}</label>
+            class="fr-label"
+          >{{ $t('Choisir quoi afficher') }}</label>
           <select
             id="x-axis-column"
             v-model="form.x_axis.column_x"
@@ -157,7 +165,7 @@
         <div>
           <label
             for="x-axis-type"
-            class="mb-1"
+            class="fr-label"
           >{{ $t('Type') }}</label>
           <select
             id="x-axis-type"
@@ -175,7 +183,7 @@
         <div>
           <label
             for="x-axis-sort-combined"
-            class="mb-1"
+            class="fr-label"
           >{{ $t('Trier par') }}</label>
           <select
             id="x-axis-sort-combined"
@@ -205,8 +213,9 @@
           <div>
             <label
               :for="`column-y-${index}`"
-              class=" block text-sm font-medium mb-1"
-            >{{ $t('Colonne Y') }}</label>
+              class="fr-label"
+            >{{ $t('Colonne Y')
+            }}</label>
             <select
               :id="`column-y-${index}`"
               v-model="serie.column_y"
@@ -227,8 +236,9 @@
           <div>
             <label
               :for="`aggregate-y-${index}`"
-              class="block text-sm font-medium mb-1"
-            >{{ $t('Agrégation') }}</label>
+              class="fr-label"
+            >{{ $t('Agrégation')
+            }}</label>
             <select
               :id="`aggregate-y-${index}`"
               v-model="serie.aggregate_y"
@@ -255,7 +265,7 @@
         <div>
           <label
             for="y-axis-label"
-            class="mb-1"
+            class="fr-label"
           >{{ $t('Label') }}</label>
           <input
             id="y-axis-label"
@@ -268,7 +278,7 @@
           <div>
             <label
               for="y-axis-min"
-              class="block text-sm font-medium mb-1"
+              class="fr-label"
             >{{ $t('Min') }}</label>
             <input
               id="y-axis-min"
@@ -280,7 +290,7 @@
           <div>
             <label
               for="y-axis-max"
-              class="block text-sm font-medium mb-1"
+              class="fr-label"
             >{{ $t('Max') }}</label>
             <input
               id="y-axis-max"
@@ -294,7 +304,7 @@
           <div>
             <label
               for="y-axis-unit"
-              class="block text-sm font-medium mb-1"
+              class="fr-label"
             >{{ $t('Unité') }}</label>
             <input
               id="y-axis-unit"
@@ -307,8 +317,9 @@
           <div>
             <label
               for="y-axis-unit-position"
-              class="block text-sm font-medium mb-1"
-            >{{ $t('Position unité') }}</label>
+              class="fr-label"
+            >{{ $t('Position unité')
+            }}</label>
             <select
               id="y-axis-unit-position"
               v-model="form.y_axis.unit_position"
@@ -341,7 +352,7 @@ import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
 import { useAPI } from '~/utils/api'
 
-const ChartViewerWrapper = defineAsyncComponent(() => import('../datagouv-components/src/components/Chart/ChartViewerWrapper.vue'))
+const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/components-next').then(m => m.ChartViewerWrapper))
 
 const form = defineModel<ChartForm>({
   required: true,
@@ -471,8 +482,9 @@ function loadSelectedChart() {
 async function saveChart() {
   try {
     const chartForApi = toChartApi(form.value)
-    if (savedChart.value?.id) {
-      savedChart.value = await $api<Chart>(`/api/1/visualizations/${savedChart.value.id}/`, {
+    const update = savedChart.value?.id
+    if (update) {
+      savedChart.value = await $api<Chart>(`/api/1/visualizations/${savedChart.value!.id}/`, {
         method: 'PATCH',
         body: JSON.stringify(chartForApi),
       })
@@ -484,8 +496,9 @@ async function saveChart() {
       })
     }
 
-    toast.success(savedChart.value?.id ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
+    toast.success(update ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
     await refresh()
+    selectedChartId.value = savedChart.value.id
   }
   catch (error) {
     console.error('Failed to save chart:', error)

@@ -14,7 +14,7 @@ import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, Datas
 import VChart from 'vue-echarts'
 import { computed } from 'vue'
 import { summarize } from '../../functions/helpers'
-import type { Chart, DataSeries, XAxis, YAxis, ChartForm, XAxisForm } from '../../types/visualizations'
+import type { Chart, XAxis, YAxis, ChartForm, XAxisForm } from '../../types/visualizations'
 
 use([CanvasRenderer, LineChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent])
 
@@ -25,10 +25,6 @@ const props = defineProps<{
     columns: Record<string, Array<string>>
   }
 }>()
-
-function mapSeriesType(type: DataSeries['type']): 'line' | 'bar' {
-  return (type ?? 'line') === 'histogram' ? 'bar' : 'line'
-}
 
 function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' {
   if (!xAxis) return 'category'
@@ -48,31 +44,26 @@ const echartsOption = computed(() => {
   const seriesCount = props.chart.series.length
   if (!props.chart.series || seriesCount === 0) return
 
-  // Create series configuration with data mapping
   const seriesData = props.chart.series.map((s) => {
     const xColumn = s.column_x_name_override ?? props.chart.x_axis.column_x
     const yColumn = s.aggregate_y ? `${s.column_y}__${s.aggregate_y}` : s.column_y
     const resourceId = s.resource_id
-    const seriesType = s.type
 
-    if (!xColumn || !yColumn || !resourceId || !seriesType || !props.series.data[resourceId] || !props.series.columns[resourceId]) {
+    if (!xColumn || !yColumn || !resourceId || !s.type || !props.series.data[resourceId] || !props.series.columns[resourceId]) {
       return null
     }
 
-    // Sort data before passing to ECharts to avoid transform issues
     const sortedData = [...props.series.data[resourceId]]
-    // Handle both old format (sort_x_by, sort_x_direction) and new format (sort_combined)
-    const sortCombined = (props.chart.x_axis as XAxis | XAxisForm).sort_combined
     let sortBy: string | null = null
     let sortDirection: 'asc' | 'desc' = 'asc'
-    if (sortCombined) {
-      const [sort, direction] = sortCombined.split('-')
-      sortBy = sort
+    if ('sort_combined' in props.chart.x_axis) {
+      const [sort, direction] = props.chart.x_axis.sort_combined.split('-')
+      sortBy = sort ?? null
       sortDirection = direction as 'asc' | 'desc'
     }
     else {
-      sortBy = (props.chart.x_axis as XAxis).sort_x_by
-      sortDirection = (props.chart.x_axis as XAxis).sort_x_direction ?? 'asc'
+      sortBy = props.chart.x_axis.sort_x_by
+      sortDirection = props.chart.x_axis.sort_x_direction ?? 'asc'
     }
 
     if (sortBy && sortDirection && props.chart.x_axis.column_x) {
@@ -86,9 +77,13 @@ const echartsOption = computed(() => {
       })
     }
 
+    if ('chart_type' in props.chart && props.chart.chart_type) {
+      s.type = props.chart.chart_type
+    }
+
     return {
       series: {
-        type: mapSeriesType(seriesType),
+        type: s.type === 'histogram' ? 'bar' : 'line',
         dimensions: s.aggregate_y ? [xColumn, yColumn] : props.series.columns[resourceId],
         name: s.column_y,
         encode: {

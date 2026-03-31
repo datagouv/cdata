@@ -162,33 +162,4 @@ watch([() => chart.value.series, () => chart.value.x_axis.column_x], async () =>
 watch(() => series.columns, () => {
   emit('columns', series.columns)
 })
-
-/**
- * Combines data from multiple series into a single echarts dataset source
- */
-// function combineSeriesData(seriesData: Array<TabularDataResponse | null>): Array<Array<unknown>> {
-//   if (!seriesData.length || seriesData.every(data => !data || !data.data || data.data.length === 0)) {
-//     return []
-//   }
-
-//   // Get all unique columns from all series
-//   const allColumns = Array.from(new Set(seriesData.flatMap(data =>
-//     data?.data?.flatMap(Object.keys) || []
-//   )))
-
-//   // Build the source array with headers
-//   const source: Array<Array<unknown>> = [allColumns]
-
-//   // Add data rows - for simplicity, we'll use data from the first series
-//   // In a real implementation, you'd want to merge/combine the data appropriately
-//   const firstData = seriesData.find(data => data?.data?.length)?.data
-//   if (firstData) {
-//     firstData.forEach(row => {
-//       const rowValues = allColumns.map(column => row[column])
-//       source.push(rowValues)
-//     })
-//   }
-
-//   return source
-// }
 </script>

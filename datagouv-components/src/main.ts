@@ -81,6 +81,8 @@ import ReuseDetails from './components/ReuseDetails.vue'
 import SchemaCard from './components/SchemaCard.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
 import SmallChart from './components/SmallChart.vue'
+import ChartViewer from './components/Chart/ChartViewer.vue'
+import ChartViewerWrapper from './components/Chart/ChartViewerWrapper.vue'
 import StatBox from './components/StatBox.vue'
 import Tab from './components/Tabs/Tab.vue'
 import TabGroup from './components/Tabs/TabGroup.vue'
@@ -321,6 +323,8 @@ export {
   SchemaCard,
   SimpleBanner,
   SmallChart,
+  ChartViewer,
+  ChartViewerWrapper,
   StatBox,
   OpenApiViewer,
   Tab,
