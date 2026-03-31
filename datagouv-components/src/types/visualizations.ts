@@ -84,4 +84,5 @@ export type ChartForm = Omit<ChartForApi, 'x_axis' | 'series' | 'owner' | 'organ
   x_axis: XAxisForm
   series: Array<DataSeriesForm>
   chart_type?: DataSeriesType | null
+  filter?: Filter
 }

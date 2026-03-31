@@ -1,6 +1,8 @@
 import type { Chart, ChartForm, ChartForApi } from '@datagouv/components-next'
 
 export function toChartForm(chart: Chart) {
+  const seriesFilter = chart.series[0]?.filters as Filter | null
+  
   return {
     title: chart.title,
     description: chart.description,
@@ -26,6 +28,7 @@ export function toChartForm(chart: Chart) {
     })),
     extras: chart.extras,
     chart_type: chart.series.length > 0 ? chart.series[0].type : null,
+    filter: seriesFilter && 'column' in seriesFilter ? seriesFilter : undefined,
   } satisfies ChartForm
 }
 
@@ -56,6 +59,7 @@ export function toChartApi(chartForm: ChartForm): ChartForApi {
       ...serie,
       type: index === 0 && chartForm.chart_type ? chartForm.chart_type : serie.type,
       aggregate_y: serie.aggregate_y || null,
+      filters: index === 0 && chartForm.filter ? chartForm.filter : serie.filters,
     })),
     extras: chartForm.extras,
   }

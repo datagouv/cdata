@@ -260,6 +260,66 @@
 
       <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
         <p class="font-bold mb-2">
+          {{ $t('Filtre') }}
+        </p>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-sm text-gray-600">{{ $t('Quand') }}</span>
+          
+          <!-- Column select -->
+          <select
+            v-model="form.filter?.column"
+            class="fr-select text-sm"
+          >
+            <option value="" disabled>
+              {{ $t('Colonne') }}
+            </option>
+            <template v-if="selectedResource">
+              <option
+                v-for="column in columns[selectedResource]"
+                :key="column"
+                :value="column"
+              >
+                {{ column }}
+              </option>
+            </template>
+          </select>
+          
+          <!-- Condition select -->
+          <select
+            v-model="form.filter?.condition"
+            class="fr-select text-sm"
+          >
+            <option value="" disabled>
+              {{ $t('Condition') }}
+            </option>
+            <option value="equal">
+              {{ $t('est') }}
+            </option>
+            <option value="greater">
+              {{ $t('est supérieur à') }}
+            </option>
+          </select>
+          
+          <!-- Value input -->
+          <input
+            v-model="form.filter?.value"
+            type="text"
+            class="fr-input text-sm w-32"
+            :placeholder="$t('Valeur')"
+          >
+          
+          <!-- Remove button -->
+          <BrandedButton
+            size="sm"
+            @click="removeFilter"
+            :disabled="!form.filter?.column"
+          >
+            <RiDeleteBinLine class="w-4 h-4" />
+          </BrandedButton>
+        </div>
+      </fieldset>
+      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+        <p class="font-bold mb-2">
           {{ $t('Axe Y') }}
         </p>
         <div>
@@ -346,10 +406,11 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, FilterCondition } from '@datagouv/components-next'
 import { SearchableSelect, useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton } from '@datagouv/components-next'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
+import { RiDeleteBinLine } from '@remixicon/vue'
 import { useAPI } from '~/utils/api'
 
 const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/components-next').then(m => m.ChartViewerWrapper))
@@ -443,6 +504,10 @@ async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
   return await $api<Array<DatasetSuggest>>('https://demo.data.gouv.fr/api/1/datasets/suggest/', {
     query: { q, size: 5 },
   })
+}
+
+function removeFilter() {
+  form.value.filter = undefined
 }
 
 async function loadChart(id: string) {
