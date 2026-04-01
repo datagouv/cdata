@@ -260,9 +260,9 @@
                     —
                   </div>
                   <AdminDeleteModal
-                    v-if="report.subject && getDeleteUrl(report.subject)"
-                    :title="$t('Êtes-vous sûr de vouloir supprimer cet objet ?')"
-                    :delete-url="getDeleteUrl(report.subject)!"
+                    v-if="report.subject && getDeleteUrl(report, report.subject)"
+                    :title="report.subject_embed_id ? $t('Êtes-vous sûr de vouloir supprimer ce commentaire ?') : $t('Êtes-vous sûr de vouloir supprimer cet objet ?')"
+                    :delete-url="getDeleteUrl(report, report.subject)!"
                     :delete-button-label="$t('Supprimer')"
                     :deletable-object="subjects[report.id].value!"
                     :object-type="getObjectType(report.subject.class)"
@@ -426,13 +426,21 @@ const switchPrivate = async (report: Report, subject: ReportSubject) => {
   await fetchFullSubject(report, subject)
 }
 
-const getDeleteUrl = (subject: ReportSubject): string | null => {
+const getDeleteUrl = (report: Report, subject: ReportSubject): string | null => {
+  if (subject.class === 'Discussion' && report.subject_embed_id) {
+    const thread = subjects.value[report.id]?.value as Thread | null
+    if (!thread) return null
+    const commentIndex = thread.discussion.findIndex(comment => comment.id === report.subject_embed_id)
+    if (commentIndex < 0) return null
+    return `/api/1/discussions/${subject.id}/comments/${commentIndex}/`
+  }
+
   return {
     Dataset: `/api/1/datasets/${subject.id}/`,
     Dataservice: `/api/1/dataservices/${subject.id}/`,
     Reuse: `/api/1/reuses/${subject.id}/`,
     Organization: `/api/1/organizations/${subject.id}/`,
-    Discussion: null,
+    Discussion: `/api/1/discussions/${subject.id}/`,
   }[subject.class]
 }
 

@@ -16,6 +16,7 @@ export type Report = {
   id: string
   by: User | null
   subject: ReportSubject | null
+  subject_embed_id: string | null
   reason: ReportReasonValue
   message: string
   reported_at: string
