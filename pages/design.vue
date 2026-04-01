@@ -68,6 +68,11 @@
           :label="$t('Traductions')"
           to="/design/translations"
         />
+        <AdminSidebarLink
+          :icon="RiListCheck"
+          :label="$t('Listbox')"
+          to="/design/listbox"
+        />
       </ul>
     </Sidemenu>
     <div class="w-8/12 space-y-8 px-8 bg-gray-50 pb-32">
@@ -77,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-import { RiEyeLine, RiExternalLinkLine, RiFileSearchLine, RiIdCardLine, RiListView, RiRadioButtonLine, RiSearch2Line, RiSearchEyeLine, RiTranslate, RiUserSearchLine } from '@remixicon/vue'
+import { RiEyeLine, RiExternalLinkLine, RiFileSearchLine, RiIdCardLine, RiListView, RiRadioButtonLine, RiSearch2Line, RiSearchEyeLine, RiTranslate, RiUserSearchLine, RiListCheck } from '@remixicon/vue'
 import AdminSidebarLink from '~/components/AdminSidebar/AdminSidebarLink/AdminSidebarLink.vue'
 import LogoOnly from '~/components/LogoOnly.vue'
 import Sidemenu from '~/components/Sidemenu/Sidemenu.global.vue'
