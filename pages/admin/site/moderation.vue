@@ -47,22 +47,40 @@
         <AdminTable>
           <thead>
             <tr>
-              <AdminTableTh scope="col">
+              <AdminTableTh
+                class="w-full"
+                scope="col"
+              >
                 {{ t("Objet") }}
               </AdminTableTh>
-              <AdminTableTh scope="col">
+              <AdminTableTh
+                class="w-24"
+                scope="col"
+              >
                 {{ t("Statut") }}
               </AdminTableTh>
-              <AdminTableTh scope="col">
+              <AdminTableTh
+                class="w-44"
+                scope="col"
+              >
                 {{ t("Créé le") }}
               </AdminTableTh>
-              <AdminTableTh scope="col">
+              <AdminTableTh
+                class="w-44"
+                scope="col"
+              >
                 {{ t("Signalé le") }}
               </AdminTableTh>
-              <AdminTableTh scope="col">
+              <AdminTableTh
+                class="w-full"
+                scope="col"
+              >
                 {{ t("Raison") }}
               </AdminTableTh>
-              <AdminTableTh scope="col">
+              <AdminTableTh
+                class="w-28"
+                scope="col"
+              >
                 {{ $t('Actions') }}
               </AdminTableTh>
             </tr>
@@ -73,80 +91,105 @@
               :key="report.id"
             >
               <td>
-                <div v-if="subjects[report.id] && subjects[report.id].value">
-                  <LinkToSubject
-                    :type="subjects[report.id].type"
-                    :subject="subjects[report.id].value!"
-                  />
-                </div>
-                <div v-else-if="subjects[report.id]">
-                  <LinkToSubject
-                    :type="subjects[report.id].type"
-                    :subject="{ customTitle: $t('Supprimé'), customUrl: undefined }"
-                  />
-                </div>
-                <div v-if="subjects[report.id] && subjects[report.id].value">
-                  <OrganizationOwner
-                    v-if="'organization' in subjects[report.id].value! && (subjects[report.id].value as any).organization"
-                    :organization="(subjects[report.id].value as any).organization"
-                    logo-size-class="size-3.5"
-                    logo-no-border
-                  />
-                  <AvatarWithName
-                    v-if="'owner' in subjects[report.id].value! && (subjects[report.id].value as any).owner"
-                    :size="14"
-                    :user="(subjects[report.id].value as any).owner"
-                    class="space-x-2"
-                  />
-                </div>
-              </td>
-              <td>
-                <div v-if="subjects[report.id] && subjects[report.id].value">
-                  <DatasetBadge
-                    v-if="subjects[report.id].type === 'Dataset'"
-                    :dataset="(subjects[report.id].value as DatasetV2)"
-                  />
-                  <DataserviceBadge
-                    v-else-if="subjects[report.id].type === 'Dataservice'"
-                    :dataservice="(subjects[report.id].value as Dataservice)"
-                  />
-                  <ReuseBadge
-                    v-else-if="subjects[report.id].type === 'Reuse'"
-                    :reuse="(subjects[report.id].value as Reuse)"
-                  />
-                  <div v-else>
-                    —
-                  </div>
-                </div>
-                <AdminBadge
-                  v-else
-                  type="danger"
-                  size="xs"
-                >
-                  {{ $t('Supprimé') }}
-                </AdminBadge>
-              </td>
-              <td>
-                <div v-if="subjects[report.id] && subjects[report.id].value">
-                  <div v-if="'created_at' in subjects[report.id].value!">
-                    {{ formatDate((subjects[report.id].value as any).created_at) }}
-                  </div>
-                  <div v-else-if="'created' in subjects[report.id].value!">
-                    {{ formatDate((subjects[report.id].value as any).created) }}
-                  </div>
-                  <div v-else>
-                    —
-                  </div>
-                  <p
-                    v-if="report.subject && report.subject.id in activities"
-                    class="inline-flex items-center flex-wrap"
-                  >
-                    {{ t('Modifié le {date} par ', { date: formatDate(activities[report.subject.id].created_at) }) }}
-                    <AvatarWithName
-                      class="fr-ml-1v"
-                      :user="activities[report.subject.id].actor"
+                <template v-if="subjects[report.id]">
+                  <div v-if="subjects[report.id].value">
+                    <LinkToSubject
+                      :type="subjects[report.id].type"
+                      :subject="subjects[report.id].value!"
                     />
-                  </p>
+                  </div>
+                  <div v-else>
+                    <LinkToSubject
+                      :type="subjects[report.id].type"
+                      :subject="{ customTitle: $t('Supprimé'), customUrl: undefined }"
+                    />
+                  </div>
+                  <div v-if="subjects[report.id].value">
+                    <OrganizationOwner
+                      v-if="'organization' in subjects[report.id].value! && (subjects[report.id].value as any).organization"
+                      :organization="(subjects[report.id].value as any).organization"
+                      logo-size-class="size-3.5"
+                      logo-no-border
+                      name-size="xs"
+                    />
+                    <AvatarWithName
+                      v-if="'owner' in subjects[report.id].value! && (subjects[report.id].value as any).owner"
+                      :size="14"
+                      :user="(subjects[report.id].value as any).owner"
+                    />
+                  </div>
+                </template>
+                <div
+                  v-else
+                  class="animate-pulse-placeholder space-y-1.5"
+                >
+                  <div class="bg-gray-200 h-3.5 w-3/4" />
+                  <div class="bg-gray-200 h-3 w-1/3" />
+                </div>
+              </td>
+              <td>
+                <template v-if="subjects[report.id]">
+                  <div v-if="subjects[report.id].value">
+                    <DatasetBadge
+                      v-if="subjects[report.id].type === 'Dataset'"
+                      :dataset="(subjects[report.id].value as DatasetV2)"
+                    />
+                    <DataserviceBadge
+                      v-else-if="subjects[report.id].type === 'Dataservice'"
+                      :dataservice="(subjects[report.id].value as Dataservice)"
+                    />
+                    <ReuseBadge
+                      v-else-if="subjects[report.id].type === 'Reuse'"
+                      :reuse="(subjects[report.id].value as Reuse)"
+                    />
+                    <div v-else>
+                      —
+                    </div>
+                  </div>
+                  <AdminBadge
+                    v-else
+                    type="danger"
+                    size="xs"
+                  >
+                    {{ $t('Supprimé') }}
+                  </AdminBadge>
+                </template>
+                <div
+                  v-else
+                  class="animate-pulse-placeholder"
+                >
+                  <div class="bg-gray-200 h-3.5 w-14 rounded-full" />
+                </div>
+              </td>
+              <td>
+                <template v-if="subjects[report.id]">
+                  <div v-if="subjects[report.id].value">
+                    <div v-if="'created_at' in subjects[report.id].value!">
+                      {{ t('Créé le {date}', { date: formatDate((subjects[report.id].value as any).created_at) }) }}
+                    </div>
+                    <div v-else-if="'created' in subjects[report.id].value!">
+                      {{ t('Créé le {date}', { date: formatDate((subjects[report.id].value as any).created) }) }}
+                    </div>
+                    <div v-else>
+                      —
+                    </div>
+                    <div v-if="report.subject && report.subject.id in activities">
+                      <div>{{ t('Modifié le {date}', { date: formatDate(activities[report.subject.id].created_at) }) }}</div>
+                      <p class="flex items-center min-w-0">
+                        {{ t('par ') }}
+                        <AvatarWithName
+                          class="fr-ml-1v min-w-0"
+                          :user="activities[report.subject.id].actor"
+                        />
+                      </p>
+                    </div>
+                  </div>
+                </template>
+                <div
+                  v-else
+                  class="animate-pulse-placeholder"
+                >
+                  <div class="bg-gray-200 h-3.5 w-20" />
                 </div>
               </td>
               <td>
@@ -161,6 +204,12 @@
                     :user="report.by"
                   />
                 </p>
+                <p
+                  v-else
+                  class="text-mention-grey"
+                >
+                  {{ report.reason === 'auto_spam' ? t('Signalement automatique') : t('Utilisateur anonyme') }}
+                </p>
               </td>
               <td>
                 <div class="font-bold">
@@ -170,7 +219,15 @@
               </td>
               <td>
                 <div
-                  v-if="subjects[report.id] && subjects[report.id].value"
+                  v-if="!subjects[report.id]"
+                  class="animate-pulse-placeholder flex items-center gap-1"
+                >
+                  <div class="bg-gray-200 size-5 rounded" />
+                  <div class="bg-gray-200 size-5 rounded" />
+                  <div class="bg-gray-200 size-5 rounded" />
+                </div>
+                <div
+                  v-else-if="subjects[report.id].value"
                   class="flex items-center"
                 >
                   <BrandedButton
@@ -322,13 +379,10 @@ const fetchFullSubject = async (report: Report, subject: ReportSubject) => {
 
 watch(pageData, async () => {
   if (!pageData.value) return
-  for (const report of pageData.value.data) {
-    const subject = report.subject
-    if (!subject) continue
-    if (subjects.value[report.id]) continue
-
-    await fetchFullSubject(report, subject)
-  }
+  const promises = pageData.value.data
+    .filter(report => report.subject && !subjects.value[report.id])
+    .map(report => fetchFullSubject(report, report.subject!))
+  await Promise.all(promises)
 }, { immediate: true })
 
 const activities = ref({} as Record<string, Activity>)
@@ -407,3 +461,13 @@ const getSubjectTitle = (subject: RecordSubjectFullObject['value']): string | un
   return undefined
 }
 </script>
+
+<style scoped>
+:deep(table) {
+  table-layout: fixed;
+}
+
+:deep(.link) {
+  text-underline-offset: 2px;
+}
+</style>
