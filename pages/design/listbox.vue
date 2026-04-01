@@ -164,14 +164,6 @@ const fruits: Fruit[] = [
 
 const selectedFruit = ref<Fruit | null>(fruits[0])
 
-const colors: Color[] = [
-  { id: 'red', name: 'Red', hex: '#ef4444' },
-  { id: 'green', name: 'Green', hex: '#22c55e' },
-  { id: 'blue', name: 'Blue', hex: '#3b82f6' },
-  { id: 'yellow', name: 'Yellow', hex: '#eab308' },
-  { id: 'purple', name: 'Purple', hex: '#a855f7' },
-]
-
 const statuses: Status[] = [
   { id: 'draft', label: 'Draft' },
   { id: 'review', label: 'In Review' },
