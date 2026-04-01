@@ -73,6 +73,11 @@
           :label="$t('Charts')"
           to="/design/chart"
         />
+        <AdminSidebarLink
+          :icon="RiListCheck"
+          :label="$t('Listbox')"
+          to="/design/listbox"
+        />
       </ul>
     </Sidemenu>
     <div class="w-full md:flex-1 space-y-8 px-4 md:px-8 bg-gray-50 pb-32 min-w-0">
@@ -82,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { RiEyeLine, RiExternalLinkLine, RiFileSearchLine, RiIdCardLine, RiLineChartLine, RiListView, RiRadioButtonLine, RiSearch2Line, RiSearchEyeLine, RiTranslate, RiUserSearchLine } from '@remixicon/vue'
+import { RiEyeLine, RiExternalLinkLine, RiFileSearchLine, RiIdCardLine, RiLineChartLine, RiListView, RiRadioButtonLine, RiSearch2Line, RiSearchEyeLine, RiTranslate, RiUserSearchLine, RiListCheck } from '@remixicon/vue'
 import AdminSidebarLink from '~/components/AdminSidebar/AdminSidebarLink/AdminSidebarLink.vue'
 import LogoOnly from '~/components/LogoOnly.vue'
 import Sidemenu from '~/components/Sidemenu/Sidemenu.global.vue'

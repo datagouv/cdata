@@ -160,11 +160,10 @@
                     </select>
                     <div class="relative">
                     <Listbox v-model="form.filter.condition">
-                      <div ref="floatingReference" class="relative w-full cursor-default overflow-hidden bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm">
-                          <ListboxButton class="input shadow-input">{{ form.filter.condition }}</ListboxButton>
-                      </div>
-                      <ListboxOptions ref="popover" :style="floatingStyles" class="z-10 mt-1 absolute max-h-60 min-w-80 w-full overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm pl-0">
-                          <ListboxOption v-slot="{active, selected}" as="template" value="equal">
+                        <template #button>
+                            {{ form.filter.condition }}
+                        </template>
+                        <ListboxOption v-slot="{active, selected}" as="template" value="equal">
                             <li
                               class="relative cursor-default select-none py-2 pr-4 list-none flex items-center gap-2 text-gray-900"
                               :class="{
@@ -187,7 +186,6 @@
                         <ListboxOption class="relative cursor-default select-none py-2 pr-4 list-none flex items-center gap-2 text-gray-900" value="greater">
                           {{ $t('Est supérieur à') }}
                         </ListboxOption>
-                      </ListboxOptions>
                     </Listbox>
                     </div>
 
@@ -263,8 +261,8 @@ import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
 import { RiAddLine, RiDeleteBinLine } from '@remixicon/vue'
 import { useAPI } from '~/utils/api'
-import { useFloating, autoUpdate, autoPlacement } from '@floating-ui/vue'
-import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/vue'
+import { Listbox } from '@datagouv/components-next'
+import { ListboxOption } from '@headlessui/vue'
 
 const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/components-next').then(m => m.ChartViewerWrapper))
 
@@ -274,15 +272,6 @@ const form = defineModel<ChartForm>({
 
 const { t } = useTranslation()
 
-const referenceRef = useTemplateRef('floatingReference')
-const floatingRef = useTemplateRef<InstanceType<typeof ListboxOptions>>('popover')
-const { floatingStyles } = useFloating(referenceRef, floatingRef, {
-  middleware: [autoPlacement({
-    allowedPlacements: ['bottom-start', 'bottom', 'bottom-end'],
-    crossAxis: true,
-  })],
-  whileElementsMounted: autoUpdate,
-})
 
 
 const columns = ref<Record<string, Array<string>>>({})
