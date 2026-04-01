@@ -68,7 +68,10 @@
                 }"
               />
               {{ option.label }}
-              <span v-if="active" class="text-xs text-gray-500">(active)</span>
+              <span
+                v-if="active"
+                class="text-xs text-gray-500"
+              >(active)</span>
             </template>
           </Listbox>
         </div>
@@ -110,7 +113,10 @@
                 }"
               />
               {{ option.label }}
-              <span v-if="active" class="ml-auto text-xs text-gray-500">(active)</span>
+              <span
+                v-if="active"
+                class="ml-auto text-xs text-gray-500"
+              >(active)</span>
             </template>
           </Listbox>
         </div>
@@ -165,8 +171,6 @@ const colors: Color[] = [
   { id: 'yellow', name: 'Yellow', hex: '#eab308' },
   { id: 'purple', name: 'Purple', hex: '#a855f7' },
 ]
-
-const selectedColor = ref<Color | null>(colors[0])
 
 const statuses: Status[] = [
   { id: 'draft', label: 'Draft' },
