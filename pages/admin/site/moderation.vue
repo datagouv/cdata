@@ -60,13 +60,13 @@
                 {{ t("Statut") }}
               </AdminTableTh>
               <AdminTableTh
-                class="w-44"
+                class="w-52"
                 scope="col"
               >
                 {{ t("Créé le") }}
               </AdminTableTh>
               <AdminTableTh
-                class="w-44"
+                class="w-52"
                 scope="col"
               >
                 {{ t("Signalé le") }}
@@ -111,11 +111,18 @@
                       logo-size-class="size-3.5"
                       logo-no-border
                       name-size="xs"
+                      name-color="text-gray-plain font-bold"
                     />
                     <AvatarWithName
                       v-if="'owner' in subjects[report.id].value! && (subjects[report.id].value as any).owner"
                       :size="14"
                       :user="(subjects[report.id].value as any).owner"
+                      class="text-gray-plain"
+                    />
+                    <AvatarWithName
+                      v-if="subjects[report.id].type === 'Discussion'"
+                      :size="14"
+                      :user="getDiscussionAuthor(report, subjects[report.id].value as Thread)"
                     />
                   </div>
                 </template>
@@ -164,15 +171,20 @@
               <td>
                 <template v-if="subjects[report.id]">
                   <div v-if="subjects[report.id].value">
-                    <div v-if="'created_at' in subjects[report.id].value!">
-                      {{ t('Créé le {date}', { date: formatDate((subjects[report.id].value as any).created_at) }) }}
+                    <div>
+                      {{ t('Créé le {date}', { date: formatDate(getSubjectCreatedDate(report, subjects[report.id])) }) }}
                     </div>
-                    <div v-else-if="'created' in subjects[report.id].value!">
-                      {{ t('Créé le {date}', { date: formatDate((subjects[report.id].value as any).created) }) }}
-                    </div>
-                    <div v-else>
-                      —
-                    </div>
+                    <p
+                      v-if="getSubjectCreatedBy(report, subjects[report.id])"
+                      class="flex items-center min-w-0"
+                    >
+                      {{ t('par ') }}
+                      <AvatarWithName
+                        class="fr-ml-1v min-w-0"
+                        :size="14"
+                        :user="getSubjectCreatedBy(report, subjects[report.id])!"
+                      />
+                    </p>
                     <div v-if="report.subject && report.subject.id in activities">
                       <div>{{ t('Modifié le {date}', { date: formatDate(activities[report.subject.id].created_at) }) }}</div>
                       <p class="flex items-center min-w-0">
@@ -206,9 +218,19 @@
                 </p>
                 <p
                   v-else
-                  class="text-mention-grey"
+                  class="inline-flex items-center text-mention-grey"
                 >
-                  {{ report.reason === 'auto_spam' ? t('Signalement automatique') : t('Utilisateur anonyme') }}
+                  {{ t('par ') }}
+                  <span
+                    class="fr-ml-1v inline-flex items-center space-x-1"
+                    :class="report.reason === 'auto_spam' ? 'text-new-primary' : 'text-gray-plain'"
+                  >
+                    <component
+                      :is="report.reason === 'auto_spam' ? RiRobot2Line : RiSpyLine"
+                      class="size-3.5 shrink-0"
+                    />
+                    <span class="font-bold">{{ report.reason === 'auto_spam' ? t('Spam bot') : t('Anonyme') }}</span>
+                  </span>
                 </p>
               </td>
               <td>
@@ -312,10 +334,10 @@
 </template>
 
 <script setup lang="ts">
-import type { Report, ReportReason, ReportSubject, Activity, Dataservice, DatasetV2, Organization, Reuse } from '@datagouv/components-next'
+import type { Report, ReportReason, ReportSubject, Activity, Dataservice, DatasetV2, Organization, Reuse, UserReference } from '@datagouv/components-next'
 import { AvatarWithName, LoadingBlock, Pagination, SearchableSelect, useFormatDate, BrandedButton } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
-import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine } from '@remixicon/vue'
+import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine, RiRobot2Line, RiSpyLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'
 import type { ObjectType } from '~/types/delete'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
@@ -331,6 +353,8 @@ import ReuseBadge from '~/components/AdminBadge/ReuseBadge.vue'
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const { $api } = useNuxtApp()
+
+useSeoMeta({ title: t('Modération'), robots: 'noindex' })
 
 const page = ref(1)
 const pageSize = ref(20)
@@ -450,6 +474,36 @@ const isSubjectDeleted = (subject: RecordSubjectFullObject['value']) => {
   if ('deleted_at' in subject && subject.deleted_at) return true
 
   return false
+}
+
+const getSubjectCreatedBy = (report: Report, subject: RecordSubjectFullObject): UserReference | null => {
+  if (subject.type === 'Discussion' && subject.value) {
+    return getDiscussionAuthor(report, subject.value)
+  }
+  if (subject.type === 'Dataset' && subject.value?.owner) return subject.value.owner
+  if (subject.type === 'Reuse' && subject.value?.owner) return subject.value.owner
+  return null
+}
+
+const getSubjectCreatedDate = (report: Report, subject: RecordSubjectFullObject): string => {
+  if (subject.type === 'Discussion' && report.subject_embed_id && subject.value) {
+    const comment = subject.value.discussion.find(c => c.id === report.subject_embed_id)
+    if (comment) return comment.posted_on
+  }
+  if (subject.type === 'Dataset' && subject.value) return subject.value.created_at
+  if (subject.type === 'Dataservice' && subject.value) return subject.value.created_at
+  if (subject.type === 'Organization' && subject.value) return subject.value.created_at
+  if (subject.type === 'Reuse' && subject.value) return subject.value.created_at
+  if (subject.type === 'Discussion' && subject.value) return subject.value.created
+  return ''
+}
+
+const getDiscussionAuthor = (report: Report, thread: Thread) => {
+  if (report.subject_embed_id) {
+    const comment = thread.discussion.find(c => c.id === report.subject_embed_id)
+    if (comment) return comment.posted_by
+  }
+  return thread.user
 }
 
 const getObjectType = (subjectClass: string): ObjectType => {
