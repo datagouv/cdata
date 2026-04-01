@@ -390,6 +390,7 @@ const subjects = ref({} as Record<string, RecordSubjectFullObject>)
 const fetchFullSubject = async (report: Report, subject: ReportSubject) => {
   if (report.subject_deleted_at) {
     subjects.value[report.id] = { type: subject.class, value: null }
+    return
   }
 
   try {
