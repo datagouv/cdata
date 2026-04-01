@@ -129,23 +129,17 @@
 import { Listbox } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
-interface Fruit {
+type Fruit = {
   id: string
   label: string
 }
 
-interface Color {
-  id: string
-  name: string
-  hex: string
-}
-
-interface Status {
+type Status = {
   id: string
   label: string
 }
 
-interface Priority {
+type Priority = {
   id: string
   label: string
 }
