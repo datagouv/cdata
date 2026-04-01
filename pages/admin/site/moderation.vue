@@ -218,7 +218,7 @@
                 </p>
                 <p
                   v-else
-                  class="inline-flex items-center text-mention-grey"
+                  class="inline-flex items-center"
                 >
                   {{ t('par ') }}
                   <span
