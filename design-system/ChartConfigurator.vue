@@ -1,417 +1,270 @@
 <template>
-  <div class="grid lg:grid-cols-12 gap-4">
-    <div class="col-span-7 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
-      <div>
-        <label
-          for="chart-title"
-          class="font-bold fr-label"
-        >{{ $t('Titre') }}</label>
-        <input
-          id="chart-title"
-          v-model="title"
-          type="text"
-          class="w-full fr-input"
-        >
-      </div>
+    <div class="grid lg:grid-cols-12 gap-4">
+        <div class="col-span-7 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
+            <div>
+                <label for="chart-title" class="font-bold fr-label">{{ $t('Titre') }}</label>
+                <input id="chart-title" v-model="title" type="text" class="w-full fr-input">
+            </div>
 
-      <div>
-        <label
-          for="chart-description"
-          class="font-bold fr-label"
-        >{{ $t('Description') }}</label>
-        <textarea
-          id="chart-description"
-          v-model="desc"
-          class="w-full fr-input"
-          rows="2"
-        />
-      </div>
-      <div class="mt-4">
-        <ClientOnly>
-          <ChartViewerWrapper
-            v-model="form"
-            @columns="columns = $event"
-          />
-        </ClientOnly>
-      </div>
+            <div>
+                <label for="chart-description" class="font-bold fr-label">{{ $t('Description') }}</label>
+                <textarea id="chart-description" v-model="desc" class="w-full fr-input" rows="2" />
+            </div>
+            <div class="mt-4">
+                <ClientOnly>
+                    <ChartViewerWrapper v-model="form" @columns="columns = $event" />
+                </ClientOnly>
+            </div>
+        </div>
+        <div class="col-span-5 space-y-6 lg:ml-4 py-4 rounded-lg bg-white border border-new-gray-light">
+            <fieldset class="px-6 space-y-4">
+                <label for="existing-charts" class="mb-2 font-bold">
+                    {{ $t('Graphiques existants') }}
+                </label>
+                <div class="flex gap-2">
+                    <select id="existing-charts" v-model="selectedChartId" class="flex-1 fr-select">
+                        <option value="" disabled>
+                            {{ $t('Sélectionnez un graphique') }}
+                        </option>
+                        <option v-for="chart in charts?.data" :key="chart.id" :value="chart.id">
+                            {{ chart.title }}
+                        </option>
+                    </select>
+                    <button class="fr-btn" :disabled="!selectedChartId" @click="loadSelectedChart">
+                        {{ $t('Charger') }}
+                    </button>
+                </div>
+            </fieldset>
+            <fieldset class="px-6">
+                <p class="mb-2 font-bold">
+                    {{ $t('Source de données') }}
+                </p>
+                <SearchableSelect v-model="dataset" :label="$t('Jeu de données')"
+                    :placeholder="$t('Recherchez un jeu de données...')"
+                    :display-value="(option: DatasetSuggest) => option.title"
+                    :get-option-id="(option: DatasetSuggest) => option.id" :multiple="false" :suggest="suggestDataset"
+                    class="mb-4" />
+                <label for="resource-select" class="fr-label">{{ $t('Choix de la ressource') }}</label>
+                <select id="resource-select" v-model="selectedResource" class="w-full fr-select" :disabled="!dataset">
+                    <option value="" disabled>
+                        {{ dataset ? $t('Sélectionnez une ressource') : $t('Sélectionnez d\'abord un jeu de données') }}
+                    </option>
+                    <option v-for="resource in resources" :key="resource.id" :value="resource.id">
+                        {{ resource.title }}
+                    </option>
+                </select>
+            </fieldset>
+            <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+                <label for="chart-type" class="fr-label font-bold">
+                    {{ $t('Type de graphique') }}
+                </label>
+                <div>
+                    <select id="chart-type" v-model="form.chart_type" class="w-full fr-select">
+                        <option value="line">
+                            {{ $t('Ligne') }}
+                        </option>
+                        <option value="histogram">
+                            {{ $t('Histogramme') }}
+                        </option>
+                    </select>
+                </div>
+            </fieldset>
+            <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+                <p class="font-bold mb-2">
+                    {{ $t('Axe X') }}
+                </p>
+                <div>
+                    <label for="x-axis-column" class="fr-label">{{ $t('Choisir quoi afficher') }}</label>
+                    <select id="x-axis-column" v-model="form.x_axis.column_x" class="w-full fr-select">
+                        <optgroup v-for="{ key, value } in flattenedColumns" :key="key"
+                            :label="savedResources[key]?.title ?? key">
+                            <option v-for="column in value" :key="column" :value="column">
+                                {{ column }}
+                            </option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div>
+                    <label for="x-axis-type" class="fr-label">{{ $t('Type') }}</label>
+                    <select id="x-axis-type" v-model="form.x_axis.type" class="w-full fr-select">
+                        <option value="discrete">
+                            {{ $t('Discret (catégories)') }}
+                        </option>
+                        <option value="continuous">
+                            {{ $t('Continu (valeurs)') }}
+                        </option>
+                    </select>
+                </div>
+                <div>
+                    <label for="x-axis-sort-combined" class="fr-label">{{ $t('Trier par') }}</label>
+                    <select id="x-axis-sort-combined" v-model="form.x_axis.sort_combined" class="w-full fr-select">
+                        <option v-for="(label, value) in sortOptionLabels" :key="value" :value>
+                            {{ label }}
+                        </option>
+                    </select>
+                </div>
+            </fieldset>
+
+            <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+                <p class="font-bold mb-2">
+                    {{ $t('Série') }}
+                </p>
+                <div v-for="(serie, index) in form.series" :key="index" class="space-y-4">
+                    <div>
+                        <label :for="`column-y-${index}`" class="fr-label">{{ $t('Colonne Y')
+                            }}</label>
+                        <select :id="`column-y-${index}`" v-model="serie.column_y" class="w-full fr-select">
+                            <template v-if="selectedResource">
+                                <option v-for="column in columns[selectedResource]" :key="column" :value="column">
+                                    {{ column }}
+                                </option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label :for="`aggregate-y-${index}`" class="fr-label">{{ $t('Agrégation')
+                            }}</label>
+                        <select :id="`aggregate-y-${index}`" v-model="serie.aggregate_y" class="w-full fr-select">
+                            <option :value="null">
+                                {{ $t('Non') }}
+                            </option>
+                            <option value="sum">
+                                {{ $t('Somme') }}
+                            </option>
+                            <option value="avg">
+                                {{ $t('Moyenne') }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+                <p class="font-bold mb-2">
+                    {{ $t('Filtre') }}
+                </p>
+                <div class="flex items-center gap-2 flex-wrap md:flex-nowrap" v-if="form.filter">
+                    <span class="text-sm text-gray-600">{{ $t('Quand') }}</span>
+
+                    <!-- Column select -->
+                    <select v-model="form.filter.column" class="fr-select text-sm">
+                        <option value="" disabled>
+                            {{ $t('Colonne') }}
+                        </option>
+                        <template v-if="selectedResource">
+                            <option v-for="column in columns[selectedResource]" :key="column" :value="column">
+                                {{ column }}
+                            </option>
+                        </template>
+                    </select>
+                    <div class="relative">
+                    <Listbox v-model="form.filter.condition">
+                      <div ref="floatingReference" class="relative w-full cursor-default overflow-hidden bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm">
+                          <ListboxButton class="input shadow-input">{{ form.filter.condition }}</ListboxButton>
+                      </div>
+                      <ListboxOptions ref="popover" :style="floatingStyles" class="z-10 mt-1 absolute max-h-60 min-w-80 w-full overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm pl-0">
+                          <ListboxOption v-slot="{active, selected}" as="template" value="equal">
+                            <li
+                              class="relative cursor-default select-none py-2 pr-4 list-none flex items-center gap-2 text-gray-900"
+                              :class="{
+                                'bg-gray-lower': active,
+                                'pl-2': selected,
+                                'pl-6': !selected,
+                              }"
+                            >
+                              <div
+                                class="flex items-center justify-center aspect-square"
+                              >
+                                <RiCheckLine
+                                  v-if="selected"
+                                  class="size-4 text-new-primary"
+                                />
+                              </div>
+                              {{ $t('Est') }}
+                            </li>
+                        </ListboxOption>
+                        <ListboxOption class="relative cursor-default select-none py-2 pr-4 list-none flex items-center gap-2 text-gray-900" value="greater">
+                          {{ $t('Est supérieur à') }}
+                        </ListboxOption>
+                      </ListboxOptions>
+                    </Listbox>
+                    </div>
+
+                    <!-- Value input -->
+                    <input v-model="form.filter.value" type="text" class="fr-input text-sm w-32"
+                        :placeholder="$t('Valeur')">
+
+                    <!-- Remove button -->
+                    <BrandedButton size="sm" @click="removeFilter" :disabled="!form.filter.column">
+                        <RiDeleteBinLine class="w-4 h-4" />
+                    </BrandedButton>
+                </div>
+                <div v-else>
+                    <BrandedButton size="sm" color="tertiary" :icon="RiAddLine"
+                        @click="form.filter={column: '', condition: 'equal', value: ''}">
+                        {{ $t('Ajouter un filtre') }}
+                    </BrandedButton>
+
+                </div>
+            </fieldset>
+            <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+                <p class="font-bold mb-2">
+                    {{ $t('Axe Y') }}
+                </p>
+                <div>
+                    <label for="y-axis-label" class="fr-label">{{ $t('Label') }}</label>
+                    <input id="y-axis-label" v-model="form.y_axis.label" type="text" class="w-full fr-input">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="y-axis-min" class="fr-label">{{ $t('Min') }}</label>
+                        <input id="y-axis-min" v-model.number="form.y_axis.min" type="number" class="w-full fr-input">
+                    </div>
+                    <div>
+                        <label for="y-axis-max" class="fr-label">{{ $t('Max') }}</label>
+                        <input id="y-axis-max" v-model.number="form.y_axis.max" type="number" class="w-full fr-input">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="y-axis-unit" class="fr-label">{{ $t('Unité') }}</label>
+                        <input id="y-axis-unit" v-model="form.y_axis.unit" type="text" class="w-full fr-input"
+                            :placeholder="$t('ex: €, %, kg')">
+                    </div>
+                    <div>
+                        <label for="y-axis-unit-position" class="fr-label">{{ $t('Position unité')
+                            }}</label>
+                        <select id="y-axis-unit-position" v-model="form.y_axis.unit_position" class="w-full fr-select">
+                            <option value="suffix">
+                                {{ $t('Suffixe') }}
+                            </option>
+                            <option value="prefix">
+                                {{ $t('Préfixe') }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="px-6">
+                <BrandedButton @click="saveChart">
+                    {{ $t('Sauvegarder le graphique') }}
+                </BrandedButton>
+            </div>
+        </div>
     </div>
-    <div class="col-span-5 space-y-6 lg:ml-4 py-4 rounded-lg bg-white border border-new-gray-light">
-      <fieldset class="px-6 space-y-4">
-        <label
-          for="existing-charts"
-          class="mb-2 font-bold"
-        >
-          {{ $t('Graphiques existants') }}
-        </label>
-        <div class="flex gap-2">
-          <select
-            id="existing-charts"
-            v-model="selectedChartId"
-            class="flex-1 fr-select"
-          >
-            <option
-              value=""
-              disabled
-            >
-              {{ $t('Sélectionnez un graphique') }}
-            </option>
-            <option
-              v-for="chart in charts?.data"
-              :key="chart.id"
-              :value="chart.id"
-            >
-              {{ chart.title }}
-            </option>
-          </select>
-          <button
-            class="fr-btn"
-            :disabled="!selectedChartId"
-            @click="loadSelectedChart"
-          >
-            {{ $t('Charger') }}
-          </button>
-        </div>
-      </fieldset>
-      <fieldset class="px-6">
-        <p class="mb-2 font-bold">
-          {{ $t('Source de données') }}
-        </p>
-        <SearchableSelect
-          v-model="dataset"
-          :label="$t('Jeu de données')"
-          :placeholder="$t('Recherchez un jeu de données...')"
-          :display-value="(option: DatasetSuggest) => option.title"
-          :get-option-id="(option: DatasetSuggest) => option.id"
-          :multiple="false"
-          :suggest="suggestDataset"
-          class="mb-4"
-        />
-        <label
-          for="resource-select"
-          class="fr-label"
-        >{{ $t('Choix de la ressource') }}</label>
-        <select
-          id="resource-select"
-          v-model="selectedResource"
-          class="w-full fr-select"
-          :disabled="!dataset"
-        >
-          <option
-            value=""
-            disabled
-          >
-            {{ dataset ? $t('Sélectionnez une ressource') : $t('Sélectionnez d\'abord un jeu de données') }}
-          </option>
-          <option
-            v-for="resource in resources"
-            :key="resource.id"
-            :value="resource.id"
-          >
-            {{ resource.title }}
-          </option>
-        </select>
-      </fieldset>
-      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
-        <label
-          for="chart-type"
-          class="fr-label font-bold"
-        >
-          {{ $t('Type de graphique') }}
-        </label>
-        <div>
-          <select
-            id="chart-type"
-            v-model="form.chart_type"
-            class="w-full fr-select"
-          >
-            <option value="line">
-              {{ $t('Ligne') }}
-            </option>
-            <option value="histogram">
-              {{ $t('Histogramme') }}
-            </option>
-          </select>
-        </div>
-      </fieldset>
-      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
-        <p class="font-bold mb-2">
-          {{ $t('Axe X') }}
-        </p>
-        <div>
-          <label
-            for="x-axis-column"
-            class="fr-label"
-          >{{ $t('Choisir quoi afficher') }}</label>
-          <select
-            id="x-axis-column"
-            v-model="form.x_axis.column_x"
-            class="w-full fr-select"
-          >
-            <optgroup
-              v-for="{ key, value } in flattenedColumns"
-              :key="key"
-              :label="savedResources[key].title"
-            >
-              <option
-                v-for="column in value"
-                :key="column"
-                :value="column"
-              >
-                {{ column }}
-              </option>
-            </optgroup>
-          </select>
-        </div>
-        <div>
-          <label
-            for="x-axis-type"
-            class="fr-label"
-          >{{ $t('Type') }}</label>
-          <select
-            id="x-axis-type"
-            v-model="form.x_axis.type"
-            class="w-full fr-select"
-          >
-            <option value="discrete">
-              {{ $t('Discret (catégories)') }}
-            </option>
-            <option value="continuous">
-              {{ $t('Continu (valeurs)') }}
-            </option>
-          </select>
-        </div>
-        <div>
-          <label
-            for="x-axis-sort-combined"
-            class="fr-label"
-          >{{ $t('Trier par') }}</label>
-          <select
-            id="x-axis-sort-combined"
-            v-model="form.x_axis.sort_combined"
-            class="w-full fr-select"
-          >
-            <option
-              v-for="(label, value) in sortOptionLabels"
-              :key="value"
-              :value
-            >
-              {{ label }}
-            </option>
-          </select>
-        </div>
-      </fieldset>
-
-      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
-        <p class="font-bold mb-2">
-          {{ $t('Série') }}
-        </p>
-        <div
-          v-for="(serie, index) in form.series"
-          :key="index"
-          class="space-y-4"
-        >
-          <div>
-            <label
-              :for="`column-y-${index}`"
-              class="fr-label"
-            >{{ $t('Colonne Y')
-            }}</label>
-            <select
-              :id="`column-y-${index}`"
-              v-model="serie.column_y"
-              class="w-full fr-select"
-            >
-              <template v-if="selectedResource">
-                <option
-                  v-for="column in columns[selectedResource]"
-                  :key="column"
-                  :value="column"
-                >
-                  {{ column }}
-                </option>
-              </template>
-            </select>
-          </div>
-
-          <div>
-            <label
-              :for="`aggregate-y-${index}`"
-              class="fr-label"
-            >{{ $t('Agrégation')
-            }}</label>
-            <select
-              :id="`aggregate-y-${index}`"
-              v-model="serie.aggregate_y"
-              class="w-full fr-select"
-            >
-              <option :value="null">
-                {{ $t('Non') }}
-              </option>
-              <option value="sum">
-                {{ $t('Somme') }}
-              </option>
-              <option value="avg">
-                {{ $t('Moyenne') }}
-              </option>
-            </select>
-          </div>
-        </div>
-      </fieldset>
-
-      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
-        <p class="font-bold mb-2">
-          {{ $t('Filtre') }}
-        </p>
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-sm text-gray-600">{{ $t('Quand') }}</span>
-          
-          <!-- Column select -->
-          <select
-            v-model="form.filter?.column"
-            class="fr-select text-sm"
-          >
-            <option value="" disabled>
-              {{ $t('Colonne') }}
-            </option>
-            <template v-if="selectedResource">
-              <option
-                v-for="column in columns[selectedResource]"
-                :key="column"
-                :value="column"
-              >
-                {{ column }}
-              </option>
-            </template>
-          </select>
-          
-          <!-- Condition select -->
-          <select
-            v-model="form.filter?.condition"
-            class="fr-select text-sm"
-          >
-            <option value="" disabled>
-              {{ $t('Condition') }}
-            </option>
-            <option value="equal">
-              {{ $t('est') }}
-            </option>
-            <option value="greater">
-              {{ $t('est supérieur à') }}
-            </option>
-          </select>
-          
-          <!-- Value input -->
-          <input
-            v-model="form.filter?.value"
-            type="text"
-            class="fr-input text-sm w-32"
-            :placeholder="$t('Valeur')"
-          >
-          
-          <!-- Remove button -->
-          <BrandedButton
-            size="sm"
-            @click="removeFilter"
-            :disabled="!form.filter?.column"
-          >
-            <RiDeleteBinLine class="w-4 h-4" />
-          </BrandedButton>
-        </div>
-      </fieldset>
-      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
-        <p class="font-bold mb-2">
-          {{ $t('Axe Y') }}
-        </p>
-        <div>
-          <label
-            for="y-axis-label"
-            class="fr-label"
-          >{{ $t('Label') }}</label>
-          <input
-            id="y-axis-label"
-            v-model="form.y_axis.label"
-            type="text"
-            class="w-full fr-input"
-          >
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label
-              for="y-axis-min"
-              class="fr-label"
-            >{{ $t('Min') }}</label>
-            <input
-              id="y-axis-min"
-              v-model.number="form.y_axis.min"
-              type="number"
-              class="w-full fr-input"
-            >
-          </div>
-          <div>
-            <label
-              for="y-axis-max"
-              class="fr-label"
-            >{{ $t('Max') }}</label>
-            <input
-              id="y-axis-max"
-              v-model.number="form.y_axis.max"
-              type="number"
-              class="w-full fr-input"
-            >
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label
-              for="y-axis-unit"
-              class="fr-label"
-            >{{ $t('Unité') }}</label>
-            <input
-              id="y-axis-unit"
-              v-model="form.y_axis.unit"
-              type="text"
-              class="w-full fr-input"
-              :placeholder="$t('ex: €, %, kg')"
-            >
-          </div>
-          <div>
-            <label
-              for="y-axis-unit-position"
-              class="fr-label"
-            >{{ $t('Position unité')
-            }}</label>
-            <select
-              id="y-axis-unit-position"
-              v-model="form.y_axis.unit_position"
-              class="w-full fr-select"
-            >
-              <option value="suffix">
-                {{ $t('Suffixe') }}
-              </option>
-              <option value="prefix">
-                {{ $t('Préfixe') }}
-              </option>
-            </select>
-          </div>
-        </div>
-      </fieldset>
-
-      <div class="px-6">
-        <BrandedButton @click="saveChart">
-          {{ $t('Sauvegarder le graphique') }}
-        </BrandedButton>
-      </div>
-    </div>
-  </div>
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, FilterCondition } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart } from '@datagouv/components-next'
 import { SearchableSelect, useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton } from '@datagouv/components-next'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
-import { RiDeleteBinLine } from '@remixicon/vue'
+import { RiAddLine, RiDeleteBinLine } from '@remixicon/vue'
 import { useAPI } from '~/utils/api'
+import { useFloating, autoUpdate, autoPlacement } from '@floating-ui/vue'
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/vue'
 
 const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/components-next').then(m => m.ChartViewerWrapper))
 
@@ -420,6 +273,17 @@ const form = defineModel<ChartForm>({
 })
 
 const { t } = useTranslation()
+
+const referenceRef = useTemplateRef('floatingReference')
+const floatingRef = useTemplateRef<InstanceType<typeof ListboxOptions>>('popover')
+const { floatingStyles } = useFloating(referenceRef, floatingRef, {
+  middleware: [autoPlacement({
+    allowedPlacements: ['bottom-start', 'bottom', 'bottom-end'],
+    crossAxis: true,
+  })],
+  whileElementsMounted: autoUpdate,
+})
+
 
 const columns = ref<Record<string, Array<string>>>({})
 const flattenedColumns = computed(() => Object.entries(columns.value).map(([key, value]) => ({ key, value })).flat())
@@ -491,8 +355,8 @@ async function loadMissingResourcesForChart(resourceIds: Set<string>) {
     if (savedResources[id]) continue
 
     try {
-      const resource = await $api<Resource>(`https://demo.data.gouv.fr/api/2/datasets/resources/${id}/`)
-      savedResources[id] = resource
+      const resource = await $api<{resource: Resource, dataset_id: string}>(`https://demo.data.gouv.fr/api/2/datasets/resources/${id}/`)
+      savedResources[id] = resource.resource
     }
     catch (error) {
       console.error(`Failed to fetch resource ${id}:`, error)

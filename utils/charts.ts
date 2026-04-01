@@ -1,4 +1,4 @@
-import type { Chart, ChartForm, ChartForApi } from '@datagouv/components-next'
+import type { Chart, ChartForm, ChartForApi, Filter } from '@datagouv/components-next'
 
 export function toChartForm(chart: Chart) {
   const seriesFilter = chart.series[0]?.filters as Filter | null
