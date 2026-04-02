@@ -14,7 +14,6 @@
 
     <div class="bg-white py-4 px-4 -mx-4">
       <ReusesListPage
-        :link="getLink"
         :reuses="reuses ?? { data: [], total: 0, page: 1, page_size: 21, next_page: null, previous_page: null }"
         :initial-q="q"
         :sort
@@ -29,7 +28,6 @@
 </template>
 
 <script setup lang="ts">
-import { getLink } from '@datagouv/components-next'
 import type { Reuse, ReuseTopic, Site } from '@datagouv/components-next'
 import type { LocationQueryValue } from 'vue-router'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'

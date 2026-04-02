@@ -271,7 +271,6 @@
                 :page-size
                 :total-results="results.total"
                 class="mt-4"
-                :link="getLink"
                 @change="changePage"
               />
             </div>
@@ -342,7 +341,6 @@ import { useDebouncedRef } from '../../composables/useDebouncedRef'
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
-import { getLink } from '../../functions/pagination'
 import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
 import type { Organization } from '../../types/organizations'
