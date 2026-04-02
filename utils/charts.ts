@@ -2,7 +2,7 @@ import type { Chart, ChartForm, ChartForApi, Filter } from '@datagouv/components
 
 export function toChartForm(chart: Chart) {
   const seriesFilter = chart.series[0]?.filters as Filter | null
-  
+
   return {
     title: chart.title,
     description: chart.description,

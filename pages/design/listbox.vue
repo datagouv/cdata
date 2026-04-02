@@ -68,7 +68,10 @@
                 }"
               />
               {{ option.label }}
-              <span v-if="active" class="text-xs text-gray-500">(active)</span>
+              <span
+                v-if="active"
+                class="text-xs text-gray-500"
+              >(active)</span>
             </template>
           </Listbox>
         </div>
@@ -110,7 +113,10 @@
                 }"
               />
               {{ option.label }}
-              <span v-if="active" class="ml-auto text-xs text-gray-500">(active)</span>
+              <span
+                v-if="active"
+                class="ml-auto text-xs text-gray-500"
+              >(active)</span>
             </template>
           </Listbox>
         </div>
@@ -126,12 +132,6 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 interface Fruit {
   id: string
   label: string
-}
-
-interface Color {
-  id: string
-  name: string
-  hex: string
 }
 
 interface Status {
@@ -157,16 +157,6 @@ const fruits: Fruit[] = [
 ]
 
 const selectedFruit = ref<Fruit | null>(fruits[0])
-
-const colors: Color[] = [
-  { id: 'red', name: 'Red', hex: '#ef4444' },
-  { id: 'green', name: 'Green', hex: '#22c55e' },
-  { id: 'blue', name: 'Blue', hex: '#3b82f6' },
-  { id: 'yellow', name: 'Yellow', hex: '#eab308' },
-  { id: 'purple', name: 'Purple', hex: '#a855f7' },
-]
-
-const selectedColor = ref<Color | null>(colors[0])
 
 const statuses: Status[] = [
   { id: 'draft', label: 'Draft' },
