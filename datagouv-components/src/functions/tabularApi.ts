@@ -24,6 +24,11 @@ export type FetchTabularDataOptions = {
     column: string
     type: TabularAggregateType
   } | undefined
+  filters?: Array<{
+    column: string
+    operator: string
+    value?: string
+  }> | undefined
 }
 
 export type TabularProfileResponse = {
@@ -83,6 +88,17 @@ export async function fetchTabularData(config: PluginConfig, options: FetchTabul
   }
   if (options.groupBy && options.aggregation?.type) {
     url += `&${options.groupBy}__groupby&${options.aggregation.column}__${options.aggregation.type}`
+  }
+  if (options.filters) {
+    for (const filter of options.filters) {
+      if (filter.operator === 'isnull') {
+        url += `&${filter.column}__isnull`
+      } else if (filter.operator === 'isnotnull') {
+        url += `&${filter.column}__isnotnull`
+      } else if (filter.value !== undefined && filter.value !== '') {
+        url += `&${filter.column}__${filter.operator}=${encodeURIComponent(filter.value)}`
+      }
+    }
   }
   return await ofetch<TabularDataResponse>(url)
 }
