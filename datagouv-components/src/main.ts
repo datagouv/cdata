@@ -127,6 +127,7 @@ export * from './functions/schemas'
 export * from './functions/users'
 export * from './functions/tabularApi'
 export * from './functions/filterUtils'
+export { filterFromApiFormat, OPERATOR_TO_CONDITION } from './functions/filterUtils'
 export * from './types/access_types'
 
 export type {

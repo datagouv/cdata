@@ -1,4 +1,5 @@
 import type { Chart, ChartForm, ChartForApi, Filter } from '@datagouv/components-next'
+import { filterFromApiFormat } from '@datagouv/components-next'
 
 export function toChartForm(chart: Chart) {
   const seriesFilter = chart.series[0]?.filters as Filter | null
@@ -28,26 +29,28 @@ export function toChartForm(chart: Chart) {
     })),
     extras: chart.extras,
     chart_type: chart.series.length > 0 ? chart.series[0].type : null,
-    filter: seriesFilter && 'column' in seriesFilter ? seriesFilter : undefined,
+    filter: seriesFilter && 'column' in seriesFilter ? filterFromApiFormat(seriesFilter) : undefined,
   } satisfies ChartForm
 }
 
 export function toChartApi(chartForm: ChartForm): ChartForApi {
+  const xAxis = {
+    column_x: chartForm.x_axis.column_x,
+    type: chartForm.x_axis.type,
+    sort_x_by: chartForm.x_axis.sort_combined
+      ? (chartForm.x_axis.sort_combined.split('-')[0] as 'axis_x' | 'axis_y')
+      : null,
+    sort_x_direction: chartForm.x_axis.sort_combined
+      ? (chartForm.x_axis.sort_combined.split('-')[1] as 'asc' | 'desc')
+      : null,
+  }
+
   return {
     ...chartForm.owned,
     title: chartForm.title,
     description: chartForm.description,
     private: chartForm.private,
-    x_axis: {
-      column_x: chartForm.x_axis.column_x,
-      type: chartForm.x_axis.type,
-      sort_x_by: chartForm.x_axis.sort_combined
-        ? (chartForm.x_axis.sort_combined.split('-')[0] as 'axis_x' | 'axis_y')
-        : null,
-      sort_x_direction: chartForm.x_axis.sort_combined
-        ? (chartForm.x_axis.sort_combined.split('-')[1] as 'asc' | 'desc')
-        : null,
-    },
+    x_axis: xAxis,
     y_axis: {
       label: chartForm.y_axis.label ?? null,
       min: chartForm.y_axis.min ?? null,
@@ -59,7 +62,8 @@ export function toChartApi(chartForm: ChartForm): ChartForApi {
       ...serie,
       type: index === 0 && chartForm.chart_type ? chartForm.chart_type : serie.type,
       aggregate_y: serie.aggregate_y || null,
-      filters: index === 0 && chartForm.filter ? chartForm.filter : serie.filters,
+      // Use series filter if exists, otherwise use chart-level filter
+      filters: serie.filters || (index === 0 && chartForm.filter ? chartForm.filter : null),
     })),
     extras: chartForm.extras,
   }
