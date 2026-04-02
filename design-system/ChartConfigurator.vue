@@ -463,6 +463,7 @@
 <script setup lang="ts">
 import type { Resource, PaginatedArray, ChartForm, Chart, FilterCondition } from '@datagouv/components-next'
 import { SearchableSelect, useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton, Listbox } from '@datagouv/components-next'
+import { filterToApiFormat } from '@datagouv/components-next'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
 import { RiAddLine, RiArrowDownSLine, RiDeleteBinLine } from '@remixicon/vue'
@@ -622,6 +623,49 @@ async function loadChart(id: string) {
 function loadSelectedChart() {
   if (selectedChartId.value) {
     loadChart(selectedChartId.value)
+  }
+}
+
+function toChartApi(form: ChartForm): any {
+  const xAxis: any = {
+    column_x: form.x_axis.column_x,
+    type: form.x_axis.type,
+    sort_x_by: null,
+    sort_x_direction: null,
+  }
+  
+  // Parse combined sort into separate fields
+  if (form.x_axis.sort_combined) {
+    const [sortBy, direction] = form.x_axis.sort_combined.split('-')
+    xAxis.sort_x_by = sortBy.replace('axis_', '')
+    xAxis.sort_x_direction = direction
+  }
+  
+  return {
+    title: form.title,
+    description: form.description,
+    private: form.private ?? false,
+    x_axis: xAxis,
+    y_axis: form.y_axis,
+    series: form.series.map(serie => {
+      // Convert chart-level filter to series-level filter if it exists
+      let seriesFilters = serie.filters
+      if (form.filter && !seriesFilters) {
+        seriesFilters = filterToApiFormat(form.filter)
+      }
+      
+      return {
+        type: form.chart_type ?? 'histogram',
+        column_y: serie.column_y,
+        aggregate_y: serie.aggregate_y || null,
+        resource_id: serie.resource_id,
+        column_x_name_override: serie.column_x_name_override ?? null,
+        filters: seriesFilters ?? null,
+      }
+    }),
+    extras: form.extras ?? {},
+    ...(form.owned.owner ? { owner: form.owned.owner } : {}),
+    ...(form.owned.organization ? { organization: form.owned.organization } : {}),
   }
 }
 
