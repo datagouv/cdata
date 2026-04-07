@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-6">
-    <div class="space-y-2.5">
+    <div class="space-y-2.5 max-w-4xl">
       <EditableText
         v-if="edit"
         :model-value="bloc.title ?? ''"

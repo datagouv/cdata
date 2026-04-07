@@ -32,14 +32,26 @@
           </BreadcrumbItem>
         </Breadcrumb>
 
-        <div v-if="isMeAdmin()">
+        <div
+          v-if="isMeAdmin()"
+          class="flex gap-2"
+        >
           <EditButton
             :id="post.id"
             type="posts"
           />
+          <BrandedButton
+            v-if="post.body_type === 'blocs'"
+            color="warning"
+            :href="`/posts/${post.slug}?edit=true`"
+            :icon="RiEdit2Line"
+            size="xs"
+          >
+            {{ $t('Modifier le contenu') }}
+          </BrandedButton>
         </div>
       </div>
-      <div class="max-w-4xl mx-auto">
+      <div class="max-w-4xl">
         <h1 class="text-4.5xl font-extrabold text-gray-title mb-0">
           {{ post.name }}
         </h1>
@@ -64,42 +76,51 @@
             :src="post.image"
             class="w-full h-auto mb-2"
           >
-          <template v-if="post.body_type === 'blocs' && contentPage">
-            <PageShow
-              :page="contentPage"
-              editable
-            />
-          </template>
-          <template v-else-if="post.body_type === 'markdown'">
-            <MarkdownViewer
-              :content="post.content"
-              :min-heading="2"
-              size="md"
-            />
-          </template>
-          <div
-            v-else
-            :class="markdownClasses"
-            v-html="post.content"
-          />
-
-          <DiscussionsList
-            v-if="config.public.allowDiscussionsInPosts"
-            class="mt-16"
-            type="Post"
-            :subject="post"
-          />
         </template>
         <template v-else>
           {{ $t(`Cet article n'est pas encore publié`) }}
         </template>
       </div>
+      <template v-if="post.published || isMeAdmin()">
+        <template v-if="post.body_type === 'blocs' && contentPage">
+          <PageShow
+            :page="contentPage"
+            :striped="false"
+            editable
+            hide-edit-button
+          />
+        </template>
+        <div
+          v-else-if="post.body_type === 'markdown'"
+          class="max-w-4xl"
+        >
+          <MarkdownViewer
+            :content="post.content"
+            :min-heading="2"
+            size="md"
+          />
+        </div>
+        <div
+          v-else
+          class="max-w-4xl"
+          :class="markdownClasses"
+          v-html="post.content"
+        />
+
+        <DiscussionsList
+          v-if="config.public.allowDiscussionsInPosts"
+          class="mt-16 max-w-4xl"
+          type="Post"
+          :subject="post"
+        />
+      </template>
     </div>
   </LoadingBlock>
 </template>
 
 <script setup lang="ts">
-import { markdownClasses, MarkdownViewer, LoadingBlock, useFormatDate } from '@datagouv/components-next'
+import { markdownClasses, MarkdownViewer, LoadingBlock, BrandedButton, useFormatDate } from '@datagouv/components-next'
+import { RiEdit2Line } from '@remixicon/vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import PageShow from '~/components/Pages/PageShow.vue'
