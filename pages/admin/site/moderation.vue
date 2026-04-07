@@ -101,7 +101,7 @@
                   <div v-else>
                     <LinkToSubject
                       :type="subjects[report.id].type"
-                      :subject="{ customTitle: $t('Supprimé'), customUrl: undefined }"
+                      :subject="{ customTitle: report.subject_label || $t('Supprimé'), customUrl: undefined }"
                     />
                   </div>
                   <div v-if="subjects[report.id].value">
@@ -222,8 +222,7 @@
                 >
                   {{ t('par ') }}
                   <span
-                    class="fr-ml-1v inline-flex items-center space-x-1"
-                    :class="report.reason === 'auto_spam' ? 'text-new-primary' : 'text-gray-plain'"
+                    class="fr-ml-1v inline-flex items-center space-x-1 text-gray-plain"
                   >
                     <component
                       :is="report.reason === 'auto_spam' ? RiRobot2Line : RiSpyLine"
@@ -289,7 +288,7 @@
                     :deletable-object="subjects[report.id].value!"
                     :object-type="getObjectType(report.subject.class)"
                     :object-title="getSubjectTitle(subjects[report.id]?.value)"
-                    @deleted="() => fetchFullSubject(report, report.subject!)"
+                    @deleted="() => { fetchFullSubject(report, report.subject!); refresh() }"
                   >
                     <template #button="{ attrs, listeners }">
                       <BrandedButton
@@ -453,11 +452,7 @@ const switchPrivate = async (report: Report, subject: ReportSubject) => {
 
 const getDeleteUrl = (report: Report, subject: ReportSubject): string | null => {
   if (subject.class === 'Discussion' && report.subject_embed_id) {
-    const thread = subjects.value[report.id]?.value as Thread | null
-    if (!thread) return null
-    const commentIndex = thread.discussion.findIndex(comment => comment.id === report.subject_embed_id)
-    if (commentIndex < 0) return null
-    return `/api/1/discussions/${subject.id}/comments/${commentIndex}/`
+    return `/api/1/discussions/${subject.id}/comments/${report.subject_embed_id}/`
   }
 
   return {
