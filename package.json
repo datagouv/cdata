@@ -24,7 +24,10 @@
       "core-js",
       "unrs-resolver",
       "vue-demi"
-    ]
+    ],
+    "patchedDependencies": {
+      "nuxt": "patches/nuxt.patch"
+    }
   },
   "scripts": {
     "lint": "eslint .",
