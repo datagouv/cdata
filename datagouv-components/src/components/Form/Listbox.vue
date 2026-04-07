@@ -1,9 +1,6 @@
 <template>
-  <Listbox
-    v-slot="{ activeOption }"
-    v-model="model"
-  >
-    <div class="relative">
+  <Listbox v-model="model">
+    <div class="relative min-w-0">
       <div
         ref="floatingReference"
         class="relative w-full cursor-default overflow-hidden bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm"
@@ -11,8 +8,13 @@
         <ListboxButton class="input shadow-input text-sm flex items-center gap-2">
           <slot name="button">
             <div class="w-full flex items-center justify-between gap-2">
-              {{ model ? displayValue(model) : '' }}
-                <RiArrowDownSLine class="flex-none size-4 justify-self-end" />
+              <div
+                class="truncate"
+                :class="{ 'text-new-disabled-text': isDisabled(model) }"
+              >
+                {{ displayValue(model) }}
+              </div>
+              <RiArrowDownSLine class="flex-none size-4 justify-self-end" />
             </div>
           </slot>
         </ListboxButton>
@@ -26,14 +28,15 @@
         <ListboxOption
           v-for="option in options"
           :key="getOptionId(toValue(option))"
-          v-slot="{ selected }"
+          v-slot="{ active, selected }"
           as="template"
           :value="option"
         >
           <li
             class="relative cursor-default select-none py-2 pr-4 list-none flex items-center gap-2 text-gray-900"
             :class="{
-              'bg-gray-lower': isActive(activeOption, option),
+              'bg-gray-lower': active && !isDisabled(toValue(option)),
+              'text-new-disabled-text': isDisabled(toValue(option)),
               'pl-2': selected,
               'pl-6': !selected,
             }"
@@ -41,12 +44,13 @@
             <div class="flex items-center justify-center aspect-square">
               <RiCheckLine
                 v-if="selected"
-                class="size-4 text-new-primary"
+                class="size-4"
+                :class="isDisabled(toValue(option)) ?' text-new-disabled-text' : 'text-new-primary'"
               />
             </div>
             <slot
               name="option"
-              v-bind="{ option, active: isActive(activeOption, option) }"
+              v-bind="{ option, active }"
             >
               {{ displayValue(option) }}
             </slot>
@@ -66,7 +70,8 @@ import { RiArrowDownSLine, RiCheckLine } from '@remixicon/vue'
 const props = withDefaults(defineProps<{
   options?: Array<T>
   getOptionId?: (option: T) => string | number
-  displayValue: (option: T) => string
+  displayValue: (option: T | null) => string
+  isDisabled?: (option: T | null) => boolean
 }>(), {
   getOptionId: (option: T): string | number => {
     if (typeof option === 'string') return option
@@ -75,9 +80,12 @@ const props = withDefaults(defineProps<{
 
     throw new Error('Please set getOptionId()')
   },
+  isDisabled: (_option: T | null): boolean => {
+    return false
+  },
 })
 
-const model = defineModel<T | null>()
+const model = defineModel<T | null>({ required: true })
 
 const referenceRef = useTemplateRef('floatingReference')
 const floatingRef = useTemplateRef<InstanceType<typeof ListboxOptions>>('popover')
@@ -88,8 +96,4 @@ const { floatingStyles } = useFloating(referenceRef, floatingRef, {
   })],
   whileElementsMounted: autoUpdate,
 })
-
-function isActive(activeOption: T, currentOption: T) {
-  return activeOption ? props.getOptionId(activeOption) === props.getOptionId(currentOption) : false
-}
 </script>

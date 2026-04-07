@@ -111,7 +111,7 @@
           </option>
         </select>
       </fieldset>
-      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+      <fieldset class="min-w-0 border-t border-new-gray-light py-4 px-6 space-y-4">
         <p class="font-bold mb-2">
           {{ $t('Filtre') }}
         </p>
@@ -119,36 +119,38 @@
           v-if="form.filter"
           class="flex items-center gap-2 flex-wrap md:flex-nowrap"
         >
-          <span class="text-sm text-gray-600">{{ $t('Quand') }}</span>
-          <div class="relative">
-            <Listbox
-              v-model="form.filter.column"
-              :options="columns[selectedResource]"
-              :display-value="(d: string) => d"
-            />
+          <div class="text-xs text-gray-600">
+            {{ $t('Quand') }}
           </div>
-          <div class="relative">
-            <Listbox
-              v-model="form.filter.condition"
-              :options="conditionOptions"
-              :display-value="getConditionLabel"
-            />
-          </div>
+          <Listbox
+            v-model="form.filter.column"
+            :options="getColumnOptions()"
+            :display-value="d => getColumn(d)!.value"
+            :get-option-id="d => getColumn(d)!.key"
+            :is-disabled="d => getColumn(d)!.disabled"
+          />
+
+          <Listbox
+            class="min-w-20"
+            v-model="form.filter.condition"
+            :options="conditionOptions"
+            :display-value="getConditionLabel"
+          />
 
           <input
             v-model="form.filter.value"
             type="text"
-            class="fr-input text-sm w-32"
+            class="fr-input text-sm w-32 min-w-0"
             :placeholder="$t('Valeur')"
           >
 
           <BrandedButton
-            size="sm"
+            size="xs"
             :disabled="!form.filter.column"
+            :icon="RiDeleteBinLine"
+            icon-only
             @click="removeFilter"
-          >
-            <RiDeleteBinLine class="w-4 h-4" />
-          </BrandedButton>
+          />
         </div>
         <div v-else>
           <BrandedButton
@@ -432,7 +434,8 @@ const resources = computed(() => Object.values(savedResources))
 
 const conditionOptions: Array<FilterCondition> = ['equal', 'greater']
 
-function getConditionLabel(condition: FilterCondition) {
+function getConditionLabel(condition: FilterCondition | null) {
+  if (!condition) return ''
   return {
     equal: t('est'),
     greater: t('est supérieur à'),
@@ -450,6 +453,16 @@ const sortOptionLabels = computed(() => {
     'axis_y-desc': yAxisColumn ? `${yAxisColumn} - ${t('Descendant')}` : t('Axe Y - Descendant'),
   }
 })
+
+const columnDetails = computed(() => [{ key: '', value: t('Colonne'), disabled: true }, ...columns.value[selectedResource.value].map(c => ({ key: c, value: c, disabled: false }))])
+
+function getColumnOptions() {
+  return columnDetails.value.map(d => d.key)
+}
+
+function getColumn(key: string | null) {
+  return columnDetails.value.find(c => c.key === key)
+}
 
 const { $api } = useNuxtApp()
 const hasTabularData = useHasTabularData()
