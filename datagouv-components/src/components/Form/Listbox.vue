@@ -9,11 +9,11 @@
         class="relative w-full cursor-default overflow-hidden bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm"
       >
         <ListboxButton class="input shadow-input text-sm flex items-center gap-2">
-            <slot name="button">
-              <div class="w-100 flex items-center justify-between gap-2">
-                {{ model ? displayValue(model) : '' }}
-                <RiArrowDownSLine class="size-4 justify-self-end" />
-              </div>
+          <slot name="button">
+            <div class="w-full flex items-center justify-between gap-2">
+              {{ model ? displayValue(model) : '' }}
+              <RiArrowDownSLine class="size-4 justify-self-end" />
+            </div>
           </slot>
         </ListboxButton>
       </div>

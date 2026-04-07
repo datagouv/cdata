@@ -144,7 +144,7 @@ type Priority = {
   label: string
 }
 
-const conditions = ['equal', 'greater', 'less', 'contains', 'starts_with']
+const conditions = ['equal', 'greater', 'less', 'contains', 'starts_with', 'really long option should not push the content like the default select tag and should be truncated when selected']
 
 const selectedCondition = ref<string | null>('equal')
 
