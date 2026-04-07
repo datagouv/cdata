@@ -10,9 +10,9 @@
       >
         <ListboxButton class="input shadow-input text-sm flex items-center gap-2">
           <slot name="button">
-            <div class="w-100 flex items-center justify-between gap-2">
+            <div class="w-full flex items-center justify-between gap-2">
               {{ model ? displayValue(model) : '' }}
-              <RiArrowDownSLine class="size-4 justify-self-end" />
+                <RiArrowDownSLine class="flex-none size-4 justify-self-end" />
             </div>
           </slot>
         </ListboxButton>
@@ -61,7 +61,7 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/vue'
 import { useFloating, autoUpdate, autoPlacement } from '@floating-ui/vue'
 import { toValue, useTemplateRef } from 'vue'
-import { RiCheckLine } from '@remixicon/vue'
+import { RiArrowDownSLine, RiCheckLine } from '@remixicon/vue'
 
 const props = withDefaults(defineProps<{
   options?: Array<T>

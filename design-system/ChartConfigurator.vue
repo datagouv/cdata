@@ -112,6 +112,57 @@
         </select>
       </fieldset>
       <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+        <p class="font-bold mb-2">
+          {{ $t('Filtre') }}
+        </p>
+        <div
+          v-if="form.filter"
+          class="flex items-center gap-2 flex-wrap md:flex-nowrap"
+        >
+          <span class="text-sm text-gray-600">{{ $t('Quand') }}</span>
+          <div class="relative">
+            <Listbox
+              v-model="form.filter.column"
+              :options="columns[selectedResource]"
+              :display-value="(d: string) => d"
+            />
+          </div>
+          <div class="relative">
+            <Listbox
+              v-model="form.filter.condition"
+              :options="conditionOptions"
+              :display-value="getConditionLabel"
+            />
+          </div>
+
+          <input
+            v-model="form.filter.value"
+            type="text"
+            class="fr-input text-sm w-32"
+            :placeholder="$t('Valeur')"
+          >
+
+          <BrandedButton
+            size="sm"
+            :disabled="!form.filter.column"
+            @click="removeFilter"
+          >
+            <RiDeleteBinLine class="w-4 h-4" />
+          </BrandedButton>
+        </div>
+        <div v-else>
+          <BrandedButton
+            size="sm"
+            color="tertiary"
+            :icon="RiAddLine"
+            @click="form.filter={ column: '', condition: 'equal', value: '' }"
+          >
+            {{ $t('Ajouter un filtre') }}
+          </BrandedButton>
+        </div>
+      </fieldset>
+
+      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
         <label
           for="chart-type"
           class="fr-label font-bold"
@@ -258,73 +309,6 @@
         </div>
       </fieldset>
 
-      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
-        <p class="font-bold mb-2">
-          {{ $t('Filtre') }}
-        </p>
-        <div
-          v-if="form.filter"
-          class="flex items-center gap-2 flex-wrap md:flex-nowrap"
-        >
-          <span class="text-sm text-gray-600">{{ $t('Quand') }}</span>
-
-          <!-- Column select -->
-          <select
-            v-model="form.filter.column"
-            class="fr-select text-sm"
-          >
-            <option
-              value=""
-              disabled
-            >
-              {{ $t('Colonne') }}
-            </option>
-            <template v-if="selectedResource">
-              <option
-                v-for="column in columns[selectedResource]"
-                :key="column"
-                :value="column"
-              >
-                {{ column }}
-              </option>
-            </template>
-          </select>
-          <div class="relative">
-            <Listbox
-              v-model="form.filter.condition"
-              :options="conditionOptions"
-              :display-value="getConditionLabel"
-            />
-          </div>
-
-          <!-- Value input -->
-          <input
-            v-model="form.filter.value"
-            type="text"
-            class="fr-input text-sm w-32"
-            :placeholder="$t('Valeur')"
-          >
-
-          <!-- Remove button -->
-          <BrandedButton
-            size="sm"
-            :disabled="!form.filter.column"
-            @click="removeFilter"
-          >
-            <RiDeleteBinLine class="w-4 h-4" />
-          </BrandedButton>
-        </div>
-        <div v-else>
-          <BrandedButton
-            size="sm"
-            color="tertiary"
-            :icon="RiAddLine"
-            @click="form.filter={ column: '', condition: 'equal', value: '' }"
-          >
-            {{ $t('Ajouter un filtre') }}
-          </BrandedButton>
-        </div>
-      </fieldset>
       <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
         <p class="font-bold mb-2">
           {{ $t('Axe Y') }}
