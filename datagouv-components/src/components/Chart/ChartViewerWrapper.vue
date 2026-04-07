@@ -113,13 +113,20 @@ async function fetchSeriesData() {
 
     // Fetch data for all series in parallel
     const fetchPromises = chart.value.series.map(async (serie) => {
-      const xColumn = serie.column_x_name_override ?? chart.value.x_axis.column_x
+    const xColumn = serie.column_x_name_override ?? chart.value.x_axis.column_x
 
-      // Convert series-level filters to API format
-      const apiFilters = serie.filters ? filterToApiFormat(serie.filters) : undefined
+    console.log(chart.value)
+    if ('filter' in chart.value && chart.value.filter) {
+      serie.filters = chart.value.filter
+    }
 
-      if (!xColumn || !serie.resource_id || !serie.column_y) return
-      return {
+
+        // Convert series-level filters to API format
+        console.log(serie.filters)
+        const apiFilters = serie.filters ? filterToApiFormat(serie.filters) : undefined
+
+        if (!xColumn || !serie.resource_id || !serie.column_y) return
+        return {
         id: serie.resource_id,
         data: await fetchTabularData(config, {
           columns: serie.aggregate_y ? undefined : [xColumn, serie.column_y],

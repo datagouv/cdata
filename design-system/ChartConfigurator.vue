@@ -367,7 +367,7 @@
             size="sm"
             color="tertiary"
             :icon="RiAddLine"
-            @click="form.filter = { column: '', condition: 'equal', value: '' }"
+            @click="form.filter = { column: '', condition: 'exact', value: '' }"
           >
             {{ $t('Ajouter un filtre') }}
           </BrandedButton>
@@ -463,7 +463,6 @@
 <script setup lang="ts">
 import type { Resource, PaginatedArray, ChartForm, Chart, FilterCondition } from '@datagouv/components-next'
 import { SearchableSelect, useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton, Listbox } from '@datagouv/components-next'
-import { filterToApiFormat } from '@datagouv/components-next'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
 import { RiAddLine, RiArrowDownSLine, RiDeleteBinLine } from '@remixicon/vue'
