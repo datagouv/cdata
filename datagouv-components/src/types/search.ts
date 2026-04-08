@@ -325,7 +325,16 @@ export type OrganizationSearchConfig = {
   sortOptions?: SortOption<OrganizationSearchSort>[]
 }
 
-export type SearchTypeConfig = DatasetSearchConfig | DataserviceSearchConfig | ReuseSearchConfig | OrganizationSearchConfig
+export type TopicSearchConfig = {
+  class: 'topics'
+  name?: string
+  hiddenFilters?: HiddenFilter<TopicSearchFilters>[]
+  basicFilters?: (keyof TopicSearchFilters)[]
+  advancedFilters?: (keyof TopicSearchFilters)[]
+  sortOptions?: SortOption<TopicSearchSort>[]
+}
+
+export type SearchTypeConfig = DatasetSearchConfig | DataserviceSearchConfig | ReuseSearchConfig | OrganizationSearchConfig | TopicSearchConfig
 
 export type SearchType = SearchTypeConfig['class']
 
@@ -397,11 +406,27 @@ export function getDefaultOrganizationConfig(overrides?: Partial<Omit<Organizati
   }
 }
 
+export const defaultTopicSortOptions: SortOption<TopicSearchSort>[] = [
+  { value: '-created', label: 'Date de création' },
+  { value: '-last_modified', label: 'Dernière mise à jour' },
+]
+
+export function getDefaultTopicConfig(overrides?: Partial<Omit<TopicSearchConfig, 'class'>>): TopicSearchConfig {
+  return {
+    class: 'topics',
+    basicFilters: ['last_update_range', 'producer_type'],
+    advancedFilters: ['organization', 'tag'],
+    sortOptions: defaultTopicSortOptions,
+    ...overrides,
+  }
+}
+
 export function getDefaultGlobalSearchConfig(): GlobalSearchConfig {
   return [
     getDefaultDatasetConfig(),
     getDefaultDataserviceConfig(),
     getDefaultReuseConfig(),
     getDefaultOrganizationConfig(),
+    getDefaultTopicConfig(),
   ]
 }
