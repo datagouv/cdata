@@ -41,7 +41,7 @@
 import type { Filter, FilterCondition } from '@datagouv/components-next'
 import { Listbox, BrandedButton } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps<{
   modelValue: Filter
@@ -60,18 +60,15 @@ const { t } = useTranslation()
 const localFilter = ref<Filter>({ ...props.modelValue })
 
 const selectedColumnObj = ref<{ key: string, value: string, disabled: boolean } | null>(null)
-const isUpdating = ref(false)
 
-watch(() => localFilter.value.column, (col) => {
-  if (isUpdating.value) return
+watch(() => localFilter.value.column, (col, oldCol) => {
+  if (col === oldCol) return
   selectedColumnObj.value = props.columnOptions.find(opt => opt.key === col) || null
 }, { immediate: true })
 
-watch(selectedColumnObj, (newVal) => {
-  if (isUpdating.value) return
-  isUpdating.value = true
+watch(selectedColumnObj, (newVal, oldVal) => {
+  if (newVal?.key === oldVal?.key) return
   localFilter.value.column = newVal?.key || ''
-  nextTick(() => { isUpdating.value = false })
 })
 
 watch(localFilter, (newFilter) => {
