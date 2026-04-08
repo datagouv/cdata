@@ -44,6 +44,7 @@ const searchPaths: Record<SearchType, string> = {
   dataservices: '/dataservices/search',
   reuses: '/reuses/search',
   organizations: '/organizations',
+  topics: '/topics',
 }
 
 const currentType = computed<SearchType>({
@@ -109,6 +110,7 @@ const ogTitles: Record<SearchType, string> = {
   dataservices: 'API',
   reuses: 'Réutilisations',
   organizations: 'Organisations',
+  topics: 'Bouquets',
 }
 
 const ogTitle = computed(() => ogTitles[currentType.value])
