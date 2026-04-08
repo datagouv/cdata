@@ -110,7 +110,7 @@ const ogTitles: Record<SearchType, string> = {
   dataservices: 'API',
   reuses: 'Réutilisations',
   organizations: 'Organisations',
-  topics: 'Bouquets',
+  topics: 'Thématiques',
 }
 
 const ogTitle = computed(() => ogTitles[currentType.value])
