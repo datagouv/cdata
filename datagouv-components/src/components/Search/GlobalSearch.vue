@@ -487,7 +487,8 @@ const reuseType = useRouteQuery<string | undefined>('type')
 
 const pageSize = 20
 
-// tagFilter refs — one per unique urlParam across all type configs
+// Collect unique urlParams across all type configs: a param shared between
+// types maps to a single ref so it persists correctly across type switches.
 const tagFilterUrlParams = [...new Set(
   props.config.flatMap(c => c.tagFilters ?? []).map(tf => tf.urlParam),
 )]
@@ -601,7 +602,7 @@ const filtersForReset = computed(() => ({
   last_update_range: lastUpdateRange.value,
   producer_type: producerType.value,
   type: reuseType.value,
-  ...Object.fromEntries(Object.entries(tagFilterRefs).map(([k, r]) => [k, r.value])),
+  tagFilters: Object.values(tagFilterRefs).map(r => r.value),
 }))
 
 watch(filtersForReset, () => page.value = 1)
