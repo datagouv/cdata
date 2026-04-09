@@ -2,11 +2,6 @@ import type { DatasetV2 } from './datasets'
 import type { Dataservice } from './dataservices'
 import type { Reuse } from './reuses'
 
-export type Page = {
-  id: string
-  blocs: Array<PageBloc>
-}
-
 export type BlocWithTitle = {
   title: string
   subtitle: string | null
