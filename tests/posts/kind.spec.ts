@@ -36,6 +36,7 @@ test.describe('Post kind filter', () => {
     await fileChooser1.setFiles(path.join(__dirname, '../../public/nuxt_images/onboarding/logo-ign.png'))
 
     await page.getByRole('button', { name: 'Suivant' }).click()
+    await expect(page.getByTestId('markdown-editor')).toBeVisible({ timeout: 30000 })
     await page.getByTestId('markdown-editor').click()
     await page.getByTestId('markdown-editor').fill('Contenu de l\'actualité')
     await page.getByTestId('markdown-editor').press('Tab')
@@ -65,6 +66,7 @@ test.describe('Post kind filter', () => {
     await fileChooser2.setFiles(path.join(__dirname, '../../public/nuxt_images/onboarding/logo-ign.png'))
 
     await page.getByRole('button', { name: 'Suivant' }).click()
+    await expect(page.getByTestId('markdown-editor')).toBeVisible({ timeout: 30000 })
     await page.getByTestId('markdown-editor').click()
     await page.getByTestId('markdown-editor').fill('Contenu de la page')
     await page.getByTestId('markdown-editor').press('Tab')
