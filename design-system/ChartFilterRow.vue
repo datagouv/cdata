@@ -51,14 +51,14 @@ const props = defineProps<{
   conditionOptions: Array<FilterCondition>
 }>()
 
-const emit = defineEmits<{
-  'remove': []
+defineEmits<{
+  remove: []
 }>()
 
- const { t } = useTranslation()
+const { t } = useTranslation()
 
 const listboxOptions = computed(() =>
-  props.columnOptions.map(opt => opt.key)
+  props.columnOptions.map(opt => opt.key),
 )
 
 const getOptionByKey = (key: string) =>
@@ -75,13 +75,13 @@ function getOptionId(key: string | null): string {
 }
 
 function isOptionDisabled(key: string | null): boolean {
-    if (!key) return false
-    const option = getOptionByKey(key)
-    return option?.disabled || false
+  if (!key) return false
+  const option = getOptionByKey(key)
+  return option?.disabled || false
 }
 
 const showValueInput = computed(() => {
-    return !['is_null', 'is_not_null'].includes(filter.value.condition)
+  return !['is_null', 'is_not_null'].includes(filter.value.condition)
 })
 
 function getConditionLabel(condition: FilterCondition | null) {
