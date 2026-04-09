@@ -42,7 +42,7 @@
           </Sidemenu>
         </div>
 
-        <div v-if="activeFilters.length > 0 || !!currentTypeConfig?.tagFilters?.length">
+        <div v-if="activeFilters.length > 0 || hasTagFilters">
           <Sidemenu :button-text="t('Filtres')">
             <template #title>
               {{ t('Filtres') }}
@@ -452,10 +452,12 @@ const activeFilters = computed(() => [
   ...(currentTypeConfig.value?.advancedFilters ?? []),
 ] as string[])
 
+const hasTagFilters = computed(() => !!(currentTypeConfig.value?.tagFilters?.length))
+
 const showSidebar = computed(() =>
   props.config.length > 1
   || activeFilters.value.length > 0
-  || !!(currentTypeConfig.value?.tagFilters?.length),
+  || hasTagFilters.value,
 )
 
 // URL query params
