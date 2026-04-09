@@ -280,6 +280,18 @@ export type TopicSearchResponse<T> = SearchResponseWithFacets<T, TopicSearchFace
 
 // GlobalSearch configuration types
 
+export type TagFilterValue = {
+  value: string
+  label: string
+}
+
+export type TagFilterConfig = {
+  urlParam: string
+  label: string
+  defaultLabel: string
+  values: TagFilterValue[]
+}
+
 export type HiddenFilter<Filters> = {
   [K in keyof Filters]: { key: K, value: Filters[K] }
 }[keyof Filters]
@@ -296,6 +308,7 @@ export type DatasetSearchConfig = {
   basicFilters?: (keyof DatasetSearchFilters)[]
   advancedFilters?: (keyof DatasetSearchFilters)[]
   sortOptions?: SortOption<DatasetSearchSort>[]
+  tagFilters?: TagFilterConfig[]
 }
 
 export type DataserviceSearchConfig = {
@@ -305,6 +318,7 @@ export type DataserviceSearchConfig = {
   basicFilters?: (keyof DataserviceSearchFilters)[]
   advancedFilters?: (keyof DataserviceSearchFilters)[]
   sortOptions?: SortOption<DataserviceSearchSort>[]
+  tagFilters?: TagFilterConfig[]
 }
 
 export type ReuseSearchConfig = {
@@ -314,6 +328,7 @@ export type ReuseSearchConfig = {
   basicFilters?: (keyof ReuseSearchFilters)[]
   advancedFilters?: (keyof ReuseSearchFilters)[]
   sortOptions?: SortOption<ReuseSearchSort>[]
+  tagFilters?: TagFilterConfig[]
 }
 
 export type OrganizationSearchConfig = {
@@ -323,6 +338,7 @@ export type OrganizationSearchConfig = {
   basicFilters?: (keyof OrganizationSearchFilters)[]
   advancedFilters?: (keyof OrganizationSearchFilters)[]
   sortOptions?: SortOption<OrganizationSearchSort>[]
+  tagFilters?: TagFilterConfig[]
 }
 
 export type TopicSearchConfig = {
@@ -332,6 +348,7 @@ export type TopicSearchConfig = {
   basicFilters?: (keyof TopicSearchFilters)[]
   advancedFilters?: (keyof TopicSearchFilters)[]
   sortOptions?: SortOption<TopicSearchSort>[]
+  tagFilters?: TagFilterConfig[]
 }
 
 export type SearchTypeConfig = DatasetSearchConfig | DataserviceSearchConfig | ReuseSearchConfig | OrganizationSearchConfig | TopicSearchConfig

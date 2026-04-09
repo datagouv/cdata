@@ -42,11 +42,23 @@
           </Sidemenu>
         </div>
 
-        <div v-if="activeFilters.length > 0">
+        <div v-if="activeFilters.length > 0 || !!currentTypeConfig?.tagFilters?.length">
           <Sidemenu :button-text="t('Filtres')">
             <template #title>
               {{ t('Filtres') }}
             </template>
+            <SearchableSelect
+              v-for="tagFilter in currentTypeConfig?.tagFilters"
+              :key="tagFilter.urlParam"
+              :model-value="tagFilter.values.find(v => v.value === tagFilterRefs[tagFilter.urlParam]!.value) ?? null"
+              :options="tagFilter.values"
+              :label="tagFilter.label"
+              :placeholder="tagFilter.defaultLabel"
+              :get-option-id="(opt) => opt.value"
+              :display-value="(opt) => opt.label"
+              :multiple="false"
+              @update:model-value="tagFilterRefs[tagFilter.urlParam]!.value = $event?.value"
+            />
             <BasicAndAdvancedFilters
               v-slot="{ isEnabled, getOrder }"
               :basic-filters="activeBasicFilters"
@@ -370,6 +382,7 @@ import SearchInput from './SearchInput.vue'
 import Sidemenu from './Sidemenu.vue'
 import BasicAndAdvancedFilters from './BasicAndAdvancedFilters.vue'
 import OrganizationSelect from '../Form/OrganizationSelect.vue'
+import SearchableSelect from '../Form/SearchableSelect.vue'
 import OrganizationTypeSelect from '../Form/OrganizationTypeSelect.vue'
 import TagSelect from '../Form/TagSelect.vue'
 import FormatSelect from '../Form/FormatSelect.vue'
@@ -439,7 +452,11 @@ const activeFilters = computed(() => [
   ...(currentTypeConfig.value?.advancedFilters ?? []),
 ] as string[])
 
-const showSidebar = computed(() => props.config.length > 1 || activeFilters.value.length > 0)
+const showSidebar = computed(() =>
+  props.config.length > 1
+  || activeFilters.value.length > 0
+  || !!(currentTypeConfig.value?.tagFilters?.length),
+)
 
 // URL query params
 const q = useRouteQuery<string>('q', '')
@@ -467,6 +484,14 @@ const producerType = useRouteQuery<string | undefined>('producer_type')
 const reuseType = useRouteQuery<string | undefined>('type')
 
 const pageSize = 20
+
+// tagFilter refs — one per unique urlParam across all type configs
+const tagFilterUrlParams = [...new Set(
+  props.config.flatMap(c => c.tagFilters ?? []).map(tf => tf.urlParam),
+)]
+const tagFilterRefs: Record<string, Ref<string | undefined>> = Object.fromEntries(
+  tagFilterUrlParams.map(p => [p, useRouteQuery<string | undefined>(p)]),
+)
 
 // All filter values as a record
 const allFilters: Record<string, Ref<unknown>> = {
@@ -501,6 +526,14 @@ watch(currentType, () => {
       filterRef.value = undefined
     }
   }
+
+  // Reset tagFilterRefs not belonging to the new type
+  const newTypeTagParams = new Set((currentTypeConfig.value?.tagFilters ?? []).map(tf => tf.urlParam))
+  for (const [urlParam, ref] of Object.entries(tagFilterRefs)) {
+    if (!newTypeTagParams.has(urlParam)) {
+      ref.value = undefined
+    }
+  }
 })
 
 // Check which types are enabled
@@ -513,6 +546,7 @@ const topicsEnabled = computed(() => props.config.some(c => c.class === 'topics'
 // Create stable params for each type
 const stableParamsOptions = {
   allFilters,
+  tagFilterRefs,
   q: qDebounced,
   sort,
   page,
@@ -565,6 +599,7 @@ const filtersForReset = computed(() => ({
   last_update_range: lastUpdateRange.value,
   producer_type: producerType.value,
   type: reuseType.value,
+  ...Object.fromEntries(Object.entries(tagFilterRefs).map(([k, r]) => [k, r.value])),
 }))
 
 watch(filtersForReset, () => page.value = 1)
@@ -587,6 +622,7 @@ const hasFilters = computed(() => {
     || lastUpdateRange.value
     || producerType.value
     || reuseType.value
+    || Object.values(tagFilterRefs).some(r => r.value)
 })
 
 const showForumLink = computed(() => (currentType.value === 'datasets' || currentType.value === 'dataservices') && !!componentsConfig.forumUrl)
@@ -607,6 +643,9 @@ function resetFilters() {
   lastUpdateRange.value = undefined
   producerType.value = undefined
   reuseType.value = undefined
+  for (const ref of Object.values(tagFilterRefs)) {
+    ref.value = undefined
+  }
   q.value = ''
   flushQ()
 }

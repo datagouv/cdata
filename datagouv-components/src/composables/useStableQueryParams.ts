@@ -6,6 +6,7 @@ type FilterRefs = Record<string, Ref<unknown>>
 interface StableQueryParamsOptions {
   typeConfig: SearchTypeConfig | undefined
   allFilters: FilterRefs
+  tagFilterRefs?: FilterRefs
   q: Ref<string>
   sort: Ref<string | undefined>
   page: Ref<number>
@@ -17,7 +18,7 @@ interface StableQueryParamsOptions {
  * Applies hiddenFilters first, then user filters (which can override hiddenFilters).
  */
 export function useStableQueryParams(options: StableQueryParamsOptions) {
-  const { typeConfig, allFilters, q, sort, page, pageSize } = options
+  const { typeConfig, allFilters, tagFilterRefs, q, sort, page, pageSize } = options
   const stableParams = ref<Record<string, unknown>>({})
 
   const buildParams = () => {
@@ -50,6 +51,16 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
       }
     }
 
+    // 3b. Apply tagFilters (each urlParam maps to the 'tag' API param)
+    if (tagFilterRefs) {
+      for (const tagFilter of typeConfig?.tagFilters ?? []) {
+        const value = tagFilterRefs[tagFilter.urlParam]?.value
+        if (value !== undefined && value !== '' && value !== null) {
+          params.tag = 'tag' in params ? ([] as unknown[]).concat(params.tag, value) : value
+        }
+      }
+    }
+
     // 4. Always include q, sort (if valid for this type), page, page_size
     if (q.value) {
       params.q = q.value
@@ -68,7 +79,7 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
 
   // Watch all dependencies and update only if content changed
   watch(
-    [q, sort, page, ...Object.values(allFilters)],
+    [q, sort, page, ...Object.values(allFilters), ...Object.values(tagFilterRefs ?? {})],
     () => {
       const newParams = buildParams()
       // JSON.stringify comparison is safe here because buildParams() builds the object deterministically
