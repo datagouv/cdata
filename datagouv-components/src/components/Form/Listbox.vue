@@ -71,7 +71,7 @@ withDefaults(defineProps<{
   options?: Array<T>
   getOptionId?: (option: T) => string | number
   displayValue: (option: T | null) => string
-  isDisabled?: (option: T | null) => boolean
+  isDisabled?: (option: T) => boolean
 }>(), {
   getOptionId: (option: T): string | number => {
     if (typeof option === 'string') return option
@@ -80,8 +80,10 @@ withDefaults(defineProps<{
 
     throw new Error('Please set getOptionId()')
   },
-  isDisabled: (_option: T | null): boolean => {
-    return false
+    isDisabled: (option: T): boolean => {
+      if (option && typeof option === 'object' && 'disabled' in option) return option.disabled as boolean
+
+      return false
   },
 })
 
