@@ -4,16 +4,16 @@
       {{ index === 0 ? $t('Quand') : $t('Et que') }}
     </div>
     <Listbox
-      v-model="selectedColumnObj"
+      v-model="filter.column"
       class="min-w-28 max-w-36"
-      :options="columnOptions"
-      :display-value="d => getColumnLabel(d)"
-      :get-option-id="d => getColumnKey(d)"
-      :is-disabled="d => isColumnDisabled(d)"
+      :options="listboxOptions"
+      :display-value="getOptionLabel"
+      :get-option-id="getOptionId"
+      :is-disabled="isOptionDisabled"
     />
 
     <Listbox
-      v-model="localFilter.condition"
+      v-model="filter.condition"
       class="min-w-20"
       :options="conditionOptions"
       :display-value="getConditionLabel"
@@ -21,7 +21,7 @@
 
     <input
       v-if="showValueInput"
-      v-model="localFilter.value"
+      v-model="filter.value"
       type="text"
       class="fr-input text-sm w-32 min-w-0 max-w-1/3"
       :placeholder="$t('Valeur')"
@@ -29,7 +29,7 @@
 
     <BrandedButton
       size="xs"
-      :disabled="!localFilter.column"
+      :disabled="!filter.column"
       :icon="RiDeleteBinLine"
       icon-only
       @click="$emit('remove')"
@@ -41,62 +41,48 @@
 import type { Filter, FilterCondition } from '@datagouv/components-next'
 import { Listbox, BrandedButton } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
+
+const filter = defineModel<Filter>({ required: true })
 
 const props = defineProps<{
-  modelValue: Filter
   index: number
   columnOptions: Array<{ key: string, value: string, disabled: boolean }>
   conditionOptions: Array<FilterCondition>
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [filter: Filter]
   'remove': []
 }>()
 
-const { t } = useTranslation()
+ const { t } = useTranslation()
 
-const localFilter = ref<Filter>({ ...props.modelValue })
+const listboxOptions = computed(() =>
+  props.columnOptions.map(opt => opt.key)
+)
 
-const selectedColumnObj = ref<{ key: string, value: string, disabled: boolean } | null>(null)
+const getOptionByKey = (key: string) =>
+  props.columnOptions.find(opt => opt.key === key) || null
 
-watch(() => localFilter.value.column, (col, oldCol) => {
-  if (col === oldCol) return
-  selectedColumnObj.value = props.columnOptions.find(opt => opt.key === col) || null
-}, { immediate: true })
+function getOptionLabel(key: string | null): string {
+  if (!key) return ''
+  const option = getOptionByKey(key)
+  return option?.value || ''
+}
 
-watch(selectedColumnObj, (newVal, oldVal) => {
-  if (newVal?.key === oldVal?.key) return
-  localFilter.value.column = newVal?.key || ''
-})
+function getOptionId(key: string | null): string {
+  return key || ''
+}
 
-watch(localFilter, (newFilter) => {
-  emit('update:modelValue', { ...newFilter })
-}, { deep: true })
-
-watch(() => props.modelValue, (newValue) => {
-  localFilter.value = { ...newValue }
-}, { deep: true })
+function isOptionDisabled(key: string | null): boolean {
+    if (!key) return false
+    const option = getOptionByKey(key)
+    return option?.disabled || false
+}
 
 const showValueInput = computed(() => {
-  return !['is_null', 'is_not_null'].includes(localFilter.value.condition)
+    return !['is_null', 'is_not_null'].includes(filter.value.condition)
 })
-
-function getColumnLabel(col: { key: string, value: string } | null) {
-  if (!col) return ''
-  return col.value
-}
-
-function getColumnKey(col: { key: string, value: string } | null) {
-  if (!col) return ''
-  return col.key
-}
-
-function isColumnDisabled(col: { key: string, value: string, disabled: boolean } | null) {
-  if (!col) return false
-  return col.disabled
-}
 
 function getConditionLabel(condition: FilterCondition | null) {
   if (!condition) return ''
