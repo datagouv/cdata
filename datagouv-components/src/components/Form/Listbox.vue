@@ -80,10 +80,10 @@ withDefaults(defineProps<{
 
     throw new Error('Please set getOptionId()')
   },
-    isDisabled: (option: T): boolean => {
-      if (option && typeof option === 'object' && 'disabled' in option) return option.disabled as boolean
+  isDisabled: (option: T): boolean => {
+    if (option && typeof option === 'object' && 'disabled' in option) return option.disabled as boolean
 
-      return false
+    return false
   },
 })
 
