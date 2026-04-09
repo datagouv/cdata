@@ -27,7 +27,7 @@ export function toChartForm(chart: Chart) {
       aggregate_y: serie.aggregate_y || '',
     })),
     extras: chart.extras,
-    chart_type: chart.series.length > 0 ? chart.series[0].type : null,
+    chart_type: chart.series[0] ? chart.series[0].type : null,
     filter: seriesFilter ?? null,
   } satisfies ChartForm
 }
