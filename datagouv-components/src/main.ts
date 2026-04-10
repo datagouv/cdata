@@ -23,7 +23,7 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
-import type { GlobalSearchConfig, SearchType, SortOption, TagFilterConfig, TagFilterValue } from './types/search'
+import type { GlobalSearchConfig, SearchType, SortOption, TagFilterConfig, TagFilterValue, HiddenFilter, DatasetSearchFilters, DataserviceSearchFilters, ReuseSearchFilters, OrganizationSearchFilters, TopicSearchFilters } from './types/search'
 import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 
 import ActivityList from './components/ActivityList/ActivityList.vue'
@@ -123,11 +123,17 @@ export * from './functions/users'
 export * from './types/access_types'
 
 export type {
+  DatasetSearchFilters,
+  DataserviceSearchFilters,
   GlobalSearchConfig,
+  HiddenFilter,
+  OrganizationSearchFilters,
+  ReuseSearchFilters,
   SearchType,
   SortOption,
   TagFilterConfig,
   TagFilterValue,
+  TopicSearchFilters,
   UseFetchFunction,
   AccessType,
   AccessAudience,
