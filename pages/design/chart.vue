@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import type { ChartForm } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import ChartConfigurator from '~/design-system/ChartConfigurator.vue'
+import ChartConfigurator from '~/components/Charts/ChartConfigurator.vue'
 
 const me = useMaybeMe()
 
