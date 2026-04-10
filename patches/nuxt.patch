@@ -1,10 +1,10 @@
 diff --git a/dist/core/runtime/nitro/utils/renderer/build-files.js b/dist/core/runtime/nitro/utils/renderer/build-files.js
-index 22c29a7f3bf2b890ed4d0d04fe46fcd56f2845c3..6f7b161844b819565c163427ab95f8bbc0d73d00 100644
+index c1f27b5c0fa710386d83f5bb44162f9176b260c2..cb4b4c772c4848d0a9f5a8620384ab86a119fc7b 100644
 --- a/dist/core/runtime/nitro/utils/renderer/build-files.js
 +++ b/dist/core/runtime/nitro/utils/renderer/build-files.js
 @@ -5,7 +5,9 @@ import { renderToString as _renderToString } from "vue/server-renderer";
  import { propsToString } from "@unhead/vue/server";
- import { useRuntimeConfig } from "#internal/nitro";
+ import { useRuntimeConfig } from "nitropack/runtime";
  import { appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, spaLoadingTemplateOutside } from "#internal/nuxt.config.mjs";
 -import { buildAssetsURL } from "#internal/nuxt/paths";
 +import { buildAssetsURL, publicAssetsURL } from "#internal/nuxt/paths";
