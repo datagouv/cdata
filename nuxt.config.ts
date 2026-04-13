@@ -265,6 +265,18 @@ export default defineNuxtConfig({
     plugins: [toml(), tailwindcss()],
     server: {
       allowedHosts: ['dev.local'],
+      proxy: {
+        '/proxy/entreprise-api': {
+          target: 'https://entreprise.api.gouv.fr',
+          changeOrigin: true,
+          rewrite: path => path.replace(/^\/proxy\/entreprise-api/, ''),
+        },
+        '/proxy/particulier-api': {
+          target: 'https://particulier.api.gouv.fr',
+          changeOrigin: true,
+          rewrite: path => path.replace(/^\/proxy\/particulier-api/, ''),
+        },
+      },
       warmup: {
         clientFiles: [
           './pages/**/*.vue',
