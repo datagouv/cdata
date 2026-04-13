@@ -289,12 +289,17 @@ export type SortOption<Sort extends string> = {
   label: string
 }
 
+// UI filter keys that map to a different API param name
+export const SearchFilterAliases: Record<string, string> = {
+  organization_facet: 'organization',
+}
+
 export type DatasetSearchConfig = {
   class: 'datasets'
   name?: string
   hiddenFilters?: HiddenFilter<DatasetSearchFilters>[]
-  basicFilters?: (keyof DatasetSearchFilters)[]
-  advancedFilters?: (keyof DatasetSearchFilters)[]
+  basicFilters?: (keyof DatasetSearchFilters | keyof typeof SearchFilterAliases)[]
+  advancedFilters?: (keyof DatasetSearchFilters | keyof typeof SearchFilterAliases)[]
   sortOptions?: SortOption<DatasetSearchSort>[]
 }
 
@@ -302,8 +307,8 @@ export type DataserviceSearchConfig = {
   class: 'dataservices'
   name?: string
   hiddenFilters?: HiddenFilter<DataserviceSearchFilters>[]
-  basicFilters?: (keyof DataserviceSearchFilters)[]
-  advancedFilters?: (keyof DataserviceSearchFilters)[]
+  basicFilters?: (keyof DataserviceSearchFilters | keyof typeof SearchFilterAliases)[]
+  advancedFilters?: (keyof DataserviceSearchFilters | keyof typeof SearchFilterAliases)[]
   sortOptions?: SortOption<DataserviceSearchSort>[]
 }
 
@@ -311,8 +316,8 @@ export type ReuseSearchConfig = {
   class: 'reuses'
   name?: string
   hiddenFilters?: HiddenFilter<ReuseSearchFilters>[]
-  basicFilters?: (keyof ReuseSearchFilters)[]
-  advancedFilters?: (keyof ReuseSearchFilters)[]
+  basicFilters?: (keyof ReuseSearchFilters | keyof typeof SearchFilterAliases)[]
+  advancedFilters?: (keyof ReuseSearchFilters | keyof typeof SearchFilterAliases)[]
   sortOptions?: SortOption<ReuseSearchSort>[]
 }
 
@@ -329,8 +334,8 @@ export type TopicSearchConfig = {
   class: 'topics'
   name?: string
   hiddenFilters?: HiddenFilter<TopicSearchFilters>[]
-  basicFilters?: (keyof TopicSearchFilters)[]
-  advancedFilters?: (keyof TopicSearchFilters)[]
+  basicFilters?: (keyof TopicSearchFilters | keyof typeof SearchFilterAliases)[]
+  advancedFilters?: (keyof TopicSearchFilters | keyof typeof SearchFilterAliases)[]
   sortOptions?: SortOption<TopicSearchSort>[]
 }
 
