@@ -1,3 +1,4 @@
+import type { Page, Response } from '@playwright/test'
 import { test as base } from '@playwright/test'
 
 const IGNORED_MESSAGES = [
@@ -20,7 +21,16 @@ const IGNORED_MESSAGES = [
 ]
 
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-export const test = base.extend<{ assertNoConsoleErrors: void }>({
+export const test = base.extend<{ assertNoConsoleErrors: void, page: Page }>({
+  page: async ({ page }, use) => {
+    const originalGoto = page.goto.bind(page)
+    page.goto = async (url: string, options?: Parameters<Page['goto']>[1]): Promise<Response | null> => {
+      const response = await originalGoto(url, options)
+      await page.waitForFunction(() => window.useNuxtApp?.().isHydrating === false)
+      return response
+    }
+    await use(page)
+  },
   assertNoConsoleErrors: [async ({ page }, use) => {
     const warnings: string[] = []
     const errors: string[] = []
