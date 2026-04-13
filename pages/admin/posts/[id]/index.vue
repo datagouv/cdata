@@ -13,10 +13,10 @@
           :title="post.published ? $t(`Dépublier l'article`) : $t(`'Publier l'article`)"
         >
           <template v-if="post.published">
-            {{ $t('Attention l’article ne sera plus visible.') }}
+            {{ $t("Attention l'article ne sera plus visible.") }}
           </template>
           <template v-else>
-            {{ $t("Attention l’article sera visible par tous une fois publié.") }}
+            {{ $t("Attention l'article sera visible par tous une fois publié.") }}
           </template>
 
           <template #button>
@@ -36,7 +36,6 @@
 import { BannerAction, BrandedButton, toast } from '@datagouv/components-next'
 import DescribePost from '~/components/Posts/DescribePost.vue'
 import type { Post, PostForm } from '~/types/posts'
-import type { Page } from '~/types/pages'
 
 const { t } = useTranslation()
 const { $api, $fileApi } = useNuxtApp()
@@ -54,21 +53,9 @@ const save = async (form: PostForm) => {
   try {
     loading.value = true
 
-    const formToSend = { ...form }
-
-    // We only create a page when switching to blocs, but we never delete it when switching back to markdown/html.
-    // This way, users can switch back to blocs later without losing their content.
-    if (form.body_type === 'blocs' && !form.content_as_page) {
-      const page = await $api<Page>('/api/1/pages/', {
-        method: 'POST',
-        body: { blocs: [] },
-      })
-      formToSend.content_as_page = page.id
-    }
-
     await $api(`/api/1/posts/${post.value.id}/`, {
       method: 'PUT',
-      body: JSON.stringify(postToApi(formToSend)),
+      body: JSON.stringify(postToApi(form)),
     })
 
     if (form.image && typeof form.image !== 'string') {

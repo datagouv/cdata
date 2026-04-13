@@ -44,7 +44,6 @@ import DescribePost from '~/components/Posts/DescribePost.vue'
 import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { Post, PostForm } from '~/types/posts'
-import type { Page } from '~/types/pages'
 
 const { t } = useTranslation()
 const route = useRoute()
@@ -61,8 +60,8 @@ const POST_FORM_STATE = 'post-form'
 const postForm = useState<PostForm>(POST_FORM_STATE, () => ({
   name: '',
   body_type: 'markdown',
+  blocs: [],
   content: '',
-  content_as_page: null,
   credit_to: '',
   credit_url: '',
   headline: '',
@@ -102,11 +101,7 @@ async function postNext(form: PostForm) {
   postForm.value = form
 
   if (form.body_type === 'blocs') {
-    const page = await $api<Page>('/api/1/pages/', {
-      method: 'POST',
-      body: { blocs: [] },
-    })
-    postForm.value.content_as_page = page.id
+    postForm.value.blocs = []
     await save({ content: '' })
   }
   else {

@@ -13,7 +13,7 @@ import type { License } from './types/licenses'
 import type { Member, MemberRole, NewOrganization, Organization, OrganizationOrSuggest, OrganizationReference, OrganizationSuggest } from './types/organizations'
 import type { Owned, OwnedWithFullObject, OwnedWithId } from './types/owned'
 import type { Comment, Thread } from './types/discussions'
-import type { Page, PageBloc, ContentBloc, BlocWithTitle, DatasetsListBloc, DataservicesListBloc, ReusesListBloc, LinkInBloc, LinksListBloc, MarkdownBloc, AccordionItemBloc, AccordionListBloc, HeroBloc } from './types/pages'
+import type { PageBloc, ContentBloc, BlocWithTitle, DatasetsListBloc, DataservicesListBloc, ReusesListBloc, LinkInBloc, LinksListBloc, MarkdownBloc, AccordionItemBloc, AccordionListBloc, HeroBloc } from './types/pages'
 import type { Post } from './types/posts'
 import type { ReuseReference, NewReuse, Reuse, ReuseTopic, ReuseType } from './types/reuses'
 import type { RegisteredSchema, Schema, SchemaDetails, SchemaField, SchemaPath, SchemaPublicationMode, SchemaResponseData, SchemaVersion, ValidataError } from './types/schemas'
@@ -24,7 +24,7 @@ import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
 import type { GlobalSearchConfig, SearchType, SortOption } from './types/search'
-import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
+import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 
 import ActivityList from './components/ActivityList/ActivityList.vue'
 import UserActivityList from './components/ActivityList/UserActivityList.vue'
@@ -167,7 +167,6 @@ export type {
   Owned,
   OwnedWithFullObject,
   OwnedWithId,
-  Page,
   PageBloc,
   ContentBloc,
   BlocWithTitle,
@@ -224,6 +223,7 @@ export {
   getDefaultDataserviceConfig,
   getDefaultReuseConfig,
   getDefaultOrganizationConfig,
+  getDefaultTopicConfig,
   getDefaultGlobalSearchConfig,
   defaultDatasetSortOptions,
   defaultDataserviceSortOptions,

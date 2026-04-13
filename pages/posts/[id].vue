@@ -6,10 +6,11 @@
     :data="post"
   >
     <!-- Full page blocs mode: no header, no breadcrumb, just the blocs -->
-    <PageShow
-      v-if="isFullPageBlocs && contentPage"
-      :page="contentPage"
+    <EditoBlocs
+      v-if="isFullPageBlocs"
+      :blocs="post.blocs ?? []"
       editable
+      :on-save="saveBlocs"
     />
 
     <!-- Standard news mode -->
@@ -82,12 +83,11 @@
         </template>
       </div>
       <template v-if="post.published || isMeAdmin()">
-        <template v-if="post.body_type === 'blocs' && contentPage">
-          <PageShow
-            :page="contentPage"
-            :striped="false"
+        <template v-if="post.body_type === 'blocs'">
+          <EditoBlocs
+            :blocs="post.blocs ?? []"
             editable
-            hide-edit-button
+            :on-save="saveBlocs"
           />
         </template>
         <div
@@ -119,11 +119,12 @@
 </template>
 
 <script setup lang="ts">
-import { markdownClasses, MarkdownViewer, LoadingBlock, BrandedButton, useFormatDate } from '@datagouv/components-next'
+import { markdownClasses, MarkdownViewer, LoadingBlock, BrandedButton, toast, useFormatDate } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
-import PageShow from '~/components/Pages/PageShow.vue'
+import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
+import type { PageBloc } from '~/types/pages'
 import type { Post } from '~/types/posts'
 
 const config = useRuntimeConfig()
@@ -132,14 +133,30 @@ const route = useRoute()
 const { formatDate } = useFormatDate()
 
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
-const { data: post, status } = await useAPI<Post>(url, { redirectOn404: true, lazy: true })
+const { data: post, status, refresh: refreshPost } = await useAPI<Post>(url, { redirectOn404: true, lazy: true })
+
+const { $api } = useNuxtApp()
+const { t } = useTranslation()
 
 const name = computed(() => post.value?.name)
 const robots = computed(() => !post.value?.published ? 'noindex, nofollow' : 'all')
 
-const contentPage = computed(() => post.value?.content_as_page ?? null)
-
 const isFullPageBlocs = computed(() => post.value?.kind === 'page' && post.value?.body_type === 'blocs')
+
+async function saveBlocs(blocs: Array<PageBloc>) {
+  if (!post.value) return
+  try {
+    await $api(`/api/1/posts/${post.value.id}/`, {
+      method: 'PUT',
+      body: { blocs },
+    })
+    await refreshPost()
+    toast.success(t('Page sauvegardée'))
+  }
+  catch {
+    toast.error(t('Erreur lors de la sauvegarde'))
+  }
+}
 
 useSeoMeta({
   title: name,
