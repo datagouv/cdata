@@ -9,6 +9,11 @@ export type SortConfig = {
 
 export type TabularDataResponse = {
   data: Array<Record<string, unknown>>
+  links: {
+    profile: string
+    swagger: string
+    next: string
+  }
   meta: { total: number }
 }
 
