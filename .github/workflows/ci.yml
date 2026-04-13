@@ -137,7 +137,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: ${{ env.UDATA_WORKING_DIR }}
-          ref: main
+          ref: fix_marshalling_of_references_by_string
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
