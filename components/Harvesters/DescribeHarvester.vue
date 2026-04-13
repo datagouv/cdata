@@ -361,7 +361,15 @@ function getMissingConfigs(): HarvestBackend['extra_configs'] {
 watchEffect(() => {
   // On config change:
   // - initialize available features
-  form.value.features = (backendInfo.value?.features || []).reduce<Record<string, boolean>>((acc, feat) => (acc[feat.key] = form.value.features[feat.key] || feat.default, acc), {})
+  if (backendInfo.value) {
+    form.value.features = backendInfo.value.features.reduce<Record<string, boolean>>(
+      (acc, feat) => {
+        acc[feat.key] = feat.key in form.value.features ? form.value.features[feat.key] : feat.default
+        return acc
+      },
+      {},
+    )
+  }
   // - remove previous configs or filters not existing anymore (the backend fails if we send some unknown filters or config)
   form.value.configs = form.value.configs.filter(({ key }) => !backendInfo.value || backendInfo.value.extra_configs.find(config => config.key === key))
   form.value.filters = form.value.filters.filter(({ key }) => !backendInfo.value || backendInfo.value.filters.find(filter => filter.key === key))
