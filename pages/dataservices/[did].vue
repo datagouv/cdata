@@ -217,6 +217,33 @@
             <button
               type="button"
               class="min-h-[42px] w-full flex items-center justify-between"
+              @click="showProperties"
+            >
+              <div class="text-datagouv-dark font-bold text-xl">
+                {{ $t('Données renvoyées') }}
+              </div>
+              <RiArrowUpSLine
+                v-if="openProperties"
+                class="size-6 text-gray-title"
+              />
+              <RiArrowDownSLine
+                v-else
+                class="size-6 text-gray-title"
+              />
+            </button>
+            <OpenApiProperties
+              v-if="openProperties"
+              :url="dataservice.machine_documentation_url"
+              :title="dataservice.title"
+            />
+          </SimpleBanner>
+          <SimpleBanner
+            v-if="dataservice.machine_documentation_url"
+            type="primary-frame"
+          >
+            <button
+              type="button"
+              class="min-h-[42px] w-full flex items-center justify-between"
               @click="showSwagger"
             >
               <div class="text-datagouv-dark font-bold text-xl">
@@ -308,7 +335,15 @@ defineOgImage('ObjectPage.takumi', {
 })
 await useJsonLd('dataservice', route.params.did as string)
 
+const openProperties = ref(false)
 const openSwagger = ref(false)
+
+function showProperties() {
+  openProperties.value = !openProperties.value
+  if (openProperties.value) {
+    $matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : ouvrir données renvoyées')
+  }
+}
 
 function showSwagger() {
   openSwagger.value = !openSwagger.value
