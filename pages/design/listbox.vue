@@ -24,7 +24,7 @@
           <Listbox
             v-model="selectedCondition"
             :options="conditions"
-            :display-value="(option: string) => option"
+            :display-value="(option: string | null) => option || ''"
           />
         </div>
       </section>
@@ -40,7 +40,7 @@
           <Listbox
             v-model="selectedFruit"
             :options="fruits"
-            :display-value="(option: Fruit) => option.label"
+            :display-value="(option: Fruit | null) => option?.label || ''"
           />
         </div>
       </section>
@@ -56,7 +56,7 @@
           <Listbox
             v-model="selectedStatus"
             :options="statuses"
-            :display-value="(option: Status) => option.label"
+            :display-value="(option: Status | null) => option?.label || ''"
           >
             <template #option="{ option, active }">
               <span
@@ -88,7 +88,7 @@
           <Listbox
             v-model="selectedPriority"
             :options="priorities"
-            :display-value="(option: Priority) => option.label"
+            :display-value="(option: Priority | null) => option?.label || ''"
           >
             <template #button>
               <span class="flex items-center gap-2">

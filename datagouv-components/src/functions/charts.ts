@@ -1,4 +1,4 @@
-import type { Chart, ChartForm, ChartForApi, Filter, FilterCondition } from '../types/visualizations'
+import type { Chart, ChartForm, ChartForApi, Filter } from '../types/visualizations'
 
 export function toChartForm(chart: Chart) {
   const seriesFilter = chart.series[0]?.filters as Filter | null
@@ -28,7 +28,7 @@ export function toChartForm(chart: Chart) {
     })),
     extras: chart.extras,
     chart_type: chart.series.length > 0 ? chart.series[0].type : null,
-    filter: seriesFilter && 'column' in seriesFilter ? seriesFilter : null,
+    filter: seriesFilter ?? null,
   } satisfies ChartForm
 }
 

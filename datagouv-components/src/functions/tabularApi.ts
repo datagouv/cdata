@@ -1,6 +1,6 @@
 import { ofetch } from 'ofetch'
 import { useComponentsConfig, type PluginConfig } from '../config'
-import type { Filter, GenericFilter } from '../types/visualizations'
+import type { GenericFilter } from '../types/visualizations'
 
 export type SortConfig = {
   column: string
@@ -88,18 +88,47 @@ export async function fetchTabularData(config: PluginConfig, options: FetchTabul
     url += `&${options.groupBy}__groupby&${options.aggregation.column}__${options.aggregation.type}`
   }
   if (options.filters) {
-    const filter = options.filters as Filter
-      if (filter.condition === 'is_null') {
-        url += `&${filter.column}__isnull`
-      }
-      else if (filter.condition === 'is_not_null') {
-        url += `&${filter.column}__isnotnull`
-      }
-      else if (filter.value !== null && filter.value !== undefined && filter.value !== '') {
-        url += `&${filter.column}__${filter.condition}=${encodeURIComponent(filter.value)}`
-      }
+    const filterQuery = buildFilterQuery(options.filters)
+    if (filterQuery) {
+      url += `&${filterQuery}`
+    }
   }
   return await ofetch<TabularDataResponse>(url)
+}
+
+function buildFilterQuery(filters: GenericFilter): string {
+  const params: Array<string> = []
+  if ('filters' in filters) {
+    for (const filter of filters.filters) {
+      if ('filters' in filter) {
+        params.push(buildFilterQuery(filter))
+      }
+      else {
+        if (filter.condition === 'is_null') {
+          params.push(`${filter.column}__isnull`)
+        }
+        else if (filter.condition === 'is_not_null') {
+          params.push(`${filter.column}__isnotnull`)
+        }
+        else if (filter.value !== null && filter.value !== undefined && filter.value !== '') {
+          params.push(`${filter.column}__${filter.condition}=${encodeURIComponent(filter.value)}`)
+        }
+      }
+    }
+  }
+  else {
+    const filter = filters
+    if (filter.condition === 'is_null') {
+      params.push(`${filter.column}__isnull`)
+    }
+    else if (filter.condition === 'is_not_null') {
+      params.push(`${filter.column}__isnotnull`)
+    }
+    else if (filter.value !== null && filter.value !== undefined && filter.value !== '') {
+      params.push(`${filter.column}__${filter.condition}=${encodeURIComponent(filter.value)}`)
+    }
+  }
+  return params.join('&')
 }
 
 /**

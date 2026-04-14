@@ -4,7 +4,7 @@
       {{ index === 0 ? $t('Quand') : $t('Et que') }}
     </div>
     <Listbox
-      v-model="localFilter.column"
+      v-model="selectedColumnObj"
       class="min-w-28 max-w-36"
       :options="columnOptions"
       :display-value="d => getColumnLabel(d)"
@@ -25,7 +25,7 @@
       type="text"
       class="fr-input text-sm w-32 min-w-0 max-w-1/3"
       :placeholder="$t('Valeur')"
-    />
+    >
 
     <BrandedButton
       size="xs"
@@ -59,6 +59,16 @@ const { t } = useTranslation()
 
 const localFilter = ref<Filter>({ ...props.modelValue })
 
+const selectedColumnObj = ref<{ key: string, value: string, disabled: boolean } | null>(null)
+
+watch(() => localFilter.value.column, (col) => {
+  selectedColumnObj.value = props.columnOptions.find(opt => opt.key === col) || null
+}, { immediate: true })
+
+watch(selectedColumnObj, (newVal) => {
+  localFilter.value.column = newVal?.key || ''
+})
+
 watch(localFilter, (newFilter) => {
   emit('update:modelValue', { ...newFilter })
 }, { deep: true })
@@ -71,15 +81,18 @@ const showValueInput = computed(() => {
   return !['is_null', 'is_not_null'].includes(localFilter.value.condition)
 })
 
-function getColumnLabel(col: { key: string, value: string }) {
+function getColumnLabel(col: { key: string, value: string } | null) {
+  if (!col) return ''
   return col.value
 }
 
-function getColumnKey(col: { key: string, value: string }) {
+function getColumnKey(col: { key: string, value: string } | null) {
+  if (!col) return ''
   return col.key
 }
 
-function isColumnDisabled(col: { key: string, value: string, disabled: boolean }) {
+function isColumnDisabled(col: { key: string, value: string, disabled: boolean } | null) {
+  if (!col) return false
   return col.disabled
 }
 

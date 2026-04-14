@@ -113,55 +113,28 @@
       </fieldset>
       <fieldset class="min-w-0 border-t border-new-gray-light py-4 px-6 space-y-4">
         <p class="font-bold mb-2">
-          {{ $t('Filtre') }}
+          {{ $t('Filtres') }}
         </p>
-        <div
-          v-if="form.filter"
-          class="flex items-center gap-2 flex-wrap md:flex-nowrap"
+        <div class="space-y-3">
+          <ChartFilterRow
+            v-for="(filter, index) in filterList"
+            :key="index"
+            :model-value="filter"
+            :index="index"
+            :column-options="getColumnOptions()"
+            :condition-options="conditionOptions"
+            @update:model-value="updateFilter(index, $event)"
+            @remove="removeFilter(index)"
+          />
+        </div>
+        <BrandedButton
+          size="sm"
+          color="tertiary"
+          :icon="RiAddLine"
+          @click="addFilter"
         >
-          <div class="text-xs text-gray-600">
-            {{ $t('Quand') }}
-          </div>
-          <Listbox
-            v-model="form.filter.column"
-            :options="getColumnOptions()"
-            :display-value="d => getColumn(d)!.value"
-            :get-option-id="d => getColumn(d)!.key"
-            :is-disabled="d => getColumn(d)!.disabled"
-          />
-
-          <Listbox
-            class="min-w-20"
-            v-model="form.filter.condition"
-            :options="conditionOptions"
-            :display-value="getConditionLabel"
-          />
-
-          <input
-            v-model="form.filter.value"
-            type="text"
-            class="fr-input text-sm w-32 min-w-0"
-            :placeholder="$t('Valeur')"
-          >
-
-          <BrandedButton
-            size="xs"
-            :disabled="!form.filter.column"
-            :icon="RiDeleteBinLine"
-            icon-only
-            @click="removeFilter"
-          />
-        </div>
-        <div v-else>
-          <BrandedButton
-            size="sm"
-            color="tertiary"
-            :icon="RiAddLine"
-            @click="addFilter"
-          >
-            {{ $t('Ajouter un filtre') }}
-          </BrandedButton>
-        </div>
+          {{ $t('Ajouter un filtre') }}
+        </BrandedButton>
       </fieldset>
 
       <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
@@ -399,12 +372,14 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, FilterCondition } from '@datagouv/components-next'
-import { SearchableSelect, useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton, Listbox, toChartApi, toChartForm } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, FilterCondition } from '@datagouv/components-next'
+import { SearchableSelect, useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm } from '@datagouv/components-next'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
-import { RiAddLine, RiDeleteBinLine } from '@remixicon/vue'
+import { RiAddLine } from '@remixicon/vue'
 import { useAPI } from '~/utils/api'
+
+import ChartFilterRow from './ChartFilterRow.vue'
 
 const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/components-next').then(m => m.ChartViewerWrapper))
 
@@ -434,20 +409,6 @@ const resources = computed(() => Object.values(savedResources))
 
 const conditionOptions: Array<FilterCondition> = ['exact', 'differs', 'is_null', 'is_not_null', 'greater', 'less', 'strictly_greater', 'strictly_less']
 
-function getConditionLabel(condition: FilterCondition | null) {
-  if (!condition) return ''
-  return {
-    exact: t('est'),
-    differs: t('n\'est pas'),
-    is_null: t('est vide'),
-    is_not_null: t('n\'est pas vide'),
-    greater: t('supérieur ou égal à'),
-    less: t('inférieur ou égal à'),
-    strictly_greater: t('supérieur à'),
-    strictly_less: t('inférieur à'),
-  }[condition]
-}
-
 const sortOptionLabels = computed(() => {
   const xAxisColumn = form.value.x_axis.column_x
   const yAxisColumn = form.value.series[0]?.column_y
@@ -463,11 +424,7 @@ const sortOptionLabels = computed(() => {
 const columnDetails = computed(() => [{ key: '', value: t('Colonne'), disabled: true }, ...columns.value[selectedResource.value].map(c => ({ key: c, value: c, disabled: false }))])
 
 function getColumnOptions() {
-  return columnDetails.value.map(d => d.key)
-}
-
-function getColumn(key: string | null) {
-  return columnDetails.value.find(c => c.key === key)
+  return columnDetails.value
 }
 
 const { $api } = useNuxtApp()
@@ -533,8 +490,12 @@ async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
   })
 }
 
-function removeFilter() {
-  form.value.filter = null
+function removeFilter(index: number) {
+  if (!form.value.filter || !('filters' in form.value.filter)) return
+  form.value.filter.filters.splice(index, 1)
+  if (form.value.filter.filters.length === 0) {
+    form.value.filter = null
+  }
 }
 
 async function loadChart(id: string) {
@@ -597,7 +558,31 @@ async function saveChart() {
   }
 }
 
+const filterList = computed<Array<Filter>>(() => {
+  if (!form.value.filter) return []
+  if ('filters' in form.value.filter) {
+    return form.value.filter.filters.filter((f): f is Filter => 'column' in f)
+  }
+  return [form.value.filter]
+})
+
+function updateFilter(index: number, newFilter: Filter) {
+  if (!form.value.filter || !('filters' in form.value.filter)) {
+    form.value.filter = { filters: [] }
+  }
+  form.value.filter.filters[index] = newFilter
+}
+
 function addFilter() {
-  form.value.filter = { column: '', condition: 'exact' as const, value: '' }
+  const newFilter: Filter = { column: '', condition: 'exact' as const, value: '' }
+  if (!form.value.filter) {
+    form.value.filter = { filters: [newFilter] }
+  }
+  else if ('filters' in form.value.filter) {
+    form.value.filter.filters.push(newFilter)
+  }
+  else {
+    form.value.filter = { filters: [form.value.filter, newFilter] }
+  }
 }
 </script>
