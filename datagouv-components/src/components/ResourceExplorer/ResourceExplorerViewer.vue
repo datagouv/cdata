@@ -134,7 +134,7 @@
                 :resource="resource"
                 :dataset="dataset"
               />
-              <SwaggerClient
+              <OpenApiViewer
                 v-else-if="hasOpenAPIPreview"
                 :url="resource.extras['apidocUrl'] as string"
               />
@@ -303,7 +303,7 @@
                 <p>{{ t("- Si le fichier est supprimé, l'API sera également supprimée.") }}</p>
                 <p>{{ t("Pour des usages pérennes, prévoyez que cette API dépend directement du fichier source.") }}</p>
               </div>
-              <Swagger
+              <OpenApiViewer
                 v-if="hasTabularData"
                 :url="`${config.tabularApiUrl}/api/resources/${resource.id}/swagger/`"
               />
@@ -324,7 +324,7 @@ import BrandedButton from '../BrandedButton.vue'
 import CopyButton from '../CopyButton.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
 import ResourceIcon from '../ResourceAccordion/ResourceIcon.vue'
-import Swagger from '../ResourceAccordion/Swagger.client.vue'
+import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
 import TabGroup from '../Tabs/TabGroup.vue'
 import TabList from '../Tabs/TabList.vue'
 import Tab from '../Tabs/Tab.vue'
@@ -362,9 +362,6 @@ const MapContainer = defineAsyncComponent(() =>
 )
 const Pmtiles = defineAsyncComponent(() =>
   import('../ResourceAccordion/Pmtiles.client.vue'),
-)
-const SwaggerClient = defineAsyncComponent(() =>
-  import('../ResourceAccordion/Swagger.client.vue'),
 )
 
 const props = defineProps<{

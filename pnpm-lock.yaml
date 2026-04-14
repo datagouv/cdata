@@ -302,9 +302,6 @@ importers:
       stylefire:
         specifier: ^7.0.3
         version: 7.0.3
-      swagger-ui-dist:
-        specifier: ^5.27.1
-        version: 5.30.3
       unified:
         specifier: ^11.0.5
         version: 11.0.5
@@ -326,6 +323,9 @@ importers:
       vue3-xml-viewer:
         specifier: ^0.0.14
         version: 0.0.14(core-js@3.47.0)(vue@3.5.31(typescript@5.9.2))
+      yaml:
+        specifier: ^2.8.2
+        version: 2.8.3
     devDependencies:
       '@intlify/cli':
         specifier: ^0.13.1
@@ -369,6 +369,9 @@ importers:
       npm-run-all2:
         specifier: ^8.0
         version: 8.0.4
+      openapi-types:
+        specifier: ^12.1.3
+        version: 12.1.3
       prettier:
         specifier: ^3.0.0
         version: 3.7.4
@@ -3178,9 +3181,6 @@ packages:
     resolution: {integrity: sha512-PrsWNQ8BuE00O3Xsx3ALh2Df8fAj9+cvvX9AIA6o4KpATR98c9mud4XtDWVvsEuyia5U4tVSTKygawyJkjm60w==}
     cpu: [x64]
     os: [win32]
-
-  '@scarf/scarf@1.4.0':
-    resolution: {integrity: sha512-xxeapPiUXdZAE3che6f3xogoJPeZgig6omHEy1rIY5WVsB3H2BHNnZH+gHG6x91SCWyQCzWGsuL2Hh3ClO5/qQ==}
 
   '@scure/base@2.0.0':
     resolution: {integrity: sha512-3E1kpuZginKkek01ovG8krQ0Z44E3DHPjc5S2rjJw9lZn3KSQOs8S7wqikF/AH7iRanHypj85uGyxk0XAyC37w==}
@@ -7285,6 +7285,9 @@ packages:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
 
+  openapi-types@12.1.3:
+    resolution: {integrity: sha512-N4YtSYJqghVu4iek2ZUvcN/0aqH1kRDuNqzcycDxhOUpg7GdvLa2F3DgS6yBNhInhv2r/6I0Flkn7CqL8+nIcw==}
+
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
@@ -8509,9 +8512,6 @@ packages:
     resolution: {integrity: sha512-XDpWUOPC6FEibaLzjfe0ucaV0YrOjYotGJO1WpF0Zd+n6ZGEQUsSugaoLq9QkEZtAfQIxT42UChcssDVPP3+/w==}
     engines: {node: '>=16'}
     hasBin: true
-
-  swagger-ui-dist@5.30.3:
-    resolution: {integrity: sha512-giQl7/ToPxCqnUAx2wpnSnDNGZtGzw1LyUw6ZitIpTmdrvpxKFY/94v1hihm0zYNpgp1/VY0jTDk//R0BBgnRQ==}
 
   sync-child-process@1.0.2:
     resolution: {integrity: sha512-8lD+t2KrrScJ/7KXCSyfhT3/hRq78rC0wBFqNJXv3mZyn6hW2ypM05JmlSvtqRbeq6jqA94oHbxAr2vYsJ8vDA==}
@@ -12876,8 +12876,6 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.60.0':
     optional: true
-
-  '@scarf/scarf@1.4.0': {}
 
   '@scure/base@2.0.0': {}
 
@@ -18104,6 +18102,8 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
+  openapi-types@12.1.3: {}
+
   optionator@0.9.4:
     dependencies:
       deep-is: 0.1.4
@@ -19503,10 +19503,6 @@ snapshots:
       csso: 5.0.5
       picocolors: 1.1.1
       sax: 1.6.0
-
-  swagger-ui-dist@5.30.3:
-    dependencies:
-      '@scarf/scarf': 1.4.0
 
   sync-child-process@1.0.2:
     dependencies:
