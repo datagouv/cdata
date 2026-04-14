@@ -134,7 +134,7 @@
                 :resource="resource"
                 :dataset="dataset"
               />
-              <SwaggerClient
+              <OpenApiViewer
                 v-else-if="hasOpenAPIPreview"
                 :url="resource.extras['apidocUrl'] as string"
               />
@@ -143,7 +143,18 @@
                 :resource="resource"
               />
               <PreviewUnavailable v-else>
-                {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+                <!-- "File too large to download" is the only analysis:error value from hydra for now -->
+                <template v-if="resource.extras['analysis:error'] === 'File too large to download'">
+                  {{ t("Ce fichier est trop volumineux pour être analysé et prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+                </template>
+                <template v-else-if="resource.extras['analysis:parsing:error']">
+                  {{ t("L'analyse de ce fichier a rencontré une erreur, l'aperçu n'est pas disponible. Téléchargez-le depuis l'onglet Téléchargements.") }}
+                  <br>
+                  <span class="text-gray-medium text-xs">{{ resource.extras['analysis:parsing:error'] }}</span>
+                </template>
+                <template v-else>
+                  {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+                </template>
               </PreviewUnavailable>
             </div>
             <div v-if="tab.key === 'description'">
@@ -292,7 +303,7 @@
                 <p>{{ t("- Si le fichier est supprimé, l'API sera également supprimée.") }}</p>
                 <p>{{ t("Pour des usages pérennes, prévoyez que cette API dépend directement du fichier source.") }}</p>
               </div>
-              <Swagger
+              <OpenApiViewer
                 v-if="hasTabularData"
                 :url="`${config.tabularApiUrl}/api/resources/${resource.id}/swagger/`"
               />
@@ -313,7 +324,7 @@ import BrandedButton from '../BrandedButton.vue'
 import CopyButton from '../CopyButton.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
 import ResourceIcon from '../ResourceAccordion/ResourceIcon.vue'
-import Swagger from '../ResourceAccordion/Swagger.client.vue'
+import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
 import TabGroup from '../Tabs/TabGroup.vue'
 import TabList from '../Tabs/TabList.vue'
 import Tab from '../Tabs/Tab.vue'
@@ -325,8 +336,7 @@ import DataStructure from '../ResourceAccordion/DataStructure.vue'
 import Metadata from '../ResourceAccordion/Metadata.vue'
 import SchemaBadge from '../ResourceAccordion/SchemaBadge.vue'
 import { filesize, summarize } from '../../functions/helpers'
-import { getResourceFormatIcon } from '../../functions/resources'
-import { getResourceExternalUrl, getResourceFilesize } from '../../functions/datasets'
+import { getResourceFormatIcon, getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
 import { trackEvent } from '../../functions/matomo'
 import { useComponentsConfig } from '../../config'
 import { useFormatDate } from '../../functions/dates'
@@ -352,9 +362,6 @@ const MapContainer = defineAsyncComponent(() =>
 )
 const Pmtiles = defineAsyncComponent(() =>
   import('../ResourceAccordion/Pmtiles.client.vue'),
-)
-const SwaggerClient = defineAsyncComponent(() =>
-  import('../ResourceAccordion/Swagger.client.vue'),
 )
 
 const props = defineProps<{

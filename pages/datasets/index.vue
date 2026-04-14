@@ -12,14 +12,11 @@
       :link-label="$t(`Qu'est-ce qu'un jeu de données ?`)"
       :link-url="config.public.guideDatasets"
     />
-    <PageShowById
-      v-if="site?.datasets_page"
-      :page-id="site.datasets_page"
-    />
-    <PageShowNew
-      v-else-if="isEditing"
-      site-key="datasets_page"
-      @created="onPageCreated"
+    <EditoBlocs
+      v-if="siteBlocs.length > 0 || isEditing"
+      :blocs="siteBlocs"
+      editable
+      :on-save="saveBlocs"
     />
     <EditoFooter
       color="primary"
@@ -30,11 +27,9 @@
 </template>
 
 <script setup lang="ts">
-import type { Site } from '@datagouv/components-next'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
-import PageShowById from '~/components/Pages/PageShowById.vue'
-import PageShowNew from '~/components/Pages/PageShowNew.vue'
+import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 
 defineOgImage('MainPage.takumi', {
   title: 'Jeux de données',
@@ -66,11 +61,7 @@ onMounted(async () => {
   }
 })
 
-const { data: site, refresh: refreshSite } = await useAPI<Site>('/api/1/site/')
+const { site, blocs: siteBlocs, saveBlocs } = await useSiteBlocs('datasets_blocs', ['metrics'])
 
 const isEditing = computed(() => route.query.edit === 'true')
-
-async function onPageCreated() {
-  await refreshSite()
-}
 </script>

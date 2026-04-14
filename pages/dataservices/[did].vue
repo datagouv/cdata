@@ -231,7 +231,7 @@
                 class="size-6 text-gray-title"
               />
             </button>
-            <Swagger
+            <OpenApiViewer
               v-if="openSwagger"
               :url="dataservice.machine_documentation_url"
             />
@@ -258,7 +258,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, LoadingBlock, Swagger, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, StatBox, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, StatBox, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
@@ -329,8 +329,9 @@ const metricsViews = ref<null | Record<string, number>>(null)
 const metricsViewsTotal = ref<null | number>(null)
 
 watchEffect(async () => {
-  if (!dataservice.value?.id) return
-  const response = await fetch(`${config.public.metricsApi}/api/dataservices/data/?dataservice_id__exact=${dataservice.value.id}&metric_month__sort=desc&page_size=12`)
+  const id = dataservice.value?.id
+  if (!id) return
+  const response = await fetch(`${config.public.metricsApi}/api/dataservices/data/?dataservice_id__exact=${id}&metric_month__sort=desc&page_size=12`)
   const page = await response.json()
 
   const views: Record<string, number> = {}
@@ -339,7 +340,7 @@ watchEffect(async () => {
     views[metric_month] = monthly_visit
   }
   // Fetching totals
-  const totalResponse = await fetch(`${config.public.metricsApi}/api/dataservices_total/data/?dataservice_id__exact=${dataservice.value.id}`)
+  const totalResponse = await fetch(`${config.public.metricsApi}/api/dataservices_total/data/?dataservice_id__exact=${id}`)
   const totalPage = await totalResponse.json()
 
   let totalViews = 0

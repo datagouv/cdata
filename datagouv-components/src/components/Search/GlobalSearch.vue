@@ -263,6 +263,14 @@
                       <OrganizationHorizontalCard :organization="(result as Organization)" />
                     </slot>
                   </template>
+                  <template v-else-if="currentType === 'topics'">
+                    <slot
+                      name="topic"
+                      :topic="result"
+                    >
+                      <TopicCard :topic="(result as TopicV2)" />
+                    </slot>
+                  </template>
                 </li>
               </ul>
               <Pagination
@@ -271,7 +279,6 @@
                 :page-size
                 :total-results="results.total"
                 class="mt-4"
-                :link="getLink"
                 @change="changePage"
               />
             </div>
@@ -335,19 +342,19 @@
 <script setup lang="ts">
 import { computed, watch, useTemplateRef, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
-import { RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiLightbulbLine, RiLineChartLine, RiRssLine, RiTerminalLine } from '@remixicon/vue'
+import { RiBookShelfLine, RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiLightbulbLine, RiLineChartLine, RiRssLine, RiTerminalLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
 import { useTranslation } from '../../composables/useTranslation'
 import { useDebouncedRef } from '../../composables/useDebouncedRef'
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
-import { getLink } from '../../functions/pagination'
 import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
 import type { Organization } from '../../types/organizations'
 import type { Reuse } from '../../types/reuses'
-import type { GlobalSearchConfig, SearchType, SortOption, DatasetSearchResponse, DataserviceSearchResponse, ReuseSearchResponse, OrganizationSearchResponse, FacetItem } from '../../types/search'
+import type { TopicV2 } from '../../types/topics'
+import type { GlobalSearchConfig, SearchType, SortOption, DatasetSearchResponse, DataserviceSearchResponse, ReuseSearchResponse, OrganizationSearchResponse, TopicSearchResponse, FacetItem } from '../../types/search'
 import { getDefaultGlobalSearchConfig } from '../../types/search'
 import BrandedButton from '../BrandedButton.vue'
 import LoadingBlock from '../LoadingBlock.vue'
@@ -358,6 +365,7 @@ import DatasetCard from '../DatasetCard.vue'
 import DataserviceCard from '../DataserviceCard.vue'
 import OrganizationHorizontalCard from '../OrganizationHorizontalCard.vue'
 import ReuseHorizontalCard from '../ReuseHorizontalCard.vue'
+import TopicCard from '../TopicCard.vue'
 import SearchInput from './SearchInput.vue'
 import Sidemenu from './Sidemenu.vue'
 import BasicAndAdvancedFilters from './BasicAndAdvancedFilters.vue'
@@ -500,6 +508,7 @@ const datasetsEnabled = computed(() => props.config.some(c => c.class === 'datas
 const dataservicesEnabled = computed(() => props.config.some(c => c.class === 'dataservices'))
 const reusesEnabled = computed(() => props.config.some(c => c.class === 'reuses'))
 const organizationsEnabled = computed(() => props.config.some(c => c.class === 'organizations'))
+const topicsEnabled = computed(() => props.config.some(c => c.class === 'topics'))
 
 // Create stable params for each type
 const stableParamsOptions = {
@@ -526,12 +535,17 @@ const organizationsParams = useStableQueryParams({
   ...stableParamsOptions,
   typeConfig: props.config.find(c => c.class === 'organizations'),
 })
+const topicsParams = useStableQueryParams({
+  ...stableParamsOptions,
+  typeConfig: props.config.find(c => c.class === 'topics'),
+})
 
 // URLs that return null when type is not enabled
 const datasetsUrl = computed(() => datasetsEnabled.value ? '/api/2/datasets/search/' : null)
 const dataservicesUrl = computed(() => dataservicesEnabled.value ? '/api/2/dataservices/search/' : null)
 const reusesUrl = computed(() => reusesEnabled.value ? '/api/2/reuses/search/' : null)
 const organizationsUrl = computed(() => organizationsEnabled.value ? '/api/2/organizations/search/' : null)
+const topicsUrl = computed(() => topicsEnabled.value ? '/api/2/topics/search/' : null)
 
 // Reset page on filter/sort change
 const filtersForReset = computed(() => ({
@@ -615,6 +629,10 @@ const { data: organizationsResults, status: organizationsStatus } = await useFet
   organizationsUrl,
   { params: organizationsParams, lazy: true, server: initialType === 'organizations' },
 )
+const { data: topicsResults, status: topicsStatus } = await useFetch<TopicSearchResponse<TopicV2>>(
+  topicsUrl,
+  { params: topicsParams, lazy: true, server: initialType === 'topics' },
+)
 
 const typesMeta = {
   datasets: {
@@ -644,6 +662,13 @@ const typesMeta = {
     placeholder: t('Rechercher une organisation'),
     results: organizationsResults,
     status: organizationsStatus,
+  },
+  topics: {
+    icon: RiBookShelfLine,
+    name: t('Thématiques'),
+    placeholder: t('Rechercher une thématique'),
+    results: topicsResults,
+    status: topicsStatus,
   },
 } as const
 

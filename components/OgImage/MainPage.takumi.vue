@@ -19,7 +19,7 @@ const { isProduction } = useRuntimeConfig().public
       <div
         v-if="! isProduction"
         class="ml-auto self-start text-4xl py-2 px-4 uppercase tracking-wide bg-[#FFE9E6] text-[#B34000] font-extrabold"
-        style="font-family: 'MarianneExtraBold'"
+        style="font-family: 'Marianne'"
       >
         Version de test
       </div>

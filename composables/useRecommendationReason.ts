@@ -8,7 +8,7 @@ export function useRecommendationReason() {
       case 'edito':
         return t(`par l'équipe de {site}`, { site: config.public.title })
       case 'schemas':
-        return t('car conforme au schéma de données | car conformes aux schémas de données', { count })
+        return t('car lié au schéma de données | car liés aux schémas de données', { count })
       default:
         return t('')
     }

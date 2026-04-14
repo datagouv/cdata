@@ -4,6 +4,6 @@
 
 <script setup lang="ts">
 definePageMeta({
-  layout: false,
+  layout: 'embed',
 })
 </script>

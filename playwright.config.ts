@@ -4,9 +4,14 @@ import { defineConfig, devices } from '@playwright/test'
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
+
+const envPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.env')
+if (existsSync(envPath)) {
+  process.loadEnvFile(envPath)
+}
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -79,7 +84,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'pnpm run dev',
-    url: 'http://localhost:3000',
+    url: process.env.BASE_URL || 'http://localhost:3000',
     reuseExistingServer: true,
   },
 })

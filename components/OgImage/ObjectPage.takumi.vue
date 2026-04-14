@@ -34,7 +34,7 @@ const { isProduction } = useRuntimeConfig().public
 <template>
   <div
     class="flex flex-col justify-between w-full h-full bg-white p-12"
-    style="font-family: 'MarianneRegular'"
+    style="font-family: 'Marianne'"
   >
     <div class="flex items-start">
       <img
@@ -45,7 +45,7 @@ const { isProduction } = useRuntimeConfig().public
       <div
         v-if="! isProduction"
         class="ml-auto self-start text-4xl py-2 px-4 uppercase tracking-wide bg-[#FFE9E6] text-[#B34000] font-extrabold"
-        style="font-family: 'MarianneExtraBold'"
+        style="font-family: 'Marianne'"
       >
         Version de test
       </div>
@@ -80,7 +80,7 @@ const { isProduction } = useRuntimeConfig().public
       <h1
         v-if="objectTitle"
         class="text-6xl font-light text-[#161616] leading-tight text-balance mb-3"
-        style="font-family: 'MarianneLight'; line-clamp: 2; text-overflow: ellipsis; overflow: hidden"
+        style="font-family: 'Marianne'; line-clamp: 2; text-overflow: ellipsis; overflow: hidden"
       >
         {{ objectTitle }}
       </h1>

@@ -12,16 +12,12 @@
       :link-label="$t(`Qu'est-ce qu'une API ?`)"
       :link-url="config.public.guideDataservices"
     />
-    <PageShowById
-      v-if="site?.dataservices_page"
-      :page-id="site.dataservices_page"
+    <EditoBlocs
+      v-if="siteBlocs.length > 0 || isEditing"
+      :blocs="siteBlocs"
+      editable
       main-color="brown-illustration"
-    />
-    <PageShowNew
-      v-else-if="isEditing"
-      site-key="dataservices_page"
-      main-color="brown-illustration"
-      @created="onPageCreated"
+      :on-save="saveBlocs"
     />
     <section class="container w-full pt-16">
       <div>
@@ -244,12 +240,11 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type Site } from '@datagouv/components-next'
+import { BrandedButton } from '@datagouv/components-next'
 import { RiExternalLinkFill, RiArrowRightLine } from '@remixicon/vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
-import PageShowById from '~/components/Pages/PageShowById.vue'
-import PageShowNew from '~/components/Pages/PageShowNew.vue'
+import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
@@ -280,11 +275,7 @@ onMounted(async () => {
   }
 })
 
-const { data: site, refresh: refreshSite } = await useAPI<Site>('/api/1/site/')
+const { site, blocs: siteBlocs, saveBlocs } = await useSiteBlocs('dataservices_blocs', ['metrics'])
 
 const isEditing = computed(() => route.query.edit === 'true')
-
-async function onPageCreated() {
-  await refreshSite()
-}
 </script>

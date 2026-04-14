@@ -55,6 +55,7 @@ export default defineNuxtConfig({
     albertApiKey: '',
     public: {
       isProduction: true,
+      trustedDomains: ['data.gouv.fr'], // Hostnames allowed in Access-Control-Allow-Origin for resource preview CORS checks (includes subdomains)
       banner: undefined,
 
       title: 'data.gouv.fr',
@@ -124,7 +125,7 @@ export default defineNuxtConfig({
 
       datasetPublishingGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
       datasetQualityGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
-      datasetRestrictedGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-juridique/producteurs-de-donnees/quelles-sont-les-obligations',
+      datasetRestrictedGuideUrl: 'https://guides.data.gouv.fr/guides/guide-juridique/producteurs-de-donnees/quelles-sont-les-obligations',
       dataSearchFeedbackFormUrl: 'https://tally.so/r/mDKv1N',
       forumUrl: 'https://forum.data.gouv.fr/',
       generateShortDescriptionFeedbackUrl: 'https://tally.so/r/wbbRxo',
@@ -202,14 +203,9 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/nuxt-api/oembed': { cors: true },
-    // @ts-expect-error ssr option is valid but not in Nuxt types (see https://github.com/nuxt/nuxt/issues/15199)
     '/*/organizations/': { ssr: true },
-    // @ts-expect-error ssr option is valid but not in Nuxt types
     '/*/posts/': { ssr: true },
-    // @ts-expect-error ssr option is valid but not in Nuxt types
     '/*/posts/**': { ssr: true },
-    // Admin dashboard renders only on server-side
-    // @ts-expect-error ssr option is valid but not in Nuxt types
     '/*/admin/**': { ssr: true },
   },
 
@@ -228,9 +224,6 @@ export default defineNuxtConfig({
 
   nitro: {
     compressPublicAssets: true,
-    rollupConfig: {
-      external: ['crisp-api'],
-    },
   },
 
   vite: {
@@ -247,7 +240,6 @@ export default defineNuxtConfig({
         'extend',
         'highlight.js',
         'rehype-highlight',
-        'swagger-ui-dist',
         'unist-util-find',
         'unist-util-find-all-between',
         'vue',
@@ -327,24 +319,6 @@ export default defineNuxtConfig({
       ...isFrenchGovernment
         ? [
             { name: 'Marianne', provider: 'local' as const, weights: [300, 400, 500, 700, 800], global: true },
-            // Workaround: nuxt-og-image Takumi renderer ignores font-weight and always uses
-            // the first loaded font for a family. We declare each weight as a separate family
-            // so the correct weight is used in OG image templates.
-            { name: 'MarianneLight', provider: 'none' as const, weight: 300, global: true, src: [
-              { url: '/fonts/Marianne-300.woff2', format: 'woff2' },
-            ] },
-            { name: 'MarianneRegular', provider: 'none' as const, weight: 400, global: true, src: [
-              { url: '/fonts/Marianne-400.woff2', format: 'woff2' },
-            ] },
-            { name: 'MarianneMedium', provider: 'none' as const, weight: 500, global: true, src: [
-              { url: '/fonts/Marianne-500.woff2', format: 'woff2' },
-            ] },
-            { name: 'MarianneBold', provider: 'none' as const, weight: 700, global: true, src: [
-              { url: '/fonts/Marianne-700.woff2', format: 'woff2' },
-            ] },
-            { name: 'MarianneExtraBold', provider: 'none' as const, weight: 800, global: true, src: [
-              { url: '/fonts/Marianne-800.woff2', format: 'woff2' },
-            ] },
           ]
         : [],
       { name: 'Inconsolata', provider: 'google' as const, weights: [300], global: true },
@@ -361,6 +335,7 @@ export default defineNuxtConfig({
       },
     ],
   },
+
   image: {
     screens: {
       xs: 320,
@@ -368,6 +343,13 @@ export default defineNuxtConfig({
       md: 768,
       lg: 992,
       xl: 1248,
+    },
+  },
+  ogImage: {
+    defaults: {
+      takumi: {
+        devicePixelRatio: 2,
+      },
     },
   },
 
