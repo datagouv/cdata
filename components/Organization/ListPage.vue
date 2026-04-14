@@ -78,7 +78,6 @@
     :page="organizations.page"
     :page-size="organizations.page_size"
     :total-results="organizations.total"
-    :link="link"
     @change="(p: number) => $emit('change', q, sortParam, p)"
   />
 </template>
@@ -91,11 +90,6 @@ import { debouncedRef } from '@vueuse/core'
 import type { PaginatedArray, RequestStatus } from '~/types/types'
 
 const props = defineProps<{
-  /**
-   * Customize the links used
-   */
-  link?: (page: number) => string
-
   /**
    * List of organizations to show
    */

@@ -101,6 +101,7 @@
 
 <script setup lang="ts">
 import { computed, useTemplateRef } from 'vue'
+import { useRoute } from 'vue-router'
 import { useTranslation } from '../composables/useTranslation'
 
 type Props = {
@@ -112,10 +113,6 @@ type Props = {
    * The page size.
    */
   pageSize?: number
-  /**
-   * Customize the links used
-   */
-  link?: (page: number) => string
   /**
    * The number of items in the collection. It's used to calculated the number of pages.
    */
@@ -174,6 +171,7 @@ function getVisiblePages(currentPage: number, pageCount: number) {
 }
 
 const { t } = useTranslation()
+const route = useRoute()
 const pageCount = computed(() => Math.ceil(props.totalResults / props.pageSize))
 const visiblePages = computed(() => getVisiblePages(props.page, pageCount.value))
 
@@ -211,6 +209,11 @@ function getHref(forPage: number) {
   if (forPage < 1 || forPage > pageCount.value) {
     return undefined
   }
-  return props.page === forPage ? undefined : (props.link ? props.link(forPage) : '#')
+  if (props.page === forPage) {
+    return undefined
+  }
+  const search = new URLSearchParams(route.query as Record<string, string>)
+  search.set('page', forPage.toFixed(0))
+  return `${route.path}?${search.toString()}`
 }
 </script>

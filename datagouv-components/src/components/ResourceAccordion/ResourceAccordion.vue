@@ -231,7 +231,7 @@
                 :dataset="dataset"
               />
               <!-- Show Datafair embedded preview (koumoul) -->
-              <SwaggerClient
+              <OpenApiViewer
                 v-else-if="hasOpenAPIPreview"
                 :url="resource.extras['apidocUrl'] as string"
               />
@@ -357,7 +357,7 @@
                 <p>{{ t("- Si le fichier est supprimé, l'API sera également supprimée.") }}</p>
                 <p>{{ t("Pour des usages pérennes, prévoyez que cette API dépend directement du fichier source.") }}</p>
               </div>
-              <Swagger
+              <OpenApiViewer
                 v-if="hasTabularData"
                 :url="`${config.tabularApiUrl}/api/resources/${props.resource.id}/swagger/`"
               />
@@ -387,9 +387,8 @@ import { trackEvent } from '../../functions/matomo'
 import CopyButton from '../CopyButton.vue'
 import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
-import { getResourceFormatIcon, getResourceTitleId, detectOgcService } from '../../functions/resources'
+import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
-import { getResourceExternalUrl, getResourceFilesize } from '../../functions/datasets'
 import { useTranslation } from '../../composables/useTranslation'
 import { useHasTabularData } from '../../composables/useHasTabularData'
 import Metadata from './Metadata.vue'
@@ -399,7 +398,7 @@ import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
 import { isOrganizationCertified } from '../../functions/organizations'
-import SwaggerClient from './Swagger.client.vue'
+import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 const URL_FORMATS = ['url', 'doi', 'www:link', ' www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
@@ -418,7 +417,6 @@ const props = withDefaults(defineProps<{
 
 const config = useComponentsConfig()
 
-const Swagger = defineAsyncComponent(() => import('./Swagger.client.vue'))
 const MapContainer = defineAsyncComponent(() => import('./MapContainer.client.vue'))
 const Pmtiles = defineAsyncComponent(() => import('./Pmtiles.client.vue'))
 const JsonPreview = defineAsyncComponent(() => import('./JsonPreview.client.vue'))

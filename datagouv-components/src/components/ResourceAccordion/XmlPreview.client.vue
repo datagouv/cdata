@@ -1,42 +1,24 @@
 <template>
-  <div class="fr-text--xs">
-    <div v-if="xmlData">
-      <XmlViewer :xml="xmlData" />
-    </div>
-    <div
-      v-else-if="loading"
-      class="text-gray-medium"
-    >
-      {{ t("Chargement de l'aperçu XML...") }}
-    </div>
-    <PreviewUnavailable v-else-if="fileTooLarge">
-      {{ fileSizeBytes
-        ? t("Le fichier XML est trop volumineux pour être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.")
-        : t("La taille du fichier est inconnue, l'aperçu n'est pas disponible. Téléchargez-le depuis l'onglet Téléchargements.")
-      }}
-    </PreviewUnavailable>
-    <PreviewUnavailable v-else-if="error === 'network'">
-      {{ t("Ce fichier est hébergé sur un site externe qui ne permet pas la prévisualisation. Téléchargez-le depuis l'onglet Téléchargements.") }}
-    </PreviewUnavailable>
-    <PreviewUnavailable v-else-if="error">
-      {{ t("L'aperçu de ce fichier n'a pas pu être chargé. Téléchargez-le depuis l'onglet Téléchargements.") }}
-    </PreviewUnavailable>
-  </div>
+  <PreviewWrapper
+    v-slot="{ data }"
+    file-type="XML"
+    :resource="resource"
+    :max-size="config.maxXmlPreviewCharSize"
+    :load="load"
+  >
+    <XmlViewer :xml="(data as string)" />
+  </PreviewWrapper>
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { defineAsyncComponent } from 'vue'
 import { useComponentsConfig } from '../../config'
-import PreviewUnavailable from './PreviewUnavailable.vue'
+import PreviewWrapper from './PreviewWrapper.vue'
 import type { Resource } from '../../types/resources'
-import { useTranslation } from '../../composables/useTranslation'
 import '../../types/vue3-xml-viewer.d'
-import { getResourceFilesize } from '../../main'
 
 const XmlViewer = defineAsyncComponent(() =>
-  import('vue3-xml-viewer').then((module) => {
-    return module.default || module.XmlViewer
-  }),
+  import('vue3-xml-viewer').then(module => module.default || module.XmlViewer),
 )
 
 const props = defineProps<{
@@ -44,74 +26,10 @@ const props = defineProps<{
 }>()
 
 const config = useComponentsConfig()
-const { t } = useTranslation()
 
-const xmlData = ref<string | null>(null)
-const loading = ref(false)
-const error = ref<string | null>(null)
-const fileTooLarge = ref(false)
-
-const fileSizeBytes = computed(() => getResourceFilesize(props.resource))
-
-const shouldLoadXml = computed(() => {
-  const size = fileSizeBytes.value
-  if (!size) {
-    // If we don't know the size, don't risk loading a potentially huge file
-    return false
-  }
-
-  // Check if maxXmlPreviewCharSize is configured
-  if (!config.maxXmlPreviewCharSize) {
-    // If no limit is set, don't load unknown files
-    return false
-  }
-
-  // Convert maxXmlPreviewCharSize from characters to bytes (rough estimate)
-  // Assuming average 1 byte per character for XML
-  const maxByteSize = config.maxXmlPreviewCharSize
-
-  return size <= maxByteSize
-})
-
-const fetchXmlData = async () => {
-  // Check if file is too large or size is unknown before making the request
-  if (!shouldLoadXml.value) {
-    fileTooLarge.value = true
-    return
-  }
-
-  loading.value = true
-  error.value = null
-
-  try {
-    const response = await fetch(props.resource.url)
-    // const response = await fetch('/test-data.xml') // For testing locally without CORS issues
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-    const data = await response.text()
-
-    // Use the XML data as string - let the XML viewer handle large files
-    xmlData.value = data
-  }
-  catch (err) {
-    console.error('Error loading XML:', err)
-
-    if (err instanceof TypeError) {
-      error.value = 'network'
-    }
-    else {
-      error.value = 'generic'
-    }
-
-    xmlData.value = null
-  }
-  finally {
-    loading.value = false
-  }
+const load = async () => {
+  const response = await fetch(props.resource.url)
+  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+  return response.text()
 }
-
-onMounted(() => {
-  fetchXmlData()
-})
 </script>

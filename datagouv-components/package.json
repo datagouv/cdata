@@ -42,8 +42,8 @@
     "@remixicon/vue": "^4.5.0",
     "@types/hast": "^3.0.4",
     "@types/leaflet": "^1.9.17",
-    "@vueuse/core": "^13.1.0",
-    "@vueuse/router": "^13.1.0",
+    "@vueuse/core": "^14.2.1",
+    "@vueuse/router": "^14.2.1",
     "chart.js": "^4.4.8",
     "dompurify": "^3.2.5",
     "geopf-extensions-openlayers": "^1.0.0-beta.5",
@@ -66,14 +66,14 @@
     "remark-rehype": "^11.1.2",
     "strip-markdown": "^6.0.0",
     "stylefire": "^7.0.3",
-    "swagger-ui-dist": "^5.27.1",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.0.0",
     "vue-content-loader": "^2.0.1",
     "vue-sonner": "^2.0.9",
     "vue3-json-viewer": "^2.4.1",
     "vue3-text-clamp": "^0.1.2",
-    "vue3-xml-viewer": "^0.0.14"
+    "vue3-xml-viewer": "^0.0.14",
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
     "@intlify/cli": "^0.13.1",
@@ -90,18 +90,19 @@
     "eslint-plugin-vue": "^10.0",
     "jiti": "^2.4.2",
     "npm-run-all2": "^8.0",
+    "openapi-types": "^12.1.3",
     "prettier": "^3.0.0",
     "tailwindcss": "^4.0.8",
     "typescript": "^5.7.3",
     "vite": "^7.0",
     "vite-plugin-vue-devtools": "^8.0",
-    "vue": "^3.5.30",
-    "vue-router": "^4.6.4",
+    "vue": "^3.5.31",
+    "vue-router": "^5.0.4",
     "vue-tsc": "^3.0"
   },
   "peerDependencies": {
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "vue-router": "^4.5.0 || ^5.0.0"
   },
   "scarfSettings": {
     "enabled": false

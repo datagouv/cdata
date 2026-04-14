@@ -310,7 +310,7 @@ const reason = ref('')
 
 const alreadyMember = computed(() => me.value?.organizations.find(organization => organization.id === props.organization.id))
 
-const { data: pendingRequests, status, refresh } = await useAsyncData<Array<PendingMembershipRequest | MembershipRequest>>('membership-requests', () => {
+const { data: pendingRequests, status, refresh } = await useAsyncData<Array<PendingMembershipRequest | MembershipRequest>>(`membership-requests-${props.organization.id}-${me.value?.id}`, () => {
   if (me.value) {
     return $api(`/api/1/organizations/${props.organization.id}/membership/`, {
       query: {

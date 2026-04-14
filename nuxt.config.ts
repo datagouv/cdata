@@ -55,6 +55,7 @@ export default defineNuxtConfig({
     albertApiKey: '',
     public: {
       isProduction: true,
+      trustedDomains: ['data.gouv.fr'], // Hostnames allowed in Access-Control-Allow-Origin for resource preview CORS checks (includes subdomains)
       banner: undefined,
 
       title: 'data.gouv.fr',
@@ -124,7 +125,7 @@ export default defineNuxtConfig({
 
       datasetPublishingGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
       datasetQualityGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
-      datasetRestrictedGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-juridique/producteurs-de-donnees/quelles-sont-les-obligations',
+      datasetRestrictedGuideUrl: 'https://guides.data.gouv.fr/guides/guide-juridique/producteurs-de-donnees/quelles-sont-les-obligations',
       dataSearchFeedbackFormUrl: 'https://tally.so/r/mDKv1N',
       forumUrl: 'https://forum.data.gouv.fr/',
       generateShortDescriptionFeedbackUrl: 'https://tally.so/r/wbbRxo',
@@ -202,14 +203,9 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/nuxt-api/oembed': { cors: true },
-    // @ts-expect-error ssr option is valid but not in Nuxt types (see https://github.com/nuxt/nuxt/issues/15199)
     '/*/organizations/': { ssr: true },
-    // @ts-expect-error ssr option is valid but not in Nuxt types
     '/*/posts/': { ssr: true },
-    // @ts-expect-error ssr option is valid but not in Nuxt types
     '/*/posts/**': { ssr: true },
-    // Admin dashboard renders only on server-side
-    // @ts-expect-error ssr option is valid but not in Nuxt types
     '/*/admin/**': { ssr: true },
   },
 
@@ -228,9 +224,6 @@ export default defineNuxtConfig({
 
   nitro: {
     compressPublicAssets: true,
-    rollupConfig: {
-      external: ['crisp-api'],
-    },
   },
 
   vite: {
@@ -247,7 +240,6 @@ export default defineNuxtConfig({
         'extend',
         'highlight.js',
         'rehype-highlight',
-        'swagger-ui-dist',
         'unist-util-find',
         'unist-util-find-all-between',
         'vue',
