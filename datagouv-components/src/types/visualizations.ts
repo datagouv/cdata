@@ -1,8 +1,7 @@
 import type { TabularAggregateType } from '../functions/tabularApi'
 import type { Owned, OwnedWithId } from './owned'
 
-export type FilterCondition = 'equal' | 'greater'
-
+export type FilterCondition = 'exact' | 'differs' | 'is_null' | 'is_not_null' | 'greater' | 'less' | 'strictly_greater' | 'strictly_less'
 export type Filter = {
   column: string
   condition: FilterCondition

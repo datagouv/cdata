@@ -23,7 +23,7 @@ import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
 import { useComponentsConfig } from '../../config'
 import { fetchTabularData, useGetProfile, type TabularDataResponse, type TabularProfileResponse } from '../../functions/tabularApi'
-import type { Chart, ChartForm } from '../../types/visualizations'
+import type { AndFilters, Chart, ChartForm, GenericFilter } from '../../types/visualizations'
 
 const chart = defineModel<Chart | ChartForm>({ required: true })
 
@@ -93,7 +93,11 @@ async function fetchSeriesProfile() {
     console.log(err)
     series.columns = {}
   }
-}
+ }
+
+ function isMultipleFilters(filter: GenericFilter): filter is AndFilters {
+   return 'filters' in filter
+ }
 
 async function fetchSeriesData() {
   status.value = 'pending'
@@ -109,10 +113,12 @@ async function fetchSeriesData() {
     // Fetch data for all series in parallel
     const fetchPromises = chart.value.series.map(async (serie) => {
       const xColumn = serie.column_x_name_override ?? chart.value.x_axis.column_x
+
+      const filters = serie.filters ? serie.filters : {}
+
       if (!xColumn || !serie.resource_id || !serie.column_y) return
       return {
         id: serie.resource_id,
-        profile: await getProfile(serie.resource_id),
         data: await fetchTabularData(config, {
           columns: serie.aggregate_y ? undefined : [xColumn, serie.column_y],
           resourceId: serie.resource_id,
