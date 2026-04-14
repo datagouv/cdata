@@ -47,7 +47,7 @@ const series = reactive<{
   columns: Record<string, Array<string>>
   page: Record<string, number>
   hasNextPage: Record<string, boolean>
- }>({
+}>({
   data: {},
   columns: {},
   page: {},
@@ -108,7 +108,7 @@ async function loadMorePages() {
 
     // Calculate the next page to fetch
     const nextPage = (series.page[resourceId] || 0) + 1
-    
+
     const response = await fetchTabularData(config, {
       columns: serie.aggregate_y ? undefined : [xColumn, serie.column_y],
       resourceId,
@@ -124,9 +124,9 @@ async function loadMorePages() {
       filters: serie.filters ?? undefined,
     })
 
-      // Update the page tracker
+    // Update the page tracker
     series.page[resourceId] = nextPage
-      
+
     if (!series.data[resourceId]) {
       series.data[resourceId] = []
     }
@@ -182,7 +182,7 @@ async function fetchSeriesData() {
       result.id,
       result.data.data,
     ]))
-    
+
     // Reset page tracking for each series to 0 (page 1 has been loaded)
     // Also initialize hasNextPage based on the response
     for (const result of results) {
@@ -192,13 +192,13 @@ async function fetchSeriesData() {
         series.hasNextPage[result.id] = !!result.data.links.next
       }
     }
-    
+
     // If loadAllPages is true, fetch the next page (loadMorePages can be called again for more)
     // This allows progressive loading - first page loads quickly, then more can be loaded on demand
     if (props.loadAllPages) {
       await loadMorePages()
     }
-    
+
     status.value = 'success'
   }
   catch (err) {
