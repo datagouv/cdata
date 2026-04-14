@@ -1,17 +1,20 @@
 <template>
-  <div class="grid lg:grid-cols-2 gap-4">
+  <div class="grid lg:grid-cols-12 gap-4">
     <!-- Live preview -->
-    <div class="border border-gray-light rounded-lg p-6">
+    <div class="col-span-7 border border-gray-light rounded-lg p-6">
       <h3 class="text-lg font-bold mb-4">
         Aperçu
       </h3>
       <ClientOnly>
-        <ChartViewer :chart="chartPreview" />
+        <ChartViewerWrapper
+          v-model="chartPreview"
+          @columns="columns = $event"
+        />
       </ClientOnly>
     </div>
 
     <!-- Form -->
-    <div class="space-y-6 lg:pl-4">
+    <div class="col-span-5 space-y-6 lg:pl-4">
       <h3 class="text-lg font-bold">
         Configuration
       </h3>
@@ -26,7 +29,7 @@
           id="chart-title"
           v-model="form.title"
           type="text"
-          class="w-full border border-gray-light rounded px-3 py-2"
+          class="w-full fr-input"
         >
       </div>
 
@@ -39,7 +42,7 @@
         <textarea
           id="chart-description"
           v-model="form.description"
-          class="w-full border border-gray-light rounded px-3 py-2"
+          class="w-full fr-input"
           rows="2"
         />
       </div>
@@ -49,7 +52,26 @@
         <legend class="text-sm font-bold px-2">
           Axe X
         </legend>
-        <div>
+        <div class="fr-fieldset__element">
+          <label
+            for="x-axis-column"
+            class="block text-sm font-medium mb-1"
+          >Column</label>
+          <select
+            id="x-axis-column"
+            v-model="form.xAxisColumn"
+            class="w-full fr-select"
+          >
+            <option
+              v-for="column in flattenedColumns"
+              :key="column"
+              :value="column"
+            >
+              {{ column }}
+            </option>
+          </select>
+        </div>
+        <div class="fr-fieldset__element">
           <label
             for="x-axis-type"
             class="block text-sm font-medium mb-1"
@@ -57,7 +79,7 @@
           <select
             id="x-axis-type"
             v-model="form.xAxisType"
-            class="w-full border border-gray-light rounded px-3 py-2"
+            class="w-full fr-select"
           >
             <option value="discrete">
               Discret (catégories)
@@ -67,7 +89,7 @@
             </option>
           </select>
         </div>
-        <div>
+        <div class="fr-fieldset__element">
           <label
             for="x-axis-sort-by"
             class="block text-sm font-medium mb-1"
@@ -75,7 +97,7 @@
           <select
             id="x-axis-sort-by"
             v-model="form.xAxisSortBy"
-            class="w-full border border-gray-light rounded px-3 py-2"
+            class="w-full fr-select"
           >
             <option value="">
               Aucun
@@ -88,7 +110,7 @@
             </option>
           </select>
         </div>
-        <div>
+        <div class="fr-fieldset__element">
           <label
             for="x-axis-sort-direction"
             class="block text-sm font-medium mb-1"
@@ -96,7 +118,7 @@
           <select
             id="x-axis-sort-direction"
             v-model="form.xAxisSortDirection"
-            class="w-full border border-gray-light rounded px-3 py-2"
+            class="w-full fr-select"
           >
             <option value="asc">
               Ascendant
@@ -122,7 +144,7 @@
             id="y-axis-label"
             v-model="form.yAxisLabel"
             type="text"
-            class="w-full border border-gray-light rounded px-3 py-2"
+            class="w-full fr-input"
           >
         </div>
         <div class="grid grid-cols-2 gap-4">
@@ -135,7 +157,7 @@
               id="y-axis-min"
               v-model.number="form.yAxisMin"
               type="number"
-              class="w-full border border-gray-light rounded px-3 py-2"
+              class="w-full fr-input"
             >
           </div>
           <div>
@@ -147,7 +169,7 @@
               id="y-axis-max"
               v-model.number="form.yAxisMax"
               type="number"
-              class="w-full border border-gray-light rounded px-3 py-2"
+              class="w-full fr-input"
             >
           </div>
         </div>
@@ -161,7 +183,7 @@
               id="y-axis-unit"
               v-model="form.yAxisUnit"
               type="text"
-              class="w-full border border-gray-light rounded px-3 py-2"
+              class="w-full fr-input"
               placeholder="ex: €, %, kg"
             >
           </div>
@@ -173,7 +195,7 @@
             <select
               id="y-axis-unit-position"
               v-model="form.yAxisUnitPosition"
-              class="w-full border border-gray-light rounded px-3 py-2"
+              class="w-full fr-input"
             >
               <option value="suffix">
                 Suffixe
@@ -199,7 +221,7 @@
           <span class="text-sm text-gray-medium">{{ index + 1 }}.</span>
           <select
             v-model="serie.type"
-            class="flex-1 border border-gray-light rounded px-3 py-2"
+            class="flex-1 fr-select"
           >
             <option value="line">
               Ligne
@@ -217,7 +239,7 @@
         </div>
         <button
           class="text-sm text-datagouv underline"
-          @click="form.series.push({ type: 'line' })"
+          @click="form.series.push(dummySerie)"
         >
           + Ajouter une série
         </button>
@@ -227,14 +249,24 @@
 </template>
 
 <script setup lang="ts">
-import type { Chart, DataSeriesType, XAxisType, XAxisSortBy, SortDirection, UnitPosition } from '@datagouv/components-next'
+import type { Chart, XAxisType, XAxisSortBy, SortDirection, UnitPosition, DataSeries } from '@datagouv/components-next'
 import { computed, defineAsyncComponent, reactive } from 'vue'
 
-const ChartViewer = defineAsyncComponent(() => import('../datagouv-components/src/components/ChartViewer.vue'))
+const ChartViewerWrapper = defineAsyncComponent(() => import('../datagouv-components/src/components/Chart/ChartViewerWrapper.vue'))
+const columns = ref<Record<string, Array<string>>>({})
+const flattenedColumns = computed(() => Object.values(columns.value).flat())
+
+const dummySerie: DataSeries = {
+  type: 'histogram',
+  column_y: 'Nombre de logements',
+  aggregate_y: 'sum',
+  resource_id: '14dba482-41e3-4c54-b82a-d8c11d1d80eb',
+}
 
 const form = reactive<{
   title: string
   description: string
+  xAxisColumn: string
   xAxisType: XAxisType
   xAxisSortBy: XAxisSortBy | ''
   xAxisSortDirection: SortDirection
@@ -243,10 +275,11 @@ const form = reactive<{
   yAxisMax: number | undefined
   yAxisUnit: string
   yAxisUnitPosition: UnitPosition
-  series: Array<{ type: DataSeriesType }>
+  series: Array<DataSeries>
 }>({
   title: 'Mon graphique',
   description: '',
+  xAxisColumn: 'nom_region',
   xAxisType: 'discrete',
   xAxisSortBy: '',
   xAxisSortDirection: 'asc',
@@ -255,7 +288,7 @@ const form = reactive<{
   yAxisMax: undefined,
   yAxisUnit: '',
   yAxisUnitPosition: 'suffix',
-  series: [{ type: 'line' }, { type: 'histogram' }],
+  series: [dummySerie],
 })
 
 const chartPreview = computed<Chart>(() => ({
@@ -272,7 +305,7 @@ const chartPreview = computed<Chart>(() => ({
   uri: '',
   page: '',
   x_axis: {
-    column_x: 'category',
+    column_x: form.xAxisColumn,
     type: form.xAxisType,
     ...(form.xAxisSortBy ? { sort_x_by: form.xAxisSortBy, sort_x_direction: form.xAxisSortDirection } : {}),
   },
@@ -283,11 +316,9 @@ const chartPreview = computed<Chart>(() => ({
     unit: form.yAxisUnit || undefined,
     unit_position: form.yAxisUnitPosition,
   },
-  series: form.series.map(s => ({
-    type: s.type,
-  })),
+  series: form.series,
   extras: {},
   permissions: { delete: false, edit: true, read: true },
   metrics: { views: 0 },
-}))
+} satisfies Chart))
 </script>

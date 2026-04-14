@@ -58,9 +58,9 @@ export type ChartForm = OwnedWithId & {
   title: string
   description: string
   private: boolean
-  x_axis: XAxis
-  y_axis: YAxis
-  series: Array<DataSeries>
+  x_axis: Partial<XAxis>
+  y_axis: Partial<YAxis>
+  series: Array<Partial<DataSeries>>
   extras: Record<string, unknown>
 }
 
