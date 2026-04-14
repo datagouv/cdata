@@ -29,7 +29,7 @@
       <div class="mt-4">
         <ClientOnly>
           <ChartViewerWrapper
-            v-model="form"
+            :chart="toChartApi(form)"
             @columns="columns = $event"
           />
         </ClientOnly>
@@ -157,7 +157,7 @@
             size="sm"
             color="tertiary"
             :icon="RiAddLine"
-            @click="form.filter={ column: '', condition: 'equal', value: '' }"
+            @click="addFilter"
           >
             {{ $t('Ajouter un filtre') }}
           </BrandedButton>
@@ -313,68 +313,6 @@
 
       <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
         <p class="font-bold mb-2">
-          {{ $t('Filtre') }}
-        </p>
-        <div
-          v-if="form.filter && selectedResource"
-          class="flex items-center gap-2 flex-wrap md:flex-nowrap"
-        >
-          <span class="text-sm text-gray-600">{{ $t('Quand') }}</span>
-
-          <!-- Column select -->
-          <Listbox
-            v-model="form.filter.column"
-            :options="columns[selectedResource]"
-            :display-value="(o: string) => o"
-            class="min-w-28 max-w-36"
-          >
-            <template #button>
-              <div class="w-full truncate">
-                {{ form.filter.column }}
-              </div>
-              <RiArrowDownSLine class="shrink-0 size-4 justify-self-end" />
-            </template>
-          </Listbox>
-
-          <Listbox
-            v-model="form.filter.condition"
-            :options="conditionOptions"
-            :display-value="getConditionLabel"
-            class="shrink-0"
-          />
-
-          <!-- Value input -->
-          <input
-            v-model="form.filter.value"
-            type="text"
-            class="fr-input text-sm flex-1 max-w-1/3"
-            :placeholder="$t('Valeur')"
-          >
-
-          <!-- Remove button -->
-          <BrandedButton
-            size="xs"
-            color="tertiary"
-            keep-margins-even-without-borders
-            :icon="RiDeleteBinLine"
-            icon-only
-            :disabled="!form.filter.column"
-            @click="removeFilter"
-          />
-        </div>
-        <div v-else>
-          <BrandedButton
-            size="sm"
-            color="tertiary"
-            :icon="RiAddLine"
-            @click="form.filter = { column: '', condition: 'exact', value: '' }"
-          >
-            {{ $t('Ajouter un filtre') }}
-          </BrandedButton>
-        </div>
-      </fieldset>
-      <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
-        <p class="font-bold mb-2">
           {{ $t('Axe Y') }}
         </p>
         <div>
@@ -462,10 +400,10 @@
 
 <script setup lang="ts">
 import type { Resource, PaginatedArray, ChartForm, Chart, FilterCondition } from '@datagouv/components-next'
-import { SearchableSelect, useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton, Listbox } from '@datagouv/components-next'
+import { SearchableSelect, useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton, Listbox, toChartApi, toChartForm } from '@datagouv/components-next'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
-import { RiAddLine, RiArrowDownSLine, RiDeleteBinLine } from '@remixicon/vue'
+import { RiAddLine, RiDeleteBinLine } from '@remixicon/vue'
 import { useAPI } from '~/utils/api'
 
 const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/components-next').then(m => m.ChartViewerWrapper))
@@ -499,14 +437,14 @@ const conditionOptions: Array<FilterCondition> = ['exact', 'differs', 'is_null',
 function getConditionLabel(condition: FilterCondition | null) {
   if (!condition) return ''
   return {
-      exact: t('est'),
-      differs: t("n'est pas"),
-      is_null: t('est vide'),
-      is_not_null: t("n'est pas vide"),
-      greater: t('supérieur ou égal à'),
-      less: t('inférieur ou égal à'),
-      strictly_greater: t('supérieur à'),
-      strictly_less: t('inférieur à'),
+    exact: t('est'),
+    differs: t('n\'est pas'),
+    is_null: t('est vide'),
+    is_not_null: t('n\'est pas vide'),
+    greater: t('supérieur ou égal à'),
+    less: t('inférieur ou égal à'),
+    strictly_greater: t('supérieur à'),
+    strictly_less: t('inférieur à'),
   }[condition]
 }
 
@@ -567,6 +505,14 @@ watch([titleDebounced, descDebounced], ([title, desc]) => {
   form.value.description = desc
 })
 
+watch(columns, (columnsPerResource) => {
+  const firstColumns = Object.values(columnsPerResource) ?? []
+  const firstColumn = firstColumns[0].filter(c => c !== '__id')[0]
+  if (!form.value.x_axis.column_x && firstColumn) {
+    form.value.x_axis.column_x = firstColumn
+  }
+})
+
 async function loadMissingResourcesForChart(resourceIds: Set<string>) {
   for (const id of resourceIds) {
     if (savedResources[id]) continue
@@ -588,7 +534,7 @@ async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
 }
 
 function removeFilter() {
-  form.value.filter = undefined
+  form.value.filter = null
 }
 
 async function loadChart(id: string) {
@@ -649,5 +595,9 @@ async function saveChart() {
   catch (error) {
     console.error('Failed to save chart:', error)
   }
+}
+
+function addFilter() {
+  form.value.filter = { column: '', condition: 'exact' as const, value: '' }
 }
 </script>

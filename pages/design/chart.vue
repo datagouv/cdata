@@ -43,6 +43,7 @@ const chart = ref<ChartForm>({
     unit: '',
     unit_position: 'suffix',
   },
+  filter: null,
   chart_type: 'histogram',
   series: [{
     type: 'histogram',

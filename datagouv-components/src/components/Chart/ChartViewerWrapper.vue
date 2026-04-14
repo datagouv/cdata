@@ -22,11 +22,13 @@ import { reactive, ref, watch } from 'vue'
 import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
 import { useComponentsConfig } from '../../config'
+import { filterToApiFormat } from '../../functions/charts'
 import { fetchTabularData, useGetProfile, type TabularDataResponse, type TabularProfileResponse } from '../../functions/tabularApi'
-import { filterToApiFormat } from '../../functions/filterUtils'
-import type { AndFilters, Chart, ChartForm, GenericFilter } from '../../types/visualizations'
+import type { Chart, ChartForApi } from '../../types/visualizations'
 
-const chart = defineModel<Chart | ChartForm>({ required: true })
+const props = defineProps<{
+  chart: Chart | ChartForApi
+}>()
 
 const emit = defineEmits<{
   columns: [columns: Record<string, Array<string>>]
@@ -53,7 +55,7 @@ async function fetchSeriesProfile() {
   error.value = null
 
   try {
-    if (chart.value.series.length === 0) {
+    if (props.chart.series.length === 0) {
       status.value = 'success'
       series.data = {}
       series.columns = {}
@@ -61,7 +63,7 @@ async function fetchSeriesProfile() {
     }
 
     // Fetch data for all series in parallel
-    const fetchPromises = chart.value.series.map(async (serie) => {
+    const fetchPromises = props.chart.series.map(async (serie) => {
       if (!serie.resource_id) return
       return {
         id: serie.resource_id,
@@ -79,13 +81,6 @@ async function fetchSeriesProfile() {
       result.id,
       result.profile.profile.header,
     ]))
-    if (results.length > 0) {
-      const columns = results[0]?.profile.profile.header ?? []
-      const firstColumn = columns.filter(c => c !== '__id')[0]
-      if (!chart.value.x_axis.column_x && firstColumn) {
-        chart.value.x_axis.column_x = firstColumn
-      }
-    }
     status.value = 'success'
   }
   catch (err) {
@@ -94,39 +89,24 @@ async function fetchSeriesProfile() {
     console.log(err)
     series.columns = {}
   }
- }
-
- function isMultipleFilters(filter: GenericFilter): filter is AndFilters {
-   return 'filters' in filter
- }
+}
 
 async function fetchSeriesData() {
   status.value = 'pending'
   error.value = null
 
   try {
-    if (chart.value.series.length === 0 || !chart.value.x_axis.column_x) {
+    if (props.chart.series.length === 0 || !props.chart.x_axis.column_x) {
       status.value = 'success'
       series.data = {}
       return
     }
 
-    // Fetch data for all series in parallel
-    const fetchPromises = chart.value.series.map(async (serie) => {
-    const xColumn = serie.column_x_name_override ?? chart.value.x_axis.column_x
+    const fetchPromises = props.chart.series.map(async (serie) => {
+      const xColumn = serie.column_x_name_override ?? props.chart.x_axis.column_x
 
-    console.log(chart.value)
-    if ('filter' in chart.value && chart.value.filter) {
-      serie.filters = chart.value.filter
-    }
-
-
-        // Convert series-level filters to API format
-        console.log(serie.filters)
-        const apiFilters = serie.filters ? filterToApiFormat(serie.filters) : undefined
-
-        if (!xColumn || !serie.resource_id || !serie.column_y) return
-        return {
+      if (!xColumn || !serie.resource_id || !serie.column_y) return
+      return {
         id: serie.resource_id,
         data: await fetchTabularData(config, {
           columns: serie.aggregate_y ? undefined : [xColumn, serie.column_y],
@@ -140,7 +120,7 @@ async function fetchSeriesData() {
                 type: serie.aggregate_y,
               }
             : undefined,
-          filters: apiFilters,
+          filters: serie.filters ?? undefined,
         }),
       }
     }).filter(Boolean) as Array<Promise<{
@@ -166,12 +146,12 @@ async function fetchSeriesData() {
 }
 
 // Watch for changes in the chart or its series
-watch(() => chart.value.series, async () => {
+watch(() => props.chart.series, async () => {
   await fetchSeriesProfile()
 }, { immediate: true, deep: true })
 
 // Watch for changes in the chart or its series
-watch([() => chart.value.series, () => chart.value.x_axis.column_x], async () => {
+watch([() => props.chart.series, () => props.chart.x_axis.column_x], async () => {
   await fetchSeriesData()
 }, { immediate: true, deep: true })
 

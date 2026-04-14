@@ -1,5 +1,6 @@
 import { ofetch } from 'ofetch'
 import { useComponentsConfig, type PluginConfig } from '../config'
+import type { Filter, GenericFilter } from '../types/visualizations'
 
 export type SortConfig = {
   column: string
@@ -24,11 +25,7 @@ export type FetchTabularDataOptions = {
     column: string
     type: TabularAggregateType
   } | undefined
-  filters?: Array<{
-    column: string
-    operator: string
-    value?: string
-  }> | undefined
+  filters?: GenericFilter | undefined
 }
 
 export type TabularProfileResponse = {
@@ -91,15 +88,16 @@ export async function fetchTabularData(config: PluginConfig, options: FetchTabul
     url += `&${options.groupBy}__groupby&${options.aggregation.column}__${options.aggregation.type}`
   }
   if (options.filters) {
-    for (const filter of options.filters) {
-      if (filter.operator === 'isnull') {
+    const filter = options.filters as Filter
+      if (filter.condition === 'is_null') {
         url += `&${filter.column}__isnull`
-      } else if (filter.operator === 'isnotnull') {
-        url += `&${filter.column}__isnotnull`
-      } else if (filter.value !== undefined && filter.value !== '') {
-        url += `&${filter.column}__${filter.operator}=${encodeURIComponent(filter.value)}`
       }
-    }
+      else if (filter.condition === 'is_not_null') {
+        url += `&${filter.column}__isnotnull`
+      }
+      else if (filter.value !== null && filter.value !== undefined && filter.value !== '') {
+        url += `&${filter.column}__${filter.condition}=${encodeURIComponent(filter.value)}`
+      }
   }
   return await ofetch<TabularDataResponse>(url)
 }

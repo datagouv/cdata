@@ -14,12 +14,12 @@ import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, Datas
 import VChart from 'vue-echarts'
 import { computed } from 'vue'
 import { summarize } from '../../functions/helpers'
-import type { Chart, XAxis, YAxis, ChartForm, XAxisForm } from '../../types/visualizations'
+import type { Chart, XAxis, YAxis, XAxisForm, ChartForApi } from '../../types/visualizations'
 
 use([CanvasRenderer, LineChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent])
 
 const props = defineProps<{
-  chart: Chart | ChartForm
+  chart: Chart | ChartForApi
   series: {
     data: Record<string, Array<Record<string, unknown>>>
     columns: Record<string, Array<string>>
@@ -56,15 +56,8 @@ const echartsOption = computed(() => {
     const sortedData = [...props.series.data[resourceId]]
     let sortBy: string | null = null
     let sortDirection: 'asc' | 'desc' = 'asc'
-    if ('sort_combined' in props.chart.x_axis) {
-      const [sort, direction] = props.chart.x_axis.sort_combined.split('-')
-      sortBy = sort ?? null
-      sortDirection = direction as 'asc' | 'desc'
-    }
-    else {
-      sortBy = props.chart.x_axis.sort_x_by
-      sortDirection = props.chart.x_axis.sort_x_direction ?? 'asc'
-    }
+    sortBy = props.chart.x_axis.sort_x_by
+    sortDirection = props.chart.x_axis.sort_x_direction ?? 'asc'
 
     if (sortBy && sortDirection && props.chart.x_axis.column_x) {
       const sortKey = sortBy === 'axis_x' ? xColumn : yColumn
@@ -75,10 +68,6 @@ const echartsOption = computed(() => {
         if (valA > valB) return sortDirection === 'asc' ? 1 : -1
         return 0
       })
-    }
-
-    if ('chart_type' in props.chart && props.chart.chart_type) {
-      s.type = props.chart.chart_type
     }
 
     return {

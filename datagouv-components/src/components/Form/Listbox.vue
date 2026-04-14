@@ -67,7 +67,7 @@ import { useFloating, autoUpdate, autoPlacement } from '@floating-ui/vue'
 import { toValue, useTemplateRef } from 'vue'
 import { RiArrowDownSLine, RiCheckLine } from '@remixicon/vue'
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   options?: Array<T>
   getOptionId?: (option: T) => string | number
   displayValue: (option: T | null) => string

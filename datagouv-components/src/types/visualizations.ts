@@ -5,7 +5,7 @@ export type FilterCondition = 'exact' | 'differs' | 'is_null' | 'is_not_null' | 
 export type Filter = {
   column: string
   condition: FilterCondition
-  value?: string
+  value: string | null
 }
 
 export type AndFilters = {
@@ -83,5 +83,5 @@ export type ChartForm = Omit<ChartForApi, 'x_axis' | 'series' | 'owner' | 'organ
   x_axis: XAxisForm
   series: Array<DataSeriesForm>
   chart_type?: DataSeriesType | null
-  filter: GenericFilter
+  filter: GenericFilter | null
 }
