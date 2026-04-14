@@ -310,7 +310,7 @@
                 </template>
               </BrandedButton>
               <CdataLink
-                v-if="config.public.generateDescriptionFeedbackUrl"
+                v-if="config.public.generateDescriptionFeedbackUrl && hasReceivedAiDescriptionSuggestion"
                 :to="config.public.generateDescriptionFeedbackUrl"
                 target="_blank"
                 class="text-sm text-gray-medium"
@@ -646,6 +646,7 @@ const openConfirmModal = ref(false)
 const showRateLimitingUrl = ref(false)
 const descriptionEditorRefreshKey = ref(0)
 const isGeneratingDescription = ref(false)
+const hasReceivedAiDescriptionSuggestion = ref(false)
 
 const hasTechnicalDocumentationUrl = computed(() => form.value.technical_documentation_url && form.value.technical_documentation_url.trim().length > 0)
 const hasMachineDocumentationUrl = computed(() => form.value.machine_documentation_url && form.value.machine_documentation_url.trim().length > 0)
@@ -717,6 +718,9 @@ async function handleAutoCompleteDescription() {
 
     if (response.description) {
       form.value.description = response.description
+      if (form.value.description.trim().length > 0) {
+        hasReceivedAiDescriptionSuggestion.value = true
+      }
       descriptionEditorRefreshKey.value += 1
       await nextTick()
     }
