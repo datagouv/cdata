@@ -39,16 +39,36 @@ export async function fetchDocumentationContent(url: string): Promise<string> {
   }
 }
 
+function pathnameExtensionFromUrl(urlString: string): string {
+  try {
+    const { pathname } = new URL(urlString)
+    const lastSegment = pathname.split('/').pop() ?? ''
+    const dot = lastSegment.lastIndexOf('.')
+    if (dot <= 0 || dot === lastSegment.length - 1) {
+      return ''
+    }
+    return lastSegment.slice(dot + 1).toLowerCase()
+  }
+  catch {
+    return ''
+  }
+}
+
 /**
  * Trims and formats content: strips HTML tags if present, normalizes whitespace.
+ * Uses the URL path extension as a hint when the body lacks typical HTML markers.
  */
-function formatDocumentationContent(raw: string, _url: string): string {
+function formatDocumentationContent(raw: string, url: string): string {
   let text = raw.trim()
   if (!text) {
     return ''
   }
-  // If content looks like HTML, strip tags and collapse whitespace
-  if (/<html[\s>]|<body[\s>]|<!DOCTYPE/i.test(text)) {
+  const ext = pathnameExtensionFromUrl(url)
+  const treatAsHtml
+    = ext === 'html'
+      || ext === 'htm'
+      || /<html[\s>]|<body[\s>]|<!DOCTYPE/i.test(text)
+  if (treatAsHtml) {
     text = text
       .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
       .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
