@@ -14,7 +14,7 @@ import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, Datas
 import VChart from 'vue-echarts'
 import { computed } from 'vue'
 import { summarize } from '../../functions/helpers'
-import type { Chart, DataSeries, XAxis, YAxis, ChartForm } from '../../types/visualizations'
+import type { Chart, DataSeries, XAxis, YAxis, ChartForm, XAxisForm } from '../../types/visualizations'
 
 use([CanvasRenderer, LineChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent])
 
@@ -30,7 +30,7 @@ function mapSeriesType(type: DataSeries['type']): 'line' | 'bar' {
   return (type ?? 'line') === 'histogram' ? 'bar' : 'line'
 }
 
-function mapXAxisType(xAxis?: XAxis | Partial<XAxis>): 'category' | 'value' {
+function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' {
   if (!xAxis) return 'category'
   return (xAxis.type ?? 'discrete') === 'continuous' ? 'value' : 'category'
 }

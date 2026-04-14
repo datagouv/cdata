@@ -8,7 +8,7 @@
         >Titre</label>
         <input
           id="chart-title"
-          v-model="titleRef"
+          v-model="title"
           type="text"
           class="w-full fr-input"
         >
@@ -21,7 +21,7 @@
         >Description</label>
         <textarea
           id="chart-description"
-          v-model="descRef"
+          v-model="desc"
           class="w-full fr-input"
           rows="2"
         />
@@ -29,7 +29,7 @@
       <div class="mt-4">
         <ClientOnly>
           <ChartViewerWrapper
-            v-model="chartPreview"
+            v-model="form"
             @columns="columns = $event"
           />
         </ClientOnly>
@@ -118,13 +118,13 @@
           >Column</label>
           <select
             id="x-axis-column"
-            v-model="form.xAxisColumn"
+            v-model="form.x_axis.column_x"
             class="w-full fr-select"
           >
             <optgroup
               v-for="{ key, value } in flattenedColumns"
               :key="key"
-              :label="key"
+              :label="savedResources[key].title"
             >
               <option
                 v-for="column in value"
@@ -143,7 +143,7 @@
           >Type</label>
           <select
             id="x-axis-type"
-            v-model="form.xAxisType"
+            v-model="form.x_axis.type"
             class="w-full fr-select"
           >
             <option value="discrete">
@@ -161,7 +161,7 @@
           >Trier par</label>
           <select
             id="x-axis-sort-by"
-            v-model="form.xAxisSortBy"
+            v-model="form.x_axis.sort_x_by"
             class="w-full fr-select"
           >
             <option value="">
@@ -182,7 +182,7 @@
           >Direction du tri</label>
           <select
             id="x-axis-sort-direction"
-            v-model="form.xAxisSortDirection"
+            v-model="form.x_axis.sort_x_direction"
             class="w-full fr-select"
           >
             <option value="asc">
@@ -207,7 +207,7 @@
           >Label</label>
           <input
             id="y-axis-label"
-            v-model="form.yAxisLabel"
+            v-model="form.y_axis.label"
             type="text"
             class="w-full fr-input"
           >
@@ -220,7 +220,7 @@
             >Min</label>
             <input
               id="y-axis-min"
-              v-model.number="form.yAxisMin"
+              v-model.number="form.y_axis.min"
               type="number"
               class="w-full fr-input"
             >
@@ -232,7 +232,7 @@
             >Max</label>
             <input
               id="y-axis-max"
-              v-model.number="form.yAxisMax"
+              v-model.number="form.y_axis.max"
               type="number"
               class="w-full fr-input"
             >
@@ -246,7 +246,7 @@
             >Unité</label>
             <input
               id="y-axis-unit"
-              v-model="form.yAxisUnit"
+              v-model="form.y_axis.unit"
               type="text"
               class="w-full fr-input"
               placeholder="ex: €, %, kg"
@@ -259,7 +259,7 @@
             >Position unité</label>
             <select
               id="y-axis-unit-position"
-              v-model="form.yAxisUnitPosition"
+              v-model="form.y_axis.unit_position"
               class="w-full fr-select"
             >
               <option value="suffix">
@@ -325,13 +325,15 @@
               v-model="serie.column_y"
               class="w-full fr-select"
             >
-              <option
-                v-for="column in columns[serie.resource_id]"
-                :key="column"
-                :value="column"
-              >
-                {{ column }}
-              </option>
+              <template v-if="serie.resource_id">
+                <option
+                  v-for="column in columns[serie.resource_id]"
+                  :key="column"
+                  :value="column"
+                >
+                  {{ column }}
+                </option>
+              </template>
             </select>
           </div>
 
@@ -341,7 +343,7 @@
               v-model="serie.aggregate_y"
               class="w-full fr-select"
             >
-              <option value="">
+              <option :value="null">
                 Non
               </option>
               <option value="sum">
@@ -355,7 +357,14 @@
         </div>
         <button
           class="text-sm text-datagouv underline"
-          @click="form.series.push(dummySerie)"
+          @click="form.series.push({
+            type: 'histogram',
+            column_y: '',
+            resource_id: selectedResource,
+            column_x_name_override: null,
+            filters: null,
+            aggregate_y: null,
+          })"
         >
           + Ajouter une série
         </button>
@@ -373,22 +382,34 @@
 </template>
 
 <script setup lang="ts">
-import type { XAxisType, XAxisSortBy, SortDirection, UnitPosition, DataSeries, Resource, PaginatedArray, ChartForm, Chart } from '@datagouv/components-next'
-import { SearchableSelect, useGetProfile, useHasTabularData, toast, BrandedButton, useDebouncedRef } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart } from '@datagouv/components-next'
+import { SearchableSelect, useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import type { DatasetSuggest } from '~/types/types'
 import { useAPI } from '~/utils/api'
 
 const ChartViewerWrapper = defineAsyncComponent(() => import('../datagouv-components/src/components/Chart/ChartViewerWrapper.vue'))
+
+const form = defineModel<ChartForm>({
+  required: true,
+})
+
 const columns = ref<Record<string, Array<string>>>({})
 const flattenedColumns = computed(() => Object.entries(columns.value).map(([key, value]) => ({ key, value })).flat())
 
-const dataset = ref<DatasetSuggest>()
+const dataset = ref<DatasetSuggest | undefined>({ id: '6170ae10981edd7b132f28a0', title: 'Logements et logements sociaux dans les EPCI' } as DatasetSuggest)
 const savedResources = reactive<Record<string, Resource>>({})
-const selectedResource = ref('')
+const selectedResource = ref('14dba482-41e3-4c54-b82a-d8c11d1d80eb')
 const savedChart = ref<Chart | null>(null)
 const selectedChartId = ref('')
+
+const debounceMs = 300
+const title = ref(form.value.title)
+const desc = ref(form.value.description)
+
+const { debounced: titleDebounced } = useDebouncedRef(title, debounceMs)
+const { debounced: descDebounced } = useDebouncedRef(desc, debounceMs)
 
 const resources = computed(() => Object.values(savedResources))
 
@@ -396,90 +417,38 @@ const { $api } = useNuxtApp()
 const hasTabularData = useHasTabularData()
 const getProfile = useGetProfile()
 
-const dummyDataset = { id: '6170ae10981edd7b132f28a0', title: 'Logements et logements sociaux dans les EPCI' } as DatasetSuggest
-const dummySerie: DataSeries = {
-  type: 'histogram',
-  column_y: 'Nombre de logements',
-  aggregate_y: null,
-  resource_id: '14dba482-41e3-4c54-b82a-d8c11d1d80eb',
-  filters: null,
-  column_x_name_override: null,
-}
-
 const { data: charts, refresh: refresh } = await useAPI<PaginatedArray<Chart>>('/api/1/visualizations/', { lazy: true })
 
-dataset.value = dummyDataset
-
-const form = ref<{
-  xAxisColumn: string
-  xAxisType: XAxisType
-  xAxisSortBy: XAxisSortBy | ''
-  xAxisSortDirection: SortDirection
-  yAxisLabel: string
-  yAxisMin: number | undefined
-  yAxisMax: number | undefined
-  yAxisUnit: string
-  yAxisUnitPosition: UnitPosition
-  series: Array<DataSeries>
-}>({
-  xAxisColumn: 'nom_region',
-  xAxisType: 'discrete',
-  xAxisSortBy: '',
-  xAxisSortDirection: 'asc',
-  yAxisLabel: '',
-  yAxisMin: undefined,
-  yAxisMax: undefined,
-  yAxisUnit: '',
-  yAxisUnitPosition: 'suffix',
-  series: [dummySerie],
-})
-
-const user = useMaybeMe()
-
-const debounceMs = 300
-const titleRef = ref('Mon graphique')
-const descRef = ref('')
-
-const titleDebounced = useDebouncedRef(titleRef, debounceMs)
-const descDebounced = useDebouncedRef(descRef, debounceMs)
-
-const chartPreview = computed<ChartForm>(() => ({
-  organization: null,
-  owner: user.value ? user.value.id : 'dummyForDS',
-  title: titleDebounced.debounced.value,
-  description: descDebounced.debounced.value,
-  private: false,
-  x_axis: {
-    column_x: form.value.xAxisColumn,
-    type: form.value.xAxisType,
-    ...(form.value.xAxisSortBy ? { sort_x_by: form.value.xAxisSortBy, sort_x_direction: form.value.xAxisSortDirection } : {}),
-  },
-  y_axis: {
-    label: form.value.yAxisLabel || undefined,
-    min: form.value.yAxisMin,
-    max: form.value.yAxisMax,
-    unit: form.value.yAxisUnit || undefined,
-    unit_position: form.value.yAxisUnitPosition,
-  },
-  series: form.value.series,
-  extras: {},
-} satisfies ChartForm))
-
 watch(dataset, async (newDataset) => {
-  if (newDataset) {
-    try {
-      const fetchedResources = await $api<PaginatedArray<Resource>>(`https://demo.data.gouv.fr/api/2/datasets/${newDataset.id}/resources/`)
-      for (const r of fetchedResources.data.filter(resource => hasTabularData(resource))) {
-        savedResources[r.id] = r
-      }
-    }
-    catch (error) {
-      console.error('Failed to fetch resources:', error)
+  if (!newDataset) return
+  try {
+    const fetchedResources = await $api<PaginatedArray<Resource>>(`https://demo.data.gouv.fr/api/2/datasets/${newDataset.id}/resources/`)
+    for (const r of fetchedResources.data.filter(resource => hasTabularData(resource))) {
+      savedResources[r.id] = r
     }
   }
+  catch (error) {
+    console.error('Failed to fetch resources:', error)
+  }
+}, { immediate: true })
+
+watch(selectedResource, async (r) => {
+  if (r) {
+    await loadMissingResourcesForChart(new Set([r]))
+    if (columns.value[r]) {
+      return
+    }
+    const profile = await getProfile(r)
+    columns.value[r] = profile.profile.header
+  }
+}, { immediate: true })
+
+watch([titleDebounced, descDebounced], ([title, desc]) => {
+  form.value.title = title
+  form.value.description = desc
 })
 
-const loadMissingResourcesForChart = async (resourceIds: Set<string>) => {
+async function loadMissingResourcesForChart(resourceIds: Set<string>) {
   for (const id of resourceIds) {
     if (savedResources[id]) continue
 
@@ -493,23 +462,13 @@ const loadMissingResourcesForChart = async (resourceIds: Set<string>) => {
   }
 }
 
-watch([selectedResource], async ([r]) => {
-  if (r) {
-    if (columns.value[r]) {
-      return
-    }
-    const profile = await getProfile(r)
-    columns.value[r] = profile.profile.header
-  }
-})
-
-const suggestDataset = async (q: string): Promise<Array<DatasetSuggest>> => {
+async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
   return await $api<Array<DatasetSuggest>>('https://demo.data.gouv.fr/api/1/datasets/suggest/', {
     query: { q, size: 5 },
   })
 }
 
-const loadChart = async (id: string) => {
+async function loadChart(id: string) {
   try {
     const { data } = await useAPI<Chart>(`/api/1/visualizations/${id}/`)
     if (data.value) {
@@ -522,20 +481,9 @@ const loadChart = async (id: string) => {
         }
       }
 
-      form.value = {
-        ...data.value,
-        xAxisType: data.value.x_axis.type,
-        xAxisColumn: data.value.x_axis.column_x,
-        xAxisSortBy: data.value.x_axis.sort_x_by || '',
-        xAxisSortDirection: data.value.x_axis.sort_x_direction || 'asc',
-        yAxisLabel: data.value.y_axis.label || '',
-        yAxisMin: data.value.y_axis.min,
-        yAxisMax: data.value.y_axis.max,
-        yAxisUnit: data.value.y_axis.unit || '',
-        yAxisUnitPosition: data.value.y_axis.unit_position || 'suffix',
-      }
-      titleRef.value = data.value.title
-      descRef.value = data.value.description
+      form.value = toChartForm(data.value)
+      title.value = data.value.title
+      desc.value = data.value.description
 
       await loadMissingResourcesForChart(chartResources)
 
@@ -548,24 +496,24 @@ const loadChart = async (id: string) => {
   }
 }
 
-const loadSelectedChart = () => {
+function loadSelectedChart() {
   if (selectedChartId.value) {
     loadChart(selectedChartId.value)
   }
 }
 
-const saveChart = async () => {
+async function saveChart() {
   try {
     if (savedChart.value?.id) {
       savedChart.value = await $api<Chart>(`/api/1/visualizations/${savedChart.value.id}/`, {
         method: 'PATCH',
-        body: JSON.stringify(chartPreview.value),
+        body: JSON.stringify(form.value),
       })
     }
     else {
       savedChart.value = await $api<Chart>('/api/1/visualizations/', {
         method: 'POST',
-        body: JSON.stringify(chartPreview.value),
+        body: JSON.stringify(form.value),
       })
     }
 

@@ -23,7 +23,7 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
-import type { Chart, ChartForm, FilterCondition, Filter, AndFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, UnitPosition, YAxis, DataSeriesType, AggregateType, DataSeries } from './types/visualizations'
+import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm } from './types/visualizations'
 import type { GlobalSearchConfig, SearchType, SortOption } from './types/search'
 import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 
@@ -221,6 +221,7 @@ export type {
   WellType,
   Chart,
   ChartForm,
+  ChartForApi,
   FilterCondition,
   Filter,
   AndFilters,
@@ -229,11 +230,12 @@ export type {
   XAxisSortBy,
   SortDirection,
   XAxis,
+  XAxisForm,
   UnitPosition,
   YAxis,
   DataSeriesType,
-  AggregateType,
   DataSeries,
+  DataSeriesForm,
 }
 
 export {
