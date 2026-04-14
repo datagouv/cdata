@@ -1900,6 +1900,9 @@ packages:
   '@ocavue/utils@1.6.0':
     resolution: {integrity: sha512-8W3q1hxx9qFdrYgPtbElllG/tqYkO/dMhlRUiqasO0SuDFTj78azSQjhIrBTFWxlBPPsSZN6zXYHmb3RwN2Jtg==}
 
+  '@ocavue/utils@1.6.0':
+    resolution: {integrity: sha512-8W3q1hxx9qFdrYgPtbElllG/tqYkO/dMhlRUiqasO0SuDFTj78azSQjhIrBTFWxlBPPsSZN6zXYHmb3RwN2Jtg==}
+
   '@opentelemetry/api-logs@0.207.0':
     resolution: {integrity: sha512-lAb0jQRVyleQQGiuuvCOTDVspc14nx6XJjP4FspJ1sNARo3Regq4ZZbrc3rN4b1TYSuUCvgH+UXUPug4SLOqEQ==}
     engines: {node: '>=8.0.0'}
@@ -2676,11 +2679,11 @@ packages:
     peerDependencies:
       '@opentelemetry/api': ^1.8
 
-  '@prosemirror-adapter/core@0.4.6':
-    resolution: {integrity: sha512-qbqd4u9IyDXXolFFmX1tzE000IpF9JbCiiwuSvqIh7lT9ZqjeMcyDVR/vxyM4oVY1sVyQQQj+WxHMAIhj7egVg==}
+  '@prosemirror-adapter/core@0.5.3':
+    resolution: {integrity: sha512-jGcI/eq3USFqf1fCaejgCmifmXYDyFco6/5KjyyNBnuEhLqyLjD+020CtcduEOsnN4xPZr5ikclgHIR6kEFkQg==}
 
-  '@prosemirror-adapter/vue@0.4.6':
-    resolution: {integrity: sha512-1zDxyi4JqH4Iw8SPAvkNSAfUPEHQDRi0Oshi2qOmRf3xFHk1hBiV8CL0kEmOUE2C40ipk9AWkX2uu3UgO/8IYw==}
+  '@prosemirror-adapter/vue@0.5.3':
+    resolution: {integrity: sha512-k+qofvyTk6XXIOSdy1nzX0dQjk8tDf+HVJAj4E9GDBICeiwMiIvHcbgcpCvL+K1BuGm2zwlNFUNIFFq5ExQQhg==}
     peerDependencies:
       vue: ^3.0.0
     peerDependenciesMeta:
@@ -11906,6 +11909,8 @@ snapshots:
 
   '@ocavue/utils@1.6.0': {}
 
+  '@ocavue/utils@1.6.0': {}
+
   '@opentelemetry/api-logs@0.207.0':
     dependencies:
       '@opentelemetry/api': 1.9.0
@@ -12512,7 +12517,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@prosemirror-adapter/core@0.4.6':
+  '@prosemirror-adapter/core@0.5.3':
     dependencies:
       prosemirror-model: 1.25.4
       prosemirror-state: 1.4.4
