@@ -3,7 +3,24 @@
  * Handles HTML (strips tags, decodes character references), trims and normalizes whitespace.
  */
 
+import { assertPublicFetchHost } from '~/server/utils/assert-public-fetch-host'
+
 const FETCH_TIMEOUT_MS = 15_000
+
+/**
+ * Maximum bytes read per documentation URL (streaming cap + Content-Length check).
+ * Should stay aligned with the prompt budget in `generate-dataservice-description.post.ts`.
+ */
+export const MAX_DOCUMENTATION_DOWNLOAD_BYTES = 120_000 + 16_384
+
+const MAX_REDIRECTS = 5
+
+const DISALLOWED_URL_MESSAGE = 'Documentation URL is not allowed. Use a public http(s) URL.'
+
+const FETCH_HEADERS = {
+  'Accept': 'text/html, application/json, application/x-yaml, text/yaml, text/plain, */*',
+  'User-Agent': 'cdata',
+} as const
 
 /**
  * Common HTML named character references (ASCII names only; accents use exact case).
@@ -144,6 +161,123 @@ const NAMED_HTML_ENTITIES: Record<string, string> = {
   bull: '\u2022',
 }
 
+async function assertSafeDocumentationUrl(urlString: string): Promise<URL> {
+  let parsed: URL
+  try {
+    parsed = new URL(urlString)
+  }
+  catch {
+    throw new Error(DISALLOWED_URL_MESSAGE)
+  }
+  const proto = parsed.protocol.toLowerCase()
+  if (proto !== 'http:' && proto !== 'https:') {
+    throw new Error(DISALLOWED_URL_MESSAGE)
+  }
+  await assertPublicFetchHost(parsed.hostname, DISALLOWED_URL_MESSAGE)
+  return parsed
+}
+
+function parseContentLength(headers: Headers): number | null {
+  const raw = headers.get('content-length')
+  if (raw == null || raw === '') {
+    return null
+  }
+  const n = Number.parseInt(raw, 10)
+  if (!Number.isFinite(n) || n < 0) {
+    return null
+  }
+  return n
+}
+
+async function readBodyWithByteCap(response: Response, maxBytes: number): Promise<string> {
+  const reader = response.body?.getReader()
+  if (!reader) {
+    return ''
+  }
+  const decoder = new TextDecoder('utf-8')
+  let total = 0
+  const chunks: Uint8Array[] = []
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) {
+        break
+      }
+      if (!value?.byteLength) {
+        continue
+      }
+      const nextTotal = total + value.byteLength
+      if (nextTotal > maxBytes) {
+        await reader.cancel().catch(() => {})
+        throw new Error(`Documentation response exceeds maximum size (${maxBytes} bytes).`)
+      }
+      total = nextTotal
+      chunks.push(value)
+    }
+  }
+  catch (err) {
+    await reader.cancel().catch(() => {})
+    throw err
+  }
+  return decoder.decode(Buffer.concat(chunks.map(c => Buffer.from(c))))
+}
+
+async function fetchDocumentationResponse(
+  initialUrl: string,
+  signal: AbortSignal,
+): Promise<{ text: string, finalUrl: string }> {
+  let currentHref = (await assertSafeDocumentationUrl(initialUrl)).href
+  let redirects = 0
+
+  while (true) {
+    const response = await fetch(currentHref, {
+      method: 'GET',
+      redirect: 'manual',
+      signal,
+      headers: FETCH_HEADERS,
+    })
+
+    if (response.status >= 300 && response.status < 400) {
+      if (redirects >= MAX_REDIRECTS) {
+        response.body?.cancel().catch(() => {})
+        throw new Error('Too many redirects when loading documentation URL.')
+      }
+      const location = response.headers.get('location')
+      if (!location) {
+        response.body?.cancel().catch(() => {})
+        throw new Error('Failed to load documentation from URL.')
+      }
+      redirects++
+      let nextUrl: URL
+      try {
+        nextUrl = new URL(location, currentHref)
+      }
+      catch {
+        response.body?.cancel().catch(() => {})
+        throw new Error('Failed to load documentation from URL.')
+      }
+      await assertSafeDocumentationUrl(nextUrl.href)
+      currentHref = nextUrl.href
+      response.body?.cancel().catch(() => {})
+      continue
+    }
+
+    if (!response.ok) {
+      response.body?.cancel().catch(() => {})
+      throw new Error(`Failed to load documentation from URL: HTTP ${response.status}`)
+    }
+
+    const declared = parseContentLength(response.headers)
+    if (declared != null && declared > MAX_DOCUMENTATION_DOWNLOAD_BYTES) {
+      response.body?.cancel().catch(() => {})
+      throw new Error(`Documentation response exceeds maximum size (${MAX_DOCUMENTATION_DOWNLOAD_BYTES} bytes).`)
+    }
+
+    const text = await readBodyWithByteCap(response, MAX_DOCUMENTATION_DOWNLOAD_BYTES)
+    return { text, finalUrl: currentHref }
+  }
+}
+
 function decodeHtmlEntitiesOnce(text: string): string {
   return text.replace(
     /&(#(?:x[0-9a-f]{1,6}|\d{1,7})|[a-zA-Z][a-zA-Z0-9]*);/gi,
@@ -194,24 +328,23 @@ export async function fetchDocumentationContent(url: string): Promise<string> {
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
 
   try {
-    const response = await $fetch<string>(url, {
-      responseType: 'text',
-      signal: controller.signal,
-      headers: {
-        'Accept': 'text/html, application/json, application/x-yaml, text/yaml, text/plain, */*',
-        'User-Agent': 'data.gouv.fr-dataservice-description-generator/1.0',
-      },
-      ignoreResponseError: false,
-    })
+    const { text, finalUrl } = await fetchDocumentationResponse(url, controller.signal)
     clearTimeout(timeoutId)
-    const raw = typeof response === 'string' ? response : String(response)
-    return formatDocumentationContent(raw, url)
+    const raw = typeof text === 'string' ? text : String(text)
+    return formatDocumentationContent(raw, finalUrl)
   }
   catch (error) {
     clearTimeout(timeoutId)
     if (error instanceof Error) {
       if (error.name === 'AbortError') {
-        throw new Error(`Documentation URL could not be loaded within ${FETCH_TIMEOUT_MS / 1000} seconds: ${url}`)
+        throw new Error(`Documentation URL could not be loaded within ${FETCH_TIMEOUT_MS / 1000} seconds.`)
+      }
+      if (
+        error.message === DISALLOWED_URL_MESSAGE
+        || error.message.includes('maximum size')
+        || error.message.includes('Too many redirects')
+      ) {
+        throw error
       }
       throw new Error(`Failed to load documentation from URL: ${error.message}`)
     }
