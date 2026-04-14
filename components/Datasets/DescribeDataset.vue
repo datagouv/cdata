@@ -352,7 +352,7 @@
                 </template>
               </BrandedButton>
               <CdataLink
-                v-if="config.public.generateShortDescriptionFeedbackUrl"
+                v-if="config.public.generateShortDescriptionFeedbackUrl && hasReceivedAiShortDescriptionSuggestion"
                 :to="config.public.generateShortDescriptionFeedbackUrl"
                 target="_blank"
                 class="text-sm text-gray-medium"
@@ -410,7 +410,7 @@
                 </template>
               </BrandedButton>
               <CdataLink
-                v-if="config.public.generateTagsFeedbackUrl"
+                v-if="config.public.generateTagsFeedbackUrl && hasReceivedAiTagsSuggestion"
                 :to="config.public.generateTagsFeedbackUrl"
                 target="_blank"
                 class="text-sm text-gray-medium"
@@ -825,6 +825,7 @@ const addSpatialInformationAccordionId = useId()
 
 const isGeneratingDescriptionShort = ref(false)
 const descriptionShortGenerationError = ref(false)
+const hasReceivedAiShortDescriptionSuggestion = ref(false)
 
 const newBadges = ref(props.badges ?? [])
 watch(() => props.badges, (badges) => {
@@ -872,6 +873,7 @@ const getGranularityName = (zone: SpatialZone): string | undefined => {
 const isGeneratingTags = ref(false)
 const lastSuggestedTags = ref<Array<Tag>>([])
 const tagsGenerationError = ref(false)
+const hasReceivedAiTagsSuggestion = ref(false)
 
 const { $api } = useNuxtApp()
 
@@ -959,6 +961,9 @@ async function handleAutoCompleteDescriptionShort() {
     })
 
     form.value.description_short = response.descriptionShort || ''
+    if (form.value.description_short.trim().length > 0) {
+      hasReceivedAiShortDescriptionSuggestion.value = true
+    }
   }
   catch (error) {
     console.error('Failed to generate short description:', error)
@@ -1018,6 +1023,9 @@ async function handleAutoCompleteTags(nbTags: number) {
 
       // Update the suggested tags tracking
       lastSuggestedTags.value = newSuggestedTags
+      if (newSuggestedTags.length > 0) {
+        hasReceivedAiTagsSuggestion.value = true
+      }
     }
   }
   catch (error) {
