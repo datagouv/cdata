@@ -5,6 +5,8 @@ import type { FetchOptions } from 'ofetch'
 export type PluginConfig = {
   name: string // Name of the application (ex: data.gouv.fr)
   baseUrl: string
+  /** Hostnames allowed in Access-Control-Allow-Origin for resource preview CORS checks (e.g. data.gouv.fr). */
+  trustedDomains?: string[]
   apiBase: string
   devApiKey?: string | null
   datasetQualityGuideUrl?: string

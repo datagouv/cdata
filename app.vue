@@ -34,6 +34,7 @@ const siteConfig = useSiteConfig()
 app.vueApp.use(datagouv, {
   name: runtimeConfig.public.title,
   baseUrl: siteConfig.url,
+  trustedDomains: runtimeConfig.public.trustedDomains,
   apiBase: runtimeConfig.public.apiBase,
   devApiKey: runtimeConfig.public.devApiKey,
   datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,

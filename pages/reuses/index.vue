@@ -27,16 +27,12 @@
         </li>
       </ul>
     </EditoHeader>
-    <PageShowById
-      v-if="site?.reuses_page"
-      :page-id="site.reuses_page"
+    <EditoBlocs
+      v-if="siteBlocs.length > 0 || isEditing"
+      :blocs="siteBlocs"
+      editable
       main-color="green-illustration"
-    />
-    <PageShowNew
-      v-else-if="isEditing"
-      site-key="reuses_page"
-      main-color="green-illustration"
-      @created="onPageCreated"
+      :on-save="saveBlocs"
     />
     <div class="overflow-hidden container flex flex-col md:flex-row items-center py-16 md:py-0">
       <div class="w-full">
@@ -159,12 +155,11 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type ReuseTopic, type Site } from '@datagouv/components-next'
+import { BrandedButton, type ReuseTopic } from '@datagouv/components-next'
 import CdataLink from '~/components/CdataLink.vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
 import EditoHeader from '~/components/Pages/EditoHeader.vue'
-import PageShowById from '~/components/Pages/PageShowById.vue'
-import PageShowNew from '~/components/Pages/PageShowNew.vue'
+import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
@@ -197,11 +192,7 @@ onMounted(async () => {
 
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
 
-const { data: site, refresh: refreshSite } = await useAPI<Site>('/api/1/site/')
+const { site, blocs: siteBlocs, saveBlocs } = await useSiteBlocs('reuses_blocs', ['metrics'])
 
 const isEditing = computed(() => route.query.edit === 'true')
-
-async function onPageCreated() {
-  await refreshSite()
-}
 </script>

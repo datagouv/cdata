@@ -90,7 +90,6 @@
           :total-results="activities.total"
           :page-size="activities.page_size"
           :page="activities.page"
-          :link="getLink"
           @change="(newPage: number) => page = newPage"
         />
       </template>
@@ -117,7 +116,6 @@ import { useTranslation } from '../../composables/useTranslation'
 import { getActivityTranslation } from '../../functions/activities'
 import { useFetch } from '../../functions/api'
 import { useFormatDate } from '../../functions/dates'
-import { getLink } from '../../functions/pagination'
 import type { PaginatedArray } from '../../types/api'
 import type { Activity } from '../../types/activity'
 import Avatar from '../Avatar.vue'

@@ -33,7 +33,6 @@
         />
       </div>
       <Pagination
-        :link="getLink"
         :page="posts.page"
         :page-size="posts.page_size"
         :total-results="posts.total"
@@ -44,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, getLink } from '@datagouv/components-next'
+import { Pagination } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import type { Post } from '~/types/posts'

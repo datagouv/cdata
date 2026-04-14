@@ -16,7 +16,7 @@
     </div>
 
     <div
-      v-for="(bloc, index) in workingPage.blocs"
+      v-for="(bloc, index) in workingBlocs"
       :key="bloc.id"
       class="relative"
       :class="bloc.class !== 'HeroBloc' && 'py-24 odd:bg-gray-some even:bg-white'"
@@ -26,7 +26,7 @@
         v-if="isEditing"
         class="absolute -top-4 left-0 right-0 flex items-center justify-center"
       >
-        <AddBlocDropdown @new-bloc="workingPage.blocs.splice(index, 0, $event)">
+        <AddBlocDropdown @new-bloc="workingBlocs.splice(index, 0, $event)">
           <BrandedButton
             color="tertiary"
             size="xs"
@@ -52,7 +52,7 @@
         <BrandedButton
           color="tertiary"
           :icon="RiArrowDownLine"
-          :disabled="index === workingPage.blocs.length - 1"
+          :disabled="index === workingBlocs.length - 1"
           :title="$t('Descendre')"
           @click="moveBloc(index, 1)"
         />
@@ -60,7 +60,7 @@
           color="tertiary"
           :icon="RiDeleteBinLine"
           :title="$t('Supprimer')"
-          @click="workingPage.blocs.splice(index, 1)"
+          @click="workingBlocs.splice(index, 1)"
         />
       </div>
 
@@ -68,7 +68,7 @@
       <component
         :is="blocsTypes[bloc.class].component"
         v-if="blocsTypes[bloc.class] && 'fullWidth' in blocsTypes[bloc.class] && blocsTypes[bloc.class].component"
-        v-model="(workingPage.blocs[index] as any)"
+        v-model="(workingBlocs[index] as any)"
         :edit="isEditing"
         v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
       />
@@ -81,7 +81,7 @@
         <component
           :is="blocsTypes[bloc.class].component"
           v-if="blocsTypes[bloc.class]?.component"
-          v-model="(workingPage.blocs[index] as any)"
+          v-model="(workingBlocs[index] as any)"
           :edit="isEditing"
           v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
         />
@@ -89,10 +89,10 @@
 
       <!-- Add button below the last bloc -->
       <div
-        v-if="isEditing && index === workingPage.blocs.length - 1"
+        v-if="isEditing && index === workingBlocs.length - 1"
         class="absolute -bottom-4 left-0 right-0 flex items-center justify-center"
       >
-        <AddBlocDropdown @new-bloc="workingPage.blocs.push($event)">
+        <AddBlocDropdown @new-bloc="workingBlocs.push($event)">
           <BrandedButton
             color="tertiary"
             size="xs"
@@ -107,14 +107,14 @@
 
     <!-- Empty page message in edit mode -->
     <div
-      v-if="isEditing && workingPage.blocs.length === 0"
+      v-if="isEditing && workingBlocs.length === 0"
       class="py-24"
     >
       <div class="container text-center">
         <p class="text-gray-500 mb-4">
           {{ $t('Page vide') }}
         </p>
-        <AddBlocDropdown @new-bloc="workingPage.blocs.push($event)">
+        <AddBlocDropdown @new-bloc="workingBlocs.push($event)">
           <BrandedButton :icon="RiAddLine">
             {{ $t('Ajouter un bloc') }}
           </BrandedButton>
@@ -145,18 +145,18 @@ import type { ComponentProps } from 'vue-component-type-helpers'
 import * as Sentry from '@sentry/nuxt'
 import { BrandedButton } from '@datagouv/components-next'
 import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine, RiEdit2Line } from '@remixicon/vue'
-import { toast } from 'vue-sonner'
 import AddBlocDropdown from './AddBlocDropdown.vue'
-import type { Page } from '~/types/pages'
+import type { PageBloc } from '~/types/pages'
 import { isMeAdmin } from '~/utils/auth'
 
 const blocsTypes = useBlocsTypes()
 
 const props = withDefaults(defineProps<{
-  page: Page
+  blocs: Array<PageBloc>
   edit?: boolean
   editable?: boolean
   mainColor?: ComponentProps<typeof BrandedButton>['color']
+  onSave: (blocs: Array<PageBloc>) => Promise<void>
 }>(), {
   edit: false,
   editable: false,
@@ -164,56 +164,40 @@ const props = withDefaults(defineProps<{
 })
 
 watchEffect(() => {
-  // TODO: Temporary log any unknown/unregistered blocs for debugging. It should not happen (except following a backend update).
-  for (const bloc of props.page.blocs) {
+  for (const bloc of props.blocs) {
     if (!blocsTypes[bloc.class]) {
-      Sentry.captureMessage(`Unknown bloc type: "${bloc.class}" in page "${props.page.id}"`, 'warning')
+      Sentry.captureMessage(`Unknown bloc type: "${bloc.class}"`, 'warning')
     }
   }
 })
 
 const emit = defineEmits<{
-  'update:page': [Page]
-  'save': [Page]
-  'cancel': []
+  cancel: []
 }>()
 
-const { $api } = useNuxtApp()
 const route = useRoute()
 const router = useRouter()
 
 const isEditing = computed(() => props.edit || (props.editable && route.query.edit === 'true'))
 
-// When editable, keep an internal copy that gets updated after save
-const internalPage = ref<Page>(props.page)
-watch(() => props.page, (newPage) => {
-  internalPage.value = newPage
-})
-const displayPage = computed(() => props.editable ? internalPage.value : props.page)
-
 // In edit mode, we work on a reactive copy
-const localPage = ref<Page | null>(null)
+const localBlocs = ref<Array<PageBloc> | null>(null)
 
 watchEffect(() => {
-  if (isEditing.value && !localPage.value) {
-    localPage.value = structuredClone(toRaw(displayPage.value))
+  if (isEditing.value && !localBlocs.value) {
+    localBlocs.value = structuredClone(toRaw(props.blocs))
   }
 })
 
-const workingPage = computed(() => (isEditing.value && localPage.value ? localPage.value : displayPage.value))
+const workingBlocs = computed(() => localBlocs.value ?? props.blocs)
 
 // Check if there are unsaved changes
 const hasUnsavedChanges = computed(() => {
-  if (!isEditing.value || !localPage.value) return false
-  return JSON.stringify(toRaw(localPage.value)) !== JSON.stringify(toRaw(displayPage.value))
+  if (!isEditing.value || !localBlocs.value) return false
+  return JSON.stringify(toRaw(localBlocs.value)) !== JSON.stringify(toRaw(props.blocs))
 })
 
 // Warn before leaving with unsaved changes.
-// There are two different mechanisms because:
-// - beforeunload: handles tab close, refresh, external navigation. Modern browsers ignore
-//   custom messages for security reasons and show their own generic dialog.
-// - onBeforeRouteLeave: handles internal Nuxt/Vue Router navigation. We can use
-//   window.confirm() with a custom message here.
 const { t } = useTranslation()
 
 const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -238,9 +222,9 @@ onBeforeRouteLeave(() => {
 // Bloc manipulation functions
 function moveBloc(index: number, direction: -1 | 1) {
   const newIndex = index + direction
-  if (newIndex < 0 || newIndex >= workingPage.value.blocs.length) return
+  if (newIndex < 0 || newIndex >= workingBlocs.value.length) return
 
-  const blocs = workingPage.value.blocs
+  const blocs = workingBlocs.value
   const temp = blocs[index]
   blocs[index] = blocs[newIndex]
   blocs[newIndex] = temp
@@ -257,31 +241,17 @@ function exitEditMode() {
 
 // Save and cancel
 async function save() {
-  if (!localPage.value) return
+  if (!localBlocs.value) return
 
+  await props.onSave(localBlocs.value)
+  localBlocs.value = null
   if (props.editable) {
-    try {
-      const response = await $api<Page>(`/api/1/pages/${displayPage.value.id}/`, {
-        method: 'PUT',
-        body: localPage.value,
-      })
-      internalPage.value = response
-      localPage.value = null
-      toast.success(t('Page sauvegardée'))
-      exitEditMode()
-    }
-    catch {
-      toast.error(t('Erreur lors de la sauvegarde'))
-    }
-  }
-  else {
-    emit('update:page', localPage.value)
-    emit('save', localPage.value)
+    exitEditMode()
   }
 }
 
 function cancel() {
-  localPage.value = null
+  localBlocs.value = structuredClone(toRaw(props.blocs))
   if (props.editable) {
     exitEditMode()
   }

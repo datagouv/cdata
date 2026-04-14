@@ -143,7 +143,18 @@
                 :resource="resource"
               />
               <PreviewUnavailable v-else>
-                {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+                <!-- "File too large to download" is the only analysis:error value from hydra for now -->
+                <template v-if="resource.extras['analysis:error'] === 'File too large to download'">
+                  {{ t("Ce fichier est trop volumineux pour être analysé et prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+                </template>
+                <template v-else-if="resource.extras['analysis:parsing:error']">
+                  {{ t("L'analyse de ce fichier a rencontré une erreur, l'aperçu n'est pas disponible. Téléchargez-le depuis l'onglet Téléchargements.") }}
+                  <br>
+                  <span class="text-gray-medium text-xs">{{ resource.extras['analysis:parsing:error'] }}</span>
+                </template>
+                <template v-else>
+                  {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+                </template>
               </PreviewUnavailable>
             </div>
             <div v-if="tab.key === 'description'">
@@ -325,8 +336,7 @@ import DataStructure from '../ResourceAccordion/DataStructure.vue'
 import Metadata from '../ResourceAccordion/Metadata.vue'
 import SchemaBadge from '../ResourceAccordion/SchemaBadge.vue'
 import { filesize, summarize } from '../../functions/helpers'
-import { getResourceFormatIcon } from '../../functions/resources'
-import { getResourceExternalUrl, getResourceFilesize } from '../../functions/datasets'
+import { getResourceFormatIcon, getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
 import { trackEvent } from '../../functions/matomo'
 import { useComponentsConfig } from '../../config'
 import { useFormatDate } from '../../functions/dates'
