@@ -84,7 +84,7 @@ export async function fetchTabularData(config: PluginConfig, options: FetchTabul
   console.log(options)
   let url = `${config.tabularApiUrl}/api/resources/${options.resourceId}/data/?page=${page}&page_size=${pageSize}`
   if (options.columns) {
-    url += `&columns=${options.columns.join(',')}`
+    url += `&columns=${options.columns.map(c => `"${c}"`).join(',')}`
   }
   if (options.sort) {
     url += `&${options.sort.column}__sort=${options.sort.type}`
