@@ -11,13 +11,17 @@
       @change="bloc.content = $event"
     />
   </div>
-  <MarkdownViewer
+  <div
     v-else
-    class="prose-h2:text-3xl prose-h2:text-gray-title prose-h3:text-2xl prose-h3:text-gray-title"
-    :content="bloc.content"
-    :min-heading="2"
-    size="md"
-  />
+    class="max-w-4xl"
+  >
+    <MarkdownViewer
+      class="prose-h2:text-3xl prose-h2:text-gray-title prose-h3:text-2xl prose-h3:text-gray-title"
+      :content="bloc.content"
+      :min-heading="2"
+      size="md"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
