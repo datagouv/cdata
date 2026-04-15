@@ -36,7 +36,10 @@
       </div>
     </div>
     <div class="col-span-5 space-y-6 lg:ml-4 py-4 rounded-lg bg-white border border-new-gray-light">
-      <fieldset class="px-6 space-y-4">
+      <fieldset
+        v-if="isAdmin"
+        class="px-6 space-y-4"
+      >
         <label
           for="existing-charts"
           class="mb-2 font-bold"
@@ -362,7 +365,10 @@
         </div>
       </fieldset>
 
-      <div class="px-6">
+      <div
+        v-if="isAdmin"
+        class="px-6"
+      >
         <BrandedButton @click="saveChart">
           {{ $t('Sauvegarder le graphique') }}
         </BrandedButton>
@@ -430,6 +436,7 @@ function getColumnOptions() {
 const { $api } = useNuxtApp()
 const hasTabularData = useHasTabularData()
 const getProfile = useGetProfile()
+const isAdmin = isMeAdmin()
 
 const { data: charts, refresh: refresh } = await useAPI<PaginatedArray<Chart>>('/api/1/visualizations/', { lazy: true })
 
