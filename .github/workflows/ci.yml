@@ -137,7 +137,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: ${{ env.UDATA_WORKING_DIR }}
-          ref: main
+          ref: feat_add_viz_poc_1 # TODO : move back to main
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
