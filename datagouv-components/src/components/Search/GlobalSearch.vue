@@ -42,7 +42,7 @@
           </Sidemenu>
         </div>
 
-        <div v-if="activeFilters.length > 0">
+        <div v-if="activeFilters.length > 0 || hasCustomFilters">
           <Sidemenu :button-text="t('Filtres')">
             <template #title>
               {{ t('Filtres') }}
@@ -146,6 +146,10 @@
                 :get-order="getOrder"
               />
             </BasicAndAdvancedFilters>
+            <slot
+              name="custom-filters"
+              :current-type="currentType"
+            />
             <div
               v-if="hasFilters"
               class="mt-6 text-center"
@@ -340,12 +344,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, useTemplateRef, type Ref } from 'vue'
+import { computed, provide, shallowReactive, watch, useTemplateRef, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
 import { RiBookShelfLine, RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiLightbulbLine, RiLineChartLine, RiRssLine, RiTerminalLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
 import { useTranslation } from '../../composables/useTranslation'
 import { useDebouncedRef } from '../../composables/useDebouncedRef'
+import { searchFilterContextKey, type CustomFilterEntry } from '../../composables/useSearchFilter'
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
@@ -399,6 +404,18 @@ if (!currentType.value) currentType.value = props.config[0]?.class ?? 'datasets'
 const { t } = useTranslation()
 const componentsConfig = useComponentsConfig()
 
+// Custom filter registry for useSearchFilter composable
+const customFilterRegistry = shallowReactive(new Map<string, CustomFilterEntry>())
+
+provide(searchFilterContextKey, {
+  register(urlParam, entry) {
+    customFilterRegistry.set(urlParam, entry)
+  },
+  unregister(urlParam) {
+    customFilterRegistry.delete(urlParam)
+  },
+})
+
 // Initial type is used to determine which fetch should be SSR (non-lazy)
 const initialType = currentType.value
 
@@ -439,7 +456,8 @@ const activeFilters = computed(() => [
   ...(currentTypeConfig.value?.advancedFilters ?? []),
 ] as string[])
 
-const showSidebar = computed(() => props.config.length > 1 || activeFilters.value.length > 0)
+const hasCustomFilters = computed(() => customFilterRegistry.size > 0)
+const showSidebar = computed(() => props.config.length > 1 || activeFilters.value.length > 0 || hasCustomFilters.value)
 
 // URL query params
 const q = useRouteQuery<string>('q', '')
@@ -513,6 +531,7 @@ const topicsEnabled = computed(() => props.config.some(c => c.class === 'topics'
 // Create stable params for each type
 const stableParamsOptions = {
   allFilters,
+  customFilterRegistry,
   q: qDebounced,
   sort,
   page,
@@ -547,6 +566,15 @@ const reusesUrl = computed(() => reusesEnabled.value ? '/api/2/reuses/search/' :
 const organizationsUrl = computed(() => organizationsEnabled.value ? '/api/2/organizations/search/' : null)
 const topicsUrl = computed(() => topicsEnabled.value ? '/api/2/topics/search/' : null)
 
+// Snapshot of custom filter values for reactivity tracking
+const customFiltersSnapshot = computed(() => {
+  const result: Record<string, unknown> = {}
+  for (const [urlParam, entry] of customFilterRegistry) {
+    result[urlParam] = entry.ref.value
+  }
+  return result
+})
+
 // Reset page on filter/sort change
 const filtersForReset = computed(() => ({
   q: qDebounced.value,
@@ -565,6 +593,7 @@ const filtersForReset = computed(() => ({
   last_update_range: lastUpdateRange.value,
   producer_type: producerType.value,
   type: reuseType.value,
+  ...customFiltersSnapshot.value,
 }))
 
 watch(filtersForReset, () => page.value = 1)
@@ -587,6 +616,9 @@ const hasFilters = computed(() => {
     || lastUpdateRange.value
     || producerType.value
     || reuseType.value
+    || Array.from(customFilterRegistry.values()).some(
+      entry => entry.ref.value !== undefined && entry.ref.value !== entry.defaultValue,
+    )
 })
 
 const showForumLink = computed(() => (currentType.value === 'datasets' || currentType.value === 'dataservices') && !!componentsConfig.forumUrl)
@@ -607,6 +639,9 @@ function resetFilters() {
   lastUpdateRange.value = undefined
   producerType.value = undefined
   reuseType.value = undefined
+  for (const entry of customFilterRegistry.values()) {
+    entry.ref.value = entry.defaultValue
+  }
   q.value = ''
   flushQ()
 }
@@ -701,6 +736,13 @@ const rssUrl = computed(() => {
   if (granularity.value) params.set('granularity', granularity.value)
   if (badge.value) params.set('badge', badge.value)
   if (topic.value) params.set('topic', topic.value)
+
+  // Add custom filter values
+  for (const [, entry] of customFilterRegistry) {
+    if (entry.ref.value !== undefined && entry.ref.value !== entry.defaultValue) {
+      params.set(entry.apiParam, String(entry.ref.value))
+    }
+  }
 
   // Add sort if set
   if (sort.value) params.set('sort', sort.value)

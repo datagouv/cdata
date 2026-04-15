@@ -13,7 +13,11 @@
     </h1>
 
     <div class="bg-white py-4 px-4 -mx-4">
-      <GlobalSearch :config="searchConfig" />
+      <GlobalSearch :config="searchConfig">
+        <template #custom-filters="{ currentType }">
+          <ThemeTagFilter v-if="currentType === 'datasets'" />
+        </template>
+      </GlobalSearch>
     </div>
   </div>
 </template>
@@ -21,6 +25,7 @@
 <script setup lang="ts">
 import { GlobalSearch, type GlobalSearchConfig } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import ThemeTagFilter from '~/components/Design/ThemeTagFilter.vue'
 
 const searchConfig: GlobalSearchConfig = [
   {
