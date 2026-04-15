@@ -1,14 +1,14 @@
 <template>
-  <FilterButtonGroup
-    :model-value="modelValue"
+  <SearchableSelect
+    :model-value="selectedOption"
     :options="options"
-    :label="t('Organisation')"
-    :all-label="t('Toutes')"
-    :facets="normalizedFacets"
     :loading="loading"
-    name="organization_facet"
-    highlight-active
-    @update:model-value="emit('update:modelValue', $event)"
+    :label="t('Organisation')"
+    :placeholder="t('Toutes les organisations')"
+    :get-option-id="(opt) => opt.value"
+    :display-value="(opt) => opt.label"
+    :multiple="false"
+    @update:model-value="emit('update:modelValue', $event?.value ?? undefined)"
   />
 </template>
 
@@ -16,7 +16,7 @@
 import { computed } from 'vue'
 import type { FacetItem } from '../../../types/search'
 import { useTranslation } from '../../../composables/useTranslation'
-import FilterButtonGroup from './FilterButtonGroup.vue'
+import SearchableSelect from '../../Form/SearchableSelect.vue'
 
 const props = defineProps<{
   modelValue: string | undefined
@@ -31,18 +31,16 @@ const emit = defineEmits<{
 const { t } = useTranslation()
 
 // organization_id_with_name facet name format: "org-slug|Org Display Name"
-const parsed = computed(() =>
-  (props.facets ?? []).map((f) => {
-    const [id = '', ...labelParts] = f.name.split('|')
-    return { id, label: labelParts.join('|'), count: f.count }
-  }),
-)
-
 const options = computed(() =>
-  parsed.value.map(({ id, label }) => ({ value: id, label })),
+  (props.facets ?? [])
+    .map((f) => {
+      const [id = '', ...labelParts] = f.name.split('|')
+      return { value: id, label: labelParts.join('|') }
+    })
+    .filter(o => o.value !== '' && o.label !== ''),
 )
 
-const normalizedFacets = computed(() =>
-  parsed.value.map(({ id, count }) => ({ name: id, count })),
+const selectedOption = computed(() =>
+  options.value.find(o => o.value === props.modelValue) ?? null,
 )
 </script>
