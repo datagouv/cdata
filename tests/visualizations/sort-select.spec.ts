@@ -26,7 +26,7 @@ test('sort select updates reactively when column changes', async ({ page }) => {
   const firstOptions = await page.getByLabel('Trier par').locator('option').allTextContents()
   expect(firstOptions[1]).toContain('libellé_EPCI')
 
-  await page.getByLabel('Column').selectOption('nom_region')
+  await page.getByLabel('Choisir quoi afficher').selectOption('nom_region')
 
   await page.waitForTimeout(500)
 
