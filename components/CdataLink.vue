@@ -1,6 +1,8 @@
 <template>
   <NuxtLink
-    v-bind="{ ...attrs, to, href }"
+    v-bind="attrs"
+    :to="to"
+    :href="href as string"
     @click="$emit('click')"
   ><slot /></NuxtLink>
 </template>
