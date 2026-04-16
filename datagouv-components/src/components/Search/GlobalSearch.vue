@@ -5,6 +5,7 @@
     @submit.prevent
   >
     <div
+      v-if="!hideSearchInput"
       ref="search"
       class="flex flex-wrap items-center justify-between"
       data-cy="search"
@@ -388,8 +389,10 @@ import ReuseTypeFilter from './Filter/ReuseTypeFilter.vue'
 const props = withDefaults(defineProps<{
   config?: GlobalSearchConfig
   placeholder?: string
+  hideSearchInput?: boolean
 }>(), {
   config: getDefaultGlobalSearchConfig,
+  hideSearchInput: false,
 })
 
 // defineModel's default is static and can't depend on props, so we cast and initialize manually
