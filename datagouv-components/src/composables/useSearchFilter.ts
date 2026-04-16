@@ -1,4 +1,4 @@
-import { type InjectionKey, type Ref, inject, onScopeDispose } from 'vue'
+import { type InjectionKey, type Ref, inject, onMounted, onScopeDispose } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
 
 export interface CustomFilterEntry {
@@ -55,7 +55,11 @@ export function useSearchFilter(
 
   const value = useRouteQuery<string | undefined>(urlParam, defaultValue)
 
-  context.register(urlParam, { apiParam, ref: value, defaultValue })
+  // Register in onMounted to avoid SSR/hydration mismatch: the registry must be
+  // empty during SSR so server and client produce the same initial HTML.
+  onMounted(() => {
+    context.register(urlParam, { apiParam, ref: value, defaultValue })
+  })
 
   onScopeDispose(() => {
     value.value = defaultValue
