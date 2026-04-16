@@ -61,7 +61,6 @@ export function toChartApi(chartForm: ChartForm): ChartForApi {
       ...serie,
       type: index === 0 && chartForm.chart_type ? chartForm.chart_type : serie.type,
       aggregate_y: serie.aggregate_y || null,
-      // Use series filter if exists, otherwise use chart-level filter
       filters: serie.filters || (index === 0 && chartForm.filter ? chartForm.filter : null),
     })),
     extras: chartForm.extras,
