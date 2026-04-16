@@ -36,6 +36,6 @@ const themes = [
   { value: 'logement', label: 'Logement' },
 ]
 
-// ?theme=environnement dans l'URL → tag=environnement dans l'API
+// ?theme=environnement in URL → tag=environnement in API
 const value = useSearchFilter('theme', { apiParam: 'tag' })
 </script>

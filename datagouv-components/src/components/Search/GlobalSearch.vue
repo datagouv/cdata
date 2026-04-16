@@ -42,7 +42,7 @@
           </Sidemenu>
         </div>
 
-        <div v-if="activeFilters.length > 0 || hasCustomFilters">
+        <div v-if="activeFilters.length > 0 || $slots['custom-filters']">
           <Sidemenu :button-text="t('Filtres')">
             <template #title>
               {{ t('Filtres') }}
@@ -344,7 +344,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, provide, shallowReactive, watch, useTemplateRef, type Ref } from 'vue'
+import { computed, provide, shallowReactive, useSlots, watch, useTemplateRef, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
 import { RiBookShelfLine, RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiLightbulbLine, RiLineChartLine, RiRssLine, RiTerminalLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
@@ -456,8 +456,8 @@ const activeFilters = computed(() => [
   ...(currentTypeConfig.value?.advancedFilters ?? []),
 ] as string[])
 
-const hasCustomFilters = computed(() => customFilterRegistry.size > 0)
-const showSidebar = computed(() => props.config.length > 1 || activeFilters.value.length > 0 || hasCustomFilters.value)
+const slots = useSlots()
+const showSidebar = computed(() => props.config.length > 1 || activeFilters.value.length > 0 || !!slots['custom-filters'])
 
 // URL query params
 const q = useRouteQuery<string>('q', '')
@@ -566,35 +566,31 @@ const reusesUrl = computed(() => reusesEnabled.value ? '/api/2/reuses/search/' :
 const organizationsUrl = computed(() => organizationsEnabled.value ? '/api/2/organizations/search/' : null)
 const topicsUrl = computed(() => topicsEnabled.value ? '/api/2/topics/search/' : null)
 
-// Snapshot of custom filter values for reactivity tracking
-const customFiltersSnapshot = computed(() => {
-  const result: Record<string, unknown> = {}
-  for (const [urlParam, entry] of customFilterRegistry) {
-    result[urlParam] = entry.ref.value
-  }
-  return result
-})
-
 // Reset page on filter/sort change
-const filtersForReset = computed(() => ({
-  q: qDebounced.value,
-  organization: organizationId.value,
-  organization_badge: organizationType.value,
-  tag: tag.value,
-  format: format.value,
-  license: license.value,
-  schema: schema.value,
-  geozone: geozone.value,
-  granularity: granularity.value,
-  badge: badge.value,
-  topic: topic.value,
-  format_family: formatFamily.value,
-  access_type: accessType.value,
-  last_update_range: lastUpdateRange.value,
-  producer_type: producerType.value,
-  type: reuseType.value,
-  ...customFiltersSnapshot.value,
-}))
+const filtersForReset = computed(() => {
+  const filters: Record<string, unknown> = {
+    q: qDebounced.value,
+    organization: organizationId.value,
+    organization_badge: organizationType.value,
+    tag: tag.value,
+    format: format.value,
+    license: license.value,
+    schema: schema.value,
+    geozone: geozone.value,
+    granularity: granularity.value,
+    badge: badge.value,
+    topic: topic.value,
+    format_family: formatFamily.value,
+    access_type: accessType.value,
+    last_update_range: lastUpdateRange.value,
+    producer_type: producerType.value,
+    type: reuseType.value,
+  }
+  for (const [urlParam, entry] of customFilterRegistry) {
+    filters[urlParam] = entry.ref.value
+  }
+  return filters
+})
 
 watch(filtersForReset, () => page.value = 1)
 watch(sort, () => page.value = 1)
