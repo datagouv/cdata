@@ -91,7 +91,7 @@ test('complete chart configuration flow', async ({ page }) => {
   await page.getByLabel('Min').fill('0')
   await page.getByLabel('Max').fill('100')
   await page.locator('#y-axis-unit').fill('%')
-  await page.getByLabel('Position unité').selectOption('suffix')
+  await page.getByLabel('Position unité').selectOption('prefix')
 
   const responsePromise = page.waitForResponse(`${getApiBase()}/api/1/visualizations/*`)
 
