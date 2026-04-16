@@ -94,7 +94,7 @@
               v-for="report in pageData.data"
               :key="report.id"
             >
-              <td>
+              <td class="overflow-hidden">
                 <template v-if="subjects[report.id]">
                   <div v-if="subjects[report.id].value">
                     <LinkToSubject
