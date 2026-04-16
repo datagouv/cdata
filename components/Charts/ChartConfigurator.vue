@@ -575,21 +575,21 @@ const filterList = computed<Array<Filter>>(() => {
 
 function updateFilter(index: number, newFilter: Filter) {
   if (!form.value.filter || !('filters' in form.value.filter)) {
-    form.value.filter = { filters: [] }
+    form.value.filter = { _cls: 'AndFilters', filters: [] }
   }
   form.value.filter.filters[index] = newFilter
 }
 
 function addFilter() {
-  const newFilter: Filter = { column: '', condition: 'exact' as const, value: '' }
+  const newFilter: Filter = { _cls: 'Filter', column: '', condition: 'exact' as const, value: '' }
   if (!form.value.filter) {
-    form.value.filter = { filters: [newFilter] }
+    form.value.filter = { _cls: 'AndFilters', filters: [newFilter] }
   }
   else if ('filters' in form.value.filter) {
     form.value.filter.filters.push(newFilter)
   }
   else {
-    form.value.filter = { filters: [form.value.filter, newFilter] }
+    form.value.filter = { _cls: 'AndFilters', filters: [form.value.filter, newFilter] }
   }
 }
 </script>

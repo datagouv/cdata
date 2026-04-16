@@ -3,12 +3,14 @@ import type { Owned, OwnedWithId } from './owned'
 
 export type FilterCondition = 'exact' | 'differs' | 'is_null' | 'is_not_null' | 'greater' | 'less' | 'strictly_greater' | 'strictly_less'
 export type Filter = {
+  _cls: 'Filter'
   column: string
   condition: FilterCondition
   value: string | null
 }
 
 export type AndFilters = {
+  _cls: 'AndFilters'
   filters: Array<Filter | AndFilters>
 }
 
