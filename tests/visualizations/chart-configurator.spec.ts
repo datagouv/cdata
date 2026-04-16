@@ -59,12 +59,13 @@ test('saving chart sends correct data to API', async ({ page }) => {
   await page.getByLabel('Description').fill('Test Description')
   await page.waitForTimeout(500)
 
-  const responsePromise = page.waitForResponse(`${getApiBase()}/api/1/visualizations/*`)
+  const responsePromise = page.waitForResponse(response => response.url().includes(`${getApiBase()}/api/1/visualizations/`) && response.request().method() === 'POST')
+  const getPromise = page.waitForResponse(response => response.url().includes(`${getApiBase()}/api/1/visualizations/`) && response.request().method() === 'GET')
 
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
-
   const response = await responsePromise
   const responseBody = (await response.json()) as Chart
+  await getPromise
 
   expect(responseBody!.title).toBe('Test Chart')
   expect(await page.getByLabel('Graphiques existants').inputValue()).toBe(responseBody!.id)
@@ -93,12 +94,15 @@ test('complete chart configuration flow', async ({ page }) => {
   await page.locator('#y-axis-unit').fill('%')
   await page.getByLabel('Position unité').selectOption('prefix')
 
-  const responsePromise = page.waitForResponse(`${getApiBase()}/api/1/visualizations/*`)
+  const responsePromise = page.waitForResponse(response => response.url().includes(`${getApiBase()}/api/1/visualizations/`) && response.request().method() === 'POST')
+  const getPromise = page.waitForResponse(response => response.url().includes(`${getApiBase()}/api/1/visualizations/`) && response.request().method() === 'GET')
 
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
   const response = await responsePromise
   const responseBody = (await response.json()) as Chart
+  await getPromise
 
+  expect(responseBody!.title).toBe('Graphique complet')
   expect(await page.getByLabel('Graphiques existants').inputValue()).toBe(responseBody!.id)
 
   expect(await page.getByLabel('Titre').inputValue()).toBe('Graphique complet')
