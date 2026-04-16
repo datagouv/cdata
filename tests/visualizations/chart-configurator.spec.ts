@@ -67,7 +67,7 @@ test('saving chart sends correct data to API', async ({ page }) => {
   const responseBody = (await response.json()) as Chart
 
   expect(responseBody!.title).toBe('Test Chart')
-  expect(await page.getByLabel('Graphiques existants').inputValue()).toBe(responseBody!.title)
+  expect(await page.getByLabel('Graphiques existants').inputValue()).toBe(responseBody!.id)
   await page.request.delete(`${getApiBase()}/api/1/visualization/${responseBody!.id}/`)
 })
 
@@ -99,7 +99,7 @@ test('complete chart configuration flow', async ({ page }) => {
   const response = await responsePromise
   const responseBody = (await response.json()) as Chart
 
-  expect(await page.getByLabel('Graphiques existants').inputValue()).toBe(responseBody!.title)
+  expect(await page.getByLabel('Graphiques existants').inputValue()).toBe(responseBody!.id)
 
   expect(await page.getByLabel('Titre').inputValue()).toBe('Graphique complet')
   expect(await page.getByLabel('Description').inputValue()).toBe('Test complet de configuration')
