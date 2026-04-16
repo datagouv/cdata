@@ -7,7 +7,7 @@ const redirectionCases = [
   { from: '/dataservices/6690725d0fd97cb0a91ff6b5/discussions/', to: '/dataservices/explore-api-v2-30/discussions' },
   { from: '/reuses/66a23b96cc450c85e4409890/', to: '/reuses/itineriz-deplacements-professionnels-jop-paris-2024' },
   { from: '/reuses/66a23b96cc450c85e4409890/discussions/', to: '/reuses/itineriz-deplacements-professionnels-jop-paris-2024/discussions' },
-  { from: '/organizations/6461fa1f4e1de2ee027048b7/', to: '/organizations/sobrana' },
+  { from: '/organizations/6461fa1f4e1de2ee027048b7/', to: '/organizations/sobrana/datasets' },
   { from: '/organizations/6461fa1f4e1de2ee027048b7/datasets/', to: '/organizations/sobrana/datasets' },
   { from: '/users/5acb73d9c751df2c8dd8deb7/', to: '/users/antoine-augusti' },
 ]
