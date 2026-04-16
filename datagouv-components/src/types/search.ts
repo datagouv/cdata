@@ -291,6 +291,7 @@ export type SortOption<Sort extends string> = {
 
 export type DatasetSearchConfig = {
   class: 'datasets'
+  key?: string
   name?: string
   hiddenFilters?: HiddenFilter<DatasetSearchFilters>[]
   basicFilters?: (keyof DatasetSearchFilters)[]
@@ -300,6 +301,7 @@ export type DatasetSearchConfig = {
 
 export type DataserviceSearchConfig = {
   class: 'dataservices'
+  key?: string
   name?: string
   hiddenFilters?: HiddenFilter<DataserviceSearchFilters>[]
   basicFilters?: (keyof DataserviceSearchFilters)[]
@@ -309,6 +311,7 @@ export type DataserviceSearchConfig = {
 
 export type ReuseSearchConfig = {
   class: 'reuses'
+  key?: string
   name?: string
   hiddenFilters?: HiddenFilter<ReuseSearchFilters>[]
   basicFilters?: (keyof ReuseSearchFilters)[]
@@ -318,6 +321,7 @@ export type ReuseSearchConfig = {
 
 export type OrganizationSearchConfig = {
   class: 'organizations'
+  key?: string
   name?: string
   hiddenFilters?: HiddenFilter<OrganizationSearchFilters>[]
   basicFilters?: (keyof OrganizationSearchFilters)[]
@@ -327,6 +331,7 @@ export type OrganizationSearchConfig = {
 
 export type TopicSearchConfig = {
   class: 'topics'
+  key?: string
   name?: string
   hiddenFilters?: HiddenFilter<TopicSearchFilters>[]
   basicFilters?: (keyof TopicSearchFilters)[]
