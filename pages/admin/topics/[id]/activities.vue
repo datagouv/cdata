@@ -6,7 +6,7 @@
 import { ActivityList, type TopicV2 } from '@datagouv/components-next'
 
 definePageMeta({
-  requiredRole: 'admin',
+  requiredOrganizationPermission: 'edit',
 })
 
 defineProps<{
