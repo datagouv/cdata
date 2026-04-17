@@ -40,6 +40,7 @@
 
 <script setup lang="ts">
 import { parse } from 'yaml'
+import type { OpenAPI } from 'openapi-types'
 import { LoadingBlock } from '@datagouv/components-next'
 import OpenApiProperty from './OpenApiProperty.vue'
 import { extractEndpoints, type EndpointProperties } from '~/utils/openapi-extract'
@@ -56,7 +57,7 @@ const { data: endpoints, status } = await useAsyncData<EndpointProperties[]>(
     const response = await fetch(props.url)
     if (!response.ok) throw new Error(`Fetch failed: ${response.status}`)
     const text = await response.text()
-    const spec = parse(text)
+    const spec = parse(text) as OpenAPI.Document
     let eps = extractEndpoints(spec)
     if (props.title?.includes('| Bouquet')) {
       eps = unwrapBouquetData(eps)
