@@ -30,10 +30,16 @@ const isCurrentUrl = useIsCurrentUrl()
 function show(href: string) {
   const router = useRouter()
   const route = router.resolve(href)
-  const me = useMaybeMe()
-  if (route.meta.requiredRole) {
-    return me.value?.roles?.includes(route.meta.requiredRole as string) ?? false
+
+  if (route.meta.requiredOrganizationPermission) {
+    const { currentOrganization } = useCurrentOwned()
+    if (currentOrganization.value) {
+      return currentOrganization.value.permissions[route.meta.requiredOrganizationPermission] ?? false
+    }
+
+    return false
   }
+
   return true
 }
 </script>

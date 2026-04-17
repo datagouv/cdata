@@ -6,7 +6,7 @@
 import { ActivityList, type Reuse } from '@datagouv/components-next'
 
 definePageMeta({
-  requiredRole: 'admin',
+  requiredOrganizationPermission: 'edit',
 })
 
 defineProps<{
