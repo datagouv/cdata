@@ -21,6 +21,8 @@
 </template>
 
 <script setup lang="ts">
+import type { OrganizationReference } from '@datagouv/components-next'
+
 defineProps<{
   links: Array<{ href: string, label: string }>
 }>()
@@ -30,11 +32,11 @@ const isCurrentUrl = useIsCurrentUrl()
 function show(href: string) {
   const router = useRouter()
   const route = router.resolve(href)
-
-  if (route.meta.requiredOrganizationPermission) {
+  const requiredOrganizationPermission = route.meta.requiredOrganizationPermission as (keyof OrganizationReference['permissions'] | undefined) ?? null
+  if (requiredOrganizationPermission) {
     const { currentOrganization } = useCurrentOwned()
     if (currentOrganization.value) {
-      return currentOrganization.value.permissions[route.meta.requiredOrganizationPermission] ?? false
+      return currentOrganization.value.permissions[requiredOrganizationPermission] ?? false
     }
 
     return false
