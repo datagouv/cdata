@@ -452,7 +452,7 @@ const { data: charts, refresh: refresh } = await useAPI<PaginatedArray<Chart>>('
 watch(dataset, async (newDataset) => {
   if (!newDataset) return
   try {
-    const fetchedResources = await $api<PaginatedArray<Resource>>(`https://demo.data.gouv.fr/api/2/datasets/${newDataset.id}/resources/`)
+    const fetchedResources = await $api<PaginatedArray<Resource>>(`/api/2/datasets/${newDataset.id}/resources/`)
     for (const r of fetchedResources.data.filter(resource => hasTabularData(resource))) {
       savedResources[r.id] = r
     }
@@ -479,7 +479,8 @@ watch([titleDebounced, descDebounced], ([title, desc]) => {
 })
 
 watch(columns, (columnsPerResource) => {
-  const firstColumns = Object.values(columnsPerResource) ?? []
+  const firstColumns = Object.values(columnsPerResource ?? {})
+  if (firstColumns.length === 0) return
   const firstColumn = firstColumns[0].filter(c => c !== '__id')[0]
   if (!form.value.x_axis.column_x && firstColumn) {
     form.value.x_axis.column_x = firstColumn
@@ -491,7 +492,7 @@ async function loadMissingResourcesForChart(resourceIds: Set<string>) {
     if (savedResources[id]) continue
 
     try {
-      const resource = await $api<{ resource: Resource, dataset_id: string }>(`https://demo.data.gouv.fr/api/2/datasets/resources/${id}/`)
+      const resource = await $api<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${id}/`)
       savedResources[id] = resource.resource
     }
     catch (error) {
@@ -501,7 +502,7 @@ async function loadMissingResourcesForChart(resourceIds: Set<string>) {
 }
 
 async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
-  return await $api<Array<DatasetSuggest>>('https://demo.data.gouv.fr/api/1/datasets/suggest/', {
+  return await $api<Array<DatasetSuggest>>('/api/1/datasets/suggest/', {
     query: { q, size: 5 },
   })
 }
