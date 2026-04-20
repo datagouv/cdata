@@ -90,7 +90,7 @@ async function fetchSeriesProfile() {
   catch (err) {
     error.value = err instanceof Error ? err : new Error('Failed to fetch series profile')
     status.value = 'error'
-    console.log(err)
+    console.error(err)
     series.columns = {}
   }
 }
