@@ -24,7 +24,7 @@ import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
 import type { GlobalSearchConfig, SearchType, SortOption } from './types/search'
-import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
+import { SearchFilterAliases, getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 import { useSearchFilter } from './composables/useSearchFilter'
 import type { UseSearchFilterOptions } from './composables/useSearchFilter'
 
@@ -222,6 +222,7 @@ export type {
 }
 
 export {
+  SearchFilterAliases,
   getDefaultDatasetConfig,
   getDefaultDataserviceConfig,
   getDefaultReuseConfig,
