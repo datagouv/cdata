@@ -10,7 +10,7 @@ import type { Resource } from '../types/resources'
 export const useHasTabularData = () => {
   const config = useComponentsConfig()
 
-  const hasTabularData = (resource: Resource) => {
+  return (resource: Resource) => {
     return (
       config.tabularApiUrl
       && resource.extras['analysis:parsing:parsing_table']
@@ -18,6 +18,4 @@ export const useHasTabularData = () => {
       && (config.tabularAllowRemote || resource.filetype === 'file')
     )
   }
-
-  return hasTabularData
 }

@@ -54,10 +54,8 @@ const echartsOption = computed(() => {
     }
 
     const sortedData = [...props.series.data[resourceId]]
-    let sortBy: string | null = null
-    let sortDirection: 'asc' | 'desc' = 'asc'
-    sortBy = props.chart.x_axis.sort_x_by
-    sortDirection = props.chart.x_axis.sort_x_direction ?? 'asc'
+    const sortBy = props.chart.x_axis.sort_x_by
+    const sortDirection = props.chart.x_axis.sort_x_direction ?? 'asc'
 
     if (sortBy && sortDirection && props.chart.x_axis.column_x) {
       const sortKey = sortBy === 'axis_x' ? xColumn : yColumn

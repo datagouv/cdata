@@ -142,7 +142,7 @@ async function getTableInfos(page: number, sortConfig?: SortConfig) {
   try {
     // Check that this function return wanted data
     const response = await getData(config, props.resource.id, page, sortConfig)
-    if ('data' in response && response.data && 0 in response.data) {
+    if ('data' in response && response.data && response.data.length > 0) {
       // Update existing rows
       rows.value = response.data
       columns.value = Object.keys(response.data[0]).filter(item => item !== '__id')

@@ -48,7 +48,7 @@ test('saving chart sends correct data to API', async ({ page }) => {
 
   await page.getByLabel('Titre').fill('Test Chart')
   await page.getByLabel('Description').fill('Test Description')
-  await page.waitForTimeout(500)
+  await page.waitForTimeout(300)
 
   const responsePromise = page.waitForResponse(response => response.url().includes(`${getApiBase()}/api/1/visualizations/`) && response.request().method() === 'POST')
   const getPromise = page.waitForResponse(response => response.url().includes(`${getApiBase()}/api/1/visualizations/`) && response.request().method() === 'GET')
@@ -69,7 +69,7 @@ test('complete chart configuration flow', async ({ page }) => {
 
   await page.getByLabel('Titre').fill('Graphique complet')
   await page.getByLabel('Description').fill('Test complet de configuration')
-  await page.waitForTimeout(400)
+  await page.waitForTimeout(300)
 
   await page.getByLabel('Type de graphique').selectOption('line')
 
