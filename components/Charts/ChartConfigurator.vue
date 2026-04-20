@@ -250,7 +250,7 @@
               v-model="serie.column_y"
               class="w-full fr-select"
             >
-              <template v-if="selectedResource">
+              <template v-if="selectedResource && columns[selectedResource]">
                 <option
                   v-for="column in columns[selectedResource]"
                   :key="column"
@@ -427,7 +427,16 @@ const sortOptionLabels = computed(() => {
   }
 })
 
-const columnDetails = computed(() => [{ key: '', value: t('Colonne'), disabled: true }, ...columns.value[selectedResource.value].map(c => ({ key: c, value: c, disabled: false }))])
+const columnDetails = computed(() => {
+  const options = [{ key: '', value: t('Colonne'), disabled: true }]
+  const resourceColumns = columns.value[selectedResource.value]
+
+  if (resourceColumns) {
+    options.push(...resourceColumns.map(c => ({ key: c, value: c, disabled: false })))
+  }
+
+  return options
+})
 
 function getColumnOptions() {
   return columnDetails.value
