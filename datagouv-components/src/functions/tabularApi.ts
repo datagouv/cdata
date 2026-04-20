@@ -81,7 +81,6 @@ export type TabularProfileResponse = {
 export async function fetchTabularData(config: PluginConfig, options: FetchTabularDataOptions): Promise<TabularDataResponse> {
   const page = options.page ?? 1
   const pageSize = options.pageSize ?? config.tabularApiPageSize ?? 15
-  console.log(options)
   let url = `${config.tabularApiUrl}/api/resources/${options.resourceId}/data/?page=${page}&page_size=${pageSize}`
   if (options.columns) {
     url += `&columns=${options.columns.join(',')}`
