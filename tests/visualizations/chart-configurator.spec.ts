@@ -10,7 +10,7 @@ test('dataset selector shows default dataset', async ({ page }) => {
   // SearchableSelect displays the selected value in a different way
   const displayedValue = await datasetSelect.inputValue()
   expect(datasetSelect).toBeVisible()
-  expect(displayedValue || datasetSelect.inputValue()).toContain('Logements et logements sociaux')
+  expect(displayedValue).toContain('Logements et logements sociaux')
 })
 
 test('resource selector shows available resources', async ({ page }) => {
