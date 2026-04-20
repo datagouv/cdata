@@ -2,6 +2,20 @@ import type { Chart } from '@datagouv/components-next'
 import { test, expect } from '../base'
 import { getApiBase } from '../helpers'
 
+const envBaseURL = getApiBase()
+
+test.beforeAll(async ({ baseURL }) => {
+  if (baseURL === envBaseURL) {
+    baseURL = 'https://demo.data.gouv.fr'
+  }
+})
+
+test.afterAll(async ({ baseURL }) => {
+  if (baseURL !== envBaseURL) {
+    baseURL = envBaseURL
+  }
+})
+
 test('dataset selector shows default dataset', async ({ page }) => {
   await page.goto('/design/chart')
   await page.waitForLoadState('networkidle')
@@ -42,7 +56,57 @@ test('series column y selector shows available columns', async ({ page }) => {
   expect(columnYOptions).toContain('libellé_EPCI')
 })
 
-test('saving chart sends correct data to API', async ({ page }) => {
+test('sort select displays dynamic column names', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  // Check that the sort select now shows dynamic column names instead of static "Axe X - Ascendant"
+  const sortOptions = await page.getByLabel('Trier par').locator('option').allTextContents()
+
+  expect(sortOptions[0]).toBe('Aucun')
+
+  // Second option should show the dynamic column name, not "Axe X - Ascendant"
+  expect(sortOptions[1]).toContain('libellé_EPCI')
+  expect(sortOptions[1]).not.toContain('Axe X - Ascendant')
+
+  await page.getByLabel('Trier par').selectOption({ label: 'libellé_EPCI - Descendant' })
+
+  const selectedValue = await page.getByLabel('Trier par').inputValue()
+  expect(selectedValue).toBe('axis_x-desc')
+})
+
+test('sort select updates reactively when column changes', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  const firstOptions = await page.getByLabel('Trier par').locator('option').allTextContents()
+  expect(firstOptions[1]).toContain('libellé_EPCI')
+
+  await page.getByLabel('Choisir quoi afficher').selectOption('nom_region')
+
+  await page.waitForTimeout(500)
+
+  const updatedOptions = await page.getByLabel('Trier par').locator('option').allTextContents()
+  expect(updatedOptions[1]).toContain('nom_region')
+  expect(updatedOptions[1]).not.toContain('libellé_EPCI')
+})
+
+test('Y axis sort options show dynamic series column name too', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  await page.waitForTimeout(1000)
+
+  await page.getByLabel('Colonne Y').selectOption('Nombre de logements')
+
+  const sortOptions = await page.getByLabel('Trier par').locator('option').allTextContents()
+
+  // Y axis ascending option should show dynamic column name
+  expect(sortOptions[3]).toContain('Nombre de logements')
+  expect(sortOptions[3]).not.toContain('Axe Y - Ascendant')
+})
+
+test('saving chart sends correct data to API', async ({ page, baseURL }) => {
   await page.goto('/design/chart')
   await page.waitForLoadState('networkidle')
 
@@ -50,8 +114,8 @@ test('saving chart sends correct data to API', async ({ page }) => {
   await page.getByLabel('Description').fill('Test Description')
   await page.waitForTimeout(300)
 
-  const responsePromise = page.waitForResponse(response => response.url().includes(`${getApiBase()}/api/1/visualizations/`) && response.request().method() === 'POST')
-  const getPromise = page.waitForResponse(response => response.url().includes(`${getApiBase()}/api/1/visualizations/`) && response.request().method() === 'GET')
+  const responsePromise = page.waitForResponse(response => response.url().includes(`${baseURL}/api/1/visualizations/`) && response.request().method() === 'POST')
+  const getPromise = page.waitForResponse(response => response.url().includes(`${baseURL}/api/1/visualizations/`) && response.request().method() === 'GET')
 
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
   const response = await responsePromise
@@ -60,10 +124,10 @@ test('saving chart sends correct data to API', async ({ page }) => {
 
   expect(responseBody!.title).toBe('Test Chart')
   expect(await page.getByLabel('Graphiques existants').inputValue()).toBe(responseBody!.id)
-  await page.request.delete(`${getApiBase()}/api/1/visualizations/${responseBody!.id}/`)
+  await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody!.id}/`)
 })
 
-test('complete chart configuration flow', async ({ page }) => {
+test('complete chart configuration flow', async ({ page, baseURL }) => {
   await page.goto('/design/chart')
   await page.waitForLoadState('networkidle')
 
@@ -85,8 +149,8 @@ test('complete chart configuration flow', async ({ page }) => {
   await page.locator('#y-axis-unit').fill('%')
   await page.getByLabel('Position unité').selectOption('prefix')
 
-  const responsePromise = page.waitForResponse(response => response.url().includes(`${getApiBase()}/api/1/visualizations/`) && response.request().method() === 'POST')
-  const getPromise = page.waitForResponse(response => response.url().includes(`${getApiBase()}/api/1/visualizations/`) && response.request().method() === 'GET')
+  const responsePromise = page.waitForResponse(response => response.url().includes(`${baseURL}/api/1/visualizations/`) && response.request().method() === 'POST')
+  const getPromise = page.waitForResponse(response => response.url().includes(`${baseURL}/api/1/visualizations/`) && response.request().method() === 'GET')
 
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
   const response = await responsePromise
@@ -109,5 +173,5 @@ test('complete chart configuration flow', async ({ page }) => {
   expect(await page.getByLabel('Unité', { exact: true }).inputValue()).toBe('%')
   expect(await page.getByLabel('Position unité').inputValue()).toBe('prefix')
 
-  await page.request.delete(`${getApiBase()}/api/1/visualizations/${responseBody!.id}/`)
+  await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody!.id}/`)
 })

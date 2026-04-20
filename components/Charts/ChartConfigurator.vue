@@ -439,16 +439,27 @@ const columnDetails = computed(() => {
 })
 
 const { $api } = useNuxtApp()
+const runtimeConfig = useRuntimeConfig()
 const hasTabularData = useHasTabularData()
 const getProfile = useGetProfile()
 const isAdmin = isMeAdmin()
+
+// Create a new API client for chart-related API calls
+const $chartsApi = $fetch.create({
+  baseURL: runtimeConfig.public.chartsApiBase,
+  onRequest({ options }) {
+    options.headers.set('Content-Type', 'application/json')
+    options.headers.set('Accept', 'application/json')
+    options.credentials = 'include'
+  },
+})
 
 const { data: charts, refresh: refresh } = await useAPI<PaginatedArray<Chart>>('/api/1/visualizations/', { lazy: true })
 
 watch(dataset, async (newDataset) => {
   if (!newDataset) return
   try {
-    const fetchedResources = await $api<PaginatedArray<Resource>>(`/api/2/datasets/${newDataset.id}/resources/`)
+    const fetchedResources = await $chartsApi<PaginatedArray<Resource>>(`/api/2/datasets/${newDataset.id}/resources/`)
     for (const r of fetchedResources.data.filter(resource => hasTabularData(resource))) {
       savedResources[r.id] = r
     }
@@ -488,7 +499,7 @@ async function loadMissingResourcesForChart(resourceIds: Set<string>) {
     if (savedResources[id]) continue
 
     try {
-      const resource = await $api<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${id}/`)
+      const resource = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${id}/`)
       savedResources[id] = resource.resource
     }
     catch (error) {
@@ -513,20 +524,20 @@ function removeFilter(index: number) {
 
 async function loadChart(id: string) {
   try {
-    const { data } = await useAPI<Chart>(`/api/1/visualizations/${id}/`)
-    if (data.value) {
-      savedChart.value = data.value
+    const data = await $api<Chart>(`/api/1/visualizations/${id}/`)
+    if (data) {
+      savedChart.value = data
 
       const chartResources = new Set<string>()
-      for (const serie of data.value.series) {
+      for (const serie of data.series) {
         if (serie.resource_id) {
           chartResources.add(serie.resource_id)
         }
       }
 
-      form.value = toChartForm(data.value)
-      title.value = data.value.title
-      desc.value = data.value.description
+      form.value = toChartForm(data)
+      title.value = data.title
+      desc.value = data.description
 
       await loadMissingResourcesForChart(chartResources)
 
@@ -550,13 +561,13 @@ async function saveChart() {
     const chartForApi = toChartApi(form.value)
     const update = savedChart.value?.id
     if (update) {
-      savedChart.value = await $api<Chart>(`/api/1/visualizations/${savedChart.value!.id}/`, {
+      savedChart.value = await $chartsApi<Chart>(`/api/1/visualizations/${savedChart.value!.id}/`, {
         method: 'PATCH',
         body: JSON.stringify(chartForApi),
       })
     }
     else {
-      savedChart.value = await $api<Chart>('/api/1/visualizations/', {
+      savedChart.value = await $chartsApi<Chart>('/api/1/visualizations/', {
         method: 'POST',
         body: JSON.stringify(chartForApi),
       })
