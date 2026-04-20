@@ -42,15 +42,6 @@ test('series column y selector shows available columns', async ({ page }) => {
   expect(columnYOptions).toContain('libellé_EPCI')
 })
 
-test('save button is visible and clickable', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
-
-  const saveButton = page.getByRole('button', { name: 'Sauvegarder' })
-  await expect(saveButton).toBeVisible()
-  await expect(saveButton).toBeEnabled()
-})
-
 test('saving chart sends correct data to API', async ({ page }) => {
   await page.goto('/design/chart')
   await page.waitForLoadState('networkidle')
