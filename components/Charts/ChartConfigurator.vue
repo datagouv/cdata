@@ -475,7 +475,7 @@ watch([titleDebounced, descDebounced], ([title, desc]) => {
 })
 
 watch(columns, (columnsPerResource) => {
-  const firstColumns = Object.values(columnsPerResource ?? {})
+  const firstColumns = Object.values(columnsPerResource)
   if (firstColumns.length === 0) return
   const firstColumn = firstColumns[0].filter(c => c !== '__id')[0]
   if (!form.value.x_axis.column_x && firstColumn) {
