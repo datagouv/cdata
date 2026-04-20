@@ -69,7 +69,7 @@ test('saving chart sends correct data to API', async ({ page }) => {
 
   expect(responseBody!.title).toBe('Test Chart')
   expect(await page.getByLabel('Graphiques existants').inputValue()).toBe(responseBody!.id)
-  await page.request.delete(`${getApiBase()}/api/1/visualization/${responseBody!.id}/`)
+  await page.request.delete(`${getApiBase()}/api/1/visualizations/${responseBody!.id}/`)
 })
 
 test('complete chart configuration flow', async ({ page }) => {
@@ -118,5 +118,5 @@ test('complete chart configuration flow', async ({ page }) => {
   expect(await page.getByLabel('Unité', { exact: true }).inputValue()).toBe('%')
   expect(await page.getByLabel('Position unité').inputValue()).toBe('prefix')
 
-  await page.request.delete(`${getApiBase()}/api/1/visualization/${responseBody!.id}/`)
+  await page.request.delete(`${getApiBase()}/api/1/visualizations/${responseBody!.id}/`)
 })
