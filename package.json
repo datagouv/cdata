@@ -90,7 +90,7 @@
     "uqr": "^0.1.2",
     "uuid": "^13.0.0",
     "vue-content-loader": "^2.0.1",
-    "vue-echart": "^1.0.5",
+
     "vue-router": "^5.0.4",
     "vue3-text-clamp": "^0.1.2"
   },
