@@ -124,7 +124,7 @@
             :key="index"
             :model-value="filter"
             :index="index"
-            :column-options="getColumnOptions()"
+            :column-options="columnDetails.value"
             :condition-options="conditionOptions"
             @update:model-value="updateFilter(index, $event)"
             @remove="removeFilter(index)"
@@ -437,10 +437,6 @@ const columnDetails = computed(() => {
 
   return options
 })
-
-function getColumnOptions() {
-  return columnDetails.value
-}
 
 const { $api } = useNuxtApp()
 const hasTabularData = useHasTabularData()
