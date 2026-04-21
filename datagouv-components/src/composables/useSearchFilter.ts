@@ -12,6 +12,21 @@ export interface SearchFilterContext {
   unregister(urlParam: string): void
 }
 
+export function isCustomFilterActive(entry: CustomFilterEntry): boolean {
+  const v = entry.ref.value
+  return v !== undefined && v !== null && v !== '' && v !== entry.defaultValue
+}
+
+export function forEachActiveCustomFilter(
+  registry: Map<string, CustomFilterEntry>,
+  apply: (apiParam: string, value: string) => void,
+): void {
+  for (const entry of registry.values()) {
+    if (!isCustomFilterActive(entry)) continue
+    apply(entry.apiParam, String(entry.ref.value))
+  }
+}
+
 export const searchFilterContextKey: InjectionKey<SearchFilterContext>
   = Symbol('SearchFilterContext')
 
