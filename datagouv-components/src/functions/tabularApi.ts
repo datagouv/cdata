@@ -1,18 +1,16 @@
 import { ofetch } from 'ofetch'
 import { useComponentsConfig, type PluginConfig } from '../config'
+import type { SortConfig } from '../components/TabularExplorer/types'
 
-export type SortConfig = {
-  column: string
-  type: string
-} | null
+export type { SortConfig }
 
 /**
  * Call Tabular-api to get table content
  */
-export async function getData(config: PluginConfig, id: string, page: number, sortConfig?: SortConfig) {
+export async function getData(config: PluginConfig, id: string, page: number, sortConfig?: SortConfig | null) {
   let url = `${config.tabularApiUrl}/api/resources/${id}/data/?page=${page}&page_size=${config.tabularApiPageSize || 15}`
   if (sortConfig) {
-    url = url + `&${sortConfig.column}__sort=${sortConfig.type}`
+    url = url + `&${sortConfig.column}__sort=${sortConfig.direction}`
   }
   return await ofetch(url)
 }
