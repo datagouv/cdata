@@ -14,7 +14,7 @@
 
     <div class="bg-white py-4 px-4 -mx-4">
       <GlobalSearch :config="searchConfig">
-        <template #custom-filters="{ currentType }">
+        <template #custom-filters-bottom="{ currentType }">
           <ThemeTagFilter v-if="currentType === 'datasets'" />
         </template>
       </GlobalSearch>

@@ -42,11 +42,15 @@
           </Sidemenu>
         </div>
 
-        <div v-if="activeFilters.length > 0 || $slots['custom-filters']">
+        <div v-if="activeFilters.length > 0 || $slots['custom-filters-top'] || $slots['custom-filters-bottom']">
           <Sidemenu :button-text="t('Filtres')">
             <template #title>
               {{ t('Filtres') }}
             </template>
+            <slot
+              name="custom-filters-top"
+              :current-type="currentType"
+            />
             <BasicAndAdvancedFilters
               v-slot="{ isEnabled, getOrder }"
               :basic-filters="activeBasicFilters"
@@ -147,7 +151,7 @@
               />
             </BasicAndAdvancedFilters>
             <slot
-              name="custom-filters"
+              name="custom-filters-bottom"
               :current-type="currentType"
             />
             <div
@@ -452,7 +456,7 @@ const activeFilters = computed(() => [
 ] as string[])
 
 const slots = useSlots()
-const showSidebar = computed(() => props.config.length > 1 || activeFilters.value.length > 0 || !!slots['custom-filters'])
+const showSidebar = computed(() => props.config.length > 1 || activeFilters.value.length > 0 || !!slots['custom-filters-top'] || !!slots['custom-filters-bottom'])
 
 // URL query params
 const q = useRouteQuery<string>('q', '')

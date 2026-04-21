@@ -40,7 +40,8 @@ export interface UseSearchFilterOptions {
 /**
  * Registers a custom filter with the parent GlobalSearch component.
  *
- * Must be called inside a component rendered within GlobalSearch's `#custom-filters` slot.
+ * Must be called inside a component rendered within GlobalSearch's
+ * `#custom-filters-top` or `#custom-filters-bottom` slot.
  *
  * @param urlParam - The URL query parameter name (e.g. 'theme' → `?theme=value`)
  * @param options  - Optional: `apiParam` to map to a different API param (e.g. 'tag'), `defaultValue`
