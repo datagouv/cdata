@@ -561,13 +561,13 @@ async function saveChart() {
     const chartForApi = toChartApi(form.value)
     const update = savedChart.value?.id
     if (update) {
-      savedChart.value = await $chartsApi<Chart>(`/api/1/visualizations/${savedChart.value!.id}/`, {
+      savedChart.value = await $api<Chart>(`/api/1/visualizations/${savedChart.value!.id}/`, {
         method: 'PATCH',
         body: JSON.stringify(chartForApi),
       })
     }
     else {
-      savedChart.value = await $chartsApi<Chart>('/api/1/visualizations/', {
+      savedChart.value = await $api<Chart>('/api/1/visualizations/', {
         method: 'POST',
         body: JSON.stringify(chartForApi),
       })
