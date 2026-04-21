@@ -62,6 +62,10 @@ export function useSearchFilter(
   })
 
   onScopeDispose(() => {
+    // Clear the URL param when the scope ends. This mirrors GlobalSearch's
+    // own `watch(currentType)` logic that drops built-in filters which don't
+    // apply to the new type: a custom filter's applicability is signalled
+    // by the consumer via `v-if`, so its unmount is the equivalent signal.
     value.value = defaultValue
     context.unregister(urlParam)
   })

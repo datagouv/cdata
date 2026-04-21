@@ -172,6 +172,19 @@ test('custom theme filter resets page to 1 on change', async ({ page }) => {
   expect(url.searchParams.get('page')).toBeNull()
 })
 
+test('custom theme filter preserves page param on initial load', async ({ page }) => {
+  await page.goto('/design/dataset-search?theme=transport&page=2')
+
+  await expect(page.locator('#theme-filter')).toHaveValue('transport')
+
+  // Give the client a chance to hydrate and any stray watchers to fire.
+  await page.waitForLoadState('networkidle')
+
+  const url = new URL(page.url())
+  expect(url.searchParams.get('theme')).toBe('transport')
+  expect(url.searchParams.get('page')).toBe('2')
+})
+
 test('clicking dataset navigates to detail', async ({ page }) => {
   await page.goto('/datasets/search/')
   // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
