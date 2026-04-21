@@ -19,7 +19,7 @@
 
       <form
         class="fr-search-bar fr-search-bar--lg w-full"
-        @submit.prevent="search"
+        @submit.prevent="() => execute()"
       >
         <label
           for="search-input"
@@ -48,14 +48,14 @@
       </p>
 
       <div
-        v-if="results && results.data.length > 0"
+        v-if="displayedDatasets.length > 0"
         class="space-y-4"
       >
         <p class="text-sm text-gray-500">
-          {{ results.total }} résultat{{ results.total > 1 ? 's' : '' }}
+          {{ results!.total }} résultat{{ results!.total > 1 ? 's' : '' }}
         </p>
         <div
-          v-for="dataset in results.data"
+          v-for="dataset in displayedDatasets"
           :key="dataset.id"
           class="border rounded p-4 space-y-2"
         >
@@ -68,12 +68,9 @@
           >
             {{ dataset.organization.name }}
           </p>
-          <div
-            v-if="dataset.resources.length > 0"
-            class="space-y-1"
-          >
+          <div class="space-y-1">
             <button
-              v-for="resource in dataset.resources"
+              v-for="resource in explorableResources(dataset)"
               :key="resource.id"
               class="flex items-center gap-2 text-sm px-3 py-2 rounded hover:bg-blue-50 w-full text-left transition-colors"
               @click="selectResource(resource.id)"
@@ -90,17 +87,11 @@
               </span>
             </button>
           </div>
-          <p
-            v-else
-            class="text-sm text-gray-400 italic"
-          >
-            Aucune ressource
-          </p>
         </div>
       </div>
 
       <p
-        v-else-if="results && results.data.length === 0 && status === 'success'"
+        v-else-if="results && status === 'success'"
         class="text-sm text-gray-500 italic"
       >
         Aucun résultat
@@ -123,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { TabularExplorer, filesize } from '@datagouv/components-next'
+import { TabularExplorer, filesize, useHasTabularData } from '@datagouv/components-next'
 import type { Dataset } from '@datagouv/components-next'
 import type { PaginatedArray } from '~/types/types'
 
@@ -131,16 +122,27 @@ useSeoMeta({ robots: 'noindex' })
 
 const query = ref('')
 const resourceId = ref('')
-const searchQuery = ref('')
 
-const { data: results, status } = await useAPI<PaginatedArray<Dataset>>(
-  computed(() => searchQuery.value ? `/api/1/datasets/?q=${encodeURIComponent(searchQuery.value)}&page_size=10` : ''),
-  { lazy: true, server: false },
+const searchParams = computed(() => ({ q: query.value, page_size: 10 }))
+
+const { data: results, status, execute } = await useAPI<PaginatedArray<Dataset>>(
+  '/api/1/datasets/',
+  {
+    query: searchParams,
+    immediate: false,
+    watch: false,
+  },
 )
 
-function search() {
-  searchQuery.value = query.value
+const hasTabularData = useHasTabularData()
+
+function explorableResources(dataset: Dataset) {
+  return dataset.resources.filter(hasTabularData)
 }
+
+const displayedDatasets = computed(() =>
+  results.value?.data.filter(dataset => explorableResources(dataset).length > 0) ?? [],
+)
 
 function selectResource(id: string) {
   resourceId.value = id
