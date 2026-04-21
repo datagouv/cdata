@@ -1,20 +1,5 @@
 import type { Chart } from '@datagouv/components-next'
 import { test, expect } from '../base'
-import { getApiBase } from '../helpers'
-
-const envBaseURL = getApiBase()
-
-test.beforeAll(async ({ baseURL }) => {
-  if (baseURL === envBaseURL) {
-    baseURL = 'https://demo.data.gouv.fr'
-  }
-})
-
-test.afterAll(async ({ baseURL }) => {
-  if (baseURL !== envBaseURL) {
-    baseURL = envBaseURL
-  }
-})
 
 test('dataset selector shows default dataset', async ({ page }) => {
   await page.goto('/design/chart')
