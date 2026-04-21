@@ -185,6 +185,29 @@ test('custom theme filter preserves page param on initial load', async ({ page }
   expect(url.searchParams.get('page')).toBe('2')
 })
 
+test('custom theme filter applies its apiParam mapping to the results', async ({ page }) => {
+  await page.goto('/design/dataset-search')
+
+  const results = page.locator('.search-results ul')
+  await expect(results.locator('li')).not.toHaveCount(0)
+
+  // The UI param is `theme` but useSearchFilter maps it to `tag` for the API.
+  // Assert both: the outgoing request uses `tag`, and the results reflect it.
+  const themeSelect = page.locator('#theme-filter')
+  await themeSelect.scrollIntoViewIfNeeded()
+
+  const apiRequest = page.waitForRequest(req =>
+    req.url().includes('/api/2/datasets/search/')
+    && new URL(req.url()).searchParams.get('tag') === 'transport',
+  )
+  await themeSelect.selectOption('transport')
+  await apiRequest
+
+  await expect(
+    results.getByText('Réseau de transport en commun Trans\'Agglo de DLVA'),
+  ).toBeVisible()
+})
+
 test('clicking dataset navigates to detail', async ({ page }) => {
   await page.goto('/datasets/search/')
   // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
