@@ -406,15 +406,10 @@ const componentsConfig = useComponentsConfig()
 
 // Custom filter registry for useSearchFilter composable
 const customFilterRegistry = shallowReactive(new Map<string, CustomFilterEntry>())
-
-provide(searchFilterContextKey, {
-  register(urlParam, entry) {
-    customFilterRegistry.set(urlParam, entry)
-  },
-  unregister(urlParam) {
-    customFilterRegistry.delete(urlParam)
-  },
-})
+// Per-filter watch stoppers: each registered filter gets its own watcher so a
+// value change resets page to 1, but registration itself does not (the value
+// came from the URL, not from a user action).
+const customFilterStops = new Map<string, () => void>()
 
 // Initial type is used to determine which fetch should be SSR (non-lazy)
 const initialType = currentType.value
@@ -464,6 +459,18 @@ const q = useRouteQuery<string>('q', '')
 const { debounced: qDebounced, flush: flushQ } = useDebouncedRef(q, componentsConfig.searchDebounce ?? 300)
 const page = useRouteQuery('page', 1, { transform: Number })
 const sort = useRouteQuery<string | undefined>('sort')
+
+provide(searchFilterContextKey, {
+  register(urlParam, entry) {
+    customFilterRegistry.set(urlParam, entry)
+    customFilterStops.set(urlParam, watch(entry.ref, () => page.value = 1))
+  },
+  unregister(urlParam) {
+    customFilterStops.get(urlParam)?.()
+    customFilterStops.delete(urlParam)
+    customFilterRegistry.delete(urlParam)
+  },
+})
 
 // Filter values
 const organizationId = useRouteQuery<string | undefined>('organization')
@@ -566,31 +573,28 @@ const reusesUrl = computed(() => reusesEnabled.value ? '/api/2/reuses/search/' :
 const organizationsUrl = computed(() => organizationsEnabled.value ? '/api/2/organizations/search/' : null)
 const topicsUrl = computed(() => topicsEnabled.value ? '/api/2/topics/search/' : null)
 
-// Reset page on filter/sort change
-const filtersForReset = computed(() => {
-  const filters: Record<string, unknown> = {
-    q: qDebounced.value,
-    organization: organizationId.value,
-    organization_badge: organizationType.value,
-    tag: tag.value,
-    format: format.value,
-    license: license.value,
-    schema: schema.value,
-    geozone: geozone.value,
-    granularity: granularity.value,
-    badge: badge.value,
-    topic: topic.value,
-    format_family: formatFamily.value,
-    access_type: accessType.value,
-    last_update_range: lastUpdateRange.value,
-    producer_type: producerType.value,
-    type: reuseType.value,
-  }
-  for (const [urlParam, entry] of customFilterRegistry) {
-    filters[urlParam] = entry.ref.value
-  }
-  return filters
-})
+// Reset page on filter/sort change. Custom filters (registered via
+// useSearchFilter) have their own watchers set up in `provide`, so they're
+// intentionally excluded here to avoid resetting the page when a filter
+// registers with its URL-derived value.
+const filtersForReset = computed(() => ({
+  q: qDebounced.value,
+  organization: organizationId.value,
+  organization_badge: organizationType.value,
+  tag: tag.value,
+  format: format.value,
+  license: license.value,
+  schema: schema.value,
+  geozone: geozone.value,
+  granularity: granularity.value,
+  badge: badge.value,
+  topic: topic.value,
+  format_family: formatFamily.value,
+  access_type: accessType.value,
+  last_update_range: lastUpdateRange.value,
+  producer_type: producerType.value,
+  type: reuseType.value,
+}))
 
 watch(filtersForReset, () => page.value = 1)
 watch(sort, () => page.value = 1)
