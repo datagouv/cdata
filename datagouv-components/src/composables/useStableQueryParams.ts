@@ -1,6 +1,6 @@
 import { computed, ref, watch, type Ref } from 'vue'
 import type { SearchTypeConfig } from '../types/search'
-import type { CustomFilterEntry } from './useSearchFilter'
+import { forEachActiveCustomFilter, type CustomFilterEntry } from './useSearchFilter'
 
 type FilterRefs = Record<string, Ref<unknown>>
 
@@ -52,22 +52,18 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
       }
     }
 
-    // 3.5. Apply custom filter values
-    for (const [, entry] of customFilterRegistry) {
-      const value = entry.ref.value
-      if (value !== undefined && value !== '' && value !== null) {
-        const existing = params[entry.apiParam]
-        if (existing !== undefined) {
-          // Concatenate into array for multi-value params (e.g., tag)
-          params[entry.apiParam] = Array.isArray(existing)
-            ? [...existing, value]
-            : [existing, value]
-        }
-        else {
-          params[entry.apiParam] = value
-        }
+    // 3.5. Apply custom filter values. Concatenate into an array on collision
+    // so a custom filter mapped onto a built-in apiParam (e.g. theme → tag)
+    // combines with an existing built-in value instead of overwriting it.
+    forEachActiveCustomFilter(customFilterRegistry, (apiParam, value) => {
+      const existing = params[apiParam]
+      if (existing === undefined) {
+        params[apiParam] = value
       }
-    }
+      else {
+        params[apiParam] = Array.isArray(existing) ? [...existing, value] : [existing, value]
+      }
+    })
 
     // 4. Always include q, sort (if valid for this type), page, page_size
     if (q.value) {

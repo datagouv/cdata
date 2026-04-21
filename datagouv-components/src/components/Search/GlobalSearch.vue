@@ -350,7 +350,7 @@ import { RiBookShelfLine, RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, R
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
 import { useTranslation } from '../../composables/useTranslation'
 import { useDebouncedRef } from '../../composables/useDebouncedRef'
-import { searchFilterContextKey, type CustomFilterEntry } from '../../composables/useSearchFilter'
+import { forEachActiveCustomFilter, isCustomFilterActive, searchFilterContextKey, type CustomFilterEntry } from '../../composables/useSearchFilter'
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
@@ -616,9 +616,7 @@ const hasFilters = computed(() => {
     || lastUpdateRange.value
     || producerType.value
     || reuseType.value
-    || Array.from(customFilterRegistry.values()).some(
-      entry => entry.ref.value !== undefined && entry.ref.value !== entry.defaultValue,
-    )
+    || Array.from(customFilterRegistry.values()).some(isCustomFilterActive)
 })
 
 const showForumLink = computed(() => (currentType.value === 'datasets' || currentType.value === 'dataservices') && !!componentsConfig.forumUrl)
@@ -737,12 +735,9 @@ const rssUrl = computed(() => {
   if (badge.value) params.set('badge', badge.value)
   if (topic.value) params.set('topic', topic.value)
 
-  // Add custom filter values
-  for (const [, entry] of customFilterRegistry) {
-    if (entry.ref.value !== undefined && entry.ref.value !== entry.defaultValue) {
-      params.set(entry.apiParam, String(entry.ref.value))
-    }
-  }
+  forEachActiveCustomFilter(customFilterRegistry, (apiParam, value) => {
+    params.set(apiParam, value)
+  })
 
   // Add sort if set
   if (sort.value) params.set('sort', sort.value)
