@@ -124,7 +124,7 @@
             :key="index"
             :model-value="filter"
             :index="index"
-            :column-options="columnDetails.value"
+            :column-options="columnDetails"
             :condition-options="conditionOptions"
             @update:model-value="updateFilter(index, $event)"
             @remove="removeFilter(index)"
