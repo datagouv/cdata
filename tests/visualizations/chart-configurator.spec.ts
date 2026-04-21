@@ -23,7 +23,7 @@ test('dataset selector shows default dataset', async ({ page }) => {
   const datasetSelect = page.getByPlaceholder('Recherchez un jeu de données...')
   // SearchableSelect displays the selected value in a different way
   const displayedValue = await datasetSelect.inputValue()
-  expect(datasetSelect).toBeVisible()
+  await expect(datasetSelect).toBeVisible()
   expect(displayedValue).toContain('Logements et logements sociaux')
 })
 
