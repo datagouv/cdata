@@ -101,6 +101,7 @@ test('saving chart sends correct data to API', async ({ page, baseURL }) => {
 
   const responsePromise = page.waitForResponse((response) => {
     console.log(response.url())
+    console.log(response.url().includes('/api/1/visualizations/'))
     return response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST'
   })
   const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
@@ -139,6 +140,7 @@ test('complete chart configuration flow', async ({ page, baseURL }) => {
 
   const responsePromise = page.waitForResponse((response) => {
     console.log(response.url())
+    console.log(response.url().includes('/api/1/visualizations/'))
     return response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST'
   })
   const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
