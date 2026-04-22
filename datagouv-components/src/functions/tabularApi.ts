@@ -1,11 +1,9 @@
 import { ofetch } from 'ofetch'
 import { useComponentsConfig, type PluginConfig } from '../config'
 import type { GenericFilter } from '../types/visualizations'
+import type { SortConfig } from '../components/TabularExplorer/types'
 
-export type SortConfig = {
-  column: string
-  type: string
-} | null
+export type { SortConfig }
 
 export type TabularDataResponse = {
   data: Array<Record<string, unknown>>
@@ -86,7 +84,7 @@ export async function fetchTabularData(config: PluginConfig, options: FetchTabul
     url += `&columns=${options.columns.join(',')}`
   }
   if (options.sort) {
-    url += `&${options.sort.column}__sort=${options.sort.type}`
+    url += `&${options.sort.column}__sort=${options.sort.direction}`
   }
   if (options.groupBy && options.aggregation?.type) {
     url += `&${options.groupBy}__groupby&${options.aggregation.column}__${options.aggregation.type}`
@@ -138,8 +136,12 @@ function buildFilterQuery(filters: GenericFilter): string {
 /**
  * Call Tabular-api to get table content
  */
-export function getData(config: PluginConfig, id: string, page: number, sortConfig?: SortConfig) {
-  return fetchTabularData(config, { resourceId: id, page, sort: sortConfig })
+export async function getData(config: PluginConfig, id: string, page: number, sortConfig?: SortConfig | null): Promise<TabularDataResponse> {
+  return fetchTabularData(config, {
+    resourceId: id,
+    page,
+    sort: sortConfig,
+  })
 }
 
 /**

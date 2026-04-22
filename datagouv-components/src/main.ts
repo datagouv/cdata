@@ -98,6 +98,8 @@ import SearchInput from './components/Search/SearchInput.vue'
 import SearchableSelect from './components/Form/SearchableSelect.vue'
 import SelectGroup from './components/Form/SelectGroup.vue'
 import Listbox from './components/Form/Listbox.vue'
+import InfiniteLoader from './components/InfiniteLoader.vue'
+import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
@@ -124,6 +126,7 @@ export * from './functions/owned'
 export * from './functions/resources'
 export * from './functions/reuses'
 export * from './functions/schemas'
+export * from './functions/tabular'
 export * from './functions/users'
 export * from './functions/tabularApi'
 export * from './functions/charts'
@@ -344,4 +347,6 @@ export {
   SearchableSelect,
   SelectGroup,
   Listbox,
+  InfiniteLoader,
+  TabularExplorer,
 }
