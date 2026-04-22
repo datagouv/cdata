@@ -25,6 +25,8 @@ import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
 import type { GlobalSearchConfig, SearchType, SortOption } from './types/search'
 import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
+import { useSearchFilter } from './composables/useSearchFilter'
+import type { UseSearchFilterOptions } from './composables/useSearchFilter'
 
 import ActivityList from './components/ActivityList/ActivityList.vue'
 import UserActivityList from './components/ActivityList/UserActivityList.vue'
@@ -129,6 +131,7 @@ export type {
   GlobalSearchConfig,
   SearchType,
   SortOption,
+  UseSearchFilterOptions,
   UseFetchFunction,
   AccessType,
   AccessAudience,
@@ -232,6 +235,7 @@ export {
   defaultDataserviceSortOptions,
   defaultReuseSortOptions,
   defaultOrganizationSortOptions,
+  useSearchFilter,
 }
 
 // Vue Plugin

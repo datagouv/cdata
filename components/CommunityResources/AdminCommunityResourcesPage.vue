@@ -40,10 +40,11 @@
       v-if="pageData && !pageData.total"
       class="flex flex-col items-center"
     >
-      <nuxt-img
+      <img
         src="/illustrations/schema.svg"
         class="h-20"
-      />
+        alt=""
+      >
       <p class="fr-text--bold fr-my-3v">
         {{ t(`Vous n'avez pas encore publié de ressource communautaire`) }}
       </p>

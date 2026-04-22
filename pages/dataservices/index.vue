@@ -33,11 +33,11 @@
         <div class="flex flex-col space-y-3 justify-center">
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/book-2.svg"
                 class="w-18"
                 alt=""
-              />
+              >
             </div>
             <div class="font-extrabold text-center text-lg">
               {{ $t('La doctrine des API') }}
@@ -60,11 +60,11 @@
           </div>
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/_keyboard.svg"
                 class="w-16"
                 alt=""
-              />
+              >
             </div>
             <div class="font-extrabold text-center text-lg">
               {{ $t('Publier vos API') }}
@@ -90,11 +90,11 @@
         <div class="flex flex-col space-y-3 justify-center">
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/schema.svg"
                 class="w-18"
                 alt=""
-              />
+              >
             </div>
             <div class="font-extrabold text-center text-lg">
               {{ $t('Un accompagnement') }}<br>{{ $t('technique et métier') }}
@@ -117,11 +117,11 @@
           </div>
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/_keys.svg"
                 class="w-20"
                 alt=""
-              />
+              >
             </div>
             <div class="font-extrabold text-center text-lg">
               {{ $t('Datapass') }}<br>{{ $t('Habilitations juridiques') }}
@@ -147,11 +147,11 @@
         <div class="flex flex-col space-y-3 justify-center">
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/lightbulb.svg"
                 class="w-12"
                 alt=""
-              />
+              >
             </div>
             <div class="font-extrabold text-center text-lg">
               {{ $t('Simplifions.data.gouv.fr') }}
@@ -175,11 +175,11 @@
           </div>
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/_safe.svg"
                 class="w-20"
                 alt=""
-              />
+              >
             </div>
             <div class="font-extrabold text-center text-lg">
               {{ $t('API Entreprise') }}<br>

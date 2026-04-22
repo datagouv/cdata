@@ -25,10 +25,11 @@
       v-if="status != 'pending' && pageData && !pageData.total"
       class="flex flex-col items-center"
     >
-      <nuxt-img
+      <img
         src="/illustrations/people.svg"
         class="h-40"
-      />
+        alt=""
+      >
       <p class="font-bold my-3 text-center">
         {{ t(`Vous n'avez pas encore créé de points de contact.`) }}
         <br>

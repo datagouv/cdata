@@ -26,10 +26,11 @@
       v-if="dataservices && !dataservices.total"
       class="flex flex-col items-center mb-4"
     >
-      <nuxt-img
+      <img
         src="/illustrations/dataservice.svg"
         class="h-20"
-      />
+        alt=""
+      >
       <p class="font-bold my-3">
         {{ $t(`Il n'y a pas encore d'API associées`) }}
       </p>
@@ -70,10 +71,11 @@
       v-if="reuses && !reuses.total"
       class="flex flex-col items-center"
     >
-      <nuxt-img
+      <img
         src="/illustrations/reuse.svg"
         class="h-20"
-      />
+        alt=""
+      >
       <p class="font-bold my-3">
         {{ $t(`Il n'y a pas encore de réutilisations associées`) }}
       </p>

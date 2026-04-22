@@ -148,10 +148,11 @@
       v-if="status != 'pending' && pageData && !pageData.total"
       class="flex flex-col items-center"
     >
-      <nuxt-img
+      <img
         src="/illustrations/harvester.svg"
         class="h-20"
-      />
+        alt=""
+      >
       <p class="fr-text--bold fr-my-3v">
         {{ $t(`Aucun job pour l'instant.`) }}
       </p>
