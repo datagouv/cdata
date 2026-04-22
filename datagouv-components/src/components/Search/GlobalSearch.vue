@@ -614,10 +614,7 @@ const hasFilters = computed(() => {
     || Array.from(customFilterRegistry.values()).some(isCustomFilterActive)
 })
 
-const showForumLink = computed(() =>
-  (currentTypeConfig.value?.class === 'datasets' || currentTypeConfig.value?.class === 'dataservices')
-  && !!componentsConfig.forumUrl,
-)
+const showForumLink = computed(() => (currentType.value === 'datasets' || currentType.value === 'dataservices') && !!componentsConfig.forumUrl)
 
 function resetFilters() {
   organizationId.value = undefined
