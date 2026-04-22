@@ -229,7 +229,7 @@
         <transition mode="out-in">
           <LoadingBlock
             v-slot="{ data: results }"
-            :status="searchResultsStatus"
+            :status="searchResultsStatus!"
             :data="searchResults"
           >
             <div v-if="results && results.data.length">
@@ -554,12 +554,13 @@ const urlByClass: Record<string, string> = {
 }
 
 // One params + fetch per config entry, keyed by configKey
-const resultsMap: Record<string, { data: Ref<{ total: number, data: unknown[], facets?: unknown } | null>, status: Ref<string> }> = {}
+type SearchResult = { total: number, data: { id: string }[], facets?: unknown }
+const resultsMap: Record<string, { data: Ref<SearchResult | null>, status: Ref<string> }> = {}
 for (const c of props.config) {
   const key = configKey(c)
   const params = useStableQueryParams({ ...stableParamsOptions, typeConfig: c })
 
-  const { data, status } = await useFetch(urlByClass[c.class], {
+  const { data, status } = await useFetch<SearchResult>(urlByClass[c.class]!, {
     params,
     lazy: true,
     server: initialType === key,
