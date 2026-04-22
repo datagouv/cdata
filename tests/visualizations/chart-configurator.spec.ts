@@ -97,9 +97,12 @@ test('saving chart sends correct data to API', async ({ page, baseURL }) => {
 
   await page.getByLabel('Titre').fill('Test Chart')
   await page.getByLabel('Description').fill('Test Description')
-  await page.waitForTimeout(300)
+  await page.waitForTimeout(500)
 
-  const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
+  const responsePromise = page.waitForResponse((response) => {
+    console.log(response.url())
+    return response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST'
+  })
   const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
 
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
@@ -118,7 +121,7 @@ test('complete chart configuration flow', async ({ page, baseURL }) => {
 
   await page.getByLabel('Titre').fill('Graphique complet')
   await page.getByLabel('Description').fill('Test complet de configuration')
-  await page.waitForTimeout(300)
+  await page.waitForTimeout(500)
 
   await page.getByLabel('Type de graphique').selectOption('line')
 
@@ -134,7 +137,10 @@ test('complete chart configuration flow', async ({ page, baseURL }) => {
   await page.locator('#y-axis-unit').fill('%')
   await page.getByLabel('Position unité').selectOption('prefix')
 
-  const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
+  const responsePromise = page.waitForResponse((response) => {
+    console.log(response.url())
+    return response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST'
+  })
   const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
 
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
