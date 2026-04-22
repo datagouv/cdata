@@ -66,11 +66,12 @@
       <div class="px-6 flex justify-center py-8 sm:py-24">
         <div class="w-full max-w-lg space-y-8">
           <div class="space-y-2">
-            <nuxt-img
+            <img
               aria-hidden="true"
               src="/illustrations/dataset.svg"
               class="h-16 grayscale"
-            />
+              alt=""
+            >
             <h2 class="text-3xl text-gray-title font-extrabold">
               {{ $t('Le catalogue des données françaises') }}
             </h2>
@@ -158,11 +159,12 @@
       <div class="px-6 flex justify-center py-8 sm:py-24">
         <div class="w-full max-w-lg space-y-8">
           <div class="space-y-2">
-            <nuxt-img
+            <img
               src="/illustrations/discussion.svg"
               class="h-16 grayscale"
               aria-hidden="true"
-            />
+              alt=""
+            >
             <h2 class="text-3xl text-gray-title font-extrabold">
               {{ $t('Une communauté dynamique et engagée') }}
             </h2>
