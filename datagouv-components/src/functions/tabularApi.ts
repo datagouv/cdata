@@ -140,7 +140,7 @@ export async function getData(config: PluginConfig, id: string, page: number, so
   return fetchTabularData(config, {
     resourceId: id,
     page,
-    sort: sortConfig,
+    sort: sortConfig ?? undefined,
   })
 }
 
