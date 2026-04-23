@@ -11,7 +11,7 @@
     </template>
     <template #error>
       <div class="text-center py-8 text-gray-500">
-        Une erreur est survenue lors du chargement des données du graphique.
+        {{ t('Une erreur est survenue lors du chargement des données du graphique.') }}
       </div>
     </template>
   </LoadingBlock>
@@ -22,8 +22,9 @@ import { reactive, ref, watch } from 'vue'
 import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
 import { useComponentsConfig } from '../../config'
-import { fetchTabularData, useGetProfile, type TabularDataResponse, type TabularProfileResponse } from '../../functions/tabularApi'
+import { fetchTabularData, useGetProfile } from '../../functions/tabularApi'
 import type { Chart, ChartForApi } from '../../types/visualizations'
+import { useTranslation } from '../../composables/useTranslation'
 
 const props = defineProps<{
   chart: Chart | ChartForApi
@@ -34,6 +35,7 @@ const emit = defineEmits<{
   columns: [columns: Record<string, Array<string>>]
 }>()
 
+const { t } = useTranslation()
 const config = useComponentsConfig()
 const getProfile = useGetProfile()
 
@@ -41,7 +43,8 @@ const getProfile = useGetProfile()
 const status = ref<'idle' | 'pending' | 'success' | 'error'>('idle')
 const error = ref<Error | null>(null)
 
-// Dataset source for the chart
+const pendingOperations = ref(0)
+
 const series = reactive<{
   data: Record<string, Array<Record<string, unknown>>>
   columns: Record<string, Array<string>>
@@ -55,6 +58,7 @@ const series = reactive<{
 })
 
 async function fetchSeriesProfile() {
+  pendingOperations.value++
   status.value = 'pending'
   error.value = null
 
@@ -66,17 +70,14 @@ async function fetchSeriesProfile() {
       return
     }
 
-    // Fetch data for all series in parallel
-    const fetchPromises = props.chart.series.map(async (serie) => {
-      if (!serie.resource_id) return
-      return {
-        id: serie.resource_id,
-        profile: await getProfile(serie.resource_id),
-      }
-    }).filter(Boolean) as Array<Promise<{
-      id: string
-      profile: TabularProfileResponse
-    }>>
+    const fetchPromises = props.chart.series
+      .filter(serie => serie.resource_id)
+      .map(async (serie) => {
+        return {
+          id: serie.resource_id,
+          profile: await getProfile(serie.resource_id),
+        }
+      })
 
     const results = (await Promise.allSettled(fetchPromises))
       .filter(r => r.status === 'fulfilled')
@@ -92,6 +93,9 @@ async function fetchSeriesProfile() {
     status.value = 'error'
     console.error(err)
     series.columns = {}
+  }
+  finally {
+    pendingOperations.value--
   }
 }
 
@@ -138,6 +142,7 @@ async function loadMorePages() {
 }
 
 async function fetchSeriesData() {
+  pendingOperations.value++
   status.value = 'pending'
   error.value = null
 
@@ -148,31 +153,31 @@ async function fetchSeriesData() {
       return
     }
 
-    const fetchPromises = props.chart.series.map(async (serie) => {
-      const xColumn = serie.column_x_name_override ?? props.chart.x_axis.column_x
-
-      if (!xColumn || !serie.resource_id || !serie.column_y) return
-      return {
-        id: serie.resource_id,
-        data: await fetchTabularData(config, {
-          columns: serie.aggregate_y ? undefined : [xColumn, serie.column_y],
-          resourceId: serie.resource_id,
-          page: 1,
-          pageSize: 100,
-          groupBy: xColumn,
-          aggregation: serie.column_y && serie.aggregate_y
-            ? {
-                column: serie.column_y,
-                type: serie.aggregate_y,
-              }
-            : undefined,
-          filters: serie.filters ?? undefined,
-        }),
-      }
-    }).filter(Boolean) as Array<Promise<{
-      id: string
-      data: TabularDataResponse
-    }>>
+    const fetchPromises = props.chart.series
+      .filter((serie) => {
+        const xColumn = serie.column_x_name_override ?? props.chart.x_axis.column_x
+        return xColumn && serie.resource_id && serie.column_y
+      })
+      .map(async (serie) => {
+        const xColumn = serie.column_x_name_override ?? props.chart.x_axis.column_x
+        return {
+          id: serie.resource_id,
+          data: await fetchTabularData(config, {
+            columns: serie.aggregate_y ? undefined : [xColumn, serie.column_y],
+            resourceId: serie.resource_id,
+            page: 1,
+            pageSize: 100,
+            groupBy: xColumn,
+            aggregation: serie.column_y && serie.aggregate_y
+              ? {
+                  column: serie.column_y,
+                  type: serie.aggregate_y,
+                }
+              : undefined,
+            filters: serie.filters ?? undefined,
+          }),
+        }
+      })
 
     const results = (await Promise.allSettled(fetchPromises))
       .filter(r => r.status === 'fulfilled')
@@ -206,19 +211,28 @@ async function fetchSeriesData() {
     status.value = 'error'
     series.data = {}
   }
+  finally {
+    pendingOperations.value--
+  }
 }
 
-// Watch for changes in the chart or its series
 watch(() => props.chart.series, async () => {
   await fetchSeriesProfile()
 }, { immediate: true, deep: true })
 
-// Watch for changes in the chart or its series
 watch([() => props.chart.series, () => props.chart.x_axis.column_x], async () => {
   await fetchSeriesData()
 }, { immediate: true, deep: true })
 
 watch(() => series.columns, () => {
   emit('columns', series.columns)
+})
+
+watch(pendingOperations, (count) => {
+  if (count === 0) {
+    if (error.value === null && status.value === 'pending') {
+      status.value = 'success'
+    }
+  }
 })
 </script>
