@@ -48,6 +48,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     crispIdentifier: '',
     crispKey: '',
+    albertApiKey: '',
     crispWebsiteId: '',
     pagesGhRepoName: 'datagouv/datagouvfr-pages',
     pagesGhRepoBranch: 'master',
