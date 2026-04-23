@@ -10,10 +10,6 @@ export const clickOutside = async (page: Page) => {
   await page.mouse.click(1, 1)
 }
 
-export const getApiBase = () => {
-  return process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
-}
-
 const IGNORED_MESSAGES = [
   // Cookie secure flag doesn't work in dev (HTTP)
   'non-HTTPS cookie',
