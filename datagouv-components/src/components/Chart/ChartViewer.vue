@@ -15,6 +15,7 @@ import VChart from 'vue-echarts'
 import { computed } from 'vue'
 import { summarize } from '../../functions/helpers'
 import type { Chart, XAxis, YAxis, XAxisForm, ChartForApi } from '../../types/visualizations'
+import { useTranslation } from '../../composables/useTranslation'
 
 use([CanvasRenderer, LineChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent])
 
@@ -25,6 +26,8 @@ const props = defineProps<{
     columns: Record<string, Array<string>>
   }
 }>()
+
+const { locale } = useTranslation()
 
 function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' {
   if (!xAxis) return 'category'
@@ -44,7 +47,7 @@ const echartsOption = computed(() => {
   const seriesCount = props.chart.series.length
   if (!props.chart.series || seriesCount === 0) return
 
-  const seriesData = props.chart.series.map((s) => {
+  const seriesArray = props.chart.series.map((s) => {
     const xColumn = s.column_x_name_override ?? props.chart.x_axis.column_x
     const yColumn = s.aggregate_y ? `${s.column_y}__${s.aggregate_y}` : s.column_y
     const resourceId = s.resource_id
@@ -60,11 +63,46 @@ const echartsOption = computed(() => {
     if (sortBy && sortDirection && props.chart.x_axis.column_x) {
       const sortKey = sortBy === 'axis_x' ? xColumn : yColumn
       sortedData.sort((a, b) => {
-        const valA = a[sortKey] as number
-        const valB = b[sortKey] as number
-        if (valA < valB) return sortDirection === 'asc' ? -1 : 1
-        if (valA > valB) return sortDirection === 'asc' ? 1 : -1
-        return 0
+        const valA = a[sortKey]
+        const valB = b[sortKey]
+
+        // Handle null/undefined values - place them at the front
+        if (valA === null || valA === undefined) return sortDirection === 'asc' ? -1 : 1
+        if (valB === null || valB === undefined) return sortDirection === 'asc' ? 1 : -1
+        if (valA === null && valB === null) return 0
+        if (valA === undefined && valB === undefined) return 0
+
+        if (valA instanceof Date && valB instanceof Date) {
+          const timeA = valA.getTime()
+          const timeB = valB.getTime()
+          if (timeA < timeB) return sortDirection === 'asc' ? -1 : 1
+          if (timeA > timeB) return sortDirection === 'asc' ? 1 : -1
+          return 0
+        }
+
+        if (typeof valA === 'boolean' && typeof valB === 'boolean') {
+          if (valA === valB) return 0
+          // false comes before true in ascending order
+          if (valB) return sortDirection === 'asc' ? -1 : 1
+          return sortDirection === 'asc' ? 1 : -1
+        }
+
+        const numA = Number(valA)
+        const numB = Number(valB)
+        const bothNumeric = !isNaN(numA) && !isNaN(numB)
+
+        if (bothNumeric) {
+          if (numA < numB) return sortDirection === 'asc' ? -1 : 1
+          if (numA > numB) return sortDirection === 'asc' ? 1 : -1
+          return 0
+        }
+
+        const strA = String(valA)
+        const strB = String(valB)
+        return strA.localeCompare(strB, locale, {
+          sensitivity: 'base',
+          numeric: true,
+        }) * (sortDirection === 'asc' ? 1 : -1)
       })
     }
 
@@ -83,16 +121,18 @@ const echartsOption = computed(() => {
         dimensions: s.aggregate_y ? [xColumn, yColumn] : props.series.columns[resourceId],
       },
     }
-  }).filter(Boolean).reduce((acc: { series: Array<LineSeriesOption | BarSeriesOption>, data: Array<Record<string, unknown>> }, curr) => {
-    if (curr) {
-      acc.series.push(curr.series)
-      acc.data.push(curr.data)
-    }
-    return acc
-  }, {
-    series: [],
-    data: [],
   })
+
+  const seriesData = {
+    series: [] as Array<LineSeriesOption | BarSeriesOption>,
+    data: [] as Array<Record<string, unknown>>,
+  }
+
+  for (const curr of seriesArray) {
+    if (!curr) continue
+    seriesData.series.push(curr.series)
+    seriesData.data.push(curr.data)
+  }
 
   return {
     dataset: [...seriesData.data],
@@ -104,10 +144,11 @@ const echartsOption = computed(() => {
       trigger: 'axis' as const,
       formatter: (params: Array<{ value: Record<string, unknown>, axisValueLabel: string, seriesName: string }>) => {
         let tooltip = ''
+        const formatter = new Intl.NumberFormat('fr-FR')
         for (const param of params) {
           const keys = Object.keys(param.value)
-          const col = keys.find(key => key.startsWith(param.seriesName))!
-          const formatter = new Intl.NumberFormat('fr-FR')
+          const seriesName = param.seriesName
+          const col = keys.find(key => key === seriesName || key.startsWith(`${seriesName}__`))!
           tooltip += `${format.encodeHTML(param.axisValueLabel)}: <strong>${formatter.format(Number(param.value[col]))}</strong><br>`
         }
         return tooltip
