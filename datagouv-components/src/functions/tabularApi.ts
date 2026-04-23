@@ -81,13 +81,13 @@ export async function fetchTabularData(config: PluginConfig, options: FetchTabul
   const pageSize = options.pageSize ?? config.tabularApiPageSize ?? 15
   let url = `${config.tabularApiUrl}/api/resources/${options.resourceId}/data/?page=${page}&page_size=${pageSize}`
   if (options.columns) {
-    url += `&columns=${options.columns.join(',')}`
+    url += `&columns=${options.columns.map(col => encodeURIComponent(col)).join(',')}`
   }
   if (options.sort) {
-    url += `&${options.sort.column}__sort=${options.sort.direction}`
+    url += `&${encodeURIComponent(options.sort.column)}__sort=${encodeURIComponent(options.sort.direction)}`
   }
   if (options.groupBy && options.aggregation?.type) {
-    url += `&${options.groupBy}__groupby&${options.aggregation.column}__${options.aggregation.type}`
+    url += `&${encodeURIComponent(options.groupBy)}__groupby&${encodeURIComponent(options.aggregation.column)}__${encodeURIComponent(options.aggregation.type)}`
   }
   if (options.filters) {
     const filterQuery = buildFilterQuery(options.filters)
@@ -107,13 +107,13 @@ function buildFilterQuery(filters: GenericFilter): string {
       }
       else {
         if (filter.condition === 'is_null') {
-          params.push(`${filter.column}__isnull`)
+          params.push(`${encodeURIComponent(filter.column)}__isnull`)
         }
         else if (filter.condition === 'is_not_null') {
-          params.push(`${filter.column}__isnotnull`)
+          params.push(`${encodeURIComponent(filter.column)}__isnotnull`)
         }
         else if (filter.value !== null && filter.value !== undefined && filter.value !== '') {
-          params.push(`${filter.column}__${filter.condition}=${encodeURIComponent(filter.value)}`)
+          params.push(`${encodeURIComponent(filter.column)}__${encodeURIComponent(filter.condition)}=${encodeURIComponent(filter.value)}`)
         }
       }
     }
@@ -121,13 +121,13 @@ function buildFilterQuery(filters: GenericFilter): string {
   else {
     const filter = filters
     if (filter.condition === 'is_null') {
-      params.push(`${filter.column}__isnull`)
+      params.push(`${encodeURIComponent(filter.column)}__isnull`)
     }
     else if (filter.condition === 'is_not_null') {
-      params.push(`${filter.column}__isnotnull`)
+      params.push(`${encodeURIComponent(filter.column)}__isnotnull`)
     }
     else if (filter.value !== null && filter.value !== undefined && filter.value !== '') {
-      params.push(`${filter.column}__${filter.condition}=${encodeURIComponent(filter.value)}`)
+      params.push(`${encodeURIComponent(filter.column)}__${encodeURIComponent(filter.condition)}=${encodeURIComponent(filter.value)}`)
     }
   }
   return params.join('&')
