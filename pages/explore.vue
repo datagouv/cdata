@@ -123,7 +123,7 @@ useSeoMeta({ robots: 'noindex' })
 const query = ref('')
 const resourceId = ref('')
 
-const searchParams = computed(() => ({ q: query.value, page_size: 10 }))
+const searchParams = computed(() => ({ q: query.value, page_size: 10, format: 'csv' }))
 
 const { data: results, status, execute } = await useAPI<PaginatedArray<Dataset>>(
   '/api/1/datasets/',
