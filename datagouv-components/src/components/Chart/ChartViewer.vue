@@ -146,9 +146,9 @@ const echartsOption = computed(() => {
         let tooltip = ''
         const formatter = new Intl.NumberFormat('fr-FR')
         for (const param of params) {
-          const keys = Object.keys(param.value)
           const seriesName = param.seriesName
-          const col = keys.find(key => key === seriesName || key.startsWith(`${seriesName}__`))!
+          const seriesConfig = props.chart.series.find(s => s.column_y === seriesName)
+          const col = seriesConfig?.aggregate_y ? `${seriesName}__${seriesConfig.aggregate_y}` : seriesName
           tooltip += `${format.encodeHTML(param.axisValueLabel)}: <strong>${formatter.format(Number(param.value[col]))}</strong><br>`
         }
         return tooltip
