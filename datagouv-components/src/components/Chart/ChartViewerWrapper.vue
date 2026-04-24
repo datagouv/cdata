@@ -39,7 +39,6 @@ const { t } = useTranslation()
 const config = useComponentsConfig()
 const getProfile = useGetProfile()
 
-// Loading and error states
 const status = ref<'idle' | 'pending' | 'success' | 'error'>('idle')
 const error = ref<Error | null>(null)
 
@@ -105,12 +104,10 @@ async function loadMorePages() {
     const resourceId = serie.resource_id
     if (!xColumn || !resourceId || !serie.column_y) continue
 
-    // Check if there's more data to load for this series
     if (!series.hasNextPage[resourceId]) {
       continue
     }
 
-    // Calculate the next page to fetch
     const nextPage = (series.page[resourceId] || 0) + 1
 
     const response = await fetchTabularData(config, {
@@ -128,7 +125,6 @@ async function loadMorePages() {
       filters: serie.filters ?? undefined,
     })
 
-    // Update the page tracker
     series.page[resourceId] = nextPage
 
     if (!series.data[resourceId]) {
@@ -136,7 +132,6 @@ async function loadMorePages() {
     }
     series.data[resourceId] = [...series.data[resourceId], ...response.data]
 
-    // Update hasNextPage based on the API response
     series.hasNextPage[resourceId] = !!response.links.next
   }
 }
@@ -182,14 +177,11 @@ async function fetchSeriesData() {
     const results = (await Promise.allSettled(fetchPromises))
       .filter(r => r.status === 'fulfilled')
       .map(r => r.value)
-    // Transform data into echarts format
     series.data = Object.fromEntries(results.map(result => [
       result.id,
       result.data.data,
     ]))
 
-    // Reset page tracking for each series to 0 (page 1 has been loaded)
-    // Also initialize hasNextPage based on the response
     for (const result of results) {
       const serie = props.chart.series.find(s => s.resource_id === result.id)
       if (serie) {
@@ -198,8 +190,6 @@ async function fetchSeriesData() {
       }
     }
 
-    // If loadAllPages is true, fetch the next page (loadMorePages can be called again for more)
-    // This allows progressive loading - first page loads quickly, then more can be loaded on demand
     if (props.loadAllPages) {
       await loadMorePages()
     }
