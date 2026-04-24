@@ -1,8 +1,7 @@
 <template>
-  <VChart
+  <div
+    ref="chartContainer"
     class="w-full min-h-96"
-    :option="echartsOption"
-    autoresize
   />
 </template>
 
@@ -11,8 +10,8 @@ import { format, use, type ComposeOption } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart, BarChart, type BarSeriesOption, type LineSeriesOption } from 'echarts/charts'
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent } from 'echarts/components'
-import VChart from 'vue-echarts'
-import { computed } from 'vue'
+import { init, type ECharts as EChartsType } from 'echarts'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { summarize } from '../../functions/helpers'
 import type { Chart, XAxis, YAxis, XAxisForm, ChartForApi } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
@@ -28,6 +27,8 @@ const props = defineProps<{
 }>()
 
 const { locale } = useTranslation()
+const chartContainer = ref<HTMLElement | null>(null)
+const echartsInstance = ref<EChartsType | null>(null)
 
 function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' {
   if (!xAxis) return 'category'
@@ -66,7 +67,6 @@ const echartsOption = computed(() => {
         const valA = a[sortKey]
         const valB = b[sortKey]
 
-        // Handle null/undefined values - place them at the front
         if (valA === null || valA === undefined) return sortDirection === 'asc' ? -1 : 1
         if (valB === null || valB === undefined) return sortDirection === 'asc' ? 1 : -1
         if (valA === null && valB === null) return 0
@@ -182,5 +182,45 @@ const echartsOption = computed(() => {
     | BarSeriesOption
     | LineSeriesOption
   >
+})
+
+onMounted(() => {
+  if (chartContainer.value) {
+    echartsInstance.value = init(chartContainer.value)
+    updateChart()
+  }
+})
+
+onUnmounted(() => {
+  if (echartsInstance.value) {
+    echartsInstance.value.dispose()
+    echartsInstance.value = null
+  }
+})
+
+watch(() => props.chart, updateChart, { deep: true })
+
+watch(() => props.series, updateChart, { deep: true })
+
+function updateChart() {
+  if (!echartsInstance.value) return
+  const option = echartsOption.value
+  if (option) {
+    echartsInstance.value.setOption(option, { notMerge: true })
+  }
+}
+
+const handleResize = () => {
+  if (echartsInstance.value) {
+    echartsInstance.value.resize()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
 })
 </script>
