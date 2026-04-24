@@ -59,11 +59,17 @@
               class="flex-1 fr-select"
             >
               <option
+                value=""
+                disabled
+              >
+                {{ $t('Sélectionnez un graphique') }}
+              </option>
+              <option
                 v-for="column in charts?.data"
                 :key="column.id"
-                :value="column"
+                :value="column.id"
               >
-                {{ column }}
+                {{ column.title }}
               </option>
             </select>
             <button
