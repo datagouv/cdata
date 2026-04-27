@@ -209,7 +209,10 @@ export default defineNuxtConfig({
     '/*/admin/**': { ssr: true },
   },
 
-  sourcemap: { client: 'hidden' },
+  // Server sourcemaps disabled: Nuxt 4.4 OOMs the Nitro bundle when generating them
+  // (>4GB heap usage). Our Sentry release workflow only uploads client sourcemaps
+  // (.output/public/_nuxt) anyway, so this has no impact on observability today.
+  sourcemap: { client: 'hidden', server: false },
 
   devServer: {
     port: 3000,
