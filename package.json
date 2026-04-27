@@ -24,7 +24,10 @@
       "core-js",
       "unrs-resolver",
       "vue-demi"
-    ]
+    ],
+    "patchedDependencies": {
+      "@nuxt/nitro-server": "patches/@nuxt__nitro-server.patch"
+    }
   },
   "scripts": {
     "lint": "eslint .",

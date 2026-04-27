@@ -48,7 +48,7 @@
               >
                 <BrandedButton
                   color="tertiary"
-                  :icon="isSortedBy(col) && sortConfig && sortConfig.type == 'asc' ? RiArrowUpLine : RiArrowDownLine"
+                  :icon="isSortedBy(col) && sortConfig && sortConfig.direction === 'asc' ? RiArrowUpLine : RiArrowDownLine"
                   icon-right
                   size="xs"
                   @click="sortByField(col)"
@@ -56,7 +56,7 @@
                   <!-- There is a weird bug with `sr-only`, I needed to add a relative parent to avoid full page x scrolling into the void…  -->
                   <span class="relative">
                     {{ col }}
-                    <span class="sr-only">{{ sortConfig && sortConfig.type == 'desc' ? t("Trier par ordre croissant") : t("Trier par ordre décroissant") }}</span>
+                    <span class="sr-only">{{ sortConfig && sortConfig.direction === 'desc' ? t("Trier par ordre croissant") : t("Trier par ordre décroissant") }}</span>
                   </span>
                 </BrandedButton>
               </th>
@@ -122,7 +122,7 @@ const rows = ref<Array<Record<string, unknown>>>([])
 const columns = ref<Array<string>>([])
 const loading = ref(true)
 const hasError = ref(false)
-const sortConfig = ref<SortConfig>(null)
+const sortConfig = ref<SortConfig | null>(null)
 const rowCount = ref(0)
 const config = useComponentsConfig()
 const pageSize = computed(() => config.tabularApiPageSize || 15)
@@ -138,7 +138,7 @@ function isSortedBy(col: string) {
 /**
  * Retrieve preview necessary infos
  */
-async function getTableInfos(page: number, sortConfig?: SortConfig) {
+async function getTableInfos(page: number, sortConfig?: SortConfig | null) {
   try {
     // Check that this function return wanted data
     const response = await getData(config, props.resource.id, page, sortConfig)
@@ -172,24 +172,24 @@ function changePage(page: number) {
  * Sort by a specific column
  */
 function sortByField(col: string) {
-  if (sortConfig.value && sortConfig.value.column == col) {
-    if (sortConfig.value.type == 'asc') {
-      sortConfig.value.type = 'desc'
+  if (sortConfig.value && sortConfig.value.column === col) {
+    if (sortConfig.value.direction === 'asc') {
+      sortConfig.value.direction = 'desc'
     }
     else {
-      sortConfig.value.type = 'asc'
+      sortConfig.value.direction = 'asc'
     }
   }
   else {
     if (!sortConfig.value) {
       sortConfig.value = {
         column: col,
-        type: 'asc',
+        direction: 'asc',
       }
     }
     else {
       sortConfig.value.column = col
-      sortConfig.value.type = 'asc'
+      sortConfig.value.direction = 'asc'
     }
   }
   currentPage.value = 1

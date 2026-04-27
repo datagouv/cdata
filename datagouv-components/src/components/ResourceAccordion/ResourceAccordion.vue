@@ -56,7 +56,7 @@
             :resource
           />
           <RiSubtractLine
-            v-if="resource.schema"
+            v-if="resource.schema?.name || resource.schema?.url"
             aria-hidden="true"
             class="size-3 fill-gray-medium"
           />
@@ -231,7 +231,7 @@
                 :dataset="dataset"
               />
               <!-- Show Datafair embedded preview (koumoul) -->
-              <SwaggerClient
+              <OpenApiViewer
                 v-else-if="hasOpenAPIPreview"
                 :url="resource.extras['apidocUrl'] as string"
               />
@@ -357,7 +357,7 @@
                 <p>{{ t("- Si le fichier est supprimé, l'API sera également supprimée.") }}</p>
                 <p>{{ t("Pour des usages pérennes, prévoyez que cette API dépend directement du fichier source.") }}</p>
               </div>
-              <Swagger
+              <OpenApiViewer
                 v-if="hasTabularData"
                 :url="`${config.tabularApiUrl}/api/resources/${props.resource.id}/swagger/`"
               />
@@ -398,7 +398,7 @@ import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
 import Preview from './Preview.vue'
 import { isOrganizationCertified } from '../../functions/organizations'
-import SwaggerClient from './Swagger.client.vue'
+import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 const URL_FORMATS = ['url', 'doi', 'www:link', ' www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
@@ -417,7 +417,6 @@ const props = withDefaults(defineProps<{
 
 const config = useComponentsConfig()
 
-const Swagger = defineAsyncComponent(() => import('./Swagger.client.vue'))
 const MapContainer = defineAsyncComponent(() => import('./MapContainer.client.vue'))
 const Pmtiles = defineAsyncComponent(() => import('./Pmtiles.client.vue'))
 const JsonPreview = defineAsyncComponent(() => import('./JsonPreview.client.vue'))

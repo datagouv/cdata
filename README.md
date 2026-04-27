@@ -108,6 +108,8 @@ NUXT_PUBLIC_DEV_API_KEY=your_api_key_from_dev
 NUXT_APP_COMMIT_ID=abc1234  # defaults to 'unknown'
 ```
 
+You can get create an api key from [your profile settings page](https://demo.data.gouv.fr/admin/me/profile).
+
 ### 🔧 Troubleshooting
 
 #### File Watcher Limits (`ENOSPC` errors)

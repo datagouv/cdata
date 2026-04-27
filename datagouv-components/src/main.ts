@@ -25,6 +25,8 @@ import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
 import type { GlobalSearchConfig, SearchType, SortOption } from './types/search'
 import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
+import { useSearchFilter } from './composables/useSearchFilter'
+import type { UseSearchFilterOptions } from './composables/useSearchFilter'
 
 import ActivityList from './components/ActivityList/ActivityList.vue'
 import UserActivityList from './components/ActivityList/UserActivityList.vue'
@@ -73,7 +75,7 @@ import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
 import ResourceExplorer from './components/ResourceExplorer/ResourceExplorer.vue'
 import ResourceExplorerSidebar from './components/ResourceExplorer/ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './components/ResourceExplorer/ResourceExplorerViewer.vue'
-import Swagger from './components/ResourceAccordion/Swagger.client.vue'
+import OpenApiViewer from './components/OpenApiViewer/OpenApiViewer.vue'
 import ReuseCard from './components/ReuseCard.vue'
 import ReuseHorizontalCard from './components/ReuseHorizontalCard.vue'
 import ReuseDetails from './components/ReuseDetails.vue'
@@ -94,6 +96,8 @@ import GlobalSearch from './components/Search/GlobalSearch.vue'
 import SearchInput from './components/Search/SearchInput.vue'
 import SearchableSelect from './components/Form/SearchableSelect.vue'
 import SelectGroup from './components/Form/SelectGroup.vue'
+import InfiniteLoader from './components/InfiniteLoader.vue'
+import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 
@@ -119,6 +123,7 @@ export * from './functions/owned'
 export * from './functions/resources'
 export * from './functions/reuses'
 export * from './functions/schemas'
+export * from './functions/tabular'
 export * from './functions/users'
 export * from './types/access_types'
 
@@ -126,6 +131,7 @@ export type {
   GlobalSearchConfig,
   SearchType,
   SortOption,
+  UseSearchFilterOptions,
   UseFetchFunction,
   AccessType,
   AccessAudience,
@@ -229,6 +235,7 @@ export {
   defaultDataserviceSortOptions,
   defaultReuseSortOptions,
   defaultOrganizationSortOptions,
+  useSearchFilter,
 }
 
 // Vue Plugin
@@ -302,7 +309,7 @@ export {
   SimpleBanner,
   SmallChart,
   StatBox,
-  Swagger,
+  OpenApiViewer,
   Tab,
   TabGroup,
   TabList,
@@ -317,4 +324,6 @@ export {
   SearchInput,
   SearchableSelect,
   SelectGroup,
+  InfiniteLoader,
+  TabularExplorer,
 }

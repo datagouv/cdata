@@ -26,6 +26,7 @@ export default defineConfigWithVueTs(
       // which are required for proper typography (e.g., spaces before punctuation marks like ?, !, :)
       'no-irregular-whitespace': 'off',
       'vue/multi-word-component-names': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
   },
   skipFormatting,

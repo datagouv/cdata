@@ -97,7 +97,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
-import { AnimatedLoader } from '@datagouv/components-next'
+import { AnimatedLoader, useFormatTabular } from '@datagouv/components-next'
 
 interface GristRecord {
   id: number
@@ -136,18 +136,7 @@ const total = computed(() => {
   return sum
 })
 
-function formatNumber(value: string | number | boolean | null | undefined): string {
-  if (value === null || value === undefined) {
-    return '-'
-  }
-
-  const num = Number(value)
-  if (isNaN(num)) {
-    return String(value)
-  }
-
-  return num.toLocaleString('fr-FR')
-}
+const { formatNumber } = useFormatTabular()
 
 function getFieldValue(record: GristRecord, column: string): string {
   const value = record.fields[column]

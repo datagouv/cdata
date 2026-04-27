@@ -107,12 +107,12 @@
           type="primary"
           class="mb-4 flex items-center space-x-5"
         >
-          <NuxtImg
+          <img
             src="/illustrations/reuse.svg"
             loading="lazy"
             class="size-14 shrink-0"
             alt=""
-          />
+          >
           <div class="w-full">
             <p class="font-bold mb-1">
               {{ t(`Qu'est-ce qu'une réutilisation ?`) }}
@@ -334,7 +334,7 @@
                 </template>
               </BrandedButton>
               <CdataLink
-                v-if="config.public.generateTagsFeedbackUrl"
+                v-if="config.public.generateTagsFeedbackUrl && hasReceivedAiTagsSuggestion"
                 :to="config.public.generateTagsFeedbackUrl"
                 target="_blank"
                 class="text-sm text-gray-medium"
@@ -445,6 +445,7 @@ const MAX_TAGS_NB = 5
 const isGeneratingTags = ref(false)
 const lastSuggestedTags = ref<Array<Tag>>([])
 const tagsGenerationError = ref(false)
+const hasReceivedAiTagsSuggestion = ref(false)
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(reuseForm, {
   featured: [],
@@ -567,6 +568,9 @@ async function handleAutoCompleteTags(nbTags: number) {
 
       // Update the suggested tags tracking
       lastSuggestedTags.value = newSuggestedTags
+      if (newSuggestedTags.length > 0) {
+        hasReceivedAiTagsSuggestion.value = true
+      }
     }
   }
   catch (error) {

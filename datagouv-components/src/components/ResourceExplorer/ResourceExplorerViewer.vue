@@ -6,7 +6,7 @@
           <h3 class="m-0 flex items-baseline text-base font-bold leading-tight">
             <ResourceIcon
               :resource
-              class="size-3.5 mr-1"
+              class="size-3.5 mr-1 shrink-0 translate-y-px"
             />
             <span class="line-clamp-2">{{ resource.title || t('Fichier sans nom') }}</span>
           </h3>
@@ -14,12 +14,13 @@
             :label="t('Copier le lien')"
             :copied-label="t('Lien copié !')"
             :text="resourceExternalUrl"
+            class="hidden md:inline-flex"
           />
         </div>
-        <div class="text-gray-medium text-xs flex items-center gap-1">
+        <div class="text-gray-medium text-xs flex items-center gap-1 flex-wrap">
           <SchemaBadge :resource />
           <RiSubtractLine
-            v-if="resource.schema"
+            v-if="resource.schema?.name || resource.schema?.url"
             aria-hidden="true"
             class="size-3 fill-gray-medium"
           />
@@ -134,7 +135,7 @@
                 :resource="resource"
                 :dataset="dataset"
               />
-              <SwaggerClient
+              <OpenApiViewer
                 v-else-if="hasOpenAPIPreview"
                 :url="resource.extras['apidocUrl'] as string"
               />
@@ -303,7 +304,7 @@
                 <p>{{ t("- Si le fichier est supprimé, l'API sera également supprimée.") }}</p>
                 <p>{{ t("Pour des usages pérennes, prévoyez que cette API dépend directement du fichier source.") }}</p>
               </div>
-              <Swagger
+              <OpenApiViewer
                 v-if="hasTabularData"
                 :url="`${config.tabularApiUrl}/api/resources/${resource.id}/swagger/`"
               />
@@ -324,7 +325,7 @@ import BrandedButton from '../BrandedButton.vue'
 import CopyButton from '../CopyButton.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
 import ResourceIcon from '../ResourceAccordion/ResourceIcon.vue'
-import Swagger from '../ResourceAccordion/Swagger.client.vue'
+import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
 import TabGroup from '../Tabs/TabGroup.vue'
 import TabList from '../Tabs/TabList.vue'
 import Tab from '../Tabs/Tab.vue'
@@ -362,9 +363,6 @@ const MapContainer = defineAsyncComponent(() =>
 )
 const Pmtiles = defineAsyncComponent(() =>
   import('../ResourceAccordion/Pmtiles.client.vue'),
-)
-const SwaggerClient = defineAsyncComponent(() =>
-  import('../ResourceAccordion/Swagger.client.vue'),
 )
 
 const props = defineProps<{

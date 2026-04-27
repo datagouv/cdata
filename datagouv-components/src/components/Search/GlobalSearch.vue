@@ -5,6 +5,7 @@
     @submit.prevent
   >
     <div
+      v-if="!hideSearchInput"
       ref="search"
       class="flex flex-wrap items-center justify-between"
       data-cy="search"
@@ -42,11 +43,15 @@
           </Sidemenu>
         </div>
 
-        <div v-if="activeFilters.length > 0">
+        <div v-if="activeFilters.length > 0 || $slots['custom-filters-top'] || $slots['custom-filters-bottom']">
           <Sidemenu :button-text="t('Filtres')">
             <template #title>
               {{ t('Filtres') }}
             </template>
+            <slot
+              name="custom-filters-top"
+              :current-type="currentType"
+            />
             <BasicAndAdvancedFilters
               v-slot="{ isEnabled, getOrder }"
               :basic-filters="activeBasicFilters"
@@ -146,6 +151,10 @@
                 :get-order="getOrder"
               />
             </BasicAndAdvancedFilters>
+            <slot
+              name="custom-filters-bottom"
+              :current-type="currentType"
+            />
             <div
               v-if="hasFilters"
               class="mt-6 text-center"
@@ -340,12 +349,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, useTemplateRef, type Ref } from 'vue'
+import { computed, provide, shallowReactive, useSlots, watch, useTemplateRef, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
 import { RiBookShelfLine, RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiLightbulbLine, RiLineChartLine, RiRssLine, RiTerminalLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
 import { useTranslation } from '../../composables/useTranslation'
 import { useDebouncedRef } from '../../composables/useDebouncedRef'
+import { forEachActiveCustomFilter, isCustomFilterActive, searchFilterContextKey, type CustomFilterEntry } from '../../composables/useSearchFilter'
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
@@ -388,8 +398,10 @@ import ReuseTypeFilter from './Filter/ReuseTypeFilter.vue'
 const props = withDefaults(defineProps<{
   config?: GlobalSearchConfig
   placeholder?: string
+  hideSearchInput?: boolean
 }>(), {
   config: getDefaultGlobalSearchConfig,
+  hideSearchInput: false,
 })
 
 // defineModel's default is static and can't depend on props, so we cast and initialize manually
@@ -398,6 +410,13 @@ if (!currentType.value) currentType.value = props.config[0]?.class ?? 'datasets'
 
 const { t } = useTranslation()
 const componentsConfig = useComponentsConfig()
+
+// Custom filter registry for useSearchFilter composable
+const customFilterRegistry = shallowReactive(new Map<string, CustomFilterEntry>())
+// Per-filter watch stoppers: each registered filter gets its own watcher so a
+// value change resets page to 1, but registration itself does not (the value
+// came from the URL, not from a user action).
+const customFilterStops = new Map<string, () => void>()
 
 // Initial type is used to determine which fetch should be SSR (non-lazy)
 const initialType = currentType.value
@@ -439,13 +458,26 @@ const activeFilters = computed(() => [
   ...(currentTypeConfig.value?.advancedFilters ?? []),
 ] as string[])
 
-const showSidebar = computed(() => props.config.length > 1 || activeFilters.value.length > 0)
+const slots = useSlots()
+const showSidebar = computed(() => props.config.length > 1 || activeFilters.value.length > 0 || !!slots['custom-filters-top'] || !!slots['custom-filters-bottom'])
 
 // URL query params
 const q = useRouteQuery<string>('q', '')
 const { debounced: qDebounced, flush: flushQ } = useDebouncedRef(q, componentsConfig.searchDebounce ?? 300)
 const page = useRouteQuery('page', 1, { transform: Number })
 const sort = useRouteQuery<string | undefined>('sort')
+
+provide(searchFilterContextKey, {
+  register(urlParam, entry) {
+    customFilterRegistry.set(urlParam, entry)
+    customFilterStops.set(urlParam, watch(entry.ref, () => page.value = 1))
+  },
+  unregister(urlParam) {
+    customFilterStops.get(urlParam)?.()
+    customFilterStops.delete(urlParam)
+    customFilterRegistry.delete(urlParam)
+  },
+})
 
 // Filter values
 const organizationId = useRouteQuery<string | undefined>('organization')
@@ -513,6 +545,7 @@ const topicsEnabled = computed(() => props.config.some(c => c.class === 'topics'
 // Create stable params for each type
 const stableParamsOptions = {
   allFilters,
+  customFilterRegistry,
   q: qDebounced,
   sort,
   page,
@@ -547,7 +580,10 @@ const reusesUrl = computed(() => reusesEnabled.value ? '/api/2/reuses/search/' :
 const organizationsUrl = computed(() => organizationsEnabled.value ? '/api/2/organizations/search/' : null)
 const topicsUrl = computed(() => topicsEnabled.value ? '/api/2/topics/search/' : null)
 
-// Reset page on filter/sort change
+// Reset page on filter/sort change. Custom filters (registered via
+// useSearchFilter) have their own watchers set up in `provide`, so they're
+// intentionally excluded here to avoid resetting the page when a filter
+// registers with its URL-derived value.
 const filtersForReset = computed(() => ({
   q: qDebounced.value,
   organization: organizationId.value,
@@ -587,6 +623,7 @@ const hasFilters = computed(() => {
     || lastUpdateRange.value
     || producerType.value
     || reuseType.value
+    || Array.from(customFilterRegistry.values()).some(isCustomFilterActive)
 })
 
 const showForumLink = computed(() => (currentType.value === 'datasets' || currentType.value === 'dataservices') && !!componentsConfig.forumUrl)
@@ -607,6 +644,9 @@ function resetFilters() {
   lastUpdateRange.value = undefined
   producerType.value = undefined
   reuseType.value = undefined
+  for (const entry of customFilterRegistry.values()) {
+    entry.ref.value = entry.defaultValue
+  }
   q.value = ''
   flushQ()
 }
@@ -701,6 +741,10 @@ const rssUrl = computed(() => {
   if (granularity.value) params.set('granularity', granularity.value)
   if (badge.value) params.set('badge', badge.value)
   if (topic.value) params.set('topic', topic.value)
+
+  forEachActiveCustomFilter(customFilterRegistry, (apiParam, value) => {
+    params.set(apiParam, value)
+  })
 
   // Add sort if set
   if (sort.value) params.set('sort', sort.value)
