@@ -15,7 +15,7 @@
     <div class="bg-white py-4 px-4 -mx-4">
       <GlobalSearch :config="searchConfig">
         <template #custom-filters-bottom="{ currentType }">
-          <ThemeTagFilter v-if="currentType === 'datasets'" />
+          <ThemeTagFilter v-if="currentType === 'all-datasets' || currentType === 'inspire-datasets'" />
         </template>
       </GlobalSearch>
     </div>
@@ -30,7 +30,16 @@ import ThemeTagFilter from '~/components/Design/ThemeTagFilter.vue'
 const searchConfig: GlobalSearchConfig = [
   {
     class: 'datasets',
+    key: 'all-datasets',
+    name: 'Tous les jeux de données',
     basicFilters: ['organization', 'organization_badge', 'tag', 'format', 'license', 'schema', 'geozone', 'granularity', 'badge'],
+  },
+  {
+    class: 'datasets',
+    key: 'inspire-datasets',
+    name: 'Données INSPIRE',
+    hiddenFilters: [{ key: 'badge', value: 'inspire' }],
+    basicFilters: ['organization', 'organization_badge', 'tag', 'format', 'license', 'schema', 'geozone', 'granularity'],
   },
   {
     class: 'dataservices',

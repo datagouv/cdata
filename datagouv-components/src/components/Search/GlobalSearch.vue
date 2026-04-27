@@ -11,7 +11,7 @@
     >
       <SearchInput
         v-model="q"
-        :placeholder="placeholder || typesMeta[currentTypeConfig?.class ?? 'datasets'].placeholder"
+        :placeholder="placeholder || strategies[currentTypeConfig?.class ?? 'datasets'].placeholder"
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
@@ -34,9 +34,9 @@
                 :value="configKey(typeConfig)"
                 :count="resultsMap[configKey(typeConfig)]?.data.value?.total"
                 :loading="resultsMap[configKey(typeConfig)]?.status.value === 'pending' || resultsMap[configKey(typeConfig)]?.status.value === 'idle'"
-                :icon="typesMeta[typeConfig.class].icon"
+                :icon="strategies[typeConfig.class].icon"
               >
-                {{ typeConfig.name || typesMeta[typeConfig.class].name }}
+                {{ typeConfig.name || strategies[typeConfig.class].name }}
               </RadioInput>
             </RadioGroup>
           </Sidemenu>
@@ -348,7 +348,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, provide, shallowReactive, useSlots, watch, useTemplateRef, type Ref } from 'vue'
+import { computed, provide, shallowReactive, useSlots, watch, useTemplateRef, type Component, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
 import { RiBookShelfLine, RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiLightbulbLine, RiLineChartLine, RiRssLine, RiTerminalLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
@@ -358,12 +358,13 @@ import { forEachActiveCustomFilter, isCustomFilterActive, searchFilterContextKey
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
+import type { AsyncDataRequestStatus } from '../../functions/api.types'
 import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
 import type { Organization } from '../../types/organizations'
 import type { Reuse } from '../../types/reuses'
 import type { TopicV2 } from '../../types/topics'
-import type { GlobalSearchConfig, SearchTypeConfig, SortOption, FacetItem } from '../../types/search'
+import type { GlobalSearchConfig, SearchResponseByClass, SearchType, SearchTypeConfig, SortOption, FacetItem } from '../../types/search'
 import { getDefaultGlobalSearchConfig } from '../../types/search'
 import BrandedButton from '../BrandedButton.vue'
 import LoadingBlock from '../LoadingBlock.vue'
@@ -544,28 +545,86 @@ const stableParamsOptions = {
   pageSize,
 }
 
-// URL by class (static lookup)
-const urlByClass: Record<string, string> = {
-  datasets: '/api/2/datasets/search/',
-  dataservices: '/api/2/dataservices/search/',
-  reuses: '/api/2/reuses/search/',
-  organizations: '/api/2/organizations/search/',
-  topics: '/api/2/topics/search/',
+// Discriminated union: each variant carries its own response type so a `class`
+// narrow gives the precise shape of `data.value` (no cast needed).
+type SearchEntry = {
+  [K in SearchType]: {
+    class: K
+    data: Ref<SearchResponseByClass[K] | null>
+    status: Ref<AsyncDataRequestStatus>
+  }
+}[SearchType]
+
+// One strategy per class consolidates everything that varies by class:
+// metadata (icon/name/placeholder), endpoint, and a typed fetch factory.
+type SearchStrategy<C extends SearchType> = {
+  url: string
+  icon: Component
+  name: string
+  placeholder: string
+  fetch: (
+    params: Ref<Record<string, unknown>>,
+    server: boolean,
+  ) => Promise<Extract<SearchEntry, { class: C }>>
+}
+
+function makeStrategy<C extends SearchType>(
+  cls: C,
+  meta: Omit<SearchStrategy<C>, 'fetch'>,
+): SearchStrategy<C> {
+  return {
+    ...meta,
+    fetch: async (params, server) => {
+      const { data, status } = await useFetch<SearchResponseByClass[C]>(
+        meta.url,
+        { params, lazy: true, server },
+      )
+      // Tautologically equivalent to Extract<SearchEntry, { class: C }>, but TS
+      // cannot prove it on a generic C, so we assert.
+      return { class: cls, data, status } as Extract<SearchEntry, { class: C }>
+    },
+  }
+}
+
+const strategies: { [K in SearchType]: SearchStrategy<K> } = {
+  datasets: makeStrategy('datasets', {
+    url: '/api/2/datasets/search/',
+    icon: RiDatabase2Line,
+    name: t('Jeux de données'),
+    placeholder: t('ex. élections présidentielles'),
+  }),
+  dataservices: makeStrategy('dataservices', {
+    url: '/api/2/dataservices/search/',
+    icon: RiTerminalLine,
+    name: t('API'),
+    placeholder: t('ex: SIRENE'),
+  }),
+  reuses: makeStrategy('reuses', {
+    url: '/api/2/reuses/search/',
+    icon: RiLineChartLine,
+    name: t('Réutilisations'),
+    placeholder: t('Rechercher une réutilisation de données'),
+  }),
+  organizations: makeStrategy('organizations', {
+    url: '/api/2/organizations/search/',
+    icon: RiBuilding2Line,
+    name: t('Organisations'),
+    placeholder: t('Rechercher une organisation'),
+  }),
+  topics: makeStrategy('topics', {
+    url: '/api/2/topics/search/',
+    icon: RiBookShelfLine,
+    name: t('Thématiques'),
+    placeholder: t('Rechercher une thématique'),
+  }),
 }
 
 // One params + fetch per config entry, keyed by configKey
-type SearchResult = { total: number, data: { id: string }[], facets?: unknown }
-const resultsMap: Record<string, { data: Ref<SearchResult | null>, status: Ref<string> }> = {}
+const resultsMap: Record<string, SearchEntry> = {}
 for (const c of props.config) {
   const key = configKey(c)
   const params = useStableQueryParams({ ...stableParamsOptions, typeConfig: c })
-
-  const { data, status } = await useFetch<SearchResult>(urlByClass[c.class]!, {
-    params,
-    lazy: true,
-    server: initialType === key,
-  })
-  resultsMap[key] = { data, status }
+  resultsMap[key] = await strategies[c.class].fetch(params, initialType === key)
 }
 
 // Reset page on filter/sort change. Custom filters (registered via
@@ -638,34 +697,6 @@ function resetFilters() {
   q.value = ''
   flushQ()
 }
-
-const typesMeta = {
-  datasets: {
-    icon: RiDatabase2Line,
-    name: t('Jeux de données'),
-    placeholder: t('ex. élections présidentielles'),
-  },
-  dataservices: {
-    icon: RiTerminalLine,
-    name: t('API'),
-    placeholder: t('ex: SIRENE'),
-  },
-  reuses: {
-    icon: RiLineChartLine,
-    name: t('Réutilisations'),
-    placeholder: t('Rechercher une réutilisation de données'),
-  },
-  organizations: {
-    icon: RiBuilding2Line,
-    name: t('Organisations'),
-    placeholder: t('Rechercher une organisation'),
-  },
-  topics: {
-    icon: RiBookShelfLine,
-    name: t('Thématiques'),
-    placeholder: t('Rechercher une thématique'),
-  },
-} as const
 
 const searchResults = computed(() => resultsMap[currentType.value]?.data.value)
 const searchResultsStatus = computed(() => resultsMap[currentType.value]?.status.value)

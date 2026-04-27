@@ -1,5 +1,10 @@
 import type { PaginatedArray } from './api'
 import type { AccessType } from './access_types'
+import type { Dataset } from './datasets'
+import type { Dataservice } from './dataservices'
+import type { Organization } from './organizations'
+import type { Reuse } from './reuses'
+import type { TopicV2 } from './topics'
 import type {
   CERTIFIED,
   PUBLIC_SERVICE,
@@ -344,6 +349,15 @@ export type SearchTypeConfig = DatasetSearchConfig | DataserviceSearchConfig | R
 export type SearchType = SearchTypeConfig['class']
 
 export type GlobalSearchConfig = SearchTypeConfig[]
+
+// Maps each search class to its concrete response shape.
+export type SearchResponseByClass = {
+  datasets: DatasetSearchResponse<Dataset>
+  dataservices: DataserviceSearchResponse<Dataservice>
+  reuses: ReuseSearchResponse<Reuse>
+  organizations: OrganizationSearchResponse<Organization>
+  topics: TopicSearchResponse<TopicV2>
+}
 
 // Helper functions for default configs
 
