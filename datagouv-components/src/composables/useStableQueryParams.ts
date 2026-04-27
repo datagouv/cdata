@@ -1,11 +1,13 @@
-import { ref, watch, type Ref } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
 import type { SearchTypeConfig } from '../types/search'
+import { forEachActiveCustomFilter, type CustomFilterEntry } from './useSearchFilter'
 
 type FilterRefs = Record<string, Ref<unknown>>
 
 interface StableQueryParamsOptions {
   typeConfig: SearchTypeConfig | undefined
   allFilters: FilterRefs
+  customFilterRegistry: Map<string, CustomFilterEntry>
   q: Ref<string>
   sort: Ref<string | undefined>
   page: Ref<number>
@@ -17,7 +19,7 @@ interface StableQueryParamsOptions {
  * Applies hiddenFilters first, then user filters (which can override hiddenFilters).
  */
 export function useStableQueryParams(options: StableQueryParamsOptions) {
-  const { typeConfig, allFilters, q, sort, page, pageSize } = options
+  const { typeConfig, allFilters, customFilterRegistry, q, sort, page, pageSize } = options
   const stableParams = ref<Record<string, unknown>>({})
 
   const buildParams = () => {
@@ -50,6 +52,19 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
       }
     }
 
+    // 3.5. Apply custom filter values. Concatenate into an array on collision
+    // so a custom filter mapped onto a built-in apiParam (e.g. theme → tag)
+    // combines with an existing built-in value instead of overwriting it.
+    forEachActiveCustomFilter(customFilterRegistry, (apiParam, value) => {
+      const existing = params[apiParam]
+      if (existing === undefined) {
+        params[apiParam] = value
+      }
+      else {
+        params[apiParam] = Array.isArray(existing) ? [...existing, value] : [existing, value]
+      }
+    })
+
     // 4. Always include q, sort (if valid for this type), page, page_size
     if (q.value) {
       params.q = q.value
@@ -66,9 +81,19 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
     return params
   }
 
+  // Computed that reads all custom filter values, establishing reactive dependencies
+  // on both the Map mutations (shallowReactive) and each entry's ref.value.
+  const customFilterValues = computed(() => {
+    const snapshot: Record<string, unknown> = {}
+    for (const [urlParam, entry] of customFilterRegistry) {
+      snapshot[urlParam] = entry.ref.value
+    }
+    return snapshot
+  })
+
   // Watch all dependencies and update only if content changed
   watch(
-    [q, sort, page, ...Object.values(allFilters)],
+    [q, sort, page, ...Object.values(allFilters), customFilterValues],
     () => {
       const newParams = buildParams()
       // JSON.stringify comparison is safe here because buildParams() builds the object deterministically

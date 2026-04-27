@@ -2,7 +2,7 @@
   <div :class="{ relative: editable }">
     <!-- Admin edit button -->
     <div
-      v-if="editable && isMeAdmin() && !isEditing"
+      v-if="editable && !hideEditButton && isMeAdmin() && !isEditing"
       class="absolute top-4 right-4 z-50"
     >
       <BrandedButton
@@ -19,7 +19,7 @@
       v-for="(bloc, index) in workingBlocs"
       :key="bloc.id"
       class="relative"
-      :class="bloc.class !== 'HeroBloc' && 'py-24 odd:bg-gray-some even:bg-white'"
+      :class="bloc.class !== 'HeroBloc' && (striped ? 'py-24 odd:bg-gray-some even:bg-white' : 'py-12')"
     >
       <!-- Add button above the bloc (absolute positioned) -->
       <div
@@ -155,11 +155,15 @@ const props = withDefaults(defineProps<{
   blocs: Array<PageBloc>
   edit?: boolean
   editable?: boolean
+  striped?: boolean
+  hideEditButton?: boolean
   mainColor?: ComponentProps<typeof BrandedButton>['color']
   onSave: (blocs: Array<PageBloc>) => Promise<void>
 }>(), {
   edit: false,
   editable: false,
+  striped: true,
+  hideEditButton: false,
   mainColor: 'primary',
 })
 

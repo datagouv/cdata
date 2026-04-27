@@ -147,10 +147,11 @@
       v-if="pageData && !pageData.total"
       class="flex flex-col items-center"
     >
-      <nuxt-img
+      <img
         src="/illustrations/harvester.svg"
         class="w-24"
-      />
+        alt=""
+      >
       <template
         v-if="organization"
       >

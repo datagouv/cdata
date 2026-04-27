@@ -7,6 +7,10 @@
     <h1 class="text-2xl font-extrabold text-gray-title mb-5">
       {{ t("Modération") }}
     </h1>
+    <TabLinks
+      class="mb-5"
+      :links="subjectTypeTabs"
+    />
     <div
       v-if="pageData"
       class="flex justify-between items-end"
@@ -90,7 +94,7 @@
               v-for="report in pageData.data"
               :key="report.id"
             >
-              <td>
+              <td class="overflow-hidden">
                 <template v-if="subjects[report.id]">
                   <div v-if="subjects[report.id].value">
                     <LinkToSubject
@@ -348,6 +352,7 @@ import type { Thread } from '~/types/discussions'
 import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
 import DataserviceBadge from '~/components/AdminBadge/DataserviceBadge.vue'
 import ReuseBadge from '~/components/AdminBadge/ReuseBadge.vue'
+import TabLinks from '~/components/TabLinks.vue'
 
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
@@ -361,8 +366,28 @@ const pageSize = ref(20)
 const filterStatus = ref({ label: t('En cours'), id: false })
 const filterStatusValue = computed(() => filterStatus.value.id === null ? undefined : filterStatus.value.id)
 
+const basePath = '/admin/site/moderation'
+const subjectTypeTabs = [
+  { href: basePath, label: t('Tous') },
+  { href: `${basePath}?type=Dataset`, label: t('Datasets') },
+  { href: `${basePath}?type=Dataservice`, label: t('Dataservices') },
+  { href: `${basePath}?type=Reuse`, label: t('Réutilisations') },
+  { href: `${basePath}?type=Organization`, label: t('Organisations') },
+  { href: `${basePath}?type=Discussion`, label: t('Discussions') },
+]
+
+const route = useRoute()
+const subjectType = computed(() => {
+  const type = route.query.type
+  if (typeof type === 'string' && ['Dataset', 'Dataservice', 'Reuse', 'Organization', 'Discussion'].includes(type)) {
+    return type
+  }
+  return undefined
+})
+
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Report>>(`/api/1/reports/`, { query: {
   handled: filterStatusValue,
+  subject_type: subjectType,
   page: page,
   pageSize: pageSize,
   sort: '-reported_at',

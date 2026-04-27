@@ -1,0 +1,90 @@
+import { type InjectionKey, type Ref, inject, onMounted, onScopeDispose } from 'vue'
+import { useRouteQuery } from '@vueuse/router'
+
+export interface CustomFilterEntry {
+  apiParam: string
+  ref: Ref<string | undefined>
+  defaultValue: string | undefined
+}
+
+export interface SearchFilterContext {
+  register(urlParam: string, entry: CustomFilterEntry): void
+  unregister(urlParam: string): void
+}
+
+export function isCustomFilterActive(entry: CustomFilterEntry): boolean {
+  const v = entry.ref.value
+  return v !== undefined && v !== null && v !== '' && v !== entry.defaultValue
+}
+
+export function forEachActiveCustomFilter(
+  registry: Map<string, CustomFilterEntry>,
+  apply: (apiParam: string, value: string) => void,
+): void {
+  for (const entry of registry.values()) {
+    if (!isCustomFilterActive(entry)) continue
+    apply(entry.apiParam, String(entry.ref.value))
+  }
+}
+
+export const searchFilterContextKey: InjectionKey<SearchFilterContext>
+  = Symbol('SearchFilterContext')
+
+export interface UseSearchFilterOptions {
+  /** The API parameter name to map this filter to. Defaults to the urlParam. */
+  apiParam?: string
+  /** Default value when not present in URL. Defaults to undefined. */
+  defaultValue?: string
+}
+
+/**
+ * Registers a custom filter with the parent GlobalSearch component.
+ *
+ * Must be called inside a component rendered within GlobalSearch's
+ * `#custom-filters-top` or `#custom-filters-bottom` slot.
+ *
+ * @param urlParam - The URL query parameter name (e.g. 'theme' → `?theme=value`)
+ * @param options  - Optional: `apiParam` to map to a different API param (e.g. 'tag'), `defaultValue`
+ * @returns A reactive ref bound to the URL parameter, suitable for v-model
+ *
+ * @example
+ * ```vue
+ * <script setup>
+ * import { useSearchFilter } from '@datagouv/components-next'
+ * // URL: ?theme=environment → API: ?tag=environment
+ * const value = useSearchFilter('theme', { apiParam: 'tag' })
+ * </script>
+ * ```
+ */
+export function useSearchFilter(
+  urlParam: string,
+  options: UseSearchFilterOptions = {},
+): Ref<string | undefined> {
+  const context = inject(searchFilterContextKey)
+  if (!context) {
+    throw new Error(
+      `useSearchFilter("${urlParam}") must be used inside a <GlobalSearch> component.`,
+    )
+  }
+
+  const { apiParam = urlParam, defaultValue = undefined } = options
+
+  const value = useRouteQuery<string | undefined>(urlParam, defaultValue)
+
+  // Register in onMounted to avoid SSR/hydration mismatch: the registry must be
+  // empty during SSR so server and client produce the same initial HTML.
+  onMounted(() => {
+    context.register(urlParam, { apiParam, ref: value, defaultValue })
+  })
+
+  onScopeDispose(() => {
+    // Clear the URL param when the scope ends. This mirrors GlobalSearch's
+    // own `watch(currentType)` logic that drops built-in filters which don't
+    // apply to the new type: a custom filter's applicability is signalled
+    // by the consumer via `v-if`, so its unmount is the equivalent signal.
+    value.value = defaultValue
+    context.unregister(urlParam)
+  })
+
+  return value
+}

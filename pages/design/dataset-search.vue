@@ -13,7 +13,11 @@
     </h1>
 
     <div class="bg-white py-4 px-4 -mx-4">
-      <GlobalSearch :config="searchConfig" />
+      <GlobalSearch :config="searchConfig">
+        <template #custom-filters-bottom="{ currentType }">
+          <ThemeTagFilter v-if="currentType === 'all-datasets' || currentType === 'inspire-datasets'" />
+        </template>
+      </GlobalSearch>
     </div>
   </div>
 </template>
@@ -21,11 +25,21 @@
 <script setup lang="ts">
 import { GlobalSearch, type GlobalSearchConfig } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import ThemeTagFilter from '~/components/Design/ThemeTagFilter.vue'
 
 const searchConfig: GlobalSearchConfig = [
   {
     class: 'datasets',
+    key: 'all-datasets',
+    name: 'Tous les jeux de données',
     basicFilters: ['organization', 'organization_badge', 'tag', 'format', 'license', 'schema', 'geozone', 'granularity', 'badge'],
+  },
+  {
+    class: 'datasets',
+    key: 'inspire-datasets',
+    name: 'Données INSPIRE',
+    hiddenFilters: [{ key: 'badge', value: 'inspire' }],
+    basicFilters: ['organization', 'organization_badge', 'tag', 'format', 'license', 'schema', 'geozone', 'granularity'],
   },
   {
     class: 'dataservices',
