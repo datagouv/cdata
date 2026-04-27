@@ -82,7 +82,7 @@
     "gray-matter": "^4.0.3",
     "leaflet": "^1.9.4",
     "lodash-es": "^4.18.1",
-    "nuxt": "~4.3.0",
+    "nuxt": "~4.4.0",
     "nuxt-og-image": "^6.3.3",
     "ofetch": "^1.5.1",
     "papaparse": "^5.5.3",
