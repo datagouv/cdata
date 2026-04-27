@@ -184,6 +184,7 @@
           <p
             class="fr-col-auto my-0"
             role="status"
+            data-testid="search-result-count"
           >
             {{ t("{count} résultats | {count} résultat | {count} résultats", searchResults.total) }}
           </p>

@@ -7,8 +7,7 @@ test('search launch without params', async ({ page }) => {
     'Moteur de recherche des jeux de données - data.gouv.fr',
   )
 
-  // Result count is displayed with role="status"
-  await expect(page.getByRole('status')).toBeVisible()
+  await expect(page.getByTestId('search-result-count')).toBeVisible()
 
   // Results are displayed in a list
   const results = page.locator('.search-results ul')
@@ -44,7 +43,7 @@ test('search results update when badge filter is applied', async ({ page }) => {
   await page.goto('/datasets/search/')
 
   // Wait for initial results to load
-  await expect(page.getByRole('status')).toBeVisible()
+  await expect(page.getByTestId('search-result-count')).toBeVisible()
 
   // Badge filter is now a RadioGroup
   const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
@@ -57,7 +56,7 @@ test('search results update when badge filter is applied', async ({ page }) => {
   await page.waitForURL(/badge=/)
 
   // Either results are shown with a count, or "no results" message is displayed
-  const hasResults = await page.getByRole('status').isVisible().catch(() => false)
+  const hasResults = await page.getByTestId('search-result-count').isVisible().catch(() => false)
   const hasNoResultsMessage = await page.getByText('Vous n\'avez pas trouvé ce que vous cherchez').isVisible().catch(() => false)
 
   expect(hasResults || hasNoResultsMessage).toBeTruthy()
