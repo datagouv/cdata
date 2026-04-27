@@ -292,7 +292,7 @@
           :class="i % 2 === 1 ? 'bg-gray-lowest-2' : 'bg-white'"
         >
           <div
-            v-for="col in mobileVisibleFields(row, i)"
+            v-for="col in mobileVisibleFields(i)"
             :key="col"
             class="flex flex-col gap-0.5 min-w-0"
           >
@@ -751,7 +751,7 @@ const mobileFilterOpen = ref(false)
 const mobileExpandedRows = ref(new Set<number>())
 const mobileFilterExpandedCol = ref<string | null>(null)
 
-function mobileVisibleFields(row: TabularRow, index: number): string[] {
+function mobileVisibleFields(index: number): string[] {
   if (displayedColumns.value.length <= 4 || mobileExpandedRows.value.has(index)) {
     return displayedColumns.value
   }
