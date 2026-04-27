@@ -1,5 +1,10 @@
 import type { PaginatedArray } from './api'
 import type { AccessType } from './access_types'
+import type { Dataset } from './datasets'
+import type { Dataservice } from './dataservices'
+import type { Organization } from './organizations'
+import type { Reuse } from './reuses'
+import type { TopicV2 } from './topics'
 import type {
   CERTIFIED,
   PUBLIC_SERVICE,
@@ -291,6 +296,7 @@ export type SortOption<Sort extends string> = {
 
 export type DatasetSearchConfig = {
   class: 'datasets'
+  key?: string
   name?: string
   hiddenFilters?: HiddenFilter<DatasetSearchFilters>[]
   basicFilters?: (keyof DatasetSearchFilters)[]
@@ -300,6 +306,7 @@ export type DatasetSearchConfig = {
 
 export type DataserviceSearchConfig = {
   class: 'dataservices'
+  key?: string
   name?: string
   hiddenFilters?: HiddenFilter<DataserviceSearchFilters>[]
   basicFilters?: (keyof DataserviceSearchFilters)[]
@@ -309,6 +316,7 @@ export type DataserviceSearchConfig = {
 
 export type ReuseSearchConfig = {
   class: 'reuses'
+  key?: string
   name?: string
   hiddenFilters?: HiddenFilter<ReuseSearchFilters>[]
   basicFilters?: (keyof ReuseSearchFilters)[]
@@ -318,6 +326,7 @@ export type ReuseSearchConfig = {
 
 export type OrganizationSearchConfig = {
   class: 'organizations'
+  key?: string
   name?: string
   hiddenFilters?: HiddenFilter<OrganizationSearchFilters>[]
   basicFilters?: (keyof OrganizationSearchFilters)[]
@@ -327,6 +336,7 @@ export type OrganizationSearchConfig = {
 
 export type TopicSearchConfig = {
   class: 'topics'
+  key?: string
   name?: string
   hiddenFilters?: HiddenFilter<TopicSearchFilters>[]
   basicFilters?: (keyof TopicSearchFilters)[]
@@ -339,6 +349,15 @@ export type SearchTypeConfig = DatasetSearchConfig | DataserviceSearchConfig | R
 export type SearchType = SearchTypeConfig['class']
 
 export type GlobalSearchConfig = SearchTypeConfig[]
+
+// Maps each search class to its concrete response shape.
+export type SearchResponseByClass = {
+  datasets: DatasetSearchResponse<Dataset>
+  dataservices: DataserviceSearchResponse<Dataservice>
+  reuses: ReuseSearchResponse<Reuse>
+  organizations: OrganizationSearchResponse<Organization>
+  topics: TopicSearchResponse<TopicV2>
+}
 
 // Helper functions for default configs
 

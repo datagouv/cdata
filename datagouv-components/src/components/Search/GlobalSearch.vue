@@ -12,7 +12,7 @@
     >
       <SearchInput
         v-model="q"
-        :placeholder="placeholder || typesMeta[currentType].placeholder"
+        :placeholder="placeholder || strategies[currentTypeConfig?.class ?? 'datasets'].placeholder"
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
@@ -31,13 +31,13 @@
             >
               <RadioInput
                 v-for="typeConfig in config"
-                :key="typeConfig.class"
-                :value="typeConfig.class"
-                :count="typesMeta[typeConfig.class].results.value?.total"
-                :loading="typesMeta[typeConfig.class].status.value === 'pending' || typesMeta[typeConfig.class].status.value === 'idle'"
-                :icon="typesMeta[typeConfig.class].icon"
+                :key="configKey(typeConfig)"
+                :value="configKey(typeConfig)"
+                :count="resultsMap[configKey(typeConfig)]?.data.value?.total"
+                :loading="resultsMap[configKey(typeConfig)]?.status.value === 'pending' || resultsMap[configKey(typeConfig)]?.status.value === 'idle'"
+                :icon="strategies[typeConfig.class].icon"
               >
-                {{ typeConfig.name || typesMeta[typeConfig.class].name }}
+                {{ typeConfig.name || strategies[typeConfig.class].name }}
               </RadioInput>
             </RadioGroup>
           </Sidemenu>
@@ -128,7 +128,7 @@
                 v-model="producerType"
                 :facets="getFacets('producer_type')"
                 :loading="searchResultsStatus === 'pending'"
-                :exclude="currentType === 'organizations' ? ['user'] : []"
+                :exclude="currentTypeConfig?.class === 'organizations' ? ['user'] : []"
                 :style="{ order: getOrder('producer_type') }"
               />
               <DatasetBadgeFilter
@@ -230,7 +230,7 @@
         <transition mode="out-in">
           <LoadingBlock
             v-slot="{ data: results }"
-            :status="searchResultsStatus"
+            :status="searchResultsStatus!"
             :data="searchResults"
           >
             <div v-if="results && results.data.length">
@@ -240,7 +240,7 @@
                   :key="result.id"
                   class="p-0"
                 >
-                  <template v-if="currentType === 'datasets'">
+                  <template v-if="currentTypeConfig?.class === 'datasets'">
                     <slot
                       name="dataset"
                       :dataset="result"
@@ -248,7 +248,7 @@
                       <DatasetCard :dataset="(result as Dataset)" />
                     </slot>
                   </template>
-                  <template v-else-if="currentType === 'dataservices'">
+                  <template v-else-if="currentTypeConfig?.class === 'dataservices'">
                     <slot
                       name="dataservice"
                       :dataservice="result"
@@ -256,7 +256,7 @@
                       <DataserviceCard :dataservice="(result as Dataservice)" />
                     </slot>
                   </template>
-                  <template v-else-if="currentType === 'reuses'">
+                  <template v-else-if="currentTypeConfig?.class === 'reuses'">
                     <slot
                       name="reuse"
                       :reuse="result"
@@ -264,7 +264,7 @@
                       <ReuseHorizontalCard :reuse="(result as Reuse)" />
                     </slot>
                   </template>
-                  <template v-else-if="currentType === 'organizations'">
+                  <template v-else-if="currentTypeConfig?.class === 'organizations'">
                     <slot
                       name="organization"
                       :organization="result"
@@ -272,7 +272,7 @@
                       <OrganizationHorizontalCard :organization="(result as Organization)" />
                     </slot>
                   </template>
-                  <template v-else-if="currentType === 'topics'">
+                  <template v-else-if="currentTypeConfig?.class === 'topics'">
                     <slot
                       name="topic"
                       :topic="result"
@@ -349,7 +349,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, provide, shallowReactive, useSlots, watch, useTemplateRef, type Ref } from 'vue'
+import { computed, provide, shallowReactive, useSlots, watch, useTemplateRef, type Component, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
 import { RiBookShelfLine, RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiLightbulbLine, RiLineChartLine, RiRssLine, RiTerminalLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
@@ -359,12 +359,13 @@ import { forEachActiveCustomFilter, isCustomFilterActive, searchFilterContextKey
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
+import type { AsyncDataRequestStatus } from '../../functions/api.types'
 import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
 import type { Organization } from '../../types/organizations'
 import type { Reuse } from '../../types/reuses'
 import type { TopicV2 } from '../../types/topics'
-import type { GlobalSearchConfig, SearchType, SortOption, DatasetSearchResponse, DataserviceSearchResponse, ReuseSearchResponse, OrganizationSearchResponse, TopicSearchResponse, FacetItem } from '../../types/search'
+import type { GlobalSearchConfig, SearchResponseByClass, SearchType, SearchTypeConfig, SortOption, FacetItem } from '../../types/search'
 import { getDefaultGlobalSearchConfig } from '../../types/search'
 import BrandedButton from '../BrandedButton.vue'
 import LoadingBlock from '../LoadingBlock.vue'
@@ -404,9 +405,11 @@ const props = withDefaults(defineProps<{
   hideSearchInput: false,
 })
 
+const configKey = (c: SearchTypeConfig) => c.key ?? c.class
+
 // defineModel's default is static and can't depend on props, so we cast and initialize manually
-const currentType = defineModel<SearchType>('type') as Ref<SearchType>
-if (!currentType.value) currentType.value = props.config[0]?.class ?? 'datasets'
+const currentType = defineModel<string>('type') as Ref<string>
+if (!currentType.value) currentType.value = configKey(props.config[0] ?? { class: 'datasets' })
 
 const { t } = useTranslation()
 const componentsConfig = useComponentsConfig()
@@ -422,7 +425,7 @@ const customFilterStops = new Map<string, () => void>()
 const initialType = currentType.value
 
 const currentTypeConfig = computed(() =>
-  props.config.find(c => c.class === currentType.value),
+  props.config.find(c => configKey(c) === currentType.value),
 )
 
 const activeBasicFilters = computed(() =>
@@ -535,13 +538,6 @@ watch(currentType, () => {
   }
 })
 
-// Check which types are enabled
-const datasetsEnabled = computed(() => props.config.some(c => c.class === 'datasets'))
-const dataservicesEnabled = computed(() => props.config.some(c => c.class === 'dataservices'))
-const reusesEnabled = computed(() => props.config.some(c => c.class === 'reuses'))
-const organizationsEnabled = computed(() => props.config.some(c => c.class === 'organizations'))
-const topicsEnabled = computed(() => props.config.some(c => c.class === 'topics'))
-
 // Create stable params for each type
 const stableParamsOptions = {
   allFilters,
@@ -552,33 +548,87 @@ const stableParamsOptions = {
   pageSize,
 }
 
-const datasetsParams = useStableQueryParams({
-  ...stableParamsOptions,
-  typeConfig: props.config.find(c => c.class === 'datasets'),
-})
-const dataservicesParams = useStableQueryParams({
-  ...stableParamsOptions,
-  typeConfig: props.config.find(c => c.class === 'dataservices'),
-})
-const reusesParams = useStableQueryParams({
-  ...stableParamsOptions,
-  typeConfig: props.config.find(c => c.class === 'reuses'),
-})
-const organizationsParams = useStableQueryParams({
-  ...stableParamsOptions,
-  typeConfig: props.config.find(c => c.class === 'organizations'),
-})
-const topicsParams = useStableQueryParams({
-  ...stableParamsOptions,
-  typeConfig: props.config.find(c => c.class === 'topics'),
-})
+// Discriminated union: each variant carries its own response type so a `class`
+// narrow gives the precise shape of `data.value` (no cast needed).
+type SearchEntry = {
+  [K in SearchType]: {
+    class: K
+    data: Ref<SearchResponseByClass[K] | null>
+    status: Ref<AsyncDataRequestStatus>
+  }
+}[SearchType]
 
-// URLs that return null when type is not enabled
-const datasetsUrl = computed(() => datasetsEnabled.value ? '/api/2/datasets/search/' : null)
-const dataservicesUrl = computed(() => dataservicesEnabled.value ? '/api/2/dataservices/search/' : null)
-const reusesUrl = computed(() => reusesEnabled.value ? '/api/2/reuses/search/' : null)
-const organizationsUrl = computed(() => organizationsEnabled.value ? '/api/2/organizations/search/' : null)
-const topicsUrl = computed(() => topicsEnabled.value ? '/api/2/topics/search/' : null)
+// One strategy per class consolidates everything that varies by class:
+// metadata (icon/name/placeholder), endpoint, and a typed fetch factory.
+type SearchStrategy<C extends SearchType> = {
+  url: string
+  icon: Component
+  name: string
+  placeholder: string
+  fetch: (
+    params: Ref<Record<string, unknown>>,
+    server: boolean,
+  ) => Promise<Extract<SearchEntry, { class: C }>>
+}
+
+function makeStrategy<C extends SearchType>(
+  cls: C,
+  meta: Omit<SearchStrategy<C>, 'fetch'>,
+): SearchStrategy<C> {
+  return {
+    ...meta,
+    fetch: async (params, server) => {
+      const { data, status } = await useFetch<SearchResponseByClass[C]>(
+        meta.url,
+        { params, lazy: true, server },
+      )
+      // Tautologically equivalent to Extract<SearchEntry, { class: C }>, but TS
+      // cannot prove it on a generic C, so we assert.
+      return { class: cls, data, status } as Extract<SearchEntry, { class: C }>
+    },
+  }
+}
+
+const strategies: { [K in SearchType]: SearchStrategy<K> } = {
+  datasets: makeStrategy('datasets', {
+    url: '/api/2/datasets/search/',
+    icon: RiDatabase2Line,
+    name: t('Jeux de données'),
+    placeholder: t('ex. élections présidentielles'),
+  }),
+  dataservices: makeStrategy('dataservices', {
+    url: '/api/2/dataservices/search/',
+    icon: RiTerminalLine,
+    name: t('API'),
+    placeholder: t('ex: SIRENE'),
+  }),
+  reuses: makeStrategy('reuses', {
+    url: '/api/2/reuses/search/',
+    icon: RiLineChartLine,
+    name: t('Réutilisations'),
+    placeholder: t('Rechercher une réutilisation de données'),
+  }),
+  organizations: makeStrategy('organizations', {
+    url: '/api/2/organizations/search/',
+    icon: RiBuilding2Line,
+    name: t('Organisations'),
+    placeholder: t('Rechercher une organisation'),
+  }),
+  topics: makeStrategy('topics', {
+    url: '/api/2/topics/search/',
+    icon: RiBookShelfLine,
+    name: t('Thématiques'),
+    placeholder: t('Rechercher une thématique'),
+  }),
+}
+
+// One params + fetch per config entry, keyed by configKey
+const resultsMap: Record<string, SearchEntry> = {}
+for (const c of props.config) {
+  const key = configKey(c)
+  const params = useStableQueryParams({ ...stableParamsOptions, typeConfig: c })
+  resultsMap[key] = await strategies[c.class].fetch(params, initialType === key)
+}
 
 // Reset page on filter/sort change. Custom filters (registered via
 // useSearchFilter) have their own watchers set up in `provide`, so they're
@@ -651,80 +701,18 @@ function resetFilters() {
   flushQ()
 }
 
-// API calls only for enabled types (useFetch skips when URL is null)
-// Only the initial type is fetched during SSR, others are client-side only
-const { data: datasetsResults, status: datasetsStatus } = await useFetch<DatasetSearchResponse<Dataset>>(
-  datasetsUrl,
-  { params: datasetsParams, lazy: true, server: initialType === 'datasets' },
-)
-const { data: dataservicesResults, status: dataservicesStatus } = await useFetch<DataserviceSearchResponse<Dataservice>>(
-  dataservicesUrl,
-  { params: dataservicesParams, lazy: true, server: initialType === 'dataservices' },
-)
-const { data: reusesResults, status: reusesStatus } = await useFetch<ReuseSearchResponse<Reuse>>(
-  reusesUrl,
-  { params: reusesParams, lazy: true, server: initialType === 'reuses' },
-)
-const { data: organizationsResults, status: organizationsStatus } = await useFetch<OrganizationSearchResponse<Organization>>(
-  organizationsUrl,
-  { params: organizationsParams, lazy: true, server: initialType === 'organizations' },
-)
-const { data: topicsResults, status: topicsStatus } = await useFetch<TopicSearchResponse<TopicV2>>(
-  topicsUrl,
-  { params: topicsParams, lazy: true, server: initialType === 'topics' },
-)
-
-const typesMeta = {
-  datasets: {
-    icon: RiDatabase2Line,
-    name: t('Jeux de données'),
-    placeholder: t('ex. élections présidentielles'),
-    results: datasetsResults,
-    status: datasetsStatus,
-  },
-  dataservices: {
-    icon: RiTerminalLine,
-    name: t('API'),
-    placeholder: t('ex: SIRENE'),
-    results: dataservicesResults,
-    status: dataservicesStatus,
-  },
-  reuses: {
-    icon: RiLineChartLine,
-    name: t('Réutilisations'),
-    placeholder: t('Rechercher une réutilisation de données'),
-    results: reusesResults,
-    status: reusesStatus,
-  },
-  organizations: {
-    icon: RiBuilding2Line,
-    name: t('Organisations'),
-    placeholder: t('Rechercher une organisation'),
-    results: organizationsResults,
-    status: organizationsStatus,
-  },
-  topics: {
-    icon: RiBookShelfLine,
-    name: t('Thématiques'),
-    placeholder: t('Rechercher une thématique'),
-    results: topicsResults,
-    status: topicsStatus,
-  },
-} as const
-
-const searchResults = computed(() => typesMeta[currentType.value].results.value)
-const searchResultsStatus = computed(() => typesMeta[currentType.value].status.value)
+const searchResults = computed(() => resultsMap[currentType.value]?.data.value)
+const searchResultsStatus = computed(() => resultsMap[currentType.value]?.status.value)
 
 // RSS feed URL for datasets
 const rssUrl = computed(() => {
-  if (currentType.value !== 'datasets') return null
+  if (currentTypeConfig.value?.class !== 'datasets') return null
 
   const params = new URLSearchParams()
-  const datasetsConfig = props.config.find(c => c.class === 'datasets')
 
   // Add hidden filters first
-  if (datasetsConfig?.hiddenFilters) {
-    for (const hf of datasetsConfig.hiddenFilters) {
+  if (currentTypeConfig.value?.hiddenFilters) {
+    for (const hf of currentTypeConfig.value.hiddenFilters) {
       if (hf?.value) params.set(hf.key as string, String(hf.value))
     }
   }
