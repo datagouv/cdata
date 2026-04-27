@@ -115,7 +115,7 @@
     "otplib": "^13.4.0",
     "sass-embedded": "^1.99.0",
     "tailwindcss": "^4.2.2",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.2",
     "vue-component-type-helpers": "^3.2.6",
     "vue-tsc": "^3.2.6"
   }
