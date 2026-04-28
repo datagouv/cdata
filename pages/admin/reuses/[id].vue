@@ -135,6 +135,6 @@ function showActivitiesLink() {
   const requiredPerm = route.meta.requiredPermission as string | undefined
   if (!requiredPerm) return true
 
-  return requiredPerm in reuse.value.permissions && reuse.value.permissions[requiredPerm] === true
+  return requiredPerm in reuse.value.permissions && reuse.value.permissions[requiredPerm as keyof Reuse['permissions']]
 }
 </script>

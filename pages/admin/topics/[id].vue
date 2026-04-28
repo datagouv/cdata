@@ -19,7 +19,7 @@
         { href: `/admin/topics/${topic.id}`, label: $t('Métadonnées') },
         { href: `/admin/topics/${topic.id}/datasets`, label: $t('Jeux de données') },
         { href: `/admin/topics/${topic.id}/reuses`, label: $t('Réutilisations') },
-        { href: `/admin/topics/${topic.id}/activities`, label: $t('Activités'), show: showActivitiesLink },
+        { href: `/admin/topics/${topic.id}/activities`, label: $t('Activités') },
       ]"
     />
 

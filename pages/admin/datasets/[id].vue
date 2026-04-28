@@ -172,6 +172,6 @@ function showActivitiesLink() {
   const requiredPerm = route.meta.requiredPermission as string | undefined
   if (!requiredPerm) return true
 
-  return requiredPerm in dataset.value.permissions && dataset.value.permissions[requiredPerm] === true
+  return requiredPerm in dataset.value.permissions && dataset.value.permissions[requiredPerm as keyof DatasetV2WithFullObject['permissions']]
 }
 </script>

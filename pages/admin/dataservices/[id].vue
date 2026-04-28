@@ -134,6 +134,6 @@ function showActivitiesLink() {
   const requiredPerm = route.meta.requiredPermission as string | undefined
   if (!requiredPerm) return true
 
-  return requiredPerm in dataservice.value.permissions && dataservice.value.permissions[requiredPerm as keyof Dataservice['permissions']] === true
+  return requiredPerm in dataservice.value.permissions && dataservice.value.permissions[requiredPerm as keyof Dataservice['permissions']]
 }
 </script>
