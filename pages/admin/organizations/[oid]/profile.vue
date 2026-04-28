@@ -100,6 +100,6 @@ function showActivitiesLink() {
   const requiredPerm = route.meta.requiredPermission as string | undefined
   if (!requiredPerm) return true
 
-  return requiredPerm in props.organization.permissions && props.organization.permissions[requiredPerm] === true
+  return requiredPerm in props.organization.permissions && props.organization.permissions[requiredPerm as keyof Organization['permissions']]
 }
 </script>
