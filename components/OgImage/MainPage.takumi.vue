@@ -28,7 +28,7 @@ const { isProduction } = useRuntimeConfig().public
       <h1
         :class="title.length > 16 ? 'text-[80px]' : 'text-[120px]'"
         class="font-extrabold text-[#161616]"
-        style="font-family: 'MarianneExtraBold'; line-clamp: 2; text-overflow: ellipsis;"
+        style="font-family: 'Marianne'; line-clamp: 2; text-overflow: ellipsis;"
       >
         {{ title }}
       </h1>
