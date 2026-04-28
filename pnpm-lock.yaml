@@ -65,8 +65,8 @@ importers:
         specifier: ^8.0.13
         version: 8.0.13(@nuxt/schema@4.4.2)(magicast@0.5.2)(nuxt@4.4.2(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.28.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.6)(@types/node@24.12.2)(@vue/compiler-sfc@3.5.33)(cac@6.7.14)(db0@0.3.4)(eslint@9.36.0(jiti@2.6.1))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.2))(rollup@4.60.2)(sass-embedded@1.99.0)(sass@1.99.0)(srvx@0.11.15)(terser@5.46.2)(typescript@5.9.3)(vite@7.3.2(@types/node@24.12.2)(jiti@2.6.1)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.46.2)(yaml@2.8.3))(vue-tsc@3.2.7(typescript@5.9.3))(yaml@2.8.3))(vite@7.3.2(@types/node@24.12.2)(jiti@2.6.1)(lightningcss@1.32.0)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.46.2)(yaml@2.8.3))(vue@3.5.33(typescript@5.9.3))
       '@prosemirror-adapter/vue':
-        specifier: ^0.4.6
-        version: 0.4.6(vue@3.5.33(typescript@5.9.3))
+        specifier: ^0.5.3
+        version: 0.5.3(vue@3.5.33(typescript@5.9.3))
       '@remixicon/vue':
         specifier: ^4.9.0
         version: 4.9.0(vue@3.5.33(typescript@5.9.3))
@@ -2727,11 +2727,11 @@ packages:
     peerDependencies:
       '@opentelemetry/api': ^1.8
 
-  '@prosemirror-adapter/core@0.4.6':
-    resolution: {integrity: sha512-qbqd4u9IyDXXolFFmX1tzE000IpF9JbCiiwuSvqIh7lT9ZqjeMcyDVR/vxyM4oVY1sVyQQQj+WxHMAIhj7egVg==}
+  '@prosemirror-adapter/core@0.5.3':
+    resolution: {integrity: sha512-jGcI/eq3USFqf1fCaejgCmifmXYDyFco6/5KjyyNBnuEhLqyLjD+020CtcduEOsnN4xPZr5ikclgHIR6kEFkQg==}
 
-  '@prosemirror-adapter/vue@0.4.6':
-    resolution: {integrity: sha512-1zDxyi4JqH4Iw8SPAvkNSAfUPEHQDRi0Oshi2qOmRf3xFHk1hBiV8CL0kEmOUE2C40ipk9AWkX2uu3UgO/8IYw==}
+  '@prosemirror-adapter/vue@0.5.3':
+    resolution: {integrity: sha512-k+qofvyTk6XXIOSdy1nzX0dQjk8tDf+HVJAj4E9GDBICeiwMiIvHcbgcpCvL+K1BuGm2zwlNFUNIFFq5ExQQhg==}
     peerDependencies:
       vue: ^3.0.0
     peerDependenciesMeta:
@@ -11861,17 +11861,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@prosemirror-adapter/core@0.4.6':
+  '@prosemirror-adapter/core@0.5.3':
     dependencies:
+      '@ocavue/utils': 1.6.0
       prosemirror-model: 1.25.4
       prosemirror-state: 1.4.4
       prosemirror-view: 1.41.8
 
-  '@prosemirror-adapter/vue@0.4.6(vue@3.5.33(typescript@5.9.3))':
+  '@prosemirror-adapter/vue@0.5.3(vue@3.5.33(typescript@5.9.3))':
     dependencies:
-      '@prosemirror-adapter/core': 0.4.6
-      nanoid: 5.1.9
-      prosemirror-keymap: 1.2.3
+      '@prosemirror-adapter/core': 0.5.3
       prosemirror-model: 1.25.4
       prosemirror-state: 1.4.4
       prosemirror-view: 1.41.8

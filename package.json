@@ -67,7 +67,7 @@
     "@milkdown/vue": "^7.20.0",
     "@nuxt/image": "^2.0.0",
     "@nuxtjs/sitemap": "^8.0.13",
-    "@prosemirror-adapter/vue": "^0.4.6",
+    "@prosemirror-adapter/vue": "^0.5.3",
     "@remixicon/vue": "^4.9.0",
     "@rollup/pluginutils": "^5.3.0",
     "@sentry/nuxt": "^10.50.0",
