@@ -58,7 +58,7 @@
       :links="[
         { href: organizationUrl, label: t('Profil') },
         { href: `${organizationUrl}/contacts/`, label: t('Points de contact') },
-        { href: `${organizationUrl}/activities/`, label: t('Activités') },
+        { href: `${organizationUrl}/activities/`, label: t('Activités'), show: showActivitiesLink },
       ]"
     />
 
@@ -76,19 +76,30 @@ import { RiEyeLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
-const props = defineProps<{
-  organization: Organization
+defineEmits<{
+  refresh: []
 }>()
 
 definePageMeta({
   keepScroll: true,
 })
 
-defineEmits<{
-  refresh: []
+const props = defineProps<{
+  organization: Organization
 }>()
+
+const route = useRoute()
 
 const { t } = useTranslation()
 
 const organizationUrl = computed(() => `/admin/organizations/${props.organization?.id}/profile`)
+
+function showActivitiesLink() {
+  if (!props.organization?.permissions) return false
+
+  const requiredPerm = route.meta.requiredPermission as string | undefined
+  if (!requiredPerm) return true
+
+  return requiredPerm in props.organization.permissions && props.organization.permissions[requiredPerm] === true
+}
 </script>

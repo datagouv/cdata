@@ -89,7 +89,7 @@
           { href: `${getReuseAdminUrl(reuse)}/datasets`, label: t('Jeux de données') },
           { href: `${getReuseAdminUrl(reuse)}/dataservices`, label: t('API') },
           { href: `${getReuseAdminUrl(reuse)}/discussions`, label: t('Discussions') },
-          { href: `${getReuseAdminUrl(reuse)}/activities`, label: t('Activités') },
+          { href: `${getReuseAdminUrl(reuse)}/activities`, label: t('Activités'), show: showActivitiesLink },
         ]"
       />
 
@@ -128,4 +128,13 @@ const { data: activities } = await useAPI<PaginatedArray<Activity>>('/api/1/acti
     sort: '-created_at',
   },
 })
+
+function showActivitiesLink() {
+  if (!reuse.value?.permissions) return false
+
+  const requiredPerm = route.meta.requiredPermission as string | undefined
+  if (!requiredPerm) return true
+
+  return requiredPerm in reuse.value.permissions && reuse.value.permissions[requiredPerm] === true
+}
 </script>

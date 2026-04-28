@@ -6,7 +6,7 @@
         :key="link.label"
       >
         <CdataLink
-          v-if="show(link.href)"
+          v-if="link.show ? link.show() : true"
           :to="link.href"
           class="whitespace-nowrap md:whitespace-normal group block rounded bg-none bg-transparent border border-transparent -m-px no-underline outline-none aria-current-page:border aria-current-page:border-new-primary aria-current-page:text-new-primary p-1"
           :aria-current="isCurrentUrl(link.href) ? 'page': false"
@@ -21,29 +21,11 @@
 </template>
 
 <script setup lang="ts">
-import type { OrganizationReference } from '@datagouv/components-next'
-
 defineProps<{
-  links: Array<{ href: string, label: string }>
+  links: Array<{ href: string, label: string, show?: () => boolean }>
 }>()
 
 const isCurrentUrl = useIsCurrentUrl()
-
-function show(href: string) {
-  const router = useRouter()
-  const route = router.resolve(href)
-  const requiredOrganizationPermission = route.meta.requiredOrganizationPermission as (keyof OrganizationReference['permissions'] | undefined) ?? null
-  if (requiredOrganizationPermission) {
-    const { currentOrganization } = useCurrentOwned()
-    if (currentOrganization.value) {
-      return currentOrganization.value.permissions[requiredOrganizationPermission] ?? false
-    }
-
-    return false
-  }
-
-  return true
-}
 </script>
 
 <style scoped>

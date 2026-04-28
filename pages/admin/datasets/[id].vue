@@ -121,7 +121,7 @@
           { href: getDatasetAdminUrl(dataset), label: t('Métadonnées') },
           { href: `${getDatasetAdminUrl(dataset)}/files`, label: t('Fichiers') },
           { href: `${getDatasetAdminUrl(dataset)}/discussions`, label: t('Discussions') },
-          { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activités') },
+          { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activités'), show: showActivitiesLink },
         ]"
       />
 
@@ -165,4 +165,13 @@ const { data: activities } = await useAPI<PaginatedArray<Activity>>('/api/1/acti
     sort: '-created_at',
   },
 })
+
+function showActivitiesLink() {
+  if (!dataset.value?.permissions) return false
+
+  const requiredPerm = route.meta.requiredPermission as string | undefined
+  if (!requiredPerm) return true
+
+  return requiredPerm in dataset.value.permissions && dataset.value.permissions[requiredPerm] === true
+}
 </script>

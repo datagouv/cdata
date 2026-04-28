@@ -7,7 +7,7 @@ import { ActivityList } from '@datagouv/components-next'
 import type { Dataservice } from '@datagouv/components-next'
 
 definePageMeta({
-  requiredOrganizationPermission: 'edit',
+  requiredPermission: 'edit',
 })
 
 defineProps<{
