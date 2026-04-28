@@ -4,7 +4,7 @@ const props = defineProps<{
   uri: string
 }>()
 
-const uri = computed(() => props.uri.replace(/^\/+/, ''))
+const path = computed(() => props.uri.replace(/^\/+/, ''))
 const { isProduction } = useRuntimeConfig().public
 </script>
 
@@ -36,7 +36,7 @@ const { isProduction } = useRuntimeConfig().public
         style="font-family: 'Inconsolata'"
         class="font-light text-6xl"
       >
-        <span class="text-[#000091]">data.gouv.fr/</span><span class="text-[#272747]">{{ uri }}</span>
+        <span class="text-[#000091]">data.gouv.fr/</span><span class="text-[#272747]">{{ path }}</span>
       </div>
     </div>
   </div>
