@@ -348,14 +348,6 @@ export default defineNuxtConfig({
       xl: 1248,
     },
   },
-  ogImage: {
-    defaults: {
-      takumi: {
-        devicePixelRatio: 2,
-      },
-    },
-  },
-
   sentry: {
     sourceMapsUploadOptions: {
       // disable sourcemaps upload from build, it's done later during the release with sentry-cli
