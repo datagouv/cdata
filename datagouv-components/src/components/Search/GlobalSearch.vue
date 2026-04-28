@@ -12,7 +12,7 @@
     >
       <SearchInput
         v-model="q"
-        :placeholder="placeholder || strategies[currentTypeConfig?.class ?? 'datasets'].placeholder"
+        :placeholder="resolvedPlaceholder"
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
@@ -399,7 +399,7 @@ import ReuseTypeFilter from './Filter/ReuseTypeFilter.vue'
 
 const props = withDefaults(defineProps<{
   config?: GlobalSearchConfig
-  placeholder?: string
+  placeholder?: string | null
   hideSearchInput?: boolean
 }>(), {
   config: getDefaultGlobalSearchConfig,
@@ -428,6 +428,15 @@ const initialType = currentType.value
 const currentTypeConfig = computed(() =>
   props.config.find(c => configKey(c) === currentType.value),
 )
+
+// Precedence: prop → per-type config → strategy default.
+// null at any level means "no placeholder".
+const resolvedPlaceholder = computed(() => {
+  if (props.placeholder !== undefined) return props.placeholder ?? ''
+  const cfg = currentTypeConfig.value
+  if (cfg && 'placeholder' in cfg) return cfg.placeholder ?? ''
+  return strategies[cfg?.class ?? 'datasets'].placeholder
+})
 
 const activeBasicFilters = computed(() =>
   (currentTypeConfig.value?.basicFilters ?? []) as string[],

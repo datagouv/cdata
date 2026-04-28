@@ -298,6 +298,7 @@ export type DatasetSearchConfig = {
   class: 'datasets'
   key?: string
   name?: string
+  placeholder?: string | null
   hiddenFilters?: HiddenFilter<DatasetSearchFilters>[]
   basicFilters?: (keyof DatasetSearchFilters)[]
   advancedFilters?: (keyof DatasetSearchFilters)[]
@@ -308,6 +309,7 @@ export type DataserviceSearchConfig = {
   class: 'dataservices'
   key?: string
   name?: string
+  placeholder?: string | null
   hiddenFilters?: HiddenFilter<DataserviceSearchFilters>[]
   basicFilters?: (keyof DataserviceSearchFilters)[]
   advancedFilters?: (keyof DataserviceSearchFilters)[]
@@ -318,6 +320,7 @@ export type ReuseSearchConfig = {
   class: 'reuses'
   key?: string
   name?: string
+  placeholder?: string | null
   hiddenFilters?: HiddenFilter<ReuseSearchFilters>[]
   basicFilters?: (keyof ReuseSearchFilters)[]
   advancedFilters?: (keyof ReuseSearchFilters)[]
@@ -328,6 +331,7 @@ export type OrganizationSearchConfig = {
   class: 'organizations'
   key?: string
   name?: string
+  placeholder?: string | null
   hiddenFilters?: HiddenFilter<OrganizationSearchFilters>[]
   basicFilters?: (keyof OrganizationSearchFilters)[]
   advancedFilters?: (keyof OrganizationSearchFilters)[]
@@ -338,6 +342,7 @@ export type TopicSearchConfig = {
   class: 'topics'
   key?: string
   name?: string
+  placeholder?: string | null
   hiddenFilters?: HiddenFilter<TopicSearchFilters>[]
   basicFilters?: (keyof TopicSearchFilters)[]
   advancedFilters?: (keyof TopicSearchFilters)[]

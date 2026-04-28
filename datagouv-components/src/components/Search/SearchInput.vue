@@ -13,8 +13,8 @@
       type="search"
       name="q"
       class="input max-h-12 m-0 rounded-tl shadow-input-blue"
-      :aria-label="placeholder || t('Rechercher...')"
-      :placeholder="placeholder || t('Rechercher...')"
+      :aria-label="placeholder === null ? t('Rechercher...') : placeholder ?? t('Rechercher...')"
+      :placeholder="placeholder === null ? undefined : placeholder ?? t('Rechercher...')"
     >
     <BrandedButton
       class="rounded-l-none rounded-br-none rounded-tr min-h-12"
@@ -38,7 +38,7 @@ import BrandedButton from '../BrandedButton.vue'
 const q = defineModel<string>({ required: true })
 
 withDefaults(defineProps<{
-  placeholder?: string
+  placeholder?: string | null
   autoFocus?: boolean
 }>(), {
   autoFocus: true,
