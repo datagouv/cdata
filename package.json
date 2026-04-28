@@ -91,7 +91,7 @@
     "sortablejs": "^1.15.7",
     "tabulator-tables": "^6.4.0",
     "uqr": "^0.1.3",
-    "uuid": "^13.0.0",
+    "uuid": "^14.0.0",
     "vue-content-loader": "^2.0.1",
     "vue-router": "^5.0.6",
     "vue3-text-clamp": "^0.1.2"
