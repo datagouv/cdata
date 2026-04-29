@@ -79,6 +79,7 @@
     "@vueuse/integrations": "^14.2.1",
     "@vueuse/nuxt": "^14.2.1",
     "@vueuse/router": "^14.2.1",
+    "dompurify": "^3.2.5",
     "gray-matter": "^4.0.3",
     "leaflet": "^1.9.4",
     "lodash-es": "^4.17.23",
@@ -94,7 +95,8 @@
     "uuid": "^13.0.0",
     "vue-content-loader": "^2.0.1",
     "vue-router": "^5.0.4",
-    "vue3-text-clamp": "^0.1.2"
+    "vue3-text-clamp": "^0.1.2",
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",

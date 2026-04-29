@@ -58,6 +58,8 @@ Start the development server on `http://localhost:3000`:
 pnpm run dev
 ```
 
+You might need to add dev.local to your /etc/hosts file: `sudo sh -c 'echo "127.0.0.1 dev.local" >> /etc/hosts'`
+
 ### Common Commands
 ```bash
 pnpm run dev          # Start development server
