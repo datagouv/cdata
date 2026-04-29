@@ -351,6 +351,8 @@ export type TopicSearchConfig = {
 
 export type SearchTypeConfig = DatasetSearchConfig | DataserviceSearchConfig | ReuseSearchConfig | OrganizationSearchConfig | TopicSearchConfig
 
+export type BuiltInFilterKey = keyof DatasetSearchFilters | keyof DataserviceSearchFilters | keyof TopicSearchFilters
+
 export type SearchType = SearchTypeConfig['class']
 
 export type GlobalSearchConfig = SearchTypeConfig[]
