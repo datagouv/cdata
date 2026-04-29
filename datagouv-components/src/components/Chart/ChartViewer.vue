@@ -28,7 +28,7 @@ const props = defineProps<{
 
 const { locale } = useTranslation()
 const chartContainer = ref<HTMLElement | null>(null)
-const echartsInstance = ref<EChartsType | null>(null)
+let echartsInstance: EChartsType | null = null
 
 function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' {
   if (!xAxis) return 'category'
@@ -110,7 +110,7 @@ const echartsOption = computed(() => {
       series: {
         type: s.type === 'histogram' ? 'bar' : 'line',
         dimensions: s.aggregate_y ? [xColumn, yColumn] : props.series.columns[resourceId],
-        name: s.column_y,
+        name: yColumn,
         encode: {
           x: xColumn,
           y: yColumn,
@@ -147,14 +147,13 @@ const echartsOption = computed(() => {
         const formatter = new Intl.NumberFormat('fr-FR')
         for (const param of params) {
           const seriesName = param.seriesName
-          const seriesConfig = props.chart.series.find(s => s.column_y === seriesName)
-          const col = seriesConfig?.aggregate_y ? `${seriesName}__${seriesConfig.aggregate_y}` : seriesName
-          tooltip += `${format.encodeHTML(param.axisValueLabel)}: <strong>${formatter.format(Number(param.value[col]))}</strong><br>`
+          tooltip += `${format.encodeHTML(param.axisValueLabel)}: <strong>${formatter.format(Number(param.value[seriesName]))}</strong><br>`
         }
         return tooltip
       },
     },
     legend: {
+      show: seriesData.series.length > 1,
       bottom: 0,
     },
     grid: {
@@ -186,15 +185,15 @@ const echartsOption = computed(() => {
 
 onMounted(() => {
   if (chartContainer.value) {
-    echartsInstance.value = init(chartContainer.value)
+    echartsInstance = init(chartContainer.value)
     updateChart()
   }
 })
 
 onUnmounted(() => {
-  if (echartsInstance.value) {
-    echartsInstance.value.dispose()
-    echartsInstance.value = null
+  if (echartsInstance) {
+    echartsInstance.dispose()
+    echartsInstance = null
   }
 })
 
@@ -203,16 +202,16 @@ watch(() => props.chart, updateChart, { deep: true })
 watch(() => props.series, updateChart, { deep: true })
 
 function updateChart() {
-  if (!echartsInstance.value) return
+  if (!echartsInstance) return
   const option = echartsOption.value
   if (option) {
-    echartsInstance.value.setOption(option, { notMerge: true })
+    echartsInstance.setOption(option, { notMerge: true })
   }
 }
 
 const handleResize = () => {
-  if (echartsInstance.value) {
-    echartsInstance.value.resize()
+  if (echartsInstance) {
+    echartsInstance.resize()
   }
 }
 

@@ -74,6 +74,7 @@
             </select>
             <button
               class="fr-btn"
+              type="button"
               :disabled="!selectedChartId"
               @click="loadSelectedChart"
             >
@@ -522,7 +523,10 @@ async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
 }
 
 function removeFilter(index: number) {
-  if (!form.value.filter || !('filters' in form.value.filter)) return
+  if (!form.value.filter) return
+  if (!('filters' in form.value.filter)) {
+    return form.value.filter = null
+  }
   form.value.filter.filters.splice(index, 1)
   if (form.value.filter.filters.length === 0) {
     form.value.filter = null
@@ -607,7 +611,7 @@ function updateFilter(index: number, newFilter: Filter) {
 function addFilter() {
   const newFilter: Filter = { _cls: 'Filter', column: '', condition: 'exact' as const, value: '' }
   if (!form.value.filter) {
-    form.value.filter = { _cls: 'AndFilters', filters: [newFilter] }
+    form.value.filter = newFilter
   }
   else if ('filters' in form.value.filter) {
     form.value.filter.filters.push(newFilter)
