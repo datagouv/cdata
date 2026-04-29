@@ -23,6 +23,7 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
+import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm } from './types/visualizations'
 import type { GlobalSearchConfig, SearchType, SortOption } from './types/search'
 import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 import { useSearchFilter } from './composables/useSearchFilter'
@@ -82,6 +83,8 @@ import ReuseDetails from './components/ReuseDetails.vue'
 import SchemaCard from './components/SchemaCard.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
 import SmallChart from './components/SmallChart.vue'
+import ChartViewer from './components/Chart/ChartViewer.vue'
+import ChartViewerWrapper from './components/Chart/ChartViewerWrapper.vue'
 import StatBox from './components/StatBox.vue'
 import Tab from './components/Tabs/Tab.vue'
 import TabGroup from './components/Tabs/TabGroup.vue'
@@ -96,6 +99,7 @@ import GlobalSearch from './components/Search/GlobalSearch.vue'
 import SearchInput from './components/Search/SearchInput.vue'
 import SearchableSelect from './components/Form/SearchableSelect.vue'
 import SelectGroup from './components/Form/SelectGroup.vue'
+import Listbox from './components/Form/Listbox.vue'
 import InfiniteLoader from './components/InfiniteLoader.vue'
 import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
 import type { UseFetchFunction } from './functions/api.types'
@@ -104,6 +108,7 @@ import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 export { Toaster, toast } from 'vue-sonner'
 
 export * from './composables/useActiveDescendant'
+export * from './composables/useDebouncedRef'
 export * from './composables/useMetrics'
 export * from './composables/useReuseType'
 export * from './composables/useTranslation'
@@ -125,6 +130,8 @@ export * from './functions/reuses'
 export * from './functions/schemas'
 export * from './functions/tabular'
 export * from './functions/users'
+export * from './functions/tabularApi'
+export * from './functions/charts'
 export * from './types/access_types'
 
 export type {
@@ -222,6 +229,23 @@ export type {
   ValidataError,
   Weight,
   WellType,
+  Chart,
+  ChartForm,
+  ChartForApi,
+  FilterCondition,
+  Filter,
+  AndFilters,
+  GenericFilter,
+  XAxisType,
+  XAxisSortBy,
+  SortDirection,
+  XAxis,
+  XAxisForm,
+  UnitPosition,
+  YAxis,
+  DataSeriesType,
+  DataSeries,
+  DataSeriesForm,
 }
 
 export {
@@ -308,6 +332,8 @@ export {
   SchemaCard,
   SimpleBanner,
   SmallChart,
+  ChartViewer,
+  ChartViewerWrapper,
   StatBox,
   OpenApiViewer,
   Tab,
@@ -324,6 +350,7 @@ export {
   SearchInput,
   SearchableSelect,
   SelectGroup,
+  Listbox,
   InfiniteLoader,
   TabularExplorer,
 }
