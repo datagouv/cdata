@@ -23,7 +23,7 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
-import type { GlobalSearchConfig, SearchType, SortOption } from './types/search'
+import type { GlobalSearchConfig, SearchType, SearchTypeConfig, SortOption, HiddenFilter, BuiltInFilterKey, DatasetSearchConfig, DatasetSearchFilters, DataserviceSearchConfig, DataserviceSearchFilters, ReuseSearchConfig, ReuseSearchFilters, OrganizationSearchConfig, OrganizationSearchFilters, TopicSearchConfig, TopicSearchFilters } from './types/search'
 import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 import { useSearchFilter } from './composables/useSearchFilter'
 import type { UseSearchFilterOptions } from './composables/useSearchFilter'
@@ -130,7 +130,20 @@ export * from './types/access_types'
 export type {
   GlobalSearchConfig,
   SearchType,
+  SearchTypeConfig,
   SortOption,
+  HiddenFilter,
+  BuiltInFilterKey,
+  DatasetSearchConfig,
+  DatasetSearchFilters,
+  DataserviceSearchConfig,
+  DataserviceSearchFilters,
+  ReuseSearchConfig,
+  ReuseSearchFilters,
+  OrganizationSearchConfig,
+  OrganizationSearchFilters,
+  TopicSearchConfig,
+  TopicSearchFilters,
   UseSearchFilterOptions,
   UseFetchFunction,
   AccessType,
