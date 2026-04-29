@@ -67,10 +67,11 @@ const echartsOption = computed(() => {
         const valA = a[sortKey]
         const valB = b[sortKey]
 
-        if (valA === null || valA === undefined) return sortDirection === 'asc' ? -1 : 1
-        if (valB === null || valB === undefined) return sortDirection === 'asc' ? 1 : -1
-        if (valA === null && valB === null) return 0
-        if (valA === undefined && valB === undefined) return 0
+        const aNullish = valA === null || valA === undefined
+        const bNullish = valB === null || valB === undefined
+        if (aNullish && bNullish) return 0
+        if (aNullish) return sortDirection === 'asc' ? -1 : 1
+        if (bNullish) return sortDirection === 'asc' ? 1 : -1
 
         if (valA instanceof Date && valB instanceof Date) {
           const timeA = valA.getTime()
