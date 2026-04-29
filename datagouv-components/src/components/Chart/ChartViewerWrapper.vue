@@ -85,7 +85,6 @@ async function fetchSeriesProfile() {
       result.id,
       result.profile.profile.header,
     ]))
-    status.value = 'success'
   }
   catch (err) {
     error.value = err instanceof Error ? err : new Error('Failed to fetch series profile')
@@ -193,8 +192,6 @@ async function fetchSeriesData() {
     if (props.loadAllPages) {
       await loadMorePages()
     }
-
-    status.value = 'success'
   }
   catch (err) {
     error.value = err instanceof Error ? err : new Error('Failed to fetch series data')
