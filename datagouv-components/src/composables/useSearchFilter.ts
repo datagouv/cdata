@@ -1,4 +1,5 @@
 import { type InjectionKey, type Ref, inject, onMounted, onScopeDispose } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useRouteQuery } from '@vueuse/router'
 
 export interface CustomFilterEntry {
@@ -69,6 +70,8 @@ export function useSearchFilter(
 
   const { apiParam = urlParam, defaultValue = undefined } = options
 
+  const route = useRoute()
+  const router = useRouter()
   const value = useRouteQuery<string | undefined>(urlParam, defaultValue)
 
   // Register in onMounted to avoid SSR/hydration mismatch: the registry must be
@@ -82,7 +85,19 @@ export function useSearchFilter(
     // own `watch(currentType)` logic that drops built-in filters which don't
     // apply to the new type: a custom filter's applicability is signalled
     // by the consumer via `v-if`, so its unmount is the equivalent signal.
-    value.value = defaultValue
+    //
+    // We cannot use `value.value = defaultValue` here because VueUse's
+    // useRouteQuery registers its own tryOnScopeDispose cleanup that zeroes
+    // the internal `query` variable to undefined (FIFO order, it runs first).
+    // The setter then sees `query === v` and early-returns without ever
+    // calling router.replace(). Instead we read the live route.query directly
+    // (which is router state, not affected by that cleanup) and push the update.
+    if (route.query[urlParam] !== undefined) {
+      const { [urlParam]: _removed, ...restQuery } = route.query
+      router.replace({
+        query: defaultValue === undefined ? restQuery : { ...restQuery, [urlParam]: String(defaultValue) },
+      })
+    }
     context.unregister(urlParam)
   })
 

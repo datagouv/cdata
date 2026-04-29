@@ -159,6 +159,33 @@ test('custom theme filter is hidden on non-dataset types', async ({ page }) => {
   await expect(page.locator('#theme-filter')).not.toBeVisible()
 })
 
+test('custom theme filter URL param is cleared when switching to a type that hides it', async ({ page }) => {
+  await page.goto('/design/dataset-search?theme=transport')
+
+  await expect(page.locator('#theme-filter')).toHaveValue('transport')
+
+  const reusesRadio = page.getByRole('radio', { name: 'Réutilisations' })
+  await reusesRadio.click({ force: true })
+
+  await page.waitForURL(url => !url.searchParams.has('theme'))
+  const url = new URL(page.url())
+  expect(url.searchParams.has('theme')).toBeFalsy()
+})
+
+test('custom theme filter URL param persists when switching between types that both show it', async ({ page }) => {
+  await page.goto('/design/dataset-search?theme=transport')
+
+  await expect(page.locator('#theme-filter')).toHaveValue('transport')
+
+  const inspireRadio = page.getByRole('radio', { name: 'Données INSPIRE' })
+  await inspireRadio.click({ force: true })
+
+  await page.waitForLoadState('networkidle')
+  const url = new URL(page.url())
+  expect(url.searchParams.get('theme')).toBe('transport')
+  await expect(page.locator('#theme-filter')).toHaveValue('transport')
+})
+
 test('custom theme filter resets page to 1 on change', async ({ page }) => {
   await page.goto('/design/dataset-search?page=2')
 
