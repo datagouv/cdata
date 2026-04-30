@@ -4,7 +4,7 @@ test('organizations page renders without errors', async ({ page }) => {
   const response = await page.goto('/organizations')
   expect(response?.status()).toBeLessThan(400)
 
-  await expect(page).toHaveTitle(/Organisations/)
+  await expect(page).toHaveTitle(/Liste des organisations/)
   await expect(page.getByRole('heading', { name: 'Recherche d\'une organisation', level: 1 })).toBeVisible()
 
   await page.waitForLoadState('networkidle')
