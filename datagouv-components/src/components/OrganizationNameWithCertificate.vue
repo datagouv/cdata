@@ -7,7 +7,7 @@
     <component
       :is="as"
       class="mb-0 truncate flex-initial"
-      :class="[colorClass, { 'text-xs': size === 'xs', 'text-sm': size === 'sm', 'text-base': size === 'base' }]"
+      :class="[colorClass, { 'text-xs': size === 'xs', 'text-sm': size === 'sm', 'text-base': size === 'base', 'text-xl sm:text-2xl': size === 'xl' }]"
     >
       {{ organization.name }}
       <small
@@ -24,6 +24,7 @@
           'size-3': size === 'xs',
           'size-4': size === 'sm',
           'size-5': size === 'base',
+          'size-6': size === 'xl',
         }"
         :aria-label="t(`L'identité de ce service public est certifiée par {certifier}`, { certifier: config.name })"
         aria-hidden="true"
@@ -53,7 +54,7 @@ withDefaults(defineProps<{
   organization: Organization | OrganizationReference
   showAcronym?: boolean
   showType?: boolean
-  size?: 'base' | 'sm' | 'xs'
+  size?: 'xl' | 'base' | 'sm' | 'xs'
   colorClass?: string
   as?: string
 }>(), {

@@ -307,11 +307,11 @@
                         />
                         <template v-else>
                           <div class="py-5 px-16 flex flex-col items-center text-center">
-                            <NuxtImg
+                            <img
                               class="w-6"
                               src="/illustrations/coffee.svg"
                               alt=""
-                            />
+                            >
                             <p class="m-0 font-bold text-xs">
                               {{ $t(`Vous n'avez pas encore de notifications`) }}
                             </p>

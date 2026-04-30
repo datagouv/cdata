@@ -7,7 +7,7 @@ test('page loads with results', async ({ page }) => {
 
   await expect(page.getByRole('heading', { name: 'Recherche d\'une organisation', level: 1 })).toBeVisible()
 
-  await expect(page.getByRole('status')).toBeVisible()
+  await expect(page.getByTestId('search-result-count')).toBeVisible()
 
   const results = page.locator('.search-results ul')
   await expect(results.locator('li')).not.toHaveCount(0)

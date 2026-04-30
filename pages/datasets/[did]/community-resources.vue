@@ -51,10 +51,11 @@
     v-else-if="resources"
     class="flex flex-col items-center"
   >
-    <nuxt-img
+    <img
       src="/illustrations/schema.svg"
       class="h-20"
-    />
+      alt=""
+    >
     <p class="fr-text--bold fr-my-3v">
       {{ $t(`Il n'y a pas encore de ressources communautaires pour ce jeu de données.`) }}
     </p>

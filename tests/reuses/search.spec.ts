@@ -5,8 +5,7 @@ test('page loads with results', async ({ page }) => {
 
   await expect(page).toHaveTitle(/Moteur de recherche des réutilisations/)
 
-  // Result count is displayed with role="status"
-  await expect(page.getByRole('status')).toBeVisible()
+  await expect(page.getByTestId('search-result-count')).toBeVisible()
 
   // Verify a known reuse from seed data is displayed
   await expect(page.getByRole('link', { name: /itineriz/i })).toBeVisible()

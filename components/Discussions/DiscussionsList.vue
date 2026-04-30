@@ -129,10 +129,11 @@
         v-if="status != 'pending' && pageData && !pageData.total"
         class="flex flex-col items-center fr-my-3v"
       >
-        <nuxt-img
+        <img
           src="/illustrations/discussion.svg"
           class="h-20"
-        />
+          alt=""
+        >
 
         <template v-if="q">
           <p class="fr-text--bold fr-my-3v">

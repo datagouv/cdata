@@ -1,11 +1,10 @@
 <template>
   <div>
-    <div class="flex flex-wrap mb-6">
-      <h2 class="text-sm w-full flex-none sm:flex-1 mb-0">
-        {{ $t('Statistiques à partir de ') }}
-        {{ formatDate(config.public.metricsSince, { dateStyle: undefined, year: 'numeric', month: 'long', day: undefined }) }}.
-      </h2>
-      <div>
+    <SectionCollapse
+      :title="$t('Statistiques générales des 12 derniers mois')"
+      :button-text="$t('Voir les statistiques')"
+    >
+      <template #buttons>
         <BrandedButton
           color="secondary"
           :disabled="!downloadStatsUrl"
@@ -16,66 +15,66 @@
         >
           {{ $t('Télécharger les statistiques au format CSV') }}
         </BrandedButton>
-      </div>
-    </div>
-    <section
-      class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 pb-4"
-    >
-      <ClientOnly>
-        <StatBox
-          :title="$t('Jeux de données')"
-          :data="organization.metrics.datasets_by_months"
-          type="bar"
-          :summary="organization.metrics.datasets"
-        />
-        <StatBox
-          :title="$t('API')"
-          :data="organization.metrics.dataservices_by_months"
-          type="bar"
-          :summary="organization.metrics.dataservices"
-        />
-        <StatBox
-          :title="$t('Réutilisations')"
-          :data="organization.metrics.reuses_by_months"
-          type="bar"
-          :summary="organization.metrics.reuses"
-        />
-      </ClientOnly>
-    </section>
-    <Divider
-      color="bg-gray-default"
-      class="mb-6 pr-24"
-    />
-    <section
-      class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 pb-4"
-    >
-      <ClientOnly>
-        <StatBox
-          :title="$t('Vues')"
-          :data="metrics?.datasetsViews"
-          type="line"
-          :summary="metrics?.datasetsViewsTotal"
-        />
-        <StatBox
-          :title="$t('Téléchargements des données')"
-          :data="metrics?.downloads"
-          type="line"
-          :summary="metrics?.downloadsTotal"
-        />
-        <StatBox
-          :title="$t('Nombre de visites des API')"
-          :data="metrics?.dataservicesViews"
-          type="line"
-          :summary="metrics?.dataservicesViewsTotal"
-        />
-        <StatBox
-          :title="$t('Nombre de visites des réutilisations')"
-          :data="metrics?.reusesViews"
-          type="line"
-          :summary="metrics?.reusesViewsTotal"
-        />
-      </ClientOnly>
-    </section>
+      </template>
+      <section
+        class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 pb-4"
+      >
+        <ClientOnly>
+          <StatBox
+            :title="$t('Jeux de données')"
+            :data="organization.metrics.datasets_by_months"
+            type="bar"
+            :summary="organization.metrics.datasets"
+          />
+          <StatBox
+            :title="$t('API')"
+            :data="organization.metrics.dataservices_by_months"
+            type="bar"
+            :summary="organization.metrics.dataservices"
+          />
+          <StatBox
+            :title="$t('Réutilisations')"
+            :data="organization.metrics.reuses_by_months"
+            type="bar"
+            :summary="organization.metrics.reuses"
+          />
+        </ClientOnly>
+      </section>
+      <Divider
+        color="bg-gray-default"
+        class="mb-6 pr-24"
+      />
+      <section
+        class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 pb-4"
+      >
+        <ClientOnly>
+          <StatBox
+            :title="$t('Vues')"
+            :data="metrics?.datasetsViews"
+            type="line"
+            :summary="metrics?.datasetsViewsTotal"
+          />
+          <StatBox
+            :title="$t('Téléchargements des données')"
+            :data="metrics?.downloads"
+            type="line"
+            :summary="metrics?.downloadsTotal"
+          />
+          <StatBox
+            :title="$t('Nombre de visites des API')"
+            :data="metrics?.dataservicesViews"
+            type="line"
+            :summary="metrics?.dataservicesViewsTotal"
+          />
+          <StatBox
+            :title="$t('Nombre de visites des réutilisations')"
+            :data="metrics?.reusesViews"
+            type="line"
+            :summary="metrics?.reusesViewsTotal"
+          />
+        </ClientOnly>
+      </section>
+    </SectionCollapse>
     <SectionCollapse
       :title="$t('Membres')"
       :button-text="$t('Voir les membres')"

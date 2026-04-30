@@ -81,10 +81,11 @@
       v-if="status != 'pending' && pageData && !pageData.total"
       class="flex flex-col items-center mt-6 mb-3"
     >
-      <nuxt-img
+      <img
         src="/illustrations/dataset.svg"
         class="h-20"
-      />
+        alt=""
+      >
       <template v-if="q || datasetsStatus">
         <p
           v-if="q"

@@ -109,10 +109,11 @@
         v-else
         class="flex flex-col items-center"
       >
-        <nuxt-img
+        <img
           src="/illustrations/dataset.svg"
           class="h-20"
-        />
+          alt=""
+        >
         <p class="font-bold my-3">
           {{ $t(`Il n'y a pas encore de jeux de données associées`) }}
         </p>
@@ -155,10 +156,11 @@
         v-else
         class="flex flex-col items-center"
       >
-        <nuxt-img
+        <img
           src="/illustrations/dataservice.svg"
           class="h-20"
-        />
+          alt=""
+        >
         <p class="font-bold my-3">
           {{ $t(`Il n'y a pas encore d'API associées`) }}
         </p>
