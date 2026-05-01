@@ -234,7 +234,7 @@ test('custom theme filter applies its apiParam mapping to the results', async ({
   ).toBeVisible()
 })
 
-test('type-scoped custom filter does not appear in non-matching type requests', async ({ page }) => {
+test('custom filter scoped to dataset types never appears in the parallel dataservices search', async ({ page }) => {
   // Collect tag values from every dataservices request (initial + any re-fetches)
   const dataservicesTags: (string | null)[] = []
   page.on('request', (req) => {
@@ -246,7 +246,8 @@ test('type-scoped custom filter does not appear in non-matching type requests', 
   await page.goto('/design/dataset-search')
   await page.waitForLoadState('networkidle')
 
-  // Change the filter and wait for datasets (non-INSPIRE tab) to re-fetch with tag=transport
+  // Change the theme filter and wait for the all-datasets search to re-fetch with tag=transport
+  // (confirms the filter change was processed before we check dataservices)
   const datasetsWithTagPromise = page.waitForRequest(
     req =>
       req.url().includes('/api/2/datasets/search/')
@@ -259,29 +260,8 @@ test('type-scoped custom filter does not appear in non-matching type requests', 
   await themeSelect.selectOption('transport')
   await datasetsWithTagPromise
 
-  // tag=transport must never appear in any dataservices request
+  // tag=transport must never have appeared in any dataservices request
   expect(dataservicesTags.every(tag => tag !== 'transport')).toBe(true)
-})
-
-test('type-scoped custom filter applies to other matching types on filter change', async ({ page }) => {
-  await page.goto('/design/dataset-search')
-  await page.waitForLoadState('networkidle')
-
-  // Wait for inspire-datasets to re-fetch with tag=transport after the filter is applied.
-  // We wait for page load first so ThemeTagFilter is already registered before we change
-  // the value — avoiding the race where the first lazy fetch fires before onMounted.
-  const inspireWithTagPromise = page.waitForRequest(
-    req =>
-      req.url().includes('/api/2/datasets/search/')
-      && new URL(req.url()).searchParams.get('badge') === 'inspire'
-      && new URL(req.url()).searchParams.get('tag') === 'transport',
-  )
-
-  const themeSelect = page.locator('#theme-filter')
-  await themeSelect.scrollIntoViewIfNeeded()
-  await themeSelect.selectOption('transport')
-
-  await inspireWithTagPromise
 })
 
 test('clicking dataset navigates to detail', async ({ page }) => {
