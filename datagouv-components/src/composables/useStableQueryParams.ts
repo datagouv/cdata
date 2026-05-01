@@ -55,6 +55,9 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
     // 3.5. Apply custom filter values. Concatenate into an array on collision
     // so a custom filter mapped onto a built-in apiParam (e.g. theme → tag)
     // combines with an existing built-in value instead of overwriting it.
+    // Pass the current type key so filters scoped to specific types are excluded
+    // from background fetches for other types.
+    const currentTypeKey = typeConfig?.key ?? typeConfig?.class
     forEachActiveCustomFilter(customFilterRegistry, (apiParam, value) => {
       const existing = params[apiParam]
       if (existing === undefined) {
@@ -63,7 +66,7 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
       else {
         params[apiParam] = Array.isArray(existing) ? [...existing, value] : [existing, value]
       }
-    })
+    }, currentTypeKey)
 
     // 4. Always include q, sort (if valid for this type), page, page_size
     if (q.value) {

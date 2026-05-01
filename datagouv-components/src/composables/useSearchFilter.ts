@@ -6,6 +6,7 @@ export interface CustomFilterEntry {
   apiParam: string
   ref: Ref<string | undefined>
   defaultValue: string | undefined
+  typeKeys?: string[] // undefined = applies to all types
 }
 
 export interface SearchFilterContext {
@@ -21,9 +22,11 @@ export function isCustomFilterActive(entry: CustomFilterEntry): boolean {
 export function forEachActiveCustomFilter(
   registry: Map<string, CustomFilterEntry>,
   apply: (apiParam: string, value: string) => void,
+  typeKey?: string,
 ): void {
   for (const entry of registry.values()) {
     if (!isCustomFilterActive(entry)) continue
+    if (typeKey && entry.typeKeys && !entry.typeKeys.includes(typeKey)) continue
     apply(entry.apiParam, String(entry.ref.value))
   }
 }
@@ -36,6 +39,8 @@ export interface UseSearchFilterOptions {
   apiParam?: string
   /** Default value when not present in URL. Defaults to undefined. */
   defaultValue?: string
+  /** One or more type config keys this filter applies to. Undefined means all types. */
+  typeKeys?: string | string[]
 }
 
 /**
@@ -68,7 +73,10 @@ export function useSearchFilter(
     )
   }
 
-  const { apiParam = urlParam, defaultValue = undefined } = options
+  const { apiParam = urlParam, defaultValue = undefined, typeKeys } = options
+  const normalizedTypeKeys = typeKeys
+    ? (Array.isArray(typeKeys) ? typeKeys : [typeKeys])
+    : undefined
 
   const route = useRoute()
   const router = useRouter()
@@ -77,7 +85,7 @@ export function useSearchFilter(
   // Register in onMounted to avoid SSR/hydration mismatch: the registry must be
   // empty during SSR so server and client produce the same initial HTML.
   onMounted(() => {
-    context.register(urlParam, { apiParam, ref: value, defaultValue })
+    context.register(urlParam, { apiParam, ref: value, defaultValue, typeKeys: normalizedTypeKeys })
   })
 
   onScopeDispose(() => {

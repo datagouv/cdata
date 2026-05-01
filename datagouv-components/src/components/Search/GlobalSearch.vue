@@ -742,7 +742,7 @@ const rssUrl = computed(() => {
 
   forEachActiveCustomFilter(customFilterRegistry, (apiParam, value) => {
     params.set(apiParam, value)
-  })
+  }, currentTypeConfig.value?.key ?? currentTypeConfig.value?.class)
 
   // Add sort if set
   if (sort.value) params.set('sort', sort.value)
