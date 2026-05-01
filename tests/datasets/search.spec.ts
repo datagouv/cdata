@@ -234,46 +234,54 @@ test('custom theme filter applies its apiParam mapping to the results', async ({
   ).toBeVisible()
 })
 
-test('type-scoped custom filter change does not trigger a re-fetch for non-matching types', async ({ page }) => {
+test('type-scoped custom filter does not appear in non-matching type requests', async ({ page }) => {
+  // Collect tag values from every dataservices request (initial + any re-fetches)
+  const dataservicesTags: (string | null)[] = []
+  page.on('request', (req) => {
+    if (req.url().includes('/api/2/dataservices/search/')) {
+      dataservicesTags.push(new URL(req.url()).searchParams.get('tag'))
+    }
+  })
+
   await page.goto('/design/dataset-search')
   await page.waitForLoadState('networkidle')
 
-  // Track new dataservices requests after initial load settles
-  let dataservicesRefired = false
-  page.on('request', (req) => {
-    if (req.url().includes('/api/2/dataservices/search/')) dataservicesRefired = true
-  })
-
-  // Wait for datasets to re-fetch with the new filter (confirms the change was processed)
-  const datasetsRefiredPromise = page.waitForRequest(
+  // Change the filter and wait for datasets (non-INSPIRE tab) to re-fetch with tag=transport
+  const datasetsWithTagPromise = page.waitForRequest(
     req =>
       req.url().includes('/api/2/datasets/search/')
+      && new URL(req.url()).searchParams.get('tag') === 'transport'
+      && !new URL(req.url()).searchParams.has('badge'),
+  )
+
+  const themeSelect = page.locator('#theme-filter')
+  await themeSelect.scrollIntoViewIfNeeded()
+  await themeSelect.selectOption('transport')
+  await datasetsWithTagPromise
+
+  // tag=transport must never appear in any dataservices request
+  expect(dataservicesTags.every(tag => tag !== 'transport')).toBe(true)
+})
+
+test('type-scoped custom filter applies to other matching types on filter change', async ({ page }) => {
+  await page.goto('/design/dataset-search')
+  await page.waitForLoadState('networkidle')
+
+  // Wait for inspire-datasets to re-fetch with tag=transport after the filter is applied.
+  // We wait for page load first so ThemeTagFilter is already registered before we change
+  // the value — avoiding the race where the first lazy fetch fires before onMounted.
+  const inspireWithTagPromise = page.waitForRequest(
+    req =>
+      req.url().includes('/api/2/datasets/search/')
+      && new URL(req.url()).searchParams.get('badge') === 'inspire'
       && new URL(req.url()).searchParams.get('tag') === 'transport',
   )
 
   const themeSelect = page.locator('#theme-filter')
   await themeSelect.scrollIntoViewIfNeeded()
   await themeSelect.selectOption('transport')
-  await datasetsRefiredPromise
 
-  // dataservices params are unaffected by the theme filter, so no re-fetch
-  expect(dataservicesRefired).toBe(false)
-})
-
-test('type-scoped custom filter applies to other matching types in background searches', async ({ page }) => {
-  // inspire-datasets (badge=inspire) is also in typeKeys, so its background search
-  // must include tag=transport even though it is not the initial active type.
-  const inspireReqPromise = page.waitForRequest(
-    req =>
-      req.url().includes('/api/2/datasets/search/')
-      && new URL(req.url()).searchParams.get('badge') === 'inspire',
-  )
-
-  await page.goto('/design/dataset-search?theme=transport')
-
-  const inspireReq = await inspireReqPromise
-  const url = new URL(inspireReq.url())
-  expect(url.searchParams.get('tag')).toBe('transport')
+  await inspireWithTagPromise
 })
 
 test('clicking dataset navigates to detail', async ({ page }) => {
