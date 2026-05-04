@@ -28,7 +28,6 @@ import { useTranslation } from '../../composables/useTranslation'
 
 const props = defineProps<{
   chart: Chart | ChartForApi
-  loadAllPages?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -47,13 +46,9 @@ const pendingOperations = ref(0)
 const series = reactive<{
   data: Record<string, Array<Record<string, unknown>>>
   columns: Record<string, Array<string>>
-  page: Record<string, number>
-  hasNextPage: Record<string, boolean>
 }>({
   data: {},
   columns: {},
-  page: {},
-  hasNextPage: {},
 })
 
 async function fetchSeriesProfile() {
@@ -94,44 +89,6 @@ async function fetchSeriesProfile() {
   }
   finally {
     pendingOperations.value--
-  }
-}
-
-async function loadMorePages() {
-  for (const serie of props.chart.series) {
-    const xColumn = serie.column_x_name_override ?? props.chart.x_axis.column_x
-    const resourceId = serie.resource_id
-    if (!xColumn || !resourceId || !serie.column_y) continue
-
-    if (!series.hasNextPage[resourceId]) {
-      continue
-    }
-
-    const nextPage = (series.page[resourceId] || 0) + 1
-
-    const response = await fetchTabularData(config, {
-      columns: serie.aggregate_y ? undefined : [xColumn, serie.column_y],
-      resourceId,
-      page: nextPage,
-      pageSize: 100,
-      groupBy: xColumn,
-      aggregation: serie.column_y && serie.aggregate_y
-        ? {
-            column: serie.column_y,
-            type: serie.aggregate_y,
-          }
-        : undefined,
-      filters: serie.filters ?? undefined,
-    })
-
-    series.page[resourceId] = nextPage
-
-    if (!series.data[resourceId]) {
-      series.data[resourceId] = []
-    }
-    series.data[resourceId] = [...series.data[resourceId], ...response.data]
-
-    series.hasNextPage[resourceId] = !!response.links.next
   }
 }
 
@@ -180,18 +137,6 @@ async function fetchSeriesData() {
       result.id,
       result.data.data,
     ]))
-
-    for (const result of results) {
-      const serie = props.chart.series.find(s => s.resource_id === result.id)
-      if (serie) {
-        series.page[result.id] = 1
-        series.hasNextPage[result.id] = !!result.data.links.next
-      }
-    }
-
-    if (props.loadAllPages) {
-      await loadMorePages()
-    }
   }
   catch (err) {
     error.value = err instanceof Error ? err : new Error('Failed to fetch series data')
