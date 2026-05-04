@@ -126,16 +126,20 @@
             {{ $t('Filtres') }}
           </p>
           <div class="space-y-3">
-            <ChartFilterRow
+            <template
               v-for="(filter, index) in filterList"
               :key="index"
-              :model-value="filter"
-              :index="index"
-              :column-options="columnDetails"
-              :condition-options="conditionOptions"
-              @update:model-value="updateFilter(index, $event)"
-              @remove="removeFilter(index)"
-            />
+            >
+              <ChartFilterRow
+                v-if="'column' in filter"
+                :model-value="filter"
+                :index="index"
+                :column-options="columnDetails"
+                :condition-options="conditionOptions"
+                @update:model-value="updateFilter(index, $event)"
+                @remove="removeFilter(index)"
+              />
+            </template>
           </div>
           <BrandedButton
             size="sm"
@@ -386,7 +390,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, FilterCondition } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, FilterCondition, GenericFilter } from '@datagouv/components-next'
 import { useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect } from '@datagouv/components-next'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import { RiAddLine } from '@remixicon/vue'
@@ -522,17 +526,6 @@ async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
   })
 }
 
-function removeFilter(index: number) {
-  if (!form.value.filter) return
-  if (!('filters' in form.value.filter)) {
-    return form.value.filter = null
-  }
-  form.value.filter.filters.splice(index, 1)
-  if (form.value.filter.filters.length === 0) {
-    form.value.filter = null
-  }
-}
-
 async function loadChart(id: string) {
   try {
     const data = await $api<Chart>(`/api/1/visualizations/${id}/`)
@@ -593,13 +586,21 @@ async function saveChart() {
   }
 }
 
-const filterList = computed<Array<Filter>>(() => {
+const filterList = computed<Array<GenericFilter>>(() => {
   if (!form.value.filter) return []
-  if ('filters' in form.value.filter) {
-    return form.value.filter.filters.filter((f): f is Filter => 'column' in f)
-  }
   return [form.value.filter]
 })
+
+function removeFilter(index: number) {
+  if (!form.value.filter) return
+  if (!('filters' in form.value.filter)) {
+    return form.value.filter = null
+  }
+  form.value.filter.filters.splice(index, 1)
+  if (form.value.filter.filters.length === 0) {
+    form.value.filter = null
+  }
+}
 
 function updateFilter(index: number, newFilter: Filter) {
   if (!form.value.filter || !('filters' in form.value.filter)) {
