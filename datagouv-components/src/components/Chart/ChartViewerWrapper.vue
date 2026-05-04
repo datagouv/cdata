@@ -184,7 +184,7 @@ async function fetchSeriesData() {
     for (const result of results) {
       const serie = props.chart.series.find(s => s.resource_id === result.id)
       if (serie) {
-        series.page[result.id] = 0
+        series.page[result.id] = 1
         series.hasNextPage[result.id] = !!result.data.links.next
       }
     }
