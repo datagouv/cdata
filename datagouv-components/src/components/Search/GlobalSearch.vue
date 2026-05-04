@@ -356,7 +356,7 @@ import { RiBookShelfLine, RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, R
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
 import { useTranslation } from '../../composables/useTranslation'
 import { useDebouncedRef } from '../../composables/useDebouncedRef'
-import { forEachActiveCustomFilter, isCustomFilterActive, searchFilterContextKey, type CustomFilterEntry } from '../../composables/useSearchFilter'
+import { configKey, forEachActiveCustomFilter, isCustomFilterActive, searchFilterContextKey, type CustomFilterEntry } from '../../composables/useSearchFilter'
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
@@ -366,7 +366,7 @@ import type { Dataservice } from '../../types/dataservices'
 import type { Organization } from '../../types/organizations'
 import type { Reuse } from '../../types/reuses'
 import type { TopicV2 } from '../../types/topics'
-import type { GlobalSearchConfig, SearchResponseByClass, SearchType, SearchTypeConfig, SortOption, FacetItem } from '../../types/search'
+import type { GlobalSearchConfig, SearchResponseByClass, SearchType, SortOption, FacetItem } from '../../types/search'
 import { getDefaultGlobalSearchConfig } from '../../types/search'
 import BrandedButton from '../BrandedButton.vue'
 import LoadingBlock from '../LoadingBlock.vue'
@@ -405,8 +405,6 @@ const props = withDefaults(defineProps<{
   config: getDefaultGlobalSearchConfig,
   hideSearchInput: false,
 })
-
-const configKey = (c: SearchTypeConfig) => c.key ?? c.class
 
 // defineModel's default is static and can't depend on props, so we cast and initialize manually
 const currentType = defineModel<string>('type') as Ref<string>
@@ -742,7 +740,7 @@ const rssUrl = computed(() => {
 
   forEachActiveCustomFilter(customFilterRegistry, (apiParam, value) => {
     params.set(apiParam, value)
-  }, currentTypeConfig.value?.key ?? currentTypeConfig.value?.class)
+  }, currentTypeConfig.value ? configKey(currentTypeConfig.value) : undefined)
 
   // Add sort if set
   if (sort.value) params.set('sort', sort.value)

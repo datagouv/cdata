@@ -1,6 +1,6 @@
 import { computed, ref, watch, type Ref } from 'vue'
 import type { SearchTypeConfig } from '../types/search'
-import { forEachActiveCustomFilter, type CustomFilterEntry } from './useSearchFilter'
+import { configKey, forEachActiveCustomFilter, type CustomFilterEntry } from './useSearchFilter'
 
 type FilterRefs = Record<string, Ref<unknown>>
 
@@ -57,7 +57,7 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
     // combines with an existing built-in value instead of overwriting it.
     // Pass the current type key so filters scoped to specific types are excluded
     // from background fetches for other types.
-    const currentTypeKey = typeConfig?.key ?? typeConfig?.class
+    const currentTypeKey = typeConfig ? configKey(typeConfig) : undefined
     forEachActiveCustomFilter(customFilterRegistry, (apiParam, value) => {
       const existing = params[apiParam]
       if (existing === undefined) {

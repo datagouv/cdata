@@ -1,6 +1,11 @@
 import { type InjectionKey, type Ref, inject, onMounted, onScopeDispose } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useRouteQuery } from '@vueuse/router'
+import type { SearchTypeConfig } from '../types/search'
+
+export function configKey(c: SearchTypeConfig): string {
+  return c.key ?? c.class
+}
 
 export interface CustomFilterEntry {
   apiParam: string
