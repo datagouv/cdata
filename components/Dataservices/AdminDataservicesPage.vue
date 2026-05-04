@@ -66,10 +66,11 @@
       v-if="status != 'pending' && pageData && !pageData.total"
       class="flex flex-col items-center"
     >
-      <nuxt-img
+      <img
         src="/illustrations/dataservice.svg"
         class="h-20"
-      />
+        alt=""
+      >
       <template v-if="q">
         <p class="fr-text--bold fr-my-3v">
           {{ t(`Pas de résultats pour « {q} »`, { q }) }}

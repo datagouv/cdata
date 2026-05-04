@@ -125,8 +125,10 @@ const config = useRuntimeConfig()
 const { t } = useTranslation()
 
 useSeoMeta({
-  title: t('Réutilisateurs de données - {site}', { site: config.public.title }),
+  title: t('Utiliser des jeux de données publics - data.gouv.fr'),
+  description: t('Des milliers de données publiques, accessibles gratuitement, pour analyser, créer, développer et comprendre.'),
 })
+
 defineOgImage('MainPage.takumi', {
   title: 'Réutilisateurs',
   uri: '/reutilisateurs',

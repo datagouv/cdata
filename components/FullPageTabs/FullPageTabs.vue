@@ -24,6 +24,7 @@
             </sup>
           </CdataLink>
         </component>
+        <slot />
       </div>
     </div>
   </div>
