@@ -318,6 +318,13 @@
                 {{ $t('Comment avez-vous trouvé cette suggestion ?') }}
               </CdataLink>
             </div>
+            <SimpleBanner
+              v-if="descriptionGenerationErrorMessage"
+              type="danger"
+              class="mb-3"
+            >
+              {{ descriptionGenerationErrorMessage }}
+            </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
             class="fr-fieldset__element"
@@ -600,7 +607,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, toast, Tooltip, TranslationT } from '@datagouv/components-next'
+import { BrandedButton, SimpleBanner, Tooltip, TranslationT } from '@datagouv/components-next'
 import { RiAddLine, RiSparklingLine } from '@remixicon/vue'
 import { computed, nextTick } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
@@ -623,6 +630,31 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useTranslation()
+
+const DATASERVICE_DESCRIPTION_ERROR_GENERIC
+  = 'Une erreur s’est produite lors de la suggestion de description. Vérifiez que les liens de documentation sont valides, accessibles et adaptés, puis réessayez.'
+
+function formatIntFrLocale(n: string): string {
+  return Number.parseInt(n, 10).toLocaleString('fr-FR')
+}
+
+function userFacingDataserviceDescriptionError(raw: string): string {
+  const bytesInParens = /\((\d+) bytes\)/
+  const charsInPrompt = /process \((\d+) characters, maximum (\d+)\)/
+  if (raw.includes('Documentation response exceeds maximum size')) {
+    const m = raw.match(bytesInParens)
+    if (m) {
+      return `La suggestion de description a échoué : la documentation téléchargée dépasse la taille maximale autorisée (${formatIntFrLocale(m[1])} octets). Réduisez le fichier ou utilisez une autre URL.`
+    }
+  }
+  if (raw.includes('The documentation is too long to process')) {
+    const m = raw.match(charsInPrompt)
+    if (m) {
+      return `La suggestion de description a échoué : la documentation est trop longue pour être traitée (${formatIntFrLocale(m[1])} caractères, maximum ${formatIntFrLocale(m[2])}). Utilisez une documentation plus courte ou une seule URL.`
+    }
+  }
+  return DATASERVICE_DESCRIPTION_ERROR_GENERIC
+}
 
 const formId = useId()
 
@@ -647,6 +679,7 @@ const showRateLimitingUrl = ref(false)
 const descriptionEditorRefreshKey = ref(0)
 const isGeneratingDescription = ref(false)
 const hasReceivedAiDescriptionSuggestion = ref(false)
+const descriptionGenerationErrorMessage = ref<string | null>(null)
 
 const hasTechnicalDocumentationUrl = computed(() => form.value.technical_documentation_url && form.value.technical_documentation_url.trim().length > 0)
 const hasMachineDocumentationUrl = computed(() => form.value.machine_documentation_url && form.value.machine_documentation_url.trim().length > 0)
@@ -697,6 +730,7 @@ async function handleAutoCompleteDescription() {
 
   try {
     isGeneratingDescription.value = true
+    descriptionGenerationErrorMessage.value = null
 
     const requestBody: {
       title: string
@@ -726,13 +760,15 @@ async function handleAutoCompleteDescription() {
     }
   }
   catch (error) {
-    console.error('[Albert API] Failed to generate description:', error)
-    const message = error && typeof error === 'object' && 'data' in error && error.data && typeof error.data === 'object' && 'statusMessage' in error.data
+    console.error('Failed to generate description:', error)
+    const raw = error && typeof error === 'object' && 'data' in error && error.data && typeof error.data === 'object' && 'statusMessage' in error.data
       ? String((error.data as { statusMessage: string }).statusMessage)
       : error instanceof Error
         ? error.message
-        : t('Impossible de générer une description. Vérifiez que les liens de documentation sont valides et accessibles.')
-    toast.error(message)
+        : ''
+    descriptionGenerationErrorMessage.value = raw
+      ? userFacingDataserviceDescriptionError(raw)
+      : DATASERVICE_DESCRIPTION_ERROR_GENERIC
   }
   finally {
     isGeneratingDescription.value = false
