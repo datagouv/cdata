@@ -45,7 +45,7 @@ Guidelines:
 - The goal is to produce informative descriptions that help users understand the API's purpose and capabilities.
 - IMPORTANT: Return ONLY the description text, without quotes or additional punctuation.`
 
-async function fetchOrFail(url: string, label: string): Promise<string> {
+  async function fetchOrFail(url: string, label: string): Promise<string> {
     if (!url) return ''
     try {
       return await fetchDocumentationContent(url)
