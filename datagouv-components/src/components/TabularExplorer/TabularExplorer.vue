@@ -156,9 +156,12 @@
       </div>
 
       <!-- Desktop: scrollable table -->
+      <!-- `-mx-4` lets the table extend edge-to-edge of the parent's px-4 wrapper
+           (used in both ResourceExplorerViewer's TabPanel and pages/explore.vue),
+           while the toolbar and active-filter rows above keep that padding. -->
       <div
         ref="scrollContainer"
-        class="hidden md:block overflow-auto max-h-[70vh]"
+        class="hidden md:block overflow-auto max-h-[70vh] -mx-4"
       >
         <table class="text-sm border-collapse">
           <thead class="sticky top-0 bg-white z-10 shadow-[inset_0_-1px_0_0_#E5E5E5]">
@@ -474,6 +477,7 @@ import {
 import { useFetch } from '../../functions/api'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
+import { injectTabularProfile } from '../../composables/useTabularProfile'
 import { buildTypeConfig, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy } from '../../functions/tabular'
 import ClientOnly from '../ClientOnly.vue'
 import SimpleBanner from '../SimpleBanner.vue'
@@ -484,7 +488,7 @@ import TabularCellPopover from './TabularCellPopover.vue'
 import type { CellInfo } from './TabularCellPopover.vue'
 import TabularFilterContent from './TabularFilterContent.vue'
 import TabularFilterPopover from './TabularFilterPopover.vue'
-import type { TabularDataResponse, TabularProfileResponse, TabularRow, ColumnType, SortConfig, ColumnFilters, BadgeStyle } from './types'
+import type { TabularDataResponse, TabularRow, ColumnType, SortConfig, ColumnFilters, BadgeStyle } from './types'
 
 const props = defineProps<{
   resourceId: string
@@ -507,10 +511,6 @@ const { floatingStyles: columnFloatingStyles } = useFloating(columnAnchorEl, col
 
 const dataUrl = computed(() =>
   `${config.tabularApiUrl}/api/resources/${props.resourceId}/data/`,
-)
-
-const profileUrl = computed(() =>
-  `${config.tabularApiUrl}/api/resources/${props.resourceId}/profile/`,
 )
 
 // Sort & filter state
@@ -552,7 +552,10 @@ const dataQuery = computed(() => {
 
 const { data: tableData, error } = await useFetch<TabularDataResponse>(dataUrl, { raw: true, query: dataQuery })
 
-const { data: profileData } = await useFetch<TabularProfileResponse>(profileUrl, { raw: true })
+// Profile is shared with sibling components (e.g. DataStructure) via
+// `provideTabularProfile` in the parent. Falls back to a local fetch
+// when no parent provides it (standalone usage).
+const { data: profileData } = injectTabularProfile(() => props.resourceId)
 
 // Infinite scroll state
 const allRows = ref<TabularRow[]>([])

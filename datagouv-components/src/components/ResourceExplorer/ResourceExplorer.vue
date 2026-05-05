@@ -2,24 +2,13 @@
   <div v-if="allResources.length || hasAnyResources">
     <div class="flex gap-6">
       <div class="flex-1 min-w-0">
-        <div
-          v-if="dataset.resources.total > 1"
-          class="md:hidden flex justify-end mb-3"
-        >
-          <BrandedButton
-            size="xs"
-            color="secondary"
-            :icon="RiListUnordered"
-            @click="mobileSidebarOpen = true"
-          >
-            {{ t('Ressources ({count})', { count: dataset.resources.total }) }}
-          </BrandedButton>
-        </div>
         <ResourceExplorerViewer
           v-if="selectedResource && allResources.length"
           :key="selectedResource.id"
           :dataset
           :resource="selectedResource"
+          :resources="flatResources"
+          @select="selectResource"
         />
         <div
           v-else-if="search"
@@ -56,25 +45,6 @@
         />
       </div>
     </div>
-
-    <!-- Mobile sidebar panel -->
-    <dialog
-      ref="mobileSidebarDialog"
-      class="mobile-sidebar md:hidden fixed inset-0 m-0 ml-auto p-0 h-dvh max-h-dvh w-80 max-w-[85vw] bg-white shadow-lg overflow-y-auto overscroll-contain backdrop:bg-black/30"
-      @close="mobileSidebarOpen = false"
-      @click.self="closeMobileSidebar"
-    >
-      <ResourceExplorerSidebar
-        :resources="allResources"
-        :selected-resource-id="selectedResource?.id ?? null"
-        :collapsed="false"
-        :search
-        @select="selectResource"
-        @load-more="loadMore"
-        @update:collapsed="closeMobileSidebar"
-        @update:search="updateSearch($event)"
-      />
-    </dialog>
   </div>
   <div
     v-else
@@ -107,7 +77,6 @@ import type { DatasetV2 } from '../../types/datasets'
 import type { Resource, ResourceGroup, ResourceType } from '../../types/resources'
 import ResourceExplorerSidebar from './ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './ResourceExplorerViewer.vue'
-import { RiListUnordered } from '@remixicon/vue'
 import BrandedButton from '../BrandedButton.vue'
 
 const props = withDefaults(defineProps<{
@@ -246,21 +215,6 @@ const flatResources = computed(() =>
 
 // Fetch resource by ID if specified in URL (for SSR)
 const initialResourceId = resourceIdQuery.value
-const mobileSidebarOpen = ref(false)
-const mobileSidebarDialog = ref<HTMLDialogElement | null>(null)
-
-watch(mobileSidebarOpen, (open) => {
-  if (open) {
-    mobileSidebarDialog.value?.showModal()
-  }
-  else {
-    mobileSidebarDialog.value?.close()
-  }
-})
-
-function closeMobileSidebar() {
-  mobileSidebarOpen.value = false
-}
 const { data: fetchedResource } = initialResourceId
   ? await useFetch<Resource>(`/api/1/datasets/${props.dataset.id}/resources/${initialResourceId}/`)
   : { data: ref(null) }
@@ -288,7 +242,6 @@ function updateSearch(newSearch: string) {
 
 const selectResource = (resource: Resource) => {
   selectedResource.value = resource
-  mobileSidebarOpen.value = false
   router.replace({
     query: { ...router.currentRoute.value.query, resource_id: resource.id },
   })
@@ -303,9 +256,3 @@ watch(flatResources, () => {
   }
 })
 </script>
-
-<style>
-html:has(dialog.mobile-sidebar[open]) {
-  overflow: hidden;
-}
-</style>

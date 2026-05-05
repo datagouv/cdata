@@ -2,7 +2,7 @@
   <div class="border border-gray-default">
     <header class="p-4 flex flex-wrap md:flex-nowrap gap-4 items-center justify-between">
       <div>
-        <div class="flex items-center mb-1">
+        <div class="flex items-center gap-1 mb-1">
           <h3 class="m-0 flex items-baseline text-base font-bold leading-tight">
             <ResourceIcon
               :resource
@@ -10,6 +10,12 @@
             />
             <span class="line-clamp-2">{{ resource.title || t('Fichier sans nom') }}</span>
           </h3>
+          <ResourceSelector
+            v-if="resources && resources.length > 1"
+            :resources
+            :selected-id="resource.id"
+            @select="emit('select', $event)"
+          />
           <CopyButton
             :label="t('Copier le lien')"
             :copied-label="t('Lien copié !')"
@@ -139,9 +145,9 @@
                 v-else-if="hasOpenAPIPreview"
                 :url="resource.extras['apidocUrl'] as string"
               />
-              <Preview
+              <TabularExplorer
                 v-else-if="hasTabularData"
-                :resource="resource"
+                :resource-id="resource.id"
               />
               <PreviewUnavailable v-else>
                 <!-- "File too large to download" is the only analysis:error value from hydra for now -->
@@ -174,128 +180,10 @@
               <Metadata :resource />
             </div>
             <div v-if="tab.key === 'downloads'">
-              <dl class="fr-pl-0">
-                <dt
-                  v-if="resource.format === 'url'"
-                  class="font-bold fr-text--sm fr-mb-0"
-                >
-                  {{ t("URL d'origine") }}
-                </dt>
-                <dt
-                  v-else
-                  class="font-bold fr-text--sm fr-mb-0"
-                >
-                  {{ t('Format original') }}
-                </dt>
-                <dd class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
-                  <span
-                    v-if="resource.format === 'url'"
-                    class="inline-flex items-center max-w-full"
-                  >
-                    <a
-                      :href="resource.latest"
-                      class="fr-link no-icon-after truncate"
-                      rel="ugc nofollow noopener"
-                      target="_blank"
-                      @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
-                    >
-                      {{ resource.url }}
-                    </a>
-                    <span class="fr-ml-1v fr-icon-external-link-line fr-icon--sm shrink-0" />
-                  </span>
-                  <span v-else>
-                    <span class="text-datagouv fr-icon-download-line fr-icon--sm fr-mr-1v fr-mt-1v" />
-                    <a
-                      :href="resource.latest"
-                      class="fr-link"
-                      rel="ugc nofollow noopener"
-                      @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${resource.format}`)"
-                    >
-                      <span>{{ t('Format {format}', { format: resource.format }) }}<span v-if="resourceFilesize"> - {{ filesize(resourceFilesize) }}</span></span>
-                    </a>
-                  </span>
-                  <CopyButton
-                    :label="t('Copier le lien')"
-                    :copied-label="t('Lien copié !')"
-                    :text="resource.latest"
-                    class="relative"
-                  />
-                </dd>
-                <template v-if="generatedFormats.length">
-                  <dt class="font-bold fr-text--sm fr-mb-0">
-                    {{ t('Formats générés automatiquement par {platform} (dernière mise à jour {date})', { platform: config.name, date: conversionsLastUpdate }) }}
-                  </dt>
-                  <dd
-                    v-for="generatedFormat in generatedFormats"
-                    :key="generatedFormat.format"
-                    class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center"
-                  >
-                    <span>
-                      <span class="text-datagouv fr-icon-download-line fr-icon--sm fr-mr-1v fr-mt-1v" />
-                      <a
-                        :href="generatedFormat.url"
-                        class="fr-link"
-                        rel="ugc nofollow noopener"
-                        @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${generatedFormat.format}`)"
-                      >
-                        <span>{{ t('Format {format}', { format: generatedFormat.format }) }}<span v-if="generatedFormat.size"> - {{ filesize(generatedFormat.size) }}</span></span>
-                      </a>
-                    </span>
-                    <CopyButton
-                      :label="t('Copier le lien')"
-                      :copied-label="t('Lien copié !')"
-                      :text="generatedFormat.url"
-                      class="relative"
-                    />
-                  </dd>
-                </template>
-                <template v-if="wfsFormats.length">
-                  <dt class="font-bold fr-text--sm fr-mb-0">
-                    <div class="flex gap-1 items-center">
-                      {{ t('Formats exportés depuis le service WFS') }}
-                      <span v-if="defaultWfsProjection"> ({{ t('projection {crs}', { crs: defaultWfsProjection }) }})</span>
-                      <Tooltip>
-                        <RiInformationLine
-                          class="flex-none size-4"
-                          :aria-label="t(`Le lien de téléchargement interroge directement le flux WFS distant. Le nombre de features téléchargées peut être limité.`)"
-                          aria-hidden="true"
-                        />
-                        <template #tooltip>
-                          <p class="text-sm font-normal mb-0">
-                            {{ t(`Le lien de téléchargement interroge directement le flux WFS distant.`) }}
-                          </p>
-                          <p class="text-sm font-normal mb-0">
-                            {{ t(`Le nombre de features téléchargées peut être limité.`) }}
-                          </p>
-                        </template>
-                      </Tooltip>
-                    </div>
-                  </dt>
-                  <dd
-                    v-for="wfsFormat in wfsFormats"
-                    :key="wfsFormat.format"
-                    class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center"
-                  >
-                    <span>
-                      <span class="text-datagouv fr-icon-download-line fr-icon--sm fr-mr-1v fr-mt-1v" />
-                      <a
-                        :href="wfsFormat.url"
-                        class="fr-link"
-                        rel="ugc nofollow noopener"
-                        @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${wfsFormat.format}`)"
-                      >
-                        <span>{{ t('Format {format}', { format: wfsFormat.format }) }}</span>
-                      </a>
-                    </span>
-                    <CopyButton
-                      :label="t('Copier le lien')"
-                      :copied-label="t('Lien copié !')"
-                      :text="wfsFormat.url"
-                      class="relative"
-                    />
-                  </dd>
-                </template>
-              </dl>
+              <Downloads
+                :resource="resource"
+                :dataset="dataset"
+              />
             </div>
             <div v-if="tab.key === 'swagger'">
               <div class="fr-mb-4w">
@@ -318,7 +206,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
-import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiInformationLine, RiSubtractLine } from '@remixicon/vue'
+import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiSubtractLine } from '@remixicon/vue'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import { toast } from 'vue-sonner'
 import BrandedButton from '../BrandedButton.vue'
@@ -331,11 +219,12 @@ import TabList from '../Tabs/TabList.vue'
 import Tab from '../Tabs/Tab.vue'
 import TabPanels from '../Tabs/TabPanels.vue'
 import TabPanel from '../Tabs/TabPanel.vue'
-import Tooltip from '../Tooltip.vue'
-import Preview from '../ResourceAccordion/Preview.vue'
+import TabularExplorer from '../TabularExplorer/TabularExplorer.vue'
 import DataStructure from '../ResourceAccordion/DataStructure.vue'
+import Downloads from '../ResourceAccordion/Downloads.vue'
 import Metadata from '../ResourceAccordion/Metadata.vue'
 import SchemaBadge from '../ResourceAccordion/SchemaBadge.vue'
+import ResourceSelector from './ResourceSelector.vue'
 import { filesize, summarize } from '../../functions/helpers'
 import { getResourceFormatIcon, getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
 import { trackEvent } from '../../functions/matomo'
@@ -343,6 +232,7 @@ import { useComponentsConfig } from '../../config'
 import { useFormatDate } from '../../functions/dates'
 import { useTranslation } from '../../composables/useTranslation'
 import { useResourceCapabilities } from '../../composables/useResourceCapabilities'
+import { provideTabularProfile } from '../../composables/useTabularProfile'
 import type { Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 
@@ -368,6 +258,11 @@ const Pmtiles = defineAsyncComponent(() =>
 const props = defineProps<{
   dataset: Dataset | DatasetV2
   resource: Resource
+  resources?: Resource[]
+}>()
+
+const emit = defineEmits<{
+  select: [resource: Resource]
 }>()
 
 const { t } = useTranslation()
@@ -381,12 +276,12 @@ const {
   hasOpenAPIPreview,
   ogcService,
   ogcWms,
-  generatedFormats,
-  wfsFormats,
-  defaultWfsProjection,
   isResourceUrl,
   tabsOptions,
 } = useResourceCapabilities(() => props.resource, () => props.dataset)
+
+// Share the tabular profile fetch between TabularExplorer and DataStructure tabs.
+provideTabularProfile(() => props.resource.id)
 
 const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset, props.resource))
@@ -400,10 +295,6 @@ const downloadButtonTitle = computed(() => {
   }
   return t('Télécharger le fichier en {format}', { format: format.value })
 })
-
-const conversionsLastUpdate = computed(() =>
-  formatRelativeIfRecentDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined),
-)
 
 const copyResourceUrl = async () => {
   try {

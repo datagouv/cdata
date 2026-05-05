@@ -49,45 +49,23 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed } from 'vue'
 import type { Resource } from '../../types/resources'
-import { useGetProfile } from '../../functions/tabularApi'
 import { useTranslation } from '../../composables/useTranslation'
+import { injectTabularProfile } from '../../composables/useTabularProfile'
 import PreviewLoader from './PreviewLoader.vue'
 
 const props = defineProps<{ resource: Resource }>()
-const getProfile = useGetProfile()
 const { t } = useTranslation()
 
-type ColumnInfo = {
-  score: number
-  format: string
-  python_type: string
-}
+// Profile is shared with sibling components (e.g. TabularExplorer) via
+// `provideTabularProfile` in the parent. Falls back to a local fetch
+// when no parent provides it (standalone usage).
+const { data: profileData, status } = injectTabularProfile(() => props.resource.id)
 
-const columns = ref<Array<string>>([])
-const columnsInfo = ref<Record<string, ColumnInfo>>({})
-const loading = ref(true)
-const hasError = ref(false)
-const hasColumnInfo = ref(false)
-
-onMounted(async () => {
-  try {
-    const response = await getProfile(props.resource.id) // Assurez-vous que cette fonction retourne bien les données attendues
-    if ('profile' in response && response.profile) {
-      columns.value = Object.keys(response.profile.columns)
-      columnsInfo.value = response.profile.columns
-      hasColumnInfo.value = true
-      loading.value = false
-    }
-    else {
-      hasError.value = true
-      loading.value = false
-    }
-  }
-  catch {
-    hasError.value = true
-    loading.value = false
-  }
-})
+const loading = computed(() => status.value === 'idle' || status.value === 'pending')
+const hasError = computed(() => status.value === 'error')
+const hasColumnInfo = computed(() => !!profileData.value?.profile?.columns)
+const columns = computed(() => profileData.value?.profile ? Object.keys(profileData.value.profile.columns) : [])
+const columnsInfo = computed(() => profileData.value?.profile?.columns ?? {})
 </script>
