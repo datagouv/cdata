@@ -113,6 +113,11 @@ title = "Votre question porte sur ?"
     answer = "api_api-acces-restreint"
 
     [[choices.choices.choices]]
+    label = "L'API tabulaire de data.gouv.fr"
+    id = "apitabulaire"
+    segment = "api-tabulaire"
+
+    [[choices.choices.choices]]
     label = "Autre"
     id = "apiother"
     answer = "api_other"
