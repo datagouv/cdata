@@ -135,77 +135,33 @@
 
       <header class="flex flex-wrap md:flex-nowrap gap-4 items-start justify-between mb-4">
         <div class="min-w-0">
-          <Popover
-            v-slot="{ open, close }"
-            class="relative inline-block"
+          <ResourceSelector
+            :resources="datasetResources"
+            :selected-id="currentResource.id"
+            searchable
+            :is-disabled="(r) => !hasTabularData(r)"
+            :disabled-title="$t('Cette ressource n\'est pas explorable')"
+            @select="onResourceSelect"
           >
-            <PopoverButton
-              class="inline-flex items-center gap-1 -mx-1 px-1 py-1 rounded text-left hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-new-primary"
-            >
-              <ResourceIcon
-                :resource="currentResource"
-                class="size-4 mr-1 shrink-0"
-              />
-              <span class="text-lg font-bold line-clamp-2">
-                {{ currentResource.title || $t('Fichier sans nom') }}
-              </span>
-              <RiArrowDownSLine
-                class="size-4 shrink-0 text-gray-medium"
-                :class="{ 'rotate-180': open }"
-                aria-hidden="true"
-              />
-            </PopoverButton>
-            <PopoverPanel
-              class="absolute left-0 top-full z-50 mt-2 w-96 max-w-[calc(100vw-2rem)] bg-white border border-gray-default rounded shadow-lg p-3 space-y-2"
-            >
-              <input
-                v-model="dropdownQuery"
-                type="search"
-                class="w-full border border-gray-default rounded px-2.5 py-1.5 text-sm"
-                :placeholder="$t('Rechercher dans les ressources…')"
+            <template #trigger="{ open }">
+              <PopoverButton
+                class="inline-flex items-center gap-1 -mx-1 px-1 py-1 rounded text-left hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-new-primary"
               >
-              <ul
-                v-if="filteredDatasetResources.length > 0"
-                class="list-none p-0 m-0 space-y-0.5 max-h-80 overflow-y-auto"
-              >
-                <li
-                  v-for="r in filteredDatasetResources"
-                  :key="r.id"
-                >
-                  <NuxtLink
-                    v-if="isExplorable(r)"
-                    :to="exploreLink(r.id)"
-                    class="flex items-center gap-1.5 px-2 py-1.5 rounded text-sm hover:bg-gray-100"
-                    :class="{ 'font-bold bg-blue-50': r.id === currentResource.id }"
-                    @click="close()"
-                  >
-                    <ResourceIcon
-                      :resource="r"
-                      class="size-3.5 shrink-0"
-                    />
-                    <span class="truncate">{{ r.title || $t('Fichier sans nom') }}</span>
-                  </NuxtLink>
-                  <div
-                    v-else
-                    class="flex items-center gap-1.5 px-2 py-1.5 rounded text-sm text-gray-medium cursor-not-allowed"
-                    :title="$t('Cette ressource n\'est pas explorable')"
-                  >
-                    <ResourceIcon
-                      :resource="r"
-                      class="size-3.5 shrink-0 opacity-50"
-                    />
-                    <span class="truncate opacity-70">{{ r.title || $t('Fichier sans nom') }}</span>
-                  </div>
-                </li>
-              </ul>
-              <p
-                v-else
-                class="text-sm text-gray-medium italic mb-0 px-2 py-2"
-              >
-                {{ $t('Aucune ressource correspondante') }}
-              </p>
-            </PopoverPanel>
-          </Popover>
+                <ResourceIcon
+                  :resource="currentResource"
+                  class="size-4 mr-1 shrink-0"
+                />
+                <span class="text-lg font-bold line-clamp-2">
+                  {{ currentResource.title || $t('Fichier sans nom') }}
+                </span>
+                <RiArrowDownSLine
+                  class="size-4 shrink-0 text-gray-medium"
+                  :class="{ 'rotate-180': open }"
+                  aria-hidden="true"
+                />
+              </PopoverButton>
+            </template>
+          </ResourceSelector>
           <div class="text-sm text-gray-medium flex items-center gap-1 mt-1">
             <ObjectCardOwner
               :organization="currentDataset.organization"
@@ -290,7 +246,7 @@
 </template>
 
 <script setup lang="ts">
-import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
+import { PopoverButton } from '@headlessui/vue'
 import { RiArrowDownSLine, RiDownloadLine } from '@remixicon/vue'
 import {
   BrandedButton,
@@ -302,6 +258,7 @@ import {
   ObjectCardOwner,
   OpenApiViewer,
   ResourceIcon,
+  ResourceSelector,
   SearchInput,
   Tab,
   TabGroup,
@@ -476,19 +433,9 @@ function onTabChange(index: number) {
   router.replace({ query: q })
 }
 
-// Resource picker dropdown in the title — filters resources of current dataset by title.
-// Non-tabular ones are shown but disabled (only tabular resources can be explored on /explore).
-const dropdownQuery = ref('')
-
 const datasetResources = computed<Resource[]>(() => currentDataset.value?.resources ?? [])
 
-const filteredDatasetResources = computed(() => {
-  const q = dropdownQuery.value.trim().toLowerCase()
-  if (!q) return datasetResources.value
-  return datasetResources.value.filter(r => (r.title ?? '').toLowerCase().includes(q))
-})
-
-function isExplorable(resource: Resource) {
-  return hasTabularData(resource)
+function onResourceSelect(resource: Resource) {
+  router.push(exploreLink(resource.id))
 }
 </script>
