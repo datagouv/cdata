@@ -1,11 +1,11 @@
 <template>
   <!-- We translate to center the SVG which is asymetric. -->
-  <nuxt-img
+  <img
     v-if="appConfig.isFrenchGovernment"
     src="/nuxt_images/logo_text.svg"
     class="inline -translate-y-[15%]"
     alt=""
-  />
+  >
   <p
     v-else
     class="inline -translate-y-[15%]"

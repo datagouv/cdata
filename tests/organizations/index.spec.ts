@@ -3,11 +3,11 @@ import { test, expect } from '../base'
 test('page loads with results', async ({ page }) => {
   await page.goto('/organizations')
 
-  await expect(page).toHaveTitle(/Organisations/)
+  await expect(page).toHaveTitle(/Liste des organisations/)
 
   await expect(page.getByRole('heading', { name: 'Recherche d\'une organisation', level: 1 })).toBeVisible()
 
-  await expect(page.getByRole('status')).toBeVisible()
+  await expect(page.getByTestId('search-result-count')).toBeVisible()
 
   const results = page.locator('.search-results ul')
   await expect(results.locator('li')).not.toHaveCount(0)

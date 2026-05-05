@@ -1,7 +1,7 @@
 <template>
   <aside
     v-if="!collapsed"
-    class="w-72 shrink-0 pl-4"
+    class="w-full md:w-72 shrink-0 p-4 md:pr-0"
   >
     <div class="flex items-center justify-between mb-3">
       <h3 class="text-sm font-bold uppercase mb-0">
@@ -32,7 +32,7 @@
       >
     </div>
 
-    <div class="space-y-4 overflow-y-auto">
+    <div class="space-y-4 overflow-y-auto md:max-h-[calc(100vh-14rem)]">
       <div
         v-for="group in resources"
         :key="group.type"

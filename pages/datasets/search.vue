@@ -78,7 +78,7 @@ const title = computed(() => {
     case 'reuses':
       return t('Moteur de recherche des réutilisations - {site}', { site: config.public.title })
     case 'organizations':
-      return t('Organisations - {site}', { site: config.public.title })
+      return t('Liste des organisations - {site}', { site: config.public.title })
     default:
       return t('Moteur de recherche des jeux de données - {site}', { site: config.public.title })
   }
@@ -91,7 +91,7 @@ const description = computed(() => {
     case 'reuses':
       return t('Recherchez une réutilisation par mot-clé et filtrez les résultats grâce à plusieurs filtres.')
     case 'organizations':
-      return t('Recherchez une organisation par mot-clé.')
+      return t('Recherchez une organisation qui a partagé un jeu de données ou une réutilisation sur {site}.', { site: config.public.title })
     default:
       return t('Recherchez un jeu de données par mot-clé et filtrez les résultats grâce à plusieurs filtres (organisation, licence, format, schéma, couverture, label…).')
   }

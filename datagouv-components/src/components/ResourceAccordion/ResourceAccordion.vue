@@ -56,7 +56,7 @@
             :resource
           />
           <RiSubtractLine
-            v-if="resource.schema"
+            v-if="resource.schema?.name || resource.schema?.url"
             aria-hidden="true"
             class="size-3 fill-gray-medium"
           />

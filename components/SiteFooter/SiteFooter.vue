@@ -5,13 +5,14 @@
         <div class="flex flex-wrap divide-y md:divide-y-0 md:divide-x divide-gray-default">
           <div class="w-full pb-6 md:pb-0 md:pr-[6%] md:w-2/3 flex flex-wrap">
             <div class="flex-none hidden sm:flex items-center mr-5">
-              <NuxtImg
+              <img
                 src="/illustrations/newspaper-black.svg"
                 aria-hidden="true"
                 loading="lazy"
                 width="71"
                 height="55"
-              />
+                alt=""
+              >
             </div>
             <div class="w-full !flex-none sm:!flex-1">
               <div class="mb-4">

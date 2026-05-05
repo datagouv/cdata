@@ -217,6 +217,33 @@
             <button
               type="button"
               class="min-h-[42px] w-full flex items-center justify-between"
+              @click="showProperties"
+            >
+              <div class="text-datagouv-dark font-bold text-xl">
+                {{ $t('Données renvoyées') }}
+              </div>
+              <RiArrowUpSLine
+                v-if="openProperties"
+                class="size-6 text-gray-title"
+              />
+              <RiArrowDownSLine
+                v-else
+                class="size-6 text-gray-title"
+              />
+            </button>
+            <OpenApiProperties
+              v-if="openProperties"
+              :url="dataservice.machine_documentation_url"
+              :title="dataservice.title"
+            />
+          </SimpleBanner>
+          <SimpleBanner
+            v-if="dataservice.machine_documentation_url"
+            type="primary-frame"
+          >
+            <button
+              type="button"
+              class="min-h-[42px] w-full flex items-center justify-between"
               @click="showSwagger"
             >
               <div class="text-datagouv-dark font-bold text-xl">
@@ -296,21 +323,27 @@ useSeoMeta({
   robots,
   description,
 })
-// Workaround: encode the dot before file extension to prevent nuxt-og-image from stripping `.png` in prop values
-// See https://github.com/nuxt-modules/og-image/pull/493
 defineOgImage('ObjectPage.takumi', {
   objectTitle: dataservice.value?.title,
   orgName: dataservice.value?.organization?.name,
-  orgLogo: dataservice.value?.organization?.logo_thumbnail?.replace(/\.(\w+)$/, '%2E$1') ?? null,
+  orgLogo: dataservice.value?.organization?.logo_thumbnail ?? null,
   ownerName: dataservice.value?.owner ? `${dataservice.value.owner.first_name} ${dataservice.value.owner.last_name}` : null,
-  ownerAvatar: dataservice.value?.owner?.avatar_thumbnail?.replace(/\.(\w+)$/, '%2E$1') ?? null,
+  ownerAvatar: dataservice.value?.owner?.avatar_thumbnail ?? null,
   views: dataservice.value?.metrics?.views ?? 0,
   reuses: dataservice.value?.metrics?.reuses ?? 0,
   followers: dataservice.value?.metrics?.followers ?? 0,
 })
 await useJsonLd('dataservice', route.params.did as string)
 
+const openProperties = ref(false)
 const openSwagger = ref(false)
+
+function showProperties() {
+  openProperties.value = !openProperties.value
+  if (openProperties.value) {
+    $matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : ouvrir données renvoyées')
+  }
+}
 
 function showSwagger() {
   openSwagger.value = !openSwagger.value

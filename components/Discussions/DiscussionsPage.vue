@@ -51,10 +51,11 @@
       v-if="pageData && !pageData.total"
       class="flex flex-col items-center"
     >
-      <nuxt-img
+      <img
         src="/illustrations/discussion.svg"
         class="h-20"
-      />
+        alt=""
+      >
       <p class="fr-text--bold fr-my-3v">
         {{ t(`Il n'y a pas encore de discussion`) }}
       </p>

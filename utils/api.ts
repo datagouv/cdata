@@ -6,7 +6,7 @@ import type { ApiFetch, PaginatedArray } from '~/types/types'
 */
 export async function useAPI<T, U = T>(
   url: MaybeRefOrGetter<string>,
-  options?: UseFetchOptions<T, U> & { redirectOn404?: boolean, redirectOnSlug?: string },
+  options?: UseFetchOptions<T, U> & { redirectOn404?: boolean, redirectOnSlug?: string, raw?: boolean },
 ) {
   const { setCurrentOrganization, setCurrentUser } = useCurrentOwned()
   const isAdmin = isMeAdmin()
@@ -18,29 +18,33 @@ export async function useAPI<T, U = T>(
 
   const redirectOn404 = options && 'redirectOn404' in options && options.redirectOn404
   const redirectOnSlug = options && 'redirectOnSlug' in options && options.redirectOnSlug
-  const response = await useFetch(url, {
-    ...options,
-    $fetch: redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api,
-  })
-
-  const data = toValue(response.data) || {}
-
-  if (redirectOnSlug && redirectOnSlug in route.params && 'slug' in data && route.params[redirectOnSlug] !== data.slug) {
-    const newParams = { ...route.params }
-    newParams[redirectOnSlug] = data.slug as string
-
-    await nuxtApp.runWithContext(() => navigateTo({ name: route.name, params: newParams, query: route.query, hash: route.hash }, { redirectCode: 301 }))
+  const isRaw = options?.raw
+  const fetchOptions = { ...options }
+  if (!isRaw) {
+    fetchOptions.$fetch = redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api
   }
+  const response = await useFetch(url, fetchOptions)
 
-  if (isAdmin) {
-    // Check the response to see if an `organization` or an `owner` is present
-    // to add this organization/user to the menu.
-    if ('organization' in data && data.organization) {
-      setCurrentOrganization(data.organization as OrganizationReference)
+  if (!isRaw) {
+    const data = toValue(response.data) || {}
+
+    if (redirectOnSlug && redirectOnSlug in route.params && 'slug' in data && route.params[redirectOnSlug] !== data.slug) {
+      const newParams = { ...route.params }
+      newParams[redirectOnSlug] = data.slug as string
+
+      await nuxtApp.runWithContext(() => navigateTo({ name: route.name, params: newParams, query: route.query, hash: route.hash }, { redirectCode: 301 }))
     }
 
-    if ('owner' in data && data.owner) {
-      setCurrentUser(data.owner as User)
+    if (isAdmin) {
+      // Check the response to see if an `organization` or an `owner` is present
+      // to add this organization/user to the menu.
+      if ('organization' in data && data.organization) {
+        setCurrentOrganization(data.organization as OrganizationReference)
+      }
+
+      if ('owner' in data && data.owner) {
+        setCurrentUser(data.owner as User)
+      }
     }
   }
 

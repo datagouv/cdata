@@ -43,11 +43,13 @@
           >
             {{ props.theme }}
           </p>
-          <p
-            v-if="props.size === 'large'"
-            class="text-4xl font-bold"
+          <!-- eslint-disable vue/no-v-text-v-html-on-component -->
+          <component
+            :is="props.size === 'large' ? 'h1' : 'h2'"
+            :class="props.size === 'large' ? 'text-4xl font-bold': 'sr-only'"
             v-html="props.title"
           />
+          <!-- eslint-enable vue/no-v-text-v-html-on-component -->
           <p
             v-if="props.description"
             class="text-gray-dark"

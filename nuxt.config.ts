@@ -61,6 +61,7 @@ export default defineNuxtConfig({
       title: 'data.gouv.fr',
       description: 'Plateforme des données publiques françaises : télécharger, partager et réutiliser les données de l\'État et des collectivités',
       apiBase: 'http://dev.local:7000',
+      chartsApiBase: 'http://dev.local:7000',
       metricsApi: 'https://metric-api.data.gouv.fr',
       metricsSince: '2022-07-01',
       devApiKey: undefined,
@@ -124,7 +125,7 @@ export default defineNuxtConfig({
       },
 
       datasetPublishingGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
-      datasetQualityGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
+      datasetQualityGuideUrl: 'https://guides.data.gouv.fr/guides/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
       datasetRestrictedGuideUrl: 'https://guides.data.gouv.fr/guides/guide-juridique/producteurs-de-donnees/quelles-sont-les-obligations',
       dataSearchFeedbackFormUrl: 'https://tally.so/r/mDKv1N',
       forumUrl: 'https://forum.data.gouv.fr/',
@@ -209,7 +210,10 @@ export default defineNuxtConfig({
     '/*/admin/**': { ssr: true },
   },
 
-  sourcemap: { client: 'hidden' },
+  // Server sourcemaps disabled: Nuxt 4.4 OOMs the Nitro bundle when generating them
+  // (>4GB heap usage). Our Sentry release workflow only uploads client sourcemaps
+  // (.output/public/_nuxt) anyway, so this has no impact on observability today.
+  sourcemap: { client: 'hidden', server: false },
 
   devServer: {
     port: 3000,
@@ -345,14 +349,6 @@ export default defineNuxtConfig({
       xl: 1248,
     },
   },
-  ogImage: {
-    defaults: {
-      takumi: {
-        devicePixelRatio: 2,
-      },
-    },
-  },
-
   sentry: {
     sourceMapsUploadOptions: {
       // disable sourcemaps upload from build, it's done later during the release with sentry-cli

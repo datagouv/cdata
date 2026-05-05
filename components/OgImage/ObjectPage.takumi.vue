@@ -73,7 +73,7 @@ const { isProduction } = useRuntimeConfig().public
         v-if="orgName || ownerName"
         :class="objectTitle ? 'text-4xl' : 'text-[60px]'"
         class="font-extrabold text-[#161616] leading-tight text-balance"
-        style="font-family: 'MarianneExtraBold'; line-clamp: 2; text-overflow: ellipsis; overflow: hidden"
+        style="font-family: 'Marianne'; line-clamp: 2; text-overflow: ellipsis; overflow: hidden"
       >
         {{ orgName || ownerName }}
       </p>
