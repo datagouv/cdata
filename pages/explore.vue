@@ -13,17 +13,22 @@
     </Breadcrumb>
 
     <h1 class="text-gray-title font-extrabold text-2xl mb-2">
-      Explorer les données tabulaires
+      {{ $t('Explorer les données tabulaires') }}
     </h1>
-    <p class="text-gray-medium mb-6">
-      À ce stade, seuls les fichiers tabulaires de moins de
-      <strong>100 Mo</strong> sont disponibles.
-    </p>
+    <TranslationT
+      keypath="À ce stade, seuls les fichiers tabulaires de moins de {size} sont disponibles."
+      tag="p"
+      class="text-gray-medium mb-6"
+    >
+      <template #size>
+        <strong>{{ $t('100 Mo') }}</strong>
+      </template>
+    </TranslationT>
 
     <form @submit.prevent="() => execute()">
       <SearchInput
         v-model="query"
-        placeholder="Rechercher un fichier (exemple : élections)…"
+        :placeholder="$t('Rechercher un fichier (exemple : élections)…')"
       />
     </form>
 
@@ -31,7 +36,7 @@
       v-show="status === 'pending'"
       class="mt-4 text-sm text-gray-medium"
     >
-      Chargement…
+      {{ $t('Chargement…') }}
     </p>
 
     <div
@@ -39,7 +44,7 @@
       class="mt-6 space-y-3"
     >
       <p class="text-sm text-gray-medium">
-        {{ results!.total }} résultat{{ results!.total > 1 ? 's' : '' }}
+        {{ $t('{n} résultat | {n} résultats', results!.total) }}
       </p>
       <DatasetCard
         v-for="entry in flatResults"
@@ -47,29 +52,50 @@
         :dataset="entry.dataset"
         :dataset-url="exploreLink(entry.resource.id)"
       >
-        <p class="text-sm text-gray-700 mb-0">
-          Fichier : <strong>{{ entry.resource.title || 'Sans titre' }}</strong>
-        </p>
+        <TranslationT
+          keypath="Fichier : {file}"
+          tag="p"
+          class="text-sm text-gray-700 mb-0"
+        >
+          <template #file>
+            <strong>{{ entry.resource.title || $t('Sans titre') }}</strong>
+          </template>
+        </TranslationT>
       </DatasetCard>
     </div>
 
-    <p
+    <div
       v-else-if="results && status === 'success' && query"
-      class="mt-4 text-sm text-gray-medium italic"
+      class="mt-8 flex flex-col items-center text-center py-8"
     >
-      Aucun résultat
-    </p>
+      <img
+        src="/illustrations/magnifying_glass.svg"
+        class="h-20 mb-4"
+        alt=""
+      >
+      <p class="font-bold mb-2">
+        {{ $t('Pas de résultats pour « {q} »', { q: query }) }}
+      </p>
+      <p class="text-sm text-gray-medium mb-4">
+        {{ $t('Essayez avec d\'autres mots-clés ou parcourez la sélection ci-dessous.') }}
+      </p>
+      <BrandedButton
+        color="secondary"
+        @click="query = ''"
+      >
+        {{ $t('Réinitialiser la recherche') }}
+      </BrandedButton>
+    </div>
 
     <div
       v-if="featuredEntries && featuredEntries.length > 0"
       class="mt-12 space-y-3"
     >
       <h2 class="text-gray-title font-extrabold text-xl mb-2">
-        Quelques exemples
+        {{ $t('Quelques exemples') }}
       </h2>
       <p class="text-gray-medium">
-        Si vous ne savez pas par quoi commencer à explorer, nous vous
-        proposons ci-dessous une sélection de quelques jeux de données.
+        {{ $t('Si vous ne savez pas par quoi commencer à explorer, nous vous proposons ci-dessous une sélection de quelques jeux de données.') }}
       </p>
       <DatasetCard
         v-for="entry in featuredEntries"
@@ -77,9 +103,15 @@
         :dataset="entry.dataset"
         :dataset-url="exploreLink(entry.resource.id)"
       >
-        <p class="text-sm text-gray-700 mb-0">
-          Fichier : <strong>{{ entry.resource.title || 'Sans titre' }}</strong>
-        </p>
+        <TranslationT
+          keypath="Fichier : {file}"
+          tag="p"
+          class="text-sm text-gray-700 mb-0"
+        >
+          <template #file>
+            <strong>{{ entry.resource.title || $t('Sans titre') }}</strong>
+          </template>
+        </TranslationT>
       </DatasetCard>
     </div>
   </div>
@@ -130,7 +162,7 @@
                 v-model="dropdownQuery"
                 type="search"
                 class="w-full border border-gray-default rounded px-2.5 py-1.5 text-sm"
-                placeholder="Rechercher dans les ressources…"
+                :placeholder="$t('Rechercher dans les ressources…')"
               >
               <ul
                 v-if="filteredDatasetResources.length > 0"
@@ -170,7 +202,7 @@
                 v-else
                 class="text-sm text-gray-medium italic mb-0 px-2 py-2"
               >
-                Aucune ressource correspondante
+                {{ $t('Aucune ressource correspondante') }}
               </p>
             </PopoverPanel>
           </Popover>
@@ -193,7 +225,7 @@
           external
           class="shrink-0"
         >
-          Télécharger
+          {{ $t('Télécharger') }}
         </BrandedButton>
       </header>
 
@@ -275,17 +307,21 @@ import {
   TabGroup,
   TabList,
   TabularExplorer,
+  TranslationT,
   provideTabularProfile,
   useHasTabularData,
   useResourceCapabilities,
+  useTranslation,
 } from '@datagouv/components-next'
 import type { Dataset, DatasetV2, Resource } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import type { PaginatedArray } from '~/types/types'
 
+const { t } = useTranslation()
+
 useSeoMeta({
-  title: 'Explorer les données tabulaires',
-  description: 'Explorer facilement les fichiers tabulaires (CSV, XLSX) référencés sur data.gouv.fr.',
+  title: () => t('Explorer les données tabulaires'),
+  description: () => t('Explorer facilement les fichiers tabulaires (CSV, XLSX) référencés sur data.gouv.fr.'),
   robots: 'noindex',
 })
 
@@ -404,21 +440,21 @@ const { tabsOptions } = useResourceCapabilities(
   () => currentDataset.value as Dataset,
 )
 
-// Carte hors scope per current product decision; everything else from useResourceCapabilities is shown.
+// Map tab is out of scope per current product decision; everything else from useResourceCapabilities is shown.
 const displayedTabs = computed(() =>
-  currentResource.value ? tabsOptions.value.filter(t => t.key !== 'map') : [],
+  currentResource.value ? tabsOptions.value.filter(tab => tab.key !== 'map') : [],
 )
 
 const defaultTabIndex = computed(() => {
   const tabKey = typeof route.query.tab === 'string' ? route.query.tab : null
   if (!tabKey) return 0
-  const idx = displayedTabs.value.findIndex(t => t.key === tabKey)
+  const idx = displayedTabs.value.findIndex(tab => tab.key === tabKey)
   return idx >= 0 ? idx : 0
 })
 
 const activeTabKey = computed(() => {
   const tabKey = typeof route.query.tab === 'string' ? route.query.tab : null
-  if (tabKey && displayedTabs.value.some(t => t.key === tabKey)) return tabKey
+  if (tabKey && displayedTabs.value.some(tab => tab.key === tabKey)) return tabKey
   return displayedTabs.value[0]?.key ?? 'data'
 })
 

@@ -15,15 +15,46 @@
 
     <div
       v-else-if="previewLoading"
-      class="max-w-3xl mx-auto flex items-center justify-center py-12"
+      class="animate-pulse-placeholder"
+      :aria-label="t('Chargement de l\'aperçu…')"
+      role="status"
     >
-      <span class="inline-flex items-center gap-2 text-sm text-gray-medium">
-        <RiLoader4Line
-          class="size-4 animate-spin"
-          aria-hidden="true"
-        />
-        {{ t('Chargement de l\'aperçu…') }}
-      </span>
+      <div class="container">
+        <div class="flex items-center justify-end gap-4 py-3">
+          <div class="h-4 w-20 bg-gray-200" />
+          <div class="h-4 w-20 bg-gray-200" />
+        </div>
+      </div>
+      <div class="overflow-hidden">
+        <table class="w-full text-sm border-collapse">
+          <thead class="shadow-[inset_0_-1px_0_0_#E5E5E5]">
+            <tr>
+              <th
+                v-for="i in 6"
+                :key="i"
+                class="px-3 py-2 text-left"
+              >
+                <div class="h-4 w-24 bg-gray-200" />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="row in 8"
+              :key="row"
+              class="border-b border-gray-100"
+            >
+              <td
+                v-for="col in 6"
+                :key="col"
+                class="px-3 py-2.5"
+              >
+                <div class="h-3 bg-gray-200" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <template v-else-if="tableData && profileData">
@@ -493,7 +524,6 @@ import {
   RiFilter2Line,
   RiCloseLine,
   RiSearchLine,
-  RiLoader4Line,
 } from '@remixicon/vue'
 import { useFetch } from '../../functions/api'
 import { useComponentsConfig } from '../../config'
