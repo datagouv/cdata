@@ -212,13 +212,17 @@
       </TabGroup>
     </div>
 
-    <!-- Data tab kept mounted (v-show) to avoid TabularExplorer's
-         top-level `await useFetch` getting stuck on quick tab switches. -->
+    <!-- Data tab is lazy-mounted (only when first visited) to avoid
+         TabularExplorer's top-level `await useFetch` blocking the page
+         when landing directly on a different tab. Once mounted, we keep
+         it via `v-show` so quick tab switches don't unmount mid-fetch
+         (which would leave Suspense hanging on a stale promise). -->
     <div
       v-show="activeTabKey === 'data'"
       class="mt-4 px-4"
     >
       <TabularExplorer
+        v-if="hasVisitedDataTab"
         :key="currentResource.id"
         :resource-id="currentResource.id"
       />
@@ -417,6 +421,15 @@ const activeTabKey = computed(() => {
   if (tabKey && displayedTabs.value.some(t => t.key === tabKey)) return tabKey
   return displayedTabs.value[0]?.key ?? 'data'
 })
+
+// Lazy-mount TabularExplorer: only mount it the first time the user lands on
+// (or switches to) the Data tab. Once mounted, we keep it via v-show even
+// when other tabs are active, so we don't pay the suspended-fetch cost on
+// quick tab switches.
+const hasVisitedDataTab = ref(false)
+watch(activeTabKey, (key) => {
+  if (key === 'data') hasVisitedDataTab.value = true
+}, { immediate: true })
 
 function onTabChange(index: number) {
   const tab = displayedTabs.value[index]

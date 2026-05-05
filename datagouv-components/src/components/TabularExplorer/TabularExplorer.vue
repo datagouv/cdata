@@ -1,159 +1,179 @@
 <template>
   <div>
-    <SimpleBanner
-      v-if="error"
-      type="warning"
-      class="mb-4"
+    <div
+      v-if="previewError"
+      class="max-w-3xl mx-auto"
     >
-      {{ t("L'aperçu de ce fichier n'a pas pu être chargé.") }}
-      <pre class="text-xs mt-2">{{ error }}</pre>
-    </SimpleBanner>
-
-    <template v-else-if="tableData">
-      <!-- Toolbar -->
-      <div class="flex items-center py-3 gap-2">
-        <!-- Mobile: filter & sort button -->
-        <BrandedButton
-          class="md:hidden"
-          color="tertiary"
-          size="2xs"
-          :icon="RiFilter2Line"
-          keep-margins-even-without-borders
-          @click="mobileFilterOpen = true"
-        >
-          {{ t('Filtres & tri') }}
-        </BrandedButton>
-
-        <div class="flex-1" />
-
-        <!-- Right: Stats -->
-        <div class="flex items-center gap-4">
-          <!-- Columns (clickable, opens column popover) -->
-          <Popover
-            ref="columnAnchor"
-            v-slot="{ open }"
-            class="relative"
-          >
-            <PopoverButton class="flex items-center gap-1.5 text-xs text-gray-plain rounded px-2 py-1 hover:bg-gray-50 focus:outline-none">
-              <RiLayoutColumnLine
-                class="size-3"
-                aria-hidden="true"
-              />
-              <span class="font-bold hidden md:inline">{{ t('Colonnes') }}</span>
-              <span class="font-mono tabular-nums">{{ visibleColumns.size }}/{{ allColumns.length }}</span>
-              <RiArrowDownSLine
-                class="size-3 opacity-50"
-                aria-hidden="true"
-              />
-            </PopoverButton>
-
-            <ClientOnly>
-              <Teleport to="#tooltips">
-                <PopoverPanel
-                  v-show="open"
-                  ref="columnPanel"
-                  static
-                  class="bg-white border border-gray-default rounded shadow-lg w-72 absolute z-[800]"
-                  :style="columnFloatingStyles"
-                >
-                  <div class="flex items-center justify-between px-3 py-2 border-b border-gray-default">
-                    <span class="text-xs font-medium text-gray-title">
-                      {{ visibleColumns.size }} {{ t('sur') }} {{ allColumns.length }} {{ t('colonnes visibles') }}
-                    </span>
-                    <BrandedButton
-                      v-if="hiddenCount"
-                      color="tertiary"
-                      size="2xs"
-                      @click="showAllColumns"
-                    >
-                      {{ t('Tout afficher') }}
-                    </BrandedButton>
-                  </div>
-                  <div class="max-h-64 overflow-auto p-1">
-                    <label
-                      v-for="col in allColumns"
-                      :key="col"
-                      class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer text-xs"
-                    >
-                      <input
-                        type="checkbox"
-                        :checked="visibleColumns.has(col)"
-                        class="size-3.5 accent-new-primary"
-                        @change="toggleColumn(col)"
-                      >
-                      <span class="truncate">{{ col }}</span>
-                    </label>
-                  </div>
-                </PopoverPanel>
-              </Teleport>
-            </ClientOnly>
-          </Popover>
-
-          <!-- Rows -->
-          <span class="flex items-center gap-1.5 text-xs text-gray-plain">
-            <RiLayoutRowLine
-              class="size-3 text-mention-grey"
-              aria-hidden="true"
-            />
-            <span class="font-bold hidden md:inline">{{ t('Lignes') }}</span>
-            <span class="font-mono tabular-nums">{{ tableData.meta.total.toLocaleString() }}/{{ totalLines.toLocaleString() }}</span>
-          </span>
-        </div>
-      </div>
-
-      <!-- Active filters -->
-      <div
-        v-if="activeFilters.length > 0"
-        class="bg-gray-some border border-gray-default rounded-xl px-3 py-2.5 mb-3 space-y-2.5"
+      <SimpleBanner
+        type="warning"
+        class="mb-4"
       >
-        <!-- Header -->
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <RiFilter2Line
-              class="size-3.5"
-              aria-hidden="true"
-            />
-            <span class="text-xs text-gray-plain">{{ t('Filtres actifs') }}</span>
-            <span class="inline-flex items-center justify-center rounded-full bg-new-primary/10 text-new-primary text-xs tabular-nums min-w-5 h-5 px-1.5">
-              {{ activeFilters.length }}
-            </span>
-          </div>
+        {{ t("L'aperçu de ce fichier n'a pas pu être chargé.") }}
+        <pre class="text-xs mt-2 whitespace-pre-wrap break-words">{{ previewError }}</pre>
+      </SimpleBanner>
+    </div>
+
+    <div
+      v-else-if="previewLoading"
+      class="max-w-3xl mx-auto flex items-center justify-center py-12"
+    >
+      <span class="inline-flex items-center gap-2 text-sm text-gray-medium">
+        <RiLoader4Line
+          class="size-4 animate-spin"
+          aria-hidden="true"
+        />
+        {{ t('Chargement de l\'aperçu…') }}
+      </span>
+    </div>
+
+    <template v-else-if="tableData && profileData">
+      <!-- Toolbar (constrained width — only the table itself goes edge-to-edge) -->
+      <div class="container">
+        <div class="flex items-center py-3 gap-2">
+          <!-- Mobile: filter & sort button -->
           <BrandedButton
+            class="md:hidden"
             color="tertiary"
             size="2xs"
-            :icon="RiCloseLine"
-            @click="clearAllFilters"
+            :icon="RiFilter2Line"
+            keep-margins-even-without-borders
+            @click="mobileFilterOpen = true"
           >
-            {{ t('Tout effacer') }}
+            {{ t('Filtres & tri') }}
           </BrandedButton>
-        </div>
-        <!-- Chips -->
-        <div class="flex flex-wrap gap-1.5">
-          <span
-            v-for="af in activeFilters"
-            :key="af.column"
-            class="inline-flex items-center gap-1.5 bg-white border border-gray-silver rounded-lg pl-2 pr-1 py-1 text-xs"
-          >
-            <component
-              :is="getTypeConfig(af.column).icon"
-              class="size-3 text-gray-title"
-              aria-hidden="true"
-            />
-            <span class="text-gray-title">{{ af.column }}</span>
-            <span class="text-gray-plain">{{ af.label }}</span>
-            <button
-              class="rounded p-0.5 text-gray-low hover:text-gray-plain hover:bg-gray-100"
-              @click="removeFilter(af.column)"
+
+          <div class="flex-1" />
+
+          <!-- Right: Stats -->
+          <div class="flex items-center gap-4">
+            <!-- Columns (clickable, opens column popover) -->
+            <Popover
+              ref="columnAnchor"
+              v-slot="{ open }"
+              class="relative"
             >
-              <RiCloseLine
-                class="size-3"
+              <PopoverButton class="flex items-center gap-1.5 text-xs text-gray-plain rounded px-2 py-1 hover:bg-gray-50 focus:outline-none">
+                <RiLayoutColumnLine
+                  class="size-3"
+                  aria-hidden="true"
+                />
+                <span class="font-bold hidden md:inline">{{ t('Colonnes') }}</span>
+                <span class="font-mono tabular-nums">{{ visibleColumns.size }}/{{ allColumns.length }}</span>
+                <RiArrowDownSLine
+                  class="size-3 opacity-50"
+                  aria-hidden="true"
+                />
+              </PopoverButton>
+
+              <ClientOnly>
+                <Teleport to="#tooltips">
+                  <PopoverPanel
+                    v-show="open"
+                    ref="columnPanel"
+                    static
+                    class="bg-white border border-gray-default rounded shadow-lg w-72 absolute z-[800]"
+                    :style="columnFloatingStyles"
+                  >
+                    <div class="flex items-center justify-between px-3 py-2 border-b border-gray-default">
+                      <span class="text-xs font-medium text-gray-title">
+                        {{ visibleColumns.size }} {{ t('sur') }} {{ allColumns.length }} {{ t('colonnes visibles') }}
+                      </span>
+                      <BrandedButton
+                        v-if="hiddenCount"
+                        color="tertiary"
+                        size="2xs"
+                        @click="showAllColumns"
+                      >
+                        {{ t('Tout afficher') }}
+                      </BrandedButton>
+                    </div>
+                    <div class="max-h-64 overflow-auto p-1">
+                      <label
+                        v-for="col in allColumns"
+                        :key="col"
+                        class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer text-xs"
+                      >
+                        <input
+                          type="checkbox"
+                          :checked="visibleColumns.has(col)"
+                          class="size-3.5 accent-new-primary"
+                          @change="toggleColumn(col)"
+                        >
+                        <span class="truncate">{{ col }}</span>
+                      </label>
+                    </div>
+                  </PopoverPanel>
+                </Teleport>
+              </ClientOnly>
+            </Popover>
+
+            <!-- Rows -->
+            <span class="flex items-center gap-1.5 text-xs text-gray-plain">
+              <RiLayoutRowLine
+                class="size-3 text-mention-grey"
                 aria-hidden="true"
               />
-              <span class="sr-only">{{ t('Supprimer ce filtre') }}</span>
-            </button>
-          </span>
+              <span class="font-bold hidden md:inline">{{ t('Lignes') }}</span>
+              <span class="font-mono tabular-nums">{{ tableData.meta.total.toLocaleString() }}/{{ totalLines.toLocaleString() }}</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Active filters -->
+        <div
+          v-if="activeFilters.length > 0"
+          class="bg-gray-some border border-gray-default rounded-xl px-3 py-2.5 mb-3 space-y-2.5"
+        >
+          <!-- Header -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <RiFilter2Line
+                class="size-3.5"
+                aria-hidden="true"
+              />
+              <span class="text-xs text-gray-plain">{{ t('Filtres actifs') }}</span>
+              <span class="inline-flex items-center justify-center rounded-full bg-new-primary/10 text-new-primary text-xs tabular-nums min-w-5 h-5 px-1.5">
+                {{ activeFilters.length }}
+              </span>
+            </div>
+            <BrandedButton
+              color="tertiary"
+              size="2xs"
+              :icon="RiCloseLine"
+              @click="clearAllFilters"
+            >
+              {{ t('Tout effacer') }}
+            </BrandedButton>
+          </div>
+          <!-- Chips -->
+          <div class="flex flex-wrap gap-1.5">
+            <span
+              v-for="af in activeFilters"
+              :key="af.column"
+              class="inline-flex items-center gap-1.5 bg-white border border-gray-silver rounded-lg pl-2 pr-1 py-1 text-xs"
+            >
+              <component
+                :is="getTypeConfig(af.column).icon"
+                class="size-3 text-gray-title"
+                aria-hidden="true"
+              />
+              <span class="text-gray-title">{{ af.column }}</span>
+              <span class="text-gray-plain">{{ af.label }}</span>
+              <button
+                class="rounded p-0.5 text-gray-low hover:text-gray-plain hover:bg-gray-100"
+                @click="removeFilter(af.column)"
+              >
+                <RiCloseLine
+                  class="size-3"
+                  aria-hidden="true"
+                />
+                <span class="sr-only">{{ t('Supprimer ce filtre') }}</span>
+              </button>
+            </span>
+          </div>
         </div>
       </div>
+      <!-- /container (toolbar + active filters) -->
 
       <!-- Desktop: scrollable table -->
       <!-- `-mx-4` lets the table extend edge-to-edge of the parent's px-4 wrapper
@@ -460,7 +480,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch, useTemplateRef } from 'vue'
+import { computed, nextTick, onUnmounted, ref, watch, useTemplateRef } from 'vue'
 import { ofetch } from 'ofetch'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
 import { Dialog, DialogPanel, DialogTitle, Popover, PopoverButton, PopoverPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
@@ -473,6 +493,7 @@ import {
   RiFilter2Line,
   RiCloseLine,
   RiSearchLine,
+  RiLoader4Line,
 } from '@remixicon/vue'
 import { useFetch } from '../../functions/api'
 import { useComponentsConfig } from '../../config'
@@ -555,7 +576,14 @@ const { data: tableData, error } = await useFetch<TabularDataResponse>(dataUrl, 
 // Profile is shared with sibling components (e.g. DataStructure) via
 // `provideTabularProfile` in the parent. Falls back to a local fetch
 // when no parent provides it (standalone usage).
-const { data: profileData } = injectTabularProfile(() => props.resourceId)
+const { data: profileData, error: profileError, status: profileStatus } = injectTabularProfile(() => props.resourceId)
+
+// The component renders nothing useful until the profile is available
+// (allColumns is derived from it). Surface a clear loading / error state
+// so we don't end up with an empty table + a spinner running forever.
+const profileLoading = computed(() => !profileData.value && (profileStatus.value === 'idle' || profileStatus.value === 'pending'))
+const previewError = computed(() => error.value || profileError.value)
+const previewLoading = computed(() => !previewError.value && (!tableData.value || profileLoading.value))
 
 // Infinite scroll state
 const allRows = ref<TabularRow[]>([])
@@ -628,23 +656,65 @@ function showAllColumns() {
   visibleColumns.value = new Set(allColumns.value)
 }
 
-// Column resize
+// Column widths
+//
+// Strategy:
+// - On first render (when both data and profile are loaded), we measure the
+//   natural offsetWidth of each <th>, then distribute any leftover container
+//   space proportionally so the table fills the available horizontal area.
+// - We immediately lock all columns to those widths via `columnWidths`, so
+//   pagination, filtering, sorting or infinite-scroll never trigger a layout
+//   shift (the table doesn't re-auto-size based on newly visible content).
+// - Manual resize via the drag handle keeps working unchanged: it always sees
+//   columnWidths populated, so it goes straight into the resize loop.
 const columnWidths = ref<Record<string, number>>({})
 const resizing = ref<{ column: string, startX: number, startWidth: number } | null>(null)
 
-function initColumnWidths() {
-  const ths = scrollContainerRef.value?.querySelectorAll('th')
-  if (!ths) return
-  const widths: Record<string, number> = {}
+function measureAndDistributeColumnWidths() {
+  const container = scrollContainerRef.value
+  if (!container) return
+  const ths = container.querySelectorAll('th')
+  if (!ths || ths.length === 0) return
+
+  const naturalWidths: Record<string, number> = {}
+  let naturalSum = 0
   ths.forEach((th, i) => {
     const col = displayedColumns.value[i]
-    if (col) widths[col] = th.offsetWidth
+    if (!col) return
+    const w = th.offsetWidth
+    naturalWidths[col] = w
+    naturalSum += w
   })
+  if (naturalSum === 0) return
+
+  // Inflate to fill container if columns don't naturally cover it.
+  const containerWidth = container.clientWidth
+  const ratio = naturalSum < containerWidth ? containerWidth / naturalSum : 1
+
+  const widths: Record<string, number> = {}
+  for (const [col, w] of Object.entries(naturalWidths)) {
+    widths[col] = Math.floor(w * ratio)
+  }
   columnWidths.value = widths
 }
 
+// Lock columns once both data and profile are ready (so the <thead> is rendered
+// with content-driven natural widths). Only runs once — subsequent data changes
+// (pagination, filters) keep the locked widths and avoid layout shifts.
+watch(
+  () => [tableData.value !== null, displayedColumns.value.length] as const,
+  async ([dataReady, colCount]) => {
+    if (!dataReady || colCount === 0) return
+    if (Object.keys(columnWidths.value).length > 0) return
+    await nextTick()
+    measureAndDistributeColumnWidths()
+  },
+  { immediate: true },
+)
+
 function startResize(col: string, e: MouseEvent) {
-  if (!Object.keys(columnWidths.value).length) initColumnWidths()
+  // Fallback in case the user grabs the handle before the initial measure ran.
+  if (!Object.keys(columnWidths.value).length) measureAndDistributeColumnWidths()
   resizing.value = { column: col, startX: e.clientX, startWidth: columnWidths.value[col] ?? 100 }
   // Disable smooth scroll during resize
   if (scrollContainerRef.value) scrollContainerRef.value.style.scrollBehavior = 'auto'
