@@ -159,6 +159,33 @@ test('custom theme filter is hidden on non-dataset types', async ({ page }) => {
   await expect(page.locator('#theme-filter')).not.toBeVisible()
 })
 
+test('custom theme filter URL param is cleared when switching to a type that hides it', async ({ page }) => {
+  await page.goto('/design/dataset-search?theme=transport')
+
+  await expect(page.locator('#theme-filter')).toHaveValue('transport')
+
+  const reusesRadio = page.getByRole('radio', { name: 'Réutilisations' })
+  await reusesRadio.click({ force: true })
+
+  await page.waitForURL(url => !url.searchParams.has('theme'))
+  const url = new URL(page.url())
+  expect(url.searchParams.has('theme')).toBeFalsy()
+})
+
+test('custom theme filter URL param persists when switching between types that both show it', async ({ page }) => {
+  await page.goto('/design/dataset-search?theme=transport')
+
+  await expect(page.locator('#theme-filter')).toHaveValue('transport')
+
+  const inspireRadio = page.getByRole('radio', { name: 'Données INSPIRE' })
+  await inspireRadio.click({ force: true })
+
+  await page.waitForLoadState('networkidle')
+  const url = new URL(page.url())
+  expect(url.searchParams.get('theme')).toBe('transport')
+  await expect(page.locator('#theme-filter')).toHaveValue('transport')
+})
+
 test('custom theme filter resets page to 1 on change', async ({ page }) => {
   await page.goto('/design/dataset-search?page=2')
 
@@ -205,6 +232,36 @@ test('custom theme filter applies its apiParam mapping to the results', async ({
   await expect(
     results.getByText('Réseau de transport en commun Trans\'Agglo de DLVA'),
   ).toBeVisible()
+})
+
+test('custom filter scoped to dataset types never appears in the parallel dataservices search', async ({ page }) => {
+  // Collect tag values from every dataservices request (initial + any re-fetches)
+  const dataservicesTags: (string | null)[] = []
+  page.on('request', (req) => {
+    if (req.url().includes('/api/2/dataservices/search/')) {
+      dataservicesTags.push(new URL(req.url()).searchParams.get('tag'))
+    }
+  })
+
+  await page.goto('/design/dataset-search')
+  await page.waitForLoadState('networkidle')
+
+  // Change the theme filter and wait for the all-datasets search to re-fetch with tag=transport
+  // (confirms the filter change was processed before we check dataservices)
+  const datasetsWithTagPromise = page.waitForRequest(
+    req =>
+      req.url().includes('/api/2/datasets/search/')
+      && new URL(req.url()).searchParams.get('tag') === 'transport'
+      && !new URL(req.url()).searchParams.has('badge'),
+  )
+
+  const themeSelect = page.locator('#theme-filter')
+  await themeSelect.scrollIntoViewIfNeeded()
+  await themeSelect.selectOption('transport')
+  await datasetsWithTagPromise
+
+  // tag=transport must never have appeared in any dataservices request
+  expect(dataservicesTags.every(tag => tag !== 'transport')).toBe(true)
 })
 
 test('clicking dataset navigates to detail', async ({ page }) => {

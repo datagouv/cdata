@@ -8,14 +8,14 @@
           {{ $t('Accueil') }}
         </BreadcrumbItem>
         <BreadcrumbItem>
-          {{ $t('Articles') }}
+          {{ $t('Actualité') }}
         </BreadcrumbItem>
       </Breadcrumb>
     </div>
     <div class="border-b border-gray-lowest">
       <div class="container">
         <h1 class="text-4.5xl font-extrabold text-gray-title pt-10 pb-[3.75rem] !mb-0">
-          {{ $t('Articles') }}
+          {{ $t('Actualité') }}
         </h1>
       </div>
     </div>
@@ -52,10 +52,11 @@ import type { PaginatedArray } from '~/types/types'
 const { t } = useTranslation()
 
 useSeoMeta({
-  title: t('Articles'),
+  title: t('Actualité - data.gouv.fr'),
+  description: t('Suivre l\'actualité de data.gouv.fr et de son écosystème : nouveautés, tendances, challenges et annonces'),
 })
 defineOgImage('MainPage.takumi', {
-  title: 'Articles',
+  title: 'Actualité',
   uri: '/posts',
 })
 const route = useRoute()

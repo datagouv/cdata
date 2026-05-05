@@ -1,10 +1,17 @@
 import { type InjectionKey, type Ref, inject, onMounted, onScopeDispose } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useRouteQuery } from '@vueuse/router'
+import type { SearchTypeConfig } from '../types/search'
+
+export function configKey(c: SearchTypeConfig): string {
+  return c.key ?? c.class
+}
 
 export interface CustomFilterEntry {
   apiParam: string
   ref: Ref<string | undefined>
   defaultValue: string | undefined
+  typeKeys?: string[] // undefined = applies to all types
 }
 
 export interface SearchFilterContext {
@@ -20,9 +27,11 @@ export function isCustomFilterActive(entry: CustomFilterEntry): boolean {
 export function forEachActiveCustomFilter(
   registry: Map<string, CustomFilterEntry>,
   apply: (apiParam: string, value: string) => void,
+  typeKey?: string,
 ): void {
   for (const entry of registry.values()) {
     if (!isCustomFilterActive(entry)) continue
+    if (typeKey && entry.typeKeys && !entry.typeKeys.includes(typeKey)) continue
     apply(entry.apiParam, String(entry.ref.value))
   }
 }
@@ -35,6 +44,8 @@ export interface UseSearchFilterOptions {
   apiParam?: string
   /** Default value when not present in URL. Defaults to undefined. */
   defaultValue?: string
+  /** One or more type config keys this filter applies to. Undefined means all types. */
+  typeKeys?: string | string[]
 }
 
 /**
@@ -67,14 +78,19 @@ export function useSearchFilter(
     )
   }
 
-  const { apiParam = urlParam, defaultValue = undefined } = options
+  const { apiParam = urlParam, defaultValue = undefined, typeKeys } = options
+  const normalizedTypeKeys = typeKeys
+    ? (Array.isArray(typeKeys) ? typeKeys : [typeKeys])
+    : undefined
 
+  const route = useRoute()
+  const router = useRouter()
   const value = useRouteQuery<string | undefined>(urlParam, defaultValue)
 
   // Register in onMounted to avoid SSR/hydration mismatch: the registry must be
   // empty during SSR so server and client produce the same initial HTML.
   onMounted(() => {
-    context.register(urlParam, { apiParam, ref: value, defaultValue })
+    context.register(urlParam, { apiParam, ref: value, defaultValue, typeKeys: normalizedTypeKeys })
   })
 
   onScopeDispose(() => {
@@ -82,7 +98,19 @@ export function useSearchFilter(
     // own `watch(currentType)` logic that drops built-in filters which don't
     // apply to the new type: a custom filter's applicability is signalled
     // by the consumer via `v-if`, so its unmount is the equivalent signal.
-    value.value = defaultValue
+    //
+    // We cannot use `value.value = defaultValue` here because VueUse's
+    // useRouteQuery registers its own tryOnScopeDispose cleanup that zeroes
+    // the internal `query` variable to undefined (FIFO order, it runs first).
+    // The setter then sees `query === v` and early-returns without ever
+    // calling router.replace(). Instead we read the live route.query directly
+    // (which is router state, not affected by that cleanup) and push the update.
+    if (route.query[urlParam] !== undefined) {
+      const { [urlParam]: _removed, ...restQuery } = route.query
+      router.replace({
+        query: defaultValue === undefined ? restQuery : { ...restQuery, [urlParam]: String(defaultValue) },
+      })
+    }
     context.unregister(urlParam)
   })
 

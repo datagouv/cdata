@@ -492,7 +492,8 @@ const answers = ref<Array<string>>([])
 const { t } = useTranslation()
 
 useSeoMeta({
-  title: t('Support'),
+  title: t('Support et FAQ'),
+  description: t('Consultez le forum et les guides pour trouver la réponse à vos questions'),
 })
 
 function updateUrl(path: string, hash = '') {

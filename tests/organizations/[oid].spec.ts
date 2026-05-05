@@ -15,6 +15,15 @@ test('organization root redirects to datasets tab', async ({ page }) => {
   await expect(page).toHaveURL(/\/organizations\/sobrana\/datasets/)
 })
 
+test('clicking an organization from the list redirects and renders the page', async ({ page }) => {
+  await page.goto('/organizations')
+
+  await page.getByRole('link', { name: /sobrana/i }).first().click()
+
+  await expect(page).toHaveURL(/\/organizations\/sobrana\/datasets/)
+  await expect(page.getByRole('heading', { level: 1, name: /SOBRANA/i })).toBeVisible()
+})
+
 test('tabs display correct counts', async ({ page }) => {
   await page.goto(`/organizations/${ORG_SLUG}/datasets`)
 
