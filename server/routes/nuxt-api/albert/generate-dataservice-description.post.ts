@@ -45,36 +45,23 @@ Guidelines:
 - The goal is to produce informative descriptions that help users understand the API's purpose and capabilities.
 - IMPORTANT: Return ONLY the description text, without quotes or additional punctuation.`
 
-  let technicalContent = ''
-  let machineContent = ''
-
-  const fetchPromises: Promise<void>[] = []
-  if (technicalUrl) {
-    fetchPromises.push(
-      fetchDocumentationContent(technicalUrl)
-        .then((content) => { technicalContent = content })
-        .catch((err) => {
-          throw createError({
-            statusCode: 422,
-            statusMessage: err instanceof Error ? err.message : 'Failed to load technical documentation URL.',
-          })
-        }),
-    )
-  }
-  if (machineUrl) {
-    fetchPromises.push(
-      fetchDocumentationContent(machineUrl)
-        .then((content) => { machineContent = content })
-        .catch((err) => {
-          throw createError({
-            statusCode: 422,
-            statusMessage: err instanceof Error ? err.message : 'Failed to load machine documentation URL.',
-          })
-        }),
-    )
+async function fetchOrFail(url: string, label: string): Promise<string> {
+    if (!url) return ''
+    try {
+      return await fetchDocumentationContent(url)
+    }
+    catch (err) {
+      throw createError({
+        statusCode: 422,
+        statusMessage: err instanceof Error ? err.message : `Failed to load ${label} documentation URL.`,
+      })
+    }
   }
 
-  await Promise.all(fetchPromises)
+  const [technicalContent, machineContent] = await Promise.all([
+    fetchOrFail(technicalUrl, 'technical'),
+    fetchOrFail(machineUrl, 'machine'),
+  ])
 
   if (!technicalContent && !machineContent) {
     throw createError({
