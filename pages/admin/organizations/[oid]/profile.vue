@@ -58,7 +58,7 @@
       :links="[
         { href: organizationUrl, label: t('Profil') },
         { href: `${organizationUrl}/contacts/`, label: t('Points de contact') },
-        { href: `${organizationUrl}/activities/`, label: t('Activités'), show: showActivitiesLink },
+        { href: `${organizationUrl}/activities/`, label: t('Activités'), show: organization.permissions.edit },
       ]"
     />
 
@@ -88,18 +88,7 @@ const props = defineProps<{
   organization: Organization
 }>()
 
-const route = useRoute()
-
 const { t } = useTranslation()
 
 const organizationUrl = computed(() => `/admin/organizations/${props.organization?.id}/profile`)
-
-function showActivitiesLink() {
-  if (!props.organization?.permissions) return false
-
-  const requiredPerm = route.meta.requiredPermission as string | undefined
-  if (!requiredPerm) return true
-
-  return requiredPerm in props.organization.permissions && props.organization.permissions[requiredPerm as keyof Organization['permissions']]
-}
 </script>

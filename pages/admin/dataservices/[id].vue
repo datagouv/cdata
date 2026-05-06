@@ -88,7 +88,7 @@
           { href: getDataserviceAdminUrl(dataservice), label: t('Métadonnées') },
           { href: `${getDataserviceAdminUrl(dataservice)}/datasets`, label: t('Jeux de données associés') },
           { href: `${getDataserviceAdminUrl(dataservice)}/discussions`, label: t('Discussions') },
-          { href: `${getDataserviceAdminUrl(dataservice)}/activities`, label: t('Activités'), show: showActivitiesLink },
+          { href: `${getDataserviceAdminUrl(dataservice)}/activities`, label: t('Activités'), show: dataservice.permissions.edit },
         ]"
       />
 
@@ -127,13 +127,4 @@ const { data: activities } = await useAPI<PaginatedArray<Activity>>('/api/1/acti
     sort: '-created_at',
   },
 })
-
-function showActivitiesLink() {
-  if (!dataservice.value?.permissions) return false
-
-  const requiredPerm = route.meta.requiredPermission as string | undefined
-  if (!requiredPerm) return true
-
-  return requiredPerm in dataservice.value.permissions && dataservice.value.permissions[requiredPerm as keyof Dataservice['permissions']]
-}
 </script>

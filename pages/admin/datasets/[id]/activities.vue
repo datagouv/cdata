@@ -5,10 +5,6 @@
 <script setup lang="ts">
 import { ActivityList, type Dataset } from '@datagouv/components-next'
 
-definePageMeta({
-  requiredPermission: 'edit',
-})
-
 defineProps<{
   dataset: Dataset
 }>()
