@@ -255,17 +255,24 @@
                   v-else-if="subjects[report.id].value"
                   class="flex items-center"
                 >
-                  <BrandedButton
-                    size="xs"
-                    color="tertiary"
-                    type="button"
-                    :icon="RiCheckLine"
-                    icon-only
-                    keep-margins-even-without-borders
-                    :disabled="!!report.dismissed_at"
-                    :title="$t('Rejeter le signalement')"
-                    @click="dismiss(report)"
-                  />
+                  <div class="relative">
+                    <BrandedButton
+                      size="xs"
+                      color="tertiary"
+                      type="button"
+                      :icon="RiCheckLine"
+                      icon-only
+                      keep-margins-even-without-borders
+                      :disabled="!!report.dismissed_at"
+                      :title="report.callbacks_count > 0 ? t('Rejeter le signalement (déclenchera {n} actions en attente | déclenchera {n} action en attente | déclenchera {n} actions en attente)', report.callbacks_count) : $t('Rejeter le signalement')"
+                      @click="dismiss(report)"
+                    />
+                    <span
+                      v-if="report.callbacks_count > 0 && !report.dismissed_at"
+                      class="absolute top-0.5 right-0.5 size-2 rounded-full bg-new-warning ring-1 ring-white"
+                      aria-hidden="true"
+                    />
+                  </div>
                   <BrandedButton
                     v-if="report.subject && getSwitchToPrivateMethodAndUrl(report.subject)"
                     size="xs"
@@ -337,7 +344,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Report, ReportReason, ReportSubject, Activity, Dataservice, DatasetV2, Organization, Reuse, UserReference } from '@datagouv/components-next'
+import type { Report, ReportReason, ReportSubject, Activity, Dataservice, DatasetV2, Organization, Reuse, User, UserReference } from '@datagouv/components-next'
 import { AvatarWithName, LoadingBlock, Pagination, SearchableSelect, useFormatDate, BrandedButton } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine, RiRobot2Line, RiSpyLine } from '@remixicon/vue'
@@ -374,12 +381,13 @@ const subjectTypeTabs = [
   { href: `${basePath}?type=Reuse`, label: t('Réutilisations') },
   { href: `${basePath}?type=Organization`, label: t('Organisations') },
   { href: `${basePath}?type=Discussion`, label: t('Discussions') },
+  { href: `${basePath}?type=User`, label: t('Utilisateurs') },
 ]
 
 const route = useRoute()
 const subjectType = computed(() => {
   const type = route.query.type
-  if (typeof type === 'string' && ['Dataset', 'Dataservice', 'Reuse', 'Organization', 'Discussion'].includes(type)) {
+  if (typeof type === 'string' && ['Dataset', 'Dataservice', 'Reuse', 'Organization', 'Discussion', 'User'].includes(type)) {
     return type
   }
   return undefined
@@ -401,6 +409,7 @@ const getSubjectUrl = (subject: ReportSubject) => {
     Reuse: `/api/1/reuses/${subject.id}/`,
     Organization: `/api/1/organizations/${subject.id}/`,
     Discussion: `/api/1/discussions/${subject.id}/`,
+    User: `/api/1/users/${subject.id}/`,
   }[subject.class]
 }
 
@@ -409,6 +418,7 @@ type RecordSubjectFullObject = { type: 'Dataset', value: null | DatasetV2 }
   | { type: 'Reuse', value: null | Reuse }
   | { type: 'Organization', value: null | Organization }
   | { type: 'Discussion', value: null | Thread }
+  | { type: 'User', value: null | User }
 
 const subjects = ref({} as Record<string, RecordSubjectFullObject>)
 const fetchFullSubject = async (report: Report, subject: ReportSubject) => {
@@ -461,6 +471,7 @@ const getSwitchToPrivateMethodAndUrl = (subject: ReportSubject): { method: 'PUT'
     Reuse: { method: 'PUT' as const, url: `/api/1/reuses/${subject.id}/` },
     Organization: null,
     Discussion: null,
+    User: null,
   }[subject.class]
 }
 
@@ -486,6 +497,7 @@ const getDeleteUrl = (report: Report, subject: ReportSubject): string | null => 
     Reuse: `/api/1/reuses/${subject.id}/`,
     Organization: `/api/1/organizations/${subject.id}/`,
     Discussion: `/api/1/discussions/${subject.id}/`,
+    User: `/api/1/users/${subject.id}/`,
   }[subject.class]
 }
 
@@ -516,6 +528,7 @@ const getSubjectCreatedDate = (report: Report, subject: RecordSubjectFullObject)
   if (subject.type === 'Organization' && subject.value) return subject.value.created_at
   if (subject.type === 'Reuse' && subject.value) return subject.value.created_at
   if (subject.type === 'Discussion' && subject.value) return subject.value.created
+  if (subject.type === 'User' && subject.value?.since) return subject.value.since
   return ''
 }
 
@@ -534,6 +547,7 @@ const getObjectType = (subjectClass: string): ObjectType => {
     Reuse: 'reuse' as ObjectType,
     Organization: 'organization' as ObjectType,
     Discussion: 'discussion' as ObjectType,
+    User: 'user' as ObjectType,
   }[subjectClass] || 'dataset'
 }
 
@@ -541,6 +555,7 @@ const getSubjectTitle = (subject: RecordSubjectFullObject['value']): string | un
   if (!subject) return undefined
   if ('title' in subject) return subject.title
   if ('name' in subject) return subject.name
+  if ('first_name' in subject) return `${subject.first_name} ${subject.last_name}`.trim() || subject.slug
   return undefined
 }
 </script>
