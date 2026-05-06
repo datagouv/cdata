@@ -606,7 +606,7 @@ const { data: tableData, error } = await useFetch<TabularDataResponse>(dataUrl, 
 // Profile is shared with sibling components (e.g. DataStructure) via
 // `provideTabularProfile` in the parent. Falls back to a local fetch
 // when no parent provides it (standalone usage).
-const { data: profileData, error: profileError, status: profileStatus } = injectTabularProfile(() => props.resourceId)
+const { data: profileData, error: profileError, status: profileStatus } = await injectTabularProfile(() => props.resourceId)
 
 // The component renders nothing useful until the profile is available
 // (allColumns is derived from it). Surface a clear loading / error state

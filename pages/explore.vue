@@ -390,7 +390,7 @@ const currentResource = computed(() => resourceData.value?.resource ?? null)
 const currentDataset = computed(() => resourceData.value?.dataset ?? null)
 
 // Share the tabular profile fetch between TabularExplorer and DataStructure tabs.
-provideTabularProfile(() => currentResource.value?.id ?? '')
+await provideTabularProfile(() => currentResource.value?.id ?? '')
 
 const { tabsOptions } = useResourceCapabilities(
   () => currentResource.value as Resource,

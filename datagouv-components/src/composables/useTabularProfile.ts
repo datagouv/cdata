@@ -1,48 +1,31 @@
-import { computed, inject, provide, ref, toValue, watchEffect, type MaybeRefOrGetter, type Ref } from 'vue'
-import { ofetch } from 'ofetch'
+import { computed, inject, provide, toValue, type MaybeRefOrGetter, type Ref } from 'vue'
 import { useComponentsConfig } from '../config'
+import { useFetch } from '../functions/api'
+import type { AsyncDataRequestStatus } from '../functions/api.types'
 import type { TabularProfileResponse } from '../components/TabularExplorer/types'
 
 const TABULAR_PROFILE_KEY = Symbol('tabular-profile')
-
-type Status = 'idle' | 'pending' | 'success' | 'error'
 
 export type TabularProfileState = {
   resourceId: Readonly<Ref<string>>
   data: Readonly<Ref<TabularProfileResponse | null>>
   error: Readonly<Ref<unknown | null>>
-  status: Readonly<Ref<Status>>
+  status: Readonly<Ref<AsyncDataRequestStatus>>
   refresh: () => Promise<void>
 }
 
-function createProfileState(resourceId: MaybeRefOrGetter<string>): TabularProfileState {
+async function createProfileState(resourceId: MaybeRefOrGetter<string>): Promise<TabularProfileState> {
   const config = useComponentsConfig()
-  const data = ref<TabularProfileResponse | null>(null)
-  const error = ref<unknown | null>(null)
-  const status = ref<Status>('idle')
   const ridRef = computed(() => toValue(resourceId))
 
-  async function refresh() {
-    const id = toValue(resourceId)
-    if (!id) return
-    status.value = 'pending'
-    error.value = null
-    try {
-      data.value = await ofetch<TabularProfileResponse>(
-        `${config.tabularApiUrl}/api/resources/${id}/profile/`,
-      )
-      status.value = 'success'
-    }
-    catch (e) {
-      data.value = null
-      error.value = e
-      status.value = 'error'
-    }
-  }
+  // Goes through the package's useFetch, which delegates to the host's
+  // customUseFetch (Nuxt useFetch in cdata) so the response is shared
+  // between SSR and CSR via the Nuxt payload — avoiding a double fetch.
+  const profileUrl = computed(() =>
+    ridRef.value ? `${config.tabularApiUrl}/api/resources/${ridRef.value}/profile/` : null,
+  )
 
-  watchEffect(() => {
-    if (toValue(resourceId)) refresh()
-  })
+  const { data, error, status, refresh } = await useFetch<TabularProfileResponse>(profileUrl, { raw: true })
 
   return { resourceId: ridRef, data, error, status, refresh }
 }
@@ -51,8 +34,8 @@ function createProfileState(resourceId: MaybeRefOrGetter<string>): TabularProfil
  * Parent: fetch the tabular profile once and share it with descendants
  * (TabularExplorer, DataStructure...) via provide/inject.
  */
-export function provideTabularProfile(resourceId: MaybeRefOrGetter<string>): TabularProfileState {
-  const state = createProfileState(resourceId)
+export async function provideTabularProfile(resourceId: MaybeRefOrGetter<string>): Promise<TabularProfileState> {
+  const state = await createProfileState(resourceId)
   provide(TABULAR_PROFILE_KEY, state)
   return state
 }
@@ -63,10 +46,10 @@ export function provideTabularProfile(resourceId: MaybeRefOrGetter<string>): Tab
  * fetching on its own if no compatible ancestor is found — preserves
  * standalone usage of TabularExplorer / DataStructure.
  */
-export function injectTabularProfile(resourceId: MaybeRefOrGetter<string>): TabularProfileState {
+export async function injectTabularProfile(resourceId: MaybeRefOrGetter<string>): Promise<TabularProfileState> {
   const injected = inject<TabularProfileState | null>(TABULAR_PROFILE_KEY, null)
   if (injected && injected.resourceId.value === toValue(resourceId)) {
     return injected
   }
-  return createProfileState(resourceId)
+  return await createProfileState(resourceId)
 }

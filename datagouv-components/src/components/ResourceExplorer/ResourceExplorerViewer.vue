@@ -281,7 +281,7 @@ const {
 } = useResourceCapabilities(() => props.resource, () => props.dataset)
 
 // Share the tabular profile fetch between TabularExplorer and DataStructure tabs.
-provideTabularProfile(() => props.resource.id)
+await provideTabularProfile(() => props.resource.id)
 
 const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset, props.resource))

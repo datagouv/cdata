@@ -61,7 +61,7 @@ const { t } = useTranslation()
 // Profile is shared with sibling components (e.g. TabularExplorer) via
 // `provideTabularProfile` in the parent. Falls back to a local fetch
 // when no parent provides it (standalone usage).
-const { data: profileData, status } = injectTabularProfile(() => props.resource.id)
+const { data: profileData, status } = await injectTabularProfile(() => props.resource.id)
 
 const loading = computed(() => status.value === 'idle' || status.value === 'pending')
 const hasError = computed(() => status.value === 'error')
