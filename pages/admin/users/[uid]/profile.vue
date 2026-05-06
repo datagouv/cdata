@@ -10,7 +10,7 @@
     <TabLinks
       :links="[
         { href: `/admin/users/${user.id}/profile`, label: $t('Profil') },
-        { href: `/admin/users/${user.id}/profile/activities`, label: $t('Activités') },
+        { href: `/admin/users/${user.id}/profile/activities`, label: $t('Activités'), show: isAdmin },
       ]"
     />
 
@@ -32,8 +32,9 @@ definePageMeta({
 
 const { currentUser: user, setCurrentUser } = useCurrentOwned()
 const { $api } = useNuxtApp()
+const isAdmin = isMeAdmin()
 
-const refresh = async () => {
+async function refresh() {
   if (!user.value) return
   const newUser = await $api<User>(`/api/1/users/${user.value.id}/`)
 

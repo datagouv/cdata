@@ -121,7 +121,7 @@
           { href: getDatasetAdminUrl(dataset), label: t('Métadonnées') },
           { href: `${getDatasetAdminUrl(dataset)}/files`, label: t('Fichiers') },
           { href: `${getDatasetAdminUrl(dataset)}/discussions`, label: t('Discussions') },
-          { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activités') },
+          { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activités'), show: dataset.permissions.edit },
         ]"
       />
 
