@@ -1,6 +1,9 @@
 <template>
   <div class="space-y-1">
-    <dt class="text-gray-plain font-bold">
+    <dt
+      class="text-gray-plain font-bold"
+      :class="{ 'sr-only': hideAccessLabel }"
+    >
       {{ $t('Accès') }}
     </dt>
     <dd class="p-0">
@@ -11,19 +14,6 @@
       <template v-else>
         {{ $t('Non spécifié') }}
       </template>
-      <div
-        v-if="object.authorization_request_url"
-        class="mt-2.5"
-      >
-        <BrandedButton
-          color="primary"
-          size="sm"
-          :href="object.authorization_request_url"
-          new-tab
-        >
-          {{ $t("Demander un accès") }}
-        </BrandedButton>
-      </div>
     </dd>
     <template v-if="object.access_type === 'restricted'">
       <dt class="text-gray-plain font-bold mt-2.5">
@@ -51,6 +41,20 @@
         </template>
       </dd>
     </template>
+    <div
+      v-if="object.authorization_request_url"
+      class="mt-2.5"
+    >
+      <BrandedButton
+        color="primary"
+        size="sm"
+        class="w-full justify-between"
+        :href="object.authorization_request_url"
+        new-tab
+      >
+        {{ $t("Demander un accès") }}
+      </BrandedButton>
+    </div>
   </div>
 </template>
 
@@ -58,9 +62,12 @@
 import { BrandedButton, type AccessAudience, type AccessAudienceType, type WithAccessType } from '@datagouv/components-next'
 import AccessTypeBadge from './AccessTypeBadge.vue'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   object: WithAccessType
-}>()
+  hideAccessLabel?: boolean
+}>(), {
+  hideAccessLabel: false,
+})
 
 const accessAudiences = computed(() => (['local_authority_and_administration', 'company_and_association', 'private'] as Array<AccessAudienceType>)
   .map(type => props.object.access_audiences.find(a => a.role === type))

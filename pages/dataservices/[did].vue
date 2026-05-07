@@ -126,14 +126,17 @@
               </dl>
 
               <section class="space-y-2.5">
-                <h3 class="!text-sm uppercase !mb-0 text-gray-title font-bold">
+                <h3 class="text-base !mb-0 text-gray-title font-bold">
                   {{ $t(`Conditions d'accès`) }}
                 </h3>
-                <AccessTypePanel :object="dataservice" />
+                <AccessTypePanel
+                  :object="dataservice"
+                  hide-access-label
+                />
               </section>
 
               <section class="space-y-2.5">
-                <h3 class="!text-sm uppercase !mb-0 text-gray-title font-bold">
+                <h3 class="text-base !mb-0 text-gray-title font-bold">
                   {{ $t('Caractéristiques techniques') }}
                 </h3>
                 <dl class="space-y-2.5 m-0">
@@ -200,8 +203,6 @@
                   size="sm"
                   class="w-full justify-between"
                   :href="dataservice.business_documentation_url"
-                  :icon="RiExternalLinkLine"
-                  icon-right
                   new-tab
                   @click="$matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : documentation métier')"
                 >
@@ -302,7 +303,7 @@
 
 <script setup lang="ts">
 import { isOrganizationCertified, BrandedButton, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
-import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
+import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
