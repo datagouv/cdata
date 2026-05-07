@@ -13,16 +13,32 @@ test('page loads with correct title', async ({ page }) => {
 test('sidebar displays correct metadata values', async ({ page }) => {
   await page.goto(`/dataservices/${DATASERVICE_SLUG}`)
 
-  // Verify producer
+  // Producer + contact (no section title)
   await expect(page.getByText('Producteur')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Caisse des Dépôts' }).first()).toBeVisible()
 
-  // Verify other metadata
+  // New section titles
+  await expect(page.getByRole('heading', { name: `Conditions d'accès` })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Caractéristiques techniques' })).toBeVisible()
+
+  // Technical block
   await expect(page.getByText('Dernière mise à jour')).toBeVisible()
   await expect(page.getByText('30 juillet 2024')).toBeVisible()
-
+  await expect(page.getByText('Date de création')).toBeVisible()
   await expect(page.getByText('Taux de disponibilité')).toBeVisible()
   await expect(page.getByText('Non communiqué')).toBeVisible()
+})
+
+test('sidebar Swagger button reveals the viewer', async ({ page }) => {
+  await page.goto(`/dataservices/${DATASERVICE_SLUG}`)
+  await page.waitForLoadState('networkidle')
+
+  const sidebarSwagger = page.locator('aside').getByRole('button', { name: 'Swagger' })
+  await expect(sidebarSwagger).toBeVisible()
+
+  await sidebarSwagger.click()
+
+  await expect(page.locator('.swagger-ui').first()).toBeVisible()
 })
 
 test('discussions tab is accessible', async ({ page }) => {
