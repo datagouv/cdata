@@ -282,12 +282,11 @@
 <script setup lang="ts">
 import { Pagination, SearchableSelect, Tooltip, useFormatDate } from '@datagouv/components-next'
 import { RiAlertLine, RiArchiveLine, RiCalendarEventLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiEyeOffLine, RiInformationLine } from '@remixicon/vue'
-import type { ComputedRef } from 'vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import JobBadge from '~/components/Harvesters/JobBadge.vue'
 import type { HarvesterJob, HarvesterJobPreview, HarvestItem, HarvestItemStatus } from '~/types/harvesters'
-import type { AdminBadgeType, PaginatedArray } from '~/types/types'
+import type { AdminBadgeType } from '~/types/types'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
@@ -299,14 +298,6 @@ const props = withDefaults(defineProps<{
 }>(), {
   items: () => [],
 })
-
-// Preview vs real mode is fully determined by the shape of `job.items`:
-// preview carries an inline array, real jobs carry a paginated link object.
-function isPreviewJob(job: HarvesterJob | HarvesterJobPreview): job is HarvesterJobPreview {
-  return Array.isArray(job.items)
-}
-
-const preview = computed(() => isPreviewJob(props.job))
 
 const itemStatusMap: Record<HarvestItemStatus, { label: string, type: AdminBadgeType }> = {
   pending: { label: t('En attente'), type: 'secondary' },
@@ -327,34 +318,13 @@ watch(selectedItemStatus, () => {
   page.value = 1
 })
 
-let displayedItems: ComputedRef<Array<HarvestItem>>
-let displayedTotal: ComputedRef<number>
-let total: ComputedRef<number>
-let byStatus: ComputedRef<Record<HarvestItemStatus, number>> | null = null
-
-// Per-status counts would be misleading on the tiny preview sample (capped
-// server-side), so the items array travels inline and `byStatus` stays null.
-// Real jobs go through the paginated subresource with server-side filter &
-// pagination, and expose by_status counters.
-if (isPreviewJob(props.job)) {
-  displayedItems = computed(() => props.items)
-  displayedTotal = computed(() => props.items.length)
-  total = computed(() => props.items.length)
-}
-else {
-  const realJob = props.job
-  const itemsUrl = computed(() => `/api/1/harvest/job/${realJob.id}/items/`)
-  const itemsParams = computed(() => ({
-    page: page.value,
-    page_size: pageSize.value,
-    ...(selectedItemStatus.value ? { status: selectedItemStatus.value.id } : {}),
-  }))
-  const { data: itemsPage } = await useAPI<PaginatedArray<HarvestItem>>(itemsUrl, { lazy: true, query: itemsParams })
-  displayedItems = computed(() => itemsPage.value?.data ?? [])
-  displayedTotal = computed(() => itemsPage.value?.total ?? 0)
-  total = computed(() => realJob.items.total)
-  byStatus = computed(() => realJob.items.by_status)
-}
+const { preview, displayedItems, displayedTotal, total, byStatus } = await useJobItems(
+  props.job,
+  () => props.items,
+  page,
+  pageSize,
+  selectedItemStatus,
+)
 
 function getStatus(item: HarvestItem): { label: string, type: AdminBadgeType } {
   return itemStatusMap[item.status]
