@@ -84,109 +84,118 @@
                 />
               </ReadMore>
             </div>
-            <dl
+            <aside
               ref="sidebar"
-              class="pl-0 w-full shrink-0 md:w-[384px] space-y-2.5"
+              class="pl-0 w-full shrink-0 md:w-[384px] space-y-4"
             >
-              <div class="space-y-1">
-                <dt class="text-gray-plain font-bold">
-                  {{ $t('Producteur') }}
-                </dt>
-                <dd class="p-0">
-                  <OrganizationOwner
-                    v-if="dataservice.organization"
-                    :organization="dataservice.organization"
-                    as="h2"
-                  />
-                  <AvatarWithName
-                    v-if="dataservice.owner"
-                    :size="32"
-                    :user="dataservice.owner"
-                    class="space-x-2"
-                  />
-                </dd>
-              </div>
+              <dl class="space-y-2.5 m-0">
+                <div class="space-y-1">
+                  <dt class="text-gray-plain font-bold">
+                    {{ $t('Producteur') }}
+                  </dt>
+                  <dd class="p-0">
+                    <OrganizationOwner
+                      v-if="dataservice.organization"
+                      :organization="dataservice.organization"
+                      as="h2"
+                    />
+                    <AvatarWithName
+                      v-if="dataservice.owner"
+                      :size="32"
+                      :user="dataservice.owner"
+                      class="space-x-2"
+                    />
+                  </dd>
+                </div>
 
-              <div
-                v-if="dataservice.contact_points.length"
-                class="space-y-1"
-              >
-                <dt class="text-gray-plain font-bold">
-                  {{ $t('Contact') }}
-                </dt>
-                <dd class="p-0">
-                  <ContactPoint
-                    v-for="contact in dataservice.contact_points"
-                    :key="contact.id"
-                    :contact
-                  />
-                </dd>
-              </div>
+                <div
+                  v-if="dataservice.contact_points.length"
+                  class="space-y-1"
+                >
+                  <dt class="text-gray-plain font-bold">
+                    {{ $t('Contact') }}
+                  </dt>
+                  <dd class="p-0">
+                    <ContactPoint
+                      v-for="contact in dataservice.contact_points"
+                      :key="contact.id"
+                      :contact
+                    />
+                  </dd>
+                </div>
+              </dl>
 
-              <div class="space-y-1">
-                <dt class="text-gray-plain font-bold">
-                  {{ $t('Dernière mise à jour') }}
-                </dt>
-                <dd class="p-0">
-                  {{ formatDate(dataservice.metadata_modified_at) }}
-                </dd>
-              </div>
+              <section class="space-y-2.5">
+                <h3 class="!text-sm uppercase !mb-0 text-gray-title font-bold">
+                  {{ $t(`Conditions d'accès`) }}
+                </h3>
+                <AccessTypePanel :object="dataservice" />
+              </section>
 
-              <div
-                v-if="dataservice.rate_limiting || dataservice.rate_limiting_url"
-                class="space-y-1"
-              >
-                <dt class="text-gray-plain font-bold">
-                  {{ $t(`Limite d'appels`) }}
-                </dt>
-                <dd class="p-0">
-                  <span
-                    v-if="dataservice.rate_limiting"
-                    class="mr-1"
-                  >{{ dataservice.rate_limiting }}</span>
-                  <a
-                    v-if="dataservice.rate_limiting_url"
-                    :href="dataservice.rate_limiting_url"
-                    :title="$t(`En savoir plus sur les limites d'appels`)"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    :class="dataservice.rate_limiting ? 'inline-flex items-center gap-1' : 'block truncate'"
+              <section class="space-y-2.5">
+                <h3 class="!text-sm uppercase !mb-0 text-gray-title font-bold">
+                  {{ $t('Caractéristiques techniques') }}
+                </h3>
+                <dl class="space-y-2.5 m-0">
+                  <div
+                    v-if="dataservice.rate_limiting || dataservice.rate_limiting_url"
+                    class="space-y-1"
                   >
-                    {{ dataservice.rate_limiting ? $t("En savoir plus") : dataservice.rate_limiting_url }}
-                  </a>
-                </dd>
-              </div>
+                    <dt class="text-gray-plain font-bold">
+                      {{ $t(`Limite d'appels`) }}
+                    </dt>
+                    <dd class="p-0">
+                      <span
+                        v-if="dataservice.rate_limiting"
+                        class="mr-1"
+                      >{{ dataservice.rate_limiting }}</span>
+                      <a
+                        v-if="dataservice.rate_limiting_url"
+                        :href="dataservice.rate_limiting_url"
+                        :title="$t(`En savoir plus sur les limites d'appels`)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        :class="dataservice.rate_limiting ? 'inline-flex items-center gap-1' : 'block truncate'"
+                      >
+                        {{ dataservice.rate_limiting ? $t("En savoir plus") : dataservice.rate_limiting_url }}
+                      </a>
+                    </dd>
+                  </div>
 
-              <div
-                class="space-y-1"
-              >
-                <dt class="text-gray-plain font-bold">
-                  {{ $t('Taux de disponibilité') }}
-                </dt>
-                <dd class="p-0">
-                  <span v-if="dataservice.availability">
-                    {{ dataservice.availability }}%
-                  </span>
-                  <span v-else>
-                    {{ $t('Non communiqué') }}
-                  </span>
-                </dd>
-              </div>
+                  <div class="space-y-1">
+                    <dt class="text-gray-plain font-bold">
+                      {{ $t('Taux de disponibilité') }}
+                    </dt>
+                    <dd class="p-0">
+                      <span v-if="dataservice.availability">
+                        {{ dataservice.availability }}%
+                      </span>
+                      <span v-else>
+                        {{ $t('Non communiqué') }}
+                      </span>
+                    </dd>
+                  </div>
 
-              <AccessTypePanel :object="dataservice" />
+                  <div class="space-y-1">
+                    <dt class="text-gray-plain font-bold">
+                      {{ $t('Dernière mise à jour') }}
+                    </dt>
+                    <dd class="p-0">
+                      {{ formatDate(dataservice.metadata_modified_at) }}
+                    </dd>
+                  </div>
 
-              <div>
-                <StatBox
-                  :title="$t('Vues')"
-                  :data="metricsViews"
-                  size="sm"
-                  type="line"
-                  :summary="metricsViewsTotal"
-                  class="mb-8 md:mb-0"
-                  :since="metricsSince"
-                />
-              </div>
-            </dl>
+                  <div class="space-y-1">
+                    <dt class="text-gray-plain font-bold">
+                      {{ $t('Date de création') }}
+                    </dt>
+                    <dd class="p-0">
+                      {{ formatDate(dataservice.created_at) }}
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+            </aside>
           </div>
         </div>
 
@@ -285,7 +294,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, StatBox, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
@@ -351,38 +360,6 @@ function showSwagger() {
     $matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : ouvrir swagger')
   }
 }
-
-const metricsSince = computed(() => {
-  if (!dataservice.value) return config.public.metricsSince
-  // max of the start of metrics computing and the creation of the dataservice on the platform
-  return [dataservice.value.created_at, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
-})
-
-const metricsViews = ref<null | Record<string, number>>(null)
-const metricsViewsTotal = ref<null | number>(null)
-
-watchEffect(async () => {
-  const id = dataservice.value?.id
-  if (!id) return
-  const response = await fetch(`${config.public.metricsApi}/api/dataservices/data/?dataservice_id__exact=${id}&metric_month__sort=desc&page_size=12`)
-  const page = await response.json()
-
-  const views: Record<string, number> = {}
-
-  for (const { metric_month, monthly_visit } of page.data) {
-    views[metric_month] = monthly_visit
-  }
-  // Fetching totals
-  const totalResponse = await fetch(`${config.public.metricsApi}/api/dataservices_total/data/?dataservice_id__exact=${id}`)
-  const totalPage = await totalResponse.json()
-
-  let totalViews = 0
-  if (page.data[0]) {
-    totalViews = totalPage.data[0].visit
-  }
-  metricsViews.value = views
-  metricsViewsTotal.value = totalViews
-})
 
 onMounted(async () => {
   await redirectLegacyHashes([
