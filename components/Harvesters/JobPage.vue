@@ -9,27 +9,27 @@
     <div class="text-sm text-mentionGrey space-y-1.5 mb-5">
       <div class="space-x-1">
         <RiCalendarEventLine class="inline size-3" />
-        <span>{{ $t('Débuté le :') }}</span>
+        <span>{{ $t('Débuté le :') }}</span>
         <span class="font-mono">{{ formatDate(job.started || job.created, { dateStyle: 'long', timeStyle: 'short' }) }}</span>
       </div>
       <div class="space-x-1">
         <RiCalendarEventLine class="inline size-3" />
-        <span>{{ $t('Terminé le :') }}</span>
+        <span>{{ $t('Terminé le :') }}</span>
         <span class="font-mono">{{ job.ended ? formatDate(job.ended, { dateStyle: 'long', timeStyle: 'short' }) : '—' }}</span>
       </div>
       <div class="space-x-1">
         <RiCheckboxCircleLine class="inline size-3" />
-        <span>{{ $t('Statut :') }}</span>
+        <span>{{ $t('Statut :') }}</span>
         <JobBadge :job />
       </div>
       <div class="space-x-1">
         <RiInformationLine class="inline size-3" />
-        <span>{{ $t('Éléments :') }}</span>
+        <span>{{ $t('Éléments :') }}</span>
         <span class="space-x-2">
           <Tooltip class="inline">
             <span class="space-x-0.5 text-sm">
               <RiCheckLine class="inline size-3.5" />
-              <span>{{ job.items.filter((i) => i.status === 'done').length }}</span>
+              <span>{{ counts.done }}</span>
             </span>
             <template #tooltip>
               {{ $t('Éléments finis') }}
@@ -38,7 +38,7 @@
           <Tooltip class="inline">
             <span class="space-x-0.5 text-sm">
               <RiEyeOffLine class="inline size-3.5" />
-              <span>{{ job.items.filter((i) => i.status === 'skipped').length }}</span>
+              <span>{{ counts.skipped }}</span>
             </span>
             <template #tooltip>
               {{ $t('Éléments ignorés') }}
@@ -47,7 +47,7 @@
           <Tooltip class="inline">
             <span class="space-x-0.5 text-sm">
               <RiArchiveLine class="inline size-3.5" />
-              <span>{{ job.items.filter((i) => i.status === 'archived').length }}</span>
+              <span>{{ counts.archived }}</span>
             </span>
             <template #tooltip>
               {{ $t('Éléments archivés') }}
@@ -56,13 +56,13 @@
           <Tooltip class="inline">
             <span class="space-x-0.5 text-sm">
               <RiCloseLine class="inline size-3.5" />
-              <span>{{ job.items.filter((i) => i.status === 'failed').length }}</span>
+              <span>{{ counts.failed }}</span>
             </span>
             <template #tooltip>
               {{ $t('Éléments en échec') }}
             </template>
           </Tooltip>
-          <span>{{ $t('({count} au total)', { count: job.items.length }) }}</span>
+          <span>{{ $t('({count} au total)', { count: counts.total }) }}</span>
         </span>
       </div>
     </div>
@@ -104,10 +104,10 @@
       <div class="flex flex-wrap gap-x-4 gap-y-2 items-center">
         <div class="w-full flex-none md:flex-1">
           <h2 class="inline text-sm font-bold uppercase mb-0">
-            {{ $t('{n} éléments | {n} élément | {n} éléments', job.items.length) }}
+            {{ $t('{n} éléments | {n} élément | {n} éléments', counts.total) }}
           </h2>
           <span
-            v-if="preview && job.items.length >= config.public.harvesterPreviewMaxItems"
+            v-if="preview && counts.total >= config.public.harvesterPreviewMaxItems"
             class="ml-3 text-gray-medium"
           >{{ $t('Seuls les {n} premiers éléments sont affichés dans la prévisualisation.', config.public.harvesterPreviewMaxItems) }}</span>
         </div>
@@ -119,7 +119,7 @@
             v-model="selectedItemStatus"
             :placeholder="$t('Filtrer par statut')"
             :label="$t('Filtrer par statut')"
-            :options="itemStatus"
+            :options="itemStatusOptions"
             :display-value="(option: { label: string }) => option.label"
             :multiple="false"
             class="mb-0"
@@ -128,7 +128,7 @@
         </div>
       </div>
       <AdminTable
-        v-if="job.items.length"
+        v-if="counts.total"
         class="fr-mb-2w"
       >
         <thead>
@@ -158,7 +158,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="item in paginatedItems"
+            v-for="item in displayedItems"
             :key="item.remote_id"
           >
             <td>
@@ -223,7 +223,7 @@
       <Pagination
         :page="page"
         :page-size="pageSize"
-        :total-results="currentItems.length"
+        :total-results="displayedTotal"
         @change="(changedPage: number) => page = changedPage"
       />
     </div>
@@ -278,42 +278,27 @@
 <script setup lang="ts">
 import { Pagination, SearchableSelect, Tooltip, useFormatDate } from '@datagouv/components-next'
 import { RiAlertLine, RiArchiveLine, RiCalendarEventLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiEyeOffLine, RiInformationLine } from '@remixicon/vue'
+import type { ComputedRef } from 'vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import JobBadge from '~/components/Harvesters/JobBadge.vue'
-import type { HarvesterJob, HarvestItem } from '~/types/harvesters'
-import type { AdminBadgeType } from '~/types/types'
+import type { HarvesterJob, HarvesterJobPreview, HarvestItem, HarvestItemStatus } from '~/types/harvesters'
+import type { AdminBadgeType, PaginatedArray } from '~/types/types'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const props = withDefaults(defineProps<{
-  job: HarvesterJob
+  job: HarvesterJob | HarvesterJobPreview
+  items?: Array<HarvestItem>
   preview?: boolean
 }>(), {
   preview: false,
+  items: () => [],
 })
 
-const page = ref(1)
-const pageSize = ref(15)
-const currentItems = ref<Array<HarvestItem>>(props.job.items)
-
-const selectedItemStatus = ref<{ id: string, label: string, type: AdminBadgeType } | null>(null)
-
-watch(selectedItemStatus, () => {
-  page.value = 1
-  currentItems.value = props.job.items
-  const status = selectedItemStatus.value
-  if (status)
-    currentItems.value = currentItems.value.filter(item => item.status == status.id)
-})
-
-const paginatedItems = computed(() => {
-  return currentItems.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value)
-})
-
-const itemStatusMap: Record<HarvestItem['status'], { label: string, type: AdminBadgeType }> = {
+const itemStatusMap: Record<HarvestItemStatus, { label: string, type: AdminBadgeType }> = {
   pending: { label: t('En attente'), type: 'secondary' },
   started: { label: t('Commencé'), type: 'primary' },
   done: { label: t('Terminé'), type: 'success' },
@@ -322,7 +307,58 @@ const itemStatusMap: Record<HarvestItem['status'], { label: string, type: AdminB
   archived: { label: t('Archivé'), type: 'secondary' },
 }
 
-const itemStatus = Object.entries(itemStatusMap).map(([id, status]) => ({ id, ...status }))
+const itemStatusOptions = Object.entries(itemStatusMap).map(([id, status]) => ({ id: id as HarvestItemStatus, ...status }))
+
+const page = ref(1)
+const pageSize = ref(15)
+const selectedItemStatus = ref<{ id: HarvestItemStatus, label: string, type: AdminBadgeType } | null>(null)
+
+watch(selectedItemStatus, () => {
+  page.value = 1
+})
+
+type Counts = Record<HarvestItemStatus, number> & { total: number }
+
+let displayedItems: ComputedRef<Array<HarvestItem>>
+let displayedTotal: ComputedRef<number>
+let counts: ComputedRef<Counts>
+
+// Preview vs real divergence: previews carry the full items array client-side
+// (filter & paginate locally), while real jobs go through the paginated
+// subresource endpoint with server-side filter & pagination.
+if (props.preview) {
+  const filteredPreviewItems = computed(() => {
+    if (!selectedItemStatus.value) return props.items
+    return props.items.filter(item => item.status === selectedItemStatus.value!.id)
+  })
+  displayedItems = computed(() => filteredPreviewItems.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value))
+  displayedTotal = computed(() => filteredPreviewItems.value.length)
+  counts = computed(() => ({
+    pending: props.items.filter(i => i.status === 'pending').length,
+    started: props.items.filter(i => i.status === 'started').length,
+    done: props.items.filter(i => i.status === 'done').length,
+    failed: props.items.filter(i => i.status === 'failed').length,
+    skipped: props.items.filter(i => i.status === 'skipped').length,
+    archived: props.items.filter(i => i.status === 'archived').length,
+    total: props.items.length,
+  }))
+}
+else {
+  const realJob = props.job as HarvesterJob
+  const itemsUrl = computed(() => `/api/1/harvest/job/${realJob.id}/items/`)
+  const itemsParams = computed(() => ({
+    page: page.value,
+    page_size: pageSize.value,
+    ...(selectedItemStatus.value ? { status: selectedItemStatus.value.id } : {}),
+  }))
+  const { data: itemsPage } = await useAPI<PaginatedArray<HarvestItem>>(itemsUrl, { lazy: true, query: itemsParams })
+  displayedItems = computed(() => itemsPage.value?.data ?? [])
+  displayedTotal = computed(() => itemsPage.value?.total ?? 0)
+  counts = computed(() => ({
+    ...realJob.items.by_status,
+    total: realJob.items.total,
+  }))
+}
 
 function getStatus(item: HarvestItem): { label: string, type: AdminBadgeType } {
   return itemStatusMap[item.status]

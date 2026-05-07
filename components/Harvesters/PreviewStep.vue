@@ -8,6 +8,7 @@
   <div v-else-if="job">
     <JobPage
       :job
+      :items="job.items"
       preview
     />
     <div class="flex items-center justify-between">
@@ -31,7 +32,7 @@
 import { BrandedButton } from '@datagouv/components-next'
 import JobPage from './JobPage.vue'
 import PreviewLoader from './PreviewLoader.vue'
-import type { HarvesterForm, HarvesterJob } from '~/types/harvesters'
+import type { HarvesterForm, HarvesterJobPreview } from '~/types/harvesters'
 
 const props = defineProps<{
   harvesterForm: HarvesterForm
@@ -45,13 +46,13 @@ defineEmits<{
 const { $api } = useNuxtApp()
 
 const loading = ref(false)
-const job = ref<HarvesterJob | null>(null)
+const job = ref<HarvesterJobPreview | null>(null)
 
 onMounted(async () => {
   loading.value = true
 
   try {
-    job.value = await $api<HarvesterJob>('/api/1/harvest/source/preview', {
+    job.value = await $api<HarvesterJobPreview>('/api/1/harvest/source/preview', {
       method: 'POST',
       body: harvesterToApi(props.harvesterForm),
     })
