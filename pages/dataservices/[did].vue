@@ -194,31 +194,25 @@
                     </dd>
                   </div>
                 </dl>
+                <BrandedButton
+                  v-if="dataservice.business_documentation_url"
+                  color="secondary"
+                  size="sm"
+                  class="w-full justify-between"
+                  :href="dataservice.business_documentation_url"
+                  :icon="RiExternalLinkLine"
+                  icon-right
+                  new-tab
+                  @click="$matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : documentation métier')"
+                >
+                  {{ $t('Documentation métier') }}
+                </BrandedButton>
               </section>
             </aside>
           </div>
         </div>
 
         <div class="container space-y-4">
-          <SimpleBanner
-            v-if="dataservice.business_documentation_url"
-            type="primary-frame"
-            class="flex items-center justify-between"
-          >
-            <h2 class="text-datagouv-dark font-bold text-xl mb-0">
-              {{ $t(`Accéder à l'API`) }}
-            </h2>
-            <BrandedButton
-              color="primary"
-              :href="dataservice.business_documentation_url"
-              :icon="RiExternalLinkLine"
-              icon-right
-              external
-              @click="$matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : documentation métier')"
-            >
-              {{ $t('Documentation métier') }}
-            </BrandedButton>
-          </SimpleBanner>
           <SimpleBanner
             v-if="dataservice.machine_documentation_url"
             type="primary-frame"
