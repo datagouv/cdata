@@ -15,14 +15,14 @@
         v-if="object.authorization_request_url"
         class="mt-2.5"
       >
-        <a
+        <BrandedButton
+          color="primary"
+          size="sm"
           :href="object.authorization_request_url"
-          rel="ugc nofollow noopener"
-          target="_blank"
-          class="fr-text--sm fr-link"
+          new-tab
         >
-          {{ $t("Faire une demande d'habilitation") }}
-        </a>
+          {{ $t("Demander un accès") }}
+        </BrandedButton>
       </div>
     </dd>
     <template v-if="object.access_type === 'restricted'">
@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import type { AccessAudience, AccessAudienceType, WithAccessType } from '@datagouv/components-next'
+import { BrandedButton, type AccessAudience, type AccessAudienceType, type WithAccessType } from '@datagouv/components-next'
 import AccessTypeBadge from './AccessTypeBadge.vue'
 
 const props = defineProps<{
