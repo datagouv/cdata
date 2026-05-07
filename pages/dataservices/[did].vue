@@ -86,14 +86,14 @@
             </div>
             <aside
               ref="sidebar"
-              class="pl-0 w-full shrink-0 md:w-[384px] space-y-4"
+              class="pl-0 w-full shrink-0 md:w-[384px] space-y-5"
             >
-              <dl class="space-y-2.5 m-0">
+              <dl class="space-y-2.5 pl-0">
                 <div class="space-y-1">
                   <dt class="text-gray-plain font-bold">
                     {{ $t('Producteur') }}
                   </dt>
-                  <dd class="p-0">
+                  <dd class="p-0 m-0">
                     <OrganizationOwner
                       v-if="dataservice.organization"
                       :organization="dataservice.organization"
@@ -115,7 +115,7 @@
                   <dt class="text-gray-plain font-bold">
                     {{ $t('Contact') }}
                   </dt>
-                  <dd class="p-0">
+                  <dd class="p-0 m-0">
                     <ContactPoint
                       v-for="contact in dataservice.contact_points"
                       :key="contact.id"
@@ -125,21 +125,23 @@
                 </div>
               </dl>
 
-              <section class="space-y-2.5">
-                <h3 class="text-base !mb-0 text-gray-title font-bold">
+              <section class="space-y-2">
+                <h3 class="text-base !mt-0 !mb-0 text-gray-title font-bold">
                   {{ $t(`Conditions d'accès`) }}
                 </h3>
-                <AccessTypePanel
-                  :object="dataservice"
-                  hide-access-label
-                />
+                <dl class="pl-0">
+                  <AccessTypePanel
+                    :object="dataservice"
+                    hide-access-label
+                  />
+                </dl>
               </section>
 
-              <section class="space-y-2.5">
-                <h3 class="text-base !mb-0 text-gray-title font-bold">
+              <section class="space-y-2">
+                <h3 class="text-base !mt-0 !mb-0 text-gray-title font-bold">
                   {{ $t('Caractéristiques techniques') }}
                 </h3>
-                <dl class="space-y-2.5 m-0">
+                <dl class="space-y-2.5 pl-0">
                   <div
                     v-if="dataservice.rate_limiting || dataservice.rate_limiting_url"
                     class="space-y-1"
@@ -147,7 +149,7 @@
                     <dt class="text-gray-plain font-bold">
                       {{ $t(`Limite d'appels`) }}
                     </dt>
-                    <dd class="p-0">
+                    <dd class="p-0 m-0">
                       <span
                         v-if="dataservice.rate_limiting"
                         class="mr-1"
@@ -169,7 +171,7 @@
                     <dt class="text-gray-plain font-bold">
                       {{ $t('Taux de disponibilité') }}
                     </dt>
-                    <dd class="p-0">
+                    <dd class="p-0 m-0">
                       <span v-if="dataservice.availability">
                         {{ dataservice.availability }}%
                       </span>
@@ -183,7 +185,7 @@
                     <dt class="text-gray-plain font-bold">
                       {{ $t('Dernière mise à jour') }}
                     </dt>
-                    <dd class="p-0">
+                    <dd class="p-0 m-0">
                       {{ formatDate(dataservice.metadata_modified_at) }}
                     </dd>
                   </div>
@@ -192,33 +194,33 @@
                     <dt class="text-gray-plain font-bold">
                       {{ $t('Date de création') }}
                     </dt>
-                    <dd class="p-0">
+                    <dd class="p-0 m-0">
                       {{ formatDate(dataservice.created_at) }}
                     </dd>
                   </div>
                 </dl>
-                <BrandedButton
-                  v-if="dataservice.business_documentation_url"
-                  color="secondary"
-                  size="sm"
-                  class="w-full justify-between"
-                  :href="dataservice.business_documentation_url"
-                  new-tab
-                  @click="$matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : documentation métier')"
-                >
-                  {{ $t('Documentation métier') }}
-                </BrandedButton>
-                <BrandedButton
-                  v-if="dataservice.machine_documentation_url"
-                  color="secondary"
-                  size="sm"
-                  class="w-full justify-between"
-                  :icon="RiArrowDownSLine"
-                  icon-right
-                  @click="openSwaggerFromSidebar"
-                >
-                  {{ $t('Swagger') }}
-                </BrandedButton>
+                <div class="flex flex-wrap gap-2 pt-1">
+                  <BrandedButton
+                    v-if="dataservice.business_documentation_url"
+                    color="secondary"
+                    size="sm"
+                    :href="dataservice.business_documentation_url"
+                    new-tab
+                    @click="$matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : documentation métier')"
+                  >
+                    {{ $t('Documentation métier') }}
+                  </BrandedButton>
+                  <BrandedButton
+                    v-if="dataservice.machine_documentation_url"
+                    color="secondary"
+                    size="sm"
+                    :icon="RiArrowDownSLine"
+                    icon-right
+                    @click="openSwaggerFromSidebar"
+                  >
+                    {{ $t('Swagger') }}
+                  </BrandedButton>
+                </div>
               </section>
             </aside>
           </div>

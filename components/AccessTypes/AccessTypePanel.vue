@@ -48,7 +48,6 @@
       <BrandedButton
         color="primary"
         size="sm"
-        class="w-full justify-between"
         :href="object.authorization_request_url"
         new-tab
       >
