@@ -207,6 +207,17 @@
                 >
                   {{ $t('Documentation métier') }}
                 </BrandedButton>
+                <BrandedButton
+                  v-if="dataservice.machine_documentation_url"
+                  color="secondary"
+                  size="sm"
+                  class="w-full justify-between"
+                  :icon="RiArrowDownSLine"
+                  icon-right
+                  @click="openSwaggerFromSidebar"
+                >
+                  {{ $t('Swagger') }}
+                </BrandedButton>
               </section>
             </aside>
           </div>
@@ -240,32 +251,34 @@
               :title="dataservice.title"
             />
           </SimpleBanner>
-          <SimpleBanner
+          <div
             v-if="dataservice.machine_documentation_url"
-            type="primary-frame"
+            ref="swaggerBanner"
           >
-            <button
-              type="button"
-              class="min-h-[42px] w-full flex items-center justify-between"
-              @click="showSwagger"
-            >
-              <div class="text-datagouv-dark font-bold text-xl">
-                {{ $t('Swagger') }}
-              </div>
-              <RiArrowUpSLine
+            <SimpleBanner type="primary-frame">
+              <button
+                type="button"
+                class="min-h-[42px] w-full flex items-center justify-between"
+                @click="showSwagger"
+              >
+                <div class="text-datagouv-dark font-bold text-xl">
+                  {{ $t('Swagger') }}
+                </div>
+                <RiArrowUpSLine
+                  v-if="openSwagger"
+                  class="size-6 text-gray-title"
+                />
+                <RiArrowDownSLine
+                  v-else
+                  class="size-6 text-gray-title"
+                />
+              </button>
+              <OpenApiViewer
                 v-if="openSwagger"
-                class="size-6 text-gray-title"
+                :url="dataservice.machine_documentation_url"
               />
-              <RiArrowDownSLine
-                v-else
-                class="size-6 text-gray-title"
-              />
-            </button>
-            <OpenApiViewer
-              v-if="openSwagger"
-              :url="dataservice.machine_documentation_url"
-            />
-          </SimpleBanner>
+            </SimpleBanner>
+          </div>
         </div>
 
         <FullPageTabs
@@ -310,6 +323,7 @@ const { $matomo } = useNuxtApp()
 
 const sidebar = useTemplateRef('sidebar')
 const header = useTemplateRef('header')
+const swaggerBanner = useTemplateRef<HTMLDivElement>('swaggerBanner')
 
 const { height: sidebarHeight } = useElementSize(sidebar)
 const { height: headerHeight } = useElementSize(header)
@@ -353,6 +367,13 @@ function showSwagger() {
   if (openSwagger.value) {
     $matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : ouvrir swagger')
   }
+}
+
+async function openSwaggerFromSidebar() {
+  openSwagger.value = true
+  $matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : ouvrir swagger depuis colonne info')
+  await nextTick()
+  swaggerBanner.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 onMounted(async () => {
