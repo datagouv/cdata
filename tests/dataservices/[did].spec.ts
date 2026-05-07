@@ -38,7 +38,7 @@ test('sidebar Swagger button reveals the viewer', async ({ page }) => {
 
   await sidebarSwagger.click()
 
-  await expect(page.locator('.swagger-ui').first()).toBeVisible()
+  await expect(page.getByTestId('swagger-viewer')).toBeVisible()
 })
 
 test('discussions tab is accessible', async ({ page }) => {

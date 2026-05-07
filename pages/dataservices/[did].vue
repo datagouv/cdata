@@ -279,6 +279,7 @@
               <OpenApiViewer
                 v-if="openSwagger"
                 :url="dataservice.machine_documentation_url"
+                data-testid="swagger-viewer"
               />
             </SimpleBanner>
           </div>
