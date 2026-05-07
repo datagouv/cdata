@@ -9,7 +9,6 @@
     <JobPage
       :job
       :items="job.items"
-      preview
     />
     <div class="flex items-center justify-between">
       <BrandedButton

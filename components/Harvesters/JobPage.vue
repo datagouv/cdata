@@ -22,14 +22,17 @@
         <span>{{ $t('Statut :') }}</span>
         <JobBadge :job />
       </div>
-      <div class="space-x-1">
+      <div
+        v-if="byStatus"
+        class="space-x-1"
+      >
         <RiInformationLine class="inline size-3" />
         <span>{{ $t('Éléments :') }}</span>
         <span class="space-x-2">
           <Tooltip class="inline">
             <span class="space-x-0.5 text-sm">
               <RiCheckLine class="inline size-3.5" />
-              <span>{{ counts.done }}</span>
+              <span>{{ byStatus.done }}</span>
             </span>
             <template #tooltip>
               {{ $t('Éléments finis') }}
@@ -38,7 +41,7 @@
           <Tooltip class="inline">
             <span class="space-x-0.5 text-sm">
               <RiEyeOffLine class="inline size-3.5" />
-              <span>{{ counts.skipped }}</span>
+              <span>{{ byStatus.skipped }}</span>
             </span>
             <template #tooltip>
               {{ $t('Éléments ignorés') }}
@@ -47,7 +50,7 @@
           <Tooltip class="inline">
             <span class="space-x-0.5 text-sm">
               <RiArchiveLine class="inline size-3.5" />
-              <span>{{ counts.archived }}</span>
+              <span>{{ byStatus.archived }}</span>
             </span>
             <template #tooltip>
               {{ $t('Éléments archivés') }}
@@ -56,13 +59,13 @@
           <Tooltip class="inline">
             <span class="space-x-0.5 text-sm">
               <RiCloseLine class="inline size-3.5" />
-              <span>{{ counts.failed }}</span>
+              <span>{{ byStatus.failed }}</span>
             </span>
             <template #tooltip>
               {{ $t('Éléments en échec') }}
             </template>
           </Tooltip>
-          <span>{{ $t('({count} au total)', { count: counts.total }) }}</span>
+          <span>{{ $t('({count} au total)', { count: total }) }}</span>
         </span>
       </div>
     </div>
@@ -104,10 +107,10 @@
       <div class="flex flex-wrap gap-x-4 gap-y-2 items-center">
         <div class="w-full flex-none md:flex-1">
           <h2 class="inline text-sm font-bold uppercase mb-0">
-            {{ $t('{n} éléments | {n} élément | {n} éléments', counts.total) }}
+            {{ $t('{n} éléments | {n} élément | {n} éléments', total) }}
           </h2>
           <span
-            v-if="preview && counts.total >= config.public.harvesterPreviewMaxItems"
+            v-if="preview && total >= config.public.harvesterPreviewMaxItems"
             class="ml-3 text-gray-medium"
           >{{ $t('Seuls les {n} premiers éléments sont affichés dans la prévisualisation.', config.public.harvesterPreviewMaxItems) }}</span>
         </div>
@@ -128,7 +131,7 @@
         </div>
       </div>
       <AdminTable
-        v-if="counts.total"
+        v-if="total"
         class="fr-mb-2w"
       >
         <thead>
@@ -221,6 +224,7 @@
         </tbody>
       </AdminTable>
       <Pagination
+        v-if="!preview"
         :page="page"
         :page-size="pageSize"
         :total-results="displayedTotal"
@@ -292,11 +296,17 @@ const { formatDate } = useFormatDate()
 const props = withDefaults(defineProps<{
   job: HarvesterJob | HarvesterJobPreview
   items?: Array<HarvestItem>
-  preview?: boolean
 }>(), {
-  preview: false,
   items: () => [],
 })
+
+// Preview vs real mode is fully determined by the shape of `job.items`:
+// preview carries an inline array, real jobs carry a paginated link object.
+function isPreviewJob(job: HarvesterJob | HarvesterJobPreview): job is HarvesterJobPreview {
+  return Array.isArray(job.items)
+}
+
+const preview = computed(() => isPreviewJob(props.job))
 
 const itemStatusMap: Record<HarvestItemStatus, { label: string, type: AdminBadgeType }> = {
   pending: { label: t('En attente'), type: 'secondary' },
@@ -317,34 +327,22 @@ watch(selectedItemStatus, () => {
   page.value = 1
 })
 
-type Counts = Record<HarvestItemStatus, number> & { total: number }
-
 let displayedItems: ComputedRef<Array<HarvestItem>>
 let displayedTotal: ComputedRef<number>
-let counts: ComputedRef<Counts>
+let total: ComputedRef<number>
+let byStatus: ComputedRef<Record<HarvestItemStatus, number>> | null = null
 
-// Preview vs real divergence: previews carry the full items array client-side
-// (filter & paginate locally), while real jobs go through the paginated
-// subresource endpoint with server-side filter & pagination.
-if (props.preview) {
-  const filteredPreviewItems = computed(() => {
-    if (!selectedItemStatus.value) return props.items
-    return props.items.filter(item => item.status === selectedItemStatus.value!.id)
-  })
-  displayedItems = computed(() => filteredPreviewItems.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value))
-  displayedTotal = computed(() => filteredPreviewItems.value.length)
-  counts = computed(() => ({
-    pending: props.items.filter(i => i.status === 'pending').length,
-    started: props.items.filter(i => i.status === 'started').length,
-    done: props.items.filter(i => i.status === 'done').length,
-    failed: props.items.filter(i => i.status === 'failed').length,
-    skipped: props.items.filter(i => i.status === 'skipped').length,
-    archived: props.items.filter(i => i.status === 'archived').length,
-    total: props.items.length,
-  }))
+// Per-status counts would be misleading on the tiny preview sample (capped
+// server-side), so the items array travels inline and `byStatus` stays null.
+// Real jobs go through the paginated subresource with server-side filter &
+// pagination, and expose by_status counters.
+if (isPreviewJob(props.job)) {
+  displayedItems = computed(() => props.items)
+  displayedTotal = computed(() => props.items.length)
+  total = computed(() => props.items.length)
 }
 else {
-  const realJob = props.job as HarvesterJob
+  const realJob = props.job
   const itemsUrl = computed(() => `/api/1/harvest/job/${realJob.id}/items/`)
   const itemsParams = computed(() => ({
     page: page.value,
@@ -354,10 +352,8 @@ else {
   const { data: itemsPage } = await useAPI<PaginatedArray<HarvestItem>>(itemsUrl, { lazy: true, query: itemsParams })
   displayedItems = computed(() => itemsPage.value?.data ?? [])
   displayedTotal = computed(() => itemsPage.value?.total ?? 0)
-  counts = computed(() => ({
-    ...realJob.items.by_status,
-    total: realJob.items.total,
-  }))
+  total = computed(() => realJob.items.total)
+  byStatus = computed(() => realJob.items.by_status)
 }
 
 function getStatus(item: HarvestItem): { label: string, type: AdminBadgeType } {
