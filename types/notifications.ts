@@ -69,4 +69,20 @@ export type ValidateHarvesterNotification = CommonNotification & {
   }
 }
 
-export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification | DiscussionNotification | MembershipAcceptedNotification | MembershipRefusedNotification | ValidateHarvesterNotification
+export type ReuseCreatedNotification = CommonNotification & {
+  details: {
+    class: 'ReuseCreatedNotificationDetails'
+    reuse: ReuseReference
+    dataset: DatasetReference
+  }
+}
+
+export type DataserviceCreatedNotification = CommonNotification & {
+  details: {
+    class: 'DataserviceCreatedNotificationDetails'
+    dataservice: DataserviceReference
+    dataset: DatasetReference
+  }
+}
+
+export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification | DiscussionNotification | MembershipAcceptedNotification | MembershipRefusedNotification | ValidateHarvesterNotification | NewReuseNotification | NewDataserviceNotification
