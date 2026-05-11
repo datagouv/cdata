@@ -93,7 +93,7 @@ export default defineNuxtConfig({
       },
       apiDocExternalLink: 'https://guides.data.gouv.fr/api-de-data.gouv.fr/reference',
       guidesUrl: 'https://guides.data.gouv.fr/',
-      guidesCreateAccount: 'https://guides.data.gouv.fr/compte-utilisateur/creer-un-compte-utilisateurn',
+      guidesCreateAccount: 'https://guides.data.gouv.fr/compte-utilisateur/creer-un-compte-utilisateur',
       guidesHarvestingUrl: 'https://guides.data.gouv.fr/moissonnage',
       guidesLabelsUrl: undefined, // TODO: add guide when created
       guidesCommunityResources: 'https://guides.data.gouv.fr/jeux-de-donnees/ressource-communautaire',
