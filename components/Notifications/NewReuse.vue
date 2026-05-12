@@ -33,12 +33,6 @@
         class="size-2 rounded-full bg-new-primary mt-0.5"
       />
     </div>
-    <button
-      v-if="!notification.handled_at"
-      class="after:absolute after:inset-0 bg-none"
-      :title="$t('Marquer la notification comme lue')"
-      @click="markAsRead(notification)"
-    />
   </div>
 </template>
 
