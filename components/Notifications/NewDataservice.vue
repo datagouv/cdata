@@ -3,7 +3,6 @@
     :icon="RiTerminalLine"
     :title="$t('Nouvelle API')"
     :notification="notification"
-    :requires-action="false"
     :title-link="notification.details.dataservice.self_web_url"
     :title-link-title="$t('Voir l\'API')"
   >

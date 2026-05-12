@@ -52,14 +52,7 @@ import { AnimatedLoader, useFormatDate } from '@datagouv/components-next'
 import CdataLink from '../CdataLink.vue'
 import type { UserNotification } from '~/types/notifications'
 
-const {
-  icon,
-  title,
-  notification,
-  titleLink,
-  titleLinkTitle,
-  requiresAction,
-} = defineProps<{
+defineProps<{
   icon: object
   title: string
   notification: UserNotification

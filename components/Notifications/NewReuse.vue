@@ -3,7 +3,6 @@
     :icon="RiLineChartLine"
     :title="$t('Nouvelle Réutilisation')"
     :notification="notification"
-    :requires-action="false"
     :title-link="notification.details.reuse.page"
     :title-link-title="$t('Voir la réutilisation')"
   >

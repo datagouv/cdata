@@ -3,7 +3,6 @@
     :icon="RiCheckboxCircleLine"
     :title="$t(`Votre organisation a été {badge}`, { badge })"
     :notification="notification"
-    :requires-action="false"
   >
     <OrganizationOwner
       :organization="notification.details.organization as OrganizationReference"

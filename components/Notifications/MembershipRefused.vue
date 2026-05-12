@@ -3,7 +3,6 @@
     :icon="RiCloseCircleLine"
     :title="$t('Votre adhésion a été refusée')"
     :notification="notification"
-    :requires-action="false"
   >
     <p class="m-0 text-xs flex items-center gap-1 truncate">
       {{ $t('pour rejoindre') }}

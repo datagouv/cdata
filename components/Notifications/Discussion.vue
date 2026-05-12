@@ -3,7 +3,6 @@
     :icon="icon"
     :title="title"
     :notification="notification"
-    :requires-action="false"
     :title-link="notification.details.discussion.self_web_url"
     :title-link-title="notification.handled_at ? $t('Voir la discussion') : $t('Voir la discussion et la marquer comme lue')"
   >
