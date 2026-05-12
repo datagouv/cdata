@@ -137,7 +137,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: ${{ env.UDATA_WORKING_DIR }}
-          ref: main
+          ref: switch_harvests_to_new_api_fields
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
