@@ -26,7 +26,7 @@ export type Quality = {
 export type DatasetReference = {
   class: 'Dataset'
   id: string
-  acronym: string | null
+  acronym: string
   page: string
   title: string
   uri: string

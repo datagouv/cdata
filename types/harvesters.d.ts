@@ -1,4 +1,4 @@
-import type { DataserviceReference, DatasetReference, Owned, User } from '@datagouv/components-next'
+import type { Dataservice, Dataset, Owned, User } from '@datagouv/components-next'
 
 export type HarvesterValidationStatus = 'accepted' | 'refused' | 'pending'
 
@@ -25,8 +25,8 @@ export type HarvestItemStatus = 'pending' | 'started' | 'done' | 'failed' | 'ski
 export type HarvestItem = {
   remote_id: string
   remote_url: string | null
-  dataset: DatasetReference | null
-  dataservice: DataserviceReference | null
+  dataset: Dataset | null
+  dataservice: Dataservice | null
   status: HarvestItemStatus
   created: string
   started: string | null
