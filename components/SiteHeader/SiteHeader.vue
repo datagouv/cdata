@@ -320,23 +320,35 @@
                             </p>
                           </div>
                         </template>
-                        <button
-                          v-if="nextPage"
-                          type="button"
-                          class="w-full bg-datagouv hover:bg-datagouv-dark text-white p-2 flex items-center justify-center"
-                          :disabled="isLoading"
-                          @click="loadMoreNotifications"
+                        <div
+                          v-if="nextPage || pendingNotifications?.total"
+                          class="px-2 py-2 space-y-2 border-t border-gray-default"
                         >
-                          <AnimatedLoader
-                            v-if="isLoading"
-                            class="size-5"
-                          />
-                          <RiAddLine
-                            v-else
-                            class="size-5"
-                          />
-                          {{ t('Charger plus de notifications') }}
-                        </button>
+                          <BrandedButton
+                            v-if="nextPage"
+                            type="button"
+                            color="primary"
+                            size="xs"
+                            :icon="RiAddLine"
+                            :loading="isLoading"
+                            class="w-full rounded-full"
+                            @click="loadMoreNotifications"
+                          >
+                            {{ t('Charger plus de notifications') }}
+                          </BrandedButton>
+                          <BrandedButton
+                            v-if="pendingNotifications?.total"
+                            type="button"
+                            color="secondary"
+                            size="xs"
+                            :icon="RiCheckLine"
+                            :loading="loading"
+                            class="w-full rounded-full"
+                            @click="() => markWithoutActionAsRead(notificationsCombinedList)"
+                          >
+                            {{ t('Marquer comme lues') }}
+                          </BrandedButton>
+                        </div>
                       </template>
                     </Toggletip>
                   </li>
@@ -508,12 +520,13 @@
 <script setup lang="ts">
 import { NuxtImg as _NuxtImg } from '#components'
 import type { Component } from 'vue'
-import { AnimatedLoader, BrandedButton, Toggletip, useGetUserAvatar, toast } from '@datagouv/components-next'
-import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiTerminalLine, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
+import { BrandedButton, Toggletip, useGetUserAvatar, toast } from '@datagouv/components-next'
+import { RiAccountCircleLine, RiAddLine, RiCheckLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiTerminalLine, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
 import LogoAsText from '../LogoAsText.vue'
 import LogoImage from '../LogoImage.vue'
+import { useMarkAsRead } from '~/composables/useMarkAsRead'
 import { useNotifications } from '~/composables/useNotifications.client'
 import { useLogout, useMaybeMe } from '~/utils/auth'
 
@@ -534,6 +547,7 @@ const router = useRouter()
 const route = useRoute()
 const { isLoading } = useLoadingIndicator()
 const { refreshNotifications, loadMoreNotifications, pendingNotifications, nextPage, notificationsCombinedList } = useNotifications()
+const { markWithoutActionAsRead, loading } = useMarkAsRead()
 
 const menu = [
   { label: t('Données'), link: '/datasets' },
