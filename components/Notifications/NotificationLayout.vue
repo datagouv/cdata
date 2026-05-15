@@ -49,11 +49,12 @@
 
 <script setup lang="ts">
 import { AnimatedLoader, useFormatDate } from '@datagouv/components-next'
+import type { Component } from 'vue'
 import CdataLink from '../CdataLink.vue'
 import type { UserNotification } from '~/types/notifications'
 
 const props = defineProps<{
-  icon: object
+  icon: Component
   title: string
   notification: UserNotification
   titleLink?: string
