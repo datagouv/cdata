@@ -3,17 +3,17 @@
     <div class="flex-none">
       <component
         :is="icon"
-        class="size-4"
+        class="size-4 mt-1"
       />
     </div>
     <div class="flex-1 truncate">
-      <p class="m-0 text-xs font-bold relative">
+      <p class="m-0 text-xs font-bold">
         <CdataLink
           v-if="titleLink"
           class="after:absolute after:inset-0 bg-none truncate"
           :to="titleLink"
           :title="titleLinkTitle"
-          @click="markAsRead(notification)"
+          @click="handleMarkAsRead"
         >
           {{ title }}
         </CdataLink>
@@ -39,10 +39,10 @@
     </div>
     <!-- Auto overlay: only when no titleLink and unread -->
     <button
-      v-if="!titleLink && !notification.handled_at"
+      v-if="!titleLink && !notification.handled_at && !requiresAction"
       class="after:absolute after:inset-0 bg-none"
       :title="$t('Marquer la notification comme lue')"
-      @click="markAsRead(notification)"
+      @click="handleMarkAsRead"
     />
   </div>
 </template>
@@ -52,7 +52,7 @@ import { AnimatedLoader, useFormatDate } from '@datagouv/components-next'
 import CdataLink from '../CdataLink.vue'
 import type { UserNotification } from '~/types/notifications'
 
-defineProps<{
+const props = defineProps<{
   icon: object
   title: string
   notification: UserNotification
@@ -63,4 +63,10 @@ defineProps<{
 
 const { formatDate } = useFormatDate()
 const { loading, markAsRead } = useMarkAsRead()
+
+const handleMarkAsRead = () => {
+  if (!props.requiresAction) {
+    markAsRead(props.notification)
+  }
+}
 </script>
