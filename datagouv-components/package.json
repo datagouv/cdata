@@ -1,6 +1,6 @@
 {
   "name": "@datagouv/components-next",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "private": false,
   "type": "module",
   "packageManager": "pnpm@10.23.0",
@@ -17,6 +17,7 @@
     ]
   },
   "main": "./src/main.ts",
+  "sideEffects": "false",
   "files": [
     "assets",
     "dist",
