@@ -26,7 +26,10 @@
         :with-link="false"
       />
     </p>
-    <p class="m-0 text-xs truncate">
+    <p
+      class="m-0 text-xs truncate"
+      :class="{ 'text-gray-medium': notification.details.status === 'new_comment' }"
+    >
       <template v-if="notification.details.status === 'new_discussion'">
         {{ notification.details.discussion.title }}
       </template>
