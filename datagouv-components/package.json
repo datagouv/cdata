@@ -17,6 +17,7 @@
     ]
   },
   "main": "./src/main.ts",
+  "sideEffects": "false",
   "files": [
     "assets",
     "dist",
