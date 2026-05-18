@@ -109,7 +109,7 @@ jobs:
           - browser: firefox
             projects: "--project=setup --project=setup-normal-user --project=firefox"
     container:
-      image: mcr.microsoft.com/playwright:v1.58.2-noble
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
       options: --user 1001
 
     services:
@@ -233,6 +233,8 @@ jobs:
           NUXT_PUBLIC_API_BASE: http://localhost:7000
           NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "hero_15.png"
           NUXT_SITE_URL: http://localhost:3000
+          NUXT_PUBLIC_TABULAR_API_URL: https://tabular-api.preprod.data.gouv.fr
+          NUXT_PUBLIC_CHARTS_API_BASE: https://demo.data.gouv.fr
         run: |
           # Start cdata server in background using pre-built artifacts
           PORT=3000 node .output/server/index.mjs > cdata.log 2>&1 &

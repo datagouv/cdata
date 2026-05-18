@@ -37,5 +37,5 @@ const themes = [
 ]
 
 // ?theme=environnement in URL → tag=environnement in API
-const value = useSearchFilter('theme', { apiParam: 'tag' })
+const value = useSearchFilter('theme', { apiParam: 'tag', typeKeys: ['all-datasets', 'inspire-datasets'] })
 </script>

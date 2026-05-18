@@ -8,6 +8,7 @@ dist
 
 # Node dependencies
 node_modules
+.pnpm-store
 
 # Logs
 logs
@@ -18,6 +19,7 @@ logs
 .fleet
 .idea
 .claude
+.tool-versions
 
 # Local env files
 .env

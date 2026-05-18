@@ -58,6 +58,8 @@ Start the development server on `http://localhost:3000`:
 pnpm run dev
 ```
 
+You might need to add dev.local to your /etc/hosts file: `sudo sh -c 'echo "127.0.0.1 dev.local" >> /etc/hosts'`
+
 ### Common Commands
 ```bash
 pnpm run dev          # Start development server
@@ -69,7 +71,7 @@ pnpm run lint:fix     # Automatically fix ESLint issues and format code
 
 ## 🛠️ Technology Stack
 
-- **Framework**: [Nuxt 3](https://nuxt.com/) (Vue 3)
+- **Framework**: [Nuxt 4](https://nuxt.com/) (Vue 3)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) + [DSFR](https://www.systeme-de-design.gouv.fr/)
 - **State Management**: Vue 3 Composition API
@@ -224,7 +226,7 @@ The project includes some test data and test IDs for component testing, but form
 
 ## 📚 Additional Resources
 
-- [Nuxt 3 Documentation](https://nuxt.com/docs/getting-started/introduction)
+- [Nuxt 4 Documentation](https://nuxt.com/docs/getting-started/introduction)
 - [Vue 3 Documentation](https://vuejs.org/)
 - [DSFR Documentation](https://www.systeme-de-design.gouv.fr/)
 - [data.gouv.fr API Documentation](https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/api/reference)

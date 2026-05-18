@@ -89,7 +89,7 @@
           { href: `${getReuseAdminUrl(reuse)}/datasets`, label: t('Jeux de données') },
           { href: `${getReuseAdminUrl(reuse)}/dataservices`, label: t('API') },
           { href: `${getReuseAdminUrl(reuse)}/discussions`, label: t('Discussions') },
-          { href: `${getReuseAdminUrl(reuse)}/activities`, label: t('Activités') },
+          { href: `${getReuseAdminUrl(reuse)}/activities`, label: t('Activités'), show: reuse.permissions.edit },
         ]"
       />
 
