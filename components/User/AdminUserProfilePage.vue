@@ -167,6 +167,26 @@
         </BannerAction>
       </div>
       <BannerAction
+        v-if="isMeAdmin() && user.id !== me.id"
+        type="warning"
+        :title="$t('Forcer la rotation du mot de passe')"
+        class="mt-4"
+      >
+        <template v-if="rotationPending">
+          {{ $t("Rotation demandée {date}, en attente du changement de mot de passe par l'utilisateur.", { date: formatFromNow(user.password_rotation_demanded) }) }}
+        </template>
+        <template v-else>
+          {{ $t("L'utilisateur sera déconnecté et devra définir un nouveau mot de passe à sa prochaine connexion.") }}
+        </template>
+
+        <template #button>
+          <RotatePasswordModal
+            :user
+            @rotated="emits('refresh')"
+          />
+        </template>
+      </BannerAction>
+      <BannerAction
         type="danger"
         :title="$t('Supprimer le compte')"
         class="mt-4"
@@ -190,12 +210,13 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, PaddedContainer, toast, SearchableSelect } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, PaddedContainer, toast, SearchableSelect, useFormatDate } from '@datagouv/components-next'
 import type { User } from '@datagouv/components-next'
 import { RiEditLine, RiSaveLine } from '@remixicon/vue'
 import DeleteUserModal from './DeleteUserModal.vue'
 import ChangePasswordModal from './ChangePasswordModal.vue'
 import ChangeEmailModal from './ChangeEmailModal.vue'
+import RotatePasswordModal from './RotatePasswordModal.vue'
 import TwoFactorSetupModal from './TwoFactorSetupModal.vue'
 import ApiTokensSection from './ApiTokensSection.vue'
 import { uploadProfilePicture } from '~/api/users'
@@ -212,11 +233,18 @@ const me = useMe()
 const config = useNuxtApp().$config
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
+const { formatFromNow } = useFormatDate()
 
 const emailId = useId()
 const passwordId = useId()
 
 const loading = ref(false)
+
+const rotationPending = computed(() => {
+  if (!props.user.password_rotation_demanded) return false
+  if (!props.user.password_rotation_performed) return true
+  return new Date(props.user.password_rotation_performed) < new Date(props.user.password_rotation_demanded)
+})
 
 const profilePicture = ref<File | null>(null)
 
