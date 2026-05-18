@@ -137,9 +137,9 @@ const echartsOption = computed(() => {
 
   return {
     dataset: [...seriesData.data],
-    title: {
-      text: props.chart.title,
-      left: 'center',
+    textStyle: {
+      fontFamily: 'Marianne, arial, sans-serif',
+      color: '#000091',
     },
     tooltip: {
       trigger: 'axis' as const,

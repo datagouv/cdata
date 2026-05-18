@@ -1,6 +1,62 @@
 import type { Chart } from '@datagouv/components-next'
 import { test, expect } from '../base'
 
+// ============================================================================
+// Title & Description Tests
+// ============================================================================
+
+test('title input updates form value with debounce', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  await page.getByLabel('Titre').fill('Nouveau titre de graphique')
+
+  // Wait for debounce (300ms as per component)
+  await page.waitForTimeout(400)
+
+  // The title should be updated in the form
+  expect(await page.getByLabel('Titre').inputValue()).toBe('Nouveau titre de graphique')
+})
+
+test('description input updates form value with debounce', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  await page.getByLabel('Description').fill('Nouvelle description de graphique')
+
+  // Wait for debounce (300ms as per component)
+  await page.waitForTimeout(400)
+
+  // The description should be updated in the form
+  expect(await page.getByLabel('Description').inputValue()).toBe('Nouvelle description de graphique')
+})
+
+// ============================================================================
+// Chart Type Tests
+// ============================================================================
+
+test('chart type selector defaults to histogram', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  const chartType = await page.getByLabel('Type de graphique').inputValue()
+  expect(chartType).toBe('histogram')
+})
+
+test('chart type selector can switch to line chart', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  await page.getByLabel('Type de graphique').selectOption('line')
+
+  const chartType = await page.getByLabel('Type de graphique').inputValue()
+  expect(chartType).toBe('line')
+})
+
+// ============================================================================
+// Data Source Tests
+// ============================================================================
+
 test('dataset selector shows default dataset', async ({ page }) => {
   await page.goto('/design/chart')
   await page.waitForLoadState('networkidle')
@@ -40,6 +96,42 @@ test('series column y selector shows available columns', async ({ page }) => {
   expect(columnYOptions).toContain('Nombre de logements')
   expect(columnYOptions).toContain('libellé_EPCI')
 })
+
+// ============================================================================
+// Series Aggregation Tests
+// ============================================================================
+
+test('series aggregation defaults to none', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  const aggregation = await page.getByLabel('Agrégation').inputValue()
+  expect(aggregation).toBe('')
+})
+
+test('series aggregation can be changed to sum', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  await page.getByLabel('Agrégation').selectOption('Somme')
+
+  const aggregation = await page.getByLabel('Agrégation').inputValue()
+  expect(aggregation).toBe('sum')
+})
+
+test('series aggregation can be changed to avg', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  await page.getByLabel('Agrégation').selectOption('Moyenne')
+
+  const aggregation = await page.getByLabel('Agrégation').inputValue()
+  expect(aggregation).toBe('avg')
+})
+
+// ============================================================================
+// X-Axis & Sort Tests
+// ============================================================================
 
 test('sort select displays dynamic column names', async ({ page }) => {
   await page.goto('/design/chart')
@@ -91,6 +183,83 @@ test('Y axis sort options show dynamic series column name too', async ({ page })
   expect(sortOptions[3]).not.toContain('Axe Y - Ascendant')
 })
 
+// ============================================================================
+// Y-Axis Configuration Tests
+// ============================================================================
+
+test('y-axis label input is initially empty', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  const labelValue = await page.getByLabel('Label').inputValue()
+  expect(labelValue).toBe('')
+})
+
+test('y-axis label input can be filled', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  await page.getByLabel('Label').fill('Nombre de logements sociaux')
+
+  const labelValue = await page.getByLabel('Label').inputValue()
+  expect(labelValue).toBe('Nombre de logements sociaux')
+})
+
+test('y-axis min and max inputs are initially empty', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  const minValue = await page.getByLabel('Min').inputValue()
+  const maxValue = await page.getByLabel('Max').inputValue()
+
+  expect(minValue).toBe('')
+  expect(maxValue).toBe('')
+})
+
+test('y-axis min and max can be set', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  await page.getByLabel('Min').fill('0')
+  await page.getByLabel('Max').fill('100')
+
+  const minValue = await page.getByLabel('Min').inputValue()
+  const maxValue = await page.getByLabel('Max').inputValue()
+
+  expect(minValue).toBe('0')
+  expect(maxValue).toBe('100')
+})
+
+test('y-axis unit input is initially empty', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  const unitValue = await page.getByLabel('Unité').inputValue()
+  expect(unitValue).toBe('')
+})
+
+test('y-axis unit position defaults to suffix', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  const unitPosition = await page.getByLabel('Position unité').inputValue()
+  expect(unitPosition).toBe('suffix')
+})
+
+test('y-axis unit position can be changed to prefix', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  await page.getByLabel('Position unité').selectOption('Préfixe')
+
+  const unitPosition = await page.getByLabel('Position unité').inputValue()
+  expect(unitPosition).toBe('prefix')
+})
+
+// ============================================================================
+// Save Chart Tests
+// ============================================================================
+
 test('saving chart sends correct data to API', async ({ page, baseURL }) => {
   await page.goto('/design/chart')
   await page.waitForLoadState('networkidle')
@@ -111,6 +280,80 @@ test('saving chart sends correct data to API', async ({ page, baseURL }) => {
   expect(await page.getByLabel('Graphiques existants').inputValue()).toBe(responseBody!.id)
   await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody!.id}/`)
 })
+
+test('saving chart shows success message', async ({ page, baseURL }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
+  const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
+
+  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  const response = await responsePromise
+  const responseBody = (await response.json()) as Chart
+  await getPromise
+
+  // Wait for toast message
+  await page.waitForTimeout(1000)
+
+  // Check for success message - the component uses toast.success which shows "Graphique sauvegardé !"
+  await expect(page.getByText('Graphique sauvegardé !')).toBeVisible()
+
+  await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody!.id}/`)
+})
+
+// ============================================================================
+// Existing Charts Tests
+// ============================================================================
+
+test('existing charts selector shows placeholder option', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  const chartOptions = await page.getByLabel('Graphiques existants').locator('option').allTextContents()
+
+  // Should have at least the placeholder option
+  expect(chartOptions[0]).toBe('Sélectionnez un graphique')
+})
+
+test('load button is disabled without selected chart', async ({ page }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  const loadButton = page.getByRole('button', { name: 'Charger' })
+  await expect(loadButton).toBeDisabled()
+})
+
+test('load button becomes enabled when chart is selected', async ({ page, baseURL }) => {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  // First, create a chart to load
+  const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
+  const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
+
+  await page.getByLabel('Titre').fill('Chart to load')
+  await page.waitForTimeout(400)
+  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  const response = await responsePromise
+  const responseBody = (await response.json()) as Chart
+  await getPromise
+
+  const chartId = responseBody!.id
+
+  // Now select the chart in the dropdown
+  await page.getByLabel('Graphiques existants').selectOption(chartId)
+
+  const loadButton = page.getByRole('button', { name: 'Charger' })
+  await expect(loadButton).toBeEnabled()
+
+  // Cleanup
+  await page.request.delete(`${baseURL}/api/1/visualizations/${chartId}/`)
+})
+
+// ============================================================================
+// Integration Tests
+// ============================================================================
 
 test('complete chart configuration flow', async ({ page, baseURL }) => {
   await page.goto('/design/chart')

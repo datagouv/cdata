@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
 import { useComponentsConfig } from '../../config'
@@ -49,6 +49,13 @@ const series = reactive<{
 }>({
   data: {},
   columns: {},
+})
+
+// Track resource IDs to avoid unnecessary profile refetches
+const resourceIds = computed(() => {
+  return props.chart.series
+    .filter(s => s.resource_id)
+    .map(s => s.resource_id)
 })
 
 async function fetchSeriesProfile() {
@@ -148,10 +155,12 @@ async function fetchSeriesData() {
   }
 }
 
-watch(() => props.chart.series, async () => {
+// Only fetch profile when resource IDs change, not when filters change
+watch(resourceIds, async () => {
   await fetchSeriesProfile()
-}, { immediate: true, deep: true })
+}, { immediate: true })
 
+// Fetch data when series content changes (including filters) or x_axis changes
 watch([() => props.chart.series, () => props.chart.x_axis.column_x], async () => {
   await fetchSeriesData()
 }, { immediate: true, deep: true })
