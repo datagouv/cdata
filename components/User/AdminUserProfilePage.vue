@@ -179,7 +179,10 @@
           {{ $t("L'utilisateur sera déconnecté et devra définir un nouveau mot de passe à sa prochaine connexion.") }}
         </template>
 
-        <template #button>
+        <template
+          v-if="!rotationPending"
+          #button
+        >
           <RotatePasswordModal
             :user
             @rotated="emits('refresh')"
