@@ -115,7 +115,7 @@ export default defineNuxtConfig({
       featuredResourceIds: [
         '1c5075ec-7ce1-49cb-ab89-94f507812daf', // Visas d'exploitations cinématographiques (CNC)
         'df2cbcb3-da0a-4265-a24e-c36f2c787db2', // Indices de position sociale dans les lycées
-      ] as string[],
+      ],
       homepageRightNow: {
         title: 'Données relatives aux Énergies',
         url: '/pages/donnees-energie',
