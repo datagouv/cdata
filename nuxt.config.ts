@@ -16,6 +16,10 @@ export default defineNuxtConfig({
     '@nuxt/fonts',
     'nuxt-og-image',
   ],
+
+  plugins: [
+    '~/plugins/logger.ts',
+  ],
   devtools: { enabled: true, componentInspector: false },
 
   app: {
