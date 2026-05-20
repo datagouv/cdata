@@ -225,6 +225,10 @@ const url = computed(() => {
 
 const { data: pageData, status } = await useAPI<PaginatedArray<HarvesterSource>>(url, { lazy: true })
 
+watch(qDebounced, () => {
+  page.value = 1
+})
+
 const jobs = ref<Record<string, HarvesterJob>>({})
 const jobsPromises = ref<Record<string, Promise<void>>>({})
 
