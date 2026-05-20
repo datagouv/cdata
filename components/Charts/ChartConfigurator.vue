@@ -72,7 +72,7 @@
         </div>
       </div>
 
-      <div class="col-span-5 space-y-6 lg:ml-4 py-4 rounded-lg bg-white border border-new-gray-light">
+      <div class="col-span-5 space-y-6 lg:ml-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
         <fieldset
           v-if="isAdmin"
           class="px-6 space-y-4"
@@ -194,24 +194,36 @@
           <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
             <label
               for="chart-type"
-              class="fr-label font-bold flex items-center gap-2"
+              class="fr-label font-bold"
             >
-              <RiBarChartLine />
               {{ $t('Type de graphique') }}
             </label>
             <div>
-              <select
+              <Listbox
                 id="chart-type"
-                v-model="form.chart_type"
-                class="w-full fr-select"
+                v-model="chartTypeProxy"
+                class="w-full"
+                :options="chartTypeOptions"
+                :display-value="(opt) => opt?.label || ''"
+                :get-option-id="(opt) => opt?.value"
               >
-                <option value="line">
-                  {{ $t('Ligne') }}
-                </option>
-                <option value="histogram">
-                  {{ $t('Histogramme') }}
-                </option>
-              </select>
+                <template #button>
+                  <div class="w-full flex items-center gap-2">
+                    <component
+                      :is="chartTypeProxy?.icon"
+                      class="size-4"
+                    />
+                    <span>{{ chartTypeProxy?.label }}</span>
+                  </div>
+                </template>
+                <template #option="{ option }">
+                  <component
+                    :is="option.icon"
+                    class="size-4"
+                  />
+                  {{ option.label }}
+                </template>
+              </Listbox>
             </div>
           </fieldset>
           <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
@@ -223,25 +235,26 @@
                 for="x-axis-column"
                 class="fr-label"
               >{{ $t('Choisir quoi afficher') }}</label>
-              <select
+              <SearchableSelect
                 id="x-axis-column"
                 v-model="form.x_axis.column_x"
-                class="w-full fr-select"
+                :label="$t('Choisir quoi afficher')"
+                :placeholder="$t('Rechercher une colonne...')"
+                :options="xAxisColumnOptions"
+                :display-value="(opt: {name: string, colType: ColumnType}) => opt.name"
+                :get-option-id="(opt: {name: string, colType: ColumnType}) => opt.name"
+                :group-by="(opt: {name: string, colType: ColumnType}) => typeConfig[opt.colType]?.label || opt.colType"
+                :multiple="false"
+                class="w-full"
               >
-                <optgroup
-                  v-for="{ key, value } in columnsArray"
-                  :key="key"
-                  :label="savedResources[key]?.title ?? key"
-                >
-                  <option
-                    v-for="column in value"
-                    :key="column"
-                    :value="column"
-                  >
-                    {{ column }}
-                  </option>
-                </optgroup>
-              </select>
+                <template #option="{ option }">
+                  <component
+                    :is="getColumnTypeIcon(option.colType)"
+                    class="inline w-4 h-4 mr-2"
+                  />
+                  {{ option.name }}
+                </template>
+              </SearchableSelect>
             </div>
             <div>
               <label
@@ -297,24 +310,26 @@
                   class="fr-label"
                 >{{ $t('Colonne Y')
                 }}</label>
-                <select
+                <SearchableSelect
                   :id="`column-y-${index}`"
                   v-model="serie.column_y"
-                  class="w-full fr-select"
+                  :label="$t('Colonne Y')"
+                  :placeholder="$t('Rechercher une colonne...')"
+                  :options="yAxisColumnOptions"
+                  :display-value="(opt: {name: string, colType: ColumnType}) => opt.name"
+                  :get-option-id="(opt: {name: string, colType: ColumnType}) => opt.name"
+                  :group-by="(opt: {name: string, colType: ColumnType}) => typeConfig[opt.colType]?.label || opt.colType"
+                  :multiple="false"
+                  class="w-full"
                 >
-                  <option value="__count__">
-                    {{ $t('Count') }}
-                  </option>
-                  <template v-if="selectedResource && columns[selectedResource]">
-                    <option
-                      v-for="column in columns[selectedResource]"
-                      :key="column"
-                      :value="column"
-                    >
-                      {{ column }}
-                    </option>
+                  <template #option="{ option }">
+                    <component
+                      :is="getColumnTypeIcon(option.colType)"
+                      class="inline w-4 h-4 mr-2"
+                    />
+                    {{ option.name }}
                   </template>
-                </select>
+                </SearchableSelect>
               </div>
 
               <div>
@@ -431,7 +446,7 @@
 
           <div
             v-if="isAdmin"
-            class="px-6"
+            class="px-6 space-y-4"
           >
             <BrandedButton type="submit">
               {{ $t('Sauvegarder le graphique') }}
@@ -444,11 +459,13 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, FilterCondition, Owned } from '@datagouv/components-next'
-import { useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, Owned, ColumnType } from '@datagouv/components-next'
+import { resolveColumnType, buildTypeConfig, useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
+import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
-import { RiAddLine, RiBarChartLine } from '@remixicon/vue'
+import { RiAddLine, RiBarChartLine, RiLineChartLine, RiText } from '@remixicon/vue'
 import { useAPI } from '~/utils/api'
+import { isMeAdmin } from '~/utils/auth'
 
 import ChartFilterRow from './ChartFilterRow.vue'
 import ProducerSelect from '../ProducerSelect.vue'
@@ -464,8 +481,53 @@ const form = defineModel<ChartForm>({
 
 const { t } = useTranslation()
 
-const columns = ref<Record<string, Array<string>>>({})
-const columnsArray = computed(() => Object.entries(columns.value).map(([key, value]) => ({ key, value })))
+const resourceProfiles = ref<Record<string, { profile: { categorical: string[] }, columns: Record<string, { python_type: string, format?: string }> }>>({})
+
+const columns = ref<Record<string, Array<{ name: string, type: ColumnType }>>>({})
+
+const typeConfig = buildTypeConfig(t)
+
+const chartTypeOptions = [
+  { value: 'line', label: t('Ligne'), icon: RiLineChartLine },
+  { value: 'histogram', label: t('Histogramme'), icon: RiBarChartLine },
+]
+
+// Proxy for chart_type to handle Listbox object selection
+const chartTypeProxy = computed<{ value: string, label: string, icon: Component } | null>({
+  get: () => chartTypeOptions.find(o => o.value === form.value.chart_type) ?? null,
+  set: (val: { value: string, label: string, icon: Component } | null) => {
+    if (val) {
+      form.value.chart_type = val.value
+    }
+  },
+})
+
+const xAxisColumnOptions = computed<Array<{ name: string, colType: ColumnType, resourceId: string }>>(() => {
+  const result: Array<{ name: string, colType: ColumnType, resourceId: string }> = []
+  for (const [resourceId, cols] of Object.entries(columns.value)) {
+    for (const col of cols) {
+      result.push({ name: col.name, colType: col.type, resourceId })
+    }
+  }
+  return result
+})
+
+const yAxisColumnOptions = computed<Array<{ name: string, colType: ColumnType }>>(() => {
+  const result: Array<{ name: string, colType: ColumnType }> = []
+  if (selectedResource.value && columns.value[selectedResource.value]) {
+    for (const col of columns.value[selectedResource.value]) {
+      // Exclude date columns from Y-axis
+      if (col.type !== 'date') {
+        result.push({ name: col.name, colType: col.type })
+      }
+    }
+  }
+  return result
+})
+
+function getColumnTypeIcon(colType: ColumnType): Component {
+  return typeConfig[colType]?.icon ?? RiText
+}
 
 const producer = ref<Owned | null>(null)
 const dataset = ref<DatasetSuggest | null>(null)
@@ -483,15 +545,15 @@ const { debounced: descDebounced } = useDebouncedRef(desc, debounceMs)
 
 const resources = computed(() => Object.values(savedResources))
 
-const sourceText = computed(() => {
+const sourceText = computed<string>(() => {
   if (!dataset.value) return ''
   const orgName = producer.value?.organization?.name || ''
   return `${dataset.value.title}${orgName ? ` - ${orgName}` : ''} - datagouv.fr`
 })
 
-const conditionOptions: Array<FilterCondition> = ['exact', 'differs', 'is_null', 'is_not_null', 'greater', 'less', 'strictly_greater', 'strictly_less']
+const conditionOptions = ['exact', 'differs', 'is_null', 'is_not_null', 'greater', 'less', 'strictly_greater', 'strictly_less'] as const
 
-const sortOptionLabels = computed(() => {
+const sortOptionLabels = computed<Record<string, string>>(() => {
   const xAxisColumn = form.value.x_axis.column_x
   const yAxisColumn = form.value.series[0]?.column_y
   return {
@@ -503,12 +565,12 @@ const sortOptionLabels = computed(() => {
   }
 })
 
-const columnDetails = computed(() => {
-  const options = [{ key: '', value: t('Colonne'), disabled: true }]
-  const resourceColumns = columns.value[selectedResource.value]
+const columnDetails = computed<Array<{ key: string, value: string, disabled: boolean }>>(() => {
+  const options: Array<{ key: string, value: string, disabled: boolean }> = [{ key: '', value: t('Colonne'), disabled: true }]
+  const resourceColumns = columns.value[selectedResource.value ?? '']
 
   if (resourceColumns) {
-    options.push(...resourceColumns.map(c => ({ key: c, value: c, disabled: false })))
+    options.push(...resourceColumns.map(c => ({ key: c.name, value: c.name, disabled: false })))
   }
 
   return options
@@ -520,7 +582,6 @@ const hasTabularData = useHasTabularData()
 const getProfile = useGetProfile()
 const isAdmin = isMeAdmin()
 
-// Create a new API client for chart-related API calls
 const $chartsApi = $fetch.create({
   baseURL: runtimeConfig.public.chartsApiBase as string,
   onRequest({ options }) {
@@ -549,7 +610,6 @@ watch(dataset, async (newDataset) => {
 }, { immediate: true })
 
 watch(producer, () => {
-  // When producer changes, reset dataset and resource selection
   dataset.value = null
   selectedResource.value = null
 })
@@ -557,11 +617,20 @@ watch(producer, () => {
 watch(selectedResource, async (r) => {
   if (r) {
     await loadMissingResourcesForChart(new Set([r]))
-    if (columns.value[r]) {
+    if (columns.value[r]?.length > 0) {
       return
     }
     const profile = await getProfile(r)
-    columns.value[r] = profile.profile.header
+    resourceProfiles.value[r] = {
+      profile: { categorical: profile.profile.categorical },
+      columns: profile.profile.columns,
+    }
+    columns.value[r] = profile.profile.header.map((name) => {
+      const colInfo = profile.profile.columns[name]
+      const isCategorical = profile.profile.categorical.includes(name)
+      const colType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
+      return { name, type: colType }
+    })
   }
 }, { immediate: true })
 
@@ -573,9 +642,9 @@ watch([titleDebounced, descDebounced], ([title, desc]) => {
 watch(columns, (columnsPerResource) => {
   const firstColumns = Object.values(columnsPerResource)
   if (firstColumns.length === 0) return
-  const firstColumn = firstColumns[0].filter(c => c !== '__id')[0]
+  const firstColumn = firstColumns[0].filter(c => c.name !== '__id')[0]
   if (!form.value.x_axis.column_x && firstColumn) {
-    form.value.x_axis.column_x = firstColumn
+    form.value.x_axis.column_x = firstColumn.name
   }
 })
 
@@ -596,8 +665,7 @@ async function loadMissingResourcesForChart(resourceIds: Set<string>) {
 async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
   const query: Record<string, string> = { q, size: '5' }
 
-  // Scope to producer's org if user is not admin and producer is selected
-  if (!isAdmin && producer.value?.organization) {
+  if (!isAdmin && producer.value?.organization?.id) {
     query.organization = producer.value.organization.id
   }
 
@@ -666,19 +734,25 @@ async function saveChart() {
   }
 }
 
-// Flatten filter structure: return all individual filters in a flat array
+function isFilter(f: GenericFilter | null): f is Filter {
+  return f?._cls === 'Filter'
+}
+
+function isAndFilters(f: GenericFilter | null): f is AndFilters {
+  return f?._cls === 'AndFilters'
+}
+
 const filterList = computed<Array<Filter>>(() => {
   if (!form.value.filter) return []
 
   const filter = form.value.filter
-  if (filter._cls === 'Filter') {
+  if (isFilter(filter)) {
     return [filter]
   }
-  else if (filter._cls === 'AndFilters') {
-    // Flatten nested filters
+  else if (isAndFilters(filter)) {
     const result: Array<Filter> = []
     for (const f of filter.filters) {
-      if (f._cls === 'Filter') {
+      if (isFilter(f)) {
         result.push(f)
       }
       // For simplicity, we don't handle nested AndFilters recursively
@@ -692,11 +766,10 @@ const filterList = computed<Array<Filter>>(() => {
 function removeFilter(index: number) {
   if (!form.value.filter) return
 
-  if (form.value.filter._cls === 'Filter') {
-    // Single filter - removing it means clearing the filter
+  if (isFilter(form.value.filter)) {
     form.value.filter = null
   }
-  else if ('filters' in form.value.filter) {
+  else if (isAndFilters(form.value.filter)) {
     form.value.filter.filters.splice(index, 1)
     if (form.value.filter.filters.length === 0) {
       form.value.filter = null
@@ -707,11 +780,10 @@ function removeFilter(index: number) {
 function updateFilter(index: number, newFilter: Filter) {
   if (!form.value.filter) return
 
-  if (form.value.filter._cls === 'Filter') {
-    // Single filter - replace it
+  if (isFilter(form.value.filter)) {
     form.value.filter = newFilter
   }
-  else if ('filters' in form.value.filter) {
+  else if (isAndFilters(form.value.filter)) {
     form.value.filter.filters[index] = newFilter
   }
 }
@@ -722,14 +794,13 @@ function addFilter() {
   if (!form.value.filter) {
     form.value.filter = newFilter
   }
-  else if (form.value.filter._cls === 'Filter') {
-    // Convert single filter to AndFilters with both
+  else if (isFilter(form.value.filter)) {
     form.value.filter = {
       _cls: 'AndFilters',
       filters: [form.value.filter, newFilter],
     }
   }
-  else if ('filters' in form.value.filter) {
+  else if (isAndFilters(form.value.filter)) {
     form.value.filter.filters.push(newFilter)
   }
 }

@@ -16,7 +16,7 @@ export default defineNuxtConfig({
     '@nuxt/fonts',
     'nuxt-og-image',
   ],
-  devtools: { enabled: true, componentInspector: false },
+  devtools: { enabled: false, componentInspector: false },
 
   app: {
     head: {

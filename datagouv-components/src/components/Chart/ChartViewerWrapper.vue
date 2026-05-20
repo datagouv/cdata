@@ -25,13 +25,16 @@ import { useComponentsConfig } from '../../config'
 import { fetchTabularData, useGetProfile } from '../../functions/tabularApi'
 import type { Chart, ChartForApi } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
+import { watchDebounced } from '@vueuse/shared'
+import { resolveColumnType } from '../../functions/tabular'
+import type { ColumnType } from '../TabularExplorer/types'
 
 const props = defineProps<{
   chart: Chart | ChartForApi
 }>()
 
 const emit = defineEmits<{
-  columns: [columns: Record<string, Array<string>>]
+  columns: [columns: Record<string, Array<{ name: string, type: ColumnType }>>]
 }>()
 
 const { t } = useTranslation()
@@ -45,13 +48,12 @@ const pendingOperations = ref(0)
 
 const series = reactive<{
   data: Record<string, Array<Record<string, unknown>>>
-  columns: Record<string, Array<string>>
+  columns: Record<string, Array<{ name: string, type: ColumnType }>>
 }>({
   data: {},
   columns: {},
 })
 
-// Track resource IDs to avoid unnecessary profile refetches
 const resourceIds = computed(() => {
   return props.chart.series
     .filter(s => s.resource_id)
@@ -85,7 +87,12 @@ async function fetchSeriesProfile() {
       .map(r => r.value)
     series.columns = Object.fromEntries(results.map(result => [
       result.id,
-      result.profile.profile.header,
+      result.profile.profile.header.map((name) => {
+        const colInfo = result.profile.profile.columns[name]
+        const isCategorical = result.profile.profile.categorical.includes(name)
+        const colType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
+        return { name, type: colType }
+      }),
     ]))
   }
   catch (err) {
@@ -93,6 +100,7 @@ async function fetchSeriesProfile() {
     status.value = 'error'
     console.error(err)
     series.columns = {}
+    series.data = {}
   }
   finally {
     pendingOperations.value--
@@ -155,15 +163,16 @@ async function fetchSeriesData() {
   }
 }
 
-// Only fetch profile when resource IDs change, not when filters change
 watch(resourceIds, async () => {
   await fetchSeriesProfile()
 }, { immediate: true })
 
-// Fetch data when series content changes (including filters) or x_axis changes
-watch([() => props.chart.series, () => props.chart.x_axis.column_x], async () => {
+watchDebounced([
+  () => props.chart.series,
+  () => props.chart.x_axis.column_x,
+], async () => {
   await fetchSeriesData()
-}, { immediate: true, deep: true })
+}, { debounce: config.searchDebounce ?? 300, immediate: true, deep: true })
 
 watch(() => series.columns, () => {
   emit('columns', series.columns)

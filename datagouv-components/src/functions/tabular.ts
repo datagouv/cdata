@@ -25,6 +25,15 @@ export function buildTypeConfig(t: (s: string) => string): Record<ColumnType, { 
   }
 }
 
+export function resolveColumnType(colInfo: { python_type: string, format?: string }, isCategorical: boolean): ColumnType {
+  if (['int', 'float'].includes(colInfo.python_type)) return 'number'
+  if (colInfo.format === 'year') return 'date'
+  if (['date', 'datetime'].includes(colInfo.python_type)) return 'date'
+  if (colInfo.python_type === 'bool') return 'boolean'
+  if (isCategorical) return 'categorical'
+  return 'text'
+}
+
 export function useFormatTabular() {
   const { locale } = useTranslation()
 

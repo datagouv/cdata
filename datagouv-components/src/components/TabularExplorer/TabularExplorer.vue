@@ -474,7 +474,7 @@ import {
 import { useFetch } from '../../functions/api'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
-import { buildTypeConfig, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy } from '../../functions/tabular'
+import { buildTypeConfig, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy, resolveColumnType } from '../../functions/tabular'
 import ClientOnly from '../ClientOnly.vue'
 import SimpleBanner from '../SimpleBanner.vue'
 import BrandedButton from '../BrandedButton.vue'
@@ -770,23 +770,18 @@ function toggleMobileFilterColumn(col: string) {
 }
 
 // Column type helpers
-function resolveColumnType(col: string): ColumnType {
+function getColumnTypeFromName(col: string): ColumnType {
   const profile = profileData.value?.profile
   if (!profile) return 'text'
   const colInfo = profile.columns[col]
   if (!colInfo) return 'text'
-  if (['int', 'float'].includes(colInfo.python_type)) return 'number'
-  if (colInfo.format === 'year') return 'date'
-  if (['date', 'datetime'].includes(colInfo.python_type)) return 'date'
-  if (colInfo.python_type === 'bool') return 'boolean'
-  if (profile.categorical.includes(col)) return 'categorical'
-  return 'text'
+  return resolveColumnType(colInfo, profile.categorical.includes(col))
 }
 
 const columnTypesMap = computed(() => {
   const map: Record<string, ColumnType> = {}
   for (const col of allColumns.value) {
-    map[col] = resolveColumnType(col)
+    map[col] = getColumnTypeFromName(col)
   }
   return map
 })
