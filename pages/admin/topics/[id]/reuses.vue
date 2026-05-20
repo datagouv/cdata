@@ -10,8 +10,7 @@
         </h2>
       </div>
       <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
-        <!-- TODO: re-enable when elements are properly handled -->
-        <!-- <ModalWithButton
+        <ModalWithButton
           :title="$t('Ajouter des réutilisations')"
           size="xl"
         >
@@ -27,7 +26,7 @@
           </template>
 
           <ReusesSelect
-            v-model="reuses"
+            v-model="selectedReuses"
             :allow-reorder="false"
           />
 
@@ -35,14 +34,14 @@
             <div class="flex-1 flex justify-end">
               <BrandedButton
                 color="primary"
-                :disabled="!reuses.length"
-                @click="save(close)"
+                :disabled="!selectedReuses.length"
+                @click="addReuses(close)"
               >
                 {{ $t("Sauvegarder") }}
               </BrandedButton>
             </div>
           </template>
-        </ModalWithButton> -->
+        </ModalWithButton>
       </div>
     </div>
 
@@ -57,8 +56,7 @@
           sorted-by="created"
           sort-direction="desc"
         >
-          <!-- TODO: re-enable when elements are properly handled -->
-          <!-- <template #actions="{ reuse }">
+          <template #actions="{ reuse }">
             <BrandedButton
               icon-only
               color="tertiary"
@@ -69,7 +67,7 @@
             >
               {{ $t('Supprimer la réutilisation') }}
             </BrandedButton>
-          </template> -->
+          </template>
         </AdminReusesTable>
         <Pagination
           :page="page"
@@ -83,7 +81,8 @@
 
 <script setup lang="ts">
 import type { Reuse, TopicV2, TopicElement } from '@datagouv/components-next'
-import { LoadingBlock, Pagination } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination } from '@datagouv/components-next'
+import { RiAddLine, RiDeleteBinLine } from '@remixicon/vue'
 import AdminReusesTable from '~/components/AdminTable/AdminReusesTable/AdminReusesTable.vue'
 import type { PaginatedArray } from '~/types/types'
 
@@ -92,12 +91,13 @@ const props = defineProps<{
 }>()
 
 const reuses = ref<Array<Reuse>>([])
+const selectedReuses = ref<Array<Reuse>>([])
 
 const page = ref(1)
 const params = computed(() => {
   return { page: page.value, class: 'Reuse' }
 })
-const { data: pageData, status } = await useAPI<PaginatedArray<TopicElement>>(`/api/2/topics/${props.topic.id}/elements/`, { lazy: true, query: params })
+const { data: pageData, status, refresh } = await useAPI<PaginatedArray<TopicElement>>(`/api/2/topics/${props.topic.id}/elements/`, { lazy: true, query: params })
 
 const { $api } = useNuxtApp()
 
@@ -108,4 +108,21 @@ watch(pageData, async (_pageData) => {
     return await $api(`/api/1/reuses/${element.element.id}/`)
   }))
 }, { immediate: true })
+
+const addReuses = async (close: () => void) => {
+  await $api(`/api/2/topics/${props.topic.id}/elements/`, {
+    method: 'POST',
+    body: selectedReuses.value.map(reuse => ({ element: { id: reuse.id, class: 'Reuse' } })),
+  })
+  selectedReuses.value = []
+  await refresh()
+  close()
+}
+
+const removeReuse = async (reuse: Reuse) => {
+  const element = pageData.value?.data.find(e => e.element.id === reuse.id)
+  if (!element) return
+  await $api(`/api/2/topics/${props.topic.id}/elements/${element.id}/`, { method: 'DELETE' })
+  await refresh()
+}
 </script>

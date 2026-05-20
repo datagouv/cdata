@@ -84,132 +84,149 @@
                 />
               </ReadMore>
             </div>
-            <dl
+            <aside
               ref="sidebar"
-              class="pl-0 w-full shrink-0 md:w-[384px] space-y-2.5"
+              class="pl-0 w-full shrink-0 md:w-[384px] space-y-5"
             >
-              <div class="space-y-1">
-                <dt class="text-gray-plain font-bold">
-                  {{ $t('Producteur') }}
-                </dt>
-                <dd class="p-0">
-                  <OrganizationOwner
-                    v-if="dataservice.organization"
-                    :organization="dataservice.organization"
-                    as="h2"
-                  />
-                  <AvatarWithName
-                    v-if="dataservice.owner"
-                    :size="32"
-                    :user="dataservice.owner"
-                    class="space-x-2"
-                  />
-                </dd>
-              </div>
+              <dl class="space-y-2.5 pl-0">
+                <div class="space-y-1">
+                  <dt class="text-gray-plain font-bold">
+                    {{ $t('Producteur') }}
+                  </dt>
+                  <dd class="p-0 m-0">
+                    <OrganizationOwner
+                      v-if="dataservice.organization"
+                      :organization="dataservice.organization"
+                      as="h2"
+                    />
+                    <AvatarWithName
+                      v-if="dataservice.owner"
+                      :size="32"
+                      :user="dataservice.owner"
+                      class="space-x-2"
+                    />
+                  </dd>
+                </div>
 
-              <div
-                v-if="dataservice.contact_points.length"
-                class="space-y-1"
-              >
-                <dt class="text-gray-plain font-bold">
-                  {{ $t('Contact') }}
-                </dt>
-                <dd class="p-0">
-                  <ContactPoint
-                    v-for="contact in dataservice.contact_points"
-                    :key="contact.id"
-                    :contact
+                <div
+                  v-if="dataservice.contact_points.length"
+                  class="space-y-1"
+                >
+                  <dt class="text-gray-plain font-bold">
+                    {{ $t('Contact') }}
+                  </dt>
+                  <dd class="p-0 m-0">
+                    <ContactPoint
+                      v-for="contact in dataservice.contact_points"
+                      :key="contact.id"
+                      :contact
+                    />
+                  </dd>
+                </div>
+              </dl>
+
+              <section class="space-y-2">
+                <h3 class="text-base !mt-0 !mb-0 text-gray-title font-bold">
+                  {{ $t(`Conditions d'accès`) }}
+                </h3>
+                <dl class="pl-0">
+                  <AccessTypePanel
+                    :object="dataservice"
+                    hide-access-label
                   />
-                </dd>
-              </div>
+                </dl>
+              </section>
 
-              <div class="space-y-1">
-                <dt class="text-gray-plain font-bold">
-                  {{ $t('Dernière mise à jour') }}
-                </dt>
-                <dd class="p-0">
-                  {{ formatDate(dataservice.metadata_modified_at) }}
-                </dd>
-              </div>
-
-              <div
-                v-if="dataservice.rate_limiting || dataservice.rate_limiting_url"
-                class="space-y-1"
-              >
-                <dt class="text-gray-plain font-bold">
-                  {{ $t(`Limite d'appels`) }}
-                </dt>
-                <dd class="p-0">
-                  <span
-                    v-if="dataservice.rate_limiting"
-                    class="mr-1"
-                  >{{ dataservice.rate_limiting }}</span>
-                  <a
-                    v-if="dataservice.rate_limiting_url"
-                    :href="dataservice.rate_limiting_url"
-                    :title="$t(`En savoir plus sur les limites d'appels`)"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    :class="dataservice.rate_limiting ? 'inline-flex items-center gap-1' : 'block truncate'"
+              <section class="space-y-2">
+                <h3 class="text-base !mt-0 !mb-0 text-gray-title font-bold">
+                  {{ $t('Caractéristiques techniques') }}
+                </h3>
+                <dl class="space-y-2.5 pl-0">
+                  <div
+                    v-if="dataservice.rate_limiting || dataservice.rate_limiting_url"
+                    class="space-y-1"
                   >
-                    {{ dataservice.rate_limiting ? $t("En savoir plus") : dataservice.rate_limiting_url }}
-                  </a>
-                </dd>
-              </div>
+                    <dt class="text-gray-plain font-bold">
+                      {{ $t(`Limite d'appels`) }}
+                    </dt>
+                    <dd class="p-0 m-0">
+                      <span
+                        v-if="dataservice.rate_limiting"
+                        class="mr-1"
+                      >{{ dataservice.rate_limiting }}</span>
+                      <a
+                        v-if="dataservice.rate_limiting_url"
+                        :href="dataservice.rate_limiting_url"
+                        :title="$t(`En savoir plus sur les limites d'appels`)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        :class="dataservice.rate_limiting ? 'inline-flex items-center gap-1' : 'block truncate'"
+                      >
+                        {{ dataservice.rate_limiting ? $t("En savoir plus") : dataservice.rate_limiting_url }}
+                      </a>
+                    </dd>
+                  </div>
 
-              <div
-                class="space-y-1"
-              >
-                <dt class="text-gray-plain font-bold">
-                  {{ $t('Taux de disponibilité') }}
-                </dt>
-                <dd class="p-0">
-                  <span v-if="dataservice.availability">
-                    {{ dataservice.availability }}%
-                  </span>
-                  <span v-else>
-                    {{ $t('Non communiqué') }}
-                  </span>
-                </dd>
-              </div>
+                  <div class="space-y-1">
+                    <dt class="text-gray-plain font-bold">
+                      {{ $t('Taux de disponibilité') }}
+                    </dt>
+                    <dd class="p-0 m-0">
+                      <span v-if="dataservice.availability">
+                        {{ dataservice.availability }}%
+                      </span>
+                      <span v-else>
+                        {{ $t('Non communiqué') }}
+                      </span>
+                    </dd>
+                  </div>
 
-              <AccessTypePanel :object="dataservice" />
+                  <div class="space-y-1">
+                    <dt class="text-gray-plain font-bold">
+                      {{ $t('Dernière mise à jour') }}
+                    </dt>
+                    <dd class="p-0 m-0">
+                      {{ formatDate(dataservice.metadata_modified_at) }}
+                    </dd>
+                  </div>
 
-              <div>
-                <StatBox
-                  :title="$t('Vues')"
-                  :data="metricsViews"
-                  size="sm"
-                  type="line"
-                  :summary="metricsViewsTotal"
-                  class="mb-8 md:mb-0"
-                  :since="metricsSince"
-                />
-              </div>
-            </dl>
+                  <div class="space-y-1">
+                    <dt class="text-gray-plain font-bold">
+                      {{ $t('Date de création') }}
+                    </dt>
+                    <dd class="p-0 m-0">
+                      {{ formatDate(dataservice.created_at) }}
+                    </dd>
+                  </div>
+                </dl>
+                <div class="flex flex-wrap gap-2 pt-1">
+                  <BrandedButton
+                    v-if="dataservice.business_documentation_url"
+                    color="secondary"
+                    size="sm"
+                    :href="dataservice.business_documentation_url"
+                    new-tab
+                    @click="$matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : documentation métier')"
+                  >
+                    {{ $t('Documentation métier') }}
+                  </BrandedButton>
+                  <BrandedButton
+                    v-if="dataservice.machine_documentation_url"
+                    color="secondary"
+                    size="sm"
+                    :icon="RiArrowDownSLine"
+                    icon-right
+                    @click="openSwaggerFromSidebar"
+                  >
+                    {{ $t('Swagger') }}
+                  </BrandedButton>
+                </div>
+              </section>
+            </aside>
           </div>
         </div>
 
         <div class="container space-y-4">
-          <SimpleBanner
-            v-if="dataservice.business_documentation_url"
-            type="primary-frame"
-            class="flex items-center justify-between"
-          >
-            <h2 class="text-datagouv-dark font-bold text-xl mb-0">
-              {{ $t(`Accéder à l'API`) }}
-            </h2>
-            <BrandedButton
-              color="primary"
-              :href="dataservice.business_documentation_url"
-              :icon="RiExternalLinkLine"
-              icon-right
-              external
-              @click="$matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : documentation métier')"
-            >
-              {{ $t('Documentation métier') }}
-            </BrandedButton>
-          </SimpleBanner>
           <SimpleBanner
             v-if="dataservice.machine_documentation_url"
             type="primary-frame"
@@ -237,32 +254,35 @@
               :title="dataservice.title"
             />
           </SimpleBanner>
-          <SimpleBanner
+          <div
             v-if="dataservice.machine_documentation_url"
-            type="primary-frame"
+            ref="swaggerBanner"
           >
-            <button
-              type="button"
-              class="min-h-[42px] w-full flex items-center justify-between"
-              @click="showSwagger"
-            >
-              <div class="text-datagouv-dark font-bold text-xl">
-                {{ $t('Swagger') }}
-              </div>
-              <RiArrowUpSLine
+            <SimpleBanner type="primary-frame">
+              <button
+                type="button"
+                class="min-h-[42px] w-full flex items-center justify-between"
+                @click="showSwagger"
+              >
+                <div class="text-datagouv-dark font-bold text-xl">
+                  {{ $t('Swagger') }}
+                </div>
+                <RiArrowUpSLine
+                  v-if="openSwagger"
+                  class="size-6 text-gray-title"
+                />
+                <RiArrowDownSLine
+                  v-else
+                  class="size-6 text-gray-title"
+                />
+              </button>
+              <OpenApiViewer
                 v-if="openSwagger"
-                class="size-6 text-gray-title"
+                :url="dataservice.machine_documentation_url"
+                data-testid="swagger-viewer"
               />
-              <RiArrowDownSLine
-                v-else
-                class="size-6 text-gray-title"
-              />
-            </button>
-            <OpenApiViewer
-              v-if="openSwagger"
-              :url="dataservice.machine_documentation_url"
-            />
-          </SimpleBanner>
+            </SimpleBanner>
+          </div>
         </div>
 
         <FullPageTabs
@@ -285,8 +305,8 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, StatBox, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
-import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiExternalLinkLine, RiLockLine } from '@remixicon/vue'
+import { isOrganizationCertified, BrandedButton, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
+import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -307,6 +327,7 @@ const { $matomo } = useNuxtApp()
 
 const sidebar = useTemplateRef('sidebar')
 const header = useTemplateRef('header')
+const swaggerBanner = useTemplateRef<HTMLDivElement>('swaggerBanner')
 
 const { height: sidebarHeight } = useElementSize(sidebar)
 const { height: headerHeight } = useElementSize(header)
@@ -352,37 +373,12 @@ function showSwagger() {
   }
 }
 
-const metricsSince = computed(() => {
-  if (!dataservice.value) return config.public.metricsSince
-  // max of the start of metrics computing and the creation of the dataservice on the platform
-  return [dataservice.value.created_at, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
-})
-
-const metricsViews = ref<null | Record<string, number>>(null)
-const metricsViewsTotal = ref<null | number>(null)
-
-watchEffect(async () => {
-  const id = dataservice.value?.id
-  if (!id) return
-  const response = await fetch(`${config.public.metricsApi}/api/dataservices/data/?dataservice_id__exact=${id}&metric_month__sort=desc&page_size=12`)
-  const page = await response.json()
-
-  const views: Record<string, number> = {}
-
-  for (const { metric_month, monthly_visit } of page.data) {
-    views[metric_month] = monthly_visit
-  }
-  // Fetching totals
-  const totalResponse = await fetch(`${config.public.metricsApi}/api/dataservices_total/data/?dataservice_id__exact=${id}`)
-  const totalPage = await totalResponse.json()
-
-  let totalViews = 0
-  if (page.data[0]) {
-    totalViews = totalPage.data[0].visit
-  }
-  metricsViews.value = views
-  metricsViewsTotal.value = totalViews
-})
+async function openSwaggerFromSidebar() {
+  openSwagger.value = true
+  $matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : ouvrir swagger depuis colonne info')
+  await nextTick()
+  swaggerBanner.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 
 onMounted(async () => {
   await redirectLegacyHashes([
