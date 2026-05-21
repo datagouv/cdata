@@ -16,10 +16,7 @@
       :status
       :data="data"
     >
-      <div
-        v-if="status === 'success' && data"
-        :class="markdownClasses"
-      >
+      <div :class="markdownClasses">
         <MarkdownViewer
           v-if="data.extension === 'md'"
           :content="data.content"
@@ -29,13 +26,6 @@
         <ComponentDefinedInSetup
           v-else
         />
-      </div>
-      <div
-        v-else
-        class="py-9 prose"
-      >
-        <h1>{{ $t('Erreur 404') }}</h1>
-        <p>{{ $t("La page que vous recherchez est introuvable.") }}</p>
       </div>
     </LoadingBlock>
   </div>
@@ -49,7 +39,7 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 const route = useRoute()
 const siteConfig = useSiteConfig()
 
-const { data, status } = useFetch<{
+const { data, status, error } = await useFetch<{
   data: {
     title: string
     description?: string
@@ -57,6 +47,10 @@ const { data, status } = useFetch<{
   extension: string
   content: string
 }>(`/nuxt-api/pages/${route.params.slug ? (route.params.slug as string[]).join('/') : ''}`)
+
+if (error.value || !data.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Page Not Found', fatal: true })
+}
 
 const title = computed(() => data.value?.data.title)
 const description = computed(() => data.value?.data.description)
