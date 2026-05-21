@@ -237,13 +237,13 @@
               >{{ $t('Choisir quoi afficher') }}</label>
               <SearchableSelect
                 id="x-axis-column"
-                v-model="form.x_axis.column_x"
+                v-model="xAxisColumnProxy"
                 :label="$t('Choisir quoi afficher')"
                 :placeholder="$t('Rechercher une colonne...')"
                 :options="xAxisColumnOptions"
-                :display-value="(opt: {name: string, colType: ColumnType}) => opt.name"
-                :get-option-id="(opt: {name: string, colType: ColumnType}) => opt.name"
-                :group-by="(opt: {name: string, colType: ColumnType}) => typeConfig[opt.colType]?.label || opt.colType"
+                :display-value="(opt: {name: string, colType: ColumnType, resourceId: string}) => opt.name"
+                :get-option-id="(opt: {name: string, colType: ColumnType, resourceId: string}) => opt.name"
+                :group-by="(opt: {name: string, colType: ColumnType, resourceId: string}) => typeConfig[opt.colType]?.label || opt.colType"
                 :multiple="false"
                 class="w-full"
               >
@@ -312,7 +312,7 @@
                 }}</label>
                 <SearchableSelect
                   :id="`column-y-${index}`"
-                  v-model="serie.column_y"
+                  :model-value="getSerieColumnYProxy(serie).get()"
                   :label="$t('Colonne Y')"
                   :placeholder="$t('Rechercher une colonne...')"
                   :options="yAxisColumnOptions"
@@ -321,6 +321,7 @@
                   :group-by="(opt: {name: string, colType: ColumnType}) => typeConfig[opt.colType]?.label || opt.colType"
                   :multiple="false"
                   class="w-full"
+                  @update:model-value="getSerieColumnYProxy(serie).set($event)"
                 >
                   <template #option="{ option }">
                     <component
@@ -459,7 +460,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, Owned, ColumnType } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, Owned, ColumnType, DataSeriesType, DataSeriesForm, FilterCondition } from '@datagouv/components-next'
 import { resolveColumnType, buildTypeConfig, useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
@@ -497,10 +498,35 @@ const chartTypeProxy = computed<{ value: string, label: string, icon: Component 
   get: () => chartTypeOptions.find(o => o.value === form.value.chart_type) ?? null,
   set: (val: { value: string, label: string, icon: Component } | null) => {
     if (val) {
-      form.value.chart_type = val.value
+      form.value.chart_type = val.value as DataSeriesType
     }
   },
 })
+
+// Proxy for x_axis.column_x to handle SearchableSelect object selection
+const xAxisColumnProxy = computed<{ name: string, colType: ColumnType, resourceId: string } | null>({
+  get: () => {
+    const colName = form.value.x_axis.column_x
+    if (!colName) return null
+    return xAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
+  },
+  set: (val: { name: string, colType: ColumnType, resourceId: string } | null) => {
+    form.value.x_axis.column_x = val?.name ?? ''
+  },
+})
+
+// Helper to get/set column_y as object for SearchableSelect
+function getSerieColumnYProxy(serie: DataSeriesForm) {
+  const get = (): { name: string, colType: ColumnType } | null => {
+    const colName = serie.column_y
+    if (!colName) return null
+    return yAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
+  }
+  const set = (val: { name: string, colType: ColumnType } | null | undefined) => {
+    serie.column_y = val?.name ?? ''
+  }
+  return { get, set }
+}
 
 const xAxisColumnOptions = computed<Array<{ name: string, colType: ColumnType, resourceId: string }>>(() => {
   const result: Array<{ name: string, colType: ColumnType, resourceId: string }> = []
@@ -551,7 +577,7 @@ const sourceText = computed<string>(() => {
   return `${dataset.value.title}${orgName ? ` - ${orgName}` : ''} - datagouv.fr`
 })
 
-const conditionOptions = ['exact', 'differs', 'is_null', 'is_not_null', 'greater', 'less', 'strictly_greater', 'strictly_less'] as const
+const conditionOptions = ['exact', 'differs', 'is_null', 'is_not_null', 'greater', 'less', 'strictly_greater', 'strictly_less'] satisfies Array<FilterCondition>
 
 const sortOptionLabels = computed<Record<string, string>>(() => {
   const xAxisColumn = form.value.x_axis.column_x
