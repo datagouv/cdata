@@ -9,7 +9,7 @@
         {{ $t('Les données relatives aux élections') }}
       </template>
       <template #subtitle>
-        {{ $t('Cette rubrique rassemble les principaux jeux de données par type de scrutin : municipales, législatives, présidentielles, etc.') }}
+        {{ subtitle }}
       </template>
     </OnboardingHero>
 
@@ -55,8 +55,11 @@ import ElectionCard from '~/components/Elections/ElectionCard.vue'
 const config = useRuntimeConfig()
 const { t } = useTranslation()
 
+const subtitle = t('Cette rubrique rassemble les principaux jeux de données par type de scrutin : municipales, législatives, présidentielles, etc.')
+
 useSeoMeta({
   title: t('Données élections - {site}', { site: config.public.title }),
+  description: subtitle,
 })
 defineOgImage('MainPage.takumi', {
   title: 'Élections',
