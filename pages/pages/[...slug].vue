@@ -39,6 +39,14 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 const route = useRoute()
 const siteConfig = useSiteConfig()
 
+// An empty slug (/pages) is not a valid page: return a clean 404 right away.
+// Fetching it would build the URL `/nuxt-api/pages/` whose trailing slash gets
+// 308-redirected, which ofetch follows without raising an error.
+const slug = route.params.slug ? (route.params.slug as string[]).join('/') : ''
+if (!slug) {
+  throw createError({ statusCode: 404, statusMessage: 'Page Not Found', fatal: true })
+}
+
 const { data, status, error } = await useFetch<{
   data: {
     title: string
@@ -46,7 +54,7 @@ const { data, status, error } = await useFetch<{
   }
   extension: string
   content: string
-}>(`/nuxt-api/pages/${route.params.slug ? (route.params.slug as string[]).join('/') : ''}`)
+}>(`/nuxt-api/pages/${slug}`)
 
 if (error.value || !data.value) {
   throw createError({ statusCode: 404, statusMessage: 'Page Not Found', fatal: true })
