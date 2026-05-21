@@ -1,5 +1,8 @@
 <template>
-  <h3 class="w-full text-base flex">
+  <component
+    :is="titleTag"
+    class="w-full text-base flex"
+  >
     <AppLink
       :to="url"
       class="text-gray-title text-base bg-none flex items-center w-full truncate gap-1"
@@ -19,17 +22,21 @@
       <slot name="extra" />
       <span class="absolute inset-0" />
     </AppLink>
-  </h3>
+  </component>
 </template>
 
 <script setup lang="ts">
 import type { Component } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
+import type { TitleTag } from '../types/ui'
 import AppLink from './AppLink.vue'
 
-defineProps<{
+withDefaults(defineProps<{
   icon: Component
   url: RouteLocationRaw
   target?: string
-}>()
+  titleTag?: TitleTag
+}>(), {
+  titleTag: 'h3',
+})
 </script>
