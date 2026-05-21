@@ -253,6 +253,8 @@ export default defineNuxtConfig({
         'vue3-xml-viewer', // CJS
         'uqr',
         'pdfjs-dist',
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
       ],
       // `@datagouv/components-next` shouldn't be optimize otherwise its vue instance is not the same
       // as the one used in udata-front-kit. This cause errors with the `provide` / `inject` functions
