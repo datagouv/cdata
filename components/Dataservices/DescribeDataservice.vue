@@ -43,11 +43,11 @@
         </Accordion>
         <Accordion
           :id="addBaseUrlAccordionId"
-          :title="t('Définir le bon lien vers l’API')"
+          :title="t(`Définir le lien racine de l'API`)"
           :state="accordionState('base_api_url')"
         >
           <p class="fr-m-0">
-            {{ t("L'URL de base d'une API est le point d'entrée commun à toutes les requêtes, souvent constitué d'un domaine ou d'une adresse serveur. Elle sert de fondation à laquelle on ajoute des chemins (endpoints) spécifiques pour accéder aux différentes ressources de l'API.") }}
+            {{ t(`Le lien racine de l'API est l'URL de base, commune à toutes les requêtes. Par exemple "https://mon-api.com". Elle est souvent constituée d'un domaine ou d'une adresse serveur et sert de fondation à laquelle sont ajoutés des chemins spécifiques s'il y en a (endpoints) et les paramètres d'appel.`) }}
           </p>
         </Accordion>
         <Accordion
