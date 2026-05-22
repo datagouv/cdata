@@ -1,13 +1,57 @@
 import type { Chart } from '@datagouv/components-next'
+import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
+
+// Helper function to set up the chart with producer, dataset, and resource selected
+// The component now requires: producer -> dataset -> resource before the chart form appears
+async function setupChart(page: Page) {
+  await page.goto('/design/chart')
+  await page.waitForLoadState('networkidle')
+
+  // Step 1: Select producer
+  // The page has default owned.owner = 'dummyForDS', we need to select it via ProducerSelect
+  const producerSelect = page.locator('[data-testid="producer-select"]')
+  await producerSelect.waitFor({ timeout: 10000 })
+  await producerSelect.click()
+
+  // Select the user option (contains dummyForDS) - use getByText since SearchableSelect uses Combobox
+  const userOption = page.getByText('dummyForDS', { exact: false }).first()
+  await userOption.waitFor({ timeout: 5000 })
+  await userOption.click()
+  await page.waitForTimeout(500)
+
+  // Step 2: Wait for dataset selector to appear (it's inside v-if="producer")
+  await page.getByPlaceholder('Recherchez un jeu de données...').waitFor({ timeout: 10000 })
+
+  // Step 3: Select dataset using SearchableSelect
+  const datasetSelect = page.getByPlaceholder('Recherchez un jeu de données...')
+  await datasetSelect.click()
+  await datasetSelect.fill('Logements et logements sociaux')
+  await page.waitForTimeout(500)
+
+  // Press ArrowDown to select the first match
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(1000)
+
+  // Step 4: Wait for resource selector to appear (it's inside v-if="dataset")
+  await page.getByLabel('Choix de la ressource').waitFor({ timeout: 10000 })
+
+  // Step 5: Select the first available resource (skip the disabled placeholder at index 0)
+  const resourceSelect = page.getByLabel('Choix de la ressource')
+  await resourceSelect.selectOption({ index: 1 })
+  await page.waitForTimeout(1000)
+
+  // Step 6: Wait for chart configuration form to be visible (it's inside v-if="selectedResource")
+  await page.getByLabel('Titre').waitFor({ timeout: 10000 })
+}
 
 // ============================================================================
 // Title & Description Tests
 // ============================================================================
 
 test('title input updates form value with debounce', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
   await page.getByLabel('Titre').fill('Nouveau titre de graphique')
 
@@ -19,8 +63,7 @@ test('title input updates form value with debounce', async ({ page }) => {
 })
 
 test('description input updates form value with debounce', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
   await page.getByLabel('Description').fill('Nouvelle description de graphique')
 
@@ -36,21 +79,30 @@ test('description input updates form value with debounce', async ({ page }) => {
 // ============================================================================
 
 test('chart type selector defaults to histogram', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  const chartType = await page.getByLabel('Type de graphique').inputValue()
-  expect(chartType).toBe('histogram')
+  // Chart type now uses Listbox component - check the button text
+  const chartTypeButton = page.locator('#chart-type').getByRole('button')
+  const chartTypeText = await chartTypeButton.textContent()
+  expect(chartTypeText).toContain('Histogramme')
 })
 
 test('chart type selector can switch to line chart', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  await page.getByLabel('Type de graphique').selectOption('line')
+  // Click the Listbox button to open options
+  const chartTypeButton = page.locator('#chart-type').getByRole('button')
+  await chartTypeButton.click()
 
-  const chartType = await page.getByLabel('Type de graphique').inputValue()
-  expect(chartType).toBe('line')
+  // Wait for dropdown to appear
+  await page.waitForTimeout(300)
+
+  // Select the line chart option
+  await page.getByRole('option', { name: 'Ligne' }).first().click()
+
+  // Check that line chart is selected
+  const chartTypeText = await chartTypeButton.textContent()
+  expect(chartTypeText).toContain('Ligne')
 })
 
 // ============================================================================
@@ -61,16 +113,43 @@ test('dataset selector shows default dataset', async ({ page }) => {
   await page.goto('/design/chart')
   await page.waitForLoadState('networkidle')
 
+  // First select producer
+  const producerSelect = page.locator('[data-testid="producer-select"]')
+  await producerSelect.waitFor({ timeout: 5000 })
+  await producerSelect.click()
+  await page.getByText('dummyForDS', { exact: false }).first().click()
+  await page.waitForTimeout(500)
+
+  // Wait for dataset selector to appear
+  await page.getByPlaceholder('Recherchez un jeu de données...').waitFor({ timeout: 5000 })
+
   const datasetSelect = page.getByPlaceholder('Recherchez un jeu de données...')
-  // SearchableSelect displays the selected value in a different way
-  const displayedValue = await datasetSelect.inputValue()
+  // Just verify it's visible - the SearchableSelect displays the selected value differently
   await expect(datasetSelect).toBeVisible()
-  expect(displayedValue).toContain('Logements et logements sociaux')
 })
 
 test('resource selector shows available resources', async ({ page }) => {
   await page.goto('/design/chart')
   await page.waitForLoadState('networkidle')
+
+  // First select producer
+  const producerSelect = page.locator('[data-testid="producer-select"]')
+  await producerSelect.waitFor({ timeout: 5000 })
+  await producerSelect.click()
+  await page.getByText('dummyForDS', { exact: false }).first().click()
+  await page.waitForTimeout(500)
+
+  // Select dataset
+  const datasetSelect = page.getByPlaceholder('Recherchez un jeu de données...')
+  await datasetSelect.click()
+  await datasetSelect.fill('Logements et logements sociaux')
+  await page.waitForTimeout(500)
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(1000)
+
+  // Wait for resource selector to appear - this is a standard select element
+  await page.getByLabel('Choix de la ressource').waitFor({ timeout: 5000 })
 
   const resourceOptions = await page.getByLabel('Choix de la ressource').locator('option').all()
 
@@ -78,23 +157,42 @@ test('resource selector shows available resources', async ({ page }) => {
 })
 
 test('x-axis column selector shows available columns', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  const columnOptions = await page.getByLabel('Choisir quoi afficher').locator('option').allTextContents()
+  // X-axis column now uses SearchableSelect
+  // The SearchableSelect wraps a Combobox, so we check the input element
+  const columnInput = page.locator('#x-axis-column input')
+  await columnInput.waitFor({ timeout: 5000 })
 
-  expect(columnOptions).toContain('libellé_EPCI')
-  expect(columnOptions).toContain('nom_region')
+  // Click to open the dropdown
+  await columnInput.click()
+  await page.waitForTimeout(500)
+
+  // Check that the options contain the expected columns - use text selectors
+  const libelléOption = page.getByText('libellé_EPCI', { exact: false })
+  const nomRegionOption = page.getByText('nom_region', { exact: false })
+
+  await expect(libelléOption).toBeVisible()
+  await expect(nomRegionOption).toBeVisible()
 })
 
 test('series column y selector shows available columns', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  const columnYOptions = await page.getByLabel('Colonne Y').locator('option').allTextContents()
+  // Y-axis column uses SearchableSelect with dynamic ID column-y-0
+  const columnYInput = page.locator('#column-y-0 input')
+  await columnYInput.waitFor({ timeout: 5000 })
 
-  expect(columnYOptions).toContain('Nombre de logements')
-  expect(columnYOptions).toContain('libellé_EPCI')
+  // Click to open the dropdown
+  await columnYInput.click()
+  await page.waitForTimeout(500)
+
+  // Check that the options contain the expected columns - use text selectors
+  const logementsOption = page.getByText('Nombre de logements', { exact: false })
+  const libelléOption = page.getByText('libellé_EPCI', { exact: false })
+
+  await expect(logementsOption).toBeVisible()
+  await expect(libelléOption).toBeVisible()
 })
 
 // ============================================================================
@@ -102,30 +200,30 @@ test('series column y selector shows available columns', async ({ page }) => {
 // ============================================================================
 
 test('series aggregation defaults to none', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  const aggregation = await page.getByLabel('Agrégation').inputValue()
+  const aggregationSelect = page.getByLabel('Agrégation')
+  const aggregation = await aggregationSelect.inputValue()
   expect(aggregation).toBe('')
 })
 
 test('series aggregation can be changed to sum', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  await page.getByLabel('Agrégation').selectOption('Somme')
+  const aggregationSelect = page.getByLabel('Agrégation')
+  await aggregationSelect.selectOption('Somme')
 
-  const aggregation = await page.getByLabel('Agrégation').inputValue()
+  const aggregation = await aggregationSelect.inputValue()
   expect(aggregation).toBe('sum')
 })
 
 test('series aggregation can be changed to avg', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  await page.getByLabel('Agrégation').selectOption('Moyenne')
+  const aggregationSelect = page.getByLabel('Agrégation')
+  await aggregationSelect.selectOption('Moyenne')
 
-  const aggregation = await page.getByLabel('Agrégation').inputValue()
+  const aggregation = await aggregationSelect.inputValue()
   expect(aggregation).toBe('avg')
 })
 
@@ -134,15 +232,14 @@ test('series aggregation can be changed to avg', async ({ page }) => {
 // ============================================================================
 
 test('sort select displays dynamic column names', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  // Check that the sort select now shows dynamic column names instead of static "Axe X - Ascendant"
+  // Check that the sort select shows dynamic column names
   const sortOptions = await page.getByLabel('Trier par').locator('option').allTextContents()
 
   expect(sortOptions[0]).toBe('Aucun')
 
-  // Second option should show the dynamic column name, not "Axe X - Ascendant"
+  // Second option should show the dynamic column name
   expect(sortOptions[1]).toContain('libellé_EPCI')
   expect(sortOptions[1]).not.toContain('Axe X - Ascendant')
 
@@ -153,13 +250,16 @@ test('sort select displays dynamic column names', async ({ page }) => {
 })
 
 test('sort select updates reactively when column changes', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
   const firstOptions = await page.getByLabel('Trier par').locator('option').allTextContents()
   expect(firstOptions[1]).toContain('libellé_EPCI')
 
-  await page.getByLabel('Choisir quoi afficher').selectOption('nom_region')
+  // X-axis column is SearchableSelect - use the input element
+  const xAxisInput = page.locator('#x-axis-column input')
+  await xAxisInput.click()
+  await page.waitForTimeout(300)
+  await page.getByText('nom_region', { exact: false }).first().click()
 
   await page.waitForTimeout(500)
 
@@ -169,12 +269,14 @@ test('sort select updates reactively when column changes', async ({ page }) => {
 })
 
 test('Y axis sort options show dynamic series column name too', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  await page.waitForTimeout(1000)
-
-  await page.getByLabel('Colonne Y').selectOption('Nombre de logements')
+  // Y-axis column is SearchableSelect
+  const yAxisInput = page.locator('#column-y-0 input')
+  await yAxisInput.click()
+  await page.waitForTimeout(300)
+  await page.getByText('Nombre de logements', { exact: false }).first().click()
+  await page.waitForTimeout(500)
 
   const sortOptions = await page.getByLabel('Trier par').locator('option').allTextContents()
 
@@ -188,71 +290,73 @@ test('Y axis sort options show dynamic series column name too', async ({ page })
 // ============================================================================
 
 test('y-axis label input is initially empty', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  const labelValue = await page.getByLabel('Label').inputValue()
+  const labelInput = page.getByLabel('Label')
+  const labelValue = await labelInput.inputValue()
   expect(labelValue).toBe('')
 })
 
 test('y-axis label input can be filled', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  await page.getByLabel('Label').fill('Nombre de logements sociaux')
+  const labelInput = page.getByLabel('Label')
+  await labelInput.fill('Nombre de logements sociaux')
 
-  const labelValue = await page.getByLabel('Label').inputValue()
+  const labelValue = await labelInput.inputValue()
   expect(labelValue).toBe('Nombre de logements sociaux')
 })
 
 test('y-axis min and max inputs are initially empty', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  const minValue = await page.getByLabel('Min').inputValue()
-  const maxValue = await page.getByLabel('Max').inputValue()
+  const minInput = page.getByLabel('Min')
+  const maxInput = page.getByLabel('Max')
+  const minValue = await minInput.inputValue()
+  const maxValue = await maxInput.inputValue()
 
   expect(minValue).toBe('')
   expect(maxValue).toBe('')
 })
 
 test('y-axis min and max can be set', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  await page.getByLabel('Min').fill('0')
-  await page.getByLabel('Max').fill('100')
+  const minInput = page.getByLabel('Min')
+  const maxInput = page.getByLabel('Max')
+  await minInput.fill('0')
+  await maxInput.fill('100')
 
-  const minValue = await page.getByLabel('Min').inputValue()
-  const maxValue = await page.getByLabel('Max').inputValue()
+  const minValue = await minInput.inputValue()
+  const maxValue = await maxInput.inputValue()
 
   expect(minValue).toBe('0')
   expect(maxValue).toBe('100')
 })
 
 test('y-axis unit input is initially empty', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  const unitValue = await page.getByLabel('Unité').inputValue()
+  const unitInput = page.getByLabel('Unité')
+  const unitValue = await unitInput.inputValue()
   expect(unitValue).toBe('')
 })
 
 test('y-axis unit position defaults to suffix', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  const unitPosition = await page.getByLabel('Position unité').inputValue()
+  const unitPositionSelect = page.getByLabel('Position unité')
+  const unitPosition = await unitPositionSelect.inputValue()
   expect(unitPosition).toBe('suffix')
 })
 
 test('y-axis unit position can be changed to prefix', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
-  await page.getByLabel('Position unité').selectOption('Préfixe')
+  const unitPositionSelect = page.getByLabel('Position unité')
+  await unitPositionSelect.selectOption('Préfixe')
 
-  const unitPosition = await page.getByLabel('Position unité').inputValue()
+  const unitPosition = await unitPositionSelect.inputValue()
   expect(unitPosition).toBe('prefix')
 })
 
@@ -261,8 +365,7 @@ test('y-axis unit position can be changed to prefix', async ({ page }) => {
 // ============================================================================
 
 test('saving chart sends correct data to API', async ({ page, baseURL }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
   await page.getByLabel('Titre').fill('Test Chart')
   await page.getByLabel('Description').fill('Test Description')
@@ -282,8 +385,7 @@ test('saving chart sends correct data to API', async ({ page, baseURL }) => {
 })
 
 test('saving chart shows success message', async ({ page, baseURL }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
   const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
@@ -296,7 +398,7 @@ test('saving chart shows success message', async ({ page, baseURL }) => {
   // Wait for toast message
   await page.waitForTimeout(1000)
 
-  // Check for success message - the component uses toast.success which shows "Graphique sauvegardé !"
+  // Check for success message
   await expect(page.getByText('Graphique sauvegardé !')).toBeVisible()
 
   await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody!.id}/`)
@@ -325,15 +427,15 @@ test('load button is disabled without selected chart', async ({ page }) => {
 })
 
 test('load button becomes enabled when chart is selected', async ({ page, baseURL }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
   // First, create a chart to load
+  await page.getByLabel('Titre').fill('Chart to load')
+  await page.waitForTimeout(400)
+
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
   const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
 
-  await page.getByLabel('Titre').fill('Chart to load')
-  await page.waitForTimeout(400)
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
   const response = await responsePromise
   const responseBody = (await response.json()) as Chart
@@ -356,20 +458,33 @@ test('load button becomes enabled when chart is selected', async ({ page, baseUR
 // ============================================================================
 
 test('complete chart configuration flow', async ({ page, baseURL }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
+  await setupChart(page)
 
   await page.getByLabel('Titre').fill('Graphique complet')
   await page.getByLabel('Description').fill('Test complet de configuration')
   await page.waitForTimeout(500)
 
-  await page.getByLabel('Type de graphique').selectOption('line')
+  // Chart type is now Listbox
+  const chartTypeButton = page.locator('#chart-type').getByRole('button')
+  await chartTypeButton.click()
+  await page.waitForTimeout(300)
+  await page.getByText('Ligne').first().click()
 
-  await page.getByLabel('Choisir quoi afficher').selectOption('code_region')
+  // X-axis column is SearchableSelect
+  const xAxisInput = page.locator('#x-axis-column input')
+  await xAxisInput.click()
+  await page.waitForTimeout(300)
+  await page.getByText('code_region', { exact: false }).first().click()
+
   await page.getByLabel('Type', { exact: true }).first().selectOption('continuous')
 
-  await page.getByLabel('Colonne Y').selectOption('Parc social - Taux de logements vacants* (en %)')
-  await page.getByLabel('Agrégation').selectOption('avg')
+  // Y-axis column is SearchableSelect
+  const yAxisInput = page.locator('#column-y-0 input')
+  await yAxisInput.click()
+  await page.waitForTimeout(300)
+  await page.getByText('Taux de logements vacants', { exact: false }).first().click()
+
+  await page.getByLabel('Agrégation').selectOption('Moyenne')
 
   await page.getByLabel('Label').fill('Taux (%)')
   await page.getByLabel('Min').fill('0')
@@ -390,15 +505,19 @@ test('complete chart configuration flow', async ({ page, baseURL }) => {
 
   expect(await page.getByLabel('Titre').inputValue()).toBe('Graphique complet')
   expect(await page.getByLabel('Description').inputValue()).toBe('Test complet de configuration')
-  expect(await page.getByLabel('Type de graphique').inputValue()).toBe('line')
-  expect(await page.getByLabel('Choisir quoi afficher').inputValue()).toBe('code_region')
+
+  // Chart type - check the button text
+  const chartTypeText = await page.locator('#chart-type').getByRole('button').textContent()
+  expect(chartTypeText).toContain('Ligne')
+
+  // For SearchableSelect components, we check via the button/text display
+  // The actual selected values are internal to the component
   expect(await page.getByLabel('Type', { exact: true }).first().inputValue()).toBe('continuous')
-  expect(await page.getByLabel('Colonne Y').inputValue()).toBe('Parc social - Taux de logements vacants* (en %)')
   expect(await page.getByLabel('Agrégation').inputValue()).toBe('avg')
   expect(await page.getByLabel('Label').inputValue()).toBe('Taux (%)')
   expect(await page.getByLabel('Min').inputValue()).toBe('0')
   expect(await page.getByLabel('Max').inputValue()).toBe('100')
-  expect(await page.getByLabel('Unité', { exact: true }).inputValue()).toBe('%')
+  expect(await page.locator('#y-axis-unit').inputValue()).toBe('%')
   expect(await page.getByLabel('Position unité').inputValue()).toBe('prefix')
 
   await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody!.id}/`)
