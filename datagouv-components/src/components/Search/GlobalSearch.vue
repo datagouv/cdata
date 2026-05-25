@@ -406,6 +406,10 @@ const props = withDefaults(defineProps<{
   hideSearchInput: false,
 })
 
+const emit = defineEmits<{
+  resultsCount: [total: number]
+}>()
+
 // defineModel's default is static and can't depend on props, so we cast and initialize manually
 const currentType = defineModel<string>('type') as Ref<string>
 if (!currentType.value) currentType.value = configKey(props.config[0] ?? { class: 'datasets' })
@@ -716,6 +720,10 @@ function resetFilters() {
 
 const searchResults = computed(() => resultsMap[currentType.value]?.data.value)
 const searchResultsStatus = computed(() => resultsMap[currentType.value]?.status.value)
+
+watch(searchResults, (results) => {
+  if (results) emit('resultsCount', results.total)
+}, { immediate: true })
 
 // RSS feed URL for datasets
 const rssUrl = computed(() => {
