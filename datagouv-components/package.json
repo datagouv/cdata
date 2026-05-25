@@ -17,6 +17,10 @@
     ]
   },
   "main": "./src/main.ts",
+  "exports": {
+    ".": "./src/main.ts",
+    "./chart": "./src/chart.ts"
+  },
   "sideEffects": false,
   "files": [
     "assets",
