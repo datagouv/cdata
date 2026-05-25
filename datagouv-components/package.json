@@ -20,7 +20,8 @@
   "exports": {
     ".": "./src/main.ts",
     "./chart": "./src/chart.ts",
-    "./assets/*": "./assets/*"
+    "./assets/*": "./assets/*",
+    "./dist/*": "./dist/*"
   },
   "sideEffects": false,
   "files": [
