@@ -13,6 +13,7 @@
       <SearchInput
         v-model="q"
         :placeholder="resolvedPlaceholder"
+        :auto-focus="props.autoFocus"
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
@@ -401,9 +402,11 @@ const props = withDefaults(defineProps<{
   config?: GlobalSearchConfig
   placeholder?: string | null
   hideSearchInput?: boolean
+  autoFocus?: boolean
 }>(), {
   config: getDefaultGlobalSearchConfig,
   hideSearchInput: false,
+  autoFocus: true,
 })
 
 const emit = defineEmits<{
