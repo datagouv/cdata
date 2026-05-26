@@ -13,7 +13,7 @@
       <SearchInput
         v-model="q"
         :placeholder="resolvedPlaceholder"
-        :auto-focus="props.autoFocus"
+        :auto-focus
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
