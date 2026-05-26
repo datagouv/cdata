@@ -1,39 +1,33 @@
 import type { Chart } from '@datagouv/components-next'
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
+import { clickOutside } from '../helpers'
 
 // Helper function to set up the chart with producer, dataset, and resource selected
 async function setupChart(page: Page) {
   await page.goto('/design/chart')
   await page.waitForLoadState('networkidle')
 
-  const producerSelect = page.locator('[data-testid="producer-select"]')
-  await producerSelect.waitFor({ timeout: 10000 })
-  await producerSelect.click()
+  await page.getByTestId('producer-select').click()
+  await page.getByRole('option', { name: 'Admin User' }).click()
 
-  const userOption = page.getByText('dummyForDS', { exact: false }).first()
-  await userOption.waitFor({ timeout: 5000 })
-  await userOption.click()
-  await page.waitForTimeout(500)
+  await page.getByTestId('searchable-select-jeu-de-donn-es').click()
 
-  await page.getByPlaceholder('Recherchez un jeu de données...').waitFor({ timeout: 10000 })
-
+  const getPromise = page.waitForResponse('**/api/1/datasets/suggest/?q=logements+sociaux*')
   const datasetSelect = page.getByPlaceholder('Recherchez un jeu de données...')
-  await datasetSelect.click()
-  await datasetSelect.fill('Logements et logements sociaux')
-  await page.waitForTimeout(500)
+  await datasetSelect.fill('logements sociaux')
+  await getPromise
+
+  await page.getByRole('option', { name: 'Logements et logements sociaux dans les EPCI' }).click()
+  await clickOutside(page)
 
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('Enter')
-  await page.waitForTimeout(1000)
-
-  await page.getByLabel('Choix de la ressource').waitFor({ timeout: 10000 })
 
   const resourceSelect = page.getByLabel('Choix de la ressource')
   await resourceSelect.selectOption({ index: 1 })
-  await page.waitForTimeout(1000)
 
-  await page.getByLabel('Titre').waitFor({ timeout: 10000 })
+  expect(page.getByLabel('Titre')).toBeVisible()
 }
 
 test('title input updates form value with debounce', async ({ page }) => {

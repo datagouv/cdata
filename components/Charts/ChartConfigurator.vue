@@ -231,10 +231,6 @@
               {{ $t('Axe X') }}
             </p>
             <div>
-              <label
-                for="x-axis-column"
-                class="fr-label"
-              >{{ $t('Choisir quoi afficher') }}</label>
               <SearchableSelect
                 id="x-axis-column"
                 v-model="xAxisColumnProxy"
@@ -305,11 +301,6 @@
               class="space-y-4"
             >
               <div>
-                <label
-                  :for="`column-y-${index}`"
-                  class="fr-label"
-                >{{ $t('Colonne Y')
-                }}</label>
                 <SearchableSelect
                   :id="`column-y-${index}`"
                   :model-value="getSerieColumnYProxy(serie).get()"
@@ -695,7 +686,7 @@ async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
     query.organization = producer.value.organization.id
   }
 
-  return await $api<Array<DatasetSuggest>>('/api/1/datasets/suggest/', {
+  return await $chartsApi<Array<DatasetSuggest>>('/api/1/datasets/suggest/', {
     query,
   })
 }
