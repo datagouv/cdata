@@ -13,6 +13,7 @@
       <SearchInput
         v-model="q"
         :placeholder="resolvedPlaceholder"
+        :auto-focus
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
@@ -401,10 +402,16 @@ const props = withDefaults(defineProps<{
   config?: GlobalSearchConfig
   placeholder?: string | null
   hideSearchInput?: boolean
+  autoFocus?: boolean
 }>(), {
   config: getDefaultGlobalSearchConfig,
   hideSearchInput: false,
+  autoFocus: true,
 })
+
+const emit = defineEmits<{
+  resultsCount: [total: number]
+}>()
 
 // defineModel's default is static and can't depend on props, so we cast and initialize manually
 const currentType = defineModel<string>('type') as Ref<string>
@@ -716,6 +723,10 @@ function resetFilters() {
 
 const searchResults = computed(() => resultsMap[currentType.value]?.data.value)
 const searchResultsStatus = computed(() => resultsMap[currentType.value]?.status.value)
+
+watch(searchResults, (results) => {
+  if (results) emit('resultsCount', results.total)
+}, { immediate: true })
 
 // RSS feed URL for datasets
 const rssUrl = computed(() => {
