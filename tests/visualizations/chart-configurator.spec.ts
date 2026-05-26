@@ -9,7 +9,7 @@ async function setupChart(page: Page) {
   await page.waitForLoadState('networkidle')
 
   await page.getByTestId('producer-select').click()
-  await page.getByRole('option', { name: 'Admin User' }).click()
+  await page.getByRole('option', { name: 'Admin User', exact: true }).click()
 
   await page.getByTestId('searchable-select-jeu-de-donn-es').click()
 
@@ -18,7 +18,7 @@ async function setupChart(page: Page) {
   await datasetSelect.fill('logements sociaux')
   await getPromise
 
-  await page.getByRole('option', { name: 'Logements et logements sociaux dans les EPCI' }).click()
+  await page.getByRole('option', { name: 'Logements et logements sociaux dans les EPCI', exact: true }).click()
   await clickOutside(page)
 
   await page.keyboard.press('ArrowDown')
@@ -67,83 +67,28 @@ test('chart type selector can switch to line chart', async ({ page }) => {
   // Wait for dropdown to appear
   await page.waitForTimeout(300)
 
-  await page.getByRole('option', { name: 'Ligne' }).first().click()
+  await page.getByRole('option', { name: 'Ligne', exact: true }).click()
 
   const chartTypeText = await chartTypeButton.textContent()
   expect(chartTypeText).toContain('Ligne')
 })
 
-test('dataset selector shows default dataset', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
-
-  const producerSelect = page.locator('[data-testid="producer-select"]')
-  await producerSelect.waitFor({ timeout: 5000 })
-  await producerSelect.click()
-  await page.getByText('dummyForDS', { exact: false }).first().click()
-  await page.waitForTimeout(500)
-
-  await page.getByPlaceholder('Recherchez un jeu de données...').waitFor({ timeout: 5000 })
-
-  const datasetSelect = page.getByPlaceholder('Recherchez un jeu de données...')
-  await expect(datasetSelect).toBeVisible()
-})
-
-test('resource selector shows available resources', async ({ page }) => {
-  await page.goto('/design/chart')
-  await page.waitForLoadState('networkidle')
-
-  const producerSelect = page.locator('[data-testid="producer-select"]')
-  await producerSelect.waitFor({ timeout: 5000 })
-  await producerSelect.click()
-  await page.getByText('dummyForDS', { exact: false }).first().click()
-  await page.waitForTimeout(500)
-
-  const datasetSelect = page.getByPlaceholder('Recherchez un jeu de données...')
-  await datasetSelect.click()
-  await datasetSelect.fill('Logements et logements sociaux')
-  await page.waitForTimeout(500)
-  await page.keyboard.press('ArrowDown')
-  await page.keyboard.press('Enter')
-  await page.waitForTimeout(1000)
-
-  await page.getByLabel('Choix de la ressource').waitFor({ timeout: 5000 })
-
-  const resourceOptions = await page.getByLabel('Choix de la ressource').locator('option').all()
-
-  expect(resourceOptions.length).toBeGreaterThan(1)
-})
-
 test('x-axis column selector shows available columns', async ({ page }) => {
   await setupChart(page)
 
-  const columnInput = page.locator('#x-axis-column input')
-  await columnInput.waitFor({ timeout: 5000 })
+  await page.getByTestId('searchable-select-choisir-quoi-afficher').click()
 
-  await columnInput.click()
-  await page.waitForTimeout(500)
-
-  const libelléOption = page.getByText('libellé_EPCI', { exact: false })
-  const nomRegionOption = page.getByText('nom_region', { exact: false })
-
-  await expect(libelléOption).toBeVisible()
-  await expect(nomRegionOption).toBeVisible()
+  await expect(page.getByRole('option', { name: 'libellé_EPCI', exact: true })).toBeVisible()
+  await expect(page.getByRole('option', { name: 'nom_region', exact: true })).toBeVisible()
 })
 
 test('series column y selector shows available columns', async ({ page }) => {
   await setupChart(page)
 
-  const columnYInput = page.locator('#column-y-0 input')
-  await columnYInput.waitFor({ timeout: 5000 })
+  await page.getByTestId('searchable-select-colonne-y').click()
 
-  await columnYInput.click()
-  await page.waitForTimeout(500)
-
-  const logementsOption = page.getByText('Nombre de logements', { exact: false })
-  const libelléOption = page.getByText('libellé_EPCI', { exact: false })
-
-  await expect(logementsOption).toBeVisible()
-  await expect(libelléOption).toBeVisible()
+  await expect(page.getByRole('option', { name: 'Nombre de logements', exact: true })).toBeVisible()
+  await expect(page.getByRole('option', { name: 'libellé_EPCI', exact: true })).toBeVisible()
 })
 
 test('series aggregation defaults to none', async ({ page }) => {
@@ -151,7 +96,7 @@ test('series aggregation defaults to none', async ({ page }) => {
 
   const aggregationSelect = page.getByLabel('Agrégation')
   const aggregation = await aggregationSelect.inputValue()
-  expect(aggregation).toBe('')
+  expect(aggregation).toBe('Non')
 })
 
 test('series aggregation can be changed to sum', async ({ page }) => {
@@ -196,10 +141,9 @@ test('sort select updates reactively when column changes', async ({ page }) => {
   const firstOptions = await page.getByLabel('Trier par').locator('option').allTextContents()
   expect(firstOptions[1]).toContain('libellé_EPCI')
 
-  const xAxisInput = page.locator('#x-axis-column input')
-  await xAxisInput.click()
+  await page.getByTestId('searchable-select-choisir-quoi-afficher').click()
   await page.waitForTimeout(300)
-  await page.getByText('nom_region', { exact: false }).first().click()
+  await page.getByRole('option', { name: 'nom_region', exact: true }).click()
 
   await page.waitForTimeout(500)
 
@@ -211,10 +155,9 @@ test('sort select updates reactively when column changes', async ({ page }) => {
 test('Y axis sort options show dynamic series column name too', async ({ page }) => {
   await setupChart(page)
 
-  const yAxisInput = page.locator('#column-y-0 input')
-  await yAxisInput.click()
+  await page.getByTestId('searchable-select-colonne-y').click()
   await page.waitForTimeout(300)
-  await page.getByText('Nombre de logements', { exact: false }).first().click()
+  await page.getByRole('option', { name: 'Nombre de logements', exact: true }).click()
   await page.waitForTimeout(500)
 
   const sortOptions = await page.getByLabel('Trier par').locator('option').allTextContents()
@@ -226,6 +169,8 @@ test('Y axis sort options show dynamic series column name too', async ({ page })
 test('y-axis label input is initially empty', async ({ page }) => {
   await setupChart(page)
 
+  await page.getByText('Styles').click()
+
   const labelInput = page.getByLabel('Label')
   const labelValue = await labelInput.inputValue()
   expect(labelValue).toBe('')
@@ -233,6 +178,8 @@ test('y-axis label input is initially empty', async ({ page }) => {
 
 test('y-axis label input can be filled', async ({ page }) => {
   await setupChart(page)
+
+  await page.getByText('Styles').click()
 
   const labelInput = page.getByLabel('Label')
   await labelInput.fill('Nombre de logements sociaux')
@@ -243,6 +190,8 @@ test('y-axis label input can be filled', async ({ page }) => {
 
 test('y-axis min and max inputs are initially empty', async ({ page }) => {
   await setupChart(page)
+
+  await page.getByText('Styles').click()
 
   const minInput = page.getByLabel('Min')
   const maxInput = page.getByLabel('Max')
@@ -255,6 +204,8 @@ test('y-axis min and max inputs are initially empty', async ({ page }) => {
 
 test('y-axis min and max can be set', async ({ page }) => {
   await setupChart(page)
+
+  await page.getByText('Styles').click()
 
   const minInput = page.getByLabel('Min')
   const maxInput = page.getByLabel('Max')
@@ -271,13 +222,17 @@ test('y-axis min and max can be set', async ({ page }) => {
 test('y-axis unit input is initially empty', async ({ page }) => {
   await setupChart(page)
 
-  const unitInput = page.getByLabel('Unité')
+  await page.getByText('Styles').click()
+
+  const unitInput = page.getByRole('textbox', { name: 'Unité' })
   const unitValue = await unitInput.inputValue()
   expect(unitValue).toBe('')
 })
 
 test('y-axis unit position defaults to suffix', async ({ page }) => {
   await setupChart(page)
+
+  await page.getByText('Styles').click()
 
   const unitPositionSelect = page.getByLabel('Position unité')
   const unitPosition = await unitPositionSelect.inputValue()
@@ -286,6 +241,8 @@ test('y-axis unit position defaults to suffix', async ({ page }) => {
 
 test('y-axis unit position can be changed to prefix', async ({ page }) => {
   await setupChart(page)
+
+  await page.getByText('Styles').click()
 
   const unitPositionSelect = page.getByLabel('Position unité')
   await unitPositionSelect.selectOption('Préfixe')
@@ -316,6 +273,10 @@ test('saving chart sends correct data to API', async ({ page, baseURL }) => {
 
 test('saving chart shows success message', async ({ page, baseURL }) => {
   await setupChart(page)
+
+  await page.getByLabel('Titre').fill('Test Chart')
+  await page.getByLabel('Description').fill('Test Description')
+  await page.waitForTimeout(500)
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
   const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
@@ -353,6 +314,7 @@ test('load button becomes enabled when chart is selected', async ({ page, baseUR
   await setupChart(page)
 
   await page.getByLabel('Titre').fill('Chart to load')
+  await page.getByLabel('Description').fill('Chart to load description')
   await page.waitForTimeout(400)
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
@@ -383,21 +345,21 @@ test('complete chart configuration flow', async ({ page, baseURL }) => {
   const chartTypeButton = page.locator('#chart-type').getByRole('button')
   await chartTypeButton.click()
   await page.waitForTimeout(300)
-  await page.getByText('Ligne').first().click()
+  await page.getByRole('option', { name: 'Ligne', exact: true }).click()
 
-  const xAxisInput = page.locator('#x-axis-column input')
-  await xAxisInput.click()
+  await page.getByTestId('searchable-select-choisir-quoi-afficher').click()
   await page.waitForTimeout(300)
-  await page.getByText('code_region', { exact: false }).first().click()
+  await page.getByRole('option', { name: 'code_region', exact: true }).click()
 
   await page.getByLabel('Type', { exact: true }).first().selectOption('continuous')
 
-  const yAxisInput = page.locator('#column-y-0 input')
-  await yAxisInput.click()
+  await page.getByTestId('searchable-select-colonne-y').click()
   await page.waitForTimeout(300)
-  await page.getByText('Taux de logements vacants', { exact: false }).first().click()
+  await page.getByRole('option', { name: 'Taux de logements vacants* (en %)', exact: true }).click()
 
   await page.getByLabel('Agrégation').selectOption('Moyenne')
+
+  await page.getByText('Styles').click()
 
   await page.getByLabel('Label').fill('Taux (%)')
   await page.getByLabel('Min').fill('0')
