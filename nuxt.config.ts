@@ -46,6 +46,10 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // Private-network API base used for server-side (SSR / Nitro) requests, to reach the API
+    // without going through the public internet. Empty by default → falls back to `public.apiBase`.
+    // Override in production with NUXT_API_BASE_PRIVATE_NETWORK.
+    apiBasePrivateNetwork: '',
     crispIdentifier: '',
     crispKey: '',
     crispWebsiteId: '',

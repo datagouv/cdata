@@ -80,6 +80,9 @@ jobs:
       - name: Run typecheck
         run: pnpm run typecheck
 
+      - name: Run unit tests
+        run: pnpm run test:unit
+
       - name: Install datagouv-components dependencies
         working-directory: ./datagouv-components
         run: pnpm install

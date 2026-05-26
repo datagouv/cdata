@@ -92,7 +92,8 @@ This project uses [pnpm](https://pnpm.io/) instead of npm mostly for security re
 ### 🔧 Environment Variables
 
 **Key variables:**
-- `NUXT_PUBLIC_API_BASE`: Base URL for API calls
+- `NUXT_PUBLIC_API_BASE`: Base URL for API calls (used by the browser and to build links)
+- `NUXT_API_BASE_PRIVATE_NETWORK`: Private-network API base for server-side (SSR / Nitro) requests, to reach the API without going through the public internet. Falls back to `NUXT_PUBLIC_API_BASE` when unset.
 - `NUXT_PUBLIC_DEV_API_KEY`: API key for development environment  
 - `NUXT_APP_COMMIT_ID`: Git commit ID (auto-generated in dev mode)
 - `NUXT_PUBLIC_SENTRY_DSN`: Sentry DSN for error tracking

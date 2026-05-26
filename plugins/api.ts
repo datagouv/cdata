@@ -8,10 +8,21 @@ export default defineNuxtPlugin({
     const route = useRoute()
     const { t, locale } = useTranslation()
 
+    const publicApiBase = config.public.apiBase as string
+    // Only set on the server (private runtimeConfig keys aren't exposed to the client).
+    const privateNetworkApiBase = (config.apiBasePrivateNetwork as string) || ''
+
     const makeApi = (apiOptions: { sendJson: boolean, redirectOn404: boolean }) => {
       return $fetch.create({
-        baseURL: config.public.apiBase,
-        onRequest({ options }) {
+        baseURL: publicApiBase,
+        onRequest(context) {
+          const { options } = context
+          // On the server, route requests through the private-network API base (when configured)
+          // so SSR doesn't go over the public internet. ofetch runs onRequest before applying
+          // baseURL, so rewriting the (absolute) request here makes baseURL a no-op server-side.
+          if (import.meta.server && privateNetworkApiBase && typeof context.request === 'string') {
+            context.request = toServerApiUrl(context.request, publicApiBase, privateNetworkApiBase)
+          }
           if (apiOptions.sendJson) {
             options.headers.set('Content-Type', 'application/json')
           }

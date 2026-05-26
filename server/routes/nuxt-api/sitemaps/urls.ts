@@ -3,6 +3,7 @@ import { defineSitemapEventHandler } from '#imports'
 import { getQuery } from 'h3'
 import type { SitemapUrl } from '#sitemap/types'
 import type { H3Event } from 'h3'
+import { toServerApiUrl } from '~/utils/apiBase'
 
 const API_V2_TYPES = ['dataset']
 
@@ -20,6 +21,11 @@ interface PaginatedResponse {
 export default defineSitemapEventHandler(async (event: H3Event) => {
   const config = useRuntimeConfig()
 
+  const publicApiBase = config.public.apiBase as string
+  // Reach the API without going through the public internet when a private-network base is configured.
+  const privateNetworkApiBase = (config.apiBasePrivateNetwork as string) || ''
+  const apiBase = privateNetworkApiBase || publicApiBase
+
   const { type, nbSitemapSections = 1 } = getQuery(event)
   if (!type)
     return new Response(null, { status: 404 })
@@ -33,7 +39,7 @@ export default defineSitemapEventHandler(async (event: H3Event) => {
   // computing starting api page and max page for this sitemap section
   let currentPage = 1
   let maxPage = 1
-  await $fetch<TotalResponse>(`${config.public.apiBase}/api/1/${type}s/`, {
+  await $fetch<TotalResponse>(`${apiBase}/api/1/${type}s/`, {
     headers: { 'X-Fields': 'total' },
   }).then((result) => {
     const total = result.total
@@ -44,14 +50,15 @@ export default defineSitemapEventHandler(async (event: H3Event) => {
   })
 
   const apiVersion = API_V2_TYPES.includes(String(type)) ? 2 : 1
-  let nextPageUrl: string | null = config.public.apiBase + `/api/${apiVersion}/${type}s/?page_size=${pageSize}&page=${currentPage}`
+  let nextPageUrl: string | null = apiBase + `/api/${apiVersion}/${type}s/?page_size=${pageSize}&page=${currentPage}`
   const pages: SitemapUrl[] = []
 
   do {
     await $fetch<PaginatedResponse>(nextPageUrl, {
       headers: { 'X-Fields': `data{${selfWebUrlKey}},next_page,page,total` },
     }).then((result) => {
-      nextPageUrl = result.next_page
+      // The API returns an absolute public URL in `next_page`; keep paginating through the private base.
+      nextPageUrl = result.next_page ? toServerApiUrl(result.next_page, publicApiBase, privateNetworkApiBase) : null
       currentPage = result.page
       pages.push(...result.data.map((p: Record<string, string>) => ({
         loc: p[selfWebUrlKey],
