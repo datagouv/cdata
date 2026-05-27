@@ -14,7 +14,7 @@
             >{{ $t('Titre') }}</label>
             <input
               id="chart-title"
-              v-model="title"
+              v-model="form.title"
               type="text"
               class="w-full fr-input"
             >
@@ -27,27 +27,27 @@
             >{{ $t('Description') }}</label>
             <textarea
               id="chart-description"
-              v-model="desc"
+              v-model="form.description"
               class="w-full fr-input"
               rows="2"
             />
           </div>
           <div class="mt-4 border-t border-new-gray-light pt-4">
             <h3 class="font-medium text-lg text-new-gray-dark">
-              {{ title || $t('Sans titre') }}
+              {{ form.title || $t('Sans titre') }}
             </h3>
             <p
-              v-if="desc"
+              v-if="form.description"
               class="text-new-gray-medium mt-1"
             >
-              {{ desc }}
+              {{ form.description }}
             </p>
           </div>
           <hr class="border-new-gray-light my-4">
           <div class="mt-4">
             <ClientOnly>
               <ChartViewerWrapper
-                :chart="toChartApi(form)"
+                :chart="chartForViewer"
                 @columns="columns = $event"
               />
             </ClientOnly>
@@ -469,48 +469,77 @@
 
 <script setup lang="ts">
 import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, Owned, ColumnType, DataSeriesType, DataSeriesForm, FilterCondition } from '@datagouv/components-next'
-import { resolveColumnType, buildTypeConfig, useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
+import { resolveColumnType, buildTypeConfig, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartLine, RiLineChartLine, RiText } from '@remixicon/vue'
 import { useAPI } from '~/utils/api'
 import { isMeAdmin } from '~/utils/auth'
-
 import ChartFilterRow from './ChartFilterRow.vue'
 import ProducerSelect from '../ProducerSelect.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import type { DatasetSuggest } from '~/types/types'
 
-// Sort option type for the Listbox
+type CombinedSort = '' | 'axis_x-asc' | 'axis_x-desc' | 'axis_y-asc' | 'axis_y-desc'
+
 type SortOption = {
-  value: string
+  value: CombinedSort
   column: string
   direction: 'asc' | 'desc' | ''
   label: string
   icon: Component | null
 }
 
+const { $api } = useNuxtApp()
+const runtimeConfig = useRuntimeConfig()
+const { t } = useTranslation()
+const hasTabularData = useHasTabularData()
+const getProfile = useGetProfile()
+const isAdmin = isMeAdmin()
+const { data: charts, refresh } = await useAPI<PaginatedArray<Chart>>('/api/1/visualizations/', { lazy: true })
+
+const $chartsApi = $fetch.create({
+  baseURL: runtimeConfig.public.chartsApiBase as string,
+  onRequest({ options }) {
+    options.headers.set('Content-Type', 'application/json')
+    options.headers.set('Accept', 'application/json')
+  },
+})
+
+const typeConfig = buildTypeConfig(t)
 const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/components-next').then(m => m.ChartViewerWrapper))
 
 const form = defineModel<ChartForm>({
   required: true,
 })
 
-const { t } = useTranslation()
-
 const resourceProfiles = ref<Record<string, { profile: { categorical: string[] }, columns: Record<string, { python_type: string, format?: string }> }>>({})
-
 const columns = ref<Record<string, Array<{ name: string, type: ColumnType }>>>({})
+const producer = ref<Owned | null>(null)
+const dataset = ref<DatasetSuggest | null>(null)
+const savedResources = reactive<Record<string, Resource>>({})
+const selectedResource = ref<string | null>(null)
+const savedChart = ref<Chart | null>(null)
+const selectedChartId = ref('')
 
-const typeConfig = buildTypeConfig(t)
+const chartForViewer = ref(toChartApi(form.value))
 
 const chartTypeOptions = [
   { value: 'line', label: t('Ligne'), icon: RiLineChartLine },
   { value: 'histogram', label: t('Histogramme'), icon: RiBarChartLine },
 ]
 
-// Proxy for chart_type to handle Listbox object selection
+const conditionOptions = ['exact', 'differs', 'is_null', 'is_not_null', 'greater', 'less', 'strictly_greater', 'strictly_less'] satisfies Array<FilterCondition>
+
+const resources = computed(() => Object.values(savedResources))
+
+const sourceText = computed<string>(() => {
+  if (!dataset.value) return ''
+  const orgName = producer.value?.organization?.name || ''
+  return `${dataset.value.title}${orgName ? ` - ${orgName}` : ''} - datagouv.fr`
+})
+
 const chartTypeProxy = computed<{ value: string, label: string, icon: Component } | null>({
   get: () => chartTypeOptions.find(o => o.value === form.value.chart_type) ?? null,
   set: (val: { value: string, label: string, icon: Component } | null) => {
@@ -520,7 +549,6 @@ const chartTypeProxy = computed<{ value: string, label: string, icon: Component 
   },
 })
 
-// Proxy for x_axis.column_x to handle SearchableSelect object selection
 const xAxisColumnProxy = computed<{ name: string, colType: ColumnType, resourceId: string } | null>({
   get: () => {
     const colName = form.value.x_axis.column_x
@@ -531,19 +559,6 @@ const xAxisColumnProxy = computed<{ name: string, colType: ColumnType, resourceI
     form.value.x_axis.column_x = val?.name ?? ''
   },
 })
-
-// Helper to get/set column_y as object for SearchableSelect
-function getSerieColumnYProxy(serie: DataSeriesForm) {
-  const get = (): { name: string, colType: ColumnType } | null => {
-    const colName = serie.column_y
-    if (!colName) return null
-    return yAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
-  }
-  const set = (val: { name: string, colType: ColumnType } | null | undefined) => {
-    serie.column_y = val?.name ?? ''
-  }
-  return { get, set }
-}
 
 const xAxisColumnOptions = computed<Array<{ name: string, colType: ColumnType, resourceId: string }>>(() => {
   const result: Array<{ name: string, colType: ColumnType, resourceId: string }> = []
@@ -559,7 +574,6 @@ const yAxisColumnOptions = computed<Array<{ name: string, colType: ColumnType }>
   const result: Array<{ name: string, colType: ColumnType }> = []
   if (selectedResource.value && columns.value[selectedResource.value]) {
     for (const col of columns.value[selectedResource.value]) {
-      // Exclude date columns from Y-axis
       if (col.type !== 'date') {
         result.push({ name: col.name, colType: col.type })
       }
@@ -568,35 +582,6 @@ const yAxisColumnOptions = computed<Array<{ name: string, colType: ColumnType }>
   return result
 })
 
-function getColumnTypeIcon(colType: ColumnType): Component {
-  return typeConfig[colType]?.icon ?? RiText
-}
-
-const producer = ref<Owned | null>(null)
-const dataset = ref<DatasetSuggest | null>(null)
-const savedResources = reactive<Record<string, Resource>>({})
-const selectedResource = ref<string | null>(null)
-const savedChart = ref<Chart | null>(null)
-const selectedChartId = ref('')
-
-const debounceMs = 300
-const title = ref(form.value.title)
-const desc = ref(form.value.description)
-
-const { debounced: titleDebounced } = useDebouncedRef(title, debounceMs)
-const { debounced: descDebounced } = useDebouncedRef(desc, debounceMs)
-
-const resources = computed(() => Object.values(savedResources))
-
-const sourceText = computed<string>(() => {
-  if (!dataset.value) return ''
-  const orgName = producer.value?.organization?.name || ''
-  return `${dataset.value.title}${orgName ? ` - ${orgName}` : ''} - datagouv.fr`
-})
-
-const conditionOptions = ['exact', 'differs', 'is_null', 'is_not_null', 'greater', 'less', 'strictly_greater', 'strictly_less'] satisfies Array<FilterCondition>
-
-// Sort options for Listbox with icons
 const sortOptions = computed<SortOption[]>(() => {
   const xAxisColumn = form.value.x_axis.column_x
   const yAxisColumn = form.value.series[0]?.column_y
@@ -609,7 +594,6 @@ const sortOptions = computed<SortOption[]>(() => {
   ]
 })
 
-// Proxy for sort to handle Listbox object selection
 const sortProxy = computed<SortOption | null>({
   get: () => sortOptions.value.find(o => o.value === form.value.x_axis.sort_combined) ?? null,
   set: (val: SortOption | null) => {
@@ -630,76 +614,49 @@ const columnDetails = computed<Array<{ key: string, value: string, disabled: boo
   return options
 })
 
-const { $api } = useNuxtApp()
-const runtimeConfig = useRuntimeConfig()
-const hasTabularData = useHasTabularData()
-const getProfile = useGetProfile()
-const isAdmin = isMeAdmin()
+// Type guard functions - needed by filterList computed below
+function isFilter(f: GenericFilter | null): f is Filter {
+  return f?._cls === 'Filter'
+}
 
-const $chartsApi = $fetch.create({
-  baseURL: runtimeConfig.public.chartsApiBase as string,
-  onRequest({ options }) {
-    options.headers.set('Content-Type', 'application/json')
-    options.headers.set('Accept', 'application/json')
-  },
-})
+function isAndFilters(f: GenericFilter | null): f is AndFilters {
+  return f?._cls === 'AndFilters'
+}
 
-const { data: charts, refresh } = await useAPI<PaginatedArray<Chart>>('/api/1/visualizations/', { lazy: true })
+const filterList = computed<Array<Filter>>(() => {
+  if (!form.value.filter) return []
 
-watch(dataset, async (newDataset) => {
-  if (!newDataset) {
-    selectedResource.value = null
-    return
+  const filter = form.value.filter
+  if (isFilter(filter)) {
+    return [filter]
   }
-  try {
-    const fetchedResources = await $chartsApi<PaginatedArray<Resource>>(`/api/2/datasets/${newDataset.id}/resources/`)
-    for (const r of fetchedResources.data.filter(resource => hasTabularData(resource))) {
-      savedResources[r.id] = r
+  else if (isAndFilters(filter)) {
+    const result: Array<Filter> = []
+    for (const f of filter.filters) {
+      if (isFilter(f)) {
+        result.push(f)
+      }
     }
+    return result
   }
-  catch (error) {
-    console.error('Failed to fetch resources:', error)
-  }
-}, { immediate: true })
-
-watch(producer, () => {
-  dataset.value = null
-  selectedResource.value = null
+  return []
 })
 
-watch(selectedResource, async (r) => {
-  if (r) {
-    await loadMissingResourcesForChart(new Set([r]))
-    if (columns.value[r]?.length > 0) {
-      return
-    }
-    const profile = await getProfile(r)
-    resourceProfiles.value[r] = {
-      profile: { categorical: profile.profile.categorical },
-      columns: profile.profile.columns,
-    }
-    columns.value[r] = profile.profile.header.map((name) => {
-      const colInfo = profile.profile.columns[name]
-      const isCategorical = profile.profile.categorical.includes(name)
-      const colType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
-      return { name, type: colType }
-    })
-  }
-}, { immediate: true })
+function getColumnTypeIcon(colType: ColumnType): Component {
+  return typeConfig[colType]?.icon ?? RiText
+}
 
-watch([titleDebounced, descDebounced], ([title, desc]) => {
-  form.value.title = title
-  form.value.description = desc
-})
-
-watch(columns, (columnsPerResource) => {
-  const firstColumns = Object.values(columnsPerResource)
-  if (firstColumns.length === 0) return
-  const firstColumn = firstColumns[0].filter(c => c.name !== '__id')[0]
-  if (!form.value.x_axis.column_x && firstColumn) {
-    form.value.x_axis.column_x = firstColumn.name
+function getSerieColumnYProxy(serie: DataSeriesForm) {
+  const get = (): { name: string, colType: ColumnType } | null => {
+    const colName = serie.column_y
+    if (!colName) return null
+    return yAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
   }
-})
+  const set = (val: { name: string, colType: ColumnType } | null | undefined) => {
+    serie.column_y = val?.name ?? ''
+  }
+  return { get, set }
+}
 
 async function loadMissingResourcesForChart(resourceIds: Set<string>) {
   for (const id of resourceIds) {
@@ -741,8 +698,6 @@ async function loadChart(id: string) {
       }
 
       form.value = toChartForm(data)
-      title.value = data.title
-      desc.value = data.description
 
       await loadMissingResourcesForChart(chartResources)
 
@@ -787,35 +742,6 @@ async function saveChart() {
   }
 }
 
-function isFilter(f: GenericFilter | null): f is Filter {
-  return f?._cls === 'Filter'
-}
-
-function isAndFilters(f: GenericFilter | null): f is AndFilters {
-  return f?._cls === 'AndFilters'
-}
-
-const filterList = computed<Array<Filter>>(() => {
-  if (!form.value.filter) return []
-
-  const filter = form.value.filter
-  if (isFilter(filter)) {
-    return [filter]
-  }
-  else if (isAndFilters(filter)) {
-    const result: Array<Filter> = []
-    for (const f of filter.filters) {
-      if (isFilter(f)) {
-        result.push(f)
-      }
-      // For simplicity, we don't handle nested AndFilters recursively
-      // This would require a more complex recursive flattening
-    }
-    return result
-  }
-  return []
-})
-
 function removeFilter(index: number) {
   if (!form.value.filter) return
 
@@ -857,4 +783,68 @@ function addFilter() {
     form.value.filter.filters.push(newFilter)
   }
 }
+
+watch(
+  () => ({
+    series: form.value.series,
+    x_axis: form.value.x_axis,
+    y_axis: form.value.y_axis,
+    filter: form.value.filter,
+    extras: form.value.extras,
+  }),
+  () => {
+    chartForViewer.value = toChartApi(form.value)
+  },
+  { deep: true, immediate: true },
+)
+
+watch(dataset, async (newDataset) => {
+  if (!newDataset) {
+    selectedResource.value = null
+    return
+  }
+  try {
+    const fetchedResources = await $chartsApi<PaginatedArray<Resource>>(`/api/2/datasets/${newDataset.id}/resources/`)
+    for (const r of fetchedResources.data.filter(resource => hasTabularData(resource))) {
+      savedResources[r.id] = r
+    }
+  }
+  catch (error) {
+    console.error('Failed to fetch resources:', error)
+  }
+}, { immediate: true })
+
+watch(producer, () => {
+  dataset.value = null
+  selectedResource.value = null
+})
+
+watch(selectedResource, async (r) => {
+  if (r) {
+    await loadMissingResourcesForChart(new Set([r]))
+    if (columns.value[r]?.length > 0) {
+      return
+    }
+    const profile = await getProfile(r)
+    resourceProfiles.value[r] = {
+      profile: { categorical: profile.profile.categorical },
+      columns: profile.profile.columns,
+    }
+    columns.value[r] = profile.profile.header.map((name) => {
+      const colInfo = profile.profile.columns[name]
+      const isCategorical = profile.profile.categorical.includes(name)
+      const colType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
+      return { name, type: colType }
+    })
+  }
+}, { immediate: true })
+
+watch(columns, (columnsPerResource) => {
+  const firstColumns = Object.values(columnsPerResource)
+  if (firstColumns.length === 0) return
+  const firstColumn = firstColumns[0].filter(c => c.name !== '__id')[0]
+  if (!form.value.x_axis.column_x && firstColumn) {
+    form.value.x_axis.column_x = firstColumn.name
+  }
+})
 </script>

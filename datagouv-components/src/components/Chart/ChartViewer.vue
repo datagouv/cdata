@@ -30,7 +30,7 @@ const { locale } = useTranslation()
 const chartContainer = ref<HTMLElement | null>(null)
 let echartsInstance: EChartsType | null = null
 
-function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' | 'time' {
+function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' {
   if (!xAxis) return 'category'
   return xAxis.type === 'continuous' ? 'value' : 'category'
 }
