@@ -1,5 +1,5 @@
 import { escapeCsvValue } from './helpers'
-import { ofetch } from 'ofetch'
+import { ofetch, type $Fetch } from 'ofetch'
 import type { DatasetV2 } from '../types/datasets'
 import type { PaginatedArray } from '../types/api'
 
@@ -119,14 +119,16 @@ export async function getDatasetMetrics(datasetId: string, metricsApi: string): 
   }
 }
 
-export async function createDatasetsForOrganizationMetricsUrl(organizationId: string, metricsApi: string, apiBase: string) {
+export async function createDatasetsForOrganizationMetricsUrl(organizationId: string, metricsApi: string, apiBase: string, apiFetch: $Fetch) {
   let data = 'dataset_title,dataset_id,month,monthly_visit,monthly_download_resource\n'
 
-  // fetch datasets info from organization datasets
+  // fetch datasets info from organization datasets through the configured fetch, so it carries the
+  // consumer's auth (cookie for cdata via `$api`, Bearer for verticals) instead of a hardcoded
+  // `credentials: 'include'`, which breaks CORS cross-origin on the verticals.
   const datasets: Record<string, Record<string, string>> = {}
   let datasetsUrl: string | null = `/api/2/datasets/?organization=${organizationId}&page_size=200`
   while (datasetsUrl) {
-    const body: PaginatedArray<DatasetV2> = await ofetch(datasetsUrl, { baseURL: apiBase, credentials: 'include' })
+    const body: PaginatedArray<DatasetV2> = await apiFetch(datasetsUrl, { baseURL: apiBase })
     datasetsUrl = body.next_page
     for (const row of body.data) {
       datasets[row.id] = { title: row.title }
