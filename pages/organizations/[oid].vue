@@ -127,7 +127,7 @@
 <script setup lang="ts">
 import { isOrganizationCertified, LoadingBlock, MarkdownViewer, OrganizationNameWithCertificate, OwnerType, ReadMore, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiSearchLine } from '@remixicon/vue'
-import { watchDebounced } from '@vueuse/core'
+import { useTimeoutFn } from '@vueuse/core'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
@@ -173,13 +173,21 @@ function submitSearch() {
   }
 }
 
-watchDebounced(searchQuery, (value) => {
-  const q = value.trim()
-  if (q) {
-    navigateTo({ path: searchPath.value, query: { q, type: currentSearchType.value } })
+// Debounce typing-driven navigation to /search, but navigate immediately when
+// clearing — debouncing a clear adds perceived latency for nothing, and the
+// explicit cancel() avoids a latent bug where typing "foo" then clearing
+// within 300ms would still fire the search navigation after the clear.
+const { start: scheduleSearch, stop: cancelSearch } = useTimeoutFn(() => {
+  navigateTo({ path: searchPath.value, query: { q: searchQuery.value.trim(), type: currentSearchType.value } })
+}, 300, { immediate: false })
+
+watch(searchQuery, (value) => {
+  cancelSearch()
+  if (value.trim()) {
+    scheduleSearch()
   }
   else if (route.path.endsWith('/search')) {
     navigateTo({ path: `/organizations/${route.params.oid}` })
   }
-}, { debounce: 300 })
+})
 </script>
