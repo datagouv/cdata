@@ -174,4 +174,8 @@ const url = computed(() => {
 })
 
 const { data: pageData, status } = await useAPI<PaginatedArray<User>>(url, { lazy: true })
+
+watch(qDebounced, () => {
+  page.value = 1
+})
 </script>

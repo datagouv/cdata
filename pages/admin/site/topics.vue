@@ -143,6 +143,10 @@ const query = computed(() => {
 
 const { data: pageData, status } = await useAPI<PaginatedArray<TopicV2>>('/api/2/topics/', { query, lazy: true })
 
+watch(qDebounced, () => {
+  page.value = 1
+})
+
 const countElements = async (topic: TopicV2, _class: 'Dataset' | 'Reuse') => {
   const data = await $fetch<PaginatedArray<TopicElement>>(topic.elements.href, {
     query: { page_size: 1, class: _class },

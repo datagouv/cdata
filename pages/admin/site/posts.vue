@@ -203,6 +203,10 @@ const params = computed(() => {
 
 const { data: pageData, status } = await useAPI<PaginatedArray<Post>>('/api/1/posts/', { lazy: true, query: params })
 
+watch(qDebounced, () => {
+  page.value = 1
+})
+
 function getKindLabel(kind: Post['kind']) {
   return kind === 'page' ? t('Page') : t('Actualité')
 }
