@@ -75,7 +75,7 @@
       <div class="col-span-5 space-y-6 lg:ml-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
         <fieldset
           v-if="isAdmin"
-          class="min-w-0 px-6 space-y-4"
+          class="min-w-0 space-y-4"
         >
           <label
             for="existing-charts"
@@ -113,7 +113,7 @@
             </button>
           </div>
         </fieldset>
-        <fieldset class="min-w-0 px-6">
+        <fieldset class="min-w-0">
           <ProducerSelect
             v-model="producer"
             :label="$t('Avec qui souhaitez-vous publier ?')"
@@ -123,7 +123,7 @@
         </fieldset>
         <fieldset
           v-if="producer"
-          class="min-w-0 px-6"
+          class="min-w-0"
         >
           <p class="mb-2 font-bold">
             {{ $t('Source de données') }}
@@ -165,7 +165,7 @@
           </div>
         </fieldset>
         <template v-if="selectedResource">
-          <fieldset class="min-w-0 border-t border-new-gray-light py-4 px-6 space-y-4">
+          <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
             <p class="font-bold mb-2">
               {{ $t('Filtres') }}
             </p>
@@ -191,7 +191,7 @@
             </BrandedButton>
           </fieldset>
 
-          <fieldset class="min-w-0 border-t border-new-gray-light py-4 px-6 space-y-4">
+          <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
             <label
               for="chart-type"
               class="fr-label font-bold"
@@ -226,7 +226,7 @@
               </Listbox>
             </div>
           </fieldset>
-          <fieldset class="min-w-0 border-t border-new-gray-light py-4 px-6 space-y-4">
+          <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
             <p class="font-bold mb-2">
               {{ $t('Axe X') }}
             </p>
@@ -308,7 +308,7 @@
             </div>
           </fieldset>
 
-          <fieldset class="min-w-0 border-t border-new-gray-light py-4 px-6 space-y-4">
+          <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
             <p class="font-bold mb-2">
               {{ $t('Axe Y') }}
             </p>
@@ -455,7 +455,7 @@
 
           <div
             v-if="isAdmin"
-            class="min-w-0 px-6 space-y-4"
+            class="min-w-0 space-y-4"
           >
             <BrandedButton type="submit">
               {{ $t('Sauvegarder le graphique') }}
