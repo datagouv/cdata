@@ -75,7 +75,7 @@
       <div class="col-span-5 space-y-6 lg:ml-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
         <fieldset
           v-if="isAdmin"
-          class="px-6 space-y-4"
+          class="min-w-0 px-6 space-y-4"
         >
           <label
             for="existing-charts"
@@ -113,7 +113,7 @@
             </button>
           </div>
         </fieldset>
-        <fieldset class="px-6">
+        <fieldset class="min-w-0 px-6">
           <ProducerSelect
             v-model="producer"
             :label="$t('Avec qui souhaitez-vous publier ?')"
@@ -123,7 +123,7 @@
         </fieldset>
         <fieldset
           v-if="producer"
-          class="px-6"
+          class="min-w-0 px-6"
         >
           <p class="mb-2 font-bold">
             {{ $t('Source de données') }}
@@ -191,7 +191,7 @@
             </BrandedButton>
           </fieldset>
 
-          <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+          <fieldset class="min-w-0 border-t border-new-gray-light py-4 px-6 space-y-4">
             <label
               for="chart-type"
               class="fr-label font-bold"
@@ -226,7 +226,7 @@
               </Listbox>
             </div>
           </fieldset>
-          <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+          <fieldset class="min-w-0 border-t border-new-gray-light py-4 px-6 space-y-4">
             <p class="font-bold mb-2">
               {{ $t('Axe X') }}
             </p>
@@ -270,28 +270,45 @@
                 </option>
               </select>
             </div>
-            <div>
+            <div class="min-w-0">
               <label
                 for="x-axis-sort-combined"
                 class="fr-label"
               >{{ $t('Trier par') }}</label>
-              <select
+              <Listbox
                 id="x-axis-sort-combined"
-                v-model="form.x_axis.sort_combined"
-                class="w-full fr-select"
+                v-model="sortProxy"
+                class="w-full"
+                :options="sortOptions"
+                :display-value="(opt) => opt ? `${opt.column}${opt.column ? ' - ' : ''}${opt.label}` : $t('Sélectionnez une option')"
+                :get-option-id="(opt) => opt.value"
               >
-                <option
-                  v-for="(label, value) in sortOptionLabels"
-                  :key="value"
-                  :value
-                >
-                  {{ label }}
-                </option>
-              </select>
+                <template #button>
+                  <div class="w-full flex items-center justify-between gap-2 min-w-0">
+                    <div
+                      class="truncate"
+                      :class="{ 'text-new-disabled-text': !sortProxy }"
+                    >
+                      {{ sortProxy ? `${sortProxy.column}${sortProxy.column ? ' - ' : ''}${sortProxy.label}` : $t('Sélectionnez une option') }}
+                    </div>
+                    <RiArrowDownSLine class="flex-none size-4 justify-self-end" />
+                  </div>
+                </template>
+                <template #option="{ option }">
+                  <div class="w-full flex items-center justify-between gap-2">
+                    <span class="truncate">{{ option.column }}{{ option.column ? ' - ' : '' }}{{ option.label }}</span>
+                    <component
+                      :is="option.icon"
+                      v-if="option.icon"
+                      class="size-4 text-new-gray-medium"
+                    />
+                  </div>
+                </template>
+              </Listbox>
             </div>
           </fieldset>
 
-          <fieldset class="border-t border-new-gray-light py-4 px-6 space-y-4">
+          <fieldset class="min-w-0 border-t border-new-gray-light py-4 px-6 space-y-4">
             <p class="font-bold mb-2">
               {{ $t('Axe Y') }}
             </p>
@@ -438,7 +455,7 @@
 
           <div
             v-if="isAdmin"
-            class="px-6 space-y-4"
+            class="min-w-0 px-6 space-y-4"
           >
             <BrandedButton type="submit">
               {{ $t('Sauvegarder le graphique') }}
@@ -455,7 +472,7 @@ import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, Ge
 import { resolveColumnType, buildTypeConfig, useDebouncedRef, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
-import { RiAddLine, RiBarChartLine, RiLineChartLine, RiText } from '@remixicon/vue'
+import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartLine, RiLineChartLine, RiText } from '@remixicon/vue'
 import { useAPI } from '~/utils/api'
 import { isMeAdmin } from '~/utils/auth'
 
@@ -464,6 +481,15 @@ import ProducerSelect from '../ProducerSelect.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import type { DatasetSuggest } from '~/types/types'
+
+// Sort option type for the Listbox
+type SortOption = {
+  value: string
+  column: string
+  direction: 'asc' | 'desc' | ''
+  label: string
+  icon: Component | null
+}
 
 const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/components-next').then(m => m.ChartViewerWrapper))
 
@@ -570,16 +596,27 @@ const sourceText = computed<string>(() => {
 
 const conditionOptions = ['exact', 'differs', 'is_null', 'is_not_null', 'greater', 'less', 'strictly_greater', 'strictly_less'] satisfies Array<FilterCondition>
 
-const sortOptionLabels = computed<Record<string, string>>(() => {
+// Sort options for Listbox with icons
+const sortOptions = computed<SortOption[]>(() => {
   const xAxisColumn = form.value.x_axis.column_x
   const yAxisColumn = form.value.series[0]?.column_y
-  return {
-    '': t('Aucun'),
-    'axis_x-asc': xAxisColumn ? `${xAxisColumn} - ↑ ${t('Ascendant')}` : `↑ ${t('Axe X - Ascendant')}`,
-    'axis_x-desc': xAxisColumn ? `${xAxisColumn} - ↓ ${t('Descendant')}` : `↓ ${t('Axe X - Descendant')}`,
-    'axis_y-asc': yAxisColumn ? `${yAxisColumn} - ↑ ${t('Ascendant')}` : `↑ ${t('Axe Y - Ascendant')}`,
-    'axis_y-desc': yAxisColumn ? `${yAxisColumn} - ↓ ${t('Descendant')}` : `↓ ${t('Axe Y - Descendant')}`,
-  }
+  return [
+    { value: '', column: '', direction: '', label: t('Aucun'), icon: null },
+    { value: 'axis_x-asc', column: xAxisColumn || t('Axe X'), direction: 'asc', label: t('Ascendant'), icon: RiArrowUpLine },
+    { value: 'axis_x-desc', column: xAxisColumn || t('Axe X'), direction: 'desc', label: t('Descendant'), icon: RiArrowDownLine },
+    { value: 'axis_y-asc', column: yAxisColumn || t('Axe Y'), direction: 'asc', label: t('Ascendant'), icon: RiArrowUpLine },
+    { value: 'axis_y-desc', column: yAxisColumn || t('Axe Y'), direction: 'desc', label: t('Descendant'), icon: RiArrowDownLine },
+  ]
+})
+
+// Proxy for sort to handle Listbox object selection
+const sortProxy = computed<SortOption | null>({
+  get: () => sortOptions.value.find(o => o.value === form.value.x_axis.sort_combined) ?? null,
+  set: (val: SortOption | null) => {
+    if (val) {
+      form.value.x_axis.sort_combined = val.value
+    }
+  },
 })
 
 const columnDetails = computed<Array<{ key: string, value: string, disabled: boolean }>>(() => {
@@ -604,7 +641,6 @@ const $chartsApi = $fetch.create({
   onRequest({ options }) {
     options.headers.set('Content-Type', 'application/json')
     options.headers.set('Accept', 'application/json')
-    options.credentials = 'include'
   },
 })
 
