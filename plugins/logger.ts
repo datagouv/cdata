@@ -4,7 +4,8 @@ import { defineNuxtPlugin } from '#imports'
 let __logger_plugin_initialized = false
 
 export default defineNuxtPlugin(() => {
-  if (process.env.NODE_ENV === 'production' && !__logger_plugin_initialized) {
+  if (__logger_plugin_initialized) return
+  if (process.env.NODE_ENV !== 'production') return
     __logger_plugin_initialized = true
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
