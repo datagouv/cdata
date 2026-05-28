@@ -1,14 +1,26 @@
 <template>
   <div class="mb-4">
-    <div class="flex items-center justify-between mb-1">
-      <span class="inline-block rounded-sm border border-gray-200 bg-white px-3 py-1 text-sm font-bold shrink-0">
-        {{ title || name }}
-      </span>
-      <span
-        v-if="example !== undefined"
-        class="text-xs text-gray-500 ml-2 truncate"
+    <div class="flex items-center mb-1">
+      <button
+        v-if="isExpandable"
+        type="button"
+        class="flex items-center gap-1 shrink-0 min-w-0"
+        :aria-expanded="isOpen"
+        @click="isOpen = !isOpen"
       >
-        {{ $t('Ex : {example}', { example: String(example) }) }}
+        <RiArrowRightSLine
+          class="size-4 text-gray-500 shrink-0 transition-transform"
+          :class="{ 'rotate-90': isOpen }"
+        />
+        <span class="inline-block rounded-sm border border-gray-200 bg-white px-3 py-1 text-sm font-bold truncate">
+          {{ title || name }}
+        </span>
+      </button>
+      <span
+        v-else
+        class="inline-block rounded-sm border border-gray-200 bg-white px-3 py-1 text-sm font-bold shrink-0 ml-5"
+      >
+        {{ title || name }}
       </span>
     </div>
 
@@ -22,13 +34,20 @@
     <!-- eslint-disable-next-line vue/no-v-html -->
     <div
       v-else-if="description"
-      class="text-sm text-gray-600 mb-2 pl-3"
+      class="text-sm text-gray-800 mb-2 pl-3"
       v-html="sanitizedDescription"
     />
 
+    <p
+      v-if="example !== undefined"
+      class="text-xs text-gray-500 mb-2 pl-3"
+    >
+      {{ $t('Ex : {example}', { example: String(example) }) }}
+    </p>
+
     <div
-      v-if="objectProperties"
-      class="border-l border-gray-200 pl-4 ml-3 mt-2"
+      v-if="objectProperties && isOpen"
+      class="border-l border-gray-300 pl-4 ml-3 mt-2"
     >
       <OpenApiProperty
         v-for="(subSchema, subName) in objectProperties"
@@ -39,8 +58,8 @@
     </div>
 
     <div
-      v-if="arrayItemProperties"
-      class="border-l border-gray-200 pl-4 ml-3 mt-2"
+      v-if="arrayItemProperties && isOpen"
+      class="border-l border-gray-300 pl-4 ml-3 mt-2"
     >
       <p class="text-xs text-gray-500 mb-2">
         {{ $t('Cette propriété contient 1 ou plusieurs éléments ayant les spécifications suivantes :') }}
@@ -56,8 +75,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
+import { RiArrowRightSLine } from '@remixicon/vue'
 import DOMPurify from 'dompurify'
+import { collapseSignalKey, isObject } from './openApiCollapse'
 
 const props = defineProps<{
   name: string
@@ -65,10 +86,6 @@ const props = defineProps<{
 }>()
 
 const { t } = useTranslation()
-
-function isObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
-}
 
 const schemaObj = computed(() => (isObject(props.schema) ? props.schema : {}))
 
@@ -102,6 +119,15 @@ const arrayItemProperties = computed(() => {
   if (!isObject(items)) return undefined
   return isObject(items.properties) ? items.properties : undefined
 })
+
+const isExpandable = computed(() => objectProperties.value !== undefined || arrayItemProperties.value !== undefined)
+
+const isOpen = ref(true)
+
+const collapseSignal = inject(collapseSignalKey, null)
+watch(() => collapseSignal?.version, () => {
+  if (collapseSignal) isOpen.value = collapseSignal.target
+}, { immediate: true })
 
 const sanitizedDescription = computed(() => {
   if (!description.value) return ''
