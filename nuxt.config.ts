@@ -13,6 +13,7 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
+    '@nuxtjs/robots',
     '@nuxt/fonts',
     'nuxt-og-image',
   ],

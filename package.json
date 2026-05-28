@@ -66,6 +66,7 @@
     "@milkdown/transformer": "^7.20.0",
     "@milkdown/vue": "^7.20.0",
     "@nuxt/image": "^2.0.0",
+    "@nuxtjs/robots": "^6.0.8",
     "@nuxtjs/sitemap": "^8.0.13",
     "@prosemirror-adapter/vue": "^0.5.3",
     "@remixicon/vue": "^4.9.0",
