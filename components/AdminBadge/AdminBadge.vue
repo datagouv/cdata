@@ -11,6 +11,11 @@
     <span>
       <slot />
     </span>
+    <component
+      :is="iconRight"
+      v-if="iconRight"
+      class="size-3"
+    />
   </span>
 </template>
 
@@ -22,6 +27,7 @@ const props = defineProps<{
   type: AdminBadgeType
   size: 'xs' | 'sm'
   icon?: Component
+  iconRight?: Component
 }>()
 
 const colors = computed(() => {
