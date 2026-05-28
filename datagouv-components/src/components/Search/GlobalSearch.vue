@@ -61,6 +61,7 @@
               <OrganizationSelect
                 v-if="isEnabled('organization')"
                 v-model:id="organizationId"
+                :dataservices="currentTypeConfig?.class === 'dataservices'"
                 :style="{ order: getOrder('organization') }"
               />
               <OrganizationTypeSelect

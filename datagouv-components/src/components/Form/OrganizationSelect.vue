@@ -36,8 +36,9 @@ import SearchableSelect from './SearchableSelect.vue'
 const model = defineModel<Organization | OrganizationSuggest | null>({ default: null })
 const id = defineModel<string | undefined>('id')
 
-defineProps<{
+const props = defineProps<{
   loading?: boolean
+  dataservices?: boolean
 }>()
 
 const config = useComponentsConfig()
@@ -56,6 +57,7 @@ async function suggestOrganizations(q: string): Promise<Array<Organization | Org
     query: {
       q,
       size: 20,
+      ...(props.dataservices ? { dataservices: true } : {}),
     },
   })
 }
