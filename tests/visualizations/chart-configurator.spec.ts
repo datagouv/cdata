@@ -3,7 +3,6 @@ import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
 
-// Helper function to set up the chart with producer, dataset, and resource selected
 async function setupChart(page: Page) {
   await page.goto('/design/chart')
   await page.waitForLoadState('networkidle')
@@ -30,22 +29,18 @@ async function setupChart(page: Page) {
   expect(page.getByLabel('Titre')).toBeVisible()
 }
 
-test('title input updates form value with debounce', async ({ page }) => {
+test('title input updates form value without debounce', async ({ page }) => {
   await setupChart(page)
 
   await page.getByLabel('Titre').fill('Nouveau titre de graphique')
 
-  await page.waitForTimeout(400)
-
   expect(await page.getByLabel('Titre').inputValue()).toBe('Nouveau titre de graphique')
 })
 
-test('description input updates form value with debounce', async ({ page }) => {
+test('description input updates form value without debounce', async ({ page }) => {
   await setupChart(page)
 
   await page.getByLabel('Description').fill('Nouvelle description de graphique')
-
-  await page.waitForTimeout(400)
 
   expect(await page.getByLabel('Description').inputValue()).toBe('Nouvelle description de graphique')
 })
@@ -63,9 +58,6 @@ test('chart type selector can switch to line chart', async ({ page }) => {
 
   const chartTypeButton = page.locator('#chart-type').getByRole('button')
   await chartTypeButton.click()
-
-  // Wait for dropdown to appear
-  await page.waitForTimeout(300)
 
   await page.getByRole('option', { name: 'Ligne', exact: true }).click()
 
@@ -122,32 +114,41 @@ test('series aggregation can be changed to avg', async ({ page }) => {
 test('sort select displays dynamic column names', async ({ page }) => {
   await setupChart(page)
 
-  const sortOptions = await page.getByLabel('Trier par').locator('option').allTextContents()
+  const listbox = page.locator('#x-axis-sort-combined')
+  await listbox.click()
+
+  const sortOptions = await listbox.locator('role=option').allTextContents()
 
   expect(sortOptions[0]).toBe('Aucun')
 
   expect(sortOptions[1]).toContain('libellé_EPCI')
   expect(sortOptions[1]).not.toContain('Axe X - Ascendant')
 
-  await page.getByLabel('Trier par').selectOption({ label: 'libellé_EPCI - Descendant' })
+  await listbox.getByRole('option', { name: 'libellé_EPCI - Descendant' }).click()
 
-  const selectedValue = await page.getByLabel('Trier par').inputValue()
-  expect(selectedValue).toBe('axis_x-desc')
+  const buttonText = await listbox.locator('.input').textContent()
+  expect(buttonText).toContain('libellé_EPCI - Descendant')
 })
 
 test('sort select updates reactively when column changes', async ({ page }) => {
   await setupChart(page)
 
-  const firstOptions = await page.getByLabel('Trier par').locator('option').allTextContents()
+  const listbox = page.locator('#x-axis-sort-combined')
+  await listbox.click()
+
+  const firstOptions = await listbox.locator('role=option').allTextContents()
   expect(firstOptions[1]).toContain('libellé_EPCI')
+  await clickOutside(page)
 
-  await page.getByTestId('searchable-select-choisir-quoi-afficher').click()
-  await page.waitForTimeout(300)
+  const xAxisSelect = page.getByTestId('searchable-select-choisir-quoi-afficher')
+  await xAxisSelect.click()
+  await expect(page.getByRole('option', { name: 'nom_region', exact: true })).toBeVisible()
   await page.getByRole('option', { name: 'nom_region', exact: true }).click()
+  await clickOutside(page)
 
-  await page.waitForTimeout(500)
+  await listbox.click()
 
-  const updatedOptions = await page.getByLabel('Trier par').locator('option').allTextContents()
+  const updatedOptions = await listbox.locator('role=option').allTextContents()
   expect(updatedOptions[1]).toContain('nom_region')
   expect(updatedOptions[1]).not.toContain('libellé_EPCI')
 })
@@ -155,14 +156,16 @@ test('sort select updates reactively when column changes', async ({ page }) => {
 test('Y axis sort options show dynamic series column name too', async ({ page }) => {
   await setupChart(page)
 
-  await page.getByTestId('searchable-select-colonne-y').click()
-  await page.waitForTimeout(300)
-  await page.getByRole('option', { name: 'Nombre de logements', exact: true }).click()
-  await page.waitForTimeout(500)
+  const yAxisSelect = page.getByTestId('searchable-select-colonne-y')
+  await yAxisSelect.click()
+  await page.getByRole('option', { name: 'année_publication', exact: true }).click()
+  await clickOutside(page)
 
-  const sortOptions = await page.getByLabel('Trier par').locator('option').allTextContents()
+  const listbox = page.locator('#x-axis-sort-combined')
+  await listbox.click()
+  const sortOptions = await listbox.locator('role=option').allTextContents()
 
-  expect(sortOptions[3]).toContain('Nombre de logements')
+  expect(sortOptions[3]).toContain('année_publication')
   expect(sortOptions[3]).not.toContain('Axe Y - Ascendant')
 })
 
@@ -256,7 +259,6 @@ test('saving chart sends correct data to API', async ({ page, baseURL }) => {
 
   await page.getByLabel('Titre').fill('Test Chart')
   await page.getByLabel('Description').fill('Test Description')
-  await page.waitForTimeout(500)
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
   const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
@@ -276,7 +278,6 @@ test('saving chart shows success message', async ({ page, baseURL }) => {
 
   await page.getByLabel('Titre').fill('Test Chart')
   await page.getByLabel('Description').fill('Test Description')
-  await page.waitForTimeout(500)
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
   const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
@@ -286,7 +287,7 @@ test('saving chart shows success message', async ({ page, baseURL }) => {
   const responseBody = (await response.json()) as Chart
   await getPromise
 
-  await page.waitForTimeout(1000)
+  await page.waitForTimeout(300)
 
   await expect(page.getByText('Graphique sauvegardé !')).toBeVisible()
 
@@ -315,7 +316,6 @@ test('load button becomes enabled when chart is selected', async ({ page, baseUR
 
   await page.getByLabel('Titre').fill('Chart to load')
   await page.getByLabel('Description').fill('Chart to load description')
-  await page.waitForTimeout(400)
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
   const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
@@ -340,21 +340,17 @@ test('complete chart configuration flow', async ({ page, baseURL }) => {
 
   await page.getByLabel('Titre').fill('Graphique complet')
   await page.getByLabel('Description').fill('Test complet de configuration')
-  await page.waitForTimeout(500)
 
   const chartTypeButton = page.locator('#chart-type').getByRole('button')
   await chartTypeButton.click()
-  await page.waitForTimeout(300)
   await page.getByRole('option', { name: 'Ligne', exact: true }).click()
 
   await page.getByTestId('searchable-select-choisir-quoi-afficher').click()
-  await page.waitForTimeout(300)
   await page.getByRole('option', { name: 'code_region', exact: true }).click()
 
   await page.getByLabel('Type', { exact: true }).first().selectOption('continuous')
 
   await page.getByTestId('searchable-select-colonne-y').click()
-  await page.waitForTimeout(300)
   await page.getByRole('option', { name: 'Taux de logements vacants* (en %)', exact: true }).click()
 
   await page.getByLabel('Agrégation').selectOption('Moyenne')
@@ -374,6 +370,9 @@ test('complete chart configuration flow', async ({ page, baseURL }) => {
   const response = await responsePromise
   const responseBody = (await response.json()) as Chart
   await getPromise
+
+  await page.waitForTimeout(300)
+  await expect(page.getByText('Graphique sauvegardé !')).toBeVisible()
 
   expect(responseBody!.title).toBe('Graphique complet')
   expect(await page.getByLabel('Graphiques existants').inputValue()).toBe(responseBody!.id)
