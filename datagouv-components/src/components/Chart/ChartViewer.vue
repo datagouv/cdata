@@ -141,6 +141,7 @@ const echartsOption = computed(() => {
     textStyle: {
       fontFamily: 'Marianne, arial, sans-serif',
     },
+    color: '#000091',
     tooltip: {
       trigger: 'axis' as const,
       formatter: (params: Array<{ value: Record<string, unknown>, axisValueLabel: string, seriesName: string }>) => {
