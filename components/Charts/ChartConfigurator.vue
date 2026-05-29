@@ -32,31 +32,32 @@
               rows="2"
             />
           </div>
-          <div class="mt-4 border-t border-new-gray-light pt-4">
-            <h3 class="font-medium text-lg text-new-gray-dark">
-              {{ form.title || $t('Sans titre') }}
-            </h3>
-            <p
-              v-if="form.description"
-              class="text-new-gray-medium mt-1"
+          <div>
+            <div class="mt-8 pt-4 border-t border-new-gray-light">
+              <h3 class="font-medium text-lg text-new-gray-dark mb-0">
+                {{ form.title || $t('Sans titre') }}
+              </h3>
+              <p
+                v-if="form.description"
+                class="text-new-gray-medium mt-4 mb-0"
+              >
+                {{ form.description }}
+              </p>
+            </div>
+            <div>
+              <ClientOnly>
+                <ChartViewerWrapper
+                  :chart="chartForViewer"
+                  @columns="columns = $event"
+                />
+              </ClientOnly>
+            </div>
+            <div
+              v-if="sourceText"
+              class="text-sm text-new-gray-medium"
             >
-              {{ form.description }}
-            </p>
-          </div>
-          <hr class="border-new-gray-light my-4">
-          <div class="mt-4">
-            <ClientOnly>
-              <ChartViewerWrapper
-                :chart="chartForViewer"
-                @columns="columns = $event"
-              />
-            </ClientOnly>
-          </div>
-          <div
-            v-if="sourceText"
-            class="text-sm text-new-gray-medium"
-          >
-            {{ $t('Source') }}: {{ sourceText }}
+              {{ $t('Source') }}: {{ sourceText }}
+            </div>
           </div>
         </template>
         <div
@@ -320,7 +321,7 @@
               <div>
                 <SearchableSelect
                   :id="`column-y-${index}`"
-                  :model-value="getSerieColumnYProxy(serie).get()"
+                  :model-value="getSerieColumnYValue(serie)"
                   :label="$t('Colonne Y')"
                   :placeholder="$t('Rechercher une colonne...')"
                   :options="yAxisColumnOptions"
@@ -329,7 +330,7 @@
                   :group-by="(opt: {name: string, colType: ColumnType}) => typeConfig[opt.colType]?.label || opt.colType"
                   :multiple="false"
                   class="w-full"
-                  @update:model-value="getSerieColumnYProxy(serie).set($event)"
+                  @update:model-value="(val) => serie.column_y = val?.name ?? ''"
                 >
                   <template #option="{ option }">
                     <component
@@ -614,7 +615,6 @@ const columnDetails = computed<Array<{ key: string, value: string, disabled: boo
   return options
 })
 
-// Type guard functions - needed by filterList computed below
 function isFilter(f: GenericFilter | null): f is Filter {
   return f?._cls === 'Filter'
 }
@@ -646,16 +646,10 @@ function getColumnTypeIcon(colType: ColumnType): Component {
   return typeConfig[colType]?.icon ?? RiText
 }
 
-function getSerieColumnYProxy(serie: DataSeriesForm) {
-  const get = (): { name: string, colType: ColumnType } | null => {
-    const colName = serie.column_y
-    if (!colName) return null
-    return yAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
-  }
-  const set = (val: { name: string, colType: ColumnType } | null | undefined) => {
-    serie.column_y = val?.name ?? ''
-  }
-  return { get, set }
+function getSerieColumnYValue(serie: DataSeriesForm): { name: string, colType: ColumnType } | null {
+  const colName = serie.column_y
+  if (!colName) return null
+  return yAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
 }
 
 async function loadMissingResourcesForChart(resourceIds: Set<string>) {

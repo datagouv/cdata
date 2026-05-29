@@ -140,7 +140,6 @@ const echartsOption = computed(() => {
     dataset: [...seriesData.data],
     textStyle: {
       fontFamily: 'Marianne, arial, sans-serif',
-      color: '#000091',
     },
     tooltip: {
       trigger: 'axis' as const,
