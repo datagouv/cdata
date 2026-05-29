@@ -1,3 +1,4 @@
+import type { DeepReadonly } from 'vue'
 import type { UserNotification } from '~/types/notifications'
 
 export function useMarkAsRead() {
@@ -20,7 +21,7 @@ export function useMarkAsRead() {
     }
   }
 
-  const markWithoutActionAsRead = async (notifications: Array<UserNotification>) => {
+  const markWithoutActionAsRead = async (notifications: DeepReadonly<Array<UserNotification>> | Array<UserNotification>) => {
     const withoutActionUnread = notifications.filter((n) => {
       const cls = n.details.class
       if (cls === 'MembershipRequestNotificationDetails') return false
