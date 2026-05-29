@@ -1,7 +1,6 @@
 import { ref, toValue, watchEffect, onMounted, type ComputedRef, type MaybeRefOrGetter, type Ref } from 'vue'
 import { ofetch } from 'ofetch'
 import { useComponentsConfig } from '../config'
-import { useTranslation } from '../composables/useTranslation'
 import type { AsyncData, AsyncDataRequestStatus, UseFetchOptions } from './api.types'
 
 function deepToValue(obj: MaybeRefOrGetter<Record<string, unknown> | undefined>): Record<string, unknown> | undefined {
@@ -17,8 +16,6 @@ export async function useFetch<DataT, ErrorT = never>(
   options?: UseFetchOptions<DataT>,
 ): Promise<AsyncData<DataT, ErrorT>> {
   const config = useComponentsConfig()
-
-  const { locale } = useTranslation()
 
   if (config.customUseFetch) {
     return await config.customUseFetch(url, options)
@@ -37,38 +34,12 @@ export async function useFetch<DataT, ErrorT = never>(
     status.value = 'pending'
     try {
       data.value = isRaw
+        // Raw targets another data.gouv service (the Tabular API in TabularExplorer) via its own
+        // absolute URL, so it must stay bare ofetch: no datagouv apiBase, no datagouv auth attached.
         ? await ofetch<DataT | null>(urlValue, { params: params ?? query })
-        : await ofetch<DataT | null>(urlValue, {
-            baseURL: config.apiBase,
-            params: params ?? query,
-            onRequest(param) {
-              if (config.onRequest) {
-                if (Array.isArray(config.onRequest)) {
-                  config.onRequest.forEach(r => r(param))
-                }
-                else {
-                  config.onRequest(param)
-                }
-              }
-              const { options } = param
-              options.headers.set('Content-Type', 'application/json')
-              options.headers.set('Accept', 'application/json')
-              options.credentials = 'include'
-              if (config.devApiKey) {
-                options.headers.set('X-API-KEY', config.devApiKey)
-              }
-
-              if (locale) {
-                if (!options.params) {
-                  options.params = {}
-                }
-                options.params['lang'] = locale
-              }
-            },
-            onRequestError: config.onRequestError,
-            onResponse: config.onResponse,
-            onResponseError: config.onResponseError,
-          })
+        // The configured `$fetch` carries baseURL + auth + headers (see the `datagouv` plugin install
+        // for the default one). We only forward the URL and params here.
+        : await config.$fetch<DataT | null>(urlValue, { baseURL: config.apiBase, params: params ?? query })
       status.value = 'success'
     }
     catch (e) {
