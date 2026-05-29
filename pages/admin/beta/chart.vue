@@ -1,17 +1,16 @@
 <template>
   <div>
     <Breadcrumb>
-      <BreadcrumbItem to="/design">
-        {{ $t('Système de design') }}
+      <BreadcrumbItem to="/">
+        {{ $t('Accueil') }}
       </BreadcrumbItem>
-      <BreadcrumbItem to="/design/chart">
-        {{ $t('Chart') }}
+      <BreadcrumbItem>
+        {{ $t('Visualisations') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem>
+        {{ $t('Formulaire de publication') }}
       </BreadcrumbItem>
     </Breadcrumb>
-    <h1 class="mb-3">
-      Chart Configurator
-    </h1>
-
     <ChartConfigurator v-model="chart" />
   </div>
 </template>
@@ -21,12 +20,12 @@ import type { ChartForm } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ChartConfigurator from '~/components/Charts/ChartConfigurator.vue'
 
-const me = useMaybeMe()
+const me = useMe()
 
 const chart = ref<ChartForm>({
   owned: {
     organization: null,
-    owner: me.value ? me.value.id : 'dummyForDS',
+    owner: me.value.id,
   },
   title: 'Mon graphique',
   description: '',

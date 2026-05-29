@@ -4,7 +4,7 @@
     class="block"
     @submit.prevent="saveChart"
   >
-    <div class="grid lg:grid-cols-12 gap-4">
+    <div class="grid lg:grid-cols-12 gap-4 lg:gap-8">
       <div class="col-span-7 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
         <template v-if="selectedResource">
           <div>
@@ -79,7 +79,7 @@
         </div>
       </div>
 
-      <div class="col-span-5 space-y-6 lg:ml-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
+      <div class="col-span-5 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
         <fieldset
           v-if="isAdmin"
           class="min-w-0 space-y-4"

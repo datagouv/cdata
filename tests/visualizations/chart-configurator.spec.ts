@@ -4,7 +4,7 @@ import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
 
 async function setupChart(page: Page) {
-  await page.goto('/design/chart')
+  await page.goto('/admin/beta/chart')
   await page.waitForLoadState('networkidle')
 
   await page.getByTestId('producer-select').click()
@@ -196,8 +196,8 @@ test('y-axis min and max inputs are initially empty', async ({ page }) => {
 
   await page.getByText('Styles').click()
 
-  const minInput = page.getByLabel('Min')
-  const maxInput = page.getByLabel('Max')
+  const minInput = page.locator('#y-axis-min')
+  const maxInput = page.locator('#y-axis-max')
   const minValue = await minInput.inputValue()
   const maxValue = await maxInput.inputValue()
 
@@ -210,8 +210,8 @@ test('y-axis min and max can be set', async ({ page }) => {
 
   await page.getByText('Styles').click()
 
-  const minInput = page.getByLabel('Min')
-  const maxInput = page.getByLabel('Max')
+  const minInput = page.locator('#y-axis-min')
+  const maxInput = page.locator('#y-axis-max')
   await minInput.fill('0')
   await maxInput.fill('100')
 
@@ -295,7 +295,8 @@ test('saving chart shows success message', async ({ page, baseURL }) => {
 })
 
 test('existing charts selector shows placeholder option', async ({ page }) => {
-  await page.goto('/design/chart')
+  await page.goto('/admin/beta/chart')
+
   await page.waitForLoadState('networkidle')
 
   const chartOptions = await page.getByLabel('Graphiques existants').locator('option').allTextContents()
@@ -304,7 +305,7 @@ test('existing charts selector shows placeholder option', async ({ page }) => {
 })
 
 test('load button is disabled without selected chart', async ({ page }) => {
-  await page.goto('/design/chart')
+  await page.goto('/admin/beta/chart')
   await page.waitForLoadState('networkidle')
 
   const loadButton = page.getByRole('button', { name: 'Charger' })
@@ -358,8 +359,8 @@ test('complete chart configuration flow', async ({ page, baseURL }) => {
   await page.getByText('Styles').click()
 
   await page.getByLabel('Label').fill('Taux (%)')
-  await page.getByLabel('Min').fill('0')
-  await page.getByLabel('Max').fill('100')
+  await page.locator('#y-axis-min').fill('0')
+  await page.locator('#y-axis-max').fill('100')
   await page.locator('#y-axis-unit').fill('%')
   await page.getByLabel('Position unité').selectOption('prefix')
 
@@ -386,8 +387,8 @@ test('complete chart configuration flow', async ({ page, baseURL }) => {
   expect(await page.getByLabel('Type', { exact: true }).first().inputValue()).toBe('continuous')
   expect(await page.getByLabel('Agrégation').inputValue()).toBe('avg')
   expect(await page.getByLabel('Label').inputValue()).toBe('Taux (%)')
-  expect(await page.getByLabel('Min').inputValue()).toBe('0')
-  expect(await page.getByLabel('Max').inputValue()).toBe('100')
+  expect(await page.locator('#y-axis-min').inputValue()).toBe('0')
+  expect(await page.locator('#y-axis-max').inputValue()).toBe('100')
   expect(await page.locator('#y-axis-unit').inputValue()).toBe('%')
   expect(await page.getByLabel('Position unité').inputValue()).toBe('prefix')
 
