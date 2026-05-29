@@ -64,6 +64,12 @@
           v-else
           class="flex flex-col items-center justify-center h-full py-24"
         >
+          <img
+            src="/illustrations/chart.svg"
+            class="size-32 shrink-0"
+            alt=""
+          >
+
           <p class="text-new-gray-dark font-medium mb-0">
             {{ $t('Aucune source sélectionnée') }}
           </p>
