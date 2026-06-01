@@ -150,7 +150,7 @@
                 <p>
                   {{ $t('Attention : cette ressource est exposée via une') }}
                   <a
-                    href="https://www.data.gouv.fr/dataservices/673b0e6774a23d9eac2af8ce"
+                    :href="`${siteConfig.url}/dataservices/${runtimeConfig.public.tabularApiDataserviceId}`"
                     target="_blank"
                     class="fr-link"
                   >
