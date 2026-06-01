@@ -46,12 +46,11 @@
 </template>
 
 <script setup lang="ts">
-import type { DeepReadonly } from 'vue'
 import type { DiscussionSubjectTypes } from '~/types/discussions'
 import type { DiscussionNotification, MembershipAcceptedNotification, MembershipRefusedNotification, MembershipRequestNotification, NewBadgeNotification, DataserviceCreatedNotification, ReuseCreatedNotification, TransferRequestNotification, UserNotification, ValidateHarvesterNotification } from '~/types/notifications'
 
 const props = defineProps<{
-  notifications: DeepReadonly<Array<UserNotification>>
+  notifications: Array<UserNotification>
 }>()
 
 const subjects = ref<Record<string, DiscussionSubjectTypes | null>>({})

@@ -321,7 +321,7 @@
                           </div>
                         </template>
                         <div
-                          v-if="nextPage || pendingNotifications?.total"
+                          v-if="nextPage || notificationsToRead.length > 0"
                           class="px-2 py-2 space-y-2 border-t border-gray-default"
                         >
                           <BrandedButton
@@ -337,7 +337,7 @@
                             {{ t('Charger plus de notifications') }}
                           </BrandedButton>
                           <BrandedButton
-                            v-if="pendingNotifications?.total"
+                            v-if="notificationsToRead.length > 0"
                             type="button"
                             color="secondary"
                             size="xs"
@@ -546,7 +546,7 @@ const currentRoute = useRoute()
 const router = useRouter()
 const route = useRoute()
 const { isLoading } = useLoadingIndicator()
-const { refreshNotifications, loadMoreNotifications, pendingNotifications, nextPage, notificationsCombinedList } = useNotifications()
+const { refreshNotifications, loadMoreNotifications, pendingNotifications, nextPage, notificationsCombinedList, notificationsToRead } = useNotifications()
 const { markWithoutActionAsRead, loading } = useMarkAsRead()
 
 const menu = [

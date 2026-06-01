@@ -1,5 +1,5 @@
-import type { DeepReadonly } from 'vue'
 import type { UserNotification } from '~/types/notifications'
+import { requireAction } from '~/utils/notifications'
 
 export function useMarkAsRead() {
   const loading = ref(false)
@@ -21,25 +21,19 @@ export function useMarkAsRead() {
     }
   }
 
-  const markWithoutActionAsRead = async (notifications: DeepReadonly<Array<UserNotification>> | Array<UserNotification>) => {
-    const withoutActionUnread = notifications.filter((n) => {
-      const cls = n.details.class
-      if (cls === 'MembershipRequestNotificationDetails') return false
-      if (cls === 'TransferRequestNotificationDetails') return false
-      if (cls === 'ValidateHarvesterNotificationDetails') {
-        return n.details.status !== 'pending'
-      }
-      return !n.handled_at
+  const markWithoutActionAsRead = async (notifications: Array<UserNotification>) => {
+    const withoutAction = notifications.filter((n) => {
+      return !n.handled_at && !requireAction(n)
     })
 
-    if (withoutActionUnread.length === 0) {
+    if (withoutAction.length === 0) {
       return
     }
 
     try {
       loading.value = true
       await Promise.all(
-        withoutActionUnread.map(notification =>
+        withoutAction.map(notification =>
           $api(`/api/1/notifications/${notification.id}/read/`, { method: 'POST' }),
         ),
       )
