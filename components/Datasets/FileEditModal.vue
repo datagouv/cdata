@@ -69,7 +69,7 @@
               <p>
                 {{ $t(`Attention : l'`) }}
                 <a
-                  :href="`https://tabular-api.data.gouv.fr/api/resources/${resource.resource?.id}/`"
+                  :href="`${config.tabularApiUrl}/api/resources/${resource.resource?.id}/`"
                   target="_blank"
                   class="fr-link"
                 >
@@ -150,7 +150,7 @@
                 <p>
                   {{ $t('Attention : cette ressource est exposée via une') }}
                   <a
-                    href="https://www.data.gouv.fr/dataservices/api-tabulaire-data-gouv-fr-beta"
+                    href="https://www.data.gouv.fr/dataservices/673b0e6774a23d9eac2af8ce"
                     target="_blank"
                     class="fr-link"
                   >
@@ -161,7 +161,7 @@
                 <p>
                   {{ $t('Si vous supprimez la ressource,') }}
                   <a
-                    :href="`https://tabular-api.data.gouv.fr/api/resources/${resource.resource?.id}/`"
+                    :href="`${config.tabularApiUrl}/api/resources/${resource.resource?.id}/`"
                     target="_blank"
                     class="fr-link"
                   >

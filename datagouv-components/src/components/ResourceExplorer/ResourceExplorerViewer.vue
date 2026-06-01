@@ -303,7 +303,7 @@
                 <p>{{ t("- Si le fichier est modifié, l'API sera mise à jour et sa structure pourra changer.") }}</p>
                 <p>{{ t("- Si le fichier est supprimé, l'API sera également supprimée.") }}</p>
                 <p>{{ t("Pour des usages pérennes, prévoyez que cette API dépend directement du fichier source.") }}</p>
-                <p>{{ t("L'URL de base de l'API est https://tabular-api.data.gouv.fr") }}</p>
+                <p>{{ t("L'URL de base de l'API est ${config.tabularApiUrl}") }}</p>
               </div>
               <OpenApiViewer
                 v-if="hasTabularData"
