@@ -167,10 +167,7 @@
 </template>
 
 <script setup lang="ts">
-import { datagouv, BrandedButton, CopyButton } from '@datagouv/components-next'
-import type { UseFetchFunction } from '@datagouv/components-next'
-import CdataLink from './components/CdataLink.vue'
-import { ClientOnly, TextClamp } from '#components'
+import { BrandedButton, CopyButton } from '@datagouv/components-next'
 import error404Svg from '~/public/nuxt_images/errors/404.svg'
 import error403Svg from '~/public/nuxt_images/errors/403.svg'
 import error410Svg from '~/public/nuxt_images/errors/410.svg'
@@ -178,30 +175,11 @@ import error500Svg from '~/public/nuxt_images/errors/500.svg'
 
 const error = useError()
 
-const app = useNuxtApp()
-
 const { locale } = useTranslation()
-const runtimeConfig = useRuntimeConfig()
-const siteConfig = useSiteConfig()
 
 // Computed properties to avoid repeating error checks
 const statusCode = computed(() => error.value?.statusCode as number)
 const errorMessage = computed(() => error.value?.message)
-
-app.vueApp.use(datagouv, {
-  name: runtimeConfig.public.title,
-  baseUrl: siteConfig.url,
-  apiBase: runtimeConfig.public.apiBase,
-  devApiKey: runtimeConfig.public.devApiKey,
-  tabularApiUrl: runtimeConfig.public.tabularApiUrl,
-  tabularApiDataserviceId: runtimeConfig.public.tabularApiDataserviceId,
-  tabularAllowRemote: true,
-  datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
-  customUseFetch: useAPI as UseFetchFunction, // Why this `as` is required?
-  textClamp: TextClamp,
-  appLink: CdataLink,
-  clientOnly: ClientOnly,
-})
 
 useHeadSafe({
   htmlAttrs: {
