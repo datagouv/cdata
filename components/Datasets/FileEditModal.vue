@@ -205,6 +205,8 @@ const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const formId = useId()
 const config = useComponentsConfig()
+const siteConfig = useSiteConfig()
+const runtimeConfig = useRuntimeConfig()
 
 const props = withDefaults(defineProps<{
   openOnMounted?: boolean
