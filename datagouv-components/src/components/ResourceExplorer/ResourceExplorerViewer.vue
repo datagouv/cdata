@@ -303,7 +303,9 @@
                 <p>{{ t("- Si le fichier est modifié, l'API sera mise à jour et sa structure pourra changer.") }}</p>
                 <p>{{ t("- Si le fichier est supprimé, l'API sera également supprimée.") }}</p>
                 <p>{{ t("Pour des usages pérennes, prévoyez que cette API dépend directement du fichier source.") }}</p>
-                <p>{{ t("L'URL de base de l'API est {url}", { url: config.tabularApiUrl }) }}</p>
+                <p v-if="config.tabularApiUrl">
+                  {{ t("L'URL de base de l'API est {url}", { url: config.tabularApiUrl }) }}
+                </p>
               </div>
               <OpenApiViewer
                 v-if="hasTabularData"
