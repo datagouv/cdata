@@ -37,7 +37,7 @@ import BrandedButton from '../BrandedButton.vue'
 
 const q = defineModel<string>({ required: true })
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   placeholder?: string | null
   autoFocus?: boolean
 }>(), {
@@ -57,6 +57,7 @@ const focus = () => {
 }
 
 onMounted(async () => {
+  if (!props.autoFocus) return
   await nextTick()
   focus()
 })

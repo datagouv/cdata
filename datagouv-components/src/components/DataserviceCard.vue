@@ -53,6 +53,7 @@
     <ObjectCardHeader
       :icon="isTabularApi ? RiSparklingLine : RiTerminalLine"
       :url="dataserviceUrl || dataservice.self_web_url"
+      :title-tag="titleTag"
     >
       {{ dataservice.title }}
     </ObjectCardHeader>
@@ -115,6 +116,7 @@ import { useComponentsConfig } from '../config'
 import { useFormatDate } from '../functions/dates'
 import { summarize } from '../functions/helpers'
 import type { Dataservice } from '../types/dataservices'
+import type { TitleTag } from '../types/ui'
 import { useTranslation } from '../composables/useTranslation'
 import OrganizationLogo from './OrganizationLogo.vue'
 import Avatar from './Avatar.vue'
@@ -130,6 +132,7 @@ type Props = {
   dataserviceUrl?: RouteLocationRaw
   organizationUrl?: RouteLocationRaw
   showDescription?: boolean
+  titleTag?: TitleTag
 }
 
 const props = withDefaults(defineProps<Props>(), {
