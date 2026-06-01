@@ -31,7 +31,7 @@ const { t } = useTranslation()
 
 const options = [
   { value: 'open', label: t('Téléchargement libre') },
-  { value: 'open_with_account', label: t('Ouvert sous condition') },
-  { value: 'restricted', label: t('Accessible sous habilitation') },
+  { value: 'open_with_account', label: t('Ouvert avec un compte') },
+  { value: 'restricted', label: t('Accès restreint') },
 ]
 </script>
