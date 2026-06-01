@@ -39,13 +39,10 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 const route = useRoute()
 const siteConfig = useSiteConfig()
 
-// An empty slug (/pages) is not a valid page: return a clean 404 right away.
-// Fetching it would build the URL `/nuxt-api/pages/` whose trailing slash gets
-// 308-redirected, which ofetch follows without raising an error.
+// An empty slug (/pages) is not a valid page. Skip the fetch entirely: its URL
+// `/nuxt-api/pages/` has a trailing slash that gets 308-redirected, which ofetch
+// follows without raising an error.
 const slug = route.params.slug ? (route.params.slug as string[]).join('/') : ''
-if (!slug) {
-  throw createError({ statusCode: 404, statusMessage: 'Page Not Found', fatal: true })
-}
 
 const { data, status, error } = await useFetch<{
   data: {
@@ -54,10 +51,14 @@ const { data, status, error } = await useFetch<{
   }
   extension: string
   content: string
-}>(`/nuxt-api/pages/${slug}`)
+}>(() => `/nuxt-api/pages/${slug}`, { immediate: Boolean(slug) })
 
-if (error.value || !data.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Page Not Found', fatal: true })
+if (!slug || error.value || !data.value) {
+  // Use `showError`, not `throw createError`: throwing here rejects the async
+  // setup, and during an in-app (SPA) navigation Vue then renders this page once
+  // with an empty setup context, logging "Invalid vnode type: undefined" for each
+  // child component. `showError` sets the error state without rejecting setup.
+  showError({ statusCode: 404, statusMessage: 'Page Not Found', fatal: true })
 }
 
 const title = computed(() => data.value?.data.title)
