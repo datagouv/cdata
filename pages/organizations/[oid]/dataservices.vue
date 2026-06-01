@@ -29,31 +29,37 @@
         </select>
       </div>
     </div>
-    <ul
-      v-if="results?.data.length"
-      class="space-y-4 p-0 list-none"
+    <LoadingBlock
+      v-slot="{ data: loaded }"
+      :status
+      :data="results"
     >
-      <li
-        v-for="dataservice in results.data"
-        :key="dataservice.id"
-        class="p-0"
+      <ul
+        v-if="loaded.data.length"
+        class="space-y-4 p-0 list-none"
       >
-        <DataserviceCard :dataservice />
-      </li>
-    </ul>
-    <Pagination
-      v-if="results && results.total > pageSize"
-      :page
-      :page-size="pageSize"
-      :total-results="results.total"
-      class="mt-4"
-      @change="(p: number) => page = p"
-    />
+        <li
+          v-for="dataservice in loaded.data"
+          :key="dataservice.id"
+          class="p-0"
+        >
+          <DataserviceCard :dataservice />
+        </li>
+      </ul>
+      <Pagination
+        v-if="loaded.total > pageSize"
+        :page
+        :page-size="pageSize"
+        :total-results="loaded.total"
+        class="mt-4"
+        @change="(p: number) => page = p"
+      />
+    </LoadingBlock>
   </div>
 </template>
 
 <script setup lang="ts">
-import { DataserviceCard, Pagination, defaultDataserviceSortOptions, type Dataservice, type Organization, type PaginatedArray } from '@datagouv/components-next'
+import { DataserviceCard, LoadingBlock, Pagination, defaultDataserviceSortOptions, type Dataservice, type Organization, type PaginatedArray } from '@datagouv/components-next'
 import { useRouteQuery } from '@vueuse/router'
 
 const props = defineProps<{
@@ -77,7 +83,8 @@ const params = computed(() => {
   return p
 })
 
-const { data: results } = await useAPI<PaginatedArray<Dataservice>>('/api/2/dataservices/search/', {
+const { data: results, status } = await useAPI<PaginatedArray<Dataservice>>('/api/2/dataservices/search/', {
   params,
+  lazy: true,
 })
 </script>

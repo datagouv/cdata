@@ -2,14 +2,17 @@
   <article class="fr-enlarge-link group/reuse-card bg-white border border-gray-default hover:bg-gray-some flex flex-col relative">
     <div class="flex flex-col h-full flex-1 order-2 px-8">
       <div class="order-1 flex flex-col px-4 py-1 h-full -mx-8">
-        <h3 class="font-bold text-base mt-1 mb-0 truncate">
+        <component
+          :is="titleTag"
+          class="font-bold text-base mt-1 mb-0 truncate"
+        >
           <AppLink
             class="text-gray-title overflow-hidden"
             :to="reuseUrl"
           >
             {{ reuse.title }}
           </AppLink>
-        </h3>
+        </component>
         <div class="order-3 text-sm m-0 text-gray-medium">
           <div class="text-sm mb-0 flex items-center">
             <ObjectCardOwner
@@ -66,13 +69,14 @@ import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { useFormatDate } from '../functions/dates'
 import type { Reuse } from '../types/reuses'
+import type { TitleTag } from '../types/ui'
 import { useTranslation } from '../composables/useTranslation'
 import AppLink from './AppLink.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
 import ReuseDetails from './ReuseDetails.vue'
 import Placeholder from './Placeholder.vue'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   reuse: Reuse
 
   /**
@@ -86,7 +90,11 @@ const props = defineProps<{
   * It is used as a separate prop to allow other sites using the package to define their own organization pages.
   */
   organizationUrl?: RouteLocationRaw
-}>()
+
+  titleTag?: TitleTag
+}>(), {
+  titleTag: 'h3',
+})
 
 const { t } = useTranslation()
 const { formatRelativeIfRecentDate } = useFormatDate()

@@ -16,6 +16,10 @@ export default defineNuxtConfig({
     '@nuxt/fonts',
     'nuxt-og-image',
   ],
+
+  plugins: [
+    '~/plugins/logger.ts',
+  ],
   devtools: { enabled: true, componentInspector: false },
 
   app: {
@@ -240,18 +244,21 @@ export default defineNuxtConfig({
       // It must optimized them to be able to handle commonjs dependencies.
       // See https://vite.dev/guide/dep-pre-bundling.html#customizing-the-behavior
       include: [
-        'debug',
-        'extend',
+        'debug', // CJS
+        'extend', // CJS
         'highlight.js',
         'rehype-highlight',
-        'unist-util-find',
-        'unist-util-find-all-between',
+        'unist-util-find', // CJS
+        'unist-util-find-all-between', // CJS
         'vue',
         'vue-router',
-        'maplibre-gl',
+        'maplibre-gl', // CJS
         'geopf-extensions-openlayers',
-        'vue3-xml-viewer',
+        'vue3-xml-viewer', // CJS
         'uqr',
+        'pdfjs-dist',
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
       ],
       // `@datagouv/components-next` shouldn't be optimize otherwise its vue instance is not the same
       // as the one used in udata-front-kit. This cause errors with the `provide` / `inject` functions

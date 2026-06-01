@@ -1,5 +1,6 @@
 import { datagouv } from '@datagouv/components-next'
 import type { UseFetchFunction } from '@datagouv/components-next'
+import type { $Fetch } from 'ofetch'
 import CdataLink from '~/components/CdataLink.vue'
 import { ClientOnly, TextClamp } from '#components'
 
@@ -35,6 +36,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     tabularApiDataserviceId: runtimeConfig.public.tabularApiDataserviceId,
     tabularAllowRemote: true,
     customUseFetch: useAPI as UseFetchFunction,
+    $fetch: nuxtApp.$api as $Fetch, // Imperative fetch for the lib's non-reactive helpers (metrics CSV export). Cast: Nuxt's $Fetch type lacks `native`, like the `as UseFetchFunction` above.
     textClamp: TextClamp,
     appLink: CdataLink,
     clientOnly: ClientOnly,
