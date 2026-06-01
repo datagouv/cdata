@@ -160,6 +160,7 @@
 <script setup lang="ts">
 import { datagouv, BrandedButton, CopyButton } from '@datagouv/components-next'
 import type { UseFetchFunction } from '@datagouv/components-next'
+import type { $Fetch } from 'ofetch'
 import CdataLink from './components/CdataLink.vue'
 import { ClientOnly, TextClamp } from '#components'
 import error404Svg from '~/public/nuxt_images/errors/404.svg'
@@ -189,6 +190,7 @@ app.vueApp.use(datagouv, {
   tabularAllowRemote: true,
   datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
   customUseFetch: useAPI as UseFetchFunction, // Why this `as` is required?
+  $fetch: app.$api as $Fetch, // Imperative fetch for the lib's non-reactive helpers (metrics CSV export). Cast: Nuxt's $Fetch type lacks `native`, like the `as UseFetchFunction` above.
   textClamp: TextClamp,
   appLink: CdataLink,
   clientOnly: ClientOnly,

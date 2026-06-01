@@ -104,6 +104,8 @@ import InfiniteLoader from './components/InfiniteLoader.vue'
 import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
+import { ofetch } from 'ofetch'
+import { useTranslation } from './composables/useTranslation'
 
 export { Toaster, toast } from 'vue-sonner'
 
@@ -278,6 +280,31 @@ export {
 // Vue Plugin
 const datagouv: Plugin<PluginConfig> = {
   async install(app: App, options) {
+    // Default `$fetch` to an ofetch instance carrying the datagouv API specifics + the consumer's
+    // auth hooks, so everything downstream (the default `useFetch`, imperative helpers) can rely on
+    // a single configured fetch. A consumer that provides its own `$fetch` keeps full control.
+    if (!options.$fetch) {
+      options.$fetch = ofetch.create({
+        baseURL: options.apiBase,
+        onRequest(context) {
+          if (options.onRequest) {
+            if (Array.isArray(options.onRequest)) options.onRequest.forEach(hook => hook(context))
+            else options.onRequest(context)
+          }
+          context.options.headers.set('Content-Type', 'application/json')
+          context.options.headers.set('Accept', 'application/json')
+          if (options.devApiKey) context.options.headers.set('X-API-KEY', options.devApiKey)
+          const { locale } = useTranslation()
+          if (locale) {
+            context.options.params ??= {}
+            context.options.params['lang'] = locale
+          }
+        },
+        onRequestError: options.onRequestError,
+        onResponse: options.onResponse,
+        onResponseError: options.onResponseError,
+      })
+    }
     app.provide(configKey, options)
     if (!options.textClamp) {
       const textClamp = await import('vue3-text-clamp')
