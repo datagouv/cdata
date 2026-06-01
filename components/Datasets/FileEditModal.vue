@@ -199,10 +199,12 @@ import { RiDeleteBin6Line, RiPencilLine } from '@remixicon/vue'
 import ModalWithButton from '../Modal/ModalWithButton.vue'
 import DescribeResource from './DescribeResource.vue'
 import type { CommunityResourceForm, ResourceForm } from '~/types/types'
+import { useComponentsConfig } from '../../datagouv-components/src/config'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const formId = useId()
+const config = useComponentsConfig()
 
 const props = withDefaults(defineProps<{
   openOnMounted?: boolean
