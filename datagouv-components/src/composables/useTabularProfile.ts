@@ -14,6 +14,15 @@ export type TabularProfileState = {
   refresh: () => Promise<void>
 }
 
+// What is shared through provide/inject: the resourceId (to let descendants
+// check they target the same resource) and the in-flight fetch promise. We
+// share the promise rather than the resolved state because `provide()` must
+// run synchronously during setup — see `provideTabularProfile`.
+type TabularProfileShared = {
+  resourceId: Readonly<Ref<string>>
+  state: Promise<TabularProfileState>
+}
+
 async function createProfileState(resourceId: MaybeRefOrGetter<string>): Promise<TabularProfileState> {
   const config = useComponentsConfig()
   const ridRef = computed(() => toValue(resourceId))
@@ -33,10 +42,16 @@ async function createProfileState(resourceId: MaybeRefOrGetter<string>): Promise
 /**
  * Parent: fetch the tabular profile once and share it with descendants
  * (TabularExplorer, DataStructure...) via provide/inject.
+ *
+ * Not async on purpose: `provide()` only works while the active component
+ * instance is set, which is lost after the first `await`. So we kick off the
+ * fetch, `provide()` the resulting promise synchronously, then return it for
+ * the caller to await.
  */
-export async function provideTabularProfile(resourceId: MaybeRefOrGetter<string>): Promise<TabularProfileState> {
-  const state = await createProfileState(resourceId)
-  provide(TABULAR_PROFILE_KEY, state)
+export function provideTabularProfile(resourceId: MaybeRefOrGetter<string>): Promise<TabularProfileState> {
+  const ridRef = computed(() => toValue(resourceId))
+  const state = createProfileState(resourceId)
+  provide<TabularProfileShared>(TABULAR_PROFILE_KEY, { resourceId: ridRef, state })
   return state
 }
 
@@ -47,9 +62,9 @@ export async function provideTabularProfile(resourceId: MaybeRefOrGetter<string>
  * standalone usage of TabularExplorer / DataStructure.
  */
 export async function injectTabularProfile(resourceId: MaybeRefOrGetter<string>): Promise<TabularProfileState> {
-  const injected = inject<TabularProfileState | null>(TABULAR_PROFILE_KEY, null)
+  const injected = inject<TabularProfileShared | null>(TABULAR_PROFILE_KEY, null)
   if (injected && injected.resourceId.value === toValue(resourceId)) {
-    return injected
+    return await injected.state
   }
   return await createProfileState(resourceId)
 }
