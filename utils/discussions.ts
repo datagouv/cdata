@@ -23,7 +23,6 @@ export function getSubjectTitle(subject: DiscussionSubjectTypes) {
   if ('title' in subject) {
     return subject.title
   }
-  // Topics use `name` instead of `title`.
   if ('name' in subject) {
     return subject.name
   }
@@ -35,7 +34,6 @@ export function getSubjectPage(subject: DiscussionSubjectTypes) {
   if (subject === null) {
     return ''
   }
-  // Topics expose their front URL through `page` like other subjects.
   if ('elements' in subject) {
     return subject.page
   }
