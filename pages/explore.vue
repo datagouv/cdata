@@ -1,127 +1,169 @@
 <template>
-  <div class="container py-8">
-    <h1 class="mb-6">
-      Explore
+  <div
+    v-if="!resourceId"
+    class="container mb-16"
+  >
+    <Breadcrumb>
+      <BreadcrumbItem to="/">
+        {{ $t('Accueil') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem>
+        {{ $t('Explorer') }}
+      </BreadcrumbItem>
+    </Breadcrumb>
+
+    <h1 class="text-gray-title font-extrabold text-2xl mb-2">
+      {{ $t('Explorer les données tabulaires') }}
     </h1>
+    <TranslationT
+      keypath="À ce stade, seuls les fichiers tabulaires de moins de {size} sont disponibles."
+      tag="p"
+      class="text-gray-medium mb-6"
+    >
+      <template #size>
+        <strong>{{ $t('100 Mo') }}</strong>
+      </template>
+    </TranslationT>
+
+    <form @submit.prevent="() => execute()">
+      <SearchInput
+        v-model="query"
+        :placeholder="$t('Rechercher un fichier (exemple : élections)…')"
+      />
+    </form>
+
+    <p
+      v-show="status === 'pending'"
+      class="mt-4 text-sm text-gray-medium"
+    >
+      {{ $t('Chargement…') }}
+    </p>
 
     <div
-      v-if="!resourceId"
-      class="space-y-6"
+      v-if="flatResults.length > 0"
+      class="mt-6 space-y-3"
     >
-      <div class="flex flex-wrap gap-2">
-        <button
-          class="fr-btn fr-btn--secondary fr-btn--sm"
-          @click="selectResource('eaa95292-072d-4353-a6b8-1be65be0ab0f')"
-        >
-          Petitions du Sénat
-        </button>
-      </div>
-
-      <form
-        class="fr-search-bar fr-search-bar--lg w-full"
-        @submit.prevent="() => execute()"
-      >
-        <label
-          for="search-input"
-          class="sr-only"
-        >Rechercher un jeu de données</label>
-        <input
-          id="search-input"
-          v-model="query"
-          type="search"
-          class="input max-h-12 m-0 rounded-tl shadow-input-blue"
-          placeholder="Rechercher un jeu de données..."
-        >
-        <button
-          class="fr-btn"
-          type="submit"
-        >
-          Rechercher
-        </button>
-      </form>
-
-      <p
-        v-show="status === 'pending'"
-        class="text-sm text-gray-500"
-      >
-        Chargement...
+      <p class="text-sm text-gray-medium">
+        {{ $t('{n} résultat | {n} résultats', results!.total) }}
       </p>
-
-      <div
-        v-if="displayedDatasets.length > 0"
-        class="space-y-4"
+      <DatasetCard
+        v-for="entry in flatResults"
+        :key="`${entry.dataset.id}-${entry.resource.id}`"
+        :dataset="entry.dataset"
+        :dataset-url="exploreLink(entry.resource.id)"
       >
-        <p class="text-sm text-gray-500">
-          {{ results!.total }} résultat{{ results!.total > 1 ? 's' : '' }}
-        </p>
-        <div
-          v-for="dataset in displayedDatasets"
-          :key="dataset.id"
-          class="border rounded p-4 space-y-2"
+        <TranslationT
+          keypath="Fichier : {file}"
+          tag="p"
+          class="text-sm text-gray-700 mb-0"
         >
-          <p class="font-bold">
-            {{ dataset.title }}
-          </p>
-          <p
-            v-if="dataset.organization"
-            class="text-sm text-gray-500"
-          >
-            {{ dataset.organization.name }}
-          </p>
-          <div class="space-y-1">
-            <button
-              v-for="resource in explorableResources(dataset)"
-              :key="resource.id"
-              class="flex items-center gap-2 text-sm px-3 py-2 rounded hover:bg-blue-50 w-full text-left transition-colors"
-              @click="selectResource(resource.id)"
-            >
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 uppercase">
-                {{ resource.format }}
-              </span>
-              <span>{{ resource.title }}</span>
-              <span
-                v-if="resource.filesize"
-                class="text-gray-400 text-xs ml-auto"
-              >
-                {{ filesize(resource.filesize) }}
-              </span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <p
-        v-else-if="results && status === 'success'"
-        class="text-sm text-gray-500 italic"
-      >
-        Aucun résultat
-      </p>
+          <template #file>
+            <strong>{{ entry.resource.title || $t('Sans titre') }}</strong>
+          </template>
+        </TranslationT>
+      </DatasetCard>
     </div>
 
-    <div v-else>
-      <button
-        class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm mb-4"
-        @click="resourceId = ''"
+    <div
+      v-else-if="results && status === 'success' && query"
+      class="mt-8 flex flex-col items-center text-center py-8"
+    >
+      <img
+        src="/illustrations/magnifying_glass.svg"
+        class="h-20 mb-4"
+        alt=""
       >
-        &larr; Retour à la recherche
-      </button>
-      <TabularExplorer
-        :key="resourceId"
-        :resource-id="resourceId"
-      />
+      <p class="font-bold mb-2">
+        {{ $t('Pas de résultats pour « {q} »', { q: query }) }}
+      </p>
+      <p class="text-sm text-gray-medium mb-4">
+        {{ $t('Essayez avec d\'autres mots-clés ou parcourez la sélection ci-dessous.') }}
+      </p>
+      <BrandedButton
+        color="secondary"
+        @click="query = ''"
+      >
+        {{ $t('Réinitialiser la recherche') }}
+      </BrandedButton>
+    </div>
+
+    <div
+      v-if="featuredEntries && featuredEntries.length > 0"
+      class="mt-12 space-y-3"
+    >
+      <h2 class="text-gray-title font-extrabold text-xl mb-2">
+        {{ $t('Quelques exemples') }}
+      </h2>
+      <p class="text-gray-medium">
+        {{ $t('Si vous ne savez pas par quoi commencer à explorer, nous vous proposons ci-dessous une sélection de quelques jeux de données.') }}
+      </p>
+      <DatasetCard
+        v-for="entry in featuredEntries"
+        :key="`${entry.dataset.id}-${entry.resource.id}`"
+        :dataset="entry.dataset"
+        :dataset-url="exploreLink(entry.resource.id)"
+      >
+        <TranslationT
+          keypath="Fichier : {file}"
+          tag="p"
+          class="text-sm text-gray-700 mb-0"
+        >
+          <template #file>
+            <strong>{{ entry.resource.title || $t('Sans titre') }}</strong>
+          </template>
+        </TranslationT>
+      </DatasetCard>
     </div>
   </div>
+
+  <ExploreResourceView
+    v-else-if="currentResource && currentDataset"
+    :resource="currentResource"
+    :dataset="currentDataset"
+  />
 </template>
 
 <script setup lang="ts">
-import { TabularExplorer, filesize, useHasTabularData } from '@datagouv/components-next'
-import type { Dataset } from '@datagouv/components-next'
+import {
+  BrandedButton,
+  DatasetCard,
+  SearchInput,
+  TranslationT,
+  useHasTabularData,
+  useTranslation,
+} from '@datagouv/components-next'
+import type { Dataset, DatasetV2, Resource } from '@datagouv/components-next'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import type { PaginatedArray } from '~/types/types'
 
-useSeoMeta({ robots: 'noindex' })
+const { t } = useTranslation()
 
-const query = ref('')
-const resourceId = ref('')
+useSeoMeta({
+  title: () => t('Explorer les données tabulaires'),
+  description: () => t('Explorer facilement les fichiers tabulaires (CSV, XLSX) référencés sur data.gouv.fr.'),
+  robots: 'noindex',
+})
+
+const route = useRoute()
+const router = useRouter()
+const { $api } = useNuxtApp()
+const config = useRuntimeConfig()
+
+const featuredResourceIds = config.public.featuredResourceIds
+
+const query = computed({
+  get: () => (typeof route.query.q === 'string' ? route.query.q : ''),
+  set: (v: string) => {
+    const q = { ...route.query }
+    if (v) q.q = v
+    else delete q.q
+    router.replace({ query: q })
+  },
+})
+
+const resourceId = computed(() =>
+  typeof route.query.resource_id === 'string' ? route.query.resource_id : '',
+)
 
 const searchParams = computed(() => ({ q: query.value, page_size: 10, format: 'csv' }))
 
@@ -129,7 +171,7 @@ const { data: results, status, execute } = await useAPI<PaginatedArray<Dataset>>
   '/api/1/datasets/',
   {
     query: searchParams,
-    immediate: false,
+    immediate: !!query.value,
     watch: false,
   },
 )
@@ -140,11 +182,64 @@ function explorableResources(dataset: Dataset) {
   return dataset.resources.filter(hasTabularData)
 }
 
-const displayedDatasets = computed(() =>
-  results.value?.data.filter(dataset => explorableResources(dataset).length > 0) ?? [],
+type ResourceInDataset = { dataset: Dataset | DatasetV2, resource: Resource }
+
+const flatResults = computed<ResourceInDataset[]>(() => {
+  const out: ResourceInDataset[] = []
+  for (const dataset of results.value?.data ?? []) {
+    for (const resource of explorableResources(dataset)) {
+      out.push({ dataset, resource })
+    }
+  }
+  return out
+})
+
+const { data: featuredEntries } = await useAsyncData(
+  'explore-featured',
+  async () => {
+    const entries = await Promise.all(
+      featuredResourceIds.map(async (id): Promise<ResourceInDataset | null> => {
+        try {
+          const r = await $api<{ resource: Resource, dataset_id: string }>(
+            `/api/2/datasets/resources/${id}/`,
+          )
+          const dataset = await $api<DatasetV2>(`/api/2/datasets/${r.dataset_id}/`)
+          return { dataset, resource: r.resource }
+        }
+        catch {
+          return null
+        }
+      }),
+    )
+    return entries.filter((e): e is ResourceInDataset => e !== null)
+  },
 )
 
-function selectResource(id: string) {
-  resourceId.value = id
+function exploreLink(id: string) {
+  return { query: { ...route.query, resource_id: id, tab: undefined } }
 }
+
+// Resource view: fetch the current resource + its parent dataset
+type ResourceWithDataset = { resource: Resource, dataset_id: string }
+
+const { data: resourceData } = await useAsyncData(
+  'explore-current-resource',
+  async () => {
+    if (!resourceId.value) return null
+    try {
+      const r = await $api<ResourceWithDataset>(
+        `/api/2/datasets/resources/${resourceId.value}/`,
+      )
+      const dataset = await $api<Dataset>(`/api/1/datasets/${r.dataset_id}/`)
+      return { resource: r.resource, dataset }
+    }
+    catch {
+      return null
+    }
+  },
+  { watch: [resourceId] },
+)
+
+const currentResource = computed(() => resourceData.value?.resource ?? null)
+const currentDataset = computed(() => resourceData.value?.dataset ?? null)
 </script>
