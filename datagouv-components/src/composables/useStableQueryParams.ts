@@ -72,10 +72,11 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
     if (q.value) {
       params.q = q.value
     }
-    if (sort.value) {
+    const sortToUse = sort.value ?? typeConfig?.defaultSort
+    if (sortToUse) {
       const validSortValues = typeConfig?.sortOptions?.map(o => o.value as string) ?? []
-      if (validSortValues.includes(sort.value)) {
-        params.sort = sort.value
+      if (validSortValues.includes(sortToUse)) {
+        params.sort = sortToUse
       }
     }
     params.page = page.value
