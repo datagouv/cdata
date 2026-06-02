@@ -23,6 +23,10 @@ export function getSubjectTitle(subject: DiscussionSubjectTypes) {
   if ('title' in subject) {
     return subject.title
   }
+  // Topics use `name` instead of `title`.
+  if ('name' in subject) {
+    return subject.name
+  }
 
   return throwOnNever(subject as never, `Unknown type ${subject}`)
 };
@@ -30,6 +34,10 @@ export function getSubjectTitle(subject: DiscussionSubjectTypes) {
 export function getSubjectPage(subject: DiscussionSubjectTypes) {
   if (subject === null) {
     return ''
+  }
+  // Topics expose their front URL through `page` like other subjects.
+  if ('elements' in subject) {
+    return subject.page
   }
   if ('page' in subject) {
     return subject.page

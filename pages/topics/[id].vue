@@ -1,17 +1,24 @@
 <template>
   <div>
     <div class="container">
-      <Breadcrumb
+      <div
         v-if="topic"
-        class="mt-4 md:mb-0"
+        class="mt-4 flex gap-4 flex-wrap md:flex-nowrap items-center justify-between"
       >
-        <BreadcrumbItem to="/">
-          {{ $t('Accueil') }}
-        </BreadcrumbItem>
-        <BreadcrumbItem>
-          {{ topic.name }}
-        </BreadcrumbItem>
-      </Breadcrumb>
+        <Breadcrumb class="md:my-0">
+          <BreadcrumbItem to="/">
+            {{ $t('Accueil') }}
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            {{ topic.name }}
+          </BreadcrumbItem>
+        </Breadcrumb>
+        <EditButton
+          v-if="isMeAdmin()"
+          :id="topic.id"
+          type="topics"
+        />
+      </div>
     </div>
 
     <LoadingBlock
@@ -20,7 +27,7 @@
       :status
       :data="topic"
     >
-      <div class="container py-10 min-h-32 space-y-8">
+      <div class="container py-10 min-h-32">
         <header class="space-y-3">
           <div
             v-if="topic.organization"
@@ -80,69 +87,37 @@
             </span>
           </div>
         </header>
+      </div>
 
-        <MarkdownViewer
-          v-if="topic.description"
-          class="w-full min-w-0"
-          :content="topic.description"
-          :min-heading="3"
+      <FullPageTabs
+        :links="[
+          { label: $t('Description'), href: `/topics/${route.params.id}` },
+          { label: $t('Discussions'), href: `/topics/${route.params.id}/discussions`, count: discussionsCount },
+        ]"
+      />
+      <div
+        id="page"
+        class="bg-white pt-5 pb-8"
+      >
+        <NuxtPage
+          class="container"
+          :topic
         />
-
-        <section v-if="datasets && datasets.total">
-          <h2 class="uppercase text-sm mb-2.5">
-            {{ $t('aucun jeu de données associé | {n} jeu de données associé | {n} jeux de données associés', { n: datasets.total }) }}
-          </h2>
-          <div
-            class="grid gap-5"
-            :class="{ 'lg:grid-cols-2': datasets.total > 1 }"
-          >
-            <DatasetCardLg
-              v-for="dataset in datasets.data"
-              :key="dataset.id"
-              :dataset="dataset"
-              :show-description="datasets.total === 1"
-              class="m-0 min-w-0"
-            />
-          </div>
-          <Pagination
-            class="mt-4"
-            :page="datasetsPage"
-            :page-size="datasetsPageSize"
-            :total-results="datasets.total"
-            @change="(changedPage: number) => datasetsPage = changedPage"
-          />
-        </section>
-
-        <section v-if="reuses && reuses.total">
-          <h2 class="uppercase text-sm mb-2.5">
-            {{ $t('aucune réutilisation associée | {n} réutilisation associée | {n} réutilisations associées', { n: reuses.total }) }}
-          </h2>
-          <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <ReuseCard
-              v-for="reuse in reuses.data"
-              :key="reuse.id"
-              class="min-w-0"
-              :reuse="reuse"
-            />
-          </div>
-          <Pagination
-            class="mt-4"
-            :page="reusesPage"
-            :page-size="reusesPageSize"
-            :total-results="reuses.total"
-            @change="(changedPage: number) => reusesPage = changedPage"
-          />
-        </section>
       </div>
     </LoadingBlock>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Avatar, getDescriptionShort, LoadingBlock, MarkdownViewer, OrganizationLogo, OrganizationNameWithCertificate, Pagination, useFormatDate, type DatasetV2, type Reuse, type TopicV2 } from '@datagouv/components-next'
+import { Avatar, getDescriptionShort, LoadingBlock, OrganizationLogo, OrganizationNameWithCertificate, useFormatDate, type TopicV2 } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import ReuseCard from '~/components/Reuses/ReuseCard.vue'
+import EditButton from '~/components/Buttons/EditButton.vue'
+import type { Thread } from '~/types/discussions'
 import type { PaginatedArray } from '~/types/types'
+
+definePageMeta({
+  keepScroll: true,
+})
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -152,28 +127,10 @@ const { formatDate } = useFormatDate()
 const url = computed(() => `/api/2/topics/${route.params.id}/`)
 const { data: topic, status } = await useAPI<TopicV2>(url, { redirectOn404: true, redirectOnSlug: 'id' })
 
-const datasetsPage = ref(1)
-const datasetsPageSize = ref(10)
-const datasetsQuery = computed(() => ({
-  page: datasetsPage.value,
-  page_size: datasetsPageSize.value,
-  // Filter by the topic id: the datasets endpoint rejects the slug, and route.params.id
-  // is replaced by the slug after redirectOnSlug.
-  topic: topic.value?.id,
-}))
-const { data: datasets } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/', { query: datasetsQuery })
-
-const reusesPage = ref(1)
-const reusesPageSize = ref(9)
-const reusesQuery = computed(() => ({
-  page: reusesPage.value,
-  page_size: reusesPageSize.value,
-  topic: topic.value?.id,
-}))
-const { data: reuses } = await useAPI<PaginatedArray<Reuse>>('/api/2/reuses/search/', {
-  headers: { 'X-Fields': reusesXFields },
-  query: reusesQuery,
+const { data: discussions } = await useAPI<PaginatedArray<Thread>>('/api/1/discussions/', {
+  query: { for: topic.value?.id, page_size: 1 },
 })
+const discussionsCount = computed(() => discussions.value?.total ?? 0)
 
 const title = computed(() => `${topic.value?.name} | ${config.public.title}`)
 const description = computed(() => topic.value ? getDescriptionShort(topic.value) : '')
