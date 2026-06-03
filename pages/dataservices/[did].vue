@@ -180,24 +180,6 @@
                       </span>
                     </dd>
                   </div>
-
-                  <div class="space-y-1">
-                    <dt class="text-gray-plain font-bold">
-                      {{ $t('Dernière mise à jour') }}
-                    </dt>
-                    <dd class="p-0 m-0">
-                      {{ formatDate(dataservice.metadata_modified_at) }}
-                    </dd>
-                  </div>
-
-                  <div class="space-y-1">
-                    <dt class="text-gray-plain font-bold">
-                      {{ $t('Date de création') }}
-                    </dt>
-                    <dd class="p-0 m-0">
-                      {{ formatDate(dataservice.created_at) }}
-                    </dd>
-                  </div>
                 </dl>
                 <div class="flex flex-wrap gap-2 pt-1">
                   <BrandedButton
@@ -305,7 +287,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
@@ -322,7 +304,6 @@ definePageMeta({
 
 const config = useRuntimeConfig()
 const route = useRoute()
-const { formatDate } = useFormatDate()
 const { $matomo } = useNuxtApp()
 
 const sidebar = useTemplateRef('sidebar')

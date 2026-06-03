@@ -22,9 +22,6 @@ test('sidebar displays correct metadata values', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Caractéristiques techniques' })).toBeVisible()
 
   // Technical block
-  await expect(page.getByText('Dernière mise à jour')).toBeVisible()
-  await expect(page.getByText('30 juillet 2024')).toBeVisible()
-  await expect(page.getByText('Date de création')).toBeVisible()
   await expect(page.getByText('Taux de disponibilité')).toBeVisible()
   await expect(page.getByText('Non communiqué')).toBeVisible()
 })
