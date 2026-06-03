@@ -34,6 +34,10 @@ export function getSubjectPage(subject: DiscussionSubjectTypes) {
   if (subject === null) {
     return ''
   }
+  // TODO: remove once udata#3765 is merged. Until then the topic API doesn't
+  // return `page`, so the `'page' in subject` check below fails at runtime and
+  // we'd hit throwOnNever. Matching on `elements` (always present on topics)
+  // avoids the crash while the field is missing.
   if ('elements' in subject) {
     return subject.page
   }
