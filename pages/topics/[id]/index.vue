@@ -80,6 +80,12 @@ const reusesQuery = computed(() => ({
   page_size: reusesPageSize.value,
   topic: props.topic.id,
 }))
+// We use the search endpoint for reuses because there is no v2 reuses index
+// filtered by topic yet. Once udata#3800 is merged we can switch to the faster
+// v2 index, like we already do for datasets above.
+// If we ever need the TopicElement data (title/description/extras attached to
+// the element), we could instead query /api/2/topics/{id}/elements/ for both
+// datasets and reuses.
 const { data: reuses } = await useAPI<PaginatedArray<Reuse>>('/api/2/reuses/search/', {
   headers: { 'X-Fields': reusesXFields },
   query: reusesQuery,
