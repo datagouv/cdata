@@ -143,6 +143,25 @@
                 </h3>
                 <dl class="space-y-2.5 pl-0">
                   <div
+                    v-if="dataservice.base_api_url"
+                    class="space-y-1"
+                  >
+                    <dt class="text-gray-plain font-bold">
+                      {{ $t(`URL de base de l'API`) }}
+                    </dt>
+                    <dd class="p-0 m-0">
+                      <a
+                        :href="dataservice.base_api_url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="link block truncate"
+                      >
+                        {{ dataservice.base_api_url }}
+                      </a>
+                    </dd>
+                  </div>
+
+                  <div
                     v-if="dataservice.rate_limiting || dataservice.rate_limiting_url"
                     class="space-y-1"
                   >

@@ -22,6 +22,10 @@ test('sidebar displays correct metadata values', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Caractéristiques techniques' })).toBeVisible()
 
   // Technical block
+  await expect(page.getByText(`URL de base de l'API`)).toBeVisible()
+  await expect(
+    page.locator('aside a[href="https://opendata.caissedesdepots.fr/api/explore/v2.1/"]'),
+  ).toBeVisible()
   await expect(page.getByText('Taux de disponibilité')).toBeVisible()
   await expect(page.getByText('Non communiqué')).toBeVisible()
 })
