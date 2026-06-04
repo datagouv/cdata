@@ -36,7 +36,7 @@
                 :value="configKey(typeConfig)"
                 :count="resultsMap[configKey(typeConfig)]?.data.value?.total"
                 :loading="resultsMap[configKey(typeConfig)]?.status.value === 'pending' || resultsMap[configKey(typeConfig)]?.status.value === 'idle'"
-                :icon="strategies[typeConfig.class].icon"
+                :icon="typeConfig.icon ?? strategies[typeConfig.class].icon"
               >
                 {{ typeConfig.name || strategies[typeConfig.class].name }}
               </RadioInput>

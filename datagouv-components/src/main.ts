@@ -41,6 +41,9 @@ import BrandedButton from './components/BrandedButton.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
 import DatasetCard from './components/DatasetCard.vue'
+import DataStructure from './components/ResourceAccordion/DataStructure.vue'
+import Downloads from './components/ResourceAccordion/Downloads.vue'
+import Metadata from './components/ResourceAccordion/Metadata.vue'
 import DescriptionListTerm from './components/DescriptionListTerm.vue'
 import DescriptionListDetails from './components/DescriptionListDetails.vue'
 import DiscussionMessageCard from './components/DiscussionMessageCard.vue'
@@ -61,6 +64,7 @@ import LoadingBlock from './components/LoadingBlock.vue'
 import MarkdownViewer from './components/MarkdownViewer.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
 import OrganizationHorizontalCard from './components/OrganizationHorizontalCard.vue'
+import ObjectCardOwner from './components/ObjectCardOwner.vue'
 import OrganizationLogo from './components/OrganizationLogo.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
@@ -74,6 +78,7 @@ import PostCard from './components/PostCard.vue'
 import ReadMore from './components/ReadMore.vue'
 import ResourceAccordion from './components/ResourceAccordion/ResourceAccordion.vue'
 import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
+import ResourceSelector from './components/ResourceExplorer/ResourceSelector.vue'
 import ResourceExplorer from './components/ResourceExplorer/ResourceExplorer.vue'
 import ResourceExplorerSidebar from './components/ResourceExplorer/ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './components/ResourceExplorer/ResourceExplorerViewer.vue'
@@ -116,6 +121,8 @@ export * from './composables/useMetrics'
 export * from './composables/useReuseType'
 export * from './composables/useTranslation'
 export * from './composables/useHasTabularData'
+export * from './composables/useResourceCapabilities'
+export * from './composables/useTabularProfile'
 
 export * from './functions/activities'
 export * from './functions/datasets'
@@ -328,6 +335,9 @@ export {
   CopyButton,
   DataserviceCard,
   DatasetCard,
+  DataStructure,
+  Downloads,
+  Metadata,
   DatasetInformationSection,
   DatasetTemporalitySection,
   DatasetSpatialSection,
@@ -367,7 +377,9 @@ export {
   ResourceExplorer,
   ResourceExplorerSidebar,
   ResourceExplorerViewer,
+  ObjectCardOwner,
   ResourceIcon,
+  ResourceSelector,
   ReuseCard,
   ReuseDetails,
   ReuseHorizontalCard,
