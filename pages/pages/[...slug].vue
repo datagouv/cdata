@@ -58,7 +58,7 @@ if (!slug || error.value || !data.value) {
   // setup, and during an in-app (SPA) navigation Vue then renders this page once
   // with an empty setup context, logging "Invalid vnode type: undefined" for each
   // child component. `showError` sets the error state without rejecting setup.
-  showError({ statusCode: 404, statusMessage: 'Page Not Found', fatal: true })
+  showError({ statusCode: 404, statusMessage: 'Page Not Found' })
 }
 
 const title = computed(() => data.value?.data.title)
