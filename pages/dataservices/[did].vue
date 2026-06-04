@@ -289,6 +289,7 @@
           class="mt-12"
           :links="[
             { label: $t('Informations'), href: `/dataservices/${route.params.did}` },
+            { label: $t('Réutilisations'), href: `/dataservices/${route.params.did}/reuses`, count: dataservice.metrics.reuses ?? 0 },
             { label: $t('Discussions'), href: `/dataservices/${route.params.did}/discussions`, count: dataservice.metrics.discussions ?? 0 },
           ]"
         />

@@ -53,3 +53,16 @@ test('discussions tab is accessible', async ({ page }) => {
 
   await expect(page).toHaveURL(`/dataservices/${DATASERVICE_SLUG}/discussions`)
 })
+
+test('reuses tab is accessible', async ({ page }) => {
+  await page.goto(`/dataservices/${DATASERVICE_SLUG}`)
+  // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
+
+  const reusesTab = page.locator(`a[href="/dataservices/${DATASERVICE_SLUG}/reuses"]`)
+  await expect(reusesTab).toBeVisible()
+
+  await reusesTab.click()
+
+  await expect(page).toHaveURL(`/dataservices/${DATASERVICE_SLUG}/reuses`)
+})
