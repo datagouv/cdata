@@ -19,7 +19,7 @@
       :aria-label="t('Chargement de l\'aperçu…')"
       role="status"
     >
-      <div class="container">
+      <div>
         <div class="flex items-center justify-end gap-4 py-3">
           <div class="h-4 w-20 bg-gray-200" />
           <div class="h-4 w-20 bg-gray-200" />
@@ -58,15 +58,18 @@
     </div>
 
     <template v-else-if="tableData && profileData">
-      <!-- Toolbar (constrained width — only the table itself goes edge-to-edge) -->
-      <div class="container">
+      <!-- Toolbar & active filters inherit the host's horizontal padding (px-4
+           in both ResourceExplorerViewer's TabPanel and ExploreResourceView), so
+           they line up with the resource title / download button above. Only the
+           table itself goes edge-to-edge (via -mx-4 below). -->
+      <div>
         <div class="flex items-center py-3 gap-2">
           <!-- Mobile: filter & sort button -->
           <BrandedButton
             class="md:hidden"
             color="tertiary"
             size="2xs"
-            :icon="RiFilter2Line"
+            :icon="RiFilterLine"
             keep-margins-even-without-borders
             @click="mobileFilterOpen = true"
           >
@@ -105,33 +108,51 @@
                     class="bg-white border border-gray-default rounded shadow-lg w-72 absolute z-[800]"
                     :style="columnFloatingStyles"
                   >
-                    <div class="flex items-center justify-between px-3 py-2 border-b border-gray-default">
-                      <span class="text-xs font-medium text-gray-title">
+                    <div class="px-3 py-2 border-b border-gray-default space-y-1.5">
+                      <span class="block text-xs font-medium text-gray-title">
                         {{ visibleColumns.size }} {{ t('sur') }} {{ allColumns.length }} {{ t('colonnes visibles') }}
                       </span>
-                      <BrandedButton
-                        v-if="hiddenCount"
-                        color="tertiary"
-                        size="2xs"
-                        @click="showAllColumns"
-                      >
-                        {{ t('Tout afficher') }}
-                      </BrandedButton>
+                      <div class="flex items-center gap-1">
+                        <BrandedButton
+                          v-if="hiddenCount"
+                          color="tertiary"
+                          size="2xs"
+                          @click="showAllColumns"
+                        >
+                          {{ t('Tout afficher') }}
+                        </BrandedButton>
+                        <BrandedButton
+                          v-if="visibleColumns.size > 0"
+                          color="tertiary"
+                          size="2xs"
+                          @click="hideAllColumns"
+                        >
+                          {{ t('Tout masquer') }}
+                        </BrandedButton>
+                      </div>
                     </div>
                     <div class="max-h-64 overflow-auto p-1">
-                      <label
+                      <div
                         v-for="col in allColumns"
                         :key="col"
-                        class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer text-xs"
+                        class="group/col flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 text-xs"
                       >
-                        <input
-                          type="checkbox"
-                          :checked="visibleColumns.has(col)"
-                          class="size-3.5 accent-new-primary"
-                          @change="toggleColumn(col)"
+                        <label class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            :checked="visibleColumns.has(col)"
+                            class="size-3.5 accent-new-primary"
+                            @change="toggleColumn(col)"
+                          >
+                          <span class="truncate">{{ col }}</span>
+                        </label>
+                        <button
+                          class="shrink-0 px-1 text-new-primary hover:underline hidden group-hover/col:block group-focus-within/col:block"
+                          @click="selectOnlyColumn(col)"
                         >
-                        <span class="truncate">{{ col }}</span>
-                      </label>
+                          {{ t('Uniquement') }}
+                        </button>
+                      </div>
                     </div>
                   </PopoverPanel>
                 </Teleport>
@@ -150,20 +171,23 @@
           </div>
         </div>
 
-        <!-- Active filters -->
+        <!-- Active filters & sort -->
         <div
-          v-if="activeFilters.length > 0"
+          v-if="activeFilters.length > 0 || sort"
           class="bg-gray-some border border-gray-default rounded-xl px-3 py-2.5 mb-3 space-y-2.5"
         >
           <!-- Header -->
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <RiFilter2Line
+              <RiFilterLine
                 class="size-3.5"
                 aria-hidden="true"
               />
-              <span class="text-xs text-gray-plain">{{ t('Filtres actifs') }}</span>
-              <span class="inline-flex items-center justify-center rounded-full bg-new-primary/10 text-new-primary text-xs tabular-nums min-w-5 h-5 px-1.5">
+              <span class="text-xs text-gray-plain">{{ activeFilters.length > 0 ? t('Filtres actifs') : t('Tri actif') }}</span>
+              <span
+                v-if="activeFilters.length > 0"
+                class="inline-flex items-center justify-center rounded-full bg-new-primary/10 text-new-primary text-xs tabular-nums min-w-5 h-5 px-1.5"
+              >
                 {{ activeFilters.length }}
               </span>
             </div>
@@ -171,20 +195,50 @@
               color="tertiary"
               size="2xs"
               :icon="RiCloseLine"
-              @click="clearAllFilters"
+              @click="clearAllFilters(); sort = null"
             >
               {{ t('Tout effacer') }}
             </BrandedButton>
           </div>
           <!-- Chips -->
           <div class="flex flex-wrap gap-1.5">
+            <!-- Sort chip -->
+            <span
+              v-if="sort"
+              class="inline-flex items-center gap-1.5 bg-white border border-gray-silver rounded-lg pl-2 pr-1 py-1 text-xs"
+            >
+              <RiArrowUpLine
+                v-if="sort.direction === 'asc'"
+                class="size-3 text-new-primary"
+                aria-hidden="true"
+              />
+              <RiArrowDownLine
+                v-else
+                class="size-3 text-new-primary"
+                aria-hidden="true"
+              />
+              <span class="text-gray-plain">{{ t('Tri') }}</span>
+              <span class="text-gray-title">{{ sort.column }}</span>
+              <span class="text-gray-plain">{{ sort.direction === 'asc' ? t('croissant') : t('décroissant') }}</span>
+              <button
+                class="rounded p-0.5 text-gray-low hover:text-gray-plain hover:bg-gray-100"
+                @click="sort = null"
+              >
+                <RiCloseLine
+                  class="size-3"
+                  aria-hidden="true"
+                />
+                <span class="sr-only">{{ t('Supprimer le tri') }}</span>
+              </button>
+            </span>
+            <!-- Filter chips -->
             <span
               v-for="af in activeFilters"
               :key="af.column"
               class="inline-flex items-center gap-1.5 bg-white border border-gray-silver rounded-lg pl-2 pr-1 py-1 text-xs"
             >
               <component
-                :is="getTypeConfig(af.column).icon"
+                :is="getColumnDisplay(af.column).icon"
                 class="size-3 text-gray-title"
                 aria-hidden="true"
               />
@@ -206,11 +260,34 @@
       </div>
       <!-- /container (toolbar + active filters) -->
 
+      <!-- No column selected -->
+      <div
+        v-if="displayedColumns.length === 0"
+        class="flex flex-col items-center py-12"
+      >
+        <img
+          :src="noColumnsSrc"
+          class="h-32"
+          alt=""
+        >
+        <p class="fr-text--bold fr-my-3v">
+          {{ t('Aucune colonne sélectionnée') }}
+        </p>
+        <BrandedButton
+          color="secondary"
+          size="xs"
+          @click="showAllColumns"
+        >
+          {{ t('Afficher toutes les colonnes') }}
+        </BrandedButton>
+      </div>
+
       <!-- Desktop: scrollable table -->
       <!-- `-mx-4` lets the table extend edge-to-edge of the parent's px-4 wrapper
            (used in both ResourceExplorerViewer's TabPanel and pages/explore.vue),
            while the toolbar and active-filter rows above keep that padding. -->
       <div
+        v-if="displayedColumns.length > 0"
         ref="scrollContainer"
         class="hidden md:block overflow-auto max-h-[70vh] -mx-4"
       >
@@ -251,14 +328,14 @@
                     :boolean-counts="getColumnType(col) === 'boolean' ? getBooleanCounts(col) : undefined"
                   />
                 </div>
-                <!-- Column type -->
-                <span class="font-mono text-xs text-gray-plain -mt-0.5 inline-flex items-center gap-1">
+                <!-- Column type (semantic format when available) -->
+                <span class="font-mono text-xs text-gray-plain -mt-0.5 inline-flex items-center gap-1 max-w-full">
                   <component
-                    :is="getTypeConfig(col).icon"
-                    class="size-3"
+                    :is="getColumnDisplay(col).icon"
+                    class="size-3 shrink-0"
                     aria-hidden="true"
                   />
-                  <span class="mt-px">{{ getTypeConfig(col).label }}</span>
+                  <span class="mt-px truncate">{{ getColumnDisplay(col).label }}</span>
                 </span>
                 <!-- Resize handle: wide hit zone, thin visible bar -->
                 <div
@@ -326,7 +403,10 @@
       />
 
       <!-- Mobile: card layout -->
-      <div class="md:hidden space-y-2 px-1">
+      <div
+        v-if="displayedColumns.length > 0"
+        class="md:hidden space-y-2 px-1"
+      >
         <div
           v-if="allRows.length === 0"
           class="py-16 text-center"
@@ -352,7 +432,7 @@
           >
             <div class="flex items-center gap-1 min-w-0">
               <component
-                :is="getTypeConfig(col).icon"
+                :is="getColumnDisplay(col).icon"
                 class="size-3 text-gray-low shrink-0"
                 aria-hidden="true"
               />
@@ -444,7 +524,7 @@
                       @click="toggleMobileFilterColumn(col)"
                     >
                       <component
-                        :is="getTypeConfig(col).icon"
+                        :is="getColumnDisplay(col).icon"
                         class="size-3.5 text-gray-low shrink-0"
                         aria-hidden="true"
                       />
@@ -521,7 +601,7 @@ import {
   RiArrowDownSLine,
   RiArrowUpLine,
   RiArrowDownLine,
-  RiFilter2Line,
+  RiFilterLine,
   RiCloseLine,
   RiSearchLine,
 } from '@remixicon/vue'
@@ -529,7 +609,7 @@ import { useFetch } from '../../functions/api'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { injectTabularProfile } from '../../composables/useTabularProfile'
-import { buildTypeConfig, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy } from '../../functions/tabular'
+import { buildTypeConfig, buildFormatConfig, humanizeFormat, GENERIC_FORMATS, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy } from '../../functions/tabular'
 import ClientOnly from '../ClientOnly.vue'
 import SimpleBanner from '../SimpleBanner.vue'
 import BrandedButton from '../BrandedButton.vue'
@@ -540,6 +620,7 @@ import type { CellInfo } from './TabularCellPopover.vue'
 import TabularFilterContent from './TabularFilterContent.vue'
 import TabularFilterPopover from './TabularFilterPopover.vue'
 import type { TabularDataResponse, TabularRow, ColumnType, SortConfig, ColumnFilters, BadgeStyle } from './types'
+import noColumnsSrc from '../../../assets/illustrations/_table.svg?url'
 
 const props = defineProps<{
   resourceId: string
@@ -674,7 +755,7 @@ const hiddenCount = computed(() =>
 function toggleColumn(col: string) {
   const next = new Set(visibleColumns.value)
   if (next.has(col)) {
-    if (next.size > 1) next.delete(col)
+    next.delete(col)
   }
   else {
     next.add(col)
@@ -686,65 +767,91 @@ function showAllColumns() {
   visibleColumns.value = new Set(allColumns.value)
 }
 
+function hideAllColumns() {
+  visibleColumns.value = new Set()
+}
+
+function selectOnlyColumn(col: string) {
+  visibleColumns.value = new Set([col])
+}
+
 // Column widths
 //
 // Strategy:
-// - On first render (when both data and profile are loaded), we measure the
-//   natural offsetWidth of each <th>, then distribute any leftover container
-//   space proportionally so the table fills the available horizontal area.
-// - We immediately lock all columns to those widths via `columnWidths`, so
-//   pagination, filtering, sorting or infinite-scroll never trigger a layout
-//   shift (the table doesn't re-auto-size based on newly visible content).
-// - Manual resize via the drag handle keeps working unchanged: it always sees
-//   columnWidths populated, so it goes straight into the resize loop.
+// - `naturalWidths` holds each column's content-driven width, measured ONCE
+//   from the DOM while the <th> are still auto-sized. It's the stable base and
+//   never re-measured (re-measuring would require unlocking the widths first).
+// - `columnWidths` is the applied result: `naturalWidths` distributed to fill
+//   the container. It's recomputed from the base whenever the set of displayed
+//   columns changes (toggling, isolating or hiding columns via the menu), so
+//   reducing to a few columns re-stretches them instead of leaving blank space.
+//   Pagination / filtering / sorting don't change the column set, so they keep
+//   the locked widths and never trigger a layout shift.
+// - Manual resize writes directly to `columnWidths` during the drag, then stores
+//   the final width back into `naturalWidths` so it survives later redistribution.
 const columnWidths = ref<Record<string, number>>({})
+const naturalWidths = ref<Record<string, number>>({})
 const resizing = ref<{ column: string, startX: number, startWidth: number } | null>(null)
 
-function measureAndDistributeColumnWidths() {
+// Measure content-driven widths once, while the <th> are still auto-sized.
+function measureNaturalWidths() {
   const container = scrollContainerRef.value
   if (!container) return
   const ths = container.querySelectorAll('th')
   if (!ths || ths.length === 0) return
 
-  const naturalWidths: Record<string, number> = {}
-  let naturalSum = 0
+  const widths: Record<string, number> = {}
   ths.forEach((th, i) => {
     const col = displayedColumns.value[i]
-    if (!col) return
-    const w = th.offsetWidth
-    naturalWidths[col] = w
-    naturalSum += w
+    if (col) widths[col] = th.offsetWidth
   })
+  naturalWidths.value = widths
+}
+
+// Distribute the natural widths of the currently displayed columns to fill the
+// container (inflating proportionally when they don't naturally cover it).
+function redistributeColumnWidths() {
+  const container = scrollContainerRef.value
+  if (!container) return
+  const cols = displayedColumns.value
+  let naturalSum = 0
+  for (const col of cols) naturalSum += naturalWidths.value[col] ?? 0
   if (naturalSum === 0) return
 
-  // Inflate to fill container if columns don't naturally cover it.
-  const containerWidth = container.clientWidth
-  const ratio = naturalSum < containerWidth ? containerWidth / naturalSum : 1
-
+  const ratio = naturalSum < container.clientWidth ? container.clientWidth / naturalSum : 1
   const widths: Record<string, number> = {}
-  for (const [col, w] of Object.entries(naturalWidths)) {
-    widths[col] = Math.floor(w * ratio)
-  }
+  for (const col of cols) widths[col] = Math.floor((naturalWidths.value[col] ?? 0) * ratio)
   columnWidths.value = widths
 }
 
-// Lock columns once both data and profile are ready (so the <thead> is rendered
-// with content-driven natural widths). Only runs once — subsequent data changes
-// (pagination, filters) keep the locked widths and avoid layout shifts.
+// Measure once both data and profile are ready (so the <thead> is rendered with
+// content-driven natural widths), then distribute.
 watch(
   () => [tableData.value !== null, displayedColumns.value.length] as const,
   async ([dataReady, colCount]) => {
     if (!dataReady || colCount === 0) return
-    if (Object.keys(columnWidths.value).length > 0) return
+    if (Object.keys(naturalWidths.value).length > 0) return
     await nextTick()
-    measureAndDistributeColumnWidths()
+    measureNaturalWidths()
+    redistributeColumnWidths()
   },
   { immediate: true },
 )
 
+// Re-stretch the remaining columns whenever the displayed set changes (columns
+// toggled / hidden / isolated from the menu). No DOM measurement needed — we
+// redistribute the already-measured natural widths over the new container space.
+watch(displayedColumns, () => {
+  if (Object.keys(naturalWidths.value).length === 0) return
+  redistributeColumnWidths()
+})
+
 function startResize(col: string, e: MouseEvent) {
   // Fallback in case the user grabs the handle before the initial measure ran.
-  if (!Object.keys(columnWidths.value).length) measureAndDistributeColumnWidths()
+  if (!Object.keys(naturalWidths.value).length) {
+    measureNaturalWidths()
+    redistributeColumnWidths()
+  }
   resizing.value = { column: col, startX: e.clientX, startWidth: columnWidths.value[col] ?? 100 }
   // Disable smooth scroll during resize
   if (scrollContainerRef.value) scrollContainerRef.value.style.scrollBehavior = 'auto'
@@ -772,6 +879,12 @@ function onResize(e: MouseEvent) {
 
 function stopResize() {
   if (scrollContainerRef.value) scrollContainerRef.value.style.scrollBehavior = ''
+  // Persist the manual width as the column's new base so it survives later
+  // redistribution when other columns are toggled.
+  if (resizing.value) {
+    const col = resizing.value.column
+    naturalWidths.value = { ...naturalWidths.value, [col]: columnWidths.value[col] ?? naturalWidths.value[col] }
+  }
   resizing.value = null
   document.removeEventListener('mousemove', onResize)
   document.removeEventListener('mouseup', stopResize)
@@ -914,9 +1027,21 @@ function getNullPercent(col: string) {
 }
 
 const typeConfig = buildTypeConfig(t)
+const formatConfig = buildFormatConfig(t)
 
 function getTypeConfig(col: string) {
   return typeConfig[getColumnType(col)]
+}
+
+// Header display: prefer the rich semantic format detected by csv-detective
+// (code INSEE, UAI, département, SIREN, email…) over the generic display type.
+// Tolerant: generic formats fall back to the type config, and unknown semantic
+// formats are humanized rather than dropped.
+function getColumnDisplay(col: string) {
+  const format = profileData.value?.profile?.columns?.[col]?.format
+  const fallback = getTypeConfig(col)
+  if (!format || GENERIC_FORMATS.has(format)) return fallback
+  return formatConfig[format] ?? { icon: fallback.icon, label: humanizeFormat(format) }
 }
 
 const BADGE_PALETTE = [
