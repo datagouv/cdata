@@ -1,9 +1,9 @@
 import type { UserNotification } from '~/types/notifications'
-import { canMarkAsRead } from '~/utils/notifications'
+import { canMarkAsRead, localMarkAsRead } from '~/utils/notifications'
 
 export function useMarkAsRead() {
   const loading = ref(false)
-  const { refreshNotifications } = useNotifications()
+  const { refreshPendingNotifications } = useNotifications()
   const { $api } = useNuxtApp()
 
   const markAsRead = async (notification: UserNotification) => {
@@ -13,8 +13,9 @@ export function useMarkAsRead() {
 
     try {
       loading.value = true
+      localMarkAsRead(notification)
       await $api(`/api/1/notifications/${notification.id}/read/`, { method: 'POST' })
-      await refreshNotifications()
+      await refreshPendingNotifications()
     }
     finally {
       loading.value = false
@@ -35,7 +36,10 @@ export function useMarkAsRead() {
           $api(`/api/1/notifications/${notification.id}/read/`, { method: 'POST' }),
         ),
       )
-      await refreshNotifications()
+      for (const n of withoutAction) {
+        localMarkAsRead(n)
+      }
+      await refreshPendingNotifications()
     }
     finally {
       loading.value = false

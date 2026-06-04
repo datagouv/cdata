@@ -293,6 +293,9 @@
                 <option value="avg">
                   {{ $t('Moyenne') }}
                 </option>
+                <option value="count">
+                  {{ $t('Compter') }}
+                </option>
               </select>
             </div>
           </div>

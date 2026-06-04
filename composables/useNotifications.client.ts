@@ -33,19 +33,32 @@ export function useNotifications() {
   async function refreshNotifications() {
     start()
     try {
-      page.value = 1
-      const notifications = await $api<PaginatedArray<UserNotification>>('/api/1/notifications/', {
-        params: {
-          page_size: PAGE_SIZE,
-          page: page.value,
-        },
-      })
-      notificationsCombinedList.value = notifications.data
-      nextPage.value = notifications.next_page
+      const toPage = page.value
+      notificationsCombinedList.value = []
+      for (let p = 1; p <= toPage; p++) {
+        page.value = p
+        await loadNotifications()
+      }
       pendingNotifications.value = await $api<PaginatedArray<UserNotification>>('/api/1/notifications/', {
         params: {
           page_size: 1,
-          page: page.value,
+          page: 1,
+          handled: false,
+        },
+      })
+    }
+    finally {
+      finish()
+    }
+  }
+
+  async function refreshPendingNotifications() {
+    start()
+    try {
+      pendingNotifications.value = await $api<PaginatedArray<UserNotification>>('/api/1/notifications/', {
+        params: {
+          page_size: 1,
+          page: 1,
           handled: false,
         },
       })
@@ -67,5 +80,6 @@ export function useNotifications() {
     loadNotifications,
     loadMoreNotifications,
     refreshNotifications,
+    refreshPendingNotifications,
   }
 }
