@@ -8,7 +8,7 @@
         :placeholder="$t('Recherche')"
       />
       <BrandedButton
-        v-if="organization"
+        v-if="organization && organization.metrics.datasets > 0"
         size="xs"
         :icon="RiDownloadLine"
         :loading="isDownloadingStats"
@@ -17,7 +17,7 @@
         {{ isDownloadingStats ? $t('Téléchargement de l\'évolution par mois...') : $t('Télécharger l\'évolution par mois') }}
       </BrandedButton>
       <BrandedButton
-        v-if="downloadCatalogsUrl"
+        v-if="organization && organization.metrics.datasets > 0 && downloadCatalogsUrl"
         color="secondary"
         :href="downloadCatalogsUrl"
         :external="true"
