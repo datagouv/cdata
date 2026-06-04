@@ -7,3 +7,7 @@ export function requireAction(notification: UserNotification) {
     || cls === 'TransferRequestNotificationDetails'
     || (cls === 'ValidateHarvesterNotificationDetails' && notification.details.status === 'pending')
 }
+
+export function canMarkAsRead(notification: UserNotification) {
+  return !notification.handled_at && !requireAction(notification)
+}

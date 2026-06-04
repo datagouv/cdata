@@ -1,13 +1,13 @@
 import type { UserNotification } from '~/types/notifications'
 import type { PaginatedArray } from '~/types/types'
-import { requireAction } from '~/utils/notifications'
+import { canMarkAsRead } from '~/utils/notifications'
 
 const page = ref(1)
 const PAGE_SIZE = 10
 const nextPage = ref<string | null>(null)
 const pendingNotifications = ref<PaginatedArray<UserNotification> | null>(null)
 const notificationsCombinedList = ref<Array<UserNotification>>([])
-const notificationsToRead = computed(() => notificationsCombinedList.value.filter(n => !n.handled_at && !requireAction(n)))
+const notificationsToRead = computed(() => notificationsCombinedList.value.filter(n => canMarkAsRead(n)))
 
 export function useNotifications() {
   const { start, finish } = useLoadingIndicator()
