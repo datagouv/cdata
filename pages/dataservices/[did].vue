@@ -150,10 +150,10 @@
                       {{ $t(`Limite d'appels`) }}
                     </dt>
                     <dd class="p-0 m-0">
-                      <span
+                      <MarkdownViewer
                         v-if="dataservice.rate_limiting"
-                        class="mr-1"
-                      >{{ dataservice.rate_limiting }}</span>
+                        :content="dataservice.rate_limiting"
+                      />
                       <a
                         v-if="dataservice.rate_limiting_url"
                         :href="dataservice.rate_limiting_url"
