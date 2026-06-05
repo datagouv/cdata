@@ -77,6 +77,9 @@
                     v-bind="{ class: '', activity }"
                   >
                     {{ getActivityTranslation(activity) }}
+                    <p v-if="activity.extras?.hasOwnProperty('resource_id')">
+                      {{ activity.extras.resource_id }}
+                    </p>
                   </slot>
                 </p>
                 <p class="m-0 flex-none text-xs text-gray-medium">
