@@ -77,7 +77,7 @@
                     v-bind="{ class: '', activity }"
                   >
                     {{ getActivityTranslation(activity) }}
-                    <p v-if="activity.extras?.hasOwnProperty('resource_id')">
+                    <template v-if="'resource_id' in activity.extras">
                       {{ activity.extras.resource_id }}
                     </p>
                   </slot>
