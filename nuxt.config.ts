@@ -23,6 +23,10 @@ export default defineNuxtConfig({
   devtools: { enabled: true, componentInspector: false },
 
   app: {
+    // Build assets (`/_nuxt/`) and public files are served from a CDN/S3 bucket in production.
+    // Empty by default and overridden at runtime via the `NUXT_APP_CDN_URL` env var, so the very
+    // same build runs with or without the CDN (e.g. E2E tests start the server without it).
+    cdnURL: '',
     head: {
       bodyAttrs: {
         class: 'datagouv-components font-marianne',

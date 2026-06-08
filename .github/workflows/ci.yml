@@ -340,7 +340,54 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   # ============================================
-  # JOB 5: Sentry - upload source maps (automatic on main, manual on any branch)
+  # JOB 5: Assets - push static assets to the OVH S3 bucket (automatic on main, manual on any branch)
+  # ============================================
+  # Runs alongside the Docker build, reusing the same `build-output` artifact. Because the actual
+  # rollout is triggered by `create-deploy-release.yml` on `workflow_run: CI completed (success)`,
+  # the new container is only deployed once this job succeeds — so the assets are always on the
+  # bucket before the new HTML (which references them via `NUXT_APP_CDN_URL`) is served.
+  upload-assets:
+    needs: [quality, e2e]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+    env:
+      # Bucket itself (CORS, public policy, lifecycle) is configured at the infra level.
+      # PLACEHOLDERS: define these GitHub secrets/vars before enabling on main.
+      AWS_ACCESS_KEY_ID: ${{ secrets.ASSETS_S3_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.ASSETS_S3_SECRET_KEY }}
+      AWS_DEFAULT_REGION: ${{ vars.ASSETS_S3_REGION }} # e.g. "gra"
+      S3_ENDPOINT: ${{ vars.ASSETS_S3_ENDPOINT }} # e.g. "https://s3.gra.io.cloud.ovh.net"
+      S3_BUCKET: ${{ vars.ASSETS_S3_BUCKET }} # bucket name
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: build-output
+          path: .output
+
+      - name: Push hashed build assets to S3
+        run: |
+          # `_nuxt/` files are content-hashed, so they are immutable: cache them forever.
+          # No `--delete`: old chunks must stay available for clients still on the previous
+          # version during a rolling deploy; stale assets are purged by an infra lifecycle rule.
+          aws s3 sync .output/public/_nuxt "s3://${S3_BUCKET}/_nuxt" \
+            --endpoint-url "$S3_ENDPOINT" \
+            --cache-control "public, max-age=31536000, immutable" \
+            --no-progress
+
+      - name: Push remaining public files to S3
+        run: |
+          # Non-hashed files (favicon, nuxt_images, ...) get a short TTL so they can be updated.
+          aws s3 sync .output/public "s3://${S3_BUCKET}" \
+            --endpoint-url "$S3_ENDPOINT" \
+            --exclude "_nuxt/*" \
+            --cache-control "public, max-age=3600" \
+            --no-progress
+
+  # ============================================
+  # JOB 6: Sentry - upload source maps (automatic on main, manual on any branch)
   # ============================================
   sentry:
     needs: [quality, e2e]
@@ -375,7 +422,7 @@ jobs:
           ignore_missing: true
 
   # ============================================
-  # JOB 6: Publish datagouv-components (automatic on main, manual on any branch)
+  # JOB 7: Publish datagouv-components (automatic on main, manual on any branch)
   # ============================================
   publish-datagouv-components:
     needs: [quality, e2e]
