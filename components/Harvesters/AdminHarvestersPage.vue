@@ -115,10 +115,10 @@
                 </template>
               </td>
               <td class="font-mono text-right">
-                {{ getHarvesterDatasets(harvester) }}
+                {{ harvester.last_job?.items.by_type.dataset ?? 0 }}
               </td>
               <td class="font-mono text-right">
-                {{ getHarvesterDataservices(harvester) }}
+                {{ harvester.last_job?.items.by_type.dataservice ?? 0 }}
               </td>
               <td>
                 <BrandedButton
@@ -223,12 +223,4 @@ const url = computed(() => {
 })
 
 const { data: pageData, status } = await useAPI<PaginatedArray<HarvesterSource>>(url, { lazy: true })
-
-function getHarvesterDataservices(harvester: HarvesterSource) {
-  return harvester.last_job?.items.by_type.dataservice ?? 0
-}
-
-function getHarvesterDatasets(harvester: HarvesterSource) {
-  return harvester.last_job?.items.by_type.dataset ?? 0
-}
 </script>

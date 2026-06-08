@@ -31,7 +31,7 @@ export async function useJobItems(
     }
   }
 
-  const itemsUrl = computed(() => `/api/1/harvest/job/${job.id}/items/`)
+  const itemsUrl = computed(() => job.items.href)
   const itemsParams = computed(() => ({
     page: page.value,
     page_size: pageSize.value,
