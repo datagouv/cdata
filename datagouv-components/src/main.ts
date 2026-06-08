@@ -40,6 +40,8 @@ import BannerAction from './components/BannerAction.vue'
 import BrandedButton from './components/BrandedButton.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
+import DataserviceQuality from './components/DataserviceQuality.vue'
+import DataserviceQualityTooltipContent from './components/DataserviceQualityTooltipContent.vue'
 import DatasetCard from './components/DatasetCard.vue'
 import DataStructure from './components/ResourceAccordion/DataStructure.vue'
 import Downloads from './components/ResourceAccordion/Downloads.vue'
@@ -334,6 +336,8 @@ export {
   BrandedButton,
   CopyButton,
   DataserviceCard,
+  DataserviceQuality,
+  DataserviceQualityTooltipContent,
   DatasetCard,
   DataStructure,
   Downloads,
