@@ -265,88 +265,10 @@
             <div
               v-if="tab.key === 'downloads'"
             >
-              <dl class="fr-pl-0">
-                <dt
-                  v-if="resource.format === 'url'"
-                  class="font-bold fr-text--sm fr-mb-0"
-                >
-                  {{ t("URL d'origine") }}
-                </dt>
-                <dt
-                  v-else
-                  class="font-bold fr-text--sm fr-mb-0"
-                >
-                  {{ t('Format original') }}
-                </dt>
-                <dd class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
-                  <span v-if="resource.format === 'url'">
-                    <a
-                      :href="resource.latest"
-                      class="fr-link no-icon-after"
-                      rel="ugc nofollow noopener"
-                      target="_blank"
-                      @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
-                    >
-                      <component
-                        :is="config.textClamp"
-                        v-if="config && config.textClamp"
-                        :auto-resize="true"
-                        :max-lines="1"
-                        :text="resource.url"
-                      >
-                        <template #after>
-                          <span class="fr-ml-1v fr-icon-external-link-line fr-icon--sm" />
-                        </template>
-                      </component>
-                    </a>
-                  </span>
-                  <span v-else>
-                    <span class="text-datagouv fr-icon-download-line fr-icon--sm fr-mr-1v fr-mt-1v" />
-                    <a
-                      :href="resource.latest"
-                      class="fr-link"
-                      rel="ugc nofollow noopener"
-                      @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${resource.format}`)"
-                    >
-                      <span>{{ t('Format {format}', { format: resource.format }) }}<span v-if="resourceFilesize"> - {{ filesize(resourceFilesize) }}</span></span>
-                    </a>
-                  </span>
-                  <CopyButton
-                    :label="t('Copier le lien')"
-                    :copied-label="t('Lien copié !')"
-                    :text="resource.latest"
-                    class="relative"
-                  />
-                </dd>
-                <template v-if="generatedFormats.length">
-                  <dt class="font-bold fr-text--sm fr-mb-0">
-                    {{ t('Formats générés automatiquement par {platform} (dernière mise à jour {date})', { platform: config.name, date: conversionsLastUpdate }) }}
-                  </dt>
-                  <dd
-                    v-for="generatedFormat in generatedFormats"
-                    :key="generatedFormat.format"
-                    class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center"
-                  >
-                    <span>
-                      <span class="text-datagouv fr-icon-download-line fr-icon--sm fr-mr-1v fr-mt-1v" />
-                      <a
-                        :href="generatedFormat.url"
-                        class="fr-link"
-                        rel="ugc nofollow noopener"
-                        @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${generatedFormat.format}`)"
-                      >
-                        <span>{{ t('Format {format}', { format: generatedFormat.format }) }}<span v-if="generatedFormat.size"> - {{ filesize(generatedFormat.size) }}</span></span>
-                      </a>
-                    </span>
-                    <CopyButton
-                      :label="t('Copier le lien')"
-                      :copied-label="t('Lien copié !')"
-                      :text="generatedFormat.url"
-                      class="relative"
-                    />
-                  </dd>
-                </template>
-              </dl>
+              <Downloads
+                :resource="resource"
+                :dataset="dataset"
+              />
             </div>
             <div
               v-if="tab.key === 'swagger'"
@@ -396,11 +318,11 @@ import SchemaBadge from './SchemaBadge.vue'
 import ResourceIcon from './ResourceIcon.vue'
 import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
+import Downloads from './Downloads.vue'
 import Preview from './Preview.vue'
 import { isOrganizationCertified } from '../../functions/organizations'
 import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
 
-const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 const URL_FORMATS = ['url', 'doi', 'www:link', ' www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
 
 const props = withDefaults(defineProps<{
@@ -459,24 +381,6 @@ const format = computed(() => getResourceFormatIcon(props.resource.format) ? pro
 const ogcService = computed(() => detectOgcService(props.resource))
 
 const ogcWms = computed(() => ogcService.value === 'wms')
-
-const generatedFormats = computed(() => {
-  const formats = GENERATED_FORMATS
-    .filter(format => `analysis:parsing:${format}_url` in props.resource.extras)
-    .map(format => ({
-      url: props.resource.extras[`analysis:parsing:${format}_url`] as string,
-      size: props.resource.extras[`analysis:parsing:${format}_size`] as number | undefined,
-      format: format,
-    }))
-  if ('analysis:parsing:parsing_table' in props.resource.extras) {
-    formats.push({
-      url: `${config.tabularApiUrl}/api/resources/${props.resource.id}/data/json/`,
-      size: undefined,
-      format: 'json',
-    })
-  }
-  return formats
-})
 
 const open = ref(props.expandedOnMount)
 const toggle = () => {
@@ -540,7 +444,6 @@ const communityResource = computed<CommunityResource | null>(() => {
 const owner = computed(() => communityResource.value ? getOwnerName(communityResource.value) : null)
 
 const lastUpdate = props.resource.last_modified
-const conversionsLastUpdate = computed(() => formatRelativeIfRecentDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined))
 const availabilityChecked = props.resource.extras && 'check:available' in props.resource.extras
 const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 

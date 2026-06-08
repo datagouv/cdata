@@ -107,10 +107,12 @@
         </p>
       </div>
     </div>
-    <ObjectCardShortDescription
-      v-if="showDescriptionShort"
-      :text="getDescriptionShort(props.dataset)"
-    />
+    <slot>
+      <ObjectCardShortDescription
+        v-if="showDescriptionShort"
+        :text="getDescriptionShort(props.dataset)"
+      />
+    </slot>
   </ObjectCard>
 </template>
 
