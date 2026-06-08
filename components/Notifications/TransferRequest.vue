@@ -3,7 +3,6 @@
     :icon="RiSendPlaneLine"
     :title="$t('Demande de transfert')"
     :notification="notification"
-    :requires-action="true"
     :title-link="link"
     :title-link-title="$t('Voir la demande')"
   >
