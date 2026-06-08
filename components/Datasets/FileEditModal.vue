@@ -149,13 +149,13 @@
               >
                 <p>
                   {{ $t('Attention : cette ressource est exposée via une') }}
-                  <a
-                    :href="`${siteConfig.url}/dataservices/${runtimeConfig.public.tabularApiDataserviceId}`"
+                  <CdataLink
+                    :to="`${siteConfig.url}/dataservices/${runtimeConfig.public.tabularApiDataserviceId}`"
                     target="_blank"
                     class="fr-link"
                   >
                     {{ $t('API automatique') }}
-                  </a>
+                  </CdataLink>
                   {{ $t('fournie par data.gouv.fr.') }}
                 </p>
                 <p>
@@ -198,6 +198,7 @@ import { cloneDeep } from 'lodash-es'
 import { RiDeleteBin6Line, RiPencilLine } from '@remixicon/vue'
 import ModalWithButton from '../Modal/ModalWithButton.vue'
 import DescribeResource from './DescribeResource.vue'
+import CdataLink from '../CdataLink.vue'
 import type { CommunityResourceForm, ResourceForm } from '~/types/types'
 import { useComponentsConfig } from '../../datagouv-components/src/config'
 
