@@ -16,10 +16,7 @@
       :status
       :data="data"
     >
-      <div
-        v-if="status === 'success' && data"
-        :class="markdownClasses"
-      >
+      <div :class="markdownClasses">
         <MarkdownViewer
           v-if="data.extension === 'md'"
           :content="data.content"
@@ -29,13 +26,6 @@
         <ComponentDefinedInSetup
           v-else
         />
-      </div>
-      <div
-        v-else
-        class="py-9 prose"
-      >
-        <h1>{{ $t('Erreur 404') }}</h1>
-        <p>{{ $t("La page que vous recherchez est introuvable.") }}</p>
       </div>
     </LoadingBlock>
   </div>
@@ -49,14 +39,27 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 const route = useRoute()
 const siteConfig = useSiteConfig()
 
-const { data, status } = useFetch<{
+// An empty slug (/pages) is not a valid page. Skip the fetch entirely: its URL
+// `/nuxt-api/pages/` has a trailing slash that gets 308-redirected, which ofetch
+// follows without raising an error.
+const slug = route.params.slug ? (route.params.slug as string[]).join('/') : ''
+
+const { data, status, error } = await useFetch<{
   data: {
     title: string
     description?: string
   }
   extension: string
   content: string
-}>(`/nuxt-api/pages/${route.params.slug ? (route.params.slug as string[]).join('/') : ''}`)
+}>(() => `/nuxt-api/pages/${slug}`, { immediate: Boolean(slug) })
+
+if (!slug || error.value || !data.value) {
+  // Use `showError`, not `throw createError`: throwing here rejects the async
+  // setup, and during an in-app (SPA) navigation Vue then renders this page once
+  // with an empty setup context, logging "Invalid vnode type: undefined" for each
+  // child component. `showError` sets the error state without rejecting setup.
+  showError({ statusCode: 404, statusMessage: 'Page Not Found' })
+}
 
 const title = computed(() => data.value?.data.title)
 const description = computed(() => data.value?.data.description)

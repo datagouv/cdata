@@ -3,7 +3,6 @@
     :icon="harvesterIcon"
     :title="statusLabel"
     :notification="notification"
-    :requires-action="notification.details.status === 'pending'"
     :title-link="`/admin/harvesters/${notification.details.source.id}`"
     :title-link-title="$t('Voir le moissonneur')"
   >

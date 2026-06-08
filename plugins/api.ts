@@ -27,9 +27,11 @@ export default defineNuxtPlugin({
             options.headers.set('Content-Type', 'application/json')
           }
           options.headers.set('Accept', 'application/json')
-          options.credentials = 'include'
           if (config.public.devApiKey) {
             options.headers.set('X-API-KEY', config.public.devApiKey)
+          }
+          else {
+            options.credentials = 'include'
           }
           if (token.value) {
             options.headers.set('Authentication-Token', token.value)
@@ -47,7 +49,7 @@ export default defineNuxtPlugin({
         async onResponseError({ response, options }) {
           if (response.status === 404) {
             if (apiOptions.redirectOn404) {
-              await nuxtApp.runWithContext(() => showError({ statusCode: 404, statusMessage: 'Page Not Found', fatal: true }))
+              await nuxtApp.runWithContext(() => showError({ statusCode: 404, statusMessage: 'Page Not Found' }))
             }
             else {
               // We don't want to show the toast for default 404 Flask response
