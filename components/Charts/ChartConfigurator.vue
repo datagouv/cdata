@@ -244,9 +244,9 @@
                 :label="$t('Choisir quoi afficher')"
                 :placeholder="$t('Rechercher une colonne...')"
                 :options="xAxisColumnOptions"
-                :display-value="(opt: {name: string, colType: ColumnType, resourceId: string}) => opt.name"
-                :get-option-id="(opt: {name: string, colType: ColumnType, resourceId: string}) => opt.name"
-                :group-by="(opt: {name: string, colType: ColumnType, resourceId: string}) => typeConfig[opt.colType]?.label || opt.colType"
+                :display-value="(opt: XAxisColumnOption) => opt.name"
+                :get-option-id="(opt: XAxisColumnOption) => opt.name"
+                :group-by="(opt: XAxisColumnOption) => typeConfig[opt.colType]?.label || opt.colType"
                 :multiple="false"
                 class="w-full"
               >
@@ -287,7 +287,7 @@
                 v-model="sortProxy"
                 class="w-full"
                 :options="sortOptions"
-                :display-value="(opt) => opt ? `${opt.column}${opt.column ? ' - ' : ''}${opt.label}` : $t('Sélectionnez une option')"
+                :display-value="(opt) => formatColumnLabel(opt) || $t('Sélectionnez une option')"
                 :get-option-id="(opt) => opt.value"
               >
                 <template #button>
@@ -296,14 +296,14 @@
                       class="truncate"
                       :class="{ 'text-new-disabled-text': !sortProxy }"
                     >
-                      {{ sortProxy ? `${sortProxy.column}${sortProxy.column ? ' - ' : ''}${sortProxy.label}` : $t('Sélectionnez une option') }}
+                      {{ formatColumnLabel(sortProxy) || $t('Sélectionnez une option') }}
                     </div>
                     <RiArrowDownSLine class="flex-none size-4 justify-self-end" />
                   </div>
                 </template>
                 <template #option="{ option }">
                   <div class="w-full flex items-center justify-between gap-2">
-                    <span class="truncate">{{ option.column }}{{ option.column ? ' - ' : '' }}{{ option.label }}</span>
+                    <span class="truncate">{{ formatColumnLabel(option) }}</span>
                     <component
                       :is="option.icon"
                       v-if="option.icon"
@@ -331,9 +331,9 @@
                   :label="$t('Colonne Y')"
                   :placeholder="$t('Rechercher une colonne...')"
                   :options="yAxisColumnOptions"
-                  :display-value="(opt: {name: string, colType: ColumnType}) => opt.name"
-                  :get-option-id="(opt: {name: string, colType: ColumnType}) => opt.name"
-                  :group-by="(opt: {name: string, colType: ColumnType}) => typeConfig[opt.colType]?.label || opt.colType"
+                  :display-value="(opt: ColumnOption) => opt.name"
+                  :get-option-id="(opt: ColumnOption) => opt.name"
+                  :group-by="(opt: ColumnOption) => typeConfig[opt.colType]?.label || opt.colType"
                   :multiple="false"
                   class="w-full"
                   @update:model-value="(val) => serie.column_y = val?.name ?? ''"
@@ -475,7 +475,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, Owned, ColumnType, DataSeriesType, DataSeriesForm, FilterCondition } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, Owned, ColumnType, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort } from '@datagouv/components-next'
 import { resolveColumnType, buildTypeConfig, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
@@ -488,7 +488,14 @@ import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import type { DatasetSuggest } from '~/types/types'
 
-type CombinedSort = '' | 'axis_x-asc' | 'axis_x-desc' | 'axis_y-asc' | 'axis_y-desc'
+type ColumnOption = {
+  name: string
+  colType: ColumnType
+}
+
+type XAxisColumnOption = ColumnOption & {
+  resourceId: string
+}
 
 type SortOption = {
   value: CombinedSort
@@ -521,7 +528,6 @@ const form = defineModel<ChartForm>({
   required: true,
 })
 
-const resourceProfiles = ref<Record<string, { profile: { categorical: string[] }, columns: Record<string, { python_type: string, format?: string }> }>>({})
 const columns = ref<Record<string, Array<{ name: string, type: ColumnType }>>>({})
 const producer = ref<Owned | null>(null)
 const dataset = ref<DatasetSuggest | null>(null)
@@ -556,37 +562,30 @@ const chartTypeProxy = computed<{ value: string, label: string, icon: Component 
   },
 })
 
-const xAxisColumnProxy = computed<{ name: string, colType: ColumnType, resourceId: string } | null>({
+const xAxisColumnProxy = computed<XAxisColumnOption | null>({
   get: () => {
     const colName = form.value.x_axis.column_x
     if (!colName) return null
     return xAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
   },
-  set: (val: { name: string, colType: ColumnType, resourceId: string } | null) => {
+  set: (val: XAxisColumnOption | null) => {
     form.value.x_axis.column_x = val?.name ?? ''
   },
 })
 
-const xAxisColumnOptions = computed<Array<{ name: string, colType: ColumnType, resourceId: string }>>(() => {
-  const result: Array<{ name: string, colType: ColumnType, resourceId: string }> = []
-  for (const [resourceId, cols] of Object.entries(columns.value)) {
-    for (const col of cols) {
-      result.push({ name: col.name, colType: col.type, resourceId })
-    }
-  }
-  return result
-})
+const xAxisColumnOptions = computed<Array<XAxisColumnOption>>(() =>
+  Object.entries(columns.value).flatMap(([resourceId, cols]) =>
+    cols.map(col => ({ name: col.name, colType: col.type, resourceId })),
+  ),
+)
 
-const yAxisColumnOptions = computed<Array<{ name: string, colType: ColumnType }>>(() => {
-  const result: Array<{ name: string, colType: ColumnType }> = []
+const yAxisColumnOptions = computed<Array<ColumnOption>>(() => {
   if (selectedResource.value && columns.value[selectedResource.value]) {
-    for (const col of columns.value[selectedResource.value]) {
-      if (col.type !== 'date') {
-        result.push({ name: col.name, colType: col.type })
-      }
-    }
+    return columns.value[selectedResource.value]
+      .filter(col => col.type !== 'date')
+      .map(col => ({ name: col.name, colType: col.type }))
   }
-  return result
+  return []
 })
 
 const sortOptions = computed<SortOption[]>(() => {
@@ -637,13 +636,7 @@ const filterList = computed<Array<Filter>>(() => {
     return [filter]
   }
   else if (isAndFilters(filter)) {
-    const result: Array<Filter> = []
-    for (const f of filter.filters) {
-      if (isFilter(f)) {
-        result.push(f)
-      }
-    }
-    return result
+    return filter.filters.filter(isFilter)
   }
   return []
 })
@@ -652,10 +645,24 @@ function getColumnTypeIcon(colType: ColumnType): Component {
   return typeConfig[colType]?.icon ?? RiText
 }
 
-function getSerieColumnYValue(serie: DataSeriesForm): { name: string, colType: ColumnType } | null {
+function formatColumnLabel(opt: { column: string, label: string } | null): string {
+  if (!opt) return ''
+  return `${opt.column}${opt.column ? ' - ' : ''}${opt.label}`
+}
+
+function getSerieColumnYValue(serie: DataSeriesForm): ColumnOption | null {
   const colName = serie.column_y
   if (!colName) return null
   return yAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
+}
+
+function buildColumnsFromProfile(profile: { profile: { header: string[], columns: Record<string, { python_type: string, format?: string }>, categorical: string[] } }): Array<{ name: string, type: ColumnType }> {
+  return profile.profile.header.map((name) => {
+    const colInfo = profile.profile.columns[name]
+    const isCategorical = profile.profile.categorical.includes(name)
+    const colType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
+    return { name, type: colType }
+  })
 }
 
 async function loadMissingResourcesForChart(resourceIds: Set<string>) {
@@ -791,6 +798,7 @@ watch(
     y_axis: form.value.y_axis,
     filter: form.value.filter,
     extras: form.value.extras,
+    chart_type: form.value.chart_type,
   }),
   () => {
     chartForViewer.value = toChartApi(form.value)
@@ -826,16 +834,7 @@ watch(selectedResource, async (r) => {
       return
     }
     const profile = await getProfile(r)
-    resourceProfiles.value[r] = {
-      profile: { categorical: profile.profile.categorical },
-      columns: profile.profile.columns,
-    }
-    columns.value[r] = profile.profile.header.map((name) => {
-      const colInfo = profile.profile.columns[name]
-      const isCategorical = profile.profile.categorical.includes(name)
-      const colType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
-      return { name, type: colType }
-    })
+    columns.value[r] = buildColumnsFromProfile(profile)
   }
 }, { immediate: true })
 
