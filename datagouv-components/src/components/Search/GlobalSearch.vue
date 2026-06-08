@@ -13,6 +13,7 @@
       <SearchInput
         v-model="q"
         :placeholder="resolvedPlaceholder"
+        :auto-focus
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
@@ -35,7 +36,7 @@
                 :value="configKey(typeConfig)"
                 :count="resultsMap[configKey(typeConfig)]?.data.value?.total"
                 :loading="resultsMap[configKey(typeConfig)]?.status.value === 'pending' || resultsMap[configKey(typeConfig)]?.status.value === 'idle'"
-                :icon="strategies[typeConfig.class].icon"
+                :icon="typeConfig.icon ?? strategies[typeConfig.class].icon"
               >
                 {{ typeConfig.name || strategies[typeConfig.class].name }}
               </RadioInput>
@@ -401,10 +402,16 @@ const props = withDefaults(defineProps<{
   config?: GlobalSearchConfig
   placeholder?: string | null
   hideSearchInput?: boolean
+  autoFocus?: boolean
 }>(), {
   config: getDefaultGlobalSearchConfig,
   hideSearchInput: false,
+  autoFocus: true,
 })
+
+const emit = defineEmits<{
+  resultsCount: [total: number]
+}>()
 
 // defineModel's default is static and can't depend on props, so we cast and initialize manually
 const currentType = defineModel<string>('type') as Ref<string>
@@ -475,6 +482,11 @@ const showSidebar = computed(() => props.config.length > 1 || activeFilters.valu
 // URL query params
 const q = useRouteQuery<string>('q', '')
 const { debounced: qDebounced, flush: flushQ } = useDebouncedRef(q, componentsConfig.searchDebounce ?? 300)
+// When the search input is hidden, the parent owns the input and is expected
+// to debounce user typing itself (otherwise typing would land in the URL
+// instantly via v-model and stack two debounces). Bypass the internal debounce
+// so URL-driven q changes hit the fetch params immediately.
+const qForParams = computed(() => props.hideSearchInput ? q.value : qDebounced.value)
 const page = useRouteQuery('page', 1, { transform: Number })
 const sort = useRouteQuery<string | undefined>('sort')
 
@@ -550,7 +562,7 @@ watch(currentType, () => {
 const stableParamsOptions = {
   allFilters,
   customFilterRegistry,
-  q: qDebounced,
+  q: qForParams,
   sort,
   page,
   pageSize,
@@ -643,7 +655,7 @@ for (const c of props.config) {
 // intentionally excluded here to avoid resetting the page when a filter
 // registers with its URL-derived value.
 const filtersForReset = computed(() => ({
-  q: qDebounced.value,
+  q: qForParams.value,
   organization: organizationId.value,
   organization_badge: organizationType.value,
   tag: tag.value,
@@ -712,6 +724,10 @@ function resetFilters() {
 const searchResults = computed(() => resultsMap[currentType.value]?.data.value)
 const searchResultsStatus = computed(() => resultsMap[currentType.value]?.status.value)
 
+watch(searchResults, (results) => {
+  if (results) emit('resultsCount', results.total)
+}, { immediate: true })
+
 // RSS feed URL for datasets
 const rssUrl = computed(() => {
   if (currentTypeConfig.value?.class !== 'datasets') return null
@@ -726,7 +742,7 @@ const rssUrl = computed(() => {
   }
 
   // Add active filters
-  if (qDebounced.value) params.set('q', qDebounced.value)
+  if (qForParams.value) params.set('q', qForParams.value)
   if (organizationId.value) params.set('organization', organizationId.value)
   if (organizationType.value) params.set('organization_badge', organizationType.value)
   if (tag.value) params.set('tag', tag.value)

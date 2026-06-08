@@ -40,6 +40,9 @@ import BrandedButton from './components/BrandedButton.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
 import DatasetCard from './components/DatasetCard.vue'
+import DataStructure from './components/ResourceAccordion/DataStructure.vue'
+import Downloads from './components/ResourceAccordion/Downloads.vue'
+import Metadata from './components/ResourceAccordion/Metadata.vue'
 import DescriptionListTerm from './components/DescriptionListTerm.vue'
 import DescriptionListDetails from './components/DescriptionListDetails.vue'
 import DiscussionMessageCard from './components/DiscussionMessageCard.vue'
@@ -60,6 +63,7 @@ import LoadingBlock from './components/LoadingBlock.vue'
 import MarkdownViewer from './components/MarkdownViewer.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
 import OrganizationHorizontalCard from './components/OrganizationHorizontalCard.vue'
+import ObjectCardOwner from './components/ObjectCardOwner.vue'
 import OrganizationLogo from './components/OrganizationLogo.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
@@ -73,6 +77,7 @@ import PostCard from './components/PostCard.vue'
 import ReadMore from './components/ReadMore.vue'
 import ResourceAccordion from './components/ResourceAccordion/ResourceAccordion.vue'
 import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
+import ResourceSelector from './components/ResourceExplorer/ResourceSelector.vue'
 import ResourceExplorer from './components/ResourceExplorer/ResourceExplorer.vue'
 import ResourceExplorerSidebar from './components/ResourceExplorer/ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './components/ResourceExplorer/ResourceExplorerViewer.vue'
@@ -104,6 +109,8 @@ import InfiniteLoader from './components/InfiniteLoader.vue'
 import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
+import { ofetch } from 'ofetch'
+import { useTranslation } from './composables/useTranslation'
 
 export { Toaster, toast } from 'vue-sonner'
 
@@ -113,6 +120,8 @@ export * from './composables/useMetrics'
 export * from './composables/useReuseType'
 export * from './composables/useTranslation'
 export * from './composables/useHasTabularData'
+export * from './composables/useResourceCapabilities'
+export * from './composables/useTabularProfile'
 
 export * from './functions/activities'
 export * from './functions/datasets'
@@ -278,6 +287,31 @@ export {
 // Vue Plugin
 const datagouv: Plugin<PluginConfig> = {
   async install(app: App, options) {
+    // Default `$fetch` to an ofetch instance carrying the datagouv API specifics + the consumer's
+    // auth hooks, so everything downstream (the default `useFetch`, imperative helpers) can rely on
+    // a single configured fetch. A consumer that provides its own `$fetch` keeps full control.
+    if (!options.$fetch) {
+      options.$fetch = ofetch.create({
+        baseURL: options.apiBase,
+        onRequest(context) {
+          if (options.onRequest) {
+            if (Array.isArray(options.onRequest)) options.onRequest.forEach(hook => hook(context))
+            else options.onRequest(context)
+          }
+          context.options.headers.set('Content-Type', 'application/json')
+          context.options.headers.set('Accept', 'application/json')
+          if (options.devApiKey) context.options.headers.set('X-API-KEY', options.devApiKey)
+          const { locale } = useTranslation()
+          if (locale) {
+            context.options.params ??= {}
+            context.options.params['lang'] = locale
+          }
+        },
+        onRequestError: options.onRequestError,
+        onResponse: options.onResponse,
+        onResponseError: options.onResponseError,
+      })
+    }
     app.provide(configKey, options)
     if (!options.textClamp) {
       const textClamp = await import('vue3-text-clamp')
@@ -299,6 +333,9 @@ export {
   CopyButton,
   DataserviceCard,
   DatasetCard,
+  DataStructure,
+  Downloads,
+  Metadata,
   DatasetInformationSection,
   DatasetTemporalitySection,
   DatasetSpatialSection,
@@ -338,7 +375,9 @@ export {
   ResourceExplorer,
   ResourceExplorerSidebar,
   ResourceExplorerViewer,
+  ObjectCardOwner,
   ResourceIcon,
+  ResourceSelector,
   ReuseCard,
   ReuseDetails,
   ReuseHorizontalCard,

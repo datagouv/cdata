@@ -1,6 +1,6 @@
 {
   "name": "@datagouv/components-next",
-  "version": "1.0.1",
+  "version": "1.1.2",
   "private": false,
   "type": "module",
   "packageManager": "pnpm@10.23.0",
@@ -17,6 +17,7 @@
     ]
   },
   "main": "./src/main.ts",
+  "sideEffects": false,
   "files": [
     "assets",
     "dist",
@@ -47,7 +48,7 @@
     "chart.js": "^4.4.8",
     "dompurify": "^3.2.5",
     "echarts": "^6.0.0",
-    "geopf-extensions-openlayers": "^1.0.0-beta.5",
+    "geopf-extensions-openlayers": "^1.0.0-beta.10",
     "leaflet": "^1.9.4",
     "maplibre-gl": "^5.6.2",
     "ofetch": "^1.4.1",

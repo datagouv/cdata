@@ -88,7 +88,7 @@
           { href: getDataserviceAdminUrl(dataservice), label: t('Métadonnées') },
           { href: `${getDataserviceAdminUrl(dataservice)}/datasets`, label: t('Jeux de données associés') },
           { href: `${getDataserviceAdminUrl(dataservice)}/discussions`, label: t('Discussions') },
-          { href: `${getDataserviceAdminUrl(dataservice)}/activities`, label: t('Activités') },
+          { href: `${getDataserviceAdminUrl(dataservice)}/activities`, label: t('Activités'), show: dataservice.permissions.edit },
         ]"
       />
 

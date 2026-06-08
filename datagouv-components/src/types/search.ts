@@ -1,3 +1,4 @@
+import type { Component } from 'vue'
 import type { PaginatedArray } from './api'
 import type { AccessType } from './access_types'
 import type { Dataset } from './datasets'
@@ -298,6 +299,7 @@ export type DatasetSearchConfig = {
   class: 'datasets'
   key?: string
   name?: string
+  icon?: Component | string
   placeholder?: string | null
   hiddenFilters?: HiddenFilter<DatasetSearchFilters>[]
   basicFilters?: (keyof DatasetSearchFilters)[]
@@ -309,6 +311,7 @@ export type DataserviceSearchConfig = {
   class: 'dataservices'
   key?: string
   name?: string
+  icon?: Component | string
   placeholder?: string | null
   hiddenFilters?: HiddenFilter<DataserviceSearchFilters>[]
   basicFilters?: (keyof DataserviceSearchFilters)[]
@@ -320,6 +323,7 @@ export type ReuseSearchConfig = {
   class: 'reuses'
   key?: string
   name?: string
+  icon?: Component | string
   placeholder?: string | null
   hiddenFilters?: HiddenFilter<ReuseSearchFilters>[]
   basicFilters?: (keyof ReuseSearchFilters)[]
@@ -331,6 +335,7 @@ export type OrganizationSearchConfig = {
   class: 'organizations'
   key?: string
   name?: string
+  icon?: Component | string
   placeholder?: string | null
   hiddenFilters?: HiddenFilter<OrganizationSearchFilters>[]
   basicFilters?: (keyof OrganizationSearchFilters)[]
@@ -342,6 +347,7 @@ export type TopicSearchConfig = {
   class: 'topics'
   key?: string
   name?: string
+  icon?: Component | string
   placeholder?: string | null
   hiddenFilters?: HiddenFilter<TopicSearchFilters>[]
   basicFilters?: (keyof TopicSearchFilters)[]

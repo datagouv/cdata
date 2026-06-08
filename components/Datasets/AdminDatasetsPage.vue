@@ -43,8 +43,8 @@
         />
         <div>
           <BrandedButton
-            v-if="organization"
-            :href="pageData.total ? `${config.public.apiBase}/api/1/organizations/${organization.id}/datasets.csv` : undefined"
+            v-if="organization && organization.metrics.datasets > 0"
+            :href="`${config.public.apiBase}/api/1/organizations/${organization.id}/datasets.csv`"
             size="xs"
             :external="true"
             :icon="RiDownloadLine"
@@ -56,14 +56,14 @@
     </div>
 
     <LoadingBlock
-      v-slot="{ data: pageData }"
+      v-slot="{ data }"
       :status
       :data="pageData"
     >
-      <div v-if="pageData && pageData.total > 0">
+      <div v-if="data && data.total > 0">
         <AdminDatasetsTable
           :activities="datasetActivities"
-          :datasets="pageData ? pageData.data : []"
+          :datasets="data.data"
           :sort-direction="direction"
           :sorted-by
           @sort="sort"
@@ -71,7 +71,7 @@
         <Pagination
           :page="page"
           :page-size="pageSize"
-          :total-results="pageData.total"
+          :total-results="data.total"
           @change="(changedPage: number) => page = changedPage"
         />
       </div>
@@ -213,6 +213,10 @@ const params = computed(() => {
 })
 
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<DatasetV2>>('/api/2/datasets/', { lazy: true, query: params })
+
+watch(qDebounced, () => {
+  page.value = 1
+})
 
 watchEffect(async () => {
   if (pageData.value) {

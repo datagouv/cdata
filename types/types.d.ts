@@ -330,7 +330,7 @@ export type NewContactPoint = Omit<ContactPoint, 'id'>
 export type ContactPointInForm = ContactPoint | NewContactPoint
 
 export type LinkToSubjectFallback = { customTitle: string, customUrl: string | undefined }
-export type LinkToSubject = Dataset | DatasetV2 | DatasetV2WithFullObject | Omit<Dataset, 'resources' | 'community_resources'> | Reuse | Dataservice | Organization | Thread | LinkToSubjectFallback
+export type LinkToSubject = Dataset | DatasetV2 | DatasetV2WithFullObject | Omit<Dataset, 'resources' | 'community_resources'> | Reuse | Dataservice | Organization | Thread | User | LinkToSubjectFallback
 
 export type TransferRequest = {
   id: string

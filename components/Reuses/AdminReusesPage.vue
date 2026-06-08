@@ -133,6 +133,10 @@ const params = computed(() => {
 
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Reuse>>('/api/1/reuses/', { lazy: true, query: params })
 
+watch(qDebounced, () => {
+  page.value = 1
+})
+
 watchEffect(async () => {
   if (pageData.value) {
     const activities = await getLatestActivitiesForObjects($api, pageData.value.data, 'created_at')

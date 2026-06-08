@@ -16,6 +16,10 @@ export default defineNuxtConfig({
     '@nuxt/fonts',
     'nuxt-og-image',
   ],
+
+  plugins: [
+    '~/plugins/logger.ts',
+  ],
   devtools: { enabled: true, componentInspector: false },
 
   app: {
@@ -91,25 +95,31 @@ export default defineNuxtConfig({
         url: 'https://schema.data.gouv.fr/',
         name: 'schema.data.gouv.fr',
       },
-      apiDocExternalLink: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/api/reference',
+      apiDocExternalLink: 'https://guides.data.gouv.fr/api-de-data.gouv.fr/reference',
       guidesUrl: 'https://guides.data.gouv.fr/',
-      guidesCreateAccount: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/creer-un-compte-utilisateur-et-rejoindre-une-organisation',
-      guidesHarvestingUrl: 'https://guides.data.gouv.fr/guide-data.gouv.fr/moissonnage',
+      guidesCreateAccount: 'https://guides.data.gouv.fr/compte-utilisateur/creer-un-compte-utilisateur',
+      guidesHarvestingUrl: 'https://guides.data.gouv.fr/moissonnage',
       guidesLabelsUrl: undefined, // TODO: add guide when created
-      guidesCommunityResources: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/ressource-communautaire',
+      guidesCommunityResources: 'https://guides.data.gouv.fr/jeux-de-donnees/ressource-communautaire',
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
 
-      guideDatasets: 'https://guides.data.gouv.fr/guide-data.gouv.fr/jeux-de-donnees',
-      guideReuses: 'https://guides.data.gouv.fr/guide-data.gouv.fr/reutilisations',
-      guideDataservices: 'https://guides.data.gouv.fr/guide-data.gouv.fr/api',
+      guideDatasets: 'https://guides.data.gouv.fr/jeux-de-donnees',
+      guideReuses: 'https://guides.data.gouv.fr/reutilisations',
+      guideDataservices: 'https://guides.data.gouv.fr/api',
       reusesOnboardingUsecases: 'https://www.data.gouv.fr/pages/onboarding/liste_cas_usage/',
-      dataservicesOnboarding: 'https://guides.data.gouv.fr/guide-data.gouv.fr/api/outils-pour-les-administrations',
+      dataservicesOnboarding: 'https://guides.data.gouv.fr/autres/outils-pour-les-administrations',
 
       homepagePublishDatasetOnboarding: '/producteurs',
       homepagePublishReuseOnboarding: '/reutilisateurs',
       homepageAboutUs: '/a-propos',
       homepageExplore: 'https://explore.data.gouv.fr',
+      // Featured resources shown on the /explore page. Override via env var:
+      // NUXT_PUBLIC_FEATURED_RESOURCE_IDS='["resource-id-1","resource-id-2"]'
+      featuredResourceIds: [
+        '1c5075ec-7ce1-49cb-ab89-94f507812daf', // Visas d'exploitations cinématographiques (CNC)
+        'df2cbcb3-da0a-4265-a24e-c36f2c787db2', // Indices de position sociale dans les lycées
+      ],
       homepageRightNow: {
         title: 'Données relatives aux Énergies',
         url: '/pages/donnees-energie',
@@ -135,7 +145,7 @@ export default defineNuxtConfig({
       publishingDataserviceFeedbackUrl: 'https://tally.so/r/w2J7lL',
       publishingReuseFeedbackUrl: 'https://tally.so/r/mV98y6',
       publishingHarvesterFeedbackUrl: 'https://tally.so/r/3NMLOQ',
-      reuseGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/reutilisations',
+      reuseGuideUrl: 'https://guides.data.gouv.fr/reutilisations/publier-une-reutilisation',
       harvesterRequestValidationUrl: 'https://support.data.gouv.fr/help/datagouv/moissonnage#support-tree',
       harvesterPreviewMaxItems: 20, // Should be the same as `HARVEST_PREVIEW_MAX_ITEMS` in udata
       harvestEnableManualRun: false,
@@ -240,18 +250,21 @@ export default defineNuxtConfig({
       // It must optimized them to be able to handle commonjs dependencies.
       // See https://vite.dev/guide/dep-pre-bundling.html#customizing-the-behavior
       include: [
-        'debug',
-        'extend',
+        'debug', // CJS
+        'extend', // CJS
         'highlight.js',
         'rehype-highlight',
-        'unist-util-find',
-        'unist-util-find-all-between',
+        'unist-util-find', // CJS
+        'unist-util-find-all-between', // CJS
         'vue',
         'vue-router',
-        'maplibre-gl',
+        'maplibre-gl', // CJS
         'geopf-extensions-openlayers',
-        'vue3-xml-viewer',
+        'vue3-xml-viewer', // CJS
         'uqr',
+        'pdfjs-dist',
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
       ],
       // `@datagouv/components-next` shouldn't be optimize otherwise its vue instance is not the same
       // as the one used in udata-front-kit. This cause errors with the `provide` / `inject` functions

@@ -1,167 +1,173 @@
 <template>
-  <NuxtLayout>
+  <div>
+    <!-- Teleport target for Toggletip (rendered by SiteHeader). app.vue
+         provides it, but app.vue isn't mounted on the error page, so we must
+         provide it here too, before NuxtLayout mounts the header. -->
     <div
-      v-if="error"
-      class="min-h-screen bg-white flex items-center justify-center px-8 md:px-4"
-    >
-      <div class="flex flex-col items-center text-center max-w-2xl w-full gap-6">
-        <div class="w-37 h-35 flex items-center justify-center md:w-25 md:h-24">
-          <img
-            v-if="statusCode === 404"
-            :src="error404Svg"
-            alt="Erreur 404"
-            class="w-full h-full object-contain"
-          >
-          <img
-            v-else-if="statusCode === 403"
-            :src="error403Svg"
-            alt="Erreur 403"
-            class="w-full h-full object-contain"
-          >
-          <img
-            v-else-if="statusCode === 410"
-            :src="error410Svg"
-            alt="Erreur 410"
-            class="w-full h-full object-contain"
-          >
-          <img
-            v-else-if="statusCode >= 500"
-            :src="error500Svg"
-            alt="Erreur serveur"
-            class="w-full h-full object-contain"
-          >
-          <img
-            v-else
-            :src="error500Svg"
-            alt="Erreur"
-            class="w-full h-full object-contain"
-          >
-        </div>
+      id="tooltips"
+      class="datagouv-components h-0"
+    />
+    <NuxtLayout>
+      <div
+        v-if="error"
+        class="min-h-screen bg-white flex items-center justify-center px-8 md:px-4"
+      >
+        <div class="flex flex-col items-center text-center max-w-2xl w-full gap-6">
+          <div class="w-37 h-35 flex items-center justify-center md:w-25 md:h-24">
+            <img
+              v-if="statusCode === 404"
+              :src="error404Svg"
+              alt="Erreur 404"
+              class="w-full h-full object-contain"
+            >
+            <img
+              v-else-if="statusCode === 403"
+              :src="error403Svg"
+              alt="Erreur 403"
+              class="w-full h-full object-contain"
+            >
+            <img
+              v-else-if="statusCode === 410"
+              :src="error410Svg"
+              alt="Erreur 410"
+              class="w-full h-full object-contain"
+            >
+            <img
+              v-else-if="statusCode >= 500"
+              :src="error500Svg"
+              alt="Erreur serveur"
+              class="w-full h-full object-contain"
+            >
+            <img
+              v-else
+              :src="error500Svg"
+              alt="Erreur"
+              class="w-full h-full object-contain"
+            >
+          </div>
 
-        <h1 class="text-6xl font-extrabold leading-none text-gray-title m-0 md:text-5xl">
-          <template v-if="statusCode">
-            {{ statusCode }}
-          </template>
-          <template v-else>
-            {{ $t('Erreur') }}
-          </template>
-        </h1>
+          <h1 class="text-6xl font-extrabold leading-none text-gray-title m-0 md:text-5xl">
+            <template v-if="statusCode">
+              {{ statusCode }}
+            </template>
+            <template v-else>
+              {{ $t('Erreur') }}
+            </template>
+          </h1>
 
-        <h2 class="text-2xl font-extrabold leading-9 text-gray-title m-0 md:text-xl md:leading-8">
-          <template v-if="statusCode === 404">
-            {{ $t('Page non trouvée') }}
-          </template>
-          <template v-else-if="statusCode === 403">
-            {{ $t('Accès interdit') }}
-          </template>
-          <template v-else-if="statusCode === 410">
-            {{ $t('Contenu supprimé') }}
-          </template>
-          <template v-else-if="statusCode >= 500">
-            {{ $t('Erreur interne du serveur') }}
-          </template>
-          <template v-else>
-            {{ $t('Erreur inattendue') }}
-          </template>
-        </h2>
+          <h2 class="text-2xl font-extrabold leading-9 text-gray-title m-0 md:text-xl md:leading-8">
+            <template v-if="statusCode === 404">
+              {{ $t('Page non trouvée') }}
+            </template>
+            <template v-else-if="statusCode === 403">
+              {{ $t('Accès interdit') }}
+            </template>
+            <template v-else-if="statusCode === 410">
+              {{ $t('Contenu supprimé') }}
+            </template>
+            <template v-else-if="statusCode >= 500">
+              {{ $t('Erreur interne du serveur') }}
+            </template>
+            <template v-else>
+              {{ $t('Erreur inattendue') }}
+            </template>
+          </h2>
 
-        <p class="text-base font-normal leading-6 text-gray-title m-0 text-center md:text-sm md:leading-5">
-          <template v-if="statusCode === 404">
-            {{ $t("Désolé, nous n'avons pas trouvé la page que vous recherchez. Il se peut que le lien soit incorrect ou que la page ait été déplacée ou supprimée. Si cela vous semble une erreur n'hésitez pas à") }}
-            <NuxtLink
-              to="/support"
-              class="text-datagouv-dark"
-            >
-              {{ $t('nous écrire') }}
-            </NuxtLink>.
-          </template>
-          <template v-else-if="statusCode === 403">
-            {{ $t("Vous n'avez pas la permission d'accéder à cette page. Cela peut être dû à des restrictions de droits ou à une authentification manquante. Si cela vous semble une erreur n'hésitez pas à") }}
-            <NuxtLink
-              to="/support"
-              class="text-datagouv-dark"
-            >
-              {{ $t('nous écrire') }}
-            </NuxtLink>.
-          </template>
-          <template v-else-if="statusCode === 410">
-            {{ $t("Ce contenu a été volontairement retiré. Il n'est plus accessible, car il a été supprimé définitivement par son producteur. Si cela vous semble une erreur n'hésitez pas à") }}
-            <NuxtLink
-              to="/support"
-              class="text-datagouv-dark"
-            >
-              {{ $t('nous écrire') }}
-            </NuxtLink>.
-          </template>
-          <template v-else-if="statusCode >= 500">
-            {{ $t("Une erreur interne est survenue. Veuillez nous excuser pour la gêne occasionnée. Si le problème persiste, merci de nous écrire avec les détails de l'erreur pour que nous puissions y remédier rapidement.") }}
-          </template>
-          <template v-else>
-            {{ $t("Une erreur inattendue s'est produite. Veuillez nous excuser pour la gêne occasionnée. Si le problème persiste, merci de") }}
-            <NuxtLink
-              to="/support"
-              class="text-datagouv-dark"
-            >
-              {{ $t('nous écrire') }}
-            </NuxtLink>
-            {{ $t("avec les détails de l'erreur pour que nous puissions y remédier rapidement.") }}
-            <span
-              v-if="errorMessage"
-              class="fr-mt-2w fr-text--sm fr-text--bold"
-            >{{ errorMessage }}</span>
-          </template>
-        </p>
+          <p class="text-base font-normal leading-6 text-gray-title m-0 text-center md:text-sm md:leading-5">
+            <template v-if="statusCode === 404">
+              {{ $t("Désolé, nous n'avons pas trouvé la page que vous recherchez. Il se peut que le lien soit incorrect ou que la page ait été déplacée ou supprimée. Si cela vous semble une erreur n'hésitez pas à") }}
+              <NuxtLink
+                to="/support"
+                class="text-datagouv-dark"
+              >
+                {{ $t('nous écrire') }}
+              </NuxtLink>.
+            </template>
+            <template v-else-if="statusCode === 403">
+              {{ $t("Vous n'avez pas la permission d'accéder à cette page. Cela peut être dû à des restrictions de droits ou à une authentification manquante. Si cela vous semble une erreur n'hésitez pas à") }}
+              <NuxtLink
+                to="/support"
+                class="text-datagouv-dark"
+              >
+                {{ $t('nous écrire') }}
+              </NuxtLink>.
+            </template>
+            <template v-else-if="statusCode === 410">
+              {{ $t("Ce contenu a été volontairement retiré. Il n'est plus accessible, car il a été supprimé définitivement par son producteur. Si cela vous semble une erreur n'hésitez pas à") }}
+              <NuxtLink
+                to="/support"
+                class="text-datagouv-dark"
+              >
+                {{ $t('nous écrire') }}
+              </NuxtLink>.
+            </template>
+            <template v-else-if="statusCode >= 500">
+              {{ $t("Une erreur interne est survenue. Veuillez nous excuser pour la gêne occasionnée. Si le problème persiste, merci de nous écrire avec les détails de l'erreur pour que nous puissions y remédier rapidement.") }}
+            </template>
+            <template v-else>
+              {{ $t("Une erreur inattendue s'est produite. Veuillez nous excuser pour la gêne occasionnée. Si le problème persiste, merci de") }}
+              <NuxtLink
+                to="/support"
+                class="text-datagouv-dark"
+              >
+                {{ $t('nous écrire') }}
+              </NuxtLink>
+              {{ $t("avec les détails de l'erreur pour que nous puissions y remédier rapidement.") }}
+              <span
+                v-if="errorMessage"
+                class="fr-mt-2w fr-text--sm fr-text--bold"
+              >{{ errorMessage }}</span>
+            </template>
+          </p>
 
-        <div
-          v-if="statusCode >= 500 && errorMessage"
-          class="fr-mt-4w fr-p-2w"
-        >
-          <p class="fr-text--sm">
-            <span class="fr-text--bold">{{ $t('Code erreur') }} :&nbsp;</span>
-            <span class="font-mono">{{ errorMessage }}</span>
-            <CopyButton
-              :label="$t('Copier le code erreur')"
-              :copied-label="$t('Code erreur copié !')"
-              :text="errorMessage || ''"
-              class="ml-2"
-            />
-            <pre
-              v-if="error.stack"
-              class="text-left"
-            >
+          <div
+            v-if="statusCode >= 500 && errorMessage"
+            class="fr-mt-4w fr-p-2w"
+          >
+            <p class="fr-text--sm">
+              <span class="fr-text--bold">{{ $t('Code erreur') }} :&nbsp;</span>
+              <span class="font-mono">{{ errorMessage }}</span>
+              <CopyButton
+                :label="$t('Copier le code erreur')"
+                :copied-label="$t('Code erreur copié !')"
+                :text="errorMessage || ''"
+                class="ml-2"
+              />
+              <pre
+                v-if="error.stack"
+                class="text-left"
+              >
               {{ error.stack }}
             </pre>
-          </p>
-        </div>
+            </p>
+          </div>
 
-        <div class="mt-0">
-          <BrandedButton
-            v-if="statusCode >= 500"
-            href="/support"
-            color="primary"
-            size="lg"
-          >
-            {{ $t("Nous écrire") }}
-          </BrandedButton>
-          <BrandedButton
-            v-else
-            href="/"
-            color="primary"
-            size="lg"
-          >
-            {{ $t("Retour à l'accueil") }}
-          </BrandedButton>
+          <div class="mt-0">
+            <BrandedButton
+              v-if="statusCode >= 500"
+              href="/support"
+              color="primary"
+              size="lg"
+            >
+              {{ $t("Nous écrire") }}
+            </BrandedButton>
+            <BrandedButton
+              v-else
+              href="/"
+              color="primary"
+              size="lg"
+            >
+              {{ $t("Retour à l'accueil") }}
+            </BrandedButton>
+          </div>
         </div>
       </div>
-    </div>
-  </NuxtLayout>
+    </NuxtLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { datagouv, BrandedButton, CopyButton } from '@datagouv/components-next'
-import type { UseFetchFunction } from '@datagouv/components-next'
-import CdataLink from './components/CdataLink.vue'
-import { ClientOnly, TextClamp } from '#components'
+import { BrandedButton, CopyButton } from '@datagouv/components-next'
 import error404Svg from '~/public/nuxt_images/errors/404.svg'
 import error403Svg from '~/public/nuxt_images/errors/403.svg'
 import error410Svg from '~/public/nuxt_images/errors/410.svg'
@@ -169,30 +175,11 @@ import error500Svg from '~/public/nuxt_images/errors/500.svg'
 
 const error = useError()
 
-const app = useNuxtApp()
-
 const { locale } = useTranslation()
-const runtimeConfig = useRuntimeConfig()
-const siteConfig = useSiteConfig()
 
 // Computed properties to avoid repeating error checks
 const statusCode = computed(() => error.value?.statusCode as number)
 const errorMessage = computed(() => error.value?.message)
-
-app.vueApp.use(datagouv, {
-  name: runtimeConfig.public.title,
-  baseUrl: siteConfig.url,
-  apiBase: runtimeConfig.public.apiBase,
-  devApiKey: runtimeConfig.public.devApiKey,
-  tabularApiUrl: runtimeConfig.public.tabularApiUrl,
-  tabularApiDataserviceId: runtimeConfig.public.tabularApiDataserviceId,
-  tabularAllowRemote: true,
-  datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
-  customUseFetch: useAPI as UseFetchFunction, // Why this `as` is required?
-  textClamp: TextClamp,
-  appLink: CdataLink,
-  clientOnly: ClientOnly,
-})
 
 useHeadSafe({
   htmlAttrs: {

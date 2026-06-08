@@ -33,17 +33,24 @@
         v-else-if="notification.details.class === 'ValidateHarvesterNotificationDetails'"
         :notification="notification as ValidateHarvesterNotification"
       />
+      <NotificationsNewReuse
+        v-else-if="notification.details.class === 'ReuseCreatedNotificationDetails'"
+        :notification="notification as ReuseCreatedNotification"
+      />
+      <NotificationsNewDataservice
+        v-else-if="notification.details.class === 'DataserviceCreatedNotificationDetails'"
+        :notification="notification as DataserviceCreatedNotification"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { DeepReadonly } from 'vue'
 import type { DiscussionSubjectTypes } from '~/types/discussions'
-import type { DiscussionNotification, MembershipAcceptedNotification, MembershipRefusedNotification, MembershipRequestNotification, NewBadgeNotification, TransferRequestNotification, UserNotification, ValidateHarvesterNotification } from '~/types/notifications'
+import type { DiscussionNotification, MembershipAcceptedNotification, MembershipRefusedNotification, MembershipRequestNotification, NewBadgeNotification, DataserviceCreatedNotification, ReuseCreatedNotification, TransferRequestNotification, UserNotification, ValidateHarvesterNotification } from '~/types/notifications'
 
 const props = defineProps<{
-  notifications: DeepReadonly<Array<UserNotification>>
+  notifications: Array<UserNotification>
 }>()
 
 const subjects = ref<Record<string, DiscussionSubjectTypes | null>>({})
