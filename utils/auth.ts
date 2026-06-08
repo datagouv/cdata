@@ -76,7 +76,11 @@ export const loadMe = async (meState: Ref<Me | null | undefined>) => {
   try {
     meState.value = await $fetch<Me | null>('/api/1/me/', {
       baseURL: config.public.apiBase,
-      credentials: 'include',
+      // No `credentials: 'include'`: same reason as in `plugins/api.ts`. In production
+      // cdata and udata share the same origin (HAProxy routing) so the default
+      // 'same-origin' already sends the session cookie, while forcing 'include' breaks
+      // the dev setup (cross-origin to demo, where udata returns
+      // `Access-Control-Allow-Origin: *`). Dev auth uses X-API-KEY.
       headers,
     })
     if (meState.value) {
