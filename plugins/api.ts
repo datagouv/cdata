@@ -16,9 +16,11 @@ export default defineNuxtPlugin({
             options.headers.set('Content-Type', 'application/json')
           }
           options.headers.set('Accept', 'application/json')
-          options.credentials = 'include'
           if (config.public.devApiKey) {
             options.headers.set('X-API-KEY', config.public.devApiKey)
+          }
+          else {
+            options.credentials = 'include'
           }
           if (token.value) {
             options.headers.set('Authentication-Token', token.value)
