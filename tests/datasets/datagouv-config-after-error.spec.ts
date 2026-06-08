@@ -13,8 +13,10 @@ import { test, expect } from '../base'
 // error; the heading assertions catch the "content stuck on the search page"
 // symptom.
 test('a dataset detail page renders after starting on the error page', async ({ page }) => {
-  await page.goto('/datasets/azerty')
+  const response = await page.goto('/datasets/azerty')
+  expect(response?.status()).toBe(404)
   await expect(page.getByRole('heading', { level: 1, name: '404' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Page non trouvée' })).toBeVisible()
 
   // SPA navigation: error page -> /datasets -> /datasets/search
   await page.getByRole('link', { name: 'Données', exact: true }).click()
