@@ -78,6 +78,9 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
       if (validSortValues.includes(sortToUse)) {
         params.sort = sortToUse
       }
+      else if (import.meta.env.DEV && typeConfig?.defaultSort && typeConfig?.sortOptions && sortToUse === typeConfig.defaultSort) {
+        console.warn(`[GlobalSearch] defaultSort "${typeConfig.defaultSort}" is not in sortOptions for "${typeConfig.class}". Valid values: ${validSortValues.join(', ')}`)
+      }
     }
     params.page = page.value
     params.page_size = pageSize
