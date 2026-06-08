@@ -3,7 +3,6 @@
     :icon="notification.details.kind === 'invitation' ? RiMailSendLine : RiUserAddLine"
     :title="notification.details.kind === 'invitation' ? $t('Invitation à rejoindre une organisation') : $t('Demande d\'adhésion')"
     :notification="notification"
-    :requires-action="true"
     :title-link="notification.details.kind === 'invitation' ? '/admin/me/profile' : `/admin/organizations/${notification.details.request_organization.id}/members`"
     :title-link-title="$t('Voir la demande')"
   >

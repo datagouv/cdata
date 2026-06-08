@@ -462,7 +462,6 @@ const $chartsApi = $fetch.create({
   onRequest({ options }) {
     options.headers.set('Content-Type', 'application/json')
     options.headers.set('Accept', 'application/json')
-    options.credentials = 'include'
   },
 })
 

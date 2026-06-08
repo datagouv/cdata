@@ -13,8 +13,13 @@
     >
     <component
       :is="icon"
-      v-if="icon"
+      v-if="icon && typeof icon !== 'string'"
       class="w-4 h-4"
+    />
+    <span
+      v-else-if="icon"
+      :class="icon"
+      aria-hidden="true"
     />
     <span class="text-sm flex-1 min-w-0">
       <slot />
@@ -40,7 +45,7 @@ type Props = {
   value: string
   count?: number
   loading?: boolean
-  icon?: Component
+  icon?: Component | string
   highlighted?: boolean
 }
 

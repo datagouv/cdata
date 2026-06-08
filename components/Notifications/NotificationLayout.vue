@@ -34,12 +34,12 @@
       <div
         v-else-if="!notification.handled_at"
         class="size-2 rounded-full mt-0.5"
-        :class="requiresAction ? 'bg-danger' : 'bg-new-primary'"
+        :class="requireAction(notification) ? 'bg-danger' : 'bg-new-primary'"
       />
     </div>
-    <!-- Auto overlay: only when no titleLink and unread -->
+    <!-- overlay: only when no titleLink and can be marked as read -->
     <button
-      v-if="!titleLink && !notification.handled_at && !requiresAction"
+      v-if="!titleLink && canMarkAsRead(notification)"
       class="after:absolute after:inset-0 bg-none"
       :title="$t('Marquer la notification comme lue')"
       @click="handleMarkAsRead"
@@ -52,6 +52,7 @@ import { AnimatedLoader, useFormatDate } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import CdataLink from '../CdataLink.vue'
 import type { UserNotification } from '~/types/notifications'
+import { canMarkAsRead, requireAction } from '~/utils/notifications'
 
 const props = defineProps<{
   icon: Component
@@ -59,14 +60,13 @@ const props = defineProps<{
   notification: UserNotification
   titleLink?: string
   titleLinkTitle?: string
-  requiresAction?: boolean
 }>()
 
 const { formatDate } = useFormatDate()
 const { loading, markAsRead } = useMarkAsRead()
 
 const handleMarkAsRead = () => {
-  if (!props.requiresAction) {
+  if (canMarkAsRead(props.notification)) {
     markAsRead(props.notification)
   }
 }
