@@ -16,7 +16,12 @@ export default defineNuxtPlugin({
             options.headers.set('Content-Type', 'application/json')
           }
           options.headers.set('Accept', 'application/json')
-          options.credentials = 'include'
+          // No `credentials: 'include'`: in production cdata and udata share the same
+          // origin (HAProxy routing), so the default 'same-origin' already sends the
+          // session cookie. Forcing 'include' only matters cross-origin and breaks the
+          // dev setup (cdata on dev.local hitting demo), which is not a trusted origin
+          // so udata returns `Access-Control-Allow-Origin: *` — a value the browser
+          // rejects in credentials mode (opendatateam/udata#3781). Dev auth uses X-API-KEY.
           if (config.public.devApiKey) {
             options.headers.set('X-API-KEY', config.public.devApiKey)
           }
