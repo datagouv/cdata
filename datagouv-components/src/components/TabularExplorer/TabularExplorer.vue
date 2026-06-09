@@ -207,13 +207,8 @@
               v-if="sort"
               class="inline-flex items-center gap-1.5 bg-white border border-gray-silver rounded-lg pl-2 pr-1 py-1 text-xs"
             >
-              <RiArrowUpLine
-                v-if="sort.direction === 'asc'"
-                class="size-3 text-new-primary"
-                aria-hidden="true"
-              />
-              <RiArrowDownLine
-                v-else
+              <component
+                :is="sort.direction === 'asc' ? RiArrowUpLine : RiArrowDownLine"
                 class="size-3 text-new-primary"
                 aria-hidden="true"
               />
@@ -258,7 +253,7 @@
           </div>
         </div>
       </div>
-      <!-- /container (toolbar + active filters) -->
+      <!-- /toolbar & active filters -->
 
       <!-- No column selected -->
       <div
@@ -270,7 +265,7 @@
           class="h-32"
           alt=""
         >
-        <p class="fr-text--bold fr-my-3v">
+        <p class="font-bold text-gray-title my-3">
           {{ t('Aucune colonne sélectionnée') }}
         </p>
         <BrandedButton
@@ -841,8 +836,12 @@ watch(
 // Re-stretch the remaining columns whenever the displayed set changes (columns
 // toggled / hidden / isolated from the menu). No DOM measurement needed — we
 // redistribute the already-measured natural widths over the new container space.
-watch(displayedColumns, () => {
+watch(displayedColumns, async () => {
   if (Object.keys(naturalWidths.value).length === 0) return
+  // Wait for the table to (re)mount before reading the container: the desktop
+  // table is `v-if`-ed out when no column is displayed, so going from 0 → N
+  // columns means `scrollContainer` only exists after the next render.
+  await nextTick()
   redistributeColumnWidths()
 })
 
@@ -883,7 +882,8 @@ function stopResize() {
   // redistribution when other columns are toggled.
   if (resizing.value) {
     const col = resizing.value.column
-    naturalWidths.value = { ...naturalWidths.value, [col]: columnWidths.value[col] ?? naturalWidths.value[col] }
+    const width = columnWidths.value[col]
+    if (width != null) naturalWidths.value = { ...naturalWidths.value, [col]: width }
   }
   resizing.value = null
   document.removeEventListener('mousemove', onResize)
