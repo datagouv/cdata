@@ -143,6 +143,25 @@
                 </h3>
                 <dl class="space-y-2.5 pl-0">
                   <div
+                    v-if="dataservice.base_api_url"
+                    class="space-y-1"
+                  >
+                    <dt class="text-gray-plain font-bold">
+                      {{ $t(`URL de base de l'API`) }}
+                    </dt>
+                    <dd class="p-0 m-0">
+                      <a
+                        :href="dataservice.base_api_url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="link block truncate"
+                      >
+                        {{ dataservice.base_api_url }}
+                      </a>
+                    </dd>
+                  </div>
+
+                  <div
                     v-if="dataservice.rate_limiting || dataservice.rate_limiting_url"
                     class="space-y-1"
                   >
@@ -178,24 +197,6 @@
                       <span v-else>
                         {{ $t('Non communiqué') }}
                       </span>
-                    </dd>
-                  </div>
-
-                  <div class="space-y-1">
-                    <dt class="text-gray-plain font-bold">
-                      {{ $t('Dernière mise à jour') }}
-                    </dt>
-                    <dd class="p-0 m-0">
-                      {{ formatDate(dataservice.metadata_modified_at) }}
-                    </dd>
-                  </div>
-
-                  <div class="space-y-1">
-                    <dt class="text-gray-plain font-bold">
-                      {{ $t('Date de création') }}
-                    </dt>
-                    <dd class="p-0 m-0">
-                      {{ formatDate(dataservice.created_at) }}
                     </dd>
                   </div>
                 </dl>
@@ -305,7 +306,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
@@ -322,7 +323,6 @@ definePageMeta({
 
 const config = useRuntimeConfig()
 const route = useRoute()
-const { formatDate } = useFormatDate()
 const { $matomo } = useNuxtApp()
 
 const sidebar = useTemplateRef('sidebar')
