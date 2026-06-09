@@ -606,10 +606,15 @@ onMounted(async () => {
   ])
 })
 
-const { data: resources } = await useAPI<PaginatedArray<Resource>>(
-  `/api/2/datasets/${route.params.did}/resources/`,
-  { query: { type: 'main' } },
-)
+// Use the same cache key as ResourceExplorer's `main` fetch (dataset id + identical params)
+// so Nuxt dedupes the two into a single request on the resources tab. `q: undefined` mirrors
+// the explorer's params exactly: without it the keys differ and both requests fire.
+const { data: resources } = dataset.value
+  ? await useAPI<PaginatedArray<Resource>>(
+      `/api/2/datasets/${dataset.value.id}/resources/`,
+      { query: { type: 'main', page_size: 10, q: undefined } },
+    )
+  : { data: ref<PaginatedArray<Resource> | null>(null) }
 const exploreUrl = computed(() => {
   if (!resources.value) return null
   for (const resource of resources.value.data) {
