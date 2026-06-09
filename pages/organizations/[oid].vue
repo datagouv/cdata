@@ -83,12 +83,7 @@
           </ReadMore>
         </div>
         <FullPageTabs
-          :links="[
-            { label: $t('Jeux de données'), href: `/organizations/${route.params.oid}/datasets`, count: organization.metrics.datasets },
-            { label: $t('API'), href: `/organizations/${route.params.oid}/dataservices`, count: organization.metrics.dataservices },
-            { label: $t('Réutilisations'), href: `/organizations/${route.params.oid}/reuses`, count: organization.metrics.reuses },
-            { label: $t('Informations'), href: `/organizations/${route.params.oid}/information` },
-          ]"
+          :links="tabLinks"
         >
           <form
             class="flex items-center"
@@ -113,10 +108,10 @@
           </form>
         </FullPageTabs>
       </div>
-      <div class="bg-white pt-5 pb-8 lg:pb-24">
+      <div :class="{ 'bg-white pt-5 pb-8 lg:pb-24': !isPresentationTab }">
         <NuxtPage
           v-if="organization"
-          class="container"
+          :class="{ container: !isPresentationTab }"
           :organization
         />
       </div>
@@ -131,12 +126,42 @@ import { useTimeoutFn } from '@vueuse/core'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
+import { isUserOrgAdmin, useMaybeMe } from '~/utils/auth'
 
 const config = useRuntimeConfig()
 const route = useRoute()
+const me = useMaybeMe()
+const { t } = useTranslation()
 
 const url = computed(() => `/api/1/organizations/${route.params.oid}/`)
 const { data: organization, status } = await useAPI<Organization>(url, { redirectOn404: true, redirectOnSlug: 'oid' })
+
+// `blocs` is excluded from the default read mask. We only need to know whether a
+// presentation exists to decide the tab's visibility, so we request the blocs ids
+// alone — a tiny payload, kept separate from the heavy per-bloc content loaded by
+// the presentation tab itself.
+const { data: blocsPreview } = await useAPI<Pick<Organization, 'blocs'>>(url, {
+  key: `org-blocs-preview-${route.params.oid}`,
+  headers: { 'X-Fields': '{blocs{id}}' },
+})
+
+const hasPresentation = computed(() => (blocsPreview.value?.blocs?.length ?? 0) > 0)
+const canEditPresentation = computed(() => isUserOrgAdmin(me.value, organization.value))
+// Hidden from non-admins until configured; always available to org admins so they
+// can create it.
+const showPresentationTab = computed(() => hasPresentation.value || canEditPresentation.value)
+const isPresentationTab = computed(() => route.path.endsWith('/presentation'))
+
+const tabLinks = computed(() => {
+  const oid = route.params.oid
+  return [
+    ...(showPresentationTab.value ? [{ label: t('Présentation'), href: `/organizations/${oid}/presentation` }] : []),
+    { label: t('Jeux de données'), href: `/organizations/${oid}/datasets`, count: organization.value?.metrics.datasets },
+    { label: t('API'), href: `/organizations/${oid}/dataservices`, count: organization.value?.metrics.dataservices },
+    { label: t('Réutilisations'), href: `/organizations/${oid}/reuses`, count: organization.value?.metrics.reuses },
+    { label: t('Informations'), href: `/organizations/${oid}/information` },
+  ]
+})
 
 const title = computed(() => `Organisation - ${organization.value?.name} | ${config.public.title}`)
 const robots = computed(() => organization.value && !organization.value.metrics.dataservices && !organization.value.metrics.datasets && !organization.value.metrics.reuses ? 'noindex, nofollow' : 'all')

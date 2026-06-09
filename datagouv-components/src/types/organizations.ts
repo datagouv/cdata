@@ -1,5 +1,6 @@
 import type { User } from './users'
 import type { Badges } from './badges'
+import type { PageBloc } from './pages'
 
 export type MemberRole = 'admin' | 'editor' | 'partial_editor'
 
@@ -68,4 +69,7 @@ export type Organization = {
     reuses_by_months: Record<string, number>
     views: number
   }
+  // Editorial blocs powering the organization "Présentation" tab. Excluded from
+  // the default API read mask, so only present when requested with X-Fields.
+  blocs?: Array<PageBloc>
 }
