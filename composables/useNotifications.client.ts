@@ -1,5 +1,7 @@
 import type { UserNotification } from '~/types/notifications'
 import type { PaginatedArray } from '~/types/types'
+import { toast } from '@datagouv/components-next'
+import { useTranslation } from '~/composables/useTranslation'
 import { canMarkAsRead } from '~/utils/notifications'
 
 const page = ref(1)
@@ -12,6 +14,7 @@ const notificationsToRead = computed(() => notificationsCombinedList.value.filte
 export function useNotifications() {
   const { start, finish } = useLoadingIndicator()
   const { $api } = useNuxtApp()
+  const { t } = useTranslation()
 
   async function loadNotifications() {
     start()
@@ -25,31 +28,22 @@ export function useNotifications() {
       notificationsCombinedList.value.push(...notifications.data)
       nextPage.value = notifications.next_page
     }
+    catch {
+      toast.error(t('Erreur lors du chargement des notifications'))
+    }
     finally {
       finish()
     }
   }
 
   async function refreshNotifications() {
-    start()
-    try {
-      const toPage = page.value
-      notificationsCombinedList.value = []
-      for (let p = 1; p <= toPage; p++) {
-        page.value = p
-        await loadNotifications()
-      }
-      pendingNotifications.value = await $api<PaginatedArray<UserNotification>>('/api/1/notifications/', {
-        params: {
-          page_size: 1,
-          page: 1,
-          handled: false,
-        },
-      })
+    const toPage = page.value
+    notificationsCombinedList.value = []
+    for (let p = 1; p <= toPage; p++) {
+      page.value = p
+      await loadNotifications()
     }
-    finally {
-      finish()
-    }
+    refreshPendingNotifications()
   }
 
   async function refreshPendingNotifications() {
@@ -62,6 +56,9 @@ export function useNotifications() {
           handled: false,
         },
       })
+    }
+    catch {
+      toast.error(t('Erreur lors du chargement des notifications'))
     }
     finally {
       finish()
