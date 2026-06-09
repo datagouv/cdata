@@ -417,7 +417,7 @@ const tabsOptions = computed(() => {
   options.push({ key: 'downloads', label: t('Téléchargements') })
 
   if (hasTabularData.value) {
-    options.push({ key: 'swagger', label: t('Swagger') })
+    options.push({ key: 'api', label: t('API') })
   }
 
   return options
