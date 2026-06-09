@@ -150,7 +150,7 @@
                 <p>
                   {{ $t('Attention : cette ressource est exposée via une') }}
                   <CdataLink
-                    :to="`${siteConfig.url}/dataservices/${runtimeConfig.public.tabularApiDataserviceId}`"
+                    :to="`/dataservices/${runtimeConfig.public.tabularApiDataserviceId}`"
                     target="_blank"
                     class="fr-link"
                   >
@@ -206,7 +206,6 @@ const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const formId = useId()
 const config = useComponentsConfig()
-const siteConfig = useSiteConfig()
 const runtimeConfig = useRuntimeConfig()
 
 const props = withDefaults(defineProps<{
