@@ -200,10 +200,13 @@
               <div class="fr-col">
                 <select
                   id="sort-search"
-                  v-model="sort"
+                  v-model="effectiveSort"
                   class="fr-select text-sm shadow-input-blue!"
                 >
-                  <option :value="undefined">
+                  <option
+                    v-if="!currentTypeConfig?.defaultSort"
+                    :value="undefined"
+                  >
                     {{ t('Pertinence') }}
                   </option>
                   <option
@@ -489,6 +492,10 @@ const { debounced: qDebounced, flush: flushQ } = useDebouncedRef(q, componentsCo
 const qForParams = computed(() => props.hideSearchInput ? q.value : qDebounced.value)
 const page = useRouteQuery('page', 1, { transform: Number })
 const sort = useRouteQuery<string | undefined>('sort')
+const effectiveSort = computed({
+  get: () => sort.value ?? currentTypeConfig.value?.defaultSort,
+  set: (value) => { sort.value = value },
+})
 
 provide(searchFilterContextKey, {
   register(urlParam, entry) {
@@ -759,7 +766,7 @@ const rssUrl = computed(() => {
   }, currentTypeConfig.value ? configKey(currentTypeConfig.value) : undefined)
 
   // Add sort if set
-  if (sort.value) params.set('sort', sort.value)
+  if (effectiveSort.value) params.set('sort', effectiveSort.value)
 
   const queryString = params.toString()
   const basePath = '/api/1/datasets/recent.atom'

@@ -305,6 +305,7 @@ export type DatasetSearchConfig = {
   basicFilters?: (keyof DatasetSearchFilters)[]
   advancedFilters?: (keyof DatasetSearchFilters)[]
   sortOptions?: SortOption<DatasetSearchSort>[]
+  defaultSort?: DatasetSearchSort
 }
 
 export type DataserviceSearchConfig = {
@@ -317,6 +318,7 @@ export type DataserviceSearchConfig = {
   basicFilters?: (keyof DataserviceSearchFilters)[]
   advancedFilters?: (keyof DataserviceSearchFilters)[]
   sortOptions?: SortOption<DataserviceSearchSort>[]
+  defaultSort?: DataserviceSearchSort
 }
 
 export type ReuseSearchConfig = {
@@ -329,6 +331,7 @@ export type ReuseSearchConfig = {
   basicFilters?: (keyof ReuseSearchFilters)[]
   advancedFilters?: (keyof ReuseSearchFilters)[]
   sortOptions?: SortOption<ReuseSearchSort>[]
+  defaultSort?: ReuseSearchSort
 }
 
 export type OrganizationSearchConfig = {
@@ -341,6 +344,7 @@ export type OrganizationSearchConfig = {
   basicFilters?: (keyof OrganizationSearchFilters)[]
   advancedFilters?: (keyof OrganizationSearchFilters)[]
   sortOptions?: SortOption<OrganizationSearchSort>[]
+  defaultSort?: OrganizationSearchSort
 }
 
 export type TopicSearchConfig = {
@@ -353,6 +357,7 @@ export type TopicSearchConfig = {
   basicFilters?: (keyof TopicSearchFilters)[]
   advancedFilters?: (keyof TopicSearchFilters)[]
   sortOptions?: SortOption<TopicSearchSort>[]
+  defaultSort?: TopicSearchSort
 }
 
 export type SearchTypeConfig = DatasetSearchConfig | DataserviceSearchConfig | ReuseSearchConfig | OrganizationSearchConfig | TopicSearchConfig
