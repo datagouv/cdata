@@ -32,4 +32,14 @@ else if (queryFlag === '0') {
 }
 // useCookie uses `destr` which deserializes '1' as the number 1
 const useNewExplorer = computed(() => String(newExplorerCookie.value) === '1')
+
+// A resource selected via ?resource_id duplicates content from the main dataset page,
+// so it must stay out of the search index. Kept at the page level (not in a child
+// component) so it applies whichever explorer renders the resources.
+const hasResourceId = computed(() => 'resource_id' in route.query && route.query.resource_id)
+if (import.meta.server && hasResourceId.value) {
+  useSeoMeta({
+    robots: 'noindex',
+  })
+}
 </script>

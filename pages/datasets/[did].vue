@@ -607,8 +607,12 @@ onMounted(async () => {
 })
 
 // Use the same cache key as ResourceExplorer's `main` fetch (dataset id + identical params)
-// so Nuxt dedupes the two into a single request on the resources tab. `q: undefined` mirrors
-// the explorer's params exactly: without it the keys differ and both requests fire.
+// so Nuxt dedupes the two into a single request on the resources tab. Every part of the key
+// must stay byte-for-byte identical to the explorer's `mainParams`, otherwise the keys diverge
+// and both requests fire again (silent perf regression, no error, no failing test):
+//   - dataset id (not route.params.did, which can be a slug)
+//   - page_size: 10 must match ResourceExplorer's PAGE_SIZE constant (not exported, keep in sync)
+//   - q: undefined mirrors the explorer's `q: searchDebounced || undefined` at rest
 const { data: resources } = dataset.value
   ? await useAPI<PaginatedArray<Resource>>(
       `/api/2/datasets/${dataset.value.id}/resources/`,

@@ -157,10 +157,4 @@ watchEffect(async () => {
     selectedResource.value = null
   }
 })
-
-if (import.meta.server && hasResourceId.value) {
-  useSeoMeta({
-    robots: 'noindex',
-  })
-}
 </script>
