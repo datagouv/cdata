@@ -35,7 +35,7 @@
           >
             <JobPage
               :job="previewJob"
-              preview
+              :items="previewJob.items"
             />
           </div>
         </ModalWithButton>
@@ -97,7 +97,7 @@ import { BannerAction, BrandedButton, toast } from '@datagouv/components-next'
 import DescribeHarvester from '~/components/Harvesters/DescribeHarvester.vue'
 import JobPage from '~/components/Harvesters/JobPage.vue'
 import PreviewLoader from '~/components/Harvesters/PreviewLoader.vue'
-import type { HarvesterForm, HarvesterJob, HarvesterSource } from '~/types/harvesters'
+import type { HarvesterForm, HarvesterJobPreview, HarvesterSource } from '~/types/harvesters'
 
 const route = useRoute()
 const { $api } = useNuxtApp()
@@ -151,11 +151,11 @@ const save = async () => {
   }
 }
 
-const previewJob = ref<HarvesterJob | null>(null)
+const previewJob = ref<HarvesterJobPreview | null>(null)
 const preview = async () => {
   if (!harvesterForm.value) throw new Error('No harvester form')
 
-  previewJob.value = await $api<HarvesterJob>('/api/1/harvest/source/preview', {
+  previewJob.value = await $api<HarvesterJobPreview>('/api/1/harvest/source/preview', {
     method: 'POST',
     body: harvesterToApi(harvesterForm.value),
   })
