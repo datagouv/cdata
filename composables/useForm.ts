@@ -53,7 +53,7 @@ export function useForm<T>(initialValues: MaybeRef<T>, errorsRules: ValidationsR
   const getFirstWarning = (key: KeysOfUnion<T>): string | null => getFirst(warnings.value, key)
 
   const warningsAsList = computed<Array<string>>(() => {
-    return Object.keys(errors.value).flatMap(key => errors.value[key] || [])
+    return Object.keys(warnings.value).flatMap(key => warnings.value[key] || [])
   })
   const errorsAsList = computed<Array<string>>(() => {
     return Object.keys(errors.value).flatMap(key => errors.value[key] || [])

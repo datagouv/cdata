@@ -40,6 +40,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "prepare": "husky",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:update-screenshots": "playwright test tests/homepage.spec.ts tests/edito/pages-editor.spec.ts --update-snapshots",
     "test:e2e:ui": "playwright test --ui",
@@ -111,6 +113,7 @@
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^24.12.2",
     "@types/sortablejs": "^1.15.9",
+    "@vitejs/plugin-vue": "^6.0.6",
     "husky": "^9.1.7",
     "lightningcss": "^1.32.0",
     "lint-staged": "^16.4.0",
@@ -118,6 +121,7 @@
     "sass-embedded": "^1.99.0",
     "tailwindcss": "^4.2.4",
     "typescript": "^5.9.3",
+    "vitest": "^4.1.8",
     "vue-component-type-helpers": "^3.2.7",
     "vue-tsc": "^3.2.7"
   }
