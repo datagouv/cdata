@@ -1,4 +1,6 @@
-import type { Chart, ChartForm, ChartForApi, Filter } from '../types/visualizations'
+import type { Chart, ChartForm, ChartForApi, Filter, ColumnDefinition } from '../types/visualizations'
+import type { TabularProfile } from '../components/TabularExplorer/types'
+import { resolveColumnType } from './tabular'
 
 export function toChartForm(chart: Chart) {
   const seriesFilter = chart.series[0]?.filters as Filter | null
@@ -65,4 +67,13 @@ export function toChartApi(chartForm: ChartForm): ChartForApi {
     })),
     extras: chartForm.extras,
   }
+}
+
+export function buildColumnsFromProfile(profile: { profile: TabularProfile }): Array<ColumnDefinition> {
+  return profile.profile.header.map((name) => {
+    const colInfo = profile.profile.columns[name]
+    const isCategorical = profile.profile.categorical.includes(name)
+    const colType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
+    return { name, type: colType }
+  })
 }

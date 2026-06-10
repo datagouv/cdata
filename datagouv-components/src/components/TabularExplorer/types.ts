@@ -19,6 +19,9 @@ export type TabularRow = Record<string, unknown> & { __id: number }
 /** Response from /api/resources/{rid}/profile/ */
 export interface TabularProfileResponse {
   profile: TabularProfile
+  deleted_at: string | null
+  dataset_id: string
+  indexes: null
 }
 
 export interface TabularProfile {
@@ -31,8 +34,8 @@ export interface TabularProfile {
   categorical: string[]
   total_lines: number
   nb_duplicates: number
-  columns_fields: unknown
-  columns_labels: unknown
+  columns_fields: Record<string, TabularColumnInfo>
+  columns_labels: Record<string, TabularColumnInfo>
   header_row_idx: number
   heading_columns: number
   trailing_columns: number

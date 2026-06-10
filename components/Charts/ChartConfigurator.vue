@@ -246,13 +246,13 @@
                 :options="xAxisColumnOptions"
                 :display-value="(opt: XAxisColumnOption) => opt.name"
                 :get-option-id="(opt: XAxisColumnOption) => opt.name"
-                :group-by="(opt: XAxisColumnOption) => typeConfig[opt.colType]?.label || opt.colType"
+                :group-by="(opt: XAxisColumnOption) => typeConfig[opt.type]?.label || opt.type"
                 :multiple="false"
                 class="w-full"
               >
                 <template #option="{ option }">
                   <component
-                    :is="getColumnTypeIcon(option.colType)"
+                    :is="getColumnTypeIcon(option.type)"
                     class="inline w-4 h-4 mr-2"
                   />
                   {{ option.name }}
@@ -331,16 +331,16 @@
                   :label="$t('Colonne Y')"
                   :placeholder="$t('Rechercher une colonne...')"
                   :options="yAxisColumnOptions"
-                  :display-value="(opt: ColumnOption) => opt.name"
-                  :get-option-id="(opt: ColumnOption) => opt.name"
-                  :group-by="(opt: ColumnOption) => typeConfig[opt.colType]?.label || opt.colType"
+                  :display-value="(opt: ColumnDefinition) => opt.name"
+                  :get-option-id="(opt: ColumnDefinition) => opt.name"
+                  :group-by="(opt: ColumnDefinition) => typeConfig[opt.type]?.label || opt.type"
                   :multiple="false"
                   class="w-full"
                   @update:model-value="(val) => serie.column_y = val?.name ?? ''"
                 >
                   <template #option="{ option }">
                     <component
-                      :is="getColumnTypeIcon(option.colType)"
+                      :is="getColumnTypeIcon(option.type)"
                       class="inline w-4 h-4 mr-2"
                     />
                     {{ option.name }}
@@ -475,8 +475,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, Owned, ColumnType, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort } from '@datagouv/components-next'
-import { resolveColumnType, buildTypeConfig, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, Owned, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort } from '@datagouv/components-next'
+import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartLine, RiLineChartLine, RiText } from '@remixicon/vue'
@@ -488,12 +488,7 @@ import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import type { DatasetSuggest } from '~/types/types'
 
-type ColumnOption = {
-  name: string
-  colType: ColumnType
-}
-
-type XAxisColumnOption = ColumnOption & {
+type XAxisColumnOption = ColumnDefinition & {
   resourceId: string
 }
 
@@ -528,7 +523,7 @@ const form = defineModel<ChartForm>({
   required: true,
 })
 
-const columns = ref<Record<string, Array<{ name: string, type: ColumnType }>>>({})
+const columns = ref<ColumnsDefinition>({})
 const producer = ref<Owned | null>(null)
 const dataset = ref<DatasetSuggest | null>(null)
 const savedResources = reactive<Record<string, Resource>>({})
@@ -575,15 +570,15 @@ const xAxisColumnProxy = computed<XAxisColumnOption | null>({
 
 const xAxisColumnOptions = computed<Array<XAxisColumnOption>>(() =>
   Object.entries(columns.value).flatMap(([resourceId, cols]) =>
-    cols.map(col => ({ name: col.name, colType: col.type, resourceId })),
+    cols.map(col => ({ name: col.name, type: col.type, resourceId })),
   ),
 )
 
-const yAxisColumnOptions = computed<Array<ColumnOption>>(() => {
+const yAxisColumnOptions = computed<Array<ColumnDefinition>>(() => {
   if (selectedResource.value && columns.value[selectedResource.value]) {
     return columns.value[selectedResource.value]
       .filter(col => col.type !== 'date')
-      .map(col => ({ name: col.name, colType: col.type }))
+      .map(col => ({ name: col.name, type: col.type }))
   }
   return []
 })
@@ -650,19 +645,10 @@ function formatColumnLabel(opt: { column: string, label: string } | null): strin
   return `${opt.column}${opt.column ? ' - ' : ''}${opt.label}`
 }
 
-function getSerieColumnYValue(serie: DataSeriesForm): ColumnOption | null {
+function getSerieColumnYValue(serie: DataSeriesForm): ColumnDefinition | null {
   const colName = serie.column_y
   if (!colName) return null
   return yAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
-}
-
-function buildColumnsFromProfile(profile: { profile: { header: string[], columns: Record<string, { python_type: string, format?: string }>, categorical: string[] } }): Array<{ name: string, type: ColumnType }> {
-  return profile.profile.header.map((name) => {
-    const colInfo = profile.profile.columns[name]
-    const isCategorical = profile.profile.categorical.includes(name)
-    const colType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
-    return { name, type: colType }
-  })
 }
 
 async function loadMissingResourcesForChart(resourceIds: Set<string>) {

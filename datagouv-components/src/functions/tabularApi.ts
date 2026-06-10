@@ -1,7 +1,7 @@
 import { ofetch } from 'ofetch'
 import { useComponentsConfig, type PluginConfig } from '../config'
 import type { GenericFilter } from '../types/visualizations'
-import type { SortConfig } from '../components/TabularExplorer/types'
+import type { SortConfig, TabularProfileResponse } from '../components/TabularExplorer/types'
 
 export type { SortConfig }
 
@@ -29,48 +29,6 @@ export type FetchTabularDataOptions = {
     type: TabularAggregateType
   } | undefined
   filters?: GenericFilter | undefined
-}
-
-export type TabularProfileResponse = {
-  profile: {
-    header: Array<string>
-    columns: Record<string, {
-      score: number
-      format: string
-      python_type: string
-    }>
-    formats: Record<string, Array<string>>
-    profile: Record<string, {
-      tops: Array<{ count: number, value: string }>
-      nb_distinct: number
-      nb_missing_values: number
-      min?: number
-      max?: number
-      std?: number
-      mean?: number
-    }>
-    encoding: string
-    separator: string
-    categorical: Array<string>
-    total_lines: number
-    nb_duplicates: number
-    columns_fields: Record<string, {
-      score: number
-      format: string
-      python_type: string
-    }>
-    columns_labels: Record<string, {
-      score: number
-      format: string
-      python_type: string
-    }>
-    header_row_idx: number
-    heading_columns: number
-    trailing_columns: number
-  }
-  deleted_at: string | null
-  dataset_id: string
-  indexes: null
 }
 
 /**

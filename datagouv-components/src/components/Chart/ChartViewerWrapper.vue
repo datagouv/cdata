@@ -23,18 +23,17 @@ import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
 import { useComponentsConfig } from '../../config'
 import { fetchTabularData, useGetProfile } from '../../functions/tabularApi'
-import type { Chart, ChartForApi } from '../../types/visualizations'
+import type { Chart, ChartForApi, ColumnsDefinition } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
 import { watchDebounced } from '@vueuse/shared'
-import { resolveColumnType } from '../../functions/tabular'
-import type { ColumnType } from '../TabularExplorer/types'
+import { buildColumnsFromProfile } from '../../functions/charts'
 
 const props = defineProps<{
   chart: Chart | ChartForApi
 }>()
 
 const emit = defineEmits<{
-  columns: [columns: Record<string, Array<{ name: string, type: ColumnType }>>]
+  columns: [columns: ColumnsDefinition]
 }>()
 
 const { t } = useTranslation()
@@ -48,7 +47,7 @@ const pendingOperations = ref(0)
 
 const series = reactive<{
   data: Record<string, Array<Record<string, unknown>>>
-  columns: Record<string, Array<{ name: string, type: ColumnType }>>
+  columns: ColumnsDefinition
 }>({
   data: {},
   columns: {},
@@ -87,12 +86,7 @@ async function fetchSeriesProfile() {
       .map(r => r.value)
     series.columns = Object.fromEntries(results.map(result => [
       result.id,
-      result.profile.profile.header.map((name) => {
-        const colInfo = result.profile.profile.columns[name]
-        const isCategorical = result.profile.profile.categorical.includes(name)
-        const colType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
-        return { name, type: colType }
-      }),
+      buildColumnsFromProfile(result.profile),
     ]))
   }
   catch (err) {
