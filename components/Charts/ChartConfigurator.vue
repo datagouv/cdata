@@ -381,7 +381,7 @@
               </div>
             </div>
             <AccordionGroup>
-              <Accordion title="Styles">
+              <Accordion :title="$t('Styles')">
                 <div class="space-y-4">
                   <div>
                     <label
