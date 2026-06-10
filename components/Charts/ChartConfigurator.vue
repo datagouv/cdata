@@ -522,7 +522,7 @@ const $chartsApi = $fetch.create({
 })
 
 const typeConfig = buildTypeConfig(t)
-const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/components-next').then(m => m.ChartViewerWrapper))
+const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/components-next/chart').then(m => m.ChartViewerWrapper))
 
 const form = defineModel<ChartForm>({
   required: true,
