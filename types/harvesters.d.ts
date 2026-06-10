@@ -20,22 +20,38 @@ export type HarvestLog = {
   message: string
 }
 
+export type HarvestItemStatus = 'pending' | 'started' | 'done' | 'failed' | 'skipped' | 'archived'
+
 export type HarvestItem = {
   remote_id: string
   remote_url: string | null
   dataset: Dataset | null
   dataservice: Dataservice | null
-  status: 'pending' | 'started' | 'done' | 'failed' | 'skipped' | 'archived'
+  status: HarvestItemStatus
   created: string
   started: string | null
   ended: string | null
   errors: Array<HarvestError>
   logs: Array<HarvestLog>
-  args: string
+  args: Array<string>
   kwargs: Record<string, unknown>
 }
 
+export type HarvestItemsLink = {
+  rel: string
+  href: string
+  type: string
+  total: number
+  by_status: Record<HarvestItemStatus, number>
+  by_type: { dataset: number, dataservice: number }
+}
+
 export type HarvesterJobStatus = 'pending' | 'initializing' | 'initialized' | 'processing' | 'done' | 'done-errors' | 'failed'
+
+export type HarvesterJobSourceRef = {
+  id: string
+  class: string
+}
 
 export type HarvesterJob = {
   id: string
@@ -44,8 +60,12 @@ export type HarvesterJob = {
   ended: string | null
   status: HarvesterJobStatus
   errors: Array<HarvestError>
+  items: HarvestItemsLink
+  source: HarvesterJobSourceRef
+}
+
+export type HarvesterJobPreview = Omit<HarvesterJob, 'items'> & {
   items: Array<HarvestItem>
-  source: string
 }
 
 export type HarvesterSourcePermissions = {

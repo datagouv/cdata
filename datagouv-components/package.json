@@ -1,6 +1,6 @@
 {
   "name": "@datagouv/components-next",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "private": false,
   "type": "module",
   "packageManager": "pnpm@10.23.0",
@@ -17,6 +17,12 @@
     ]
   },
   "main": "./src/main.ts",
+  "exports": {
+    ".": "./src/main.ts",
+    "./chart": "./src/chart.ts",
+    "./assets/*": "./assets/*",
+    "./dist/*": "./dist/*"
+  },
   "sideEffects": false,
   "files": [
     "assets",
@@ -104,7 +110,8 @@
   },
   "peerDependencies": {
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0 || ^5.0.0"
+    "vue-router": "^4.5.0 || ^5.0.0",
+    "echarts": "^6.0.0"
   },
   "scarfSettings": {
     "enabled": false

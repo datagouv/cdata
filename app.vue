@@ -19,47 +19,12 @@
 
 <script setup lang="ts">
 import 'vue-sonner/style.css'
-import { Toaster, datagouv } from '@datagouv/components-next'
-import type { UseFetchFunction } from '@datagouv/components-next'
-import type { $Fetch } from 'ofetch'
-import CdataLink from './components/CdataLink.vue'
-import { ClientOnly, TextClamp } from '#components'
-
-const app = useNuxtApp()
+import { Toaster } from '@datagouv/components-next'
 
 const { locale } = useTranslation()
 const runtimeConfig = useRuntimeConfig()
 const route = useRoute()
 const siteConfig = useSiteConfig()
-
-app.vueApp.use(datagouv, {
-  name: runtimeConfig.public.title,
-  baseUrl: siteConfig.url,
-  trustedDomains: runtimeConfig.public.trustedDomains,
-  apiBase: runtimeConfig.public.apiBase,
-  chartsApiBase: runtimeConfig.public.chartsApiBase,
-  devApiKey: runtimeConfig.public.devApiKey,
-  datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
-  maxJsonPreviewCharSize: runtimeConfig.public.maxJsonPreviewCharSize,
-  maxPdfPreviewByteSize: runtimeConfig.public.maxPdfPreviewByteSize,
-  maxXmlPreviewCharSize: runtimeConfig.public.maxXmlPreviewCharSize,
-  metricsApiUrl: runtimeConfig.public.metricsApi,
-  pmtilesViewerBaseUrl: null,
-  schemaValidataUrl: runtimeConfig.public.schemaValidataUrl,
-  schemaDocumentationUrl: runtimeConfig.public.schemasSite.url,
-  schemasSiteUrl: runtimeConfig.public.schemasSite.url,
-  schemasSiteName: runtimeConfig.public.schemasSite.name,
-  tabularApiUrl: runtimeConfig.public.tabularApiUrl,
-  tabularApiDataserviceId: runtimeConfig.public.tabularApiDataserviceId,
-  tabularAllowRemote: true,
-  customUseFetch: useAPI as UseFetchFunction, // Why this `as` is required?
-  $fetch: app.$api as $Fetch, // Imperative fetch for the lib's non-reactive helpers (metrics CSV export). Cast: Nuxt's $Fetch type lacks `native`, like the `as UseFetchFunction` above.
-  textClamp: TextClamp,
-  appLink: CdataLink,
-  clientOnly: ClientOnly,
-  forumUrl: runtimeConfig.public.forumUrl,
-  searchDebounce: runtimeConfig.public.searchDebounce,
-})
 
 useHeadSafe({
   htmlAttrs: {

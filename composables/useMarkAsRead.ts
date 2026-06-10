@@ -1,4 +1,5 @@
 import type { UserNotification } from '~/types/notifications'
+import { canMarkAsRead } from '~/utils/notifications'
 
 export function useMarkAsRead() {
   const loading = ref(false)
@@ -20,8 +21,30 @@ export function useMarkAsRead() {
     }
   }
 
+  const markWithoutActionAsRead = async (notifications: Array<UserNotification>) => {
+    const withoutAction = notifications.filter(n => canMarkAsRead(n))
+
+    if (withoutAction.length === 0) {
+      return
+    }
+
+    try {
+      loading.value = true
+      await Promise.all(
+        withoutAction.map(notification =>
+          $api(`/api/1/notifications/${notification.id}/read/`, { method: 'POST' }),
+        ),
+      )
+      await refreshNotifications()
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
   return {
     markAsRead,
+    markWithoutActionAsRead,
     loading,
   }
 }

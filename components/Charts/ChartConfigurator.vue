@@ -399,7 +399,7 @@ import { useAPI } from '~/utils/api'
 import ChartFilterRow from './ChartFilterRow.vue'
 import type { DatasetSuggest } from '~/types/types'
 
-const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/components-next').then(m => m.ChartViewerWrapper))
+const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/components-next/chart').then(m => m.ChartViewerWrapper))
 
 const form = defineModel<ChartForm>({
   required: true,
@@ -462,7 +462,6 @@ const $chartsApi = $fetch.create({
   onRequest({ options }) {
     options.headers.set('Content-Type', 'application/json')
     options.headers.set('Accept', 'application/json')
-    options.credentials = 'include'
   },
 })
 
