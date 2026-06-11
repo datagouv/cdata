@@ -5,11 +5,12 @@
   >
     <div
       class="container text-white"
-      :class="image ? 'flex flex-col md:flex-row items-center gap-12' : 'max-w-3xl text-center'"
+      :class="image ? 'flex flex-col md:flex-row items-center gap-12' : { 'max-w-3xl text-center': !alignLeft }"
     >
       <div
         v-if="image"
         class="flex-shrink-0"
+        :class="{ 'md:order-last': imagePosition === 'right' }"
       >
         <img
           :src="image"
@@ -18,7 +19,7 @@
           class="w-80"
         >
       </div>
-      <div :class="image ? 'flex-1' : ''">
+      <div :class="image ? 'flex-1' : { 'max-w-3xl': alignLeft }">
         <h1 class="text-white text-3xl md:text-4xl lg:text-4.5xl font-extrabold mb-4">
           <slot name="title" />
         </h1>
@@ -31,7 +32,7 @@
         <div
           v-if="$slots.actions"
           class="flex flex-wrap gap-4"
-          :class="{ 'justify-center': !image }"
+          :class="{ 'justify-center': !image && !alignLeft }"
         >
           <slot name="actions" />
         </div>
@@ -45,7 +46,11 @@ const props = defineProps<{
   color?: 'primary' | 'green' | 'brown' | 'dark'
   image?: string
   imageAlt?: string
+  imagePosition?: 'left' | 'right'
+  align?: 'center' | 'left'
 }>()
+
+const alignLeft = computed(() => props.align === 'left')
 
 const bgColor = computed(() => ({
   primary: 'bg-new-blue-illustration',

@@ -2,8 +2,8 @@ import type { Page } from '@playwright/test'
 import { test as testWithoutConsoleCheck, expect } from '@playwright/test'
 import { test } from '../base'
 
-// The /ouvertures page loads its data client-side from two Grist tables. The Grist
-// endpoint is not available in CI (NUXT_PUBLIC_OUVERTURES_GRIST_* are empty by
+// The /ouvertures/suivi page loads its data client-side from two Grist tables. The
+// Grist endpoint is not available in CI (NUXT_PUBLIC_OUVERTURES_GRIST_* are empty by
 // default), so every test mocks both endpoints through page.route.
 
 const GRIST_RECORDS = {
@@ -53,6 +53,22 @@ const GRIST_RECORDS = {
         url: null,
       },
     },
+    {
+      id: 4,
+      // Fully empty Grist row (restriction_acces still holds its default value):
+      // must not produce a table row.
+      fields: {
+        nom_donnee: '',
+        organisation: null,
+        ministere_de_tutelle: null,
+        type: null,
+        source_demande_front: '',
+        thematique: null,
+        statut_front: '',
+        restriction_acces: 'Aucune',
+        url: '',
+      },
+    },
   ],
 }
 
@@ -80,31 +96,31 @@ async function mockGristEndpoints(page: Page) {
 
 test('displays the enriched Grist records sorted by title', async ({ page }) => {
   await mockGristEndpoints(page)
-  await page.goto('/ouvertures')
+  await page.goto('/ouvertures/suivi')
 
   const rows = page.locator('.grist-table-viewer tbody tr')
+  // 3 rows and not 4: the fully empty Grist record must not be displayed.
   await expect(rows).toHaveCount(3)
 
   // Sorted by title, records without a title last.
-  await expect(rows.locator('td:first-child')).toHaveText(['Abeille', 'Zèbre', '-'])
+  await expect(rows.locator('td:first-child .font-medium')).toHaveText(['Abeille', 'Zèbre', '-'])
 
   const zebreRow = rows.nth(1)
   // Organisation ids resolved to names through the Organisations table.
   await expect(zebreRow.locator('td').nth(1)).toHaveText('INSEE')
-  await expect(zebreRow.locator('td').nth(2)).toHaveText('DGFiP')
-  // Grist list unwrapped: one badge per value, no "L" marker.
-  await expect(zebreRow.locator('td').nth(3).locator('.fr-badge')).toHaveText(['API', 'Code source'])
+  // Grist list unwrapped: one type badge per value above the title, no "L" marker.
+  await expect(zebreRow.locator('td:first-child .fr-badge')).toHaveText(['API', 'Code source'])
 
   const abeilleRow = rows.nth(0)
   // Non-list type value yields no badge.
-  await expect(abeilleRow.locator('td').nth(3)).toHaveText('-')
+  await expect(abeilleRow.locator('td:first-child .fr-badge')).toHaveCount(0)
   // Unknown organisation id dropped.
   await expect(rows.nth(2).locator('td').nth(1)).toHaveText('-')
 })
 
 test('filters the records and syncs the selection to the URL', async ({ page }) => {
   await mockGristEndpoints(page)
-  await page.goto('/ouvertures')
+  await page.goto('/ouvertures/suivi')
 
   const rows = page.locator('.grist-table-viewer tbody tr')
   await expect(rows).toHaveCount(3)
@@ -115,28 +131,34 @@ test('filters the records and syncs the selection to the URL', async ({ page }) 
 
   await statutSelect.selectOption('Disponible')
   await expect(rows).toHaveCount(1)
-  await expect(rows.first().locator('td:first-child')).toHaveText('Zèbre')
+  await expect(rows.first().locator('td:first-child .font-medium')).toHaveText('Zèbre')
   await expect(page).toHaveURL(/statut=Disponible/)
 
   await page.getByRole('button', { name: 'Ré-initialiser tous les filtres' }).click()
   await expect(rows).toHaveCount(3)
   await expect(page).not.toHaveURL(/statut=/)
+
+  // The ministère filter still works even though the column is not displayed.
+  await page.getByLabel('Ministère de tutelle', { exact: true }).selectOption('DGFiP')
+  await expect(rows).toHaveCount(1)
+  await expect(rows.first().locator('td:first-child .font-medium')).toHaveText('Zèbre')
+  await expect(page).toHaveURL(/ministere=DGFiP/)
 })
 
 test('pre-fills the filters from the URL query', async ({ page }) => {
   await mockGristEndpoints(page)
-  await page.goto('/ouvertures?statut=En cours')
+  await page.goto('/ouvertures/suivi?statut=En cours')
 
   const rows = page.locator('.grist-table-viewer tbody tr')
   await expect(rows).toHaveCount(1)
-  await expect(rows.first().locator('td:first-child')).toHaveText('Abeille')
+  await expect(rows.first().locator('td:first-child .font-medium')).toHaveText('Abeille')
   await expect(page.getByLabel('Statut', { exact: true })).toHaveValue('En cours')
 })
 
 test('shows the empty state when no record matches the filters', async ({ page }) => {
   await mockGristEndpoints(page)
   // Zèbre is INSEE/Disponible and Abeille is DGFiP/En cours: nothing matches both.
-  await page.goto('/ouvertures?organisation=INSEE&statut=En cours')
+  await page.goto('/ouvertures/suivi?organisation=INSEE&statut=En cours')
 
   await expect(page.getByText('Aucun résultat ne correspond aux filtres sélectionnés')).toBeVisible()
   await expect(page.locator('.grist-table-viewer table')).toHaveCount(0)
@@ -147,7 +169,7 @@ test('shows the empty state when no record matches the filters', async ({ page }
 // and on the page's console.error, both expected in this scenario.
 testWithoutConsoleCheck('shows an error instead of "no data" when the Grist fetch fails', async ({ page }) => {
   await page.route(GRIST_TABLE_ROUTE, route => route.fulfill({ status: 500, json: { error: 'boom' } }))
-  await page.goto('/ouvertures')
+  await page.goto('/ouvertures/suivi')
 
   const alert = page.locator('.fr-alert--error')
   await expect(alert).toBeVisible()

@@ -1,6 +1,9 @@
 <template>
   <div>
-    <OnboardingHero color="primary">
+    <OnboardingHero
+      color="primary"
+      align="left"
+    >
       <template #title>
         {{ $t('Suivre les publications de données et les engagements ministériels') }}
       </template>
@@ -10,24 +13,24 @@
     </OnboardingHero>
 
     <OnboardingSection>
-      <div class="max-w-4xl">
-        <OnboardingParagraph class="mb-4">
+      <div class="max-w-4xl space-y-4 text-lg font-normal leading-normal text-gray-plain [&_p]:text-lg [&_p]:leading-normal [&_a]:bg-none">
+        <p>
           {{ $t('Conformément à leurs obligations légales, les administrations publient et mettent à disposition une partie de ces données, mais d\'autres acteurs (organismes privés ou citoyens) peuvent également contribuer en produisant des données réutilisables.') }}
-        </OnboardingParagraph>
-        <OnboardingParagraph class="mb-4">
+        </p>
+        <p>
           {{ $t('L\'équipe de {site} accompagne activement les producteurs de données pour identifier, prioriser et suivre l\'évolution de la mise à disposition de ces données. Pour accompagner cette démarche, nous avons conçu un tableau qui vous permet de suivre de façon transparente le statut des données dont nous travaillons à l\'ouverture, à leur publication et à leur mise à jour.', { site: config.public.title }) }}
-        </OnboardingParagraph>
-        <OnboardingParagraph class="mb-4">
-          {{ $t('Ce document n\'est pas exhaustif, ne reflète pas l\'ensemble des actions menées par les acteurs publics. Les sujets répertoriés sont issus de la sélection de l\'équipe de {site}, basée notamment sur :', { site: config.public.title }) }}
-        </OnboardingParagraph>
-        <ul class="list-disc pl-5 space-y-2 mb-4 text-2xl font-light leading-normal text-black">
+        </p>
+        <p>
+          {{ $t('Ce document est un outil de travail. Il n\'est pas exhaustif et ne reflète pas l\'ensemble des actions menées par les acteurs publics. Les sujets répertoriés sont issus de la sélection de l\'équipe de {site}, basée notamment sur :', { site: config.public.title }) }}
+        </p>
+        <ul class="list-disc pl-5 space-y-2">
           <li>
             <TranslationT keypath="les demandes exprimées sur le {forum} ou notre {contact} ;">
               <template #forum>
                 <CdataLink
                   :href="config.public.forumUrl"
                   external
-                  class="text-black underline"
+                  class="underline"
                 >
                   forum.data.gouv.fr
                 </CdataLink>
@@ -36,7 +39,7 @@
                 <CdataLink
                   :href="config.public.supportUrl"
                   external
-                  class="text-black underline"
+                  class="underline"
                 >
                   {{ $t('formulaire de contact') }}
                 </CdataLink>
@@ -46,32 +49,55 @@
           <li>{{ $t('la recherche active de l\'équipe, en fonction des actualités et besoins identifiés ;') }}</li>
           <li>{{ $t('les feuilles de routes des ministères.') }}</li>
         </ul>
-        <OnboardingParagraph class="mb-4">
+        <p>
+          {{ $t('L\'objectif de ce suivi est :') }}
+        </p>
+        <ul class="list-disc pl-5 space-y-2">
+          <li>{{ $t('d\'améliorer la transparence et la visibilité des travaux en cours auprès du public ;') }}</li>
+          <li>{{ $t('de faciliter le suivi et la coordination des ouvertures de données avec les producteurs de données.') }}</li>
+        </ul>
+        <p>
+          {{ $t('Ce tableau a été créé pour la première fois en septembre 2024. Notez que certaines demandes qu\'il contient peuvent remonter à plusieurs années.') }}
+        </p>
+        <p>
           <TranslationT keypath="Vous pouvez formuler des demandes de publication pour des données encore non identifiées par notre équipe via le {forum}. Merci pour vos contributions !">
             <template #forum>
               <CdataLink
                 :href="config.public.forumUrl"
                 external
-                class="text-black underline"
+                class="underline"
               >
                 forum.data.gouv.fr
               </CdataLink>
             </template>
           </TranslationT>
-        </OnboardingParagraph>
-        <OnboardingParagraph>
+        </p>
+        <p>
+          <TranslationT keypath="Un autre tableau de suivi est également disponible pour les {hvd} (règlementation européenne).">
+            <template #hvd>
+              <CdataLink
+                :to="config.public.ouverturesHvdUrl"
+                external
+                class="underline"
+              >
+                {{ $t('données de forte valeur') }}
+              </CdataLink>
+            </template>
+          </TranslationT>
+        </p>
+        <p>
           <TranslationT keypath="Les données affichées ci-dessous sont également disponibles en open data sous forme de jeu de données : {dataset}.">
             <template #dataset>
               <CdataLink
                 :to="config.public.ouverturesDatasetUrl"
                 external
-                class="text-black underline"
+                class="underline"
               >
                 {{ $t('Tableau de suivi des ouvertures de données, codes sources et API publics') }}
               </CdataLink>
             </template>
           </TranslationT>
-        </OnboardingParagraph>
+        </p>
       </div>
     </OnboardingSection>
 
@@ -83,43 +109,44 @@
         :sort-fn="sortByTitle"
         :loading="loading"
         :error="error"
-        table-min-width="1400px"
+        table-min-width="1100px"
       >
         <template #row="{ record }">
           <td>
-            <CdataLink
-              v-if="record.fields.url"
-              :to="record.fields.url"
-              external
-              class="font-medium"
-            >
-              {{ record.fields.nom_donnee || '-' }}
-            </CdataLink>
-            <span
-              v-else
-              class="font-medium"
-            >
-              {{ record.fields.nom_donnee || '-' }}
-            </span>
+            <div class="flex flex-col gap-1 items-start">
+              <!-- -ml-1.5 offsets the badge's own 0.375rem horizontal padding so the
+                   badge text (not its border) lines up with the title text below. -->
+              <div
+                v-if="record.fields.type_values.length > 0"
+                class="flex flex-wrap gap-1 -ml-1.5"
+              >
+                <span
+                  v-for="value in record.fields.type_values"
+                  :key="value"
+                  class="fr-badge fr-badge--sm fr-badge--no-icon"
+                  :class="typeBadgeClass(value)"
+                >
+                  {{ value }}
+                </span>
+              </div>
+              <CdataLink
+                v-if="record.fields.url"
+                :to="record.fields.url"
+                external
+                class="font-medium bg-none underline"
+              >
+                {{ record.fields.nom_donnee || '-' }}
+              </CdataLink>
+              <span
+                v-else
+                class="font-medium"
+              >
+                {{ record.fields.nom_donnee || '-' }}
+              </span>
+            </div>
           </td>
           <td>
             {{ humanJoin(record.fields.organisation_names) || '-' }}
-          </td>
-          <td>
-            {{ humanJoin(record.fields.ministere_de_tutelle_names) || '-' }}
-          </td>
-          <td class="whitespace-nowrap">
-            <div class="flex flex-col gap-1 items-start">
-              <span
-                v-for="value in record.fields.type_values"
-                :key="value"
-                class="fr-badge fr-badge--sm fr-badge--no-icon"
-                :class="typeBadgeClass(value)"
-              >
-                {{ value }}
-              </span>
-              <span v-if="record.fields.type_values.length === 0">-</span>
-            </div>
           </td>
           <td class="whitespace-nowrap">
             <AdminBadge
@@ -187,10 +214,10 @@
         <OnboardingTitle class="mb-4">
           {{ $t('Explication des statuts d\'avancement') }}
         </OnboardingTitle>
-        <OnboardingParagraph class="mb-6">
+        <p class="mb-6 text-lg font-normal leading-normal text-gray-plain">
           {{ $t('Les données affichées dans ce tableau sont associées à un statut d\'avancement, qui permet d\'indiquer le niveau de progression du travail.') }}
-        </OnboardingParagraph>
-        <dl class="space-y-4 text-2xl font-light leading-normal text-black">
+        </p>
+        <dl class="space-y-4 text-lg font-normal leading-normal text-gray-plain">
           <div>
             <dt class="inline">
               <AdminBadge
@@ -254,7 +281,6 @@ import { RiExternalLinkLine } from '@remixicon/vue'
 import { TranslationT } from '@datagouv/components-next'
 import OnboardingHero from '~/components/Onboarding/OnboardingHero.vue'
 import OnboardingSection from '~/components/Onboarding/OnboardingSection.vue'
-import OnboardingParagraph from '~/components/Onboarding/OnboardingParagraph.vue'
 import OnboardingTitle from '~/components/Onboarding/OnboardingTitle.vue'
 import CdataLink from '~/components/CdataLink.vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
@@ -296,7 +322,7 @@ useSeoMeta({
 })
 defineOgImage('MainPage.takumi', {
   title: 'Suivi des publications',
-  uri: '/ouvertures',
+  uri: '/ouvertures/suivi',
 })
 
 interface OrganisationRecord {
@@ -356,7 +382,7 @@ onMounted(async () => {
         type_values: unwrapList(record.fields.type).map(String),
         thematique_values: unwrapList(record.fields.thematique).map(String),
       },
-    }))
+    })).filter(isMeaningfulRecord)
   }
   catch (e) {
     console.error('Failed to load ouvertures data', e)
@@ -370,8 +396,6 @@ onMounted(async () => {
 const columns = [
   t('Titre'),
   t('Organisation'),
-  t('Ministère de tutelle'),
-  t('Type'),
   t('Source de la demande'),
   t('Thématique'),
   t('Statut'),
@@ -435,6 +459,21 @@ function typeBadgeClass(type: string): string {
     case 'Code source': return 'fr-badge--purple-glycine'
     default: return ''
   }
+}
+
+// Grist keeps fully empty rows in the table; restriction_acces is ignored here
+// because it holds a default value ("Aucune") even on those empty rows.
+function isMeaningfulRecord(record: OuvertureRecord): boolean {
+  const fields = record.fields
+  return Boolean(
+    fields.nom_donnee
+    || fields.statut_front
+    || fields.source_demande_front
+    || fields.organisation_names.length
+    || fields.ministere_de_tutelle_names.length
+    || fields.type_values.length
+    || fields.thematique_values.length,
+  )
 }
 
 // Push records with empty title to the end (matches the legacy "A venir" behaviour).
