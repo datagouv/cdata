@@ -22,47 +22,55 @@
         </OnboardingParagraph>
         <ul class="list-disc pl-5 space-y-2 mb-4 text-2xl font-light leading-normal text-black">
           <li>
-            {{ $t('les demandes exprimées sur le') }}
-            <CdataLink
-              :href="config.public.forumUrl"
-              external
-              class="text-black underline"
-            >
-              forum.data.gouv.fr
-            </CdataLink>
-            {{ $t('ou notre') }}
-            <CdataLink
-              :href="config.public.supportUrl"
-              external
-              class="text-black underline"
-            >
-              {{ $t('formulaire de contact') }}
-            </CdataLink>
-            ;
+            <TranslationT keypath="les demandes exprimées sur le {forum} ou notre {contact} ;">
+              <template #forum>
+                <CdataLink
+                  :href="config.public.forumUrl"
+                  external
+                  class="text-black underline"
+                >
+                  forum.data.gouv.fr
+                </CdataLink>
+              </template>
+              <template #contact>
+                <CdataLink
+                  :href="config.public.supportUrl"
+                  external
+                  class="text-black underline"
+                >
+                  {{ $t('formulaire de contact') }}
+                </CdataLink>
+              </template>
+            </TranslationT>
           </li>
           <li>{{ $t('la recherche active de l\'équipe, en fonction des actualités et besoins identifiés ;') }}</li>
           <li>{{ $t('les feuilles de routes des ministères.') }}</li>
         </ul>
         <OnboardingParagraph class="mb-4">
-          {{ $t('Vous pouvez formuler des demandes de publication pour des données encore non identifiées par notre équipe via le') }}
-          <CdataLink
-            :href="config.public.forumUrl"
-            external
-            class="text-black underline"
-          >
-            forum.data.gouv.fr
-          </CdataLink>
-          {{ $t('. Merci pour vos contributions !') }}
+          <TranslationT keypath="Vous pouvez formuler des demandes de publication pour des données encore non identifiées par notre équipe via le {forum}. Merci pour vos contributions !">
+            <template #forum>
+              <CdataLink
+                :href="config.public.forumUrl"
+                external
+                class="text-black underline"
+              >
+                forum.data.gouv.fr
+              </CdataLink>
+            </template>
+          </TranslationT>
         </OnboardingParagraph>
         <OnboardingParagraph>
-          {{ $t('Les données affichées ci-dessous sont également disponibles en open data sous forme de jeu de données :') }}
-          <CdataLink
-            :to="config.public.ouverturesDatasetUrl"
-            external
-            class="text-black underline"
-          >
-            {{ $t('Tableau de suivi des ouvertures de données, codes sources et API publics') }}
-          </CdataLink>.
+          <TranslationT keypath="Les données affichées ci-dessous sont également disponibles en open data sous forme de jeu de données : {dataset}.">
+            <template #dataset>
+              <CdataLink
+                :to="config.public.ouverturesDatasetUrl"
+                external
+                class="text-black underline"
+              >
+                {{ $t('Tableau de suivi des ouvertures de données, codes sources et API publics') }}
+              </CdataLink>
+            </template>
+          </TranslationT>
         </OnboardingParagraph>
       </div>
     </OnboardingSection>
@@ -70,128 +78,103 @@
     <OnboardingSection background="gray">
       <GristTableViewer
         :data="enrichedRecords"
+        :columns="columns"
         :filters="filters"
         :sort-fn="sortByTitle"
         :loading="loading"
+        :error="error"
         table-min-width="1400px"
       >
-        <template #thead>
-          <th scope="col">
-            {{ $t('Titre') }}
-          </th>
-          <th scope="col">
-            {{ $t('Organisation') }}
-          </th>
-          <th scope="col">
-            {{ $t('Ministère de tutelle') }}
-          </th>
-          <th scope="col">
-            {{ $t('Type') }}
-          </th>
-          <th scope="col">
-            {{ $t('Source de la demande') }}
-          </th>
-          <th scope="col">
-            {{ $t('Thématique') }}
-          </th>
-          <th scope="col">
-            {{ $t('Statut') }}
-          </th>
-          <th scope="col">
-            {{ $t('Restriction d\'accès') }}
-          </th>
-        </template>
-
         <template #row="{ record }">
           <td>
             <CdataLink
-              v-if="fieldsOf(record).url"
-              :to="fieldsOf(record).url!"
+              v-if="record.fields.url"
+              :to="record.fields.url"
               external
               class="font-medium"
             >
-              {{ fieldsOf(record).nom_donnee || '-' }}
+              {{ record.fields.nom_donnee || '-' }}
             </CdataLink>
             <span
               v-else
               class="font-medium"
             >
-              {{ fieldsOf(record).nom_donnee || '-' }}
+              {{ record.fields.nom_donnee || '-' }}
             </span>
           </td>
           <td>
-            {{ humanJoin(fieldsOf(record).organisation_names) || '-' }}
+            {{ humanJoin(record.fields.organisation_names) || '-' }}
           </td>
           <td>
-            {{ humanJoin(fieldsOf(record).ministere_de_tutelle_names) || '-' }}
+            {{ humanJoin(record.fields.ministere_de_tutelle_names) || '-' }}
           </td>
           <td class="whitespace-nowrap">
             <div class="flex flex-col gap-1 items-start">
               <span
-                v-for="value in fieldsOf(record).type_values"
+                v-for="value in record.fields.type_values"
                 :key="value"
                 class="fr-badge fr-badge--sm fr-badge--no-icon"
                 :class="typeBadgeClass(value)"
               >
                 {{ value }}
               </span>
-              <span v-if="fieldsOf(record).type_values.length === 0">-</span>
+              <span v-if="record.fields.type_values.length === 0">-</span>
             </div>
           </td>
           <td class="whitespace-nowrap">
             <AdminBadge
-              v-if="fieldsOf(record).source_demande_front"
+              v-if="record.fields.source_demande_front"
               type="default"
               size="sm"
             >
-              {{ fieldsOf(record).source_demande_front }}
+              {{ record.fields.source_demande_front }}
             </AdminBadge>
             <span v-else>-</span>
           </td>
           <td>
             <div class="flex flex-col gap-1 items-start">
               <AdminBadge
-                v-for="value in fieldsOf(record).thematique_values"
+                v-for="value in record.fields.thematique_values"
                 :key="value"
                 type="default"
                 size="sm"
               >
                 {{ value }}
               </AdminBadge>
-              <span v-if="fieldsOf(record).thematique_values.length === 0">-</span>
+              <span v-if="record.fields.thematique_values.length === 0">-</span>
             </div>
           </td>
           <td class="whitespace-nowrap">
             <CdataLink
-              v-if="fieldsOf(record).statut_front && (fieldsOf(record).statut_front === 'Disponible' || fieldsOf(record).statut_front === 'Mise à jour requise') && fieldsOf(record).url"
-              :to="fieldsOf(record).url!"
+              v-if="(record.fields.statut_front === 'Disponible' || record.fields.statut_front === 'Mise à jour requise') && record.fields.url"
+              :to="record.fields.url"
               external
               class="no-underline"
             >
               <AdminBadge
-                :type="statutBadgeType(fieldsOf(record).statut_front!)"
+                :type="statutBadgeType(record.fields.statut_front)"
                 :icon-right="RiExternalLinkLine"
                 size="sm"
               >
-                {{ fieldsOf(record).statut_front }}
+                {{ record.fields.statut_front }}
               </AdminBadge>
             </CdataLink>
             <AdminBadge
-              v-else-if="fieldsOf(record).statut_front"
-              :type="statutBadgeType(fieldsOf(record).statut_front!)"
+              v-else-if="record.fields.statut_front"
+              :type="statutBadgeType(record.fields.statut_front)"
               size="sm"
             >
-              {{ fieldsOf(record).statut_front }}
+              {{ record.fields.statut_front }}
             </AdminBadge>
             <span v-else>-</span>
           </td>
           <td class="whitespace-nowrap">
             <AdminBadge
-              v-if="fieldsOf(record).restriction_acces"
-              :type="fieldsOf(record).restriction_acces === 'Aucune' ? 'success' : 'warning'"
+              v-if="record.fields.restriction_acces"
+              :type="record.fields.restriction_acces === 'Aucune' ? 'success' : 'warning'"
               size="sm"
             >
-              {{ fieldsOf(record).restriction_acces }}
+              {{ record.fields.restriction_acces }}
             </AdminBadge>
             <span v-else>-</span>
           </td>
@@ -268,6 +251,7 @@
 
 <script setup lang="ts">
 import { RiExternalLinkLine } from '@remixicon/vue'
+import { TranslationT } from '@datagouv/components-next'
 import OnboardingHero from '~/components/Onboarding/OnboardingHero.vue'
 import OnboardingSection from '~/components/Onboarding/OnboardingSection.vue'
 import OnboardingParagraph from '~/components/Onboarding/OnboardingParagraph.vue'
@@ -298,6 +282,10 @@ interface OuvertureFields extends Record<string, unknown> {
 interface OuvertureRecord extends GristRecord {
   fields: OuvertureFields
 }
+
+// Filters are synced to the URL query by GristTableViewer; keepScroll prevents
+// each query update from scrolling back to the top of the page.
+definePageMeta({ keepScroll: true })
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
@@ -330,16 +318,27 @@ const organisationsUrl = `${config.public.ouverturesGristBaseUrl}/tables/Organis
 
 const enrichedRecords = ref<Array<OuvertureRecord>>([])
 const loading = ref(true)
+const error = ref<string | null>(null)
 
 onMounted(async () => {
   try {
     const [recordsRes, orgsRes] = await Promise.all([
-      fetch(recordsUrl).then(r => r.json()),
-      fetch(organisationsUrl).then(r => r.json()),
+      fetch(recordsUrl),
+      fetch(organisationsUrl),
     ])
+    const failed = [recordsRes, orgsRes].find(response => !response.ok)
+    if (failed) {
+      throw new Error(`${t('Erreur HTTP')}: ${failed.status} ${failed.statusText}`)
+    }
+
+    const recordsData = await recordsRes.json() as { records?: Array<OuvertureRecord> }
+    const orgsData = await orgsRes.json() as { records?: Array<OrganisationRecord> }
+    if (!recordsData.records || !orgsData.records) {
+      throw new Error(t('Format de réponse invalide: propriété "records" manquante'))
+    }
 
     const orgsById = new Map<number, string>()
-    for (const org of orgsRes.records as Array<OrganisationRecord>) {
+    for (const org of orgsData.records) {
       orgsById.set(org.id, org.fields.nom_organisation)
     }
 
@@ -348,7 +347,7 @@ onMounted(async () => {
         .map(id => orgsById.get(Number(id)))
         .filter((name): name is string => Boolean(name))
 
-    enrichedRecords.value = (recordsRes.records as Array<OuvertureRecord>).map(record => ({
+    enrichedRecords.value = recordsData.records.map(record => ({
       ...record,
       fields: {
         ...record.fields,
@@ -361,50 +360,60 @@ onMounted(async () => {
   }
   catch (e) {
     console.error('Failed to load ouvertures data', e)
+    error.value = e instanceof Error ? e.message : t('Erreur inconnue')
   }
   finally {
     loading.value = false
   }
 })
 
-const fieldsOf = (r: GristRecord) => r.fields as OuvertureFields
+const columns = [
+  t('Titre'),
+  t('Organisation'),
+  t('Ministère de tutelle'),
+  t('Type'),
+  t('Source de la demande'),
+  t('Thématique'),
+  t('Statut'),
+  t('Restriction d\'accès'),
+]
 
-const filters: Array<GristFilter> = [
+const filters: Array<GristFilter<OuvertureRecord>> = [
   {
     slug: 'organisation',
     label: t('Organisation'),
     placeholder: t('Toutes les organisations'),
-    getValues: r => fieldsOf(r).organisation_names,
+    getValues: r => r.fields.organisation_names,
   },
   {
     slug: 'ministere',
     label: t('Ministère de tutelle'),
     placeholder: t('Tous les ministères'),
-    getValues: r => fieldsOf(r).ministere_de_tutelle_names,
+    getValues: r => r.fields.ministere_de_tutelle_names,
   },
   {
     slug: 'type',
     label: t('Type'),
     placeholder: t('Tous les types'),
-    getValues: r => fieldsOf(r).type_values,
+    getValues: r => r.fields.type_values,
   },
   {
     slug: 'source',
     label: t('Source de la demande'),
     placeholder: t('Toutes les sources'),
-    getValues: r => fieldsOf(r).source_demande_front ? [fieldsOf(r).source_demande_front!] : [],
+    getValues: r => r.fields.source_demande_front ? [r.fields.source_demande_front] : [],
   },
   {
     slug: 'thematique',
     label: t('Thématique'),
     placeholder: t('Toutes les thématiques'),
-    getValues: r => fieldsOf(r).thematique_values,
+    getValues: r => r.fields.thematique_values,
   },
   {
     slug: 'statut',
     label: t('Statut'),
     placeholder: t('Tous les statuts'),
-    getValues: r => fieldsOf(r).statut_front ? [fieldsOf(r).statut_front!] : [],
+    getValues: r => r.fields.statut_front ? [r.fields.statut_front] : [],
     valueOrder: ['Non disponible', 'En cours', 'Disponible', 'Mise à jour requise'],
   },
 ]
@@ -429,9 +438,9 @@ function typeBadgeClass(type: string): string {
 }
 
 // Push records with empty title to the end (matches the legacy "A venir" behaviour).
-function sortByTitle(a: GristRecord, b: GristRecord): number {
-  const aTitle = fieldsOf(a).nom_donnee
-  const bTitle = fieldsOf(b).nom_donnee
+function sortByTitle(a: OuvertureRecord, b: OuvertureRecord): number {
+  const aTitle = a.fields.nom_donnee
+  const bTitle = b.fields.nom_donnee
   if (!aTitle && !bTitle) return 0
   if (!aTitle) return 1
   if (!bTitle) return -1

@@ -17,10 +17,11 @@
       <p>{{ error }}</p>
     </div>
 
-    <template v-else-if="records.length > 0">
+    <template v-else-if="records.length > 0 && columns">
       <div
         v-if="filters && filters.length"
-        class="fr-mb-2w"
+        class="fr-mb-2w group/form"
+        data-input-color="blue"
       >
         <div class="fr-grid-row fr-grid-row--gutters">
           <div
@@ -28,30 +29,15 @@
             :key="filter.slug"
             class="fr-col-12 fr-col-md-6 fr-col-lg"
           >
-            <div class="fr-select-group">
-              <label
-                :for="`grist-filter-${filter.slug}`"
-                class="fr-label"
-              >
-                {{ filter.label }}
-              </label>
-              <select
-                :id="`grist-filter-${filter.slug}`"
-                v-model="selectedFilters[filter.slug]"
-                class="fr-select shadow-input-blue!"
-              >
-                <option :value="undefined">
-                  {{ filter.placeholder }}
-                </option>
-                <option
-                  v-for="value in filterValues[filter.slug]"
-                  :key="value"
-                  :value="value"
-                >
-                  {{ value }}
-                </option>
-              </select>
-            </div>
+            <SelectGroup
+              v-model="selectedFilters[filter.slug].value"
+              :label="filter.label"
+              :options="[
+                { label: filter.placeholder, value: null },
+                ...filterValues[filter.slug].map(value => ({ label: value, value })),
+              ]"
+              hide-null-option
+            />
           </div>
         </div>
         <div
@@ -86,18 +72,16 @@
         >
           <thead>
             <tr>
-              <slot name="thead">
-                <th
-                  v-for="column in columns"
-                  :key="column"
-                  scope="col"
-                  class="font-bold"
-                >
-                  <div class="column-header">
-                    <span>{{ column }}</span>
-                  </div>
-                </th>
-              </slot>
+              <th
+                v-for="column in columns"
+                :key="column"
+                scope="col"
+                class="font-bold"
+              >
+                <div class="column-header">
+                  <span>{{ column }}</span>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -133,7 +117,7 @@
                     >
                       {{ formatNumber(total) }} {{ unit }}
                     </span>
-                    <span v-else-if="column === columns?.[0]">
+                    <span v-else-if="column === columns[0]">
                       <span class="font-bold">{{ $t('Total') }}</span>
                     </span>
                     <span v-else>-</span>
@@ -157,21 +141,23 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends GristRecord = GristRecord">
 import { ref, onMounted, watch, computed } from 'vue'
-import { AnimatedLoader, useFormatTabular } from '@datagouv/components-next'
+import type { Ref } from 'vue'
+import { useRouteQuery } from '@vueuse/router'
+import { AnimatedLoader, SelectGroup, useFormatTabular } from '@datagouv/components-next'
 
 export interface GristRecord {
   id: number
   fields: Record<string, unknown>
 }
 
-export interface GristFilter {
+export interface GristFilter<R extends GristRecord = GristRecord> {
   slug: string
   label: string
   placeholder: string
   // Extract one or several values from a record for filtering and option building.
-  getValues: (record: GristRecord) => Array<string>
+  getValues: (record: R) => Array<string>
   // Optional custom ordering for the dropdown options (returned values appear first, in order).
   valueOrder?: Array<string>
 }
@@ -183,16 +169,18 @@ interface GristResponse {
 interface Props {
   // Source: either pass a Grist API URL to fetch from, or pass already-loaded records.
   url?: string | undefined
-  data?: Array<GristRecord> | undefined
+  data?: Array<T> | undefined
   columns?: string[] | undefined
   totalColumn?: string | undefined
   unit?: string | number | undefined
   unitColumn?: string | undefined
-  filters?: Array<GristFilter> | undefined
+  filters?: Array<GristFilter<T>> | undefined
   // Optional sort applied after filtering.
-  sortFn?: ((a: GristRecord, b: GristRecord) => number) | undefined
+  sortFn?: ((a: T, b: T) => number) | undefined
   // External loading state — used when records are provided via `data`.
   loading?: boolean
+  // External error message — used when records are provided via `data`.
+  error?: string | null
   // Minimum width of the table — when set, the table scrolls horizontally
   // below this width. Useful for tables with many columns.
   tableMinWidth?: string
@@ -200,17 +188,23 @@ interface Props {
 
 const props = defineProps<Props>()
 
+defineSlots<{
+  row?: (props: { record: T }) => unknown
+}>()
+
 const { t } = useTranslation()
 
 const internalRecords = ref<Array<GristRecord>>([])
 // Start in the loading state when we fetch ourselves (url mode); in data mode the
 // parent owns the loading state via the `loading` prop, so we stay out of the way.
 const internalLoading = ref(!props.data)
-const error = ref<string | null>(null)
+const internalError = ref<string | null>(null)
 
 const isLoading = computed(() => props.loading || internalLoading.value)
+const error = computed(() => props.error ?? internalError.value)
 
-const records = computed<Array<GristRecord>>(() => props.data ?? internalRecords.value)
+// In url mode no `data` is passed, so T stays GristRecord and the cast is a no-op.
+const records = computed<Array<T>>(() => props.data ?? (internalRecords.value as Array<T>))
 
 const total = computed(() => {
   if (!props.totalColumn || !records.value.length) {
@@ -228,38 +222,19 @@ const total = computed(() => {
 
 const { formatNumber } = useFormatTabular()
 
-const route = useRoute()
-
-const selectedFilters = ref<Record<string, string | undefined>>(
-  Object.fromEntries(
-    (props.filters ?? []).map(f => [f.slug, typeof route.query[f.slug] === 'string' ? route.query[f.slug] as string : undefined]),
-  ),
+// One URL query ref per filter slug. The page hosting the filters must set
+// definePageMeta({ keepScroll: true }) so the query updates don't scroll back to top.
+const selectedFilters: Record<string, Ref<string | null>> = Object.fromEntries(
+  (props.filters ?? []).map(f => [f.slug, useRouteQuery<string | null>(f.slug, null)]),
 )
 
-// Sync filters to URL via history.replaceState — using router.replace would trigger
-// Nuxt's scroll behaviour and scroll back to top on every change.
-watch(selectedFilters, (next) => {
-  if (!import.meta.client) return
-  const url = new URL(window.location.href)
-  for (const filter of props.filters ?? []) {
-    const value = next[filter.slug]
-    if (value !== undefined && value !== '') {
-      url.searchParams.set(filter.slug, value)
-    }
-    else {
-      url.searchParams.delete(filter.slug)
-    }
-  }
-  window.history.replaceState(window.history.state, '', url.toString())
-}, { deep: true })
-
 const hasActiveFilter = computed(() =>
-  (props.filters ?? []).some(f => selectedFilters.value[f.slug] !== undefined && selectedFilters.value[f.slug] !== ''),
+  (props.filters ?? []).some(f => selectedFilters[f.slug].value),
 )
 
 function resetFilters() {
   for (const filter of props.filters ?? []) {
-    selectedFilters.value[filter.slug] = undefined
+    selectedFilters[filter.slug].value = null
   }
 }
 
@@ -269,7 +244,7 @@ const filterValues = computed<Record<string, Array<string>>>(() => {
     const set = new Set<string>()
     for (const record of records.value) {
       for (const value of filter.getValues(record)) {
-        if (value !== undefined && value !== null && value !== '') {
+        if (value) {
           set.add(value)
         }
       }
@@ -290,10 +265,10 @@ const filterValues = computed<Record<string, Array<string>>>(() => {
   return result
 })
 
-const filteredRecords = computed<Array<GristRecord>>(() => {
+const filteredRecords = computed<Array<T>>(() => {
   let result = records.value
   for (const filter of props.filters ?? []) {
-    const selected = selectedFilters.value[filter.slug]
+    const selected = selectedFilters[filter.slug].value
     if (!selected) continue
     result = result.filter(record => filter.getValues(record).includes(selected))
   }
@@ -313,13 +288,13 @@ function getFieldValue(record: GristRecord, column: string): string {
 
 async function fetchData() {
   if (!props.url) {
-    error.value = t('URL non définie')
+    internalError.value = t('URL non définie')
     internalLoading.value = false
     return
   }
 
   internalLoading.value = true
-  error.value = null
+  internalError.value = null
 
   try {
     const response = await fetch(props.url)
@@ -338,7 +313,7 @@ async function fetchData() {
   }
   catch (err) {
     console.error('Erreur lors de la récupération des données Grist:', err)
-    error.value = err instanceof Error ? err.message : t('Erreur inconnue')
+    internalError.value = err instanceof Error ? err.message : t('Erreur inconnue')
   }
   finally {
     internalLoading.value = false
