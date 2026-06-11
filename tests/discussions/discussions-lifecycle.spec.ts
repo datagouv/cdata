@@ -141,39 +141,31 @@ for (const config of SUBJECT_CONFIGS) {
       await expect(page.getByText(`Sujet beta ${uniqueId}`, { exact: true })).not.toBeVisible()
     })
 
-    test.describe('admin discussions page', () => {
-      // Pre-existing app bug: loading /admin/{type}/{id}/discussions directly logs
-      // "Hydration completed but contains mismatches" (the SSR markup of the
-      // open/closed SelectGroup differs from the client render). Scoped ignore so
-      // the test still guards against any other console error.
-      test.use({ ignoredConsoleMessages: ['Hydration completed but contains mismatches.'] })
-
-      test('can filter open and closed discussions', async ({ page, request }) => {
-        const uniqueId = Date.now()
-        const subject = await config.create(request, uniqueId)
-        await createDiscussion(request, config.type, subject.id, `Discussion ouverte ${uniqueId}`)
-        const closed = await createDiscussion(request, config.type, subject.id, `Discussion fermée ${uniqueId}`)
-        await request.post(`${API_BASE}/api/1/discussions/${closed.id}/`, {
-          data: {
-            comment: 'Clôture via API pour le test',
-            close: true,
-          },
-        })
-
-        await page.goto(`/${config.adminBase}/${subject.id}/discussions`)
-        await page.waitForLoadState('networkidle')
-
-        await expect(page.getByText(`Discussion ouverte ${uniqueId}`, { exact: true })).toBeVisible()
-        await expect(page.getByText(`Discussion fermée ${uniqueId}`, { exact: true })).toBeVisible()
-
-        await page.getByLabel('Type', { exact: true }).selectOption({ label: 'Discussions clôturées' })
-        await expect(page.getByText(`Discussion fermée ${uniqueId}`, { exact: true })).toBeVisible()
-        await expect(page.getByText(`Discussion ouverte ${uniqueId}`, { exact: true })).not.toBeVisible()
-
-        await page.getByLabel('Type', { exact: true }).selectOption({ label: 'Discussions ouvertes' })
-        await expect(page.getByText(`Discussion ouverte ${uniqueId}`, { exact: true })).toBeVisible()
-        await expect(page.getByText(`Discussion fermée ${uniqueId}`, { exact: true })).not.toBeVisible()
+    test('admin page can filter open and closed discussions', async ({ page, request }) => {
+      const uniqueId = Date.now()
+      const subject = await config.create(request, uniqueId)
+      await createDiscussion(request, config.type, subject.id, `Discussion ouverte ${uniqueId}`)
+      const closed = await createDiscussion(request, config.type, subject.id, `Discussion fermée ${uniqueId}`)
+      await request.post(`${API_BASE}/api/1/discussions/${closed.id}/`, {
+        data: {
+          comment: 'Clôture via API pour le test',
+          close: true,
+        },
       })
+
+      await page.goto(`/${config.adminBase}/${subject.id}/discussions`)
+      await page.waitForLoadState('networkidle')
+
+      await expect(page.getByText(`Discussion ouverte ${uniqueId}`, { exact: true })).toBeVisible()
+      await expect(page.getByText(`Discussion fermée ${uniqueId}`, { exact: true })).toBeVisible()
+
+      await page.getByLabel('Type', { exact: true }).selectOption({ label: 'Discussions clôturées' })
+      await expect(page.getByText(`Discussion fermée ${uniqueId}`, { exact: true })).toBeVisible()
+      await expect(page.getByText(`Discussion ouverte ${uniqueId}`, { exact: true })).not.toBeVisible()
+
+      await page.getByLabel('Type', { exact: true }).selectOption({ label: 'Discussions ouvertes' })
+      await expect(page.getByText(`Discussion ouverte ${uniqueId}`, { exact: true })).toBeVisible()
+      await expect(page.getByText(`Discussion fermée ${uniqueId}`, { exact: true })).not.toBeVisible()
     })
   })
 }

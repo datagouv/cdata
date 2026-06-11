@@ -39,7 +39,6 @@ const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
 
 const me = useMaybeMe()
-const route = useRoute()
 
 const { data: follower, status: followStatus } = await useAPI<PaginatedArray<{
   id: string
@@ -64,11 +63,8 @@ const iconAttrs = computed(() => ({
   class: animating.value ? 'animate-ping' : '',
 }))
 
+// The button is only rendered for logged-in users (v-if="me" above)
 async function toggleFollow() {
-  const me = useMaybeMe()
-  if (!me.value) {
-    navigateTo({ path: '/login', query: { next: route.fullPath } }, { external: true })
-  }
   loading.value = true
   try {
     await $api(props.url, {
