@@ -271,7 +271,7 @@
               />
             </div>
             <div
-              v-if="tab.key === 'swagger'"
+              v-if="tab.key === 'api'"
             >
               <div class="fr-mb-4w">
                 <p>{{ t("Cette API est générée automatiquement par {platform} à partir du fichier.", { platform: config.name }) }}</p>
