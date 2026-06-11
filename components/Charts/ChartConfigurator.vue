@@ -48,7 +48,7 @@
               <ClientOnly>
                 <ChartViewerWrapper
                   :chart="chartForViewer"
-                  @columns="columns = $event"
+                  @columns="columns = { ...columns, ...$event }"
                 />
               </ClientOnly>
             </div>
@@ -651,11 +651,23 @@ function getSerieColumnYValue(serie: DataSeriesForm): ColumnDefinition | null {
   return yAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
 }
 
+function ensureSeriesHasColumnX(resourceId: string) {
+  if (!form.value.x_axis.column_x) {
+    const resourceColumns = columns.value[resourceId]
+    if (resourceColumns?.length) {
+      const nonIdColumns = resourceColumns.filter(c => c.name !== '__id')
+      if (nonIdColumns.length > 0) {
+        form.value.x_axis.column_x = nonIdColumns[0].name
+      }
+    }
+  }
+}
+
 function ensureSeriesHasColumnY(resourceId: string) {
   if (form.value.series[0]?.column_y === '') {
     const resourceColumns = columns.value[resourceId]
     if (resourceColumns?.length) {
-      const nonIdColumns = resourceColumns.filter(c => c.name !== '__id')
+      const nonIdColumns = resourceColumns.filter(c => c.name !== '__id' && c.name !== form.value.x_axis.column_x)
       if (nonIdColumns.length > 0) {
         form.value.series[0].column_y = nonIdColumns[0].name
       }
@@ -841,22 +853,12 @@ watch(selectedResource, async (r) => {
       form.value.series[0].resource_id = r
     }
     await loadMissingResourcesForChart(new Set([r]))
-    if (columns.value[r]?.length > 0) {
-      ensureSeriesHasColumnY(r)
-      return
+    if (!columns.value[r] || columns.value[r].length === 0) {
+      const profile = await getProfile(r)
+      columns.value[r] = buildColumnsFromProfile(profile)
     }
-    const profile = await getProfile(r)
-    columns.value[r] = buildColumnsFromProfile(profile)
+    ensureSeriesHasColumnX(r)
     ensureSeriesHasColumnY(r)
-  }
-}, { immediate: true })
-
-watch(columns, (columnsPerResource) => {
-  const firstColumns = Object.values(columnsPerResource)
-  if (firstColumns.length === 0) return
-  const firstColumn = firstColumns[0].filter(c => c.name !== '__id')[0]
-  if (!form.value.x_axis.column_x && firstColumn) {
-    form.value.x_axis.column_x = firstColumn.name
   }
 })
 </script>
