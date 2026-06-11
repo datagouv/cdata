@@ -31,7 +31,7 @@ const chart = ref<ChartForm>({
   description: '',
   private: false,
   x_axis: {
-    column_x: 'libellé_EPCI',
+    column_x: '',
     type: 'discrete',
     sort_combined: '',
   },
@@ -44,14 +44,7 @@ const chart = ref<ChartForm>({
   },
   filter: null,
   chart_type: 'histogram',
-  series: [{
-    type: 'histogram',
-    column_y: 'Nombre de logements',
-    aggregate_y: null,
-    resource_id: '14dba482-41e3-4c54-b82a-d8c11d1d80eb',
-    filters: null,
-    column_x_name_override: null,
-  }],
+  series: [],
   extras: {},
 })
 </script>

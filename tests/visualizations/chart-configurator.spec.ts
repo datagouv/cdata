@@ -394,3 +394,35 @@ test('complete chart configuration flow', async ({ page, baseURL }) => {
 
   await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody!.id}/`)
 })
+
+test('y-axis column options update when selecting different resource', async ({ page }) => {
+  await setupChart(page)
+
+  // Get initial y-axis column options
+  await page.getByTestId('searchable-select-colonne-y').click()
+  const initialOptions = await page.getByRole('option').allTextContents()
+  await page.keyboard.press('Escape')
+
+  // Select a different resource
+  const resourceSelect = page.getByLabel('Choix de la ressource')
+  const optionCount = await resourceSelect.locator('option').count()
+
+  if (optionCount > 2) {
+    await resourceSelect.selectOption({ index: 2 })
+
+    // Wait for columns to load for new resource
+    await page.waitForTimeout(500)
+
+    // Open y-axis selector again
+    await page.getByTestId('searchable-select-colonne-y').click()
+
+    // Get new options
+    const newOptions = await page.getByRole('option').allTextContents()
+    await page.keyboard.press('Escape')
+
+    // Options should have changed (new resource has different columns)
+    // This verifies that the resource_id was updated and ChartViewerWrapper
+    // is now fetching columns for the new resource
+    expect(newOptions).not.toEqual(initialOptions)
+  }
+})

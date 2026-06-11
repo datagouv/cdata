@@ -651,6 +651,18 @@ function getSerieColumnYValue(serie: DataSeriesForm): ColumnDefinition | null {
   return yAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
 }
 
+function ensureSeriesHasColumnY(resourceId: string) {
+  if (form.value.series[0]?.column_y === '') {
+    const resourceColumns = columns.value[resourceId]
+    if (resourceColumns?.length) {
+      const nonIdColumns = resourceColumns.filter(c => c.name !== '__id')
+      if (nonIdColumns.length > 0) {
+        form.value.series[0].column_y = nonIdColumns[0].name
+      }
+    }
+  }
+}
+
 async function loadMissingResourcesForChart(resourceIds: Set<string>) {
   for (const id of resourceIds) {
     if (savedResources[id]) continue
@@ -815,12 +827,27 @@ watch(producer, () => {
 
 watch(selectedResource, async (r) => {
   if (r) {
+    if (form.value.series.length === 0) {
+      form.value.series.push({
+        type: 'histogram',
+        column_y: '',
+        aggregate_y: null,
+        resource_id: r,
+        filters: null,
+        column_x_name_override: null,
+      })
+    }
+    else {
+      form.value.series[0].resource_id = r
+    }
     await loadMissingResourcesForChart(new Set([r]))
     if (columns.value[r]?.length > 0) {
+      ensureSeriesHasColumnY(r)
       return
     }
     const profile = await getProfile(r)
     columns.value[r] = buildColumnsFromProfile(profile)
+    ensureSeriesHasColumnY(r)
   }
 }, { immediate: true })
 
