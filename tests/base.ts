@@ -3,7 +3,7 @@ import { test as base } from '@playwright/test'
 const IGNORED_MESSAGES = [
   // Cookie secure flag doesn't work in dev (HTTP)
   'non-HTTPS cookie',
-  // TODO: find a way to only ignore this in redirect tests (e.g. a per-test option)
+  // TODO: find a way to only ignore this in redirect tests (use `ignoredConsoleMessages`)
   // instead of globally silencing 404 errors. Example test that needs this:
   //   test('/datasets/slug/ → /datasets/slug', async ({ page }) => {
   //     await page.goto('/datasets/slug/')
@@ -20,14 +20,18 @@ const IGNORED_MESSAGES = [
 ]
 
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-export const test = base.extend<{ assertNoConsoleErrors: void }>({
-  assertNoConsoleErrors: [async ({ page }, use) => {
+export const test = base.extend<{ ignoredConsoleMessages: Array<string>, assertNoConsoleErrors: void }>({
+  // Extra messages to ignore for a specific file/describe, via
+  // test.use({ ignoredConsoleMessages: [...] }). Always document why.
+  ignoredConsoleMessages: [[], { option: true }],
+  assertNoConsoleErrors: [async ({ page, ignoredConsoleMessages }, use) => {
+    const ignoredMessages = [...IGNORED_MESSAGES, ...ignoredConsoleMessages]
     const warnings: string[] = []
     const errors: string[] = []
 
     page.on('console', (msg) => {
       const text = msg.text()
-      if (IGNORED_MESSAGES.some(ignored => text.includes(ignored))) return
+      if (ignoredMessages.some(ignored => text.includes(ignored))) return
 
       const type = msg.type()
       if (type === 'warning') {
@@ -39,7 +43,7 @@ export const test = base.extend<{ assertNoConsoleErrors: void }>({
     })
 
     page.on('pageerror', (error) => {
-      if (IGNORED_MESSAGES.some(ignored => error.message.includes(ignored))) return
+      if (ignoredMessages.some(ignored => error.message.includes(ignored))) return
       errors.push(error.message)
     })
 

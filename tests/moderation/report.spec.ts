@@ -1,20 +1,30 @@
+import type { APIRequestContext } from '@playwright/test'
 import { test, expect } from '../base'
+import { API_BASE, createDataset, deleteDatasets } from '../helpers'
 
-const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
+const createdDatasets: Array<string> = []
+
+test.afterEach(async ({ request }) => {
+  await deleteDatasets(request, createdDatasets)
+})
+
+async function reportDataset(request: APIRequestContext, datasetId: string, message: string) {
+  const reasonsResponse = await request.get(`${API_BASE}/api/1/reports/reasons/`)
+  const reasons = await reasonsResponse.json()
+  await request.post(`${API_BASE}/api/1/reports/`, {
+    data: {
+      subject: { class: 'Dataset', id: datasetId },
+      reason: reasons[0].value,
+      message,
+    },
+  })
+}
 
 test.describe('Report and moderation', () => {
-  test('can report a dataset and dismiss the report in moderation', async ({ page }) => {
-    const uniqueId = Date.now()
-    const title = `Test report dismiss ${uniqueId}`
-
-    const response = await page.request.post(`${API_BASE}/api/1/datasets/`, {
-      data: {
-        title,
-        description: 'Dataset pour tester le signalement',
-        frequency: 'unknown',
-      },
-    })
-    const dataset = await response.json()
+  test('can report a dataset and dismiss the report in moderation', async ({ page, request }) => {
+    const title = `Test report dismiss ${Date.now()}`
+    const dataset = await createDataset(request, title, 'Dataset pour tester le signalement')
+    createdDatasets.push(dataset.id)
 
     // Report from the public page
     await page.goto(`/datasets/${dataset.id}/`)
@@ -29,7 +39,8 @@ test.describe('Report and moderation', () => {
     await dialog.getByRole('button', { name: 'Signalement' }).click()
 
     await expect(dialog.getByRole('heading', { name: 'Merci d\'avoir signalé ce contenu' })).toBeVisible()
-    await dialog.getByRole('button', { name: 'Fermer' }).click()
+    // Both the X button and the footer button are named "Fermer": use the footer one
+    await dialog.getByRole('button', { name: 'Fermer', exact: true }).last().click()
     await expect(page.getByRole('dialog')).not.toBeVisible()
 
     // Find the report in the moderation page and dismiss it
@@ -44,33 +55,15 @@ test.describe('Report and moderation', () => {
 
     // The default filter only shows pending reports: the dismissed one disappears
     await expect(row).not.toBeVisible()
-
-    await page.request.delete(`${API_BASE}/api/1/datasets/${dataset.id}/`)
   })
 
-  test('can hide a reported object (switch to private)', async ({ page }) => {
-    const uniqueId = Date.now()
-    const title = `Test report hide ${uniqueId}`
-
-    const datasetResponse = await page.request.post(`${API_BASE}/api/1/datasets/`, {
-      data: {
-        title,
-        description: 'Dataset pour tester le masquage via modération',
-        frequency: 'unknown',
-      },
-    })
-    const dataset = await datasetResponse.json()
+  test('can hide a reported object (switch to private)', async ({ page, request }) => {
+    const title = `Test report hide ${Date.now()}`
+    const dataset = await createDataset(request, title, 'Dataset pour tester le masquage via modération')
+    createdDatasets.push(dataset.id)
 
     // Report via API (the report UI itself is covered by the dismiss test)
-    const reasonsResponse = await page.request.get(`${API_BASE}/api/1/reports/reasons/`)
-    const reasons = await reasonsResponse.json()
-    await page.request.post(`${API_BASE}/api/1/reports/`, {
-      data: {
-        subject: { class: 'Dataset', id: dataset.id },
-        reason: reasons[0].value,
-        message: 'Signalement de test E2E (masquage)',
-      },
-    })
+    await reportDataset(request, dataset.id, 'Signalement de test E2E (masquage)')
 
     await page.goto('/admin/site/moderation?type=Dataset')
     await page.waitForLoadState('networkidle')
@@ -84,34 +77,16 @@ test.describe('Report and moderation', () => {
 
     // Once hidden the object is private and the button is disabled
     await expect(hideButton).toBeDisabled()
-    const updated = await (await page.request.get(`${API_BASE}/api/2/datasets/${dataset.id}/`)).json()
+    const updated = await (await request.get(`${API_BASE}/api/2/datasets/${dataset.id}/`)).json()
     expect(updated.private).toBe(true)
-
-    await page.request.delete(`${API_BASE}/api/1/datasets/${dataset.id}/`)
   })
 
-  test('can delete a reported object from moderation', async ({ page }) => {
-    const uniqueId = Date.now()
-    const title = `Test report delete ${uniqueId}`
+  test('can delete a reported object from moderation', async ({ page, request }) => {
+    const title = `Test report delete ${Date.now()}`
+    const dataset = await createDataset(request, title, 'Dataset pour tester la suppression via modération')
+    createdDatasets.push(dataset.id)
 
-    const datasetResponse = await page.request.post(`${API_BASE}/api/1/datasets/`, {
-      data: {
-        title,
-        description: 'Dataset pour tester la suppression via modération',
-        frequency: 'unknown',
-      },
-    })
-    const dataset = await datasetResponse.json()
-
-    const reasonsResponse = await page.request.get(`${API_BASE}/api/1/reports/reasons/`)
-    const reasons = await reasonsResponse.json()
-    await page.request.post(`${API_BASE}/api/1/reports/`, {
-      data: {
-        subject: { class: 'Dataset', id: dataset.id },
-        reason: reasons[0].value,
-        message: 'Signalement de test E2E (suppression)',
-      },
-    })
+    await reportDataset(request, dataset.id, 'Signalement de test E2E (suppression)')
 
     await page.goto('/admin/site/moderation?type=Dataset')
     await page.waitForLoadState('networkidle')
@@ -129,7 +104,7 @@ test.describe('Report and moderation', () => {
     await dialog.getByRole('button', { name: 'Supprimer', exact: true }).click()
     await expect(page.getByRole('dialog')).not.toBeVisible()
 
-    const updated = await (await page.request.get(`${API_BASE}/api/2/datasets/${dataset.id}/`)).json()
+    const updated = await (await request.get(`${API_BASE}/api/2/datasets/${dataset.id}/`)).json()
     expect(updated.deleted).not.toBeNull()
   })
 })

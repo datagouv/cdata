@@ -1,69 +1,61 @@
+import type { APIRequestContext } from '@playwright/test'
 import { test, expect } from '../base'
-
-const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
+import { API_BASE, createDatasetWithRemoteResources, deleteDatasets } from '../helpers'
 
 // Pin the old resources layout: these tests target ResourceAccordion,
 // not the new explorer behind the ?new_explorer=1 feature flag.
 const LAYOUT_QUERY = 'new_explorer=0'
 
-type CreatedResource = { id: string, title: string, latest: string }
+const createdDatasets: Array<string> = []
 
-async function createDatasetWithResources(page: import('@playwright/test').Page, uniqueId: number, mainCount: number) {
-  const response = await page.request.post(`${API_BASE}/api/1/datasets/`, {
-    data: {
-      title: `Test public resources ${uniqueId}`,
-      description: 'Dataset pour tester l\'affichage public des ressources',
-      frequency: 'unknown',
-    },
-  })
-  const dataset = await response.json()
+test.afterEach(async ({ request }) => {
+  await deleteDatasets(request, createdDatasets)
+})
 
-  const resources: Array<CreatedResource> = []
-  for (let i = 1; i <= mainCount; i++) {
-    const title = `Fichier numero ${String(i).padStart(2, '0')}`
-    const resourceResponse = await page.request.post(`${API_BASE}/api/1/datasets/${dataset.id}/resources/`, {
-      data: {
-        title,
-        type: 'main',
-        filetype: 'remote',
-        url: `https://example.com/${uniqueId}/fichier-${i}.csv`,
-        format: 'csv',
-      },
-    })
-    const resource = await resourceResponse.json()
-    resources.push({ id: resource.id, title, latest: resource.latest })
-  }
+function resourceTitles(count: number): Array<string> {
+  return Array.from({ length: count }, (_, index) => `Fichier numero ${String(index + 1).padStart(2, '0')}`)
+}
 
-  return { dataset, resources }
+// The page displays resources in the API order (newest first), not in creation
+// order: read the expected page content from the same endpoint the page uses.
+async function getDisplayedTitles(request: APIRequestContext, datasetId: string, page: number): Promise<Array<string>> {
+  const response = await request.get(`${API_BASE}/api/2/datasets/${datasetId}/resources/?type=main&page=${page}&page_size=10`)
+  const { data } = await response.json()
+  return data.map((resource: { title: string }) => resource.title)
 }
 
 test.describe('Public resources display', () => {
-  test('paginates resources by type', async ({ page }) => {
-    const uniqueId = Date.now()
-    const { dataset } = await createDatasetWithResources(page, uniqueId, 12)
+  test('paginates resources by type', async ({ page, request }) => {
+    const { dataset } = await createDatasetWithRemoteResources(request, `Test public resources ${Date.now()}`, resourceTitles(12))
+    createdDatasets.push(dataset.id)
+
+    const firstPage = await getDisplayedTitles(request, dataset.id, 1)
+    const secondPage = await getDisplayedTitles(request, dataset.id, 2)
+    expect(firstPage).toHaveLength(10)
+    expect(secondPage).toHaveLength(2)
 
     await page.goto(`/datasets/${dataset.id}/?${LAYOUT_QUERY}`)
     await page.waitForLoadState('networkidle')
 
     // First page: 10 resources out of 12
-    await expect(page.getByText('Fichier numero 01')).toBeVisible()
-    await expect(page.getByText('Fichier numero 10')).toBeVisible()
-    await expect(page.getByText('Fichier numero 11')).not.toBeVisible()
+    await expect(page.getByText(firstPage[0])).toBeVisible()
+    await expect(page.getByText(firstPage[9])).toBeVisible()
+    await expect(page.getByText(secondPage[0])).not.toBeVisible()
 
     const pagination = page.getByRole('navigation', { name: 'Pagination' })
     await expect(pagination).toBeVisible()
     await pagination.getByText('2', { exact: true }).click()
 
-    await expect(page.getByText('Fichier numero 11')).toBeVisible()
-    await expect(page.getByText('Fichier numero 12')).toBeVisible()
-    await expect(page.getByText('Fichier numero 01')).not.toBeVisible()
-
-    await page.request.delete(`${API_BASE}/api/1/datasets/${dataset.id}/`)
+    await expect(page.getByText(secondPage[0])).toBeVisible()
+    await expect(page.getByText(secondPage[1])).toBeVisible()
+    await expect(page.getByText(firstPage[0])).not.toBeVisible()
   })
 
-  test('can search within resources', async ({ page }) => {
-    const uniqueId = Date.now()
-    const { dataset } = await createDatasetWithResources(page, uniqueId, 12)
+  test('can search within resources', async ({ page, request }) => {
+    const { dataset } = await createDatasetWithRemoteResources(request, `Test public resources ${Date.now()}`, resourceTitles(12))
+    createdDatasets.push(dataset.id)
+
+    const firstPage = await getDisplayedTitles(request, dataset.id, 1)
 
     await page.goto(`/datasets/${dataset.id}/?${LAYOUT_QUERY}`)
     await page.waitForLoadState('networkidle')
@@ -78,33 +70,40 @@ test.describe('Public resources display', () => {
     await expect(page.getByText('Pas de résultats pour « zzz-introuvable-zzz »')).toBeVisible()
 
     await page.getByRole('button', { name: 'Réinitialiser les filtres' }).click()
-    await expect(page.getByText('Fichier numero 01')).toBeVisible()
-
-    await page.request.delete(`${API_BASE}/api/1/datasets/${dataset.id}/`)
+    await expect(page.getByText(firstPage[0])).toBeVisible()
   })
 
-  test('can copy the resource URL', async ({ page, context, browserName }) => {
+  test('can copy the resource URL', async ({ page, context, request, browserName }) => {
     if (browserName === 'chromium') {
       await context.grantPermissions(['clipboard-read', 'clipboard-write'])
     }
 
-    const uniqueId = Date.now()
-    const { dataset } = await createDatasetWithResources(page, uniqueId, 1)
+    const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test public resources ${Date.now()}`, resourceTitles(1))
+    createdDatasets.push(dataset.id)
 
     await page.goto(`/datasets/${dataset.id}/?${LAYOUT_QUERY}`)
     await page.waitForLoadState('networkidle')
+
+    // navigator.clipboard only exists in secure contexts: CI runs on localhost
+    // (secure), but local runs on http://dev.local are not
+    test.skip(!await page.evaluate(() => window.isSecureContext), 'navigator.clipboard requires a secure context')
 
     await page.getByTestId('expand-button').first().click()
     await page.getByRole('button', { name: 'Copier le lien' }).click()
 
     await expect(page.getByText('Lien copié !')).toBeVisible()
 
-    await page.request.delete(`${API_BASE}/api/1/datasets/${dataset.id}/`)
+    // The copied link is the deep-link to this specific resource (clipboard
+    // reading is only available on chromium)
+    if (browserName === 'chromium') {
+      const clipboardText = await page.evaluate(() => navigator.clipboard.readText())
+      expect(clipboardText).toContain(`resource_id=${resources[0].id}`)
+    }
   })
 
-  test('deep-link to a specific resource shows a banner', async ({ page }) => {
-    const uniqueId = Date.now()
-    const { dataset, resources } = await createDatasetWithResources(page, uniqueId, 3)
+  test('deep-link to a specific resource shows a banner', async ({ page, request }) => {
+    const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test public resources ${Date.now()}`, resourceTitles(3))
+    createdDatasets.push(dataset.id)
 
     await page.goto(`/datasets/${dataset.id}/?resource_id=${resources[1].id}&${LAYOUT_QUERY}`)
     await page.waitForLoadState('networkidle')
@@ -117,23 +116,21 @@ test.describe('Public resources display', () => {
     await page.getByRole('link', { name: 'Voir toutes les resources' }).click()
     await expect(page.getByText('Vous consultez une resource spécifique.')).not.toBeVisible()
     await expect(page.getByText(resources[0].title)).toBeVisible()
-
-    await page.request.delete(`${API_BASE}/api/1/datasets/${dataset.id}/`)
   })
 
-  test('remote resource has a correct visit link', async ({ page }) => {
-    const uniqueId = Date.now()
-    const { dataset, resources } = await createDatasetWithResources(page, uniqueId, 1)
+  test('remote resource has a correct download link', async ({ page, request }) => {
+    const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test public resources ${Date.now()}`, resourceTitles(1))
+    createdDatasets.push(dataset.id)
 
     await page.goto(`/datasets/${dataset.id}/?${LAYOUT_QUERY}`)
     await page.waitForLoadState('networkidle')
 
     await page.getByTestId('expand-button').first().click()
 
-    const visitLink = page.getByRole('link', { name: 'Visiter' })
-    await expect(visitLink).toBeVisible()
-    await expect(visitLink).toHaveAttribute('href', resources[0].latest)
-
-    await page.request.delete(`${API_BASE}/api/1/datasets/${dataset.id}/`)
+    // csv is not a "URL" format: the action is a download link pointing to the
+    // stable "latest" URL of the resource
+    const downloadLink = page.getByRole('link', { name: 'Télécharger', exact: true })
+    await expect(downloadLink).toBeVisible()
+    await expect(downloadLink).toHaveAttribute('href', resources[0].latest)
   })
 })

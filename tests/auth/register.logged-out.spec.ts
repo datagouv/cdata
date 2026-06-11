@@ -1,18 +1,23 @@
 // Plain @playwright/test (no assertNoConsoleErrors fixture): failed registrations
 // trigger expected 4xx responses that the browser logs as console errors.
+import type { Page } from '@playwright/test'
 import { test, expect } from '@playwright/test'
 
-async function fillRegisterForm(page: import('@playwright/test').Page, options: {
+async function fillRegisterForm(page: Page, options: {
   email: string
   password: string
   passwordConfirm?: string
 }) {
-  await page.getByLabel('Adresse email').fill(options.email)
-  await page.getByLabel('Mot de passe', { exact: true }).fill(options.password)
-  await page.getByLabel('Confirmer le mot de passe').fill(options.passwordConfirm ?? options.password)
-  await page.getByLabel('Prénom').fill('Test')
-  await page.getByLabel('Nom', { exact: true }).fill('E2E')
-  await page.getByRole('checkbox', { name: /J'ai lu et j'accepte/ }).check()
+  // Required fields render their label as "{label} *"
+  await page.getByLabel('Adresse email *', { exact: true }).fill(options.email)
+  await page.getByLabel('Mot de passe *', { exact: true }).fill(options.password)
+  await page.getByLabel('Confirmer le mot de passe *', { exact: true }).fill(options.passwordConfirm ?? options.password)
+  await page.getByLabel('Prénom *', { exact: true }).fill('Test')
+  await page.getByLabel('Nom *', { exact: true }).fill('E2E')
+  // The DSFR label covers the checkbox input (and its center holds the terms
+  // link): force the check, the click lands on the label which toggles the input
+  await page.getByRole('checkbox', { name: /J'ai lu et j'accepte/ }).check({ force: true })
+  await expect(page.getByRole('checkbox', { name: /J'ai lu et j'accepte/ })).toBeChecked()
 }
 
 test.describe('Register page', () => {

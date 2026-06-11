@@ -1,21 +1,19 @@
 import { test, expect } from '../base'
+import { createDataset, deleteDatasets } from '../helpers'
 
-const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
+const createdDatasets: Array<string> = []
 
-async function createDataset(page: import('@playwright/test').Page, title: string) {
-  const response = await page.request.post(`${API_BASE}/api/1/datasets/`, {
-    data: {
-      title,
-      description: 'Dataset pour tester le cycle de vie',
-      frequency: 'unknown',
-    },
-  })
-  return await response.json()
-}
+test.afterEach(async ({ request }) => {
+  await deleteDatasets(request, createdDatasets)
+})
 
+// The public dataset page fires a client-side fetch to the metrics API: wait for
+// networkidle before navigating away, otherwise the aborted fetch is reported as
+// an uncaught error and fails the assertNoConsoleErrors fixture.
 test.describe('Dataset lifecycle', () => {
-  test('can switch a dataset to draft and back to public', async ({ page }) => {
-    const dataset = await createDataset(page, `Test lifecycle private ${Date.now()}`)
+  test('can switch a dataset to draft and back to public', async ({ page, request }) => {
+    const dataset = await createDataset(request, `Test lifecycle private ${Date.now()}`, 'Dataset pour tester le cycle de vie')
+    createdDatasets.push(dataset.id)
 
     await page.goto(`/admin/datasets/${dataset.id}/`)
     await page.waitForLoadState('networkidle')
@@ -26,6 +24,7 @@ test.describe('Dataset lifecycle', () => {
 
     // The public page shows the draft badge
     await page.goto(`/datasets/${dataset.id}/`)
+    await page.waitForLoadState('networkidle')
     await expect(page.getByText('Brouillon', { exact: true })).toBeVisible()
 
     // Publish again
@@ -35,13 +34,13 @@ test.describe('Dataset lifecycle', () => {
     await expect(page.getByText('Jeu de données publié !')).toBeVisible()
 
     await page.goto(`/datasets/${dataset.id}/`)
+    await page.waitForLoadState('networkidle')
     await expect(page.getByText('Brouillon', { exact: true })).not.toBeVisible()
-
-    await page.request.delete(`${API_BASE}/api/1/datasets/${dataset.id}/`)
   })
 
-  test('can archive and unarchive a dataset', async ({ page }) => {
-    const dataset = await createDataset(page, `Test lifecycle archive ${Date.now()}`)
+  test('can archive and unarchive a dataset', async ({ page, request }) => {
+    const dataset = await createDataset(request, `Test lifecycle archive ${Date.now()}`, 'Dataset pour tester le cycle de vie')
+    createdDatasets.push(dataset.id)
 
     await page.goto(`/admin/datasets/${dataset.id}/`)
     await page.waitForLoadState('networkidle')
@@ -49,9 +48,11 @@ test.describe('Dataset lifecycle', () => {
     await page.getByRole('button', { name: 'Archiver', exact: true }).click()
     await expect(page.getByText('Jeu de données archivé !')).toBeVisible()
 
-    // The public page shows the archived badge
+    // The public page shows the archived badge and is excluded from indexing
     await page.goto(`/datasets/${dataset.id}/`)
+    await page.waitForLoadState('networkidle')
     await expect(page.getByText('Archivé', { exact: true })).toBeVisible()
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/)
 
     // Unarchive
     await page.goto(`/admin/datasets/${dataset.id}/`)
@@ -60,13 +61,13 @@ test.describe('Dataset lifecycle', () => {
     await expect(page.getByText('Jeu de données désarchivé !')).toBeVisible()
 
     await page.goto(`/datasets/${dataset.id}/`)
+    await page.waitForLoadState('networkidle')
     await expect(page.getByText('Archivé', { exact: true })).not.toBeVisible()
-
-    await page.request.delete(`${API_BASE}/api/1/datasets/${dataset.id}/`)
   })
 
-  test('can delete a dataset and restore it before the purge', async ({ page }) => {
-    const dataset = await createDataset(page, `Test lifecycle restore ${Date.now()}`)
+  test('can delete a dataset and restore it before the purge', async ({ page, request }) => {
+    const dataset = await createDataset(request, `Test lifecycle restore ${Date.now()}`, 'Dataset pour tester le cycle de vie')
+    createdDatasets.push(dataset.id)
 
     await page.goto(`/admin/datasets/${dataset.id}/`)
     await page.waitForLoadState('networkidle')
@@ -82,6 +83,7 @@ test.describe('Dataset lifecycle', () => {
     // The restore banner appears, the public page shows the deleted badge
     await expect(page.getByText('Restaurer ce jeu de données')).toBeVisible()
     await page.goto(`/datasets/${dataset.id}/`)
+    await page.waitForLoadState('networkidle')
     await expect(page.getByText('Supprimé', { exact: true })).toBeVisible()
 
     // Restore
@@ -92,8 +94,7 @@ test.describe('Dataset lifecycle', () => {
     await expect(page.getByText('Restaurer ce jeu de données')).not.toBeVisible()
 
     await page.goto(`/datasets/${dataset.id}/`)
+    await page.waitForLoadState('networkidle')
     await expect(page.getByText('Supprimé', { exact: true })).not.toBeVisible()
-
-    await page.request.delete(`${API_BASE}/api/1/datasets/${dataset.id}/`)
   })
 })

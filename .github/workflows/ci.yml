@@ -108,7 +108,7 @@ jobs:
         browser: [chromium, firefox]
         include:
           - browser: chromium
-            projects: "--project=setup --project=setup-normal-user --project=chromium --project=chromium-normal-user --project=chromium-2fa-user"
+            projects: "--project=setup --project=setup-normal-user --project=chromium --project=chromium-normal-user --project=chromium-2fa-user --project=chromium-logged-out"
           - browser: firefox
             projects: "--project=setup --project=setup-normal-user --project=firefox"
     container:
