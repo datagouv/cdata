@@ -526,7 +526,7 @@ const columns = ref<ColumnsDefinition>({})
 const producer = ref<Owned | null>(null)
 const dataset = ref<DatasetSuggest | null>(null)
 const savedResources = reactive<Record<string, Resource>>({})
-const selectedResource = ref<string | null>(null)
+const selectedResource = ref<string>('')
 const savedChart = ref<Chart | null>(null)
 const selectedChartId = ref('')
 
@@ -842,7 +842,7 @@ watch(
 
 watch(dataset, async (newDataset) => {
   if (!newDataset) {
-    selectedResource.value = null
+    selectedResource.value = ''
     return
   }
   try {
@@ -858,7 +858,7 @@ watch(dataset, async (newDataset) => {
 
 watch(producer, () => {
   dataset.value = null
-  selectedResource.value = null
+  selectedResource.value = ''
 })
 
 watch(selectedResource, async (r) => {
