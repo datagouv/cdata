@@ -32,10 +32,6 @@ const props = defineProps<{
   chart: Chart | ChartForApi
 }>()
 
-const emit = defineEmits<{
-  columns: [columns: ColumnsDefinition]
-}>()
-
 const { t } = useTranslation()
 const config = useComponentsConfig()
 const getProfile = useGetProfile()
@@ -167,10 +163,6 @@ watchDebounced([
 ], async () => {
   await fetchSeriesData()
 }, { debounce: config.searchDebounce ?? 300, immediate: true, deep: true })
-
-watch(() => series.columns, () => {
-  emit('columns', series.columns)
-})
 
 watch(pendingOperations, (count) => {
   if (count === 0) {

@@ -48,7 +48,6 @@
               <ClientOnly>
                 <ChartViewerWrapper
                   :chart="chartForViewer"
-                  @columns="columns = { ...columns, ...$event }"
                 />
               </ClientOnly>
             </div>
@@ -577,7 +576,6 @@ const xAxisColumnOptions = computed<Array<XAxisColumnOption>>(() =>
 const yAxisColumnOptions = computed<Array<ColumnDefinition>>(() => {
   if (selectedResource.value && columns.value[selectedResource.value]) {
     return columns.value[selectedResource.value]
-      .filter(col => col.type !== 'date')
       .map(col => ({ name: col.name, type: col.type }))
   }
   return []
@@ -675,18 +673,39 @@ function ensureSeriesHasColumnY(resourceId: string) {
   }
 }
 
-async function loadMissingResourcesForChart(resourceIds: Set<string>) {
-  for (const id of resourceIds) {
-    if (savedResources[id]) continue
+async function loadMissingResourcesForChart(resourceIds: Array<string>) {
+  const idsToLoad = resourceIds.filter(id => !savedResources[id])
+  if (idsToLoad.length === 0) return
 
-    try {
-      const resource = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${id}/`)
-      savedResources[id] = resource.resource
-    }
-    catch (error) {
-      console.error(`Failed to fetch resource ${id}:`, error)
-    }
-  }
+  await Promise.all(
+    idsToLoad.map(async (id) => {
+      try {
+        const resource = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${id}/`)
+        savedResources[id] = resource.resource
+      }
+      catch (error) {
+        console.error(`Failed to fetch resource ${id}:`, error)
+      }
+    }),
+  )
+}
+
+async function loadColumnsForResources(resourceIds: Array<string>) {
+  const idsToLoad = resourceIds.filter(id => !columns.value[id] || columns.value[id].length === 0)
+  if (idsToLoad.length === 0) return
+
+  await Promise.all(
+    idsToLoad.map(async (id) => {
+      try {
+        const profile = await getProfile(id)
+        columns.value[id] = buildColumnsFromProfile(profile)
+      }
+      catch (error) {
+        console.error(`Failed to load columns for resource ${id}:`, error)
+        columns.value[id] = []
+      }
+    }),
+  )
 }
 
 async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
@@ -716,7 +735,12 @@ async function loadChart(id: string) {
 
       form.value = toChartForm(data)
 
-      await loadMissingResourcesForChart(chartResources)
+      await loadMissingResourcesForChart(Array.from(chartResources))
+      await loadColumnsForResources(Array.from(chartResources))
+
+      if (!selectedResource.value && data.series.length > 0 && data.series[0]?.resource_id) {
+        selectedResource.value = data.series[0].resource_id
+      }
 
       toast.success(t('Graphique chargé !'))
     }
@@ -852,11 +876,8 @@ watch(selectedResource, async (r) => {
     else {
       form.value.series[0].resource_id = r
     }
-    await loadMissingResourcesForChart(new Set([r]))
-    if (!columns.value[r] || columns.value[r].length === 0) {
-      const profile = await getProfile(r)
-      columns.value[r] = buildColumnsFromProfile(profile)
-    }
+    await loadMissingResourcesForChart([r])
+    await loadColumnsForResources([r])
     ensureSeriesHasColumnX(r)
     ensureSeriesHasColumnY(r)
   }

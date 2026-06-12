@@ -478,3 +478,44 @@ test('y-axis columns should not be empty after selecting resource from loaded ch
   // Cleanup
   await page.request.delete(`${baseURL}/api/1/visualizations/${chartData.id}/`)
 })
+
+test('x-axis dropdown should show columns from all chart resources after loading', async ({ page, baseURL }) => {
+  await setupChart(page)
+
+  const saveResponsePromise = page.waitForResponse(response =>
+    response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST',
+  )
+  await page.getByLabel('Titre').fill('Test All Columns Loaded')
+  await page.getByLabel('Description').fill('Test')
+  await page.getByTestId('save-chart-button').click()
+  const saveResponse = await saveResponsePromise
+  const chartData = await saveResponse.json()
+
+  // Load the saved chart
+  await page.goto(`${baseURL}/admin/beta/chart`)
+  await page.waitForLoadState('networkidle')
+
+  await page.getByTestId('producer-select').click()
+  await page.getByRole('option', { name: 'Admin User', exact: true }).click()
+
+  await page.getByTestId('existing-charts').selectOption({ label: 'Test All Columns Loaded' })
+  await page.getByRole('button', { name: 'Charger' }).click()
+  await page.waitForLoadState('networkidle')
+
+  // Wait for columns to be loaded
+  await page.waitForSelector('.fr-select')
+
+  // Open x-axis column dropdown
+  await page.getByLabel('Choisir quoi afficher').click()
+
+  // Get all options
+  const options = await page.getByRole('option').allTextContents()
+  await page.keyboard.press('Escape')
+
+  // There should be column options available (not just the placeholder)
+  expect(options.length).toBeGreaterThan(1)
+  expect(options.some(opt => opt !== 'Sélectionnez une option' && opt !== '')).toBeTruthy()
+
+  // Cleanup
+  await page.request.delete(`${baseURL}/api/1/visualizations/${chartData.id}/`)
+})
