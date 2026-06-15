@@ -8,7 +8,7 @@
         {{ $t('Suivre les publications de données et les engagements ministériels') }}
       </template>
       <template #subtitle>
-        {{ $t('Les administrations produisent un large ensemble de données — données ouvertes ou à accès restreint, API, algorithmes et codes sources publics — dont l\'ouverture ou l\'amélioration de l\'accès constitue un enjeu majeur pour la transparence et la réutilisation.') }}
+        {{ $t('Les administrations produisent un large ensemble de données (données ouvertes ou à accès restreint, API, algorithmes et codes sources publics), dont l\'ouverture ou l\'amélioration de l\'accès constitue un enjeu majeur pour la transparence et la réutilisation.') }}
       </template>
     </OnboardingHero>
 
