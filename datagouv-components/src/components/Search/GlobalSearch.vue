@@ -16,12 +16,30 @@
         :auto-focus
       />
     </div>
+    <div
+      v-if="universes && universes.length > 1"
+      class="mt-2 md:mt-5"
+    >
+      <RadioGroup
+        v-model="universeParam"
+        name="search-universe"
+      >
+        <RadioInput
+          v-for="u in universes"
+          :key="u.key"
+          :value="u.key"
+          :icon="u.icon"
+        >
+          {{ u.name }}
+        </RadioInput>
+      </RadioGroup>
+    </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
       <div
         v-if="showSidebar"
         class="col-span-12 md:col-span-4 lg:col-span-3 md:space-y-8"
       >
-        <div v-if="config.length > 1">
+        <div v-if="effectiveConfig.length > 1">
           <Sidemenu :button-text="t('Type')">
             <template #title>
               {{ t('Type') }}
@@ -31,7 +49,7 @@
               name="search-type"
             >
               <RadioInput
-                v-for="typeConfig in config"
+                v-for="typeConfig in effectiveConfig"
                 :key="configKey(typeConfig)"
                 :value="configKey(typeConfig)"
                 :count="resultsMap[configKey(typeConfig)]?.data.value?.total"
@@ -370,7 +388,7 @@ import type { Dataservice } from '../../types/dataservices'
 import type { Organization } from '../../types/organizations'
 import type { Reuse } from '../../types/reuses'
 import type { TopicV2 } from '../../types/topics'
-import type { GlobalSearchConfig, SearchResponseByClass, SearchType, SortOption, FacetItem } from '../../types/search'
+import type { GlobalSearchConfig, UniverseConfig, SearchResponseByClass, SearchType, SortOption, FacetItem } from '../../types/search'
 import { getDefaultGlobalSearchConfig } from '../../types/search'
 import BrandedButton from '../BrandedButton.vue'
 import LoadingBlock from '../LoadingBlock.vue'
@@ -403,6 +421,7 @@ import ReuseTypeFilter from './Filter/ReuseTypeFilter.vue'
 
 const props = withDefaults(defineProps<{
   config?: GlobalSearchConfig
+  universes?: UniverseConfig[]
   placeholder?: string | null
   hideSearchInput?: boolean
   autoFocus?: boolean
@@ -416,9 +435,46 @@ const emit = defineEmits<{
   resultsCount: [total: number]
 }>()
 
+// Universe state: computed before currentType init so SSR validation can use it
+const universeParam = useRouteQuery<string>('universe', props.universes?.[0]?.key ?? '')
+
+// Inject a synthetic key ({universe}-{class}) for any type without an explicit key,
+// so each universe×type combination gets its own fetch instance automatically.
+const resolvedUniverses = computed(() =>
+  props.universes?.map(u => ({
+    ...u,
+    types: u.types.map(c => c.key ? c : { ...c, key: `${u.key}-${c.class}` }),
+  })),
+)
+
+const activeUniverse = computed<UniverseConfig | undefined>(() => {
+  if (!resolvedUniverses.value) return undefined
+  return resolvedUniverses.value.find(u => u.key === universeParam.value) ?? resolvedUniverses.value[0]
+})
+
+const activeUniverseTopic = computed<string | undefined>(() =>
+  activeUniverse.value?.topicId,
+)
+
+// Effective config: active universe's types when in universe mode, otherwise props.config
+const effectiveConfig = computed<GlobalSearchConfig>(() =>
+  activeUniverse.value ? activeUniverse.value.types : props.config,
+)
+
 // defineModel's default is static and can't depend on props, so we cast and initialize manually
 const currentType = defineModel<string>('type') as Ref<string>
-if (!currentType.value) currentType.value = configKey(props.config[0] ?? { class: 'datasets' })
+if (!currentType.value) {
+  const first = activeUniverse.value?.types[0] ?? props.config[0] ?? { class: 'datasets' as const }
+  currentType.value = configKey(first)
+}
+else if (props.universes && activeUniverse.value) {
+  // Clamp type to the active universe's types on page load
+  const validKeys = new Set(activeUniverse.value.types.map(c => configKey(c)))
+  const firstType = activeUniverse.value.types[0]
+  if (!validKeys.has(currentType.value) && firstType) {
+    currentType.value = configKey(firstType)
+  }
+}
 
 const { t } = useTranslation()
 const componentsConfig = useComponentsConfig()
@@ -434,7 +490,7 @@ const customFilterStops = new Map<string, () => void>()
 const initialType = currentType.value
 
 const currentTypeConfig = computed(() =>
-  props.config.find(c => configKey(c) === currentType.value),
+  effectiveConfig.value.find(c => configKey(c) === currentType.value),
 )
 
 // Precedence: prop → per-type config → strategy default.
@@ -467,7 +523,7 @@ const activeSortValues = computed(() =>
 // intrinsic width regardless of which type is currently active.
 const allSortOptions = computed(() => {
   const seen = new Set<string>()
-  return props.config.flatMap(c => (c.sortOptions ?? []) as SortOption<string>[]).filter((o) => {
+  return effectiveConfig.value.flatMap(c => (c.sortOptions ?? []) as SortOption<string>[]).filter((o) => {
     if (seen.has(o.value)) return false
     seen.add(o.value)
     return true
@@ -480,7 +536,7 @@ const activeFilters = computed(() => [
 ] as string[])
 
 const slots = useSlots()
-const showSidebar = computed(() => props.config.length > 1 || activeFilters.value.length > 0 || !!slots['custom-filters-top'] || !!slots['custom-filters-bottom'])
+const showSidebar = computed(() => effectiveConfig.value.length > 1 || activeFilters.value.length > 0 || !!slots['custom-filters-top'] || !!slots['custom-filters-bottom'])
 
 // URL query params
 const q = useRouteQuery<string>('q', '')
@@ -549,6 +605,21 @@ const allFilters: Record<string, Ref<unknown>> = {
   type: reuseType,
 }
 
+// Reset type, sort, and filters when changing universe
+watch(universeParam, (newKey, oldKey) => {
+  if (!resolvedUniverses.value || newKey === oldKey) return
+  const newUniverse = resolvedUniverses.value.find(u => u.key === newKey) ?? resolvedUniverses.value[0]
+  if (!newUniverse) return
+  const newTypeKeys = new Set(newUniverse.types.map(c => configKey(c)))
+  const firstType = newUniverse.types[0]
+  if (!newTypeKeys.has(currentType.value) && firstType) {
+    currentType.value = configKey(firstType)
+  }
+  resetFilters()
+  sort.value = undefined
+  page.value = 1
+})
+
 // Reset sort and filters when changing type if they're not valid for the new type
 watch(currentType, () => {
   // Reset sort if not valid
@@ -573,6 +644,7 @@ const stableParamsOptions = {
   sort,
   page,
   pageSize,
+  universeTopic: activeUniverseTopic,
 }
 
 // Discriminated union: each variant carries its own response type so a `class`
@@ -649,9 +721,23 @@ const strategies: { [K in SearchType]: SearchStrategy<K> } = {
   }),
 }
 
-// One params + fetch per config entry, keyed by configKey
+// One params + fetch per config entry, keyed by configKey.
+// In universe mode, build from the deduplicated union of all resolved universes' types.
+// Synthetic keys ({universe}-{class}) ensure each universe×type gets its own fetch instance.
+const buildConfigs: GlobalSearchConfig = resolvedUniverses.value
+  ? (() => {
+      const seen = new Set<string>()
+      return resolvedUniverses.value.flatMap(u => u.types).filter((c) => {
+        const k = configKey(c)
+        if (seen.has(k)) return false
+        seen.add(k)
+        return true
+      })
+    })()
+  : props.config
+
 const resultsMap: Record<string, SearchEntry> = {}
-for (const c of props.config) {
+for (const c of buildConfigs) {
   const key = configKey(c)
   const params = useStableQueryParams({ ...stableParamsOptions, typeConfig: c })
   resultsMap[key] = await strategies[c.class].fetch(params, initialType === key)
@@ -746,6 +832,11 @@ const rssUrl = computed(() => {
     for (const hf of currentTypeConfig.value.hiddenFilters) {
       if (hf?.value) params.set(hf.key as string, String(hf.value))
     }
+  }
+
+  // Universe topic (authoritative — set after hiddenFilters so it wins)
+  if (activeUniverseTopic.value) {
+    params.set('topic', activeUniverseTopic.value)
   }
 
   // Add active filters

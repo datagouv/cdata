@@ -12,6 +12,7 @@ interface StableQueryParamsOptions {
   sort: Ref<string | undefined>
   page: Ref<number>
   pageSize: number
+  universeTopic?: Ref<string | undefined>
 }
 
 /**
@@ -20,6 +21,7 @@ interface StableQueryParamsOptions {
  */
 export function useStableQueryParams(options: StableQueryParamsOptions) {
   const { typeConfig, allFilters, customFilterRegistry, q, sort, page, pageSize } = options
+  const universeTopic = options.universeTopic ?? ref(undefined)
   const stableParams = ref<Record<string, unknown>>({})
 
   const buildParams = () => {
@@ -68,6 +70,14 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
       }
     }, currentTypeKey)
 
+    // 3.75. Universe topic: authoritative scope, overrides any user-set topic for supported types
+    if (universeTopic.value) {
+      const cls = typeConfig?.class
+      if (cls === 'datasets' || cls === 'dataservices') {
+        params.topic = universeTopic.value
+      }
+    }
+
     // 4. Always include q, sort (if valid for this type), page, page_size
     if (q.value) {
       params.q = q.value
@@ -100,7 +110,7 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
 
   // Watch all dependencies and update only if content changed
   watch(
-    [q, sort, page, ...Object.values(allFilters), customFilterValues],
+    [q, sort, page, ...Object.values(allFilters), customFilterValues, universeTopic],
     () => {
       const newParams = buildParams()
       // JSON.stringify comparison is safe here because buildParams() builds the object deterministically

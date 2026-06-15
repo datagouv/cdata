@@ -368,6 +368,14 @@ export type SearchType = SearchTypeConfig['class']
 
 export type GlobalSearchConfig = SearchTypeConfig[]
 
+export type UniverseConfig = {
+  key: string
+  name: string
+  icon?: Component | string
+  topicId: string
+  types: GlobalSearchConfig
+}
+
 // Maps each search class to its concrete response shape.
 export type SearchResponseByClass = {
   datasets: DatasetSearchResponse<Dataset>
