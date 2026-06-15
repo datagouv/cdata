@@ -1,7 +1,7 @@
 <template>
-  <NuxtLink
+  <LinkCard
     :to="to"
-    class="flex flex-col md:flex-row gap-2.5 p-4 rounded-sm border border-gray-silver hover:border-gray-medium transition-colors bg-white bg-none"
+    class="flex flex-col md:flex-row gap-2.5 p-4"
   >
     <img
       :src="image"
@@ -16,10 +16,12 @@
         {{ description }}
       </p>
     </div>
-  </NuxtLink>
+  </LinkCard>
 </template>
 
 <script setup lang="ts">
+import LinkCard from '~/components/LinkCard.vue'
+
 defineProps<{
   title: string
   description: string

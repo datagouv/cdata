@@ -24,12 +24,12 @@
         {{ $t('Voir les différentes catégories de données') }}
       </OnboardingTitle>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-        <CdataLink
+        <LinkCard
           v-for="category in categories"
           :key="category.title"
           :to="category.to"
           :external="category.external"
-          class="flex flex-col p-6 rounded-sm border border-gray-silver hover:border-gray-medium transition-colors bg-white bg-none"
+          class="flex flex-col p-6"
         >
           <h3 class="text-lg font-bold leading-normal text-gray-title mb-2">
             {{ category.title }}
@@ -42,7 +42,7 @@
             aria-hidden="true"
             class="size-4 text-new-primary self-end mt-auto"
           />
-        </CdataLink>
+        </LinkCard>
       </div>
     </OnboardingSection>
   </div>
@@ -54,7 +54,7 @@ import OnboardingHero from '~/components/Onboarding/OnboardingHero.vue'
 import OnboardingSection from '~/components/Onboarding/OnboardingSection.vue'
 import OnboardingParagraph from '~/components/Onboarding/OnboardingParagraph.vue'
 import OnboardingTitle from '~/components/Onboarding/OnboardingTitle.vue'
-import CdataLink from '~/components/CdataLink.vue'
+import LinkCard from '~/components/LinkCard.vue'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()

@@ -173,7 +173,7 @@
           </td>
           <td class="whitespace-nowrap">
             <CdataLink
-              v-if="(record.fields.statut_front === 'Disponible' || record.fields.statut_front === 'Mise à jour requise') && record.fields.url"
+              v-if="statutLinksToData(record.fields.statut_front) && record.fields.url"
               :to="record.fields.url"
               external
               class="no-underline"
@@ -218,56 +218,20 @@
           {{ $t('Les données affichées dans ce tableau sont associées à un statut d\'avancement, qui permet d\'indiquer le niveau de progression du travail.') }}
         </p>
         <dl class="space-y-4 text-lg font-normal leading-normal text-gray-plain">
-          <div>
+          <div
+            v-for="statut in STATUTS"
+            :key="statut.value"
+          >
             <dt class="inline">
               <AdminBadge
-                type="danger"
+                :type="statut.badgeType"
                 size="sm"
               >
-                {{ $t('Non disponible') }}
+                {{ statut.label }}
               </AdminBadge>
             </dt>
             <dd class="inline ml-2">
-              {{ $t('les données ne sont pas publiées sur {site}.', { site: config.public.title }) }}
-            </dd>
-          </div>
-          <div>
-            <dt class="inline">
-              <AdminBadge
-                type="success"
-                size="sm"
-              >
-                {{ $t('Disponible') }}
-              </AdminBadge>
-            </dt>
-            <dd class="inline ml-2">
-              {{ $t('les données sont publiées sur {site}.', { site: config.public.title }) }}
-            </dd>
-          </div>
-          <div>
-            <dt class="inline">
-              <AdminBadge
-                type="primary"
-                size="sm"
-              >
-                {{ $t('En cours') }}
-              </AdminBadge>
-            </dt>
-            <dd class="inline ml-2">
-              {{ $t('les données sont en cours de publication sur {site}.', { site: config.public.title }) }}
-            </dd>
-          </div>
-          <div>
-            <dt class="inline">
-              <AdminBadge
-                type="warning"
-                size="sm"
-              >
-                {{ $t('Mise à jour requise') }}
-              </AdminBadge>
-            </dt>
-            <dd class="inline ml-2">
-              {{ $t('le jeu de données est disponible sur {site}, mais une mise à jour est attendue (ajout d\'un nouveau millésime, correction d\'une erreur, enrichissement des données publiées…).', { site: config.public.title }) }}
+              {{ statut.description }}
             </dd>
           </div>
         </dl>
@@ -288,6 +252,7 @@ import GristTableViewer from '~/components/GristTableViewer/GristTableViewer.vue
 import type { GristFilter, GristRecord } from '~/components/GristTableViewer/GristTableViewer.vue'
 import type { AdminBadgeType } from '~/types/types'
 import { humanJoin } from '~/utils/helpers'
+import { unwrapList } from '~/utils/grist'
 
 interface OuvertureFields extends Record<string, unknown> {
   nom_donnee: string | null
@@ -330,13 +295,6 @@ interface OrganisationRecord {
   fields: {
     nom_organisation: string
   }
-}
-
-// Grist returns lists as ["L", val1, val2, ...] — strip the leading marker.
-function unwrapList(value: unknown): Array<unknown> {
-  if (!Array.isArray(value)) return []
-  if (value[0] === 'L') return value.slice(1)
-  return value
 }
 
 const recordsUrl = `${config.public.ouverturesGristBaseUrl}/tables/${config.public.ouverturesGristTable}/records`
@@ -393,6 +351,52 @@ onMounted(async () => {
   }
 })
 
+interface StatutDefinition {
+  // Raw Grist value — used both to match records and as the filter option value.
+  value: string
+  // Translated label shown in the legend below the table.
+  label: string
+  badgeType: AdminBadgeType
+  // Statuses whose badge links to the published dataset (when the record has an url).
+  linksToData: boolean
+  description: string
+}
+
+// Single source of truth for the statuses: drives the filter order, the badge
+// colours, the "links to data" behaviour and the legend. Order = progression order.
+const STATUTS: Array<StatutDefinition> = [
+  {
+    value: 'Non disponible',
+    label: t('Non disponible'),
+    badgeType: 'danger',
+    linksToData: false,
+    description: t('les données ne sont pas publiées sur {site}.', { site: config.public.title }),
+  },
+  {
+    value: 'En cours',
+    label: t('En cours'),
+    badgeType: 'primary',
+    linksToData: false,
+    description: t('les données sont en cours de publication sur {site}.', { site: config.public.title }),
+  },
+  {
+    value: 'Disponible',
+    label: t('Disponible'),
+    badgeType: 'success',
+    linksToData: true,
+    description: t('les données sont publiées sur {site}.', { site: config.public.title }),
+  },
+  {
+    value: 'Mise à jour requise',
+    label: t('Mise à jour requise'),
+    badgeType: 'warning',
+    linksToData: true,
+    description: t('le jeu de données est disponible sur {site}, mais une mise à jour est attendue (ajout d\'un nouveau millésime, correction d\'une erreur, enrichissement des données publiées…).', { site: config.public.title }),
+  },
+]
+
+const statutByValue = new Map(STATUTS.map(statut => [statut.value, statut]))
+
 const columns = [
   t('Titre'),
   t('Organisation'),
@@ -438,18 +442,17 @@ const filters: Array<GristFilter<OuvertureRecord>> = [
     label: t('Statut'),
     placeholder: t('Tous les statuts'),
     getValues: r => r.fields.statut_front ? [r.fields.statut_front] : [],
-    valueOrder: ['Non disponible', 'En cours', 'Disponible', 'Mise à jour requise'],
+    valueOrder: STATUTS.map(statut => statut.value),
   },
 ]
 
-function statutBadgeType(statut: string): AdminBadgeType {
-  switch (statut) {
-    case 'Disponible': return 'success'
-    case 'En cours': return 'primary'
-    case 'Mise à jour requise': return 'warning'
-    case 'Non disponible': return 'danger'
-    default: return 'default'
-  }
+function statutBadgeType(statut: string | null): AdminBadgeType {
+  if (!statut) return 'default'
+  return statutByValue.get(statut)?.badgeType ?? 'default'
+}
+
+function statutLinksToData(statut: string | null): boolean {
+  return Boolean(statut && statutByValue.get(statut)?.linksToData)
 }
 
 function typeBadgeClass(type: string): string {
