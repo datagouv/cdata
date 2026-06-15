@@ -25,7 +25,8 @@
         </h1>
         <p
           v-if="$slots.subtitle"
-          class="font-spectral font-normal italic text-2xl leading-8 text-white/80 mb-8"
+          class="font-spectral font-normal italic text-2xl leading-8 text-white/80"
+          :class="{ 'mb-8': $slots.actions }"
         >
           <slot name="subtitle" />
         </p>
