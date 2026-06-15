@@ -207,22 +207,18 @@ const pageSize = ref(20)
 const q = ref('')
 const qDebounced = refDebounced(q, config.public.searchDebounce)
 
-const url = computed(() => {
-  const url = new URL(`/api/1/harvest/sources/`, config.public.apiBase)
+const params = computed(() => {
+  return {
+    organization: props.organization?.id,
 
-  if (props.organization) {
-    url.searchParams.set('owner', props.organization.id)
+    deleted: true,
+    q: qDebounced.value,
+    page_size: pageSize.value,
+    page: page.value,
   }
-
-  url.searchParams.set('deleted', 'true')
-  url.searchParams.set('q', qDebounced.value)
-  url.searchParams.set('page_size', pageSize.value.toString())
-  url.searchParams.set('page', page.value.toString())
-
-  return url.toString()
 })
 
-const { data: pageData, status } = await useAPI<PaginatedArray<HarvesterSource>>(url, { lazy: true })
+const { data: pageData, status } = await useAPI<PaginatedArray<HarvesterSource>>('/api/1/harvest/sources/', { lazy: true, query: params })
 
 watch(qDebounced, () => {
   page.value = 1
