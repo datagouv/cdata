@@ -1,6 +1,6 @@
 import { inject, type Component, type InjectionKey } from 'vue'
 import type { UseFetchFunction } from './functions/api.types'
-import type { FetchOptions } from 'ofetch'
+import type { $Fetch, FetchOptions } from 'ofetch'
 
 export type PluginConfig = {
   name: string // Name of the application (ex: data.gouv.fr)
@@ -25,6 +25,16 @@ export type PluginConfig = {
   tabularAllowRemote?: boolean
   tabularApiDataserviceId?: string
   customUseFetch?: UseFetchFunction | null
+  /**
+   * Imperative configured fetch (auth, headers, error handling): the single source of truth for
+   * requests. The default `useFetch` uses it as its transport, and imperative helpers (metrics CSV
+   * export, …) call it directly — so they never need a `?? ofetch` fallback.
+   * Optional for consumers: when omitted, the plugin defaults it to an `ofetch` instance built from
+   * the `onRequest`/`onResponse` hooks below (see the `datagouv` plugin install). A consumer can
+   * instead provide its own (e.g. a Bearer-authenticated `$fetch`) and skip the hooks entirely.
+   */
+  $fetch?: $Fetch | null
+  /** Auth/headers/error hooks. Folded into the default `$fetch` when no `$fetch` is provided. */
   onRequest?: FetchOptions['onRequest']
   onRequestError?: FetchOptions['onRequestError']
   onResponse?: FetchOptions['onResponse']
@@ -38,8 +48,12 @@ export type PluginConfig = {
 
 export const configKey = Symbol() as InjectionKey<PluginConfig>
 
-export function useComponentsConfig(): PluginConfig {
+// After the `datagouv` plugin install, `$fetch` is always set (defaulted to an ofetch instance), so
+// consumers of the config can rely on it without a fallback.
+export type ResolvedPluginConfig = PluginConfig & { $fetch: $Fetch }
+
+export function useComponentsConfig(): ResolvedPluginConfig {
   const config = inject(configKey)
   if (!config) throw new Error('Calling `useComponentsConfig` outside @datagouv/components')
-  return config
+  return config as ResolvedPluginConfig
 }

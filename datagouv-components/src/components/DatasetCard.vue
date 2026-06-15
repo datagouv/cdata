@@ -36,6 +36,7 @@
       :icon="RiDatabase2Line"
       :url="datasetUrl || dataset.page"
       :target="datasetUrlInNewTab ? '_blank' : undefined"
+      :title-tag="titleTag"
     >
       {{ dataset.title }}
       <template
@@ -106,10 +107,12 @@
         </p>
       </div>
     </div>
-    <ObjectCardShortDescription
-      v-if="showDescriptionShort"
-      :text="getDescriptionShort(props.dataset)"
-    />
+    <slot>
+      <ObjectCardShortDescription
+        v-if="showDescriptionShort"
+        :text="getDescriptionShort(props.dataset)"
+      />
+    </slot>
   </ObjectCard>
 </template>
 
@@ -117,6 +120,7 @@
 import type { RouteLocationRaw } from 'vue-router'
 import { RiArchiveLine, RiDatabase2Line, RiDownloadLine, RiEyeLine, RiLineChartLine, RiLockLine, RiStarLine, RiSubtractLine } from '@remixicon/vue'
 import type { Dataset, DatasetV2 } from '../types/datasets'
+import type { TitleTag } from '../types/ui'
 import { summarize } from '../functions/helpers'
 import { useFormatDate } from '../functions/dates'
 import { getDescriptionShort } from '../functions/description'
@@ -137,6 +141,7 @@ type Props = {
   datasetUrlInNewTab?: boolean
   organizationUrl?: RouteLocationRaw
   showDescriptionShort?: boolean
+  titleTag?: TitleTag
 }
 
 const props = withDefaults(defineProps<Props>(), {
