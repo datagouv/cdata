@@ -136,16 +136,13 @@ const { t } = useTranslation()
 const url = computed(() => `/api/1/organizations/${route.params.oid}/`)
 const { data: organization, status } = await useAPI<Organization>(url, { redirectOn404: true, redirectOnSlug: 'oid' })
 
-// `blocs` is excluded from the default read mask. We only need to know whether a
-// presentation exists to decide the tab's visibility, so we request the blocs ids
-// alone — a tiny payload, kept separate from the heavy per-bloc content loaded by
-// the presentation tab itself.
-const { data: blocsPreview } = await useAPI<Pick<Organization, 'blocs'>>(url, {
-  key: `org-blocs-preview-${route.params.oid}`,
-  headers: { 'X-Fields': '{blocs{id}}' },
-})
+// We need to know whether a presentation exists to decide the tab's visibility.
+// Keyed by the canonical id so the presentation page reuses the same request.
+const { blocs: presentationBlocs } = organization.value
+  ? await useOrganizationBlocs(organization.value)
+  : { blocs: computed(() => []) }
 
-const hasPresentation = computed(() => (blocsPreview.value?.blocs?.length ?? 0) > 0)
+const hasPresentation = computed(() => presentationBlocs.value.length > 0)
 const canEditPresentation = computed(() => isUserOrgAdmin(me.value, organization.value))
 // Hidden from non-admins until configured; always available to org admins so they
 // can create it.
