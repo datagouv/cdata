@@ -4,6 +4,19 @@
       color="primary"
       align="left"
     >
+      <template #breadcrumb>
+        <Breadcrumb>
+          <BreadcrumbItem to="/">
+            {{ $t('Accueil') }}
+          </BreadcrumbItem>
+          <BreadcrumbItem to="/ouvertures">
+            {{ $t('Ouvertures') }}
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            {{ $t('Suivi des publications et engagements ministériels') }}
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </template>
       <template #title>
         {{ $t('Suivre les publications de données et les engagements ministériels') }}
       </template>
@@ -28,7 +41,7 @@
             <TranslationT keypath="les demandes exprimées sur le {forum} ou notre {contact} ;">
               <template #forum>
                 <CdataLink
-                  :href="config.public.forumUrl"
+                  :to="config.public.forumUrl"
                   external
                   class="underline"
                 >
@@ -37,7 +50,7 @@
               </template>
               <template #contact>
                 <CdataLink
-                  :href="config.public.supportUrl"
+                  :to="config.public.supportUrl"
                   external
                   class="underline"
                 >
@@ -63,7 +76,7 @@
           <TranslationT keypath="Vous pouvez formuler des demandes de publication pour des données encore non identifiées par notre équipe via le {forum}. Merci pour vos contributions !">
             <template #forum>
               <CdataLink
-                :href="config.public.forumUrl"
+                :to="config.public.forumUrl"
                 external
                 class="underline"
               >
@@ -246,6 +259,8 @@ import { TranslationT } from '@datagouv/components-next'
 import OnboardingHero from '~/components/Onboarding/OnboardingHero.vue'
 import OnboardingSection from '~/components/Onboarding/OnboardingSection.vue'
 import OnboardingTitle from '~/components/Onboarding/OnboardingTitle.vue'
+import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import GristTableViewer from '~/components/GristTableViewer/GristTableViewer.vue'

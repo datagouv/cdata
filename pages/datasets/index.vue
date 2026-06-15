@@ -1,17 +1,29 @@
 <template>
   <div>
-    <EditoHeader
-      color="primary"
-      :title="$t('Rechercher un jeu de données')"
-      :subtitle="$t('parmi les {count} jeux de données sur {site}', {
-        count: site?.metrics.datasets ?? 0,
-        site: config.public.title,
-      })"
-      :placeholder="$t('ex. élections présidentielles')"
-      search-url="/datasets/search"
-      :link-label="$t(`Qu'est-ce qu'un jeu de données ?`)"
-      :link-url="config.public.guideDatasets"
-    />
+    <HeroBanner color="primary">
+      <template #breadcrumb>
+        <Breadcrumb>
+          <BreadcrumbItem to="/">
+            {{ $t('Accueil') }}
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            {{ $t('Données') }}
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </template>
+      <EditoSearchForm
+        color="primary"
+        :title="$t('Rechercher un jeu de données')"
+        :subtitle="$t('parmi les {count} jeux de données sur {site}', {
+          count: site?.metrics.datasets ?? 0,
+          site: config.public.title,
+        })"
+        :placeholder="$t('ex. élections présidentielles')"
+        search-url="/datasets/search"
+        :link-label="$t(`Qu'est-ce qu'un jeu de données ?`)"
+        :link-url="config.public.guideDatasets"
+      />
+    </HeroBanner>
     <EditoBlocs
       v-if="siteBlocs.length > 0 || isEditing"
       :blocs="siteBlocs"
@@ -28,7 +40,10 @@
 
 <script setup lang="ts">
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
-import EditoHeader from '~/components/Pages/EditoHeader.vue'
+import HeroBanner from '~/components/HeroBanner.vue'
+import EditoSearchForm from '~/components/Pages/EditoSearchForm.vue'
+import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 
 defineOgImage('MainPage.takumi', {

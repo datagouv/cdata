@@ -5,6 +5,16 @@
       image="/nuxt_images/ouvertures.svg"
       image-position="right"
     >
+      <template #breadcrumb>
+        <Breadcrumb>
+          <BreadcrumbItem to="/">
+            {{ $t('Accueil') }}
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            {{ $t('Ouvertures') }}
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </template>
       <template #title>
         {{ $t('Suivre les ouvertures et mises à disposition de données publiques') }}
       </template>
@@ -54,6 +64,8 @@ import OnboardingHero from '~/components/Onboarding/OnboardingHero.vue'
 import OnboardingSection from '~/components/Onboarding/OnboardingSection.vue'
 import OnboardingParagraph from '~/components/Onboarding/OnboardingParagraph.vue'
 import OnboardingTitle from '~/components/Onboarding/OnboardingTitle.vue'
+import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import LinkCard from '~/components/LinkCard.vue'
 
 const config = useRuntimeConfig()

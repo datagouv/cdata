@@ -1,12 +1,12 @@
 <template>
-  <section
-    class="py-16"
-    :class="bgColor"
-  >
-    <div
-      class="container text-white"
-      :class="image ? 'flex flex-col md:flex-row items-center gap-12' : { 'max-w-3xl text-center': !alignLeft }"
+  <HeroBanner :color="color">
+    <template
+      v-if="$slots.breadcrumb"
+      #breadcrumb
     >
+      <slot name="breadcrumb" />
+    </template>
+    <div :class="image ? 'flex flex-col md:flex-row items-center gap-12' : { 'max-w-3xl mx-auto text-center': !alignLeft }">
       <div
         v-if="image"
         class="flex-shrink-0"
@@ -38,10 +38,12 @@
         </div>
       </div>
     </div>
-  </section>
+  </HeroBanner>
 </template>
 
 <script setup lang="ts">
+import HeroBanner from '~/components/HeroBanner.vue'
+
 const props = defineProps<{
   color?: 'primary' | 'green' | 'brown' | 'dark'
   image?: string
@@ -51,11 +53,4 @@ const props = defineProps<{
 }>()
 
 const alignLeft = computed(() => props.align === 'left')
-
-const bgColor = computed(() => ({
-  primary: 'bg-new-blue-illustration',
-  green: 'bg-new-green-illustration',
-  brown: 'bg-new-brown-illustration',
-  dark: 'bg-gray-dark',
-}[props.color || 'primary']))
 </script>
