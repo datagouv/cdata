@@ -26,7 +26,7 @@ export async function useFetch<DataT, ErrorT = never>(
   const error: Ref<ErrorT | null> = ref(null)
   const status = ref<AsyncDataRequestStatus>('idle')
 
-  const execute = async () => {
+  const execute = async (signal?: AbortSignal) => {
     const urlValue = toValue(url)
     if (!urlValue) return
     const params = deepToValue(options?.params)
@@ -36,13 +36,15 @@ export async function useFetch<DataT, ErrorT = never>(
       data.value = isRaw
         // Raw targets another data.gouv service (the Tabular API in TabularExplorer) via its own
         // absolute URL, so it must stay bare ofetch: no datagouv apiBase, no datagouv auth attached.
-        ? await ofetch<DataT | null>(urlValue, { params: params ?? query })
+        ? await ofetch<DataT | null>(urlValue, { params: params ?? query, signal })
         // The configured `$fetch` carries baseURL + auth + headers (see the `datagouv` plugin install
         // for the default one). We only forward the URL and params here.
-        : await config.$fetch<DataT | null>(urlValue, { baseURL: config.apiBase, params: params ?? query })
+        : await config.$fetch<DataT | null>(urlValue, { baseURL: config.apiBase, params: params ?? query, signal })
       status.value = 'success'
     }
     catch (e) {
+      // Ignore aborted requests — they're superseded by a newer call, not a real error.
+      if (signal?.aborted) return
       error.value = e as ErrorT
       status.value = 'error'
     }
@@ -51,14 +53,18 @@ export async function useFetch<DataT, ErrorT = never>(
   // When server is false, only start watching after mount (client-side only)
   if (options?.server === false) {
     onMounted(() => {
-      watchEffect(async () => {
-        await execute()
+      watchEffect((onCleanup) => {
+        const controller = new AbortController()
+        onCleanup(() => controller.abort())
+        void execute(controller.signal)
       })
     })
   }
   else {
-    watchEffect(async () => {
-      await execute()
+    watchEffect((onCleanup) => {
+      const controller = new AbortController()
+      onCleanup(() => controller.abort())
+      void execute(controller.signal)
     })
   }
 
