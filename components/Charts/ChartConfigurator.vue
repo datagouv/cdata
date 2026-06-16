@@ -474,7 +474,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort, Owned } from '@datagouv/components-next'
 import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
@@ -528,16 +528,12 @@ const dataset = ref<DatasetSuggest | null>(null)
 const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref<string>('')
 
-// Synchroniser producer avec form.owned (OwnedWithId)
 watch(producer, (newProducer) => {
-  if (newProducer) {
-    form.value.owned = {
-      organization: newProducer.organization?.id ?? null,
-      owner: newProducer.owner?.id ?? null,
-    }
+  if (newProducer?.organization?.id) {
+    form.value.owned = { organization: newProducer.organization.id, owner: null }
   }
-  else {
-    form.value.owned = { organization: null, owner: null }
+  else if (newProducer?.owner?.id) {
+    form.value.owned = { organization: null, owner: newProducer.owner.id }
   }
 }, { immediate: true })
 const savedChart = ref<Chart | null>(null)
