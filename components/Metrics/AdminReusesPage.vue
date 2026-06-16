@@ -1,13 +1,18 @@
 <template>
   <div>
-    <Teleport to="#metrics-actions">
-      <AdminInput
-        v-model="q"
-        type="search"
-        :icon="RiSearchLine"
-        :placeholder="$t('Recherche')"
-      />
-    </Teleport>
+    <!-- ClientOnly required: Nuxt only injects SSR teleports targeting `body` or
+         `#teleports` into the HTML, so an SSR-rendered teleport to #metrics-actions
+         is dropped and causes a hydration mismatch. -->
+    <ClientOnly>
+      <Teleport to="#metrics-actions">
+        <AdminInput
+          v-model="q"
+          type="search"
+          :icon="RiSearchLine"
+          :placeholder="$t('Recherche')"
+        />
+      </Teleport>
+    </ClientOnly>
     <LoadingBlock
       v-slot="{ data: pageData }"
       :status
