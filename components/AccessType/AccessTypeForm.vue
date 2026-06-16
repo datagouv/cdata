@@ -61,7 +61,7 @@ defineProps<{
 const form = defineModel<AccessTypeForm>({ required: true })
 const { t } = useTranslation()
 
-const { data: categories } = await useAPI<Array<{ value: string, label: string }>>('/api/1/access_type/reason_categories')
+const { data: categories } = await useAPI<Array<{ value: string, label: string }>>('/api/1/access_type/reason_categories/')
 
 const categoriesWithOthers = computed(() => {
   return [...(categories.value || []), { value: 'other', label: t('Autre') }]
