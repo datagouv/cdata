@@ -127,7 +127,7 @@ test('sort select displays dynamic column names', async ({ page }) => {
   await listbox.getByRole('option', { name: 'année_publication - Ascendant' }).click()
 
   const buttonText = await listbox.locator('.input').textContent()
-  expect(buttonText).toContain('libellé_EPCI - Descendant')
+  expect(buttonText).toContain('année_publication - Ascendant')
 })
 
 test('sort select updates reactively when column changes', async ({ page }) => {
@@ -348,11 +348,12 @@ test('complete chart configuration flow', async ({ page, baseURL }) => {
 
   await page.getByTestId('searchable-select-choisir-quoi-afficher').click()
   await page.getByRole('option', { name: 'code_region', exact: true }).click()
+  await clickOutside(page)
 
   await page.getByLabel('Type', { exact: true }).first().selectOption('continuous')
 
   await page.getByTestId('searchable-select-colonne-y').click()
-  await page.getByRole('option', { name: 'Taux de logements vacants* (en %)', exact: true }).click()
+  await page.getByRole('option', { name: 'Taux de logements vacants* (en %)', exact: true }).first().click()
 
   await page.getByLabel('Agrégation').selectOption('Moyenne')
 
@@ -398,31 +399,23 @@ test('complete chart configuration flow', async ({ page, baseURL }) => {
 test('y-axis column options update when selecting different resource', async ({ page }) => {
   await setupChart(page)
 
-  // Get initial y-axis column options
   await page.getByTestId('searchable-select-colonne-y').click()
   const initialOptions = await page.getByRole('option').allTextContents()
   await page.keyboard.press('Escape')
 
-  // Select a different resource
   const resourceSelect = page.getByLabel('Choix de la ressource')
   const optionCount = await resourceSelect.locator('option').count()
 
   if (optionCount > 2) {
     await resourceSelect.selectOption({ index: 2 })
 
-    // Wait for columns to load for new resource
     await page.waitForTimeout(500)
 
-    // Open y-axis selector again
     await page.getByTestId('searchable-select-colonne-y').click()
 
-    // Get new options
     const newOptions = await page.getByRole('option').allTextContents()
     await page.keyboard.press('Escape')
 
-    // Options should have changed (new resource has different columns)
-    // This verifies that the resource_id was updated and ChartViewerWrapper
-    // is now fetching columns for the new resource
     expect(newOptions).not.toEqual(initialOptions)
   }
 })
@@ -430,7 +423,6 @@ test('y-axis column options update when selecting different resource', async ({ 
 test('y-axis columns should not be empty after selecting resource from loaded chart', async ({ page, baseURL }) => {
   await setupChart(page)
 
-  // Create and save a chart
   await page.getByLabel('Titre').fill('Test Columns Wipe')
   await page.getByLabel('Description').fill('Test')
 
@@ -445,37 +437,30 @@ test('y-axis columns should not be empty after selecting resource from loaded ch
   const chartData = (await saveResponse.json()) as Chart
   await getPromise
 
-  // Reload page to clear state
   await page.reload()
+  await page.waitForLoadState('networkidle')
+
+  await page.getByLabel('Graphiques existants').selectOption(chartData.id)
+  await page.getByRole('button', { name: 'Charger' }).click()
   await page.waitForLoadState('networkidle')
 
   await page.getByTestId('producer-select').click()
   await page.getByRole('option', { name: 'Admin User', exact: true }).click()
 
-  // Load the saved chart - this sets form.value.series with resource IDs
-  await page.getByLabel('Graphiques existants').selectOption(chartData.id)
-  await page.getByRole('button', { name: 'Charger' }).click()
-  await page.waitForLoadState('networkidle')
-
-  // Select a different resource from dropdown
   const resourceSelect = page.getByLabel('Choix de la ressource')
   const optionCount = await resourceSelect.locator('option').count()
   if (optionCount >= 2) {
     await resourceSelect.selectOption({ index: 1 })
     await page.waitForTimeout(50)
 
-    // With current bug: wrapper emits columns from chart.series (old resource),
-    // which doesn't include the newly selected resource, wiping parent's loaded columns
     await page.getByTestId('searchable-select-colonne-y').click()
     await page.waitForTimeout(50)
     const options = await page.getByRole('option').allTextContents()
     await page.keyboard.press('Escape')
 
-    // This should fail with current code if bug exists
     expect(options.length).toBeGreaterThan(0)
   }
 
-  // Cleanup
   await page.request.delete(`${baseURL}/api/1/visualizations/${chartData.id}/`)
 })
 
@@ -487,35 +472,26 @@ test('x-axis dropdown should show columns from all chart resources after loading
   )
   await page.getByLabel('Titre').fill('Test All Columns Loaded')
   await page.getByLabel('Description').fill('Test')
-  await page.getByTestId('save-chart-button').click()
+  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
   const saveResponse = await saveResponsePromise
-  const chartData = await saveResponse.json()
+  const chartData = (await saveResponse.json()) as Chart
 
-  // Load the saved chart
-  await page.goto(`${baseURL}/admin/beta/chart`)
+  await page.reload()
+  await page.waitForLoadState('networkidle')
+
+  await page.getByLabel('Graphiques existants').selectOption(chartData.id)
+  await page.getByRole('button', { name: 'Charger' }).click()
   await page.waitForLoadState('networkidle')
 
   await page.getByTestId('producer-select').click()
   await page.getByRole('option', { name: 'Admin User', exact: true }).click()
 
-  await page.getByTestId('existing-charts').selectOption({ label: 'Test All Columns Loaded' })
-  await page.getByRole('button', { name: 'Charger' }).click()
-  await page.waitForLoadState('networkidle')
-
-  // Wait for columns to be loaded
-  await page.waitForSelector('.fr-select')
-
-  // Open x-axis column dropdown
-  await page.getByLabel('Choisir quoi afficher').click()
-
-  // Get all options
+  await page.getByTestId('searchable-select-choisir-quoi-afficher').click()
   const options = await page.getByRole('option').allTextContents()
-  await page.keyboard.press('Escape')
+  await clickOutside(page)
 
-  // There should be column options available (not just the placeholder)
   expect(options.length).toBeGreaterThan(1)
   expect(options.some(opt => opt !== 'Sélectionnez une option' && opt !== '')).toBeTruthy()
 
-  // Cleanup
   await page.request.delete(`${baseURL}/api/1/visualizations/${chartData.id}/`)
 })

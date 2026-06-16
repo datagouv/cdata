@@ -738,7 +738,27 @@ async function loadChart(id: string) {
       await loadMissingResourcesForChart(Array.from(chartResources))
       await loadColumnsForResources(Array.from(chartResources))
 
-      if (!selectedResource.value && data.series.length > 0 && data.series[0]?.resource_id) {
+      if (!producer.value && (data.organization || data.owner)) {
+        producer.value = { organization: data.organization ?? null, owner: data.owner ?? null }
+      }
+
+      if (!dataset.value && data.series.length > 0 && data.series[0]?.resource_id) {
+        try {
+          const resourceData = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${data.series[0].resource_id}/`)
+          if (resourceData.dataset_id) {
+            const fetchedDataset = await $chartsApi<DatasetSuggest>(`/api/2/datasets/${resourceData.dataset_id}/`)
+            dataset.value = fetchedDataset
+          }
+        }
+        catch (error) {
+          console.error('Failed to load dataset for chart:', error)
+        }
+      }
+
+      if (data.series.length > 0 && data.series[0]?.resource_id) {
+        // wait for producer/dataset watchers
+        await nextTick()
+
         selectedResource.value = data.series[0].resource_id
       }
 
@@ -841,8 +861,8 @@ watch(
 )
 
 watch(dataset, async (newDataset) => {
+  selectedResource.value = ''
   if (!newDataset) {
-    selectedResource.value = ''
     return
   }
   try {
@@ -858,7 +878,6 @@ watch(dataset, async (newDataset) => {
 
 watch(producer, () => {
   dataset.value = null
-  selectedResource.value = ''
 })
 
 watch(selectedResource, async (r) => {
@@ -876,8 +895,12 @@ watch(selectedResource, async (r) => {
     else {
       form.value.series[0].resource_id = r
     }
-    await loadMissingResourcesForChart([r])
-    await loadColumnsForResources([r])
+    if (!savedResources[r]) {
+      await loadMissingResourcesForChart([r])
+    }
+    if (!columns.value[r] || columns.value[r].length === 0) {
+      await loadColumnsForResources([r])
+    }
     ensureSeriesHasColumnX(r)
     ensureSeriesHasColumnY(r)
   }
