@@ -121,14 +121,14 @@
         </fieldset>
         <fieldset class="min-w-0">
           <ProducerSelect
-            v-model="producer"
+            v-model="form.owned"
             :label="$t('Avec qui souhaitez-vous publier ?')"
             :required="true"
             all
           />
         </fieldset>
         <fieldset
-          v-if="producer"
+          v-if="form.owned"
           class="min-w-0"
         >
           <p class="mb-2 font-bold">
@@ -474,7 +474,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, Owned, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort } from '@datagouv/components-next'
 import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
@@ -523,7 +523,6 @@ const form = defineModel<ChartForm>({
 })
 
 const columns = ref<ColumnsDefinition>({})
-const producer = ref<Owned | null>(null)
 const dataset = ref<DatasetSuggest | null>(null)
 const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref<string>('')
@@ -543,7 +542,7 @@ const resources = computed(() => Object.values(savedResources))
 
 const sourceText = computed<string>(() => {
   if (!dataset.value) return ''
-  const orgName = producer.value?.organization?.name || ''
+  const orgName = form.value.owned?.organization?.name || ''
   return `${dataset.value.title}${orgName ? ` - ${orgName}` : ''} - datagouv.fr`
 })
 
@@ -711,8 +710,8 @@ async function loadColumnsForResources(resourceIds: Array<string>) {
 async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
   const query: Record<string, string> = { q, size: '5' }
 
-  if (!isAdmin && producer.value?.organization?.id) {
-    query.organization = producer.value.organization.id
+  if (!isAdmin && form.value.owned?.organization?.id) {
+    query.organization = form.value.owned.organization.id
   }
 
   return await $chartsApi<Array<DatasetSuggest>>('/api/1/datasets/suggest/', {
@@ -738,8 +737,8 @@ async function loadChart(id: string) {
       await loadMissingResourcesForChart(Array.from(chartResources))
       await loadColumnsForResources(Array.from(chartResources))
 
-      if (!producer.value && (data.organization || data.owner)) {
-        producer.value = { organization: data.organization ?? null, owner: data.owner ?? null }
+      if (data.organization || data.owner) {
+        form.value.owned = { organization: data.organization ?? null, owner: data.owner ?? null }
       }
 
       if (!dataset.value && data.series.length > 0 && data.series[0]?.resource_id) {
@@ -756,7 +755,6 @@ async function loadChart(id: string) {
       }
 
       if (data.series.length > 0 && data.series[0]?.resource_id) {
-        // wait for producer/dataset watchers
         await nextTick()
 
         selectedResource.value = data.series[0].resource_id
@@ -875,10 +873,6 @@ watch(dataset, async (newDataset) => {
     console.error('Failed to fetch resources:', error)
   }
 }, { immediate: true })
-
-watch(producer, () => {
-  dataset.value = null
-})
 
 watch(selectedResource, async (r) => {
   if (r) {
