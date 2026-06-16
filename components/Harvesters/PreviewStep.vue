@@ -51,7 +51,7 @@ onMounted(async () => {
   loading.value = true
 
   try {
-    job.value = await $api<HarvesterJobPreview>('/api/1/harvest/source/preview', {
+    job.value = await $api<HarvesterJobPreview>('/api/1/harvest/source/preview/', {
       method: 'POST',
       body: harvesterToApi(props.harvesterForm),
     })
