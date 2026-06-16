@@ -121,14 +121,14 @@
         </fieldset>
         <fieldset class="min-w-0">
           <ProducerSelect
-            v-model="form.owned"
+            v-model="producer"
             :label="$t('Avec qui souhaitez-vous publier ?')"
             :required="true"
             all
           />
         </fieldset>
         <fieldset
-          v-if="form.owned"
+          v-if="producer"
           class="min-w-0"
         >
           <p class="mb-2 font-bold">
@@ -523,9 +523,23 @@ const form = defineModel<ChartForm>({
 })
 
 const columns = ref<ColumnsDefinition>({})
+const producer = ref<Owned | null>(null)
 const dataset = ref<DatasetSuggest | null>(null)
 const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref<string>('')
+
+// Synchroniser producer avec form.owned (OwnedWithId)
+watch(producer, (newProducer) => {
+  if (newProducer) {
+    form.value.owned = {
+      organization: newProducer.organization?.id ?? null,
+      owner: newProducer.owner?.id ?? null,
+    }
+  }
+  else {
+    form.value.owned = { organization: null, owner: null }
+  }
+}, { immediate: true })
 const savedChart = ref<Chart | null>(null)
 const selectedChartId = ref('')
 
@@ -542,7 +556,7 @@ const resources = computed(() => Object.values(savedResources))
 
 const sourceText = computed<string>(() => {
   if (!dataset.value) return ''
-  const orgName = form.value.owned?.organization?.name || ''
+  const orgName = producer.value?.organization?.name || ''
   return `${dataset.value.title}${orgName ? ` - ${orgName}` : ''} - datagouv.fr`
 })
 
@@ -710,8 +724,8 @@ async function loadColumnsForResources(resourceIds: Array<string>) {
 async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
   const query: Record<string, string> = { q, size: '5' }
 
-  if (!isAdmin && form.value.owned?.organization?.id) {
-    query.organization = form.value.owned.organization.id
+  if (!isAdmin && producer.value?.organization?.id) {
+    query.organization = producer.value.organization.id
   }
 
   return await $chartsApi<Array<DatasetSuggest>>('/api/1/datasets/suggest/', {
@@ -738,7 +752,7 @@ async function loadChart(id: string) {
       await loadColumnsForResources(Array.from(chartResources))
 
       if (data.organization || data.owner) {
-        form.value.owned = data.organization ? { organization: data.organization.id, owner: null } : { organization: null, owner: data.owner.id }
+        producer.value = { organization: data.organization ?? null, owner: data.owner ?? null }
       }
 
       if (!dataset.value && data.series.length > 0 && data.series[0]?.resource_id) {
