@@ -747,8 +747,11 @@ async function loadChart(id: string) {
       await loadMissingResourcesForChart(Array.from(chartResources))
       await loadColumnsForResources(Array.from(chartResources))
 
-      if (data.organization || data.owner) {
-        producer.value = { organization: data.organization ?? null, owner: data.owner ?? null }
+      if (data.organization) {
+        producer.value = { organization: data.organization, owner: null }
+      }
+      if (data.owner) {
+        producer.value = { organization: null, owner: data.owner }
       }
 
       if (!dataset.value && data.series.length > 0 && data.series[0]?.resource_id) {
