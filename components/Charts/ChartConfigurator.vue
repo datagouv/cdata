@@ -738,7 +738,7 @@ async function loadChart(id: string) {
       await loadColumnsForResources(Array.from(chartResources))
 
       if (data.organization || data.owner) {
-        form.value.owned = { organization: data.organization ?? null, owner: data.owner ?? null }
+        form.value.owned = data.organization ? { organization: data.organization.id, owner: null } : { organization: null, owner: data.owner.id }
       }
 
       if (!dataset.value && data.series.length > 0 && data.series[0]?.resource_id) {
