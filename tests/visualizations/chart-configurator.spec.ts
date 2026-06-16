@@ -27,8 +27,10 @@ async function setupChart(page: Page) {
   await resourceSelect.selectOption({ index: 1 })
 
   await page.waitForResponse('**/api/resources/*/profile/')
+  await page.waitForTimeout(300) // necessary to wait for the watch, no real async to check
 
   expect(page.getByLabel('Titre')).toBeVisible()
+  expect(await page.getByPlaceholder('Rechercher une colonne à afficher...').inputValue()).toBe('année_publication')
 }
 
 test('title input updates form value without debounce', async ({ page }) => {
