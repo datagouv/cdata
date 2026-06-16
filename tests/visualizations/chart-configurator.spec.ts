@@ -26,6 +26,8 @@ async function setupChart(page: Page) {
   const resourceSelect = page.getByLabel('Choix de la ressource')
   await resourceSelect.selectOption({ index: 1 })
 
+  await page.waitForResponse('**/api/resources/*/profile/')
+
   expect(page.getByLabel('Titre')).toBeVisible()
 }
 
