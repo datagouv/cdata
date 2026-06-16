@@ -171,10 +171,12 @@ async function save() {
     if (reuseForm.value.image && typeof reuseForm.value.image !== 'string') {
       const formData = new FormData()
       formData.set('file', reuseForm.value.image)
-      await $fileApi(`/api/1/reuses/${newReuse.value.id}/image/`, {
+      const resp = await $fileApi<{ image: string, success: boolean }>(`/api/1/reuses/${newReuse.value.id}/image/`, {
         method: 'POST',
         body: formData,
       })
+      // The reuse was created without its image (uploaded separately), refresh it so step 3 shows the image
+      newReuse.value.image = resp.image
     }
 
     await moveToStep(3)
