@@ -551,9 +551,10 @@ const allFilters: Record<string, Ref<unknown>> = {
 
 // Reset page, sort and filters when changing type. Every reset below goes
 // through useRouteQuery, so VueUse coalesces them into a single router.replace
-// (its shared _queriesQueue flushes once on nextTick). Custom filters are cleared
-// here too, rather than in useSearchFilter's onunmount, so their URL change joins
-// that same batch instead of racing it with a separate router.replace.
+// (its shared _queriesQueue flushes once on nextTick). Custom filters are NOT
+// cleared here: type-scoped ones are cleared in useSearchFilter's onScopeDispose
+// (fires after navigation in parent-driven type switches, so route.query is already
+// up-to-date and no replace is issued — no race with the parent's router.push).
 watch(currentType, () => {
   // page=1 is the default and is dropped from the URL, so only reset when needed.
   if (page.value !== 1) page.value = 1
@@ -568,13 +569,6 @@ watch(currentType, () => {
   for (const [filterName, filterRef] of Object.entries(allFilters)) {
     if (filterRef.value !== undefined && !activeFilters.value.includes(filterName)) {
       filterRef.value = undefined
-    }
-  }
-
-  // Reset type-scoped custom filters that don't apply to the new type
-  for (const entry of customFilterRegistry.values()) {
-    if (entry.typeKeys && !entry.typeKeys.includes(currentType.value) && isCustomFilterActive(entry)) {
-      entry.ref.value = entry.defaultValue
     }
   }
 })
