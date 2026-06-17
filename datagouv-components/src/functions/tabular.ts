@@ -21,6 +21,7 @@ import {
   RiCodeLine,
 } from '@remixicon/vue'
 import { useTranslation } from '../composables/useTranslation'
+import type { TranslationFunction } from '../composables/useTranslation'
 import type { ColumnFilters, ColumnType } from '../components/TabularExplorer/types'
 
 export function hasFilterForColumn(filters: Record<string, ColumnFilters>, column: string): boolean {
@@ -34,7 +35,7 @@ export interface TypeDisplay {
   label: string
 }
 
-export function buildTypeConfig(t: (s: string) => string): Record<ColumnType, TypeDisplay> {
+export function buildTypeConfig(t: TranslationFunction): Record<ColumnType, TypeDisplay> {
   return {
     number: { icon: RiHashtag, label: t('Nombre') },
     categorical: { icon: RiPriceTag3Line, label: t('Catégoriel') },
@@ -52,7 +53,7 @@ export const GENERIC_FORMATS = new Set(['string', 'int', 'float', 'date', 'bool'
 // Semantic types detected by csv-detective (see ../../../csv-detective/csv_detective/formats).
 // The list is intentionally exhaustive, but unknown formats are tolerated:
 // `getColumnDisplay` humanizes any format missing from this map.
-export function buildFormatConfig(t: (s: string) => string): Record<string, TypeDisplay> {
+export function buildFormatConfig(t: TranslationFunction): Record<string, TypeDisplay> {
   return {
     // Geo — territories & addresses
     adresse: { icon: RiMapPin2Line, label: t('Adresse') },
