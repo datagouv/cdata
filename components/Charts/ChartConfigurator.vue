@@ -373,9 +373,6 @@
                   <option value="max">
                     {{ $t('Maximum') }}
                   </option>
-                  <option value="median">
-                    {{ $t('Médiane') }}
-                  </option>
                 </select>
               </div>
             </div>
