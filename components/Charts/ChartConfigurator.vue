@@ -905,6 +905,23 @@ watch(selectedResource, async (r) => {
     if (!columns.value[r] || columns.value[r].length === 0) {
       await loadColumnsForResources([r])
     }
+    const resourceColumns = columns.value[r]
+    if (resourceColumns && resourceColumns.length > 0) {
+      const currentXColumn = form.value.x_axis.column_x
+      const currentYColumn = form.value.series[0]?.column_y
+      const columnNames = resourceColumns.map(c => c.name)
+
+      if (currentXColumn && !columnNames.includes(currentXColumn)) {
+        form.value.x_axis.column_x = ''
+      }
+      if (currentYColumn && !columnNames.includes(currentYColumn)) {
+        form.value.series[0].column_y = ''
+      }
+    }
+    else {
+      form.value.x_axis.column_x = ''
+      form.value.series[0].column_y = ''
+    }
     ensureSeriesHasColumnX(r)
     ensureSeriesHasColumnY(r)
   }
