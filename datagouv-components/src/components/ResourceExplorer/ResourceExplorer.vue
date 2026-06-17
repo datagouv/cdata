@@ -71,7 +71,7 @@ import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { useDebouncedRef } from '../../composables/useDebouncedRef'
 import { useFetch } from '../../functions/api'
-import { RESOURCE_TYPE } from '../../functions/resources'
+import { RESOURCE_EXPLORER_PAGE_SIZE, RESOURCE_TYPE } from '../../functions/resources'
 import type { PaginatedArray } from '../../types/api'
 import type { DatasetV2 } from '../../types/datasets'
 import type { Resource, ResourceGroup, ResourceType } from '../../types/resources'
@@ -94,7 +94,6 @@ const sidebarCollapsed = ref(false)
 const search = ref('')
 const { debounced: searchDebounced, flush } = useDebouncedRef(search, config.searchDebounce ?? 300)
 
-const PAGE_SIZE = 10
 const url = computed(() => `/api/2/datasets/${props.dataset.id}/resources/`)
 
 // Resource ID from URL query
@@ -103,32 +102,32 @@ const resourceIdQuery = useRouteQuery<string | undefined>('resource_id')
 // Fetch resources for each type
 const mainParams = computed(() => ({
   type: 'main' as const,
-  page_size: PAGE_SIZE,
+  page_size: RESOURCE_EXPLORER_PAGE_SIZE,
   q: searchDebounced.value || undefined,
 }))
 const documentationParams = computed(() => ({
   type: 'documentation' as const,
-  page_size: PAGE_SIZE,
+  page_size: RESOURCE_EXPLORER_PAGE_SIZE,
   q: searchDebounced.value || undefined,
 }))
 const updateParams = computed(() => ({
   type: 'update' as const,
-  page_size: PAGE_SIZE,
+  page_size: RESOURCE_EXPLORER_PAGE_SIZE,
   q: searchDebounced.value || undefined,
 }))
 const apiParams = computed(() => ({
   type: 'api' as const,
-  page_size: PAGE_SIZE,
+  page_size: RESOURCE_EXPLORER_PAGE_SIZE,
   q: searchDebounced.value || undefined,
 }))
 const codeParams = computed(() => ({
   type: 'code' as const,
-  page_size: PAGE_SIZE,
+  page_size: RESOURCE_EXPLORER_PAGE_SIZE,
   q: searchDebounced.value || undefined,
 }))
 const otherParams = computed(() => ({
   type: 'other' as const,
-  page_size: PAGE_SIZE,
+  page_size: RESOURCE_EXPLORER_PAGE_SIZE,
   q: searchDebounced.value || undefined,
 }))
 
@@ -169,7 +168,7 @@ const loadMoreType = ref<ResourceType>('main')
 const loadMorePage = ref(1)
 const loadMoreParams = computed(() => ({
   type: loadMoreType.value,
-  page_size: PAGE_SIZE,
+  page_size: RESOURCE_EXPLORER_PAGE_SIZE,
   page: loadMorePage.value,
   q: searchDebounced.value || undefined,
 }))
