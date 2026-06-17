@@ -43,7 +43,7 @@
           type="line"
         />
         <StatBox
-          :title="$t('Téléchargement des resources')"
+          :title="$t('Téléchargement des ressources')"
           :data="site.metrics.resources_downloads_by_months"
           type="line"
         />

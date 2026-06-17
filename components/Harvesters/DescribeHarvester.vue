@@ -322,7 +322,7 @@ onMounted(() => {
   if (props.type === 'update') validate()
 })
 
-const { data: backends } = await useAPI<Array<HarvestBackend>>('/api/1/harvest/backends', { lazy: true })
+const { data: backends } = await useAPI<Array<HarvestBackend>>('/api/1/harvest/backends/', { lazy: true })
 
 const { form, getFirstError, getFirstWarning, formInfo, validate } = useForm(model, {
   name: [required()],

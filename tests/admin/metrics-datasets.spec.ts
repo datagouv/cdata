@@ -1,4 +1,7 @@
-import { test, expect } from '@playwright/test'
+// Import from '../base' (not '@playwright/test') so assertNoConsoleErrors catches
+// hydration mismatches: the metrics pages teleport into #metrics-actions and must
+// not render that teleport during SSR (Nuxt drops it, corrupting hydration).
+import { test, expect } from '../base'
 
 const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
