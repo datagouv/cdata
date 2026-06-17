@@ -30,7 +30,7 @@ export function hasFilterForColumn(filters: Record<string, ColumnFilters>, colum
   return !!(f.in?.length || f.exact != null || f.contains || f.null || f.min != null || f.max != null)
 }
 
-export interface TypeDisplay {
+export type TypeDisplay = {
   icon: Component
   label: string
 }
