@@ -549,8 +549,10 @@ const allFilters: Record<string, Ref<unknown>> = {
   type: reuseType,
 }
 
-// Reset sort and filters when changing type if they're not valid for the new type
+// Reset page, sort and filters when changing type if they're not valid for the new type
 watch(currentType, () => {
+  page.value = 1
+
   // Reset sort if not valid
   const validSortValues = activeSortOptions.value.map(o => o.value as string)
   if (sort.value && !validSortValues.includes(sort.value)) {
