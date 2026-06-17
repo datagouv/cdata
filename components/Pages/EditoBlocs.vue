@@ -1,8 +1,8 @@
 <template>
   <div :class="{ relative: editable }">
-    <!-- Admin edit button -->
+    <!-- Admin edit button. Hidden when empty: the empty state carries its own CTA. -->
     <div
-      v-if="editable && !hideEditButton && isMeAdmin() && !isEditing"
+      v-if="editable && !hideEditButton && isMeAdmin() && !isEditing && workingBlocs.length > 0"
       class="absolute top-4 right-4 z-50"
     >
       <BrandedButton
@@ -105,37 +105,64 @@
       </div>
     </div>
 
-    <!-- Empty page message in edit mode -->
+    <!-- Empty state. In edit mode it invites adding a first bloc; in view mode it
+         is only shown when the host opts in via `emptyCtaLabel` (e.g. an org admin
+         on an unconfigured presentation), offering a CTA to enter edit mode. The
+         visual comes from the host through the #empty slot, with a generic fallback. -->
     <div
-      v-if="isEditing && workingBlocs.length === 0"
-      class="py-24"
+      v-if="workingBlocs.length === 0 && (isEditing || (editable && emptyCtaLabel))"
+      class="container py-12 flex flex-col items-center text-center"
     >
-      <div class="container text-center">
-        <p class="text-gray-500 mb-4">
-          {{ $t('Page vide') }}
+      <slot name="empty">
+        <img
+          src="/illustrations/journal.svg"
+          class="h-20"
+          alt=""
+        >
+        <p class="fr-text--bold fr-my-3v">
+          {{ $t('Cette page est vide') }}
         </p>
-        <AddBlocDropdown @new-bloc="workingBlocs.push($event)">
-          <BrandedButton :icon="RiAddLine">
-            {{ $t('Ajouter un bloc') }}
-          </BrandedButton>
-        </AddBlocDropdown>
-      </div>
+        <p class="text-sm text-gray-medium mb-4 max-w-prose text-pretty">
+          {{ $t('Ajoutez un premier bloc pour commencer à composer la page.') }}
+        </p>
+      </slot>
+      <AddBlocDropdown
+        v-if="isEditing"
+        @new-bloc="workingBlocs.push($event)"
+      >
+        <BrandedButton :icon="RiAddLine">
+          {{ $t('Ajouter un bloc') }}
+        </BrandedButton>
+      </AddBlocDropdown>
+      <BrandedButton
+        v-else
+        :icon="RiEdit2Line"
+        @click="enterEditMode"
+      >
+        {{ emptyCtaLabel }}
+      </BrandedButton>
     </div>
 
     <!-- Save bar -->
     <div
       v-if="isEditing"
-      class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4 flex justify-end gap-4 z-50"
+      class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4 flex items-center justify-end gap-8 z-50"
     >
-      <BrandedButton
-        color="secondary"
-        @click="cancel"
-      >
-        {{ $t('Annuler') }}
-      </BrandedButton>
-      <BrandedButton @click="save">
-        {{ $t('Sauvegarder') }}
-      </BrandedButton>
+      <!-- Hosts can add controls applied on save (e.g. a publish toggle), grouped on
+           the right next to the save actions but spaced apart so the action buttons
+           read as one unit. -->
+      <slot name="save-extra" />
+      <div class="flex items-center gap-4">
+        <BrandedButton
+          color="secondary"
+          @click="cancel"
+        >
+          {{ $t('Annuler') }}
+        </BrandedButton>
+        <BrandedButton @click="save">
+          {{ $t('Sauvegarder') }}
+        </BrandedButton>
+      </div>
     </div>
   </div>
 </template>
@@ -158,6 +185,10 @@ const props = withDefaults(defineProps<{
   striped?: boolean
   hideEditButton?: boolean
   mainColor?: ComponentProps<typeof BrandedButton>['color']
+  // When set, the empty state is also shown in view mode (not just while editing)
+  // with this label on a CTA that enters edit mode. Hosts that pass it are
+  // responsible for only making the page editable (`editable`) for allowed users.
+  emptyCtaLabel?: string
   onSave: (blocs: Array<PageBloc>) => Promise<void>
 }>(), {
   edit: false,
@@ -165,6 +196,7 @@ const props = withDefaults(defineProps<{
   striped: true,
   hideEditButton: false,
   mainColor: 'primary',
+  emptyCtaLabel: undefined,
 })
 
 watchEffect(() => {

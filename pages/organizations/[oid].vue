@@ -20,6 +20,15 @@
           </BreadcrumbItem>
         </Breadcrumb>
         <div class="flex gap-3 items-center">
+          <BrandedButton
+            v-if="isPresentationTab && canEditPresentation && !isEditingPresentation"
+            color="warning"
+            size="xs"
+            :icon="RiEdit2Line"
+            @click="editPresentation"
+          >
+            {{ hasPresentation ? $t('Modifier la présentation') : $t('Modifier ou publier la présentation') }}
+          </BrandedButton>
           <EditButton
             v-if="organization.permissions.edit"
             :id="organization.id"
@@ -120,8 +129,8 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, LoadingBlock, MarkdownViewer, OrganizationNameWithCertificate, OwnerType, ReadMore, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
-import { RiDeleteBinLine, RiSearchLine } from '@remixicon/vue'
+import { BrandedButton, isOrganizationCertified, LoadingBlock, MarkdownViewer, OrganizationNameWithCertificate, OwnerType, ReadMore, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
+import { RiDeleteBinLine, RiEdit2Line, RiSearchLine } from '@remixicon/vue'
 import { useTimeoutFn } from '@vueuse/core'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -130,24 +139,28 @@ import { isUserOrgAdmin, useMaybeMe } from '~/utils/auth'
 
 const config = useRuntimeConfig()
 const route = useRoute()
+const router = useRouter()
 const me = useMaybeMe()
 const { t } = useTranslation()
 
 const url = computed(() => `/api/1/organizations/${route.params.oid}/`)
 const { data: organization, status } = await useAPI<Organization>(url, { redirectOn404: true, redirectOnSlug: 'oid' })
 
-// We need to know whether a presentation exists to decide the tab's visibility.
-// Keyed by the canonical id so the presentation page reuses the same request.
-const { blocs: presentationBlocs } = organization.value
-  ? await useOrganizationBlocs(organization.value)
-  : { blocs: computed(() => []) }
-
-const hasPresentation = computed(() => presentationBlocs.value.length > 0)
+// A presentation is offered to the public only once published. The publication
+// date lives in the default mask, so we read it straight from the organization
+// instead of fetching the (heavy) blocs here — those are lazy-loaded on the
+// presentation page itself.
+const hasPresentation = computed(() => isOrganizationPresentationPublished(organization.value?.blocs_published_at))
 const canEditPresentation = computed(() => isUserOrgAdmin(me.value, organization.value))
 // Hidden from non-admins until configured; always available to org admins so they
 // can create it.
 const showPresentationTab = computed(() => hasPresentation.value || canEditPresentation.value)
 const isPresentationTab = computed(() => route.path.endsWith('/presentation'))
+const isEditingPresentation = computed(() => isPresentationTab.value && route.query.edit === 'true')
+
+function editPresentation() {
+  router.push({ query: { ...route.query, edit: 'true' } })
+}
 
 const tabLinks = computed(() => {
   const oid = route.params.oid
