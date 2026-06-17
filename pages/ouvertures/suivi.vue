@@ -269,7 +269,7 @@ import type { AdminBadgeType } from '~/types/types'
 import { humanJoin } from '~/utils/helpers'
 import { unwrapList } from '~/utils/grist'
 
-interface OuvertureFields extends Record<string, unknown> {
+type OuvertureFields = Record<string, unknown> & {
   nom_donnee: string | null
   organisation: unknown
   ministere_de_tutelle: unknown
@@ -285,7 +285,7 @@ interface OuvertureFields extends Record<string, unknown> {
   thematique_values: Array<string>
 }
 
-interface OuvertureRecord extends GristRecord {
+type OuvertureRecord = GristRecord & {
   fields: OuvertureFields
 }
 
@@ -305,7 +305,7 @@ defineOgImage('MainPage.takumi', {
   uri: '/ouvertures/suivi',
 })
 
-interface OrganisationRecord {
+type OrganisationRecord = {
   id: number
   fields: {
     nom_organisation: string
@@ -366,7 +366,7 @@ onMounted(async () => {
   }
 })
 
-interface StatutDefinition {
+type StatutDefinition = {
   // Raw Grist value — used both to match records and as the filter option value.
   value: string
   // Translated label shown in the legend below the table.

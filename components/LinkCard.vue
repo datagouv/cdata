@@ -2,6 +2,8 @@
   <CdataLink
     :to="to"
     :external="external"
+    :target="external ? '_blank' : undefined"
+    :rel="external ? 'noopener' : undefined"
     class="rounded-sm border border-gray-silver hover:border-gray-medium transition-colors bg-white bg-none"
   >
     <slot />

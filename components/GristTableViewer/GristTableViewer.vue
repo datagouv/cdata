@@ -147,12 +147,12 @@ import type { Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
 import { AnimatedLoader, SelectGroup, useFormatTabular } from '@datagouv/components-next'
 
-export interface GristRecord {
+export type GristRecord = {
   id: number
   fields: Record<string, unknown>
 }
 
-export interface GristFilter<R extends GristRecord = GristRecord> {
+export type GristFilter<R extends GristRecord = GristRecord> = {
   slug: string
   label: string
   placeholder: string
@@ -162,11 +162,11 @@ export interface GristFilter<R extends GristRecord = GristRecord> {
   valueOrder?: Array<string>
 }
 
-interface GristResponse {
+type GristResponse = {
   records: GristRecord[]
 }
 
-interface Props {
+type Props = {
   // Source: either pass a Grist API URL to fetch from, or pass already-loaded records.
   url?: string | undefined
   data?: Array<T> | undefined
