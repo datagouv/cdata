@@ -549,18 +549,32 @@ const allFilters: Record<string, Ref<unknown>> = {
   type: reuseType,
 }
 
-// Reset sort and filters when changing type if they're not valid for the new type
+// Reset page, sort and filters when changing type. Every reset below goes
+// through useRouteQuery, so VueUse coalesces them into a single router.replace
+// (its shared _queriesQueue flushes once on nextTick). Custom filters are cleared
+// here too, rather than in useSearchFilter's onunmount, so their URL change joins
+// that same batch instead of racing it with a separate router.replace.
 watch(currentType, () => {
+  // page=1 is the default and is dropped from the URL, so only reset when needed.
+  if (page.value !== 1) page.value = 1
+
   // Reset sort if not valid
   const validSortValues = activeSortOptions.value.map(o => o.value as string)
   if (sort.value && !validSortValues.includes(sort.value)) {
     sort.value = undefined
   }
 
-  // Reset filters that are not enabled for the new type
+  // Reset built-in filters that are not enabled for the new type
   for (const [filterName, filterRef] of Object.entries(allFilters)) {
     if (filterRef.value !== undefined && !activeFilters.value.includes(filterName)) {
       filterRef.value = undefined
+    }
+  }
+
+  // Reset type-scoped custom filters that don't apply to the new type
+  for (const entry of customFilterRegistry.values()) {
+    if (entry.typeKeys && !entry.typeKeys.includes(currentType.value) && isCustomFilterActive(entry)) {
+      entry.ref.value = entry.defaultValue
     }
   }
 })

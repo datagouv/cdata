@@ -91,6 +91,11 @@ export function getResourceTitleId(resource: Resource) {
 export const RESOURCE_TYPE = readonly(['main', 'documentation', 'update', 'api', 'code', 'other'] as const)
 export type ResourceType = typeof RESOURCE_TYPE[number]
 
+// Page size used by ResourceExplorer for its per-type resource fetches.
+// Exported so consumers (e.g. the dataset page's `main` prefetch) can build a
+// byte-for-byte identical cache key and let Nuxt dedupe the request.
+export const RESOURCE_EXPLORER_PAGE_SIZE = 10
+
 export const getResourceLabel = (type: ResourceType, count?: number) => {
   const { t } = useTranslation()
   switch (type) {
