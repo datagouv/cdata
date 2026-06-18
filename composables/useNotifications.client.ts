@@ -1,8 +1,6 @@
 import type { UserNotification } from '~/types/notifications'
 import type { PaginatedArray } from '~/types/types'
 import { toast } from '@datagouv/components-next'
-import { useTranslation } from '~/composables/useTranslation'
-import { canMarkAsRead } from '~/utils/notifications'
 
 const page = ref(1)
 const PAGE_SIZE = 10
@@ -43,7 +41,7 @@ export function useNotifications() {
       page.value = p
       await loadNotifications()
     }
-    refreshPendingNotifications()
+    await refreshPendingNotifications()
   }
 
   async function refreshPendingNotifications() {

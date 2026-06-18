@@ -13,8 +13,8 @@ export function useMarkAsRead() {
 
     try {
       loading.value = true
-      localMarkAsRead(notification)
       await $api(`/api/1/notifications/${notification.id}/read/`, { method: 'POST' })
+      localMarkAsRead(notification)
       await refreshPendingNotifications()
     }
     finally {
