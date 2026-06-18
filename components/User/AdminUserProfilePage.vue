@@ -251,7 +251,7 @@ const rotationPending = computed(() => {
 
 const profilePicture = ref<File | null>(null)
 
-const { data: allRoles } = await useAPI<Array<{ name: string }>>('/api/1/users/roles')
+const { data: allRoles } = await useAPI<Array<{ name: string }>>('/api/1/users/roles/')
 const allRolesAsString = computed(() => (allRoles.value || []).map(r => r.name))
 
 const { form } = useForm(props.user, {}, {})

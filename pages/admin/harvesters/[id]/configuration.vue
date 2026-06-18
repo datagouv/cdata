@@ -155,7 +155,7 @@ const previewJob = ref<HarvesterJobPreview | null>(null)
 const preview = async () => {
   if (!harvesterForm.value) throw new Error('No harvester form')
 
-  previewJob.value = await $api<HarvesterJobPreview>('/api/1/harvest/source/preview', {
+  previewJob.value = await $api<HarvesterJobPreview>('/api/1/harvest/source/preview/', {
     method: 'POST',
     body: harvesterToApi(harvesterForm.value),
   })

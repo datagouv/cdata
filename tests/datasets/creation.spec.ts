@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
 import * as path from 'path'
 import { clickOutside } from '../helpers'
@@ -35,6 +36,50 @@ test('can create a minimal dataset', async ({ page }) => {
   await expect(page.locator('[id="__nuxt"]')).toContainText('Une description')
   await expect(page.locator('[id="__nuxt"]')).toContainText('Description des données non renseignée')
   await expect(page.locator('[id="__nuxt"]')).toContainText('Ce jeu de données a été publié à l\'initiative et sous la responsabilité de Admin User.')
+})
+
+async function createMinimalDataset(page: Page, title: string) {
+  await page.getByRole('button', { name: 'Publier sur data.gouv.fr' }).click()
+  await page.getByRole('link', { name: 'Un jeu de données' }).click()
+  await page.getByRole('button', { name: 'Commencer la publication' }).click()
+  await page.getByTestId('producer-select').click()
+  await page.getByRole('option', { name: 'Admin User' }).click()
+  await page.getByRole('textbox', { name: 'Titre *' }).click()
+  await page.getByRole('textbox', { name: 'Titre *' }).fill(title)
+  await page.getByRole('textbox', { name: 'Titre *' }).press('Tab')
+  await page.getByTestId('markdown-editor').click()
+  await page.getByTestId('markdown-editor').fill('Une description')
+  await page.getByTestId('markdown-editor').press('Tab')
+  await page.getByText('Il est recommandé d\'avoir une').click()
+  await page.getByTestId('select-frequency').click()
+  await page.getByRole('option', { name: 'Inconnu' }).click()
+  await clickOutside(page)
+  await page.getByRole('button', { name: 'Suivant' }).click()
+  await page.getByRole('button', { name: 'Ajoutez des fichiers' }).click()
+  // Start waiting for file chooser before clicking. Note no await.
+  const fileChooserPromise = page.waitForEvent('filechooser')
+  await page.getByRole('button', { name: 'Parcourir' }).click()
+  const fileChooser = await fileChooserPromise
+  await fileChooser.setFiles(path.join(__dirname, '../../public/illustrations/administration.svg'))
+  await page.getByRole('button', { name: 'Envoyer' }).click()
+  await page.getByRole('button', { name: 'Suivant' }).click()
+  await page.getByRole('button', { name: 'Publier le jeu de données' }).click()
+}
+
+test('creating a second dataset in the same session does not reuse the first one', async ({ page }) => {
+  // First dataset, full flow until the published page.
+  await page.goto('/')
+  await createMinimalDataset(page, 'Premier JDD')
+  await expect(page.locator('h1')).toContainText('Premier JDD')
+
+  // Second dataset, started via client-side navigation (no page reload) so the
+  // wizard state from the first flow is still live. This is what reproduces the
+  // bug: the old dataset must not be reused for the second publication.
+  await createMinimalDataset(page, 'Second JDD')
+
+  // With the bug, `newDataset` still held the first dataset, so the file was
+  // attached to it and we navigated back to "Premier JDD".
+  await expect(page.locator('h1')).toContainText('Second JDD')
 })
 
 test('can create a dataset with full information', async ({ page }) => {
