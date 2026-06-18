@@ -94,21 +94,20 @@ export function useSearchFilter(
   })
 
   onScopeDispose(() => {
+    // Type-scoped filters (typeKeys set) are cleared by GlobalSearch's
+    // watch(currentType) instead, so their URL update batches with the other
+    // type-change resets via useRouteQuery rather than racing them with the
+    // separate router.replace below. Here we only clear filters that apply to
+    // all types: their unmount is a consumer signal unrelated to a type switch,
+    // which GlobalSearch has no way to detect.
+    //
     // We cannot use `value.value = defaultValue` here because VueUse's
     // useRouteQuery registers its own tryOnScopeDispose cleanup that zeroes
     // the internal `query` variable to undefined (FIFO order, it runs first).
     // The setter then sees `query === v` and early-returns without ever
     // calling router.replace(). Instead we read the live route.query directly
     // (which is router state, not affected by that cleanup) and push the update.
-    //
-    // For type-scoped filters (typeKeys set): in a parent-driven type switch
-    // (router.push to a new route), the filter component unmounts AFTER navigation
-    // commits, at which point route.query no longer contains the param → the
-    // condition below is false and no router.replace() is issued — no race with
-    // the parent's push. In an in-page type switch (same route), the component
-    // unmounts synchronously, route.query still has the old value, and the
-    // replace clears it correctly.
-    if (route.query[urlParam] !== undefined) {
+    if (normalizedTypeKeys === undefined && route.query[urlParam] !== undefined) {
       const { [urlParam]: _removed, ...restQuery } = route.query
       router.replace({
         query: defaultValue === undefined ? restQuery : { ...restQuery, [urlParam]: String(defaultValue) },
