@@ -58,10 +58,11 @@
     </div>
 
     <template v-else-if="tableData && profileData">
-      <!-- Toolbar & active filters inherit the host's horizontal padding (px-4
-           in both ResourceExplorerViewer's TabPanel and ExploreResourceView), so
-           they line up with the resource title / download button above. Only the
-           table itself goes edge-to-edge (via -mx-4 below). -->
+      <!-- Toolbar & active filters inherit the host's 1rem horizontal padding
+           (px-4 on ResourceExplorerViewer's TabPanel, .container on
+           ExploreResourceView), so they line up with the resource title /
+           download button above. Only the table itself goes edge-to-edge
+           (via -mx-4 below). -->
       <div>
         <div class="flex items-center py-3 gap-2">
           <!-- Mobile: filter & sort button -->
@@ -278,9 +279,10 @@
       </div>
 
       <!-- Desktop: scrollable table -->
-      <!-- `-mx-4` lets the table extend edge-to-edge of the parent's px-4 wrapper
-           (used in both ResourceExplorerViewer's TabPanel and pages/explore.vue),
-           while the toolbar and active-filter rows above keep that padding. -->
+      <!-- `-mx-4` lets the table extend edge-to-edge of the host's 1rem
+           horizontal padding (px-4 on ResourceExplorerViewer's TabPanel,
+           .container on ExploreResourceView), while the toolbar and
+           active-filter rows above keep that padding. -->
       <div
         v-if="displayedColumns.length > 0"
         ref="scrollContainer"
