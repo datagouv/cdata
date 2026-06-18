@@ -11,7 +11,7 @@
             {{ $t('Accueil') }}
           </BreadcrumbItem>
           <BreadcrumbItem>
-            {{ $t('Ouvertures') }}
+            {{ $t('Suivi de publication') }}
           </BreadcrumbItem>
         </Breadcrumb>
       </template>
@@ -77,14 +77,14 @@ useSeoMeta({
 })
 defineOgImage('MainPage.takumi', {
   title: 'Ouvertures de données',
-  uri: '/ouvertures',
+  uri: '/suivi-de-publication',
 })
 
 const categories = [
   {
     title: t('Demandes d\'ouvertures et engagements ministériels'),
     description: t('Suivre les prochaines publications de données ouvertes ou restreintes ainsi que les engagements ministériels en matière de données.'),
-    to: '/ouvertures/suivi',
+    to: '/suivi-de-publication/engagements-et-demandes',
     external: false,
   },
   {

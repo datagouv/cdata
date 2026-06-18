@@ -9,8 +9,8 @@
           <BreadcrumbItem to="/">
             {{ $t('Accueil') }}
           </BreadcrumbItem>
-          <BreadcrumbItem to="/ouvertures">
-            {{ $t('Ouvertures') }}
+          <BreadcrumbItem to="/suivi-de-publication">
+            {{ $t('Suivi de publication') }}
           </BreadcrumbItem>
           <BreadcrumbItem>
             {{ $t('Suivi des publications et engagements ministériels') }}
@@ -302,7 +302,7 @@ useSeoMeta({
 })
 defineOgImage('MainPage.takumi', {
   title: 'Suivi des publications',
-  uri: '/ouvertures/suivi',
+  uri: '/suivi-de-publication/engagements-et-demandes',
 })
 
 type OrganisationRecord = {

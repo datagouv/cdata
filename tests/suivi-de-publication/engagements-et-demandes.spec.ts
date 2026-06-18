@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test'
 import { test as testWithoutConsoleCheck, expect } from '@playwright/test'
 import { test } from '../base'
 
-// The /ouvertures/suivi page loads its data client-side from two Grist tables. The
+// The /suivi-de-publication/engagements-et-demandes page loads its data client-side from two Grist tables. The
 // Grist endpoint is not available in CI (NUXT_PUBLIC_OUVERTURES_GRIST_* are empty by
 // default), so every test mocks both endpoints through page.route.
 
@@ -96,7 +96,7 @@ async function mockGristEndpoints(page: Page) {
 
 test('displays the enriched Grist records sorted by title', async ({ page }) => {
   await mockGristEndpoints(page)
-  await page.goto('/ouvertures/suivi')
+  await page.goto('/suivi-de-publication/engagements-et-demandes')
 
   const rows = page.locator('.grist-table-viewer tbody tr')
   // 3 rows and not 4: the fully empty Grist record must not be displayed.
@@ -120,7 +120,7 @@ test('displays the enriched Grist records sorted by title', async ({ page }) => 
 
 test('filters the records and syncs the selection to the URL', async ({ page }) => {
   await mockGristEndpoints(page)
-  await page.goto('/ouvertures/suivi')
+  await page.goto('/suivi-de-publication/engagements-et-demandes')
 
   const rows = page.locator('.grist-table-viewer tbody tr')
   await expect(rows).toHaveCount(3)
@@ -147,7 +147,7 @@ test('filters the records and syncs the selection to the URL', async ({ page }) 
 
 test('pre-fills the filters from the URL query', async ({ page }) => {
   await mockGristEndpoints(page)
-  await page.goto('/ouvertures/suivi?statut=En cours')
+  await page.goto('/suivi-de-publication/engagements-et-demandes?statut=En cours')
 
   const rows = page.locator('.grist-table-viewer tbody tr')
   await expect(rows).toHaveCount(1)
@@ -158,7 +158,7 @@ test('pre-fills the filters from the URL query', async ({ page }) => {
 test('shows the empty state when no record matches the filters', async ({ page }) => {
   await mockGristEndpoints(page)
   // Zèbre is INSEE/Disponible and Abeille is DGFiP/En cours: nothing matches both.
-  await page.goto('/ouvertures/suivi?organisation=INSEE&statut=En cours')
+  await page.goto('/suivi-de-publication/engagements-et-demandes?organisation=INSEE&statut=En cours')
 
   await expect(page.getByText('Aucun résultat ne correspond aux filtres sélectionnés')).toBeVisible()
   await expect(page.locator('.grist-table-viewer table')).toHaveCount(0)
@@ -169,7 +169,7 @@ test('shows the empty state when no record matches the filters', async ({ page }
 // and on the page's console.error, both expected in this scenario.
 testWithoutConsoleCheck('shows an error instead of "no data" when the Grist fetch fails', async ({ page }) => {
   await page.route(GRIST_TABLE_ROUTE, route => route.fulfill({ status: 500, json: { error: 'boom' } }))
-  await page.goto('/ouvertures/suivi')
+  await page.goto('/suivi-de-publication/engagements-et-demandes')
 
   const alert = page.locator('.fr-alert--error')
   await expect(alert).toBeVisible()

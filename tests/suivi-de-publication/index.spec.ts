@@ -2,7 +2,7 @@ import { expect } from '@playwright/test'
 import { test } from '../base'
 
 test('shows the hero and the two category cards', async ({ page }) => {
-  await page.goto('/ouvertures')
+  await page.goto('/suivi-de-publication')
 
   await expect(page.getByRole('heading', { level: 1, name: 'Suivre les ouvertures et mises à disposition de données publiques' })).toBeVisible()
 
@@ -20,9 +20,9 @@ test('navigates to the tracking table from the first card', async ({ page }) => 
   // The tracking table page fetches its Grist tables on mount; the endpoint is
   // not available in CI so it is mocked with empty tables.
   await page.route(/\/tables\/[^/]*\/records$/, route => route.fulfill({ json: { records: [] } }))
-  await page.goto('/ouvertures')
+  await page.goto('/suivi-de-publication')
 
   await page.getByRole('link', { name: 'Demandes d\'ouvertures et engagements ministériels' }).click()
-  await expect(page).toHaveURL(/\/ouvertures\/suivi$/)
+  await expect(page).toHaveURL(/\/suivi-de-publication\/engagements-et-demandes$/)
   await expect(page.getByRole('heading', { level: 1, name: 'Suivre les publications de données et les engagements ministériels' })).toBeVisible()
 })
