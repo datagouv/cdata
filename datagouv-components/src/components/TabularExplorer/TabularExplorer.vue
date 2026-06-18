@@ -279,14 +279,21 @@
       </div>
 
       <!-- Desktop: scrollable table -->
-      <!-- `-mx-4` lets the table extend edge-to-edge of the host's 1rem
-           horizontal padding (px-4 on ResourceExplorerViewer's TabPanel,
-           .container on ExploreResourceView), while the toolbar and
-           active-filter rows above keep that padding. -->
+      <!-- The table goes edge-to-edge while the toolbar / active-filter rows
+           above keep the host's horizontal padding:
+           - default: `-mx-4` cancels the host's 1rem padding (px-4 on
+             ResourceExplorerViewer's TabPanel), so the table reaches the
+             host box edge.
+           - `fullBleed`: the table breaks out of the (max-width) container to
+             span almost the whole viewport (explore page), keeping a 2rem
+             gutter on each side so it doesn't touch the screen edges. Centered
+             on the viewport via the classic `left-1/2` + `-translate-x-1/2`
+             trick (works because the container is itself centered). -->
       <div
         v-if="displayedColumns.length > 0"
         ref="scrollContainer"
-        class="hidden md:block overflow-auto max-h-[70vh] -mx-4"
+        class="hidden md:block overflow-auto max-h-[70vh]"
+        :class="fullBleed ? 'relative left-1/2 w-[calc(100vw_-_4rem)] -translate-x-1/2' : '-mx-4'"
       >
         <table class="text-sm border-collapse">
           <thead class="sticky top-0 bg-white z-10 shadow-[inset_0_-1px_0_0_#E5E5E5]">
@@ -621,6 +628,10 @@ import noColumnsSrc from '../../../assets/illustrations/_table.svg?url'
 
 const props = defineProps<{
   resourceId: string
+  // When true, the table breaks out to the full viewport width instead of just
+  // the host's padding. Used on the standalone explore page where the table
+  // should span the whole screen while the toolbar stays inside the container.
+  fullBleed?: boolean
 }>()
 
 const { t } = useTranslation()

@@ -93,6 +93,7 @@
         v-if="hasVisitedDataTab"
         :key="resource.id"
         :resource-id="resource.id"
+        full-bleed
       />
     </div>
     <div
