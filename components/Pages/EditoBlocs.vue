@@ -26,7 +26,10 @@
         v-if="isEditing"
         class="absolute -top-4 left-0 right-0 flex items-center justify-center"
       >
-        <AddBlocDropdown @new-bloc="workingBlocs.splice(index, 0, $event)">
+        <AddBlocDropdown
+          :for-organization="forOrganization"
+          @new-bloc="workingBlocs.splice(index, 0, $event)"
+        >
           <BrandedButton
             color="tertiary"
             size="xs"
@@ -92,7 +95,10 @@
         v-if="isEditing && index === workingBlocs.length - 1"
         class="absolute -bottom-4 left-0 right-0 flex items-center justify-center"
       >
-        <AddBlocDropdown @new-bloc="workingBlocs.push($event)">
+        <AddBlocDropdown
+          :for-organization="forOrganization"
+          @new-bloc="workingBlocs.push($event)"
+        >
           <BrandedButton
             color="tertiary"
             size="xs"
@@ -128,6 +134,7 @@
       </slot>
       <AddBlocDropdown
         v-if="isEditing"
+        :for-organization="forOrganization"
         @new-bloc="workingBlocs.push($event)"
       >
         <BrandedButton :icon="RiAddLine">
@@ -184,6 +191,9 @@ const props = withDefaults(defineProps<{
   editable?: boolean
   striped?: boolean
   hideEditButton?: boolean
+  // Trims the "add bloc" menu for organization presentation pages (no Hero, Markdown
+  // moved into the layout group). See AddBlocDropdown.
+  forOrganization?: boolean
   mainColor?: ComponentProps<typeof BrandedButton>['color']
   // When set, the empty state is also shown in view mode (not just while editing)
   // with this label on a CTA that enters edit mode. Hosts that pass it are
@@ -195,6 +205,7 @@ const props = withDefaults(defineProps<{
   editable: false,
   striped: true,
   hideEditButton: false,
+  forOrganization: false,
   mainColor: 'primary',
   emptyCtaLabel: undefined,
 })

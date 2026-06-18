@@ -6,6 +6,7 @@
     :blocs
     :editable="canEdit"
     hide-edit-button
+    for-organization
     :empty-cta-label="$t('Configurer la présentation')"
     :on-save="onSave"
   >
