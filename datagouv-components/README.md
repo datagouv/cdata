@@ -187,6 +187,7 @@ Additional labels for pre-release and build metadata are available as extensions
 ### Publish to NPM
 
 ```
+pnpm login
 pnpm run publish-stable
 ```
 
