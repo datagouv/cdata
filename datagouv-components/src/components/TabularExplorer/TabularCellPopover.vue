@@ -38,7 +38,7 @@
             class="flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-xs font-medium hover:bg-gray-50"
             @click="filterByValue"
           >
-            <RiFilter2Line
+            <RiFilterLine
               class="size-4"
               aria-hidden="true"
             />
@@ -71,7 +71,7 @@ import { computed, ref, useTemplateRef, watch } from 'vue'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
 import { onClickOutside } from '@vueuse/core'
 import {
-  RiFilter2Line,
+  RiFilterLine,
   RiFileCopyLine,
   RiCheckLine,
 } from '@remixicon/vue'

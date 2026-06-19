@@ -436,8 +436,8 @@ const addDescriptionAccordionId = useId()
 const addTagsAccordionId = useId()
 const addImageAccordionId = useId()
 
-const { data: types } = await useAPI<Array<ReuseType>>('/api/1/reuses/types', { lazy: true })
-const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics', { lazy: true })
+const { data: types } = await useAPI<Array<ReuseType>>('/api/1/reuses/types/', { lazy: true })
+const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/', { lazy: true })
 
 const MAX_TAGS_NB = 5
 

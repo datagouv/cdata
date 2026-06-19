@@ -2,7 +2,7 @@ import type { OrganizationReference, User } from '@datagouv/components-next'
 import type { NuxtApp, UseFetchOptions } from 'nuxt/app'
 import type { ApiFetch, PaginatedArray } from '~/types/types'
 /*
-  Example : const { data: datasets } = await useAPI<PaginatedArray<Dataset>>('/api/1/datasets')
+  Example : const { data: datasets } = await useAPI<PaginatedArray<Dataset>>('/api/1/datasets/')
 */
 export async function useAPI<T, U = T>(
   url: MaybeRefOrGetter<string>,
