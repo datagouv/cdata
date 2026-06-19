@@ -316,7 +316,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, DataserviceQuality, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, useFormatDate, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, DataserviceQuality, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
