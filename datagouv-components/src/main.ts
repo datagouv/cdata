@@ -56,7 +56,7 @@ import LicenseBadge from './components/LicenseBadge.vue'
 import Tag from './components/Tag.vue'
 import DatasetQuality from './components/DatasetQuality.vue'
 import DatasetQualityInline from './components/DatasetQualityInline.vue'
-import DatasetQualityItem from './components/DatasetQualityItem.vue'
+import QualityItem from './components/QualityItem.vue'
 import DatasetQualityScore from './components/DatasetQualityScore.vue'
 import ProgressBar from './components/ProgressBar.vue'
 import DatasetQualityTooltipContent from './components/DatasetQualityTooltipContent.vue'
@@ -352,7 +352,7 @@ export {
   DiscussionMessageCard,
   DatasetQuality,
   DatasetQualityInline,
-  DatasetQualityItem,
+  QualityItem,
   DatasetQualityScore,
   DatasetQualityTooltipContent,
   DateRangeDetails,
