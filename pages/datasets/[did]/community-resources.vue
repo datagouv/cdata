@@ -94,5 +94,5 @@ const query = computed(() => ({
   dataset: props.dataset.id,
   page_size: 5,
 }))
-const { data: resources } = await useAPI<PaginatedArray<CommunityResource>>('/api/1/datasets/community_resources', { query })
+const { data: resources } = await useAPI<PaginatedArray<CommunityResource>>('/api/1/datasets/community_resources/', { query })
 </script>

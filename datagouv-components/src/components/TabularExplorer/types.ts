@@ -1,5 +1,5 @@
 /** Response from /api/resources/{rid}/data/ */
-export interface TabularDataResponse {
+export type TabularDataResponse = {
   data: TabularRow[]
   meta: {
     page: number
@@ -17,11 +17,14 @@ export interface TabularDataResponse {
 export type TabularRow = Record<string, unknown> & { __id: number }
 
 /** Response from /api/resources/{rid}/profile/ */
-export interface TabularProfileResponse {
+export type TabularProfileResponse = {
   profile: TabularProfile
+  deleted_at: string | null
+  dataset_id: string
+  indexes: null
 }
 
-export interface TabularProfile {
+export type TabularProfile = {
   header: string[]
   columns: Record<string, TabularColumnInfo>
   formats: Record<string, string[]>
@@ -31,20 +34,20 @@ export interface TabularProfile {
   categorical: string[]
   total_lines: number
   nb_duplicates: number
-  columns_fields: unknown
-  columns_labels: unknown
+  columns_fields: Record<string, TabularColumnInfo>
+  columns_labels: Record<string, TabularColumnInfo>
   header_row_idx: number
   heading_columns: number
   trailing_columns: number
 }
 
-export interface TabularColumnInfo {
+export type TabularColumnInfo = {
   score: number
   format: string
   python_type: string
 }
 
-export interface TabularColumnProfile {
+export type TabularColumnProfile = {
   tops: TabularTopValue[]
   nb_distinct: number
   nb_missing_values: number
@@ -54,14 +57,14 @@ export interface TabularColumnProfile {
   mean?: number
 }
 
-export interface TabularTopValue {
+export type TabularTopValue = {
   value: string
   count: number
 }
 
 export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean'
 
-export interface ColumnFilters {
+export type ColumnFilters = {
   in?: string[]
   exact?: string
   min?: number
@@ -72,12 +75,12 @@ export interface ColumnFilters {
 
 export type SortDirection = 'asc' | 'desc'
 
-export interface SortConfig {
+export type SortConfig = {
   column: string
   direction: SortDirection
 }
 
-export interface BadgeStyle {
+export type BadgeStyle = {
   backgroundColor: string
   color: string
 }

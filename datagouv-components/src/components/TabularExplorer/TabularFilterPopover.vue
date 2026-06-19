@@ -1,25 +1,26 @@
 <template>
-  <div
+  <Popover
     ref="anchor"
+    v-slot="{ open }"
     class="relative shrink-0"
   >
-    <button
-      class="p-0.5 rounded focus:outline-none"
+    <PopoverButton
+      class="p-0.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-new-primary"
       :class="hasColumnFilter ? 'bg-primary text-white' : 'hover:bg-gray-100'"
-      @click.stop="togglePopover"
     >
-      <RiFilter2Line
+      <RiFilterLine
         class="size-3.5"
         aria-hidden="true"
       />
       <span class="sr-only">{{ t('Filtrer') }} {{ column }}</span>
-    </button>
+    </PopoverButton>
 
     <ClientOnly>
       <Teleport to="#tooltips">
-        <div
-          v-show="isOpen"
+        <PopoverPanel
+          v-show="open"
           ref="panel"
+          static
           class="bg-white border border-black/10 rounded-lg shadow-md w-64 absolute z-[800]"
           :style="floatingStyles"
         >
@@ -50,17 +51,17 @@
             :category-badge-styles="categoryBadgeStyles"
             :boolean-counts="booleanCounts"
           />
-        </div>
+        </PopoverPanel>
       </Teleport>
     </ClientOnly>
-  </div>
+  </Popover>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
-import { onClickOutside } from '@vueuse/core'
-import { RiFilter2Line, RiCloseLine } from '@remixicon/vue'
+import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
+import { RiFilterLine, RiCloseLine } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { hasFilterForColumn as _hasFilterForColumn } from '../../functions/tabular'
 import BrandedButton from '../BrandedButton.vue'
@@ -83,18 +84,12 @@ const filters = defineModel<Record<string, ColumnFilters>>('filters', { default:
 
 const { t } = useTranslation()
 
-const isOpen = ref(false)
-
-function togglePopover() {
-  isOpen.value = !isOpen.value
-}
-
-const anchorRef = useTemplateRef<HTMLElement>('anchor')
-const panelRef = useTemplateRef<HTMLElement>('panel')
-
-onClickOutside(panelRef, () => {
-  isOpen.value = false
-}, { ignore: [anchorRef] })
+// Headless UI Popover manages open state, Escape-to-close, outside-click,
+// focus handling and ARIA. floating-ui only positions the teleported panel.
+const anchorComponent = useTemplateRef<InstanceType<typeof Popover>>('anchor')
+const panelComponent = useTemplateRef<InstanceType<typeof PopoverPanel>>('panel')
+const anchorEl = computed(() => anchorComponent.value?.$el as HTMLElement | undefined)
+const panelEl = computed(() => panelComponent.value?.$el as HTMLElement | undefined)
 
 const hasColumnFilter = computed(() => _hasFilterForColumn(filters.value, props.column))
 
@@ -103,7 +98,7 @@ function clearColumnFilter() {
   filters.value = rest
 }
 
-const { floatingStyles } = useFloating(anchorRef, panelRef, {
+const { floatingStyles } = useFloating(anchorEl, panelEl, {
   placement: 'bottom-start',
   middleware: [flip(), shift()],
   whileElementsMounted: autoUpdate,
