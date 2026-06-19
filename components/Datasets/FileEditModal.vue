@@ -69,7 +69,7 @@
               <p>
                 {{ $t(`Attention : l'`) }}
                 <a
-                  :href="`https://tabular-api.data.gouv.fr/api/resources/${resource.resource?.id}/`"
+                  :href="`${config.tabularApiUrl}/api/resources/${resource.resource?.id}/`"
                   target="_blank"
                   class="fr-link"
                 >
@@ -149,19 +149,19 @@
               >
                 <p>
                   {{ $t('Attention : cette ressource est exposée via une') }}
-                  <a
-                    href="https://www.data.gouv.fr/dataservices/api-tabulaire-data-gouv-fr-beta"
+                  <CdataLink
+                    :to="`/dataservices/${runtimeConfig.public.tabularApiDataserviceId}`"
                     target="_blank"
                     class="fr-link"
                   >
                     {{ $t('API automatique') }}
-                  </a>
+                  </CdataLink>
                   {{ $t('fournie par data.gouv.fr.') }}
                 </p>
                 <p>
                   {{ $t('Si vous supprimez la ressource,') }}
                   <a
-                    :href="`https://tabular-api.data.gouv.fr/api/resources/${resource.resource?.id}/`"
+                    :href="`${config.tabularApiUrl}/api/resources/${resource.resource?.id}/`"
                     target="_blank"
                     class="fr-link"
                   >
@@ -198,11 +198,15 @@ import { cloneDeep } from 'lodash-es'
 import { RiDeleteBin6Line, RiPencilLine } from '@remixicon/vue'
 import ModalWithButton from '../Modal/ModalWithButton.vue'
 import DescribeResource from './DescribeResource.vue'
+import CdataLink from '../CdataLink.vue'
 import type { CommunityResourceForm, ResourceForm } from '~/types/types'
+import { useComponentsConfig } from '../../datagouv-components/src/config'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const formId = useId()
+const config = useComponentsConfig()
+const runtimeConfig = useRuntimeConfig()
 
 const props = withDefaults(defineProps<{
   openOnMounted?: boolean

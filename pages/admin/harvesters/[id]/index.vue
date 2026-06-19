@@ -115,22 +115,22 @@
               <td>{{ job.started ? formatDate(job.started, { dateStyle: 'long', timeStyle: 'short' }) : formatDate(job.created, { dateStyle: 'long', timeStyle: 'short' }) }}</td>
               <td>{{ job.ended ? formatDate(job.ended, { dateStyle: 'long', timeStyle: 'short' }) : '—' }}</td>
               <td class="!text-right font-mono">
-                {{ job.items.filter((i) => i.dataset).length }}
+                {{ job.items.by_type.dataset }}
               </td>
               <td class="!text-right font-mono">
-                {{ job.items.filter((i) => i.dataservice).length }}
+                {{ job.items.by_type.dataservice }}
               </td>
               <td class="!text-right font-mono">
-                {{ job.items.filter((i) => i.status === 'done').length }}
+                {{ job.items.by_status.done }}
               </td>
               <td class="!text-right font-mono">
-                {{ job.items.filter((i) => i.status === 'skipped').length }}
+                {{ job.items.by_status.skipped }}
               </td>
               <td class="!text-right font-mono">
-                {{ job.items.filter((i) => i.status === 'archived').length }}
+                {{ job.items.by_status.archived }}
               </td>
               <td class="!text-right font-mono">
-                {{ job.items.filter((i) => i.status === 'failed').length }}
+                {{ job.items.by_status.failed }}
               </td>
             </tr>
           </tbody>

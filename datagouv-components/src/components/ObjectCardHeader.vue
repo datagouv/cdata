@@ -1,7 +1,7 @@
 <template>
   <component
     :is="titleTag"
-    class="w-full text-base flex"
+    class="w-full text-base font-bold flex"
   >
     <AppLink
       :to="url"

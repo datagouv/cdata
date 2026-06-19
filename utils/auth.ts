@@ -76,7 +76,7 @@ export const loadMe = async (meState: Ref<Me | null | undefined>) => {
   try {
     meState.value = await $fetch<Me | null>('/api/1/me/', {
       baseURL: config.public.apiBase,
-      credentials: 'include',
+      credentials: config.public.devApiKey ? undefined : 'include',
       headers,
     })
     if (meState.value) {

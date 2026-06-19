@@ -9,11 +9,11 @@
 
 <script setup lang="ts">
 import { throwOnNever } from '@datagouv/components-next'
-import type { HarvesterJob } from '~/types/harvesters'
+import type { HarvesterJob, HarvesterJobPreview } from '~/types/harvesters'
 import type { AdminBadgeType } from '~/types/types'
 
 const props = defineProps<{
-  job: HarvesterJob
+  job: HarvesterJob | HarvesterJobPreview
 }>()
 
 const { t } = useTranslation()

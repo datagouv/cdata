@@ -271,7 +271,7 @@
               />
             </div>
             <div
-              v-if="tab.key === 'swagger'"
+              v-if="tab.key === 'api'"
             >
               <div class="fr-mb-4w">
                 <p>{{ t("Cette API est générée automatiquement par {platform} à partir du fichier.", { platform: config.name }) }}</p>
@@ -417,7 +417,7 @@ const tabsOptions = computed(() => {
   options.push({ key: 'downloads', label: t('Téléchargements') })
 
   if (hasTabularData.value) {
-    options.push({ key: 'swagger', label: t('Swagger') })
+    options.push({ key: 'api', label: t('API') })
   }
 
   return options

@@ -115,10 +115,10 @@
                 </template>
               </td>
               <td class="font-mono text-right">
-                {{ getHarvesterDatasets(harvester) }}
+                {{ harvester.last_job?.items.by_type.dataset ?? 0 }}
               </td>
               <td class="font-mono text-right">
-                {{ getHarvesterDataservices(harvester) }}
+                {{ harvester.last_job?.items.by_type.dataservice ?? 0 }}
               </td>
               <td>
                 <BrandedButton
@@ -192,7 +192,7 @@ import HarvesterBadge from './HarvesterBadge.vue'
 import type { PaginatedArray } from '~/types/types'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
-import type { HarvesterJob, HarvesterSource } from '~/types/harvesters'
+import type { HarvesterSource } from '~/types/harvesters'
 import { getHarvesterAdminUrl } from '~/utils/harvesters'
 
 const props = defineProps<{
@@ -201,66 +201,26 @@ const props = defineProps<{
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
-const { $api } = useNuxtApp()
 
 const page = ref(1)
 const pageSize = ref(20)
 const q = ref('')
 const qDebounced = refDebounced(q, config.public.searchDebounce)
 
-const url = computed(() => {
-  const url = new URL(`/api/1/harvest/sources/`, config.public.apiBase)
+const params = computed(() => {
+  return {
+    organization: props.organization?.id,
 
-  if (props.organization) {
-    url.searchParams.set('owner', props.organization.id)
+    deleted: true,
+    q: qDebounced.value,
+    page_size: pageSize.value,
+    page: page.value,
   }
-
-  url.searchParams.set('deleted', 'true')
-  url.searchParams.set('q', qDebounced.value)
-  url.searchParams.set('page_size', pageSize.value.toString())
-  url.searchParams.set('page', page.value.toString())
-
-  return url.toString()
 })
 
-const { data: pageData, status } = await useAPI<PaginatedArray<HarvesterSource>>(url, { lazy: true })
+const { data: pageData, status } = await useAPI<PaginatedArray<HarvesterSource>>('/api/1/harvest/sources/', { lazy: true, query: params })
 
 watch(qDebounced, () => {
   page.value = 1
 })
-
-const jobs = ref<Record<string, HarvesterJob>>({})
-const jobsPromises = ref<Record<string, Promise<void>>>({})
-
-watchEffect(async () => {
-  if (!pageData.value) return
-
-  for (const source of pageData.value.data) {
-    if (!source.last_job) continue
-    if (source.last_job.id in jobsPromises.value) continue
-
-    jobsPromises.value[source.last_job.id] = $api<HarvesterJob>(`/api/1/harvest/job/${source.last_job.id}/`)
-      .then((job) => {
-        if (source.last_job) {
-          jobs.value[source.last_job.id] = job // Working because there is no conflicts between IDs from different types
-        }
-      })
-  }
-
-  await Promise.all(Object.values(jobsPromises.value))
-})
-
-function getHarvesterDataservices(harvester: HarvesterSource) {
-  if (!harvester.last_job || !jobs.value[harvester.last_job.id]) {
-    return 0
-  }
-  return jobs.value[harvester.last_job.id].items.filter(item => item.dataservice).length
-}
-
-function getHarvesterDatasets(harvester: HarvesterSource) {
-  if (!harvester.last_job || !jobs.value[harvester.last_job.id]) {
-    return 0
-  }
-  return jobs.value[harvester.last_job.id].items.filter(item => item.dataset).length
-}
 </script>

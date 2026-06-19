@@ -1,21 +1,26 @@
 <template>
   <div>
-    <Teleport
-      v-if="downloadStatsUrl"
-      to="#metrics-actions"
-    >
-      <BrandedButton
-        color="secondary"
-        :disabled="!downloadStatsUrl"
-        :href="downloadStatsUrl || ''"
-        :title="$t('Télécharger le fichier')"
-        download="stats.csv"
-        :icon="RiDownloadLine"
-        size="xs"
+    <!-- ClientOnly required: Nuxt only injects SSR teleports targeting `body` or
+         `#teleports` into the HTML, so an SSR-rendered teleport to #metrics-actions
+         is dropped and causes a hydration mismatch. -->
+    <ClientOnly>
+      <Teleport
+        v-if="downloadStatsUrl"
+        to="#metrics-actions"
       >
-        {{ $t('Télécharger les statistiques agrégées') }}
-      </BrandedButton>
-    </Teleport>
+        <BrandedButton
+          color="secondary"
+          :disabled="!downloadStatsUrl"
+          :href="downloadStatsUrl || ''"
+          :title="$t('Télécharger le fichier')"
+          download="stats.csv"
+          :icon="RiDownloadLine"
+          size="xs"
+        >
+          {{ $t('Télécharger les statistiques agrégées') }}
+        </BrandedButton>
+      </Teleport>
+    </ClientOnly>
     <PaddedContainer class="mb-5">
       <section
         class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 pb-4"

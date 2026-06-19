@@ -200,10 +200,13 @@
               <div class="fr-col">
                 <select
                   id="sort-search"
-                  v-model="sort"
+                  v-model="effectiveSort"
                   class="fr-select text-sm shadow-input-blue!"
                 >
-                  <option :value="undefined">
+                  <option
+                    v-if="!currentTypeConfig?.defaultSort"
+                    :value="undefined"
+                  >
                     {{ t('Pertinence') }}
                   </option>
                   <option
@@ -489,6 +492,10 @@ const { debounced: qDebounced, flush: flushQ } = useDebouncedRef(q, componentsCo
 const qForParams = computed(() => props.hideSearchInput ? q.value : qDebounced.value)
 const page = useRouteQuery('page', 1, { transform: Number })
 const sort = useRouteQuery<string | undefined>('sort')
+const effectiveSort = computed({
+  get: () => sort.value ?? currentTypeConfig.value?.defaultSort,
+  set: (value) => { sort.value = value },
+})
 
 provide(searchFilterContextKey, {
   register(urlParam, entry) {
@@ -542,18 +549,32 @@ const allFilters: Record<string, Ref<unknown>> = {
   type: reuseType,
 }
 
-// Reset sort and filters when changing type if they're not valid for the new type
+// Reset page, sort and filters when changing type. Every reset below goes
+// through useRouteQuery, so VueUse coalesces them into a single router.replace
+// (its shared _queriesQueue flushes once on nextTick). Custom filters are cleared
+// here too, rather than in useSearchFilter's onunmount, so their URL change joins
+// that same batch instead of racing it with a separate router.replace.
 watch(currentType, () => {
+  // page=1 is the default and is dropped from the URL, so only reset when needed.
+  if (page.value !== 1) page.value = 1
+
   // Reset sort if not valid
   const validSortValues = activeSortOptions.value.map(o => o.value as string)
   if (sort.value && !validSortValues.includes(sort.value)) {
     sort.value = undefined
   }
 
-  // Reset filters that are not enabled for the new type
+  // Reset built-in filters that are not enabled for the new type
   for (const [filterName, filterRef] of Object.entries(allFilters)) {
     if (filterRef.value !== undefined && !activeFilters.value.includes(filterName)) {
       filterRef.value = undefined
+    }
+  }
+
+  // Reset type-scoped custom filters that don't apply to the new type
+  for (const entry of customFilterRegistry.values()) {
+    if (entry.typeKeys && !entry.typeKeys.includes(currentType.value) && isCustomFilterActive(entry)) {
+      entry.ref.value = entry.defaultValue
     }
   }
 })
@@ -759,7 +780,7 @@ const rssUrl = computed(() => {
   }, currentTypeConfig.value ? configKey(currentTypeConfig.value) : undefined)
 
   // Add sort if set
-  if (sort.value) params.set('sort', sort.value)
+  if (effectiveSort.value) params.set('sort', effectiveSort.value)
 
   const queryString = params.toString()
   const basePath = '/api/1/datasets/recent.atom'

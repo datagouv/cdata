@@ -1,33 +1,38 @@
 <template>
   <div>
-    <Teleport to="#metrics-actions">
-      <AdminInput
-        v-model="q"
-        type="search"
-        :icon="RiSearchLine"
-        :placeholder="$t('Recherche')"
-      />
-      <BrandedButton
-        v-if="organization && organization.metrics.datasets > 0"
-        size="xs"
-        :icon="RiDownloadLine"
-        :loading="isDownloadingStats"
-        @click="downloadStats"
-      >
-        {{ isDownloadingStats ? $t('Téléchargement de l\'évolution par mois...') : $t('Télécharger l\'évolution par mois') }}
-      </BrandedButton>
-      <BrandedButton
-        v-if="organization && organization.metrics.datasets > 0 && downloadCatalogsUrl"
-        color="secondary"
-        :href="downloadCatalogsUrl"
-        :external="true"
-        download="stats.csv"
-        :icon="RiDownloadLine"
-        size="xs"
-      >
-        {{ $t('Télécharger le catalogue') }}
-      </BrandedButton>
-    </Teleport>
+    <!-- ClientOnly required: Nuxt only injects SSR teleports targeting `body` or
+         `#teleports` into the HTML, so an SSR-rendered teleport to #metrics-actions
+         is dropped and causes a hydration mismatch. -->
+    <ClientOnly>
+      <Teleport to="#metrics-actions">
+        <AdminInput
+          v-model="q"
+          type="search"
+          :icon="RiSearchLine"
+          :placeholder="$t('Recherche')"
+        />
+        <BrandedButton
+          v-if="organization && organization.metrics.datasets > 0"
+          size="xs"
+          :icon="RiDownloadLine"
+          :loading="isDownloadingStats"
+          @click="downloadStats"
+        >
+          {{ isDownloadingStats ? $t('Téléchargement de l\'évolution par mois...') : $t('Télécharger l\'évolution par mois') }}
+        </BrandedButton>
+        <BrandedButton
+          v-if="organization && organization.metrics.datasets > 0 && downloadCatalogsUrl"
+          color="secondary"
+          :href="downloadCatalogsUrl"
+          :external="true"
+          download="stats.csv"
+          :icon="RiDownloadLine"
+          size="xs"
+        >
+          {{ $t('Télécharger le catalogue') }}
+        </BrandedButton>
+      </Teleport>
+    </ClientOnly>
     <LoadingBlock
       v-slot="{ data: pageData }"
       :status

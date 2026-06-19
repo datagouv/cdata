@@ -107,7 +107,9 @@ async function displayMap() {
   p.getHeader().then((h: { maxZoom: number, centerLon: number, centerLat: number }) => {
     const map = new maplibregl.Map({
       container: container.value!,
-      style: styleVector as maplibregl.StyleSpecification,
+      // JSON import is inferred too loosely (e.g. center as number[]) to match
+      // maplibre's strict StyleSpecification, so cast through unknown.
+      style: styleVector as unknown as maplibregl.StyleSpecification,
       zoom: h.maxZoom - 2,
       center: [h.centerLon, h.centerLat],
     })
