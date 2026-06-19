@@ -87,12 +87,13 @@
          (which would leave Suspense hanging on a stale promise). -->
     <div
       v-show="activeTabKey === 'data'"
-      class="mt-4 px-4"
+      class="container mt-4"
     >
       <TabularExplorer
         v-if="hasVisitedDataTab"
         :key="resource.id"
         :resource-id="resource.id"
+        full-bleed
       />
     </div>
     <div
