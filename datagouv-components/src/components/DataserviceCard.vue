@@ -104,6 +104,11 @@
       :text="dataservice.description"
     />
 
+    <DataserviceQualityInline
+      v-if="dataservice.quality"
+      :quality="dataservice.quality"
+    />
+
     <slot />
   </ObjectCard>
 </template>
@@ -126,6 +131,7 @@ import ObjectCardBadge from './ObjectCardBadge.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
+import DataserviceQualityInline from './DataserviceQualityInline.vue'
 
 type Props = {
   dataservice: Dataservice

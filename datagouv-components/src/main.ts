@@ -41,6 +41,7 @@ import BrandedButton from './components/BrandedButton.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
 import DataserviceQuality from './components/DataserviceQuality.vue'
+import DataserviceQualityInline from './components/DataserviceQualityInline.vue'
 import DataserviceQualityTooltipContent from './components/DataserviceQualityTooltipContent.vue'
 import DatasetCard from './components/DatasetCard.vue'
 import DataStructure from './components/ResourceAccordion/DataStructure.vue'
@@ -337,6 +338,7 @@ export {
   CopyButton,
   DataserviceCard,
   DataserviceQuality,
+  DataserviceQualityInline,
   DataserviceQualityTooltipContent,
   DatasetCard,
   DataStructure,
