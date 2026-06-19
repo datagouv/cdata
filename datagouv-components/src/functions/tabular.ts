@@ -45,6 +45,15 @@ export function buildTypeConfig(t: TranslationFunction): Record<ColumnType, Type
   }
 }
 
+export function resolveColumnType(colInfo: { python_type: string, format?: string }, isCategorical: boolean): ColumnType {
+  if (['int', 'float'].includes(colInfo.python_type)) return 'number'
+  if (colInfo.format === 'year') return 'date'
+  if (['date', 'datetime'].includes(colInfo.python_type)) return 'date'
+  if (colInfo.python_type === 'bool') return 'boolean'
+  if (isCategorical) return 'categorical'
+  return 'text'
+}
+
 // csv-detective formats that carry no semantic meaning beyond the generic
 // display type already resolved by `ColumnType` — these fall back to
 // `buildTypeConfig` (Texte / Nombre / Date / Booléen) in the header.
