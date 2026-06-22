@@ -143,7 +143,7 @@
                 </span>
               </div>
               <CdataLink
-                v-if="record.fields.url"
+                v-if="record.fields.url && statutLinksToData(record.fields.statut_front)"
                 :to="record.fields.url"
                 external
                 class="font-medium bg-none underline"
@@ -164,7 +164,7 @@
           <td class="whitespace-nowrap">
             <AdminBadge
               v-if="record.fields.source_demande_front"
-              type="default"
+              :type="sourceBadgeType(record.fields.source_demande_front)"
               size="sm"
             >
               {{ record.fields.source_demande_front }}
@@ -314,58 +314,45 @@ type OrganisationRecord = {
   }
 }
 
-const recordsUrl = `${config.public.ouverturesGristBaseUrl}/tables/${config.public.ouverturesGristTable}/records`
+// Only the records explicitly flagged for the public site are shown; the Grist
+// table also holds internal rows that must not appear here.
+const recordsFilter = encodeURIComponent(JSON.stringify({ ajout_ouverture_data_gouv_fr: [true] }))
+const recordsUrl = `${config.public.ouverturesGristBaseUrl}/tables/${config.public.ouverturesGristTable}/records?filter=${recordsFilter}`
 const organisationsUrl = `${config.public.ouverturesGristBaseUrl}/tables/Organisations/records`
 
-const enrichedRecords = ref<Array<OuvertureRecord>>([])
-const loading = ref(true)
-const error = ref<string | null>(null)
+const { data: recordsData, status: recordsStatus, error: recordsError } = useFetch<{ records?: Array<OuvertureRecord> }>(recordsUrl)
+const { data: orgsData, status: orgsStatus, error: orgsError } = useFetch<{ records?: Array<OrganisationRecord> }>(organisationsUrl)
 
-onMounted(async () => {
-  try {
-    const [recordsRes, orgsRes] = await Promise.all([
-      fetch(recordsUrl),
-      fetch(organisationsUrl),
-    ])
-    const failed = [recordsRes, orgsRes].find(response => !response.ok)
-    if (failed) {
-      throw new Error(`${t('Erreur HTTP')}: ${failed.status} ${failed.statusText}`)
-    }
+const loading = computed(() => recordsStatus.value === 'pending' || orgsStatus.value === 'pending')
+const error = computed<string | null>(() =>
+  recordsError.value || orgsError.value ? t('Erreur lors du chargement des données') : null,
+)
 
-    const recordsData = await recordsRes.json() as { records?: Array<OuvertureRecord> }
-    const orgsData = await orgsRes.json() as { records?: Array<OrganisationRecord> }
-    if (!recordsData.records || !orgsData.records) {
-      throw new Error(t('Format de réponse invalide: propriété "records" manquante'))
-    }
+const enrichedRecords = computed<Array<OuvertureRecord>>(() => {
+  const records = recordsData.value?.records
+  const orgs = orgsData.value?.records
+  if (!records || !orgs) return []
 
-    const orgsById = new Map<number, string>()
-    for (const org of orgsData.records) {
-      orgsById.set(org.id, org.fields.nom_organisation)
-    }
-
-    const resolveOrgs = (value: unknown): Array<string> =>
-      unwrapList(value)
-        .map(id => orgsById.get(Number(id)))
-        .filter((name): name is string => Boolean(name))
-
-    enrichedRecords.value = recordsData.records.map(record => ({
-      ...record,
-      fields: {
-        ...record.fields,
-        organisation_names: resolveOrgs(record.fields.organisation),
-        ministere_de_tutelle_names: resolveOrgs(record.fields.ministere_de_tutelle),
-        type_values: unwrapList(record.fields.type).map(String),
-        thematique_values: unwrapList(record.fields.thematique).map(String),
-      },
-    })).filter(isMeaningfulRecord)
+  const orgsById = new Map<number, string>()
+  for (const org of orgs) {
+    orgsById.set(org.id, org.fields.nom_organisation)
   }
-  catch (e) {
-    console.error('Failed to load ouvertures data', e)
-    error.value = e instanceof Error ? e.message : t('Erreur inconnue')
-  }
-  finally {
-    loading.value = false
-  }
+
+  const resolveOrgs = (value: unknown): Array<string> =>
+    unwrapList(value)
+      .map(id => orgsById.get(Number(id)))
+      .filter((name): name is string => Boolean(name))
+
+  return records.map(record => ({
+    ...record,
+    fields: {
+      ...record.fields,
+      organisation_names: resolveOrgs(record.fields.organisation),
+      ministere_de_tutelle_names: resolveOrgs(record.fields.ministere_de_tutelle),
+      type_values: unwrapList(record.fields.type).map(String),
+      thematique_values: unwrapList(record.fields.thematique).map(String),
+    },
+  })).filter(isMeaningfulRecord)
 })
 
 type StatutDefinition = {
@@ -413,6 +400,21 @@ const STATUTS: Array<StatutDefinition> = [
 ]
 
 const statutByValue = new Map(STATUTS.map(statut => [statut.value, statut]))
+
+// Colours for the "Source de la demande" column. Status colours (red, green, orange)
+// are kept out so they stay tied to the status column; "Demande utilisateur" uses the
+// DSFR decorative teal and "Autre demande" stays neutral grey.
+const SOURCE_BADGE_TYPES: Record<string, AdminBadgeType> = {
+  'DINUM': 'primary',
+  'Engagements ministériels 2021': 'pink',
+  'Demande utilisateur': 'teal',
+  'Autre demande': 'default',
+}
+
+function sourceBadgeType(source: string | null): AdminBadgeType {
+  if (!source) return 'default'
+  return SOURCE_BADGE_TYPES[source] ?? 'default'
+}
 
 const columns = [
   t('Titre'),

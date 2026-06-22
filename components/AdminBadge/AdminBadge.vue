@@ -39,6 +39,8 @@ const colors = computed(() => {
     danger: 'text-new-error bg-new-error-light',
     default: 'text-gray-plain bg-gray-lower',
     pink: 'text-pink bg-pink-soft',
+    // DSFR decorative "illustration" colour, for categorical (non-status) badges.
+    teal: 'text-new-green-illustration bg-new-green-illustration-light',
   }[props.type]
 })
 
