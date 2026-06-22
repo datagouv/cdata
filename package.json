@@ -34,7 +34,7 @@
     "lint:fix": "eslint . --fix",
     "lint-staged": "lint-staged",
     "build": "NODE_OPTIONS=--max-old-space-size=8192 nuxt build",
-    "typecheck": "nuxt typecheck",
+    "typecheck": "NODE_OPTIONS=--max-old-space-size=8192 nuxt typecheck",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",

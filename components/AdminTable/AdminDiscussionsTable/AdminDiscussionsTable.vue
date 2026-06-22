@@ -55,14 +55,17 @@
         :key="discussion.id"
       >
         <td>
-          <p class="fr-text--bold">
+          <!-- Not <p>s: TextClamp is a .client component, its SSR placeholder is
+               a <div> and a <div> inside a <p> is restructured by the browser
+               parser, causing hydration mismatches -->
+          <div class="fr-text--bold">
             <TextClamp
               :text="discussion.title"
               :auto-resize="true"
               :max-lines="1"
             />
-          </p>
-          <p v-if="!subject && subjects[discussion.subject.id]">
+          </div>
+          <div v-if="!subject && subjects[discussion.subject.id]">
             <CdataLink
               class="link inline-flex gap-1"
               :to="getSubjectPage(subjects[discussion.subject.id]!)"
@@ -79,7 +82,7 @@
                 :max-lines="1"
               />
             </CdataLink>
-          </p>
+          </div>
         </td>
         <td>
           <AdminBadge

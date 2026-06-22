@@ -26,20 +26,22 @@
     <!-- Null filter with progress bar -->
     <div
       v-if="columnProfile && columnProfile.nb_missing_values > 0"
-      class="flex items-center gap-2 px-3 py-2 border-b border-black/10"
+      class="px-3 py-2 border-b border-black/10 space-y-1.5"
     >
-      <span class="text-xs text-gray-plain whitespace-nowrap">
-        <span class="font-mono tabular-nums">{{ columnProfile.nb_missing_values }}</span>
-        null
-        <span class="text-gray-low">({{ nullPercent }})</span>
-      </span>
-      <ProgressBar
-        :value="columnProfile.nb_missing_values"
-        :max="totalLines"
-        bar-class="bg-gray-low"
-        class="flex-1 !h-1.5 !min-w-0 !border-0 !bg-gray-default"
-      />
-      <div class="flex items-center gap-0.5">
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-gray-plain whitespace-nowrap">
+          <span class="font-mono tabular-nums">{{ columnProfile.nb_missing_values }}</span>
+          null
+          <span class="text-gray-low">({{ nullPercent }})</span>
+        </span>
+        <ProgressBar
+          :value="columnProfile.nb_missing_values"
+          :max="totalLines"
+          bar-class="bg-gray-low"
+          class="flex-1 !h-1.5 !min-w-0 !border-0 !bg-gray-default"
+        />
+      </div>
+      <div class="flex items-center justify-end gap-0.5">
         <BrandedButton
           :color="nullFilter === 'only' ? 'primary' : 'tertiary'"
           size="2xs"

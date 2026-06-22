@@ -51,6 +51,7 @@ export default defineConfig({
       testIgnore: [
         /.*\.normal-user\.spec\.ts/,
         /.*\.2fa-user\.spec\.ts/,
+        /.*\.logged-out\.spec\.ts/,
       ],
       use: { ...devices['Desktop Chrome'], storageState: 'playwright/.auth/user.json' },
       dependencies: ['setup'],
@@ -71,10 +72,20 @@ export default defineConfig({
     },
 
     {
+      name: 'chromium-logged-out',
+      testMatch: /.*\.logged-out\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+      // No storageState: the browser is logged out. The setup dependency is still
+      // needed so tests can create fixtures through an authenticated API context.
+      dependencies: ['setup'],
+    },
+
+    {
       name: 'firefox',
       testIgnore: [
         /.*\.normal-user\.spec\.ts/,
         /.*\.2fa-user\.spec\.ts/,
+        /.*\.logged-out\.spec\.ts/,
       ],
       use: { ...devices['Desktop Firefox'], storageState: 'playwright/.auth/user.json' },
       dependencies: ['setup'],
