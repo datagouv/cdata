@@ -189,7 +189,9 @@
               v-if="statutLinksToData(record.fields.statut_front) && record.fields.url"
               :to="record.fields.url"
               external
-              class="no-underline"
+              target="_blank"
+              rel="noopener"
+              class="no-underline fr-raw-link"
             >
               <AdminBadge
                 :type="statutBadgeType(record.fields.statut_front)"
