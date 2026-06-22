@@ -1,5 +1,6 @@
 import type { TabularAggregateType } from '../functions/tabularApi'
 import type { Owned, OwnedWithId } from './owned'
+import type { ColumnType } from '../components/TabularExplorer/types'
 
 export type FilterCondition = 'exact' | 'differs' | 'is_null' | 'is_not_null' | 'greater' | 'less' | 'strictly_greater' | 'strictly_less'
 export type Filter = {
@@ -87,3 +88,6 @@ export type ChartForm = Omit<ChartForApi, 'x_axis' | 'series' | 'owner' | 'organ
   chart_type?: DataSeriesType | null
   filter: GenericFilter | null
 }
+
+export type ColumnDefinition = { name: string, type: ColumnType }
+export type ColumnsDefinition = Record<string, Array<ColumnDefinition>>

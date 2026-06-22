@@ -177,6 +177,18 @@ async function updateDataset(asPrivate: boolean) {
   await navigateTo(`/datasets/${newDataset.value.slug}`)
 }
 
+// A fresh wizard entry must not reuse the dataset created during a previous
+// publication flow. Otherwise the `||` reuse below keeps the old dataset and
+// every new resource gets attached to it instead of a brand new dataset.
+// The page remounts on every step navigation, so we only clear on a genuine
+// fresh start (step 1, where no dataset of the current flow exists yet) to
+// avoid wiping the dataset created for the current flow on later steps.
+onMounted(() => {
+  if (currentStep.value === 1) {
+    clearNuxtState('new-dataset')
+  }
+})
+
 watchEffect(() => {
   if (!isCurrentStepValid.value) {
     moveToStep(1)
