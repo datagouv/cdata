@@ -58,9 +58,9 @@ jobs:
           include-hidden-files: true
 
   # ============================================
-  # JOB 2: Quality - lint + typecheck (runs in parallel with build)
+  # JOB 2: Quality & unit tests - lint + typecheck + vitest (runs in parallel with build)
   # ============================================
-  quality:
+  quality_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -82,6 +82,9 @@ jobs:
 
       - name: Run typecheck
         run: pnpm run typecheck
+
+      - name: Run unit tests
+        run: pnpm run test:unit
 
       - name: Install datagouv-components dependencies
         working-directory: ./datagouv-components
@@ -290,7 +293,7 @@ jobs:
   # JOB 4: Docker - build & push Docker image (automatic on main, manual on any branch)
   # ============================================
   docker:
-    needs: [quality, e2e]
+    needs: [quality_and_test, e2e]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     permissions:
@@ -343,7 +346,7 @@ jobs:
   # JOB 5: Sentry - upload source maps (automatic on main, manual on any branch)
   # ============================================
   sentry:
-    needs: [quality, e2e]
+    needs: [quality_and_test, e2e]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
@@ -378,7 +381,7 @@ jobs:
   # JOB 6: Publish datagouv-components (automatic on main, manual on any branch)
   # ============================================
   publish-datagouv-components:
-    needs: [quality, e2e]
+    needs: [quality_and_test, e2e]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
