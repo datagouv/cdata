@@ -2,8 +2,20 @@ import type { Chart } from '@datagouv/components-next'
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
+import profile from './profile.json' with { type: 'json' }
+import data from './data.json' with { type: 'json' }
+
+async function mockTabular(page: Page) {
+  await page.route('**/api/resources/*/profile/', async (route) => {
+    await route.fulfill({ json: profile })
+  })
+  await page.route('**/api/resources/*/data/', async (route) => {
+    await route.fulfill({ json: data })
+  })
+}
 
 async function setupChart(page: Page) {
+  await mockTabular(page)
   await page.goto('/admin/beta/chart')
   await page.waitForLoadState('networkidle')
 
