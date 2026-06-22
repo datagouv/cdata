@@ -48,6 +48,7 @@
               <ClientOnly>
                 <ChartViewerWrapper
                   :chart="chartForViewer"
+                  @update="updateImage"
                 />
               </ClientOnly>
             </div>
@@ -496,7 +497,7 @@ type SortOption = {
   icon: Component | null
 }
 
-const { $api } = useNuxtApp()
+const { $api, $fileApi } = useNuxtApp()
 const runtimeConfig = useRuntimeConfig()
 const { t } = useTranslation()
 const hasTabularData = useHasTabularData()
@@ -524,6 +525,7 @@ const producer = ref<Owned | null>(null)
 const dataset = ref<DatasetSuggest | null>(null)
 const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref<string>('')
+const image = ref<Blob | null>(null)
 
 watch(producer, (newProducer) => {
   if (newProducer?.organization?.id) {
@@ -679,6 +681,11 @@ function ensureSeriesHasColumnY(resourceId: string) {
   }
 }
 
+async function updateImage(value: string) {
+  const i = await fetch(value)
+  image.value = await i.blob()
+}
+
 async function loadMissingResourcesForChart(resourceIds: Array<string>) {
   const idsToLoad = resourceIds.filter(id => !savedResources[id])
   if (idsToLoad.length === 0) return
@@ -799,6 +806,15 @@ async function saveChart() {
       savedChart.value = await $api<Chart>('/api/1/visualizations/', {
         method: 'POST',
         body: JSON.stringify(chartForApi),
+      })
+    }
+
+    if (image.value) {
+      const formData = new FormData()
+      formData.set('file', image.value, 'image.png')
+      await $fileApi(`/api/1/visualizations/${savedChart.value.id}/image/`, {
+        method: 'POST',
+        body: formData,
       })
     }
 

@@ -7,6 +7,7 @@
       <ChartViewer
         :chart="chart"
         :series="data"
+        @update="(value: string | null) => { if (value) $emit('update', value) }"
       />
     </template>
     <template #error>
@@ -30,6 +31,10 @@ import { buildColumnsFromProfile } from '../../functions/charts'
 
 const props = defineProps<{
   chart: Chart | ChartForApi
+}>()
+
+defineEmits<{
+  update: [value: string]
 }>()
 
 const { t } = useTranslation()

@@ -26,9 +26,17 @@ const props = defineProps<{
   }
 }>()
 
+const emit = defineEmits<{
+  update: [value: string | null]
+}>()
+
 const { locale } = useTranslation()
 const chartContainer = ref<HTMLElement | null>(null)
 let echartsInstance: EChartsType | null = null
+
+const finishHandler = () => {
+  emit('update', echartsInstance?.getDataURL() ?? null)
+}
 
 function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' {
   if (!xAxis) return 'category'
@@ -188,12 +196,14 @@ const echartsOption = computed(() => {
 onMounted(() => {
   if (chartContainer.value) {
     echartsInstance = init(chartContainer.value)
+    echartsInstance.on('finished', finishHandler)
     updateChart()
   }
 })
 
 onUnmounted(() => {
   if (echartsInstance) {
+    echartsInstance.off('finished', finishHandler)
     echartsInstance.dispose()
     echartsInstance = null
   }
