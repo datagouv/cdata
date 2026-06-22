@@ -109,6 +109,10 @@ jobs:
       fail-fast: false
       matrix:
         browser: [chromium, firefox]
+        # Each (browser, shard) pair runs in its own container with its own MongoDB/Redis/udata,
+        # so Playwright can keep workers=1 (shared backend state) while shards run in parallel.
+        # Keep the shard count in sync with the `--shard=.../N` value in the "Run E2E tests" step.
+        shard: [1, 2]
         include:
           - browser: chromium
             projects: "--project=setup --project=setup-normal-user --project=chromium --project=chromium-normal-user --project=chromium-2fa-user --project=chromium-logged-out"
@@ -255,7 +259,11 @@ jobs:
           NUXT_PUBLIC_API_BASE: http://localhost:7000
           UDATA_WORKING_DIR: ${{ env.UDATA_WORKING_DIR }}
           CI: true
-        run: pnpm run test:e2e ${{ matrix.projects }}
+          # Unique blob name per (browser, shard): the default is report-<shard>.zip, which would
+          # collide between browsers (chromium 1/2 and firefox 1/2 both produce report-1.zip) when
+          # the merge job downloads everything into a single directory.
+          PLAYWRIGHT_BLOB_OUTPUT_NAME: report-${{ matrix.browser }}-${{ matrix.shard }}.zip
+        run: pnpm run test:e2e ${{ matrix.projects }} --shard=${{ matrix.shard }}/2
 
       - name: Kill udata server
         if: always()
@@ -277,15 +285,54 @@ jobs:
         uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: playwright-screenshots-${{ matrix.browser }}
+          name: playwright-screenshots-${{ matrix.browser }}-${{ matrix.shard }}
           path: tests/**/*-snapshots
           retention-days: 7
 
-      - name: Upload Playwright report
+      - name: Upload blob report
         uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: playwright-report-${{ matrix.browser }}
+          name: blob-report-${{ matrix.browser }}-${{ matrix.shard }}
+          path: blob-report/
+          retention-days: 7
+
+  # ============================================
+  # JOB 3b: Merge sharded Playwright reports into a single HTML report
+  # ============================================
+  e2e-report:
+    needs: e2e
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Download blob reports
+        uses: actions/download-artifact@v8
+        with:
+          path: all-blob-reports
+          pattern: blob-report-*
+          merge-multiple: true
+
+      - name: Merge reports into HTML
+        run: pnpm exec playwright merge-reports --reporter html ./all-blob-reports
+
+      - name: Upload merged HTML report
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
           path: playwright-report/
           retention-days: 7
 
