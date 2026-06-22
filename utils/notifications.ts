@@ -11,3 +11,7 @@ export function requireAction(notification: UserNotification) {
 export function canMarkAsRead(notification: UserNotification) {
   return !notification.handled_at && !requireAction(notification)
 }
+
+export function localMarkAsRead(notification: UserNotification) {
+  notification.handled_at = new Date().toISOString()
+}
