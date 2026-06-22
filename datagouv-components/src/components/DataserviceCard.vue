@@ -99,14 +99,14 @@
         </p>
       </div>
     </div>
-    <ObjectCardShortDescription
-      v-if="showDescription"
-      :text="dataservice.description"
-    />
-
     <DataserviceQualityInline
       v-if="dataservice.quality"
       :quality="dataservice.quality"
+    />
+
+    <ObjectCardShortDescription
+      v-if="showDescription"
+      :text="dataservice.description"
     />
 
     <slot />
