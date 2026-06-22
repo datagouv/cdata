@@ -58,7 +58,7 @@ import Tag from './components/Tag.vue'
 import DatasetQuality from './components/DatasetQuality.vue'
 import DatasetQualityInline from './components/DatasetQualityInline.vue'
 import QualityItem from './components/QualityItem.vue'
-import DatasetQualityScore from './components/DatasetQualityScore.vue'
+import QualityScore from './components/QualityScore.vue'
 import ProgressBar from './components/ProgressBar.vue'
 import DatasetQualityTooltipContent from './components/DatasetQualityTooltipContent.vue'
 import ExtraAccordion from './components/ExtraAccordion.vue'
@@ -355,7 +355,7 @@ export {
   DatasetQuality,
   DatasetQualityInline,
   QualityItem,
-  DatasetQualityScore,
+  QualityScore,
   DatasetQualityTooltipContent,
   DateRangeDetails,
   ExtraAccordion,

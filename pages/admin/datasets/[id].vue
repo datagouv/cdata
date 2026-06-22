@@ -44,7 +44,7 @@
             <RiPriceTag3Line class="inline size-3" />
             <span>{{ $t('Métadonnées:') }}</span>
             <Tooltip>
-              <DatasetQualityScore
+              <QualityScore
                 class="w-32"
                 :score="dataset.quality.score"
               />
@@ -134,7 +134,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, DatasetQualityTooltipContent, DatasetQualityScore, summarize, useFormatDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
+import { BrandedButton, DatasetQualityTooltipContent, QualityScore, summarize, useFormatDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
 import type { Activity, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiDownloadLine, RiEyeLine, RiLineChartLine, RiPriceTag3Line, RiStarLine } from '@remixicon/vue'
 import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
