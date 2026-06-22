@@ -22,11 +22,14 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  timeout: 60_0000,
+  timeout: 60_000,
+  /* Retry on CI to absorb transient failures (flaky externals, network blips); flakes still surface in the report. */
+  retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: process.env.CI ? [['html', { open: 'never' }], ['github']] : 'html',
+  /* On CI we use the blob reporter so the sharded jobs can be merged into a single HTML report afterwards. */
+  reporter: process.env.CI ? [['blob'], ['github']] : 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -54,7 +57,9 @@ export default defineConfig({
         /.*\.logged-out\.spec\.ts/,
       ],
       use: { ...devices['Desktop Chrome'], storageState: 'playwright/.auth/user.json' },
-      dependencies: ['setup'],
+      // setup-normal-user is needed too: some tests (e.g. partial-editor) open a
+      // second context with the normal-user storage state, so that file must exist.
+      dependencies: ['setup', 'setup-normal-user'],
     },
 
     {
@@ -88,7 +93,9 @@ export default defineConfig({
         /.*\.logged-out\.spec\.ts/,
       ],
       use: { ...devices['Desktop Firefox'], storageState: 'playwright/.auth/user.json' },
-      dependencies: ['setup'],
+      // setup-normal-user is needed too: some tests (e.g. partial-editor) open a
+      // second context with the normal-user storage state, so that file must exist.
+      dependencies: ['setup', 'setup-normal-user'],
     },
   ],
 
