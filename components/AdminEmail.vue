@@ -1,5 +1,8 @@
 <template>
-  <p
+  <!-- Not a <p>: TextClamp is a .client component, its SSR placeholder is a
+       <div> and a <div> inside a <p> is restructured by the browser parser,
+       causing hydration mismatches -->
+  <div
     v-if="'email' in user && user.email"
     class="fr-m-0 fr-text--xs text-mention-grey italic inline-flex items-center"
   >
@@ -10,7 +13,7 @@
       :auto-resize="true"
       :max-lines="1"
     />
-  </p>
+  </div>
 </template>
 
 <script setup lang="ts">

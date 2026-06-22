@@ -22,7 +22,7 @@ const props = defineProps<{
   chart: Chart | ChartForApi
   series: {
     data: Record<string, Array<Record<string, unknown>>>
-    columns: Record<string, Array<string>>
+    columns: Record<string, Array<{ name: string, type: string }>>
   }
 }>()
 
@@ -32,7 +32,7 @@ let echartsInstance: EChartsType | null = null
 
 function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' {
   if (!xAxis) return 'category'
-  return (xAxis.type ?? 'discrete') === 'continuous' ? 'value' : 'category'
+  return xAxis.type === 'continuous' ? 'value' : 'category'
 }
 
 function buildYAxisFormatter(yAxis: YAxis): ((value: number) => string) | undefined {
@@ -53,7 +53,8 @@ const echartsOption = computed(() => {
     const yColumn = s.aggregate_y ? `${s.column_y}__${s.aggregate_y}` : s.column_y
     const resourceId = s.resource_id
 
-    if (!xColumn || !yColumn || !resourceId || !s.type || !props.series.data[resourceId] || !props.series.columns[resourceId]) {
+    const resourceColumns = props.series.columns[resourceId]
+    if (!xColumn || !yColumn || !resourceId || !s.type || !props.series.data[resourceId] || !resourceColumns) {
       return null
     }
 
@@ -110,7 +111,7 @@ const echartsOption = computed(() => {
     return {
       series: {
         type: s.type === 'histogram' ? 'bar' : 'line',
-        dimensions: s.aggregate_y ? [xColumn, yColumn] : props.series.columns[resourceId],
+        dimensions: s.aggregate_y ? [xColumn, yColumn] : resourceColumns.map(c => c.name),
         name: yColumn,
         encode: {
           x: xColumn,
@@ -119,7 +120,7 @@ const echartsOption = computed(() => {
       } as LineSeriesOption | BarSeriesOption,
       data: {
         source: sortedData,
-        dimensions: s.aggregate_y ? [xColumn, yColumn] : props.series.columns[resourceId],
+        dimensions: s.aggregate_y ? [xColumn, yColumn] : resourceColumns.map(c => c.name),
       },
     }
   })
@@ -137,10 +138,10 @@ const echartsOption = computed(() => {
 
   return {
     dataset: [...seriesData.data],
-    title: {
-      text: props.chart.title,
-      left: 'center',
+    textStyle: {
+      fontFamily: 'Marianne, arial, sans-serif',
     },
+    color: '#000091',
     tooltip: {
       trigger: 'axis' as const,
       formatter: (params: Array<{ value: Record<string, unknown>, axisValueLabel: string, seriesName: string }>) => {
@@ -154,7 +155,7 @@ const echartsOption = computed(() => {
       },
     },
     legend: {
-      show: seriesData.series.length > 1,
+      show: false,
       bottom: 0,
     },
     grid: {

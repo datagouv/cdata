@@ -49,7 +49,7 @@
         color="primary"
         @click="navigateTo('/admin/organizations/new/')"
       >
-        {{ t("Créer ou rejoindre une organisation") }}
+        <span class="block whitespace-normal">{{ t("Créer ou rejoindre une organisation") }}</span>
       </BrandedButton>
     </PaddedContainer>
   </div>
