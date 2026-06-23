@@ -18,7 +18,7 @@
         </Breadcrumb>
       </template>
       <template #title>
-        {{ $t('Suivre les publications de données et les engagements ministériels') }}
+        {{ $t('Suivi de la publication des données, API et codes sources publics') }}
       </template>
       <template #subtitle>
         {{ $t('Les administrations produisent un large ensemble de données (données ouvertes ou à accès restreint, API, algorithmes et codes sources publics), dont l\'ouverture ou l\'amélioration de l\'accès constitue un enjeu majeur pour la transparence et la réutilisation.') }}
@@ -28,49 +28,23 @@
     <OnboardingSection>
       <div class="max-w-4xl space-y-4 text-lg font-normal leading-normal text-gray-plain [&_p]:text-lg [&_p]:leading-normal [&_a]:bg-none">
         <p>
-          {{ $t('Conformément à leurs obligations légales, les administrations publient et mettent à disposition une partie de ces données, mais d\'autres acteurs (organismes privés ou citoyens) peuvent également contribuer en produisant des données réutilisables.') }}
+          {{ $t('Conformément à leurs obligations légales, les administrations publient et mettent à disposition une partie de leurs données. D\'autres acteurs (organismes privés, citoyens, etc.) peuvent également produire des données réutilisables.') }}
         </p>
         <p>
-          {{ $t('L\'équipe de {site} accompagne activement les producteurs de données pour identifier, prioriser et suivre l\'évolution de la mise à disposition de ces données. Pour accompagner cette démarche, nous avons conçu un tableau qui vous permet de suivre de façon transparente le statut des données dont nous travaillons à l\'ouverture, à leur publication et à leur mise à jour.', { site: config.public.title }) }}
+          <TranslationT keypath="L'équipe de {datagouv} accompagne les producteurs pour identifier, prioriser et suivre les données à publier ou mettre à jour. Ce tableau permet de rendre l'avancement de ces travaux plus transparent.">
+            <template #datagouv>
+              <CdataLink
+                to="https://data.gouv.fr"
+                external
+                class="underline"
+              >
+                data.gouv.fr
+              </CdataLink>
+            </template>
+          </TranslationT>
         </p>
         <p>
-          {{ $t('Ce document est un outil de travail. Il n\'est pas exhaustif et ne reflète pas l\'ensemble des actions menées par les acteurs publics. Les sujets répertoriés sont issus de la sélection de l\'équipe de {site}, basée notamment sur :', { site: config.public.title }) }}
-        </p>
-        <ul class="list-disc pl-5 space-y-2">
-          <li>
-            <TranslationT keypath="les demandes exprimées sur le {forum} ou notre {contact} ;">
-              <template #forum>
-                <CdataLink
-                  :to="config.public.forumUrl"
-                  external
-                  class="underline"
-                >
-                  forum.data.gouv.fr
-                </CdataLink>
-              </template>
-              <template #contact>
-                <CdataLink
-                  :to="config.public.supportUrl"
-                  external
-                  class="underline"
-                >
-                  {{ $t('formulaire de contact') }}
-                </CdataLink>
-              </template>
-            </TranslationT>
-          </li>
-          <li>{{ $t('la recherche active de l\'équipe, en fonction des actualités et besoins identifiés ;') }}</li>
-          <li>{{ $t('les feuilles de routes des ministères.') }}</li>
-        </ul>
-        <p>
-          {{ $t('L\'objectif de ce suivi est :') }}
-        </p>
-        <ul class="list-disc pl-5 space-y-2">
-          <li>{{ $t('d\'améliorer la transparence et la visibilité des travaux en cours auprès du public ;') }}</li>
-          <li>{{ $t('de faciliter le suivi et la coordination des ouvertures de données avec les producteurs de données.') }}</li>
-        </ul>
-        <p>
-          {{ $t('Ce tableau a été créé pour la première fois en septembre 2024. Notez que certaines demandes qu\'il contient peuvent remonter à plusieurs années.') }}
+          {{ $t('Il s\'agit d\'un outil de travail non exhaustif. Les sujets suivis sont sélectionnés à partir des demandes reçues, des feuilles de route ministérielles ou de l\'actualité en cours.') }}
         </p>
         <p>
           <TranslationT keypath="Vous pouvez formuler des demandes de publication pour des données encore non identifiées par notre équipe via le {forum}. Merci pour vos contributions !">
