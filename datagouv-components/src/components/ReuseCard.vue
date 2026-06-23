@@ -68,7 +68,7 @@ import { RiLockLine, RiSubtractLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { useFormatDate } from '../functions/dates'
-import type { Reuse } from '../types/reuses'
+import type { Reuse, ReuseV2 } from '../types/reuses'
 import type { TitleTag } from '../types/ui'
 import { useTranslation } from '../composables/useTranslation'
 import AppLink from './AppLink.vue'
@@ -77,7 +77,7 @@ import ReuseDetails from './ReuseDetails.vue'
 import Placeholder from './Placeholder.vue'
 
 const props = withDefaults(defineProps<{
-  reuse: Reuse
+  reuse: Reuse | ReuseV2
 
   /**
   * The reuseUrl is a route location object to allow Vue Router to navigate to the details of a reuse.

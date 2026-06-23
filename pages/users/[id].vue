@@ -212,7 +212,7 @@
 
 <script setup lang="ts">
 import { Avatar, BrandedButton, MarkdownViewer, OrganizationCard, Pagination, ReuseCard } from '@datagouv/components-next'
-import type { DatasetV2, Reuse, User } from '@datagouv/components-next'
+import type { DatasetV2, ReuseV2, User } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 import { DatasetCardLg } from '#components'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -257,7 +257,7 @@ const reusesParams = computed(() => {
     owner: user.value?.id,
   }
 })
-const { data: reuses } = await useAPI<PaginatedArray<Reuse>>(`/api/1/reuses`, { query: reusesParams })
+const { data: reuses } = await useAPI<PaginatedArray<ReuseV2>>(`/api/2/reuses`, { query: reusesParams })
 
 const followedDatasetsPage = ref(1)
 const followedDatasetsParams = computed(() => {
