@@ -29,7 +29,7 @@ async function setupChart(page: Page) {
   await datasetSelect.fill('logements sociaux')
   await getPromise
 
-  await page.getByRole('option', { name: 'logements sociaux et bailleurs par région', exact: true }).click()
+  await page.getByRole('option', { name: 'Logements sociaux et bailleurs par région', exact: true }).click()
   await clickOutside(page)
 
   await page.keyboard.press('ArrowDown')
