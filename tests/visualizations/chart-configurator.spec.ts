@@ -9,7 +9,7 @@ async function mockTabular(page: Page) {
   await page.route('**/api/resources/*/profile/', async (route) => {
     await route.fulfill({ json: profile })
   })
-  await page.route('**/api/resources/*/data/', async (route) => {
+  await page.route('**/api/resources/*/data/*', async (route) => {
     await route.fulfill({ json: data })
   })
 }
