@@ -35,7 +35,7 @@ test('navigates to the tracking table from the first card', async ({ page }) => 
   await page.route(/\/tables\/[^/]*\/records(\?|$)/, route => route.fulfill({ json: { records: [] } }))
   await page.goto('/suivi-de-publication')
 
-  await page.getByRole('link', { name: 'Demandes d\'ouvertures et engagements ministériels' }).click()
+  await page.getByRole('link', { name: 'Demandes de publications et engagements ministériels' }).click()
   await expect(page).toHaveURL(/\/suivi-de-publication\/engagements-et-demandes$/)
   await expect(page.getByRole('heading', { level: 1, name: 'Suivi de la publication des données, API et codes sources publics' })).toBeVisible()
 })
