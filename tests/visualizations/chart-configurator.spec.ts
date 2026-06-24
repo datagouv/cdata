@@ -25,8 +25,7 @@ async function setupChart(page: Page) {
   await page.getByTestId('searchable-select-jeu-de-donn-es').click()
 
   const getPromise = page.waitForResponse('**/api/1/datasets/suggest/?q=logements+sociaux*')
-  const datasetSelect = page.getByPlaceholder('Recherchez un jeu de données...')
-  await datasetSelect.fill('logements sociaux')
+  await page.getByPlaceholder('Recherchez un jeu de données...').fill('logements sociaux')
   await getPromise
 
   await page.getByRole('option', { name: 'Logements sociaux et bailleurs par région', exact: true }).click()
