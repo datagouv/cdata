@@ -1,17 +1,16 @@
 <template>
   <div>
     <Breadcrumb>
-      <BreadcrumbItem to="/design">
-        {{ $t('Système de design') }}
+      <BreadcrumbItem to="/">
+        {{ $t('Accueil') }}
       </BreadcrumbItem>
-      <BreadcrumbItem to="/design/chart">
-        {{ $t('Chart') }}
+      <BreadcrumbItem>
+        {{ $t('Visualisations') }}
+      </BreadcrumbItem>
+      <BreadcrumbItem>
+        {{ $t('Formulaire de publication') }}
       </BreadcrumbItem>
     </Breadcrumb>
-    <h1 class="mb-3">
-      Chart Configurator
-    </h1>
-
     <ChartConfigurator v-model="chart" />
   </div>
 </template>
@@ -21,18 +20,18 @@ import type { ChartForm } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ChartConfigurator from '~/components/Charts/ChartConfigurator.vue'
 
-const me = useMaybeMe()
+const me = useMe()
 
 const chart = ref<ChartForm>({
   owned: {
     organization: null,
-    owner: me.value ? me.value.id : 'dummyForDS',
+    owner: me.value.id,
   },
   title: 'Mon graphique',
   description: '',
   private: false,
   x_axis: {
-    column_x: 'libellé_EPCI',
+    column_x: '',
     type: 'discrete',
     sort_combined: '',
   },
@@ -45,14 +44,7 @@ const chart = ref<ChartForm>({
   },
   filter: null,
   chart_type: 'histogram',
-  series: [{
-    type: 'histogram',
-    column_y: 'Nombre de logements',
-    aggregate_y: null,
-    resource_id: '14dba482-41e3-4c54-b82a-d8c11d1d80eb',
-    filters: null,
-    column_x_name_override: null,
-  }],
+  series: [],
   extras: {},
 })
 </script>

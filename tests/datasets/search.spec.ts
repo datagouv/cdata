@@ -264,6 +264,51 @@ test('custom filter scoped to dataset types never appears in the parallel datase
   expect(dataservicesTags.every(tag => tag !== 'transport')).toBe(true)
 })
 
+test('switching search type resets page to 1', async ({ page }) => {
+  // Reproduces the bug: deep into datasets results (page 18), switching to the
+  // organizations type used to carry the stale page over to /organizations.
+  await page.goto('/datasets/search/?q=biblioth%C3%A8que&page=18')
+  await page.waitForLoadState('networkidle')
+
+  const organizationsRadio = page.getByRole('radio', { name: 'Organisations' })
+  await organizationsRadio.click({ force: true })
+
+  await page.waitForURL(/\/organizations/)
+  const url = new URL(page.url())
+  expect(url.searchParams.has('page')).toBeFalsy()
+})
+
+test('switching type in-component resets page to 1', async ({ page }) => {
+  // Same reset, but exercised through GlobalSearch's internal type model (no
+  // navigation) as used on the design search page.
+  await page.goto('/design/dataset-search?page=2')
+  await page.waitForLoadState('networkidle')
+
+  const reusesRadio = page.getByRole('radio', { name: 'Réutilisations' })
+  await reusesRadio.click({ force: true })
+
+  await page.waitForURL(url => !url.searchParams.has('page'))
+  const url = new URL(page.url())
+  expect(url.searchParams.has('page')).toBeFalsy()
+})
+
+test('switching type resets page and clears a type-scoped custom filter in one go', async ({ page }) => {
+  // Combined case: a deep page AND an active custom filter the target type hides.
+  // Both URL updates must batch into a single navigation without clobbering each
+  // other (page reset via useRouteQuery vs. the custom filter being cleared).
+  await page.goto('/design/dataset-search?theme=transport&page=18')
+  await expect(page.locator('#theme-filter')).toHaveValue('transport')
+  await page.waitForLoadState('networkidle')
+
+  const reusesRadio = page.getByRole('radio', { name: 'Réutilisations' })
+  await reusesRadio.click({ force: true })
+
+  await page.waitForURL(url => !url.searchParams.has('theme'))
+  const url = new URL(page.url())
+  expect(url.searchParams.has('theme')).toBeFalsy()
+  expect(url.searchParams.has('page')).toBeFalsy()
+})
+
 test('clicking dataset navigates to detail', async ({ page }) => {
   await page.goto('/datasets/search/')
   // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)

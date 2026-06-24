@@ -490,6 +490,7 @@ import {
   type DatasetMetrics,
   TranslationT,
   getDescriptionShort,
+  RESOURCE_EXPLORER_PAGE_SIZE,
 } from '@datagouv/components-next'
 import {
   RiDeleteBinLine,
@@ -606,10 +607,19 @@ onMounted(async () => {
   ])
 })
 
-const { data: resources } = await useAPI<PaginatedArray<Resource>>(
-  `/api/2/datasets/${route.params.did}/resources/`,
-  { query: { type: 'main' } },
-)
+// Use the same cache key as ResourceExplorer's `main` fetch (dataset id + identical params)
+// so Nuxt dedupes the two into a single request on the resources tab. Every part of the key
+// must stay byte-for-byte identical to the explorer's `mainParams`, otherwise the keys diverge
+// and both requests fire again (silent perf regression, no error, no failing test):
+//   - dataset id (not route.params.did, which can be a slug)
+//   - page_size: shared RESOURCE_EXPLORER_PAGE_SIZE so the two stay in sync
+//   - q: undefined mirrors the explorer's `q: searchDebounced || undefined` at rest
+const { data: resources } = dataset.value
+  ? await useAPI<PaginatedArray<Resource>>(
+      `/api/2/datasets/${dataset.value.id}/resources/`,
+      { query: { type: 'main', page_size: RESOURCE_EXPLORER_PAGE_SIZE, q: undefined } },
+    )
+  : { data: ref<PaginatedArray<Resource> | null>(null) }
 const exploreUrl = computed(() => {
   if (!resources.value) return null
   for (const resource of resources.value.data) {

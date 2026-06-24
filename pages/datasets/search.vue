@@ -50,7 +50,9 @@ const searchPaths: Record<SearchType, string> = {
 const currentType = computed<SearchType>({
   get: () => typeFromPath(route.path),
   set: (newType) => {
-    navigateTo({ path: searchPaths[newType], query: route.query })
+    // Drop page: a type switch always starts back at the first page.
+    const { page, ...query } = route.query
+    navigateTo({ path: searchPaths[newType], query })
   },
 })
 
