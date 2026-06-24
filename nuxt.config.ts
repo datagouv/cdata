@@ -109,7 +109,6 @@ export default defineNuxtConfig({
       // (see .env) so the Grist document URL is not committed.
       ouverturesGristBaseUrl: '',
       ouverturesGristTable: '',
-      ouverturesDatasetUrl: 'https://www.data.gouv.fr/datasets/tableau-de-suivi-des-ouvertures-de-donnees-codes-sources-et-api-publics',
       ouverturesHvdUrl: 'https://ouverture.data.gouv.fr/donnees_de_forte_valeur.html',
 
       guideDatasets: 'https://guides.data.gouv.fr/jeux-de-donnees',

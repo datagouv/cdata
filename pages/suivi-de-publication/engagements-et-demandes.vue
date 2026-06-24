@@ -72,19 +72,6 @@
             </template>
           </TranslationT>
         </p>
-        <p>
-          <TranslationT keypath="Les données affichées ci-dessous sont également disponibles en open data sous forme de jeu de données : {dataset}.">
-            <template #dataset>
-              <CdataLink
-                :to="config.public.ouverturesDatasetUrl"
-                external
-                class="underline"
-              >
-                {{ $t('Tableau de suivi des ouvertures de données, codes sources et API publics') }}
-              </CdataLink>
-            </template>
-          </TranslationT>
-        </p>
       </div>
     </OnboardingSection>
 
