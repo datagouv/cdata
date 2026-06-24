@@ -595,8 +595,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch, useTemplateRef } from 'vue'
+import { computed, nextTick, onUnmounted, ref, watch, useTemplateRef } from 'vue'
 import { ofetch } from 'ofetch'
+import { useElementSize } from '@vueuse/core'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
 import { Dialog, DialogPanel, DialogTitle, Popover, PopoverButton, PopoverPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import {
@@ -832,12 +833,8 @@ function redistributeColumnWidths() {
   columnWidths.value = widths
 }
 
-// Measure once the table is actually in the DOM. `tableData` and `profileData`
-// are awaited in setup, so by mount the <thead> is already rendered with
-// content-driven natural widths and `scrollContainer` exists. (An `immediate`
-// watch can't be used here: it would fire during setup, before mount, while the
-// container ref is still null, and its deps are already at their final values so
-// it would never re-run.)
+// Measure the natural widths once (the <th> must still be auto-sized) and
+// distribute them. No-op once measured or while no column is displayed.
 function ensureMeasured() {
   if (Object.keys(naturalWidths.value).length > 0) return
   if (displayedColumns.value.length === 0) return
@@ -845,27 +842,26 @@ function ensureMeasured() {
   redistributeColumnWidths()
 }
 
-let resizeObserver: ResizeObserver | null = null
+// Drive measurement and re-stretch off the container's reactive width
+// (`useElementSize` wraps a ResizeObserver and disconnects it on unmount). The
+// width goes 0 -> N once the table is laid out in the DOM, which is also when
+// the <thead> carries its content-driven natural widths: the first non-zero
+// width measures the stable base, later changes (window resize) only
+// redistribute it.
+const { width: containerWidth } = useElementSize(scrollContainerRef)
 
-onMounted(async () => {
-  await nextTick()
-  ensureMeasured()
-
-  // Re-stretch when the container width changes (window resize). Reads the
-  // stable `naturalWidths` base, so it only shifts the applied widths, never
-  // re-measures. Guarded against running before the initial measure.
-  const container = scrollContainerRef.value
-  if (container && typeof ResizeObserver !== 'undefined') {
-    resizeObserver = new ResizeObserver(() => {
-      if (Object.keys(naturalWidths.value).length === 0) return
-      redistributeColumnWidths()
-    })
-    resizeObserver.observe(container)
+watch(containerWidth, (width) => {
+  if (width === 0) return
+  if (Object.keys(naturalWidths.value).length === 0) {
+    ensureMeasured()
+  }
+  else {
+    redistributeColumnWidths()
   }
 })
 
-// Fallback: re-run once columns appear if they weren't available at mount
-// (standalone usage where the profile resolves after mount).
+// Fallback: re-run once columns appear if they weren't available when the
+// container was first sized (standalone usage where the profile resolves late).
 watch(
   () => [tableData.value !== null, displayedColumns.value.length] as const,
   async ([dataReady, colCount]) => {
@@ -936,7 +932,6 @@ function stopResize() {
 onUnmounted(() => {
   document.removeEventListener('mousemove', onResize)
   document.removeEventListener('mouseup', stopResize)
-  resizeObserver?.disconnect()
 })
 
 // Cell popover
