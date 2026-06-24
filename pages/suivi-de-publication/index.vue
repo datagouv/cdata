@@ -19,10 +19,8 @@
         {{ $t('Suivre les ouvertures et mises à disposition des données') }}
       </template>
       <template #subtitle>
-        {{ $t('Les données peuvent être mises à disposition en accès libre (open data) ou en accès restreint.') }}
-      </template>
-      <template #description>
-        {{ $t('Cette rubrique permet de suivre les ouvertures de données annoncées, les demandes en cours, ainsi que les modalités d\'accès associées.') }}
+        <span class="block">{{ $t('Les données peuvent être mises à disposition en accès libre (open data) ou en accès restreint.') }}</span>
+        <span class="block mt-4">{{ $t('Cette rubrique permet de suivre les ouvertures de données annoncées, les demandes en cours, ainsi que les modalités d\'accès associées.') }}</span>
       </template>
     </OnboardingHero>
 

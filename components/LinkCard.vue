@@ -4,7 +4,7 @@
     :external="external"
     :target="external ? '_blank' : undefined"
     :rel="external ? 'noopener' : undefined"
-    class="rounded-sm border border-gray-silver hover:border-gray-medium transition-colors bg-white bg-none"
+    class="fr-raw-link rounded-sm border border-gray-silver hover:border-gray-medium transition-colors bg-white bg-none"
   >
     <slot />
   </CdataLink>

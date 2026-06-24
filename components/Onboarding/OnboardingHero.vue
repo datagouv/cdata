@@ -30,13 +30,6 @@
           <slot name="subtitle" />
         </p>
         <div
-          v-if="$slots.description"
-          class="text-white/90 text-lg font-normal leading-relaxed mt-4 max-w-3xl"
-          :class="{ 'mb-8': $slots.actions }"
-        >
-          <slot name="description" />
-        </div>
-        <div
           v-if="$slots.actions"
           class="flex flex-wrap gap-4"
           :class="{ 'justify-center': !image && !alignLeft }"
