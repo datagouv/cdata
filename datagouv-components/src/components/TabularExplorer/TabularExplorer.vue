@@ -595,7 +595,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onUnmounted, ref, watch, useTemplateRef } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch, useTemplateRef } from 'vue'
 import { ofetch } from 'ofetch'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
 import { Dialog, DialogPanel, DialogTitle, Popover, PopoverButton, PopoverPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
@@ -832,18 +832,48 @@ function redistributeColumnWidths() {
   columnWidths.value = widths
 }
 
-// Measure once both data and profile are ready (so the <thead> is rendered with
-// content-driven natural widths), then distribute.
+// Measure once the table is actually in the DOM. `tableData` and `profileData`
+// are awaited in setup, so by mount the <thead> is already rendered with
+// content-driven natural widths and `scrollContainer` exists. (An `immediate`
+// watch can't be used here: it would fire during setup, before mount, while the
+// container ref is still null, and its deps are already at their final values so
+// it would never re-run.)
+function ensureMeasured() {
+  if (Object.keys(naturalWidths.value).length > 0) return
+  if (displayedColumns.value.length === 0) return
+  measureNaturalWidths()
+  redistributeColumnWidths()
+}
+
+let resizeObserver: ResizeObserver | null = null
+
+onMounted(async () => {
+  await nextTick()
+  ensureMeasured()
+
+  // Re-stretch when the container width changes (window resize). Reads the
+  // stable `naturalWidths` base, so it only shifts the applied widths, never
+  // re-measures. Guarded against running before the initial measure.
+  const container = scrollContainerRef.value
+  if (container && typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(() => {
+      if (Object.keys(naturalWidths.value).length === 0) return
+      redistributeColumnWidths()
+    })
+    resizeObserver.observe(container)
+  }
+})
+
+// Fallback: re-run once columns appear if they weren't available at mount
+// (standalone usage where the profile resolves after mount).
 watch(
   () => [tableData.value !== null, displayedColumns.value.length] as const,
   async ([dataReady, colCount]) => {
     if (!dataReady || colCount === 0) return
     if (Object.keys(naturalWidths.value).length > 0) return
     await nextTick()
-    measureNaturalWidths()
-    redistributeColumnWidths()
+    ensureMeasured()
   },
-  { immediate: true },
 )
 
 // Re-stretch the remaining columns whenever the displayed set changes (columns
@@ -906,6 +936,7 @@ function stopResize() {
 onUnmounted(() => {
   document.removeEventListener('mousemove', onResize)
   document.removeEventListener('mouseup', stopResize)
+  resizeObserver?.disconnect()
 })
 
 // Cell popover
