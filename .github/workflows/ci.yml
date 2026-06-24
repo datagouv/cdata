@@ -397,7 +397,7 @@ jobs:
   # the new container is only deployed once this job succeeds — so the assets are always on the
   # bucket before the new HTML (which references them via `NUXT_APP_CDN_URL`) is served.
   upload-assets:
-    needs: [quality, e2e]
+    needs: [quality_and_test, e2e]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     permissions:
