@@ -122,6 +122,7 @@
           v-if="organization"
           :class="{ container: !isPresentationTab }"
           :organization
+          @organization-updated="onOrganizationUpdated"
         />
       </div>
     </LoadingBlock>
@@ -160,6 +161,12 @@ const isEditingPresentation = computed(() => isPresentationTab.value && route.qu
 
 function editPresentation() {
   router.push({ query: { ...route.query, edit: 'true' } })
+}
+
+// The presentation page saves the org on its own fetch and hands back the saved
+// version; swap it in so the header CTA, tabs… update without a reload.
+function onOrganizationUpdated(updated: Organization) {
+  organization.value = updated
 }
 
 const tabLinks = computed(() => {

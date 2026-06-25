@@ -71,7 +71,7 @@ test.describe('Organization presentation tab', () => {
       await publicToggle.click()
       await page.getByRole('button', { name: 'Sauvegarder' }).click()
       await expect(page.getByText('Présentation sauvegardée')).toBeVisible()
-      // Once published, the header CTA drops "ou publier".
+      // Once published, the header CTA updates in place and drops "ou publier".
       await expect(page.getByRole('button', { name: 'Modifier la présentation', exact: true })).toBeVisible()
 
       const published = await page.request.get(`${API_BASE}/api/1/organizations/${org.id}/`, {
@@ -102,7 +102,7 @@ test.describe('Organization presentation tab', () => {
       await unpublishToggle.click()
       await page.getByRole('button', { name: 'Sauvegarder' }).click()
       await expect(page.getByText('Présentation sauvegardée')).toBeVisible()
-      // Back to a draft: the header CTA offers "ou publier" again.
+      // Back to a draft: the header CTA updates in place and offers "ou publier" again.
       await expect(page.getByRole('button', { name: 'Modifier ou publier la présentation' })).toBeVisible()
 
       const draft = await page.request.get(`${API_BASE}/api/1/organizations/${org.id}/`, {

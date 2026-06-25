@@ -35,14 +35,17 @@ export async function useOrganizationBlocs(organization: Organization) {
   // detailed message (a second generic toast would just hide it), and letting the
   // error propagate keeps the composer open with the unsaved edits instead of the
   // caller silently treating the save as successful.
+  // `refresh()` below updates this composer's own blocs view; the returned value is
+  // the PUT response (full org, default mask) for callers that render it elsewhere.
   async function saveBlocs(updatedBlocs: Array<PageBloc>, published: boolean) {
-    await updateOrganization({
+    const updated = await updateOrganization({
       ...organization,
       blocs: updatedBlocs,
       blocs_published_at: published ? (publishedAt.value ?? new Date().toISOString()) : null,
     })
     await refresh()
     toast.success(t('Présentation sauvegardée'))
+    return updated
   }
 
   return { blocs, isPublished, saveBlocs, refresh }

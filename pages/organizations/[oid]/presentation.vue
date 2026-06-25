@@ -75,7 +75,10 @@ watch(isEditing, (editing) => {
   if (editing) wantPublished.value = isPublished.value
 }, { immediate: true })
 
-function onSave(updatedBlocs: Array<PageBloc>) {
-  return saveBlocs(updatedBlocs, wantPublished.value)
+const emit = defineEmits<{ organizationUpdated: [organization: Organization] }>()
+
+async function onSave(updatedBlocs: Array<PageBloc>) {
+  const updated = await saveBlocs(updatedBlocs, wantPublished.value)
+  emit('organizationUpdated', updated)
 }
 </script>
