@@ -46,7 +46,7 @@ test.describe('Organization presentation tab', () => {
         data: {
           ...org,
           blocs: [
-            { class: 'MarkdownBloc', title: 'Bienvenue', subtitle: null, content: '## Bienvenue\n\nNotre **présentation**.' },
+            { class: 'MarkdownBloc', title: 'Bienvenue', subtitle: null, content: '## Nos données\n\nNotre **présentation**.' },
           ],
         },
       })
@@ -57,7 +57,9 @@ test.describe('Organization presentation tab', () => {
       await expect(page).toHaveURL(new RegExp(`/organizations/${org.slug}/datasets`))
 
       await page.goto(`/organizations/${org.slug}/presentation`)
+      // The bloc title and the markdown content render as distinct headings.
       await expect(page.getByRole('heading', { name: 'Bienvenue' })).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Nos données' })).toBeVisible()
       await expect(page.getByText('Notre présentation.')).toBeVisible()
       // Configured but still a draft: the header CTA offers to edit or publish it.
       await expect(page.getByRole('button', { name: 'Modifier ou publier la présentation' })).toBeVisible()
