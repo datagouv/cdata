@@ -14,6 +14,11 @@ dist-ssr
 coverage
 *.local
 
+# This package is part of a pnpm workspace; the root pnpm-lock.yaml is the
+# single source of truth. A nested lockfile here would be stale and is not
+# used when the package is published or consumed.
+pnpm-lock.yaml
+
 /cypress/videos/
 /cypress/screenshots/
 
