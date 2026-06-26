@@ -47,8 +47,8 @@
             <div>
               <ClientOnly>
                 <ChartViewerWrapper
+                  ref="chartViewerWrapperRef"
                   :chart="chartForViewer"
-                  @update="updateImage"
                 />
               </ClientOnly>
             </div>
@@ -525,7 +525,7 @@ const producer = ref<Owned | null>(null)
 const dataset = ref<DatasetSuggest | null>(null)
 const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref<string>('')
-const image = ref<Blob | null>(null)
+const chartViewerWrapperRef = ref<InstanceType<typeof ChartViewerWrapper> | null>(null)
 
 watch(producer, (newProducer) => {
   if (newProducer?.organization?.id) {
@@ -681,11 +681,6 @@ function ensureSeriesHasColumnY(resourceId: string) {
   }
 }
 
-async function updateImage(value: string) {
-  const i = await fetch(value)
-  image.value = await i.blob()
-}
-
 async function loadMissingResourcesForChart(resourceIds: Array<string>) {
   const idsToLoad = resourceIds.filter(id => !savedResources[id])
   if (idsToLoad.length === 0) return
@@ -809,9 +804,12 @@ async function saveChart() {
       })
     }
 
-    if (image.value) {
+    const imageUrl = chartViewerWrapperRef.value?.capture()
+    if (imageUrl) {
+      const i = await fetch(imageUrl)
+      const imageBlob = await i.blob()
       const formData = new FormData()
-      formData.set('file', image.value, 'image.png')
+      formData.set('file', imageBlob, 'image.png')
       await $fileApi(`/api/1/visualizations/${savedChart.value.id}/image/`, {
         method: 'POST',
         body: formData,

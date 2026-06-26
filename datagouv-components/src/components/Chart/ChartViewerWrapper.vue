@@ -5,9 +5,9 @@
   >
     <template #default="{ data }">
       <ChartViewer
+        ref="chartViewerRef"
         :chart="chart"
         :series="data"
-        @update="(value: string | null) => { if (value) $emit('update', value) }"
       />
     </template>
     <template #error>
@@ -33,11 +33,14 @@ const props = defineProps<{
   chart: Chart | ChartForApi
 }>()
 
-defineEmits<{
-  update: [value: string]
-}>()
-
 const { t } = useTranslation()
+const chartViewerRef = ref<InstanceType<typeof ChartViewer> | null>(null)
+
+function capture(): string | null {
+  return chartViewerRef.value?.capture() ?? null
+}
+
+defineExpose({ capture })
 const config = useComponentsConfig()
 const getProfile = useGetProfile()
 
