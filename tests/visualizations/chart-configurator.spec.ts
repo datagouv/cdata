@@ -2,8 +2,20 @@ import type { Chart } from '@datagouv/components-next'
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
+import profile from './profile.json' with { type: 'json' }
+import data from './data.json' with { type: 'json' }
+
+async function mockTabular(page: Page) {
+  await page.route('**/api/resources/*/profile/', async (route) => {
+    await route.fulfill({ json: profile })
+  })
+  await page.route('**/api/resources/*/data/*', async (route) => {
+    await route.fulfill({ json: data })
+  })
+}
 
 async function setupChart(page: Page) {
+  await mockTabular(page)
   await page.goto('/admin/beta/chart')
   await page.waitForLoadState('networkidle')
 
@@ -13,11 +25,10 @@ async function setupChart(page: Page) {
   await page.getByTestId('searchable-select-jeu-de-donn-es').click()
 
   const getPromise = page.waitForResponse('**/api/1/datasets/suggest/?q=logements+sociaux*')
-  const datasetSelect = page.getByPlaceholder('Recherchez un jeu de données...')
-  await datasetSelect.fill('logements sociaux')
+  await page.getByPlaceholder('Recherchez un jeu de données...').fill('logements sociaux')
   await getPromise
 
-  await page.getByRole('option', { name: 'Logements et logements sociaux dans les EPCI', exact: true }).click()
+  await page.getByRole('option', { name: 'Logements sociaux et bailleurs par région', exact: true }).click()
   await clickOutside(page)
 
   await page.keyboard.press('ArrowDown')
