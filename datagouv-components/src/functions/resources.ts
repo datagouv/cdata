@@ -105,14 +105,29 @@ export const getResourceLabel = (type: ResourceType, count?: number) => {
       }
       return t('Fichiers principaux')
     case 'documentation':
+      if (typeof count === 'number') {
+        return t('Aucun fichier de documentation | 1 fichier de documentation | {n} fichiers de documentation', count)
+      }
       return t('Documentation')
     case 'update':
+      if (typeof count === 'number') {
+        return t('Aucune mise à jour | 1 mise à jour | {n} mises à jour', count)
+      }
       return t('Mise à jour')
     case 'api':
+      if (typeof count === 'number') {
+        return t('Aucune API | 1 API | {n} API', count)
+      }
       return t('API')
     case 'code':
+      if (typeof count === 'number') {
+        return t('Aucun fichier de code source | 1 fichier de code source | {n} fichiers de code source', count)
+      }
       return t('Code source')
     case 'other':
+      if (typeof count === 'number') {
+        return t('Aucun autre fichier | 1 autre fichier | {n} autres fichiers', count)
+      }
       return t('Autre')
   }
 }
