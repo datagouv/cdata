@@ -40,6 +40,9 @@ import BannerAction from './components/BannerAction.vue'
 import BrandedButton from './components/BrandedButton.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
+import DataserviceQuality from './components/DataserviceQuality.vue'
+import DataserviceQualityInline from './components/DataserviceQualityInline.vue'
+import DataserviceQualityTooltipContent from './components/DataserviceQualityTooltipContent.vue'
 import DatasetCard from './components/DatasetCard.vue'
 import DataStructure from './components/ResourceAccordion/DataStructure.vue'
 import Downloads from './components/ResourceAccordion/Downloads.vue'
@@ -54,8 +57,8 @@ import LicenseBadge from './components/LicenseBadge.vue'
 import Tag from './components/Tag.vue'
 import DatasetQuality from './components/DatasetQuality.vue'
 import DatasetQualityInline from './components/DatasetQualityInline.vue'
-import DatasetQualityItem from './components/DatasetQualityItem.vue'
-import DatasetQualityScore from './components/DatasetQualityScore.vue'
+import QualityItem from './components/QualityItem.vue'
+import QualityScore from './components/QualityScore.vue'
 import ProgressBar from './components/ProgressBar.vue'
 import DatasetQualityTooltipContent from './components/DatasetQualityTooltipContent.vue'
 import ExtraAccordion from './components/ExtraAccordion.vue'
@@ -334,6 +337,9 @@ export {
   BrandedButton,
   CopyButton,
   DataserviceCard,
+  DataserviceQuality,
+  DataserviceQualityInline,
+  DataserviceQualityTooltipContent,
   DatasetCard,
   DataStructure,
   Downloads,
@@ -348,8 +354,8 @@ export {
   DiscussionMessageCard,
   DatasetQuality,
   DatasetQualityInline,
-  DatasetQualityItem,
-  DatasetQualityScore,
+  QualityItem,
+  QualityScore,
   DatasetQualityTooltipContent,
   DateRangeDetails,
   ExtraAccordion,

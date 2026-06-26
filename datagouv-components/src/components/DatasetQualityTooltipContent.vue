@@ -68,7 +68,7 @@
 import type { Quality } from '../types/datasets'
 import { useComponentsConfig } from '../config'
 import { useTranslation } from '../composables/useTranslation'
-import DatasetQualityItem from './DatasetQualityItem.vue'
+import DatasetQualityItem from './QualityItem.vue'
 
 defineProps<{
   quality: Quality
