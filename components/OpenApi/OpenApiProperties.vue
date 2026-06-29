@@ -66,7 +66,7 @@ import { BrandedButton, LoadingBlock } from '@datagouv/components-next'
 import OpenApiProperty from './OpenApiProperty.vue'
 import { collapseSignalKey, isObject, type CollapseSignal } from './openApiCollapse'
 import { extractEndpoints, type EndpointProperties } from '~/utils/openapi-extract'
-import { unwrapBouquetData, filterEndpointsByTitle } from '~/utils/openapi-bouquet'
+import { unwrapBouquetData } from '~/utils/openapi-bouquet'
 
 const props = defineProps<{
   url: string
@@ -83,7 +83,6 @@ const { data: endpoints, status } = await useAsyncData<EndpointProperties[]>(
     let eps = extractEndpoints(spec)
     if (props.title?.includes('| Bouquet')) {
       eps = unwrapBouquetData(eps)
-      eps = filterEndpointsByTitle(eps, props.title)
     }
     return eps
   },
