@@ -71,11 +71,11 @@ export type Organization = {
   }
   // Editorial blocs powering the organization "Présentation" tab. Excluded from
   // the default API read mask, so only present when requested with X-Fields.
-  // Read through the API's `public_blocs`: hidden from the public until published,
-  // but always returned to organization administrators.
-  blocs?: Array<PageBloc>
-  // Publication date of the blocs. `null` means draft (never public); a reached
-  // date means published; a future date means scheduled. Like `blocs`, only
-  // present when requested with X-Fields.
-  blocs_published_at?: string | null
+  // Read through the API's `public_presentation_blocs`: hidden from the public until
+  // published, but always returned to organization administrators.
+  presentation_blocs?: Array<PageBloc>
+  // Publication date of the blocs. `null` means draft (never public); a set date
+  // means published. Like `presentation_blocs`, only present when requested with
+  // X-Fields.
+  presentation_blocs_published_at?: string | null
 }

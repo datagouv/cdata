@@ -151,7 +151,7 @@ const { data: organization, status } = await useAPI<Organization>(url, { redirec
 // date lives in the default mask, so we read it straight from the organization
 // instead of fetching the (heavy) blocs here — those are lazy-loaded on the
 // presentation page itself.
-const hasPresentation = computed(() => isOrganizationPresentationPublished(organization.value?.blocs_published_at))
+const hasPresentation = computed(() => isOrganizationPresentationPublished(organization.value?.presentation_blocs_published_at))
 const canEditPresentation = computed(() => isUserOrgAdmin(me.value, organization.value))
 // Hidden from non-admins until configured; always available to org admins so they
 // can create it.
