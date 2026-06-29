@@ -113,6 +113,26 @@ test('discussions tab navigates to discussions page', async ({ page }) => {
   await expect(page).toHaveURL('/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/discussions')
 })
 
+test('reuses and dataservices tab lists the dataset reuses', async ({ page }) => {
+  await page.goto(
+    '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
+  )
+  // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
+
+  await page.getByRole('link', { name: /Réutilisations et API/ }).click()
+  await expect(page).toHaveURL(
+    '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/reuses_and_dataservices',
+  )
+
+  // The reuses are fetched from /api/2/reuses/, which exposes `datasets` as a
+  // lightweight link instead of inlining every linked dataset. Anchor on the
+  // listing count (not the "réutilisations recommandées" block) and assert a
+  // reuse card actually rendered.
+  await expect(page.getByText(/^\d+ réutilisations?$/)).toBeVisible()
+  await expect(page.getByRole('article').first()).toBeVisible()
+})
+
 test('resources are displayed and accordion expands', async ({ page }) => {
   await page.goto(
     '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',

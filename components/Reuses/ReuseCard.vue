@@ -7,9 +7,9 @@
 </template>
 
 <script setup lang="ts">
-import { ReuseCard, type Reuse } from '@datagouv/components-next'
+import { ReuseCard, type Reuse, type ReuseV2 } from '@datagouv/components-next'
 
 defineProps<{
-  reuse: Reuse
+  reuse: Reuse | ReuseV2
 }>()
 </script>
