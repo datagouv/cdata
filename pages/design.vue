@@ -49,6 +49,11 @@
           to="/design/reuse-search"
         />
         <AdminSidebarLink
+          :icon="RiGlobalLine"
+          :label="$t('Recherche par univers')"
+          to="/design/universe-search"
+        />
+        <AdminSidebarLink
           :icon="RiUserSearchLine"
           :label="$t('Recherche d\'organisations')"
           to="/design/organization-search"
@@ -87,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { RiEyeLine, RiExternalLinkLine, RiFileSearchLine, RiIdCardLine, RiLineChartLine, RiListView, RiRadioButtonLine, RiSearch2Line, RiSearchEyeLine, RiTranslate, RiUserSearchLine, RiListCheck } from '@remixicon/vue'
+import { RiEyeLine, RiExternalLinkLine, RiFileSearchLine, RiGlobalLine, RiIdCardLine, RiLineChartLine, RiListView, RiRadioButtonLine, RiSearch2Line, RiSearchEyeLine, RiTranslate, RiUserSearchLine, RiListCheck } from '@remixicon/vue'
 import AdminSidebarLink from '~/components/AdminSidebar/AdminSidebarLink/AdminSidebarLink.vue'
 import LogoOnly from '~/components/LogoOnly.vue'
 import Sidemenu from '~/components/Sidemenu/Sidemenu.global.vue'

@@ -16,29 +16,31 @@
         :auto-focus
       />
     </div>
-    <div
-      v-if="universes && universes.length > 1"
-      class="mt-2 md:mt-5"
-    >
-      <RadioGroup
-        v-model="universeParam"
-        name="search-universe"
-      >
-        <RadioInput
-          v-for="u in universes"
-          :key="u.key"
-          :value="u.key"
-          :icon="u.icon"
-        >
-          {{ u.name }}
-        </RadioInput>
-      </RadioGroup>
-    </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
       <div
         v-if="showSidebar"
         class="col-span-12 md:col-span-4 lg:col-span-3 md:space-y-8"
       >
+        <div v-if="universes && universes.length > 1">
+          <Sidemenu :button-text="t('Univers')">
+            <template #title>
+              {{ t('Univers') }}
+            </template>
+            <RadioGroup
+              v-model="universeParam"
+              name="search-universe"
+            >
+              <RadioInput
+                v-for="u in universes"
+                :key="u.key"
+                :value="u.key"
+                :icon="u.icon"
+              >
+                {{ u.name }}
+              </RadioInput>
+            </RadioGroup>
+          </Sidemenu>
+        </div>
         <div v-if="effectiveConfig.length > 1">
           <Sidemenu :button-text="t('Type')">
             <template #title>
@@ -537,7 +539,7 @@ const activeFilters = computed(() => [
 ] as string[])
 
 const slots = useSlots()
-const showSidebar = computed(() => effectiveConfig.value.length > 1 || activeFilters.value.length > 0 || !!slots['custom-filters-top'] || !!slots['custom-filters-bottom'])
+const showSidebar = computed(() => (props.universes && props.universes.length > 1) || effectiveConfig.value.length > 1 || activeFilters.value.length > 0 || !!slots['custom-filters-top'] || !!slots['custom-filters-bottom'])
 
 // URL query params
 const q = useRouteQuery<string>('q', '')
@@ -619,6 +621,7 @@ watch(universeParam, (newKey, oldKey) => {
   const savedQ = q.value
   resetFilters()
   q.value = savedQ
+  flushQ()
   sort.value = undefined
   page.value = 1
 })
