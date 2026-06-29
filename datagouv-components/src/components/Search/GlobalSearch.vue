@@ -624,7 +624,6 @@ watch(universeParam, (newKey, oldKey) => {
   resetFilters()
   q.value = savedQ
   flushQ()
-  sort.value = undefined
   page.value = 1
 }, { flush: 'post' }) // post: let Vue finish patching the universe RadioGroup before secondary mutations trigger a new render
 

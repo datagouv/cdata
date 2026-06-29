@@ -25,7 +25,8 @@
 </template>
 
 <script setup lang="ts">
-import type { TopicV2, TopicElement, DatasetSearchFilters, PaginatedArray, GlobalSearch, type UniverseConfig, defaultDatasetSortOptions, defaultReuseSortOptions } from '@datagouv/components-next'
+import { GlobalSearch, defaultDatasetSortOptions, defaultReuseSortOptions } from '@datagouv/components-next'
+import type { TopicV2, TopicElement, DatasetSearchFilters, PaginatedArray, UniverseConfig } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const { data: topicsData } = await useAPI<PaginatedArray<TopicV2>>('/api/2/topics/', {
@@ -38,6 +39,10 @@ const datasetFilterSets: (keyof DatasetSearchFilters)[][] = [
   ['organization', 'tag', 'format', 'license'],
   ['organization', 'geozone', 'granularity', 'badge'],
   ['organization', 'schema', 'license'],
+]
+
+const altDatasetSortOptions = [
+  { value: '-created', label: 'Date de création' },
 ]
 
 const universes = ref<UniverseConfig[]>([])
@@ -65,12 +70,11 @@ watch(
           {
             class: 'datasets' as const,
             basicFilters: datasetFilterSets[i % datasetFilterSets.length],
-            sortOptions: defaultDatasetSortOptions,
+            sortOptions: i % 2 !== 0 ? defaultDatasetSortOptions : altDatasetSortOptions,
           },
           {
             class: 'dataservices' as const,
             basicFilters: ['organization'],
-            sortOptions: [{ value: '-created', label: 'Date de création' }],
           },
           ...(i % 2 !== 0 ? [{ class: 'reuses' as const, basicFilters: ['organization'] as const, sortOptions: defaultReuseSortOptions }] : []),
         ],
