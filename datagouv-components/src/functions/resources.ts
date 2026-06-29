@@ -167,6 +167,13 @@ export function getResourceFilesize(resource: Resource): null | number {
   return null
 }
 
+const IMAGE_PREVIEW_FORMATS = ['png', 'jpg', 'jpeg', 'webp', 'gif'] as const
+
+export function isImagePreviewFormat(format: string | undefined | null): boolean {
+  if (!format) return false
+  return IMAGE_PREVIEW_FORMATS.includes(format.toLowerCase() as typeof IMAGE_PREVIEW_FORMATS[number])
+}
+
 type CorsStatus = 'allowed' | 'blocked' | 'unknown'
 
 export const getResourceCorsStatus = (resource: Resource): CorsStatus => {

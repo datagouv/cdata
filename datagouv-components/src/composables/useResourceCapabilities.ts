@@ -2,7 +2,7 @@ import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useComponentsConfig } from '../config'
 import { useTranslation } from './useTranslation'
 import { useHasTabularData } from './useHasTabularData'
-import { detectOgcService } from '../functions/resources'
+import { detectOgcService, isImagePreviewFormat } from '../functions/resources'
 import { isOrganizationCertified } from '../functions/organizations'
 import type { Resource, WfsMetadata } from '../types/resources'
 import type { Dataset, DatasetV2 } from '../types/datasets'
@@ -21,7 +21,7 @@ export function useResourceCapabilities(
 
   const hasPreview = computed(() => {
     const format = toValue(resource).format?.toLowerCase()
-    return format === 'json' || format === 'pdf' || format === 'xml'
+    return format === 'json' || format === 'pdf' || format === 'xml' || isImagePreviewFormat(format)
   })
 
   const hasTabularData = computed(() => {
