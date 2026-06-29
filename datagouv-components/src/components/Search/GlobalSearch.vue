@@ -523,7 +523,8 @@ const activeSortValues = computed(() =>
 // intrinsic width regardless of which type is currently active.
 const allSortOptions = computed(() => {
   const seen = new Set<string>()
-  return effectiveConfig.value.flatMap(c => (c.sortOptions ?? []) as SortOption<string>[]).filter((o) => {
+  const allTypeConfigs = resolvedUniverses.value ? resolvedUniverses.value.flatMap(u => u.types) : props.config
+  return allTypeConfigs.flatMap(c => (c.sortOptions ?? []) as SortOption<string>[]).filter((o) => {
     if (seen.has(o.value)) return false
     seen.add(o.value)
     return true
@@ -608,14 +609,16 @@ const allFilters: Record<string, Ref<unknown>> = {
 // Reset type, sort, and filters when changing universe
 watch(universeParam, (newKey, oldKey) => {
   if (!resolvedUniverses.value || newKey === oldKey) return
-  const newUniverse = resolvedUniverses.value.find(u => u.key === newKey) ?? resolvedUniverses.value[0]
+  const newUniverse = resolvedUniverses.value.find(u => u.key === newKey)
   if (!newUniverse) return
   const newTypeKeys = new Set(newUniverse.types.map(c => configKey(c)))
   const firstType = newUniverse.types[0]
   if (!newTypeKeys.has(currentType.value) && firstType) {
     currentType.value = configKey(firstType)
   }
+  const savedQ = q.value
   resetFilters()
+  q.value = savedQ
   sort.value = undefined
   page.value = 1
 })
@@ -803,7 +806,7 @@ const hasFilters = computed(() => {
     || Array.from(customFilterRegistry.values()).some(isCustomFilterActive)
 })
 
-const showForumLink = computed(() => (currentType.value === 'datasets' || currentType.value === 'dataservices') && !!componentsConfig.forumUrl)
+const showForumLink = computed(() => (currentTypeConfig.value?.class === 'datasets' || currentTypeConfig.value?.class === 'dataservices') && !!componentsConfig.forumUrl)
 
 function resetFilters() {
   organizationId.value = undefined
@@ -848,11 +851,6 @@ const rssUrl = computed(() => {
     }
   }
 
-  // Universe topic (authoritative — set after hiddenFilters so it wins)
-  if (activeUniverseTopic.value) {
-    params.set('topic', activeUniverseTopic.value)
-  }
-
   // Add active filters
   if (qForParams.value) params.set('q', qForParams.value)
   if (organizationId.value) params.set('organization', organizationId.value)
@@ -865,6 +863,11 @@ const rssUrl = computed(() => {
   if (granularity.value) params.set('granularity', granularity.value)
   if (badge.value) params.set('badge', badge.value)
   if (topic.value) params.set('topic', topic.value)
+
+  // Universe topic (authoritative — set last so it wins over user topic filter)
+  if (activeUniverseTopic.value) {
+    params.set('topic', activeUniverseTopic.value)
+  }
 
   forEachActiveCustomFilter(customFilterRegistry, (apiParam, value) => {
     params.set(apiParam, value)
