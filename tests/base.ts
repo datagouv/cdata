@@ -1,4 +1,10 @@
-import { test as base } from '@playwright/test'
+import { test as base, type ConsoleMessage } from '@playwright/test'
+
+// `msg.text()` flattens an `Error` argument to its bare message (e.g. "Error"),
+// dropping the stack on Firefox. Resolve the args to recover `error.stack`.
+const fullText = (msg: ConsoleMessage) =>
+  Promise.all(msg.args().map(arg => arg.evaluate(v => (v instanceof Error ? v.stack : v)).catch(() => null)))
+    .then(parts => parts.filter(p => p != null).join(' ') || msg.text())
 
 const IGNORED_MESSAGES = [
   // Cookie secure flag doesn't work in dev (HTTP)
@@ -22,8 +28,8 @@ const IGNORED_MESSAGES = [
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 export const test = base.extend<{ assertNoConsoleErrors: void }>({
   assertNoConsoleErrors: [async ({ page }, use) => {
-    const warnings: string[] = []
-    const errors: string[] = []
+    const warnings: Array<Promise<string>> = []
+    const errors: Array<Promise<string>> = []
 
     page.on('console', (msg) => {
       const text = msg.text()
@@ -31,28 +37,31 @@ export const test = base.extend<{ assertNoConsoleErrors: void }>({
 
       const type = msg.type()
       if (type === 'warning') {
-        warnings.push(text)
+        warnings.push(fullText(msg))
       }
       if (type === 'error') {
-        errors.push(text)
+        errors.push(fullText(msg))
       }
     })
 
     page.on('pageerror', (error) => {
       if (IGNORED_MESSAGES.some(ignored => error.message.includes(ignored))) return
-      errors.push(error.message)
+      errors.push(Promise.resolve(error.stack ?? error.message))
     })
 
     await use()
 
-    for (const w of warnings) {
+    const resolvedWarnings = await Promise.all(warnings)
+    const resolvedErrors = await Promise.all(errors)
+
+    for (const w of resolvedWarnings) {
       base.info().annotations.push({ type: 'warning', description: w })
     }
-    for (const e of errors) {
+    for (const e of resolvedErrors) {
       base.info().annotations.push({ type: 'error', description: e })
     }
 
-    const all = [...errors, ...warnings]
+    const all = [...resolvedErrors, ...resolvedWarnings]
     if (all.length > 0) {
       throw new Error(`Console errors/warnings:\n${all.join('\n')}`)
     }

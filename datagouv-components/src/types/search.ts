@@ -4,7 +4,7 @@ import type { AccessType } from './access_types'
 import type { Dataset } from './datasets'
 import type { Dataservice } from './dataservices'
 import type { Organization } from './organizations'
-import type { Reuse } from './reuses'
+import type { ReuseV2 } from './reuses'
 import type { TopicV2 } from './topics'
 import type {
   CERTIFIED,
@@ -372,7 +372,7 @@ export type GlobalSearchConfig = SearchTypeConfig[]
 export type SearchResponseByClass = {
   datasets: DatasetSearchResponse<Dataset>
   dataservices: DataserviceSearchResponse<Dataservice>
-  reuses: ReuseSearchResponse<Reuse>
+  reuses: ReuseSearchResponse<ReuseV2>
   organizations: OrganizationSearchResponse<Organization>
   topics: TopicSearchResponse<TopicV2>
 }
