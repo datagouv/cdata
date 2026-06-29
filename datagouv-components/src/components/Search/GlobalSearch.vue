@@ -614,9 +614,11 @@ watch(universeParam, (newKey, oldKey) => {
   const newUniverse = resolvedUniverses.value.find(u => u.key === newKey)
   if (!newUniverse) return
   const newTypeKeys = new Set(newUniverse.types.map(c => configKey(c)))
-  const firstType = newUniverse.types[0]
-  if (!newTypeKeys.has(currentType.value) && firstType) {
-    currentType.value = configKey(firstType)
+  if (!newTypeKeys.has(currentType.value)) {
+    const oldUniverse = resolvedUniverses.value.find(u => u.key === oldKey)
+    const currentClass = oldUniverse?.types.find(c => configKey(c) === currentType.value)?.class
+    const sameClassType = currentClass ? newUniverse.types.find(c => c.class === currentClass) : undefined
+    currentType.value = configKey(sameClassType ?? newUniverse.types[0])
   }
   const savedQ = q.value
   resetFilters()
