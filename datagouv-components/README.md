@@ -65,7 +65,7 @@ app.vueApp.use(datagouv, {
 `@datagouv/components` is using [TailwindCSS](https://tailwindcss.com/docs) and some [DSFR](https://www.systeme-de-design.gouv.fr/) right now. The user needs to provide the correct version of the DSFR. Concerning TailwindCSS, there are two modes:
 
 1. If the user is using TailwindCSS, it can import a full TailwindCSS config with `@import "@datagouv/components-next/assets/main.css";`, then build the CSS via TailwindCSS CLI or Vite plugin.
-2. If the user is not using TailwindCSS, it can import an already built CSS file with `@import '@datagouv/components-next/dist/components.css';`. Note @dev, this file should be built before publishing the package to NPM with `npm run css`. For more details on the [technology stack](../README.md#-technology-stack), see the main README.
+2. If the user is not using TailwindCSS, it can import an already built CSS file with `@import '@datagouv/components-next/dist/components.css';`. Note @dev, this file should be built before publishing the package to PNPM with `pnpm run css`. For more details on the [technology stack](../README.md#-technology-stack), see the main README.
 
 ### I18n
 
@@ -94,8 +94,8 @@ For general development guidelines and contributing, see the [contributing secti
 This component library uses both ESLint and Prettier for code quality and formatting:
 
 ```bash
-npm run lint    # Lint and auto-fix ESLint issues
-npm run format  # Format code with Prettier
+pnpm run lint    # Lint and auto-fix ESLint issues
+pnpm run format  # Format code with Prettier
 ```
 
 **Note:** Make sure to run both commands before submitting contributions to ensure consistent code style.
@@ -172,10 +172,10 @@ To make a new release, you have to :
 
 ### Update the version
 
-Use the dedicated npm command, with the correct parameter :
+Use the dedicated pnpm command, with the correct parameter :
 
 ```
-npm version VERSION
+pnpm version VERSION
 ```
 
 Where VERSION is :
@@ -187,7 +187,8 @@ Additional labels for pre-release and build metadata are available as extensions
 ### Publish to NPM
 
 ```
-npm run publish-stable
+pnpm login
+pnpm run publish-stable
 ```
 
 ## 📄 License

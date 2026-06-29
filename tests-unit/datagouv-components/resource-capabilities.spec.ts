@@ -1,5 +1,5 @@
+import { expect, test } from 'vitest'
 import { getWfsExportFormats } from '~/datagouv-components/src/functions/resourceCapabilities'
-import { test, expect } from '../base'
 
 test('WFS format download URLs generation', async () => {
   const resource = {

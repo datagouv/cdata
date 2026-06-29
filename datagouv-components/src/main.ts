@@ -15,7 +15,7 @@ import type { Owned, OwnedWithFullObject, OwnedWithId } from './types/owned'
 import type { Comment, Thread } from './types/discussions'
 import type { PageBloc, ContentBloc, BlocWithTitle, DatasetsListBloc, DataservicesListBloc, ReusesListBloc, LinkInBloc, LinksListBloc, MarkdownBloc, AccordionItemBloc, AccordionListBloc, HeroBloc } from './types/pages'
 import type { Post } from './types/posts'
-import type { ReuseReference, NewReuse, Reuse, ReuseTopic, ReuseType } from './types/reuses'
+import type { ReuseReference, NewReuse, Reuse, ReuseV2, ReuseTopic, ReuseType } from './types/reuses'
 import type { RegisteredSchema, Schema, SchemaDetails, SchemaField, SchemaPath, SchemaPublicationMode, SchemaResponseData, SchemaVersion, ValidataError } from './types/schemas'
 import type { TopicV2, TopicElement, TopicElementClass, TopicElementRel } from './types/topics'
 import type { CommunityResource, FileResourceFileType, RemoteResourceFileType, ResourceFileType, ResourceGroup, ResourceType, Resource } from './types/resources'
@@ -23,7 +23,8 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
-import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm } from './types/visualizations'
+import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm, CombinedSort, ColumnDefinition, ColumnsDefinition } from './types/visualizations'
+import type { ColumnType } from './components/TabularExplorer/types'
 import type { GlobalSearchConfig, UniverseConfig, SearchType, SearchTypeConfig, SortOption, HiddenFilter, BuiltInFilterKey, DatasetSearchConfig, DatasetSearchFilters, DataserviceSearchConfig, DataserviceSearchFilters, ReuseSearchConfig, ReuseSearchFilters, OrganizationSearchConfig, OrganizationSearchFilters, TopicSearchConfig, TopicSearchFilters } from './types/search'
 import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 import { useSearchFilter } from './composables/useSearchFilter'
@@ -228,6 +229,7 @@ export type {
   ResourceType,
   ReuseReference,
   Reuse,
+  ReuseV2,
   ReuseTopic,
   ReuseType,
   Schema,
@@ -252,6 +254,10 @@ export type {
   Chart,
   ChartForm,
   ChartForApi,
+  CombinedSort,
+  ColumnDefinition,
+  ColumnType,
+  ColumnsDefinition,
   FilterCondition,
   Filter,
   AndFilters,

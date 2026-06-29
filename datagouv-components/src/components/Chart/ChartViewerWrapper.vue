@@ -18,20 +18,18 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
 import { useComponentsConfig } from '../../config'
 import { fetchTabularData, useGetProfile } from '../../functions/tabularApi'
-import type { Chart, ChartForApi } from '../../types/visualizations'
+import type { Chart, ChartForApi, ColumnsDefinition } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
+import { watchDebounced } from '@vueuse/shared'
+import { buildColumnsFromProfile } from '../../functions/charts'
 
 const props = defineProps<{
   chart: Chart | ChartForApi
-}>()
-
-const emit = defineEmits<{
-  columns: [columns: Record<string, Array<string>>]
 }>()
 
 const { t } = useTranslation()
@@ -45,10 +43,16 @@ const pendingOperations = ref(0)
 
 const series = reactive<{
   data: Record<string, Array<Record<string, unknown>>>
-  columns: Record<string, Array<string>>
+  columns: ColumnsDefinition
 }>({
   data: {},
   columns: {},
+})
+
+const resourceIds = computed(() => {
+  return props.chart.series
+    .filter(s => s.resource_id)
+    .map(s => s.resource_id)
 })
 
 async function fetchSeriesProfile() {
@@ -78,7 +82,7 @@ async function fetchSeriesProfile() {
       .map(r => r.value)
     series.columns = Object.fromEntries(results.map(result => [
       result.id,
-      result.profile.profile.header,
+      buildColumnsFromProfile(result.profile),
     ]))
   }
   catch (err) {
@@ -86,6 +90,7 @@ async function fetchSeriesProfile() {
     status.value = 'error'
     console.error(err)
     series.columns = {}
+    series.data = {}
   }
   finally {
     pendingOperations.value--
@@ -148,17 +153,16 @@ async function fetchSeriesData() {
   }
 }
 
-watch(() => props.chart.series, async () => {
+watch(resourceIds, async () => {
   await fetchSeriesProfile()
-}, { immediate: true, deep: true })
+}, { immediate: true })
 
-watch([() => props.chart.series, () => props.chart.x_axis.column_x], async () => {
+watchDebounced([
+  () => props.chart.series,
+  () => props.chart.x_axis.column_x,
+], async () => {
   await fetchSeriesData()
-}, { immediate: true, deep: true })
-
-watch(() => series.columns, () => {
-  emit('columns', series.columns)
-})
+}, { debounce: config.searchDebounce ?? 300, immediate: true, deep: true })
 
 watch(pendingOperations, (count) => {
   if (count === 0) {

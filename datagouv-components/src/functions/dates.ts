@@ -77,8 +77,9 @@ export function useFormatDate() {
     dateWithoutTime.setHours(0)
     dateWithoutTime.setMinutes(0)
     dateWithoutTime.setSeconds(0)
-    const diff = Math.abs(dateWithoutTime.getTime() - today.getTime())
-    if (Math.round(diff / (SECONDS_IN_A_DAY * 30)) >= 1) {
+    // `getTime()` returns milliseconds, `SECONDS_IN_A_DAY` is in seconds
+    const diffInSeconds = Math.abs(dateWithoutTime.getTime() - today.getTime()) / 1000
+    if (diffInSeconds >= SECONDS_IN_A_DAY * 30) {
       return t('le {date}', { date: formatDate(date, options) })
     }
     return formatFromNow(date)
