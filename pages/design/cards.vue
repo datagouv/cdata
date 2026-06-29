@@ -144,10 +144,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { DiscussionMessageCard, LoadingBlock, PostCard, ReuseHorizontalCard, TopicCard, type PaginatedArray, type Post, type Reuse, type Thread, type TopicV2 } from '@datagouv/components-next'
+import { DiscussionMessageCard, LoadingBlock, PostCard, ReuseHorizontalCard, TopicCard, type PaginatedArray, type Post, type ReuseV2, type Thread, type TopicV2 } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
-const { data: reusesData, status: reusesHorizontalStatus } = await useAPI<PaginatedArray<Reuse>>('/api/1/reuses/', { lazy: true, server: false, query: { page_size: 2 } })
+const { data: reusesData, status: reusesHorizontalStatus } = await useAPI<PaginatedArray<ReuseV2>>('/api/2/reuses/', { lazy: true, server: false, query: { page_size: 2 } })
 const reusesForHorizontal = computed(() => reusesData.value?.data ?? [])
 
 const { data: discussionsData, status: discussionStatus } = await useAPI<PaginatedArray<Thread>>('/api/1/discussions/', { lazy: true, server: false, query: { page_size: 2 } })

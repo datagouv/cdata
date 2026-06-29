@@ -201,7 +201,7 @@
 </template>
 
 <script setup lang="ts">
-import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, useFormatDate, MarkdownViewer, BrandedButton } from '@datagouv/components-next'
+import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseV2, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, useFormatDate, MarkdownViewer, BrandedButton } from '@datagouv/components-next'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import type { PaginatedArray } from '~/types/types'
 
@@ -241,10 +241,7 @@ const { data: dataservices } = await useAPI<PaginatedArray<Dataservice>>('/api/1
 
 const topic = computed(() => getTopic(topics.value ?? [], props.reuse.topic))
 
-const { data: reuses, status } = await useAPI<PaginatedArray<Reuse>>(`/api/2/reuses/search/`, {
-  headers: {
-    'X-Fields': reusesXFields,
-  },
+const { data: reuses, status } = await useAPI<PaginatedArray<ReuseV2>>(`/api/2/reuses/search/`, {
   params: {
     page: 1,
     page_size: 4,

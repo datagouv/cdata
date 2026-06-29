@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, ReuseHorizontalCard, Pagination, defaultReuseSortOptions, type Reuse, type Organization, type PaginatedArray } from '@datagouv/components-next'
+import { LoadingBlock, ReuseHorizontalCard, Pagination, defaultReuseSortOptions, type ReuseV2, type Organization, type PaginatedArray } from '@datagouv/components-next'
 import { useRouteQuery } from '@vueuse/router'
 
 const props = defineProps<{
@@ -83,7 +83,7 @@ const params = computed(() => {
   return p
 })
 
-const { data: results, status } = await useAPI<PaginatedArray<Reuse>>('/api/2/reuses/search/', {
+const { data: results, status } = await useAPI<PaginatedArray<ReuseV2>>('/api/2/reuses/search/', {
   params,
   lazy: true,
 })
