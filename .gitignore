@@ -33,3 +33,5 @@ logs
 /playwright/.cache/
 playwright/.auth
 tests/**/screenshots/
+.superpowers/
+export-resource-*.csv
