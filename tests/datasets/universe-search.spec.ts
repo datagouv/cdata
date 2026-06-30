@@ -73,7 +73,7 @@ test('API requests include topic= param matching the active universe', async ({ 
 test('search query persists across universe switch', async ({ page }) => {
   const fieldset = await gotoAndWait(page)
 
-  const searchInput = page.getByRole('textbox').first()
+  const searchInput = page.getByRole('searchbox').first()
   await searchInput.fill('budget')
   await page.waitForURL(url => url.searchParams.get('q') === 'budget')
 
@@ -94,7 +94,7 @@ test('page resets to 1 when switching universe', async ({ page }) => {
 
 test('even universe has no reuses type, odd universe has reuses', async ({ page }) => {
   const fieldset = await gotoAndWait(page)
-  const typeFieldset = page.locator('fieldset').filter({ hasText: 'Type' })
+  const typeFieldset = page.locator('fieldset:has(input[name="search-type"])')
 
   // Universe 1 (index 0, even): no reuses
   await expect(typeFieldset.getByRole('radio', { name: /Réutilisations/i })).not.toBeAttached()
@@ -107,7 +107,7 @@ test('even universe has no reuses type, odd universe has reuses', async ({ page 
 
 test('type is preserved across universe switch when class exists in both', async ({ page }) => {
   const fieldset = await gotoAndWait(page)
-  const typeFieldset = page.locator('fieldset').filter({ hasText: 'Type' })
+  const typeFieldset = page.locator('fieldset:has(input[name="search-type"])')
 
   await typeFieldset.getByRole('radio', { name: /API/i }).click({ force: true })
   await page.waitForURL(url => url.searchParams.has('type'))
