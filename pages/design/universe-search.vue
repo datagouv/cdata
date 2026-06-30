@@ -26,7 +26,7 @@
 
 <script setup lang="ts">
 import { GlobalSearch, defaultDatasetSortOptions, defaultReuseSortOptions } from '@datagouv/components-next'
-import type { TopicV2, TopicElement, DatasetSearchFilters, PaginatedArray, UniverseConfig } from '@datagouv/components-next'
+import type { TopicV2, TopicElement, DatasetSearchFilters, ReuseSearchFilters, PaginatedArray, UniverseConfig } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const { data: topicsData } = await useAPI<PaginatedArray<TopicV2>>('/api/2/topics/', {
@@ -41,7 +41,7 @@ const datasetFilterSets: (keyof DatasetSearchFilters)[][] = [
   ['organization', 'schema', 'license'],
 ]
 
-const altDatasetSortOptions = [
+const altDatasetSortOptions: typeof defaultDatasetSortOptions = [
   { value: '-created', label: 'Date de création' },
 ]
 
@@ -76,7 +76,7 @@ watch(
             class: 'dataservices' as const,
             basicFilters: ['organization'],
           },
-          ...(i % 2 !== 0 ? [{ class: 'reuses' as const, basicFilters: ['organization'] as const, sortOptions: defaultReuseSortOptions }] : []),
+          ...(i % 2 !== 0 ? [{ class: 'reuses' as const, basicFilters: ['organization'] as (keyof ReuseSearchFilters)[], sortOptions: defaultReuseSortOptions }] : []),
         ],
       }))
     if (universes.value.length === 0) console.warn('No test data found for universes')
