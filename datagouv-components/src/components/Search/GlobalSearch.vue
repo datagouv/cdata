@@ -390,7 +390,7 @@ import type { Dataservice } from '../../types/dataservices'
 import type { Organization } from '../../types/organizations'
 import type { ReuseV2 } from '../../types/reuses'
 import type { TopicV2 } from '../../types/topics'
-import type { GlobalSearchConfig, UniverseConfig, SearchResponseByClass, SearchType, SortOption, FacetItem } from '../../types/search'
+import type { GlobalSearchConfig, UniverseConfig, SearchTypeConfig, NonEmptyArray, SearchResponseByClass, SearchType, SortOption, FacetItem } from '../../types/search'
 import { getDefaultGlobalSearchConfig } from '../../types/search'
 import BrandedButton from '../BrandedButton.vue'
 import LoadingBlock from '../LoadingBlock.vue'
@@ -445,7 +445,7 @@ const universeParam = useRouteQuery<string>('universe', props.universes?.[0]?.ke
 const resolvedUniverses = computed(() =>
   props.universes?.map(u => ({
     ...u,
-    types: u.types.map(c => c.key ? c : { ...c, key: `${u.key}-${c.class}` }),
+    types: u.types.map(c => c.key ? c : { ...c, key: `${u.key}-${c.class}` }) as NonEmptyArray<SearchTypeConfig>,
   })),
 )
 

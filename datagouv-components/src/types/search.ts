@@ -15,7 +15,7 @@ import type {
   USER,
   OrganizationTypes } from '../functions/organizations'
 
-// Common types
+export type NonEmptyArray<T> = [T, ...T[]]
 
 export type LastUpdateRange = 'last_30_days' | 'last_12_months' | 'last_3_years'
 
@@ -373,7 +373,7 @@ export type UniverseConfig = {
   name: string
   icon?: Component | string
   topicId: string
-  types: GlobalSearchConfig
+  types: NonEmptyArray<SearchTypeConfig>
 }
 
 // Maps each search class to its concrete response shape.
