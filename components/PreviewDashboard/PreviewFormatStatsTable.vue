@@ -119,7 +119,18 @@
               class="border-t border-gray-default"
             >
               <td class="py-4 pr-3 pl-11 text-sm font-medium whitespace-nowrap text-gray-title border-r border-gray-default last:border-r-0 sm:pl-10">
-                {{ row.Format }}
+                <NuxtLink
+                  class="link"
+                  :to="{
+                    query: {
+                      ...route.query,
+                      tab: 'fichiers',
+                      format: row.Format,
+                    },
+                  }"
+                >
+                  {{ row.Format }}
+                </NuxtLink>
               </td>
               <td class="px-3 py-4 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
                 {{ formatNumber(row.Nombre) }}
@@ -149,6 +160,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useRoute } from '#imports'
 import {
   RiArchiveLine,
   RiArrowDownSLine,
@@ -170,13 +182,14 @@ const props = defineProps<{
   resourceId: string
 }>()
 
+const route = useRoute()
 const config = useRuntimeConfig()
 const { t } = useTranslation()
 const { formatNumber } = useFormatTabular()
 
 const dataUrl = computed(() => {
   const base = `${config.public.tabularApiUrl}/api/resources/${props.resourceId}/data/`
-  const params = new URLSearchParams({ page: '1', page_size: '101' })
+  const params = new URLSearchParams({ page: '1', page_size: '99' })
   return `${base}?${params.toString()}`
 })
 

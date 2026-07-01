@@ -7,27 +7,30 @@ const statsResourceId = '33cf9a65-3f77-4d88-acd1-bca420d83e60'
 const resourcesData: PreviewDashboardResource[] = [
   {
     'id': 'resource-1',
-    'title': 'Données CSV',
+    'titre': 'Données CSV',
     'url': 'https://example.com/resource-1',
-    'format renseigné': 'csv',
-    'format détecté': 'text/csv',
-    'filesize renseignée': 1024,
-    'filesize détectée': 1024,
     'source': 'https://example.com/dataset-1',
-    'previews': 'tabular',
-    'tabular preview last update': '2026-06-30T12:00:00Z',
+    'format déclaré': 'csv',
+    'format détecté': 'text/csv',
     'format normalisé': 'csv',
     'famille': 'Tabulaire',
+    'taille déclarée': 1024,
+    'taille détectée': 1024,
+    'téléchargements': 42,
+    'dernière modification': '2026-06-30T10:00:00Z',
+    'dernière maj tabular': '2026-06-30T12:00:00Z',
+    'délai tabular (jours)': 0,
+    'aperçus actifs': 'tabular',
     'a un aperçu': true,
     'a une erreur': false,
     'a un too big': false,
-    'err source unreachable': false,
-    'err parsing error': false,
-    'err no parsing table': false,
-    'err cors blocked': false,
-    'err cors unknown': false,
-    'err file too big': false,
-    'err unknown size': false,
+    'aperçu manquant': false,
+    'erreur source inaccessible': false,
+    'erreur analyse': false,
+    'erreur cors': false,
+    'erreur cors inconnu': false,
+    'erreur fichier trop volumineux': false,
+    'erreur taille inconnue': false,
     '__id': 1,
   },
 ]
@@ -36,34 +39,37 @@ const resourcesProfile = {
   profile: {
     header: [
       'id',
-      'title',
+      'titre',
       'url',
-      'format renseigné',
-      'format détecté',
-      'filesize renseignée',
-      'filesize détectée',
       'source',
-      'previews',
-      'tabular preview last update',
+      'format déclaré',
+      'format détecté',
       'format normalisé',
       'famille',
+      'taille déclarée',
+      'taille détectée',
+      'téléchargements',
+      'dernière modification',
+      'dernière maj tabular',
+      'délai tabular (jours)',
+      'aperçus actifs',
       'a un aperçu',
       'a une erreur',
       'a un too big',
-      'err source unreachable',
-      'err parsing error',
-      'err no parsing table',
-      'err cors blocked',
-      'err cors unknown',
-      'err file too big',
-      'err unknown size',
+      'aperçu manquant',
+      'erreur source inaccessible',
+      'erreur analyse',
+      'erreur cors',
+      'erreur cors inconnu',
+      'erreur fichier trop volumineux',
+      'erreur taille inconnue',
     ],
     columns: {},
     formats: {},
     profile: {},
     encoding: 'utf-8',
     separator: ',',
-    categorical: ['format renseigné', 'previews', 'famille'],
+    categorical: ['format déclaré', 'aperçus actifs', 'famille'],
     total_lines: 1,
     nb_duplicates: 0,
     columns_fields: {},
@@ -87,6 +93,7 @@ const statsData: PreviewDashboardFormatStat[] = [
     '% erreur': 0.5,
     '% too big': 0.2,
     '% prévisualisable': 50,
+    '% prévisualisation manquante': 0.3,
     'Mois': '2026-06',
     '__id': 1,
   },
@@ -134,5 +141,45 @@ test.describe('Preview dashboard', () => {
     await page.getByRole('tab', { name: 'Fichiers' }).click()
     await expect(page.getByRole('cell', { name: 'Données CSV' })).toBeVisible()
     await expect(page.getByRole('cell', { name: 'csv' })).toBeVisible()
+  })
+
+  test('navigates to the filtered Fichiers tab when clicking a format name', async ({ page }) => {
+    await page.route(`**/api/resources/${resourceId}/data/**`, async (route) => {
+      await route.fulfill({
+        json: {
+          data: resourcesData,
+          meta: { page: 1, page_size: 50, total: 1 },
+          links: { profile: '', swagger: '', next: null, prev: null },
+        },
+      })
+    })
+
+    await page.route(`**/api/resources/${resourceId}/profile/**`, async (route) => {
+      await route.fulfill({ json: resourcesProfile })
+    })
+
+    await page.route(`**/api/resources/${statsResourceId}/data/**`, async (route) => {
+      await route.fulfill({
+        json: {
+          data: statsData,
+          meta: { page: 1, page_size: 100, total: 1 },
+          links: { profile: '', swagger: '', next: null, prev: null },
+        },
+      })
+    })
+
+    await page.goto('/admin/beta/preview-dashboard')
+
+    await page.waitForResponse(`**/api/resources/${resourceId}/data/**`)
+    await page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
+
+    await page.getByText('Tabulaire').click()
+    await page.getByRole('link', { name: 'csv' }).click()
+
+    await expect(page).toHaveURL(/[?&]tab=fichiers/)
+    await expect(page).toHaveURL(/[?&]format=csv/)
+
+    await expect(page.getByRole('tab', { name: 'Fichiers' })).toHaveAttribute('aria-selected', 'true')
+    await expect(page.getByText('format normalisé = csv')).toBeVisible()
   })
 })

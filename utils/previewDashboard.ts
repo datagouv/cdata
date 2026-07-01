@@ -1,26 +1,26 @@
-import type { PreviewType } from '~/types/preview-dashboard'
+import type { LocationQuery } from 'vue-router'
+import type { ColumnFilters } from '~/datagouv-components/src/components/TabularExplorer/types'
 
-export function parsePreviews(value: string | null | undefined): PreviewType[] {
-  if (!value) return []
-  return value
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean) as PreviewType[]
+const FORMAT_COLUMN = 'format normalisé'
+
+export type PreviewDashboardFilters = Record<string, ColumnFilters>
+
+export function buildFiltersFromQuery(query: LocationQuery): PreviewDashboardFilters {
+  const raw = query.format
+  if (raw == null || raw === '') return {}
+
+  const values = Array.isArray(raw) ? raw : String(raw).split(',')
+  const normalized = values.map(v => String(v).trim()).filter(Boolean)
+
+  if (normalized.length === 0) return {}
+  return { [FORMAT_COLUMN]: { in: normalized } }
 }
 
-export function getFormatFamily(format: string): string {
-  const normalized = format.toLowerCase().trim()
+export function buildQueryFromFilters(filters: PreviewDashboardFilters): { format?: string } {
+  const formatFilter = filters[FORMAT_COLUMN]
+  if (!formatFilter) return {}
 
-  const tabular = ['csv', 'xls', 'xlsx', 'ods']
-  const structured = ['json', 'geojson']
-  const geospatial = ['shp', 'kml', 'gpx', 'kmz', 'geopackage']
-  const document = ['pdf', 'doc', 'docx', 'odt']
+  if (formatFilter.in && formatFilter.in.length > 0) return { format: formatFilter.in.join(',') }
 
-  if (tabular.includes(normalized)) return 'Tabulaire'
-  if (structured.includes(normalized)) return 'Structuré'
-  if (geospatial.includes(normalized)) return 'Géospatial'
-  if (document.includes(normalized)) return 'Document'
-  if (normalized === 'xml') return 'XML'
-
-  return 'Autre'
+  return {}
 }

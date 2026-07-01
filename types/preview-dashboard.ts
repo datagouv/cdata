@@ -2,27 +2,30 @@ export type PreviewType = 'map' | 'tabular' | 'json' | 'pdf' | 'xml' | 'datafair
 
 export type PreviewDashboardResource = {
   'id': string
-  'title': string
+  'titre': string
   'url': string
-  'format renseigné': string
-  'format détecté': string | null
-  'filesize renseignée': number | null
-  'filesize détectée': number | null
   'source': string
-  'previews': string | null
-  'tabular preview last update': string | null
+  'format déclaré': string
+  'format détecté': string | null
   'format normalisé': string
   'famille': string
+  'taille déclarée': number | null
+  'taille détectée': number | null
+  'téléchargements': number
+  'dernière modification': string | null
+  'dernière maj tabular': string | null
+  'délai tabular (jours)': number
+  'aperçus actifs': string | null
   'a un aperçu': boolean
   'a une erreur': boolean
   'a un too big': boolean
-  'err source unreachable': boolean
-  'err parsing error': boolean
-  'err no parsing table': boolean
-  'err cors blocked': boolean
-  'err cors unknown': boolean
-  'err file too big': boolean
-  'err unknown size': boolean
+  'aperçu manquant': boolean
+  'erreur source inaccessible': boolean
+  'erreur analyse': boolean
+  'erreur cors': boolean
+  'erreur cors inconnu': boolean
+  'erreur fichier trop volumineux': boolean
+  'erreur taille inconnue': boolean
   '__id': number
 }
 
@@ -35,6 +38,7 @@ export type PreviewDashboardFormatStat = {
   '% erreur': number
   '% too big': number
   '% prévisualisable': number
+  '% prévisualisation manquante': number
   'Mois': string
   '__id': number
 }
