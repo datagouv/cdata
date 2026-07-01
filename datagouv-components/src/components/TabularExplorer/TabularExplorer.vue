@@ -656,7 +656,9 @@ const dataUrl = computed(() =>
 
 // Sort & filter state
 const sort = ref<SortConfig | null>(null)
-const filters = ref<Record<string, ColumnFilters>>({})
+const filters = defineModel<Record<string, ColumnFilters>>('filters', {
+  default: () => ({}),
+})
 
 const PAGE_SIZE = 50
 
