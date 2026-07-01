@@ -95,13 +95,13 @@
                 scope="col"
                 class="px-3 py-3.5 text-right text-sm font-semibold text-gray-title border-b border-r border-gray-default last:border-r-0"
               >
-                {{ t('Prévisualisable') }}
+                {{ t('% catalogue') }}
               </th>
               <th
                 scope="col"
                 class="px-3 py-3.5 text-right text-sm font-semibold text-gray-title border-b border-r border-gray-default last:border-r-0"
               >
-                {{ t('% catalogue') }}
+                {{ t('% prévisualisation manquante') }}
               </th>
               <th
                 scope="col"
@@ -114,6 +114,12 @@
                 class="px-3 py-3.5 text-right text-sm font-semibold text-gray-title border-b border-r border-gray-default last:border-r-0"
               >
                 {{ t('% too big') }}
+              </th>
+              <th
+                scope="col"
+                class="px-3 py-3.5 text-right text-sm font-semibold text-gray-title border-b border-r border-gray-default last:border-r-0"
+              >
+                {{ t('Prévisualisable') }}
               </th>
               <th
                 scope="col"
@@ -132,7 +138,7 @@
               class="border-t border-gray-default cursor-pointer hover:bg-gray-lowest"
               @click="toggleFamily(family.family)"
             >
-              <td class="py-3 pr-3 pl-4 text-sm font-semibold text-gray-title border-r border-gray-default last:border-r-0 sm:pl-3">
+              <td class="py-4 pr-3 pl-4 text-sm font-semibold text-gray-title border-r border-gray-default last:border-r-0 sm:pl-3">
                 <div class="flex items-center gap-2">
                   <RiArrowDownSLine
                     class="size-4 shrink-0 text-gray-low transition-transform"
@@ -147,32 +153,38 @@
                   {{ family.family }}
                 </div>
               </td>
-              <td class="px-3 py-3 text-right text-sm text-gray-title border-r border-gray-default last:border-r-0">
-                {{ formatNumber(family.count) }}
+              <td class="px-3 py-4 text-right text-sm text-gray-title border-r border-gray-default last:border-r-0">
+                <div>{{ formatNumber(family.count) }}</div>
+                <component :is="renderDelta(family.countDelta, 'count')" />
               </td>
-              <td class="px-3 py-3 text-right text-sm text-gray-title border-r border-gray-default last:border-r-0">
-                {{ formatNumber(family.withPreview) }}
-              </td>
-              <td class="px-3 py-3 text-right text-sm text-gray-title border-r border-gray-default last:border-r-0">
+              <td class="px-3 py-4 text-right text-sm text-gray-title border-r border-gray-default last:border-r-0">
                 {{ formatPercentage(family.percentageOfCatalog) }}
               </td>
-              <td class="px-3 py-3 text-right text-sm text-gray-title border-r border-gray-default last:border-r-0">
+              <td class="px-3 py-4 text-right text-sm text-gray-title border-r border-gray-default last:border-r-0">
+                {{ formatPercentage(family.percentageMissingPreview) }}
+              </td>
+              <td class="px-3 py-4 text-right text-sm text-gray-title border-r border-gray-default last:border-r-0">
                 {{ formatPercentage(family.percentageError) }}
               </td>
-              <td class="px-3 py-3 text-right text-sm text-gray-title border-r border-gray-default last:border-r-0">
+              <td class="px-3 py-4 text-right text-sm text-gray-title border-r border-gray-default last:border-r-0">
                 {{ formatPercentage(family.percentageTooBig) }}
               </td>
-              <td class="px-3 py-3 text-right text-sm text-gray-title border-r border-gray-default last:border-r-0">
+              <td class="px-3 py-4 text-right text-sm text-gray-title border-r border-gray-default last:border-r-0">
+                {{ formatNumber(family.withPreview) }}
+              </td>
+              <td class="px-3 py-4 text-right text-sm text-gray-title border-r border-gray-default last:border-r-0">
                 <PercentageMeter :value="family.percentageWithPreview" />
+                <component :is="renderDelta(family.previewDelta, 'points')" />
               </td>
             </tr>
+
             <tr
               v-for="row in family.formats"
               v-show="expandedFamilies.has(family.family)"
               :key="row.__id"
-              class="border-t border-gray-default"
+              class="border-t border-gray-default bg-gray-lowest-2"
             >
-              <td class="py-4 pr-3 pl-11 text-sm font-medium whitespace-nowrap text-gray-title border-r border-gray-default last:border-r-0 sm:pl-10">
+              <td class="py-1 pr-3 pl-11 text-sm font-medium whitespace-nowrap text-gray-title border-r border-gray-default last:border-r-0 sm:pl-10">
                 <NuxtLink
                   class="link"
                   :to="{
@@ -186,23 +198,28 @@
                   {{ row.Format }}
                 </NuxtLink>
               </td>
-              <td class="px-3 py-4 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
-                {{ formatNumber(row.Nombre) }}
+              <td class="px-3 py-1 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
+                <div>{{ formatNumber(row.Nombre) }}</div>
+                <component :is="renderDelta(row.countDelta, 'count')" />
               </td>
-              <td class="px-3 py-4 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
-                {{ formatNumber(row['Prévisualisable']) }}
-              </td>
-              <td class="px-3 py-4 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
+              <td class="px-3 py-1 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
                 {{ formatPercentage(row['% catalogue']) }}
               </td>
-              <td class="px-3 py-4 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
+              <td class="px-3 py-1 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
+                {{ formatPercentage(row['% prévisualisation manquante']) }}
+              </td>
+              <td class="px-3 py-1 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
                 {{ formatPercentage(row['% erreur']) }}
               </td>
-              <td class="px-3 py-4 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
+              <td class="px-3 py-1 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
                 {{ formatPercentage(row['% too big']) }}
               </td>
-              <td class="px-3 py-4 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
+              <td class="px-3 py-1 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
+                {{ formatNumber(row['Prévisualisable']) }}
+              </td>
+              <td class="px-3 py-1 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
                 <PercentageMeter :value="row['% prévisualisable']" />
+                <component :is="renderDelta(row.previewDelta, 'points')" />
               </td>
             </tr>
           </tbody>
@@ -213,11 +230,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, h, ref, watch } from 'vue'
 import { useRoute } from '#imports'
 import {
   RiArchiveLine,
+  RiArrowDownLine,
   RiArrowDownSLine,
+  RiArrowUpLine,
   RiBracesLine,
   RiCodeSSlashLine,
   RiFileTextLine,
@@ -232,6 +251,23 @@ import PercentageMeter from './PercentageMeter.vue'
 import type { PreviewDashboardFormatStat, TabularDataResponse } from '~/types/preview-dashboard'
 import type { Component } from 'vue'
 
+function formatDelta(value: number, unit: 'count' | 'points'): string {
+  const sign = value > 0 ? '+' : ''
+  const formatted = unit === 'points' ? `${Math.abs(value).toFixed(1)}%` : `${Math.abs(Math.round(value))}`
+  return `${sign}${formatted}`
+}
+
+function renderDelta(value: number | undefined, unit: 'count' | 'points') {
+  if (value == null) return null
+  const isPositive = value > 0
+  const colorClass = isPositive ? 'text-green-700' : 'text-red-700'
+  const Icon = isPositive ? RiArrowUpLine : RiArrowDownLine
+  return h('span', { class: `inline-flex items-center gap-1 text-xs font-medium ${colorClass}` }, [
+    h(Icon, { 'class': 'size-3', 'aria-hidden': 'true' }),
+    formatDelta(value, unit),
+  ])
+}
+
 const props = defineProps<{
   resourceId: string
 }>()
@@ -240,6 +276,19 @@ const route = useRoute()
 const config = useRuntimeConfig()
 const { t } = useTranslation()
 const { formatNumber } = useFormatTabular()
+
+function formatMonth(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  return `${y}-${m}`
+}
+
+function getPreviousMonth(month: string): string {
+  const [year, monthNum] = month.split('-').map(Number)
+  const date = new Date(year, monthNum - 1, 1)
+  date.setMonth(date.getMonth() - 1)
+  return formatMonth(date)
+}
 
 const jsonPreviewSize = computed(() => {
   const mo = Math.round(config.public.maxJsonPreviewCharSize / 1_000_000)
@@ -258,13 +307,36 @@ const xmlPreviewSize = computed(() => {
 
 const imagePreviewSize = computed(() => `${formatNumber(10)} Mo`)
 
-const dataUrl = computed(() => {
+const currentMonth = computed(() => formatMonth(new Date()))
+const previousMonth = computed(() => getPreviousMonth(currentMonth.value))
+
+const currentMonthUrl = computed(() => {
   const base = `${config.public.tabularApiUrl}/api/resources/${props.resourceId}/data/`
-  const params = new URLSearchParams({ page: '1', page_size: '99' })
+  const params = new URLSearchParams({ page: '1', page_size: '100', Mois__exact: currentMonth.value })
   return `${base}?${params.toString()}`
 })
 
-const { data: response, error, pending } = useFetch<TabularDataResponse<PreviewDashboardFormatStat>>(dataUrl)
+const previousMonthUrl = computed(() => {
+  const base = `${config.public.tabularApiUrl}/api/resources/${props.resourceId}/data/`
+  const params = new URLSearchParams({ page: '1', page_size: '100', Mois__exact: previousMonth.value })
+  return `${base}?${params.toString()}`
+})
+
+const { data: currentResponse, error: currentError, pending: currentPending } = useFetch<TabularDataResponse<PreviewDashboardFormatStat>>(currentMonthUrl)
+const { data: previousResponse, error: previousError, pending: previousPending } = useFetch<TabularDataResponse<PreviewDashboardFormatStat>>(previousMonthUrl)
+
+const response = computed<TabularDataResponse<PreviewDashboardFormatStat>>(() => ({
+  data: [
+    ...(currentResponse.value?.data ?? []),
+    ...(previousResponse.value?.data ?? []),
+  ],
+  meta: {
+    total: (currentResponse.value?.meta.total ?? 0) + (previousResponse.value?.meta.total ?? 0),
+  },
+}))
+
+const error = computed(() => currentError.value ?? previousError.value)
+const pending = computed(() => currentPending.value || previousPending.value)
 
 watch(error, (err) => {
   if (err) {
@@ -281,23 +353,31 @@ watch(response, (resp) => {
 interface FamilyStats {
   family: string
   count: number
+  countDelta?: number
   withPreview: number
+  previewDelta?: number
   percentageOfCatalog: number
+  percentageMissingPreview: number
   percentageError: number
   percentageTooBig: number
   percentageWithPreview: number
   month: string
-  formats: PreviewDashboardFormatStat[]
+  formats: Array<PreviewDashboardFormatStat & { countDelta?: number, previewDelta?: number }>
 }
 
 const expandedFamilies = ref(new Set<string>())
 
 const familyStats = computed<FamilyStats[]>(() => {
   const rows = response.value?.data ?? []
-  const totalCount = rows.reduce((sum, row) => sum + row.Nombre, 0)
-  const byFamily = new Map<string, PreviewDashboardFormatStat[]>()
+  const currentMonthValue = currentMonth.value || '-'
+  const previousMonthValue = previousMonth.value || undefined
+  const totalCount = rows
+    .filter(row => row.Mois === currentMonthValue)
+    .reduce((sum, row) => sum + row.Nombre, 0)
 
+  const byFamily = new Map<string, PreviewDashboardFormatStat[]>()
   for (const row of rows) {
+    if (row.Mois !== currentMonthValue) continue
     const family = row['Famille de format']
     if (!byFamily.has(family)) {
       byFamily.set(family, [])
@@ -305,18 +385,69 @@ const familyStats = computed<FamilyStats[]>(() => {
     byFamily.get(family)!.push(row)
   }
 
+  const previousFamilyMap = new Map<string, PreviewDashboardFormatStat>()
+  const previousFormatMap = new Map<string, PreviewDashboardFormatStat>()
+  if (previousMonthValue) {
+    for (const row of rows) {
+      if (row.Mois !== previousMonthValue) continue
+      const family = row['Famille de format']
+      if (!previousFamilyMap.has(family)) {
+        previousFamilyMap.set(family, { ...row })
+      }
+      else {
+        const existing = previousFamilyMap.get(family)!
+        existing.Nombre += row.Nombre
+        existing['Prévisualisable'] += row['Prévisualisable']
+      }
+      previousFormatMap.set(`${family}|${row.Format}`, row)
+    }
+  }
+
   return Array.from(byFamily.entries())
     .map(([family, formats]) => {
       const count = formats.reduce((sum, row) => sum + row.Nombre, 0)
       const withPreview = formats.reduce((sum, row) => sum + row['Prévisualisable'], 0)
       const percentageOfCatalog = totalCount > 0 ? (count / totalCount) * 100 : 0
+      const weightedMissingPreviewSum = formats.reduce((sum, row) => sum + ((row['% prévisualisation manquante'] ?? 0) * row.Nombre), 0)
+      const percentageMissingPreview = count > 0 ? weightedMissingPreviewSum / count : 0
       const weightedErrorSum = formats.reduce((sum, row) => sum + ((row['% erreur'] ?? 0) * row.Nombre), 0)
       const percentageError = count > 0 ? weightedErrorSum / count : 0
       const weightedTooBigSum = formats.reduce((sum, row) => sum + ((row['% too big'] ?? 0) * row.Nombre), 0)
       const percentageTooBig = count > 0 ? weightedTooBigSum / count : 0
       const percentageWithPreview = count > 0 ? (withPreview / count) * 100 : 0
       const month = formats[0]?.Mois ?? '-'
-      return { family, count, withPreview, percentageOfCatalog, percentageError, percentageTooBig, percentageWithPreview, month, formats }
+
+      const previousFamily = previousFamilyMap.get(family)
+      const previousCount = previousFamily?.Nombre
+      const previousWithPreview = previousFamily?.['Prévisualisable']
+      const countDelta = previousCount != null ? count - previousCount : undefined
+      const previewDelta = previousCount != null && previousCount > 0
+        ? ((withPreview / count) - (previousWithPreview! / previousCount)) * 100
+        : undefined
+
+      const formatsWithDelta = formats.map((row) => {
+        const previousRow = previousFormatMap.get(`${family}|${row.Format}`)
+        const rowCountDelta = previousRow != null ? row.Nombre - previousRow.Nombre : undefined
+        const rowPreviewDelta = previousRow != null
+          ? row['% prévisualisable'] - previousRow['% prévisualisable']
+          : undefined
+        return { ...row, countDelta: rowCountDelta, previewDelta: rowPreviewDelta }
+      })
+
+      return {
+        family,
+        count,
+        countDelta,
+        withPreview,
+        previewDelta,
+        percentageOfCatalog,
+        percentageMissingPreview,
+        percentageError,
+        percentageTooBig,
+        percentageWithPreview,
+        month,
+        formats: formatsWithDelta,
+      }
     })
     .sort((a, b) => b.count - a.count)
 })

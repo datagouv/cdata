@@ -99,6 +99,16 @@ const statsData: PreviewDashboardFormatStat[] = [
   },
 ]
 
+const previousMonthStatsData: PreviewDashboardFormatStat[] = statsData.map(row => ({
+  ...row,
+  'Mois': '2026-05',
+  'Nombre': row.Nombre - 3,
+  'Prévisualisable': row['Prévisualisable'] - 1,
+  '% prévisualisable': row['% prévisualisable'] - 5,
+}))
+
+const allStatsData: PreviewDashboardFormatStat[] = [...previousMonthStatsData, ...statsData]
+
 test.describe('Preview dashboard', () => {
   test('renders tiered format stats and resources table in tabs', async ({ page }) => {
     await page.route(`**/api/resources/${resourceId}/data/**`, async (route) => {
@@ -116,10 +126,15 @@ test.describe('Preview dashboard', () => {
     })
 
     await page.route(`**/api/resources/${statsResourceId}/data/**`, async (route) => {
+      const url = new URL(route.request().url())
+      const requestedMonth = url.searchParams.get('Mois__exact')
+      const data = requestedMonth
+        ? allStatsData.filter(row => row.Mois === requestedMonth)
+        : allStatsData
       await route.fulfill({
         json: {
-          data: statsData,
-          meta: { page: 1, page_size: 100, total: 1 },
+          data,
+          meta: { page: 1, page_size: 100, total: data.length },
           links: { profile: '', swagger: '', next: null, prev: null },
         },
       })
@@ -128,6 +143,7 @@ test.describe('Preview dashboard', () => {
     await page.goto('/admin/beta/preview-dashboard')
 
     await page.waitForResponse(`**/api/resources/${resourceId}/data/**`)
+    await page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
     await page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
 
     await expect(page.getByRole('heading', { name: 'Tableau de bord des aperçus' })).toBeVisible()
@@ -159,10 +175,15 @@ test.describe('Preview dashboard', () => {
     })
 
     await page.route(`**/api/resources/${statsResourceId}/data/**`, async (route) => {
+      const url = new URL(route.request().url())
+      const requestedMonth = url.searchParams.get('Mois__exact')
+      const data = requestedMonth
+        ? allStatsData.filter(row => row.Mois === requestedMonth)
+        : allStatsData
       await route.fulfill({
         json: {
-          data: statsData,
-          meta: { page: 1, page_size: 100, total: 1 },
+          data,
+          meta: { page: 1, page_size: 100, total: data.length },
           links: { profile: '', swagger: '', next: null, prev: null },
         },
       })
@@ -171,6 +192,7 @@ test.describe('Preview dashboard', () => {
     await page.goto('/admin/beta/preview-dashboard')
 
     await page.waitForResponse(`**/api/resources/${resourceId}/data/**`)
+    await page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
     await page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
 
     await page.getByText('Tabulaire').click()
@@ -181,5 +203,53 @@ test.describe('Preview dashboard', () => {
 
     await expect(page.getByRole('tab', { name: 'Fichiers' })).toHaveAttribute('aria-selected', 'true')
     await expect(page.getByText('format normalisé = csv')).toBeVisible()
+  })
+
+  test('shows month-over-month deltas for Nombre and % prévisualisable', async ({ page }) => {
+    await page.route(`**/api/resources/${resourceId}/data/**`, async (route) => {
+      await route.fulfill({
+        json: {
+          data: resourcesData,
+          meta: { page: 1, page_size: 50, total: 1 },
+          links: { profile: '', swagger: '', next: null, prev: null },
+        },
+      })
+    })
+
+    await page.route(`**/api/resources/${resourceId}/profile/**`, async (route) => {
+      await route.fulfill({ json: resourcesProfile })
+    })
+
+    await page.route(`**/api/resources/${statsResourceId}/data/**`, async (route) => {
+      const url = new URL(route.request().url())
+      const requestedMonth = url.searchParams.get('Mois__exact')
+      const data = requestedMonth
+        ? allStatsData.filter(row => row.Mois === requestedMonth)
+        : allStatsData
+      await route.fulfill({
+        json: {
+          data,
+          meta: { page: 1, page_size: 100, total: data.length },
+          links: { profile: '', swagger: '', next: null, prev: null },
+        },
+      })
+    })
+
+    await page.goto('/admin/beta/preview-dashboard')
+
+    await page.waitForResponse(`**/api/resources/${resourceId}/data/**`)
+    await page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
+    await page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
+
+    await page.getByText('Tabulaire').click()
+
+    const familyRow = page.locator('tr', { hasText: /^Tabulaire$/ }).first()
+    await expect(familyRow).toBeVisible()
+    await expect(familyRow.locator('td').nth(1)).toContainText('+')
+    await expect(familyRow.locator('td').nth(7)).toContainText('+')
+
+    const formatRow = page.locator('tr', { hasText: 'csv' }).first()
+    await expect(formatRow.locator('td').nth(1)).toContainText('+')
+    await expect(formatRow.locator('td').nth(7)).toContainText('+')
   })
 })
