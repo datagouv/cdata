@@ -3,6 +3,60 @@
     {{ t('Répartition des ressources par famille de format et par format, avec le taux de prévisualisation.') }}
   </p>
 
+  <AccordionGroup class="mt-4">
+    <Accordion :title="t('Méthodologie et limites')">
+      <ul class="list-disc space-y-1 pl-5 text-sm text-gray-plain">
+        <li>
+          {{ t('JSON : prévisualisation limitée à environ {size} de contenu texte.', { size: jsonPreviewSize }) }}
+        </li>
+        <li>
+          {{ t('PDF : prévisualisation limitée aux fichiers de {size} maximum.', { size: pdfPreviewSize }) }}
+        </li>
+        <li>
+          {{ t('XML : prévisualisation limitée à environ {size} de contenu texte.', { size: xmlPreviewSize }) }}
+        </li>
+        <li>
+          {{ t('Images : prévisualisation limitée aux fichiers de {size} maximum.', { size: imagePreviewSize }) }}
+        </li>
+        <li>
+          {{ t('Seuls les formats représentant au moins 100 ressources sont affichés individuellement.') }}
+        </li>
+        <li>
+          {{ t('Certains formats très proches ont été regroupés pour rendre l’analyse plus lisible.') }}
+        </li>
+      </ul>
+    </Accordion>
+  </AccordionGroup>
+
+  <div
+    v-if="!pending && summaryStats"
+    class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2"
+  >
+    <div class="rounded-lg border border-gray-default bg-white px-4 py-5 sm:p-6">
+      <dt class="text-sm font-normal text-gray-plain">
+        {{ t('Nombre total de ressources analysées') }}
+      </dt>
+      <dd class="mt-1">
+        <div class="text-2xl font-bold text-gray-title">
+          {{ formatNumber(summaryStats.total) }}
+        </div>
+      </dd>
+    </div>
+    <div class="rounded-lg border border-gray-default bg-white px-4 py-5 sm:p-6">
+      <dt class="text-sm font-normal text-gray-plain">
+        {{ t('Ressources prévisualisables') }}
+      </dt>
+      <dd class="mt-1">
+        <div class="text-2xl font-bold text-gray-title">
+          {{ formatPercentage(summaryStats.previewablePercentage) }}
+          <span class="ml-2 text-sm font-medium text-gray-plain">
+            ({{ formatNumber(summaryStats.previewableCount) }})
+          </span>
+        </div>
+      </dd>
+    </div>
+  </div>
+
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
       <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
@@ -187,6 +241,23 @@ const config = useRuntimeConfig()
 const { t } = useTranslation()
 const { formatNumber } = useFormatTabular()
 
+const jsonPreviewSize = computed(() => {
+  const mo = Math.round(config.public.maxJsonPreviewCharSize / 1_000_000)
+  return `${formatNumber(mo)} Mo`
+})
+
+const pdfPreviewSize = computed(() => {
+  const mo = Math.round(config.public.maxPdfPreviewByteSize / 1_000_000)
+  return `${formatNumber(mo)} Mo`
+})
+
+const xmlPreviewSize = computed(() => {
+  const ko = Math.round(config.public.maxXmlPreviewCharSize / 1_000)
+  return `${formatNumber(ko)} Ko`
+})
+
+const imagePreviewSize = computed(() => `${formatNumber(10)} Mo`)
+
 const dataUrl = computed(() => {
   const base = `${config.public.tabularApiUrl}/api/resources/${props.resourceId}/data/`
   const params = new URLSearchParams({ page: '1', page_size: '99' })
@@ -248,6 +319,15 @@ const familyStats = computed<FamilyStats[]>(() => {
       return { family, count, withPreview, percentageOfCatalog, percentageError, percentageTooBig, percentageWithPreview, month, formats }
     })
     .sort((a, b) => b.count - a.count)
+})
+
+const summaryStats = computed(() => {
+  const rows = response.value?.data ?? []
+  if (rows.length === 0) return null
+  const total = rows.reduce((sum, row) => sum + row.Nombre, 0)
+  const previewableCount = rows.reduce((sum, row) => sum + row['Prévisualisable'], 0)
+  const previewablePercentage = total > 0 ? (previewableCount / total) * 100 : 0
+  return { total, previewableCount, previewablePercentage }
 })
 
 function toggleFamily(family: string) {
