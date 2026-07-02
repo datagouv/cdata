@@ -12,7 +12,7 @@
     <img
       v-else
       :src="resource.url"
-      :alt="resource.title"
+      alt=""
       class="block w-full h-auto max-w-[800px]"
       @error="hasError = true"
     >
