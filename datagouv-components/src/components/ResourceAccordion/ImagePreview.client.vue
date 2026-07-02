@@ -13,7 +13,7 @@
       v-else
       :src="resource.url"
       :alt="resource.title"
-      class="image-preview"
+      class="block w-full h-auto max-w-[800px]"
       @error="hasError = true"
     >
   </div>
@@ -46,12 +46,3 @@ const isSizeAllowed = computed(() => {
   return size <= max
 })
 </script>
-
-<style scoped>
-.image-preview {
-  max-width: 800px;
-  width: 100%;
-  height: auto;
-  display: block;
-}
-</style>
