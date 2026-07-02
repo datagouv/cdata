@@ -30,6 +30,12 @@ const { locale } = useTranslation()
 const chartContainer = ref<HTMLElement | null>(null)
 let echartsInstance: EChartsType | null = null
 
+function capture(): string | null {
+  return echartsInstance?.getDataURL() ?? null
+}
+
+defineExpose({ capture })
+
 function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' {
   if (!xAxis) return 'category'
   return xAxis.type === 'continuous' ? 'value' : 'category'
