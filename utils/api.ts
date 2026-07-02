@@ -62,6 +62,45 @@ export function getDataFromSSRPayload(key: string, nuxtApp: NuxtApp) {
   return nuxtApp.payload.data[key] ? nuxtApp.payload.data[key] : undefined
 }
 
+/**
+ * Extract a human-readable error message from an API error response body.
+ * Handles non-JSON responses (e.g. HTML error pages) gracefully.
+ */
+export function getApiErrorMessage(data: unknown): string {
+  if (!data || typeof data !== 'object') {
+    if (typeof data === 'string' && data.length) {
+      console.warn('[API] Non-JSON error response:', data.slice(0, 200))
+    }
+    return ''
+  }
+
+  const record = data as Record<string, unknown>
+
+  if ('error' in record && typeof record.error === 'string') {
+    return record.error
+  }
+
+  if ('message' in record && typeof record.message === 'string') {
+    return record.message
+  }
+
+  if ('errors' in record && typeof record.errors === 'object' && record.errors !== null) {
+    return Object.entries(record.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
+  }
+
+  if (
+    'response' in record
+    && record.response
+    && typeof record.response === 'object'
+    && 'errors' in record.response
+    && Array.isArray((record.response as Record<string, unknown>).errors)
+  ) {
+    return ((record.response as Record<string, unknown>).errors as string[]).join(' ; ')
+  }
+
+  return ''
+}
+
 export function usePostApiWithCsrf() {
   const { $api } = useNuxtApp()
 
