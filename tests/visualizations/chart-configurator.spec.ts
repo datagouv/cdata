@@ -486,7 +486,7 @@ test('selecting a non-count column after count resets aggregate to none', async 
 
   const aggregationSelect = page.getByLabel('Agrégation')
   await expect(aggregationSelect).toBeVisible()
-  expect(await aggregationSelect.inputValue()).toBe('')
+  expect(await aggregationSelect.inputValue()).toBe('Non')
 })
 
 test('changing x-axis updates count serie column_y to the new x-axis column', async ({ page }) => {
