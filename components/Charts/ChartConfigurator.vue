@@ -330,24 +330,24 @@
                   :label="$t('Colonne Y')"
                   :placeholder="$t('Rechercher une colonne Y...')"
                   :options="yAxisColumnOptions"
-                  :display-value="(opt: ColumnDefinition) => opt.name"
-                  :get-option-id="(opt: ColumnDefinition) => opt.name"
-                  :group-by="(opt: ColumnDefinition) => typeConfig[opt.type]?.label || opt.type"
+                  :display-value="(opt: YAxisColumnOption) => isCountOption(opt) ? t('Compter') : opt.name"
+                  :get-option-id="(opt: YAxisColumnOption) => opt.name"
+                  :group-by="(opt: YAxisColumnOption) => isCountOption(opt) ? '' : typeConfig[opt.type]?.label || opt.type"
                   :multiple="false"
                   class="w-full"
-                  @update:model-value="(val) => serie.column_y = val?.name ?? ''"
+                  @update:model-value="(val) => handleSerieColumnYChange(index, val)"
                 >
                   <template #option="{ option }">
                     <component
                       :is="getColumnTypeIcon(option.type)"
                       class="inline w-4 h-4 mr-2"
                     />
-                    {{ option.name }}
+                    {{ isCountOption(option) ? $t('Compter') : option.name }}
                   </template>
                 </SearchableSelect>
               </div>
 
-              <div>
+              <div v-if="isNumberColumnOption(getSerieColumnYValue(serie))">
                 <label
                   :for="`aggregate-y-${index}`"
                   class="fr-label"
@@ -475,7 +475,7 @@ import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, Ge
 import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
-import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartLine, RiLineChartLine, RiText } from '@remixicon/vue'
+import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartLine, RiCalculatorLine, RiLineChartLine, RiText } from '@remixicon/vue'
 import { useAPI } from '~/utils/api'
 import { isMeAdmin } from '~/utils/auth'
 import ChartFilterRow from './ChartFilterRow.vue'
@@ -495,6 +495,10 @@ type SortOption = {
   label: string
   icon: Component | null
 }
+
+const COUNT_OPTION = { name: '__count__', type: 'count' } as const
+type CountColumnOption = typeof COUNT_OPTION
+type YAxisColumnOption = ColumnDefinition | CountColumnOption
 
 const { $api } = useNuxtApp()
 const runtimeConfig = useRuntimeConfig()
@@ -579,24 +583,40 @@ const xAxisColumnOptions = computed<Array<XAxisColumnOption>>(() =>
   ),
 )
 
-const yAxisColumnOptions = computed<Array<ColumnDefinition>>(() => {
+const yAxisColumnOptions = computed<Array<YAxisColumnOption>>(() => {
   if (selectedResource.value && columns.value[selectedResource.value]) {
-    return columns.value[selectedResource.value]
-      .map(col => ({ name: col.name, type: col.type }))
+    return [
+      COUNT_OPTION,
+      ...columns.value[selectedResource.value].map(col => ({ name: col.name, type: col.type })),
+    ]
   }
-  return []
+  return [COUNT_OPTION]
 })
+
+function isCountOption(option: YAxisColumnOption | null | undefined): option is CountColumnOption {
+  return option?.name === COUNT_OPTION.name
+}
+
+function isNumberColumnOption(option: YAxisColumnOption | null | undefined): boolean {
+  return option?.type === 'number'
+}
 
 const sortOptions = computed<SortOption[]>(() => {
   const xAxisColumn = form.value.x_axis.column_x
   const yAxisColumn = form.value.series[0]?.column_y
-  return [
+  const sameColumnAsX = xAxisColumn && yAxisColumn === xAxisColumn
+  const options: SortOption[] = [
     { value: '', column: '', direction: '', label: t('Aucun'), icon: null },
     { value: 'axis_x-asc', column: xAxisColumn || t('Axe X'), direction: 'asc', label: t('Ascendant'), icon: RiArrowUpLine },
     { value: 'axis_x-desc', column: xAxisColumn || t('Axe X'), direction: 'desc', label: t('Descendant'), icon: RiArrowDownLine },
-    { value: 'axis_y-asc', column: yAxisColumn || t('Axe Y'), direction: 'asc', label: t('Ascendant'), icon: RiArrowUpLine },
-    { value: 'axis_y-desc', column: yAxisColumn || t('Axe Y'), direction: 'desc', label: t('Descendant'), icon: RiArrowDownLine },
   ]
+  if (!sameColumnAsX) {
+    options.push(
+      { value: 'axis_y-asc', column: yAxisColumn || t('Axe Y'), direction: 'asc', label: t('Ascendant'), icon: RiArrowUpLine },
+      { value: 'axis_y-desc', column: yAxisColumn || t('Axe Y'), direction: 'desc', label: t('Descendant'), icon: RiArrowDownLine },
+    )
+  }
+  return options
 })
 
 const sortProxy = computed<SortOption | null>({
@@ -640,7 +660,10 @@ const filterList = computed<Array<Filter>>(() => {
   return []
 })
 
-function getColumnTypeIcon(colType: ColumnType): Component {
+function getColumnTypeIcon(colType: ColumnType | 'count'): Component {
+  if (colType === 'count') {
+    return RiCalculatorLine
+  }
   return typeConfig[colType]?.icon ?? RiText
 }
 
@@ -649,10 +672,29 @@ function formatColumnLabel(opt: { column: string, label: string } | null): strin
   return `${opt.column}${opt.column ? ' - ' : ''}${opt.label}`
 }
 
-function getSerieColumnYValue(serie: DataSeriesForm): ColumnDefinition | null {
+function getSerieColumnYValue(serie: DataSeriesForm): YAxisColumnOption | null {
+  if (serie.aggregate_y === 'count' && serie.column_y === form.value.x_axis.column_x) {
+    return COUNT_OPTION
+  }
   const colName = serie.column_y
   if (!colName) return null
   return yAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
+}
+
+function handleSerieColumnYChange(index: number, option: YAxisColumnOption | null | undefined) {
+  const serie = form.value.series[index]
+  if (!serie) return
+
+  if (isCountOption(option)) {
+    serie.column_y = form.value.x_axis.column_x
+    serie.aggregate_y = 'count'
+  }
+  else {
+    serie.column_y = option?.name ?? ''
+    if (serie.aggregate_y === 'count' || option?.type !== 'number') {
+      serie.aggregate_y = null
+    }
+  }
 }
 
 function ensureSeriesHasColumnX(resourceId: string) {
@@ -669,11 +711,18 @@ function ensureSeriesHasColumnX(resourceId: string) {
 
 function ensureSeriesHasColumnY(resourceId: string) {
   if (form.value.series[0]?.column_y === '') {
-    const resourceColumns = columns.value[resourceId]
-    if (resourceColumns?.length) {
-      const nonIdColumns = resourceColumns.filter(c => c.name !== '__id' && c.name !== form.value.x_axis.column_x)
-      if (nonIdColumns.length > 0) {
-        form.value.series[0].column_y = nonIdColumns[0].name
+    const xColumn = form.value.x_axis.column_x
+    if (xColumn) {
+      form.value.series[0].column_y = xColumn
+      form.value.series[0].aggregate_y = 'count'
+    }
+    else {
+      const resourceColumns = columns.value[resourceId]
+      if (resourceColumns?.length) {
+        const nonIdColumns = resourceColumns.filter(c => c.name !== '__id')
+        if (nonIdColumns.length > 0) {
+          form.value.series[0].column_y = nonIdColumns[0].name
+        }
       }
     }
   }
@@ -866,6 +915,16 @@ watch(
     chartForViewer.value = toChartApi(form.value)
   },
   { deep: true, immediate: true },
+)
+
+watch(
+  () => form.value.x_axis.column_x,
+  (newXColumn) => {
+    const serie = form.value.series[0]
+    if (serie && serie.aggregate_y === 'count') {
+      serie.column_y = newXColumn
+    }
+  },
 )
 
 watch(dataset, async (newDataset) => {
