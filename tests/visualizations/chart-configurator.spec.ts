@@ -494,12 +494,13 @@ test('changing x-axis updates count serie column_y to the new x-axis column', as
 
   await page.getByTestId('searchable-select-colonne-y').click()
   await page.getByRole('option', { name: 'Compter', exact: true }).click()
-  await clickOutside(page)
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('option', { name: 'Compter', exact: true })).not.toBeVisible()
 
   const xAxisSelect = page.getByTestId('searchable-select-choisir-quoi-afficher')
   await xAxisSelect.click()
   await page.getByRole('option', { name: 'nom_region', exact: true }).click()
-  await clickOutside(page)
+  await page.keyboard.press('Escape')
 
   await page.getByTestId('searchable-select-colonne-y').click()
   await expect(page.getByRole('option', { name: 'Compter', exact: true })).toBeVisible()
