@@ -240,8 +240,10 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.screenshot({ path: 'tests/edito/screenshots/05-links-bloc-with-paragraph.png', fullPage: true })
 
   // === Step 5b: Add a MarkdownBloc ===
+  // The bloc is now labelled "Texte", which collides with the "Texte" group
+  // header, so target its unique description instead.
   await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
-  await page.getByText('Bloc Markdown').click()
+  await page.getByText('Ajouter du contenu texte riche').click()
   await page.waitForTimeout(300)
 
   // Type some markdown content in the editor
