@@ -224,6 +224,10 @@
                 v-else-if="resource.format && resource.format.toLowerCase() === 'xml'"
                 :resource="resource"
               />
+              <ImagePreview
+                v-else-if="isImagePreviewFormat(resource.format)"
+                :resource="resource"
+              />
               <!-- Show Datafair embedded preview (koumoul) -->
               <DatafairPreview
                 v-else-if="hasDatafairPreview"
@@ -309,7 +313,7 @@ import { trackEvent } from '../../functions/matomo'
 import CopyButton from '../CopyButton.vue'
 import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
-import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
+import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceExternalUrl, getResourceFilesize, isImagePreviewFormat } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useHasTabularData } from '../../composables/useHasTabularData'
@@ -344,6 +348,7 @@ const Pmtiles = defineAsyncComponent(() => import('./Pmtiles.client.vue'))
 const JsonPreview = defineAsyncComponent(() => import('./JsonPreview.client.vue'))
 const PdfPreview = defineAsyncComponent(() => import('./PdfPreview.client.vue'))
 const XmlPreview = defineAsyncComponent(() => import('./XmlPreview.client.vue'))
+const ImagePreview = defineAsyncComponent(() => import('./ImagePreview.client.vue'))
 const DatafairPreview = defineAsyncComponent(() => import('./Datafair.client.vue'))
 
 const { t } = useTranslation()
@@ -351,11 +356,11 @@ const { formatRelativeIfRecentDate } = useFormatDate()
 const checkTabularData = useHasTabularData()
 
 const hasPreview = computed(() => {
-  // For JSON, PDF, and XML files, show preview.
+  // For JSON, PDF, XML, and image files, show preview.
   // We cannot check for CORS issues here because we cannot use an async component here.
   // If there is a CORS issue when fetching the file for preview, it will be managed and displayed as an error banner by the preview component.
   const format = props.resource.format?.toLowerCase()
-  return format === 'json' || format === 'pdf' || format === 'xml'
+  return format === 'json' || format === 'pdf' || format === 'xml' || isImagePreviewFormat(format)
 })
 
 const hasTabularData = computed(() => checkTabularData(props.resource))
