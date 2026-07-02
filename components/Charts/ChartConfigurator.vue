@@ -604,13 +604,19 @@ function isNumberColumnOption(option: YAxisColumnOption | null | undefined): boo
 const sortOptions = computed<SortOption[]>(() => {
   const xAxisColumn = form.value.x_axis.column_x
   const yAxisColumn = form.value.series[0]?.column_y
-  return [
+  const sameColumnAsX = xAxisColumn && yAxisColumn === xAxisColumn
+  const options: SortOption[] = [
     { value: '', column: '', direction: '', label: t('Aucun'), icon: null },
     { value: 'axis_x-asc', column: xAxisColumn || t('Axe X'), direction: 'asc', label: t('Ascendant'), icon: RiArrowUpLine },
     { value: 'axis_x-desc', column: xAxisColumn || t('Axe X'), direction: 'desc', label: t('Descendant'), icon: RiArrowDownLine },
-    { value: 'axis_y-asc', column: yAxisColumn || t('Axe Y'), direction: 'asc', label: t('Ascendant'), icon: RiArrowUpLine },
-    { value: 'axis_y-desc', column: yAxisColumn || t('Axe Y'), direction: 'desc', label: t('Descendant'), icon: RiArrowDownLine },
   ]
+  if (!sameColumnAsX) {
+    options.push(
+      { value: 'axis_y-asc', column: yAxisColumn || t('Axe Y'), direction: 'asc', label: t('Ascendant'), icon: RiArrowUpLine },
+      { value: 'axis_y-desc', column: yAxisColumn || t('Axe Y'), direction: 'desc', label: t('Descendant'), icon: RiArrowDownLine },
+    )
+  }
+  return options
 })
 
 const sortProxy = computed<SortOption | null>({

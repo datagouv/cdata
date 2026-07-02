@@ -143,6 +143,7 @@ test('sort select displays dynamic column names', async ({ page }) => {
 
   const sortOptions = await listbox.locator('role=option').allTextContents()
 
+  expect(sortOptions).toHaveLength(3)
   expect(sortOptions[0]).toBe('Aucun')
 
   expect(sortOptions[1]).toContain('année_publication - Ascendant')
@@ -182,14 +183,14 @@ test('Y axis sort options show dynamic series column name too', async ({ page })
 
   const yAxisSelect = page.getByTestId('searchable-select-colonne-y')
   await yAxisSelect.click()
-  await page.getByRole('option', { name: 'année_publication', exact: true }).click()
-  await clickOutside(page)
+  await page.getByRole('option', { name: 'Nombre de logements', exact: true }).click()
+  await page.keyboard.press('Escape')
 
   const listbox = page.locator('#x-axis-sort-combined')
   await listbox.click()
   const sortOptions = await listbox.locator('role=option').allTextContents()
 
-  expect(sortOptions[3]).toContain('année_publication')
+  expect(sortOptions[3]).toContain('Nombre de logements')
   expect(sortOptions[3]).not.toContain('Axe Y - Ascendant')
 })
 
