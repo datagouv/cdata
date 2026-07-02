@@ -167,7 +167,7 @@ export function getResourceFilesize(resource: Resource): null | number {
   return null
 }
 
-const IMAGE_PREVIEW_FORMATS = ['png', 'jpg', 'jpeg', 'webp', 'gif'] as const
+const IMAGE_PREVIEW_FORMATS = ['png', 'jpg', 'jpeg', 'jpe', 'gif'] as const
 
 export function isImagePreviewFormat(format: string | undefined | null): boolean {
   if (!format) return false
