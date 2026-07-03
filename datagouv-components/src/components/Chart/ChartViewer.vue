@@ -13,7 +13,7 @@ import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, Datas
 import { init, type ECharts as EChartsType } from 'echarts'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { summarize } from '../../functions/helpers'
-import type { Chart, XAxis, YAxis, XAxisForm, ChartForApi } from '../../types/visualizations'
+import type { Chart, ColumnsDefinition, XAxis, YAxis, XAxisForm, ChartForApi } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
 
 use([CanvasRenderer, LineChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent])
@@ -22,7 +22,7 @@ const props = defineProps<{
   chart: Chart | ChartForApi
   series: {
     data: Record<string, Array<Record<string, unknown>>>
-    columns: Record<string, Array<{ name: string, type: string }>>
+    columns: ColumnsDefinition
   }
 }>()
 
@@ -43,6 +43,16 @@ function buildYAxisFormatter(yAxis: YAxis): ((value: number) => string) | undefi
     return `${v} ${yAxis.unit}`
   }
 }
+
+const xAxisColumn = computed(() => {
+  const columnName = props.chart.x_axis.column_x
+  if (!columnName) return null
+  for (const columns of Object.values(props.series.columns)) {
+    const column = columns.find(c => c.name === columnName)
+    if (column) return column
+  }
+  return null
+})
 
 const echartsOption = computed(() => {
   const seriesCount = props.chart.series.length
@@ -168,6 +178,8 @@ const echartsOption = computed(() => {
     xAxis: {
       type: mapXAxisType(props.chart.x_axis),
       name: (props.chart.x_axis as XAxis).column_x,
+      min: xAxisColumn.value?.min ?? undefined,
+      max: xAxisColumn.value?.max ?? undefined,
     },
     yAxis: {
       type: 'value' as const,

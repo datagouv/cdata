@@ -471,7 +471,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort, Owned } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
 import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
@@ -570,6 +570,7 @@ const xAxisColumnProxy = computed<XAxisColumnOption | null>({
   },
   set: (val: XAxisColumnOption | null) => {
     form.value.x_axis.column_x = val?.name ?? ''
+    form.value.x_axis.type = getDefaultXAxisType(val?.type)
   },
 })
 
@@ -655,13 +656,22 @@ function getSerieColumnYValue(serie: DataSeriesForm): ColumnDefinition | null {
   return yAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
 }
 
+function getDefaultXAxisType(columnType: ColumnType | undefined): XAxisType {
+  if (columnType === 'number' || columnType === 'date') {
+    return 'continuous'
+  }
+  return 'discrete'
+}
+
 function ensureSeriesHasColumnX(resourceId: string) {
   if (!form.value.x_axis.column_x) {
     const resourceColumns = columns.value[resourceId]
     if (resourceColumns?.length) {
       const nonIdColumns = resourceColumns.filter(c => c.name !== '__id')
       if (nonIdColumns.length > 0) {
-        form.value.x_axis.column_x = nonIdColumns[0].name
+        const column = nonIdColumns[0]
+        form.value.x_axis.column_x = column.name
+        form.value.x_axis.type = getDefaultXAxisType(column.type)
       }
     }
   }

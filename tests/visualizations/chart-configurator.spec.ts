@@ -89,6 +89,25 @@ test('x-axis column selector shows available columns', async ({ page }) => {
   await expect(page.getByRole('option', { name: 'nom_region', exact: true })).toBeVisible()
 })
 
+test('x-axis type defaults to continuous for numeric column', async ({ page }) => {
+  await setupChart(page)
+
+  const xAxisTypeSelect = page.locator('#x-axis-type')
+  await expect(xAxisTypeSelect).toHaveValue('continuous')
+})
+
+test('x-axis type defaults to discrete for string column', async ({ page }) => {
+  await setupChart(page)
+
+  const xAxisSelect = page.getByTestId('searchable-select-choisir-quoi-afficher')
+  await xAxisSelect.click()
+  await page.getByRole('option', { name: 'nom_region', exact: true }).click()
+  await clickOutside(page)
+
+  const xAxisTypeSelect = page.locator('#x-axis-type')
+  await expect(xAxisTypeSelect).toHaveValue('discrete')
+})
+
 test('series column y selector shows available columns', async ({ page }) => {
   await setupChart(page)
 

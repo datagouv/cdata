@@ -74,6 +74,18 @@ export function buildColumnsFromProfile(profile: { profile: TabularProfile }): A
     const colInfo = profile.profile.columns[name]
     const isCategorical = profile.profile.categorical.includes(name)
     const colType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
-    return { name, type: colType }
+    const colProfile = profile.profile.profile[name]
+    return {
+      name,
+      type: colType,
+      min: normalizeProfileNumber(colProfile?.min),
+      max: normalizeProfileNumber(colProfile?.max),
+    }
   })
+}
+
+function normalizeProfileNumber(value: number | string | undefined): number | undefined {
+  if (value === undefined || value === null) return undefined
+  const parsed = Number(value)
+  return Number.isNaN(parsed) ? undefined : parsed
 }
