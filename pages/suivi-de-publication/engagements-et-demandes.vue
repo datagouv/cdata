@@ -64,7 +64,6 @@
             <template #hvd>
               <CdataLink
                 :to="config.public.ouverturesHvdUrl"
-                external
                 class="underline"
               >
                 {{ $t('données de forte valeur') }}

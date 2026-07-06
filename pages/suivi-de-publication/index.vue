@@ -147,7 +147,7 @@ const categories = [
     title: t('Données de forte valeur'),
     description: t('Suivre l\'ouverture de données de forte valeur identifiées par la Commission européenne.'),
     to: config.public.ouverturesHvdUrl,
-    external: true,
+    external: false,
   },
 ]
 </script>
