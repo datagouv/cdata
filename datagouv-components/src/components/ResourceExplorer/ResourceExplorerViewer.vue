@@ -14,7 +14,8 @@
             v-if="resources && resources.length > 1"
             :resources
             :selected-id="resource.id"
-            @select="emit('select', $event)"
+            :resource-to
+            :replace
           />
           <CopyButton
             :label="t('Copier le lien')"
@@ -236,6 +237,7 @@ import { useFormatDate } from '../../functions/dates'
 import { useTranslation } from '../../composables/useTranslation'
 import { useResourceCapabilities } from '../../composables/useResourceCapabilities'
 import { provideTabularProfile } from '../../composables/useTabularProfile'
+import type { RouteLocationRaw } from 'vue-router'
 import type { Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 
@@ -262,10 +264,8 @@ const props = defineProps<{
   dataset: Dataset | DatasetV2
   resource: Resource
   resources?: Resource[]
-}>()
-
-const emit = defineEmits<{
-  select: [resource: Resource]
+  resourceTo: (resource: Resource) => RouteLocationRaw
+  replace?: boolean
 }>()
 
 const { t } = useTranslation()

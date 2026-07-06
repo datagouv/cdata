@@ -1,7 +1,7 @@
 <template>
   <aside
     v-if="!collapsed"
-    class="w-full md:w-72 shrink-0 p-4 md:pr-0"
+    class="w-full md:w-72 shrink-0 p-4 md:pl-0"
   >
     <div class="flex items-center justify-between mb-3">
       <h3 class="text-sm font-bold uppercase mb-0">
@@ -13,7 +13,7 @@
         class="p-1 hover:bg-gray-100 rounded"
         @click="$emit('update:collapsed', true)"
       >
-        <RiArrowRightSLine class="size-5" />
+        <RiArrowLeftSLine class="size-5" />
       </button>
     </div>
 
@@ -34,7 +34,7 @@
 
     <div class="space-y-4 overflow-y-auto md:max-h-[calc(100vh-14rem)]">
       <div
-        v-for="group in resources"
+        v-for="group in groups"
         :key="group.type"
       >
         <div class="text-xs text-gray-plain font-bold uppercase mb-1.5 border-b border-gray-default pb-1">
@@ -45,20 +45,12 @@
             v-for="resource in group.items"
             :key="resource.id"
           >
-            <button
-              type="button"
-              class="w-full text-left px-2 py-1.5 rounded text-sm flex items-center gap-1.5 hover:bg-gray-100"
-              :class="{
-                'font-bold bg-blue-50': resource.id === selectedResourceId,
-              }"
-              @click="$emit('select', resource)"
-            >
-              <ResourceIcon
-                :resource
-                class="size-3.5 shrink-0"
-              />
-              <span class="truncate">{{ resource.title || t('Fichier sans nom') }}</span>
-            </button>
+            <ResourceListItem
+              :resource
+              :to="resourceTo(resource)"
+              :replace
+              :selected="resource.id === selectedResourceId"
+            />
           </li>
         </ul>
         <button
@@ -83,15 +75,16 @@
       class="p-1 hover:bg-gray-100 rounded border border-gray-default"
       @click="$emit('update:collapsed', false)"
     >
-      <RiArrowLeftSLine class="size-5" />
+      <RiArrowRightSLine class="size-5" />
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useId } from 'vue'
+import type { RouteLocationRaw } from 'vue-router'
 import { RiArrowRightSLine, RiArrowLeftSLine } from '@remixicon/vue'
-import ResourceIcon from '../ResourceAccordion/ResourceIcon.vue'
+import ResourceListItem from '../ResourceListItem.vue'
 import { getResourceLabel } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
 import type { Resource, ResourceGroup, ResourceType } from '../../types/resources'
@@ -99,14 +92,15 @@ import type { Resource, ResourceGroup, ResourceType } from '../../types/resource
 const { t } = useTranslation()
 
 defineProps<{
-  resources: ResourceGroup[]
+  groups: ResourceGroup[]
   selectedResourceId: string | null
   collapsed: boolean
   search: string
+  resourceTo: (resource: Resource) => RouteLocationRaw
+  replace?: boolean
 }>()
 
 defineEmits<{
-  'select': [resource: Resource]
   'load-more': [type: ResourceType]
   'update:collapsed': [value: boolean]
   'update:search': [value: string]

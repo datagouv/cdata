@@ -18,10 +18,10 @@
           <ResourceSelector
             :resources="datasetResources"
             :selected-id="resource.id"
+            :resource-to="resourceTo"
             searchable
             :is-disabled="(r) => !hasTabularData(r)"
             :disabled-title="$t('Cette ressource n\'est pas explorable')"
-            @select="onResourceSelect"
           >
             <template #trigger="{ open }">
               <PopoverButton
@@ -148,6 +148,7 @@ import {
   useResourceCapabilities,
 } from '@datagouv/components-next'
 import type { Dataset, Resource } from '@datagouv/components-next'
+import type { RouteLocationRaw } from 'vue-router'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const props = defineProps<{
@@ -171,9 +172,11 @@ const backLink = computed(() => {
 const hasTabularData = useHasTabularData()
 const datasetResources = computed<Resource[]>(() => props.dataset.resources ?? [])
 
-function onResourceSelect(resource: Resource) {
-  router.push({ query: { ...route.query, resource_id: resource.id, tab: undefined } })
-}
+// Switching resource is a plain link: the URL (resource_id) is the source of truth.
+// Reset `tab` so a new resource opens on its default tab.
+const resourceTo = (resource: Resource): RouteLocationRaw => ({
+  query: { ...route.query, resource_id: resource.id, tab: undefined },
+})
 
 // Share the tabular profile fetch between the TabularExplorer and DataStructure
 // tabs. Mounting this component only when a resource exists guarantees the id is

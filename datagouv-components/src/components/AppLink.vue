@@ -3,6 +3,7 @@
     :is="config?.appLink"
     v-if="config.appLink"
     :to
+    :replace
   >
     <slot />
   </component>
@@ -18,6 +19,7 @@
   <RouterLink
     v-else
     :to
+    :replace
   ><slot /></RouterLink>
 </template>
 
@@ -33,6 +35,7 @@ const { locale } = useTranslation()
 
 const props = defineProps<{
   to: string | RouteLocationRaw | null | undefined
+  replace?: boolean
 }>()
 
 const isExternal = computed(() => {
