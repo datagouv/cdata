@@ -1,6 +1,15 @@
 <template>
   <div v-if="groups.length || hasAnyResources">
-    <div class="flex gap-6">
+    <ResourceExplorerHeader
+      v-if="contextHeader"
+      :dataset
+      :resource="selectedResource"
+      :exit-to="exitTo"
+    />
+    <div
+      class="flex gap-6"
+      :class="{ 'p-4 md:p-6': contextHeader }"
+    >
       <div class="hidden md:block">
         <ResourceExplorerSidebar
           :groups
@@ -75,13 +84,18 @@ import type { DatasetV2 } from '../../types/datasets'
 import type { Resource } from '../../types/resources'
 import ResourceExplorerSidebar from './ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './ResourceExplorerViewer.vue'
+import ResourceExplorerHeader from './ResourceExplorerHeader.vue'
 import BrandedButton from '../BrandedButton.vue'
 
 const props = withDefaults(defineProps<{
   dataset: DatasetV2
   noResultsImage?: string
+  // Fullscreen mode: show the dataset context bar (org / title / date + download + exit).
+  contextHeader?: boolean
+  exitTo?: RouteLocationRaw
 }>(), {
   noResultsImage: '',
+  contextHeader: false,
 })
 
 const { t } = useTranslation()

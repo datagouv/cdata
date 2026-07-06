@@ -1,31 +1,20 @@
 <template>
   <div
     v-if="dataset"
-    class="min-h-dvh bg-white px-4 py-4 md:px-6"
+    class="min-h-dvh bg-white"
   >
     <ResourceExplorer
       :dataset
+      context-header
+      :exit-to="`/datasets/${dataset.id}`"
       no-results-image="/illustrations/dataset.svg"
     />
-    <!-- No site header/breadcrumb in fullscreen: keep a discreet way back to the dataset. -->
-    <BrandedButton
-      :href="`/datasets/${dataset.id}`"
-      :icon="RiCloseLine"
-      color="secondary"
-      size="sm"
-      icon-only
-      class="fixed top-3 right-3 z-50"
-      :title="$t('Revenir au jeu de données')"
-    >
-      {{ $t('Revenir au jeu de données') }}
-    </BrandedButton>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, ResourceExplorer } from '@datagouv/components-next'
+import { ResourceExplorer } from '@datagouv/components-next'
 import type { DatasetV2 } from '@datagouv/components-next'
-import { RiCloseLine } from '@remixicon/vue'
 
 const route = useRoute()
 const { t } = useTranslation()
