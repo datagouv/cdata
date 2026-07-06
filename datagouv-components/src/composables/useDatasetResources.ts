@@ -27,17 +27,6 @@ export async function useDatasetResources(datasetGetter: MaybeRefOrGetter<Datase
     q: searchDebounced.value || undefined,
   }))
 
-  // Only the main resources are fetched on the server: they are the most likely
-  // to be looked at, the others are hydrated client-side to keep SSR light.
-  const { data: mainData } = await useFetch<PaginatedArray<Resource>>(url, { params: makeParams('main') })
-  const { data: documentationData } = await useFetch<PaginatedArray<Resource>>(url, { params: makeParams('documentation'), server: false })
-  const { data: updateData } = await useFetch<PaginatedArray<Resource>>(url, { params: makeParams('update'), server: false })
-  const { data: apiData } = await useFetch<PaginatedArray<Resource>>(url, { params: makeParams('api'), server: false })
-  const { data: codeData } = await useFetch<PaginatedArray<Resource>>(url, { params: makeParams('code'), server: false })
-  const { data: otherData } = await useFetch<PaginatedArray<Resource>>(url, { params: makeParams('other'), server: false })
-
-  const rawDataByType = [mainData, documentationData, updateData, apiData, codeData, otherData]
-
   // Evaluated once at setup (before any search) — never changes afterwards
   const hasAnyResources = computed(() => toValue(datasetGetter).resources.total > 0)
 
@@ -51,8 +40,8 @@ export async function useDatasetResources(datasetGetter: MaybeRefOrGetter<Datase
     }
   })
 
-  // Separate useFetch for loadMore, initialized at setup time with immediate: false
-  // so that it doesn't fetch until execute() is called from the event handler.
+  // Separate useFetch for loadMore, initialized with immediate: false so it doesn't
+  // fetch until execute() is called from the event handler.
   const loadMoreType = ref<ResourceType>('main')
   const loadMorePage = ref(1)
   const loadMoreParams = computed(() => ({
@@ -61,11 +50,34 @@ export async function useDatasetResources(datasetGetter: MaybeRefOrGetter<Datase
     page: loadMorePage.value,
     q: searchDebounced.value || undefined,
   }))
-  const { data: loadMoreData, execute: executeLoadMore } = await useFetch<PaginatedArray<Resource>>(url, {
-    params: loadMoreParams,
-    immediate: false,
-    watch: false,
-  })
+
+  const resourceIdQuery = useRouteQuery<string | undefined>('resource_id')
+  const initialResourceId = resourceIdQuery.value
+
+  // Vue rule: composables must be called synchronously, before any `await` — `inject()`
+  // needs the active component instance, which a plain .ts composable loses after its
+  // first await (documented in useTabularProfile.ts). The package's `useFetch` calls
+  // `useComponentsConfig()` (an inject) on every call, so we kick off every request
+  // up-front, then await them together. This is also the idiomatic Nuxt parallel-fetch.
+  const typeFetches = RESOURCE_TYPE.map(type =>
+    useFetch<PaginatedArray<Resource>>(url, {
+      params: makeParams(type),
+      // Only main is server-rendered; the rest hydrate client-side to keep SSR light.
+      server: type === 'main',
+    }),
+  )
+  const loadMoreFetch = useFetch<PaginatedArray<Resource>>(url, { params: loadMoreParams, immediate: false, watch: false })
+  // The resource pointed at by `resource_id` (SSR / deep link) may live beyond the first
+  // page of its type group, so it wouldn't be in flatResources — fetch it directly.
+  const fetchedResourceFetch = initialResourceId
+    ? useFetch<Resource>(`/api/1/datasets/${datasetId.value}/resources/${initialResourceId}/`)
+    : null
+
+  const typeResults = await Promise.all(typeFetches)
+  const { data: loadMoreData, execute: executeLoadMore } = await loadMoreFetch
+  const fetchedResource = fetchedResourceFetch ? (await fetchedResourceFetch).data : ref<Resource | null>(null)
+
+  const rawDataByType = typeResults.map(result => result.data)
 
   const loadMore = async (type: ResourceType) => {
     const index = RESOURCE_TYPE.indexOf(type)
@@ -98,14 +110,6 @@ export async function useDatasetResources(datasetGetter: MaybeRefOrGetter<Datase
   })
 
   const flatResources = computed(() => groups.value.flatMap(g => g.items))
-
-  // Fetch the resource pointed at by `resource_id` (for SSR / deep links): it may
-  // live beyond the first page of its type group, so it wouldn't be in flatResources.
-  const resourceIdQuery = useRouteQuery<string | undefined>('resource_id')
-  const initialResourceId = resourceIdQuery.value
-  const { data: fetchedResource } = initialResourceId
-    ? await useFetch<Resource>(`/api/1/datasets/${datasetId.value}/resources/${initialResourceId}/`)
-    : { data: ref(null) }
 
   // The URL is the single source of truth for the selection: no ref to keep in
   // sync, navigation is done with plain links that change `resource_id`.
