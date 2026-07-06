@@ -175,7 +175,7 @@ export function getParsingErrorStep(resource: Resource): string | null {
   const error = resource.extras['analysis:parsing:error']
   if (typeof error !== 'string' || !error) return null
   const [step] = error.split(':', 1)
-  return step
+  return step ?? null
 }
 
 /** The parsing error message without its `<step>:` prefix, or null when there is none. */
