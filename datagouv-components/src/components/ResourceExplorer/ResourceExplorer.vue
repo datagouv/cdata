@@ -32,18 +32,31 @@
         class="flex-1 min-w-0"
         :class="fullscreen ? 'flex flex-col' : ''"
       >
-        <ResourceExplorerViewer
+        <!-- Suspense shows the skeleton fallback while the (async) viewer resolves
+             its data on each resource switch. `timeout` keeps the previous resource
+             visible for a beat so a near-instant switch doesn't flash a skeleton. -->
+        <Suspense
           v-if="selectedResource"
-          :key="selectedResource.id"
-          :dataset
-          :resource="selectedResource"
-          :resources="flatResources"
-          :resource-to="resourceTo"
-          :explore-to="exploreTo"
-          replace
-          :bordered="false"
-          :fullscreen
-        />
+          :timeout="200"
+        >
+          <ResourceExplorerViewer
+            :key="selectedResource.id"
+            :dataset
+            :resource="selectedResource"
+            :resources="flatResources"
+            :resource-to="resourceTo"
+            :explore-to="exploreTo"
+            replace
+            :bordered="false"
+            :fullscreen
+          />
+          <template #fallback>
+            <ResourceViewerSkeleton
+              :resource="selectedResource"
+              :fullscreen
+            />
+          </template>
+        </Suspense>
         <div
           v-else
           class="flex h-full flex-col items-center justify-center gap-3 px-4 py-12 text-center"
@@ -88,6 +101,7 @@ import type { Resource } from '../../types/resources'
 import ResourceExplorerSidebar from './ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './ResourceExplorerViewer.vue'
 import ResourceExplorerHeader from './ResourceExplorerHeader.vue'
+import ResourceViewerSkeleton from './ResourceViewerSkeleton.vue'
 
 const props = withDefaults(defineProps<{
   dataset: DatasetV2
