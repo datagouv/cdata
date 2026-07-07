@@ -2,8 +2,8 @@
   <!-- A single downloadable format needs no menu: a plain download button links
        straight to it, matching the previous behaviour. -->
   <BrandedButton
-    v-if="groups.length === 1 && groups[0].items.length === 1"
-    :href="groups[0].items[0].url"
+    v-if="singleDownload"
+    :href="singleDownload.url"
     :icon="RiDownloadLine"
     rel="ugc nofollow noopener"
     download
@@ -11,7 +11,7 @@
     class="matomo_download"
     size="xs"
     color="primary"
-    @click="trackDownload(groups[0].items[0].format)"
+    @click="trackDownload(singleDownload.format)"
   >
     {{ t('Télécharger') }}
   </BrandedButton>
@@ -150,6 +150,13 @@ const groups = computed<DownloadGroup[]>(() => {
   }
 
   return result
+})
+
+// A single downloadable format needs no menu: expose it directly for the plain button.
+const singleDownload = computed<DownloadItem | null>(() => {
+  if (groups.value.length !== 1) return null
+  const items = groups.value[0]!.items
+  return items.length === 1 ? items[0]! : null
 })
 
 const trackDownload = (format: string) => {
