@@ -1,15 +1,15 @@
 <template>
-  <div>
+  <div class="flex h-full flex-col">
     <PreviewUnavailable v-if="hasError">
       {{ t("L'aperçu cartographique de ce fichier n'a pas pu être chargé.") }}
     </PreviewUnavailable>
     <div
       v-else
-      class="-mx-4"
+      class="flex min-h-0 flex-1 flex-col"
     >
       <div
         v-if="pmtilesViewerUrl"
-        class="bg-blue-100 text-datagouv fr-hidden fr-unhidden-md p-4"
+        class="bg-blue-100 text-datagouv fr-hidden fr-unhidden-md p-4 shrink-0"
       >
         <div class="fr-grid-row fr-grid-row--middle fr-grid-row--gutters">
           <div
@@ -35,12 +35,17 @@
           </p>
         </div>
       </div>
-      <div
-        ref="containerRef"
-        style="height: 600px;"
-      />
-      <div class="fr-px-5v fr-pt-5v">
-        {{ t("Aperçu de la carte mis à jour le {date}", { date: lastUpdate }) }}
+      <div class="relative min-h-0 flex-1">
+        <div
+          ref="containerRef"
+          class="size-full"
+        />
+        <!-- Freshness caption overlaid inside the map (bottom-left, the corner left
+             free by the navigation/geolocate controls top-right and the attribution
+             bottom-right) so the map itself can use the whole height. -->
+        <div class="pointer-events-none absolute bottom-2 left-2 z-10 rounded bg-white/90 px-2 py-1 text-[12px] leading-4 text-gray-medium shadow-sm">
+          {{ t("Aperçu de la carte mis à jour le {date}", { date: lastUpdate }) }}
+        </div>
       </div>
     </div>
   </div>

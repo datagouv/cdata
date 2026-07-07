@@ -104,9 +104,12 @@
           <TabPanel
             v-for="tab in tabsOptions"
             :key="tab.key"
-            :class="[tab.key === 'data' ? '' : 'p-4', fullscreen ? 'flex min-h-0 flex-1 flex-col' : '']"
+            :class="[tab.key === 'data' || tab.key === 'map' ? '' : 'p-4', fullscreen ? 'flex min-h-0 flex-1 flex-col' : '']"
           >
-            <div v-if="tab.key === 'map'">
+            <div
+              v-if="tab.key === 'map'"
+              :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : 'h-[600px]'"
+            >
               <Pmtiles
                 v-if="hasPmtiles"
                 :resource="resource"
