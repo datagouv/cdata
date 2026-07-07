@@ -1,6 +1,6 @@
 <template>
   <div :class="{ 'border border-gray-default': bordered }">
-    <header class="flex h-14 items-center justify-between gap-2 border-b border-gray-default bg-gray-some px-4">
+    <header class="flex h-14 items-center justify-between gap-2 border-b border-gray-default bg-gray-some px-3">
       <div class="flex min-w-0 items-center gap-1.5 text-[13px] text-gray-medium">
         <ResourceIcon
           :resource
@@ -84,12 +84,12 @@
       </div>
     </header>
 
-    <section class="pb-4">
+    <section>
       <TabGroup
         size="sm"
         @change="switchTab"
       >
-        <div class="pl-4 pr-4 pb-4">
+        <div class="flex items-center border-b border-gray-default p-2">
           <TabList class="max-w-full overflow-x-auto">
             <Tab
               v-for="tab in tabsOptions"
@@ -103,7 +103,7 @@
           <TabPanel
             v-for="tab in tabsOptions"
             :key="tab.key"
-            class="px-4"
+            class="p-4"
           >
             <div v-if="tab.key === 'map'">
               <Pmtiles
