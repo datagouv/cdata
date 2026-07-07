@@ -6,7 +6,7 @@
     <ResourceExplorer
       :dataset
       fullscreen
-      :exit-to="`/datasets/${dataset.id}`"
+      :exit-to="exitTo"
       no-results-image="/illustrations/dataset.svg"
     />
   </div>
@@ -26,6 +26,17 @@ const url = computed(() => `/api/2/datasets/${route.params.did}/`)
 const { data: dataset } = await useAPI<DatasetV2>(url, {
   redirectOn404: true,
   redirectOnSlug: 'did',
+})
+
+// Carry the resource being viewed back to the dataset page so we land on it when
+// leaving fullscreen. Uses the slug (canonical URL) to avoid a slug redirect that
+// would drop the query, and tracks the current resource as it changes in fullscreen.
+const exitTo = computed(() => {
+  const base = `/datasets/${dataset.value?.slug}`
+  const resourceId = route.query.resource_id
+  return typeof resourceId === 'string' && resourceId
+    ? `${base}?resource_id=${encodeURIComponent(resourceId)}`
+    : base
 })
 
 useSeoMeta({
