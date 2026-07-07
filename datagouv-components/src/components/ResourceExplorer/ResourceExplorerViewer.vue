@@ -20,7 +20,7 @@
              spacing is carried by the separators' margins. -->
         <div class="min-w-0 truncate">
           <span class="mr-1.5">·</span>
-          <span>{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
+          <span :title="formatDate(resource.last_modified)">{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
           <template v-if="resourceFilesize">
             <span class="mx-1.5">·</span>
             <span>{{ filesize(resourceFilesize) }}</span>
@@ -43,6 +43,7 @@
           :label="t('Copier le lien')"
           :copied-label="t('Lien copié !')"
           :text="resourceExternalUrl"
+          icon-only
           class="hidden shrink-0 md:inline-flex"
         />
       </div>
@@ -343,7 +344,7 @@ const props = withDefaults(defineProps<{
 
 const { t } = useTranslation()
 const config = useComponentsConfig()
-const { formatRelativeIfRecentDate } = useFormatDate()
+const { formatRelativeIfRecentDate, formatDate } = useFormatDate()
 
 const {
   hasTabularData,
