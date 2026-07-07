@@ -1,6 +1,6 @@
 <template>
-  <div :class="{ 'border border-gray-default': bordered }">
-    <header class="flex h-14 items-center justify-between gap-2 border-b border-gray-default bg-gray-some px-3">
+  <div :class="[{ 'border border-gray-default': bordered }, fillHeight ? 'flex min-h-0 flex-1 flex-col' : '']">
+    <header class="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-gray-default bg-gray-some px-3">
       <div class="flex min-w-0 items-center gap-1.5 text-[13px] text-gray-medium">
         <ResourceIcon
           :resource
@@ -84,12 +84,13 @@
       </div>
     </header>
 
-    <section>
+    <section :class="fillHeight ? 'flex min-h-0 flex-1 flex-col' : ''">
       <TabGroup
         size="sm"
+        :class="fillHeight ? 'flex min-h-0 flex-1 flex-col' : ''"
         @change="switchTab"
       >
-        <div class="flex items-center border-b border-gray-default p-2">
+        <div class="flex shrink-0 items-center border-b border-gray-default p-2">
           <TabList class="max-w-full overflow-x-auto">
             <Tab
               v-for="tab in tabsOptions"
@@ -99,11 +100,11 @@
             </Tab>
           </TabList>
         </div>
-        <TabPanels>
+        <TabPanels :class="fillHeight ? 'flex min-h-0 flex-1 flex-col' : ''">
           <TabPanel
             v-for="tab in tabsOptions"
             :key="tab.key"
-            class="p-4"
+            :class="[tab.key === 'data' ? '' : 'p-4', fillHeight ? 'flex min-h-0 flex-1 flex-col' : '']"
           >
             <div v-if="tab.key === 'map'">
               <Pmtiles
@@ -116,46 +117,72 @@
                 :resource="resource"
               />
             </div>
-            <div v-if="tab.key === 'data'">
-              <JsonPreview
-                v-if="resource.format && resource.format.toLowerCase() === 'json'"
-                :resource="resource"
-              />
-              <PdfPreview
-                v-else-if="resource.format && resource.format.toLowerCase() === 'pdf'"
-                :resource="resource"
-              />
-              <XmlPreview
-                v-else-if="resource.format && resource.format.toLowerCase() === 'xml'"
-                :resource="resource"
-              />
-              <DatafairPreview
-                v-else-if="hasDatafairPreview"
-                :resource="resource"
-                :dataset="dataset"
-              />
-              <OpenApiViewer
-                v-else-if="hasOpenAPIPreview"
-                :url="resource.extras['apidocUrl'] as string"
-              />
+            <div
+              v-if="tab.key === 'data'"
+              :class="fillHeight ? 'flex min-h-0 flex-1 flex-col' : ''"
+            >
+              <!-- Interactive table: full width, composes its own framed toolbar + table -->
               <TabularExplorer
-                v-else-if="hasTabularData"
+                v-if="isTabularPreview"
                 :resource-id="resource.id"
-              />
-              <PreviewUnavailable v-else>
-                <!-- "File too large to download" is the only analysis:error value from hydra for now -->
-                <template v-if="resource.extras['analysis:error'] === 'File too large to download'">
-                  {{ t("Ce fichier est trop volumineux pour être analysé et prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
-                </template>
-                <template v-else-if="resource.extras['analysis:parsing:error']">
-                  {{ t("L'analyse de ce fichier a rencontré une erreur, l'aperçu n'est pas disponible. Téléchargez-le depuis l'onglet Téléchargements.") }}
-                  <br>
-                  <span class="text-gray-medium text-xs">{{ resource.extras['analysis:parsing:error'] }}</span>
-                </template>
-                <template v-else>
-                  {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
-                </template>
-              </PreviewUnavailable>
+              >
+                <div class="flex shrink-0 items-center gap-2 border-b border-gray-default p-2">
+                  <div class="flex min-w-0 flex-1 items-center gap-1.5">
+                    <TabularMobileFilterButton class="md:hidden" />
+                    <div class="hidden md:block">
+                      <TabularActiveFilters with-clear />
+                    </div>
+                  </div>
+                  <div class="flex shrink-0 items-center gap-4">
+                    <TabularColumnsMenu />
+                    <TabularRowsInfo />
+                  </div>
+                </div>
+                <TabularTable :fill="fillHeight" />
+                <TabularMobileFilters />
+              </TabularExplorer>
+
+              <!-- Other previews stay padded inside the tab panel -->
+              <div
+                v-else
+                class="p-4"
+              >
+                <JsonPreview
+                  v-if="resource.format && resource.format.toLowerCase() === 'json'"
+                  :resource="resource"
+                />
+                <PdfPreview
+                  v-else-if="resource.format && resource.format.toLowerCase() === 'pdf'"
+                  :resource="resource"
+                />
+                <XmlPreview
+                  v-else-if="resource.format && resource.format.toLowerCase() === 'xml'"
+                  :resource="resource"
+                />
+                <DatafairPreview
+                  v-else-if="hasDatafairPreview"
+                  :resource="resource"
+                  :dataset="dataset"
+                />
+                <OpenApiViewer
+                  v-else-if="hasOpenAPIPreview"
+                  :url="resource.extras['apidocUrl'] as string"
+                />
+                <PreviewUnavailable v-else>
+                  <!-- "File too large to download" is the only analysis:error value from hydra for now -->
+                  <template v-if="resource.extras['analysis:error'] === 'File too large to download'">
+                    {{ t("Ce fichier est trop volumineux pour être analysé et prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+                  </template>
+                  <template v-else-if="resource.extras['analysis:parsing:error']">
+                    {{ t("L'analyse de ce fichier a rencontré une erreur, l'aperçu n'est pas disponible. Téléchargez-le depuis l'onglet Téléchargements.") }}
+                    <br>
+                    <span class="text-gray-medium text-xs">{{ resource.extras['analysis:parsing:error'] }}</span>
+                  </template>
+                  <template v-else>
+                    {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+                  </template>
+                </PreviewUnavailable>
+              </div>
             </div>
             <div v-if="tab.key === 'description'">
               <MarkdownViewer
@@ -216,6 +243,12 @@ import Tab from '../Tabs/Tab.vue'
 import TabPanels from '../Tabs/TabPanels.vue'
 import TabPanel from '../Tabs/TabPanel.vue'
 import TabularExplorer from '../TabularExplorer/TabularExplorer.vue'
+import TabularActiveFilters from '../TabularExplorer/TabularActiveFilters.vue'
+import TabularColumnsMenu from '../TabularExplorer/TabularColumnsMenu.vue'
+import TabularRowsInfo from '../TabularExplorer/TabularRowsInfo.vue'
+import TabularTable from '../TabularExplorer/TabularTable.vue'
+import TabularMobileFilters from '../TabularExplorer/TabularMobileFilters.vue'
+import TabularMobileFilterButton from '../TabularExplorer/TabularMobileFilterButton.vue'
 import DataStructure from '../ResourceAccordion/DataStructure.vue'
 import Downloads from '../ResourceAccordion/Downloads.vue'
 import Metadata from '../ResourceAccordion/Metadata.vue'
@@ -262,9 +295,12 @@ const props = withDefaults(defineProps<{
   // Fullscreen mode shows download/visit/copy in the top context bar, so the viewer
   // header hides them there and only shows them inline (dataset page).
   showActions?: boolean
+  // Fullscreen: make the viewer a flex column so the table fills down to the bottom.
+  fillHeight?: boolean
 }>(), {
   bordered: true,
   showActions: true,
+  fillHeight: false,
 })
 
 const { t } = useTranslation()
@@ -284,6 +320,15 @@ const {
 
 // Share the tabular profile fetch between TabularExplorer and DataStructure tabs.
 await provideTabularProfile(() => props.resource.id)
+
+// Which data-tab preview to render — same precedence as the template chain below:
+// the interactive table wins only when no dedicated preview (json/pdf/xml/datafair/api) applies.
+const isTabularPreview = computed(() => {
+  const fmt = props.resource.format?.toLowerCase()
+  if (fmt === 'json' || fmt === 'pdf' || fmt === 'xml') return false
+  if (hasDatafairPreview.value || hasOpenAPIPreview.value) return false
+  return hasTabularData.value
+})
 
 const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset, props.resource))

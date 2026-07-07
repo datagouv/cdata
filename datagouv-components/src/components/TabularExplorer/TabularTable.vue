@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="fill ? 'flex min-h-0 flex-1 flex-col' : ''">
     <!-- No column selected -->
     <div
       v-if="displayedColumns.length === 0"
@@ -22,12 +22,13 @@
       </BrandedButton>
     </div>
 
-    <!-- Desktop: scrollable table. `-mx-4` cancels the host's 1rem padding so the
-         table reaches the panel edge (until the panel stops padding it). -->
+    <!-- Desktop: scrollable table, full width (the host provides no padding here).
+         `fill` makes it grow to the bottom (fullscreen); otherwise it's capped. -->
     <div
       v-if="displayedColumns.length > 0"
       ref="scrollContainer"
-      class="hidden md:block overflow-auto max-h-[70vh] -mx-4"
+      class="hidden md:block overflow-auto"
+      :class="fill ? 'min-h-0 flex-1' : 'max-h-[70vh]'"
     >
       <table class="text-sm border-collapse">
         <thead class="sticky top-0 bg-white z-10 shadow-[inset_0_-1px_0_0_#E5E5E5]">
@@ -221,6 +222,11 @@ import TabularFilterPopover from './TabularFilterPopover.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useTabularContext } from './useTabularContext'
 import noColumnsSrc from '../../../assets/illustrations/_table.svg?url'
+
+defineProps<{
+  // Fill the available height (fullscreen) instead of the default 70vh cap.
+  fill?: boolean
+}>()
 
 const { t } = useTranslation()
 const {

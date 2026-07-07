@@ -1,14 +1,18 @@
 <template>
-  <div v-if="groups.length || hasAnyResources">
+  <div
+    v-if="groups.length || hasAnyResources"
+    :class="contextHeader ? 'flex min-h-0 flex-1 flex-col' : ''"
+  >
     <ResourceExplorerHeader
       v-if="contextHeader"
+      class="shrink-0"
       :dataset
       :resource="selectedResource"
       :exit-to="exitTo"
     />
     <div
       class="flex"
-      :class="contextHeader ? 'min-h-[calc(100dvh-3.625rem)]' : 'overflow-hidden rounded border border-gray-default'"
+      :class="contextHeader ? 'min-h-0 flex-1 overflow-hidden' : 'overflow-hidden rounded border border-gray-default'"
     >
       <div class="hidden md:flex">
         <ResourceExplorerSidebar
@@ -23,7 +27,10 @@
           @update:search="updateSearch($event)"
         />
       </div>
-      <div class="flex-1 min-w-0">
+      <div
+        class="flex-1 min-w-0"
+        :class="contextHeader ? 'flex flex-col' : ''"
+      >
         <ResourceExplorerViewer
           v-if="selectedResource"
           :key="selectedResource.id"
@@ -34,6 +41,7 @@
           replace
           :bordered="false"
           :show-actions="!contextHeader"
+          :fill-height="contextHeader"
         />
         <div
           v-else

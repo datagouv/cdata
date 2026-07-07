@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="flex min-h-0 flex-1 flex-col">
     <div
       v-if="previewError"
       class="max-w-3xl mx-auto"
@@ -57,45 +57,10 @@
       </div>
     </div>
 
+    <!-- Loaded: the consumer composes the parts (toolbar, table, mobile sheet) from
+         the provided context, so it controls the framing and layout. -->
     <template v-else-if="tableData && profileData">
-      <!-- Toolbar & active filters inherit the host's 1rem horizontal padding
-           (px-4 on ResourceExplorerViewer's TabPanel, .container on
-           ExploreResourceView), so they line up with the resource title /
-           download button above. Only the table itself goes edge-to-edge
-           (via -mx-4 below). -->
-      <div>
-        <div class="flex items-center gap-2 py-3">
-          <!-- Left: active filter/sort chips + clear all -->
-          <div class="flex min-w-0 flex-1 items-center gap-1.5">
-            <!-- Mobile: filter & sort button -->
-            <BrandedButton
-              class="md:hidden"
-              color="tertiary"
-              size="2xs"
-              :icon="RiFilterLine"
-              keep-margins-even-without-borders
-              @click="mobileFilterOpen = true"
-            >
-              {{ t('Filtres & tri') }}
-            </BrandedButton>
-
-            <div class="hidden md:block">
-              <TabularActiveFilters with-clear />
-            </div>
-          </div>
-
-          <!-- Right: columns + rows (both inject the shared context) -->
-          <div class="flex shrink-0 items-center gap-4">
-            <TabularColumnsMenu />
-            <TabularRowsInfo />
-          </div>
-        </div>
-      </div>
-      <!-- /toolbar & active filters -->
-
-      <TabularTable />
-
-      <TabularMobileFilters />
+      <slot />
     </template>
   </div>
 </template>
@@ -103,19 +68,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { ofetch } from 'ofetch'
-import { RiFilterLine } from '@remixicon/vue'
 import { useFetch } from '../../functions/api'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { injectTabularProfile } from '../../composables/useTabularProfile'
 import { buildTypeConfig, buildFormatConfig, humanizeFormat, GENERIC_FORMATS, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy, resolveColumnType } from '../../functions/tabular'
 import SimpleBanner from '../SimpleBanner.vue'
-import BrandedButton from '../BrandedButton.vue'
-import TabularActiveFilters from './TabularActiveFilters.vue'
-import TabularColumnsMenu from './TabularColumnsMenu.vue'
-import TabularRowsInfo from './TabularRowsInfo.vue'
-import TabularTable from './TabularTable.vue'
-import TabularMobileFilters from './TabularMobileFilters.vue'
 import type { TabularDataResponse, TabularRow, ColumnType, SortConfig, ColumnFilters, BadgeStyle } from './types'
 import { provideTabularContext, type ActiveFilter } from './useTabularContext'
 

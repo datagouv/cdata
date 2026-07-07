@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="dataset"
-    class="min-h-dvh bg-white"
+    class="flex h-dvh flex-col overflow-hidden bg-white"
   >
     <ResourceExplorer
       :dataset

@@ -28,9 +28,11 @@
     <!-- min-w keeps the content laid out at the sidebar's min width so it doesn't
          reflow (badges wrapping, section titles on 2 lines) while the width animates
          open from the collapsed state — the aside's overflow-hidden clips the rest. -->
+    <!-- Extra bottom padding so the last item can scroll clear of the browser's
+         hover URL bar (Firefox shows it bottom-left). -->
     <div
       v-if="!collapsed"
-      class="flex min-h-0 min-w-[260px] flex-1 flex-col gap-3 overflow-y-auto p-2"
+      class="flex min-h-0 min-w-[260px] flex-1 flex-col gap-3 overflow-y-auto p-2 pb-16"
     >
       <label class="flex h-8 items-center gap-1 rounded border border-gray-default bg-gray-some px-2">
         <RiSearchLine class="size-3.5 shrink-0 text-gray-medium" />
