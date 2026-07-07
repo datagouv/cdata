@@ -1,39 +1,44 @@
 <template>
   <div :class="[{ 'border border-gray-default': bordered }, fullscreen ? 'flex min-h-0 flex-1 flex-col' : '']">
     <header class="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-gray-default bg-gray-some px-3">
-      <div class="flex min-w-0 items-center gap-1.5 text-[13px] text-gray-medium">
+      <div class="flex min-w-0 items-center gap-1.5 overflow-hidden text-[13px] text-gray-medium">
         <ResourceIcon
           :resource
           class="size-4 shrink-0"
         />
-        <span class="min-w-0 truncate font-medium text-gray-title">{{ resource.title || t('Fichier sans nom') }}</span>
+        <span class="shrink-0 whitespace-nowrap font-medium text-gray-title">{{ resource.title || t('Fichier sans nom') }}</span>
         <ResourceSelector
           v-if="resources && resources.length > 1"
           :resources
           :selected-id="resource.id"
           :resource-to
           :replace
-          class="md:hidden"
+          class="shrink-0 md:hidden"
         />
-        <span class="shrink-0">·</span>
-        <span class="shrink-0">{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
-        <template v-if="resourceFilesize">
-          <span class="shrink-0">·</span>
-          <span class="shrink-0">{{ filesize(resourceFilesize) }}</span>
-        </template>
-        <template v-if="resource.format">
-          <span class="shrink-0">·</span>
-          <span class="shrink-0 rounded bg-gray-lower px-1.5 py-0.5 text-[12px] uppercase leading-4 text-gray-medium">{{ resource.format }}</span>
-        </template>
-        <template v-if="resource.schema?.name || resource.schema?.url">
-          <span class="shrink-0">·</span>
-          <SchemaBadge :resource />
-        </template>
-        <span class="shrink-0">·</span>
-        <span class="inline-flex shrink-0 items-center gap-0.5">
-          <RiDownloadLine class="size-3" />
-          {{ summarize(resource.metrics.views) }}
-        </span>
+        <!-- Metadata truncates before the title, so the resource name stays fully
+             visible. Inline flow (not flex) so text-overflow renders the ellipsis;
+             spacing is carried by the separators' margins. -->
+        <div class="min-w-0 truncate">
+          <span class="mr-1.5">·</span>
+          <span>{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
+          <template v-if="resourceFilesize">
+            <span class="mx-1.5">·</span>
+            <span>{{ filesize(resourceFilesize) }}</span>
+          </template>
+          <template v-if="resource.format">
+            <span class="mx-1.5">·</span>
+            <span class="rounded bg-gray-lower px-1.5 py-0.5 text-[12px] uppercase leading-4 text-gray-medium">{{ resource.format }}</span>
+          </template>
+          <template v-if="resource.schema?.name || resource.schema?.url">
+            <span class="mx-1.5">·</span>
+            <SchemaBadge :resource />
+          </template>
+          <span class="mx-1.5">·</span>
+          <span class="inline-flex items-center gap-0.5 align-middle">
+            <RiDownloadLine class="size-3" />
+            {{ summarize(resource.metrics.views) }}
+          </span>
+        </div>
         <CopyButton
           :label="t('Copier le lien')"
           :copied-label="t('Lien copié !')"
