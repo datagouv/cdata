@@ -4,7 +4,7 @@
     :class="collapsed ? 'w-12' : 'w-[246px]'"
   >
     <div
-      class="flex h-14 items-center border-b border-gray-default bg-gray-50 px-3"
+      class="flex h-14 items-center border-b border-gray-default bg-gray-some px-3"
       :class="collapsed ? 'justify-center' : 'justify-between'"
     >
       <span
@@ -28,7 +28,7 @@
       v-if="!collapsed"
       class="flex flex-col gap-3 overflow-y-auto p-2"
     >
-      <label class="flex h-8 items-center gap-1 rounded border border-gray-default bg-gray-50 px-2">
+      <label class="flex h-8 items-center gap-1 rounded border border-gray-default bg-gray-some px-2">
         <RiSearchLine class="size-3.5 shrink-0 text-gray-medium" />
         <span class="sr-only">{{ t('Rechercher') }}</span>
         <input

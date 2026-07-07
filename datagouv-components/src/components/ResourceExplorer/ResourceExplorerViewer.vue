@@ -1,58 +1,50 @@
 <template>
   <div :class="{ 'border border-gray-default': bordered }">
-    <header class="p-4 flex flex-wrap md:flex-nowrap gap-4 items-center justify-between">
-      <div>
-        <div class="flex items-center gap-1 mb-1">
-          <h3 class="m-0 flex items-baseline text-base font-bold leading-tight">
-            <ResourceIcon
-              :resource
-              class="size-3.5 mr-1 shrink-0 translate-y-px"
-            />
-            <span class="line-clamp-2">{{ resource.title || t('Fichier sans nom') }}</span>
-          </h3>
-          <ResourceSelector
-            v-if="resources && resources.length > 1"
-            :resources
-            :selected-id="resource.id"
-            :resource-to
-            :replace
-          />
-          <CopyButton
-            :label="t('Copier le lien')"
-            :copied-label="t('Lien copié !')"
-            :text="resourceExternalUrl"
-            class="hidden md:inline-flex"
-          />
-        </div>
-        <div class="text-gray-medium text-xs flex items-center gap-1 flex-wrap">
+    <header class="flex h-14 items-center justify-between gap-2 border-b border-gray-default bg-gray-some px-4">
+      <div class="flex min-w-0 items-center gap-1.5 text-[13px] text-gray-medium">
+        <ResourceIcon
+          :resource
+          class="size-4 shrink-0"
+        />
+        <span class="min-w-0 truncate font-medium text-gray-title">{{ resource.title || t('Fichier sans nom') }}</span>
+        <ResourceSelector
+          v-if="resources && resources.length > 1"
+          :resources
+          :selected-id="resource.id"
+          :resource-to
+          :replace
+          class="md:hidden"
+        />
+        <span class="shrink-0">·</span>
+        <span class="shrink-0">{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
+        <template v-if="resourceFilesize">
+          <span class="shrink-0">·</span>
+          <span class="shrink-0">{{ filesize(resourceFilesize) }}</span>
+        </template>
+        <template v-if="resource.format">
+          <span class="shrink-0">·</span>
+          <span class="shrink-0 rounded bg-gray-100 px-1.5 py-0.5 text-[12px] uppercase leading-4 text-gray-medium">{{ resource.format }}</span>
+        </template>
+        <template v-if="resource.schema?.name || resource.schema?.url">
+          <span class="shrink-0">·</span>
           <SchemaBadge :resource />
-          <RiSubtractLine
-            v-if="resource.schema?.name || resource.schema?.url"
-            aria-hidden="true"
-            class="size-3 fill-gray-medium"
-          />
-          <span>{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
-          <RiSubtractLine
-            aria-hidden="true"
-            class="size-3 fill-gray-medium"
-          />
-          <template v-if="resource.format">
-            <span>
-              {{ resource.format.trim().toLowerCase() }}
-              <span v-if="resourceFilesize">({{ filesize(resourceFilesize) }})</span>
-            </span>
-            <RiSubtractLine
-              aria-hidden="true"
-              class="size-3 fill-gray-medium"
-            />
-          </template>
-          <span class="inline-flex items-center">
-            <RiDownloadLine class="size-3 mr-0.5" />
-            {{ summarize(resource.metrics.views) }}
-          </span>
-        </div>
+        </template>
+        <span class="shrink-0">·</span>
+        <span class="inline-flex shrink-0 items-center gap-0.5">
+          <RiDownloadLine class="size-3" />
+          {{ summarize(resource.metrics.views) }}
+        </span>
+        <CopyButton
+          :label="t('Copier le lien')"
+          :copied-label="t('Lien copié !')"
+          :text="resourceExternalUrl"
+          class="hidden shrink-0 md:inline-flex"
+        />
       </div>
-      <div class="flex items-center gap-2">
+      <div
+        v-if="showActions"
+        class="flex shrink-0 items-center gap-2"
+      >
         <BrandedButton
           v-if="isResourceUrl"
           :href="resource.latest"
@@ -210,7 +202,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
-import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiSubtractLine } from '@remixicon/vue'
+import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine } from '@remixicon/vue'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import { toast } from 'vue-sonner'
 import BrandedButton from '../BrandedButton.vue'
@@ -267,8 +259,12 @@ const props = withDefaults(defineProps<{
   resourceTo: (resource: Resource) => RouteLocationRaw
   replace?: boolean
   bordered?: boolean
+  // Fullscreen mode shows download/visit/copy in the top context bar, so the viewer
+  // header hides them there and only shows them inline (dataset page).
+  showActions?: boolean
 }>(), {
   bordered: true,
+  showActions: true,
 })
 
 const { t } = useTranslation()

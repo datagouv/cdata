@@ -33,6 +33,7 @@
           :resource-to="resourceTo"
           replace
           :bordered="false"
+          :show-actions="!contextHeader"
         />
         <div
           v-else

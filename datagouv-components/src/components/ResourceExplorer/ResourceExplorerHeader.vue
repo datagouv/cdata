@@ -1,5 +1,5 @@
 <template>
-  <div class="sticky top-0 z-30 flex h-[58px] shrink-0 items-center justify-between gap-2 border-b border-gray-default bg-gray-50/95 px-3 backdrop-blur-[5px] sm:gap-4">
+  <div class="sticky top-0 z-30 flex h-[58px] shrink-0 items-center justify-between gap-2 border-b border-gray-default bg-gray-some/95 px-3 backdrop-blur-[5px] sm:gap-4">
     <div class="flex min-w-0 items-center gap-2">
       <OrganizationLogo
         v-if="dataset.organization"
