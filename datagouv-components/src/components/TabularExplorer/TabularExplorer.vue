@@ -1,17 +1,10 @@
 <template>
   <div class="flex min-h-0 flex-1 flex-col">
-    <div
-      v-if="previewError"
-      class="max-w-3xl mx-auto"
-    >
-      <SimpleBanner
-        type="warning"
-        class="mb-4"
-      >
-        {{ t("L'aperçu de ce fichier n'a pas pu être chargé.") }}
-        <pre class="text-xs mt-2 whitespace-pre-wrap break-words">{{ previewError }}</pre>
-      </SimpleBanner>
-    </div>
+    <PreviewUnavailable v-if="previewError">
+      {{ t("L'aperçu de ce fichier n'a pas pu être chargé.") }}
+      <br>
+      <span class="text-xs break-words">{{ previewError }}</span>
+    </PreviewUnavailable>
 
     <div
       v-else-if="previewLoading"
@@ -73,7 +66,7 @@ import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { injectTabularProfile } from '../../composables/useTabularProfile'
 import { hasFilterForColumn as _hasFilterForColumn } from '../../functions/tabular'
-import SimpleBanner from '../SimpleBanner.vue'
+import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import type { TabularDataResponse, TabularRow, SortConfig, ColumnFilters } from './types'
 import { provideTabularContext, type ActiveFilter } from './useTabularContext'
 import { useColumnMetadata } from './useColumnMetadata'
