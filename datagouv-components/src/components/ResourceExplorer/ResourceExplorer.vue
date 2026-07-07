@@ -53,6 +53,7 @@
           <template #fallback>
             <ResourceViewerSkeleton
               :resource="selectedResource"
+              :dataset
               :fullscreen
             />
           </template>
