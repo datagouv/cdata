@@ -186,6 +186,40 @@ export function getResourceFilesize(resource: Resource): null | number {
   return null
 }
 
+// Parsing errors are stored as `<step>:<message>`, where `<step>` names the
+// analysis step that failed (e.g. `pmtiles_export`, `geojson_export`).
+
+/** The analysis step that failed, or null when there is no parsing error. */
+export function getParsingErrorStep(resource: Resource): string | null {
+  const error = resource.extras['analysis:parsing:error']
+  if (typeof error !== 'string' || !error) return null
+  const [step] = error.split(':', 1)
+  return step ?? null
+}
+
+/** The parsing error message without its `<step>:` prefix, or null when there is none. */
+export function getParsingErrorMessage(resource: Resource): string | null {
+  const error = resource.extras['analysis:parsing:error']
+  if (typeof error !== 'string' || !error) return null
+  const colon = error.indexOf(':')
+  return colon === -1 ? error : error.slice(colon + 1)
+}
+
+// Geo/format export steps run *after* the tabular table has been built, so a
+// failure here (e.g. a huge geometry timing out the pmtiles export) leaves the
+// tabular data fully usable and must not disable the tabular explorer.
+const NON_TABULAR_PARSING_ERROR_STEPS = ['pmtiles_export', 'geojson_export']
+
+/**
+ * Whether the resource's parsing error prevents reading its tabular data.
+ * Only errors from the tabular parsing itself are fatal; downstream geo/format
+ * export failures are not.
+ */
+export function hasTabularParsingError(resource: Resource): boolean {
+  const step = getParsingErrorStep(resource)
+  return step !== null && !NON_TABULAR_PARSING_ERROR_STEPS.includes(step)
+}
+
 type CorsStatus = 'allowed' | 'blocked' | 'unknown'
 
 export const getResourceCorsStatus = (resource: Resource): CorsStatus => {
