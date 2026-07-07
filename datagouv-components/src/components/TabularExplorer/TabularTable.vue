@@ -39,28 +39,36 @@
             <th
               v-for="col in displayedColumns"
               :key="col"
-              class="group/th relative h-14 px-2 last:pr-5 text-left align-middle whitespace-nowrap border-r border-gray-default last:border-r-0"
+              class="group/th relative h-12 px-3 last:pr-5 text-left align-middle whitespace-nowrap border-r border-gray-default last:border-r-0"
               :style="columnWidths[col] ? { width: columnWidths[col] + 'px', minWidth: columnWidths[col] + 'px', maxWidth: columnWidths[col] + 'px' } : { maxWidth: '300px' }"
             >
-              <div class="flex items-center gap-0.5 min-w-0">
-                <span
-                  class="font-extrabold text-sm truncate"
-                  :title="col"
-                >{{ col }}</span>
-                <RiArrowUpLine
-                  v-if="sort?.column === col && sort.direction === 'asc'"
-                  class="size-3.5 shrink-0 text-new-primary"
-                  aria-hidden="true"
-                />
-                <RiArrowDownLine
-                  v-else-if="sort?.column === col && sort.direction === 'desc'"
-                  class="size-3.5 shrink-0 text-new-primary"
-                  aria-hidden="true"
-                />
+              <div class="flex items-center justify-between gap-1">
+                <div class="flex min-w-0 items-center gap-1">
+                  <!-- Type as an icon only; the human label is on hover -->
+                  <component
+                    :is="getColumnDisplay(col).icon"
+                    class="size-4 shrink-0 text-gray-plain"
+                    :title="getColumnDisplay(col).label"
+                    aria-hidden="true"
+                  />
+                  <span
+                    class="truncate text-[12px] font-bold text-gray-title"
+                    :title="col"
+                  >{{ col }}</span>
+                  <RiArrowUpLine
+                    v-if="sort?.column === col && sort.direction === 'asc'"
+                    class="size-3.5 shrink-0 text-new-primary"
+                    aria-hidden="true"
+                  />
+                  <RiArrowDownLine
+                    v-else-if="sort?.column === col && sort.direction === 'desc'"
+                    class="size-3.5 shrink-0 text-new-primary"
+                    aria-hidden="true"
+                  />
+                </div>
                 <TabularFilterPopover
                   v-model:sort="sort"
                   v-model:filters="filters"
-                  class="mt-1"
                   :column="col"
                   :column-type="getColumnType(col)"
                   :column-profile="getColumnProfile(col)"
@@ -69,15 +77,6 @@
                   :boolean-counts="getColumnType(col) === 'boolean' ? getBooleanCounts(col) : undefined"
                 />
               </div>
-              <!-- Column type (semantic format when available) -->
-              <span class="font-mono text-xs text-gray-plain -mt-0.5 inline-flex items-center gap-1 max-w-full">
-                <component
-                  :is="getColumnDisplay(col).icon"
-                  class="size-3 shrink-0"
-                  aria-hidden="true"
-                />
-                <span class="mt-px truncate">{{ getColumnDisplay(col).label }}</span>
-              </span>
               <!-- Resize handle: wide hit zone, thin visible bar -->
               <div
                 class="absolute top-0 bottom-0 w-3 z-20 cursor-col-resize group/resize"

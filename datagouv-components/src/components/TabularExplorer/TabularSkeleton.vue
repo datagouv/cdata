@@ -20,10 +20,15 @@
           <th
             v-for="i in 6"
             :key="i"
-            class="h-14 px-2 text-left align-middle border-r border-gray-default last:border-r-0"
+            class="h-12 px-3 text-left align-middle border-r border-gray-default last:border-r-0"
           >
-            <div class="mb-1.5 h-4 w-24 rounded bg-gray-200" />
-            <div class="h-3 w-16 rounded bg-gray-200" />
+            <div class="flex items-center justify-between gap-1">
+              <div class="flex items-center gap-1">
+                <div class="size-4 shrink-0 rounded bg-gray-200" />
+                <div class="h-3.5 w-20 rounded bg-gray-200" />
+              </div>
+              <div class="size-4 shrink-0 rounded bg-gray-200" />
+            </div>
           </th>
         </tr>
       </thead>

@@ -5,11 +5,12 @@
     class="relative shrink-0"
   >
     <PopoverButton
-      class="p-0.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-new-primary"
-      :class="hasColumnFilter ? 'bg-primary text-white' : 'hover:bg-gray-100'"
+      class="flex size-5 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-new-primary"
+      :class="open ? 'bg-new-primary/10' : 'hover:bg-gray-100'"
     >
       <RiFilterLine
-        class="size-3.5"
+        class="size-4"
+        :class="open || hasColumnFilter ? 'text-new-primary' : 'text-gray-low'"
         aria-hidden="true"
       />
       <span class="sr-only">{{ t('Filtrer') }} {{ column }}</span>
