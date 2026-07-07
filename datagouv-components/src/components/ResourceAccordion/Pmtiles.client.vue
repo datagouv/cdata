@@ -109,14 +109,23 @@ async function displayMap() {
   const p = new PMTiles(pmtilesUrl.value)
   protocol.add(p)
 
-  p.getHeader().then((h: { maxZoom: number, centerLon: number, centerLat: number }) => {
+  p.getHeader().then((h: { minLon: number, minLat: number, maxLon: number, maxLat: number, centerZoom: number, centerLon: number, centerLat: number }) => {
+    // Frame the data's bounding box (carried by the archive header) so we land on
+    // the data. The previous `maxZoom - 2` overshot into a single point instead of
+    // fitting the whole extent. Fall back to the header center when the bbox is
+    // degenerate (e.g. a single point or unset world bounds).
+    const hasBounds = h.minLon < h.maxLon && h.minLat < h.maxLat
     const map = new maplibregl.Map({
       container: container.value!,
       // JSON import is inferred too loosely (e.g. center as number[]) to match
       // maplibre's strict StyleSpecification, so cast through unknown.
       style: styleVector as unknown as maplibregl.StyleSpecification,
-      zoom: h.maxZoom - 2,
-      center: [h.centerLon, h.centerLat],
+      ...(hasBounds
+        ? {
+            bounds: [[h.minLon, h.minLat], [h.maxLon, h.maxLat]] as [[number, number], [number, number]],
+            fitBoundsOptions: { padding: 24 },
+          }
+        : { center: [h.centerLon, h.centerLat] as [number, number], zoom: h.centerZoom }),
     })
     map.addControl(new maplibregl.NavigationControl())
     map.addControl(
