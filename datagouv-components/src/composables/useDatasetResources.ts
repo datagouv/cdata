@@ -79,6 +79,11 @@ export async function useDatasetResources(datasetGetter: MaybeRefOrGetter<Datase
 
   const rawDataByType = typeResults.map(result => result.data)
 
+  // Which type group is currently loading its next page. A single loadMoreFetch is
+  // shared across types, so we track the type here to show the spinner on the right
+  // group's "Charger plus…" button.
+  const loadingType = ref<ResourceType | null>(null)
+
   const loadMore = async (type: ResourceType) => {
     const index = RESOURCE_TYPE.indexOf(type)
     if (index === -1) return
@@ -88,10 +93,16 @@ export async function useDatasetResources(datasetGetter: MaybeRefOrGetter<Datase
 
     loadMoreType.value = type
     loadMorePage.value = pageRef.value
-    await executeLoadMore()
+    loadingType.value = type
+    try {
+      await executeLoadMore()
 
-    if (loadMoreData.value) {
-      extraRef.value = [...extraRef.value, ...loadMoreData.value.data]
+      if (loadMoreData.value) {
+        extraRef.value = [...extraRef.value, ...loadMoreData.value.data]
+      }
+    }
+    finally {
+      loadingType.value = null
     }
   }
 
@@ -131,6 +142,7 @@ export async function useDatasetResources(datasetGetter: MaybeRefOrGetter<Datase
     hasAnyResources,
     selectedResource,
     loadMore,
+    loadingType,
     search,
     updateSearch,
   }

@@ -65,9 +65,14 @@
         <button
           v-if="group.items.length < group.total"
           type="button"
-          class="w-full px-1 py-1 text-left text-[13px] text-blue-default hover:underline"
+          :disabled="loadingType === group.type"
+          class="flex w-full items-center gap-1 px-1 py-1 text-left text-[13px] text-blue-default hover:underline disabled:cursor-default disabled:no-underline"
           @click="$emit('load-more', group.type)"
         >
+          <RiLoader5Line
+            v-if="loadingType === group.type"
+            class="size-3.5 shrink-0 animate-spin"
+          />
           {{ t('Charger plus…') }}
         </button>
       </section>
@@ -104,7 +109,7 @@
 
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
-import { RiSidebarFoldLine, RiSidebarUnfoldLine, RiSearchLine } from '@remixicon/vue'
+import { RiSidebarFoldLine, RiSidebarUnfoldLine, RiSearchLine, RiLoader5Line } from '@remixicon/vue'
 import ResourceListItem from '../ResourceListItem.vue'
 import { getResourceLabel } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
@@ -118,6 +123,7 @@ defineProps<{
   selectedResourceId: string | null
   collapsed: boolean
   search: string
+  loadingType: ResourceType | null
   resourceTo: (resource: Resource) => RouteLocationRaw
   replace?: boolean
 }>()

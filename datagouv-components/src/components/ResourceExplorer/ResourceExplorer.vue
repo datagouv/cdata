@@ -20,6 +20,7 @@
           :selected-resource-id="selectedResource?.id ?? null"
           :collapsed="sidebarCollapsed"
           :search
+          :loading-type="loadingType"
           :resource-to="resourceTo"
           replace
           @load-more="loadMore"
@@ -108,6 +109,7 @@ const {
   hasAnyResources,
   selectedResource,
   loadMore,
+  loadingType,
   search,
   updateSearch,
 } = await useDatasetResources(() => props.dataset)
