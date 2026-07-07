@@ -141,26 +141,33 @@
               v-if="tab.key === 'data'"
               :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''"
             >
-              <!-- Interactive table: full width, composes its own framed toolbar + table -->
-              <TabularExplorer
+              <!-- Interactive table: full width, composes its own framed toolbar + table.
+                   Wrapped in Suspense so switching to this tab (or loading its data) shows
+                   the table skeleton instead of a blank gap while TabularExplorer resolves. -->
+              <Suspense
                 v-if="isTabularPreview"
-                :resource-id="resource.id"
+                :timeout="200"
               >
-                <div class="flex shrink-0 items-center gap-2 border-b border-gray-default p-2">
-                  <div class="flex min-w-0 flex-1 items-center gap-1.5">
-                    <TabularMobileFilterButton class="md:hidden" />
-                    <div class="hidden md:block">
-                      <TabularActiveFilters with-clear />
+                <TabularExplorer :resource-id="resource.id">
+                  <div class="flex shrink-0 items-center gap-2 border-b border-gray-default p-2">
+                    <div class="flex min-w-0 flex-1 items-center gap-1.5">
+                      <TabularMobileFilterButton class="md:hidden" />
+                      <div class="hidden md:block">
+                        <TabularActiveFilters with-clear />
+                      </div>
+                    </div>
+                    <div class="flex shrink-0 items-center gap-4">
+                      <TabularColumnsMenu />
+                      <TabularRowsInfo />
                     </div>
                   </div>
-                  <div class="flex shrink-0 items-center gap-4">
-                    <TabularColumnsMenu />
-                    <TabularRowsInfo />
-                  </div>
-                </div>
-                <TabularTable :fill="fullscreen" />
-                <TabularMobileFilters />
-              </TabularExplorer>
+                  <TabularTable :fill="fullscreen" />
+                  <TabularMobileFilters />
+                </TabularExplorer>
+                <template #fallback>
+                  <TabularSkeleton :fill="fullscreen" />
+                </template>
+              </Suspense>
 
               <!-- PDF is a full-bleed visual preview like the table and the map: it
                    owns its own reader backdrop, so it sits outside the padded wrapper. -->
@@ -273,6 +280,7 @@ import TabularRowsInfo from '../TabularExplorer/TabularRowsInfo.vue'
 import TabularTable from '../TabularExplorer/TabularTable.vue'
 import TabularMobileFilters from '../TabularExplorer/TabularMobileFilters.vue'
 import TabularMobileFilterButton from '../TabularExplorer/TabularMobileFilterButton.vue'
+import TabularSkeleton from '../TabularExplorer/TabularSkeleton.vue'
 import DataStructure from '../ResourceAccordion/DataStructure.vue'
 import Downloads from '../ResourceAccordion/Downloads.vue'
 import Metadata from '../ResourceAccordion/Metadata.vue'
