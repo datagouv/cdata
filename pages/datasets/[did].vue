@@ -27,15 +27,6 @@
             v-if="!isOrganizationCertified(dataset.organization)"
             :subject="{ id: dataset.id, class: 'Dataset' }"
           />
-          <BrandedButton
-            v-if="dataset.resources.total > 0"
-            :href="`/explore/${dataset.id}`"
-            :icon="RiFullscreenLine"
-            size="xs"
-            @click="$matomo.trackEvent('Jeux de données', 'Explorer les données', 'Bouton : explorer les données')"
-          >
-            {{ $t("Explorer les données") }}
-          </BrandedButton>
           <EditButton
             v-if="dataset.permissions.edit"
             :id="dataset.id"
@@ -491,7 +482,6 @@ import {
 import {
   RiDeleteBinLine,
   RiExternalLinkLine,
-  RiFullscreenLine,
   RiLockLine,
 } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'

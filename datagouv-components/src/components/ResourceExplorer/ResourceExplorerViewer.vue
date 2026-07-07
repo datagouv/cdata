@@ -81,6 +81,18 @@
         >
           {{ t('Télécharger') }}
         </BrandedButton>
+        <BrandedButton
+          v-if="exploreTo"
+          :href="exploreTo(resource)"
+          :icon="RiFullscreenLine"
+          icon-only
+          color="secondary"
+          size="xs"
+          :title="t('Explorer les données')"
+          @click="trackEvent('Jeux de données', 'Explorer les données', 'Bouton : explorer les données')"
+        >
+          {{ t('Explorer les données') }}
+        </BrandedButton>
       </div>
     </header>
 
@@ -237,7 +249,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
-import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine } from '@remixicon/vue'
+import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiFullscreenLine } from '@remixicon/vue'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import { toast } from 'vue-sonner'
 import BrandedButton from '../BrandedButton.vue'
@@ -298,6 +310,9 @@ const props = withDefaults(defineProps<{
   resource: Resource
   resources?: Resource[]
   resourceTo: (resource: Resource) => RouteLocationRaw
+  // When provided (inline mode), shows an "Explorer" button next to the download
+  // action that opens the fullscreen explorer on the current resource.
+  exploreTo?: (resource: Resource) => string
   replace?: boolean
   bordered?: boolean
   // Fullscreen mode: make the viewer a flex column so the table fills down to the

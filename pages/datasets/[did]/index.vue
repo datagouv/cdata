@@ -3,6 +3,7 @@
     <ResourceExplorer
       v-if="useNewExplorer"
       :dataset
+      :explore-to="exploreTo"
       no-results-image="/illustrations/dataset.svg"
     />
     <DatasetsLegacyResourceList
@@ -15,11 +16,14 @@
 </template>
 
 <script setup lang="ts">
-import { ResourceExplorer, type DatasetV2 } from '@datagouv/components-next'
+import { ResourceExplorer, type DatasetV2, type Resource } from '@datagouv/components-next'
 
-defineProps<{ dataset: DatasetV2 }>()
+const props = defineProps<{ dataset: DatasetV2 }>()
 
 const route = useRoute()
+
+// Opens the fullscreen explorer on the current resource, next to the download button.
+const exploreTo = (resource: Resource) => `/explore/${props.dataset.id}?resource_id=${resource.id}`
 
 // Feature flag: ?new_explorer=1 to enable, ?new_explorer=0 to disable, persisted in cookie
 const newExplorerCookie = useCookie('new_explorer', { maxAge: 60 * 60 * 24 * 7, path: '/' })

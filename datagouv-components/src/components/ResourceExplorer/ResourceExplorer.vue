@@ -39,6 +39,7 @@
           :resource="selectedResource"
           :resources="flatResources"
           :resource-to="resourceTo"
+          :explore-to="exploreTo"
           replace
           :bordered="false"
           :fullscreen
@@ -95,6 +96,9 @@ const props = withDefaults(defineProps<{
   // viewer fills the height and hides its inline actions (shown in the context bar).
   fullscreen?: boolean
   exitTo?: RouteLocationRaw
+  // Inline mode only: link builder for the "Explorer" button in the viewer header
+  // that opens the fullscreen explorer on the current resource.
+  exploreTo?: (resource: Resource) => string
 }>(), {
   noResultsImage: '',
   fullscreen: false,
