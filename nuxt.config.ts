@@ -104,6 +104,11 @@ export default defineNuxtConfig({
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
 
+      // Feedback form for the new resource explorer. Empty by default (set via
+      // NUXT_PUBLIC_EXPLORER_FEEDBACK_URL) — the banner's "Donner votre avis" link
+      // only shows when it is set.
+      explorerFeedbackUrl: '',
+
       // Grist endpoint for the "Suivi des ouvertures" table on /suivi-de-publication/engagements-et-demandes.
       // Provided through NUXT_PUBLIC_OUVERTURES_GRIST_BASE_URL / NUXT_PUBLIC_OUVERTURES_GRIST_TABLE
       // (see .env) so the Grist document URL is not committed.
