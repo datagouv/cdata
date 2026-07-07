@@ -15,7 +15,7 @@
     :aria-label="t('Chargement de l\'aperçu…')"
   >
     <table class="w-full table-fixed text-sm border-collapse">
-      <thead class="shadow-[inset_0_-1px_0_0_#E5E5E5]">
+      <thead class="bg-gray-some shadow-[inset_0_-1px_0_0_#E5E5E5]">
         <tr class="border-b border-gray-default">
           <th
             v-for="i in 6"

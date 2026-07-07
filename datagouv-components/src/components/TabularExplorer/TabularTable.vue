@@ -31,7 +31,10 @@
       :class="fill ? 'min-h-0 flex-1' : 'max-h-[70vh]'"
     >
       <table class="text-sm border-collapse">
-        <thead class="sticky top-0 bg-white z-10 shadow-[inset_0_-1px_0_0_#E5E5E5]">
+        <thead
+          class="sticky top-0 z-10 bg-gray-some transition-shadow"
+          :class="scrolled ? 'shadow-[inset_0_-1px_0_0_#E5E5E5,0_6px_8px_-6px_rgba(0,0,0,0.15)]' : 'shadow-[inset_0_-1px_0_0_#E5E5E5]'"
+        >
           <tr class="border-b border-gray-default">
             <th
               v-for="col in displayedColumns"
@@ -208,8 +211,8 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onUnmounted, ref, useTemplateRef, watch } from 'vue'
-import { useElementSize } from '@vueuse/core'
+import { computed, nextTick, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { useElementSize, useScroll } from '@vueuse/core'
 import { RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiSearchLine } from '@remixicon/vue'
 import BrandedButton from '../BrandedButton.vue'
 import InfiniteLoader from '../InfiniteLoader.vue'
@@ -254,6 +257,11 @@ const {
 // - Manual resize writes directly to `columnWidths` during the drag, then stores the
 //   final width back into `naturalWidths` so it survives later redistribution.
 const scrollContainerRef = useTemplateRef<HTMLElement>('scrollContainer')
+
+// Drop a shadow under the sticky header once the body is scrolled under it.
+const { y: scrollTop } = useScroll(scrollContainerRef)
+const scrolled = computed(() => scrollTop.value > 0)
+
 const columnWidths = ref<Record<string, number>>({})
 const naturalWidths = ref<Record<string, number>>({})
 const resizing = ref<{ column: string, startX: number, startWidth: number } | null>(null)
