@@ -90,6 +90,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
+import { useEventListener } from '@vueuse/core'
 import type { RouteLocationRaw } from 'vue-router'
 import { RiDownloadLine } from '@remixicon/vue'
 import AppLink from './AppLink.vue'
@@ -161,4 +162,10 @@ async function openTooltip(event: MouseEvent | FocusEvent) {
 function closeTooltip() {
   tooltipPos.value = null
 }
+
+// A hover-shown card gets no `mouseleave` when the window loses focus (alt-tab) or
+// the pointer leaves the document, so it would linger on return — close it in those
+// cases too.
+useEventListener(window, 'blur', closeTooltip)
+useEventListener(document, 'mouseleave', closeTooltip)
 </script>
