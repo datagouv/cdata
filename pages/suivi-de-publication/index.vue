@@ -55,7 +55,7 @@
       <OnboardingTitle class="mb-8">
         {{ $t('Questions fréquentes') }}
       </OnboardingTitle>
-      <div class="max-w-4xl">
+      <div>
         <AccordionGroup>
           <Accordion :title="$t('Qu\'est-ce que l\'ouverture des données ?')">
             <div class="space-y-4 text-gray-plain">

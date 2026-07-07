@@ -64,23 +64,29 @@
             <span class="font-medium">{{ record.fields.title || '-' }}</span>
           </td>
           <td>
-            {{ record.fields.ensemble || '-' }}
+            {{ humanJoin(record.fields.ensemble_values) || '-' }}
           </td>
           <td>
-            <AdminBadge
-              v-if="record.fields.thematique"
-              type="teal"
-              size="sm"
+            <div
+              v-if="record.fields.thematique_values.length"
+              class="flex flex-wrap gap-1"
             >
-              {{ record.fields.thematique }}
-            </AdminBadge>
+              <AdminBadge
+                v-for="theme in record.fields.thematique_values"
+                :key="theme"
+                type="teal"
+                size="sm"
+              >
+                {{ theme }}
+              </AdminBadge>
+            </div>
             <span v-else>-</span>
           </td>
           <td>
-            {{ humanJoin(record.fields.ministere_values) || '-' }}
+            {{ record.fields.ministere || '-' }}
           </td>
           <td>
-            {{ humanJoin(record.fields.producteur_values) || '-' }}
+            {{ record.fields.producteur || '-' }}
           </td>
           <td class="whitespace-nowrap">
             <HvdStatutBadge
@@ -101,32 +107,6 @@
         </template>
       </GristTableViewer>
     </OnboardingSection>
-
-    <OnboardingSection>
-      <div class="max-w-4xl">
-        <OnboardingTitle class="mb-4">
-          {{ $t('Explication des statuts d\'avancement') }}
-        </OnboardingTitle>
-        <dl class="space-y-4 text-lg font-normal leading-normal text-gray-plain">
-          <div
-            v-for="statut in STATUTS"
-            :key="statut.value"
-          >
-            <dt class="inline">
-              <AdminBadge
-                :type="statut.badgeType"
-                size="sm"
-              >
-                {{ statut.label }}
-              </AdminBadge>
-            </dt>
-            <dd class="inline ml-2">
-              {{ statut.description }}
-            </dd>
-          </div>
-        </dl>
-      </div>
-    </OnboardingSection>
   </div>
 </template>
 
@@ -134,7 +114,6 @@
 import { TranslationT } from '@datagouv/components-next'
 import OnboardingHero from '~/components/Onboarding/OnboardingHero.vue'
 import OnboardingSection from '~/components/Onboarding/OnboardingSection.vue'
-import OnboardingTitle from '~/components/Onboarding/OnboardingTitle.vue'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
@@ -145,14 +124,14 @@ import type { GristFilter, GristRecord } from '~/components/GristTableViewer/Gri
 import type { AdminBadgeType } from '~/types/types'
 import { humanJoin } from '~/utils/helpers'
 
-// Ministère de tutelle and Producteur are stored per channel (Téléchargement / API)
-// in Grist; we merge each pair into a single deduplicated column for display.
+// hvd_name (ensemble) and hvd_category (thématique) are Grist ChoiceList cells,
+// so each record can carry several values.
 type HvdFields = {
   title: string | null
-  ensemble: string | null
-  thematique: string | null
-  ministere_values: Array<string>
-  producteur_values: Array<string>
+  ensemble_values: Array<string>
+  thematique_values: Array<string>
+  ministere: string | null
+  producteur: string | null
   statut_telechargement: string | null
   url_telechargement: string | null
   statut_api: string | null
@@ -193,14 +172,27 @@ function str(value: unknown): string | null {
   return typeof value === 'string' && value !== '' ? value : null
 }
 
-// Collect several channel values into a single deduplicated, order-preserving list.
-function uniqueNonEmpty(...values: Array<unknown>): Array<string> {
-  const result: Array<string> = []
-  for (const value of values) {
+// Grist encodes a ChoiceList cell as ["L", "value1", "value2"]; the leading "L"
+// is the list-type marker. Return the real values, dropping empties.
+function choiceList(value: unknown): Array<string> {
+  if (!Array.isArray(value)) {
     const s = str(value)
-    if (s && !result.includes(s)) result.push(s)
+    return s ? [s] : []
   }
-  return result
+  return value.slice(1).map(str).filter((v): v is string => v !== null)
+}
+
+// The API channel labels partial availability differently ("Disponibilité
+// partielle"); unify it with the download channel so a single badge/legend entry
+// covers both.
+function normaliseStatut(value: string | null): string | null {
+  return value === 'Disponibilité partielle' ? 'Partiellement disponible' : value
+}
+
+// The displayed status is the manual override when set, otherwise the automatic
+// one.
+function resolveStatut(manual: unknown, automatique: unknown): string | null {
+  return normaliseStatut(str(manual) ?? str(automatique))
 }
 
 // All raw Grist columns are read here; this is the only place to update if the
@@ -210,15 +202,18 @@ function enrichRecord(record: GristRecord): HvdRecord {
   return {
     ...record,
     fields: {
-      title: str(f.Titre),
-      ensemble: str(f.Ensemble_de_donnees),
-      thematique: str(f.Thematique),
-      ministere_values: uniqueNonEmpty(f.Ministere_de_tutelle_Telechargement, f.Ministere_de_tutelle_API),
-      producteur_values: uniqueNonEmpty(f.Producteur_Telechargement, f.Producteur_API),
-      statut_telechargement: str(f.Statut_Telechargement),
-      url_telechargement: str(f.URL_Telechargement),
-      statut_api: str(f.Statut_API),
-      url_api: str(f.URL_API),
+      title: str(f.title),
+      ensemble_values: choiceList(f.hvd_name),
+      // Raw hvd_category values (no accents) are kept as-is so legacy links like
+      // ?theme=Geospatiales, forwarded verbatim by the infra redirect from
+      // ouverture.data.gouv.fr, still match this filter.
+      thematique_values: choiceList(f.hvd_category),
+      ministere: str(f.ministry),
+      producteur: str(f.organization),
+      statut_telechargement: resolveStatut(f.manual_status_telechargement, f.status_telechargement_automatique),
+      url_telechargement: str(f.url),
+      statut_api: resolveStatut(f.manual_status_api, f.status_api_automatique),
+      url_api: str(f.api_web_datagouv),
     },
   }
 }
@@ -232,51 +227,20 @@ const enrichedRecords = computed<Array<HvdRecord>>(() => {
 type StatutDefinition = {
   // Raw Grist value — used both to match records and as the filter option value.
   value: string
-  label: string
   badgeType: AdminBadgeType
   // Statuses whose badge links to the published dataset (when the record has an url).
   linksToData: boolean
-  description: string
 }
 
 // Single source of truth for the statuses: drives the badge colours, the
-// "links to data" behaviour and the legend. Order = progression order.
+// "links to data" behaviour and the filter ordering. Order = progression order.
 const STATUTS: Array<StatutDefinition> = [
-  {
-    value: 'Non disponible',
-    label: t('Non disponible'),
-    badgeType: 'danger',
-    linksToData: false,
-    description: t('les données ne sont pas publiées sur {site}.', { site: config.public.title }),
-  },
-  {
-    value: 'Planifié',
-    label: t('Planifié'),
-    badgeType: 'warning',
-    linksToData: false,
-    description: t('la publication des données est planifiée.'),
-  },
-  {
-    value: 'Partiellement disponible',
-    label: t('Partiellement disponible'),
-    badgeType: 'pink',
-    linksToData: true,
-    description: t('une partie des données est publiée sur {site}.', { site: config.public.title }),
-  },
-  {
-    value: 'Disponible',
-    label: t('Disponible'),
-    badgeType: 'primary',
-    linksToData: true,
-    description: t('les données sont publiées sur {site}.', { site: config.public.title }),
-  },
-  {
-    value: 'Disponible sur data.gouv.fr',
-    label: t('Disponible sur data.gouv.fr'),
-    badgeType: 'success',
-    linksToData: true,
-    description: t('les données sont publiées et à jour sur {site}.', { site: config.public.title }),
-  },
+  { value: 'Non disponible', badgeType: 'danger', linksToData: false },
+  { value: 'Planifié', badgeType: 'warning', linksToData: false },
+  { value: 'Partiellement disponible', badgeType: 'pink', linksToData: true },
+  { value: 'Disponible', badgeType: 'primary', linksToData: true },
+  { value: 'Disponible sur data.gouv.fr', badgeType: 'success', linksToData: true },
+  { value: 'Non requis', badgeType: 'default', linksToData: false },
 ]
 
 const statutByValue = new Map(STATUTS.map(statut => [statut.value, statut]))
@@ -291,14 +255,14 @@ function statutLinksToData(statut: string | null): boolean {
 }
 
 // Custom ordering for the "Thématique" filter, matching the six European HVD
-// categories order. Values are the raw Grist labels.
+// categories order. Values are the raw Grist labels (stored without diacritics).
 const THEME_ORDER = [
-  'Géospatiales',
+  'Geospatiales',
   'Observation de la terre et environnement',
-  'Météorologiques',
+  'Meteorologiques',
   'Statistiques',
-  'Entreprises et propriété d\'entreprises',
-  'Mobilité',
+  'Entreprises et propriete dentreprises',
+  'Mobilite',
 ]
 
 const columns = [
@@ -311,31 +275,35 @@ const columns = [
   t('API'),
 ]
 
+// The filter slugs double as URL query keys. They deliberately reuse the legacy
+// ouverture.data.gouv.fr param names (category / theme / department / producer)
+// so links already shared with ministries keep filtering once the infra redirect
+// forwards their query string verbatim to this page.
 const filters: Array<GristFilter<HvdRecord>> = [
   {
-    slug: 'ensemble',
+    slug: 'category',
     label: t('Ensemble de données'),
     placeholder: t('Tous les ensembles de données'),
-    getValues: r => r.fields.ensemble ? [r.fields.ensemble] : [],
+    getValues: r => r.fields.ensemble_values,
   },
   {
-    slug: 'thematique',
+    slug: 'theme',
     label: t('Thématique'),
     placeholder: t('Toutes les thématiques'),
-    getValues: r => r.fields.thematique ? [r.fields.thematique] : [],
+    getValues: r => r.fields.thematique_values,
     valueOrder: THEME_ORDER,
   },
   {
-    slug: 'ministere',
+    slug: 'department',
     label: t('Ministère de tutelle'),
     placeholder: t('Tous les ministères'),
-    getValues: r => r.fields.ministere_values,
+    getValues: r => r.fields.ministere ? [r.fields.ministere] : [],
   },
   {
-    slug: 'producteur',
+    slug: 'producer',
     label: t('Producteur'),
     placeholder: t('Tous les producteurs'),
-    getValues: r => r.fields.producteur_values,
+    getValues: r => r.fields.producteur ? [r.fields.producteur] : [],
   },
   {
     slug: 'statut-telechargement',
@@ -359,10 +327,10 @@ function isMeaningfulRecord(record: HvdRecord): boolean {
   const f = record.fields
   return Boolean(
     f.title
-    || f.ensemble
-    || f.thematique
-    || f.ministere_values.length
-    || f.producteur_values.length
+    || f.ensemble_values.length
+    || f.thematique_values.length
+    || f.ministere
+    || f.producteur
     || f.statut_telechargement
     || f.statut_api,
   )
