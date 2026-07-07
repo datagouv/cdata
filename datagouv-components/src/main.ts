@@ -122,6 +122,7 @@ export * from './composables/useHasTabularData'
 export * from './composables/useResourceCapabilities'
 export * from './composables/useTabularProfile'
 export * from './composables/useDatasetResources'
+export * from './composables/useResizable'
 
 export * from './functions/activities'
 export * from './functions/datasets'

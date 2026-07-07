@@ -28,7 +28,7 @@
     </div>
     <span
       v-if="resource.format"
-      class="shrink-0 rounded bg-gray-100 px-1.5 py-0.5 text-[12px] uppercase leading-4 text-gray-medium"
+      class="shrink-0 rounded bg-gray-lower px-1.5 py-0.5 text-[12px] uppercase leading-4 text-gray-medium"
     >{{ resource.format }}</span>
   </AppLink>
   <div

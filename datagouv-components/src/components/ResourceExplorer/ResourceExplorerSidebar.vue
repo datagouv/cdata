@@ -1,7 +1,8 @@
 <template>
   <aside
-    class="flex shrink-0 flex-col border-r border-gray-default bg-white transition-[width] duration-200"
-    :class="collapsed ? 'w-12' : 'w-[246px]'"
+    class="relative flex shrink-0 flex-col overflow-hidden border-r border-gray-default bg-white"
+    :class="resizing ? '' : 'transition-[width] duration-200'"
+    :style="{ width: collapsed ? '48px' : `${width}px` }"
   >
     <div
       class="flex h-14 items-center border-b border-gray-default bg-gray-some px-3"
@@ -24,9 +25,12 @@
       </button>
     </div>
 
+    <!-- min-w keeps the content laid out at the sidebar's min width so it doesn't
+         reflow (badges wrapping, section titles on 2 lines) while the width animates
+         open from the collapsed state — the aside's overflow-hidden clips the rest. -->
     <div
       v-if="!collapsed"
-      class="flex flex-col gap-3 overflow-y-auto p-2"
+      class="flex min-h-0 min-w-[260px] flex-1 flex-col gap-3 overflow-y-auto p-2"
     >
       <label class="flex h-8 items-center gap-1 rounded border border-gray-default bg-gray-some px-2">
         <RiSearchLine class="size-3.5 shrink-0 text-gray-medium" />
@@ -82,6 +86,17 @@
         </button>
       </div>
     </div>
+
+    <!-- Drag the right edge to resize the panel and read longer resource titles. -->
+    <button
+      v-if="!collapsed"
+      type="button"
+      :title="t('Glisser pour redimensionner')"
+      class="absolute right-0 top-0 z-20 h-full w-2 cursor-col-resize touch-none hover:bg-new-primary/10"
+      @mousedown="startResize"
+    >
+      <span class="sr-only">{{ t('Redimensionner la navigation') }}</span>
+    </button>
   </aside>
 </template>
 
@@ -91,6 +106,7 @@ import { RiSidebarFoldLine, RiSidebarUnfoldLine, RiSearchLine } from '@remixicon
 import ResourceListItem from '../ResourceListItem.vue'
 import { getResourceLabel } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
+import { useResizable } from '../../composables/useResizable'
 import type { Resource, ResourceGroup, ResourceType } from '../../types/resources'
 
 const { t } = useTranslation()
@@ -109,4 +125,10 @@ defineEmits<{
   'update:collapsed': [value: boolean]
   'update:search': [value: string]
 }>()
+
+const { width, resizing, startResize } = useResizable({
+  initialWidth: 300,
+  minWidth: 260,
+  maxWidth: 720,
+})
 </script>

@@ -23,7 +23,7 @@
         </template>
         <template v-if="resource.format">
           <span class="shrink-0">·</span>
-          <span class="shrink-0 rounded bg-gray-100 px-1.5 py-0.5 text-[12px] uppercase leading-4 text-gray-medium">{{ resource.format }}</span>
+          <span class="shrink-0 rounded bg-gray-lower px-1.5 py-0.5 text-[12px] uppercase leading-4 text-gray-medium">{{ resource.format }}</span>
         </template>
         <template v-if="resource.schema?.name || resource.schema?.url">
           <span class="shrink-0">·</span>
