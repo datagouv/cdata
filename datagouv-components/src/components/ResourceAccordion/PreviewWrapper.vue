@@ -7,12 +7,14 @@
       v-if="data !== null"
       :data="data"
     />
-    <div
+    <slot
       v-else-if="loading"
-      class="text-gray-medium"
+      name="loading"
     >
-      {{ t("Chargement de l'aperçu {fileType}...", { fileType }) }}
-    </div>
+      <div class="text-gray-medium">
+        {{ t("Chargement de l'aperçu {fileType}...", { fileType }) }}
+      </div>
+    </slot>
     <PreviewUnavailable v-else-if="!isSizeAllowed">
       {{ fileSizeBytes
         ? t("Le fichier {fileType} est trop volumineux pour être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.", { fileType })

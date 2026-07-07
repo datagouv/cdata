@@ -91,8 +91,13 @@
       </div>
     </template>
 
-    <!-- Non-tabular previews (PDF, JSON, map…) — a simple placeholder for now; we'll
-         flesh out per-type skeletons later if needed. -->
+    <!-- PDF preview: the same A4 skeleton the PdfPreview shows while pdfjs loads. -->
+    <PdfSkeleton
+      v-else-if="isPdf"
+      :fill="fullscreen"
+    />
+
+    <!-- Other non-tabular previews (JSON, map…) — a simple placeholder for now. -->
     <div
       v-else
       class="animate-pulse-placeholder p-4"
@@ -111,6 +116,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import ResourceIcon from '../ResourceAccordion/ResourceIcon.vue'
+import PdfSkeleton from '../ResourceAccordion/PdfSkeleton.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useResourceCapabilities } from '../../composables/useResourceCapabilities'
 import type { Resource } from '../../types/resources'
@@ -136,4 +142,6 @@ const isTabularPreview = computed(() => {
   if (hasDatafairPreview.value || hasOpenAPIPreview.value) return false
   return Boolean(hasTabularData.value)
 })
+
+const isPdf = computed(() => props.resource.format?.toLowerCase() === 'pdf')
 </script>

@@ -1,6 +1,5 @@
 <template>
   <PreviewWrapper
-    v-slot="{ data }"
     file-type="PDF"
     :resource="resource"
     :max-size="config.maxPdfPreviewByteSize"
@@ -8,30 +7,38 @@
     :fill="fill"
     @loaded="renderAllPages"
   >
+    <!-- While pdfjs downloads/parses the document, show the A4 skeleton instead of a
+         bare "loading" line — it matches the reader framing below seamlessly. -->
+    <template #loading>
+      <PdfSkeleton :fill="fill" />
+    </template>
+
     <!-- Cap the page width (A4 never needs more) and center on a light backdrop so
          it reads like a document reader. The width cap applies in both modes since
          the render width follows the container; `fill` only drives the height
          (fullscreen fills down, inline stays capped). The scroll container is a plain
          block (not a flex) so the trailing `pb` is reliably scrollable — flex + overflow
          drops the end padding of flex items. -->
-    <div
-      class="overflow-y-auto bg-gray-100"
-      :class="fill ? 'min-h-0 flex-1' : 'max-h-[80vh]'"
-    >
-      <div class="flex justify-center p-4 pb-16">
-        <div
-          ref="containerRef"
-          class="w-[800px] max-w-full space-y-3"
-        >
-          <canvas
-            v-for="page in (data as PDFDocumentProxy).numPages"
-            :key="page"
-            :ref="(el) => setCanvasRef(el as HTMLCanvasElement, page)"
-            class="w-full bg-white shadow-sm"
-          />
+    <template #default="{ data }">
+      <div
+        class="overflow-y-auto bg-gray-100"
+        :class="fill ? 'min-h-0 flex-1' : 'max-h-[80vh]'"
+      >
+        <div class="flex justify-center p-4 pb-16">
+          <div
+            ref="containerRef"
+            class="w-[800px] max-w-full space-y-3"
+          >
+            <canvas
+              v-for="page in (data as PDFDocumentProxy).numPages"
+              :key="page"
+              :ref="(el) => setCanvasRef(el as HTMLCanvasElement, page)"
+              class="w-full bg-white shadow-sm"
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </template>
   </PreviewWrapper>
 </template>
 
@@ -41,6 +48,7 @@ import * as pdfjsLib from 'pdfjs-dist'
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
 import PreviewWrapper from './PreviewWrapper.vue'
+import PdfSkeleton from './PdfSkeleton.vue'
 import { useComponentsConfig } from '../../config'
 import type { Resource } from '../../types/resources'
 
