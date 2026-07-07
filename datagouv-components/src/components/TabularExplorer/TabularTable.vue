@@ -63,7 +63,6 @@
                   :column-profile="getColumnProfile(col)"
                   :null-percent="getNullPercent(col)"
                   :total-lines="totalLines"
-                  :category-badge-styles="getColumnType(col) === 'categorical' ? getCategoryBadgeStylesForColumn(col) : undefined"
                   :boolean-counts="getColumnType(col) === 'boolean' ? getBooleanCounts(col) : undefined"
                 />
               </div>
@@ -122,7 +121,6 @@
               <TabularCell
                 :value="row[col]"
                 :column-type="getColumnType(col)"
-                :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
               />
             </td>
           </tr>
@@ -188,7 +186,6 @@
             <TabularCell
               :value="row[col]"
               :column-type="getColumnType(col)"
-              :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
               compact
             />
           </div>
@@ -244,8 +241,6 @@ const {
   getColumnProfile,
   getColumnDisplay,
   getNullPercent,
-  getCategoryBadgeStyle,
-  getCategoryBadgeStylesForColumn,
   getBooleanCounts,
 } = useTabularContext()
 

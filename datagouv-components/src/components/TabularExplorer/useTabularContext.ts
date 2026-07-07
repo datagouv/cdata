@@ -1,7 +1,6 @@
 import type { Component, ComputedRef, InjectionKey, Ref } from 'vue'
 import { inject, provide } from 'vue'
 import type {
-  BadgeStyle,
   ColumnFilters,
   ColumnType,
   SortConfig,
@@ -67,8 +66,6 @@ export type TabularContext = {
   getColumnDisplay: (col: string) => ColumnDisplay
   getTopsEntries: (col: string) => TabularTopValue[]
   getNullPercent: (col: string) => string
-  getCategoryBadgeStyle: (col: string, value: string) => BadgeStyle
-  getCategoryBadgeStylesForColumn: (col: string) => Record<string, BadgeStyle>
   getBooleanCounts: (col: string) => { trueCount: number, falseCount: number }
 }
 

@@ -100,14 +100,7 @@
           />
         </span>
         <span class="flex-1 truncate text-left text-xs">
-          <span
-            v-if="categoryBadgeStyles?.[top.value]"
-            class="inline-block rounded font-medium px-2 py-0.5 text-xs"
-            :style="{ backgroundColor: categoryBadgeStyles![top.value]!.backgroundColor, color: categoryBadgeStyles![top.value]!.color }"
-          >{{ top.value }}</span>
-          <template v-else>
-            {{ top.value ?? 'null' }}
-          </template>
+          {{ top.value ?? 'null' }}
         </span>
         <span class="font-mono text-xs text-gray-low tabular-nums shrink-0">{{ top.count }}</span>
       </button>
@@ -219,7 +212,7 @@ import { useTranslation } from '../../composables/useTranslation'
 import { useFormatTabular } from '../../functions/tabular'
 import BrandedButton from '../BrandedButton.vue'
 import ProgressBar from '../ProgressBar.vue'
-import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig, SortDirection, BadgeStyle } from './types'
+import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig, SortDirection } from './types'
 
 const props = defineProps<{
   column: string
@@ -227,7 +220,6 @@ const props = defineProps<{
   columnProfile: TabularColumnProfile | null
   nullPercent: string
   totalLines: number
-  categoryBadgeStyles?: Record<string, BadgeStyle>
   booleanCounts?: { trueCount: number, falseCount: number }
 }>()
 

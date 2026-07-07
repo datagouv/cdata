@@ -17,8 +17,7 @@
   </span>
   <span
     v-else-if="columnType === 'categorical'"
-    class="inline-block rounded font-medium px-2 py-0.5 text-xs max-w-full truncate"
-    :style="categoryBadgeStyle ? { backgroundColor: categoryBadgeStyle.backgroundColor, color: categoryBadgeStyle.color } : undefined"
+    class="inline-block max-w-full truncate rounded bg-gray-lower px-2 py-0.5 text-xs text-gray-plain"
   >{{ value }}</span>
   <span
     v-else-if="columnType === 'number'"
@@ -37,12 +36,11 @@
 <script setup lang="ts">
 import { useTranslation } from '../../composables/useTranslation'
 import { useFormatTabular, isTruthy } from '../../functions/tabular'
-import type { ColumnType, BadgeStyle } from './types'
+import type { ColumnType } from './types'
 
 defineProps<{
   value: unknown
   columnType: ColumnType
-  categoryBadgeStyle?: BadgeStyle
   compact?: boolean
 }>()
 

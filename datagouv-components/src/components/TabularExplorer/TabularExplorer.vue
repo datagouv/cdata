@@ -273,8 +273,6 @@ const {
   getColumnDisplay,
   getTopsEntries,
   getNullPercent,
-  getCategoryBadgeStyle,
-  getCategoryBadgeStylesForColumn,
   getBooleanCounts,
 } = useColumnMetadata(profileData, allColumns, t)
 
@@ -309,8 +307,6 @@ provideTabularContext({
   getColumnDisplay,
   getTopsEntries,
   getNullPercent,
-  getCategoryBadgeStyle,
-  getCategoryBadgeStylesForColumn,
   getBooleanCounts,
 })
 </script>

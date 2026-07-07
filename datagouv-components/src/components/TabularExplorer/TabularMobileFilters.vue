@@ -89,7 +89,6 @@
                     :column-profile="getColumnProfile(col)"
                     :null-percent="getNullPercent(col)"
                     :total-lines="totalLines"
-                    :category-badge-styles="getColumnType(col) === 'categorical' ? getCategoryBadgeStylesForColumn(col) : undefined"
                     :boolean-counts="getColumnType(col) === 'boolean' ? getBooleanCounts(col) : undefined"
                   />
                 </div>
@@ -139,7 +138,6 @@ const {
   getColumnType,
   getColumnProfile,
   getNullPercent,
-  getCategoryBadgeStylesForColumn,
   getBooleanCounts,
 } = useTabularContext()
 

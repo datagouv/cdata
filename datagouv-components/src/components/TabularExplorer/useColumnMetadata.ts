@@ -11,30 +11,14 @@ import {
 } from '../../functions/tabular'
 import type { ColumnDisplay } from './useTabularContext'
 import type {
-  BadgeStyle,
   ColumnType,
   TabularColumnProfile,
   TabularProfileResponse,
   TabularTopValue,
 } from './types'
 
-const BADGE_PALETTE = [
-  { bg: '#E6EEFE', text: '#3558A2' }, // blue-cumulus
-  { bg: '#E8E3DB', text: '#6A6156' }, // beige-gris-galet
-  { bg: '#FEECC2', text: '#695240' }, // yellow-tournesol
-  { bg: '#C7F6FC', text: '#006A6F' }, // green-archipel
-  { bg: '#E9EDFE', text: '#2323FF' }, // blue-ecume
-  { bg: '#FFE0C7', text: '#885B40' }, // orange-terre-battue
-  { bg: '#F2E9DB', text: '#6B4C35' }, // brown-cafe-creme
-  { bg: '#BAFAEE', text: '#297254' }, // green-menthe
-  { bg: '#FEE0EB', text: '#8D5368' }, // pink-macaron
-  { bg: '#FCE164', text: '#695240' }, // yellow-moutarde
-] as const
-
-const BADGE_FALLBACK = { bg: '#F0E0CF', text: '#745B47' } // brown-opera
-
 // Pure derivations of the csv-detective profile: a column's display type, its
-// human-facing label/icon, null ratio, category badge colors and boolean counts.
+// human-facing label/icon, null ratio and boolean counts.
 // Kept out of TabularExplorer so the fetch/pagination/filter state doesn't drown
 // under a hundred lines of metadata math — and so this logic stays unit-testable
 // in isolation from the component.
@@ -96,31 +80,6 @@ export function useColumnMetadata(
     return formatConfig[format] ?? { icon: fallback.icon, label: humanizeFormat(format) }
   }
 
-  const badgeColorMap = computed(() => {
-    const map = new Map<string, { bg: string, text: string }>()
-    const profile = profileData.value?.profile
-    if (!profile) return map
-    for (const col of profile.categorical) {
-      getTopsEntries(col).forEach((top, i) => {
-        map.set(`${col}::${top.value}`, BADGE_PALETTE[i % BADGE_PALETTE.length]!)
-      })
-    }
-    return map
-  })
-
-  function getCategoryBadgeStyle(col: string, value: string): BadgeStyle {
-    const colors = badgeColorMap.value.get(`${col}::${value}`) ?? BADGE_FALLBACK
-    return { backgroundColor: colors.bg, color: colors.text }
-  }
-
-  function getCategoryBadgeStylesForColumn(col: string): Record<string, BadgeStyle> {
-    const styles: Record<string, BadgeStyle> = {}
-    for (const top of getTopsEntries(col)) {
-      styles[top.value] = getCategoryBadgeStyle(col, top.value)
-    }
-    return styles
-  }
-
   function getBooleanCounts(col: string): { trueCount: number, falseCount: number } {
     const profile = getColumnProfile(col)
     if (!profile?.tops) return { trueCount: 0, falseCount: 0 }
@@ -140,8 +99,6 @@ export function useColumnMetadata(
     getColumnDisplay,
     getTopsEntries,
     getNullPercent,
-    getCategoryBadgeStyle,
-    getCategoryBadgeStylesForColumn,
     getBooleanCounts,
   }
 }
