@@ -7,10 +7,10 @@
       :exit-to="exitTo"
     />
     <div
-      class="flex gap-6"
-      :class="{ 'p-4 md:p-6': contextHeader }"
+      class="flex"
+      :class="contextHeader ? 'min-h-[calc(100dvh-3.625rem)]' : 'overflow-hidden rounded border border-gray-default'"
     >
-      <div class="hidden md:block">
+      <div class="hidden md:flex">
         <ResourceExplorerSidebar
           :groups
           :selected-resource-id="selectedResource?.id ?? null"
@@ -25,34 +25,27 @@
       </div>
       <div class="flex-1 min-w-0">
         <ResourceExplorerViewer
-          v-if="selectedResource && groups.length"
+          v-if="selectedResource"
           :key="selectedResource.id"
           :dataset
           :resource="selectedResource"
           :resources="flatResources"
           :resource-to="resourceTo"
           replace
+          :bordered="false"
         />
         <div
-          v-else-if="search"
-          class="flex flex-col items-center py-12"
+          v-else
+          class="flex h-full flex-col items-center justify-center gap-3 px-4 py-12 text-center"
         >
-          <slot name="no-results-image">
-            <img
-              :src="noResultsImage"
-              class="h-20"
-              alt=""
-            >
-          </slot>
-          <p class="fr-text--bold fr-my-3v">
-            {{ t('Pas de résultats pour « {q} »', { q: search }) }}
-          </p>
-          <BrandedButton
-            color="primary"
-            @click="updateSearch('')"
+          <img
+            :src="noResultsImage"
+            class="h-16 opacity-60"
+            alt=""
           >
-            {{ t('Réinitialiser la recherche') }}
-          </BrandedButton>
+          <p class="m-0 text-sm text-gray-medium">
+            {{ t('Sélectionnez une ressource dans le menu pour l\'explorer.') }}
+          </p>
         </div>
       </div>
     </div>
@@ -85,7 +78,6 @@ import type { Resource } from '../../types/resources'
 import ResourceExplorerSidebar from './ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './ResourceExplorerViewer.vue'
 import ResourceExplorerHeader from './ResourceExplorerHeader.vue'
-import BrandedButton from '../BrandedButton.vue'
 
 const props = withDefaults(defineProps<{
   dataset: DatasetV2

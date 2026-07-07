@@ -1,5 +1,5 @@
 <template>
-  <div class="border border-gray-default">
+  <div :class="{ 'border border-gray-default': bordered }">
     <header class="p-4 flex flex-wrap md:flex-nowrap gap-4 items-center justify-between">
       <div>
         <div class="flex items-center gap-1 mb-1">
@@ -260,13 +260,16 @@ const Pmtiles = defineAsyncComponent(() =>
   import('../ResourceAccordion/Pmtiles.client.vue'),
 )
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   dataset: Dataset | DatasetV2
   resource: Resource
   resources?: Resource[]
   resourceTo: (resource: Resource) => RouteLocationRaw
   replace?: boolean
-}>()
+  bordered?: boolean
+}>(), {
+  bordered: true,
+})
 
 const { t } = useTranslation()
 const config = useComponentsConfig()

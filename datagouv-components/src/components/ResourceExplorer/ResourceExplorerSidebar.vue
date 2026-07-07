@@ -1,89 +1,93 @@
 <template>
   <aside
-    v-if="!collapsed"
-    class="w-full md:w-72 shrink-0 p-4 md:pl-0"
+    class="flex shrink-0 flex-col border-r border-gray-default bg-white transition-[width] duration-200"
+    :class="collapsed ? 'w-12' : 'w-[246px]'"
   >
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-sm font-bold uppercase mb-0">
-        {{ t('Ressources') }}
-      </h3>
+    <div
+      class="flex h-14 items-center border-b border-gray-default bg-gray-50 px-3"
+      :class="collapsed ? 'justify-center' : 'justify-between'"
+    >
+      <span
+        v-if="!collapsed"
+        class="text-[13px] font-medium text-gray-title"
+      >{{ t('Ressources') }}</span>
       <button
         type="button"
-        :title="t('Masquer le panneau')"
-        class="p-1 hover:bg-gray-100 rounded"
-        @click="$emit('update:collapsed', true)"
+        :title="collapsed ? t('Afficher le panneau des ressources') : t('Masquer le panneau')"
+        class="flex size-6 items-center justify-center rounded text-gray-plain hover:bg-gray-100"
+        @click="$emit('update:collapsed', !collapsed)"
       >
-        <RiArrowLeftSLine class="size-5" />
+        <component
+          :is="collapsed ? RiSidebarUnfoldLine : RiSidebarFoldLine"
+          class="size-5"
+        />
       </button>
     </div>
 
-    <div class="mb-3">
-      <label
-        :for="searchId"
-        class="sr-only"
-      >{{ t('Rechercher') }}</label>
-      <input
-        :id="searchId"
-        :value="search"
-        type="search"
-        class="w-full border border-gray-default rounded px-2.5 py-1.5 text-sm"
-        :placeholder="t('Rechercher')"
-        @input="$emit('update:search', ($event.target as HTMLInputElement).value)"
-      >
-    </div>
+    <div
+      v-if="!collapsed"
+      class="flex flex-col gap-3 overflow-y-auto p-2"
+    >
+      <label class="flex h-8 items-center gap-1 rounded border border-gray-default bg-gray-50 px-2">
+        <RiSearchLine class="size-3.5 shrink-0 text-gray-medium" />
+        <span class="sr-only">{{ t('Rechercher') }}</span>
+        <input
+          :value="search"
+          type="search"
+          class="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-gray-medium"
+          :placeholder="t('Rechercher une ressource')"
+          @input="$emit('update:search', ($event.target as HTMLInputElement).value)"
+        >
+      </label>
 
-    <div class="space-y-4 overflow-y-auto md:max-h-[calc(100vh-14rem)]">
-      <div
+      <section
         v-for="group in groups"
         :key="group.type"
+        class="space-y-0.5"
       >
-        <div class="text-xs text-gray-plain font-bold uppercase mb-1.5 border-b border-gray-default pb-1">
-          {{ getResourceLabel(group.type, group.total) }}
-        </div>
-        <ul class="list-none p-0 m-0 space-y-0.5">
-          <li
-            v-for="resource in group.items"
-            :key="resource.id"
-          >
-            <ResourceListItem
-              :resource
-              :to="resourceTo(resource)"
-              :replace
-              :selected="resource.id === selectedResourceId"
-            />
-          </li>
-        </ul>
+        <p class="px-1 py-2 text-[12px] font-medium leading-3 text-gray-medium">
+          {{ group.total }} {{ getResourceLabel(group.type) }}
+        </p>
+        <ResourceListItem
+          v-for="resource in group.items"
+          :key="resource.id"
+          :resource
+          :to="resourceTo(resource)"
+          :replace
+          :selected="resource.id === selectedResourceId"
+        />
         <button
           v-if="group.items.length < group.total"
           type="button"
-          class="w-full text-left px-2 py-1.5 text-sm text-blue-default hover:underline"
+          class="w-full px-1 py-1 text-left text-[13px] text-blue-default hover:underline"
           @click="$emit('load-more', group.type)"
         >
           {{ t('Charger plus…') }}
         </button>
+      </section>
+
+      <div
+        v-if="search && !groups.length"
+        class="px-1 py-2"
+      >
+        <p class="mb-1.5 text-[13px] leading-snug text-gray-medium">
+          {{ t('Pas de résultats pour « {q} »', { q: search }) }}
+        </p>
+        <button
+          type="button"
+          class="text-[13px] text-blue-default hover:underline"
+          @click="$emit('update:search', '')"
+        >
+          {{ t('Réinitialiser la recherche') }}
+        </button>
       </div>
     </div>
   </aside>
-
-  <div
-    v-else
-    class="shrink-0 flex items-start pt-1"
-  >
-    <button
-      type="button"
-      :title="t('Afficher le panneau des ressources')"
-      class="p-1 hover:bg-gray-100 rounded border border-gray-default"
-      @click="$emit('update:collapsed', false)"
-    >
-      <RiArrowRightSLine class="size-5" />
-    </button>
-  </div>
 </template>
 
 <script setup lang="ts">
-import { useId } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { RiArrowRightSLine, RiArrowLeftSLine } from '@remixicon/vue'
+import { RiSidebarFoldLine, RiSidebarUnfoldLine, RiSearchLine } from '@remixicon/vue'
 import ResourceListItem from '../ResourceListItem.vue'
 import { getResourceLabel } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
@@ -105,6 +109,4 @@ defineEmits<{
   'update:collapsed': [value: boolean]
   'update:search': [value: string]
 }>()
-
-const searchId = useId()
 </script>

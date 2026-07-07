@@ -45,7 +45,6 @@
             :selected="r.id === selectedId"
             :disabled="isDisabled?.(r)"
             :disabled-title="disabledTitle"
-            show-format
             @click="close()"
           />
         </li>

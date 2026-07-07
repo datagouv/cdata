@@ -84,6 +84,25 @@ export function getResourceFormatIcon(format: string): Component | null {
   }
 }
 
+// Badge colors for the resource icon, keyed on the same format categorization as
+// getResourceFormatIcon so tabular/geo/code/documentation stay consistent with the icon.
+export function getResourceIconColor(format?: string | null): string {
+  const icon = format ? getResourceFormatIcon(format) : null
+  switch (icon) {
+    case Table:
+      return 'bg-[#c3fad5] text-[#18753c]'
+    case RiMap2Line:
+    case RiEarthLine:
+      return 'bg-[#e6eefe] text-[#0063cb]'
+    case Code:
+      return 'bg-[#fce164] text-[#716043]'
+    case Documentation:
+      return 'bg-[#fee7fc] text-[#6e445a]'
+    default:
+      return 'bg-gray-100 text-gray-plain'
+  }
+}
+
 export function getResourceTitleId(resource: Resource) {
   return 'resource-' + resource.id + '-title'
 }
