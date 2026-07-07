@@ -162,17 +162,21 @@
                 <TabularMobileFilters />
               </TabularExplorer>
 
-              <!-- Other previews stay padded inside the tab panel -->
+              <!-- PDF is a full-bleed visual preview like the table and the map: it
+                   owns its own reader backdrop, so it sits outside the padded wrapper. -->
+              <PdfPreview
+                v-else-if="isPdfPreview"
+                :resource="resource"
+                :fill="fullscreen"
+              />
+
+              <!-- Text previews stay padded inside the tab panel -->
               <div
                 v-else
                 class="p-4"
               >
                 <JsonPreview
                   v-if="resource.format && resource.format.toLowerCase() === 'json'"
-                  :resource="resource"
-                />
-                <PdfPreview
-                  v-else-if="resource.format && resource.format.toLowerCase() === 'pdf'"
                   :resource="resource"
                 />
                 <XmlPreview
@@ -352,6 +356,8 @@ const isTabularPreview = computed(() => {
   if (hasDatafairPreview.value || hasOpenAPIPreview.value) return false
   return hasTabularData.value
 })
+
+const isPdfPreview = computed(() => props.resource.format?.toLowerCase() === 'pdf')
 
 const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset, props.resource))

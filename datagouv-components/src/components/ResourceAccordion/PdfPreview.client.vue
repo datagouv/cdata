@@ -5,18 +5,32 @@
     :resource="resource"
     :max-size="config.maxPdfPreviewByteSize"
     :load="load"
+    :fill="fill"
     @loaded="renderAllPages"
   >
+    <!-- Cap the page width (A4 never needs more) and center on a light backdrop so
+         it reads like a document reader. The width cap applies in both modes since
+         the render width follows the container; `fill` only drives the height
+         (fullscreen fills down, inline stays capped). The scroll container is a plain
+         block (not a flex) so the trailing `pb` is reliably scrollable — flex + overflow
+         drops the end padding of flex items. -->
     <div
-      ref="containerRef"
-      class="w-full overflow-y-auto max-h-[80vh] space-y-3"
+      class="overflow-y-auto bg-gray-100"
+      :class="fill ? 'min-h-0 flex-1' : 'max-h-[80vh]'"
     >
-      <canvas
-        v-for="page in (data as PDFDocumentProxy).numPages"
-        :key="page"
-        :ref="(el) => setCanvasRef(el as HTMLCanvasElement, page)"
-        class="w-full"
-      />
+      <div class="flex justify-center p-4 pb-16">
+        <div
+          ref="containerRef"
+          class="w-[800px] max-w-full space-y-3"
+        >
+          <canvas
+            v-for="page in (data as PDFDocumentProxy).numPages"
+            :key="page"
+            :ref="(el) => setCanvasRef(el as HTMLCanvasElement, page)"
+            class="w-full bg-white shadow-sm"
+          />
+        </div>
+      </div>
     </div>
   </PreviewWrapper>
 </template>
@@ -34,6 +48,8 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
 const props = defineProps<{
   resource: Resource
+  // Fill the available height (fullscreen) instead of the default capped height.
+  fill?: boolean
 }>()
 
 const config = useComponentsConfig()

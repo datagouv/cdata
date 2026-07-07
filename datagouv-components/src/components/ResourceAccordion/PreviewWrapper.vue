@@ -1,5 +1,8 @@
 <template>
-  <div class="text-xs">
+  <div
+    class="text-xs"
+    :class="fill ? 'flex min-h-0 flex-1 flex-col' : ''"
+  >
     <slot
       v-if="data !== null"
       :data="data"
@@ -40,6 +43,8 @@ const props = defineProps<{
   resource: Resource
   maxSize: number | undefined
   load: () => Promise<unknown>
+  // Fill the available height (fullscreen) instead of sizing to content.
+  fill?: boolean
 }>()
 
 const emit = defineEmits<{
