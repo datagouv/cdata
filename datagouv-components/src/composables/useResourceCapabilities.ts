@@ -116,7 +116,6 @@ export function useResourceCapabilities(
     }
 
     options.push({ key: 'metadata', label: t('Métadonnées') })
-    options.push({ key: 'downloads', label: t('Téléchargements') })
 
     if (hasTabularData.value) {
       options.push({ key: 'api', label: t('API') })

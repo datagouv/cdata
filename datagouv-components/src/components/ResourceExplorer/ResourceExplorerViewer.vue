@@ -72,21 +72,11 @@
         >
           {{ t('Copier le lien') }}
         </BrandedButton>
-        <BrandedButton
+        <ResourceDownloadMenu
           v-else
-          :href="resource.latest"
-          rel="ugc nofollow noopener"
-          :title="downloadButtonTitle"
-          download
-          class="matomo_download"
-          :icon="unavailable ? RiFileWarningLine : RiDownloadLine"
-          size="xs"
-          color="primary"
-          external
-          @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
-        >
-          {{ t('Télécharger') }}
-        </BrandedButton>
+          :resource="resource"
+          :dataset="dataset"
+        />
         <BrandedButton
           v-if="exploreTo"
           :href="exploreTo(resource)"
@@ -208,15 +198,15 @@
                 <PreviewUnavailable v-else>
                   <!-- "File too large to download" is the only analysis:error value from hydra for now -->
                   <template v-if="resource.extras['analysis:error'] === 'File too large to download'">
-                    {{ t("Ce fichier est trop volumineux pour être analysé et prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+                    {{ t("Ce fichier est trop volumineux pour être analysé et prévisualisé. Téléchargez-le avec le bouton Télécharger.") }}
                   </template>
                   <template v-else-if="resource.extras['analysis:parsing:error']">
-                    {{ t("L'analyse de ce fichier a rencontré une erreur, l'aperçu n'est pas disponible. Téléchargez-le depuis l'onglet Téléchargements.") }}
+                    {{ t("L'analyse de ce fichier a rencontré une erreur, l'aperçu n'est pas disponible. Téléchargez-le avec le bouton Télécharger.") }}
                     <br>
                     <span class="text-gray-medium text-xs">{{ resource.extras['analysis:parsing:error'] }}</span>
                   </template>
                   <template v-else>
-                    {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+                    {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le avec le bouton Télécharger.") }}
                   </template>
                 </PreviewUnavailable>
               </div>
@@ -235,12 +225,6 @@
             </div>
             <div v-if="tab.key === 'metadata'">
               <Metadata :resource />
-            </div>
-            <div v-if="tab.key === 'downloads'">
-              <Downloads
-                :resource="resource"
-                :dataset="dataset"
-              />
             </div>
             <div v-if="tab.key === 'api'">
               <div class="fr-mb-4w">
@@ -266,7 +250,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
-import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiFullscreenLine } from '@remixicon/vue'
+import { RiDownloadLine, RiFileCopyLine, RiFullscreenLine } from '@remixicon/vue'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import { toast } from 'vue-sonner'
 import BrandedButton from '../BrandedButton.vue'
@@ -288,12 +272,12 @@ import TabularMobileFilters from '../TabularExplorer/TabularMobileFilters.vue'
 import TabularMobileFilterButton from '../TabularExplorer/TabularMobileFilterButton.vue'
 import TabularSkeleton from '../TabularExplorer/TabularSkeleton.vue'
 import DataStructure from '../ResourceAccordion/DataStructure.vue'
-import Downloads from '../ResourceAccordion/Downloads.vue'
 import Metadata from '../ResourceAccordion/Metadata.vue'
 import SchemaBadge from '../ResourceAccordion/SchemaBadge.vue'
 import ResourceSelector from './ResourceSelector.vue'
+import ResourceDownloadMenu from './ResourceDownloadMenu.vue'
 import { filesize, summarize } from '../../functions/helpers'
-import { getResourceFormatIcon, getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
+import { getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
 import { trackEvent } from '../../functions/matomo'
 import { useComponentsConfig } from '../../config'
 import { useFormatDate } from '../../functions/dates'
@@ -375,16 +359,6 @@ const isPdfPreview = computed(() => props.resource.format?.toLowerCase() === 'pd
 
 const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset, props.resource))
-
-const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : 'Fichier')
-const availabilityChecked = computed(() => props.resource.extras && 'check:available' in props.resource.extras)
-const unavailable = computed(() => availabilityChecked.value && props.resource.extras['check:available'] === false)
-const downloadButtonTitle = computed(() => {
-  if (unavailable.value) {
-    return t('Le robot de {platform} n\'a pas pu accéder à ce fichier - Télécharger le fichier en {format}', { platform: config.name, format: format.value })
-  }
-  return t('Télécharger le fichier en {format}', { format: format.value })
-})
 
 const copyResourceUrl = async () => {
   try {

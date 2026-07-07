@@ -19,18 +19,11 @@
       </div>
     </div>
     <div class="flex shrink-0 items-center gap-2">
-      <BrandedButton
+      <ResourceDownloadMenu
         v-if="resource"
-        :href="resource.latest"
-        :icon="RiDownloadLine"
-        rel="ugc nofollow noopener"
-        download
-        external
-        class="matomo_download"
-        size="xs"
-      >
-        {{ t('Télécharger') }}
-      </BrandedButton>
+        :resource="resource"
+        :dataset="dataset"
+      />
       <BrandedButton
         v-if="exitTo"
         :href="exitTo"
@@ -48,10 +41,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RiDownloadLine, RiFullscreenExitLine } from '@remixicon/vue'
+import { RiFullscreenExitLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import BrandedButton from '../BrandedButton.vue'
 import OrganizationLogo from '../OrganizationLogo.vue'
+import ResourceDownloadMenu from './ResourceDownloadMenu.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useFormatDate } from '../../functions/dates'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
