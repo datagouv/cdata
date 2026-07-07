@@ -5,7 +5,7 @@
   >
     <ResourceExplorer
       :dataset
-      context-header
+      fullscreen
       :exit-to="`/datasets/${dataset.id}`"
       no-results-image="/illustrations/dataset.svg"
     />

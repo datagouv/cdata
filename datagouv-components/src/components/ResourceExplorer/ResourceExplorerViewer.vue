@@ -1,5 +1,5 @@
 <template>
-  <div :class="[{ 'border border-gray-default': bordered }, fillHeight ? 'flex min-h-0 flex-1 flex-col' : '']">
+  <div :class="[{ 'border border-gray-default': bordered }, fullscreen ? 'flex min-h-0 flex-1 flex-col' : '']">
     <header class="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-gray-default bg-gray-some px-3">
       <div class="flex min-w-0 items-center gap-1.5 text-[13px] text-gray-medium">
         <ResourceIcon
@@ -42,7 +42,7 @@
         />
       </div>
       <div
-        v-if="showActions"
+        v-if="!fullscreen"
         class="flex shrink-0 items-center gap-2"
       >
         <BrandedButton
@@ -84,10 +84,10 @@
       </div>
     </header>
 
-    <section :class="fillHeight ? 'flex min-h-0 flex-1 flex-col' : ''">
+    <section :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''">
       <TabGroup
         size="sm"
-        :class="fillHeight ? 'flex min-h-0 flex-1 flex-col' : ''"
+        :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''"
         @change="switchTab"
       >
         <div class="flex shrink-0 items-center border-b border-gray-default p-2">
@@ -100,11 +100,11 @@
             </Tab>
           </TabList>
         </div>
-        <TabPanels :class="fillHeight ? 'flex min-h-0 flex-1 flex-col' : ''">
+        <TabPanels :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''">
           <TabPanel
             v-for="tab in tabsOptions"
             :key="tab.key"
-            :class="[tab.key === 'data' ? '' : 'p-4', fillHeight ? 'flex min-h-0 flex-1 flex-col' : '']"
+            :class="[tab.key === 'data' ? '' : 'p-4', fullscreen ? 'flex min-h-0 flex-1 flex-col' : '']"
           >
             <div v-if="tab.key === 'map'">
               <Pmtiles
@@ -124,7 +124,7 @@
             </div>
             <div
               v-if="tab.key === 'data'"
-              :class="fillHeight ? 'flex min-h-0 flex-1 flex-col' : ''"
+              :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''"
             >
               <!-- Interactive table: full width, composes its own framed toolbar + table -->
               <TabularExplorer
@@ -143,7 +143,7 @@
                     <TabularRowsInfo />
                   </div>
                 </div>
-                <TabularTable :fill="fillHeight" />
+                <TabularTable :fill="fullscreen" />
                 <TabularMobileFilters />
               </TabularExplorer>
 
@@ -297,15 +297,13 @@ const props = withDefaults(defineProps<{
   resourceTo: (resource: Resource) => RouteLocationRaw
   replace?: boolean
   bordered?: boolean
-  // Fullscreen mode shows download/visit/copy in the top context bar, so the viewer
-  // header hides them there and only shows them inline (dataset page).
-  showActions?: boolean
-  // Fullscreen: make the viewer a flex column so the table fills down to the bottom.
-  fillHeight?: boolean
+  // Fullscreen mode: make the viewer a flex column so the table fills down to the
+  // bottom, and hide the inline download/visit/copy actions — they're shown in the
+  // dataset context bar above. Inline mode (dataset page) shows them in the header.
+  fullscreen?: boolean
 }>(), {
   bordered: true,
-  showActions: true,
-  fillHeight: false,
+  fullscreen: false,
 })
 
 const { t } = useTranslation()

@@ -1,10 +1,10 @@
 <template>
   <div
     v-if="groups.length || hasAnyResources"
-    :class="contextHeader ? 'flex min-h-0 flex-1 flex-col' : ''"
+    :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''"
   >
     <ResourceExplorerHeader
-      v-if="contextHeader"
+      v-if="fullscreen"
       class="shrink-0"
       :dataset
       :resource="selectedResource"
@@ -12,7 +12,7 @@
     />
     <div
       class="flex"
-      :class="contextHeader ? 'min-h-0 flex-1 overflow-hidden' : 'overflow-hidden rounded border border-gray-default'"
+      :class="fullscreen ? 'min-h-0 flex-1 overflow-hidden' : 'overflow-hidden rounded border border-gray-default'"
     >
       <div class="hidden md:flex">
         <ResourceExplorerSidebar
@@ -30,7 +30,7 @@
       </div>
       <div
         class="flex-1 min-w-0"
-        :class="contextHeader ? 'flex flex-col' : ''"
+        :class="fullscreen ? 'flex flex-col' : ''"
       >
         <ResourceExplorerViewer
           v-if="selectedResource"
@@ -41,8 +41,7 @@
           :resource-to="resourceTo"
           replace
           :bordered="false"
-          :show-actions="!contextHeader"
-          :fill-height="contextHeader"
+          :fullscreen
         />
         <div
           v-else
@@ -92,12 +91,13 @@ import ResourceExplorerHeader from './ResourceExplorerHeader.vue'
 const props = withDefaults(defineProps<{
   dataset: DatasetV2
   noResultsImage?: string
-  // Fullscreen mode: show the dataset context bar (org / title / date + download + exit).
-  contextHeader?: boolean
+  // Fullscreen mode: dataset context bar (org / title / date + download + exit), the
+  // viewer fills the height and hides its inline actions (shown in the context bar).
+  fullscreen?: boolean
   exitTo?: RouteLocationRaw
 }>(), {
   noResultsImage: '',
-  contextHeader: false,
+  fullscreen: false,
 })
 
 const { t } = useTranslation()
