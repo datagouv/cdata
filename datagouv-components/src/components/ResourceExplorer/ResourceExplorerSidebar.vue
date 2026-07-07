@@ -52,7 +52,7 @@
         class="space-y-0.5"
       >
         <p class="px-1 py-2 text-[12px] font-medium leading-3 text-gray-medium">
-          {{ group.total }} {{ getResourceLabel(group.type) }}
+          {{ getResourceLabel(group.type, group.total) }}
         </p>
         <ResourceListItem
           v-for="resource in group.items"
