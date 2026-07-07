@@ -64,193 +64,30 @@
            download button above. Only the table itself goes edge-to-edge
            (via -mx-4 below). -->
       <div>
-        <div class="flex items-center py-3 gap-2">
-          <!-- Mobile: filter & sort button -->
-          <BrandedButton
-            class="md:hidden"
-            color="tertiary"
-            size="2xs"
-            :icon="RiFilterLine"
-            keep-margins-even-without-borders
-            @click="mobileFilterOpen = true"
-          >
-            {{ t('Filtres & tri') }}
-          </BrandedButton>
-
-          <div class="flex-1" />
-
-          <!-- Right: Stats -->
-          <div class="flex items-center gap-4">
-            <!-- Columns (clickable, opens column popover) -->
-            <Popover
-              ref="columnAnchor"
-              v-slot="{ open }"
-              class="relative"
-            >
-              <PopoverButton class="flex items-center gap-1.5 text-xs text-gray-plain rounded px-2 py-1 hover:bg-gray-50 focus:outline-none">
-                <RiLayoutColumnLine
-                  class="size-3"
-                  aria-hidden="true"
-                />
-                <span class="font-bold hidden md:inline">{{ t('Colonnes') }}</span>
-                <span class="font-mono tabular-nums">{{ visibleColumns.size }}/{{ allColumns.length }}</span>
-                <RiArrowDownSLine
-                  class="size-3 opacity-50"
-                  aria-hidden="true"
-                />
-              </PopoverButton>
-
-              <ClientOnly>
-                <Teleport to="#tooltips">
-                  <PopoverPanel
-                    v-show="open"
-                    ref="columnPanel"
-                    static
-                    class="bg-white border border-gray-default rounded shadow-lg w-72 absolute z-[800]"
-                    :style="columnFloatingStyles"
-                  >
-                    <div class="px-3 py-2 border-b border-gray-default space-y-1.5">
-                      <span class="block text-xs font-medium text-gray-title">
-                        {{ visibleColumns.size }} {{ t('sur') }} {{ allColumns.length }} {{ t('colonnes visibles') }}
-                      </span>
-                      <div class="flex items-center gap-1">
-                        <BrandedButton
-                          v-if="hiddenCount"
-                          color="tertiary"
-                          size="2xs"
-                          @click="showAllColumns"
-                        >
-                          {{ t('Tout afficher') }}
-                        </BrandedButton>
-                        <BrandedButton
-                          v-if="visibleColumns.size > 0"
-                          color="tertiary"
-                          size="2xs"
-                          @click="hideAllColumns"
-                        >
-                          {{ t('Tout masquer') }}
-                        </BrandedButton>
-                      </div>
-                    </div>
-                    <div class="max-h-64 overflow-auto p-1">
-                      <div
-                        v-for="col in allColumns"
-                        :key="col"
-                        class="group/col flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 text-xs"
-                      >
-                        <label class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            :checked="visibleColumns.has(col)"
-                            class="size-3.5 accent-new-primary"
-                            @change="toggleColumn(col)"
-                          >
-                          <span class="truncate">{{ col }}</span>
-                        </label>
-                        <button
-                          class="shrink-0 px-1 text-new-primary hover:underline hidden group-hover/col:block group-focus-within/col:block"
-                          @click="selectOnlyColumn(col)"
-                        >
-                          {{ t('Uniquement') }}
-                        </button>
-                      </div>
-                    </div>
-                  </PopoverPanel>
-                </Teleport>
-              </ClientOnly>
-            </Popover>
-
-            <!-- Rows -->
-            <span class="flex items-center gap-1.5 text-xs text-gray-plain">
-              <RiLayoutRowLine
-                class="size-3 text-mention-grey"
-                aria-hidden="true"
-              />
-              <span class="font-bold hidden md:inline">{{ t('Lignes') }}</span>
-              <span class="font-mono tabular-nums">{{ tableData.meta.total.toLocaleString() }}/{{ totalLines.toLocaleString() }}</span>
-            </span>
-          </div>
-        </div>
-
-        <!-- Active filters & sort -->
-        <div
-          v-if="activeFilters.length > 0 || sort"
-          class="bg-gray-some border border-gray-default rounded-xl px-3 py-2.5 mb-3 space-y-2.5"
-        >
-          <!-- Header -->
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <RiFilterLine
-                class="size-3.5"
-                aria-hidden="true"
-              />
-              <span class="text-xs text-gray-plain">{{ activeFilters.length > 0 ? t('Filtres actifs') : t('Tri actif') }}</span>
-              <span
-                v-if="activeFilters.length > 0"
-                class="inline-flex items-center justify-center rounded-full bg-new-primary/10 text-new-primary text-xs tabular-nums min-w-5 h-5 px-1.5"
-              >
-                {{ activeFilters.length }}
-              </span>
-            </div>
+        <div class="flex items-center gap-2 py-3">
+          <!-- Left: active filter/sort chips + clear all -->
+          <div class="flex min-w-0 flex-1 items-center gap-1.5">
+            <!-- Mobile: filter & sort button -->
             <BrandedButton
+              class="md:hidden"
               color="tertiary"
               size="2xs"
-              :icon="RiCloseLine"
-              @click="clearAllFilters(); sort = null"
+              :icon="RiFilterLine"
+              keep-margins-even-without-borders
+              @click="mobileFilterOpen = true"
             >
-              {{ t('Tout effacer') }}
+              {{ t('Filtres & tri') }}
             </BrandedButton>
+
+            <div class="hidden md:block">
+              <TabularActiveFilters with-clear />
+            </div>
           </div>
-          <!-- Chips -->
-          <div class="flex flex-wrap gap-1.5">
-            <!-- Sort chip -->
-            <span
-              v-if="sort"
-              class="inline-flex items-center gap-1.5 bg-white border border-gray-silver rounded-lg pl-2 pr-1 py-1 text-xs"
-            >
-              <component
-                :is="sort.direction === 'asc' ? RiArrowUpLine : RiArrowDownLine"
-                class="size-3 text-new-primary"
-                aria-hidden="true"
-              />
-              <span class="text-gray-plain">{{ t('Tri') }}</span>
-              <span class="text-gray-title">{{ sort.column }}</span>
-              <span class="text-gray-plain">{{ sort.direction === 'asc' ? t('croissant') : t('décroissant') }}</span>
-              <button
-                class="rounded p-0.5 text-gray-low hover:text-gray-plain hover:bg-gray-100"
-                @click="sort = null"
-              >
-                <RiCloseLine
-                  class="size-3"
-                  aria-hidden="true"
-                />
-                <span class="sr-only">{{ t('Supprimer le tri') }}</span>
-              </button>
-            </span>
-            <!-- Filter chips -->
-            <span
-              v-for="af in activeFilters"
-              :key="af.column"
-              class="inline-flex items-center gap-1.5 bg-white border border-gray-silver rounded-lg pl-2 pr-1 py-1 text-xs"
-            >
-              <component
-                :is="getColumnDisplay(af.column).icon"
-                class="size-3 text-gray-title"
-                aria-hidden="true"
-              />
-              <span class="text-gray-title">{{ af.column }}</span>
-              <span class="text-gray-plain">{{ af.label }}</span>
-              <button
-                class="rounded p-0.5 text-gray-low hover:text-gray-plain hover:bg-gray-100"
-                @click="removeFilter(af.column)"
-              >
-                <RiCloseLine
-                  class="size-3"
-                  aria-hidden="true"
-                />
-                <span class="sr-only">{{ t('Supprimer ce filtre') }}</span>
-              </button>
-            </span>
+
+          <!-- Right: columns + rows (both inject the shared context) -->
+          <div class="flex shrink-0 items-center gap-4">
+            <TabularColumnsMenu />
+            <TabularRowsInfo />
           </div>
         </div>
       </div>
@@ -598,16 +435,12 @@
 import { computed, nextTick, onUnmounted, ref, watch, useTemplateRef } from 'vue'
 import { ofetch } from 'ofetch'
 import { useElementSize } from '@vueuse/core'
-import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
-import { Dialog, DialogPanel, DialogTitle, Popover, PopoverButton, PopoverPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
+import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import {
-  RiLayoutColumnLine,
-  RiLayoutRowLine,
   RiArrowDownSLine,
   RiArrowUpLine,
   RiArrowDownLine,
   RiFilterLine,
-  RiCloseLine,
   RiSearchLine,
 } from '@remixicon/vue'
 import { useFetch } from '../../functions/api'
@@ -615,16 +448,19 @@ import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { injectTabularProfile } from '../../composables/useTabularProfile'
 import { buildTypeConfig, buildFormatConfig, humanizeFormat, GENERIC_FORMATS, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy, resolveColumnType } from '../../functions/tabular'
-import ClientOnly from '../ClientOnly.vue'
 import SimpleBanner from '../SimpleBanner.vue'
 import BrandedButton from '../BrandedButton.vue'
 import InfiniteLoader from '../InfiniteLoader.vue'
+import TabularActiveFilters from './TabularActiveFilters.vue'
+import TabularColumnsMenu from './TabularColumnsMenu.vue'
+import TabularRowsInfo from './TabularRowsInfo.vue'
 import TabularCell from './TabularCell.vue'
 import TabularCellPopover from './TabularCellPopover.vue'
 import type { CellInfo } from './TabularCellPopover.vue'
 import TabularFilterContent from './TabularFilterContent.vue'
 import TabularFilterPopover from './TabularFilterPopover.vue'
 import type { TabularDataResponse, TabularRow, ColumnType, SortConfig, ColumnFilters, BadgeStyle } from './types'
+import { provideTabularContext, type ActiveFilter } from './useTabularContext'
 import noColumnsSrc from '../../../assets/illustrations/_table.svg?url'
 
 const props = defineProps<{
@@ -637,18 +473,6 @@ const props = defineProps<{
 
 const { t } = useTranslation()
 const config = useComponentsConfig()
-
-// Column selector popover positioning
-const columnAnchorComponent = useTemplateRef<InstanceType<typeof Popover>>('columnAnchor')
-const columnPanelComponent = useTemplateRef<InstanceType<typeof PopoverPanel>>('columnPanel')
-const columnAnchorEl = computed(() => columnAnchorComponent.value?.$el as HTMLElement | undefined)
-const columnPanelEl = computed(() => columnPanelComponent.value?.$el as HTMLElement | undefined)
-
-const { floatingStyles: columnFloatingStyles } = useFloating(columnAnchorEl, columnPanelEl, {
-  placement: 'bottom-start',
-  middleware: [flip(), shift()],
-  whileElementsMounted: autoUpdate,
-})
 
 const dataUrl = computed(() =>
   `${config.tabularApiUrl}/api/resources/${props.resourceId}/data/`,
@@ -948,11 +772,6 @@ function onCellClick(col: string, value: unknown, event: MouseEvent) {
 }
 
 // Active filters
-interface ActiveFilter {
-  column: string
-  label: string
-}
-
 const activeFilters = computed<ActiveFilter[]>(() => {
   const result: ActiveFilter[] = []
   for (const [col, filter] of Object.entries(filters.value)) {
@@ -1129,4 +948,40 @@ function getBooleanCounts(col: string): { trueCount: number, falseCount: number 
   }
   return { trueCount, falseCount }
 }
+
+// Provide the shared state so child components (active filters, columns menu, rows
+// info, table…) can inject it instead of receiving a wall of props.
+provideTabularContext({
+  resourceId: computed(() => props.resourceId),
+  tableData,
+  totalLines,
+  allRows,
+  hasMore,
+  loadingMore,
+  loadNextPage,
+  sort,
+  filters,
+  activeFilters,
+  removeFilter,
+  clearAllFilters,
+  hasFilterForColumn,
+  allColumns,
+  visibleColumns,
+  displayedColumns,
+  hiddenCount,
+  toggleColumn,
+  showAllColumns,
+  hideAllColumns,
+  selectOnlyColumn,
+  mobileFilterOpen,
+  columnTypesMap,
+  getColumnType,
+  getColumnProfile,
+  getColumnDisplay,
+  getTopsEntries,
+  getNullPercent,
+  getCategoryBadgeStyle,
+  getCategoryBadgeStylesForColumn,
+  getBooleanCounts,
+})
 </script>
