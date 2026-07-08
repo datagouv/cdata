@@ -571,6 +571,10 @@ const xAxisColumnProxy = computed<XAxisColumnOption | null>({
   set: (val: XAxisColumnOption | null) => {
     form.value.x_axis.column_x = val?.name ?? ''
     form.value.x_axis.type = getDefaultXAxisType(val?.type)
+    if (val?.type === 'date') {
+      form.value.x_axis.sort_combined = 'axis_x-asc'
+      form.value.chart_type = 'line'
+    }
   },
 })
 

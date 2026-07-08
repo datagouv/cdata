@@ -1,5 +1,5 @@
 import type { Chart, ChartForm, ChartForApi, Filter, ColumnDefinition } from '../types/visualizations'
-import type { TabularProfile } from '../components/TabularExplorer/types'
+import type { ColumnType, TabularProfile } from '../components/TabularExplorer/types'
 import { resolveColumnType } from './tabular'
 
 export function toChartForm(chart: Chart) {
@@ -78,14 +78,18 @@ export function buildColumnsFromProfile(profile: { profile: TabularProfile }): A
     return {
       name,
       type: colType,
-      min: normalizeProfileNumber(colProfile?.min),
-      max: normalizeProfileNumber(colProfile?.max),
+      min: normalizeProfileNumber(colProfile?.min, colType),
+      max: normalizeProfileNumber(colProfile?.max, colType),
     }
   })
 }
 
-function normalizeProfileNumber(value: number | string | undefined): number | undefined {
+function normalizeProfileNumber(value: number | string | undefined, type: ColumnType): number | undefined {
   if (value === undefined || value === null) return undefined
+  if (type === 'date' && typeof value === 'string') {
+    const timestamp = new Date(value).getTime()
+    return Number.isNaN(timestamp) ? undefined : timestamp
+  }
   const parsed = Number(value)
   return Number.isNaN(parsed) ? undefined : parsed
 }

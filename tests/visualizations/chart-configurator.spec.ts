@@ -92,6 +92,11 @@ test('x-axis column selector shows available columns', async ({ page }) => {
 test('x-axis type defaults to continuous for numeric column', async ({ page }) => {
   await setupChart(page)
 
+  const xAxisSelect = page.getByTestId('searchable-select-choisir-quoi-afficher')
+  await xAxisSelect.click()
+  await page.getByRole('option', { name: 'Nombre de logements', exact: true }).click()
+  await clickOutside(page)
+
   const xAxisTypeSelect = page.locator('#x-axis-type')
   await expect(xAxisTypeSelect).toHaveValue('continuous')
 })
@@ -106,6 +111,44 @@ test('x-axis type defaults to discrete for string column', async ({ page }) => {
 
   const xAxisTypeSelect = page.locator('#x-axis-type')
   await expect(xAxisTypeSelect).toHaveValue('discrete')
+})
+
+test('selecting a date x-axis column switches to line chart and sorts by date ascending', async ({ page }) => {
+  await setupChart(page)
+
+  const xAxisSelect = page.getByTestId('searchable-select-choisir-quoi-afficher')
+  await xAxisSelect.click()
+  await page.getByRole('option', { name: 'nom_region', exact: true }).click()
+  await clickOutside(page)
+
+  await xAxisSelect.click()
+  await page.getByRole('option', { name: 'jour', exact: true }).click()
+  await clickOutside(page)
+
+  const chartTypeButton = page.locator('#chart-type').getByRole('button')
+  await expect(chartTypeButton).toContainText('Ligne')
+
+  const sortListbox = page.locator('#x-axis-sort-combined')
+  await expect(sortListbox.locator('.input')).toContainText('jour - Ascendant')
+})
+
+test('selecting a numeric x-axis column does not switch to line chart or force sort', async ({ page }) => {
+  await setupChart(page)
+
+  const xAxisSelect = page.getByTestId('searchable-select-choisir-quoi-afficher')
+  await xAxisSelect.click()
+  await page.getByRole('option', { name: 'nom_region', exact: true }).click()
+  await clickOutside(page)
+
+  await xAxisSelect.click()
+  await page.getByRole('option', { name: 'Nombre de logements', exact: true }).click()
+  await clickOutside(page)
+
+  const chartTypeButton = page.locator('#chart-type').getByRole('button')
+  await expect(chartTypeButton).toContainText('Histogramme')
+
+  const sortListbox = page.locator('#x-axis-sort-combined')
+  await expect(sortListbox.locator('.input')).toContainText('Aucun')
 })
 
 test('series column y selector shows available columns', async ({ page }) => {
