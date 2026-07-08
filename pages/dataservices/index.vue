@@ -1,17 +1,29 @@
 <template>
   <div>
-    <EditoHeader
-      color="purple"
-      :title="$t('Rechercher une API')"
-      :subtitle="$t('parmi les {count} API sur {site}', {
-        count: site?.metrics.dataservices || 0,
-        site: config.public.title,
-      })"
-      :placeholder="$t('ex: SIRENE')"
-      search-url="/dataservices/search"
-      :link-label="$t(`Qu'est-ce qu'une API ?`)"
-      :link-url="config.public.guideDataservices"
-    />
+    <HeroBanner color="purple">
+      <template #breadcrumb>
+        <Breadcrumb>
+          <BreadcrumbItem to="/">
+            {{ $t('Accueil') }}
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            {{ $t('API') }}
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </template>
+      <EditoSearchForm
+        color="purple"
+        :title="$t('Rechercher une API')"
+        :subtitle="$t('parmi les {count} API sur {site}', {
+          count: site?.metrics.dataservices || 0,
+          site: config.public.title,
+        })"
+        :placeholder="$t('ex: SIRENE')"
+        search-url="/dataservices/search"
+        :link-label="$t(`Qu'est-ce qu'une API ?`)"
+        :link-url="config.public.guideDataservices"
+      />
+    </HeroBanner>
     <EditoBlocs
       v-if="siteBlocs.length > 0 || isEditing"
       :blocs="siteBlocs"
@@ -243,7 +255,10 @@
 import { BrandedButton } from '@datagouv/components-next'
 import { RiExternalLinkFill, RiArrowRightLine } from '@remixicon/vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
-import EditoHeader from '~/components/Pages/EditoHeader.vue'
+import HeroBanner from '~/components/HeroBanner.vue'
+import EditoSearchForm from '~/components/Pages/EditoSearchForm.vue'
+import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 
 const config = useRuntimeConfig()

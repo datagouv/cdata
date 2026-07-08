@@ -1,32 +1,44 @@
 <template>
   <div>
-    <EditoHeader
-      color="green"
-      :title="$t('Rechercher une réutilisation')"
-      :subtitle="$t('parmi les {count} réutilisations sur {site}', {
-        count: site?.metrics.reuses ?? 0,
-        site: config.public.title,
-      })"
-      :placeholder="$t('Rechercher une réutilisation de données')"
-      search-url="/reuses/search"
-      :link-label="$t(`Qu'est-ce qu'une réutilisation ?`)"
-      :link-url="config.public.guideReuses"
-    >
-      <ul class="flex flex-nowrap md:flex-wrap overflow-auto gap-3 list-none pl-0">
-        <li
-          v-for="topic in topics"
-          :key="topic.id"
-          class="flex-none"
-        >
-          <CdataLink
-            class="bg-white/10 text-white rounded-md px-2 py-1 text-lg fr-raw-link"
-            :href="`/reuses/search?topic=${topic.id}`"
+    <HeroBanner color="green">
+      <template #breadcrumb>
+        <Breadcrumb>
+          <BreadcrumbItem to="/">
+            {{ $t('Accueil') }}
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            {{ $t('Réutilisations') }}
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </template>
+      <EditoSearchForm
+        color="green"
+        :title="$t('Rechercher une réutilisation')"
+        :subtitle="$t('parmi les {count} réutilisations sur {site}', {
+          count: site?.metrics.reuses ?? 0,
+          site: config.public.title,
+        })"
+        :placeholder="$t('Rechercher une réutilisation de données')"
+        search-url="/reuses/search"
+        :link-label="$t(`Qu'est-ce qu'une réutilisation ?`)"
+        :link-url="config.public.guideReuses"
+      >
+        <ul class="flex flex-nowrap md:flex-wrap overflow-auto gap-3 list-none pl-0">
+          <li
+            v-for="topic in topics"
+            :key="topic.id"
+            class="flex-none"
           >
-            {{ topic.label }}
-          </CdataLink>
-        </li>
-      </ul>
-    </EditoHeader>
+            <CdataLink
+              class="bg-white/10 text-white rounded-md px-2 py-1 text-lg fr-raw-link"
+              :href="`/reuses/search?topic=${topic.id}`"
+            >
+              {{ topic.label }}
+            </CdataLink>
+          </li>
+        </ul>
+      </EditoSearchForm>
+    </HeroBanner>
     <EditoBlocs
       v-if="siteBlocs.length > 0 || isEditing"
       :blocs="siteBlocs"
@@ -158,7 +170,10 @@
 import { BrandedButton, type ReuseTopic } from '@datagouv/components-next'
 import CdataLink from '~/components/CdataLink.vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
-import EditoHeader from '~/components/Pages/EditoHeader.vue'
+import HeroBanner from '~/components/HeroBanner.vue'
+import EditoSearchForm from '~/components/Pages/EditoSearchForm.vue'
+import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 
 const config = useRuntimeConfig()
