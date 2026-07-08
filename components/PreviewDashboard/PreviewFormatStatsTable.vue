@@ -325,7 +325,7 @@ const previousMonthUrl = computed(() => {
 const { data: currentResponse, error: currentError, pending: currentPending } = useFetch<TabularDataResponse<PreviewDashboardFormatStat>>(currentMonthUrl)
 const { data: previousResponse, error: previousError, pending: previousPending } = useFetch<TabularDataResponse<PreviewDashboardFormatStat>>(previousMonthUrl)
 
-const response = computed<TabularDataResponse<PreviewDashboardFormatStat>>(() => ({
+const response = computed(() => ({
   data: [
     ...(currentResponse.value?.data ?? []),
     ...(previousResponse.value?.data ?? []),
