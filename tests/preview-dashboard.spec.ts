@@ -140,11 +140,15 @@ test.describe('Preview dashboard', () => {
       })
     })
 
+    const resourcesResponsePromise = page.waitForResponse(`**/api/resources/${resourceId}/data/**`)
+    const currentMonthStatsResponsePromise = page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
+    const previousMonthStatsResponsePromise = page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
+
     await page.goto('/admin/beta/preview-dashboard')
 
-    await page.waitForResponse(`**/api/resources/${resourceId}/data/**`)
-    await page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
-    await page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
+    await resourcesResponsePromise
+    await currentMonthStatsResponsePromise
+    await previousMonthStatsResponsePromise
 
     await expect(page.getByRole('heading', { name: 'Tableau de bord des aperçus' })).toBeVisible()
     await expect(page.getByText('Statistiques par format')).toBeVisible()
@@ -189,11 +193,15 @@ test.describe('Preview dashboard', () => {
       })
     })
 
+    const resourcesResponsePromise = page.waitForResponse(`**/api/resources/${resourceId}/data/**`)
+    const currentMonthStatsResponsePromise = page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
+    const previousMonthStatsResponsePromise = page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
+
     await page.goto('/admin/beta/preview-dashboard')
 
-    await page.waitForResponse(`**/api/resources/${resourceId}/data/**`)
-    await page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
-    await page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
+    await resourcesResponsePromise
+    await currentMonthStatsResponsePromise
+    await previousMonthStatsResponsePromise
 
     await page.getByText('Tabulaire').click()
     await page.getByRole('link', { name: 'csv' }).click()
@@ -235,11 +243,15 @@ test.describe('Preview dashboard', () => {
       })
     })
 
+    const resourcesResponsePromise = page.waitForResponse(`**/api/resources/${resourceId}/data/**`)
+    const currentMonthStatsResponsePromise = page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
+    const previousMonthStatsResponsePromise = page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
+
     await page.goto('/admin/beta/preview-dashboard')
 
-    await page.waitForResponse(`**/api/resources/${resourceId}/data/**`)
-    await page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
-    await page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
+    await resourcesResponsePromise
+    await currentMonthStatsResponsePromise
+    await previousMonthStatsResponsePromise
 
     await page.getByText('Tabulaire').click()
 
