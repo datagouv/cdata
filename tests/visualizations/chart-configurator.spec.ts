@@ -34,10 +34,11 @@ async function setupChart(page: Page) {
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('Enter')
 
+  const resourceProfilePromise = page.waitForResponse('**/api/resources/*/profile/')
   const resourceSelect = page.getByLabel('Choix de la ressource')
   await resourceSelect.selectOption({ index: 1 })
 
-  await page.waitForResponse('**/api/resources/*/profile/')
+  await resourceProfilePromise
   await page.waitForTimeout(300) // necessary to wait for the watch, no real async to check
 
   expect(page.getByLabel('Titre')).toBeVisible()

@@ -30,6 +30,12 @@ const { locale } = useTranslation()
 const chartContainer = ref<HTMLElement | null>(null)
 let echartsInstance: EChartsType | null = null
 
+function capture(): string | null {
+  return echartsInstance?.getDataURL() ?? null
+}
+
+defineExpose({ capture })
+
 // ECharts has a dedicated 'time' axis type for continuous date values.
 function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' | 'time' {
   if (!xAxis) return 'category'

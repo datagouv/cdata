@@ -1,4 +1,5 @@
 import { toast } from '@datagouv/components-next'
+import { getApiErrorMessage } from '~/utils/api'
 
 export default defineNuxtPlugin({
   async setup(nuxtApp) {
@@ -65,26 +66,7 @@ export default defineNuxtPlugin({
             return
           }
 
-          let message = ''
-          if (response._data) {
-            try {
-              if ('error' in response._data) {
-                message = response._data.error
-              }
-              else if ('message' in response._data) {
-                message = response._data.message
-              }
-              else if ('errors' in response._data && typeof response._data.errors === 'object') {
-                message = Object.entries(response._data.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
-              }
-              else if ('response' in response._data && 'errors' in response._data.response && Array.isArray(response._data.response.errors)) {
-                message = response._data.response.errors.join(' ; ')
-              }
-            }
-            catch (e) {
-              console.error(e)
-            }
-          }
+          const message = getApiErrorMessage(response._data)
 
           if (options?.method && ['POST', 'PUT', 'PATCH'].includes(options.method) && response.status === 400) {
             toast.error(t(`Le formulaire contient des erreurs. ${message}`))

@@ -182,7 +182,7 @@
                 <div class="fr-mt-6v">
                   <GristTableViewer
                     :url="card.roadmap_url"
-                    :columns="card.roadmap_column?.filter((col: string) => col !== 'L')"
+                    :columns="card.roadmap_column ? unwrapList(card.roadmap_column).map(String) : undefined"
                   />
                 </div>
               </div>
@@ -199,7 +199,7 @@
                 <div class="fr-mt-6v">
                   <GristTableViewer
                     :url="card.budget_url"
-                    :columns="card.budget_columns?.filter((col: string) => col !== 'L')"
+                    :columns="card.budget_columns ? unwrapList(card.budget_columns).map(String) : undefined"
                     :total-column="card.budget_column_total"
                     :unit="card.budget_unit"
                     :unit-column="card.budget_column_total"
@@ -224,6 +224,7 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import BrandCard from '~/components/Brand/BrandCard.vue'
 import DatasetCard from '~/components/Embeds/DatasetCard.global.vue'
 import GristTableViewer from '~/components/GristTableViewer/GristTableViewer.vue'
+import { unwrapList } from '~/utils/grist'
 
 const route = useRoute()
 interface ProductCard {

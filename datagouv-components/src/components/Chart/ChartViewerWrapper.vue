@@ -5,6 +5,7 @@
   >
     <template #default="{ data }">
       <ChartViewer
+        ref="chartViewerRef"
         :chart="chart"
         :series="data"
       />
@@ -33,6 +34,13 @@ const props = defineProps<{
 }>()
 
 const { t } = useTranslation()
+const chartViewerRef = ref<InstanceType<typeof ChartViewer> | null>(null)
+
+function capture(): string | null {
+  return chartViewerRef.value?.capture() ?? null
+}
+
+defineExpose({ capture })
 const config = useComponentsConfig()
 const getProfile = useGetProfile()
 
