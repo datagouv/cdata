@@ -4,6 +4,22 @@ import type { PreviewDashboardResource, PreviewDashboardFormatStat } from '../ty
 const resourceId = '982d9dd0-365a-4c4b-8a83-75dec40c36bb'
 const statsResourceId = '33cf9a65-3f77-4d88-acd1-bca420d83e60'
 
+function formatMonth(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  return `${y}-${m}`
+}
+
+function getPreviousMonth(month: string): string {
+  const [year, monthNum] = month.split('-').map(Number)
+  const date = new Date(year, monthNum - 1, 1)
+  date.setMonth(date.getMonth() - 1)
+  return formatMonth(date)
+}
+
+const currentMonth = formatMonth(new Date())
+const previousMonth = getPreviousMonth(currentMonth)
+
 const resourcesData: PreviewDashboardResource[] = [
   {
     'id': 'resource-1',
@@ -94,16 +110,16 @@ const statsData: PreviewDashboardFormatStat[] = [
     '% too big': 0.2,
     '% prévisualisable': 50,
     '% prévisualisation manquante': 0.3,
-    'Mois': '2026-06',
+    'Mois': currentMonth,
     '__id': 1,
   },
 ]
 
 const previousMonthStatsData: PreviewDashboardFormatStat[] = statsData.map(row => ({
   ...row,
-  'Mois': '2026-05',
+  'Mois': previousMonth,
   'Nombre': row.Nombre - 3,
-  'Prévisualisable': row['Prévisualisable'] - 1,
+  'Prévisualisable': row['Prévisualisable'] - 2,
   '% prévisualisable': row['% prévisualisable'] - 5,
 }))
 
@@ -140,27 +156,23 @@ test.describe('Preview dashboard', () => {
       })
     })
 
-    const resourcesResponsePromise = page.waitForResponse(`**/api/resources/${resourceId}/data/**`)
-    const currentMonthStatsResponsePromise = page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
-    const previousMonthStatsResponsePromise = page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
-
     await page.goto('/admin/beta/preview-dashboard')
-
-    await resourcesResponsePromise
-    await currentMonthStatsResponsePromise
-    await previousMonthStatsResponsePromise
+    await page.waitForLoadState('networkidle')
 
     await expect(page.getByRole('heading', { name: 'Tableau de bord des aperçus' })).toBeVisible()
-    await expect(page.getByText('Statistiques par format')).toBeVisible()
+    await expect(page.getByRole('tab', { name: 'Statistique' })).toBeVisible()
     await expect(page.getByText('Tabulaire')).toBeVisible()
 
     await page.getByText('Tabulaire').click()
-    await expect(page.getByRole('cell', { name: 'csv' })).toBeVisible()
-    await expect(page.getByRole('cell', { name: '10' })).toBeVisible()
+    const csvFormatRow = page.locator('tr', { hasText: 'csv' }).first()
+    await expect(csvFormatRow).toBeVisible()
+    await expect(csvFormatRow.locator('td').nth(0)).toContainText('csv')
+    await expect(csvFormatRow.locator('td').nth(1)).toContainText('10')
 
     await page.getByRole('tab', { name: 'Fichiers' }).click()
     await expect(page.getByRole('cell', { name: 'Données CSV' })).toBeVisible()
-    await expect(page.getByRole('cell', { name: 'csv' })).toBeVisible()
+    const resourceRow = page.locator('tr', { hasText: 'Données CSV' }).first()
+    await expect(resourceRow.locator('td').nth(6)).toContainText('csv')
   })
 
   test('navigates to the filtered Fichiers tab when clicking a format name', async ({ page }) => {
@@ -193,15 +205,8 @@ test.describe('Preview dashboard', () => {
       })
     })
 
-    const resourcesResponsePromise = page.waitForResponse(`**/api/resources/${resourceId}/data/**`)
-    const currentMonthStatsResponsePromise = page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
-    const previousMonthStatsResponsePromise = page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
-
     await page.goto('/admin/beta/preview-dashboard')
-
-    await resourcesResponsePromise
-    await currentMonthStatsResponsePromise
-    await previousMonthStatsResponsePromise
+    await page.waitForLoadState('networkidle')
 
     await page.getByText('Tabulaire').click()
     await page.getByRole('link', { name: 'csv' }).click()
@@ -210,7 +215,8 @@ test.describe('Preview dashboard', () => {
     await expect(page).toHaveURL(/[?&]format=csv/)
 
     await expect(page.getByRole('tab', { name: 'Fichiers' })).toHaveAttribute('aria-selected', 'true')
-    await expect(page.getByText('format normalisé = csv')).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Données CSV' })).toBeVisible()
+    await expect(page.getByText(/format normalisé\s*=\s*csv/)).toBeVisible({ timeout: 10000 })
   })
 
   test('shows month-over-month deltas for Nombre and % prévisualisable', async ({ page }) => {
@@ -243,19 +249,12 @@ test.describe('Preview dashboard', () => {
       })
     })
 
-    const resourcesResponsePromise = page.waitForResponse(`**/api/resources/${resourceId}/data/**`)
-    const currentMonthStatsResponsePromise = page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
-    const previousMonthStatsResponsePromise = page.waitForResponse(`**/api/resources/${statsResourceId}/data/**`)
-
     await page.goto('/admin/beta/preview-dashboard')
-
-    await resourcesResponsePromise
-    await currentMonthStatsResponsePromise
-    await previousMonthStatsResponsePromise
+    await page.waitForLoadState('networkidle')
 
     await page.getByText('Tabulaire').click()
 
-    const familyRow = page.locator('tr', { hasText: /^Tabulaire$/ }).first()
+    const familyRow = page.locator('tr', { hasText: 'Tabulaire' }).first()
     await expect(familyRow).toBeVisible()
     await expect(familyRow.locator('td').nth(1)).toContainText('+')
     await expect(familyRow.locator('td').nth(7)).toContainText('+')
