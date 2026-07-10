@@ -45,6 +45,7 @@
     <Step3DescribeDataset
       v-if="currentStep === 3 && associateSchemaForm.selectedSchema && associateSchemaForm.owned?.organization"
       v-model="datasetForm"
+      :resources="resources"
       @previous="goBackFromStep3"
       @next="describeNext"
     />
