@@ -478,6 +478,7 @@ import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartLine, RiCalculatorLine, RiLineChartLine, RiText } from '@remixicon/vue'
 import { useAPI } from '~/utils/api'
 import { isMeAdmin } from '~/utils/auth'
+import { keepValidSortCombined } from '~/utils/charts'
 import ChartFilterRow from './ChartFilterRow.vue'
 import ProducerSelect from '../ProducerSelect.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
@@ -985,4 +986,15 @@ watch(selectedResource, async (r) => {
     ensureSeriesHasColumnY(r)
   }
 })
+
+watch(
+  sortOptions,
+  (newOptions) => {
+    form.value.x_axis.sort_combined = keepValidSortCombined(
+      form.value.x_axis.sort_combined,
+      newOptions.map(option => option.value),
+    )
+  },
+  { immediate: true },
+)
 </script>
