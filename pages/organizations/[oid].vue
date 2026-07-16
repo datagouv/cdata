@@ -20,6 +20,15 @@
           </BreadcrumbItem>
         </Breadcrumb>
         <div class="flex gap-3 items-center">
+          <BrandedButton
+            v-if="isPresentationTab && canEditPresentation && !isEditingPresentation"
+            color="warning"
+            size="xs"
+            :icon="RiEdit2Line"
+            @click="editPresentation"
+          >
+            {{ hasPresentation ? $t('Modifier la présentation') : $t('Modifier ou publier la présentation') }}
+          </BrandedButton>
           <EditButton
             v-if="organization.permissions.edit"
             :id="organization.id"
@@ -83,12 +92,7 @@
           </ReadMore>
         </div>
         <FullPageTabs
-          :links="[
-            { label: $t('Jeux de données'), href: `/organizations/${route.params.oid}/datasets`, count: organization.metrics.datasets },
-            { label: $t('API'), href: `/organizations/${route.params.oid}/dataservices`, count: organization.metrics.dataservices },
-            { label: $t('Réutilisations'), href: `/organizations/${route.params.oid}/reuses`, count: organization.metrics.reuses },
-            { label: $t('Informations'), href: `/organizations/${route.params.oid}/information` },
-          ]"
+          :links="tabLinks"
         >
           <form
             class="flex items-center"
@@ -113,11 +117,12 @@
           </form>
         </FullPageTabs>
       </div>
-      <div class="bg-white pt-5 pb-8 lg:pb-24">
+      <div :class="{ 'bg-white pt-5 pb-8 lg:pb-24': !isPresentationTab }">
         <NuxtPage
           v-if="organization"
-          class="container"
+          :class="{ container: !isPresentationTab }"
           :organization
+          @organization-updated="onOrganizationUpdated"
         />
       </div>
     </LoadingBlock>
@@ -125,18 +130,55 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, LoadingBlock, MarkdownViewer, OrganizationNameWithCertificate, OwnerType, ReadMore, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
-import { RiDeleteBinLine, RiSearchLine } from '@remixicon/vue'
+import { BrandedButton, isOrganizationCertified, LoadingBlock, MarkdownViewer, OrganizationNameWithCertificate, OwnerType, ReadMore, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
+import { RiDeleteBinLine, RiEdit2Line, RiSearchLine } from '@remixicon/vue'
 import { useTimeoutFn } from '@vueuse/core'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
+import { isUserOrgAdmin, useMaybeMe } from '~/utils/auth'
 
 const config = useRuntimeConfig()
 const route = useRoute()
+const router = useRouter()
+const me = useMaybeMe()
+const { t } = useTranslation()
 
 const url = computed(() => `/api/1/organizations/${route.params.oid}/`)
 const { data: organization, status } = await useAPI<Organization>(url, { redirectOn404: true, redirectOnSlug: 'oid' })
+
+// A presentation is offered to the public only once published. The publication
+// date lives in the default mask, so we read it straight from the organization
+// instead of fetching the (heavy) blocs here — those are lazy-loaded on the
+// presentation page itself.
+const hasPresentation = computed(() => isOrganizationPresentationPublished(organization.value?.presentation_blocs_published_at))
+const canEditPresentation = computed(() => isUserOrgAdmin(me.value, organization.value))
+// Hidden from non-admins until configured; always available to org admins so they
+// can create it.
+const showPresentationTab = computed(() => hasPresentation.value || canEditPresentation.value)
+const isPresentationTab = computed(() => route.path.endsWith('/presentation'))
+const isEditingPresentation = computed(() => isPresentationTab.value && route.query.edit === 'true')
+
+function editPresentation() {
+  router.push({ query: { ...route.query, edit: 'true' } })
+}
+
+// The presentation page saves the org on its own fetch and hands back the saved
+// version; swap it in so the header CTA, tabs… update without a reload.
+function onOrganizationUpdated(updated: Organization) {
+  organization.value = updated
+}
+
+const tabLinks = computed(() => {
+  const oid = route.params.oid
+  return [
+    ...(showPresentationTab.value ? [{ label: t('Présentation'), href: `/organizations/${oid}/presentation` }] : []),
+    { label: t('Jeux de données'), href: `/organizations/${oid}/datasets`, count: organization.value?.metrics.datasets },
+    { label: t('API'), href: `/organizations/${oid}/dataservices`, count: organization.value?.metrics.dataservices },
+    { label: t('Réutilisations'), href: `/organizations/${oid}/reuses`, count: organization.value?.metrics.reuses },
+    { label: t('Informations'), href: `/organizations/${oid}/information` },
+  ]
+})
 
 const title = computed(() => `Organisation - ${organization.value?.name} | ${config.public.title}`)
 const robots = computed(() => organization.value && !organization.value.metrics.dataservices && !organization.value.metrics.datasets && !organization.value.metrics.reuses ? 'noindex, nofollow' : 'all')

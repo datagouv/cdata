@@ -165,7 +165,7 @@
 
 <script setup lang="ts">
 import { RiDownloadLine, RiSearchLine, RiStarSLine } from '@remixicon/vue'
-import { BrandedButton, LoadingBlock, Pagination, summarize, Tooltip, type Organization, type Reuse, type User } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, Pagination, summarize, Tooltip, type Organization, type ReuseV2, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
@@ -199,9 +199,9 @@ const params = computed(() => {
   }
 })
 
-const { data: pageData, status } = await useAPI<PaginatedArray<Reuse>>('/api/1/reuses/', { lazy: true, query: params })
+const { data: pageData, status } = await useAPI<PaginatedArray<ReuseV2>>('/api/2/reuses/', { lazy: true, query: params })
 
-function getCsvUrl(reuse: Reuse) {
+function getCsvUrl(reuse: ReuseV2) {
   return `${config.public.metricsApi}/api/reuses/data/csv/?reuse_id__exact=${reuse.id}&metric_month__sort=asc`
 }
 

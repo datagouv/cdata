@@ -1,9 +1,7 @@
-import type { Dataservice, Dataset, DatasetV2, Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
+import type { Dataservice, Dataset, DatasetV2, Reuse, ReuseTopic, ReuseType, ReuseV2 } from '@datagouv/components-next'
 import type { DatasetSuggest, NewReuseForApi, ReuseForm } from '~/types/types'
 
-export const reusesXFields = 'data{archived,deleted,featured,id,owner,organization,metrics,created_at,last_modified,title,slug,page,description,type,url,image,image_thumbnail},page,page_size,total'
-
-export function getReuseAdminUrl(reuse: Reuse): string {
+export function getReuseAdminUrl(reuse: Reuse | ReuseV2): string {
   return `/admin/reuses/${reuse.id}`
 }
 

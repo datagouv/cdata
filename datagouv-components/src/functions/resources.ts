@@ -105,14 +105,29 @@ export const getResourceLabel = (type: ResourceType, count?: number) => {
       }
       return t('Fichiers principaux')
     case 'documentation':
+      if (typeof count === 'number') {
+        return t('Aucun fichier de documentation | 1 fichier de documentation | {n} fichiers de documentation', count)
+      }
       return t('Documentation')
     case 'update':
+      if (typeof count === 'number') {
+        return t('Aucune mise à jour | 1 mise à jour | {n} mises à jour', count)
+      }
       return t('Mise à jour')
     case 'api':
+      if (typeof count === 'number') {
+        return t('Aucune API | 1 API | {n} API', count)
+      }
       return t('API')
     case 'code':
+      if (typeof count === 'number') {
+        return t('Aucun fichier de code source | 1 fichier de code source | {n} fichiers de code source', count)
+      }
       return t('Code source')
     case 'other':
+      if (typeof count === 'number') {
+        return t('Aucun autre fichier | 1 autre fichier | {n} autres fichiers', count)
+      }
       return t('Autre')
   }
 }
@@ -150,6 +165,40 @@ export function getResourceFilesize(resource: Resource): null | number {
   if ('analysis:content-length' in resource.extras) return resource.extras['analysis:content-length'] as number
 
   return null
+}
+
+// Parsing errors are stored as `<step>:<message>`, where `<step>` names the
+// analysis step that failed (e.g. `pmtiles_export`, `geojson_export`).
+
+/** The analysis step that failed, or null when there is no parsing error. */
+export function getParsingErrorStep(resource: Resource): string | null {
+  const error = resource.extras['analysis:parsing:error']
+  if (typeof error !== 'string' || !error) return null
+  const [step] = error.split(':', 1)
+  return step ?? null
+}
+
+/** The parsing error message without its `<step>:` prefix, or null when there is none. */
+export function getParsingErrorMessage(resource: Resource): string | null {
+  const error = resource.extras['analysis:parsing:error']
+  if (typeof error !== 'string' || !error) return null
+  const colon = error.indexOf(':')
+  return colon === -1 ? error : error.slice(colon + 1)
+}
+
+// Geo/format export steps run *after* the tabular table has been built, so a
+// failure here (e.g. a huge geometry timing out the pmtiles export) leaves the
+// tabular data fully usable and must not disable the tabular explorer.
+const NON_TABULAR_PARSING_ERROR_STEPS = ['pmtiles_export', 'geojson_export']
+
+/**
+ * Whether the resource's parsing error prevents reading its tabular data.
+ * Only errors from the tabular parsing itself are fatal; downstream geo/format
+ * export failures are not.
+ */
+export function hasTabularParsingError(resource: Resource): boolean {
+  const step = getParsingErrorStep(resource)
+  return step !== null && !NON_TABULAR_PARSING_ERROR_STEPS.includes(step)
 }
 
 type CorsStatus = 'allowed' | 'blocked' | 'unknown'

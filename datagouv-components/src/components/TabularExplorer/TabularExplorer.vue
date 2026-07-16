@@ -597,6 +597,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, ref, watch, useTemplateRef } from 'vue'
 import { ofetch } from 'ofetch'
+import { useElementSize } from '@vueuse/core'
 import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
 import { Dialog, DialogPanel, DialogTitle, Popover, PopoverButton, PopoverPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import {
@@ -832,18 +833,43 @@ function redistributeColumnWidths() {
   columnWidths.value = widths
 }
 
-// Measure once both data and profile are ready (so the <thead> is rendered with
-// content-driven natural widths), then distribute.
+// Measure the natural widths once (the <th> must still be auto-sized) and
+// distribute them. No-op once measured or while no column is displayed.
+function ensureMeasured() {
+  if (Object.keys(naturalWidths.value).length > 0) return
+  if (displayedColumns.value.length === 0) return
+  measureNaturalWidths()
+  redistributeColumnWidths()
+}
+
+// Drive measurement and re-stretch off the container's reactive width
+// (`useElementSize` wraps a ResizeObserver and disconnects it on unmount). The
+// width goes 0 -> N once the table is laid out in the DOM, which is also when
+// the <thead> carries its content-driven natural widths: the first non-zero
+// width measures the stable base, later changes (window resize) only
+// redistribute it.
+const { width: containerWidth } = useElementSize(scrollContainerRef)
+
+watch(containerWidth, (width) => {
+  if (width === 0) return
+  if (Object.keys(naturalWidths.value).length === 0) {
+    ensureMeasured()
+  }
+  else {
+    redistributeColumnWidths()
+  }
+})
+
+// Fallback: re-run once columns appear if they weren't available when the
+// container was first sized (standalone usage where the profile resolves late).
 watch(
   () => [tableData.value !== null, displayedColumns.value.length] as const,
   async ([dataReady, colCount]) => {
     if (!dataReady || colCount === 0) return
     if (Object.keys(naturalWidths.value).length > 0) return
     await nextTick()
-    measureNaturalWidths()
-    redistributeColumnWidths()
+    ensureMeasured()
   },
-  { immediate: true },
 )
 
 // Re-stretch the remaining columns whenever the displayed set changes (columns

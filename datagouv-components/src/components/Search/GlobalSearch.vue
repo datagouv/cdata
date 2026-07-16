@@ -266,7 +266,7 @@
                       name="reuse"
                       :reuse="result"
                     >
-                      <ReuseHorizontalCard :reuse="(result as Reuse)" />
+                      <ReuseHorizontalCard :reuse="(result as ReuseV2)" />
                     </slot>
                   </template>
                   <template v-else-if="currentTypeConfig?.class === 'organizations'">
@@ -368,7 +368,7 @@ import type { AsyncDataRequestStatus } from '../../functions/api.types'
 import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
 import type { Organization } from '../../types/organizations'
-import type { Reuse } from '../../types/reuses'
+import type { ReuseV2 } from '../../types/reuses'
 import type { TopicV2 } from '../../types/topics'
 import type { GlobalSearchConfig, SearchResponseByClass, SearchType, SortOption, FacetItem } from '../../types/search'
 import { getDefaultGlobalSearchConfig } from '../../types/search'
