@@ -76,6 +76,7 @@
                 :key="theme"
                 type="teal"
                 size="sm"
+                :no-wrap="false"
               >
                 {{ theme }}
               </AdminBadge>
@@ -88,7 +89,7 @@
           <td>
             {{ record.fields.producteur || '-' }}
           </td>
-          <td class="whitespace-nowrap">
+          <td>
             <HvdStatutBadge
               :statut="record.fields.statut_telechargement"
               :url="record.fields.url_telechargement"
@@ -96,7 +97,7 @@
               :links-to-data="statutLinksToData(record.fields.statut_telechargement)"
             />
           </td>
-          <td class="whitespace-nowrap">
+          <td>
             <HvdStatutBadge
               :statut="record.fields.statut_api"
               :url="record.fields.url_api"
