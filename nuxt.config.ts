@@ -76,6 +76,8 @@ export default defineNuxtConfig({
       schemaValidataUrl: 'https://validata.fr',
       tabularApiUrl: 'https://tabular-api.data.gouv.fr',
       tabularApiDataserviceId: undefined,
+      cadaResourceId: undefined,
+      cadaDatasetUrl: 'https://www.data.gouv.fr/datasets/avis-et-conseils-de-la-cada',
 
       qualityDescriptionLength: 100,
       searchDebounce: 300,

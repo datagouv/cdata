@@ -63,6 +63,7 @@
            ExploreResourceView), so they line up with the resource title /
            download button above. Only the table itself goes edge-to-edge
            (via -mx-4 below). -->
+      <slot name="toolbar-top" />
       <div>
         <div class="flex items-center py-3 gap-2">
           <!-- Mobile: filter & sort button -->
@@ -373,7 +374,8 @@
             <tr
               v-for="(row, i) in allRows"
               :key="row.__id ?? i"
-              class="border-b border-gray-default even:bg-gray-lowest-2 hover:bg-gray-100"
+              class="border-b border-gray-default even:bg-gray-lowest-2 hover:bg-gray-100 cursor-pointer"
+              @click="emit('rowClick', row)"
             >
               <td
                 v-for="col in displayedColumns"
@@ -402,6 +404,7 @@
 
       <!-- Cell popover -->
       <TabularCellPopover
+        v-if="!props.disablePopover"
         v-model:cell="activeCell"
         v-model:filters="filters"
       />
@@ -426,8 +429,9 @@
         <div
           v-for="(row, i) in allRows"
           :key="row.__id ?? i"
-          class="border border-gray-default rounded-lg p-3 space-y-2"
+          class="border border-gray-default rounded-lg p-3 space-y-2 cursor-pointer"
           :class="i % 2 === 1 ? 'bg-gray-lowest-2' : 'bg-white'"
+          @click="emit('rowClick', row)"
         >
           <div
             v-for="col in mobileVisibleFields(i)"
@@ -633,6 +637,21 @@ const props = defineProps<{
   // the host's padding. Used on the standalone explore page where the table
   // should span the whole screen while the toolbar stays inside the container.
   fullBleed?: boolean
+  // When set, searches across multiple text columns using the Tabular API's
+  // or(...) parameter. Each text/varchar column gets a __contains filter.
+  // Note: combined via AND with any existing column-specific `contains` filters,
+  // so it acts as an additional narrowing constraint, not a replacement.
+  globalSearch?: string
+  // When true, clicking a cell does not open the popover. Use when row-click
+  // navigation is the primary interaction.
+  disablePopover?: boolean
+  // Initial filters applied on mount, e.g. { 'Administration': { contains: 'Ministère' } }.
+  // Used when navigating from the detail page badge with query params.
+  initialFilters?: Record<string, ColumnFilters>
+}>()
+
+const emit = defineEmits<{
+  rowClick: [row: TabularRow]
 }>()
 
 const { t } = useTranslation()
@@ -657,6 +676,10 @@ const dataUrl = computed(() =>
 // Sort & filter state
 const sort = ref<SortConfig | null>(null)
 const filters = ref<Record<string, ColumnFilters>>({})
+
+if (props.initialFilters) {
+  filters.value = { ...props.initialFilters }
+}
 
 const PAGE_SIZE = 50
 
@@ -687,6 +710,10 @@ const dataQuery = computed(() => {
     else if (filter.null === 'exclude') {
       q[`${col}__isnotnull`] = ''
     }
+  }
+  if (props.globalSearch && profileData.value?.profile) {
+    const textCols = allColumns.value.filter(c => getColumnType(c) === 'text')
+    q.or = '(' + textCols.map(c => c + '__contains.' + encodeURIComponent(props.globalSearch!)).join(',') + ')'
   }
   return q
 })
@@ -938,6 +965,7 @@ onUnmounted(() => {
 const activeCell = ref<CellInfo | null>(null)
 
 function onCellClick(col: string, value: unknown, event: MouseEvent) {
+  if (props.disablePopover) return
   const el = (event.target as HTMLElement).closest('[data-cell]') as HTMLElement | null
   if (!el) return
   if (activeCell.value && activeCell.value.element === el) {
@@ -961,7 +989,12 @@ const activeFilters = computed<ActiveFilter[]>(() => {
       parts.push(`= ${filter.in.join(', ')}`)
     }
     if (filter.exact != null) {
-      parts.push(`= ${filter.exact === 'true' ? t('Vrai') : t('Faux')}`)
+      if (getColumnType(col) === 'boolean') {
+        parts.push(`= ${filter.exact === 'true' ? t('Vrai') : t('Faux')}`)
+      }
+      else {
+        parts.push(`= ${filter.exact}`)
+      }
     }
     if (filter.contains) {
       parts.push(`${t('contient')} "${filter.contains}"`)
