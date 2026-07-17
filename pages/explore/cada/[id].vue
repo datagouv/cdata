@@ -18,25 +18,25 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2">
           <div class="mb-6">
-            <h1 class="text-xl font-bold text-gray-900 mb-1">
+            <h1 class="text-2xl font-extrabold text-gray-title mb-2">
               {{ advice.Type }} {{ advice['Numéro de dossier'] }}
             </h1>
-            <p class="text-sm text-gray-500">
+            <p class="text-sm text-gray-medium">
               {{ $t('Séance du') }} {{ formatDate(advice['Séance']) }}
             </p>
           </div>
 
           <div class="mb-6">
-            <p class="text-gray-800 text-sm leading-relaxed">
+            <p class="text-gray-plain text-sm">
               {{ advice.Objet }}
             </p>
           </div>
 
           <div class="border-t pt-6">
-            <h2 class="font-semibold text-gray-700 text-sm mb-3">
+            <h2 class="text-sm font-bold uppercase mb-3">
               {{ $t('Avis complet') }}
             </h2>
-            <div class="text-gray-800 whitespace-pre-wrap text-sm leading-relaxed">
+            <div class="text-gray-plain whitespace-pre-wrap text-sm">
               {{ advice.Avis }}
             </div>
           </div>
@@ -48,14 +48,14 @@
               color="secondary"
               size="sm"
             >
-              {{ $t('Signaler un défaut d\u2019anonymisation') }}
+              {{ $t('Signaler un défaut d’anonymisation') }}
             </BrandedButton>
           </div>
         </div>
 
         <aside class="space-y-4">
-          <div class="bg-gray-50 rounded-lg p-4">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+          <div class="bg-gray-100 rounded-lg p-4">
+            <h3 class="text-sm text-gray-500 uppercase mb-2">
               {{ $t('Administration') }}
             </h3>
             <CdataLink
@@ -66,8 +66,8 @@
             </CdataLink>
           </div>
 
-          <div class="bg-gray-50 rounded-lg p-4">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+          <div class="bg-gray-100 rounded-lg p-4">
+            <h3 class="text-sm text-gray-500 uppercase mb-2">
               {{ $t('Type de consultation') }}
             </h3>
             <CdataLink
@@ -78,9 +78,9 @@
             </CdataLink>
           </div>
 
-          <div class="bg-gray-50 rounded-lg p-4">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-              {{ $t('Th\u00e8mes') }}
+          <div class="bg-gray-100 rounded-lg p-4">
+            <h3 class="text-sm text-gray-500 uppercase mb-2">
+              {{ $t('Thèmes') }}
             </h3>
             <div class="flex flex-wrap gap-1.5">
               <CdataLink
@@ -94,8 +94,8 @@
             </div>
           </div>
 
-          <div class="bg-gray-50 rounded-lg p-4">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+          <div class="bg-gray-100 rounded-lg p-4">
+            <h3 class="text-sm text-gray-500 uppercase mb-2">
               {{ $t('Conclusions') }}
             </h3>
             <div class="flex flex-wrap gap-1.5">
@@ -113,9 +113,9 @@
 
           <div
             v-if="advice['Mots clés']"
-            class="bg-gray-50 rounded-lg p-4"
+            class="bg-gray-100 rounded-lg p-4"
           >
-            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <h3 class="text-sm text-gray-500 uppercase mb-2">
               {{ $t('Mots-clés') }}
             </h3>
             <div class="flex flex-wrap gap-1.5">
@@ -135,10 +135,10 @@
 
     <div
       v-else-if="!RESOURCE_ID"
-      class="bg-gray-50 rounded-lg p-8 text-center"
+      class="bg-gray-100 rounded-lg p-8 text-center"
     >
       <ClientOnly>
-        <p class="text-gray-600">
+        <p class="text-gray-medium">
           {{ $t('La base des avis CADA n\'est pas configurée.') }}
         </p>
       </ClientOnly>
@@ -146,17 +146,17 @@
 
     <div
       v-else
-      class="bg-gray-50 rounded-lg p-8 text-center"
+      class="bg-gray-100 rounded-lg p-8 text-center"
     >
-      <h1 class="text-xl font-bold text-gray-900 mb-2">
+      <h1 class="text-2xl font-extrabold text-gray-title mb-2">
         {{ $t('Avis non trouvé') }}
       </h1>
-      <p class="text-gray-600">
+      <p class="text-gray-medium">
         {{ $t('L\'avis demandé n\'existe pas ou a été supprimé.') }}
       </p>
       <CdataLink
         to="/explore/cada"
-        class="text-blue-600 hover:underline mt-4 inline-block"
+        class="link mt-4"
       >
         {{ $t('Retour aux résultats') }}
       </CdataLink>
@@ -221,8 +221,8 @@ const partLabel = computed(() => {
 })
 
 const themeParts = computed(() => {
-  if (!advice.value || !advice.value['Th\u00e8me et sous th\u00e8me']) return []
-  return advice.value['Th\u00e8me et sous th\u00e8me'].split(/,\s*/).map(s => s.trim()).filter(Boolean)
+  if (!advice.value || !advice.value['Thème et sous thème']) return []
+  return advice.value['Thème et sous thème'].split(/,\s*/).map(s => s.trim()).filter(Boolean)
 })
 
 const meanings = computed(() => {
@@ -258,7 +258,7 @@ function formatDate(dateStr: string): string {
 
 function meaningClass(meaning: string): string {
   const lower = meaning.toLowerCase()
-  if (lower.includes('d\u00e9favorable') || lower.includes('refus')) return 'fr-badge--error'
+  if (lower.includes('défavorable') || lower.includes('refus')) return 'fr-badge--error'
   if (lower.includes('favorable') || lower.includes('recommande')) return 'fr-badge--success'
   return 'fr-badge--warning'
 }
