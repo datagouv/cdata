@@ -374,19 +374,33 @@
             <tr
               v-for="(row, i) in allRows"
               :key="row.__id ?? i"
-              class="border-b border-gray-default even:bg-gray-lowest-2 hover:bg-gray-100 cursor-pointer"
-              @click="emit('rowClick', row)"
+              class="border-b border-gray-default even:bg-gray-lowest-2 hover:bg-gray-100"
             >
               <td
                 v-for="col in displayedColumns"
                 :key="col"
                 data-cell
-                class="p-2 align-middle whitespace-nowrap border-r border-gray-default last:border-r-0 overflow-hidden cursor-pointer hover:bg-gray-200/50"
-                :class="{ 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' }"
+                class="p-2 align-middle whitespace-nowrap border-r border-gray-default last:border-r-0 overflow-hidden"
+                :class="[
+                  !props.disablePopover && 'cursor-pointer',
+                  { 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' },
+                ]"
                 :style="columnWidths[col] ? { maxWidth: columnWidths[col] + 'px' } : { maxWidth: '300px' }"
                 @click="onCellClick(col, row[col], $event)"
               >
+                <a
+                  v-if="linkColumns?.has(col)"
+                  :href="getRowHref(row) ?? ''"
+                  class="link"
+                >
+                  <TabularCell
+                    :value="row[col]"
+                    :column-type="getColumnType(col)"
+                    :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
+                  />
+                </a>
                 <TabularCell
+                  v-else
                   :value="row[col]"
                   :column-type="getColumnType(col)"
                   :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
@@ -429,9 +443,8 @@
         <div
           v-for="(row, i) in allRows"
           :key="row.__id ?? i"
-          class="border border-gray-default rounded-lg p-3 space-y-2 cursor-pointer"
+          class="border border-gray-default rounded-lg p-3 space-y-2"
           :class="i % 2 === 1 ? 'bg-gray-lowest-2' : 'bg-white'"
-          @click="emit('rowClick', row)"
         >
           <div
             v-for="col in mobileVisibleFields(i)"
@@ -454,7 +467,19 @@
               class="min-w-0 pl-4 cursor-pointer"
               @click="onCellClick(col, row[col], $event)"
             >
+              <a
+                v-if="linkColumns?.has(col)"
+                :href="getRowHref(row) ?? ''"
+              >
+                <TabularCell
+                  :value="row[col]"
+                  :column-type="getColumnType(col)"
+                  :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
+                  compact
+                />
+              </a>
               <TabularCell
+                v-else
                 :value="row[col]"
                 :column-type="getColumnType(col)"
                 :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
@@ -648,11 +673,20 @@ const props = defineProps<{
   // Initial filters applied on mount, e.g. { 'Administration': { contains: 'Ministère' } }.
   // Used when navigating from the detail page badge with query params.
   initialFilters?: Record<string, ColumnFilters>
+  // When set, renders <a> tags inside the specified column cells for native
+  // browser UX (hover URL, ctrl+click, middle-click).
+  rowHref?: { columns: string[], href: (row: TabularRow) => string }
 }>()
 
-const emit = defineEmits<{
-  rowClick: [row: TabularRow]
-}>()
+const rowHrefFn = computed(() => props.rowHref?.href ?? null)
+
+function getRowHref(row: TabularRow): string | null {
+  return rowHrefFn.value?.(row) ?? null
+}
+
+const linkColumns = computed(() =>
+  props.rowHref ? new Set(props.rowHref.columns) : null,
+)
 
 const { t } = useTranslation()
 const config = useComponentsConfig()

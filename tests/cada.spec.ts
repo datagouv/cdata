@@ -32,17 +32,17 @@ test('CADA about section exists on index page', async ({ page }) => {
   await expect(page.getByText('Codifiées dans le')).toBeVisible()
 })
 
-test('clicking a row navigates to the CADA detail page', async ({ page }) => {
+test('clicking the Numéro de dossier link navigates to the CADA detail page', async ({ page }) => {
   await page.goto('/explore/cada')
   await page.waitForLoadState('networkidle')
 
   // Wait for rows to load
   await expect(page.getByText('Lignes').first()).toBeVisible({ timeout: 30000 })
 
-  // Click the first data row
-  const firstRow = page.locator('tr.cursor-pointer').first()
-  await firstRow.waitFor({ timeout: 30000 })
-  await firstRow.click()
+  // Click the first Numéro de dossier link (rendered as an <a> by rowHref)
+  const dossierLink = page.locator('table a.link').first()
+  await dossierLink.waitFor({ timeout: 30000 })
+  await dossierLink.click()
 
   // Should navigate to /explore/cada/<numero>
   await page.waitForURL(/\/explore\/cada\/\d+/, { timeout: 30000 })

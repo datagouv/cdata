@@ -30,7 +30,7 @@
         disable-popover
         :global-search="currentSearch"
         :initial-filters="initialFilters"
-        @row-click="(row: any) => navigateTo(`/explore/cada/${row['Numéro de dossier']}`)"
+        :row-href="{ columns: ['Numéro de dossier'], href: (row: any) => `/explore/cada/${row['Numéro de dossier']}` }"
       >
         <template #toolbar-top>
           <div class="py-3">
@@ -46,7 +46,9 @@
                 class="px-4 py-2 bg-new-primary text-white text-sm rounded hover:bg-new-primary-hover"
                 @click="applySearch"
               >
-                {{ $t('Rechercher') }}
+                <RiSearchLine class="size-4 md:hidden" />
+                <span class="hidden md:inline">{{ $t('Rechercher') }}</span>
+                <span class="sr-only md:hidden">{{ $t('Rechercher') }}</span>
               </button>
             </div>
           </div>
@@ -177,6 +179,7 @@
 
 <script setup lang="ts">
 import { TabularExplorer, provideTabularProfile } from '@datagouv/components-next'
+import { RiSearchLine } from '@remixicon/vue'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
