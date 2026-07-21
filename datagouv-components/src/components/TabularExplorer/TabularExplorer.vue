@@ -643,7 +643,7 @@ import { useFetch } from '../../functions/api'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { injectTabularProfile } from '../../composables/useTabularProfile'
-import { buildTypeConfig, buildFormatConfig, humanizeFormat, GENERIC_FORMATS, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy, resolveColumnType } from '../../functions/tabular'
+import { buildTypeConfig, buildFormatConfig, humanizeFormat, GENERIC_FORMATS, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy, resolveColumnType, buildGlobalSearchConditions } from '../../functions/tabular'
 import ClientOnly from '../ClientOnly.vue'
 import SimpleBanner from '../SimpleBanner.vue'
 import BrandedButton from '../BrandedButton.vue'
@@ -662,8 +662,10 @@ const props = defineProps<{
   // the host's padding. Used on the standalone explore page where the table
   // should span the whole screen while the toolbar stays inside the container.
   fullBleed?: boolean
-  // When set, searches across multiple text columns using the Tabular API's
-  // or(...) parameter. Each text/varchar column gets a __contains filter.
+  // When set, searches across multiple columns using the Tabular API's or(...)
+  // parameter. Text and categorical columns get a __contains filter; number
+  // columns get a __exact filter (since __contains is not supported for numbers
+  // by the API). Date and boolean columns are excluded.
   // Note: combined via AND with any existing column-specific `contains` filters,
   // so it acts as an additional narrowing constraint, not a replacement.
   globalSearch?: string
@@ -746,8 +748,8 @@ const dataQuery = computed(() => {
     }
   }
   if (props.globalSearch && profileData.value?.profile) {
-    const textCols = allColumns.value.filter(c => getColumnType(c) === 'text')
-    q.or = '(' + textCols.map(c => c + '__contains.' + encodeURIComponent(props.globalSearch!)).join(',') + ')'
+    const conditions = buildGlobalSearchConditions(allColumns.value, getColumnType, props.globalSearch)
+    q.or = '(' + conditions.join(',') + ')'
   }
   return q
 })

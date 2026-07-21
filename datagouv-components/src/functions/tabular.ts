@@ -158,6 +158,30 @@ export function useFormatTabular() {
 const TRUTHY_VALUES = ['true', '1', 'oui', 'yes']
 const FALSY_VALUES = ['false', '0', 'non', 'no']
 
+/**
+ * Builds the OR conditions for global search across all columns.
+ * Text and categorical columns get a `__contains` filter; number columns
+ * get a `__exact` filter only when the search value is numeric.
+ * Date and boolean columns are excluded.
+ */
+export function buildGlobalSearchConditions(
+  allColumns: string[],
+  getColumnType: (col: string) => ColumnType,
+  searchValue: string,
+): string[] {
+  const conditions: string[] = []
+  for (const col of allColumns) {
+    const type = getColumnType(col)
+    if (type === 'text' || type === 'categorical') {
+      conditions.push(col + '__contains.' + encodeURIComponent(searchValue))
+    }
+    else if (type === 'number' && searchValue.length > 0 && isFinite(Number(searchValue))) {
+      conditions.push(col + '__exact.' + encodeURIComponent(searchValue))
+    }
+  }
+  return conditions
+}
+
 export function isTruthy(value: unknown): boolean {
   if (typeof value === 'boolean') return value
   if (typeof value === 'string') return TRUTHY_VALUES.includes(value.toLowerCase())

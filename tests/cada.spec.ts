@@ -50,3 +50,45 @@ test('clicking the Numéro de dossier link navigates to the CADA detail page', a
   // Confirm detail page content loaded
   await expect(page.locator('h1').first()).toBeVisible()
 })
+
+test.describe('global search', () => {
+  test('searching by exact dossier number finds the correct row', async ({ page }) => {
+    await page.goto('/explore/cada')
+    await page.waitForLoadState('networkidle')
+
+    // Wait for table to load
+    await expect(page.getByText('Lignes').first()).toBeVisible({ timeout: 30000 })
+
+    // Search by a known dossier number
+    const searchInput = page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')
+    await searchInput.fill('20112327')
+    await searchInput.press('Enter')
+
+    // Wait for results to reload
+    await page.waitForTimeout(2000)
+
+    // The exact dossier should be in the results
+    await expect(page.locator('table').getByText('20 112 327').first()).toBeVisible()
+  })
+
+  test('searching by a non-numeric term does not cause API errors', async ({ page }) => {
+    await page.goto('/explore/cada')
+    await page.waitForLoadState('networkidle')
+
+    // Wait for table to load
+    await expect(page.getByText('Lignes').first()).toBeVisible({ timeout: 30000 })
+
+    // Search with a word — if __exact were incorrectly applied to number columns
+    // the Tabular API would return a 500 error. The base test fixture catches console errors.
+    const searchInput = page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')
+    await searchInput.fill('cheval')
+    await searchInput.press('Enter')
+
+    // Wait for the query to complete — no console error = no API crash
+    await page.waitForTimeout(2000)
+
+    // Results may appear (text/categorical matches) — that's fine
+    const hasRows = page.locator('table a.link').first()
+    await expect(hasRows).toBeVisible({ timeout: 10000 })
+  })
+})
