@@ -128,7 +128,7 @@ function filterByValue() {
   const val = String(cell.value.value ?? '')
   const col = cell.value.column
   const existing = filters.value[col] ?? {}
-  if (cell.value.columnType === 'categorical' || cell.value.columnType === 'text' || cell.value.columnType === 'date') {
+  if (cell.value.columnType === 'categorical' || cell.value.columnType === 'text' || cell.value.columnType === 'date' || cell.value.columnType === 'year') {
     const current = existing.in ?? []
     if (!current.includes(val)) {
       filters.value = { ...filters.value, [col]: { ...existing, in: [...current, val] } }

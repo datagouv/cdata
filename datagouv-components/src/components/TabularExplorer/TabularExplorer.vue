@@ -383,7 +383,7 @@
                 class="p-2 align-middle whitespace-nowrap border-r border-gray-default last:border-r-0 overflow-hidden"
                 :class="[
                   !props.disablePopover && 'cursor-pointer',
-                  { 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' },
+                  { 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' || getColumnType(col) === 'year' },
                 ]"
                 :style="columnWidths[col] ? { maxWidth: columnWidths[col] + 'px' } : { maxWidth: '300px' }"
                 @click="onCellClick(col, row[col], $event)"
@@ -397,6 +397,7 @@
                     :value="row[col]"
                     :column-type="getColumnType(col)"
                     :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
+                    :no-number-format="props.noFormatColumns?.includes(col)"
                   />
                 </a>
                 <TabularCell
@@ -404,6 +405,7 @@
                   :value="row[col]"
                   :column-type="getColumnType(col)"
                   :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
+                  :no-number-format="props.noFormatColumns?.includes(col)"
                 />
               </td>
             </tr>
@@ -476,6 +478,7 @@
                   :column-type="getColumnType(col)"
                   :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
                   compact
+                  :no-number-format="props.noFormatColumns?.includes(col)"
                 />
               </a>
               <TabularCell
@@ -484,6 +487,7 @@
                 :column-type="getColumnType(col)"
                 :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
                 compact
+                :no-number-format="props.noFormatColumns?.includes(col)"
               />
             </div>
           </div>
@@ -678,6 +682,9 @@ const props = defineProps<{
   // When set, renders <a> tags inside the specified column cells for native
   // browser UX (hover URL, ctrl+click, middle-click).
   rowHref?: { columns: string[], href: (row: TabularRow) => string }
+  // Columns listed here render their values raw (no number formatting).
+  // Useful for identifier columns.
+  noFormatColumns?: string[]
 }>()
 
 const rowHrefFn = computed(() => props.rowHref?.href ?? null)

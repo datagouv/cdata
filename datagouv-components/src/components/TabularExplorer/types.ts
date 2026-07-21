@@ -62,7 +62,7 @@ export type TabularTopValue = {
   count: number
 }
 
-export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean'
+export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean' | 'year'
 
 export type ColumnFilters = {
   in?: string[]

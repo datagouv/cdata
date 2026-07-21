@@ -68,7 +68,7 @@ test.describe('global search', () => {
     await page.waitForTimeout(2000)
 
     // The exact dossier should be in the results
-    await expect(page.locator('table').getByText('20 112 327').first()).toBeVisible()
+    await expect(page.locator('table').getByText('20112327').first()).toBeVisible()
   })
 
   test('searching by a non-numeric term does not cause API errors', async ({ page }) => {

@@ -42,12 +42,13 @@ export function buildTypeConfig(t: TranslationFunction): Record<ColumnType, Type
     text: { icon: RiText, label: t('Texte') },
     date: { icon: RiCalendarLine, label: t('Date') },
     boolean: { icon: RiCheckboxLine, label: t('Booléen') },
+    year: { icon: RiCalendarLine, label: t('Année') },
   }
 }
 
 export function resolveColumnType(colInfo: { python_type: string, format?: string }, isCategorical: boolean): ColumnType {
+  if (colInfo.format === 'year') return 'year'
   if (['int', 'float'].includes(colInfo.python_type)) return 'number'
-  if (colInfo.format === 'year') return 'date'
   if (['date', 'datetime'].includes(colInfo.python_type)) return 'date'
   if (colInfo.python_type === 'bool') return 'boolean'
   if (isCategorical) return 'categorical'

@@ -40,11 +40,9 @@ describe('resolveColumnType', () => {
     expect(resolveColumnType({ python_type: 'float' }, false)).toBe('number')
   })
 
-  it('resolves year format on string as date', () => {
-    // The code checks python_type before format: int is caught first.
-    // Only non-int/non-float text types with year format become 'date'.
-    expect(resolveColumnType({ python_type: 'int', format: 'year' }, false)).toBe('number')
-    expect(resolveColumnType({ python_type: 'string', format: 'year' }, false)).toBe('date')
+  it('resolves year format as year regardless of python_type', () => {
+    expect(resolveColumnType({ python_type: 'int', format: 'year' }, false)).toBe('year')
+    expect(resolveColumnType({ python_type: 'string', format: 'year' }, false)).toBe('year')
   })
 
   it('resolves date/datetime as date', () => {
@@ -73,11 +71,11 @@ describe('global search query conditions', () => {
   ]
 
   function typeForCadaCol(col: string): ColumnType {
-    const map: Record<string, string> = {
+    const map: Record<string, ColumnType> = {
       'Numéro de dossier': 'number',
       'Administration': 'text',
       'Type': 'categorical',
-      'Année': 'number',
+      'Année': 'year',
       'Séance': 'date',
       'Objet': 'text',
       'Thème et sous thème': 'categorical',
@@ -86,7 +84,7 @@ describe('global search query conditions', () => {
       'Partie': 'categorical',
       'Avis': 'text',
     }
-    return (map[col] ?? 'text') as ColumnType
+    return map[col] ?? 'text'
   }
 
   it('adds __contains for text and categorical columns, __exact for number columns with numeric search', () => {
@@ -94,7 +92,6 @@ describe('global search query conditions', () => {
 
     // Number columns get __exact
     expect(conditions).toContain('Numéro de dossier__exact.19950248')
-    expect(conditions).toContain('Année__exact.19950248')
 
     // Text columns get __contains
     expect(conditions).toContain('Administration__contains.19950248')
@@ -108,11 +105,12 @@ describe('global search query conditions', () => {
     expect(conditions).toContain('Thème et sous thème__contains.19950248')
     expect(conditions).toContain('Partie__contains.19950248')
 
-    // Date and boolean columns are excluded
+    // Date, year and boolean columns are excluded
     expect(conditions.find(c => c.startsWith('Séance__'))).toBeUndefined()
+    expect(conditions.find(c => c.startsWith('Année__'))).toBeUndefined()
 
-    // All 11 columns: 2 number (__exact) + 5 text (__contains) + 3 categorical (__contains) + 1 date (excluded)
-    expect(conditions).toHaveLength(10)
+    // All 11 columns: 1 number (__exact) + 5 text (__contains) + 3 categorical (__contains) + 1 date + 1 year (excluded)
+    expect(conditions).toHaveLength(9)
   })
 
   it('skips __exact on number columns for non-numeric search', () => {

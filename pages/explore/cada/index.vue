@@ -31,6 +31,7 @@
         :global-search="currentSearch"
         :initial-filters="initialFilters"
         :row-href="{ columns: ['Numéro de dossier'], href: (row: any) => `/explore/cada/${row['Numéro de dossier']}` }"
+        :no-format-columns="['Numéro de dossier']"
       >
         <template #toolbar-top>
           <div class="py-3">
