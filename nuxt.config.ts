@@ -104,6 +104,18 @@ export default defineNuxtConfig({
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
 
+      // Grist endpoint for the "Suivi des ouvertures" table on /suivi-de-publication/engagements-et-demandes.
+      // Provided through NUXT_PUBLIC_OUVERTURES_GRIST_BASE_URL / NUXT_PUBLIC_OUVERTURES_GRIST_TABLE
+      // (see .env) so the Grist document URL is not committed.
+      ouverturesGristBaseUrl: '',
+      ouverturesGristTable: '',
+      // Grist endpoint for the "Hvd" table on /suivi-de-publication/donnees-de-forte-valeur.
+      // Provided through NUXT_PUBLIC_HVD_GRIST_BASE_URL / NUXT_PUBLIC_HVD_GRIST_TABLE
+      // (see .env) so the Grist document URL is not committed.
+      hvdGristBaseUrl: '',
+      hvdGristTable: '',
+      ouverturesHvdUrl: '/suivi-de-publication/donnees-de-forte-valeur',
+
       guideDatasets: 'https://guides.data.gouv.fr/jeux-de-donnees',
       guideReuses: 'https://guides.data.gouv.fr/reutilisations',
       guideDataservices: 'https://guides.data.gouv.fr/api',
