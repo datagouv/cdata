@@ -135,12 +135,11 @@ export async function apiFetchAll<T>(
      */
 
   const results: T[] = []
-  let nextPage: string | null = null
 
   // Initial query
   let response = await api<PaginatedArray<T>>(baseUrl)
   results.push(...response.data)
-  nextPage = response.next_page
+  let nextPage: string | null = response.next_page
 
   // Pagination
   while (nextPage) {
