@@ -69,7 +69,6 @@
     "nuxt-og-image": "^6.7.2",
     "ofetch": "^1.5.1",
     "papaparse": "^5.5.4",
-    "sharp": "^0.34.5",
     "smol-toml": "^1.7.0",
     "sortablejs": "^1.15.7",
     "tabulator-tables": "^6.5.2",
