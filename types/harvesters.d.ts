@@ -90,7 +90,7 @@ export type HarvesterSource = Owned & {
   validation: HarvesterValidation
   last_job: HarvesterJob | null
   deleted: string | null
-  schedule: string
+  schedule: string | null
   permissions: HarvesterSourcePermissions
 }
 

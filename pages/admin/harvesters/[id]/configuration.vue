@@ -108,9 +108,11 @@ const { data: harvester, refresh } = await useAPI<HarvesterSource>(sourceUrl, { 
 
 const loading = ref(false)
 
+// The form is the user's working copy: it is built from the source once, then lives its
+// own life until it is saved.
 const harvesterForm = ref<HarvesterForm | null>(null)
 watchEffect(() => {
-  if (!harvester.value) return
+  if (!harvester.value || harvesterForm.value) return
   harvesterForm.value = harvesterToForm(harvester.value)
 })
 
@@ -121,12 +123,17 @@ const save = async () => {
   try {
     loading.value = true
 
-    await $api(`/api/1/harvest/source/${harvester.value.id}`, {
+    // `harvester.schedule` is null when the source isn't scheduled, the form holds ''.
+    const scheduleChanged = (harvester.value.schedule || '') !== harvesterForm.value.schedule
+
+    // `harvester` is shared with the parent page, which displays the source around the
+    // tabs, and is only fetched once per session.
+    harvester.value = await $api<HarvesterSource>(`/api/1/harvest/source/${harvester.value.id}`, {
       method: 'PUT',
       body: JSON.stringify(harvesterToApi(harvesterForm.value)),
     })
 
-    if (harvester.value.schedule !== harvesterForm.value.schedule) {
+    if (scheduleChanged) {
       if (harvesterForm.value.schedule) {
         await $api(`/api/1/harvest/source/${harvester.value.id}/schedule`, {
           method: 'POST',
@@ -137,9 +144,8 @@ const save = async () => {
         await $api(`/api/1/harvest/source/${harvester.value.id}/schedule`, { method: 'DELETE' })
       }
 
-      // Update harvester.value with the new schedule
-      // It could be better to be able to do `harvester.value = await $api…` above since
-      // the API returns the updated value…
+      // The unschedule endpoint answers a 204 with an empty body, so the source is fetched
+      // back instead of reusing the schedule response.
       await refresh()
     }
 
