@@ -167,6 +167,13 @@ export function getResourceFilesize(resource: Resource): null | number {
   return null
 }
 
+const IMAGE_PREVIEW_FORMATS = ['png', 'jpg', 'jpeg', 'jpe', 'gif', 'webp'] as const
+
+export function isImagePreviewFormat(format: string | undefined | null): boolean {
+  if (!format) return false
+  return IMAGE_PREVIEW_FORMATS.includes(format.toLowerCase() as typeof IMAGE_PREVIEW_FORMATS[number])
+}
+
 // Parsing errors are stored as `<step>:<message>`, where `<step>` names the
 // analysis step that failed (e.g. `pmtiles_export`, `geojson_export`).
 
