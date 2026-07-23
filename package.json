@@ -54,7 +54,7 @@
     "@rollup/pluginutils": "^5.4.0",
     "@sentry/nuxt": "^10.66.0",
     "@tailwindcss/vite": "^4.3.3",
-    "@takumi-rs/core": "^1.8.7",
+    "@takumi-rs/core": "^2.3.0",
     "@types/papaparse": "^5.5.2",
     "@types/tabulator-tables": "^6.3.6",
     "@vueuse/core": "^14.3.0",
