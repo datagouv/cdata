@@ -5,6 +5,34 @@ export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:70
 
 export type ApiDataset = { id: string, title: string }
 export type ApiResource = { id: string, title: string, latest: string, url: string }
+export type ApiHarvestSource = { id: string, name: string, backend: string, schedule: string | null, config: Record<string, unknown> }
+
+export async function createHarvestSource(request: APIRequestContext, name: string, backend: string, config: Record<string, unknown> = {}): Promise<ApiHarvestSource> {
+  const me = await request.get(`${API_BASE}/api/1/me/`)
+  if (!me.ok()) {
+    throw new Error(`Failed to identify the current user: ${me.status()} ${(await me.text()).slice(0, 300)}`)
+  }
+
+  const response = await request.post(`${API_BASE}/api/1/harvest/sources/`, {
+    data: {
+      name,
+      backend,
+      url: 'https://example.com/csw',
+      owner: (await me.json()).id,
+      config,
+    },
+  })
+  if (!response.ok()) {
+    throw new Error(`Failed to create harvest source "${name}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+  return await response.json()
+}
+
+export async function deleteHarvestSources(request: APIRequestContext, ids: Array<string>): Promise<void> {
+  for (const id of ids.splice(0)) {
+    await request.delete(`${API_BASE}/api/1/harvest/source/${id}/`)
+  }
+}
 
 export async function createDataset(request: APIRequestContext, title: string, description: string): Promise<ApiDataset> {
   const response = await request.post(`${API_BASE}/api/1/datasets/`, {
