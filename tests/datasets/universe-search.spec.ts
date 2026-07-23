@@ -21,7 +21,7 @@ async function gotoAndWait(page: Page, url = PAGE) {
   await mockUniverseAPIs(page)
   await page.goto(url)
   await page.waitForLoadState('networkidle')
-  const fieldset = page.locator('fieldset').filter({ hasText: 'Univers' })
+  const fieldset = page.locator('fieldset:has(input[name="search-universe"])')
   await expect(fieldset.locator('input[type="radio"]').first()).toBeVisible()
   return fieldset
 }
@@ -55,7 +55,7 @@ test('switching back to first universe removes ?universe= from URL', async ({ pa
 
 test('deep link to second universe pre-selects it', async ({ page }) => {
   await gotoAndWait(page, `${PAGE}?universe=${UNIVERSE_2.id}`)
-  const fieldset = page.locator('fieldset').filter({ hasText: 'Univers' })
+  const fieldset = page.locator('fieldset:has(input[name="search-universe"])')
   await expect(fieldset.getByRole('radio', { name: UNIVERSE_2.name })).toBeChecked()
 })
 
@@ -86,7 +86,7 @@ test('search query persists across universe switch', async ({ page }) => {
 
 test('page resets to 1 when switching universe', async ({ page }) => {
   await gotoAndWait(page, `${PAGE}?page=3`)
-  const fieldset = page.locator('fieldset').filter({ hasText: 'Univers' })
+  const fieldset = page.locator('fieldset:has(input[name="search-universe"])')
   await fieldset.getByRole('radio', { name: UNIVERSE_2.name }).click({ force: true })
   await page.waitForURL(url => url.searchParams.get('universe') === UNIVERSE_2.id)
   expect(new URL(page.url()).searchParams.has('page')).toBeFalsy()

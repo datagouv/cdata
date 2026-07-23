@@ -620,10 +620,7 @@ watch(universeParam, (newKey, oldKey) => {
     const sameClassType = currentClass ? newUniverse.types.find(c => c.class === currentClass) : undefined
     currentType.value = configKey(sameClassType ?? newUniverse.types[0])
   }
-  const savedQ = q.value
-  resetFilters()
-  q.value = savedQ
-  flushQ()
+  resetFilters({ preserveQ: true })
   page.value = 1
 }, { flush: 'post' }) // post: let Vue finish patching the universe RadioGroup before secondary mutations trigger a new render
 
@@ -812,7 +809,7 @@ const hasFilters = computed(() => {
 
 const showForumLink = computed(() => (currentTypeConfig.value?.class === 'datasets' || currentTypeConfig.value?.class === 'dataservices') && !!componentsConfig.forumUrl)
 
-function resetFilters() {
+function resetFilters(options: { preserveQ?: boolean } = {}) {
   organizationId.value = undefined
   organizationType.value = undefined
   tag.value = undefined
@@ -831,8 +828,10 @@ function resetFilters() {
   for (const entry of customFilterRegistry.values()) {
     entry.ref.value = entry.defaultValue
   }
-  q.value = ''
-  flushQ()
+  if (!options.preserveQ) {
+    q.value = ''
+    flushQ()
+  }
 }
 
 const searchResults = computed(() => resultsMap[currentType.value]?.data.value)
