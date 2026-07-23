@@ -54,7 +54,7 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
       }
     }
 
-    // 3.5. Apply custom filter values. Concatenate into an array on collision
+    // 4. Apply custom filter values. Concatenate into an array on collision
     // so a custom filter mapped onto a built-in apiParam (e.g. theme → tag)
     // combines with an existing built-in value instead of overwriting it.
     // Pass the current type key so filters scoped to specific types are excluded
@@ -70,7 +70,7 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
       }
     }, currentTypeKey)
 
-    // 3.75. Universe topic: authoritative scope, overrides any user-set topic for supported types
+    // 5. Universe topic: authoritative scope, overrides any user-set topic for supported types
     if (universeTopic.value) {
       const cls = typeConfig?.class
       if (cls === 'datasets' || cls === 'dataservices') {
@@ -78,7 +78,7 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
       }
     }
 
-    // 4. Always include q, sort (if valid for this type), page, page_size
+    // 6. Always include q, sort (if valid for this type), page, page_size
     if (q.value) {
       params.q = q.value
     }
