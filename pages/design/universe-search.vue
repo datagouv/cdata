@@ -27,6 +27,7 @@
 <script setup lang="ts">
 import { GlobalSearch, defaultDatasetSortOptions, defaultReuseSortOptions } from '@datagouv/components-next'
 import type { TopicV2, TopicElement, DatasetSearchFilters, ReuseSearchFilters, PaginatedArray, UniverseConfig } from '@datagouv/components-next'
+import { RiGlobalLine } from '@remixicon/vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const { data: topicsData } = await useAPI<PaginatedArray<TopicV2>>('/api/2/topics/', {
@@ -66,6 +67,7 @@ watch(
       .map(({ topic }, i) => ({
         key: topic.id,
         name: topic.name,
+        icon: i === 0 ? RiGlobalLine : undefined,
         topicId: topic.id,
         types: [
           {
