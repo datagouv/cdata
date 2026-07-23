@@ -358,22 +358,11 @@ function getMissingConfigs(): HarvestBackend['extra_configs'] {
   })
 }
 
-watchEffect(() => {
-  // On config change:
-  // - initialize available features
-  if (backendInfo.value) {
-    form.value.features = backendInfo.value.features.reduce<Record<string, boolean>>(
-      (acc, feat) => {
-        acc[feat.key] = feat.key in form.value.features ? form.value.features[feat.key] : feat.default
-        return acc
-      },
-      {},
-    )
-  }
-  // - remove previous configs or filters not existing anymore (the backend fails if we send some unknown filters or config)
-  form.value.configs = form.value.configs.filter(({ key }) => !backendInfo.value || backendInfo.value.extra_configs.find(config => config.key === key))
-  form.value.filters = form.value.filters.filter(({ key }) => !backendInfo.value || backendInfo.value.filters.find(filter => filter.key === key))
-})
+// Sync as soon as the backend is known and not only on submit: the preview sends the form
+// as it stands, so it has to match what the screen shows at all times.
+watch(backendInfo, (backend) => {
+  if (backend) syncFormWithBackend(form.value, backend)
+}, { immediate: true })
 
 async function submit() {
   if (await validate()) {
