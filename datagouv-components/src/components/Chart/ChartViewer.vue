@@ -13,7 +13,8 @@ import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, Datas
 import { init, type ECharts as EChartsType } from 'echarts'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { summarize } from '../../functions/helpers'
-import type { Chart, XAxis, YAxis, XAxisForm, ChartForApi } from '../../types/visualizations'
+import { useFormatDate } from '../../functions/dates'
+import type { Chart, ColumnDefinition, ColumnsDefinition, XAxis, YAxis, XAxisForm, ChartForApi } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
 
 use([CanvasRenderer, LineChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent])
@@ -22,17 +23,26 @@ const props = defineProps<{
   chart: Chart | ChartForApi
   series: {
     data: Record<string, Array<Record<string, unknown>>>
-    columns: Record<string, Array<{ name: string, type: string }>>
+    columns: ColumnsDefinition
   }
 }>()
 
 const { locale } = useTranslation()
+const { formatDate } = useFormatDate()
 const chartContainer = ref<HTMLElement | null>(null)
 let echartsInstance: EChartsType | null = null
 
-function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' {
+function capture(): string | null {
+  return echartsInstance?.getDataURL() ?? null
+}
+
+defineExpose({ capture })
+
+// ECharts has a dedicated 'time' axis type for continuous date values.
+function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' | 'time' {
   if (!xAxis) return 'category'
-  return xAxis.type === 'continuous' ? 'value' : 'category'
+  if (xAxis.type !== 'continuous') return 'category'
+  return isDateAxis.value ? 'time' : 'value'
 }
 
 function buildYAxisFormatter(yAxis: YAxis): ((value: number) => string) | undefined {
@@ -43,6 +53,77 @@ function buildYAxisFormatter(yAxis: YAxis): ((value: number) => string) | undefi
     return `${v} ${yAxis.unit}`
   }
 }
+
+function buildXAxisFormatter(column: ColumnDefinition | null, options?: Intl.DateTimeFormatOptions): ((value: string | number | Date) => string) | undefined {
+  if (column?.type !== 'date') return undefined
+  return (value: string | number | Date) => {
+    if (value === null || value === undefined) return ''
+    const date = value instanceof Date ? value : new Date(value)
+    if (Number.isNaN(date.getTime())) return String(value)
+    return formatDate(date, options ?? { dateStyle: 'short' })
+  }
+}
+
+function parseXValueAsDate(row: Record<string, unknown>, xColumn: string): Record<string, unknown> {
+  const value = row[xColumn]
+  if (value === null || value === undefined || value instanceof Date) return row
+  if (typeof value === 'string') {
+    const date = new Date(value)
+    if (!Number.isNaN(date.getTime())) {
+      return { ...row, [xColumn]: date }
+    }
+  }
+  return row
+}
+
+const xAxisColumn = computed(() => {
+  const columnName = props.chart.x_axis.column_x
+  if (!columnName) return null
+  for (const columns of Object.values(props.series.columns)) {
+    const column = columns.find(c => c.name === columnName)
+    if (column) return column
+  }
+  return null
+})
+
+const isDateAxis = computed(() => xAxisColumn.value?.type === 'date')
+
+const xAxisBounds = computed(() => {
+  const columnName = props.chart.x_axis.column_x
+  if (!columnName) return { min: undefined, max: undefined }
+
+  let min: number | undefined
+  let max: number | undefined
+
+  for (const s of props.chart.series) {
+    const xColumn = s.column_x_name_override ?? columnName
+    const data = props.series.data[s.resource_id]
+    if (!data) continue
+
+    for (const row of data) {
+      const value = row[xColumn]
+      if (value === null || value === undefined) continue
+
+      let numericValue: number | undefined
+      if (value instanceof Date) {
+        numericValue = value.getTime()
+      }
+      else if (isDateAxis.value && typeof value === 'string') {
+        numericValue = new Date(value).getTime()
+      }
+      else {
+        numericValue = Number(value)
+      }
+
+      if (numericValue === undefined || Number.isNaN(numericValue)) continue
+
+      if (min === undefined || numericValue < min) min = numericValue
+      if (max === undefined || numericValue > max) max = numericValue
+    }
+  }
+
+  return { min, max }
+})
 
 const echartsOption = computed(() => {
   const seriesCount = props.chart.series.length
@@ -58,12 +139,15 @@ const echartsOption = computed(() => {
       return null
     }
 
-    const sortedData = [...props.series.data[resourceId]]
-    const sortBy = props.chart.x_axis.sort_x_by
+    const rawData = props.series.data[resourceId]
+    const sortedData = isDateAxis.value
+      ? rawData.map(row => parseXValueAsDate(row, xColumn))
+      : [...rawData]
+    const sortBy = props.chart.x_axis.sort_x_by ?? (isDateAxis.value ? 'axis_x' : null)
     const sortDirection = props.chart.x_axis.sort_x_direction ?? 'asc'
 
     if (sortBy && sortDirection && props.chart.x_axis.column_x) {
-      const sortKey = sortBy === 'axis_x' ? xColumn : yColumn
+      const sortKey = sortBy === 'axis_y' ? yColumn : xColumn
       sortedData.sort((a, b) => {
         const valA = a[sortKey]
         const valB = b[sortKey]
@@ -136,6 +220,8 @@ const echartsOption = computed(() => {
     seriesData.data.push(curr.data)
   }
 
+  const xAxisType = mapXAxisType(props.chart.x_axis)
+
   return {
     dataset: [...seriesData.data],
     textStyle: {
@@ -146,10 +232,12 @@ const echartsOption = computed(() => {
       trigger: 'axis' as const,
       formatter: (params: Array<{ value: Record<string, unknown>, axisValueLabel: string, seriesName: string }>) => {
         let tooltip = ''
-        const formatter = new Intl.NumberFormat('fr-FR')
+        const valueFormatter = new Intl.NumberFormat(locale)
+        const xAxisFormatter = buildXAxisFormatter(xAxisColumn.value, { dateStyle: 'medium' })
         for (const param of params) {
           const seriesName = param.seriesName
-          tooltip += `${format.encodeHTML(param.axisValueLabel)}: <strong>${formatter.format(Number(param.value[seriesName]))}</strong><br>`
+          const axisLabel = xAxisFormatter ? xAxisFormatter(param.axisValueLabel) : param.axisValueLabel
+          tooltip += `${format.encodeHTML(String(axisLabel))}: <strong>${valueFormatter.format(Number(param.value[seriesName]))}</strong><br>`
         }
         return tooltip
       },
@@ -166,8 +254,13 @@ const echartsOption = computed(() => {
       containLabel: true,
     },
     xAxis: {
-      type: mapXAxisType(props.chart.x_axis),
+      type: xAxisType,
       name: (props.chart.x_axis as XAxis).column_x,
+      min: xAxisType !== 'category' ? xAxisColumn.value?.min ?? xAxisBounds.value.min ?? undefined : undefined,
+      max: xAxisType !== 'category' ? xAxisColumn.value?.max ?? xAxisBounds.value.max ?? undefined : undefined,
+      axisLabel: xAxisType === 'time'
+        ? { formatter: buildXAxisFormatter(xAxisColumn.value) }
+        : undefined,
     },
     yAxis: {
       type: 'value' as const,

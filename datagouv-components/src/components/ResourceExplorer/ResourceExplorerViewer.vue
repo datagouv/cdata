@@ -122,6 +122,11 @@
                 v-if="ogcWms"
                 :resource="resource"
               />
+              <PreviewUnavailable v-if="!hasPmtiles && !ogcWms && hasPmtilesError">
+                {{ t("La carte n'a pas pu être générée automatiquement pour ce fichier.") }}
+                <br>
+                <span class="text-gray-medium text-xs">{{ pmtilesError }}</span>
+              </PreviewUnavailable>
             </div>
             <div v-if="tab.key === 'data'">
               <JsonPreview
@@ -282,6 +287,8 @@ const { formatRelativeIfRecentDate } = useFormatDate()
 const {
   hasTabularData,
   hasPmtiles,
+  hasPmtilesError,
+  pmtilesError,
   hasDatafairPreview,
   hasOpenAPIPreview,
   ogcService,

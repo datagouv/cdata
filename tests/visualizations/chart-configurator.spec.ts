@@ -34,10 +34,11 @@ async function setupChart(page: Page) {
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('Enter')
 
+  const resourceProfilePromise = page.waitForResponse('**/api/resources/*/profile/')
   const resourceSelect = page.getByLabel('Choix de la ressource')
   await resourceSelect.selectOption({ index: 1 })
 
-  await page.waitForResponse('**/api/resources/*/profile/')
+  await resourceProfilePromise
   await page.waitForTimeout(300) // necessary to wait for the watch, no real async to check
 
   expect(page.getByLabel('Titre')).toBeVisible()
@@ -89,6 +90,68 @@ test('x-axis column selector shows available columns', async ({ page }) => {
   await expect(page.getByRole('option', { name: 'nom_region', exact: true })).toBeVisible()
 })
 
+test('x-axis type defaults to continuous for numeric column', async ({ page }) => {
+  await setupChart(page)
+
+  const xAxisSelect = page.getByTestId('searchable-select-choisir-quoi-afficher')
+  await xAxisSelect.click()
+  await page.getByRole('option', { name: 'Nombre de logements', exact: true }).click()
+  await clickOutside(page)
+
+  const xAxisTypeSelect = page.locator('#x-axis-type')
+  await expect(xAxisTypeSelect).toHaveValue('continuous')
+})
+
+test('x-axis type defaults to discrete for string column', async ({ page }) => {
+  await setupChart(page)
+
+  const xAxisSelect = page.getByTestId('searchable-select-choisir-quoi-afficher')
+  await xAxisSelect.click()
+  await page.getByRole('option', { name: 'nom_region', exact: true }).click()
+  await clickOutside(page)
+
+  const xAxisTypeSelect = page.locator('#x-axis-type')
+  await expect(xAxisTypeSelect).toHaveValue('discrete')
+})
+
+test('selecting a date x-axis column switches to line chart and sorts by date ascending', async ({ page }) => {
+  await setupChart(page)
+
+  const xAxisSelect = page.getByTestId('searchable-select-choisir-quoi-afficher')
+  await xAxisSelect.click()
+  await page.getByRole('option', { name: 'nom_region', exact: true }).click()
+  await clickOutside(page)
+
+  await xAxisSelect.click()
+  await page.getByRole('option', { name: 'jour', exact: true }).click()
+  await clickOutside(page)
+
+  const chartTypeButton = page.locator('#chart-type').getByRole('button')
+  await expect(chartTypeButton).toContainText('Ligne')
+
+  const sortListbox = page.locator('#x-axis-sort-combined')
+  await expect(sortListbox.locator('.input')).toContainText('jour - Ascendant')
+})
+
+test('selecting a numeric x-axis column does not switch to line chart or force sort', async ({ page }) => {
+  await setupChart(page)
+
+  const xAxisSelect = page.getByTestId('searchable-select-choisir-quoi-afficher')
+  await xAxisSelect.click()
+  await page.getByRole('option', { name: 'nom_region', exact: true }).click()
+  await clickOutside(page)
+
+  await xAxisSelect.click()
+  await page.getByRole('option', { name: 'Nombre de logements', exact: true }).click()
+  await clickOutside(page)
+
+  const chartTypeButton = page.locator('#chart-type').getByRole('button')
+  await expect(chartTypeButton).toContainText('Histogramme')
+
+  const sortListbox = page.locator('#x-axis-sort-combined')
+  await expect(sortListbox.locator('.input')).toContainText('Aucun')
+})
+
 test('series column y selector shows available columns', async ({ page }) => {
   await setupChart(page)
 
@@ -98,16 +161,20 @@ test('series column y selector shows available columns', async ({ page }) => {
   await expect(page.getByRole('option', { name: 'libellé_EPCI', exact: true })).toBeVisible()
 })
 
-test('series aggregation defaults to none', async ({ page }) => {
+test('series aggregation defaults to count and is hidden', async ({ page }) => {
   await setupChart(page)
 
   const aggregationSelect = page.getByLabel('Agrégation')
-  const aggregation = await aggregationSelect.inputValue()
-  expect(aggregation).toBe('Non')
+  await expect(aggregationSelect).not.toBeVisible()
 })
 
 test('series aggregation can be changed to sum', async ({ page }) => {
   await setupChart(page)
+
+  const yAxisSelect = page.getByTestId('searchable-select-colonne-y')
+  await yAxisSelect.click()
+  await page.getByRole('option', { name: 'Nombre de logements', exact: true }).click()
+  await clickOutside(page)
 
   const aggregationSelect = page.getByLabel('Agrégation')
   await aggregationSelect.selectOption('Somme')
@@ -118,6 +185,11 @@ test('series aggregation can be changed to sum', async ({ page }) => {
 
 test('series aggregation can be changed to avg', async ({ page }) => {
   await setupChart(page)
+
+  const yAxisSelect = page.getByTestId('searchable-select-colonne-y')
+  await yAxisSelect.click()
+  await page.getByRole('option', { name: 'Nombre de logements', exact: true }).click()
+  await clickOutside(page)
 
   const aggregationSelect = page.getByLabel('Agrégation')
   await aggregationSelect.selectOption('Moyenne')
@@ -134,6 +206,7 @@ test('sort select displays dynamic column names', async ({ page }) => {
 
   const sortOptions = await listbox.locator('role=option').allTextContents()
 
+  expect(sortOptions).toHaveLength(3)
   expect(sortOptions[0]).toBe('Aucun')
 
   expect(sortOptions[1]).toContain('année_publication - Ascendant')
@@ -173,14 +246,14 @@ test('Y axis sort options show dynamic series column name too', async ({ page })
 
   const yAxisSelect = page.getByTestId('searchable-select-colonne-y')
   await yAxisSelect.click()
-  await page.getByRole('option', { name: 'année_publication', exact: true }).click()
-  await clickOutside(page)
+  await page.getByRole('option', { name: 'Nombre de logements', exact: true }).click()
+  await page.keyboard.press('Escape')
 
   const listbox = page.locator('#x-axis-sort-combined')
   await listbox.click()
   const sortOptions = await listbox.locator('role=option').allTextContents()
 
-  expect(sortOptions[3]).toContain('année_publication')
+  expect(sortOptions[3]).toContain('Nombre de logements')
   expect(sortOptions[3]).not.toContain('Axe Y - Ascendant')
 })
 
@@ -433,6 +506,93 @@ test('y-axis column options update when selecting different resource', async ({ 
 
     expect(newOptions).not.toEqual(initialOptions)
   }
+})
+
+test('count option appears in the y-axis column selector', async ({ page }) => {
+  await setupChart(page)
+
+  await page.getByTestId('searchable-select-colonne-y').click()
+
+  await expect(page.getByRole('option', { name: 'Compter', exact: true })).toBeVisible()
+})
+
+test('selecting count option sets aggregate to count and hides aggregation dropdown', async ({ page }) => {
+  await setupChart(page)
+
+  const yAxisSelect = page.getByTestId('searchable-select-colonne-y')
+
+  // First select a number column so the aggregate dropdown is visible
+  await yAxisSelect.click()
+  await page.getByRole('option', { name: 'Nombre de logements', exact: true }).click()
+  await clickOutside(page)
+  await expect(page.getByLabel('Agrégation')).toBeVisible()
+
+  // Then select the count option
+  await yAxisSelect.click()
+  await page.getByRole('option', { name: 'Compter', exact: true }).click()
+  await clickOutside(page)
+
+  await expect(page.getByLabel('Agrégation')).not.toBeVisible()
+})
+
+test('selecting a non-count column after count resets aggregate to none', async ({ page }) => {
+  await setupChart(page)
+
+  const yAxisSelect = page.getByTestId('searchable-select-colonne-y')
+
+  await yAxisSelect.click()
+  await page.getByRole('option', { name: 'Compter', exact: true }).click()
+  await clickOutside(page)
+
+  await yAxisSelect.click()
+  await page.getByRole('option', { name: 'Nombre de logements', exact: true }).click()
+  await clickOutside(page)
+
+  const aggregationSelect = page.getByLabel('Agrégation')
+  await expect(aggregationSelect).toBeVisible()
+  expect(await aggregationSelect.inputValue()).toBe('Non')
+})
+
+test('changing x-axis updates count serie column_y to the new x-axis column', async ({ page }) => {
+  await setupChart(page)
+
+  await page.getByTestId('searchable-select-colonne-y').click()
+  await page.getByRole('option', { name: 'Compter', exact: true }).click()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('option', { name: 'Compter', exact: true })).not.toBeVisible()
+
+  const xAxisSelect = page.getByTestId('searchable-select-choisir-quoi-afficher')
+  await xAxisSelect.click()
+  await page.getByRole('option', { name: 'nom_region', exact: true }).click()
+  await page.keyboard.press('Escape')
+
+  await page.getByTestId('searchable-select-colonne-y').click()
+  await expect(page.getByRole('option', { name: 'Compter', exact: true })).toBeVisible()
+})
+
+test('saving chart with count aggregation round-trips correctly', async ({ page, baseURL }) => {
+  await setupChart(page)
+
+  await page.getByLabel('Titre').fill('Test Count Chart')
+  await page.getByLabel('Description').fill('Test count aggregation')
+
+  await page.getByTestId('searchable-select-colonne-y').click()
+  await page.getByRole('option', { name: 'Compter', exact: true }).click()
+  await clickOutside(page)
+
+  const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
+  const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
+
+  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  const response = await responsePromise
+  const responseBody = (await response.json()) as Chart
+  await getPromise
+
+  expect(responseBody.series[0].aggregate_y).toBe('count')
+  expect(responseBody.series[0].column_y).toBe(responseBody.x_axis.column_x)
+  expect(await page.getByLabel('Graphiques existants').inputValue()).toBe(responseBody.id)
+
+  await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody.id}/`)
 })
 
 test('y-axis columns should not be empty after selecting resource from loaded chart', async ({ page, baseURL }) => {

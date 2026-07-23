@@ -110,7 +110,12 @@ export default defineNuxtConfig({
       // (see .env) so the Grist document URL is not committed.
       ouverturesGristBaseUrl: '',
       ouverturesGristTable: '',
-      ouverturesHvdUrl: 'https://ouverture.data.gouv.fr/donnees_de_forte_valeur.html',
+      // Grist endpoint for the "Hvd" table on /suivi-de-publication/donnees-de-forte-valeur.
+      // Provided through NUXT_PUBLIC_HVD_GRIST_BASE_URL / NUXT_PUBLIC_HVD_GRIST_TABLE
+      // (see .env) so the Grist document URL is not committed.
+      hvdGristBaseUrl: '',
+      hvdGristTable: '',
+      ouverturesHvdUrl: '/suivi-de-publication/donnees-de-forte-valeur',
 
       guideDatasets: 'https://guides.data.gouv.fr/jeux-de-donnees',
       guideReuses: 'https://guides.data.gouv.fr/reutilisations',

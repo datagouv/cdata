@@ -327,47 +327,17 @@ async function validateData() {
   }
 }
 
-async function initializeTable() {
-  await nextTick()
-
-  if (!tableRef.value) {
-    console.error('tableRef.value est null')
-    return
-  }
-  let tableData: RowData[] = []
-  if (uploadedFile.value) {
-    try {
-      paparse.parse<RowData, File>(uploadedFile.value, {
-        header: true,
-        complete: function (results) {
-          tableData = results.data.map((r, i) => {
-            return { id: i, ...r }
-          })
-          makeTable(tableData, true)
-          uploadedFile.value = null
-        },
-      })
-    }
-    catch (error) {
-      console.error('Erreur lors du chargement du fichier:', error)
-      customErrors.value = [t('Erreur lors du chargement du fichier CSV')]
-      tableData = createEmptyRows(1)
-      makeTable(tableData)
-    }
-  }
-  else {
-    tableData = createEmptyRows(1)
-    makeTable(tableData)
-  }
-}
-
 async function makeTable(data: Array<RowData>, shouldValidate = false) {
   if (!tableRef.value) {
     return
   }
+
+  table?.destroy()
+
   table = new Tabulator(tableRef.value, {
     data: data,
     layout: 'fitData',
+    nestedFieldSeparator: false,
     columns: getColumns(),
     rowContextMenu: [
       {
@@ -518,11 +488,45 @@ function generateFile() {
 
 defineExpose({ generateFile })
 
-watch([tableRef, schemaFields], () => {
-  if (tableRef.value && schemaFields.value.length > 0) {
-    initializeTable()
+const stopInit = watchEffect(() => {
+  if (!tableRef.value || schemaFields.value.length === 0) return
+
+  stopInit()
+
+  if (uploadedFile.value) {
+    let handled = false
+    try {
+      paparse.parse<RowData, File>(uploadedFile.value, {
+        header: true,
+        complete: (results) => {
+          if (handled) return
+          if (results.errors.length > 0) {
+            console.warn('PapaParse a rencontré des avertissements:', results.errors)
+          }
+          const tableData = results.data.map((r, i) => ({ id: i, ...r }))
+          makeTable(tableData, true)
+        },
+        error: (error) => {
+          if (handled) return
+          handled = true
+          console.error('Erreur lors du chargement du fichier:', error)
+          customErrors.value = [t('Erreur lors du chargement du fichier CSV')]
+          makeTable(createEmptyRows(1))
+        },
+      })
+    }
+    catch (error) {
+      if (handled) return
+      handled = true
+      console.error('Erreur lors du chargement du fichier:', error)
+      customErrors.value = [t('Erreur lors du chargement du fichier CSV')]
+      makeTable(createEmptyRows(1))
+    }
   }
-}, { immediate: true })
+  else {
+    makeTable(createEmptyRows(1))
+  }
+}, { flush: 'post' })
 
 watch(validationReport, () => {
   if (validationReport.value && !validationReport.value.report?.valid && validationReport.value.report?.errors) {
