@@ -52,4 +52,33 @@ describe('toChartForm / toChartApi', () => {
     const form = { ...toChartForm(baseChart), filter } as ReturnType<typeof toChartForm>
     expect(toChartApi(form).series[0].filters).toEqual(filter)
   })
+
+  it('round-trips a count aggregation', () => {
+    const chart = {
+      ...baseChart,
+      x_axis: { ...baseChart.x_axis, column_x: 'region' },
+      series: [{ type: 'bar', column_y: 'region', aggregate_y: 'count', filters: null }],
+    } as unknown as Chart
+
+    const form = toChartForm(chart)
+    expect(form.series[0].aggregate_y).toEqual('count')
+    expect(form.series[0].column_y).toEqual('region')
+
+    const api = toChartApi(form)
+    expect(api.series[0].aggregate_y).toEqual('count')
+    expect(api.series[0].column_y).toEqual('region')
+  })
+
+  it('preserves an empty aggregate as null in the API payload', () => {
+    const chart = {
+      ...baseChart,
+      series: [{ type: 'bar', column_y: 'montant', aggregate_y: null, filters: null }],
+    } as unknown as Chart
+
+    const form = toChartForm(chart)
+    expect(form.series[0].aggregate_y).toEqual('')
+
+    const api = toChartApi(form)
+    expect(api.series[0].aggregate_y).toBeNull()
+  })
 })
