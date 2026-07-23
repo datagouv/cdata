@@ -47,6 +47,7 @@
             <div>
               <ClientOnly>
                 <ChartViewerWrapper
+                  ref="chartViewerWrapperRef"
                   :chart="chartForViewer"
                 />
               </ClientOnly>
@@ -501,7 +502,7 @@ const COUNT_OPTION = { name: '__count__', type: 'count' } as const
 type CountColumnOption = typeof COUNT_OPTION
 type YAxisColumnOption = ColumnDefinition | CountColumnOption
 
-const { $api } = useNuxtApp()
+const { $api, $fileApi } = useNuxtApp()
 const runtimeConfig = useRuntimeConfig()
 const { t } = useTranslation()
 const hasTabularData = useHasTabularData()
@@ -529,6 +530,7 @@ const producer = ref<Owned | null>(null)
 const dataset = ref<DatasetSuggest | null>(null)
 const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref<string>('')
+const chartViewerWrapperRef = ref<InstanceType<typeof ChartViewerWrapper> | null>(null)
 
 watch(producer, (newProducer) => {
   if (newProducer?.organization?.id) {
@@ -849,6 +851,18 @@ async function saveChart() {
       savedChart.value = await $api<Chart>('/api/1/visualizations/', {
         method: 'POST',
         body: JSON.stringify(chartForApi),
+      })
+    }
+
+    const imageUrl = chartViewerWrapperRef.value?.capture()
+    if (imageUrl) {
+      const i = await fetch(imageUrl)
+      const imageBlob = await i.blob()
+      const formData = new FormData()
+      formData.set('file', imageBlob, 'image.png')
+      await $fileApi(`/api/1/visualizations/${savedChart.value.id}/image/`, {
+        method: 'POST',
+        body: formData,
       })
     }
 
