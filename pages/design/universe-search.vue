@@ -16,7 +16,7 @@
       v-if="universes.length"
       class="bg-white py-4 px-4 -mx-4"
     >
-      <GlobalSearch :universes="universes" />
+      <GlobalSearch :config="universes" />
     </div>
     <p v-else>
       Chargement des univers…

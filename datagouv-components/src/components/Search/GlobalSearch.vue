@@ -422,8 +422,14 @@ import DatasetBadgeFilter from './Filter/DatasetBadgeFilter.vue'
 import ReuseTypeFilter from './Filter/ReuseTypeFilter.vue'
 
 const props = withDefaults(defineProps<{
-  config?: GlobalSearchConfig
-  universes?: UniverseConfig[]
+  /**
+   * Either a flat list of search types (`GlobalSearchConfig`, e.g. `[{ class: 'datasets', ... }]`,
+   * shared across the whole component), or a list of topic-scoped bundles
+   * (`UniverseConfig[]`, e.g. `[{ key, name, topicId, types: [...] }]`) — pass the
+   * latter to enable the "Univers" selector and per-universe topic scoping.
+   * The two shapes are distinguished at runtime by the presence of `topicId`.
+   */
+  config?: GlobalSearchConfig | UniverseConfig[]
   placeholder?: string | null
   hideSearchInput?: boolean
   autoFocus?: boolean
@@ -437,39 +443,52 @@ const emit = defineEmits<{
   resultsCount: [total: number]
 }>()
 
-// Universe state: computed before currentType init so SSR validation can use it
-const universeParam = useRouteQuery<string>('universe', props.universes?.[0]?.key ?? '')
+// A UniverseConfig always has topicId/types; a SearchTypeConfig always has class.
+// This is the only place that inspects props.config's shape — every computed
+// below reads `universes`/`flatConfig` instead of re-testing the prop itself.
+function isUniverseList(config: GlobalSearchConfig | UniverseConfig[]): config is UniverseConfig[] {
+  return config.length > 0 && 'topicId' in config[0]
+}
 
-// Inject a synthetic key ({universe}-{class}) for any type without an explicit key,
-// so each universe×type combination gets its own fetch instance automatically.
-const resolvedUniverses = computed(() =>
-  props.universes?.map(u => ({
+// Single entrypoint: normalizes props.config into universe mode (with synthetic
+// {universe}-{class} keys injected for any type missing an explicit key, so each
+// universe×type combination gets its own fetch instance) or flat mode.
+const universes = computed<NonEmptyArray<UniverseConfig> | undefined>(() => {
+  if (!isUniverseList(props.config)) return undefined
+  return props.config.map(u => ({
     ...u,
     types: u.types.map(c => c.key ? c : { ...c, key: `${u.key}-${c.class}` }) as NonEmptyArray<SearchTypeConfig>,
-  })),
+  })) as NonEmptyArray<UniverseConfig>
+})
+
+const flatConfig = computed<GlobalSearchConfig>(() =>
+  universes.value ? [] : (props.config as GlobalSearchConfig),
 )
 
+// Universe state: computed before currentType init so SSR validation can use it
+const universeParam = useRouteQuery<string>('universe', universes.value?.[0]?.key ?? '')
+
 const activeUniverse = computed<UniverseConfig | undefined>(() => {
-  if (!resolvedUniverses.value) return undefined
-  return resolvedUniverses.value.find(u => u.key === universeParam.value) ?? resolvedUniverses.value[0]
+  if (!universes.value) return undefined
+  return universes.value.find(u => u.key === universeParam.value) ?? universes.value[0]
 })
 
 const activeUniverseTopic = computed<string | undefined>(() =>
   activeUniverse.value?.topicId,
 )
 
-// Effective config: active universe's types when in universe mode, otherwise props.config
+// Effective config: active universe's types when in universe mode, otherwise flatConfig
 const effectiveConfig = computed<GlobalSearchConfig>(() =>
-  activeUniverse.value ? activeUniverse.value.types : props.config,
+  activeUniverse.value ? activeUniverse.value.types : flatConfig.value,
 )
 
 // defineModel's default is static and can't depend on props, so we cast and initialize manually
 const currentType = defineModel<string>('type') as Ref<string>
 if (!currentType.value) {
-  const first = activeUniverse.value?.types[0] ?? props.config[0] ?? { class: 'datasets' as const }
+  const first = activeUniverse.value?.types[0] ?? flatConfig.value[0] ?? { class: 'datasets' as const }
   currentType.value = configKey(first)
 }
-else if (props.universes && activeUniverse.value) {
+else if (activeUniverse.value) {
   // Clamp type to the active universe's types on page load
   const validKeys = new Set(activeUniverse.value.types.map(c => configKey(c)))
   const firstType = activeUniverse.value.types[0]
@@ -525,7 +544,7 @@ const activeSortValues = computed(() =>
 // intrinsic width regardless of which type is currently active.
 const allSortOptions = computed(() => {
   const seen = new Set<string>()
-  const allTypeConfigs = resolvedUniverses.value ? resolvedUniverses.value.flatMap(u => u.types) : props.config
+  const allTypeConfigs = universes.value ? universes.value.flatMap(u => u.types) : flatConfig.value
   return allTypeConfigs.flatMap(c => (c.sortOptions ?? []) as SortOption<string>[]).filter((o) => {
     if (seen.has(o.value)) return false
     seen.add(o.value)
@@ -539,7 +558,7 @@ const activeFilters = computed(() => [
 ] as string[])
 
 const slots = useSlots()
-const showSidebar = computed(() => (props.universes && props.universes.length > 1) || effectiveConfig.value.length > 1 || activeFilters.value.length > 0 || !!slots['custom-filters-top'] || !!slots['custom-filters-bottom'])
+const showSidebar = computed(() => (universes.value && universes.value.length > 1) || effectiveConfig.value.length > 1 || activeFilters.value.length > 0 || !!slots['custom-filters-top'] || !!slots['custom-filters-bottom'])
 
 // URL query params
 const q = useRouteQuery<string>('q', '')
@@ -610,12 +629,12 @@ const allFilters: Record<string, Ref<unknown>> = {
 
 // Reset type, sort, and filters when changing universe
 watch(universeParam, (newKey, oldKey) => {
-  if (!resolvedUniverses.value || newKey === oldKey) return
-  const newUniverse = resolvedUniverses.value.find(u => u.key === newKey)
+  if (!universes.value || newKey === oldKey) return
+  const newUniverse = universes.value.find(u => u.key === newKey)
   if (!newUniverse) return
   const newTypeKeys = new Set(newUniverse.types.map(c => configKey(c)))
   if (!newTypeKeys.has(currentType.value)) {
-    const oldUniverse = resolvedUniverses.value.find(u => u.key === oldKey)
+    const oldUniverse = universes.value.find(u => u.key === oldKey)
     const currentClass = oldUniverse?.types.find(c => configKey(c) === currentType.value)?.class
     const sameClassType = currentClass ? newUniverse.types.find(c => c.class === currentClass) : undefined
     currentType.value = configKey(sameClassType ?? newUniverse.types[0])
@@ -742,17 +761,17 @@ const strategies: { [K in SearchType]: SearchStrategy<K> } = {
 // One params + fetch per config entry, keyed by configKey.
 // In universe mode, build from the deduplicated union of all resolved universes' types.
 // Synthetic keys ({universe}-{class}) ensure each universe×type gets its own fetch instance.
-const buildConfigs: GlobalSearchConfig = resolvedUniverses.value
+const buildConfigs: GlobalSearchConfig = universes.value
   ? (() => {
       const seen = new Set<string>()
-      return resolvedUniverses.value.flatMap(u => u.types).filter((c) => {
+      return universes.value.flatMap(u => u.types).filter((c) => {
         const k = configKey(c)
         if (seen.has(k)) return false
         seen.add(k)
         return true
       })
     })()
-  : props.config
+  : flatConfig.value
 
 const resultsMap: Record<string, SearchEntry> = {}
 for (const c of buildConfigs) {
