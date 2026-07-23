@@ -447,7 +447,8 @@ const emit = defineEmits<{
 // This is the only place that inspects props.config's shape — every computed
 // below reads `universes`/`flatConfig` instead of re-testing the prop itself.
 function isUniverseList(config: GlobalSearchConfig | UniverseConfig[]): config is UniverseConfig[] {
-  return config.length > 0 && 'topicId' in config[0]
+  const first = config[0]
+  return first !== undefined && 'topicId' in first
 }
 
 // Single entrypoint: normalizes props.config into universe mode (with synthetic
