@@ -10,12 +10,6 @@
     "npm": "use-pnpm-instead",
     "yarn": "use-pnpm-instead"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "cypress",
-      "husky"
-    ]
-  },
   "main": "./src/main.ts",
   "exports": {
     ".": "./src/main.ts",

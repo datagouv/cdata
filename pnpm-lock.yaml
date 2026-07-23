@@ -122,7 +122,7 @@ importers:
         specifier: ^14.3.0
         version: 14.3.0(vue-router@5.2.0(@vue/compiler-sfc@3.5.40)(esbuild@0.28.1)(rollup@4.62.2)(vite@7.3.6(@types/node@24.13.3)(jiti@2.7.0)(lightningcss@1.32.0)(sass-embedded@1.100.0)(sass@1.100.0)(terser@5.49.0)(yaml@2.9.0))(vue@3.5.40(typescript@5.9.3)))(vue@3.5.40(typescript@5.9.3))
       dompurify:
-        specifier: ^3.4.12
+        specifier: ^3.4.11
         version: 3.4.12
       gray-matter:
         specifier: ^4.0.3
@@ -14509,7 +14509,7 @@ snapshots:
       ajv-formats: 3.0.1(ajv@8.20.0)
       clusterize.js: 1.0.0
       doctoc: 2.4.1
-      dompurify: 3.4.11
+      dompurify: 3.4.12
       eventbusjs: 0.2.0
       geoportal-access-lib: 3.4.6
       loglevel: 1.9.2
