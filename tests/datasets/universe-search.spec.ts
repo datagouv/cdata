@@ -110,7 +110,9 @@ test('type is preserved across universe switch when class exists in both', async
   const typeFieldset = page.locator('fieldset:has(input[name="search-type"])')
 
   await typeFieldset.getByRole('radio', { name: /API/i }).click({ force: true })
-  await page.waitForURL(url => url.searchParams.has('type'))
+  // This page doesn't bind v-model:type to a route query (like the other design
+  // pages), so `type` never lands in the URL here — wait on the checked state instead.
+  await expect(typeFieldset.getByRole('radio', { name: /API/i })).toBeChecked()
 
   await fieldset.getByRole('radio', { name: UNIVERSE_2.name }).click({ force: true })
   await page.waitForURL(url => url.searchParams.has('universe'))
