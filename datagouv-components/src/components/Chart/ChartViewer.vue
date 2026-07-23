@@ -13,6 +13,7 @@ import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, Datas
 import { init, type ECharts as EChartsType } from 'echarts'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { summarize } from '../../functions/helpers'
+import { useFormatDate } from '../../functions/dates'
 import type { Chart, ColumnDefinition, ColumnsDefinition, XAxis, YAxis, XAxisForm, ChartForApi } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
 
@@ -27,6 +28,7 @@ const props = defineProps<{
 }>()
 
 const { locale } = useTranslation()
+const { formatDate } = useFormatDate()
 const chartContainer = ref<HTMLElement | null>(null)
 let echartsInstance: EChartsType | null = null
 
@@ -54,12 +56,11 @@ function buildYAxisFormatter(yAxis: YAxis): ((value: number) => string) | undefi
 
 function buildXAxisFormatter(column: ColumnDefinition | null, options?: Intl.DateTimeFormatOptions): ((value: string | number | Date) => string) | undefined {
   if (column?.type !== 'date') return undefined
-  const dateFormatter = new Intl.DateTimeFormat(locale, options ?? { dateStyle: 'short' })
   return (value: string | number | Date) => {
     if (value === null || value === undefined) return ''
     const date = value instanceof Date ? value : new Date(value)
     if (Number.isNaN(date.getTime())) return String(value)
-    return dateFormatter.format(date)
+    return formatDate(date, options ?? { dateStyle: 'short' })
   }
 }
 
