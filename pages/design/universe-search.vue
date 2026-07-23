@@ -32,7 +32,7 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 const { data: topicsData } = await useAPI<PaginatedArray<TopicV2>>('/api/2/topics/', {
   lazy: true,
   server: false,
-  query: { page_size: 5 },
+  query: { page_size: 50 },
 })
 
 const datasetFilterSets: (keyof DatasetSearchFilters)[][] = [
@@ -62,6 +62,7 @@ watch(
     )
     universes.value = results
       .filter(({ total }) => total > 0)
+      .slice(0, 5)
       .map(({ topic }, i) => ({
         key: topic.id,
         name: topic.name,
