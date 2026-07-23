@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { toChartApi, toChartForm } from '~/datagouv-components/src/functions/charts'
+import { buildColumnsFromProfile, toChartApi, toChartForm } from '~/datagouv-components/src/functions/charts'
 import type { Chart } from '~/datagouv-components/src/types/visualizations'
+import type { TabularProfile } from '~/datagouv-components/src/components/TabularExplorer/types'
 
 const baseChart = {
   title: 'Mon graphique',
@@ -80,5 +81,76 @@ describe('toChartForm / toChartApi', () => {
 
     const api = toChartApi(form)
     expect(api.series[0].aggregate_y).toBeNull()
+  })
+})
+
+describe('buildColumnsFromProfile', () => {
+  const profile: { profile: TabularProfile } = {
+    profile: {
+      header: ['year', 'rate', 'label', 'created_at'],
+      columns: {
+        year: { score: 1, format: 'int', python_type: 'int' },
+        rate: { score: 1, format: 'float', python_type: 'float' },
+        label: { score: 1, format: 'string', python_type: 'string' },
+        created_at: { score: 1, format: 'date', python_type: 'date' },
+      },
+      formats: {},
+      profile: {
+        year: { tops: [], nb_distinct: 6, nb_missing_values: 0, min: '2018', max: '2023' },
+        rate: { tops: [], nb_distinct: 10, nb_missing_values: 0, min: 0, max: 49.5 },
+        label: { tops: [], nb_distinct: 3, nb_missing_values: 0 },
+        created_at: { tops: [], nb_distinct: 5, nb_missing_values: 0, min: '2018-01-01T00:00:00.000Z', max: '2023-12-31T23:59:59.000Z' },
+      },
+      encoding: 'utf-8',
+      separator: ',',
+      categorical: ['label'],
+      total_lines: 100,
+      nb_duplicates: 0,
+      columns_fields: {},
+      columns_labels: {},
+      header_row_idx: 0,
+      heading_columns: 0,
+      trailing_columns: 0,
+    },
+  }
+
+  it('includes normalized min/max from the profile', () => {
+    const columns = buildColumnsFromProfile(profile)
+    expect(columns).toEqual([
+      { name: 'year', type: 'number', min: 2018, max: 2023 },
+      { name: 'rate', type: 'number', min: 0, max: 49.5 },
+      { name: 'label', type: 'categorical' },
+      { name: 'created_at', type: 'date', min: new Date('2018-01-01T00:00:00.000Z').getTime(), max: new Date('2023-12-31T23:59:59.000Z').getTime() },
+    ])
+  })
+
+  it('drops non-numeric min/max values', () => {
+    const invalidProfile: { profile: TabularProfile } = {
+      profile: {
+        ...profile.profile,
+        profile: {
+          ...profile.profile.profile,
+          year: { tops: [], nb_distinct: 6, nb_missing_values: 0, min: 'not-a-number', max: '2023' },
+        },
+      },
+    }
+    const columns = buildColumnsFromProfile(invalidProfile)
+    const yearColumn = columns.find(c => c.name === 'year')
+    expect(yearColumn).toEqual({ name: 'year', type: 'number', min: undefined, max: 2023 })
+  })
+
+  it('returns undefined min/max for date columns when the profile does not provide them', () => {
+    const profileWithoutDateBounds: { profile: TabularProfile } = {
+      profile: {
+        ...profile.profile,
+        profile: {
+          ...profile.profile.profile,
+          created_at: { tops: [], nb_distinct: 5, nb_missing_values: 0 },
+        },
+      },
+    }
+    const columns = buildColumnsFromProfile(profileWithoutDateBounds)
+    const createdAtColumn = columns.find(c => c.name === 'created_at')
+    expect(createdAtColumn).toEqual({ name: 'created_at', type: 'date', min: undefined, max: undefined })
   })
 })

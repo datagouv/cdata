@@ -472,7 +472,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort, Owned } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
 import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
@@ -577,6 +577,11 @@ const xAxisColumnProxy = computed<XAxisColumnOption | null>({
   },
   set: (val: XAxisColumnOption | null) => {
     form.value.x_axis.column_x = val?.name ?? ''
+    form.value.x_axis.type = getDefaultXAxisType(val?.type)
+    if (val?.type === 'date') {
+      form.value.x_axis.sort_combined = 'axis_x-asc'
+      form.value.chart_type = 'line'
+    }
   },
 })
 
@@ -684,6 +689,13 @@ function getSerieColumnYValue(serie: DataSeriesForm): YAxisColumnOption | null {
   return yAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
 }
 
+function getDefaultXAxisType(columnType: ColumnType | undefined): XAxisType {
+  if (columnType === 'number' || columnType === 'date') {
+    return 'continuous'
+  }
+  return 'discrete'
+}
+
 function handleSerieColumnYChange(index: number, option: YAxisColumnOption | null | undefined) {
   const serie = form.value.series[index]
   if (!serie) return
@@ -706,7 +718,9 @@ function ensureSeriesHasColumnX(resourceId: string) {
     if (resourceColumns?.length) {
       const nonIdColumns = resourceColumns.filter(c => c.name !== '__id')
       if (nonIdColumns.length > 0) {
-        form.value.x_axis.column_x = nonIdColumns[0].name
+        const column = nonIdColumns[0]
+        form.value.x_axis.column_x = column.name
+        form.value.x_axis.type = getDefaultXAxisType(column.type)
       }
     }
   }
