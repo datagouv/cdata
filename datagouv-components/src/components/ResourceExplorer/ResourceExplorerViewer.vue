@@ -1,57 +1,56 @@
 <template>
-  <div class="border border-gray-default">
-    <header class="p-4 flex flex-wrap md:flex-nowrap gap-4 items-center justify-between">
-      <div>
-        <div class="flex items-center gap-1 mb-1">
-          <h3 class="m-0 flex items-baseline text-base font-bold leading-tight">
-            <ResourceIcon
-              :resource
-              class="size-3.5 mr-1 shrink-0 translate-y-px"
-            />
-            <span class="line-clamp-2">{{ resource.title || t('Fichier sans nom') }}</span>
-          </h3>
-          <ResourceSelector
-            v-if="resources && resources.length > 1"
-            :resources
-            :selected-id="resource.id"
-            @select="emit('select', $event)"
-          />
-          <CopyButton
-            :label="t('Copier le lien')"
-            :copied-label="t('Lien copié !')"
-            :text="resourceExternalUrl"
-            class="hidden md:inline-flex"
-          />
-        </div>
-        <div class="text-gray-medium text-xs flex items-center gap-1 flex-wrap">
-          <SchemaBadge :resource />
-          <RiSubtractLine
-            v-if="resource.schema?.name || resource.schema?.url"
-            aria-hidden="true"
-            class="size-3 fill-gray-medium"
-          />
-          <span>{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
-          <RiSubtractLine
-            aria-hidden="true"
-            class="size-3 fill-gray-medium"
-          />
-          <template v-if="resource.format">
-            <span>
-              {{ resource.format.trim().toLowerCase() }}
-              <span v-if="resourceFilesize">({{ filesize(resourceFilesize) }})</span>
-            </span>
-            <RiSubtractLine
-              aria-hidden="true"
-              class="size-3 fill-gray-medium"
-            />
+  <div :class="[{ 'border border-gray-default': bordered }, fullscreen ? 'flex min-h-0 flex-1 flex-col' : '']">
+    <header class="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-gray-default bg-gray-some px-3">
+      <div class="flex min-w-0 items-center gap-1.5 overflow-hidden text-[13px] text-gray-medium">
+        <ResourceIcon
+          :resource
+          class="size-4 shrink-0"
+        />
+        <span class="shrink-0 whitespace-nowrap font-medium text-gray-title">{{ resource.title || t('Fichier sans nom') }}</span>
+        <ResourceSelector
+          v-if="resources && resources.length > 1"
+          :resources
+          :selected-id="resource.id"
+          :resource-to
+          :replace
+          class="shrink-0 md:hidden"
+        />
+        <!-- Metadata truncates before the title, so the resource name stays fully
+             visible. Inline flow (not flex) so text-overflow renders the ellipsis;
+             spacing is carried by the separators' margins. -->
+        <div class="min-w-0 truncate">
+          <span class="mr-1.5">·</span>
+          <span :title="formatDate(resource.last_modified)">{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
+          <template v-if="resourceFilesize">
+            <span class="mx-1.5">·</span>
+            <span>{{ filesize(resourceFilesize) }}</span>
           </template>
-          <span class="inline-flex items-center">
-            <RiDownloadLine class="size-3 mr-0.5" />
+          <template v-if="resource.format">
+            <span class="mx-1.5">·</span>
+            <span class="rounded bg-gray-lower px-1.5 py-0.5 text-[12px] uppercase leading-4 text-gray-medium">{{ resource.format }}</span>
+          </template>
+          <template v-if="resource.schema?.name || resource.schema?.url">
+            <span class="mx-1.5">·</span>
+            <SchemaBadge :resource />
+          </template>
+          <span class="mx-1.5">·</span>
+          <span class="inline-flex items-center gap-0.5 align-middle">
+            <RiDownloadLine class="size-3" />
             {{ summarize(resource.metrics.views) }}
           </span>
         </div>
+        <CopyButton
+          :label="t('Copier le lien')"
+          :copied-label="t('Lien copié !')"
+          :text="resourceExternalUrl"
+          icon-only
+          class="hidden shrink-0 md:inline-flex"
+        />
       </div>
-      <div class="flex items-center gap-2">
+      <div
+        v-if="!fullscreen"
+        class="flex shrink-0 items-center gap-2"
+      >
         <BrandedButton
           v-if="isResourceUrl"
           :href="resource.latest"
@@ -73,30 +72,33 @@
         >
           {{ t('Copier le lien') }}
         </BrandedButton>
-        <BrandedButton
+        <ResourceDownloadMenu
           v-else
-          :href="resource.latest"
-          rel="ugc nofollow noopener"
-          :title="downloadButtonTitle"
-          download
-          class="matomo_download"
-          :icon="unavailable ? RiFileWarningLine : RiDownloadLine"
+          :resource="resource"
+          :dataset="dataset"
+        />
+        <BrandedButton
+          v-if="exploreTo"
+          :href="exploreTo(resource)"
+          :icon="RiFullscreenLine"
+          icon-only
+          color="secondary"
           size="xs"
-          color="primary"
-          external
-          @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
+          :title="t('Explorer les données')"
+          @click="trackEvent('Jeux de données', 'Explorer les données', 'Bouton : explorer les données')"
         >
-          {{ t('Télécharger') }}
+          {{ t('Explorer les données') }}
         </BrandedButton>
       </div>
     </header>
 
-    <section class="pb-4">
+    <section :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''">
       <TabGroup
         size="sm"
+        :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''"
         @change="switchTab"
       >
-        <div class="pl-4 pr-4 pb-4">
+        <div class="flex shrink-0 items-center border-b border-gray-default p-2">
           <TabList class="max-w-full overflow-x-auto">
             <Tab
               v-for="tab in tabsOptions"
@@ -106,13 +108,16 @@
             </Tab>
           </TabList>
         </div>
-        <TabPanels>
+        <TabPanels :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''">
           <TabPanel
             v-for="tab in tabsOptions"
             :key="tab.key"
-            class="px-4"
+            :class="[tab.key === 'data' || tab.key === 'map' ? '' : 'p-4', fullscreen ? 'flex min-h-0 flex-1 flex-col' : '']"
           >
-            <div v-if="tab.key === 'map'">
+            <div
+              v-if="tab.key === 'map'"
+              :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : 'h-[600px]'"
+            >
               <Pmtiles
                 v-if="hasPmtiles"
                 :resource="resource"
@@ -128,46 +133,83 @@
                 <span class="text-gray-medium text-xs">{{ pmtilesError }}</span>
               </PreviewUnavailable>
             </div>
-            <div v-if="tab.key === 'data'">
-              <JsonPreview
-                v-if="resource.format && resource.format.toLowerCase() === 'json'"
-                :resource="resource"
-              />
+            <div
+              v-if="tab.key === 'data'"
+              :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''"
+            >
+              <!-- Interactive table: full width, composes its own framed toolbar + table.
+                   Wrapped in Suspense so switching to this tab (or loading its data) shows
+                   the table skeleton instead of a blank gap while TabularExplorer resolves. -->
+              <Suspense
+                v-if="isTabularPreview"
+                :timeout="200"
+              >
+                <TabularExplorer :resource-id="resource.id">
+                  <div class="flex shrink-0 items-center gap-2 border-b border-gray-default p-2">
+                    <div class="flex min-w-0 flex-1 items-center gap-1.5">
+                      <TabularMobileFilterButton class="md:hidden" />
+                      <div class="hidden md:block">
+                        <TabularActiveFilters with-clear />
+                      </div>
+                    </div>
+                    <div class="flex shrink-0 items-center gap-4">
+                      <TabularColumnsMenu />
+                      <TabularRowsInfo />
+                    </div>
+                  </div>
+                  <TabularTable :fill="fullscreen" />
+                  <TabularMobileFilters />
+                </TabularExplorer>
+                <template #fallback>
+                  <TabularSkeleton :fill="fullscreen" />
+                </template>
+              </Suspense>
+
+              <!-- PDF is a full-bleed visual preview like the table and the map: it
+                   owns its own reader backdrop, so it sits outside the padded wrapper. -->
               <PdfPreview
-                v-else-if="resource.format && resource.format.toLowerCase() === 'pdf'"
+                v-else-if="isPdfPreview"
                 :resource="resource"
+                :fill="fullscreen"
               />
-              <XmlPreview
-                v-else-if="resource.format && resource.format.toLowerCase() === 'xml'"
-                :resource="resource"
-              />
-              <DatafairPreview
-                v-else-if="hasDatafairPreview"
-                :resource="resource"
-                :dataset="dataset"
-              />
-              <OpenApiViewer
-                v-else-if="hasOpenAPIPreview"
-                :url="resource.extras['apidocUrl'] as string"
-              />
-              <TabularExplorer
-                v-else-if="hasTabularData"
-                :resource-id="resource.id"
-              />
-              <PreviewUnavailable v-else>
-                <!-- "File too large to download" is the only analysis:error value from hydra for now -->
-                <template v-if="resource.extras['analysis:error'] === 'File too large to download'">
-                  {{ t("Ce fichier est trop volumineux pour être analysé et prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
-                </template>
-                <template v-else-if="resource.extras['analysis:parsing:error']">
-                  {{ t("L'analyse de ce fichier a rencontré une erreur, l'aperçu n'est pas disponible. Téléchargez-le depuis l'onglet Téléchargements.") }}
-                  <br>
-                  <span class="text-gray-medium text-xs">{{ resource.extras['analysis:parsing:error'] }}</span>
-                </template>
-                <template v-else>
-                  {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
-                </template>
-              </PreviewUnavailable>
+
+              <!-- Text previews stay padded inside the tab panel -->
+              <div
+                v-else
+                class="p-4"
+              >
+                <JsonPreview
+                  v-if="resource.format && resource.format.toLowerCase() === 'json'"
+                  :resource="resource"
+                />
+                <XmlPreview
+                  v-else-if="resource.format && resource.format.toLowerCase() === 'xml'"
+                  :resource="resource"
+                />
+                <DatafairPreview
+                  v-else-if="hasDatafairPreview"
+                  :resource="resource"
+                  :dataset="dataset"
+                />
+                <OpenApiViewer
+                  v-else-if="hasOpenAPIPreview"
+                  :url="resource.extras['apidocUrl'] as string"
+                />
+                <PreviewUnavailable v-else>
+                  <!-- "File too large to download" is the only analysis:error value from hydra for now -->
+                  <template v-if="resource.extras['analysis:error'] === 'File too large to download'">
+                    {{ t("Ce fichier est trop volumineux pour être analysé et prévisualisé. Téléchargez-le avec le bouton Télécharger.") }}
+                  </template>
+                  <template v-else-if="resource.extras['analysis:parsing:error']">
+                    {{ t("L'analyse de ce fichier a rencontré une erreur, l'aperçu n'est pas disponible. Téléchargez-le avec le bouton Télécharger.") }}
+                    <br>
+                    <span class="text-gray-medium text-xs">{{ resource.extras['analysis:parsing:error'] }}</span>
+                  </template>
+                  <template v-else>
+                    {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le avec le bouton Télécharger.") }}
+                  </template>
+                </PreviewUnavailable>
+              </div>
             </div>
             <div v-if="tab.key === 'description'">
               <MarkdownViewer
@@ -183,12 +225,6 @@
             </div>
             <div v-if="tab.key === 'metadata'">
               <Metadata :resource />
-            </div>
-            <div v-if="tab.key === 'downloads'">
-              <Downloads
-                :resource="resource"
-                :dataset="dataset"
-              />
             </div>
             <div v-if="tab.key === 'api'">
               <div class="fr-mb-4w">
@@ -214,7 +250,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
-import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiSubtractLine } from '@remixicon/vue'
+import { RiDownloadLine, RiFileCopyLine, RiFullscreenLine } from '@remixicon/vue'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import { toast } from 'vue-sonner'
 import BrandedButton from '../BrandedButton.vue'
@@ -228,19 +264,27 @@ import Tab from '../Tabs/Tab.vue'
 import TabPanels from '../Tabs/TabPanels.vue'
 import TabPanel from '../Tabs/TabPanel.vue'
 import TabularExplorer from '../TabularExplorer/TabularExplorer.vue'
+import TabularActiveFilters from '../TabularExplorer/TabularActiveFilters.vue'
+import TabularColumnsMenu from '../TabularExplorer/TabularColumnsMenu.vue'
+import TabularRowsInfo from '../TabularExplorer/TabularRowsInfo.vue'
+import TabularTable from '../TabularExplorer/TabularTable.vue'
+import TabularMobileFilters from '../TabularExplorer/TabularMobileFilters.vue'
+import TabularMobileFilterButton from '../TabularExplorer/TabularMobileFilterButton.vue'
+import TabularSkeleton from '../TabularExplorer/TabularSkeleton.vue'
 import DataStructure from '../ResourceAccordion/DataStructure.vue'
-import Downloads from '../ResourceAccordion/Downloads.vue'
 import Metadata from '../ResourceAccordion/Metadata.vue'
 import SchemaBadge from '../ResourceAccordion/SchemaBadge.vue'
 import ResourceSelector from './ResourceSelector.vue'
+import ResourceDownloadMenu from './ResourceDownloadMenu.vue'
 import { filesize, summarize } from '../../functions/helpers'
-import { getResourceFormatIcon, getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
+import { getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
 import { trackEvent } from '../../functions/matomo'
 import { useComponentsConfig } from '../../config'
 import { useFormatDate } from '../../functions/dates'
 import { useTranslation } from '../../composables/useTranslation'
 import { useResourceCapabilities } from '../../composables/useResourceCapabilities'
 import { provideTabularProfile } from '../../composables/useTabularProfile'
+import type { RouteLocationRaw } from 'vue-router'
 import type { Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 
@@ -263,19 +307,28 @@ const Pmtiles = defineAsyncComponent(() =>
   import('../ResourceAccordion/Pmtiles.client.vue'),
 )
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   dataset: Dataset | DatasetV2
   resource: Resource
   resources?: Resource[]
-}>()
-
-const emit = defineEmits<{
-  select: [resource: Resource]
-}>()
+  resourceTo: (resource: Resource) => RouteLocationRaw
+  // When provided (inline mode), shows an "Explorer" button next to the download
+  // action that opens the fullscreen explorer on the current resource.
+  exploreTo?: (resource: Resource) => string
+  replace?: boolean
+  bordered?: boolean
+  // Fullscreen mode: make the viewer a flex column so the table fills down to the
+  // bottom, and hide the inline download/visit/copy actions — they're shown in the
+  // dataset context bar above. Inline mode (dataset page) shows them in the header.
+  fullscreen?: boolean
+}>(), {
+  bordered: true,
+  fullscreen: false,
+})
 
 const { t } = useTranslation()
 const config = useComponentsConfig()
-const { formatRelativeIfRecentDate } = useFormatDate()
+const { formatRelativeIfRecentDate, formatDate } = useFormatDate()
 
 const {
   hasTabularData,
@@ -293,18 +346,19 @@ const {
 // Share the tabular profile fetch between TabularExplorer and DataStructure tabs.
 await provideTabularProfile(() => props.resource.id)
 
+// Which data-tab preview to render — same precedence as the template chain below:
+// the interactive table wins only when no dedicated preview (json/pdf/xml/datafair/api) applies.
+const isTabularPreview = computed(() => {
+  const fmt = props.resource.format?.toLowerCase()
+  if (fmt === 'json' || fmt === 'pdf' || fmt === 'xml') return false
+  if (hasDatafairPreview.value || hasOpenAPIPreview.value) return false
+  return hasTabularData.value
+})
+
+const isPdfPreview = computed(() => props.resource.format?.toLowerCase() === 'pdf')
+
 const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset, props.resource))
-
-const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : 'Fichier')
-const availabilityChecked = computed(() => props.resource.extras && 'check:available' in props.resource.extras)
-const unavailable = computed(() => availabilityChecked.value && props.resource.extras['check:available'] === false)
-const downloadButtonTitle = computed(() => {
-  if (unavailable.value) {
-    return t('Le robot de {platform} n\'a pas pu accéder à ce fichier - Télécharger le fichier en {format}', { platform: config.name, format: format.value })
-  }
-  return t('Télécharger le fichier en {format}', { format: format.value })
-})
 
 const copyResourceUrl = async () => {
   try {

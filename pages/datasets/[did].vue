@@ -27,17 +27,6 @@
             v-if="!isOrganizationCertified(dataset.organization)"
             :subject="{ id: dataset.id, class: 'Dataset' }"
           />
-          <BrandedButton
-            v-if="exploreUrl"
-            :href="exploreUrl"
-            :icon="RiExternalLinkFill"
-            icon-right
-            size="xs"
-            new-tab
-            @click="$matomo.trackEvent('Jeux de données', 'Explorer les données', 'Bouton : explorer les données')"
-          >
-            {{ $t("Explorer les données") }}
-          </BrandedButton>
           <EditButton
             v-if="dataset.permissions.edit"
             :id="dataset.id"
@@ -476,7 +465,6 @@ import {
   DatasetQuality,
   isOrganizationCertified,
   LoadingBlock,
-  type Resource,
   BrandedButton,
   useFormatDate,
   StatBox,
@@ -490,11 +478,9 @@ import {
   type DatasetMetrics,
   TranslationT,
   getDescriptionShort,
-  RESOURCE_EXPLORER_PAGE_SIZE,
 } from '@datagouv/components-next'
 import {
   RiDeleteBinLine,
-  RiExternalLinkFill,
   RiExternalLinkLine,
   RiLockLine,
 } from '@remixicon/vue'
@@ -503,7 +489,6 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
-import type { PaginatedArray } from '~/types/types'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import { useElementSize } from '@vueuse/core'
 
@@ -605,28 +590,6 @@ onMounted(async () => {
     },
     { from: 'information', to: `/datasets/${route.params.did}/informations` },
   ])
-})
-
-// Use the same cache key as ResourceExplorer's `main` fetch (dataset id + identical params)
-// so Nuxt dedupes the two into a single request on the resources tab. Every part of the key
-// must stay byte-for-byte identical to the explorer's `mainParams`, otherwise the keys diverge
-// and both requests fire again (silent perf regression, no error, no failing test):
-//   - dataset id (not route.params.did, which can be a slug)
-//   - page_size: shared RESOURCE_EXPLORER_PAGE_SIZE so the two stay in sync
-//   - q: undefined mirrors the explorer's `q: searchDebounced || undefined` at rest
-const { data: resources } = dataset.value
-  ? await useAPI<PaginatedArray<Resource>>(
-      `/api/2/datasets/${dataset.value.id}/resources/`,
-      { query: { type: 'main', page_size: RESOURCE_EXPLORER_PAGE_SIZE, q: undefined } },
-    )
-  : { data: ref<PaginatedArray<Resource> | null>(null) }
-const exploreUrl = computed(() => {
-  if (!resources.value) return null
-  for (const resource of resources.value.data) {
-    if (!resource.preview_url) continue
-    return resource.preview_url
-  }
-  return null
 })
 
 const { data: badgeTranslations } = await useAPI<Record<string, string>>(

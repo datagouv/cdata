@@ -38,36 +38,15 @@
           v-for="r in filteredResources"
           :key="r.id"
         >
-          <button
-            v-if="!isDisabled?.(r)"
-            type="button"
-            class="flex items-center gap-1.5 w-full text-left px-2 py-1.5 rounded text-sm hover:bg-gray-100 focus:outline-none focus-visible:bg-gray-100"
-            :class="{ 'font-bold bg-blue-50 text-new-primary': r.id === selectedId }"
-            @click="emit('select', r); close()"
-          >
-            <ResourceIcon
-              :resource="r"
-              class="size-3.5 shrink-0"
-            />
-            <span class="truncate">{{ r.title || t('Fichier sans nom') }}</span>
-            <span
-              v-if="r.format"
-              class="ml-auto text-xs text-gray-medium uppercase shrink-0"
-            >
-              {{ r.format }}
-            </span>
-          </button>
-          <div
-            v-else
-            class="flex items-center gap-1.5 px-2 py-1.5 rounded text-sm text-gray-medium cursor-not-allowed"
-            :title="disabledTitle"
-          >
-            <ResourceIcon
-              :resource="r"
-              class="size-3.5 shrink-0 opacity-50"
-            />
-            <span class="truncate opacity-70">{{ r.title || t('Fichier sans nom') }}</span>
-          </div>
+          <ResourceListItem
+            :resource="r"
+            :to="resourceTo(r)"
+            :replace
+            :selected="r.id === selectedId"
+            :disabled="isDisabled?.(r)"
+            :disabled-title="disabledTitle"
+            @click="close()"
+          />
         </li>
       </ul>
       <p
@@ -82,22 +61,21 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import type { RouteLocationRaw } from 'vue-router'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { RiArrowDownSLine } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
-import ResourceIcon from '../ResourceAccordion/ResourceIcon.vue'
+import ResourceListItem from '../ResourceListItem.vue'
 import type { Resource } from '../../types/resources'
 
 const props = defineProps<{
   resources: Resource[]
   selectedId: string
+  resourceTo: (resource: Resource) => RouteLocationRaw
   searchable?: boolean
   isDisabled?: (resource: Resource) => boolean
   disabledTitle?: string
-}>()
-
-const emit = defineEmits<{
-  select: [resource: Resource]
+  replace?: boolean
 }>()
 
 const { t } = useTranslation()

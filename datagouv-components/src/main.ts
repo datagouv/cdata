@@ -79,6 +79,7 @@ import ReadMore from './components/ReadMore.vue'
 import ResourceAccordion from './components/ResourceAccordion/ResourceAccordion.vue'
 import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
 import ResourceSelector from './components/ResourceExplorer/ResourceSelector.vue'
+import ResourceListItem from './components/ResourceListItem.vue'
 import ResourceExplorer from './components/ResourceExplorer/ResourceExplorer.vue'
 import ResourceExplorerSidebar from './components/ResourceExplorer/ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './components/ResourceExplorer/ResourceExplorerViewer.vue'
@@ -120,6 +121,8 @@ export * from './composables/useTranslation'
 export * from './composables/useHasTabularData'
 export * from './composables/useResourceCapabilities'
 export * from './composables/useTabularProfile'
+export * from './composables/useDatasetResources'
+export * from './composables/useResizable'
 
 export * from './functions/activities'
 export * from './functions/datasets'
@@ -380,6 +383,7 @@ export {
   ResourceExplorerViewer,
   ObjectCardOwner,
   ResourceIcon,
+  ResourceListItem,
   ResourceSelector,
   ReuseCard,
   ReuseDetails,

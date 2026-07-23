@@ -1,15 +1,15 @@
 <template>
-  <div>
+  <div class="flex h-full flex-col">
     <PreviewUnavailable v-if="hasError">
       {{ t("L'aperçu cartographique de ce fichier n'a pas pu être chargé.") }}
     </PreviewUnavailable>
     <div
       v-else
-      class="-mx-4"
+      class="flex min-h-0 flex-1 flex-col"
     >
       <div
         v-if="pmtilesViewerUrl"
-        class="bg-blue-100 text-datagouv fr-hidden fr-unhidden-md p-4"
+        class="bg-blue-100 text-datagouv fr-hidden fr-unhidden-md p-4 shrink-0"
       >
         <div class="fr-grid-row fr-grid-row--middle fr-grid-row--gutters">
           <div
@@ -35,12 +35,17 @@
           </p>
         </div>
       </div>
-      <div
-        ref="containerRef"
-        style="height: 600px;"
-      />
-      <div class="fr-px-5v fr-pt-5v">
-        {{ t("Aperçu de la carte mis à jour le {date}", { date: lastUpdate }) }}
+      <div class="relative min-h-0 flex-1">
+        <div
+          ref="containerRef"
+          class="size-full"
+        />
+        <!-- Freshness caption overlaid inside the map (bottom-left, the corner left
+             free by the navigation/geolocate controls top-right and the attribution
+             bottom-right) so the map itself can use the whole height. -->
+        <div class="pointer-events-none absolute bottom-2 left-2 z-10 rounded bg-white/90 px-2 py-1 text-[12px] leading-4 text-gray-medium shadow-sm">
+          {{ t("Aperçu de la carte mis à jour le {date}", { date: lastUpdate }) }}
+        </div>
       </div>
     </div>
   </div>
@@ -104,14 +109,23 @@ async function displayMap() {
   const p = new PMTiles(pmtilesUrl.value)
   protocol.add(p)
 
-  p.getHeader().then((h: { maxZoom: number, centerLon: number, centerLat: number }) => {
+  p.getHeader().then((h: { minLon: number, minLat: number, maxLon: number, maxLat: number, centerZoom: number, centerLon: number, centerLat: number }) => {
+    // Frame the data's bounding box (carried by the archive header) so we land on
+    // the data. The previous `maxZoom - 2` overshot into a single point instead of
+    // fitting the whole extent. Fall back to the header center when the bbox is
+    // degenerate (e.g. a single point or unset world bounds).
+    const hasBounds = h.minLon < h.maxLon && h.minLat < h.maxLat
     const map = new maplibregl.Map({
       container: container.value!,
       // JSON import is inferred too loosely (e.g. center as number[]) to match
       // maplibre's strict StyleSpecification, so cast through unknown.
       style: styleVector as unknown as maplibregl.StyleSpecification,
-      zoom: h.maxZoom - 2,
-      center: [h.centerLon, h.centerLat],
+      ...(hasBounds
+        ? {
+            bounds: [[h.minLon, h.minLat], [h.maxLon, h.maxLat]] as [[number, number], [number, number]],
+            fitBoundsOptions: { padding: 24 },
+          }
+        : { center: [h.centerLon, h.centerLat] as [number, number], zoom: h.centerZoom }),
     })
     map.addControl(new maplibregl.NavigationControl())
     map.addControl(

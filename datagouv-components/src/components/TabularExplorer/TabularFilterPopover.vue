@@ -5,11 +5,12 @@
     class="relative shrink-0"
   >
     <PopoverButton
-      class="p-0.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-new-primary"
-      :class="hasColumnFilter ? 'bg-primary text-white' : 'hover:bg-gray-100'"
+      class="flex size-5 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-new-primary"
+      :class="open ? 'bg-new-primary/10' : 'hover:bg-gray-100'"
     >
       <RiFilterLine
-        class="size-3.5"
+        class="size-4"
+        :class="open || hasColumnFilter ? 'text-new-primary' : 'text-gray-low'"
         aria-hidden="true"
       />
       <span class="sr-only">{{ t('Filtrer') }} {{ column }}</span>
@@ -48,7 +49,6 @@
             :column-profile="columnProfile"
             :null-percent="nullPercent"
             :total-lines="totalLines"
-            :category-badge-styles="categoryBadgeStyles"
             :boolean-counts="booleanCounts"
           />
         </PopoverPanel>
@@ -67,7 +67,7 @@ import { hasFilterForColumn as _hasFilterForColumn } from '../../functions/tabul
 import BrandedButton from '../BrandedButton.vue'
 import ClientOnly from '../ClientOnly.vue'
 import TabularFilterContent from './TabularFilterContent.vue'
-import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig, BadgeStyle } from './types'
+import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig } from './types'
 
 const props = defineProps<{
   column: string
@@ -75,7 +75,6 @@ const props = defineProps<{
   columnProfile: TabularColumnProfile | null
   nullPercent: string
   totalLines: number
-  categoryBadgeStyles?: Record<string, BadgeStyle>
   booleanCounts?: { trueCount: number, falseCount: number }
 }>()
 
