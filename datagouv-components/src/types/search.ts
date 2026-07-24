@@ -15,6 +15,8 @@ import type {
   USER,
   OrganizationTypes } from '../functions/organizations'
 
+// Common types
+
 export type NonEmptyArray<T> = [T, ...T[]]
 
 export type LastUpdateRange = 'last_30_days' | 'last_12_months' | 'last_3_years'

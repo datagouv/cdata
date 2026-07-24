@@ -424,10 +424,8 @@ import ReuseTypeFilter from './Filter/ReuseTypeFilter.vue'
 const props = withDefaults(defineProps<{
   /**
    * Either a flat list of search types (`GlobalSearchConfig`, e.g. `[{ class: 'datasets', ... }]`,
-   * shared across the whole component), or a list of topic-scoped bundles
-   * (`UniverseConfig[]`, e.g. `[{ key, name, topicId, types: [...] }]`) — pass the
-   * latter to enable the "Univers" selector and per-universe topic scoping.
-   * The two shapes are distinguished at runtime by the presence of `topicId`.
+   * shared across the whole component), or a list of topic-scoped bundles for universes
+   * (`UniverseConfig[]`, e.g. `[{ key, name, topicId, types: [...] }]`)
    */
   config?: GlobalSearchConfig | UniverseConfig[]
   placeholder?: string | null
@@ -443,17 +441,14 @@ const emit = defineEmits<{
   resultsCount: [total: number]
 }>()
 
-// A UniverseConfig always has topicId/types; a SearchTypeConfig always has class.
-// This is the only place that inspects props.config's shape — every computed
-// below reads `universes`/`flatConfig` instead of re-testing the prop itself.
+// Duck-type config list: universes list or standard config?
 function isUniverseList(config: GlobalSearchConfig | UniverseConfig[]): config is UniverseConfig[] {
   const first = config[0]
   return first !== undefined && 'topicId' in first
 }
 
-// Single entrypoint: normalizes props.config into universe mode (with synthetic
-// {universe}-{class} keys injected for any type missing an explicit key, so each
-// universe×type combination gets its own fetch instance) or flat mode.
+// Normalizes props.config for universes with synthetic
+// {universe}-{class} keys injected for any type missing an explicit key
 const universes = computed<NonEmptyArray<UniverseConfig> | undefined>(() => {
   if (!isUniverseList(props.config)) return undefined
   return props.config.map(u => ({
