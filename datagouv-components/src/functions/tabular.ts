@@ -42,12 +42,13 @@ export function buildTypeConfig(t: TranslationFunction): Record<ColumnType, Type
     text: { icon: RiText, label: t('Texte') },
     date: { icon: RiCalendarLine, label: t('Date') },
     boolean: { icon: RiCheckboxLine, label: t('Booléen') },
+    year: { icon: RiCalendarLine, label: t('Année') },
   }
 }
 
 export function resolveColumnType(colInfo: { python_type: string, format?: string }, isCategorical: boolean): ColumnType {
+  if (colInfo.format === 'year') return 'year'
   if (['int', 'float'].includes(colInfo.python_type)) return 'number'
-  if (colInfo.format === 'year') return 'date'
   if (['date', 'datetime'].includes(colInfo.python_type)) return 'date'
   if (colInfo.python_type === 'bool') return 'boolean'
   if (isCategorical) return 'categorical'
@@ -157,6 +158,30 @@ export function useFormatTabular() {
 
 const TRUTHY_VALUES = ['true', '1', 'oui', 'yes']
 const FALSY_VALUES = ['false', '0', 'non', 'no']
+
+/**
+ * Builds the OR conditions for global search across all columns.
+ * Text and categorical columns get a `__contains` filter; number columns
+ * get a `__exact` filter only when the search value is numeric.
+ * Date and boolean columns are excluded.
+ */
+export function buildGlobalSearchConditions(
+  allColumns: string[],
+  getColumnType: (col: string) => ColumnType,
+  searchValue: string,
+): string[] {
+  const conditions: string[] = []
+  for (const col of allColumns) {
+    const type = getColumnType(col)
+    if (type === 'text' || type === 'categorical') {
+      conditions.push(col + '__contains.' + encodeURIComponent(searchValue))
+    }
+    else if (type === 'number' && searchValue.length > 0 && isFinite(Number(searchValue))) {
+      conditions.push(col + '__exact.' + encodeURIComponent(searchValue))
+    }
+  }
+  return conditions
+}
 
 export function isTruthy(value: unknown): boolean {
   if (typeof value === 'boolean') return value

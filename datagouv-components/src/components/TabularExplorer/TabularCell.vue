@@ -21,6 +21,10 @@
     :style="categoryBadgeStyle ? { backgroundColor: categoryBadgeStyle.backgroundColor, color: categoryBadgeStyle.color } : undefined"
   >{{ value }}</span>
   <span
+    v-else-if="columnType === 'number' && noNumberFormat"
+    :class="compact ? 'font-mono tabular-nums text-xs text-gray-title' : ''"
+  >{{ value }}</span>
+  <span
     v-else-if="columnType === 'number'"
     :class="compact ? 'font-mono tabular-nums text-xs text-gray-title' : ''"
   >{{ formatNumber(value) }}</span>
@@ -28,6 +32,10 @@
     v-else-if="columnType === 'date'"
     :class="compact ? 'font-mono tabular-nums text-xs text-gray-title' : ''"
   >{{ formatCellDate(value) }}</span>
+  <span
+    v-else-if="columnType === 'year'"
+    :class="compact ? 'font-mono tabular-nums text-xs text-gray-title' : ''"
+  >{{ value }}</span>
   <span
     v-else
     class="text-gray-title truncate block text-xs"
@@ -44,6 +52,7 @@ defineProps<{
   columnType: ColumnType
   categoryBadgeStyle?: BadgeStyle
   compact?: boolean
+  noNumberFormat?: boolean
 }>()
 
 const { t } = useTranslation()

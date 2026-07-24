@@ -154,14 +154,14 @@
 
     <!-- Number range -->
     <form
-      v-if="columnType === 'number' && columnProfile"
+      v-if="(columnType === 'number' || columnType === 'year') && columnProfile"
       class="px-3 py-2 border-b border-black/10 space-y-2"
       @submit.prevent="applyRange"
     >
       <div class="flex items-center gap-2 text-xs text-gray-plain">
-        <span class="tabular-nums">{{ formatNumber(profileMin) }}</span>
+        <span class="tabular-nums">{{ columnType === 'year' ? profileMin : formatNumber(profileMin) }}</span>
         <span class="text-gray-medium">—</span>
-        <span class="tabular-nums">{{ formatNumber(profileMax) }}</span>
+        <span class="tabular-nums">{{ columnType === 'year' ? profileMax : formatNumber(profileMax) }}</span>
       </div>
       <div class="flex items-center gap-2">
         <input

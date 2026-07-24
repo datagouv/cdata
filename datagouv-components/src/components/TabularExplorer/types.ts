@@ -62,13 +62,13 @@ export type TabularTopValue = {
   count: number
 }
 
-export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean'
+export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean' | 'year'
 
 export type ColumnFilters = {
   in?: string[]
   exact?: string
-  min?: number
-  max?: number
+  min?: number | string
+  max?: number | string
   contains?: string
   null?: 'only' | 'exclude'
 }

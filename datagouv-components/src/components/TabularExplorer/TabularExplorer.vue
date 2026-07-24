@@ -63,6 +63,7 @@
            ExploreResourceView), so they line up with the resource title /
            download button above. Only the table itself goes edge-to-edge
            (via -mx-4 below). -->
+      <slot name="toolbar-top" />
       <div>
         <div class="flex items-center py-3 gap-2">
           <!-- Mobile: filter & sort button -->
@@ -379,15 +380,32 @@
                 v-for="col in displayedColumns"
                 :key="col"
                 data-cell
-                class="p-2 align-middle whitespace-nowrap border-r border-gray-default last:border-r-0 overflow-hidden cursor-pointer hover:bg-gray-200/50"
-                :class="{ 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' }"
+                class="p-2 align-middle whitespace-nowrap border-r border-gray-default last:border-r-0 overflow-hidden"
+                :class="[
+                  !props.disablePopover && 'cursor-pointer',
+                  { 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' || getColumnType(col) === 'year' },
+                ]"
                 :style="columnWidths[col] ? { maxWidth: columnWidths[col] + 'px' } : { maxWidth: '300px' }"
                 @click="onCellClick(col, row[col], $event)"
               >
+                <a
+                  v-if="linkColumns?.has(col)"
+                  :href="getRowHref(row) ?? ''"
+                  class="link"
+                >
+                  <TabularCell
+                    :value="row[col]"
+                    :column-type="getColumnType(col)"
+                    :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
+                    :no-number-format="props.noFormatColumns?.includes(col)"
+                  />
+                </a>
                 <TabularCell
+                  v-else
                   :value="row[col]"
                   :column-type="getColumnType(col)"
                   :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
+                  :no-number-format="props.noFormatColumns?.includes(col)"
                 />
               </td>
             </tr>
@@ -402,6 +420,7 @@
 
       <!-- Cell popover -->
       <TabularCellPopover
+        v-if="!props.disablePopover"
         v-model:cell="activeCell"
         v-model:filters="filters"
       />
@@ -450,11 +469,25 @@
               class="min-w-0 pl-4 cursor-pointer"
               @click="onCellClick(col, row[col], $event)"
             >
+              <a
+                v-if="linkColumns?.has(col)"
+                :href="getRowHref(row) ?? ''"
+              >
+                <TabularCell
+                  :value="row[col]"
+                  :column-type="getColumnType(col)"
+                  :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
+                  compact
+                  :no-number-format="props.noFormatColumns?.includes(col)"
+                />
+              </a>
               <TabularCell
+                v-else
                 :value="row[col]"
                 :column-type="getColumnType(col)"
                 :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
                 compact
+                :no-number-format="props.noFormatColumns?.includes(col)"
               />
             </div>
           </div>
@@ -614,7 +647,7 @@ import { useFetch } from '../../functions/api'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { injectTabularProfile } from '../../composables/useTabularProfile'
-import { buildTypeConfig, buildFormatConfig, humanizeFormat, GENERIC_FORMATS, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy, resolveColumnType } from '../../functions/tabular'
+import { buildTypeConfig, buildFormatConfig, humanizeFormat, GENERIC_FORMATS, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy, resolveColumnType, buildGlobalSearchConditions } from '../../functions/tabular'
 import ClientOnly from '../ClientOnly.vue'
 import SimpleBanner from '../SimpleBanner.vue'
 import BrandedButton from '../BrandedButton.vue'
@@ -633,7 +666,36 @@ const props = defineProps<{
   // the host's padding. Used on the standalone explore page where the table
   // should span the whole screen while the toolbar stays inside the container.
   fullBleed?: boolean
+  // When set, searches across multiple columns using the Tabular API's or(...)
+  // parameter. Text and categorical columns get a __contains filter; number
+  // columns get a __exact filter (since __contains is not supported for numbers
+  // by the API). Date and boolean columns are excluded.
+  // Note: combined via AND with any existing column-specific `contains` filters,
+  // so it acts as an additional narrowing constraint, not a replacement.
+  globalSearch?: string
+  // When true, clicking a cell does not open the popover. Use when row-click
+  // navigation is the primary interaction.
+  disablePopover?: boolean
+  // Initial filters applied on mount, e.g. { 'Administration': { contains: 'Ministère' } }.
+  // Used when navigating from the detail page badge with query params.
+  initialFilters?: Record<string, ColumnFilters>
+  // When set, renders <a> tags inside the specified column cells for native
+  // browser UX (hover URL, ctrl+click, middle-click).
+  rowHref?: { columns: string[], href: (row: TabularRow) => string }
+  // Columns listed here render their values raw (no number formatting).
+  // Useful for identifier columns.
+  noFormatColumns?: string[]
 }>()
+
+const rowHrefFn = computed(() => props.rowHref?.href ?? null)
+
+function getRowHref(row: TabularRow): string | null {
+  return rowHrefFn.value?.(row) ?? null
+}
+
+const linkColumns = computed(() =>
+  props.rowHref ? new Set(props.rowHref.columns) : null,
+)
 
 const { t } = useTranslation()
 const config = useComponentsConfig()
@@ -657,6 +719,10 @@ const dataUrl = computed(() =>
 // Sort & filter state
 const sort = ref<SortConfig | null>(null)
 const filters = ref<Record<string, ColumnFilters>>({})
+
+if (props.initialFilters) {
+  filters.value = { ...props.initialFilters }
+}
 
 const PAGE_SIZE = 50
 
@@ -687,6 +753,10 @@ const dataQuery = computed(() => {
     else if (filter.null === 'exclude') {
       q[`${col}__isnotnull`] = ''
     }
+  }
+  if (props.globalSearch && profileData.value?.profile) {
+    const conditions = buildGlobalSearchConditions(allColumns.value, getColumnType, props.globalSearch)
+    q.or = '(' + conditions.join(',') + ')'
   }
   return q
 })
@@ -938,6 +1008,7 @@ onUnmounted(() => {
 const activeCell = ref<CellInfo | null>(null)
 
 function onCellClick(col: string, value: unknown, event: MouseEvent) {
+  if (props.disablePopover) return
   const el = (event.target as HTMLElement).closest('[data-cell]') as HTMLElement | null
   if (!el) return
   if (activeCell.value && activeCell.value.element === el) {
@@ -961,7 +1032,12 @@ const activeFilters = computed<ActiveFilter[]>(() => {
       parts.push(`= ${filter.in.join(', ')}`)
     }
     if (filter.exact != null) {
-      parts.push(`= ${filter.exact === 'true' ? t('Vrai') : t('Faux')}`)
+      if (getColumnType(col) === 'boolean') {
+        parts.push(`= ${filter.exact === 'true' ? t('Vrai') : t('Faux')}`)
+      }
+      else {
+        parts.push(`= ${filter.exact}`)
+      }
     }
     if (filter.contains) {
       parts.push(`${t('contient')} "${filter.contains}"`)
