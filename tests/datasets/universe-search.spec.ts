@@ -48,8 +48,12 @@ test('switching back to first universe removes ?universe= from URL', async ({ pa
   const fieldset = await gotoAndWait(page)
   await fieldset.getByRole('radio', { name: UNIVERSE_2.name }).click({ force: true })
   await page.waitForURL(url => url.searchParams.has('universe'))
+  // Wait for the fetch/render cycle to fully settle (not just the URL update) so
+  // assertNoConsoleErrors also catches errors surfacing after the switch
+  await page.waitForLoadState('networkidle')
   await fieldset.getByRole('radio', { name: UNIVERSE_1.name }).click({ force: true })
   await page.waitForURL(url => !url.searchParams.has('universe'))
+  await page.waitForLoadState('networkidle')
   expect(new URL(page.url()).searchParams.has('universe')).toBeFalsy()
 })
 
@@ -110,20 +114,10 @@ test('type is preserved across universe switch when class exists in both', async
   const typeFieldset = page.locator('fieldset:has(input[name="search-type"])')
 
   await typeFieldset.getByRole('radio', { name: /API/i }).click({ force: true })
-  // This page doesn't bind v-model:type to a route query (like the other design
-  // pages), so `type` never lands in the URL here — wait on the checked state instead.
   await expect(typeFieldset.getByRole('radio', { name: /API/i })).toBeChecked()
 
   await fieldset.getByRole('radio', { name: UNIVERSE_2.name }).click({ force: true })
   await page.waitForURL(url => url.searchParams.has('universe'))
 
   await expect(typeFieldset.getByRole('radio', { name: /API/i })).toBeChecked()
-})
-
-test('no console errors when switching between universes', async ({ page }) => {
-  const fieldset = await gotoAndWait(page)
-  await fieldset.getByRole('radio', { name: UNIVERSE_2.name }).click({ force: true })
-  await page.waitForLoadState('networkidle')
-  await fieldset.getByRole('radio', { name: UNIVERSE_1.name }).click({ force: true })
-  await page.waitForLoadState('networkidle')
 })
