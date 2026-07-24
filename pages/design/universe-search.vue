@@ -46,7 +46,9 @@ const altDatasetSortOptions: typeof defaultDatasetSortOptions = [
   { value: '-created', label: 'Date de création' },
 ]
 
-const universes = ref<UniverseConfig[]>([])
+// shallowRef: the array is always replaced wholesale below, never mutated in
+// place, and its items hold icon component objects that Vue shouldn't deep-proxy.
+const universes = shallowRef<UniverseConfig[]>([])
 
 watch(
   () => topicsData.value?.data,
