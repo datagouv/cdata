@@ -43,6 +43,7 @@ export function buildTypeConfig(t: TranslationFunction): Record<ColumnType, Type
     date: { icon: RiCalendarLine, label: t('Date') },
     boolean: { icon: RiCheckboxLine, label: t('Booléen') },
     year: { icon: RiCalendarLine, label: t('Année') },
+    json: { icon: RiBracesLine, label: t('JSON') },
   }
 }
 
@@ -51,6 +52,7 @@ export function resolveColumnType(colInfo: { python_type: string, format?: strin
   if (['int', 'float'].includes(colInfo.python_type)) return 'number'
   if (['date', 'datetime'].includes(colInfo.python_type)) return 'date'
   if (colInfo.python_type === 'bool') return 'boolean'
+  if (colInfo.python_type === 'json' || colInfo.format === 'geojson') return 'json'
   if (isCategorical) return 'categorical'
   return 'text'
 }
@@ -58,7 +60,7 @@ export function resolveColumnType(colInfo: { python_type: string, format?: strin
 // csv-detective formats that carry no semantic meaning beyond the generic
 // display type already resolved by `ColumnType` — these fall back to
 // `buildTypeConfig` (Texte / Nombre / Date / Booléen) in the header.
-export const GENERIC_FORMATS = new Set(['string', 'int', 'float', 'date', 'bool', 'booleen'])
+export const GENERIC_FORMATS = new Set(['string', 'int', 'float', 'date', 'bool', 'booleen', 'json'])
 
 // Semantic types detected by csv-detective (see ../../../csv-detective/csv_detective/formats).
 // The list is intentionally exhaustive, but unknown formats are tolerated:

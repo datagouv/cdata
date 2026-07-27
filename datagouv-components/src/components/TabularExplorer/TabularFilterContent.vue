@@ -61,18 +61,27 @@
       </div>
     </div>
 
-    <!-- Search (contains) -->
-    <div class="px-3 py-2 border-b border-black/10">
+    <!-- Search (contains) or date filter -->
+    <div
+      v-if="columnType !== 'boolean' && columnType !== 'json'"
+      class="px-3 py-2 border-b border-black/10"
+    >
       <div class="relative">
+        <RiCalendarLine
+          v-if="columnType === 'date'"
+          class="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-medium"
+          aria-hidden="true"
+        />
         <RiSearchLine
+          v-else
           class="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-medium"
           aria-hidden="true"
         />
         <input
           v-model="search"
-          type="text"
+          :type="columnType === 'number' || columnType === 'year' ? 'number' : columnType === 'date' ? 'date' : 'text'"
           class="w-full h-8 text-sm border border-transparent rounded-lg py-1 pl-8 pr-3 bg-[#f3f3f5] focus:outline-none focus:border-new-primary"
-          :placeholder="t('Rechercher...')"
+          :placeholder="columnType === 'date' ? '' : t('Rechercher...')"
         >
       </div>
     </div>
@@ -213,6 +222,7 @@ import {
   RiArrowUpLine,
   RiArrowDownLine,
   RiSearchLine,
+  RiCalendarLine,
   RiCheckLine,
 } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
@@ -241,11 +251,15 @@ const search = ref('')
 
 watchDebounced(search, (q) => {
   const existing = filters.value[props.column] ?? {}
+  const searchableTypes: ColumnType[] = ['number', 'year', 'text', 'categorical', 'date']
+  if (!searchableTypes.includes(props.columnType)) return
+
+  const operator = props.columnType === 'number' || props.columnType === 'year' || props.columnType === 'date' ? 'exact' : 'contains'
   if (q) {
-    filters.value = { ...filters.value, [props.column]: { ...existing, contains: q } }
+    filters.value = { ...filters.value, [props.column]: { ...existing, [operator]: q } }
   }
   else {
-    const { contains: _, ...rest } = existing
+    const { [operator]: _, ...rest } = existing
     filters.value = { ...filters.value, [props.column]: rest }
   }
 }, { debounce: 300 })

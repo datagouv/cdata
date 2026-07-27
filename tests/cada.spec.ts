@@ -92,3 +92,33 @@ test.describe('global search', () => {
     await expect(hasRows).toBeVisible({ timeout: 10000 })
   })
 })
+
+test.describe('column filter', () => {
+  test('date column filter popover shows a date input', async ({ page }) => {
+    await page.goto('/explore/cada')
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.getByText('Lignes').first()).toBeVisible({ timeout: 30000 })
+
+    const seanceFilterButton = page.getByRole('button', { name: 'Filtrer Séance' })
+    await seanceFilterButton.click()
+
+    // Date columns show a native date picker input, not a text search
+    const dateInput = page.locator('input[type="date"]')
+    await expect(dateInput).toBeVisible({ timeout: 3000 })
+  })
+
+  test('year column filter shows a number input', async ({ page }) => {
+    await page.goto('/explore/cada')
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.getByText('Lignes').first()).toBeVisible({ timeout: 30000 })
+
+    const anneeFilterButton = page.getByRole('button', { name: 'Filtrer Année' })
+    await anneeFilterButton.click()
+
+    await expect(
+      page.locator('[data-column-filter="Année"]').getByPlaceholder('Rechercher...'),
+    ).toBeVisible({ timeout: 3000 })
+  })
+})
