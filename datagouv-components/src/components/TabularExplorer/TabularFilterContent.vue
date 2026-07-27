@@ -63,7 +63,7 @@
 
     <!-- Search (contains) or date filter -->
     <div
-      v-if="columnType !== 'boolean' && columnType !== 'json'"
+      v-if="columnType !== 'boolean'"
       class="px-3 py-2 border-b border-black/10"
     >
       <div class="relative">

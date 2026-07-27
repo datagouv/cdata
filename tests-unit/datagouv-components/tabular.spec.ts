@@ -58,10 +58,10 @@ describe('resolveColumnType', () => {
     expect(resolveColumnType({ python_type: 'string' }, true)).toBe('categorical')
   })
 
-  it('resolves json and geojson as json', () => {
-    expect(resolveColumnType({ python_type: 'json' }, false)).toBe('json')
-    expect(resolveColumnType({ python_type: 'json' }, true)).toBe('json')
-    expect(resolveColumnType({ python_type: 'string', format: 'geojson' }, false)).toBe('json')
+  it('resolves json and geojson as text, or categorical when they are', () => {
+    expect(resolveColumnType({ python_type: 'json' }, false)).toBe('text')
+    expect(resolveColumnType({ python_type: 'json' }, true)).toBe('categorical')
+    expect(resolveColumnType({ python_type: 'string', format: 'geojson' }, false)).toBe('text')
   })
 
   it('resolves everything else as text', () => {
@@ -161,20 +161,18 @@ describe('global search query conditions', () => {
     expect(nonNumeric).toContain('name__contains.abc')
   })
 
-  it('excludes date, year, boolean and json columns from global search', () => {
-    const cols = ['a_date', 'a_year', 'a_bool', 'a_json', 'a_text']
+  it('excludes date, year and boolean columns from global search', () => {
+    const cols = ['a_date', 'a_year', 'a_bool', 'a_text']
     const types: Record<string, ColumnType> = {
       a_date: 'date',
       a_year: 'year',
       a_bool: 'boolean',
-      a_json: 'json',
       a_text: 'text',
     }
     const conditions = buildGlobalSearchConditions(cols, c => types[c], 'search')
     expect(conditions.find(c => c.startsWith('a_date__'))).toBeUndefined()
     expect(conditions.find(c => c.startsWith('a_year__'))).toBeUndefined()
     expect(conditions.find(c => c.startsWith('a_bool__'))).toBeUndefined()
-    expect(conditions.find(c => c.startsWith('a_json__'))).toBeUndefined()
     expect(conditions).toContain('a_text__contains.search')
     expect(conditions).toHaveLength(1)
   })
