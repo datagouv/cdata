@@ -67,68 +67,82 @@
           {{ $t('La Commission d\'accès aux documents administratifs (CADA) est une autorité administrative indépendante chargée de veiller à la liberté d\'accès aux documents administratifs et aux archives publiques ainsi qu\'à la réutilisation des informations publiques. Elle peut être saisie par les personnes qui se sont vues opposer une décision défavorable en matière d\'accès à des documents administratifs. Le recours devant la CADA constitue un préalable obligatoire à tout recours contentieux.') }}
         </p>
 
-        <p class="text-gray-700 mb-6">
-          {{ $t('Cette exploration permet de consulter les avis et conseils rendus par la CADA depuis les années 1980. Les données proviennent du jeu de données') }}
-          <CdataLink
-            :to="CADA_DATASET_URL"
-            external
-            target="_blank"
-            class="link"
-          >
-            {{ $t('Avis et conseils de la CADA') }}
-          </CdataLink>
-          {{ $t('publié sur') }}
-          <CdataLink
-            href="https://www.data.gouv.fr"
-            external
-            target="_blank"
-            class="link"
-          >
-            data.gouv.fr
-          </CdataLink>.
-        </p>
+        <TranslationT
+          keypath="Cette exploration permet de consulter les avis et conseils rendus par la CADA depuis les années 1980. Les données proviennent du jeu de données {dataset} publié sur {platform}."
+          tag="p"
+          class="text-gray-700 mb-6"
+        >
+          <template #dataset>
+            <CdataLink
+              :to="CADA_DATASET_URL"
+              external
+              target="_blank"
+              class="link"
+            >
+              {{ $t('Avis et conseils de la CADA') }}
+            </CdataLink>
+          </template>
+          <template #platform>
+            <CdataLink
+              href="https://www.data.gouv.fr"
+              external
+              target="_blank"
+              class="link"
+            >
+              data.gouv.fr
+            </CdataLink>
+          </template>
+        </TranslationT>
 
         <h2 class="text-lg font-bold mb-4">
           {{ $t('Cadre légal') }}
         </h2>
-        <p class="text-gray-700 mb-4">
-          {{ $t('La politique d\u2019open data, dont le cadre légal a été profondément renouvelé par les lois') }}
-          <CdataLink
-            href="https://www.legifrance.gouv.fr/eli/loi/2015/12/28/PRMX1515110L/jo/texte"
-            external
-            target="_blank"
-            class="link"
-          >
-            {{ $t('Gratuité et modalités de réutilisation des informations publiques') }}
-          </CdataLink>
-          {{ $t('et') }}
-          <CdataLink
-            href="https://www.legifrance.gouv.fr/affichTexte.do;jsessionid=70F06FAFE42AB53A449EF2AE222183BF.tplgfr23s_1?cidTexte=JORFTEXT000033202746&categorieLien=id"
-            external
-            target="_blank"
-            class="link"
-          >
-            {{ $t('République numérique') }}
-          </CdataLink>
-          {{ $t('désormais codifiées dans le') }}
-          <CdataLink
-            href="https://www.legifrance.gouv.fr/affichCode.do?cidTexte=LEGITEXT000031366350&dateTexte=vig"
-            external
-            target="_blank"
-            class="link"
-          >
-            {{ $t('Code des relations entre le public et l\u2019administration') }}
-          </CdataLink>
-          {{ $t(', puise en partie ses fondements dans le droit d\u2019accès aux documents administratifs, institué par') }}
-          <CdataLink
-            href="https://www.legifrance.gouv.fr/jo_pdf.do?id=JORFTEXT000000339241"
-            external
-            target="_blank"
-            class="link"
-          >
-            {{ $t('la loi CADA en 1978') }}
-          </CdataLink>{{ $t('. La loi CADA permet aux particuliers de demander des documents à l\u2019ensemble des administrations centrales et locales. Ces dernières ont l\u2019obligation d\u2019y répondre, favorablement ou défavorablement.') }}
-        </p>
+        <TranslationT
+          keypath="La politique d’open data, dont le cadre légal a été profondément renouvelé par les lois {gratuite} et {republique} désormais codifiées dans le {code}, puise en partie ses fondements dans le droit d’accès aux documents administratifs, institué par {loiCada}. La loi CADA permet aux particuliers de demander des documents à l’ensemble des administrations centrales et locales. Ces dernières ont l’obligation d’y répondre, favorablement ou défavorablement."
+          tag="p"
+          class="text-gray-700 mb-4"
+        >
+          <template #gratuite>
+            <CdataLink
+              href="https://www.legifrance.gouv.fr/eli/loi/2015/12/28/PRMX1515110L/jo/texte"
+              external
+              target="_blank"
+              class="link"
+            >
+              {{ $t('Gratuité et modalités de réutilisation des informations publiques') }}
+            </CdataLink>
+          </template>
+          <template #republique>
+            <CdataLink
+              href="https://www.legifrance.gouv.fr/affichTexte.do;jsessionid=70F06FAFE42AB53A449EF2AE222183BF.tplgfr23s_1?cidTexte=JORFTEXT000033202746&categorieLien=id"
+              external
+              target="_blank"
+              class="link"
+            >
+              {{ $t('République numérique') }}
+            </CdataLink>
+          </template>
+          <template #code>
+            <CdataLink
+              href="https://www.legifrance.gouv.fr/affichCode.do?cidTexte=LEGITEXT000031366350&dateTexte=vig"
+              external
+              target="_blank"
+              class="link"
+            >
+              {{ $t('Code des relations entre le public et l’administration') }}
+            </CdataLink>
+          </template>
+          <template #loiCada>
+            <CdataLink
+              href="https://www.legifrance.gouv.fr/jo_pdf.do?id=JORFTEXT000000339241"
+              external
+              target="_blank"
+              class="link"
+            >
+              {{ $t('la loi CADA en 1978') }}
+            </CdataLink>
+          </template>
+        </TranslationT>
 
         <h2 class="text-lg font-bold mb-4">
           {{ $t('Liens utiles') }}
@@ -140,7 +154,7 @@
               target="_blank"
               class="link"
             >
-              {{ $t('Quand et comment saisir la CADA\u202f?') }}
+              {{ $t('Quand et comment saisir la CADA ?') }}
             </CdataLink>
           </li>
           <li>
@@ -153,14 +167,17 @@
             </CdataLink>
           </li>
           <li>
-            <CdataLink
-              href="https://www.cada.fr/administration/fiches-thematiques"
-              target="_blank"
-              class="link"
-            >
-              {{ $t('Fiches thématiques relatives aux documents fréquemment demandés') }}
-            </CdataLink>
-            (environnement, marchés publics, gestion des collectivités territoriales…)
+            <TranslationT keypath="{fiches} (environnement, marchés publics, gestion des collectivités territoriales…)">
+              <template #fiches>
+                <CdataLink
+                  href="https://www.cada.fr/administration/fiches-thematiques"
+                  target="_blank"
+                  class="link"
+                >
+                  {{ $t('Fiches thématiques relatives aux documents fréquemment demandés') }}
+                </CdataLink>
+              </template>
+            </TranslationT>
           </li>
         </ul>
       </div>
@@ -169,7 +186,7 @@
 </template>
 
 <script setup lang="ts">
-import { SearchInput, TabularExplorer, provideTabularProfile } from '@datagouv/components-next'
+import { SearchInput, TabularExplorer, TranslationT, provideTabularProfile } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
