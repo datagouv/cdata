@@ -137,6 +137,16 @@
                 </dl>
               </section>
 
+              <section
+                v-if="dataservice.quality"
+                class="space-y-2"
+              >
+                <h3 class="text-base !mt-0 !mb-0 text-gray-title font-bold">
+                  {{ $t('Qualité des métadonnées') }}
+                </h3>
+                <DataserviceQuality :quality="dataservice.quality" />
+              </section>
+
               <section class="space-y-2">
                 <h3 class="text-base !mt-0 !mb-0 text-gray-title font-bold">
                   {{ $t('Caractéristiques techniques') }}
@@ -306,7 +316,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
+import { isOrganizationCertified, BrandedButton, DataserviceQuality, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
