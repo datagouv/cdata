@@ -33,25 +33,16 @@
         :no-format-columns="['Numéro de dossier']"
       >
         <template #toolbar-top>
-          <div class="py-3">
-            <div class="flex gap-2">
-              <input
-                v-model="searchQuery"
-                type="text"
-                :placeholder="$t('Rechercher par objet, administration, thème, mots-clés…')"
-                class="flex-1 px-4 py-2 border border-gray-300 rounded shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                @keydown.enter="applySearch"
-              >
-              <button
-                class="px-4 py-2 bg-new-primary text-white text-sm rounded hover:bg-new-primary-hover"
-                @click="applySearch"
-              >
-                <RiSearchLine class="size-4 md:hidden" />
-                <span class="hidden md:inline">{{ $t('Rechercher') }}</span>
-                <span class="sr-only md:hidden">{{ $t('Rechercher') }}</span>
-              </button>
-            </div>
-          </div>
+          <form
+            class="py-3"
+            @submit.prevent="applySearch"
+          >
+            <SearchInput
+              v-model="searchQuery"
+              :placeholder="$t('Rechercher par objet, administration, thème, mots-clés…')"
+              :auto-focus="false"
+            />
+          </form>
         </template>
       </TabularExplorer>
       <div
@@ -178,8 +169,7 @@
 </template>
 
 <script setup lang="ts">
-import { TabularExplorer, provideTabularProfile } from '@datagouv/components-next'
-import { RiSearchLine } from '@remixicon/vue'
+import { SearchInput, TabularExplorer, provideTabularProfile } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
