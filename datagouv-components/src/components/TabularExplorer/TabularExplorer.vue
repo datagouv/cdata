@@ -380,11 +380,8 @@
                 v-for="col in displayedColumns"
                 :key="col"
                 data-cell
-                class="p-2 align-middle whitespace-nowrap border-r border-gray-default last:border-r-0 overflow-hidden"
-                :class="[
-                  !props.disablePopover && 'cursor-pointer',
-                  { 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' || getColumnType(col) === 'year' },
-                ]"
+                class="p-2 align-middle whitespace-nowrap border-r border-gray-default last:border-r-0 overflow-hidden cursor-pointer hover:bg-gray-200/50"
+                :class="{ 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' || getColumnType(col) === 'year' }"
                 :style="columnWidths[col] ? { maxWidth: columnWidths[col] + 'px' } : { maxWidth: '300px' }"
                 @click="onCellClick(col, row[col], $event)"
               >
@@ -392,6 +389,7 @@
                   v-if="linkColumns?.has(col)"
                   :href="getRowHref(row) ?? ''"
                   class="link"
+                  @click.stop
                 >
                   <TabularCell
                     :value="row[col]"
@@ -420,7 +418,6 @@
 
       <!-- Cell popover -->
       <TabularCellPopover
-        v-if="!props.disablePopover"
         v-model:cell="activeCell"
         v-model:filters="filters"
       />
@@ -472,6 +469,8 @@
               <a
                 v-if="linkColumns?.has(col)"
                 :href="getRowHref(row) ?? ''"
+                class="link"
+                @click.stop
               >
                 <TabularCell
                   :value="row[col]"
@@ -673,9 +672,6 @@ const props = defineProps<{
   // Note: combined via AND with any existing column-specific `contains` filters,
   // so it acts as an additional narrowing constraint, not a replacement.
   globalSearch?: string
-  // When true, clicking a cell does not open the popover. Use when row-click
-  // navigation is the primary interaction.
-  disablePopover?: boolean
   // Initial filters applied on mount, e.g. { 'Administration': { contains: 'Ministère' } }.
   // Used when navigating from the detail page badge with query params.
   initialFilters?: Record<string, ColumnFilters>
@@ -1008,7 +1004,6 @@ onUnmounted(() => {
 const activeCell = ref<CellInfo | null>(null)
 
 function onCellClick(col: string, value: unknown, event: MouseEvent) {
-  if (props.disablePopover) return
   const el = (event.target as HTMLElement).closest('[data-cell]') as HTMLElement | null
   if (!el) return
   if (activeCell.value && activeCell.value.element === el) {

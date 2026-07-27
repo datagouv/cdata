@@ -27,7 +27,6 @@
         :key="route.fullPath"
         :resource-id="RESOURCE_ID"
         full-bleed
-        disable-popover
         :global-search="currentSearch"
         :initial-filters="initialFilters"
         :row-href="{ columns: ['Numéro de dossier'], href: (row: any) => `/explore/cada/${row['Numéro de dossier']}` }"
