@@ -402,11 +402,10 @@
                 :style="columnWidths[col] ? { maxWidth: columnWidths[col] + 'px' } : { maxWidth: '300px' }"
                 @click="onCellClick(col, row[col], $event)"
               >
-                <a
+                <AppLink
                   v-if="linkColumns?.has(col)"
-                  :href="getRowHref(row) ?? ''"
+                  :to="getRowHref(row)"
                   class="link"
-                  @click.stop
                 >
                   <TabularCell
                     :value="row[col]"
@@ -414,7 +413,7 @@
                     :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
                     :no-number-format="props.noFormatColumns?.includes(col)"
                   />
-                </a>
+                </AppLink>
                 <TabularCell
                   v-else
                   :value="row[col]"
@@ -485,11 +484,10 @@
               class="min-w-0 pl-4 cursor-pointer"
               @click="onCellClick(col, row[col], $event)"
             >
-              <a
+              <AppLink
                 v-if="linkColumns?.has(col)"
-                :href="getRowHref(row) ?? ''"
+                :to="getRowHref(row)"
                 class="link"
-                @click.stop
               >
                 <TabularCell
                   :value="row[col]"
@@ -498,7 +496,7 @@
                   compact
                   :no-number-format="props.noFormatColumns?.includes(col)"
                 />
-              </a>
+              </AppLink>
               <TabularCell
                 v-else
                 :value="row[col]"
@@ -667,6 +665,7 @@ import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { injectTabularProfile } from '../../composables/useTabularProfile'
 import { buildTypeConfig, buildFormatConfig, humanizeFormat, GENERIC_FORMATS, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy, resolveColumnType, buildGlobalSearchConditions } from '../../functions/tabular'
+import AppLink from '../AppLink.vue'
 import ClientOnly from '../ClientOnly.vue'
 import SimpleBanner from '../SimpleBanner.vue'
 import BrandedButton from '../BrandedButton.vue'
@@ -1027,6 +1026,9 @@ onUnmounted(() => {
 const activeCell = ref<CellInfo | null>(null)
 
 function onCellClick(col: string, value: unknown, event: MouseEvent) {
+  // A link inside a cell (see `rowHref`) owns its clicks: navigate, don't open
+  // the popover on top of the page we're leaving.
+  if ((event.target as HTMLElement).closest('a')) return
   const el = (event.target as HTMLElement).closest('[data-cell]') as HTMLElement | null
   if (!el) return
   if (activeCell.value && activeCell.value.element === el) {
