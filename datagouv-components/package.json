@@ -10,12 +10,6 @@
     "npm": "use-pnpm-instead",
     "yarn": "use-pnpm-instead"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "cypress",
-      "husky"
-    ]
-  },
   "main": "./src/main.ts",
   "exports": {
     ".": "./src/main.ts",
@@ -44,7 +38,7 @@
     "publish-stable": "pnpm publish --access public"
   },
   "dependencies": {
-    "@floating-ui/vue": "^1.1.11",
+    "@floating-ui/vue": "^2.0.1",
     "@headlessui/vue": "^1.7.23",
     "@remixicon/vue": "^4.9.0",
     "@types/hast": "^3.0.4",
@@ -104,7 +98,7 @@
     "typescript": "^5.9.3",
     "vite": "^7.3.3",
     "vite-plugin-vue-devtools": "^8.1.2",
-    "vue": "^3.5.35",
+    "vue": "^3.5.40",
     "vue-router": "^5.0.7",
     "vue-tsc": "^3.3.2"
   },
