@@ -43,7 +43,7 @@
 
           <div class="flex justify-center mt-8">
             <BrandedButton
-              :href="SUPPORT_URL"
+              :href="config.public.supportUrl"
               new-tab
               color="secondary"
               size="sm"
@@ -177,7 +177,6 @@ const config = useRuntimeConfig()
 const route = useRoute()
 
 const RESOURCE_ID = config.public.cadaResourceId
-const SUPPORT_URL = 'https://support.data.gouv.fr'
 
 type CadaRow = {
   'Numéro de dossier': number
