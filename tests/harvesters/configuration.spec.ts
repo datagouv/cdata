@@ -152,7 +152,7 @@ test('changing the backend drops the configs the new one does not know about', a
   })
   createdSources.push(source.id)
 
-  // The config label carries an empty `for`, so it is only text next to its input.
+  // The config label isn't tied to its input, so it is only text sitting next to it.
   // Both spellings are accepted: udata builds that label with `gettext` at class level
   // (udata/harvest/backends/dcat.py), so it is frozen to the language of whichever request
   // imported the module first. The French one is what it answers once udata makes it lazy.

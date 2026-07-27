@@ -213,10 +213,9 @@
             v-for="(configItem, index) in form.configs"
             :key="index"
           >
-            <label
-              for=""
-              class="fr-label whitespace-nowrap"
-            >
+            <!-- No `for`: the input is inside InputGroup, which keeps its own generated id.
+                 An empty one makes Firefox warn on every getElementById call. -->
+            <label class="fr-label whitespace-nowrap">
               {{ getConfigLabel(configItem.key) }}
             </label>
             <div class="flex items-center space-x-2.5">
