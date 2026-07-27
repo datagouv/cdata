@@ -131,13 +131,13 @@ const save = async () => {
 
     if (scheduleChanged) {
       if (harvesterForm.value.schedule) {
-        await $api(`/api/1/harvest/source/${harvester.value.id}/schedule`, {
+        await $api(`/api/1/harvest/source/${harvester.value.id}/schedule/`, {
           method: 'POST',
           body: JSON.stringify(harvesterForm.value.schedule),
         })
       }
       else {
-        await $api(`/api/1/harvest/source/${harvester.value.id}/schedule`, { method: 'DELETE' })
+        await $api(`/api/1/harvest/source/${harvester.value.id}/schedule/`, { method: 'DELETE' })
       }
 
       // The unschedule endpoint answers a 204 with an empty body, so the source is fetched

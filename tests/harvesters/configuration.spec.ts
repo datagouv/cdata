@@ -27,7 +27,8 @@ test('a feature enabled on the source shows as enabled, even when reaching the t
   // Through a client-side navigation: the backends list is fetched lazily, so it resolves
   // after the source itself.
   await page.goto(`/admin/harvesters/${source.id}/`)
-  await page.getByRole('link', { name: 'Configuration' }).click()
+  // Exact match: the page also holds an "Aller à la configuration" call to action.
+  await page.getByRole('link', { name: 'Configuration', exact: true }).click()
 
   await expect(page.getByRole('switch', { name: 'GeoDCAT-AP' })).toBeChecked()
 })
@@ -146,13 +147,19 @@ test('changing the backend drops the configs the new one does not know about', a
   })
   createdSources.push(source.id)
 
-  await page.goto(`/admin/harvesters/${source.id}/configuration/`)
   // The config label carries an empty `for`, so it can't be reached through its input.
-  await expect(page.getByText('Préfixe d\'URL distante')).toBeVisible()
+  // Both spellings are accepted: udata builds that label with `gettext` instead of
+  // `lazy_gettext` (udata/harvest/backends/dcat.py), so it is translated at import time,
+  // outside of any request, and served in English whatever language we ask for. The French
+  // one is what it will answer once udata makes it lazy.
+  const configLabel = page.getByText(/Préfixe d'URL distante|Remote URL prefix/)
+
+  await page.goto(`/admin/harvesters/${source.id}/configuration/`)
+  await expect(configLabel).toBeVisible()
   await expect(page.getByLabel('Type de configuration')).toHaveValue('https://example.com/prefix/')
 
   await page.getByLabel('Type *', { exact: true }).selectOption({ label: 'DCAT' })
-  await expect(page.getByText('Préfixe d\'URL distante')).toBeHidden()
+  await expect(configLabel).toBeHidden()
 
   await save(page)
 
