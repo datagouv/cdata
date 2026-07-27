@@ -63,7 +63,7 @@ const reusesQuery = computed(() => ({
   page_size: 6,
 }))
 
-const { data: reuses } = await useAPI<PaginatedArray<Reuse>>('/api/1/reuses', {
+const { data: reuses } = await useAPI<PaginatedArray<Reuse>>('/api/2/reuses', {
   query: reusesQuery,
 })
 </script>
