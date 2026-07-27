@@ -11,9 +11,14 @@ test.afterEach(async ({ request }) => {
 // The schedule shown above the tabs sits in the <span> following its "Planning :" label.
 const scheduleShownAboveTabs = (page: Page) => page.getByText('Planning :').locator('xpath=following-sibling::span')
 
+const savedToast = (page: Page) => page.getByText('Moissonneur mis à jour !')
+
 const save = async (page: Page) => {
+  // Toasts stack, so a leftover from a previous save would satisfy the assertion below and
+  // make the locator ambiguous. Wait for them to fade out first.
+  await expect(savedToast(page)).toHaveCount(0)
   await page.getByRole('button', { name: 'Sauvegarder' }).click()
-  await expect(page.getByText('Moissonneur mis à jour !')).toBeVisible()
+  await expect(savedToast(page)).toBeVisible()
 }
 
 test('a feature enabled on the source shows as enabled, even when reaching the tab from another page', async ({ page, request }) => {
@@ -106,7 +111,7 @@ test('a schedule can be set then removed, and saving again leaves it alone', asy
 
   // The source is now unscheduled: the API answers null for its schedule while the form
   // holds ''. Saving again must not try to unschedule it a second time.
-  await expect(page.getByText('Moissonneur mis à jour !')).toBeHidden()
+  await expect(savedToast(page)).toHaveCount(0)
   await save(page)
 
   expect(unscheduleCalls).toHaveLength(1)
@@ -133,7 +138,7 @@ test('the schedule input follows the expression the API stored', async ({ page, 
   await expect(page.getByLabel('Planning', { exact: true })).toHaveValue('0 0 * * *')
 
   // The form now holds what the API stored: saving again must not reschedule the source.
-  await expect(page.getByText('Moissonneur mis à jour !')).toBeHidden()
+  await expect(savedToast(page)).toHaveCount(0)
   await save(page)
 
   expect(scheduleCalls).toHaveLength(1)
@@ -147,11 +152,10 @@ test('changing the backend drops the configs the new one does not know about', a
   })
   createdSources.push(source.id)
 
-  // The config label carries an empty `for`, so it can't be reached through its input.
-  // Both spellings are accepted: udata builds that label with `gettext` instead of
-  // `lazy_gettext` (udata/harvest/backends/dcat.py), so it is translated at import time,
-  // outside of any request, and served in English whatever language we ask for. The French
-  // one is what it will answer once udata makes it lazy.
+  // The config label carries an empty `for`, so it is only text next to its input.
+  // Both spellings are accepted: udata builds that label with `gettext` at class level
+  // (udata/harvest/backends/dcat.py), so it is frozen to the language of whichever request
+  // imported the module first. The French one is what it answers once udata makes it lazy.
   const configLabel = page.getByText(/Préfixe d'URL distante|Remote URL prefix/)
 
   await page.goto(`/admin/harvesters/${source.id}/configuration/`)
