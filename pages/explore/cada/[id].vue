@@ -66,7 +66,10 @@
             </CdataLink>
           </div>
 
-          <div class="bg-gray-100 rounded-lg p-4">
+          <div
+            v-if="partLabel"
+            class="bg-gray-100 rounded-lg p-4"
+          >
             <h3 class="text-sm text-gray-500 uppercase mb-2">
               {{ $t('Type de consultation') }}
             </h3>
@@ -216,7 +219,7 @@ const { data: advice, status } = await useAsyncData(
 )
 
 const partLabel = computed(() => {
-  if (!advice.value) return ''
+  if (!advice.value?.Partie) return ''
   return PART_LABELS[advice.value.Partie.trim()] ?? advice.value.Partie
 })
 

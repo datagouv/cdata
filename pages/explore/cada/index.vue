@@ -194,28 +194,29 @@ function applySearch() {
   currentSearch.value = searchQuery.value.trim()
 }
 
-const URL_PARAM_MAP: Record<string, string> = {
-  administration: 'Administration',
-  topic: 'Thème et sous thème',
-  tag: 'Mots clés',
-  meaning: 'Sens et motivation',
-  year: 'Année',
-  part: 'Partie',
+type UrlFilterParam = {
+  column: string
+  // `contains` for free text, `exact` for closed vocabularies: a `contains` on
+  // the roman numerals of `Partie` would match I inside II, III and IV.
+  operator: 'contains' | 'exact'
+}
+
+const URL_PARAM_MAP: Record<string, UrlFilterParam> = {
+  administration: { column: 'Administration', operator: 'contains' },
+  topic: { column: 'Thème et sous thème', operator: 'contains' },
+  tag: { column: 'Mots clés', operator: 'contains' },
+  meaning: { column: 'Sens et motivation', operator: 'contains' },
+  year: { column: 'Année', operator: 'exact' },
+  part: { column: 'Partie', operator: 'exact' },
 }
 
 const initialFilters = computed(() => {
   const f: Record<string, { contains?: string, exact?: string }> = {}
-  for (const [param, column] of Object.entries(URL_PARAM_MAP)) {
+  for (const [param, { column, operator }] of Object.entries(URL_PARAM_MAP)) {
     const val = route.query[param]
-    if (val) {
-      const value = Array.isArray(val) ? String(val[0]) : val
-      if (column === 'Année') {
-        f[column] = { exact: value }
-      }
-      else {
-        f[column] = { contains: value }
-      }
-    }
+    if (!val) continue
+    const value = Array.isArray(val) ? String(val[0]) : val
+    f[column] = operator === 'exact' ? { exact: value } : { contains: value }
   }
   return f
 })
