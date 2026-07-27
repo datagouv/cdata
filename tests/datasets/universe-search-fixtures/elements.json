@@ -1,0 +1,15 @@
+{
+  "data": [
+    {
+      "id": "bbb000000000000000000001",
+      "tags": [],
+      "extras": {},
+      "element": { "id": "ccc000000000000000000001", "class": "Dataset" }
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "page_size": 20,
+  "next_page": null,
+  "previous_page": null
+}

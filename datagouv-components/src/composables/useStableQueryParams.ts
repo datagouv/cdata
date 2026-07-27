@@ -12,6 +12,7 @@ interface StableQueryParamsOptions {
   sort: Ref<string | undefined>
   page: Ref<number>
   pageSize: number
+  universeTopic?: Ref<string | undefined>
 }
 
 /**
@@ -20,6 +21,7 @@ interface StableQueryParamsOptions {
  */
 export function useStableQueryParams(options: StableQueryParamsOptions) {
   const { typeConfig, allFilters, customFilterRegistry, q, sort, page, pageSize } = options
+  const universeTopic = options.universeTopic ?? ref(undefined)
   const stableParams = ref<Record<string, unknown>>({})
 
   const buildParams = () => {
@@ -52,7 +54,7 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
       }
     }
 
-    // 3.5. Apply custom filter values. Concatenate into an array on collision
+    // 4. Apply custom filter values. Concatenate into an array on collision
     // so a custom filter mapped onto a built-in apiParam (e.g. theme → tag)
     // combines with an existing built-in value instead of overwriting it.
     // Pass the current type key so filters scoped to specific types are excluded
@@ -68,7 +70,15 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
       }
     }, currentTypeKey)
 
-    // 4. Always include q, sort (if valid for this type), page, page_size
+    // 5. Universe topic: authoritative scope, overrides any user-set topic for supported types
+    if (universeTopic.value) {
+      const cls = typeConfig?.class
+      if (cls === 'datasets' || cls === 'dataservices') {
+        params.topic = universeTopic.value
+      }
+    }
+
+    // 6. Always include q, sort (if valid for this type), page, page_size
     if (q.value) {
       params.q = q.value
     }
@@ -100,7 +110,7 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
 
   // Watch all dependencies and update only if content changed
   watch(
-    [q, sort, page, ...Object.values(allFilters), customFilterValues],
+    [q, sort, page, ...Object.values(allFilters), customFilterValues, universeTopic],
     () => {
       const newParams = buildParams()
       // JSON.stringify comparison is safe here because buildParams() builds the object deterministically

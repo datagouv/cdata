@@ -1,0 +1,43 @@
+{
+  "data": [
+    {
+      "id": "aaa000000000000000000001",
+      "name": "Univers Alpha",
+      "slug": "univers-alpha",
+      "description": "Premier univers de test",
+      "tags": [],
+      "elements": { "rel": "elements", "href": "" },
+      "featured": false,
+      "private": false,
+      "created_at": "2024-01-01T00:00:00+00:00",
+      "last_modified": "2024-01-01T00:00:00+00:00",
+      "uri": "",
+      "page": "",
+      "extras": {},
+      "organization": null,
+      "owner": { "id": "000000000000000000000001", "first_name": "Test", "last_name": "User", "slug": "test-user", "avatar": null, "avatar_thumbnail": null, "page": "" }
+    },
+    {
+      "id": "aaa000000000000000000002",
+      "name": "Univers Beta",
+      "slug": "univers-beta",
+      "description": "Deuxième univers de test",
+      "tags": [],
+      "elements": { "rel": "elements", "href": "" },
+      "featured": false,
+      "private": false,
+      "created_at": "2024-01-01T00:00:00+00:00",
+      "last_modified": "2024-01-01T00:00:00+00:00",
+      "uri": "",
+      "page": "",
+      "extras": {},
+      "organization": null,
+      "owner": { "id": "000000000000000000000001", "first_name": "Test", "last_name": "User", "slug": "test-user", "avatar": null, "avatar_thumbnail": null, "page": "" }
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "page_size": 5,
+  "next_page": null,
+  "previous_page": null
+}
