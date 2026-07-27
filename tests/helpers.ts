@@ -8,17 +8,11 @@ export type ApiResource = { id: string, title: string, latest: string, url: stri
 export type ApiHarvestSource = { id: string, name: string, backend: string, schedule: string | null, config: Record<string, unknown> }
 
 export async function createHarvestSource(request: APIRequestContext, name: string, backend: string, config: Record<string, unknown> = {}): Promise<ApiHarvestSource> {
-  const me = await request.get(`${API_BASE}/api/1/me/`)
-  if (!me.ok()) {
-    throw new Error(`Failed to identify the current user: ${me.status()} ${(await me.text()).slice(0, 300)}`)
-  }
-
   const response = await request.post(`${API_BASE}/api/1/harvest/sources/`, {
     data: {
       name,
       backend,
       url: 'https://example.com/csw',
-      owner: (await me.json()).id,
       config,
     },
   })

@@ -73,7 +73,7 @@ test('the source shown around the tabs is up to date right after a save', async 
   const newName = `${source.name} renommé`
 
   await page.goto(`/admin/harvesters/${source.id}/configuration/`)
-  await page.getByLabel('Nom', { exact: true }).fill(newName)
+  await page.getByLabel('Nom *', { exact: true }).fill(newName)
   await save(page)
 
   // No reload: the heading above the tabs is built from the same source object.
@@ -112,6 +112,33 @@ test('a schedule can be set then removed, and saving again leaves it alone', asy
   await expect(scheduleShownAboveTabs(page)).toHaveText('N/A')
 })
 
+test('the schedule input follows the expression the API stored', async ({ page, request }) => {
+  const source = await createHarvestSource(request, `Moissonneur cron ${Date.now()}`, 'csw-dcat')
+  createdSources.push(source.id)
+
+  const scheduleCalls: Array<string> = []
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && request.url().includes('/schedule')) {
+      scheduleCalls.push(request.url())
+    }
+  })
+
+  await page.goto(`/admin/harvesters/${source.id}/configuration/`)
+
+  // The API rebuilds the cron from its parsed fields, so the extra space is dropped.
+  await page.getByLabel('Planning', { exact: true }).fill('0  0 * * *')
+  await save(page)
+  await expect(scheduleShownAboveTabs(page)).toHaveText('0 0 * * *')
+  await expect(page.getByLabel('Planning', { exact: true })).toHaveValue('0 0 * * *')
+
+  // The form now holds what the API stored: saving again must not reschedule the source.
+  await expect(page.getByText('Moissonneur mis à jour !')).toBeHidden()
+  await save(page)
+
+  expect(scheduleCalls).toHaveLength(1)
+  await expect(scheduleShownAboveTabs(page)).toHaveText('0 0 * * *')
+})
+
 test('changing the backend drops the configs the new one does not know about', async ({ page, request }) => {
   // `remote_url_prefix` only exists on the CSW backends, not on plain DCAT.
   const source = await createHarvestSource(request, `Moissonneur backend ${Date.now()}`, 'csw-dcat', {
@@ -124,7 +151,7 @@ test('changing the backend drops the configs the new one does not know about', a
   await expect(page.getByText('Préfixe d\'URL distante')).toBeVisible()
   await expect(page.getByLabel('Type de configuration')).toHaveValue('https://example.com/prefix/')
 
-  await page.getByLabel('Type', { exact: true }).selectOption({ label: 'DCAT' })
+  await page.getByLabel('Type *', { exact: true }).selectOption({ label: 'DCAT' })
   await expect(page.getByText('Préfixe d\'URL distante')).toBeHidden()
 
   await save(page)

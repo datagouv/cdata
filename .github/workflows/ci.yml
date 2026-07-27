@@ -200,6 +200,8 @@ jobs:
           PLUGINS = []
           FS_ROOT = 'fs'
 
+          HARVESTER_BACKENDS = ['dcat', 'csw*']
+
           SESSION_COOKIE_SECURE = False
 
           SECURITY_EMAIL_VALIDATOR_ARGS = {

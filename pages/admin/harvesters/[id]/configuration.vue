@@ -110,11 +110,7 @@ const loading = ref(false)
 
 // The form is the user's working copy: it is built from the source once, then lives its
 // own life until it is saved.
-const harvesterForm = ref<HarvesterForm | null>(null)
-watchEffect(() => {
-  if (!harvester.value || harvesterForm.value) return
-  harvesterForm.value = harvesterToForm(harvester.value)
-})
+const harvesterForm = ref<HarvesterForm | null>(harvester.value ? harvesterToForm(harvester.value) : null)
 
 const save = async () => {
   if (!harvesterForm.value) throw new Error('No harvester form')
@@ -147,6 +143,11 @@ const save = async () => {
       // The unschedule endpoint answers a 204 with an empty body, so the source is fetched
       // back instead of reusing the schedule response.
       await refresh()
+
+      // The API rewrites the cron expression from its parsed fields, so `0  0 * * *` comes
+      // back as `0 0 * * *`. The input has to follow it, otherwise the next save would still
+      // see a change and reschedule the source.
+      harvesterForm.value.schedule = harvester.value?.schedule || ''
     }
 
     toast.success(t('Moissonneur mis à jour !'))
