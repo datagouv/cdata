@@ -163,12 +163,25 @@
 
             <!-- Rows -->
             <span class="flex items-center gap-1.5 text-xs text-gray-plain">
+              <RiLoader5Line
+                v-if="isRefreshing"
+                class="size-3 text-new-primary animate-spin"
+                aria-hidden="true"
+              />
               <RiLayoutRowLine
+                v-else
                 class="size-3 text-mention-grey"
                 aria-hidden="true"
               />
               <span class="font-bold hidden md:inline">{{ t('Lignes') }}</span>
-              <span class="font-mono tabular-nums">{{ tableData.meta.total.toLocaleString() }}/{{ totalLines.toLocaleString() }}</span>
+              <span
+                v-if="isRefreshing"
+                class="text-new-primary"
+              >{{ t('Chargement…') }}</span>
+              <span
+                v-else
+                class="font-mono tabular-nums"
+              >{{ tableData.meta.total.toLocaleString() }}/{{ totalLines.toLocaleString() }}</span>
             </span>
           </div>
         </div>
@@ -293,8 +306,12 @@
       <div
         v-if="displayedColumns.length > 0"
         ref="scrollContainer"
-        class="hidden md:block overflow-auto max-h-[70vh]"
-        :class="fullBleed ? 'relative left-1/2 w-[calc(100vw_-_4rem)] -translate-x-1/2' : '-mx-4'"
+        class="hidden md:block overflow-auto max-h-[70vh] transition-opacity"
+        :class="[
+          fullBleed ? 'relative left-1/2 w-[calc(100vw_-_4rem)] -translate-x-1/2' : '-mx-4',
+          { 'opacity-40': isRefreshing },
+        ]"
+        :aria-busy="isRefreshing"
       >
         <table class="text-sm border-collapse">
           <thead class="sticky top-0 bg-white z-10 shadow-[inset_0_-1px_0_0_#E5E5E5]">
@@ -425,7 +442,9 @@
       <!-- Mobile: card layout -->
       <div
         v-if="displayedColumns.length > 0"
-        class="md:hidden space-y-2 px-1"
+        class="md:hidden space-y-2 px-1 transition-opacity"
+        :class="{ 'opacity-40': isRefreshing }"
+        :aria-busy="isRefreshing"
       >
         <div
           v-if="allRows.length === 0"
@@ -641,6 +660,7 @@ import {
   RiFilterLine,
   RiCloseLine,
   RiSearchLine,
+  RiLoader5Line,
 } from '@remixicon/vue'
 import { useFetch } from '../../functions/api'
 import { useComponentsConfig } from '../../config'
@@ -757,7 +777,7 @@ const dataQuery = computed(() => {
   return q
 })
 
-const { data: tableData, error } = await useFetch<TabularDataResponse>(dataUrl, { raw: true, query: dataQuery })
+const { data: tableData, error, status: dataStatus } = await useFetch<TabularDataResponse>(dataUrl, { raw: true, query: dataQuery })
 
 // Profile is shared with sibling components (e.g. DataStructure) via
 // `provideTabularProfile` in the parent. Falls back to a local fetch
@@ -770,6 +790,9 @@ const { data: profileData, error: profileError, status: profileStatus } = await 
 const profileLoading = computed(() => !profileData.value && (profileStatus.value === 'idle' || profileStatus.value === 'pending'))
 const previewError = computed(() => error.value || profileError.value)
 const previewLoading = computed(() => !previewError.value && (!tableData.value || profileLoading.value))
+// A search / filter / sort change refetches while the previous rows stay on
+// screen: without a signal, the table looks unchanged for several seconds.
+const isRefreshing = computed(() => dataStatus.value === 'pending' && !previewLoading.value)
 
 // Infinite scroll state
 const allRows = ref<TabularRow[]>([])
