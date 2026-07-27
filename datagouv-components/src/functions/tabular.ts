@@ -161,6 +161,19 @@ export function useFormatTabular() {
 const TRUTHY_VALUES = ['true', '1', 'oui', 'yes']
 const FALSY_VALUES = ['false', '0', 'non', 'no']
 
+// `encodeURIComponent` leaves `.`, `(` and `)` as-is, but they are the operator
+// separator and the delimiters of the API's `or(...)` grammar: a search value
+// containing one makes the parser reject the whole query with a 400. Wrapping
+// the value in double quotes (as the API README suggests) does not work here —
+// the API keeps them as part of the searched string and returns no result. It
+// does percent-decode the value after parsing, so encoding them is enough.
+function encodeConditionValue(value: string): string {
+  return encodeURIComponent(value)
+    .replace(/\./g, '%2E')
+    .replace(/\(/g, '%28')
+    .replace(/\)/g, '%29')
+}
+
 /**
  * Builds the OR conditions for global search across all columns.
  * Text and categorical columns get a `__contains` filter; number columns
@@ -176,10 +189,10 @@ export function buildGlobalSearchConditions(
   for (const col of allColumns) {
     const type = getColumnType(col)
     if (type === 'text' || type === 'categorical') {
-      conditions.push(col + '__contains.' + encodeURIComponent(searchValue))
+      conditions.push(col + '__contains.' + encodeConditionValue(searchValue))
     }
     else if (type === 'number' && searchValue.length > 0 && isFinite(Number(searchValue))) {
-      conditions.push(col + '__exact.' + encodeURIComponent(searchValue))
+      conditions.push(col + '__exact.' + encodeConditionValue(searchValue))
     }
   }
   return conditions

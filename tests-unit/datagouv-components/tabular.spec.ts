@@ -136,6 +136,17 @@ describe('global search query conditions', () => {
     expect(conditions[0]).toBe('Administration__contains.min%2Bmax')
   })
 
+  it('encodes the characters of the or(...) grammar the API would fail to parse', () => {
+    // A raw dot ends the operator, a raw parenthesis closes the expression:
+    // either one makes the API reject the whole query with a 400.
+    expect(buildGlobalSearchConditions(['Objet'], typeForCadaCol, 'art. 6'))
+      .toEqual(['Objet__contains.art%2E%206'])
+    expect(buildGlobalSearchConditions(['Objet'], typeForCadaCol, 'mairie (Paris)'))
+      .toEqual(['Objet__contains.mairie%20%28Paris%29'])
+    expect(buildGlobalSearchConditions(['Objet'], typeForCadaCol, 'a,b'))
+      .toEqual(['Objet__contains.a%2Cb'])
+  })
+
   it('only adds __exact for number columns when search is a valid number', () => {
     const cols = ['id', 'name', 'score']
     const types: Record<string, ColumnType> = { id: 'number', name: 'text', score: 'number' }
