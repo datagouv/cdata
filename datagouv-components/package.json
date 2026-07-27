@@ -78,7 +78,6 @@
     "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@intlify/cli": "^0.13.1",
     "@tailwindcss/cli": "^4.3.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tsconfig/node22": "^22.0.5",
