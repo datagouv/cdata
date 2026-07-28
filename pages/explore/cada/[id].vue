@@ -166,13 +166,14 @@
 </template>
 
 <script setup lang="ts">
-import { AnimatedLoader, BrandedButton, useFormatDate } from '@datagouv/components-next'
+import { AnimatedLoader, BrandedButton, fetchTabularData, useComponentsConfig, useFormatDate } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
+const componentsConfig = useComponentsConfig()
 const route = useRoute()
 
 const RESOURCE_ID = config.public.cadaResourceId
@@ -209,12 +210,17 @@ const adviceId = computed(() => parseInt(route.params.id as string, 10))
 const { data: advice, status } = await useAsyncData(
   `cada-advice-${adviceId.value}`,
   async () => {
-    const baseUrl = config.public.tabularApiUrl
     try {
-      const response = await $fetch<{ data: CadaRow[] }>(
-        `${baseUrl}/api/resources/${RESOURCE_ID}/data/?Num%C3%A9ro%20de%20dossier__exact=${adviceId.value}`,
-      )
-      return response.data[0] ?? null
+      const response = await fetchTabularData(componentsConfig, {
+        resourceId: RESOURCE_ID,
+        filters: {
+          _cls: 'Filter',
+          column: 'Numéro de dossier',
+          condition: 'exact',
+          value: String(adviceId.value),
+        },
+      })
+      return (response.data[0] as CadaRow | undefined) ?? null
     }
     catch {
       return null
