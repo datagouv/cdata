@@ -166,6 +166,14 @@ import { BrandedButton, fetchTabularData, LoadingBlock, useComponentsConfig, use
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
+// The id is a `Numéro de dossier` and nothing else. Without this, a slug suffix
+// or a leading zero would serve the same advice under a non-canonical URL, and a
+// non-numeric segment would reach the API as `NaN` — answering 200 with the
+// error block instead of a 404.
+definePageMeta({
+  validate: route => /^[1-9]\d*$/.test(route.params.id as string),
+})
+
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
@@ -188,7 +196,7 @@ type CadaRow = {
   'Avis': string
 }
 
-const adviceId = computed(() => parseInt(route.params.id as string, 10))
+const adviceId = computed(() => Number(route.params.id))
 
 const { data: advice, status, error } = await useAsyncData(
   `cada-advice-${adviceId.value}`,
