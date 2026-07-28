@@ -118,7 +118,7 @@
                   :key="m"
                   :to="{ path: '/explore/cada', query: { meaning: m } }"
                   class="fr-badge fr-badge--sm"
-                  :class="meaningClass(m)"
+                  :class="cadaMeaningBadgeClass(m)"
                 >
                   {{ m }}
                 </CdataLink>
@@ -188,13 +188,6 @@ type CadaRow = {
   'Avis': string
 }
 
-const PART_LABELS: Record<string, string> = {
-  I: 'Avec audition de l\'administration',
-  II: 'Affaire de principe',
-  III: 'Affaire courante',
-  IV: 'Délégué',
-}
-
 const adviceId = computed(() => parseInt(route.params.id as string, 10))
 
 const { data: advice, status, error } = await useAsyncData(
@@ -221,25 +214,10 @@ if (!error.value && !advice.value) {
   showError({ statusCode: 404, statusMessage: 'Page Not Found' })
 }
 
-const partLabel = computed(() => {
-  if (!advice.value?.Partie) return ''
-  return PART_LABELS[advice.value.Partie.trim()] ?? advice.value.Partie
-})
-
-const themeParts = computed(() => {
-  if (!advice.value || !advice.value['Thème et sous thème']) return []
-  return advice.value['Thème et sous thème'].split(/,\s*/).map(s => s.trim()).filter(Boolean)
-})
-
-const meanings = computed(() => {
-  if (!advice.value || !advice.value['Sens et motivation']) return []
-  return advice.value['Sens et motivation'].split(',').map(s => s.trim()).filter(Boolean)
-})
-
-const tags = computed(() => {
-  if (!advice.value || !advice.value['Mots clés']) return []
-  return advice.value['Mots clés'].split(',').map(s => s.trim()).filter(Boolean)
-})
+const partLabel = computed(() => cadaPartLabel(advice.value?.Partie))
+const themeParts = computed(() => splitCadaValues(advice.value?.['Thème et sous thème']))
+const meanings = computed(() => splitCadaValues(advice.value?.['Sens et motivation']))
+const tags = computed(() => splitCadaValues(advice.value?.['Mots clés']))
 
 useSeoMeta({
   title: () => t('Avis CADA {id}', { id: adviceId.value }),
@@ -250,11 +228,4 @@ defineOgImage('MainPage.takumi', {
   title: t('Avis CADA'),
   uri: `/explore/cada/${adviceId.value}`,
 })
-
-function meaningClass(meaning: string): string {
-  const lower = meaning.toLowerCase()
-  if (lower.includes('défavorable') || lower.includes('refus')) return 'fr-badge--error'
-  if (lower.includes('favorable') || lower.includes('recommande')) return 'fr-badge--success'
-  return 'fr-badge--warning'
-}
 </script>

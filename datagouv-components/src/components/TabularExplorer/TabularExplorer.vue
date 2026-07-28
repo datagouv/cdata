@@ -183,6 +183,7 @@
               >{{ t('Chargement…') }}</span>
               <span
                 v-else
+                data-row-count
                 class="font-mono tabular-nums"
               >{{ tableData.meta.total.toLocaleString() }}/{{ totalLines.toLocaleString() }}</span>
             </span>
@@ -248,6 +249,7 @@
             <span
               v-for="af in activeFilters"
               :key="af.column"
+              :data-active-filter="af.column"
               class="inline-flex items-center gap-1.5 bg-white border border-gray-silver rounded-lg pl-2 pr-1 py-1 text-xs"
             >
               <component
