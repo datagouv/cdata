@@ -734,11 +734,7 @@ const dataUrl = computed(() =>
 
 // Sort & filter state
 const sort = ref<SortConfig | null>(null)
-const filters = ref<Record<string, ColumnFilters>>({})
-
-if (props.initialFilters) {
-  filters.value = { ...props.initialFilters }
-}
+const filters = ref<Record<string, ColumnFilters>>({ ...props.initialFilters })
 
 const PAGE_SIZE = 50
 
