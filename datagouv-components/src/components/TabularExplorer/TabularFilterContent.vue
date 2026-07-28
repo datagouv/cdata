@@ -251,9 +251,6 @@ const search = ref('')
 
 watchDebounced(search, (q) => {
   const existing = filters.value[props.column] ?? {}
-  const searchableTypes: ColumnType[] = ['number', 'year', 'text', 'categorical', 'date']
-  if (!searchableTypes.includes(props.columnType)) return
-
   const operator = props.columnType === 'number' || props.columnType === 'year' || props.columnType === 'date' ? 'exact' : 'contains'
   if (q) {
     filters.value = { ...filters.value, [props.column]: { ...existing, [operator]: q } }
