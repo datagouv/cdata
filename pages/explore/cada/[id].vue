@@ -54,7 +54,10 @@
         </div>
 
         <aside class="space-y-4">
-          <div class="bg-gray-100 rounded-lg p-4">
+          <div
+            v-if="advice.Administration"
+            class="bg-gray-100 rounded-lg p-4"
+          >
             <h3 class="text-sm text-gray-500 uppercase mb-2">
               {{ $t('Administration') }}
             </h3>
@@ -81,7 +84,10 @@
             </CdataLink>
           </div>
 
-          <div class="bg-gray-100 rounded-lg p-4">
+          <div
+            v-if="themeParts.length"
+            class="bg-gray-100 rounded-lg p-4"
+          >
             <h3 class="text-sm text-gray-500 uppercase mb-2">
               {{ $t('Thèmes') }}
             </h3>
@@ -97,7 +103,10 @@
             </div>
           </div>
 
-          <div class="bg-gray-100 rounded-lg p-4">
+          <div
+            v-if="meanings.length"
+            class="bg-gray-100 rounded-lg p-4"
+          >
             <h3 class="text-sm text-gray-500 uppercase mb-2">
               {{ $t('Conclusions') }}
             </h3>
@@ -115,7 +124,7 @@
           </div>
 
           <div
-            v-if="advice['Mots clés']"
+            v-if="tags.length"
             class="bg-gray-100 rounded-lg p-4"
           >
             <h3 class="text-sm text-gray-500 uppercase mb-2">
