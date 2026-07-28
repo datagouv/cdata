@@ -1,5 +1,9 @@
 <template>
   <div>
+    <!-- Outside the branches below: this slot holds the query controls (search
+         input…), so it has to stay reachable when the query itself failed. -->
+    <slot name="toolbar-top" />
+
     <div
       v-if="previewError"
       class="max-w-3xl mx-auto"
@@ -63,7 +67,6 @@
            ExploreResourceView), so they line up with the resource title /
            download button above. Only the table itself goes edge-to-edge
            (via -mx-4 below). -->
-      <slot name="toolbar-top" />
       <div>
         <div class="flex items-center py-3 gap-2">
           <!-- Mobile: filter & sort button -->
