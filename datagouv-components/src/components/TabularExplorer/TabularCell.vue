@@ -22,19 +22,19 @@
   >{{ value }}</span>
   <span
     v-else-if="columnType === 'number' && noNumberFormat"
-    :class="compact ? 'font-mono tabular-nums text-xs text-gray-title' : ''"
+    :class="compact ? 'font-mono tabular-nums text-xs' : ''"
   >{{ value }}</span>
   <span
     v-else-if="columnType === 'number'"
-    :class="compact ? 'font-mono tabular-nums text-xs text-gray-title' : ''"
+    :class="compact ? 'font-mono tabular-nums text-xs' : ''"
   >{{ formatNumber(value) }}</span>
   <span
     v-else-if="columnType === 'date'"
-    :class="compact ? 'font-mono tabular-nums text-xs text-gray-title' : ''"
+    :class="compact ? 'font-mono tabular-nums text-xs' : ''"
   >{{ formatCellDate(value) }}</span>
   <span
     v-else-if="columnType === 'year'"
-    :class="compact ? 'font-mono tabular-nums text-xs text-gray-title' : ''"
+    :class="compact ? 'font-mono tabular-nums text-xs' : ''"
   >{{ value }}</span>
   <span
     v-else

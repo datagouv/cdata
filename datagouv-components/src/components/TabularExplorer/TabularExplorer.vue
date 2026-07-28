@@ -482,9 +482,11 @@
                 :title="col"
               >{{ col }}</span>
             </div>
+            <!-- The cell colour lives here and not on the cell itself, so a link
+                 wrapping it (see `rowHref`) keeps its own colour. -->
             <div
               data-cell
-              class="min-w-0 pl-4 cursor-pointer"
+              class="min-w-0 pl-4 cursor-pointer text-gray-title"
               @click="onCellClick(col, row[col], $event)"
             >
               <AppLink
