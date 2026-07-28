@@ -417,17 +417,6 @@ jobs:
           name: build-output
           path: .output
 
-      # ONE-SHOT — REMOVE IN THE FOLLOW-UP COMMIT.
-      # `aws s3 sync` skips objects that already match, so it would never re-apply the ACL to
-      # the objects uploaded before `--acl public-read` existed: they would stay 403 forever.
-      # Wiping first is safe only while the bucket is not served yet — once it is, this step
-      # would delete the previous version's chunks that old clients still need.
-      - name: Wipe the bucket before the first ACL-aware upload
-        run: |
-          aws s3 rm "s3://${S3_BUCKET}" --recursive \
-            --endpoint-url "$S3_ENDPOINT" \
-            --only-show-errors
-
       - name: Push hashed build assets to S3
         run: |
           # `_nuxt/` and `_fonts/` filenames are content-hashed, so they are immutable: cache
