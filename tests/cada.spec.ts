@@ -11,10 +11,21 @@ async function readRowCount(page: Page): Promise<{ shown: number, total: number 
 
 /** Resolves once the table asked the Tabular API for `query`. */
 function dataResponse(page: Page, query: string): Promise<Response> {
+  // `+` before `decodeURIComponent`: the query serializer writes spaces as `+`,
+  // which percent-decoding alone leaves as-is.
+  const readable = (url: string) => decodeURIComponent(url.replace(/\+/g, ' '))
   return page.waitForResponse(
-    response => response.url().includes('/data/') && decodeURIComponent(response.url()).includes(query),
+    response => response.url().includes('/data/') && readable(response.url()).includes(query),
     { timeout: 30000 },
   )
+}
+
+/** Index of `column` in the table header, to reach its cells in a row. */
+async function columnIndex(page: Page, column: string): Promise<number> {
+  const headers = await page.locator('table thead th').allInnerTexts()
+  const index = headers.findIndex(header => header.includes(column))
+  expect(index, `column ${column} is displayed`).toBeGreaterThanOrEqual(0)
+  return index
 }
 
 async function gotoExplore(page: Page, path = '/explore/cada') {
@@ -110,6 +121,38 @@ test('the Numéro de dossier column keeps its digits unformatted', async ({ page
   expect(dossier).toMatch(/^\d+$/)
 })
 
+test('a year column keeps its digits unformatted too', async ({ page }) => {
+  await gotoExplore(page)
+
+  // Same as above but driven by the column type rather than by a prop: any
+  // resource with a `year` column gets 2011, never 2 011.
+  const index = await columnIndex(page, 'Année')
+  const year = await page.locator('table tbody tr').first().locator('td').nth(index).innerText()
+  expect(year).toMatch(/^\d{4}$/)
+})
+
+test('clicking a row link navigates instead of opening the cell popover', async ({ page }) => {
+  await gotoExplore(page)
+
+  // A cell holding a link belongs to the link: ctrl+click opens the advice in a
+  // background tab, and the popover must not pile up on the page we leave.
+  await page.locator('table a.link').first().click({ modifiers: ['ControlOrMeta'] })
+  await expect(page.getByText('Valeur brute')).toBeHidden()
+
+  // Control: any other cell does open it, so the assertion above is not vacuous.
+  await page.locator('table tbody tr').first().locator('td').nth(await columnIndex(page, 'Objet')).click()
+  await expect(page.getByText('Valeur brute')).toBeVisible()
+})
+
+test('the search input stays reachable when the rows fail to load', async ({ page }) => {
+  await page.route(/\/data\//, route => route.abort())
+  await page.goto('/explore/cada')
+
+  // Without the search input, a failed query would be a dead end.
+  await expect(page.getByText('L\'aperçu de ce fichier n\'a pas pu être chargé.')).toBeVisible({ timeout: 30000 })
+  await expect(page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')).toBeVisible()
+})
+
 test.describe('global search', () => {
   test('searching by exact dossier number narrows the rows to a strict subset', async ({ page }) => {
     await gotoExplore(page)
@@ -142,6 +185,26 @@ test.describe('global search', () => {
 
     await expect(page.locator('table a.link').first()).toBeVisible({ timeout: 30000 })
   })
+
+  // `.` `(` `)` are the operator separator and the delimiters of the API's
+  // `or(...)` grammar: sent raw they make it reject the whole query with a 400,
+  // and quoted they are searched literally and match nothing. Both terms below
+  // occur in nearly every advice, so a row count of zero means the encoding
+  // reached the API as part of the searched string.
+  for (const term of ['.', '(']) {
+    test(`searching "${term}" keeps the query valid and still matches rows`, async ({ page }) => {
+      await gotoExplore(page)
+
+      const searchInput = page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')
+      await searchInput.fill(term)
+
+      const response = dataResponse(page, 'or=(')
+      await searchInput.press('Enter')
+      expect((await response).ok()).toBe(true)
+
+      await expect.poll(async () => (await readRowCount(page)).shown).toBeGreaterThan(0)
+    })
+  }
 })
 
 test.describe('column filter', () => {
