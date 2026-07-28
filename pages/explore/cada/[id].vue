@@ -166,11 +166,12 @@
 </template>
 
 <script setup lang="ts">
-import { AnimatedLoader, BrandedButton } from '@datagouv/components-next'
+import { AnimatedLoader, BrandedButton, useFormatDate } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const { t } = useTranslation()
+const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
 const route = useRoute()
 
@@ -251,17 +252,6 @@ defineOgImage('MainPage.takumi', {
   title: t('Avis CADA'),
   uri: `/explore/cada/${adviceId.value}`,
 })
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return ''
-  try {
-    const d = new Date(dateStr)
-    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
-  }
-  catch {
-    return dateStr
-  }
-}
 
 function meaningClass(meaning: string): string {
   const lower = meaning.toLowerCase()
