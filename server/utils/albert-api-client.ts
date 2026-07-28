@@ -92,7 +92,7 @@ async function makeAlbertRequest(
     }
 
     console.error(`[Albert API] ${method} ${url} failed:`, JSON.stringify(errorDetails, null, 2))
-    throw new Error(`API request failed: ${(error as Error).message}`)
+    throw new Error(`API request failed: ${(error as Error).message}`, { cause: error })
   }
 }
 

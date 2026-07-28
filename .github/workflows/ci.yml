@@ -119,7 +119,7 @@ jobs:
           - browser: firefox
             projects: "--project=setup --project=setup-normal-user --project=firefox"
     container:
-      image: mcr.microsoft.com/playwright:v1.60.0-noble
+      image: mcr.microsoft.com/playwright:v1.61.1-noble
       options: --user 1001
 
     services:

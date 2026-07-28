@@ -72,6 +72,7 @@ export default defineNuxtConfig({
       staticUrl: 'https://static.data.gouv.fr/static/',
       maxJsonPreviewCharSize: 1000000, // (~1MB)
       maxPdfPreviewByteSize: 10000000, // (10 MB)
+      maxImagePreviewByteSize: 10000000, // (10 MB)
       maxXmlPreviewCharSize: 100000, // (~100KB)
       schemaValidataUrl: 'https://validata.fr',
       tabularApiUrl: 'https://tabular-api.data.gouv.fr',
@@ -241,7 +242,12 @@ export default defineNuxtConfig({
 
   devServer: {
     port: 3000,
-    host: 'dev.local',
+    // Bind to the IPv6/IPv4 "any" wildcard rather than resolving the 'dev.local'
+    // hostname at listen-time: Node's dns.lookup() for a hostname follows live
+    // OS network-state ordering (RFC 6724) since Node 17, so binding to only
+    // whichever family the OS prefers *right now* silently flips between IPv4
+    // and IPv6 across sleep/wake or network changes, breaking dev.local access.
+    host: '::',
   },
 
   features: {

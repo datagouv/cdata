@@ -51,8 +51,8 @@ export type TabularColumnProfile = {
   tops: TabularTopValue[]
   nb_distinct: number
   nb_missing_values: number
-  min?: number
-  max?: number
+  min?: number | string
+  max?: number | string
   std?: number
   mean?: number
 }
