@@ -732,6 +732,36 @@ const dataUrl = computed(() =>
   `${config.tabularApiUrl}/api/resources/${props.resourceId}/data/`,
 )
 
+// Profile is shared with sibling components (e.g. DataStructure) via
+// `provideTabularProfile` in the parent. Falls back to a local fetch
+// when no parent provides it (standalone usage).
+// Fetched before the rows: `dataQuery` reads the column types to build the
+// global search, so the profile has to be resolved by the time it is evaluated.
+const { data: profileData, error: profileError, status: profileStatus } = await injectTabularProfile(() => props.resourceId)
+
+const allColumns = computed(() => profileData.value?.profile?.header ?? [])
+
+// Column type helpers
+function getColumnTypeFromName(col: string): ColumnType {
+  const profile = profileData.value?.profile
+  if (!profile) return 'text'
+  const colInfo = profile.columns[col]
+  if (!colInfo) return 'text'
+  return resolveColumnType(colInfo, profile.categorical.includes(col))
+}
+
+const columnTypesMap = computed(() => {
+  const map: Record<string, ColumnType> = {}
+  for (const col of allColumns.value) {
+    map[col] = getColumnTypeFromName(col)
+  }
+  return map
+})
+
+function getColumnType(col: string): ColumnType {
+  return columnTypesMap.value[col] ?? 'text'
+}
+
 // Sort & filter state
 const sort = ref<SortConfig | null>(null)
 const filters = ref<Record<string, ColumnFilters>>({ ...props.initialFilters })
@@ -774,11 +804,6 @@ const dataQuery = computed(() => {
 })
 
 const { data: tableData, error, status: dataStatus } = await useFetch<TabularDataResponse>(dataUrl, { raw: true, query: dataQuery })
-
-// Profile is shared with sibling components (e.g. DataStructure) via
-// `provideTabularProfile` in the parent. Falls back to a local fetch
-// when no parent provides it (standalone usage).
-const { data: profileData, error: profileError, status: profileStatus } = await injectTabularProfile(() => props.resourceId)
 
 // The component renders nothing useful until the profile is available
 // (allColumns is derived from it). Surface a clear loading / error state
@@ -827,8 +852,6 @@ async function loadNextPage() {
 }
 
 const totalLines = computed(() => profileData.value?.profile?.total_lines ?? tableData.value?.meta.total ?? 0)
-
-const allColumns = computed(() => profileData.value?.profile?.header ?? [])
 
 const visibleColumns = ref(new Set(allColumns.value))
 
@@ -1115,27 +1138,6 @@ function toggleMobileExpand(index: number) {
 
 function toggleMobileFilterColumn(col: string) {
   mobileFilterExpandedCol.value = mobileFilterExpandedCol.value === col ? null : col
-}
-
-// Column type helpers
-function getColumnTypeFromName(col: string): ColumnType {
-  const profile = profileData.value?.profile
-  if (!profile) return 'text'
-  const colInfo = profile.columns[col]
-  if (!colInfo) return 'text'
-  return resolveColumnType(colInfo, profile.categorical.includes(col))
-}
-
-const columnTypesMap = computed(() => {
-  const map: Record<string, ColumnType> = {}
-  for (const col of allColumns.value) {
-    map[col] = getColumnTypeFromName(col)
-  }
-  return map
-})
-
-function getColumnType(col: string): ColumnType {
-  return columnTypesMap.value[col] ?? 'text'
 }
 
 function getColumnProfile(col: string) {
