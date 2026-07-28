@@ -144,13 +144,23 @@ test('clicking a row link navigates instead of opening the cell popover', async 
   await expect(page.getByText('Valeur brute')).toBeVisible()
 })
 
-test('the search input stays reachable when the rows fail to load', async ({ page }) => {
-  await page.route(/\/data\//, route => route.abort())
-  await page.goto('/explore/cada')
+test.describe('rows that fail to load', () => {
+  // The 500 below is the point of the test, not an accident.
+  test.use({ allowedConsoleMessages: ['the server responded with a status of 500'] })
 
-  // Without the search input, a failed query would be a dead end.
-  await expect(page.getByText('L\'aperçu de ce fichier n\'a pas pu être chargé.')).toBeVisible({ timeout: 30000 })
-  await expect(page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')).toBeVisible()
+  test('the search input stays reachable', async ({ page }) => {
+    await page.route(/\/data\//, route => route.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      headers: { 'access-control-allow-origin': '*' },
+      body: '{"detail":"boom"}',
+    }))
+    await page.goto('/explore/cada')
+
+    // Without the search input, a failed query would be a dead end.
+    await expect(page.getByText('L\'aperçu de ce fichier n\'a pas pu être chargé.')).toBeVisible({ timeout: 30000 })
+    await expect(page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')).toBeVisible()
+  })
 })
 
 test.describe('global search', () => {
