@@ -172,11 +172,16 @@ function encodeConditionValue(value: string): string {
     .replace(/\)/g, '%29')
 }
 
+// A decimal literal, not `Number()`: the API compares against a number column,
+// and it answers an error for the whole `or(...)` when it is handed something it
+// cannot parse as one — which `Number()` happily accepts (`0x10`, `1e5`, ` `).
+const NUMBER_LITERAL_RE = /^-?\d+(\.\d+)?$/
+
 /**
  * Builds the OR conditions for global search across all columns.
  * Text and categorical columns get a `__contains` filter; number columns
  * get a `__exact` filter only when the search value is numeric.
- * Date and boolean columns are excluded.
+ * Year, date and boolean columns are excluded.
  */
 export function buildGlobalSearchConditions(
   allColumns: string[],
@@ -189,7 +194,7 @@ export function buildGlobalSearchConditions(
     if (type === 'text' || type === 'categorical') {
       conditions.push(col + '__contains.' + encodeConditionValue(searchValue))
     }
-    else if (type === 'number' && searchValue.length > 0 && isFinite(Number(searchValue))) {
+    else if (type === 'number' && NUMBER_LITERAL_RE.test(searchValue)) {
       conditions.push(col + '__exact.' + encodeConditionValue(searchValue))
     }
   }

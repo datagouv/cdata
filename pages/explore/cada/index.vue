@@ -181,6 +181,7 @@
 
 <script setup lang="ts">
 import { SearchInput, TabularExplorer, TranslationT, provideTabularProfile } from '@datagouv/components-next'
+import type { ColumnFilters } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
@@ -222,7 +223,7 @@ const URL_PARAM_MAP: Record<string, UrlFilterParam> = {
 }
 
 const initialFilters = computed(() => {
-  const f: Record<string, { contains?: string, exact?: string }> = {}
+  const f: Record<string, ColumnFilters> = {}
   for (const [param, { column, operator }] of Object.entries(URL_PARAM_MAP)) {
     const val = route.query[param]
     if (!val) continue

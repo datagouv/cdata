@@ -65,7 +65,7 @@
               </h3>
               <CdataLink
                 :to="{ path: '/explore/cada', query: { administration: advice.Administration } }"
-                class="fr-link"
+                class="link"
               >
                 {{ advice.Administration }}
               </CdataLink>

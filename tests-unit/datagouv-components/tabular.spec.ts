@@ -161,6 +161,21 @@ describe('global search query conditions', () => {
     expect(nonNumeric).toContain('name__contains.abc')
   })
 
+  it('rejects the numeric-looking values the API cannot parse as a number', () => {
+    const cols = ['id', 'name']
+    const types: Record<string, ColumnType> = { id: 'number', name: 'text' }
+
+    // `Number()` accepts all of these, the number column does not — and one bad
+    // condition makes the API reject the whole `or(...)`.
+    for (const value of ['0x10', '1e5', ' ', '+42', '42px']) {
+      const conditions = buildGlobalSearchConditions(cols, c => types[c], value)
+      expect(conditions.find(c => c.includes('__exact')), value).toBeUndefined()
+    }
+
+    // The decimal separator is encoded like any other dot of the grammar
+    expect(buildGlobalSearchConditions(cols, c => types[c], '-12.5')).toContain('id__exact.-12%2E5')
+  })
+
   it('excludes date, year and boolean columns from global search', () => {
     const cols = ['a_date', 'a_year', 'a_bool', 'a_text']
     const types: Record<string, ColumnType> = {

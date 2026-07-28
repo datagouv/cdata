@@ -4,7 +4,7 @@ import { test, expect } from './base'
 // The CADA explore runs against the real Tabular API, so no assertion pins an
 // absolute row count: a filtered count is always compared to the unfiltered one.
 async function readRowCount(page: Page): Promise<{ shown: number, total: number }> {
-  const text = await page.locator('[data-row-count]').first().innerText()
+  const text = await page.getByTestId('row-count').first().innerText()
   const [shown, total] = text.split('/').map(part => Number(part.replace(/\D/g, '')))
   return { shown, total }
 }
@@ -30,7 +30,7 @@ async function columnIndex(page: Page, column: string): Promise<number> {
 
 async function gotoExplore(page: Page, path = '/explore/cada') {
   await page.goto(path)
-  await expect(page.locator('[data-row-count]')).toBeVisible({ timeout: 30000 })
+  await expect(page.getByTestId('row-count')).toBeVisible({ timeout: 30000 })
 }
 
 test('CADA homepage loads with search bar and table', async ({ page }) => {
@@ -215,7 +215,7 @@ test.describe('column filter', () => {
 
     // Date columns show a native date picker input, not a text search
     await expect(
-      page.locator('[data-column-filter="Séance"] input[type="date"]'),
+      page.getByTestId('column-filter-Séance').locator('input[type="date"]'),
     ).toBeVisible({ timeout: 3000 })
   })
 
@@ -225,7 +225,7 @@ test.describe('column filter', () => {
     await page.getByRole('button', { name: 'Filtrer Année' }).click()
 
     await expect(
-      page.locator('[data-column-filter="Année"]').getByPlaceholder('Rechercher...'),
+      page.getByTestId('column-filter-Année').getByPlaceholder('Rechercher...'),
     ).toHaveAttribute('type', 'number', { timeout: 3000 })
   })
 
@@ -237,11 +237,11 @@ test.describe('column filter', () => {
 
     // A year filters with `__exact`: `__contains` is not supported for numbers
     const response = dataResponse(page, 'Année__exact=2011')
-    await page.locator('[data-column-filter="Année"]').getByPlaceholder('Rechercher...').fill('2011')
+    await page.getByTestId('column-filter-Année').getByPlaceholder('Rechercher...').fill('2011')
     expect((await response).ok()).toBe(true)
 
     // A non-boolean `exact` filter shows its own value, not Vrai/Faux
-    await expect(page.locator('[data-active-filter="Année"]')).toContainText('= 2011')
+    await expect(page.getByTestId('active-filter-Année')).toContainText('= 2011')
     await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
   })
 })
@@ -252,7 +252,7 @@ test.describe('legacy filter params', () => {
     await gotoExplore(page, '/explore/cada?part=II')
     expect((await response).ok()).toBe(true)
 
-    await expect(page.locator('[data-active-filter="Partie"]')).toContainText('= II')
+    await expect(page.getByTestId('active-filter-Partie')).toContainText('= II')
 
     const { shown, total } = await readRowCount(page)
     expect(shown).toBeGreaterThan(0)
@@ -264,7 +264,7 @@ test.describe('legacy filter params', () => {
     await gotoExplore(page, '/explore/cada?administration=Mairie+de+Paris')
     expect((await response).ok()).toBe(true)
 
-    await expect(page.locator('[data-active-filter="Administration"]')).toContainText('contient "Mairie de Paris"')
+    await expect(page.getByTestId('active-filter-Administration')).toContainText('contient "Mairie de Paris"')
 
     const { shown, total } = await readRowCount(page)
     expect(shown).toBeGreaterThan(0)
@@ -278,7 +278,7 @@ test.describe('legacy filter params', () => {
     await page.getByRole('link', { name: 'Subvention' }).click()
 
     await page.waitForURL(/\/explore\/cada\?tag=Subvention/, { timeout: 30000 })
-    await expect(page.locator('[data-active-filter="Mots clés"]'))
+    await expect(page.getByTestId('active-filter-Mots clés'))
       .toContainText('contient "Subvention"', { timeout: 30000 })
   })
 })

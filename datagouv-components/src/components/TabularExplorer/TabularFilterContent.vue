@@ -67,21 +67,16 @@
       class="px-3 py-2 border-b border-black/10"
     >
       <div class="relative">
-        <RiCalendarLine
-          v-if="columnType === 'date'"
-          class="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-medium"
-          aria-hidden="true"
-        />
-        <RiSearchLine
-          v-else
+        <component
+          :is="searchField.icon"
           class="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-medium"
           aria-hidden="true"
         />
         <input
           v-model="search"
-          :type="columnType === 'number' || columnType === 'year' ? 'number' : columnType === 'date' ? 'date' : 'text'"
+          :type="searchField.type"
           class="w-full h-8 text-sm border border-transparent rounded-lg py-1 pl-8 pr-3 bg-[#f3f3f5] focus:outline-none focus:border-new-primary"
-          :placeholder="columnType === 'date' ? '' : t('Rechercher...')"
+          :placeholder="searchField.placeholder"
         >
       </div>
     </div>
@@ -248,6 +243,17 @@ const { t } = useTranslation()
 const { formatNumber } = useFormatTabular()
 
 const search = ref('')
+
+// Numbers, years and dates are matched exactly (the API has no `contains` for
+// them), so the field offers the matching native picker instead of a text search.
+const searchField = computed(() => {
+  switch (props.columnType) {
+    case 'date': return { icon: RiCalendarLine, type: 'date', placeholder: '' }
+    case 'number':
+    case 'year': return { icon: RiSearchLine, type: 'number', placeholder: t('Rechercher...') }
+    default: return { icon: RiSearchLine, type: 'text', placeholder: t('Rechercher...') }
+  }
+})
 
 watchDebounced(search, (q) => {
   const existing = filters.value[props.column] ?? {}

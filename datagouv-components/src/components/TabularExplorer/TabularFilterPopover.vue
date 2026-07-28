@@ -23,7 +23,7 @@
           static
           class="bg-white border border-black/10 rounded-lg shadow-md w-64 absolute z-[800]"
           :style="floatingStyles"
-          :data-column-filter="column"
+          :data-testid="`column-filter-${column}`"
         >
           <!-- Title -->
           <div class="flex items-center justify-between px-3 py-2 border-b border-black/10">

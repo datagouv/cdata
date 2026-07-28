@@ -177,13 +177,11 @@
                 aria-hidden="true"
               />
               <span class="font-bold hidden md:inline">{{ t('Lignes') }}</span>
+              <!-- The count stays in place while refreshing: the spinner already
+                   says it is stale, and swapping it for a word of another width
+                   would shift the whole toolbar on every search. -->
               <span
-                v-if="isRefreshing"
-                class="text-new-primary"
-              >{{ t('Chargement…') }}</span>
-              <span
-                v-else
-                data-row-count
+                data-testid="row-count"
                 class="font-mono tabular-nums"
               >{{ tableData.meta.total.toLocaleString() }}/{{ totalLines.toLocaleString() }}</span>
             </span>
@@ -249,7 +247,7 @@
             <span
               v-for="af in activeFilters"
               :key="af.column"
-              :data-active-filter="af.column"
+              :data-testid="`active-filter-${af.column}`"
               class="inline-flex items-center gap-1.5 bg-white border border-gray-silver rounded-lg pl-2 pr-1 py-1 text-xs"
             >
               <component
@@ -476,8 +474,8 @@
                 :title="col"
               >{{ col }}</span>
             </div>
-            <!-- The cell colour lives here and not on the cell itself, so a link
-                 wrapping it (see `rowHref`) keeps its own colour. -->
+            <!-- Numbers and dates take their colour from here rather than from
+                 the cell, so a link wrapping one (see `rowHref`) keeps its own. -->
             <div
               data-cell
               class="min-w-0 pl-4 cursor-pointer text-gray-title"
@@ -680,7 +678,7 @@ const props = defineProps<{
   // When set, searches across multiple columns using the Tabular API's or(...)
   // parameter. Text and categorical columns get a __contains filter; number
   // columns get a __exact filter (since __contains is not supported for numbers
-  // by the API). Date and boolean columns are excluded.
+  // by the API). Year, date and boolean columns are excluded.
   // Note: combined via AND with any existing column-specific `contains` filters,
   // so it acts as an additional narrowing constraint, not a replacement.
   globalSearch?: string
@@ -695,8 +693,8 @@ const props = defineProps<{
   noFormatColumns?: string[]
 }>()
 
-function getRowHref(row: TabularRow): string | null {
-  return props.rowHref?.href(row) ?? null
+function getRowHref(row: TabularRow): string | undefined {
+  return props.rowHref?.href(row)
 }
 
 function isLinkColumn(col: string): boolean {
