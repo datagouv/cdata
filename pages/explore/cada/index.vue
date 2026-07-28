@@ -45,12 +45,6 @@
           </form>
         </template>
       </TabularExplorer>
-      <div
-        v-else
-        class="bg-gray-100 rounded-lg py-12 text-center text-gray-medium"
-      >
-        {{ $t('La base des avis CADA n\'est pas configurée.') }}
-      </div>
       <template #fallback>
         <div class="bg-gray-100 rounded-lg py-12 text-center text-gray-medium">
           {{ $t('Chargement…') }}
@@ -240,5 +234,10 @@ const initialFilters = computed(() => {
 
 if (RESOURCE_ID) {
   provideTabularProfile(() => RESOURCE_ID)
+}
+else {
+  // Use `showError`, not `throw createError`: throwing rejects the async setup,
+  // see the detailed explanation in pages/pages/[...slug].vue.
+  showError({ statusCode: 404, statusMessage: 'Page Not Found' })
 }
 </script>

@@ -137,17 +137,6 @@
     </template>
 
     <div
-      v-else-if="!RESOURCE_ID"
-      class="bg-gray-100 rounded-lg p-8 text-center"
-    >
-      <ClientOnly>
-        <p class="text-gray-medium">
-          {{ $t('La base des avis CADA n\'est pas configurée.') }}
-        </p>
-      </ClientOnly>
-    </div>
-
-    <div
       v-else
       class="bg-gray-100 rounded-lg p-8 text-center"
     >
@@ -177,6 +166,12 @@ const config = useRuntimeConfig()
 const route = useRoute()
 
 const RESOURCE_ID = config.public.cadaResourceId
+
+if (!RESOURCE_ID) {
+  // Use `showError`, not `throw createError`: throwing rejects the async setup,
+  // see the detailed explanation in pages/pages/[...slug].vue.
+  showError({ statusCode: 404, statusMessage: 'Page Not Found' })
+}
 
 type CadaRow = {
   'Numéro de dossier': number
@@ -215,6 +210,7 @@ const { data: advice, status } = await useAsyncData(
       return null
     }
   },
+  { immediate: Boolean(RESOURCE_ID) },
 )
 
 const partLabel = computed(() => {
