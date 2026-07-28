@@ -408,7 +408,7 @@
                 @click="onCellClick(col, row[col], $event)"
               >
                 <AppLink
-                  v-if="linkColumns?.has(col)"
+                  v-if="isLinkColumn(col)"
                   :to="getRowHref(row)"
                   class="link"
                 >
@@ -484,7 +484,7 @@
               @click="onCellClick(col, row[col], $event)"
             >
               <AppLink
-                v-if="linkColumns?.has(col)"
+                v-if="isLinkColumn(col)"
                 :to="getRowHref(row)"
                 class="link"
               >
@@ -695,15 +695,13 @@ const props = defineProps<{
   noFormatColumns?: string[]
 }>()
 
-const rowHrefFn = computed(() => props.rowHref?.href ?? null)
-
 function getRowHref(row: TabularRow): string | null {
-  return rowHrefFn.value?.(row) ?? null
+  return props.rowHref?.href(row) ?? null
 }
 
-const linkColumns = computed(() =>
-  props.rowHref ? new Set(props.rowHref.columns) : null,
-)
+function isLinkColumn(col: string): boolean {
+  return props.rowHref?.columns.includes(col) ?? false
+}
 
 function cellProps(col: string, row: TabularRow) {
   const columnType = getColumnType(col)
