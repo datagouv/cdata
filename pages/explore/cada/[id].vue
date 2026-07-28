@@ -12,173 +12,157 @@
       </BreadcrumbItem>
     </Breadcrumb>
 
-    <AnimatedLoader v-if="status === 'pending'" />
+    <LoadingBlock
+      :status="status"
+      :data="advice"
+    >
+      <template #default="{ data: advice }">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2">
+            <div class="mb-6">
+              <h1 class="text-2xl font-extrabold text-gray-title mb-2">
+                {{ advice.Type }} {{ advice['Numéro de dossier'] }}
+              </h1>
+              <p class="text-sm text-gray-medium">
+                {{ $t('Séance du') }} {{ formatDate(advice['Séance']) }}
+              </p>
+            </div>
 
-    <template v-else-if="advice">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2">
-          <div class="mb-6">
-            <h1 class="text-2xl font-extrabold text-gray-title mb-2">
-              {{ advice.Type }} {{ advice['Numéro de dossier'] }}
-            </h1>
-            <p class="text-sm text-gray-medium">
-              {{ $t('Séance du') }} {{ formatDate(advice['Séance']) }}
-            </p>
-          </div>
+            <div class="mb-6">
+              <p class="text-gray-plain text-sm">
+                {{ advice.Objet }}
+              </p>
+            </div>
 
-          <div class="mb-6">
-            <p class="text-gray-plain text-sm">
-              {{ advice.Objet }}
-            </p>
-          </div>
+            <div class="border-t pt-6">
+              <h2 class="text-sm font-bold uppercase mb-3">
+                {{ $t('Avis complet') }}
+              </h2>
+              <div class="text-gray-plain whitespace-pre-wrap text-sm">
+                {{ advice.Avis }}
+              </div>
+            </div>
 
-          <div class="border-t pt-6">
-            <h2 class="text-sm font-bold uppercase mb-3">
-              {{ $t('Avis complet') }}
-            </h2>
-            <div class="text-gray-plain whitespace-pre-wrap text-sm">
-              {{ advice.Avis }}
+            <div class="flex justify-center mt-8">
+              <BrandedButton
+                :href="config.public.supportUrl"
+                new-tab
+                color="secondary"
+                size="sm"
+              >
+                {{ $t('Signaler un défaut d’anonymisation') }}
+              </BrandedButton>
             </div>
           </div>
 
-          <div class="flex justify-center mt-8">
-            <BrandedButton
-              :href="config.public.supportUrl"
-              new-tab
-              color="secondary"
-              size="sm"
+          <aside class="space-y-4">
+            <div
+              v-if="advice.Administration"
+              class="bg-gray-100 rounded-lg p-4"
             >
-              {{ $t('Signaler un défaut d’anonymisation') }}
-            </BrandedButton>
-          </div>
+              <h3 class="text-sm text-gray-500 uppercase mb-2">
+                {{ $t('Administration') }}
+              </h3>
+              <CdataLink
+                :to="{ path: '/explore/cada', query: { administration: advice.Administration } }"
+                class="fr-link"
+              >
+                {{ advice.Administration }}
+              </CdataLink>
+            </div>
+
+            <div
+              v-if="partLabel"
+              class="bg-gray-100 rounded-lg p-4"
+            >
+              <h3 class="text-sm text-gray-500 uppercase mb-2">
+                {{ $t('Type de consultation') }}
+              </h3>
+              <CdataLink
+                :to="{ path: '/explore/cada', query: { part: advice.Partie } }"
+                class="fr-badge fr-badge--sm"
+              >
+                {{ partLabel }}
+              </CdataLink>
+            </div>
+
+            <div
+              v-if="themeParts.length"
+              class="bg-gray-100 rounded-lg p-4"
+            >
+              <h3 class="text-sm text-gray-500 uppercase mb-2">
+                {{ $t('Thèmes') }}
+              </h3>
+              <div class="flex flex-wrap gap-1.5">
+                <CdataLink
+                  v-for="th in themeParts"
+                  :key="th"
+                  :to="{ path: '/explore/cada', query: { topic: th } }"
+                  class="fr-badge fr-badge--sm"
+                >
+                  {{ th }}
+                </CdataLink>
+              </div>
+            </div>
+
+            <div
+              v-if="meanings.length"
+              class="bg-gray-100 rounded-lg p-4"
+            >
+              <h3 class="text-sm text-gray-500 uppercase mb-2">
+                {{ $t('Conclusions') }}
+              </h3>
+              <div class="flex flex-wrap gap-1.5">
+                <CdataLink
+                  v-for="m in meanings"
+                  :key="m"
+                  :to="{ path: '/explore/cada', query: { meaning: m } }"
+                  class="fr-badge fr-badge--sm"
+                  :class="meaningClass(m)"
+                >
+                  {{ m }}
+                </CdataLink>
+              </div>
+            </div>
+
+            <div
+              v-if="tags.length"
+              class="bg-gray-100 rounded-lg p-4"
+            >
+              <h3 class="text-sm text-gray-500 uppercase mb-2">
+                {{ $t('Mots-clés') }}
+              </h3>
+              <div class="flex flex-wrap gap-1.5">
+                <CdataLink
+                  v-for="tag in tags"
+                  :key="tag"
+                  :to="{ path: '/explore/cada', query: { tag: tag } }"
+                  class="fr-badge fr-badge--sm"
+                >
+                  {{ tag }}
+                </CdataLink>
+              </div>
+            </div>
+          </aside>
         </div>
+      </template>
 
-        <aside class="space-y-4">
-          <div
-            v-if="advice.Administration"
-            class="bg-gray-100 rounded-lg p-4"
-          >
-            <h3 class="text-sm text-gray-500 uppercase mb-2">
-              {{ $t('Administration') }}
-            </h3>
-            <CdataLink
-              :to="{ path: '/explore/cada', query: { administration: advice.Administration } }"
-              class="fr-link"
-            >
-              {{ advice.Administration }}
-            </CdataLink>
-          </div>
-
-          <div
-            v-if="partLabel"
-            class="bg-gray-100 rounded-lg p-4"
-          >
-            <h3 class="text-sm text-gray-500 uppercase mb-2">
-              {{ $t('Type de consultation') }}
-            </h3>
-            <CdataLink
-              :to="{ path: '/explore/cada', query: { part: advice.Partie } }"
-              class="fr-badge fr-badge--sm"
-            >
-              {{ partLabel }}
-            </CdataLink>
-          </div>
-
-          <div
-            v-if="themeParts.length"
-            class="bg-gray-100 rounded-lg p-4"
-          >
-            <h3 class="text-sm text-gray-500 uppercase mb-2">
-              {{ $t('Thèmes') }}
-            </h3>
-            <div class="flex flex-wrap gap-1.5">
-              <CdataLink
-                v-for="th in themeParts"
-                :key="th"
-                :to="{ path: '/explore/cada', query: { topic: th } }"
-                class="fr-badge fr-badge--sm"
-              >
-                {{ th }}
-              </CdataLink>
-            </div>
-          </div>
-
-          <div
-            v-if="meanings.length"
-            class="bg-gray-100 rounded-lg p-4"
-          >
-            <h3 class="text-sm text-gray-500 uppercase mb-2">
-              {{ $t('Conclusions') }}
-            </h3>
-            <div class="flex flex-wrap gap-1.5">
-              <CdataLink
-                v-for="m in meanings"
-                :key="m"
-                :to="{ path: '/explore/cada', query: { meaning: m } }"
-                class="fr-badge fr-badge--sm"
-                :class="meaningClass(m)"
-              >
-                {{ m }}
-              </CdataLink>
-            </div>
-          </div>
-
-          <div
-            v-if="tags.length"
-            class="bg-gray-100 rounded-lg p-4"
-          >
-            <h3 class="text-sm text-gray-500 uppercase mb-2">
-              {{ $t('Mots-clés') }}
-            </h3>
-            <div class="flex flex-wrap gap-1.5">
-              <CdataLink
-                v-for="tag in tags"
-                :key="tag"
-                :to="{ path: '/explore/cada', query: { tag: tag } }"
-                class="fr-badge fr-badge--sm"
-              >
-                {{ tag }}
-              </CdataLink>
-            </div>
-          </div>
-        </aside>
-      </div>
-    </template>
-
-    <div
-      v-else-if="error"
-      class="bg-gray-100 rounded-lg p-8 text-center"
-    >
-      <h1 class="text-2xl font-extrabold text-gray-title mb-2">
-        {{ $t('Une erreur est survenue') }}
-      </h1>
-      <p class="text-gray-medium">
-        {{ $t('La base des avis CADA n’a pas pu être interrogée. Réessayez dans quelques instants.') }}
-      </p>
-    </div>
-
-    <div
-      v-else
-      class="bg-gray-100 rounded-lg p-8 text-center"
-    >
-      <h1 class="text-2xl font-extrabold text-gray-title mb-2">
-        {{ $t('Avis non trouvé') }}
-      </h1>
-      <p class="text-gray-medium">
-        {{ $t('L\'avis demandé n\'existe pas ou a été supprimé.') }}
-      </p>
-      <CdataLink
-        to="/explore/cada"
-        class="link mt-4"
-      >
-        {{ $t('Retour aux résultats') }}
-      </CdataLink>
-    </div>
+      <template #error>
+        <div class="bg-gray-100 rounded-lg p-8 text-center">
+          <h1 class="text-2xl font-extrabold text-gray-title mb-2">
+            {{ $t('Une erreur est survenue') }}
+          </h1>
+          <p class="text-gray-medium">
+            {{ $t('La base des avis CADA n’a pas pu être interrogée. Réessayez dans quelques instants.') }}
+          </p>
+        </div>
+      </template>
+    </LoadingBlock>
   </div>
 </template>
 
 <script setup lang="ts">
-import { AnimatedLoader, BrandedButton, fetchTabularData, useComponentsConfig, useFormatDate } from '@datagouv/components-next'
+import { BrandedButton, fetchTabularData, LoadingBlock, useComponentsConfig, useFormatDate } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
@@ -189,12 +173,6 @@ const componentsConfig = useComponentsConfig()
 const route = useRoute()
 
 const RESOURCE_ID = config.public.cadaResourceId
-
-if (!RESOURCE_ID) {
-  // Use `showError`, not `throw createError`: throwing rejects the async setup,
-  // see the detailed explanation in pages/pages/[...slug].vue.
-  showError({ statusCode: 404, statusMessage: 'Page Not Found' })
-}
 
 type CadaRow = {
   'Numéro de dossier': number
@@ -235,6 +213,13 @@ const { data: advice, status, error } = await useAsyncData(
   },
   { immediate: Boolean(RESOURCE_ID) },
 )
+
+// An advice that does not exist — or a CADA base that is not configured — is a
+// real 404. Use `showError`, not `throw createError`: throwing rejects the async
+// setup, see the detailed explanation in pages/pages/[...slug].vue.
+if (!error.value && !advice.value) {
+  showError({ statusCode: 404, statusMessage: 'Page Not Found' })
+}
 
 const partLabel = computed(() => {
   if (!advice.value?.Partie) return ''
