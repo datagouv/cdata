@@ -21,21 +21,13 @@
     :style="categoryBadgeStyle ? { backgroundColor: categoryBadgeStyle.backgroundColor, color: categoryBadgeStyle.color } : undefined"
   >{{ value }}</span>
   <span
-    v-else-if="columnType === 'number' && noNumberFormat"
+    v-else-if="columnType === 'number' || columnType === 'year'"
     :class="compact ? 'font-mono tabular-nums text-xs' : ''"
-  >{{ value }}</span>
-  <span
-    v-else-if="columnType === 'number'"
-    :class="compact ? 'font-mono tabular-nums text-xs' : ''"
-  >{{ formatNumber(value) }}</span>
+  >{{ columnType === 'year' || noNumberFormat ? value : formatNumber(value) }}</span>
   <span
     v-else-if="columnType === 'date'"
     :class="compact ? 'font-mono tabular-nums text-xs' : ''"
   >{{ formatCellDate(value) }}</span>
-  <span
-    v-else-if="columnType === 'year'"
-    :class="compact ? 'font-mono tabular-nums text-xs' : ''"
-  >{{ value }}</span>
   <span
     v-else
     class="text-gray-title truncate block text-xs"
