@@ -146,6 +146,18 @@
     </template>
 
     <div
+      v-else-if="error"
+      class="bg-gray-100 rounded-lg p-8 text-center"
+    >
+      <h1 class="text-2xl font-extrabold text-gray-title mb-2">
+        {{ $t('Une erreur est survenue') }}
+      </h1>
+      <p class="text-gray-medium">
+        {{ $t('La base des avis CADA n’a pas pu être interrogée. Réessayez dans quelques instants.') }}
+      </p>
+    </div>
+
+    <div
       v-else
       class="bg-gray-100 rounded-lg p-8 text-center"
     >
@@ -207,24 +219,19 @@ const PART_LABELS: Record<string, string> = {
 
 const adviceId = computed(() => parseInt(route.params.id as string, 10))
 
-const { data: advice, status } = await useAsyncData(
+const { data: advice, status, error } = await useAsyncData(
   `cada-advice-${adviceId.value}`,
   async () => {
-    try {
-      const response = await fetchTabularData(componentsConfig, {
-        resourceId: RESOURCE_ID,
-        filters: {
-          _cls: 'Filter',
-          column: 'Numéro de dossier',
-          condition: 'exact',
-          value: String(adviceId.value),
-        },
-      })
-      return (response.data[0] as CadaRow | undefined) ?? null
-    }
-    catch {
-      return null
-    }
+    const response = await fetchTabularData(componentsConfig, {
+      resourceId: RESOURCE_ID,
+      filters: {
+        _cls: 'Filter',
+        column: 'Numéro de dossier',
+        condition: 'exact',
+        value: String(adviceId.value),
+      },
+    })
+    return (response.data[0] as CadaRow | undefined) ?? null
   },
   { immediate: Boolean(RESOURCE_ID) },
 )
