@@ -410,19 +410,11 @@
                   :to="getRowHref(row)"
                   class="link"
                 >
-                  <TabularCell
-                    :value="row[col]"
-                    :column-type="getColumnType(col)"
-                    :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
-                    :no-number-format="props.noFormatColumns?.includes(col)"
-                  />
+                  <TabularCell v-bind="cellProps(col, row)" />
                 </AppLink>
                 <TabularCell
                   v-else
-                  :value="row[col]"
-                  :column-type="getColumnType(col)"
-                  :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
-                  :no-number-format="props.noFormatColumns?.includes(col)"
+                  v-bind="cellProps(col, row)"
                 />
               </td>
             </tr>
@@ -495,20 +487,14 @@
                 class="link"
               >
                 <TabularCell
-                  :value="row[col]"
-                  :column-type="getColumnType(col)"
-                  :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
+                  v-bind="cellProps(col, row)"
                   compact
-                  :no-number-format="props.noFormatColumns?.includes(col)"
                 />
               </AppLink>
               <TabularCell
                 v-else
-                :value="row[col]"
-                :column-type="getColumnType(col)"
-                :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
+                v-bind="cellProps(col, row)"
                 compact
-                :no-number-format="props.noFormatColumns?.includes(col)"
               />
             </div>
           </div>
@@ -716,6 +702,16 @@ function getRowHref(row: TabularRow): string | null {
 const linkColumns = computed(() =>
   props.rowHref ? new Set(props.rowHref.columns) : null,
 )
+
+function cellProps(col: string, row: TabularRow) {
+  const columnType = getColumnType(col)
+  return {
+    value: row[col],
+    columnType,
+    categoryBadgeStyle: columnType === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined,
+    noNumberFormat: props.noFormatColumns?.includes(col),
+  }
+}
 
 const { t } = useTranslation()
 const config = useComponentsConfig()
