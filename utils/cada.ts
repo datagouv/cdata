@@ -4,17 +4,17 @@ export function splitCadaValues(value: string | null | undefined): Array<string>
   return value.split(',').map(part => part.trim()).filter(Boolean)
 }
 
-const CADA_PART_LABELS: Record<string, string> = {
-  I: 'Avec audition de l\'administration',
-  II: 'Affaire de principe',
-  III: 'Affaire courante',
-  IV: 'Délégué',
-}
-
 // `Partie` holds a roman numeral, or nothing at all for older advices.
 export function cadaPartLabel(part: string | null | undefined): string {
   if (!part) return ''
-  return CADA_PART_LABELS[part.trim()] ?? part
+  const { t } = useTranslation()
+  switch (part.trim()) {
+    case 'I': return t('Avec audition de l\'administration')
+    case 'II': return t('Affaire de principe')
+    case 'III': return t('Affaire courante')
+    case 'IV': return t('Délégué')
+    default: return part
+  }
 }
 
 export function cadaMeaningBadgeClass(meaning: string): string {
