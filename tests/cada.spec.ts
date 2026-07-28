@@ -79,10 +79,12 @@ test('CADA detail page answers a 404 for an advice that does not exist', async (
 
 test('CADA detail page answers a 404 for an id that is not a dossier number', async ({ page }) => {
   // A word would reach the API as `NaN`, a suffixed or zero-padded number would
-  // serve advice 20237028 under a second URL.
+  // serve advice 20237028 under a second URL. Plain requests rather than
+  // navigations: only the status code is under test, and chaining `goto` cuts
+  // the module loading of the page being left.
   for (const path of ['/explore/cada/abc', '/explore/cada/20237028-mon-titre', '/explore/cada/0020237028']) {
-    const response = await page.goto(path)
-    expect(response?.status(), path).toBe(404)
+    const response = await page.request.get(path)
+    expect(response.status(), path).toBe(404)
   }
 })
 
