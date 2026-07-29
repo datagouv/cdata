@@ -126,7 +126,7 @@
       />
 
       <NuxtPage
-        :page-key="route => route.fullPath"
+        :page-key="pageKey"
         :dataset
       />
     </div>
@@ -142,6 +142,7 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 import type { PaginatedArray } from '~/types/types'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 definePageMeta({
   keepScroll: true,
@@ -165,4 +166,10 @@ const { data: activities } = await useAPI<PaginatedArray<Activity>>('/api/1/acti
     sort: '-created_at',
   },
 })
+
+// Stable reference: NuxtPage compares page-key by reference, so an inline function here
+// would re-trigger the loading indicator whenever `dataset` changes and this re-renders.
+function pageKey(route: RouteLocationNormalizedLoaded) {
+  return route.fullPath
+}
 </script>
