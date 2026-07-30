@@ -42,12 +42,13 @@ export function buildTypeConfig(t: TranslationFunction): Record<ColumnType, Type
     text: { icon: RiText, label: t('Texte') },
     date: { icon: RiCalendarLine, label: t('Date') },
     boolean: { icon: RiCheckboxLine, label: t('Booléen') },
+    year: { icon: RiCalendarLine, label: t('Année') },
   }
 }
 
 export function resolveColumnType(colInfo: { python_type: string, format?: string }, isCategorical: boolean): ColumnType {
+  if (colInfo.format === 'year') return 'year'
   if (['int', 'float'].includes(colInfo.python_type)) return 'number'
-  if (colInfo.format === 'year') return 'date'
   if (['date', 'datetime'].includes(colInfo.python_type)) return 'date'
   if (colInfo.python_type === 'bool') return 'boolean'
   if (isCategorical) return 'categorical'
@@ -157,6 +158,48 @@ export function useFormatTabular() {
 
 const TRUTHY_VALUES = ['true', '1', 'oui', 'yes']
 const FALSY_VALUES = ['false', '0', 'non', 'no']
+
+// `encodeURIComponent` leaves `.`, `(` and `)` as-is, but they are the operator
+// separator and the delimiters of the API's `or(...)` grammar: a search value
+// containing one makes the parser reject the whole query with a 400. Wrapping
+// the value in double quotes (as the API README suggests) does not work here —
+// the API keeps them as part of the searched string and returns no result. It
+// does percent-decode the value after parsing, so encoding them is enough.
+function encodeConditionValue(value: string): string {
+  return encodeURIComponent(value)
+    .replace(/\./g, '%2E')
+    .replace(/\(/g, '%28')
+    .replace(/\)/g, '%29')
+}
+
+// A decimal literal, not `Number()`: the API compares against a number column,
+// and it answers an error for the whole `or(...)` when it is handed something it
+// cannot parse as one — which `Number()` happily accepts (`0x10`, `1e5`, ` `).
+const NUMBER_LITERAL_RE = /^-?\d+(\.\d+)?$/
+
+/**
+ * Builds the OR conditions for global search across all columns.
+ * Text and categorical columns get a `__contains` filter; number columns
+ * get a `__exact` filter only when the search value is numeric.
+ * Year, date and boolean columns are excluded.
+ */
+export function buildGlobalSearchConditions(
+  allColumns: string[],
+  getColumnType: (col: string) => ColumnType,
+  searchValue: string,
+): string[] {
+  const conditions: string[] = []
+  for (const col of allColumns) {
+    const type = getColumnType(col)
+    if (type === 'text' || type === 'categorical') {
+      conditions.push(col + '__contains.' + encodeConditionValue(searchValue))
+    }
+    else if (type === 'number' && NUMBER_LITERAL_RE.test(searchValue)) {
+      conditions.push(col + '__exact.' + encodeConditionValue(searchValue))
+    }
+  }
+  return conditions
+}
 
 export function isTruthy(value: unknown): boolean {
   if (typeof value === 'boolean') return value

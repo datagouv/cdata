@@ -1,5 +1,9 @@
 <template>
   <div>
+    <!-- Outside the branches below: this slot holds the query controls (search
+         input…), so it has to stay reachable when the query itself failed. -->
+    <slot name="toolbar-top" />
+
     <div
       v-if="previewError"
       class="max-w-3xl mx-auto"
@@ -162,12 +166,24 @@
 
             <!-- Rows -->
             <span class="flex items-center gap-1.5 text-xs text-gray-plain">
+              <RiLoader5Line
+                v-if="isRefreshing"
+                class="size-3 text-new-primary animate-spin"
+                aria-hidden="true"
+              />
               <RiLayoutRowLine
+                v-else
                 class="size-3 text-mention-grey"
                 aria-hidden="true"
               />
               <span class="font-bold hidden md:inline">{{ t('Lignes') }}</span>
-              <span class="font-mono tabular-nums">{{ tableData.meta.total.toLocaleString() }}/{{ totalLines.toLocaleString() }}</span>
+              <!-- The count stays in place while refreshing: the spinner already
+                   says it is stale, and swapping it for a word of another width
+                   would shift the whole toolbar on every search. -->
+              <span
+                data-testid="row-count"
+                class="font-mono tabular-nums"
+              >{{ tableData.meta.total.toLocaleString() }}/{{ totalLines.toLocaleString() }}</span>
             </span>
           </div>
         </div>
@@ -231,6 +247,7 @@
             <span
               v-for="af in activeFilters"
               :key="af.column"
+              :data-testid="`active-filter-${af.column}`"
               class="inline-flex items-center gap-1.5 bg-white border border-gray-silver rounded-lg pl-2 pr-1 py-1 text-xs"
             >
               <component
@@ -292,8 +309,12 @@
       <div
         v-if="displayedColumns.length > 0"
         ref="scrollContainer"
-        class="hidden md:block overflow-auto max-h-[70vh]"
-        :class="fullBleed ? 'relative left-1/2 w-[calc(100vw_-_4rem)] -translate-x-1/2' : '-mx-4'"
+        class="hidden md:block overflow-auto max-h-[70vh] transition-opacity"
+        :class="[
+          fullBleed ? 'relative left-1/2 w-[calc(100vw_-_4rem)] -translate-x-1/2' : '-mx-4',
+          { 'opacity-40': isRefreshing },
+        ]"
+        :aria-busy="isRefreshing"
       >
         <table class="text-sm border-collapse">
           <thead class="sticky top-0 bg-white z-10 shadow-[inset_0_-1px_0_0_#E5E5E5]">
@@ -380,14 +401,20 @@
                 :key="col"
                 data-cell
                 class="p-2 align-middle whitespace-nowrap border-r border-gray-default last:border-r-0 overflow-hidden cursor-pointer hover:bg-gray-200/50"
-                :class="{ 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' }"
+                :class="{ 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' || getColumnType(col) === 'year' }"
                 :style="columnWidths[col] ? { maxWidth: columnWidths[col] + 'px' } : { maxWidth: '300px' }"
                 @click="onCellClick(col, row[col], $event)"
               >
+                <AppLink
+                  v-if="isLinkColumn(col)"
+                  :to="getRowHref(row)"
+                  class="link"
+                >
+                  <TabularCell v-bind="cellProps(col, row)" />
+                </AppLink>
                 <TabularCell
-                  :value="row[col]"
-                  :column-type="getColumnType(col)"
-                  :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
+                  v-else
+                  v-bind="cellProps(col, row)"
                 />
               </td>
             </tr>
@@ -409,7 +436,9 @@
       <!-- Mobile: card layout -->
       <div
         v-if="displayedColumns.length > 0"
-        class="md:hidden space-y-2 px-1"
+        class="md:hidden space-y-2 px-1 transition-opacity"
+        :class="{ 'opacity-40': isRefreshing }"
+        :aria-busy="isRefreshing"
       >
         <div
           v-if="allRows.length === 0"
@@ -445,15 +474,26 @@
                 :title="col"
               >{{ col }}</span>
             </div>
+            <!-- Numbers and dates take their colour from here rather than from
+                 the cell, so a link wrapping one (see `rowHref`) keeps its own. -->
             <div
               data-cell
-              class="min-w-0 pl-4 cursor-pointer"
+              class="min-w-0 pl-4 cursor-pointer text-gray-title"
               @click="onCellClick(col, row[col], $event)"
             >
+              <AppLink
+                v-if="isLinkColumn(col)"
+                :to="getRowHref(row)"
+                class="link"
+              >
+                <TabularCell
+                  v-bind="cellProps(col, row)"
+                  compact
+                />
+              </AppLink>
               <TabularCell
-                :value="row[col]"
-                :column-type="getColumnType(col)"
-                :category-badge-style="getColumnType(col) === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined"
+                v-else
+                v-bind="cellProps(col, row)"
                 compact
               />
             </div>
@@ -609,12 +649,14 @@ import {
   RiFilterLine,
   RiCloseLine,
   RiSearchLine,
+  RiLoader5Line,
 } from '@remixicon/vue'
 import { useFetch } from '../../functions/api'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { injectTabularProfile } from '../../composables/useTabularProfile'
-import { buildTypeConfig, buildFormatConfig, humanizeFormat, GENERIC_FORMATS, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy, resolveColumnType } from '../../functions/tabular'
+import { buildTypeConfig, buildFormatConfig, humanizeFormat, GENERIC_FORMATS, hasFilterForColumn as _hasFilterForColumn, isTruthy, isFalsy, resolveColumnType, buildGlobalSearchConditions } from '../../functions/tabular'
+import AppLink from '../AppLink.vue'
 import ClientOnly from '../ClientOnly.vue'
 import SimpleBanner from '../SimpleBanner.vue'
 import BrandedButton from '../BrandedButton.vue'
@@ -633,7 +675,41 @@ const props = defineProps<{
   // the host's padding. Used on the standalone explore page where the table
   // should span the whole screen while the toolbar stays inside the container.
   fullBleed?: boolean
+  // When set, searches across multiple columns using the Tabular API's or(...)
+  // parameter. Text and categorical columns get a __contains filter; number
+  // columns get a __exact filter (since __contains is not supported for numbers
+  // by the API). Year, date and boolean columns are excluded.
+  // Note: combined via AND with any existing column-specific `contains` filters,
+  // so it acts as an additional narrowing constraint, not a replacement.
+  globalSearch?: string
+  // Initial filters applied on mount, e.g. { 'Administration': { contains: 'Ministère' } }.
+  // Used when navigating from the detail page badge with query params.
+  initialFilters?: Record<string, ColumnFilters>
+  // When set, renders <a> tags inside the specified column cells for native
+  // browser UX (hover URL, ctrl+click, middle-click).
+  rowHref?: { columns: string[], href: (row: TabularRow) => string }
+  // Columns listed here render their values raw (no number formatting).
+  // Useful for identifier columns.
+  noFormatColumns?: string[]
 }>()
+
+function getRowHref(row: TabularRow): string | undefined {
+  return props.rowHref?.href(row)
+}
+
+function isLinkColumn(col: string): boolean {
+  return props.rowHref?.columns.includes(col) ?? false
+}
+
+function cellProps(col: string, row: TabularRow) {
+  const columnType = getColumnType(col)
+  return {
+    value: row[col],
+    columnType,
+    categoryBadgeStyle: columnType === 'categorical' ? getCategoryBadgeStyle(col, String(row[col])) : undefined,
+    noNumberFormat: props.noFormatColumns?.includes(col),
+  }
+}
 
 const { t } = useTranslation()
 const config = useComponentsConfig()
@@ -654,9 +730,39 @@ const dataUrl = computed(() =>
   `${config.tabularApiUrl}/api/resources/${props.resourceId}/data/`,
 )
 
+// Profile is shared with sibling components (e.g. DataStructure) via
+// `provideTabularProfile` in the parent. Falls back to a local fetch
+// when no parent provides it (standalone usage).
+// Fetched before the rows: `dataQuery` reads the column types to build the
+// global search, so the profile has to be resolved by the time it is evaluated.
+const { data: profileData, error: profileError, status: profileStatus } = await injectTabularProfile(() => props.resourceId)
+
+const allColumns = computed(() => profileData.value?.profile?.header ?? [])
+
+// Column type helpers
+function getColumnTypeFromName(col: string): ColumnType {
+  const profile = profileData.value?.profile
+  if (!profile) return 'text'
+  const colInfo = profile.columns[col]
+  if (!colInfo) return 'text'
+  return resolveColumnType(colInfo, profile.categorical.includes(col))
+}
+
+const columnTypesMap = computed(() => {
+  const map: Record<string, ColumnType> = {}
+  for (const col of allColumns.value) {
+    map[col] = getColumnTypeFromName(col)
+  }
+  return map
+})
+
+function getColumnType(col: string): ColumnType {
+  return columnTypesMap.value[col] ?? 'text'
+}
+
 // Sort & filter state
 const sort = ref<SortConfig | null>(null)
-const filters = ref<Record<string, ColumnFilters>>({})
+const filters = ref<Record<string, ColumnFilters>>({ ...props.initialFilters })
 
 const PAGE_SIZE = 50
 
@@ -688,15 +794,14 @@ const dataQuery = computed(() => {
       q[`${col}__isnotnull`] = ''
     }
   }
+  if (props.globalSearch && profileData.value?.profile) {
+    const conditions = buildGlobalSearchConditions(allColumns.value, getColumnType, props.globalSearch)
+    q.or = '(' + conditions.join(',') + ')'
+  }
   return q
 })
 
-const { data: tableData, error } = await useFetch<TabularDataResponse>(dataUrl, { raw: true, query: dataQuery })
-
-// Profile is shared with sibling components (e.g. DataStructure) via
-// `provideTabularProfile` in the parent. Falls back to a local fetch
-// when no parent provides it (standalone usage).
-const { data: profileData, error: profileError, status: profileStatus } = await injectTabularProfile(() => props.resourceId)
+const { data: tableData, error, status: dataStatus } = await useFetch<TabularDataResponse>(dataUrl, { raw: true, query: dataQuery })
 
 // The component renders nothing useful until the profile is available
 // (allColumns is derived from it). Surface a clear loading / error state
@@ -704,6 +809,9 @@ const { data: profileData, error: profileError, status: profileStatus } = await 
 const profileLoading = computed(() => !profileData.value && (profileStatus.value === 'idle' || profileStatus.value === 'pending'))
 const previewError = computed(() => error.value || profileError.value)
 const previewLoading = computed(() => !previewError.value && (!tableData.value || profileLoading.value))
+// A search / filter / sort change refetches while the previous rows stay on
+// screen: without a signal, the table looks unchanged for several seconds.
+const isRefreshing = computed(() => dataStatus.value === 'pending' && !previewLoading.value)
 
 // Infinite scroll state
 const allRows = ref<TabularRow[]>([])
@@ -742,8 +850,6 @@ async function loadNextPage() {
 }
 
 const totalLines = computed(() => profileData.value?.profile?.total_lines ?? tableData.value?.meta.total ?? 0)
-
-const allColumns = computed(() => profileData.value?.profile?.header ?? [])
 
 const visibleColumns = ref(new Set(allColumns.value))
 
@@ -938,6 +1044,9 @@ onUnmounted(() => {
 const activeCell = ref<CellInfo | null>(null)
 
 function onCellClick(col: string, value: unknown, event: MouseEvent) {
+  // A link inside a cell (see `rowHref`) owns its clicks: navigate, don't open
+  // the popover on top of the page we're leaving.
+  if ((event.target as HTMLElement).closest('a')) return
   const el = (event.target as HTMLElement).closest('[data-cell]') as HTMLElement | null
   if (!el) return
   if (activeCell.value && activeCell.value.element === el) {
@@ -961,7 +1070,12 @@ const activeFilters = computed<ActiveFilter[]>(() => {
       parts.push(`= ${filter.in.join(', ')}`)
     }
     if (filter.exact != null) {
-      parts.push(`= ${filter.exact === 'true' ? t('Vrai') : t('Faux')}`)
+      if (getColumnType(col) === 'boolean') {
+        parts.push(`= ${filter.exact === 'true' ? t('Vrai') : t('Faux')}`)
+      }
+      else {
+        parts.push(`= ${filter.exact}`)
+      }
     }
     if (filter.contains) {
       parts.push(`${t('contient')} "${filter.contains}"`)
@@ -1022,27 +1136,6 @@ function toggleMobileExpand(index: number) {
 
 function toggleMobileFilterColumn(col: string) {
   mobileFilterExpandedCol.value = mobileFilterExpandedCol.value === col ? null : col
-}
-
-// Column type helpers
-function getColumnTypeFromName(col: string): ColumnType {
-  const profile = profileData.value?.profile
-  if (!profile) return 'text'
-  const colInfo = profile.columns[col]
-  if (!colInfo) return 'text'
-  return resolveColumnType(colInfo, profile.categorical.includes(col))
-}
-
-const columnTypesMap = computed(() => {
-  const map: Record<string, ColumnType> = {}
-  for (const col of allColumns.value) {
-    map[col] = getColumnTypeFromName(col)
-  }
-  return map
-})
-
-function getColumnType(col: string): ColumnType {
-  return columnTypesMap.value[col] ?? 'text'
 }
 
 function getColumnProfile(col: string) {
