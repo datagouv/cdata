@@ -331,11 +331,11 @@ const expandedFamilies = ref(new Set<string>())
 
 const familyStats = computed(() => computeFamilyStats(
   rows.value,
-  currentMonth.value || '-',
-  previousMonth.value || undefined,
+  currentMonth.value,
+  previousMonth.value,
 ))
 
-const summaryStats = computed(() => computeSummaryStats(rows.value, currentMonth.value || '-'))
+const summaryStats = computed(() => computeSummaryStats(rows.value, currentMonth.value))
 
 function toggleFamily(family: string) {
   const next = new Set(expandedFamilies.value)

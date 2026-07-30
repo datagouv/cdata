@@ -45,8 +45,9 @@ import { buildFiltersFromQuery, buildQueryFromFilters, type PreviewDashboardFilt
 
 const { t } = useTranslation()
 
-const resourcesResourceId = '982d9dd0-365a-4c4b-8a83-75dec40c36bb'
-const statsResourceId = '33cf9a65-3f77-4d88-acd1-bca420d83e60'
+const config = useRuntimeConfig()
+const resourcesResourceId = config.public.tabularApiPreviewResourcesId
+const statsResourceId = config.public.tabularApiPreviewStatsId
 
 const route = useRoute()
 const router = useRouter()

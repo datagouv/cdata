@@ -122,7 +122,7 @@ export function computeFamilyStats(
       const previousCount = previousFamily?.Nombre
       const previousWithPreview = previousFamily?.['Prévisualisable']
       const countDelta = previousCount != null ? count - previousCount : undefined
-      const previewDelta = previousCount != null && previousCount > 0
+      const previewDelta = previousCount != null && previousCount > 0 && count > 0
         ? ((withPreview / count) - (previousWithPreview! / previousCount)) * 100
         : undefined
 

@@ -76,6 +76,8 @@ export default defineNuxtConfig({
       schemaValidataUrl: 'https://validata.fr',
       tabularApiUrl: 'https://tabular-api.data.gouv.fr',
       tabularApiDataserviceId: undefined,
+      tabularApiPreviewResourcesId: '982d9dd0-365a-4c4b-8a83-75dec40c36bb',
+      tabularApiPreviewStatsId: '33cf9a65-3f77-4d88-acd1-bca420d83e60',
 
       qualityDescriptionLength: 100,
       searchDebounce: 300,

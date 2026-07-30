@@ -194,6 +194,15 @@ describe('computeFamilyStats', () => {
     expect(stats[0].formats[0].previewDelta).toBeUndefined()
   })
 
+  it('leaves previewDelta undefined when the current month count is zero', () => {
+    const rows = [
+      makeStat({ Mois: '2026-07', Nombre: 0, Prévisualisable: 0, __id: 1 }),
+      makeStat({ Mois: '2026-06', Nombre: 10, Prévisualisable: 5, __id: 2 }),
+    ]
+    const stats = computeFamilyStats(rows, '2026-07', '2026-06')
+    expect(stats[0].previewDelta).toBeUndefined()
+  })
+
   it('sorts families by descending count', () => {
     const rows = [
       makeStat({ 'Famille de format': 'Tabulaire', 'Nombre': 10, '__id': 1 }),
