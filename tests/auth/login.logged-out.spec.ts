@@ -48,7 +48,7 @@ test.describe('Login page', () => {
       await page.getByRole('button', { name: 'Se connecter' }).first().click()
 
       await expect(page.locator('.fr-error-text').first()).toBeVisible()
-      await expect(page).toHaveURL(`${baseURL}/login?next=%2Fdatasets%2Fsearch`)
+      await expect(page).toHaveURL(url => url.pathname === '/login' && url.searchParams.get('next') === '/datasets/search')
     }
 
     await page.getByLabel('Mot de passe').fill('@1337Password42')

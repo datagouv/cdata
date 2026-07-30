@@ -1,18 +1,23 @@
 import { test, expect } from '../base'
 
+// The router leaves slashes unencoded in query values, so assert on the parsed URL rather
+// than on the raw query string: what matters is where `next` points, not how it is written.
+const authUrl = (pathname: string, next: string | null) => (url: URL) =>
+  url.pathname === pathname && url.searchParams.get('next') === next
+
 test.describe('Header auth links', () => {
   test('keep pointing at the original page instead of nesting each other', async ({ page }) => {
     await page.goto('/datasets/search')
     await page.waitForLoadState('networkidle')
 
     await page.getByRole('link', { name: 'Se connecter' }).first().click()
-    await expect(page).toHaveURL(/\/login\?next=%2Fdatasets%2Fsearch$/)
+    await expect(page).toHaveURL(authUrl('/login', '/datasets/search'))
 
     await page.getByRole('link', { name: 'S\'enregistrer' }).first().click()
-    await expect(page).toHaveURL(/\/register\?next=%2Fdatasets%2Fsearch$/)
+    await expect(page).toHaveURL(authUrl('/register', '/datasets/search'))
 
     await page.getByRole('link', { name: 'Se connecter' }).first().click()
-    await expect(page).toHaveURL(/\/login\?next=%2Fdatasets%2Fsearch$/)
+    await expect(page).toHaveURL(authUrl('/login', '/datasets/search'))
   })
 
   test('carry no next param when the auth page was opened directly', async ({ page }) => {
@@ -20,6 +25,6 @@ test.describe('Header auth links', () => {
     await page.waitForLoadState('networkidle')
 
     await page.getByRole('link', { name: 'S\'enregistrer' }).first().click()
-    await expect(page).toHaveURL(/\/register$/)
+    await expect(page).toHaveURL(authUrl('/register', null))
   })
 })
