@@ -73,7 +73,11 @@ export function buildColumnsFromProfile(profile: { profile: TabularProfile }): A
   return profile.profile.header.map((name) => {
     const colInfo = profile.profile.columns[name]
     const isCategorical = profile.profile.categorical.includes(name)
-    const colType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
+    // The chart stack only branches on 'number' and 'date' (continuous axis,
+    // aggregatable series, time formatting): it has no notion of a year column,
+    // and on an axis a year is a number.
+    const resolvedType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
+    const colType = resolvedType === 'year' ? 'number' : resolvedType
     const colProfile = profile.profile.profile[name]
     return {
       name,
