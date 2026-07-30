@@ -122,6 +122,7 @@
           { href: `${getDatasetAdminUrl(dataset)}/files`, label: t('Fichiers') },
           { href: `${getDatasetAdminUrl(dataset)}/discussions`, label: t('Discussions') },
           { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activités'), show: dataset.permissions.edit },
+          { href: `${getDatasetAdminUrl(dataset)}/geopf`, label: t('Synchronisation cartes.gouv.fr'), show: config.public.geopfEnabled && dataset.permissions.edit_resources },
         ]"
       />
 
@@ -150,6 +151,7 @@ definePageMeta({
 
 const { t } = useTranslation()
 const me = useMe()
+const config = useRuntimeConfig()
 
 const route = useRoute()
 const { formatDate } = useFormatDate()
