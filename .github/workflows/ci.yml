@@ -258,6 +258,7 @@ jobs:
         env:
           BASE_URL: http://localhost:3000
           NUXT_PUBLIC_API_BASE: http://localhost:7000
+          NUXT_SITEMAP_INDEX_URL: https://example.com/sitemaps/sitemap.xml
           UDATA_WORKING_DIR: ${{ env.UDATA_WORKING_DIR }}
           CI: true
           # Unique blob name per (browser, shard): the default is report-<shard>.zip, which would
