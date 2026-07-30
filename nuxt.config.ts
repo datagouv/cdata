@@ -2,7 +2,6 @@ import { resolve } from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import toml from './rollup-plugin-smol-toml'
 
-const nbSitemapsDatasets = 10
 const isFrenchGovernment = true
 // const swrDuration = process.env.NUXT_TEMPLATE_CACHE_DURATION ? parseInt(process.env.NUXT_TEMPLATE_CACHE_DURATION) : 60
 // https://nuxt.com/docs/api/configuration/nuxt-config
@@ -390,45 +389,24 @@ export default defineNuxtConfig({
   sitemap: {
     cacheMaxAgeSeconds: 3600, // 1 hour
     sitemaps: {
-      content: {
+      static: {
         includeAppSources: true,
         exclude: ['/admin/**'],
       },
-      dataservices: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=dataservice',
-        ],
-      },
-      organizations: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=organization',
-        ],
-      },
-      posts: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=post',
-        ],
-      },
-      reuses: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=reuse',
-        ],
-      },
-      // split datasets between nbSitemapsDatasets sections
-      ...Array.from({ length: nbSitemapsDatasets }, (_, i) => i + 1).map(section => ({
-        [`datasets_${section}`]: {
-          sources: [
-            `/nuxt-api/sitemaps/urls?type=dataset&section=${section}&nbSitemapSections=${nbSitemapsDatasets}`,
-          ],
-        },
-      })).reduce((acc, obj) => ({ ...acc, ...obj }), {}),
       pages: {
         sources: [
           '/nuxt-api/sitemaps/pages',
         ],
       },
-      // TODO: add support
     },
+    ...(process.env.NUXT_SITEMAP_INDEX_URL
+      ? {
+          appendSitemaps: [
+            process.env.NUXT_SITEMAP_INDEX_URL,
+          ],
+        }
+      : {}),
+    // TODO: add support
   },
   // TODO: add sentry config for stack traces based on source maps
   // https://docs.sentry.io/platforms/javascript/guides/nuxt/#add-readable-stack-traces-to-errors
