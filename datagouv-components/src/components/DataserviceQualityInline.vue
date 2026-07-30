@@ -9,7 +9,7 @@
       <span class="text-gray-medium text-sm group-hover/quality:underline">{{ t('Métadonnées :') }}</span>
       <QualityScore :score="quality.score" />
       <template #toggletip>
-        <DatasetQualityTooltipContent :quality />
+        <DataserviceQualityTooltipContent :quality />
       </template>
     </Toggletip>
   </div>
@@ -17,14 +17,14 @@
 
 <script setup lang="ts">
 import { RiInformationLine } from '@remixicon/vue'
-import type { Quality } from '../types/datasets'
+import type { DataserviceQuality } from '../types/dataservices'
 import QualityScore from './QualityScore.vue'
-import DatasetQualityTooltipContent from './DatasetQualityTooltipContent.vue'
+import DataserviceQualityTooltipContent from './DataserviceQualityTooltipContent.vue'
 import Toggletip from './Toggletip.vue'
 import { useTranslation } from '../composables/useTranslation'
 
 defineProps<{
-  quality: Quality
+  quality: DataserviceQuality
 }>()
 
 const { t } = useTranslation()

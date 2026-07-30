@@ -33,5 +33,6 @@ logs
 /playwright/.cache/
 playwright/.auth
 tests/**/screenshots/
-.superpowers/
-export-resource-*.csv
+
+# Local design docs / specs (not tracked)
+/docs/

@@ -55,7 +55,7 @@
       <OnboardingTitle class="mb-8">
         {{ $t('Questions fréquentes') }}
       </OnboardingTitle>
-      <div class="max-w-4xl">
+      <div>
         <AccordionGroup>
           <Accordion :title="$t('Qu\'est-ce que l\'ouverture des données ?')">
             <div class="space-y-4 text-gray-plain">
@@ -147,7 +147,7 @@ const categories = [
     title: t('Données de forte valeur'),
     description: t('Suivre l\'ouverture de données de forte valeur identifiées par la Commission européenne.'),
     to: config.public.ouverturesHvdUrl,
-    external: true,
+    external: false,
   },
 ]
 </script>

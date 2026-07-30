@@ -143,7 +143,7 @@
 
 <script setup lang="ts" generic="T extends GristRecord = GristRecord">
 import { ref, onMounted, watch, computed } from 'vue'
-import type { Ref } from 'vue'
+import type { WritableComputedRef } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
 import { AnimatedLoader, SelectGroup, useFormatTabular } from '@datagouv/components-next'
 
@@ -160,6 +160,10 @@ export type GristFilter<R extends GristRecord = GristRecord> = {
   getValues: (record: R) => Array<string>
   // Optional custom ordering for the dropdown options (returned values appear first, in order).
   valueOrder?: Array<string>
+  // Legacy URL query keys that also feed this filter. When the canonical `slug`
+  // key is absent but an alias key is present, the filter is seeded from it, so
+  // links shared with the old query names keep filtering.
+  aliases?: Array<string>
 }
 
 type GristResponse = {
@@ -222,10 +226,24 @@ const total = computed(() => {
 
 const { formatNumber } = useFormatTabular()
 
-// One URL query ref per filter slug. The page hosting the filters must set
+// One URL-synced model per filter slug. The page hosting the filters must set
 // definePageMeta({ keepScroll: true }) so the query updates don't scroll back to top.
-const selectedFilters: Record<string, Ref<string | null>> = Object.fromEntries(
-  (props.filters ?? []).map(f => [f.slug, useRouteQuery<string | null>(f.slug, null)]),
+// A filter may declare `aliases` (legacy query keys): the model reads the canonical
+// key first, then falls back to the first alias that has a value, so old links keep
+// filtering. Writing the filter sets the canonical key and clears the aliases.
+const selectedFilters: Record<string, WritableComputedRef<string | null>> = Object.fromEntries(
+  (props.filters ?? []).map((f) => {
+    const primary = useRouteQuery<string | null>(f.slug, null)
+    const aliases = (f.aliases ?? []).map(alias => useRouteQuery<string | null>(alias, null))
+    const model = computed<string | null>({
+      get: () => primary.value ?? aliases.find(alias => alias.value)?.value ?? null,
+      set: (value) => {
+        primary.value = value
+        for (const alias of aliases) alias.value = null
+      },
+    })
+    return [f.slug, model]
+  }),
 )
 
 const hasActiveFilter = computed(() =>

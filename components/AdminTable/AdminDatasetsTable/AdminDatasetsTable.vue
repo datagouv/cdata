@@ -93,7 +93,7 @@
         </td>
         <td>
           <Tooltip>
-            <DatasetQualityScore
+            <QualityScore
               class="w-full"
               :score="dataset.quality.score"
             />
@@ -133,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { DatasetQualityScore, DatasetQualityTooltipContent, BrandedButton, AvatarWithName, Tooltip, useFormatDate } from '@datagouv/components-next'
+import { QualityScore, DatasetQualityTooltipContent, BrandedButton, AvatarWithName, Tooltip, useFormatDate } from '@datagouv/components-next'
 import type { Activity, Dataset, DatasetV2 } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminContentWithTooltip from '../../AdminContentWithTooltip/AdminContentWithTooltip.vue'

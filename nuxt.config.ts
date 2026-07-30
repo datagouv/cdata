@@ -72,12 +72,15 @@ export default defineNuxtConfig({
       staticUrl: 'https://static.data.gouv.fr/static/',
       maxJsonPreviewCharSize: 1000000, // (~1MB)
       maxPdfPreviewByteSize: 10000000, // (10 MB)
+      maxImagePreviewByteSize: 10000000, // (10 MB)
       maxXmlPreviewCharSize: 100000, // (~100KB)
       schemaValidataUrl: 'https://validata.fr',
       tabularApiUrl: 'https://tabular-api.data.gouv.fr',
       tabularApiDataserviceId: undefined,
       tabularApiPreviewResourcesId: '982d9dd0-365a-4c4b-8a83-75dec40c36bb',
       tabularApiPreviewStatsId: '33cf9a65-3f77-4d88-acd1-bca420d83e60',
+      cadaResourceId: undefined,
+      cadaDatasetUrl: 'https://www.data.gouv.fr/datasets/avis-et-conseils-de-la-cada',
 
       qualityDescriptionLength: 100,
       searchDebounce: 300,
@@ -111,7 +114,12 @@ export default defineNuxtConfig({
       // (see .env) so the Grist document URL is not committed.
       ouverturesGristBaseUrl: '',
       ouverturesGristTable: '',
-      ouverturesHvdUrl: 'https://ouverture.data.gouv.fr/donnees_de_forte_valeur.html',
+      // Grist endpoint for the "Hvd" table on /suivi-de-publication/donnees-de-forte-valeur.
+      // Provided through NUXT_PUBLIC_HVD_GRIST_BASE_URL / NUXT_PUBLIC_HVD_GRIST_TABLE
+      // (see .env) so the Grist document URL is not committed.
+      hvdGristBaseUrl: '',
+      hvdGristTable: '',
+      ouverturesHvdUrl: '/suivi-de-publication/donnees-de-forte-valeur',
 
       guideDatasets: 'https://guides.data.gouv.fr/jeux-de-donnees',
       guideReuses: 'https://guides.data.gouv.fr/reutilisations',
@@ -236,7 +244,12 @@ export default defineNuxtConfig({
 
   devServer: {
     port: 3000,
-    host: 'dev.local',
+    // Bind to the IPv6/IPv4 "any" wildcard rather than resolving the 'dev.local'
+    // hostname at listen-time: Node's dns.lookup() for a hostname follows live
+    // OS network-state ordering (RFC 6724) since Node 17, so binding to only
+    // whichever family the OS prefers *right now* silently flips between IPv4
+    // and IPv6 across sleep/wake or network changes, breaking dev.local access.
+    host: '::',
   },
 
   features: {

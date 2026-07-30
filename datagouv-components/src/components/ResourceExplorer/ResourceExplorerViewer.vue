@@ -141,6 +141,10 @@
                 v-else-if="resource.format && resource.format.toLowerCase() === 'xml'"
                 :resource="resource"
               />
+              <ImagePreview
+                v-else-if="isImagePreviewFormat(resource.format)"
+                :resource="resource"
+              />
               <DatafairPreview
                 v-else-if="hasDatafairPreview"
                 :resource="resource"
@@ -234,7 +238,7 @@ import Metadata from '../ResourceAccordion/Metadata.vue'
 import SchemaBadge from '../ResourceAccordion/SchemaBadge.vue'
 import ResourceSelector from './ResourceSelector.vue'
 import { filesize, summarize } from '../../functions/helpers'
-import { getResourceFormatIcon, getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
+import { getResourceFormatIcon, getResourceExternalUrl, getResourceFilesize, isImagePreviewFormat } from '../../functions/resources'
 import { trackEvent } from '../../functions/matomo'
 import { useComponentsConfig } from '../../config'
 import { useFormatDate } from '../../functions/dates'
@@ -252,6 +256,9 @@ const PdfPreview = defineAsyncComponent(() =>
 )
 const XmlPreview = defineAsyncComponent(() =>
   import('../ResourceAccordion/XmlPreview.client.vue'),
+)
+const ImagePreview = defineAsyncComponent(() =>
+  import('../ResourceAccordion/ImagePreview.client.vue'),
 )
 const DatafairPreview = defineAsyncComponent(() =>
   import('../ResourceAccordion/Datafair.client.vue'),

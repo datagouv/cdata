@@ -64,7 +64,6 @@
             <template #hvd>
               <CdataLink
                 :to="config.public.ouverturesHvdUrl"
-                external
                 class="underline"
               >
                 {{ $t('données de forte valeur') }}
@@ -392,6 +391,10 @@ const filters: Array<GristFilter<OuvertureRecord>> = [
     label: t('Organisation'),
     placeholder: t('Toutes les organisations'),
     getValues: r => r.fields.organisation_names,
+    // Legacy ouverture.data.gouv.fr "engagements ministériels" page filtered the
+    // producteur under the `department` key; that producteur is this page's
+    // organisation, so old links keep working through this alias.
+    aliases: ['department'],
   },
   {
     slug: 'ministere',

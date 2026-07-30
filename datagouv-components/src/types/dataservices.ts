@@ -31,6 +31,20 @@ export type BaseDataservice = Owned & WithAccessType & {
 
 export type NewDataservice = Omit<BaseDataservice, keyof OwnedWithId> & OwnedWithId
 
+export type DataserviceQuality = {
+  has_description: boolean
+  has_machine_documentation: boolean
+  has_technical_documentation: boolean
+  has_business_documentation: boolean
+  license: boolean
+  has_contact_point: boolean
+  has_base_api_url: boolean
+  availability_documented: boolean
+  rate_limiting_documented: boolean
+  access_conditions_clear: boolean
+  score: number
+}
+
 export type Dataservice = Owned & WithAccessType & {
   acronym: string
   archived_at: string | null
@@ -72,4 +86,5 @@ export type Dataservice = Owned & WithAccessType & {
   slug: string
   tags: Array<string>
   title: string
+  quality?: DataserviceQuality
 }
