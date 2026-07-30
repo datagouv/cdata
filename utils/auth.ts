@@ -1,6 +1,14 @@
 import type { Organization, OrganizationReference, User } from '@datagouv/components-next'
 import { usePostApiWithCsrf } from './api'
 
+const UNLOGGED_SECURITY_ROUTES = [
+  'login', 'register', 'reset', 'tf-validate',
+]
+
+export function isUnloggedSecurityRoute(path: string): boolean {
+  return UNLOGGED_SECURITY_ROUTES.some(route => path.startsWith(`/${route}`))
+}
+
 export type Me = User & {
   about: string | null
   active: boolean
