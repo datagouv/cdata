@@ -131,18 +131,18 @@ const save = async () => {
 
     if (scheduleChanged) {
       if (harvesterForm.value.schedule) {
-        await $api(`/api/1/harvest/source/${harvester.value.id}/schedule/`, {
+        harvester.value = await $api<HarvesterSource>(`/api/1/harvest/source/${harvester.value.id}/schedule/`, {
           method: 'POST',
           body: JSON.stringify(harvesterForm.value.schedule),
         })
       }
       else {
         await $api(`/api/1/harvest/source/${harvester.value.id}/schedule/`, { method: 'DELETE' })
-      }
 
-      // The unschedule endpoint answers a 204 with an empty body, so the source is fetched
-      // back instead of reusing the schedule response.
-      await refresh()
+        // The unschedule endpoint answers a 204 with an empty body, so the source is fetched
+        // back instead of reusing its response.
+        await refresh()
+      }
 
       // The API rewrites the cron expression from its parsed fields, so `0  0 * * *` comes
       // back as `0 0 * * *`. The input has to follow it, otherwise the next save would still
