@@ -4,7 +4,7 @@
       class="percentage-meter w-20 h-2 appearance-none"
       min="0"
       max="100"
-      :value="value"
+      :value="safeValue"
       :title="label"
     />
     <span class="text-xs tabular-nums">{{ label }}</span>
@@ -12,11 +12,16 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
-  value: number
-}>()
+const props = withDefaults(defineProps<{
+  value?: number | null
+}>(), { value: 0 })
 
-const label = computed(() => `${props.value.toFixed(1)}%`)
+const safeValue = computed(() => {
+  const num = Number(props.value ?? 0)
+  return Number.isFinite(num) ? num : 0
+})
+
+const label = computed(() => `${safeValue.value.toFixed(1)}%`)
 </script>
 
 <style scoped>

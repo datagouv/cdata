@@ -1,21 +1,9 @@
 import { test, expect } from './base'
 import type { PreviewDashboardResource, PreviewDashboardFormatStat } from '../types/preview-dashboard'
+import { formatMonth, getPreviousMonth } from '../utils/previewDashboard'
 
 const resourceId = '982d9dd0-365a-4c4b-8a83-75dec40c36bb'
 const statsResourceId = '33cf9a65-3f77-4d88-acd1-bca420d83e60'
-
-function formatMonth(date: Date): string {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  return `${y}-${m}`
-}
-
-function getPreviousMonth(month: string): string {
-  const [year, monthNum] = month.split('-').map(Number)
-  const date = new Date(year, monthNum - 1, 1)
-  date.setMonth(date.getMonth() - 1)
-  return formatMonth(date)
-}
 
 const currentMonth = formatMonth(new Date())
 const previousMonth = getPreviousMonth(currentMonth)
@@ -119,6 +107,8 @@ const previousMonthStatsData: PreviewDashboardFormatStat[] = statsData.map(row =
   ...row,
   'Mois': previousMonth,
   'Nombre': row.Nombre - 3,
+  // 3/7 ≈ 42.9% < 50%: the family-level preview ratio must decrease in the
+  // previous month so the month-over-month deltas asserted below are positive
   'Prévisualisable': row['Prévisualisable'] - 2,
   '% prévisualisable': row['% prévisualisable'] - 5,
 }))
@@ -160,14 +150,12 @@ test.describe('Preview dashboard', () => {
     await page.waitForLoadState('networkidle')
 
     await expect(page.getByRole('heading', { name: 'Tableau de bord des aperçus' })).toBeVisible()
-    await expect(page.getByRole('tab', { name: 'Statistique' })).toBeVisible()
+    await expect(page.getByText('Répartition des ressources par famille de format')).toBeVisible()
     await expect(page.getByText('Tabulaire')).toBeVisible()
 
-    await page.getByText('Tabulaire').click()
-    const csvFormatRow = page.locator('tr', { hasText: 'csv' }).first()
-    await expect(csvFormatRow).toBeVisible()
-    await expect(csvFormatRow.locator('td').nth(0)).toContainText('csv')
-    await expect(csvFormatRow.locator('td').nth(1)).toContainText('10')
+    await page.getByRole('button', { name: 'Tabulaire' }).click()
+    await expect(page.getByRole('cell', { name: 'csv' })).toBeVisible()
+    await expect(page.getByRole('cell', { name: '10' })).toBeVisible()
 
     await page.getByRole('tab', { name: 'Fichiers' }).click()
     await expect(page.getByRole('cell', { name: 'Données CSV' })).toBeVisible()
@@ -208,7 +196,7 @@ test.describe('Preview dashboard', () => {
     await page.goto('/admin/beta/preview-dashboard')
     await page.waitForLoadState('networkidle')
 
-    await page.getByText('Tabulaire').click()
+    await page.getByRole('button', { name: 'Tabulaire' }).click()
     await page.getByRole('link', { name: 'csv' }).click()
 
     await expect(page).toHaveURL(/[?&]tab=fichiers/)
@@ -252,7 +240,7 @@ test.describe('Preview dashboard', () => {
     await page.goto('/admin/beta/preview-dashboard')
     await page.waitForLoadState('networkidle')
 
-    await page.getByText('Tabulaire').click()
+    await page.getByRole('button', { name: 'Tabulaire' }).click()
 
     const familyRow = page.locator('tr', { hasText: 'Tabulaire' }).first()
     await expect(familyRow).toBeVisible()
