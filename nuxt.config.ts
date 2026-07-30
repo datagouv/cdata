@@ -399,14 +399,11 @@ export default defineNuxtConfig({
         ],
       },
     },
-    ...(process.env.NUXT_SITEMAP_INDEX_URL
-      ? {
-          appendSitemaps: [
-            process.env.NUXT_SITEMAP_INDEX_URL,
-          ],
-        }
-      : {}),
-    // TODO: add support
+    // External sitemap URL is appended at runtime via server/plugins/sitemap.ts
+    // (nitro hook sitemap:index-resolved) because we don't want to use the env var
+    // at build time
+
+    // TODO: add /support pages
   },
   // TODO: add sentry config for stack traces based on source maps
   // https://docs.sentry.io/platforms/javascript/guides/nuxt/#add-readable-stack-traces-to-errors
