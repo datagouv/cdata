@@ -604,6 +604,9 @@ test('y-axis columns should not be empty after selecting resource from loaded ch
   const saveResponsePromise = page.waitForResponse(response =>
     response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST',
   )
+  const imageResponsePromise = page.waitForResponse(response =>
+    response.url().includes('/image/') && response.request().method() === 'POST',
+  )
   const getPromise = page.waitForResponse(response =>
     response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET',
   )
@@ -611,6 +614,7 @@ test('y-axis columns should not be empty after selecting resource from loaded ch
   const saveResponse = await saveResponsePromise
   const chartData = (await saveResponse.json()) as Chart
   await getPromise
+  await imageResponsePromise
 
   await page.reload()
   await page.waitForLoadState('networkidle')
@@ -645,11 +649,15 @@ test('x-axis dropdown should show columns from all chart resources after loading
   const saveResponsePromise = page.waitForResponse(response =>
     response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST',
   )
+  const imageResponsePromise = page.waitForResponse(response =>
+    response.url().includes('/image/') && response.request().method() === 'POST',
+  )
   await page.getByLabel('Titre').fill('Test All Columns Loaded')
   await page.getByLabel('Description').fill('Test')
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
   const saveResponse = await saveResponsePromise
   const chartData = (await saveResponse.json()) as Chart
+  await imageResponsePromise
 
   await page.reload()
   await page.waitForLoadState('networkidle')
