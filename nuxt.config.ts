@@ -401,9 +401,6 @@ export default defineNuxtConfig({
         ],
       },
     },
-    // External sitemap URL is appended at runtime via server/plugins/sitemap.ts
-    // (nitro hook sitemap:index-resolved) because we don't want to use the env var
-    // at build time
 
     // TODO: add /support pages
   },

@@ -244,7 +244,6 @@ jobs:
           NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "hero_15.png"
           NUXT_SITE_URL: http://localhost:3000
           NUXT_PUBLIC_CHARTS_API_BASE: http://localhost:7000
-          NUXT_SITEMAP_INDEX_URL: https://example.com/sitemaps/sitemap.xml
           NUXT_PUBLIC_CADA_RESOURCE_ID: 3a6d6fe3-8548-43ed-ad09-72052771447c
         run: |
           # Start cdata server in background using pre-built artifacts
@@ -258,7 +257,6 @@ jobs:
         env:
           BASE_URL: http://localhost:3000
           NUXT_PUBLIC_API_BASE: http://localhost:7000
-          NUXT_SITEMAP_INDEX_URL: https://example.com/sitemaps/sitemap.xml
           UDATA_WORKING_DIR: ${{ env.UDATA_WORKING_DIR }}
           CI: true
           # Unique blob name per (browser, shard): the default is report-<shard>.zip, which would
