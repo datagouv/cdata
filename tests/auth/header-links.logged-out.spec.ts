@@ -6,6 +6,10 @@ const authUrl = (pathname: string, next: string | null) => (url: URL) =>
   url.pathname === pathname && url.searchParams.get('next') === next
 
 test.describe('Header auth links', () => {
+  // Reaching /register mounts a CaptchEtat image, and the captcha service is unreachable
+  // from the test environment: `/api/2/captchetat` answers 500.
+  test.use({ allowedConsoleMessages: ['the server responded with a status of 500'] })
+
   test('keep pointing at the original page instead of nesting each other', async ({ page }) => {
     await page.goto('/datasets/search')
     await page.waitForLoadState('networkidle')
