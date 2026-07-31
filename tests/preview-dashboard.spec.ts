@@ -155,7 +155,7 @@ test.describe('Preview dashboard', () => {
 
     await page.getByRole('button', { name: 'Tabulaire' }).click()
     await expect(page.getByRole('cell', { name: 'csv' })).toBeVisible()
-    await expect(page.getByRole('cell', { name: '10' })).toBeVisible()
+    await expect(page.locator('#format-row-1').getByRole('cell', { name: '10' })).toBeVisible()
 
     await page.getByRole('tab', { name: 'Fichiers' }).click()
     await expect(page.getByRole('cell', { name: 'Données CSV' })).toBeVisible()
