@@ -87,13 +87,13 @@ export type GeopfDatastore = {
   name: string
 }
 
-// 409 means "not connected to Géoplateforme" for both push and pull (see udata/docs/geopf.md);
+// 424 means "not connected to Géoplateforme" for both push and pull (see udata/docs/geopf.md);
 // the global $api error handler swallows it silently, so callers check it themselves
 // to prompt reconnection instead of failing silently.
 export function isGeopfReauthRequired(error: unknown): boolean {
   if (!error || typeof error !== 'object' || !('response' in error)) return false
   const response = (error as { response?: { status?: number } }).response
-  return response?.status === 409
+  return response?.status === 424
 }
 
 export function getGeopfBadgeType(status: GeopfPushStatus | GeopfPullStatus | null): AdminBadgeType {
