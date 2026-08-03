@@ -5,7 +5,10 @@
         :resource
         class="size-4 shrink-0"
       />
-      <span class="shrink-0 whitespace-nowrap font-medium text-gray-title">{{ resource.title || t('Fichier sans nom') }}</span>
+      <span
+        class="min-w-0 truncate font-medium text-gray-title"
+        :title="resource.title || t('Fichier sans nom')"
+      >{{ resource.title || t('Fichier sans nom') }}</span>
       <ResourceSelector
         v-if="resources && resources.length > 1 && resourceTo"
         :resources
@@ -14,10 +17,12 @@
         :replace
         class="shrink-0 md:hidden"
       />
-      <!-- Metadata truncates before the title, so the resource name stays fully
-           visible. Inline flow (not flex) so text-overflow renders the ellipsis;
-           spacing is carried by the separators' margins. -->
-      <div class="min-w-0 truncate">
+      <!-- Metadata gives way long before the title does (hence the shrink factor), so
+           the resource name stays readable — but the title still truncates instead of
+           being clipped by the row, which used to push the copy button out of view.
+           Inline flow (not flex) so text-overflow renders the ellipsis; spacing is
+           carried by the separators' margins. -->
+      <div class="min-w-0 truncate [flex-shrink:9999]">
         <span class="mr-1.5">·</span>
         <span :title="formatDate(resource.last_modified)">{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
         <template v-if="resourceFilesize">

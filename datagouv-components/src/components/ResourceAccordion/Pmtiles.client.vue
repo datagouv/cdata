@@ -111,9 +111,8 @@ async function displayMap() {
 
   p.getHeader().then((h: { minLon: number, minLat: number, maxLon: number, maxLat: number, centerZoom: number, centerLon: number, centerLat: number }) => {
     // Frame the data's bounding box (carried by the archive header) so we land on
-    // the data. The previous `maxZoom - 2` overshot into a single point instead of
-    // fitting the whole extent. Fall back to the header center when the bbox is
-    // degenerate (e.g. a single point or unset world bounds).
+    // the data. Fall back to the header center when the bbox is degenerate — an
+    // archive with a single feature, or bounds left unset (all zeroes).
     const hasBounds = h.minLon < h.maxLon && h.minLat < h.maxLat
     const map = new maplibregl.Map({
       container: container.value!,

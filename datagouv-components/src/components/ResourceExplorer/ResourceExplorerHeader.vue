@@ -46,6 +46,7 @@ import type { RouteLocationRaw } from 'vue-router'
 import BrandedButton from '../BrandedButton.vue'
 import OrganizationLogo from '../OrganizationLogo.vue'
 import ResourceDownloadMenu from './ResourceDownloadMenu.vue'
+import { getOwnerName } from '../../functions/owned'
 import { useTranslation } from '../../composables/useTranslation'
 import { useFormatDate } from '../../functions/dates'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
@@ -60,12 +61,7 @@ const props = defineProps<{
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
-// Plain producer name (org or owner), matching the prototype: dark text, no link,
-// no certificate badge — unlike ObjectCardOwner which renders a styled link.
-const producerName = computed(() => {
-  const { organization, owner } = props.dataset
-  if (organization) return organization.name
-  if (owner) return `${owner.first_name} ${owner.last_name}`
-  return ''
-})
+// Plain producer name, matching the prototype: dark text, no link, no certificate
+// badge — unlike ObjectCardOwner which renders a styled link.
+const producerName = computed(() => getOwnerName(props.dataset))
 </script>

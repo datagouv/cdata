@@ -47,7 +47,6 @@
             :resource-to="resourceTo"
             :explore-to="exploreTo"
             replace
-            :bordered="false"
             :fullscreen
           />
           <template #fallback>
@@ -62,6 +61,8 @@
             />
           </template>
         </Suspense>
+        <!-- Nothing to view: either the search emptied the navigation, or no resource
+             is selected yet. Say which one, and offer the same way out as the sidebar. -->
         <div
           v-else
           class="flex h-full flex-col items-center justify-center gap-3 px-4 py-12 text-center"
@@ -71,7 +72,22 @@
             class="h-16 opacity-60"
             alt=""
           >
-          <p class="m-0 text-sm text-gray-medium">
+          <template v-if="search">
+            <p class="m-0 text-sm text-gray-medium">
+              {{ t('Pas de résultats pour « {q} »', { q: search }) }}
+            </p>
+            <BrandedButton
+              color="secondary"
+              size="xs"
+              @click="updateSearch('')"
+            >
+              {{ t('Réinitialiser la recherche') }}
+            </BrandedButton>
+          </template>
+          <p
+            v-else
+            class="m-0 text-sm text-gray-medium"
+          >
             {{ t('Sélectionnez une ressource dans le menu pour l\'explorer.') }}
           </p>
         </div>
@@ -103,6 +119,7 @@ import { useTranslation } from '../../composables/useTranslation'
 import { useDatasetResources } from '../../composables/useDatasetResources'
 import type { DatasetV2 } from '../../types/datasets'
 import type { Resource } from '../../types/resources'
+import BrandedButton from '../BrandedButton.vue'
 import ResourceExplorerSidebar from './ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './ResourceExplorerViewer.vue'
 import ResourceExplorerHeader from './ResourceExplorerHeader.vue'

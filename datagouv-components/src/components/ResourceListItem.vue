@@ -1,6 +1,5 @@
 <template>
   <AppLink
-    v-if="!disabled"
     v-bind="$attrs"
     :to
     :replace
@@ -31,29 +30,15 @@
         <span class="shrink-0 text-[12px] text-gray-medium">{{ humanFilesize }}</span>
       </template>
     </div>
+    <!-- Capped and truncated: an `auto` grid track floors at its content width, so an
+         unusually long format (`www:link-1.0-http--samples`) would otherwise squeeze
+         the title track to nothing and overflow the fixed-height row. -->
     <span
       v-if="resource.format"
-      class="shrink-0 rounded bg-gray-lower px-1.5 py-0.5 text-[12px] uppercase leading-4 text-gray-medium"
+      class="max-w-24 truncate rounded bg-gray-lower px-1.5 py-0.5 text-[12px] uppercase leading-4 text-gray-medium"
+      :title="resource.format"
     >{{ resource.format }}</span>
   </AppLink>
-  <div
-    v-else
-    v-bind="$attrs"
-    :title="disabledTitle"
-    class="grid h-7 w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-1 rounded px-1 py-1 text-gray-medium cursor-not-allowed"
-  >
-    <span
-      :class="[iconColor, '[&_svg]:fill-current']"
-      class="flex size-5 shrink-0 items-center justify-center rounded-[1px] opacity-50"
-    >
-      <component
-        :is="iconComponent"
-        class="size-4"
-        aria-hidden="true"
-      />
-    </span>
-    <span class="truncate text-[13px] opacity-70">{{ resource.title || t('Fichier sans nom') }}</span>
-  </div>
 
   <!-- Hover card: the row truncates the title, so surface the full name plus the
        same metadata line as the viewer header. Positioned to the right of the menu
@@ -109,19 +94,15 @@ import type { Resource } from '../types/resources'
 defineOptions({ inheritAttrs: false })
 
 // Shared row for a single resource (sidebar + resource selector). Renders as a
-// navigation link so switching resource is a real link (URL is the source of truth),
-// except when disabled where it's a plain, inert row.
+// navigation link so switching resource is a real link — the URL is the source of
+// truth for the selection.
 const props = withDefaults(defineProps<{
   resource: Resource
-  to?: RouteLocationRaw | null
+  to: RouteLocationRaw
   selected?: boolean
-  disabled?: boolean
-  disabledTitle?: string
   replace?: boolean
 }>(), {
-  to: null,
   selected: false,
-  disabled: false,
   replace: false,
 })
 

@@ -1,5 +1,5 @@
 <template>
-  <div :class="[{ 'border border-gray-default': bordered }, fullscreen ? 'flex min-h-0 flex-1 flex-col' : '']">
+  <div :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''">
     <ResourceViewerHeader
       :dataset
       :resource
@@ -233,13 +233,11 @@ const props = withDefaults(defineProps<{
   // action that opens the fullscreen explorer on the current resource.
   exploreTo?: (resource: Resource) => string
   replace?: boolean
-  bordered?: boolean
   // Fullscreen mode: make the viewer a flex column so the table fills down to the
   // bottom, and hide the inline download/visit/copy actions — they're shown in the
   // dataset context bar above. Inline mode (dataset page) shows them in the header.
   fullscreen?: boolean
 }>(), {
-  bordered: true,
   fullscreen: false,
 })
 
