@@ -1,12 +1,12 @@
-import { computed, toValue, type MaybeRefOrGetter } from 'vue'
+import { computed, type MaybeRefOrGetter, toValue } from 'vue'
 import { useComponentsConfig } from '../config'
-import { useTranslation } from './useTranslation'
-import { useHasTabularData } from './useHasTabularData'
-import { detectOgcService, getParsingErrorMessage, getParsingErrorStep } from '../functions/resources'
 import { isOrganizationCertified } from '../functions/organizations'
-import type { Resource, WfsMetadata } from '../types/resources'
-import type { Dataset, DatasetV2 } from '../types/datasets'
 import { getWfsExportFormats } from '../functions/resourceCapabilities'
+import { detectOgcService, getParsingErrorMessage, getParsingErrorStep, isImagePreviewFormat } from '../functions/resources'
+import type { Dataset, DatasetV2 } from '../types/datasets'
+import type { Resource, WfsMetadata } from '../types/resources'
+import { useHasTabularData } from './useHasTabularData'
+import { useTranslation } from './useTranslation'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 const URL_FORMATS = ['url', 'doi', 'www:link', 'www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
@@ -21,7 +21,7 @@ export function useResourceCapabilities(
 
   const hasPreview = computed(() => {
     const format = toValue(resource).format?.toLowerCase()
-    return format === 'json' || format === 'pdf' || format === 'xml'
+    return format === 'json' || format === 'pdf' || format === 'xml' || isImagePreviewFormat(format)
   })
 
   const hasTabularData = computed(() => {

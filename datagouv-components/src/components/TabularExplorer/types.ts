@@ -51,8 +51,8 @@ export type TabularColumnProfile = {
   tops: TabularTopValue[]
   nb_distinct: number
   nb_missing_values: number
-  min?: number
-  max?: number
+  min?: number | string
+  max?: number | string
   std?: number
   mean?: number
 }
@@ -62,7 +62,7 @@ export type TabularTopValue = {
   count: number
 }
 
-export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean'
+export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean' | 'year'
 
 export type ColumnFilters = {
   in?: string[]

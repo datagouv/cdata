@@ -186,6 +186,10 @@
                   v-else-if="resource.format && resource.format.toLowerCase() === 'xml'"
                   :resource="resource"
                 />
+                <ImagePreview
+                  v-else-if="isImagePreviewFormat(resource.format)"
+                  :resource="resource"
+                />
                 <DatafairPreview
                   v-else-if="hasDatafairPreview"
                   :resource="resource"
@@ -277,7 +281,7 @@ import SchemaBadge from '../ResourceAccordion/SchemaBadge.vue'
 import ResourceSelector from './ResourceSelector.vue'
 import ResourceDownloadMenu from './ResourceDownloadMenu.vue'
 import { filesize, summarize } from '../../functions/helpers'
-import { getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
+import { getResourceExternalUrl, getResourceFilesize, isImagePreviewFormat } from '../../functions/resources'
 import { trackEvent } from '../../functions/matomo'
 import { useComponentsConfig } from '../../config'
 import { useFormatDate } from '../../functions/dates'
@@ -296,6 +300,9 @@ const PdfPreview = defineAsyncComponent(() =>
 )
 const XmlPreview = defineAsyncComponent(() =>
   import('../ResourceAccordion/XmlPreview.client.vue'),
+)
+const ImagePreview = defineAsyncComponent(() =>
+  import('../ResourceAccordion/ImagePreview.client.vue'),
 )
 const DatafairPreview = defineAsyncComponent(() =>
   import('../ResourceAccordion/Datafair.client.vue'),
@@ -347,10 +354,11 @@ const {
 await provideTabularProfile(() => props.resource.id)
 
 // Which data-tab preview to render — same precedence as the template chain below:
-// the interactive table wins only when no dedicated preview (json/pdf/xml/datafair/api) applies.
+// the interactive table wins only when no dedicated preview (json/pdf/xml/image/datafair/api) applies.
 const isTabularPreview = computed(() => {
   const fmt = props.resource.format?.toLowerCase()
   if (fmt === 'json' || fmt === 'pdf' || fmt === 'xml') return false
+  if (isImagePreviewFormat(fmt)) return false
   if (hasDatafairPreview.value || hasOpenAPIPreview.value) return false
   return hasTabularData.value
 })

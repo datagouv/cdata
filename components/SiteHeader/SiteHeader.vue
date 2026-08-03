@@ -122,7 +122,7 @@
                         >
                           <li>
                             <BrandedButton
-                              :href="{ path: '/login', query: { next: route.fullPath } }"
+                              :href="{ path: '/login', query: { next: nextAfterAuth } }"
                               color="tertiary"
                               size="lg"
                               :icon="RiLockLine"
@@ -136,7 +136,7 @@
                             <BrandedButton
                               color="tertiary"
                               size="lg"
-                              :href="{ path: '/register', query: { next: route.fullPath } }"
+                              :href="{ path: '/register', query: { next: nextAfterAuth } }"
                               class="w-full"
                               :icon="RiAccountCircleLine"
                               @click="close"
@@ -380,7 +380,7 @@
                 <li>
                   <BrandedButton
                     color="tertiary"
-                    :href="{ path: '/login', query: { next: route.fullPath } }"
+                    :href="{ path: '/login', query: { next: nextAfterAuth } }"
                     :icon="RiLockLine"
                   >
                     {{ $t("Se connecter") }}
@@ -389,7 +389,7 @@
                 <li>
                   <BrandedButton
                     color="tertiary"
-                    :href="{ path: '/register', query: { next: route.fullPath } }"
+                    :href="{ path: '/register', query: { next: nextAfterAuth } }"
                     :icon="RiAccountCircleLine"
                   >
                     {{ $t("S'enregistrer") }}
@@ -542,12 +542,22 @@ const { t } = useTranslation()
 const config = useRuntimeConfig()
 const appConfig = useAppConfig()
 const me = useMaybeMe()
-const currentRoute = useRoute()
 const router = useRouter()
 const route = useRoute()
 const { isLoading } = useLoadingIndicator()
 const { refreshNotifications, loadMoreNotifications, pendingNotifications, nextPage, notificationsCombinedList, notificationsToRead } = useNotifications()
 const { markWithoutActionAsRead, loading } = useMarkAsRead()
+
+// On an auth page, `next` must keep pointing at the original destination instead of the
+// current page: a self-referencing `next` makes the login and register links generate a
+// new URL on every hop (/login?next=/register?next=/login?next=…), an infinite URL space
+// that crawlers walk endlessly, each hop being a full SSR render.
+const nextAfterAuth = computed(() => {
+  if (!isUnloggedSecurityRoute(route.path)) return route.fullPath
+
+  const next = Array.isArray(route.query.next) ? route.query.next[0] : route.query.next
+  return next || undefined
+})
 
 const menu = [
   { label: t('Données'), link: '/datasets' },
@@ -577,10 +587,10 @@ const publishMenu = [
 const filteredPublishMenu = computed(() => publishMenu.filter(item => !('show' in item) || item.show))
 
 function getAriaCurrent(link: string) {
-  if (currentRoute.path === link) {
+  if (route.path === link) {
     return 'page'
   }
-  const routesInPath = router.getRoutes().map(route => route.path).filter(path => currentRoute.path.startsWith(path))
+  const routesInPath = router.getRoutes().map(({ path }) => path).filter(path => route.path.startsWith(path))
   return routesInPath.includes(link)
 }
 

@@ -2,7 +2,6 @@ import { resolve } from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import toml from './rollup-plugin-smol-toml'
 
-const nbSitemapsDatasets = 10
 const isFrenchGovernment = true
 // const swrDuration = process.env.NUXT_TEMPLATE_CACHE_DURATION ? parseInt(process.env.NUXT_TEMPLATE_CACHE_DURATION) : 60
 // https://nuxt.com/docs/api/configuration/nuxt-config
@@ -72,10 +71,13 @@ export default defineNuxtConfig({
       staticUrl: 'https://static.data.gouv.fr/static/',
       maxJsonPreviewCharSize: 1000000, // (~1MB)
       maxPdfPreviewByteSize: 10000000, // (10 MB)
+      maxImagePreviewByteSize: 10000000, // (10 MB)
       maxXmlPreviewCharSize: 100000, // (~100KB)
       schemaValidataUrl: 'https://validata.fr',
       tabularApiUrl: 'https://tabular-api.data.gouv.fr',
       tabularApiDataserviceId: undefined,
+      cadaResourceId: undefined,
+      cadaDatasetUrl: 'https://www.data.gouv.fr/datasets/avis-et-conseils-de-la-cada',
 
       qualityDescriptionLength: 100,
       searchDebounce: 300,
@@ -114,7 +116,12 @@ export default defineNuxtConfig({
       // (see .env) so the Grist document URL is not committed.
       ouverturesGristBaseUrl: '',
       ouverturesGristTable: '',
-      ouverturesHvdUrl: 'https://ouverture.data.gouv.fr/donnees_de_forte_valeur.html',
+      // Grist endpoint for the "Hvd" table on /suivi-de-publication/donnees-de-forte-valeur.
+      // Provided through NUXT_PUBLIC_HVD_GRIST_BASE_URL / NUXT_PUBLIC_HVD_GRIST_TABLE
+      // (see .env) so the Grist document URL is not committed.
+      hvdGristBaseUrl: '',
+      hvdGristTable: '',
+      ouverturesHvdUrl: '/suivi-de-publication/donnees-de-forte-valeur',
 
       guideDatasets: 'https://guides.data.gouv.fr/jeux-de-donnees',
       guideReuses: 'https://guides.data.gouv.fr/reutilisations',
@@ -239,7 +246,12 @@ export default defineNuxtConfig({
 
   devServer: {
     port: 3000,
-    host: 'dev.local',
+    // Bind to the IPv6/IPv4 "any" wildcard rather than resolving the 'dev.local'
+    // hostname at listen-time: Node's dns.lookup() for a hostname follows live
+    // OS network-state ordering (RFC 6724) since Node 17, so binding to only
+    // whichever family the OS prefers *right now* silently flips between IPv4
+    // and IPv6 across sleep/wake or network changes, breaking dev.local access.
+    host: '::',
   },
 
   features: {
@@ -384,45 +396,18 @@ export default defineNuxtConfig({
   sitemap: {
     cacheMaxAgeSeconds: 3600, // 1 hour
     sitemaps: {
-      content: {
+      static: {
         includeAppSources: true,
         exclude: ['/admin/**'],
       },
-      dataservices: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=dataservice',
-        ],
-      },
-      organizations: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=organization',
-        ],
-      },
-      posts: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=post',
-        ],
-      },
-      reuses: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=reuse',
-        ],
-      },
-      // split datasets between nbSitemapsDatasets sections
-      ...Array.from({ length: nbSitemapsDatasets }, (_, i) => i + 1).map(section => ({
-        [`datasets_${section}`]: {
-          sources: [
-            `/nuxt-api/sitemaps/urls?type=dataset&section=${section}&nbSitemapSections=${nbSitemapsDatasets}`,
-          ],
-        },
-      })).reduce((acc, obj) => ({ ...acc, ...obj }), {}),
       pages: {
         sources: [
           '/nuxt-api/sitemaps/pages',
         ],
       },
-      // TODO: add support
     },
+
+    // TODO: add /support pages
   },
   // TODO: add sentry config for stack traces based on source maps
   // https://docs.sentry.io/platforms/javascript/guides/nuxt/#add-readable-stack-traces-to-errors

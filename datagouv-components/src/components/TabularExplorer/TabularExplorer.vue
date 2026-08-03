@@ -65,7 +65,7 @@ import { useFetch } from '../../functions/api'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { injectTabularProfile } from '../../composables/useTabularProfile'
-import { hasFilterForColumn as _hasFilterForColumn } from '../../functions/tabular'
+import { hasFilterForColumn as _hasFilterForColumn, buildGlobalSearchConditions } from '../../functions/tabular'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import type { TabularDataResponse, TabularRow, SortConfig, ColumnFilters } from './types'
 import { provideTabularContext, type ActiveFilter } from './useTabularContext'
@@ -73,6 +73,16 @@ import { useColumnMetadata } from './useColumnMetadata'
 
 const props = defineProps<{
   resourceId: string
+  // When set, searches across multiple columns using the Tabular API's or(...)
+  // parameter. Text and categorical columns get a __contains filter; number
+  // columns get a __exact filter (since __contains is not supported for numbers
+  // by the API). Year, date and boolean columns are excluded.
+  // Note: combined via AND with any existing column-specific `contains` filters,
+  // so it acts as an additional narrowing constraint, not a replacement.
+  globalSearch?: string
+  // Initial filters applied on mount, e.g. { 'Administration': { contains: 'Ministère' } }.
+  // Used when navigating from the detail page badge with query params.
+  initialFilters?: Record<string, ColumnFilters>
 }>()
 
 const { t } = useTranslation()
@@ -82,9 +92,31 @@ const dataUrl = computed(() =>
   `${config.tabularApiUrl}/api/resources/${props.resourceId}/data/`,
 )
 
+// Profile is shared with sibling components (e.g. DataStructure) via
+// `provideTabularProfile` in the parent. Falls back to a local fetch
+// when no parent provides it (standalone usage).
+// Fetched before the rows: `dataQuery` reads the column types to build the
+// global search, so the profile has to be resolved by the time it is evaluated.
+const { data: profileData, error: profileError, status: profileStatus } = await injectTabularProfile(() => props.resourceId)
+
+const allColumns = computed(() => profileData.value?.profile?.header ?? [])
+
+// Column metadata (display type, label/icon, null ratio, boolean counts) — pure
+// derivations of the profile, extracted to keep this component focused on data
+// fetching, pagination and filter/column state.
+const {
+  columnTypesMap,
+  getColumnType,
+  getColumnProfile,
+  getColumnDisplay,
+  getTopsEntries,
+  getNullPercent,
+  getBooleanCounts,
+} = useColumnMetadata(profileData, allColumns, t)
+
 // Sort & filter state
 const sort = ref<SortConfig | null>(null)
-const filters = ref<Record<string, ColumnFilters>>({})
+const filters = ref<Record<string, ColumnFilters>>({ ...props.initialFilters })
 
 const PAGE_SIZE = 50
 
@@ -116,15 +148,14 @@ const dataQuery = computed(() => {
       q[`${col}__isnotnull`] = ''
     }
   }
+  if (props.globalSearch && profileData.value?.profile) {
+    const conditions = buildGlobalSearchConditions(allColumns.value, getColumnType, props.globalSearch)
+    q.or = '(' + conditions.join(',') + ')'
+  }
   return q
 })
 
-const { data: tableData, error } = await useFetch<TabularDataResponse>(dataUrl, { raw: true, query: dataQuery })
-
-// Profile is shared with sibling components (e.g. DataStructure) via
-// `provideTabularProfile` in the parent. Falls back to a local fetch
-// when no parent provides it (standalone usage).
-const { data: profileData, error: profileError, status: profileStatus } = await injectTabularProfile(() => props.resourceId)
+const { data: tableData, error, status: dataStatus } = await useFetch<TabularDataResponse>(dataUrl, { raw: true, query: dataQuery })
 
 // The component renders nothing useful until the profile is available
 // (allColumns is derived from it). Surface a clear loading / error state
@@ -132,6 +163,9 @@ const { data: profileData, error: profileError, status: profileStatus } = await 
 const profileLoading = computed(() => !profileData.value && (profileStatus.value === 'idle' || profileStatus.value === 'pending'))
 const previewError = computed(() => error.value || profileError.value)
 const previewLoading = computed(() => !previewError.value && (!tableData.value || profileLoading.value))
+// A search / filter / sort change refetches while the previous rows stay on
+// screen: without a signal, the table looks unchanged for several seconds.
+const isRefreshing = computed(() => dataStatus.value === 'pending' && !previewLoading.value)
 
 // Infinite scroll state
 const allRows = ref<TabularRow[]>([])
@@ -169,8 +203,6 @@ async function loadNextPage() {
 }
 
 const totalLines = computed(() => profileData.value?.profile?.total_lines ?? tableData.value?.meta.total ?? 0)
-
-const allColumns = computed(() => profileData.value?.profile?.header ?? [])
 
 const visibleColumns = ref(new Set(allColumns.value))
 
@@ -220,7 +252,12 @@ const activeFilters = computed<ActiveFilter[]>(() => {
       parts.push(`= ${filter.in.join(', ')}`)
     }
     if (filter.exact != null) {
-      parts.push(`= ${filter.exact === 'true' ? t('Vrai') : t('Faux')}`)
+      if (getColumnType(col) === 'boolean') {
+        parts.push(`= ${filter.exact === 'true' ? t('Vrai') : t('Faux')}`)
+      }
+      else {
+        parts.push(`= ${filter.exact}`)
+      }
     }
     if (filter.contains) {
       parts.push(`${t('contient')} "${filter.contains}"`)
@@ -263,19 +300,6 @@ function hasFilterForColumn(col: string): boolean {
 // Whether the mobile filter sheet is open (button lives in the toolbar).
 const mobileFilterOpen = ref(false)
 
-// Column metadata (display type, label/icon, null ratio, badge colors, boolean
-// counts) — pure derivations of the profile, extracted to keep this component
-// focused on data fetching, pagination and filter/column state.
-const {
-  columnTypesMap,
-  getColumnType,
-  getColumnProfile,
-  getColumnDisplay,
-  getTopsEntries,
-  getNullPercent,
-  getBooleanCounts,
-} = useColumnMetadata(profileData, allColumns, t)
-
 // Provide the shared state so child components (active filters, columns menu, rows
 // info, table…) can inject it instead of receiving a wall of props.
 provideTabularContext({
@@ -286,6 +310,7 @@ provideTabularContext({
   hasMore,
   loadingMore,
   loadNextPage,
+  isRefreshing,
   sort,
   filters,
   activeFilters,

@@ -24,7 +24,7 @@ import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
 import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm, CombinedSort, ColumnDefinition, ColumnsDefinition } from './types/visualizations'
-import type { ColumnType } from './components/TabularExplorer/types'
+import type { ColumnFilters, ColumnType, TabularRow } from './components/TabularExplorer/types'
 import type { GlobalSearchConfig, SearchType, SearchTypeConfig, SortOption, HiddenFilter, BuiltInFilterKey, DatasetSearchConfig, DatasetSearchFilters, DataserviceSearchConfig, DataserviceSearchFilters, ReuseSearchConfig, ReuseSearchFilters, OrganizationSearchConfig, OrganizationSearchFilters, TopicSearchConfig, TopicSearchFilters } from './types/search'
 import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 import { useSearchFilter } from './composables/useSearchFilter'
@@ -40,6 +40,9 @@ import BannerAction from './components/BannerAction.vue'
 import BrandedButton from './components/BrandedButton.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
+import DataserviceQuality from './components/DataserviceQuality.vue'
+import DataserviceQualityInline from './components/DataserviceQualityInline.vue'
+import DataserviceQualityTooltipContent from './components/DataserviceQualityTooltipContent.vue'
 import DatasetCard from './components/DatasetCard.vue'
 import DataStructure from './components/ResourceAccordion/DataStructure.vue'
 import Downloads from './components/ResourceAccordion/Downloads.vue'
@@ -54,8 +57,8 @@ import LicenseBadge from './components/LicenseBadge.vue'
 import Tag from './components/Tag.vue'
 import DatasetQuality from './components/DatasetQuality.vue'
 import DatasetQualityInline from './components/DatasetQualityInline.vue'
-import DatasetQualityItem from './components/DatasetQualityItem.vue'
-import DatasetQualityScore from './components/DatasetQualityScore.vue'
+import QualityItem from './components/QualityItem.vue'
+import QualityScore from './components/QualityScore.vue'
 import ProgressBar from './components/ProgressBar.vue'
 import DatasetQualityTooltipContent from './components/DatasetQualityTooltipContent.vue'
 import ExtraAccordion from './components/ExtraAccordion.vue'
@@ -106,6 +109,12 @@ import SelectGroup from './components/Form/SelectGroup.vue'
 import Listbox from './components/Form/Listbox.vue'
 import InfiniteLoader from './components/InfiniteLoader.vue'
 import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
+import TabularActiveFilters from './components/TabularExplorer/TabularActiveFilters.vue'
+import TabularColumnsMenu from './components/TabularExplorer/TabularColumnsMenu.vue'
+import TabularMobileFilterButton from './components/TabularExplorer/TabularMobileFilterButton.vue'
+import TabularMobileFilters from './components/TabularExplorer/TabularMobileFilters.vue'
+import TabularRowsInfo from './components/TabularExplorer/TabularRowsInfo.vue'
+import TabularTable from './components/TabularExplorer/TabularTable.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 import { ofetch } from 'ofetch'
@@ -258,8 +267,10 @@ export type {
   ChartForApi,
   CombinedSort,
   ColumnDefinition,
+  ColumnFilters,
   ColumnType,
   ColumnsDefinition,
+  TabularRow,
   FilterCondition,
   Filter,
   AndFilters,
@@ -338,6 +349,9 @@ export {
   BrandedButton,
   CopyButton,
   DataserviceCard,
+  DataserviceQuality,
+  DataserviceQualityInline,
+  DataserviceQualityTooltipContent,
   DatasetCard,
   DataStructure,
   Downloads,
@@ -352,8 +366,8 @@ export {
   DiscussionMessageCard,
   DatasetQuality,
   DatasetQualityInline,
-  DatasetQualityItem,
-  DatasetQualityScore,
+  QualityItem,
+  QualityScore,
   DatasetQualityTooltipContent,
   DateRangeDetails,
   ExtraAccordion,
@@ -409,4 +423,10 @@ export {
   Listbox,
   InfiniteLoader,
   TabularExplorer,
+  TabularActiveFilters,
+  TabularColumnsMenu,
+  TabularMobileFilterButton,
+  TabularMobileFilters,
+  TabularRowsInfo,
+  TabularTable,
 }

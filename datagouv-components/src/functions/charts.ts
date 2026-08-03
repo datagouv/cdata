@@ -1,5 +1,5 @@
 import type { Chart, ChartForm, ChartForApi, Filter, ColumnDefinition } from '../types/visualizations'
-import type { TabularProfile } from '../components/TabularExplorer/types'
+import type { ColumnType, TabularProfile } from '../components/TabularExplorer/types'
 import { resolveColumnType } from './tabular'
 
 export function toChartForm(chart: Chart) {
@@ -73,7 +73,27 @@ export function buildColumnsFromProfile(profile: { profile: TabularProfile }): A
   return profile.profile.header.map((name) => {
     const colInfo = profile.profile.columns[name]
     const isCategorical = profile.profile.categorical.includes(name)
-    const colType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
-    return { name, type: colType }
+    // The chart stack only branches on 'number' and 'date' (continuous axis,
+    // aggregatable series, time formatting): it has no notion of a year column,
+    // and on an axis a year is a number.
+    const resolvedType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
+    const colType = resolvedType === 'year' ? 'number' : resolvedType
+    const colProfile = profile.profile.profile[name]
+    return {
+      name,
+      type: colType,
+      min: normalizeProfileNumber(colProfile?.min, colType),
+      max: normalizeProfileNumber(colProfile?.max, colType),
+    }
   })
+}
+
+function normalizeProfileNumber(value: number | string | undefined, type: ColumnType): number | undefined {
+  if (value === undefined || value === null) return undefined
+  if (type === 'date' && typeof value === 'string') {
+    const timestamp = new Date(value).getTime()
+    return Number.isNaN(timestamp) ? undefined : timestamp
+  }
+  const parsed = Number(value)
+  return Number.isNaN(parsed) ? undefined : parsed
 }

@@ -10,10 +10,9 @@ test('shows the hero and the two category cards', async ({ page }) => {
   await expect(demandesCard).toBeVisible()
   await expect(demandesCard).toContainText('Suivre les prochaines publications de données ouvertes ou restreintes')
 
-  // The HVD table still lives on the legacy site.
   const hvdCard = page.getByRole('link', { name: 'Données de forte valeur' })
   await expect(hvdCard).toBeVisible()
-  await expect(hvdCard).toHaveAttribute('href', 'https://ouverture.data.gouv.fr/donnees_de_forte_valeur.html')
+  await expect(hvdCard).toHaveAttribute('href', '/suivi-de-publication/donnees-de-forte-valeur')
 })
 
 test('shows the FAQ accordions', async ({ page }) => {

@@ -297,7 +297,7 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
       formError = fetchError.data.message
     }
     fileInfo.state = { status: 'failed', message: formError }
-    throw new Error(notificationMessage)
+    throw new Error(notificationMessage, { cause: e })
   }
 }
 

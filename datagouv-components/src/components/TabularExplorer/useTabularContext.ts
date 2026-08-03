@@ -37,6 +37,9 @@ export type TabularContext = {
   hasMore: Ref<boolean>
   loadingMore: Ref<boolean>
   loadNextPage: () => Promise<void>
+  // A sort / filter / search change is refetching while the previous rows are
+  // still on screen.
+  isRefreshing: ComputedRef<boolean>
 
   // Sort & filters
   sort: Ref<SortConfig | null>

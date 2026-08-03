@@ -33,3 +33,6 @@ logs
 /playwright/.cache/
 playwright/.auth
 tests/**/screenshots/
+
+# Local design docs / specs (not tracked)
+/docs/

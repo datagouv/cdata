@@ -61,18 +61,22 @@
       </div>
     </div>
 
-    <!-- Search (contains) -->
-    <div class="px-3 py-2 border-b border-black/10">
+    <!-- Search (contains) or date filter -->
+    <div
+      v-if="columnType !== 'boolean'"
+      class="px-3 py-2 border-b border-black/10"
+    >
       <div class="relative">
-        <RiSearchLine
+        <component
+          :is="searchField.icon"
           class="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-medium"
           aria-hidden="true"
         />
         <input
           v-model="search"
-          type="text"
+          :type="searchField.type"
           class="w-full h-8 text-sm border border-transparent rounded-lg py-1 pl-8 pr-3 bg-[#f3f3f5] focus:outline-none focus:border-new-primary"
-          :placeholder="t('Rechercher...')"
+          :placeholder="searchField.placeholder"
         >
       </div>
     </div>
@@ -147,14 +151,14 @@
 
     <!-- Number range -->
     <form
-      v-if="columnType === 'number' && columnProfile"
+      v-if="(columnType === 'number' || columnType === 'year') && columnProfile"
       class="px-3 py-2 border-b border-black/10 space-y-2"
       @submit.prevent="applyRange"
     >
       <div class="flex items-center gap-2 text-xs text-gray-plain">
-        <span class="tabular-nums">{{ formatNumber(profileMin) }}</span>
+        <span class="tabular-nums">{{ columnType === 'year' ? profileMin : formatNumber(profileMin) }}</span>
         <span class="text-gray-medium">—</span>
-        <span class="tabular-nums">{{ formatNumber(profileMax) }}</span>
+        <span class="tabular-nums">{{ columnType === 'year' ? profileMax : formatNumber(profileMax) }}</span>
       </div>
       <div class="flex items-center gap-2">
         <input
@@ -206,6 +210,7 @@ import {
   RiArrowUpLine,
   RiArrowDownLine,
   RiSearchLine,
+  RiCalendarLine,
   RiCheckLine,
 } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
@@ -231,13 +236,25 @@ const { formatNumber } = useFormatTabular()
 
 const search = ref('')
 
+// Numbers, years and dates are matched exactly (the API has no `contains` for
+// them), so the field offers the matching native picker instead of a text search.
+const searchField = computed(() => {
+  switch (props.columnType) {
+    case 'date': return { icon: RiCalendarLine, type: 'date', placeholder: '' }
+    case 'number':
+    case 'year': return { icon: RiSearchLine, type: 'number', placeholder: t('Rechercher...') }
+    default: return { icon: RiSearchLine, type: 'text', placeholder: t('Rechercher...') }
+  }
+})
+
 watchDebounced(search, (q) => {
   const existing = filters.value[props.column] ?? {}
+  const operator = props.columnType === 'number' || props.columnType === 'year' || props.columnType === 'date' ? 'exact' : 'contains'
   if (q) {
-    filters.value = { ...filters.value, [props.column]: { ...existing, contains: q } }
+    filters.value = { ...filters.value, [props.column]: { ...existing, [operator]: q } }
   }
   else {
-    const { contains: _, ...rest } = existing
+    const { [operator]: _, ...rest } = existing
     filters.value = { ...filters.value, [props.column]: rest }
   }
 }, { debounce: 300 })

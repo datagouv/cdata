@@ -1,12 +1,12 @@
 <template>
   <span
-    class="inline-flex items-center space-x-1 font-bold uppercase whitespace-nowrap"
-    :class="[colors, sizes]"
+    class="inline-flex items-center space-x-1 font-bold uppercase"
+    :class="[colors, sizes, { 'whitespace-nowrap': noWrap }]"
   >
     <component
       :is="icon"
       v-if="icon"
-      class="size-3"
+      :class="iconSize"
     />
     <span>
       <slot />
@@ -14,7 +14,7 @@
     <component
       :is="iconRight"
       v-if="iconRight"
-      class="size-3"
+      :class="iconSize"
     />
   </span>
 </template>
@@ -23,12 +23,16 @@
 import type { Component } from 'vue'
 import type { AdminBadgeType } from '~/types/types'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   type: AdminBadgeType
   size: 'xs' | 'sm'
   icon?: Component
   iconRight?: Component
-}>()
+  noWrap?: boolean
+  iconSize?: string
+}>(), {
+  noWrap: true,
+})
 
 const colors = computed(() => {
   return {
@@ -50,4 +54,6 @@ const sizes = computed(() => {
     sm: 'text-xs/6 px-2 rounded',
   }[props.size]
 })
+
+const iconSize = computed(() => props.iconSize || 'size-3')
 </script>

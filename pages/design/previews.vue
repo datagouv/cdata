@@ -69,6 +69,15 @@
         />
       </div>
       <div>
+        <h2>Image Preview</h2>
+        <p>One added tab: <b>Aperçu</b>.</p>
+        <ResourceAccordion
+          v-if="imageDataset && imageResource"
+          :resource="imageResource"
+          :dataset="imageDataset"
+        />
+      </div>
+      <div>
         <h2>datafair Preview</h2>
         <h3>Iframe preview</h3>
         <p>One added tab: <b>Aperçu</b>. The iframe could show a map, data table or a structure field table.</p>
@@ -93,12 +102,15 @@
 
 <script setup lang="ts">
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import { ResourceAccordion, type Dataset } from '@datagouv/components-next'
+import { ResourceAccordion, isImagePreviewFormat, type Dataset } from '@datagouv/components-next'
 
 const { data: tabularDataset } = await useAPI<Dataset>('/api/1/datasets/repertoire-national-des-elus-1/')
 const { data: pmtilesDataset } = await useAPI<Dataset>('/api/1/datasets/proposition-de-contours-des-bureaux-de-vote/')
 const { data: ogcDataset } = await useAPI<Dataset>('/api/1/datasets/bassins-versant-topographiques-metropole-2023-bd-topage-r/')
 const { data: pdfDataset } = await useAPI<Dataset>('/api/1/datasets/etudes-impact-open-data/')
 const { data: xmlAndJsonDataset } = await useAPI<Dataset>('/api/1/datasets/paris-2024-sites-de-competition/')
+const { data: imageDataset } = await useAPI<Dataset>('/api/1/datasets/images-epi-revel/')
 const { data: datafairDataset } = await useAPI<Dataset>('/api/1/datasets/mobilite-stationnement-des-parkings-en-temps-reel-1/')
+
+const imageResource = computed(() => imageDataset.value?.resources.find(r => isImagePreviewFormat(r.format)))
 </script>

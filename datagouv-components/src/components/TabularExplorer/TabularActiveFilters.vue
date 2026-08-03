@@ -31,6 +31,7 @@
     <span
       v-for="af in activeFilters"
       :key="af.column"
+      :data-testid="`active-filter-${af.column}`"
       class="inline-flex h-6 items-center gap-1 rounded border border-new-primary/20 bg-new-primary/10 pl-1.5 pr-0.5 text-[12px] leading-4 text-new-primary"
     >
       <component

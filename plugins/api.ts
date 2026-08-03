@@ -48,11 +48,15 @@ export default defineNuxtPlugin({
           }
 
           if (response.status === 401) {
-            if (response._data?.response && typeof response._data.response === 'object' && response._data.response?.reauth_required === true) {
-              await nuxtApp.runWithContext(() => navigateTo({ path: '/verify', query: { next: route.fullPath } }))
-            }
-            else {
-              await nuxtApp.runWithContext(() => navigateTo({ path: '/login', query: { next: route.fullPath } }))
+            const reauthRequired = response._data?.response && typeof response._data.response === 'object' && response._data.response?.reauth_required === true
+            const path = reauthRequired ? '/verify' : '/login'
+
+            // Coming from the very page we would send the user to, the 401 is the expected
+            // answer to wrong credentials rather than a sign they must authenticate.
+            // Redirecting would nest `next` into itself on every attempt
+            // (/login?next=/login?next=…) and lose the actual destination.
+            if (route.path !== path) {
+              await nuxtApp.runWithContext(() => navigateTo({ path, query: { next: route.fullPath } }))
             }
           }
 

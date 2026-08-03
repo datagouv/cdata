@@ -27,8 +27,13 @@
     <div
       v-if="displayedColumns.length > 0"
       ref="scrollContainer"
-      class="hidden md:block overflow-auto"
-      :class="fill ? 'min-h-0 flex-1' : 'max-h-[70vh]'"
+      class="hidden md:block overflow-auto transition-opacity"
+      :class="[
+        fill ? 'min-h-0 flex-1' : 'max-h-[70vh]',
+        fullBleed ? 'relative left-1/2 w-[calc(100vw_-_4rem)] -translate-x-1/2' : '',
+        { 'opacity-40': isRefreshing },
+      ]"
+      :aria-busy="isRefreshing"
     >
       <table class="text-sm border-collapse">
         <thead
@@ -116,13 +121,20 @@
               :key="col"
               data-cell
               class="p-2 align-middle whitespace-nowrap border-r border-gray-default last:border-r-0 overflow-hidden cursor-pointer hover:bg-gray-200/50"
-              :class="{ 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' }"
+              :class="{ 'text-right font-mono tabular-nums text-sm': getColumnType(col) === 'number' || getColumnType(col) === 'date' || getColumnType(col) === 'year' }"
               :style="columnWidths[col] ? { maxWidth: columnWidths[col] + 'px' } : { maxWidth: '300px' }"
               @click="onCellClick(col, row[col], $event)"
             >
+              <AppLink
+                v-if="isLinkColumn(col)"
+                :to="getRowHref(row)"
+                class="link"
+              >
+                <TabularCell v-bind="cellProps(col, row)" />
+              </AppLink>
               <TabularCell
-                :value="row[col]"
-                :column-type="getColumnType(col)"
+                v-else
+                v-bind="cellProps(col, row)"
               />
             </td>
           </tr>
@@ -144,7 +156,9 @@
     <!-- Mobile: card layout -->
     <div
       v-if="displayedColumns.length > 0"
-      class="md:hidden space-y-2 px-1"
+      class="md:hidden space-y-2 px-1 transition-opacity"
+      :class="{ 'opacity-40': isRefreshing }"
+      :aria-busy="isRefreshing"
     >
       <div
         v-if="allRows.length === 0"
@@ -180,14 +194,26 @@
               :title="col"
             >{{ col }}</span>
           </div>
+          <!-- Numbers and dates take their colour from here rather than from
+               the cell, so a link wrapping one (see `rowHref`) keeps its own. -->
           <div
             data-cell
-            class="min-w-0 pl-4 cursor-pointer"
+            class="min-w-0 pl-4 cursor-pointer text-gray-title"
             @click="onCellClick(col, row[col], $event)"
           >
+            <AppLink
+              v-if="isLinkColumn(col)"
+              :to="getRowHref(row)"
+              class="link"
+            >
+              <TabularCell
+                v-bind="cellProps(col, row)"
+                compact
+              />
+            </AppLink>
             <TabularCell
-              :value="row[col]"
-              :column-type="getColumnType(col)"
+              v-else
+              v-bind="cellProps(col, row)"
               compact
             />
           </div>
@@ -213,6 +239,7 @@
 import { computed, nextTick, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { useElementSize, useScroll } from '@vueuse/core'
 import { RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiSearchLine } from '@remixicon/vue'
+import AppLink from '../AppLink.vue'
 import BrandedButton from '../BrandedButton.vue'
 import InfiniteLoader from '../InfiniteLoader.vue'
 import TabularCell from './TabularCell.vue'
@@ -220,11 +247,21 @@ import TabularCellPopover, { type CellInfo } from './TabularCellPopover.vue'
 import TabularFilterPopover from './TabularFilterPopover.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useTabularContext } from './useTabularContext'
+import type { TabularRow } from './types'
 import noColumnsSrc from '../../../assets/illustrations/_table.svg?url'
 
-defineProps<{
+const props = defineProps<{
   // Fill the available height (fullscreen) instead of the default 70vh cap.
   fill?: boolean
+  // Break out of the host's padding so the table spans the whole screen while
+  // the toolbar stays inside the container. Used on the standalone explore pages.
+  fullBleed?: boolean
+  // When set, renders <a> tags inside the specified column cells for native
+  // browser UX (hover URL, ctrl+click, middle-click).
+  rowHref?: { columns: string[], href: (row: TabularRow) => string }
+  // Columns listed here render their values raw (no number formatting).
+  // Useful for identifier columns.
+  noFormatColumns?: string[]
 }>()
 
 const { t } = useTranslation()
@@ -233,6 +270,7 @@ const {
   allRows,
   hasMore,
   loadNextPage,
+  isRefreshing,
   totalLines,
   sort,
   filters,
@@ -245,6 +283,22 @@ const {
   getNullPercent,
   getBooleanCounts,
 } = useTabularContext()
+
+function getRowHref(row: TabularRow): string | undefined {
+  return props.rowHref?.href(row)
+}
+
+function isLinkColumn(col: string): boolean {
+  return props.rowHref?.columns.includes(col) ?? false
+}
+
+function cellProps(col: string, row: TabularRow) {
+  return {
+    value: row[col],
+    columnType: getColumnType(col),
+    noNumberFormat: props.noFormatColumns?.includes(col),
+  }
+}
 
 // Column widths (table-only, never needed outside the table).
 //
@@ -381,6 +435,9 @@ onUnmounted(() => {
 const activeCell = ref<CellInfo | null>(null)
 
 function onCellClick(col: string, value: unknown, event: MouseEvent) {
+  // A link inside a cell (see `rowHref`) owns its clicks: navigate, don't open
+  // the popover on top of the page we're leaving.
+  if ((event.target as HTMLElement).closest('a')) return
   const el = (event.target as HTMLElement).closest('[data-cell]') as HTMLElement | null
   if (!el) return
   if (activeCell.value && activeCell.value.element === el) {

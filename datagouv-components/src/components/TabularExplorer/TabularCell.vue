@@ -20,12 +20,12 @@
     class="inline-block max-w-full truncate rounded bg-gray-lower px-2 py-0.5 text-xs text-gray-plain"
   >{{ value }}</span>
   <span
-    v-else-if="columnType === 'number'"
-    :class="compact ? 'font-mono tabular-nums text-xs text-gray-title' : ''"
-  >{{ formatNumber(value) }}</span>
+    v-else-if="columnType === 'number' || columnType === 'year'"
+    :class="compact ? 'font-mono tabular-nums text-xs' : ''"
+  >{{ columnType === 'year' || noNumberFormat ? value : formatNumber(value) }}</span>
   <span
     v-else-if="columnType === 'date'"
-    :class="compact ? 'font-mono tabular-nums text-xs text-gray-title' : ''"
+    :class="compact ? 'font-mono tabular-nums text-xs' : ''"
   >{{ formatCellDate(value) }}</span>
   <span
     v-else
@@ -42,6 +42,7 @@ defineProps<{
   value: unknown
   columnType: ColumnType
   compact?: boolean
+  noNumberFormat?: boolean
 }>()
 
 const { t } = useTranslation()
