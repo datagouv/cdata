@@ -257,7 +257,11 @@ const {
 } = useResourceCapabilities(() => props.resource, () => props.dataset)
 
 // Share the tabular profile fetch between TabularExplorer and DataStructure tabs.
-await provideTabularProfile(() => props.resource.id)
+// Only tabular resources have one: asking for the profile of a PDF or an image is a
+// request to the Tabular API that can only fail.
+if (hasTabularData.value) {
+  await provideTabularProfile(() => props.resource.id)
+}
 
 // The active tab lives in the URL so a shared link opens on the same one. Read once
 // at mount (TabGroup only takes an initial index), which is enough: switching resource
