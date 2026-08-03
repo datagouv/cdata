@@ -11,6 +11,11 @@ import { useTranslation } from './useTranslation'
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 const URL_FORMATS = ['url', 'doi', 'www:link', 'www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
 
+// Which preview the data tab shows. Single source of truth: the viewer renders it,
+// and the skeleton picks the matching placeholder shape — they used to hold their
+// own copy of this precedence and had already drifted apart.
+export type PreviewKind = 'json' | 'pdf' | 'xml' | 'image' | 'datafair' | 'openapi' | 'tabular' | 'unavailable'
+
 export function useResourceCapabilities(
   resource: MaybeRefOrGetter<Resource>,
   dataset: MaybeRefOrGetter<Dataset | DatasetV2>,
@@ -18,11 +23,6 @@ export function useResourceCapabilities(
   const config = useComponentsConfig()
   const { t } = useTranslation()
   const checkTabularData = useHasTabularData()
-
-  const hasPreview = computed(() => {
-    const format = toValue(resource).format?.toLowerCase()
-    return format === 'json' || format === 'pdf' || format === 'xml' || isImagePreviewFormat(format)
-  })
 
   const hasTabularData = computed(() => {
     const r = toValue(resource)
@@ -86,6 +86,20 @@ export function useResourceCapabilities(
 
   const isResourceUrl = computed(() => URL_FORMATS.includes(toValue(resource).format))
 
+  // A dedicated preview always wins over the interactive table: a PDF that also
+  // carries a parsing table is a PDF first.
+  const previewKind = computed<PreviewKind>(() => {
+    const format = toValue(resource).format?.toLowerCase()
+    if (format === 'json') return 'json'
+    if (format === 'pdf') return 'pdf'
+    if (format === 'xml') return 'xml'
+    if (isImagePreviewFormat(format)) return 'image'
+    if (hasDatafairPreview.value) return 'datafair'
+    if (hasOpenAPIPreview.value) return 'openapi'
+    if (hasTabularData.value) return 'tabular'
+    return 'unavailable'
+  })
+
   const tabsOptions = computed(() => {
     const r = toValue(resource)
     const options = []
@@ -116,7 +130,6 @@ export function useResourceCapabilities(
     }
 
     options.push({ key: 'metadata', label: t('Métadonnées') })
-    options.push({ key: 'downloads', label: t('Téléchargements') })
 
     if (hasTabularData.value) {
       options.push({ key: 'api', label: t('API') })
@@ -126,7 +139,7 @@ export function useResourceCapabilities(
   })
 
   return {
-    hasPreview,
+    previewKind,
     hasTabularData,
     hasPmtiles,
     hasPmtilesError,

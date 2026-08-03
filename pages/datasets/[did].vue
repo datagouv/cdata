@@ -27,8 +27,10 @@
             v-if="!isOrganizationCertified(dataset.organization)"
             :subject="{ id: dataset.id, class: 'Dataset' }"
           />
+          <!-- Only on the old navigation: the new explorer carries its own "Explorer"
+               action next to each resource's download button. -->
           <BrandedButton
-            v-if="exploreUrl"
+            v-if="exploreUrl && !newExplorerEnabled"
             :href="exploreUrl"
             :icon="RiExternalLinkFill"
             icon-right
@@ -476,7 +478,6 @@ import {
   DatasetQuality,
   isOrganizationCertified,
   LoadingBlock,
-  type Resource,
   BrandedButton,
   useFormatDate,
   StatBox,
@@ -490,6 +491,7 @@ import {
   type DatasetMetrics,
   TranslationT,
   getDescriptionShort,
+  type Resource,
   RESOURCE_EXPLORER_PAGE_SIZE,
 } from '@datagouv/components-next'
 import {
@@ -606,6 +608,8 @@ onMounted(async () => {
     { from: 'information', to: `/datasets/${route.params.did}/informations` },
   ])
 })
+
+const { enabled: newExplorerEnabled } = useNewExplorer()
 
 // Use the same cache key as ResourceExplorer's `main` fetch (dataset id + identical params)
 // so Nuxt dedupes the two into a single request on the resources tab. Every part of the key

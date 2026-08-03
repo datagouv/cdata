@@ -82,6 +82,7 @@ import ReadMore from './components/ReadMore.vue'
 import ResourceAccordion from './components/ResourceAccordion/ResourceAccordion.vue'
 import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
 import ResourceSelector from './components/ResourceExplorer/ResourceSelector.vue'
+import ResourceListItem from './components/ResourceListItem.vue'
 import ResourceExplorer from './components/ResourceExplorer/ResourceExplorer.vue'
 import ResourceExplorerSidebar from './components/ResourceExplorer/ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './components/ResourceExplorer/ResourceExplorerViewer.vue'
@@ -108,6 +109,12 @@ import SelectGroup from './components/Form/SelectGroup.vue'
 import Listbox from './components/Form/Listbox.vue'
 import InfiniteLoader from './components/InfiniteLoader.vue'
 import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
+import TabularActiveFilters from './components/TabularExplorer/TabularActiveFilters.vue'
+import TabularColumnsMenu from './components/TabularExplorer/TabularColumnsMenu.vue'
+import TabularMobileFilterButton from './components/TabularExplorer/TabularMobileFilterButton.vue'
+import TabularMobileFilters from './components/TabularExplorer/TabularMobileFilters.vue'
+import TabularRowsInfo from './components/TabularExplorer/TabularRowsInfo.vue'
+import TabularTable from './components/TabularExplorer/TabularTable.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 import { ofetch } from 'ofetch'
@@ -123,6 +130,8 @@ export * from './composables/useTranslation'
 export * from './composables/useHasTabularData'
 export * from './composables/useResourceCapabilities'
 export * from './composables/useTabularProfile'
+export * from './composables/useDatasetResources'
+export * from './composables/useResizable'
 
 export * from './functions/activities'
 export * from './functions/datasets'
@@ -388,6 +397,7 @@ export {
   ResourceExplorerViewer,
   ObjectCardOwner,
   ResourceIcon,
+  ResourceListItem,
   ResourceSelector,
   ReuseCard,
   ReuseDetails,
@@ -413,4 +423,10 @@ export {
   Listbox,
   InfiniteLoader,
   TabularExplorer,
+  TabularActiveFilters,
+  TabularColumnsMenu,
+  TabularMobileFilterButton,
+  TabularMobileFilters,
+  TabularRowsInfo,
+  TabularTable,
 }

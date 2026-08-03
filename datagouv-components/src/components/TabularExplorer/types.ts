@@ -79,8 +79,3 @@ export type SortConfig = {
   column: string
   direction: SortDirection
 }
-
-export type BadgeStyle = {
-  backgroundColor: string
-  color: string
-}

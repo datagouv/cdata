@@ -21,29 +21,45 @@
       </p>
     </div>
 
+    <!-- Outside the explorer: the search drives the query, so it has to stay
+         reachable when that query failed. -->
+    <form
+      class="py-3"
+      @submit.prevent="applySearch"
+    >
+      <SearchInput
+        v-model="searchQuery"
+        :placeholder="$t('Rechercher par objet, administration, thème, mots-clés…')"
+        :auto-focus="false"
+      />
+    </form>
+
     <ClientOnly>
       <TabularExplorer
         v-if="RESOURCE_ID"
         :key="route.fullPath"
         :resource-id="RESOURCE_ID"
-        full-bleed
         :global-search="currentSearch"
         :initial-filters="initialFilters"
-        :row-href="{ columns: ['Numéro de dossier'], href: row => `/explore/cada/${row['Numéro de dossier']}` }"
-        :no-format-columns="['Numéro de dossier']"
       >
-        <template #toolbar-top>
-          <form
-            class="py-3"
-            @submit.prevent="applySearch"
-          >
-            <SearchInput
-              v-model="searchQuery"
-              :placeholder="$t('Rechercher par objet, administration, thème, mots-clés…')"
-              :auto-focus="false"
-            />
-          </form>
-        </template>
+        <div class="flex items-center gap-2 py-3">
+          <div class="flex min-w-0 flex-1 items-center gap-1.5">
+            <TabularMobileFilterButton class="md:hidden" />
+            <div class="hidden md:block">
+              <TabularActiveFilters with-clear />
+            </div>
+          </div>
+          <div class="flex shrink-0 items-center gap-4">
+            <TabularColumnsMenu />
+            <TabularRowsInfo />
+          </div>
+        </div>
+        <TabularTable
+          full-bleed
+          :row-href="{ columns: ['Numéro de dossier'], href: row => `/explore/cada/${row['Numéro de dossier']}` }"
+          :no-format-columns="['Numéro de dossier']"
+        />
+        <TabularMobileFilters />
       </TabularExplorer>
       <template #fallback>
         <div class="bg-gray-100 rounded-lg py-12 text-center text-gray-medium">
@@ -180,7 +196,7 @@
 </template>
 
 <script setup lang="ts">
-import { SearchInput, TabularExplorer, TranslationT, provideTabularProfile } from '@datagouv/components-next'
+import { SearchInput, TabularActiveFilters, TabularColumnsMenu, TabularExplorer, TabularMobileFilterButton, TabularMobileFilters, TabularRowsInfo, TabularTable, TranslationT, provideTabularProfile } from '@datagouv/components-next'
 import type { ColumnFilters } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'

@@ -2,12 +2,12 @@
   <div class="text-xs">
     <PreviewUnavailable v-if="!isSizeAllowed">
       {{ fileSizeBytes
-        ? t("Le fichier {fileType} est trop volumineux pour être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.", { fileType })
-        : t("La taille du fichier est inconnue, l'aperçu n'est pas disponible. Téléchargez-le depuis l'onglet Téléchargements.")
+        ? t("Le fichier {fileType} est trop volumineux pour être prévisualisé. Téléchargez-le pour le consulter.", { fileType })
+        : t("La taille du fichier est inconnue, l'aperçu n'est pas disponible. Téléchargez-le pour le consulter.")
       }}
     </PreviewUnavailable>
     <PreviewUnavailable v-else-if="hasError">
-      {{ t("L'aperçu de ce fichier n'a pas pu être chargé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+      {{ t("L'aperçu de ce fichier n'a pas pu être chargé. Téléchargez-le pour le consulter.") }}
     </PreviewUnavailable>
     <img
       v-else

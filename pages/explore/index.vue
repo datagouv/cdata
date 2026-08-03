@@ -1,8 +1,5 @@
 <template>
-  <div
-    v-if="!resourceId"
-    class="container mb-16"
-  >
+  <div class="container mb-16">
     <Breadcrumb>
       <BreadcrumbItem to="/">
         {{ $t('Accueil') }}
@@ -50,7 +47,7 @@
         v-for="entry in flatResults"
         :key="`${entry.dataset.id}-${entry.resource.id}`"
         :dataset="entry.dataset"
-        :dataset-url="exploreLink(entry.resource.id)"
+        :dataset-url="exploreLink(entry.dataset.id, entry.resource.id)"
       >
         <TranslationT
           keypath="Fichier : {file}"
@@ -101,7 +98,7 @@
         v-for="entry in featuredEntries"
         :key="`${entry.dataset.id}-${entry.resource.id}`"
         :dataset="entry.dataset"
-        :dataset-url="exploreLink(entry.resource.id)"
+        :dataset-url="exploreLink(entry.dataset.id, entry.resource.id)"
       >
         <TranslationT
           keypath="Fichier : {file}"
@@ -115,12 +112,6 @@
       </DatasetCard>
     </div>
   </div>
-
-  <ExploreResourceView
-    v-else-if="currentResource && currentDataset"
-    :resource="currentResource"
-    :dataset="currentDataset"
-  />
 </template>
 
 <script setup lang="ts">
@@ -160,10 +151,6 @@ const query = computed({
     router.replace({ query: q })
   },
 })
-
-const resourceId = computed(() =>
-  typeof route.query.resource_id === 'string' ? route.query.resource_id : '',
-)
 
 const searchParams = computed(() => ({ q: query.value, page_size: 10, format: 'csv' }))
 
@@ -215,31 +202,9 @@ const { data: featuredEntries } = await useAsyncData(
   },
 )
 
-function exploreLink(id: string) {
-  return { query: { ...route.query, resource_id: id, tab: undefined } }
+// Each result opens the dataset's fullscreen explorer focused on that resource.
+// String path (not a route object) so AppLink adds the locale prefix.
+function exploreLink(datasetId: string, resourceId: string) {
+  return `/explore/${datasetId}?resource_id=${resourceId}`
 }
-
-// Resource view: fetch the current resource + its parent dataset
-type ResourceWithDataset = { resource: Resource, dataset_id: string }
-
-const { data: resourceData } = await useAsyncData(
-  'explore-current-resource',
-  async () => {
-    if (!resourceId.value) return null
-    try {
-      const r = await $api<ResourceWithDataset>(
-        `/api/2/datasets/resources/${resourceId.value}/`,
-      )
-      const dataset = await $api<Dataset>(`/api/1/datasets/${r.dataset_id}/`)
-      return { resource: r.resource, dataset }
-    }
-    catch {
-      return null
-    }
-  },
-  { watch: [resourceId] },
-)
-
-const currentResource = computed(() => resourceData.value?.resource ?? null)
-const currentDataset = computed(() => resourceData.value?.dataset ?? null)
 </script>
