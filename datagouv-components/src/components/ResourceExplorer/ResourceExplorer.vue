@@ -54,6 +54,10 @@
             <ResourceViewerSkeleton
               :resource="selectedResource"
               :dataset
+              :resources="flatResources"
+              :resource-to="resourceTo"
+              :explore-to="exploreTo"
+              replace
               :fullscreen
             />
           </template>

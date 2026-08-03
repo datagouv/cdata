@@ -124,12 +124,16 @@ export async function useDatasetResources(datasetGetter: MaybeRefOrGetter<Datase
 
   // The URL is the single source of truth for the selection: no ref to keep in
   // sync, navigation is done with plain links that change `resource_id`.
-  const selectedResource = computed<Resource | null>(() =>
-    flatResources.value.find(r => r.id === resourceIdQuery.value)
-    ?? fetchedResource.value
-    ?? flatResources.value[0]
-    ?? null,
-  )
+  const selectedResource = computed<Resource | null>(() => {
+    const wantedId = resourceIdQuery.value
+    const fromList = flatResources.value.find(r => r.id === wantedId)
+    if (fromList) return fromList
+    // `fetchedResource` answers for `initialResourceId` only. Using it for any other
+    // id would display a resource the URL no longer points at — which is what happens
+    // once a search narrows the list and drops the currently viewed resource.
+    if (wantedId && wantedId === initialResourceId) return fetchedResource.value
+    return flatResources.value[0] ?? null
+  })
 
   function updateSearch(newSearch: string) {
     search.value = newSearch

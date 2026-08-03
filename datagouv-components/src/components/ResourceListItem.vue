@@ -1,6 +1,7 @@
 <template>
   <AppLink
     v-if="!disabled"
+    v-bind="$attrs"
     :to
     :replace
     :class="selected ? '[&&]:!bg-gray-200' : '[&&]:hover:!bg-gray-100'"
@@ -37,6 +38,7 @@
   </AppLink>
   <div
     v-else
+    v-bind="$attrs"
     :title="disabledTitle"
     class="grid h-7 w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-1 rounded px-1 py-1 text-gray-medium cursor-not-allowed"
   >
@@ -100,6 +102,11 @@ import { filesize, summarize } from '../functions/helpers'
 import { useFormatDate } from '../functions/dates'
 import { useTranslation } from '../composables/useTranslation'
 import type { Resource } from '../types/resources'
+
+// The hover card below is a second root node, so Vue drops fallthrough attributes
+// unless we place them ourselves: without this, a listener bound by the parent
+// (the selector's `@click="close()"`) would silently never fire.
+defineOptions({ inheritAttrs: false })
 
 // Shared row for a single resource (sidebar + resource selector). Renders as a
 // navigation link so switching resource is a real link (URL is the source of truth),

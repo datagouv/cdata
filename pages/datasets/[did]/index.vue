@@ -14,11 +14,11 @@
           class="fr-link fr-reset-link text-left"
           @click="toggleExplorer"
         >
-          {{ useNewExplorer ? $t("Revenir sur l'ancienne navigation") : $t("Tester la nouvelle navigation dans les ressources et notre nouvel explorateur") }}
+          {{ newExplorerEnabled ? $t("Revenir sur l'ancienne navigation") : $t("Tester la nouvelle navigation dans les ressources et notre nouvel explorateur") }}
         </button>
       </div>
       <a
-        v-if="useNewExplorer && feedbackUrl"
+        v-if="newExplorerEnabled && feedbackUrl"
         :href="feedbackUrl"
         target="_blank"
         rel="noopener"
@@ -27,7 +27,7 @@
     </SimpleBanner>
 
     <ResourceExplorer
-      v-if="useNewExplorer"
+      v-if="newExplorerEnabled"
       :dataset
       :explore-to="exploreTo"
       no-results-image="/illustrations/dataset.svg"
@@ -55,25 +55,15 @@ const feedbackUrl = useRuntimeConfig().public.explorerFeedbackUrl
 // Opens the fullscreen explorer on the current resource, next to the download button.
 const exploreTo = (resource: Resource) => `/explore/${props.dataset.id}?resource_id=${resource.id}`
 
-// Feature flag: ?new_explorer=1 to enable, ?new_explorer=0 to disable, persisted in cookie
-const newExplorerCookie = useCookie('new_explorer', { maxAge: 60 * 60 * 24 * 7, path: '/' })
-const queryFlag = route.query.new_explorer as string | undefined
-if (queryFlag === '1') {
-  newExplorerCookie.value = '1'
-}
-else if (queryFlag === '0') {
-  newExplorerCookie.value = null
-}
-// useCookie uses `destr` which deserializes '1' as the number 1
-const useNewExplorer = computed(() => String(newExplorerCookie.value) === '1')
+const { enabled: newExplorerEnabled, setEnabled } = useNewExplorer()
 
 const router = useRouter()
 
-// Toggling the reactive cookie swaps the explorer in place (no reload). Going back
+// Toggling the reactive flag swaps the explorer in place (no reload). Going back
 // to the old navigation drops ?resource_id: it doesn't carry the same meaning there.
 function toggleExplorer() {
-  const enable = !useNewExplorer.value
-  newExplorerCookie.value = enable ? '1' : null
+  const enable = !newExplorerEnabled.value
+  setEnabled(enable)
   if (!enable && route.query.resource_id) {
     const { resource_id: _, ...query } = route.query
     router.replace({ query })
