@@ -163,6 +163,7 @@
             :dataset-id="dataset.id"
             :resource-id="resource.id"
             :is-community-resource="isCommunityResource"
+            :disabled="isGeopfSynced"
             size="xs"
           />
         </p>
@@ -367,6 +368,12 @@ const hasTabularData = computed(() => checkTabularData(props.resource))
 
 const hasPmtiles = computed(() => {
   return props.resource.extras['analysis:parsing:pmtiles_url'] || props.resource.format === 'pmtiles'
+})
+
+// A resource successfully pushed to, or pulled back from, Géoplateforme shouldn't be
+// edited locally: doing so would silently diverge from what's published on cartes.gouv.fr.
+const isGeopfSynced = computed(() => {
+  return props.resource.extras['geopf:push:status'] === 'done' || typeof props.resource.extras['geopf:offering:id'] === 'string'
 })
 
 const hasDatafairPreview = computed(() => {

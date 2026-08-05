@@ -60,6 +60,12 @@ export default defineNuxtPlugin({
             }
           }
 
+          if (response.status === 409) {
+            // Used by geopf push/pull to mean "not connected": callers handle this
+            // themselves (prompt to reconnect) instead of a generic toast.
+            return
+          }
+
           if (response.status === 429) {
             toast.error(t('Erreur API 429 : trop de requêtes. Veuillez réessayer plus tard.'))
             return
