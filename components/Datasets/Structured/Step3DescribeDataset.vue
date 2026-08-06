@@ -107,6 +107,13 @@
               :placeholder="$t('Décrivez le contenu, la source et l\'utilité de ces données...')"
               :rows="10"
             />
+            <DatasetLongDescriptionSuggestFromFiles
+              v-if="props.resources.length > 0"
+              v-model="form.description"
+              :resources="props.resources"
+              :title="form.title"
+              :organization="datasetForm.owned?.organization?.name"
+            />
           </LinkedToAccordion>
 
           <LinkedToAccordion
@@ -171,6 +178,7 @@
 import { BrandedButton, PaddedContainer, SimpleBanner, SearchableSelect } from '@datagouv/components-next'
 import type { Frequency } from '@datagouv/components-next'
 import { ref } from 'vue'
+import DatasetLongDescriptionSuggestFromFiles from '~/components/Datasets/DatasetLongDescriptionSuggestFromFiles.vue'
 import Alert from '~/components/Alert/Alert.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
 import Sidemenu from '~/components/Sidemenu/Sidemenu.global.vue'
@@ -179,7 +187,13 @@ import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import LinkedToAccordion from '~/components/LinkedToAccordion/LinkedToAccordion.vue'
 import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplanation.vue'
 import { useForm, required, minLength } from '~/composables/useForm'
-import type { DatasetForm } from '~/types/types'
+import type { DatasetForm, ResourceForm } from '~/types/types'
+
+const props = withDefaults(defineProps<{
+  resources?: Array<ResourceForm>
+}>(), {
+  resources: () => [],
+})
 
 const emit = defineEmits<{
   (e: 'previous' | 'next'): void
