@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildFiltersFromQuery, buildQueryFromFilters, computeFamilyStats, computeSummaryStats, formatDelta, formatMonth, getDeltaDirection, getPreviousMonth } from '~/utils/previewDashboard'
+import { buildFiltersFromQuery, computeFamilyStats, computeSummaryStats, formatDelta, formatMonth, getDeltaDirection, getPreviousMonth } from '~/utils/previewDashboard'
 import type { PreviewDashboardFormatStat } from '~/types/preview-dashboard'
 
 function makeStat(overrides: Partial<PreviewDashboardFormatStat> = {}): PreviewDashboardFormatStat {
@@ -44,24 +44,6 @@ describe('buildFiltersFromQuery', () => {
 
   it('ignores empty values', () => {
     expect(buildFiltersFromQuery({ format: '' })).toEqual({})
-  })
-})
-
-describe('buildQueryFromFilters', () => {
-  it('returns empty query when no filter is active', () => {
-    expect(buildQueryFromFilters({})).toEqual({})
-  })
-
-  it('returns a single format for an in filter with one value', () => {
-    expect(buildQueryFromFilters({ 'format normalisé': { in: ['csv'] } })).toEqual({
-      format: 'csv',
-    })
-  })
-
-  it('returns a comma-separated format list for an __in filter', () => {
-    expect(buildQueryFromFilters({ 'format normalisé': { in: ['csv', 'xlsx'] } })).toEqual({
-      format: 'csv,xlsx',
-    })
   })
 })
 

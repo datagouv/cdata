@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test'
 import { test, expect } from './base'
 import type { PreviewDashboardResource, PreviewDashboardFormatStat } from '../types/preview-dashboard'
 import { formatMonth, getPreviousMonth } from '../utils/previewDashboard'
@@ -115,36 +116,40 @@ const previousMonthStatsData: PreviewDashboardFormatStat[] = statsData.map(row =
 
 const allStatsData: PreviewDashboardFormatStat[] = [...previousMonthStatsData, ...statsData]
 
+async function mockTabularApi(page: Page, stats: PreviewDashboardFormatStat[] = allStatsData) {
+  await page.route(`**/api/resources/${resourceId}/data/**`, async (route) => {
+    await route.fulfill({
+      json: {
+        data: resourcesData,
+        meta: { page: 1, page_size: 50, total: 1 },
+        links: { profile: '', swagger: '', next: null, prev: null },
+      },
+    })
+  })
+
+  await page.route(`**/api/resources/${resourceId}/profile/**`, async (route) => {
+    await route.fulfill({ json: resourcesProfile })
+  })
+
+  await page.route(`**/api/resources/${statsResourceId}/data/**`, async (route) => {
+    const url = new URL(route.request().url())
+    const requestedMonth = url.searchParams.get('Mois__exact')
+    const data = requestedMonth
+      ? stats.filter(row => row.Mois === requestedMonth)
+      : stats
+    await route.fulfill({
+      json: {
+        data,
+        meta: { page: 1, page_size: 100, total: data.length },
+        links: { profile: '', swagger: '', next: null, prev: null },
+      },
+    })
+  })
+}
+
 test.describe('Preview dashboard', () => {
-  test('renders tiered format stats and resources table in tabs', async ({ page }) => {
-    await page.route(`**/api/resources/${resourceId}/data/**`, async (route) => {
-      await route.fulfill({
-        json: {
-          data: resourcesData,
-          meta: { page: 1, page_size: 50, total: 1 },
-          links: { profile: '', swagger: '', next: null, prev: null },
-        },
-      })
-    })
-
-    await page.route(`**/api/resources/${resourceId}/profile/**`, async (route) => {
-      await route.fulfill({ json: resourcesProfile })
-    })
-
-    await page.route(`**/api/resources/${statsResourceId}/data/**`, async (route) => {
-      const url = new URL(route.request().url())
-      const requestedMonth = url.searchParams.get('Mois__exact')
-      const data = requestedMonth
-        ? allStatsData.filter(row => row.Mois === requestedMonth)
-        : allStatsData
-      await route.fulfill({
-        json: {
-          data,
-          meta: { page: 1, page_size: 100, total: data.length },
-          links: { profile: '', swagger: '', next: null, prev: null },
-        },
-      })
-    })
+  test('renders tiered format stats and resources table on their own pages', async ({ page }) => {
+    await mockTabularApi(page)
 
     await page.goto('/admin/beta/preview-dashboard')
     await page.waitForLoadState('networkidle')
@@ -157,41 +162,19 @@ test.describe('Preview dashboard', () => {
     await expect(page.getByRole('cell', { name: 'csv' })).toBeVisible()
     await expect(page.locator('#format-row-1').getByRole('cell', { name: '10' })).toBeVisible()
 
-    await page.getByRole('tab', { name: 'Fichiers' }).click()
+    await page.getByRole('link', { name: 'Fichiers' }).click()
+    await expect(page).toHaveURL('/admin/beta/preview-dashboard/fichiers')
+    await expect(page.getByRole('link', { name: 'Fichiers' })).toHaveAttribute('aria-current', 'page')
     await expect(page.getByRole('cell', { name: 'Données CSV' })).toBeVisible()
     const resourceRow = page.locator('tr', { hasText: 'Données CSV' }).first()
     await expect(resourceRow.locator('td').nth(6)).toContainText('csv')
+
+    // The heading and the tabs are shared by both pages
+    await expect(page.getByRole('heading', { name: 'Tableau de bord des aperçus' })).toBeVisible()
   })
 
-  test('navigates to the filtered Fichiers tab when clicking a format name', async ({ page }) => {
-    await page.route(`**/api/resources/${resourceId}/data/**`, async (route) => {
-      await route.fulfill({
-        json: {
-          data: resourcesData,
-          meta: { page: 1, page_size: 50, total: 1 },
-          links: { profile: '', swagger: '', next: null, prev: null },
-        },
-      })
-    })
-
-    await page.route(`**/api/resources/${resourceId}/profile/**`, async (route) => {
-      await route.fulfill({ json: resourcesProfile })
-    })
-
-    await page.route(`**/api/resources/${statsResourceId}/data/**`, async (route) => {
-      const url = new URL(route.request().url())
-      const requestedMonth = url.searchParams.get('Mois__exact')
-      const data = requestedMonth
-        ? allStatsData.filter(row => row.Mois === requestedMonth)
-        : allStatsData
-      await route.fulfill({
-        json: {
-          data,
-          meta: { page: 1, page_size: 100, total: data.length },
-          links: { profile: '', swagger: '', next: null, prev: null },
-        },
-      })
-    })
+  test('navigates to the filtered Fichiers page when clicking a format name', async ({ page }) => {
+    await mockTabularApi(page)
 
     await page.goto('/admin/beta/preview-dashboard')
     await page.waitForLoadState('networkidle')
@@ -199,43 +182,45 @@ test.describe('Preview dashboard', () => {
     await page.getByRole('button', { name: 'Tabulaire' }).click()
     await page.getByRole('link', { name: 'csv' }).click()
 
-    await expect(page).toHaveURL(/[?&]tab=fichiers/)
-    await expect(page).toHaveURL(/[?&]format=csv/)
+    await expect(page).toHaveURL('/admin/beta/preview-dashboard/fichiers?format=csv')
 
-    await expect(page.getByRole('tab', { name: 'Fichiers' })).toHaveAttribute('aria-selected', 'true')
+    // The Fichiers tab stays highlighted even though the URL carries a filter
+    await expect(page.getByRole('link', { name: 'Fichiers' })).toHaveAttribute('aria-current', 'page')
     await expect(page.getByRole('cell', { name: 'Données CSV' })).toBeVisible()
     await expect(page.getByText(/format normalisé\s*=\s*csv/)).toBeVisible({ timeout: 10000 })
   })
 
+  test('keeps the filters added from the table when another one is removed', async ({ page }) => {
+    await mockTabularApi(page)
+
+    await page.goto('/admin/beta/preview-dashboard/fichiers?format=csv')
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.getByTestId('active-filter-format normalisé')).toBeVisible({ timeout: 10000 })
+
+    await page.getByRole('cell', { name: 'Données CSV' }).click()
+    await page.getByRole('button', { name: 'Filtrer par cette valeur' }).click()
+    await expect(page.getByTestId('active-filter-titre')).toBeVisible()
+
+    await page.getByTestId('active-filter-format normalisé').getByRole('button', { name: 'Supprimer ce filtre' }).click()
+
+    await expect(page.getByTestId('active-filter-format normalisé')).toBeHidden()
+    await expect(page.getByTestId('active-filter-titre')).toBeVisible()
+  })
+
+  test('shows an empty state when the current month has no stats yet', async ({ page }) => {
+    await mockTabularApi(page, previousMonthStatsData)
+
+    await page.goto('/admin/beta/preview-dashboard')
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.getByText(/Aucune statistique pour/)).toBeVisible()
+    await expect(page.getByText('Les statistiques de ce mois n’ont pas encore été publiées.')).toBeVisible()
+    await expect(page.getByRole('columnheader', { name: 'Famille / Format' })).toBeHidden()
+  })
+
   test('shows month-over-month deltas for Nombre and % prévisualisable', async ({ page }) => {
-    await page.route(`**/api/resources/${resourceId}/data/**`, async (route) => {
-      await route.fulfill({
-        json: {
-          data: resourcesData,
-          meta: { page: 1, page_size: 50, total: 1 },
-          links: { profile: '', swagger: '', next: null, prev: null },
-        },
-      })
-    })
-
-    await page.route(`**/api/resources/${resourceId}/profile/**`, async (route) => {
-      await route.fulfill({ json: resourcesProfile })
-    })
-
-    await page.route(`**/api/resources/${statsResourceId}/data/**`, async (route) => {
-      const url = new URL(route.request().url())
-      const requestedMonth = url.searchParams.get('Mois__exact')
-      const data = requestedMonth
-        ? allStatsData.filter(row => row.Mois === requestedMonth)
-        : allStatsData
-      await route.fulfill({
-        json: {
-          data,
-          meta: { page: 1, page_size: 100, total: data.length },
-          links: { profile: '', swagger: '', next: null, prev: null },
-        },
-      })
-    })
+    await mockTabularApi(page)
 
     await page.goto('/admin/beta/preview-dashboard')
     await page.waitForLoadState('networkidle')

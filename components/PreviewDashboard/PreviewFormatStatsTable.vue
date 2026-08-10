@@ -73,6 +73,22 @@
         >
           {{ t('Les statistiques n\'ont pas pu être chargées.') }}
         </SimpleBanner>
+        <div
+          v-else-if="familyStats.length === 0"
+          class="flex flex-col items-center py-12"
+        >
+          <img
+            src="/illustrations/chart.svg"
+            class="h-20"
+            alt=""
+          >
+          <p class="font-bold text-gray-title my-3">
+            {{ t('Aucune statistique pour {month}', { month: currentMonthLabel }) }}
+          </p>
+          <p class="text-sm text-gray-plain">
+            {{ t('Les statistiques de ce mois n’ont pas encore été publiées.') }}
+          </p>
+        </div>
         <table
           v-else
           class="relative min-w-full"
@@ -200,11 +216,8 @@
                 <NuxtLink
                   class="link"
                   :to="{
-                    query: {
-                      ...route.query,
-                      tab: 'fichiers',
-                      format: row.Format,
-                    },
+                    path: '/admin/beta/preview-dashboard/fichiers',
+                    query: { format: row.Format },
                   }"
                 >
                   {{ row.Format }}
@@ -249,7 +262,6 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRoute } from '#imports'
 import {
   RiArchiveLine,
   RiArrowDownSLine,
@@ -262,7 +274,7 @@ import {
   RiQuestionLine,
   RiTableLine,
 } from '@remixicon/vue'
-import { AnimatedLoader, SimpleBanner, useFormatTabular } from '@datagouv/components-next'
+import { AnimatedLoader, SimpleBanner, useFormatDate, useFormatTabular } from '@datagouv/components-next'
 import PercentageMeter from './PercentageMeter.vue'
 import DeltaIndicator from './DeltaIndicator.vue'
 import type { PreviewDashboardFormatStat, TabularDataResponse } from '~/types/preview-dashboard'
@@ -273,9 +285,9 @@ const props = defineProps<{
   resourceId: string
 }>()
 
-const route = useRoute()
 const config = useRuntimeConfig()
 const { t } = useTranslation()
+const { formatDate } = useFormatDate()
 const { formatNumber } = useFormatTabular()
 
 const jsonPreviewSize = computed(() => {
@@ -293,9 +305,13 @@ const xmlPreviewSize = computed(() => {
   return `${formatNumber(ko)} Ko`
 })
 
-const imagePreviewSize = computed(() => `${formatNumber(10)} Mo`)
+const imagePreviewSize = computed(() => {
+  const mo = Math.round(config.public.maxImagePreviewByteSize / 1_000_000)
+  return `${formatNumber(mo)} Mo`
+})
 
 const currentMonth = computed(() => formatMonth(new Date()))
+const currentMonthLabel = computed(() => formatDate(new Date(), { dateStyle: undefined, year: 'numeric', month: 'long' }))
 const previousMonth = computed(() => getPreviousMonth(currentMonth.value))
 
 const currentMonthUrl = computed(() => {

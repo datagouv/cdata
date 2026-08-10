@@ -17,15 +17,6 @@ export function buildFiltersFromQuery(query: LocationQuery): PreviewDashboardFil
   return { [FORMAT_COLUMN]: { in: normalized } }
 }
 
-export function buildQueryFromFilters(filters: PreviewDashboardFilters): { format?: string } {
-  const formatFilter = filters[FORMAT_COLUMN]
-  if (!formatFilter) return {}
-
-  if (formatFilter.in && formatFilter.in.length > 0) return { format: formatFilter.in.join(',') }
-
-  return {}
-}
-
 export function formatMonth(date: Date): string {
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
