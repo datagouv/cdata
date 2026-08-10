@@ -682,6 +682,10 @@ const props = defineProps<{
   // Note: combined via AND with any existing column-specific `contains` filters,
   // so it acts as an additional narrowing constraint, not a replacement.
   globalSearch?: string
+  // Filters seeded on mount, e.g. { 'Administration': { contains: 'Ministère' } }.
+  // The explorer owns them afterwards: later changes to this prop are ignored,
+  // so pass a fresh instance (or remount) to reset them.
+  initialFilters?: Record<string, ColumnFilters>
   // When set, renders <a> tags inside the specified column cells for native
   // browser UX (hover URL, ctrl+click, middle-click).
   rowHref?: { columns: string[], href: (row: TabularRow) => string }
@@ -759,9 +763,7 @@ function getColumnType(col: string): ColumnType {
 
 // Sort & filter state
 const sort = ref<SortConfig | null>(null)
-const filters = defineModel<Record<string, ColumnFilters>>('filters', {
-  default: () => ({}),
-})
+const filters = ref<Record<string, ColumnFilters>>({ ...props.initialFilters })
 
 const PAGE_SIZE = 50
 

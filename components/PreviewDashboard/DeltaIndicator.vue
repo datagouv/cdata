@@ -17,16 +17,17 @@
 
 <script setup lang="ts">
 import { RiArrowDownLine, RiArrowUpLine } from '@remixicon/vue'
-import { formatDelta, getDeltaDirection } from '~/utils/previewDashboard'
+import type { DeltaUnit } from '~/utils/previewDashboard'
+import { formatDelta, getDeltaDirection, roundDelta } from '~/utils/previewDashboard'
 
 const props = defineProps<{
   value?: number
-  unit: 'count' | 'points'
+  unit: DeltaUnit
 }>()
 
 const { t } = useTranslation()
 
-const direction = computed(() => getDeltaDirection(props.value ?? 0))
+const direction = computed(() => getDeltaDirection(roundDelta(props.value ?? 0, props.unit)))
 
 const colorClass = computed(() => {
   if (direction.value === 'up') return 'text-new-success'

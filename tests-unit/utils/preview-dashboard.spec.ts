@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildFiltersFromQuery, computeFamilyStats, computeSummaryStats, formatDelta, formatMonth, getDeltaDirection, getPreviousMonth } from '~/utils/previewDashboard'
+import { buildFiltersFromQuery, computeFamilyStats, formatDelta, formatMonth, getDeltaDirection, getPreviousMonth, roundDelta } from '~/utils/previewDashboard'
 import type { PreviewDashboardFormatStat } from '~/types/preview-dashboard'
 
 function makeStat(overrides: Partial<PreviewDashboardFormatStat> = {}): PreviewDashboardFormatStat {
@@ -44,6 +44,18 @@ describe('buildFiltersFromQuery', () => {
 
   it('ignores empty values', () => {
     expect(buildFiltersFromQuery({ format: '' })).toEqual({})
+  })
+
+  it('trims and drops blank segments', () => {
+    expect(buildFiltersFromQuery({ format: ' csv , , xlsx ' })).toEqual({
+      'format normalisé': { in: ['csv', 'xlsx'] },
+    })
+  })
+
+  it('drops the null entries a valueless query param produces', () => {
+    expect(buildFiltersFromQuery({ format: [null, 'csv'] })).toEqual({
+      'format normalisé': { in: ['csv'] },
+    })
   })
 })
 
@@ -94,6 +106,27 @@ describe('formatDelta', () => {
 
   it('renders a zero point delta without a sign', () => {
     expect(formatDelta(0, 'points')).toBe('0.0%')
+  })
+
+  it('drops the sign when a point delta rounds to zero', () => {
+    expect(formatDelta(0.03, 'points')).toBe('0.0%')
+    expect(formatDelta(-0.03, 'points')).toBe('0.0%')
+  })
+
+  it('drops the sign when a count delta rounds to zero', () => {
+    expect(formatDelta(-0.4, 'count')).toBe('0')
+  })
+})
+
+describe('roundDelta', () => {
+  it('reports no direction for a point delta that rounds to zero', () => {
+    expect(getDeltaDirection(roundDelta(-0.03, 'points'))).toBe('neutral')
+    expect(getDeltaDirection(roundDelta(0.03, 'points'))).toBe('neutral')
+  })
+
+  it('keeps the direction of a delta that survives rounding', () => {
+    expect(getDeltaDirection(roundDelta(-0.06, 'points'))).toBe('down')
+    expect(getDeltaDirection(roundDelta(0.6, 'count'))).toBe('up')
   })
 })
 
@@ -167,6 +200,19 @@ describe('computeFamilyStats', () => {
     expect(image.previewDelta).toBeCloseTo(0)
   })
 
+  it('sums every format of a family before comparing it to the previous month', () => {
+    const rows = [
+      makeStat({ Format: 'csv', Mois: '2026-07', Nombre: 30, Prévisualisable: 24, __id: 1 }),
+      makeStat({ Format: 'xlsx', Mois: '2026-07', Nombre: 10, Prévisualisable: 6, __id: 2 }),
+      makeStat({ Format: 'csv', Mois: '2026-06', Nombre: 20, Prévisualisable: 10, __id: 3 }),
+      makeStat({ Format: 'xlsx', Mois: '2026-06', Nombre: 10, Prévisualisable: 5, __id: 4 }),
+    ]
+    const stats = computeFamilyStats(rows, '2026-07', '2026-06')
+    // 40 - 30 resources, and 30/40 previewable against 15/30 the month before
+    expect(stats[0].countDelta).toBe(10)
+    expect(stats[0].previewDelta).toBeCloseTo(25)
+  })
+
   it('leaves deltas undefined when there is no previous month data', () => {
     const rows = [makeStat({ Mois: '2026-07', __id: 1 })]
     const stats = computeFamilyStats(rows, '2026-07', '2026-06')
@@ -195,25 +241,28 @@ describe('computeFamilyStats', () => {
   })
 })
 
-describe('computeSummaryStats', () => {
+// The summary tiles are derived from these totals in the page, so the invariants
+// they rely on are asserted here.
+describe('computeFamilyStats summary totals', () => {
   it('sums only the rows of the requested month', () => {
     const rows = [
       makeStat({ Mois: '2026-07', Nombre: 10, Prévisualisable: 5, __id: 1 }),
       makeStat({ Mois: '2026-06', Nombre: 7, Prévisualisable: 4, __id: 2 }),
     ]
-    const stats = computeSummaryStats(rows, '2026-07')
-    expect(stats).not.toBeNull()
-    expect(stats!.total).toBe(10)
-    expect(stats!.previewableCount).toBe(5)
-    expect(stats!.previewablePercentage).toBeCloseTo(50)
+    const stats = computeFamilyStats(rows, '2026-07', '2026-06')
+    const total = stats.reduce((sum, family) => sum + family.count, 0)
+    const previewableCount = stats.reduce((sum, family) => sum + family.withPreview, 0)
+    expect(total).toBe(10)
+    expect(previewableCount).toBe(5)
+    expect((previewableCount / total) * 100).toBeCloseTo(50)
   })
 
-  it('returns null when there are no rows for the requested month', () => {
+  it('returns no family when there are no rows for the requested month', () => {
     const rows = [makeStat({ Mois: '2026-06', __id: 1 })]
-    expect(computeSummaryStats(rows, '2026-07')).toBeNull()
+    expect(computeFamilyStats(rows, '2026-07', '2026-06')).toEqual([])
   })
 
-  it('returns null for an empty dataset', () => {
-    expect(computeSummaryStats([], '2026-07')).toBeNull()
+  it('returns no family for an empty dataset', () => {
+    expect(computeFamilyStats([], '2026-07', '2026-06')).toEqual([])
   })
 })

@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from './base'
-import type { PreviewDashboardResource, PreviewDashboardFormatStat } from '../types/preview-dashboard'
+import type { TabularRow } from '@datagouv/components-next'
+import type { PreviewDashboardFormatStat } from '../types/preview-dashboard'
 import { formatMonth, getPreviousMonth } from '../utils/previewDashboard'
 
 const resourceId = '982d9dd0-365a-4c4b-8a83-75dec40c36bb'
@@ -9,7 +10,7 @@ const statsResourceId = '33cf9a65-3f77-4d88-acd1-bca420d83e60'
 const currentMonth = formatMonth(new Date())
 const previousMonth = getPreviousMonth(currentMonth)
 
-const resourcesData: PreviewDashboardResource[] = [
+const resourcesData: TabularRow[] = [
   {
     'id': 'resource-1',
     'titre': 'Données CSV',
@@ -235,5 +236,42 @@ test.describe('Preview dashboard', () => {
     const formatRow = page.locator('tr', { hasText: 'csv' }).first()
     await expect(formatRow.locator('td').nth(1)).toContainText('+')
     await expect(formatRow.locator('td').nth(7)).toContainText('+')
+  })
+
+  test('aggregates every page of the month, not just the first one', async ({ page }) => {
+    const manyFormats: PreviewDashboardFormatStat[] = Array.from({ length: 150 }, (_, index) => ({
+      'Famille de format': 'Tabulaire',
+      'Format': `format-${index}`,
+      'Nombre': 1,
+      'Prévisualisable': 1,
+      '% catalogue': 0,
+      '% erreur': 0,
+      '% too big': 0,
+      '% prévisualisable': 100,
+      '% prévisualisation manquante': 0,
+      'Mois': currentMonth,
+      '__id': index + 1,
+    }))
+
+    await page.route(`**/api/resources/${statsResourceId}/data/**`, async (route) => {
+      const url = new URL(route.request().url())
+      const monthRows = manyFormats.filter(row => row.Mois === url.searchParams.get('Mois__exact'))
+      const pageNumber = Number(url.searchParams.get('page'))
+      const pageSize = Number(url.searchParams.get('page_size'))
+      await route.fulfill({
+        json: {
+          data: monthRows.slice((pageNumber - 1) * pageSize, pageNumber * pageSize),
+          meta: { page: pageNumber, page_size: pageSize, total: monthRows.length },
+          links: { profile: '', swagger: '', next: null, prev: null },
+        },
+      })
+    })
+
+    await page.goto('/admin/beta/preview-dashboard')
+    await page.waitForLoadState('networkidle')
+
+    // 150 rows over pages of 100: a single request would report 100 here
+    await expect(page.getByText('Nombre total de ressources analysées').locator('..')).toContainText('150')
+    await expect(page.locator('tr', { hasText: 'Tabulaire' }).first().locator('td').nth(1)).toContainText('150')
   })
 })

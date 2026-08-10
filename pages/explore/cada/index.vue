@@ -25,8 +25,8 @@
       <TabularExplorer
         v-if="RESOURCE_ID"
         :key="route.fullPath"
-        v-model:filters="filters"
         :resource-id="RESOURCE_ID"
+        :initial-filters="filtersFromQuery"
         full-bleed
         :global-search="currentSearch"
         :row-href="{ columns: ['Numéro de dossier'], href: row => `/explore/cada/${row['Numéro de dossier']}` }"
@@ -232,12 +232,6 @@ const filtersFromQuery = computed(() => {
   }
   return f
 })
-
-// Filters come from the query params. The explorer is keyed by
-// route.fullPath and remounts on navigation, but this ref persists across
-// remounts, so it is kept in sync with the URL.
-const filters = ref<Record<string, ColumnFilters>>({})
-watch(filtersFromQuery, f => (filters.value = { ...f }), { immediate: true })
 
 if (RESOURCE_ID) {
   provideTabularProfile(() => RESOURCE_ID)
