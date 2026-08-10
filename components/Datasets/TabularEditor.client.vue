@@ -1,33 +1,6 @@
 <template>
   <div>
-    <BannerAction
-      v-if="showSchemaMismatch"
-      type="danger"
-      :title="$t(`Ce fichier ne correspond pas au schéma « {schema} »`, { schema: schemaDetails?.title ?? '' })"
-    >
-      {{ schemaMismatchDetail }}
-
-      <template #button>
-        <div class="flex flex-wrap gap-2">
-          <BrandedButton
-            color="primary"
-            size="xs"
-            @click="$emit('changeSchema')"
-          >
-            {{ $t('Changer de schéma') }}
-          </BrandedButton>
-          <BrandedButton
-            color="secondary"
-            size="xs"
-            @click="continueAnyway"
-          >
-            {{ $t('Continuer quand même') }}
-          </BrandedButton>
-        </div>
-      </template>
-    </BannerAction>
-
-    <div v-else>
+    <div>
       <div class="grid grid-cols-2 items-center mb-4">
         <div>
           <InputGroup
@@ -223,28 +196,18 @@ const validating = ref(false)
 
 const schemaFields = computed(() => props.schemaDetails?.fields.map((field: SchemaField) => field.name) ?? [])
 
-const parsedRows = ref<Array<RowData> | null>(null)
-
 // Headers of the imported file. Only the schema fields are displayed and exported,
 // so anything else is dropped and the user must be told about it.
 const fileColumns = ref<Array<string>>([])
 
 const unrecognizedColumns = computed(() => fileColumns.value.filter(column => !schemaFields.value.includes(column)))
 
-// Not a single column in common: the file was made for another schema, so the empty
-// table would be useless and the user is asked to decide before seeing it.
+// Not a single column in common: the file was made for another schema, so its rows hold
+// nothing the table can show
 const hasSchemaMismatch = computed(() => fileColumns.value.length > 0 && unrecognizedColumns.value.length === fileColumns.value.length)
 
-const mismatchAcknowledged = ref(false)
-const showSchemaMismatch = computed(() => hasSchemaMismatch.value && !mismatchAcknowledged.value)
-
-const schemaMismatchDetail = computed(() => t(
-  `Aucune des {n} colonnes de votre fichier ne lui est connue.`,
-  { n: fileColumns.value.length },
-))
-
 const unrecognizedColumnsMessage = computed(() => {
-  if (!unrecognizedColumns.value.length || hasSchemaMismatch.value) return null
+  if (!unrecognizedColumns.value.length) return null
 
   // The names themselves stay out of the banner: the count is what tells the user the
   // schema may be wrong, and the report below already details each column
@@ -588,15 +551,6 @@ function generateFile() {
   uploadedFile.value = new File([blob], fileName, { type: 'text/csv;charset=utf-8;' })
 }
 
-async function continueAnyway() {
-  mismatchAcknowledged.value = true
-  // The table container is only rendered once the banner is gone
-  await nextTick()
-  // None of the parsed columns belongs to the schema, so keeping the rows would only
-  // fill the table with as many blank lines as the file had
-  makeTable(createEmptyRows(1))
-}
-
 defineExpose({ generateFile })
 
 type ParsedFile = { columns: Array<string>, rows: Array<RowData> }
@@ -660,12 +614,15 @@ async function loadUploadedFile(file: File) {
       : await readDelimitedText(file)
 
     fileColumns.value = columns
-    parsedRows.value = rows.map((row, index) => ({ id: index, ...row }))
 
-    // The table is only built once the user decided what to do with a file
-    // that has nothing in common with the schema
-    if (hasSchemaMismatch.value) return
-    makeTable(parsedRows.value, true)
+    // Keeping the rows when nothing matches would only fill the table with as many
+    // blank lines as the file had, and validating them says nothing useful either
+    if (hasSchemaMismatch.value) {
+      makeTable(createEmptyRows(1))
+      return
+    }
+
+    makeTable(rows.map((row, index) => ({ id: index, ...row })), true)
   }
   catch (error) {
     console.error('Erreur lors du chargement du fichier:', error)

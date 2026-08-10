@@ -303,30 +303,20 @@ test.describe('fichier illisible', () => {
 })
 
 test.describe('fichier qui ne correspond pas au schéma', () => {
-  test('aucune colonne commune : le tableau vide laisse place à une décision', async ({ page }) => {
+  test('aucune colonne commune : le tableur s’ouvre vide et le schéma reste changeable', async ({ page }) => {
     await stubPublicationApis(page)
 
     await startWizard(page, 'irve')
     await uploadAndOpenSpreadsheet(page, 'lave-linge-virgule.csv')
 
-    await expect(page.getByText(`Ce fichier ne correspond pas au schéma « ${SCHEMAS.irve.title} »`)).toBeVisible()
-    await expect(page.getByText(`Aucune des ${FILE_COLUMNS} colonnes de votre fichier ne lui est connue.`)).toBeVisible()
+    await expect(page.getByText(
+      `${FILE_COLUMNS} des ${FILE_COLUMNS} colonnes de votre fichier sont inconnues du schéma « ${SCHEMAS.irve.title} »`,
+    )).toBeVisible()
     await expect(page.getByRole('button', { name: 'Changer de schéma' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Continuer quand même' })).toBeVisible()
-    // The table is not built at all in this case
-    await expect(page.getByRole('button', { name: 'Ajouter une ligne' })).toHaveCount(0)
-  })
 
-  test('« continuer quand même » ouvre un tableur vide', async ({ page }) => {
-    const apis = await stubPublicationApis(page)
-    apis.validation = reportWithErrors(1)
-
-    await startWizard(page, 'irve')
-    await uploadAndOpenSpreadsheet(page, 'lave-linge-virgule.csv')
-    await page.getByRole('button', { name: 'Continuer quand même' }).click()
-
+    // The table is shown like in any other case, only its rows are dropped: keeping
+    // them would add as many blank lines as the file had
     await expect(page.getByRole('button', { name: 'Ajouter une ligne' })).toBeVisible()
-    // None of the file's columns belonged to the schema, so no value is carried over
     await expect(page.getByText('8690842902635-FR001088_05WVDO-2026-07-31')).toHaveCount(0)
   })
 
