@@ -1,8 +1,17 @@
 <template>
-  <div
+  <component
+    :is="selectable ? 'button' : 'div'"
+    :id
     class="p-4 relative border bg-white hover:bg-gray-some"
-    :class="{ 'border-gray-default': !selected, 'border-datagouv': selected }"
+    :class="{
+      'border-gray-default': !selected && !active,
+      'border-datagouv': selected && !active,
+      'border-blue-outline': active,
+      'block w-full text-left': selectable,
+    }"
+    :type="selectable ? 'button' : undefined"
     :role="selectable ? 'option' : undefined"
+    :tabindex="selectable ? -1 : undefined"
     :aria-selected="selectable && selected"
   >
     <h3 class="text-base font-bold mb-0 flex items-center gap-1">
@@ -60,7 +69,7 @@
       v-if="selected"
       class="size-6 fill-datagouv absolute top-4 right-4"
     />
-  </div>
+  </component>
 </template>
 
 <script setup lang="ts">
@@ -73,7 +82,10 @@ import { useComponentsConfig } from '../config'
 
 defineProps<{
   schema: RegisteredSchema
+  id?: string
   selectable?: boolean
+  // Highlighted by the keyboard inside the listbox, which is not the same as chosen
+  active?: boolean
   selected?: boolean
   showLinks?: boolean
 }>()

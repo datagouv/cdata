@@ -138,13 +138,22 @@
           <div
             class="grid grid-cols-1 gap-4"
             role="listbox"
+            tabindex="0"
+            :aria-label="$t('Résultats de la recherche de schéma')"
+            :aria-activedescendant="active"
+            @keydown="handleKeyPressForActiveDescendant"
+            @keydown.space="selectActiveSchema"
+            @keydown.enter="selectActiveSchema"
+            @focusout="focusOut"
           >
             <SchemaCard
               v-for="schema in filteredSchemas"
+              :id="schemaOptionId(schema)"
               :key="schema.name"
               :schema
               class="cursor-pointer"
               :selectable="true"
+              :active="isActive(schemaOptionId(schema))"
               :selected="schema.name === form.selectedSchema?.name"
               @click="toggleSchema(schema)"
             />
@@ -189,7 +198,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SchemaCard, SimpleBanner, useGetCatalog } from '@datagouv/components-next'
+import { BrandedButton, SchemaCard, SimpleBanner, useActiveDescendant, useGetCatalog } from '@datagouv/components-next'
 import type { Dataset, DatasetV2, RegisteredSchema } from '@datagouv/components-next'
 import { ref, onMounted, computed } from 'vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
@@ -262,6 +271,9 @@ async function loadSchemas() {
   }
 }
 
+// `useActiveDescendant` identifies options by id, and a schema name is not a valid one
+const schemaOptionId = (schema: RegisteredSchema) => `schema-${schema.name.replace(/\W/g, '-')}`
+
 const filteredSchemas = computed(() => schemas.value.filter((schema: RegisteredSchema) => {
   if (!searchQuery.value.trim()) {
     return false
@@ -271,6 +283,18 @@ const filteredSchemas = computed(() => schemas.value.filter((schema: RegisteredS
   const descriptionMatch = schema.description?.toLowerCase().includes(query)
   return titleMatch || descriptionMatch
 }))
+
+const schemaOptions = computed(() => filteredSchemas.value.map(schema => ({ id: schemaOptionId(schema) })))
+
+const { isActive, active, focusOut, handleKeyPressForActiveDescendant } = useActiveDescendant(schemaOptions, 'vertical')
+
+function selectActiveSchema(event: Event) {
+  const schema = filteredSchemas.value.find(schema => isActive(schemaOptionId(schema)))
+  if (!schema) return
+
+  event.preventDefault()
+  toggleSchema(schema)
+}
 
 async function toggleSchema(schema: RegisteredSchema) {
   if (form.value.selectedSchema && form.value.selectedSchema.name === schema.name) {
