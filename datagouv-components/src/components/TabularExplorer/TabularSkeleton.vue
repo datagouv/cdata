@@ -1,15 +1,20 @@
 <template>
-  <!-- Toolbar row — the active-filters area (left) is empty until the user filters,
-       so on load only the columns menu (h-6 button) and rows info sit on the right;
-       the columns button drives the row height. -->
-  <div class="animate-pulse-placeholder flex shrink-0 items-center justify-end gap-4 border-b border-gray-default p-2">
-    <div class="h-6 w-24 rounded bg-gray-200" />
-    <div class="h-5 w-24 rounded bg-gray-200" />
+  <!-- Toolbar row — mirrors TabularToolbar: the mobile filter button on the left (it
+       only shows below md), and the columns menu (h-6 button, which drives the row
+       height) plus the rows info on the right. The active-filters area stays empty
+       until the user filters, so nothing stands in for it. -->
+  <div class="animate-pulse-placeholder flex shrink-0 items-center gap-2 border-b border-gray-default p-2">
+    <div class="h-6 w-24 rounded bg-gray-200 md:hidden" />
+    <div class="flex flex-1 items-center justify-end gap-4">
+      <div class="h-6 w-24 rounded bg-gray-200" />
+      <div class="h-5 w-24 rounded bg-gray-200" />
+    </div>
   </div>
 
-  <!-- Table — mirrors TabularTable: tall header cells (name + type line) then rows -->
+  <!-- Table — mirrors TabularTable: tall header cells (name + type line) then rows.
+       Desktop only, like the real one. -->
   <div
-    class="animate-pulse-placeholder overflow-hidden"
+    class="animate-pulse-placeholder hidden overflow-hidden md:block"
     :class="fill ? 'min-h-0 flex-1' : 'max-h-[70vh]'"
     role="status"
     :aria-label="t('Chargement de l\'aperçu…')"
@@ -48,6 +53,30 @@
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- Mobile — the real table becomes a list of cards below md, each showing four
+       fields until it is expanded. -->
+  <div
+    class="animate-pulse-placeholder space-y-2 px-1 md:hidden"
+    role="status"
+    :aria-label="t('Chargement de l\'aperçu…')"
+  >
+    <div
+      v-for="card in 4"
+      :key="card"
+      class="space-y-2 rounded-lg border border-gray-default p-3"
+      :class="card % 2 === 0 ? 'bg-gray-lowest-2' : 'bg-white'"
+    >
+      <div
+        v-for="field in 4"
+        :key="field"
+        class="flex flex-col gap-0.5"
+      >
+        <div class="h-3 w-24 rounded bg-gray-200" />
+        <div class="h-4 w-2/3 rounded bg-gray-200" />
+      </div>
+    </div>
   </div>
 </template>
 

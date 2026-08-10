@@ -6,49 +6,9 @@
       <span class="text-xs break-words">{{ previewError }}</span>
     </PreviewUnavailable>
 
-    <div
-      v-else-if="previewLoading"
-      class="animate-pulse-placeholder"
-      :aria-label="t('Chargement de l\'aperçu…')"
-      role="status"
-    >
-      <div>
-        <div class="flex items-center justify-end gap-4 py-3">
-          <div class="h-4 w-20 bg-gray-200" />
-          <div class="h-4 w-20 bg-gray-200" />
-        </div>
-      </div>
-      <div class="overflow-hidden">
-        <table class="w-full text-sm border-collapse">
-          <thead class="shadow-[inset_0_-1px_0_0_#E5E5E5]">
-            <tr>
-              <th
-                v-for="i in 6"
-                :key="i"
-                class="px-3 py-2 text-left"
-              >
-                <div class="h-4 w-24 bg-gray-200" />
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="row in 8"
-              :key="row"
-              class="border-b border-gray-100"
-            >
-              <td
-                v-for="col in 6"
-                :key="col"
-                class="px-3 py-2.5"
-              >
-                <div class="h-3 bg-gray-200" />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <!-- Same skeleton as the Suspense fallback above us: in both cases the slot isn't
+         rendered yet, so its toolbar is a placeholder too. -->
+    <TabularSkeleton v-else-if="previewLoading" />
 
     <!-- Loaded: the consumer composes the parts (toolbar, table, mobile sheet) from
          the provided context, so it controls the framing and layout. -->
@@ -67,6 +27,7 @@ import { useTranslation } from '../../composables/useTranslation'
 import { injectTabularProfile } from '../../composables/useTabularProfile'
 import { hasFilterForColumn as _hasFilterForColumn, buildGlobalSearchConditions } from '../../functions/tabular'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
+import TabularSkeleton from './TabularSkeleton.vue'
 import type { TabularDataResponse, TabularRow, SortConfig, ColumnFilters } from './types'
 import { provideTabularContext, type ActiveFilter } from './useTabularContext'
 import { useColumnMetadata } from './useColumnMetadata'
