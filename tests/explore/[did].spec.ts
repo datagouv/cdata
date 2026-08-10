@@ -14,25 +14,29 @@ function resourceTitles(count: number): Array<string> {
 test('the fullscreen explorer opens on the resource carried by ?resource_id', async ({ page, request }) => {
   const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore fullscreen ${Date.now()}`, resourceTitles(3))
   createdDatasets.push(dataset.id)
-  const target = resources[2]!
+  // The API serves resources newest first, so the last created one is what the
+  // explorer selects by default: target the first created one instead, otherwise
+  // this passes whether ?resource_id is read or ignored.
+  const target = resources[0]!
+  const selectedByDefault = resources[2]!
 
   await page.goto(`/explore/${dataset.id}?resource_id=${target.id}`)
 
-  // The viewer header names the resource the URL points at, not the first one.
-  await expect(page.getByRole('heading', { name: dataset.title })).toBeHidden()
   await expect(page.locator('header').getByText(target.title, { exact: true })).toBeVisible({ timeout: 30000 })
+  await expect(page.locator('header').getByText(selectedByDefault.title, { exact: true })).toBeHidden()
 })
 
 test('a resource beyond the first page of its group can still be deep-linked', async ({ page, request }) => {
-  // The sidebar loads 10 resources per group (RESOURCE_EXPLORER_PAGE_SIZE), so the
-  // 12th is not in the first page: it is fetched on its own to stay selectable.
+  // The sidebar loads 10 resources per group (RESOURCE_EXPLORER_PAGE_SIZE), and the API
+  // serves them newest first: the first created one lands in 12th position, out of that
+  // first page, so it is only selectable through its own fetch.
   const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore deep link ${Date.now()}`, resourceTitles(12))
   createdDatasets.push(dataset.id)
-  const last = resources[11]!
+  const outOfFirstPage = resources[0]!
 
-  await page.goto(`/explore/${dataset.id}?resource_id=${last.id}`)
+  await page.goto(`/explore/${dataset.id}?resource_id=${outOfFirstPage.id}`)
 
-  await expect(page.locator('header').getByText(last.title, { exact: true })).toBeVisible({ timeout: 30000 })
+  await expect(page.locator('header').getByText(outOfFirstPage.title, { exact: true })).toBeVisible({ timeout: 30000 })
 })
 
 test('clicking a resource in the sidebar updates resource_id and the viewer', async ({ page, request }) => {
