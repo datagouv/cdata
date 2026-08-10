@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@datagouv/components-next": "workspace:*",
+    "@e965/xlsx": "^0.20.3",
     "@floating-ui/vue": "^2.0.1",
     "@gouvfr/dsfr": "^1.15.0",
     "@headlessui/vue": "^1.7.23",

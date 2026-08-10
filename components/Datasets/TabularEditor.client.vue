@@ -599,47 +599,88 @@ async function continueAnyway() {
 
 defineExpose({ generateFile })
 
+type ParsedFile = { columns: Array<string>, rows: Array<RowData> }
+
+function readDelimitedText(file: File): Promise<ParsedFile> {
+  return new Promise((resolve, reject) => {
+    paparse.parse<RowData, File>(file, {
+      header: true,
+      // A trailing newline otherwise counts as a row when guessing the delimiter,
+      // which makes tab separated files with two columns fall back to the comma
+      skipEmptyLines: true,
+      complete: (results) => {
+        if (results.errors.length > 0) {
+          console.warn('PapaParse a rencontré des avertissements:', results.errors)
+        }
+        resolve({ columns: results.meta.fields ?? [], rows: results.data })
+      },
+      error: reject,
+    })
+  })
+}
+
+async function readSpreadsheet(file: File): Promise<ParsedFile> {
+  // Loaded on demand: this is a heavy dependency and most files are CSV
+  const { read, utils } = await import('@e965/xlsx')
+
+  // `cellDates` turns dates into their own cell type, so anything still numeric below
+  // is a plain number
+  const workbook = read(await file.arrayBuffer(), { type: 'array', cellDates: true })
+  const sheet = workbook.Sheets[workbook.SheetNames[0]]
+  if (!sheet) {
+    return { columns: [], rows: [] }
+  }
+
+  // Cells are read as the text the spreadsheet displays, which keeps `01004` and dates
+  // intact but renders long numbers as `8.69084E+12` under the General format. Numbers
+  // are therefore rewritten from their raw value, leaving dates to their format.
+  for (const address of Object.keys(sheet)) {
+    if (address.startsWith('!')) continue
+    const cell = sheet[address]
+    if (cell.t === 'n' && cell.v != null) cell.w = String(cell.v)
+  }
+
+  const [columns = []] = utils.sheet_to_json<Array<string>>(sheet, { header: 1, raw: false, blankrows: false })
+  return { columns, rows: utils.sheet_to_json<RowData>(sheet, { raw: false, defval: '' }) }
+}
+
+// Two parsers on purpose, even though SheetJS also reads CSV. It only returns the
+// expected values when asked for the formatted text of each cell, which is a
+// conversion round trip: with the raw ones a date becomes an Excel serial number and
+// `01004` loses its zero. It also needs the whole file in memory, where PapaParse
+// streams it and never converts anything, which the announced 420 MB limit relies on.
+const SPREADSHEET_EXTENSIONS = ['xlsx', 'xls', 'ods']
+
+async function loadUploadedFile(file: File) {
+  const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
+
+  try {
+    const { columns, rows } = SPREADSHEET_EXTENSIONS.includes(extension)
+      ? await readSpreadsheet(file)
+      : await readDelimitedText(file)
+
+    fileColumns.value = columns
+    parsedRows.value = rows.map((row, index) => ({ id: index, ...row }))
+
+    // The table is only built once the user decided what to do with a file
+    // that has nothing in common with the schema
+    if (hasSchemaMismatch.value) return
+    makeTable(parsedRows.value, true)
+  }
+  catch (error) {
+    console.error('Erreur lors du chargement du fichier:', error)
+    customErrors.value = [t('Ce fichier n’a pas pu être lu. Vérifiez qu’il s’agit bien d’un fichier CSV, Excel ou ODS.')]
+    makeTable(createEmptyRows(1))
+  }
+}
+
 const stopInit = watchEffect(() => {
   if (!tableRef.value || schemaFields.value.length === 0) return
 
   stopInit()
 
   if (uploadedFile.value) {
-    let handled = false
-    try {
-      paparse.parse<RowData, File>(uploadedFile.value, {
-        header: true,
-        // A trailing newline otherwise counts as a row when guessing the delimiter,
-        // which makes tab separated files with two columns fall back to the comma
-        skipEmptyLines: true,
-        complete: (results) => {
-          if (handled) return
-          if (results.errors.length > 0) {
-            console.warn('PapaParse a rencontré des avertissements:', results.errors)
-          }
-          fileColumns.value = results.meta.fields ?? []
-          parsedRows.value = results.data.map((r, i) => ({ id: i, ...r }))
-          // The table is only built once the user decided what to do with a file
-          // that has nothing in common with the schema
-          if (hasSchemaMismatch.value) return
-          makeTable(parsedRows.value, true)
-        },
-        error: (error) => {
-          if (handled) return
-          handled = true
-          console.error('Erreur lors du chargement du fichier:', error)
-          customErrors.value = [t('Erreur lors du chargement du fichier CSV')]
-          makeTable(createEmptyRows(1))
-        },
-      })
-    }
-    catch (error) {
-      if (handled) return
-      handled = true
-      console.error('Erreur lors du chargement du fichier:', error)
-      customErrors.value = [t('Erreur lors du chargement du fichier CSV')]
-      makeTable(createEmptyRows(1))
-    }
+    loadUploadedFile(uploadedFile.value)
   }
   else {
     makeTable(createEmptyRows(1))
