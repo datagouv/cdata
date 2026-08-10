@@ -11,9 +11,9 @@ import { useTranslation } from './useTranslation'
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 const URL_FORMATS = ['url', 'doi', 'www:link', 'www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
 
-// Which preview the data tab shows. Single source of truth: the viewer renders it,
-// and the skeleton picks the matching placeholder shape — they used to hold their
-// own copy of this precedence and had already drifted apart.
+// Which preview the data tab shows. Single source of truth: the viewer renders it and
+// the skeleton picks the matching placeholder shape, so each holding its own copy of
+// this precedence would let the two drift apart.
 export type PreviewKind = 'json' | 'pdf' | 'xml' | 'image' | 'datafair' | 'openapi' | 'tabular' | 'unavailable'
 
 export function useResourceCapabilities(

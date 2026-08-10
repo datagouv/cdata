@@ -18,8 +18,8 @@
         class="shrink-0 md:hidden"
       />
       <!-- Metadata gives way long before the title does (hence the shrink factor), so
-           the resource name stays readable — but the title still truncates instead of
-           being clipped by the row, which used to push the copy button out of view.
+           the resource name stays readable — and the title truncates rather than being
+           clipped by the row, which would push the copy button out of view.
            Inline flow (not flex) so text-overflow renders the ellipsis; spacing is
            carried by the separators' margins. -->
       <div class="min-w-0 truncate [flex-shrink:9999]">
