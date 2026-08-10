@@ -498,6 +498,9 @@ const stopInit = watchEffect(() => {
     try {
       paparse.parse<RowData, File>(uploadedFile.value, {
         header: true,
+        // A trailing newline otherwise counts as a row when guessing the delimiter,
+        // which makes tab separated files with two columns fall back to the comma
+        skipEmptyLines: true,
         complete: (results) => {
           if (handled) return
           if (results.errors.length > 0) {
