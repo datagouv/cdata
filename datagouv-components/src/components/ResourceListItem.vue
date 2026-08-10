@@ -6,8 +6,8 @@
     :replace
     :class="selected ? '[&&]:!bg-gray-200' : '[&&]:hover:!bg-gray-100'"
     class="grid h-7 w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded px-1 py-1 text-left !bg-none !no-underline"
-    @mouseenter="show = true"
-    @mouseleave="closeTooltip"
+    @pointerenter="openOnHover"
+    @pointerleave="closeTooltip"
     @focus="show = true"
     @blur="closeTooltip"
   >
@@ -134,6 +134,13 @@ const { floatingStyles } = useFloating(rowEl, card, {
   middleware: [offset(16), flip(), shift({ padding: 8 })],
   whileElementsMounted: autoUpdate,
 })
+
+// A tap fires a pointer enter too, so the card would flash on every touch selection
+// in the mobile resource picker. Only a real pointer opens it — keyboard focus still
+// does, through @focus.
+function openOnHover(event: PointerEvent) {
+  if (event.pointerType === 'mouse') show.value = true
+}
 
 function closeTooltip() {
   show.value = false
