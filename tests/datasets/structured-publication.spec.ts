@@ -18,14 +18,28 @@ const fixture = (name: string) => path.join(FIXTURES, name)
 
 const SCHEMA_HOST = 'https://schema.test.local'
 
-// Column counts are measured against the fixture file, not assumed
+// Column counts are measured against the fixture file, not assumed.
+// The names are the real ones: udata validates a resource's schema against its own
+// catalog (udata/core/dataset/models.py), so a made-up name fails publication with a 400.
 const SCHEMAS = {
   // Every one of the file's 228 columns belongs to it
-  durabilite: { file: 'schema-durabilite-lave-linge.json', title: 'Indice de durabilité - Lave-linge' },
+  durabilite: {
+    name: 'etalab/indice-durabilite-lave-linge',
+    file: 'schema-durabilite-lave-linge.json',
+    title: 'Indice de durabilité - Lave-linge',
+  },
   // Shares 190 columns with the file, 38 remain unknown: the schema of the report
-  reparabilite: { file: 'schema-reparabilite.json', title: 'Indice de réparabilité' },
+  reparabilite: {
+    name: 'etalab/schema-indice-reparabilite',
+    file: 'schema-reparabilite.json',
+    title: 'Indice de réparabilité',
+  },
   // Nothing in common at all
-  irve: { file: 'schema-irve-statique.json', title: 'IRVE statique' },
+  irve: {
+    name: 'etalab/schema-irve-statique',
+    file: 'schema-irve-statique.json',
+    title: 'IRVE statique',
+  },
 }
 
 type SchemaKey = keyof typeof SCHEMAS
@@ -61,12 +75,13 @@ async function stubPublicationApis(page: Page) {
 
   await page.route(/\/api\/1\/datasets\/schemas\//, route => route.fulfill({
     json: Object.entries(SCHEMAS).map(([key, schema]) => ({
-      name: `test/${key}`,
+      name: schema.name,
       title: schema.title,
       description: `Schéma de test ${schema.title}`,
       schema_type: 'tableschema',
       schema_url: `${SCHEMA_HOST}/${key}/schema.json`,
-      versions: [{ version_name: '1.0.0', schema_url: `${SCHEMA_HOST}/${key}/schema.json` }],
+      // `latest` is always accepted by udata, so the stub needs no real version number
+      versions: [{ version_name: 'latest', schema_url: `${SCHEMA_HOST}/${key}/schema.json` }],
       labels: [],
       examples: [],
       homepage: '',
@@ -201,7 +216,7 @@ test.describe('choix du schéma', () => {
     await page.goto('/admin/datasets/structured?step=1')
 
     // The identifier as it appears in the catalog, which the title alone never matched
-    await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill('test/durabilite')
+    await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill(SCHEMAS.durabilite.name)
 
     await expect(page.getByRole('option')).toHaveCount(1)
     await expect(page.getByRole('option', { name: SCHEMAS.durabilite.title })).toBeVisible()
@@ -354,7 +369,7 @@ test.describe('fichier qui ne correspond pas au schéma', () => {
     await uploadAndOpenSpreadsheet(page, 'lave-linge-virgule.csv')
 
     await expect(page.getByText(
-      `${FILE_COLUMNS} des ${FILE_COLUMNS} colonnes de votre fichier sont inconnues du schéma « ${SCHEMAS.irve.title} »`,
+      `${FILE_COLUMNS} colonnes de votre fichier sur ${FILE_COLUMNS} sont inconnues du schéma « ${SCHEMAS.irve.title} »`,
     )).toBeVisible()
     await expect(page.getByRole('button', { name: 'Changer de schéma' })).toBeVisible()
 
@@ -374,7 +389,7 @@ test.describe('fichier qui ne correspond pas au schéma', () => {
     await uploadAndOpenSpreadsheet(page, 'lave-linge-virgule.csv')
 
     await expect(page.getByText(
-      `${UNKNOWN_FOR_REPARABILITE} des ${FILE_COLUMNS} colonnes de votre fichier sont inconnues du schéma « ${SCHEMAS.reparabilite.title} »`,
+      `${UNKNOWN_FOR_REPARABILITE} colonnes de votre fichier sur ${FILE_COLUMNS} sont inconnues du schéma « ${SCHEMAS.reparabilite.title} »`,
     )).toBeVisible()
     await expect(page.getByRole('button', { name: 'Changer de schéma' })).toBeVisible()
   })
