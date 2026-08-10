@@ -6,6 +6,12 @@
         :organization="dataset.organization"
         size-class="size-[34px] shrink-0 rounded-sm border border-gray-default bg-white p-1"
       />
+      <Avatar
+        v-else-if="dataset.owner"
+        :user="dataset.owner"
+        :size="34"
+        class="shrink-0"
+      />
       <div class="flex min-w-0 items-center gap-1 text-[13px] leading-[1.4] sm:text-base">
         <span class="min-w-0 truncate text-gray-title">{{ producerName }}</span>
         <span class="shrink-0 text-gray-title">/</span>
@@ -43,6 +49,7 @@
 import { computed } from 'vue'
 import { RiFullscreenExitLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
+import Avatar from '../Avatar.vue'
 import BrandedButton from '../BrandedButton.vue'
 import OrganizationLogo from '../OrganizationLogo.vue'
 import ResourceMainAction from './ResourceMainAction.vue'
