@@ -22,13 +22,24 @@
       </SimpleBanner>
 
       <SimpleBanner
-        v-if="!schemaDetails"
+        v-if="!schema"
         type="warning"
         class="flex items-center space-x-2"
       >
         <RiErrorWarningLine class="shrink-0 size-6" />
         <span>{{ $t(`Aucun schéma n'a été sélectionné. Veuillez retourner à l'étape précédente.`) }}</span>
       </SimpleBanner>
+
+      <SimpleBanner
+        v-else-if="schemaDetailsError"
+        type="danger"
+        class="flex items-center space-x-2"
+      >
+        <RiErrorWarningLine class="shrink-0 size-6" />
+        <span>{{ $t(`Le schéma sélectionné n'a pas pu être chargé. Réessayez, ou retournez à l'étape précédente pour en choisir un autre.`) }}</span>
+      </SimpleBanner>
+
+      <AnimatedLoader v-else-if="!schemaDetails" />
 
       <div v-else>
         <div class="fr-mb-3w">
@@ -116,12 +127,23 @@ const hasNoErrors = computed(() => {
   return errorCount === 0
 })
 
-const schemaDetails = computedAsync(async () => {
-  if (!props.schema) {
-    return Promise.resolve(null)
-  }
-  return await ofetch<SchemaDetails>(props.schema.schema_url)
-})
+const schemaDetailsError = ref(false)
+
+// The initial state matters here: without it the value stays `undefined` while the
+// schema is being fetched, which is indistinguishable from "no schema selected"
+const schemaDetails = computedAsync<SchemaDetails | null>(
+  async () => {
+    if (!props.schema) {
+      return null
+    }
+    schemaDetailsError.value = false
+    return await ofetch<SchemaDetails>(props.schema.schema_url)
+  },
+  null,
+  { onError: () => {
+    schemaDetailsError.value = true
+  } },
+)
 
 const goBack = () => {
   navigateTo({ path: route.path, query: { step: 2 } })
