@@ -44,6 +44,7 @@
           v-model:validation-report="validationReport"
           :schema
           :schema-details
+          @change-schema="changeSchema"
         />
       </div>
 
@@ -124,6 +125,10 @@ const schemaDetails = computedAsync(async () => {
 
 const goBack = () => {
   navigateTo({ path: route.path, query: { step: 2 } })
+}
+
+const changeSchema = () => {
+  navigateTo({ path: route.path, query: { step: 1 } })
 }
 
 const submit = async () => {

@@ -1,6 +1,33 @@
 <template>
   <div>
-    <div>
+    <BannerAction
+      v-if="showSchemaMismatch"
+      type="danger"
+      :title="$t(`Ce fichier ne correspond pas au schéma « {schema} »`, { schema: schemaDetails?.title ?? '' })"
+    >
+      {{ schemaMismatchDetail }}
+
+      <template #button>
+        <div class="flex flex-wrap gap-2">
+          <BrandedButton
+            color="primary"
+            size="xs"
+            @click="$emit('changeSchema')"
+          >
+            {{ $t('Changer de schéma') }}
+          </BrandedButton>
+          <BrandedButton
+            color="secondary"
+            size="xs"
+            @click="continueAnyway"
+          >
+            {{ $t('Continuer quand même') }}
+          </BrandedButton>
+        </div>
+      </template>
+    </BannerAction>
+
+    <div v-else>
       <div class="grid grid-cols-2 items-center mb-4">
         <div>
           <InputGroup
@@ -29,6 +56,16 @@
           </BrandedButton>
         </div>
       </div>
+
+      <SimpleBanner
+        v-if="unrecognizedColumnsMessage"
+        type="warning"
+        class="mb-4"
+      >
+        <p class="mb-0">
+          {{ unrecognizedColumnsMessage }}
+        </p>
+      </SimpleBanner>
 
       <div
         v-if="validationReport"
@@ -161,7 +198,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, escapeCsvValue, SimpleBanner, type RegisteredSchema, type SchemaDetails, type SchemaField } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, escapeCsvValue, SimpleBanner, type RegisteredSchema, type SchemaDetails, type SchemaField } from '@datagouv/components-next'
 import { RiAddLine, RiCheckLine, RiDownloadLine, RiInformationLine } from '@remixicon/vue'
 import { ofetch } from 'ofetch'
 import paparse from 'papaparse'
@@ -177,6 +214,10 @@ const props = defineProps<{
   schemaDetails?: SchemaDetails | null
 }>()
 
+defineEmits<{
+  changeSchema: []
+}>()
+
 const uploadedFile = defineModel<File | null>('uploadedFile', { required: true })
 const resourceTitle = defineModel<string>('resourceTitle', { required: true })
 const validationReport = defineModel<ValidationReport | null>('validationReport', { required: true })
@@ -189,6 +230,41 @@ const customErrors = ref<string[]>([])
 const validating = ref(false)
 
 const schemaFields = computed(() => props.schemaDetails?.fields.map((field: SchemaField) => field.name) ?? [])
+
+const parsedRows = ref<Array<RowData> | null>(null)
+
+// Headers of the imported file. Only the schema fields are displayed and exported,
+// so anything else is dropped and the user must be told about it.
+const fileColumns = ref<Array<string>>([])
+
+const unrecognizedColumns = computed(() => fileColumns.value.filter(column => !schemaFields.value.includes(column)))
+
+// Not a single column in common: the file was made for another schema, so the empty
+// table would be useless and the user is asked to decide before seeing it.
+const hasSchemaMismatch = computed(() => fileColumns.value.length > 0 && unrecognizedColumns.value.length === fileColumns.value.length)
+
+const mismatchAcknowledged = ref(false)
+const showSchemaMismatch = computed(() => hasSchemaMismatch.value && !mismatchAcknowledged.value)
+
+const schemaMismatchDetail = computed(() => t(
+  `Aucune des {n} colonnes de votre fichier ne lui est connue.`,
+  { n: fileColumns.value.length },
+))
+
+const unrecognizedColumnsMessage = computed(() => {
+  if (!unrecognizedColumns.value.length || hasSchemaMismatch.value) return null
+
+  // The names themselves stay out of the banner: the count is what tells the user the
+  // schema may be wrong, and the report below already details each column
+  return t(
+    `{unrecognized} des {total} colonnes de votre fichier sont inconnues du schéma « {schema} » et ne seront pas conservées.`,
+    {
+      unrecognized: unrecognizedColumns.value.length,
+      total: fileColumns.value.length,
+      schema: props.schemaDetails?.title ?? '',
+    },
+  )
+})
 
 const hasNoErrors = computed(() => {
   if (!validationReport.value) return false
@@ -486,6 +562,15 @@ function generateFile() {
   uploadedFile.value = new File([blob], fileName, { type: 'text/csv;charset=utf-8;' })
 }
 
+async function continueAnyway() {
+  mismatchAcknowledged.value = true
+  // The table container is only rendered once the banner is gone
+  await nextTick()
+  // None of the parsed columns belongs to the schema, so keeping the rows would only
+  // fill the table with as many blank lines as the file had
+  makeTable(createEmptyRows(1))
+}
+
 defineExpose({ generateFile })
 
 const stopInit = watchEffect(() => {
@@ -506,8 +591,12 @@ const stopInit = watchEffect(() => {
           if (results.errors.length > 0) {
             console.warn('PapaParse a rencontré des avertissements:', results.errors)
           }
-          const tableData = results.data.map((r, i) => ({ id: i, ...r }))
-          makeTable(tableData, true)
+          fileColumns.value = results.meta.fields ?? []
+          parsedRows.value = results.data.map((r, i) => ({ id: i, ...r }))
+          // The table is only built once the user decided what to do with a file
+          // that has nothing in common with the schema
+          if (hasSchemaMismatch.value) return
+          makeTable(parsedRows.value, true)
         },
         error: (error) => {
           if (handled) return
