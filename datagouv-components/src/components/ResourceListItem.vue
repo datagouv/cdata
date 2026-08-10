@@ -1,13 +1,14 @@
 <template>
   <AppLink
+    ref="row"
     v-bind="$attrs"
     :to
     :replace
     :class="selected ? '[&&]:!bg-gray-200' : '[&&]:hover:!bg-gray-100'"
     class="grid h-7 w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded px-1 py-1 text-left !bg-none !no-underline"
-    @mouseenter="openTooltip"
+    @mouseenter="show = true"
     @mouseleave="closeTooltip"
-    @focus="openTooltip"
+    @focus="show = true"
     @blur="closeTooltip"
   >
     <span
@@ -41,15 +42,15 @@
   </AppLink>
 
   <!-- Hover card: the row truncates the title, so surface the full name plus the
-       same metadata line as the viewer header. Positioned to the right of the menu
-       (not below) so it doesn't hide the sibling rows we're scanning. -->
+       same metadata line as the viewer header. Placed beside the row (not below) so
+       it doesn't hide the sibling rows we're scanning. -->
   <Teleport to="body">
     <div
-      v-if="tooltipPos"
-      ref="tooltipRef"
+      v-if="show"
+      ref="card"
       role="tooltip"
-      class="pointer-events-none fixed z-[80] w-max rounded border border-gray-default bg-white p-2 text-left shadow-[0_2px_4px_rgba(0,0,0,0.04),2px_4px_16px_rgba(0,0,0,0.12)]"
-      :style="{ top: `${tooltipPos.top}px`, left: `${tooltipPos.left}px` }"
+      class="pointer-events-none z-[80] w-max rounded border border-gray-default bg-white p-2 text-left shadow-[0_2px_4px_rgba(0,0,0,0.04),2px_4px_16px_rgba(0,0,0,0.12)]"
+      :style="floatingStyles"
     >
       <span class="block whitespace-nowrap text-[13px] font-medium leading-5 text-gray-title">{{ resource.title || t('Fichier sans nom') }}</span>
       <div class="mt-1 flex items-center gap-1 text-[12px] leading-4 text-gray-medium">
@@ -76,7 +77,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
+import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/vue'
 import { useEventListener } from '@vueuse/core'
 import type { RouteLocationRaw } from 'vue-router'
 import { RiDownloadLine } from '@remixicon/vue'
@@ -119,36 +121,22 @@ const humanFilesize = computed(() => {
   return size ? filesize(size) : null
 })
 
-// Fixed-positioned hover card, teleported to <body> so the sidebar's `overflow`
-// doesn't clip it. Anchored to the right edge of the menu (the nearest <aside>,
-// falling back to the row) and vertically aligned to the hovered row.
-const tooltipRef = ref<HTMLElement | null>(null)
-const tooltipPos = ref<{ top: number, left: number } | null>(null)
-
-async function openTooltip(event: MouseEvent | FocusEvent) {
-  const el = event.currentTarget as HTMLElement
-  const rect = el.getBoundingClientRect()
-  const anchor = (el.closest('aside') ?? el).getBoundingClientRect()
-  const left = anchor.right + 8
-  tooltipPos.value = { top: rect.top, left }
-
-  // Re-clamp against the actual card size once it has rendered so a row near the
-  // bottom of the viewport, or a wide sidebar on a narrow screen, doesn't push the
-  // card off-screen.
-  await nextTick()
-  const card = tooltipRef.value
-  if (card && tooltipPos.value) {
-    const maxTop = window.innerHeight - card.offsetHeight - 8
-    const maxLeft = window.innerWidth - card.offsetWidth - 8
-    tooltipPos.value = {
-      top: Math.max(8, Math.min(rect.top, maxTop)),
-      left: Math.max(8, Math.min(left, maxLeft)),
-    }
-  }
-}
+// Hover card teleported to <body> so the sidebar's `overflow` doesn't clip it, hence
+// the fixed strategy. `shift` keeps it inside the viewport for a row near an edge, and
+// `autoUpdate` follows the row when its scrollable container moves under the pointer.
+const show = ref(false)
+const row = useTemplateRef<InstanceType<typeof AppLink>>('row')
+const card = useTemplateRef<HTMLElement>('card')
+const rowEl = computed(() => row.value?.$el as HTMLElement | undefined)
+const { floatingStyles } = useFloating(rowEl, card, {
+  placement: 'right-start',
+  strategy: 'fixed',
+  middleware: [offset(16), flip(), shift({ padding: 8 })],
+  whileElementsMounted: autoUpdate,
+})
 
 function closeTooltip() {
-  tooltipPos.value = null
+  show.value = false
 }
 
 // A hover-shown card gets no `mouseleave` when the window loses focus (alt-tab) or
