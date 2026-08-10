@@ -2,26 +2,6 @@
   <div>
     <PaddedContainer>
       <SimpleBanner
-        type="primary"
-        class="mb-4 flex items-center space-x-5"
-      >
-        <img
-          src="/illustrations/notebook.svg"
-          loading="lazy"
-          class="size-14 shrink-0"
-          alt=""
-        >
-        <div class="w-full">
-          <p class="font-bold mb-1">
-            {{ $t('Saisissez vos données') }}
-          </p>
-          <p class="m-0 text-xs/5">
-            {{ $t('Utilisez le tableur pour saisir vos données conformément au schéma sélectionné.') }}
-          </p>
-        </div>
-      </SimpleBanner>
-
-      <SimpleBanner
         v-if="!schema"
         type="warning"
         class="flex items-center space-x-2"

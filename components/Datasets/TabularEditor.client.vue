@@ -57,110 +57,96 @@
         </div>
       </div>
 
-      <SimpleBanner
-        v-if="unrecognizedColumnsMessage"
-        type="warning"
-        class="mb-4"
+      <Disclosure
+        v-if="statusActionType"
+        v-slot="{ open }"
+        as="template"
       >
-        <p class="mb-0">
-          {{ unrecognizedColumnsMessage }}
-        </p>
-      </SimpleBanner>
-
-      <div
-        v-if="validationReport"
-        class="mb-6"
-      >
-        <SimpleBanner
-          v-if="hasNoErrors"
-          type="success"
+        <BannerAction
+          :type="statusActionType"
           class="mb-4"
         >
           <template #title>
-            {{ $t('Validation réussie') }}
-          </template>
-          <p class="fr-m-0">
-            {{ $t('Vos données sont conformes au schéma.') }}
-          </p>
-          <p
-            v-if="validationReport.report?.stats"
-            class="fr-m-0 fr-text--sm fr-mt-1w"
-          >
-            {{ validationReport.report.stats.rows_processed }} {{ $t('lignes traitées') }}
-          </p>
-        </SimpleBanner>
-
-        <SimpleBanner
-          v-else
-          type="danger"
-          class="mb-4"
-        >
-          <p class="mb-1">
-            {{ $t('Votre fichier contient des erreurs') }}
-          </p>
-          <p
-            v-if="validationReport.report?.stats"
-            class="m-0 text-xs"
-          >
-            {{ $t('Nous vous conseillons de corriger ces erreurs avant de continuer.') }}
-          </p>
-        </SimpleBanner>
-
-        <div v-if="!hasNoErrors && validationReport.report?.errors && validationReport.report.errors.length > 0">
-          <AccordionGroup :with-icon="false">
-            <Accordion
-              :title="$t(`Voir le rapport d'erreur détaillé`)"
-              state="default"
+            <DisclosureButton
+              v-if="detailedErrors.length"
+              class="flex items-center gap-1 text-left"
             >
-              <div class="fr-table fr-table--bordered">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>{{ $t('Ligne') }}</th>
-                      <th>{{ $t('Colonne') }}</th>
-                      <th>{{ $t('Type') }}</th>
-                      <th>{{ $t('Erreur') }}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(error, index) in (validationReport.report?.errors || []).slice(0, 50)"
-                      :key="index"
-                    >
-                      <td>{{ error.rowNumber - 1 || '-' }}</td>
-                      <td>{{ error.fieldName || error.fieldNumber || '-' }}</td>
-                      <td>{{ error.title || error.type }}</td>
-                      <td class="fr-text--sm">
-                        {{ error.message }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <p
-                v-if="(validationReport.report?.errors?.length || 0) > 50"
-                class="fr-text--sm fr-mt-2w"
-              >
-                {{ $t('Seules les 50 premières erreurs sont affichées.') }}
-              </p>
-            </Accordion>
-          </AccordionGroup>
-        </div>
-      </div>
+              {{ statusMessage }}
+              <RiArrowDownSLine
+                class="size-4 shrink-0 transition-transform"
+                :class="{ 'rotate-180': open }"
+              />
+            </DisclosureButton>
+            <template v-else>
+              {{ statusMessage }}
+            </template>
+          </template>
+
+          {{ unrecognizedColumnsMessage }}
+
+          <DisclosurePanel class="fr-table mt-1">
+            <table>
+              <thead>
+                <tr>
+                  <th>{{ $t('Ligne') }}</th>
+                  <th>{{ $t('Colonne') }}</th>
+                  <th>{{ $t('Type') }}</th>
+                  <th>{{ $t('Erreur') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(error, index) in detailedErrors"
+                  :key="index"
+                >
+                  <td class="tabular-nums">
+                    {{ error.rowNumber ? error.rowNumber - 1 : '-' }}
+                  </td>
+                  <td>{{ error.fieldName || error.fieldNumber || '-' }}</td>
+                  <td>{{ error.title || error.type }}</td>
+                  <td>{{ error.message }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <p
+              v-if="hiddenErrorsCount"
+              class="mt-2"
+            >
+              {{ $t(`Seules les {n} premières erreurs sont affichées.`, { n: MAX_LISTED_ERRORS }) }}
+            </p>
+          </DisclosurePanel>
+
+          <template #button>
+            <BrandedButton
+              color="secondary"
+              size="xs"
+              @click="$emit('changeSchema')"
+            >
+              {{ $t('Changer de schéma') }}
+            </BrandedButton>
+          </template>
+        </BannerAction>
+      </Disclosure>
 
       <SimpleBanner
-        type="gray"
-        class="mb-2 flex items-center gap-1"
+        v-else
+        :type="statusBannerType"
+        class="mb-4"
       >
-        <RiInformationLine class="size-4" />
-        <p class="text-sm mb-0">
-          {{ $t(`Un menu d'édition est accessible au clic droit dans le tableau.`) }}
+        <p class="mb-0">
+          {{ statusMessage }}
+        </p>
+        <p
+          v-if="unrecognizedColumnsMessage"
+          class="mb-0 mt-1 text-sm"
+        >
+          {{ unrecognizedColumnsMessage }}
         </p>
       </SimpleBanner>
 
       <div ref="tableRef" />
 
-      <div class="mt-2">
+      <div class="mt-2 flex flex-wrap items-center gap-4">
         <BrandedButton
           color="secondary"
           :icon="RiAddLine"
@@ -169,6 +155,9 @@
         >
           {{ $t('Ajouter une ligne') }}
         </BrandedButton>
+        <p class="text-xs text-gray-medium mb-0">
+          {{ $t(`Clic droit dans le tableau pour dupliquer ou supprimer une ligne.`) }}
+        </p>
       </div>
     </div>
     <SimpleBanner
@@ -176,9 +165,9 @@
       type="danger"
       class="my-4"
     >
-      <template #title>
+      <p class="font-bold mb-1">
         {{ $t("Une erreur est survenue | Des erreurs sont survenues", customErrors.length) }}
-      </template>
+      </p>
       <ul v-if="customErrors.length > 1">
         <li
           v-for="error in customErrors"
@@ -199,11 +188,14 @@
 
 <script setup lang="ts">
 import { BannerAction, BrandedButton, escapeCsvValue, SimpleBanner, type RegisteredSchema, type SchemaDetails, type SchemaField } from '@datagouv/components-next'
-import { RiAddLine, RiCheckLine, RiDownloadLine, RiInformationLine } from '@remixicon/vue'
+import { RiAddLine, RiArrowDownSLine, RiCheckLine, RiDownloadLine } from '@remixicon/vue'
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { ofetch } from 'ofetch'
 import paparse from 'papaparse'
 import { TabulatorFull as Tabulator, type CellComponent, type Editor, type Formatter, type GlobalTooltipOption, type RowComponent } from 'tabulator-tables'
 import type { ValidationReport } from '~/types/schema'
+
+const MAX_LISTED_ERRORS = 50
 
 interface RowData {
   [key: string]: string | number | null | undefined
@@ -271,6 +263,40 @@ const hasNoErrors = computed(() => {
   const errorCount = validationReport.value.report?.errors?.length || 0
   return errorCount === 0
 })
+
+const errorRowsCount = computed(() => new Set((validationReport.value?.report?.errors ?? []).map(error => error.rowNumber)).size)
+
+const statusMessage = computed(() => {
+  if (validating.value) return t('Validation de vos données en cours…')
+  if (!validationReport.value) return t(`Validez vos données pour pouvoir continuer.`)
+  if (hasNoErrors.value) {
+    return t(`Vos données sont conformes au schéma. {n} ligne traitée. | Vos données sont conformes au schéma. {n} lignes traitées.`, {
+      n: validationReport.value.report?.stats?.rows_processed ?? 0,
+    })
+  }
+  const errorsCount = validationReport.value.report?.errors?.length ?? 0
+  return t(`{errors} erreurs sur {n} ligne. Corrigez-les pour pouvoir continuer. | {errors} erreurs sur {n} lignes. Corrigez-les pour pouvoir continuer.`, {
+    errors: errorsCount,
+    n: errorRowsCount.value,
+  })
+})
+
+const statusBannerType = computed(() => {
+  if (validating.value || !validationReport.value) return 'gray'
+  return hasNoErrors.value ? 'success' : 'danger'
+})
+
+// As soon as something is wrong, changing the schema is worth offering: two schemas can
+// share most of their column names, so no ratio of unknown columns tells them apart
+const statusActionType = computed(() => {
+  if (detailedErrors.value.length) return 'danger'
+  if (unrecognizedColumns.value.length) return 'warning'
+  return null
+})
+
+const allErrors = computed(() => validationReport.value?.report?.errors ?? [])
+const detailedErrors = computed(() => (hasNoErrors.value ? [] : allErrors.value.slice(0, MAX_LISTED_ERRORS)))
+const hiddenErrorsCount = computed(() => allErrors.value.length - detailedErrors.value.length)
 
 // Structure pour stocker les erreurs de validation
 // Format: { "rowIndex_columnField": { title: string, message: string } }
