@@ -147,15 +147,15 @@
             @focusout="focusOut"
           >
             <SchemaCard
-              v-for="schema in filteredSchemas"
-              :id="schemaOptionId(schema)"
-              :key="schema.name"
-              :schema
+              v-for="option in schemaOptions"
+              :id="option.id"
+              :key="option.id"
+              :schema="option.schema"
               class="cursor-pointer"
               :selectable="true"
-              :active="isActive(schemaOptionId(schema))"
-              :selected="schema.name === form.selectedSchema?.name"
-              @click="toggleSchema(schema)"
+              :active="isActive(option.id)"
+              :selected="option.schema.name === form.selectedSchema?.name"
+              @click="toggleSchema(option.schema)"
             />
           </div>
         </div>
@@ -279,16 +279,17 @@ const filteredSchemas = computed(() => {
   return schemas.value.filter(schema => schemaMatchesQuery(schema, searchQuery.value))
 })
 
-const schemaOptions = computed(() => filteredSchemas.value.map(schema => ({ id: schemaOptionId(schema) })))
+// The schema travels with its option id so the composable hands it back through
+// `activeOption`, rather than looking it up again here
+const schemaOptions = computed(() => filteredSchemas.value.map(schema => ({ id: schemaOptionId(schema), schema })))
 
-const { isActive, active, focusOut, handleKeyPressForActiveDescendant } = useActiveDescendant(schemaOptions, 'vertical')
+const { isActive, active, activeOption, focusOut, handleKeyPressForActiveDescendant } = useActiveDescendant(schemaOptions, 'vertical')
 
 function selectActiveSchema(event: Event) {
-  const schema = filteredSchemas.value.find(schema => isActive(schemaOptionId(schema)))
-  if (!schema) return
+  if (!activeOption.value) return
 
   event.preventDefault()
-  toggleSchema(schema)
+  toggleSchema(activeOption.value.schema)
 }
 
 async function toggleSchema(schema: RegisteredSchema) {

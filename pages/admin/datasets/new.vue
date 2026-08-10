@@ -98,8 +98,8 @@ const resources = useState<Array<ResourceForm>>(DATASET_FILES_STATE, () => [])
 const newDataset = useState<Dataset | null>('new-dataset', () => null)
 const currentStep = computed(() => parseInt(route.query.step as string) || 1)
 
-// The wizard keeps the same URL throughout, so the step is what tells one tab or one
-// history entry from another
+// Every step of the wizard lives under the same path, so without this they would all
+// share one title in the tab bar and in the history
 useSeoMeta({
   title: () => `${steps.value[currentStep.value - 1] ?? ''} - ${t('Formulaire de publication')}`,
   robots: 'noindex',

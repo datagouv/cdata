@@ -36,8 +36,10 @@ describe('schemaMatchesQuery', () => {
     expect(schemaMatchesQuery(LAVE_LINGE, 'durabilite televiseur')).toBe(false)
   })
 
-  it('matches everything when the query holds no word', () => {
-    expect(schemaMatchesQuery(LAVE_LINGE, '')).toBe(true)
-    expect(schemaMatchesQuery(LAVE_LINGE, '   ')).toBe(true)
+  it('matches nothing when the query holds no word', () => {
+    // Callers short-circuit the empty query; punctuation used to match the whole catalog
+    expect(schemaMatchesQuery(LAVE_LINGE, '')).toBe(false)
+    expect(schemaMatchesQuery(LAVE_LINGE, '   ')).toBe(false)
+    expect(schemaMatchesQuery(LAVE_LINGE, '!')).toBe(false)
   })
 })

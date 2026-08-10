@@ -133,8 +133,8 @@ const currentStepNumber = computed(() => {
   return step
 })
 
-// The wizard keeps the same URL throughout, so the step is what tells one tab or one
-// history entry from another
+// Every step of the wizard lives under the same path, so without this they would all
+// share one title in the tab bar and in the history
 useSeoMeta({
   title: () => `${steps.value[currentStepNumber.value - 1] ?? ''} - ${t('Publication structurée')}`,
   robots: 'noindex',

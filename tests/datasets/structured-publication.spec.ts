@@ -217,6 +217,32 @@ test.describe('choix du schéma', () => {
     await expect(page.getByText('Aucun schéma ne correspond à votre recherche.')).toBeVisible()
   })
 
+  test('la liste des schémas se parcourt au clavier', async ({ page }) => {
+    await stubPublicationApis(page)
+    await page.goto('/admin/datasets/structured?step=1')
+
+    await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill('test')
+    const listbox = page.getByRole('listbox')
+    const options = page.getByRole('option')
+
+    await listbox.focus()
+    await expect(listbox).not.toHaveAttribute('aria-activedescendant', /./)
+
+    await page.keyboard.press('ArrowDown')
+    const firstId = await options.first().getAttribute('id')
+    await expect(listbox).toHaveAttribute('aria-activedescendant', firstId!)
+
+    await page.keyboard.press('ArrowDown')
+    const secondId = await options.nth(1).getAttribute('id')
+    await expect(listbox).toHaveAttribute('aria-activedescendant', secondId!)
+
+    await page.keyboard.press('Enter')
+    await expect(options.nth(1)).toHaveAttribute('aria-selected', 'true')
+
+    await page.keyboard.press('Escape')
+    await expect(listbox).not.toHaveAttribute('aria-activedescendant', /./)
+  })
+
   test('le choix du mode de publication est exclusif', async ({ page }) => {
     await stubPublicationApis(page)
     await page.goto('/admin/datasets/structured?step=1')
@@ -230,6 +256,24 @@ test.describe('choix du schéma', () => {
     await page.getByText('Ajouter à un jeu de données existant').click()
     await expect(nouveau).not.toBeChecked()
     await expect(existant).toBeChecked()
+  })
+})
+
+test.describe('chargement du schéma', () => {
+  // The failing fetch is logged by `computedAsync`'s default error handler
+  test.use({ allowedConsoleMessages: ['Failed to load resource', 'schema.test.local'] })
+
+  test('un schéma injoignable est signalé comme tel', async ({ page }) => {
+    await stubPublicationApis(page)
+    // Only the schema definition fails; the catalog still answers so the wizard runs
+    await page.route(new RegExp(`${SCHEMA_HOST}/`), route => route.fulfill({ status: 500 }))
+
+    await startWizard(page, 'durabilite')
+    await page.getByRole('group', { name: 'Saisir vos données' }).getByRole('button', { name: `Utiliser l'outil tableur` }).click()
+
+    await expect(page.getByText(`Le schéma sélectionné n'a pas pu être chargé.`)).toBeVisible()
+    // The banner that used to show during loading claimed no schema had been selected
+    await expect(page.getByText(`Aucun schéma n'a été sélectionné`)).toHaveCount(0)
   })
 })
 

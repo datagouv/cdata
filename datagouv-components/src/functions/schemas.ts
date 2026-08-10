@@ -49,8 +49,10 @@ const searchableText = (schema: RegisteredSchema) => normalizeForSearch(`${schem
 const queryTokens = (query: string) => normalizeForSearch(query).split(' ').filter(Boolean)
 
 export function schemaMatchesQuery(schema: RegisteredSchema, query: string): boolean {
+  // A query made only of punctuation holds no word to match. Callers short-circuit the
+  // empty query, so matching everything here would only ever answer that case.
   const tokens = queryTokens(query)
-  if (!tokens.length) return true
+  if (!tokens.length) return false
 
   const haystack = searchableText(schema)
   return tokens.every(token => haystack.includes(token))

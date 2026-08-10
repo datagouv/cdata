@@ -57,7 +57,7 @@
 
           {{ unrecognizedColumnsMessage }}
 
-          <DisclosurePanel class="fr-table mt-1">
+          <DisclosurePanel class="fr-table mt-1 fr-mb-0">
             <table>
               <thead>
                 <tr>
@@ -210,11 +210,12 @@ const unrecognizedColumnsMessage = computed(() => {
   if (!unrecognizedColumns.value.length) return null
 
   // The names themselves stay out of the banner: the count is what tells the user the
-  // schema may be wrong, and the report below already details each column
+  // schema may be wrong, and the report below already details each column. The singular
+  // form drops the total, which says nothing when a single column is at stake.
   return t(
-    `{unrecognized} des {total} colonnes de votre fichier sont inconnues du schéma « {schema} » et ne seront pas conservées.`,
+    `Une colonne de votre fichier est inconnue du schéma « {schema} » et ne sera pas conservée. | {n} colonnes de votre fichier sur {total} sont inconnues du schéma « {schema} » et ne seront pas conservées.`,
     {
-      unrecognized: unrecognizedColumns.value.length,
+      n: unrecognizedColumns.value.length,
       total: fileColumns.value.length,
       schema: props.schemaDetails?.title ?? '',
     },
@@ -244,9 +245,11 @@ const statusMessage = computed(() => {
   })
 })
 
+// Only read when no action is offered, which means no error to report: the failing
+// states are carried by `statusActionType` below
 const statusBannerType = computed(() => {
   if (validating.value || !validationReport.value) return 'gray'
-  return hasNoErrors.value ? 'success' : 'danger'
+  return 'success'
 })
 
 // As soon as something is wrong, changing the schema is worth offering: two schemas can
@@ -258,7 +261,7 @@ const statusActionType = computed(() => {
 })
 
 const allErrors = computed(() => validationReport.value?.report?.errors ?? [])
-const detailedErrors = computed(() => (hasNoErrors.value ? [] : allErrors.value.slice(0, MAX_LISTED_ERRORS)))
+const detailedErrors = computed(() => allErrors.value.slice(0, MAX_LISTED_ERRORS))
 const hiddenErrorsCount = computed(() => allErrors.value.length - detailedErrors.value.length)
 
 // Structure pour stocker les erreurs de validation

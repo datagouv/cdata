@@ -1,15 +1,12 @@
 <template>
-  <component
-    :is="selectable ? 'button' : 'div'"
+  <div
     :id
     class="p-4 relative border bg-white hover:bg-gray-some"
     :class="{
       'border-gray-default': !selected && !active,
       'border-datagouv': selected && !active,
       'border-blue-outline': active,
-      'block w-full text-left': selectable,
     }"
-    :type="selectable ? 'button' : undefined"
     :role="selectable ? 'option' : undefined"
     :tabindex="selectable ? -1 : undefined"
     :aria-selected="selectable && selected"
@@ -69,7 +66,7 @@
       v-if="selected"
       class="size-6 fill-datagouv absolute top-4 right-4"
     />
-  </component>
+  </div>
 </template>
 
 <script setup lang="ts">
