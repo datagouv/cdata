@@ -31,6 +31,31 @@ export function getSchemaVersion(schema: RegisteredSchema | null) {
   }
 }
 
+// Accents and separators must not stand between a query and a schema: people type
+// "lave linge" for « Lave-linge », or « reparabilite » without its accents
+function normalizeForSearch(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+// The name is searched along with the title and the description: it is the identifier
+// people know and paste, such as `etalab/indice-durabilite-lave-linge`
+const searchableText = (schema: RegisteredSchema) => normalizeForSearch(`${schema.name} ${schema.title ?? ''} ${schema.description ?? ''}`)
+
+const queryTokens = (query: string) => normalizeForSearch(query).split(' ').filter(Boolean)
+
+export function schemaMatchesQuery(schema: RegisteredSchema, query: string): boolean {
+  const tokens = queryTokens(query)
+  if (!tokens.length) return true
+
+  const haystack = searchableText(schema)
+  return tokens.every(token => haystack.includes(token))
+}
+
 export function findSchemaInCatalog(catalog: Array<RegisteredSchema>, schema: Schema | null): RegisteredSchema | null {
   if (!schema) return null
   return catalog.find(registeredSchema => schema.name === registeredSchema.name) || null

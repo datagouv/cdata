@@ -198,7 +198,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SchemaCard, SimpleBanner, useActiveDescendant, useGetCatalog } from '@datagouv/components-next'
+import { BrandedButton, SchemaCard, SimpleBanner, schemaMatchesQuery, useActiveDescendant, useGetCatalog } from '@datagouv/components-next'
 import type { Dataset, DatasetV2, RegisteredSchema } from '@datagouv/components-next'
 import { ref, onMounted, computed } from 'vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
@@ -274,15 +274,10 @@ async function loadSchemas() {
 // `useActiveDescendant` identifies options by id, and a schema name is not a valid one
 const schemaOptionId = (schema: RegisteredSchema) => `schema-${schema.name.replace(/\W/g, '-')}`
 
-const filteredSchemas = computed(() => schemas.value.filter((schema: RegisteredSchema) => {
-  if (!searchQuery.value.trim()) {
-    return false
-  }
-  const query = searchQuery.value.toLowerCase()
-  const titleMatch = schema.title?.toLowerCase().includes(query)
-  const descriptionMatch = schema.description?.toLowerCase().includes(query)
-  return titleMatch || descriptionMatch
-}))
+const filteredSchemas = computed(() => {
+  if (!searchQuery.value.trim()) return []
+  return schemas.value.filter(schema => schemaMatchesQuery(schema, searchQuery.value))
+})
 
 const schemaOptions = computed(() => filteredSchemas.value.map(schema => ({ id: schemaOptionId(schema) })))
 

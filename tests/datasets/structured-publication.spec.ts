@@ -166,6 +166,44 @@ test.describe('choix du schéma', () => {
     await expect(page.getByText('Vous devez sélectionner un schéma')).toHaveCount(0)
   })
 
+  test('la recherche ignore les accents et les séparateurs', async ({ page }) => {
+    await stubPublicationApis(page)
+    await page.goto('/admin/datasets/structured?step=1')
+
+    const search = page.getByRole('searchbox', { name: 'Rechercher un schéma' })
+
+    // « Lave-linge » is written with a hyphen, people type a space
+    await search.fill('lave linge')
+    await expect(page.getByRole('option')).toHaveCount(1)
+    await expect(page.getByRole('option', { name: SCHEMAS.durabilite.title })).toBeVisible()
+
+    // « réparabilité » carries accents, people rarely type them
+    await search.fill('reparabilite')
+    await expect(page.getByRole('option')).toHaveCount(1)
+    await expect(page.getByRole('option', { name: SCHEMAS.reparabilite.title })).toBeVisible()
+  })
+
+  test('la recherche accepte un identifiant technique collé', async ({ page }) => {
+    await stubPublicationApis(page)
+    await page.goto('/admin/datasets/structured?step=1')
+
+    // The identifier as it appears in the catalog, which the title alone never matched
+    await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill('test/durabilite')
+
+    await expect(page.getByRole('option')).toHaveCount(1)
+    await expect(page.getByRole('option', { name: SCHEMAS.durabilite.title })).toBeVisible()
+  })
+
+  test('une recherche sans rapport ne renvoie rien', async ({ page }) => {
+    await stubPublicationApis(page)
+    await page.goto('/admin/datasets/structured?step=1')
+
+    await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill('zzzz')
+
+    await expect(page.getByRole('option')).toHaveCount(0)
+    await expect(page.getByText('Aucun schéma ne correspond à votre recherche.')).toBeVisible()
+  })
+
   test('le choix du mode de publication est exclusif', async ({ page }) => {
     await stubPublicationApis(page)
     await page.goto('/admin/datasets/structured?step=1')
