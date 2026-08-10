@@ -61,22 +61,7 @@
             />
           </template>
         </Suspense>
-        <!-- Nothing left to show, because the search emptied the navigation. The why
-             and the way out belong to the sidebar, which carries the search field. -->
-        <div
-          v-else-if="search"
-          class="flex h-full flex-col items-center justify-center gap-3 px-4 py-12 text-center"
-        >
-          <img
-            :src="noResultsImage"
-            class="h-16 opacity-60"
-            alt=""
-          >
-          <p class="m-0 text-sm text-gray-medium">
-            {{ t('Aucune ressource sélectionnée') }}
-          </p>
-        </div>
-        <!-- Outside of a search the selection always falls back to the first resource,
+        <!-- The selection never falls back to nothing once a resource has been shown,
              so having none means the groups aren't in yet: only `main` is fetched on
              the server, the other types arrive on hydration. -->
         <div

@@ -124,15 +124,24 @@ export async function useDatasetResources(datasetGetter: MaybeRefOrGetter<Datase
 
   // The URL is the single source of truth for the selection: no ref to keep in
   // sync, navigation is done with plain links that change `resource_id`.
+  let lastShown: Resource | null = null
+  const remember = (resource: Resource | null) => {
+    if (resource) lastShown = resource
+    return resource
+  }
+
   const selectedResource = computed<Resource | null>(() => {
     const wantedId = resourceIdQuery.value
     const fromList = flatResources.value.find(r => r.id === wantedId)
-    if (fromList) return fromList
-    // `fetchedResource` answers for `initialResourceId` only. Using it for any other
-    // id would display a resource the URL no longer points at — which is what happens
-    // once a search narrows the list and drops the currently viewed resource.
-    if (wantedId && wantedId === initialResourceId) return fetchedResource.value
-    return flatResources.value[0] ?? null
+    if (fromList) return remember(fromList)
+    // `fetchedResource` answers for `initialResourceId` only: it holds that one
+    // resource, so using it for any other id would show something the URL doesn't
+    // point at.
+    if (wantedId && wantedId === initialResourceId) return remember(fetchedResource.value)
+    // A search that matches nothing narrows the navigation, it doesn't unload the
+    // viewer — keep showing what we had, which is the dataset's first resource when
+    // nothing has been clicked yet.
+    return remember(flatResources.value[0] ?? null) ?? lastShown
   })
 
   function updateSearch(newSearch: string) {
