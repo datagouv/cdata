@@ -49,13 +49,20 @@
             >
               <div class="flex items-center justify-between gap-1">
                 <div class="flex min-w-0 items-center gap-1">
-                  <!-- Type as an icon only; the human label is on hover -->
-                  <component
-                    :is="getColumnDisplay(col).icon"
-                    class="size-4 shrink-0 text-gray-plain"
+                  <!-- Type as an icon only; the human label is on hover. The title
+                       sits on a wrapper because an SVG ignores it as an attribute,
+                       and the icon carries the label for screen readers. -->
+                  <span
+                    class="flex shrink-0"
                     :title="getColumnDisplay(col).label"
-                    aria-hidden="true"
-                  />
+                  >
+                    <component
+                      :is="getColumnDisplay(col).icon"
+                      class="size-4 text-gray-plain"
+                      role="img"
+                      :aria-label="getColumnDisplay(col).label"
+                    />
+                  </span>
                   <span
                     class="truncate text-[12px] font-bold text-gray-title"
                     :title="col"
