@@ -63,12 +63,13 @@
     >
       <FieldsetElement form-key="existingDataset">
         <div class="flex gap-8 items-start">
-          <div class="fr-checkbox-group m-0">
+          <div class="fr-radio-group m-0">
             <input
               id="mode-new"
-              type="checkbox"
-              :checked="publicationMode === 'new'"
-              @change="publicationMode = 'new'"
+              v-model="publicationMode"
+              type="radio"
+              name="publication-mode"
+              value="new"
             >
             <label
               class="fr-label"
@@ -77,12 +78,13 @@
               {{ $t("Créer un nouveau jeu de données") }}
             </label>
           </div>
-          <div class="fr-checkbox-group m-0">
+          <div class="fr-radio-group m-0">
             <input
               id="mode-existing"
-              type="checkbox"
-              :checked="publicationMode === 'existing'"
-              @change="publicationMode = 'existing'"
+              v-model="publicationMode"
+              type="radio"
+              name="publication-mode"
+              value="existing"
             >
             <label
               class="fr-label"
