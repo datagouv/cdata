@@ -97,16 +97,18 @@
       </div>
     </div>
 
-    <!-- Drag the right edge to resize the panel and read longer resource titles. -->
-    <button
+    <!-- Drag the right edge to resize the panel and read longer resource titles.
+         A separator rather than a button: it only answers to a drag, and a focusable
+         button would announce an action that no key can trigger. Keyboard users fold
+         the panel from the header instead. -->
+    <div
       v-if="!collapsed"
-      type="button"
+      role="separator"
+      aria-orientation="vertical"
       :title="t('Glisser pour redimensionner')"
       class="absolute right-0 top-0 z-20 h-full w-2 cursor-col-resize touch-none hover:bg-new-primary/10"
       @mousedown="startResize"
-    >
-      <span class="sr-only">{{ t('Redimensionner la navigation') }}</span>
-    </button>
+    />
   </aside>
 </template>
 
