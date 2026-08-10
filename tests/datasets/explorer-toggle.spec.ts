@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { createDatasetWithRemoteResources, deleteDatasets } from '../helpers'
 
@@ -7,13 +8,20 @@ test.afterEach(async ({ request }) => {
   await deleteDatasets(request, createdDatasets)
 })
 
+// The banner is the only way into the new explorer, and it only lives on the resources
+// tab: opt in from there, then navigate wherever the test needs to go.
+async function enableNewExplorer(page: Page, url: string) {
+  await page.goto(url)
+  await page.getByRole('button', { name: 'Tester la nouvelle navigation' }).click()
+  await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
+}
+
 test('switching back to the old navigation drops ?resource_id', async ({ page, request }) => {
   const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explorer toggle ${Date.now()}`, ['Fichier numero 01', 'Fichier numero 02'])
   createdDatasets.push(dataset.id)
   const target = resources[1]!
 
-  await page.goto(`/datasets/${dataset.id}?new_explorer=1&resource_id=${target.id}`)
-  await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
+  await enableNewExplorer(page, `/datasets/${dataset.id}?resource_id=${target.id}`)
 
   await page.getByRole('button', { name: 'Revenir sur l\'ancienne navigation' }).click()
 
@@ -21,16 +29,18 @@ test('switching back to the old navigation drops ?resource_id', async ({ page, r
   // dropped rather than left pointing at nothing.
   await expect(page).not.toHaveURL(/resource_id=/)
   await expect(page.locator('aside')).toBeHidden()
-  await expect(page.getByRole('button', { name: 'Tester la nouvelle navigation dans les ressources et notre nouvel explorateur' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Tester la nouvelle navigation' })).toBeVisible()
 })
 
 test('the header explore button opens the fullscreen explorer from a tab that has none', async ({ page, request }) => {
   const { dataset } = await createDatasetWithRemoteResources(request, `Test explorer header button ${Date.now()}`, ['Fichier numero 01'])
   createdDatasets.push(dataset.id)
 
+  await enableNewExplorer(page, `/datasets/${dataset.id}`)
+
   // The informations tab renders no explorer of its own, so this button is the only
   // way in — it must follow the explorer the visitor chose rather than disappear.
-  await page.goto(`/datasets/${dataset.id}/informations?new_explorer=1`)
+  await page.goto(`/datasets/${dataset.id}/informations`)
 
   const exploreButton = page.getByRole('link', { name: 'Explorer les données' })
   await expect(exploreButton).toBeVisible({ timeout: 30000 })
@@ -44,10 +54,9 @@ test('the explorer choice survives a reload', async ({ page, request }) => {
   const { dataset } = await createDatasetWithRemoteResources(request, `Test explorer toggle cookie ${Date.now()}`, ['Fichier numero 01'])
   createdDatasets.push(dataset.id)
 
-  await page.goto(`/datasets/${dataset.id}?new_explorer=1`)
-  await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
+  await enableNewExplorer(page, `/datasets/${dataset.id}`)
 
-  // The flag is persisted in a cookie, so the plain URL keeps the new explorer.
+  // The flag is persisted in a cookie, so a fresh load keeps the new explorer.
   await page.goto(`/datasets/${dataset.id}`)
   await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
 

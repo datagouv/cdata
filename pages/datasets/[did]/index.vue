@@ -1,30 +1,27 @@
 <template>
   <div class="space-y-5">
-    <SimpleBanner
+    <BannerAction
       type="primary"
-      class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2"
+      :title="newExplorerEnabled ? $t('Vous testez la nouvelle navigation dans les ressources') : $t('Une nouvelle navigation dans les ressources est disponible')"
     >
-      <div class="flex items-center gap-2">
-        <RiInformationLine
-          class="size-5 shrink-0"
-          aria-hidden="true"
-        />
-        <button
-          type="button"
-          class="fr-link fr-reset-link text-left"
-          @click="toggleExplorer"
-        >
-          {{ newExplorerEnabled ? $t("Revenir sur l'ancienne navigation") : $t("Tester la nouvelle navigation dans les ressources et notre nouvel explorateur") }}
-        </button>
-      </div>
-      <a
-        v-if="newExplorerEnabled && feedbackUrl"
-        :href="feedbackUrl"
-        target="_blank"
-        rel="noopener"
-        class="fr-link fr-reset-link shrink-0"
-      >{{ $t("Donner votre avis") }}</a>
-    </SimpleBanner>
+      <template #button>
+        <div class="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
+          <a
+            v-if="newExplorerEnabled && feedbackUrl"
+            :href="feedbackUrl"
+            target="_blank"
+            rel="noopener"
+            class="fr-link fr-reset-link shrink-0"
+          >{{ $t("Donner votre avis") }}</a>
+          <BrandedButton
+            size="xs"
+            @click="toggleExplorer"
+          >
+            {{ newExplorerEnabled ? $t("Revenir sur l'ancienne navigation") : $t("Tester la nouvelle navigation") }}
+          </BrandedButton>
+        </div>
+      </template>
+    </BannerAction>
 
     <ResourceExplorer
       v-if="newExplorerEnabled"
@@ -42,8 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { ResourceExplorer, SimpleBanner, type DatasetV2, type Resource } from '@datagouv/components-next'
-import { RiInformationLine } from '@remixicon/vue'
+import { BannerAction, BrandedButton, ResourceExplorer, type DatasetV2, type Resource } from '@datagouv/components-next'
 
 const props = defineProps<{ dataset: DatasetV2 }>()
 
