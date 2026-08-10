@@ -133,6 +133,13 @@ const currentStepNumber = computed(() => {
   return step
 })
 
+// The wizard keeps the same URL throughout, so the step is what tells one tab or one
+// history entry from another
+useSeoMeta({
+  title: () => `${steps.value[currentStepNumber.value - 1] ?? ''} - ${t('Publication structurée')}`,
+  robots: 'noindex',
+})
+
 const isCurrentStepValid = computed(() => {
   const step = currentStepNumber.value
 
