@@ -82,7 +82,6 @@ import ReadMore from './components/ReadMore.vue'
 import ResourceAccordion from './components/ResourceAccordion/ResourceAccordion.vue'
 import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
 import ResourceSelector from './components/ResourceExplorer/ResourceSelector.vue'
-import ResourceListItem from './components/ResourceListItem.vue'
 import ResourceExplorer from './components/ResourceExplorer/ResourceExplorer.vue'
 import ResourceExplorerSidebar from './components/ResourceExplorer/ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './components/ResourceExplorer/ResourceExplorerViewer.vue'
@@ -394,7 +393,6 @@ export {
   ResourceExplorerViewer,
   ObjectCardOwner,
   ResourceIcon,
-  ResourceListItem,
   ResourceSelector,
   ReuseCard,
   ReuseDetails,
