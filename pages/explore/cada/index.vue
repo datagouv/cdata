@@ -42,18 +42,7 @@
         :global-search="currentSearch"
         :initial-filters="initialFilters"
       >
-        <div class="flex items-center gap-2 py-3">
-          <div class="flex min-w-0 flex-1 items-center gap-1.5">
-            <TabularMobileFilterButton class="md:hidden" />
-            <div class="hidden md:block">
-              <TabularActiveFilters with-clear />
-            </div>
-          </div>
-          <div class="flex shrink-0 items-center gap-4">
-            <TabularColumnsMenu />
-            <TabularRowsInfo />
-          </div>
-        </div>
+        <TabularToolbar class="py-3" />
         <TabularTable
           full-bleed
           :row-href="{ columns: ['Numéro de dossier'], href: row => `/explore/cada/${row['Numéro de dossier']}` }"
@@ -196,7 +185,7 @@
 </template>
 
 <script setup lang="ts">
-import { SearchInput, TabularActiveFilters, TabularColumnsMenu, TabularExplorer, TabularMobileFilterButton, TabularMobileFilters, TabularRowsInfo, TabularTable, TranslationT, provideTabularProfile } from '@datagouv/components-next'
+import { SearchInput, TabularExplorer, TabularMobileFilters, TabularTable, TabularToolbar, TranslationT, provideTabularProfile } from '@datagouv/components-next'
 import type { ColumnFilters } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'

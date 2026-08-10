@@ -109,12 +109,9 @@ import SelectGroup from './components/Form/SelectGroup.vue'
 import Listbox from './components/Form/Listbox.vue'
 import InfiniteLoader from './components/InfiniteLoader.vue'
 import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
-import TabularActiveFilters from './components/TabularExplorer/TabularActiveFilters.vue'
-import TabularColumnsMenu from './components/TabularExplorer/TabularColumnsMenu.vue'
-import TabularMobileFilterButton from './components/TabularExplorer/TabularMobileFilterButton.vue'
 import TabularMobileFilters from './components/TabularExplorer/TabularMobileFilters.vue'
-import TabularRowsInfo from './components/TabularExplorer/TabularRowsInfo.vue'
 import TabularTable from './components/TabularExplorer/TabularTable.vue'
+import TabularToolbar from './components/TabularExplorer/TabularToolbar.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 import { ofetch } from 'ofetch'
@@ -423,10 +420,7 @@ export {
   Listbox,
   InfiniteLoader,
   TabularExplorer,
-  TabularActiveFilters,
-  TabularColumnsMenu,
-  TabularMobileFilterButton,
   TabularMobileFilters,
-  TabularRowsInfo,
   TabularTable,
+  TabularToolbar,
 }

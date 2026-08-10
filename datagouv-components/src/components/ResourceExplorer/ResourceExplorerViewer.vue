@@ -56,26 +56,14 @@
               v-if="tab.key === 'data'"
               :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''"
             >
-              <!-- Interactive table: full width, composes its own framed toolbar + table.
-                   Wrapped in Suspense so switching to this tab (or loading its data) shows
+              <!-- Wrapped in Suspense so switching to this tab (or loading its data) shows
                    the table skeleton instead of a blank gap while TabularExplorer resolves. -->
               <Suspense
                 v-if="previewKind === 'tabular'"
                 :timeout="200"
               >
                 <TabularExplorer :resource-id="resource.id">
-                  <div class="flex shrink-0 items-center gap-2 border-b border-gray-default p-2">
-                    <div class="flex min-w-0 flex-1 items-center gap-1.5">
-                      <TabularMobileFilterButton class="md:hidden" />
-                      <div class="hidden md:block">
-                        <TabularActiveFilters with-clear />
-                      </div>
-                    </div>
-                    <div class="flex shrink-0 items-center gap-4">
-                      <TabularColumnsMenu />
-                      <TabularRowsInfo />
-                    </div>
-                  </div>
+                  <TabularToolbar class="shrink-0 border-b border-gray-default p-2" />
                   <TabularTable :fill="fullscreen" />
                   <TabularMobileFilters />
                 </TabularExplorer>
@@ -183,12 +171,9 @@ import Tab from '../Tabs/Tab.vue'
 import TabPanels from '../Tabs/TabPanels.vue'
 import TabPanel from '../Tabs/TabPanel.vue'
 import TabularExplorer from '../TabularExplorer/TabularExplorer.vue'
-import TabularActiveFilters from '../TabularExplorer/TabularActiveFilters.vue'
-import TabularColumnsMenu from '../TabularExplorer/TabularColumnsMenu.vue'
-import TabularRowsInfo from '../TabularExplorer/TabularRowsInfo.vue'
+import TabularToolbar from '../TabularExplorer/TabularToolbar.vue'
 import TabularTable from '../TabularExplorer/TabularTable.vue'
 import TabularMobileFilters from '../TabularExplorer/TabularMobileFilters.vue'
-import TabularMobileFilterButton from '../TabularExplorer/TabularMobileFilterButton.vue'
 import TabularSkeleton from '../TabularExplorer/TabularSkeleton.vue'
 import DataStructure from '../ResourceAccordion/DataStructure.vue'
 import Metadata from '../ResourceAccordion/Metadata.vue'
