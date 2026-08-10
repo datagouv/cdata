@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import * as path from 'node:path'
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { createOrganization, deleteOrganizations, type ApiOrganization } from '../helpers'
+import { createOrganization, deleteDatasets, deleteOrganizations, type ApiOrganization } from '../helpers'
 
 // These tests replay the situation reported in datagouv/data.gouv.fr#2060 with the very
 // files it was reported with: a washing machine durability record, exported as CSV
@@ -100,9 +100,22 @@ test.beforeEach(async ({ request }) => {
   organization = await createOrganization(request, `Éditeur tableur ${Date.now()}${Math.random().toString(36).slice(2, 8)}`)
 })
 
+// A test that goes through to publication creates a real dataset, which has to go too
+const createdDatasets: Array<string> = []
+
 test.afterEach(async ({ request }) => {
+  await deleteDatasets(request, createdDatasets)
   await deleteOrganizations(request, [organization.id])
 })
+
+function collectCreatedDatasets(page: Page) {
+  page.on('response', async (response) => {
+    if (response.request().method() !== 'POST') return
+    if (!/\/api\/1\/datasets\/$/.test(response.url()) || !response.ok()) return
+
+    createdDatasets.push((await response.json()).id)
+  })
+}
 
 async function selectSchema(page: Page, schema: SchemaKey) {
   await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill(SCHEMAS[schema].title)
@@ -400,6 +413,30 @@ test.describe('navigation', () => {
 
     await expect(page).toHaveURL(/step=2/)
     await expect(page.getByRole('group', { name: 'Saisir vos données' }).getByRole('button', { name: `Utiliser l'outil tableur` })).toBeVisible()
+  })
+
+  test('l’étape finale reste affichée après la publication', async ({ page }) => {
+    const apis = await stubPublicationApis(page)
+    apis.validation = VALID_REPORT
+    collectCreatedDatasets(page)
+
+    await startWizard(page, 'durabilite')
+    await uploadAndOpenSpreadsheet(page, 'lave-linge-virgule.csv')
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible()
+    await page.getByRole('button', { name: 'Suivant' }).click()
+
+    // The title and the description are prefilled from the schema, only the frequency
+    // is left to choose
+    await expect(page).toHaveURL(/step=3/)
+    await page.getByTestId('searchable-select-fr-quence-de-mise-jour').click()
+    await page.getByRole('option', { name: 'Inconnu' }).click()
+    await page.getByRole('button', { name: 'Suivant' }).click()
+
+    // Publishing empties the wizard form on purpose. That must not send the user back
+    // to the first step, which would make the last screen unreachable and wipe the
+    // dataset just created.
+    await expect(page).toHaveURL(/step=4/)
+    await expect(page.getByRole('button', { name: 'Publier le jeu de données' })).toBeVisible()
   })
 
   test('recharger une étape avancée renvoie au début plutôt qu’à un écran amputé', async ({ page }) => {

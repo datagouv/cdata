@@ -147,8 +147,10 @@ const isCurrentStepValid = computed(() => {
   if (step > steps.value.length) return false
   if (step === 4 && !newDataset.value) return false
   // The form only lives in `useState`, so a page reload past the first step lands on a
-  // screen missing its schema and producer instead of a working one
-  if (step > 1 && !(associateSchemaForm.value.selectedSchema && associateSchemaForm.value.owned)) return false
+  // screen missing its schema and producer instead of a working one. The last step is
+  // left out: `save()` empties the form once published, and that screen only reads
+  // `newDataset`.
+  if (step > 1 && step < 4 && !(associateSchemaForm.value.selectedSchema && associateSchemaForm.value.owned)) return false
 
   return true
 })
