@@ -303,7 +303,7 @@ const imagePreviewSize = computed(() => {
   return `${formatNumber(mo)} Mo`
 })
 
-const currentMonth = computed(() => getPreviousMonth(formatMonth(new Date())))
+const currentMonth = computed(() => formatMonth(new Date()))
 const currentMonthLabel = computed(() => formatDate(new Date(), { dateStyle: undefined, year: 'numeric', month: 'long' }))
 const previousMonth = computed(() => getPreviousMonth(currentMonth.value))
 
