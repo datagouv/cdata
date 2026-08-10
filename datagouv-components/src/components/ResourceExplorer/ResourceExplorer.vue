@@ -61,10 +61,10 @@
             />
           </template>
         </Suspense>
-        <!-- Nothing to view: either the search emptied the navigation, or no resource
-             is selected yet. Say which one, and offer the same way out as the sidebar. -->
+        <!-- The search emptied the navigation: say so, and offer the same way out
+             as the sidebar. -->
         <div
-          v-else
+          v-else-if="search"
           class="flex h-full flex-col items-center justify-center gap-3 px-4 py-12 text-center"
         >
           <img
@@ -72,24 +72,31 @@
             class="h-16 opacity-60"
             alt=""
           >
-          <template v-if="search">
-            <p class="m-0 text-sm text-gray-medium">
-              {{ t('Pas de résultats pour « {q} »', { q: search }) }}
-            </p>
-            <BrandedButton
-              color="secondary"
-              size="xs"
-              @click="updateSearch('')"
-            >
-              {{ t('Réinitialiser la recherche') }}
-            </BrandedButton>
-          </template>
-          <p
-            v-else
-            class="m-0 text-sm text-gray-medium"
-          >
-            {{ t('Sélectionnez une ressource dans le menu pour l\'explorer.') }}
+          <p class="m-0 text-sm text-gray-medium">
+            {{ t('Pas de résultats pour « {q} »', { q: search }) }}
           </p>
+          <BrandedButton
+            color="secondary"
+            size="xs"
+            @click="updateSearch('')"
+          >
+            {{ t('Réinitialiser la recherche') }}
+          </BrandedButton>
+        </div>
+        <!-- Outside of a search the selection always falls back to the first resource,
+             so having none means the groups aren't in yet: only `main` is fetched on
+             the server, the other types arrive on hydration. -->
+        <div
+          v-else
+          class="animate-pulse-placeholder p-4"
+          :class="fullscreen ? 'min-h-0 flex-1' : ''"
+          role="status"
+          :aria-label="t('Chargement des ressources…')"
+        >
+          <div
+            class="w-full rounded bg-gray-200"
+            :class="fullscreen ? 'h-full' : 'h-96'"
+          />
         </div>
       </div>
     </div>
