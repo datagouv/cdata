@@ -77,20 +77,23 @@
         </button>
       </section>
 
+      <!-- The search lives here, so its outcome does too: the viewer only says that
+           nothing is selected. -->
       <div
         v-if="search && !groups.length"
-        class="px-1 py-2"
+        class="flex flex-col gap-2 px-1 py-2"
       >
-        <p class="mb-1.5 text-[13px] leading-snug text-gray-medium">
+        <p class="m-0 text-[13px] leading-snug text-gray-medium">
           {{ t('Pas de résultats pour « {q} »', { q: search }) }}
         </p>
-        <button
-          type="button"
-          class="text-[13px] text-blue-default hover:underline"
+        <BrandedButton
+          color="secondary"
+          size="xs"
+          class="w-full"
           @click="$emit('update:search', '')"
         >
           {{ t('Réinitialiser la recherche') }}
-        </button>
+        </BrandedButton>
       </div>
     </div>
 
@@ -110,6 +113,7 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
 import { RiSidebarFoldLine, RiSidebarUnfoldLine, RiSearchLine, RiLoader5Line } from '@remixicon/vue'
+import BrandedButton from '../BrandedButton.vue'
 import ResourceListItem from '../ResourceListItem.vue'
 import { getResourceLabel } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'

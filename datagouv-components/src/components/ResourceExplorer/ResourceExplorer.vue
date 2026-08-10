@@ -61,8 +61,8 @@
             />
           </template>
         </Suspense>
-        <!-- The search emptied the navigation: say so, and offer the same way out
-             as the sidebar. -->
+        <!-- Nothing left to show, because the search emptied the navigation. The why
+             and the way out belong to the sidebar, which carries the search field. -->
         <div
           v-else-if="search"
           class="flex h-full flex-col items-center justify-center gap-3 px-4 py-12 text-center"
@@ -73,15 +73,8 @@
             alt=""
           >
           <p class="m-0 text-sm text-gray-medium">
-            {{ t('Pas de résultats pour « {q} »', { q: search }) }}
+            {{ t('Aucune ressource sélectionnée') }}
           </p>
-          <BrandedButton
-            color="secondary"
-            size="xs"
-            @click="updateSearch('')"
-          >
-            {{ t('Réinitialiser la recherche') }}
-          </BrandedButton>
         </div>
         <!-- Outside of a search the selection always falls back to the first resource,
              so having none means the groups aren't in yet: only `main` is fetched on
@@ -126,7 +119,6 @@ import { useTranslation } from '../../composables/useTranslation'
 import { useDatasetResources } from '../../composables/useDatasetResources'
 import type { DatasetV2 } from '../../types/datasets'
 import type { Resource } from '../../types/resources'
-import BrandedButton from '../BrandedButton.vue'
 import ResourceExplorerSidebar from './ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './ResourceExplorerViewer.vue'
 import ResourceExplorerHeader from './ResourceExplorerHeader.vue'
