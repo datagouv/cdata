@@ -32,5 +32,6 @@ test('a search result opens the fullscreen explorer on that resource', async ({ 
   // ask the real Tabular API for a profile this fake resource does not have.
   const card = page.getByRole('link', { name: payload.title })
   await expect(card).toBeVisible({ timeout: 30000 })
-  await expect(card).toHaveAttribute('href', `/explore/${dataset.id}?resource_id=${resource.id}`)
+  // Slug, not id: the explorer page would answer an id with a canonical redirect.
+  await expect(card).toHaveAttribute('href', `/explore/${payload.slug}?resource_id=${resource.id}`)
 })

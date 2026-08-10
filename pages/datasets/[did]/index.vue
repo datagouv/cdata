@@ -49,7 +49,8 @@ const route = useRoute()
 const feedbackUrl = useRuntimeConfig().public.explorerFeedbackUrl
 
 // Opens the fullscreen explorer on the current resource, next to the download button.
-const exploreTo = (resource: Resource) => `/explore/${props.dataset.id}?resource_id=${resource.id}`
+// Slug rather than id, so the explorer doesn't answer with a canonical redirect.
+const exploreTo = (resource: Resource) => `/explore/${props.dataset.slug}?resource_id=${resource.id}`
 
 const { enabled: newExplorerEnabled, setEnabled } = useNewExplorer()
 

@@ -29,8 +29,8 @@ const { data: dataset } = await useAPI<DatasetV2>(url, {
 })
 
 // Carry the resource being viewed back to the dataset page so we land on it when
-// leaving fullscreen. Uses the slug (canonical URL) to avoid a slug redirect that
-// would drop the query, and tracks the current resource as it changes in fullscreen.
+// leaving fullscreen. Uses the slug (canonical URL) to avoid a redirect, and tracks
+// the current resource as it changes in fullscreen.
 const exitTo = computed(() => {
   const base = `/datasets/${dataset.value?.slug}`
   const resourceId = route.query.resource_id

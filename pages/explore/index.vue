@@ -47,7 +47,7 @@
         v-for="entry in flatResults"
         :key="`${entry.dataset.id}-${entry.resource.id}`"
         :dataset="entry.dataset"
-        :dataset-url="exploreLink(entry.dataset.id, entry.resource.id)"
+        :dataset-url="exploreLink(entry.dataset.slug, entry.resource.id)"
       >
         <TranslationT
           keypath="Fichier : {file}"
@@ -98,7 +98,7 @@
         v-for="entry in featuredEntries"
         :key="`${entry.dataset.id}-${entry.resource.id}`"
         :dataset="entry.dataset"
-        :dataset-url="exploreLink(entry.dataset.id, entry.resource.id)"
+        :dataset-url="exploreLink(entry.dataset.slug, entry.resource.id)"
       >
         <TranslationT
           keypath="Fichier : {file}"
@@ -203,8 +203,9 @@ const { data: featuredEntries } = await useAsyncData(
 )
 
 // Each result opens the dataset's fullscreen explorer focused on that resource.
-// String path (not a route object) so AppLink adds the locale prefix.
-function exploreLink(datasetId: string, resourceId: string) {
-  return `/explore/${datasetId}?resource_id=${resourceId}`
+// String path (not a route object) so AppLink adds the locale prefix, and the slug
+// rather than the id so the explorer doesn't answer with a canonical redirect.
+function exploreLink(datasetSlug: string, resourceId: string) {
+  return `/explore/${datasetSlug}?resource_id=${resourceId}`
 }
 </script>
