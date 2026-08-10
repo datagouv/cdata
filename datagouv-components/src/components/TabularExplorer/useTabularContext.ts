@@ -7,7 +7,6 @@ import type {
   TabularColumnProfile,
   TabularDataResponse,
   TabularRow,
-  TabularTopValue,
 } from './types'
 
 export type ActiveFilter = {
@@ -28,14 +27,11 @@ export type ColumnDisplay = {
 //   - column widths / resize, cell popover, mobile row expansion → TabularTable
 //   - mobile filter sheet's expanded column → TabularMobileFilters
 export type TabularContext = {
-  resourceId: ComputedRef<string>
-
   // Data & pagination (the parent owns the fetch, children just render it)
   tableData: Ref<TabularDataResponse | null>
   totalLines: ComputedRef<number>
   allRows: Ref<TabularRow[]>
   hasMore: Ref<boolean>
-  loadingMore: Ref<boolean>
   loadNextPage: () => Promise<void>
   // A sort / filter / search change is refetching while the previous rows are
   // still on screen.
@@ -67,7 +63,6 @@ export type TabularContext = {
   getColumnType: (col: string) => ColumnType
   getColumnProfile: (col: string) => TabularColumnProfile | null
   getColumnDisplay: (col: string) => ColumnDisplay
-  getTopsEntries: (col: string) => TabularTopValue[]
   getNullPercent: (col: string) => string
   getBooleanCounts: (col: string) => { trueCount: number, falseCount: number }
 }

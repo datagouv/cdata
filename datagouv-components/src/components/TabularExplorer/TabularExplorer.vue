@@ -109,7 +109,6 @@ const {
   getColumnType,
   getColumnProfile,
   getColumnDisplay,
-  getTopsEntries,
   getNullPercent,
   getBooleanCounts,
 } = useColumnMetadata(profileData, allColumns, t)
@@ -303,12 +302,10 @@ const mobileFilterOpen = ref(false)
 // Provide the shared state so child components (active filters, columns menu, rows
 // info, table…) can inject it instead of receiving a wall of props.
 provideTabularContext({
-  resourceId: computed(() => props.resourceId),
   tableData,
   totalLines,
   allRows,
   hasMore,
-  loadingMore,
   loadNextPage,
   isRefreshing,
   sort,
@@ -330,7 +327,6 @@ provideTabularContext({
   getColumnType,
   getColumnProfile,
   getColumnDisplay,
-  getTopsEntries,
   getNullPercent,
   getBooleanCounts,
 })

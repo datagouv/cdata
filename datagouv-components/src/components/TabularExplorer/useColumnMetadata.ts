@@ -14,7 +14,6 @@ import type {
   ColumnType,
   TabularColumnProfile,
   TabularProfileResponse,
-  TabularTopValue,
 } from './types'
 
 // Pure derivations of the csv-detective profile: a column's display type, its
@@ -32,10 +31,6 @@ export function useColumnMetadata(
 
   function getColumnProfile(col: string): TabularColumnProfile | null {
     return profileData.value?.profile?.profile?.[col] ?? null
-  }
-
-  function getTopsEntries(col: string): TabularTopValue[] {
-    return getColumnProfile(col)?.tops ?? []
   }
 
   function getColumnTypeFromName(col: string): ColumnType {
@@ -97,7 +92,6 @@ export function useColumnMetadata(
     getColumnType,
     getColumnProfile,
     getColumnDisplay,
-    getTopsEntries,
     getNullPercent,
     getBooleanCounts,
   }
