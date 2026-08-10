@@ -24,6 +24,22 @@ test('switching back to the old navigation drops ?resource_id', async ({ page, r
   await expect(page.getByRole('button', { name: 'Tester la nouvelle navigation dans les ressources et notre nouvel explorateur' })).toBeVisible()
 })
 
+test('the header explore button opens the fullscreen explorer from a tab that has none', async ({ page, request }) => {
+  const { dataset } = await createDatasetWithRemoteResources(request, `Test explorer header button ${Date.now()}`, ['Fichier numero 01'])
+  createdDatasets.push(dataset.id)
+
+  // The informations tab renders no explorer of its own, so this button is the only
+  // way in — it must follow the explorer the visitor chose rather than disappear.
+  await page.goto(`/datasets/${dataset.id}/informations?new_explorer=1`)
+
+  const exploreButton = page.getByRole('link', { name: 'Explorer les données' })
+  await expect(exploreButton).toBeVisible({ timeout: 30000 })
+
+  await exploreButton.click()
+  await expect(page).toHaveURL(/\/explore\//)
+  await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
+})
+
 test('the explorer choice survives a reload', async ({ page, request }) => {
   const { dataset } = await createDatasetWithRemoteResources(request, `Test explorer toggle cookie ${Date.now()}`, ['Fichier numero 01'])
   createdDatasets.push(dataset.id)

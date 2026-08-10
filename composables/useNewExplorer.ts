@@ -2,9 +2,9 @@
 // ?new_explorer=0 to disable, persisted in a cookie.
 //
 // Shared state rather than a plain `useCookie`: the flag is read both by the dataset
-// page shell (which hides its header "Explorer" button when the new explorer provides
-// its own) and by the resources tab that toggles it. `useCookie` hands out an
-// independent ref per call, so one of the two would keep a stale value until reload.
+// page shell (which points its header "Explorer" button at one explorer or the other)
+// and by the resources tab that toggles it. `useCookie` hands out an independent ref
+// per call, so one of the two would keep a stale value until reload.
 export function useNewExplorer() {
   const route = useRoute()
   const cookie = useCookie('new_explorer', { maxAge: 60 * 60 * 24 * 7, path: '/' })
