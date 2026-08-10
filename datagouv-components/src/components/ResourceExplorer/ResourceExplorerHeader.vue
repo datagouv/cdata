@@ -19,7 +19,7 @@
       </div>
     </div>
     <div class="flex shrink-0 items-center gap-2">
-      <ResourceDownloadMenu
+      <ResourceMainAction
         v-if="resource"
         :resource="resource"
         :dataset="dataset"
@@ -45,7 +45,7 @@ import { RiFullscreenExitLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import BrandedButton from '../BrandedButton.vue'
 import OrganizationLogo from '../OrganizationLogo.vue'
-import ResourceDownloadMenu from './ResourceDownloadMenu.vue'
+import ResourceMainAction from './ResourceMainAction.vue'
 import { getOwnerName } from '../../functions/owned'
 import { useTranslation } from '../../composables/useTranslation'
 import { useFormatDate } from '../../functions/dates'

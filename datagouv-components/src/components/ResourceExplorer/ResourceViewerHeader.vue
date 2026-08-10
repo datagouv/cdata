@@ -55,29 +55,7 @@
       v-if="!fullscreen"
       class="flex shrink-0 items-center gap-2"
     >
-      <BrandedButton
-        v-if="isResourceUrl"
-        :href="resource.latest"
-        :title="t('Lien du fichier - ouvre une nouvelle fenêtre')"
-        rel="ugc nofollow noopener"
-        new-tab
-        size="xs"
-        external
-        @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
-      >
-        {{ t('Visiter') }}
-      </BrandedButton>
-      <BrandedButton
-        v-else-if="ogcService"
-        :icon="RiFileCopyLine"
-        color="primary"
-        size="xs"
-        @click="copyResourceUrl"
-      >
-        {{ t('Copier le lien') }}
-      </BrandedButton>
-      <ResourceDownloadMenu
-        v-else
+      <ResourceMainAction
         :resource="resource"
         :dataset="dataset"
       />
@@ -99,20 +77,18 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RiDownloadLine, RiFileCopyLine, RiFullscreenLine } from '@remixicon/vue'
-import { toast } from 'vue-sonner'
+import { RiDownloadLine, RiFullscreenLine } from '@remixicon/vue'
 import BrandedButton from '../BrandedButton.vue'
 import CopyButton from '../CopyButton.vue'
 import ResourceIcon from '../ResourceAccordion/ResourceIcon.vue'
 import SchemaBadge from '../ResourceAccordion/SchemaBadge.vue'
 import ResourceSelector from './ResourceSelector.vue'
-import ResourceDownloadMenu from './ResourceDownloadMenu.vue'
+import ResourceMainAction from './ResourceMainAction.vue'
 import { filesize, summarize } from '../../functions/helpers'
 import { getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
 import { trackEvent } from '../../functions/matomo'
 import { useFormatDate } from '../../functions/dates'
 import { useTranslation } from '../../composables/useTranslation'
-import { useResourceCapabilities } from '../../composables/useResourceCapabilities'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
@@ -133,18 +109,7 @@ const props = defineProps<{
 
 const { t } = useTranslation()
 const { formatRelativeIfRecentDate, formatDate } = useFormatDate()
-const { isResourceUrl, ogcService } = useResourceCapabilities(() => props.resource, () => props.dataset)
 
 const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset, props.resource))
-
-const copyResourceUrl = async () => {
-  try {
-    await navigator.clipboard.writeText(props.resource.url)
-    toast.success(t('Lien copié !'))
-  }
-  catch {
-    toast.error(t('Impossible de copier dans le presse-papier'))
-  }
-}
 </script>
