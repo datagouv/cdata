@@ -137,17 +137,15 @@
             class="grid grid-cols-1 gap-4"
             role="listbox"
           >
-            <template v-for="schema in filteredSchemas">
-              <SchemaCard
-                v-if="!form.selectedSchema || form.selectedSchema.name === schema.name"
-                :key="schema.name"
-                :schema
-                class="cursor-pointer"
-                :selectable="true"
-                :selected="schema.name === form.selectedSchema?.name"
-                @click="toggleSchema(schema)"
-              />
-            </template>
+            <SchemaCard
+              v-for="schema in filteredSchemas"
+              :key="schema.name"
+              :schema
+              class="cursor-pointer"
+              :selectable="true"
+              :selected="schema.name === form.selectedSchema?.name"
+              @click="toggleSchema(schema)"
+            />
           </div>
         </div>
 
