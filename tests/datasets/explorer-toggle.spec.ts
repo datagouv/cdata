@@ -1,20 +1,11 @@
-import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { createDatasetWithRemoteResources, deleteDatasets } from '../helpers'
+import { createDatasetWithRemoteResources, deleteDatasets, enableNewExplorer } from '../helpers'
 
 const createdDatasets: Array<string> = []
 
 test.afterEach(async ({ request }) => {
   await deleteDatasets(request, createdDatasets)
 })
-
-// The banner is the only way into the new explorer, and it only lives on the resources
-// tab: opt in from there, then navigate wherever the test needs to go.
-async function enableNewExplorer(page: Page, url: string) {
-  await page.goto(url)
-  await page.getByRole('button', { name: 'Tester la nouvelle navigation' }).click()
-  await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
-}
 
 test('switching back to the old navigation drops ?resource_id', async ({ page, request }) => {
   const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explorer toggle ${Date.now()}`, ['Fichier numero 01', 'Fichier numero 02'])
