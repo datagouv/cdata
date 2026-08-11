@@ -26,9 +26,9 @@
         v-if="RESOURCE_ID"
         :key="route.fullPath"
         :resource-id="RESOURCE_ID"
+        :initial-filters="filtersFromQuery"
         full-bleed
         :global-search="currentSearch"
-        :initial-filters="initialFilters"
         :row-href="{ columns: ['Numéro de dossier'], href: row => `/explore/cada/${row['Numéro de dossier']}` }"
         :no-format-columns="['Numéro de dossier']"
       >
@@ -222,7 +222,7 @@ const URL_PARAM_MAP: Record<string, UrlFilterParam> = {
   part: { column: 'Partie', operator: 'exact' },
 }
 
-const initialFilters = computed(() => {
+const filtersFromQuery = computed(() => {
   const f: Record<string, ColumnFilters> = {}
   for (const [param, { column, operator }] of Object.entries(URL_PARAM_MAP)) {
     const val = route.query[param]
