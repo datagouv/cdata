@@ -191,6 +191,28 @@ test.describe('Preview dashboard', () => {
     await expect(page.getByText(/format normalisé\s*=\s*csv/)).toBeVisible({ timeout: 10000 })
   })
 
+  test('applies the format filter on a direct deep-link load', async ({ page }) => {
+    await page.route(`**/api/resources/${resourceId}/data/**`, async (route) => {
+      await route.fulfill({
+        json: {
+          data: resourcesData,
+          meta: { page: 1, page_size: 50, total: 1 },
+          links: { profile: '', swagger: '', next: null, prev: null },
+        },
+      })
+    })
+
+    await page.route(`**/api/resources/${resourceId}/profile/**`, async (route) => {
+      await route.fulfill({ json: resourcesProfile })
+    })
+
+    await page.goto('/admin/beta/preview-dashboard/fichiers?format=csv')
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.getByRole('cell', { name: 'Données CSV' })).toBeVisible()
+    await expect(page.getByText(/format normalisé\s*=\s*csv/)).toBeVisible({ timeout: 10000 })
+  })
+
   test('keeps the filters added from the table when another one is removed', async ({ page }) => {
     await mockTabularApi(page)
 
