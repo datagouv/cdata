@@ -63,12 +63,13 @@
     >
       <FieldsetElement form-key="existingDataset">
         <div class="flex gap-8 items-start">
-          <div class="fr-checkbox-group m-0">
+          <div class="fr-radio-group m-0">
             <input
               id="mode-new"
-              type="checkbox"
-              :checked="publicationMode === 'new'"
-              @change="publicationMode = 'new'"
+              v-model="publicationMode"
+              type="radio"
+              name="publication-mode"
+              value="new"
             >
             <label
               class="fr-label"
@@ -77,12 +78,13 @@
               {{ $t("Créer un nouveau jeu de données") }}
             </label>
           </div>
-          <div class="fr-checkbox-group m-0">
+          <div class="fr-radio-group m-0">
             <input
               id="mode-existing"
-              type="checkbox"
-              :checked="publicationMode === 'existing'"
-              @change="publicationMode = 'existing'"
+              v-model="publicationMode"
+              type="radio"
+              name="publication-mode"
+              value="existing"
             >
             <label
               class="fr-label"
@@ -136,18 +138,25 @@
           <div
             class="grid grid-cols-1 gap-4"
             role="listbox"
+            tabindex="0"
+            :aria-label="$t('Résultats de la recherche de schéma')"
+            :aria-activedescendant="active"
+            @keydown="handleKeyPressForActiveDescendant"
+            @keydown.space="selectActiveSchema"
+            @keydown.enter="selectActiveSchema"
+            @focusout="focusOut"
           >
-            <template v-for="schema in filteredSchemas">
-              <SchemaCard
-                v-if="!form.selectedSchema || form.selectedSchema.name === schema.name"
-                :key="schema.name"
-                :schema
-                class="cursor-pointer"
-                :selectable="true"
-                :selected="schema.name === form.selectedSchema?.name"
-                @click="toggleSchema(schema)"
-              />
-            </template>
+            <SchemaCard
+              v-for="option in schemaOptions"
+              :id="option.id"
+              :key="option.id"
+              :schema="option.schema"
+              class="cursor-pointer"
+              :selectable="true"
+              :active="isActive(option.id)"
+              :selected="option.schema.name === form.selectedSchema?.name"
+              @click="toggleSchema(option.schema)"
+            />
           </div>
         </div>
 
@@ -189,7 +198,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SchemaCard, SimpleBanner, useGetCatalog } from '@datagouv/components-next'
+import { BrandedButton, SchemaCard, SimpleBanner, schemaMatchesQuery, useActiveDescendant, useGetCatalog } from '@datagouv/components-next'
 import type { Dataset, DatasetV2, RegisteredSchema } from '@datagouv/components-next'
 import { ref, onMounted, computed } from 'vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
@@ -262,15 +271,26 @@ async function loadSchemas() {
   }
 }
 
-const filteredSchemas = computed(() => schemas.value.filter((schema: RegisteredSchema) => {
-  if (!searchQuery.value.trim()) {
-    return false
-  }
-  const query = searchQuery.value.toLowerCase()
-  const titleMatch = schema.title?.toLowerCase().includes(query)
-  const descriptionMatch = schema.description?.toLowerCase().includes(query)
-  return titleMatch || descriptionMatch
-}))
+// `useActiveDescendant` identifies options by id, and a schema name is not a valid one
+const schemaOptionId = (schema: RegisteredSchema) => `schema-${schema.name.replace(/\W/g, '-')}`
+
+const filteredSchemas = computed(() => {
+  if (!searchQuery.value.trim()) return []
+  return schemas.value.filter(schema => schemaMatchesQuery(schema, searchQuery.value))
+})
+
+// The schema travels with its option id so the composable hands it back through
+// `activeOption`, rather than looking it up again here
+const schemaOptions = computed(() => filteredSchemas.value.map(schema => ({ id: schemaOptionId(schema), schema })))
+
+const { isActive, active, activeOption, focusOut, handleKeyPressForActiveDescendant } = useActiveDescendant(schemaOptions, 'vertical')
+
+function selectActiveSchema(event: Event) {
+  if (!activeOption.value) return
+
+  event.preventDefault()
+  toggleSchema(activeOption.value.schema)
+}
 
 async function toggleSchema(schema: RegisteredSchema) {
   if (form.value.selectedSchema && form.value.selectedSchema.name === schema.name) {

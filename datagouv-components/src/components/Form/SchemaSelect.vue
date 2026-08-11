@@ -8,6 +8,7 @@
     :placeholder="t('Tous les schémas')"
     :get-option-id="(s: RegisteredSchema) => s.name"
     :display-value="(s: RegisteredSchema) => s.name"
+    :filter="schemaMatchesQuery"
     :multiple="false"
   />
 </template>
@@ -16,6 +17,7 @@
 import { useTranslation } from '../../composables/useTranslation'
 import { useSelectModelSync } from '../../composables/useSelectModelSync'
 import { useFetch } from '../../functions/api'
+import { schemaMatchesQuery } from '../../functions/schemas'
 import type { RegisteredSchema } from '../../types/schemas'
 import SearchableSelect from './SearchableSelect.vue'
 

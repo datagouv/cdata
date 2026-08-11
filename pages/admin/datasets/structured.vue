@@ -133,12 +133,24 @@ const currentStepNumber = computed(() => {
   return step
 })
 
+// Every step of the wizard lives under the same path, so without this they would all
+// share one title in the tab bar and in the history
+useSeoMeta({
+  title: () => `${steps.value[currentStepNumber.value - 1] ?? ''} - ${t('Publication structurée')}`,
+  robots: 'noindex',
+})
+
 const isCurrentStepValid = computed(() => {
   const step = currentStepNumber.value
 
   if (step < 1) return false
   if (step > steps.value.length) return false
   if (step === 4 && !newDataset.value) return false
+  // The form only lives in `useState`, so a page reload past the first step lands on a
+  // screen missing its schema and producer instead of a working one. The last step is
+  // left out: `save()` empties the form once published, and that screen only reads
+  // `newDataset`.
+  if (step > 1 && step < 4 && !(associateSchemaForm.value.selectedSchema && associateSchemaForm.value.owned)) return false
 
   return true
 })
