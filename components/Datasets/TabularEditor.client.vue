@@ -57,7 +57,10 @@
 
           {{ unrecognizedColumnsMessage }}
 
-          <DisclosurePanel class="fr-table mt-1 fr-mb-0">
+          <DisclosurePanel
+            v-if="detailedErrors.length"
+            class="fr-table mt-1 fr-mb-0"
+          >
             <table>
               <thead>
                 <tr>
@@ -238,10 +241,11 @@ const statusMessage = computed(() => {
       n: validationReport.value.report?.stats?.rows_processed ?? 0,
     })
   }
-  const errorsCount = validationReport.value.report?.errors?.length ?? 0
-  return t(`{errors} erreurs sur {n} ligne. Corrigez-les pour pouvoir continuer. | {errors} erreurs sur {n} lignes. Corrigez-les pour pouvoir continuer.`, {
-    errors: errorsCount,
-    n: errorRowsCount.value,
+  const errorsLabel = t(`{n} erreur | {n} erreurs`, { n: validationReport.value.report?.errors?.length ?? 0 })
+  const rowsLabel = t(`{n} ligne | {n} lignes`, { n: errorRowsCount.value })
+  return t(`{errors} sur {rows} à corriger pour pouvoir continuer.`, {
+    errors: errorsLabel,
+    rows: rowsLabel,
   })
 })
 

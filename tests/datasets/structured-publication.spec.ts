@@ -400,7 +400,7 @@ test.describe('fichier qui ne correspond pas au schéma', () => {
 
     await startWizard(page, 'reparabilite')
     await uploadAndOpenSpreadsheet(page, 'lave-linge-virgule.csv')
-    await expect(page.getByText('3 erreurs sur 1 ligne. Corrigez-les pour pouvoir continuer.')).toBeVisible()
+    await expect(page.getByText('3 erreurs sur 1 ligne à corriger pour pouvoir continuer.')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Suivant' })).toBeDisabled()
 
     // Back to the first step through the banner's own action
@@ -417,7 +417,7 @@ test.describe('fichier qui ne correspond pas au schéma', () => {
     await page.getByRole('button', { name: 'Suivant' }).click()
 
     await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible()
-    await expect(page.getByText('Corrigez-les pour pouvoir continuer')).toHaveCount(0)
+    await expect(page.getByText('à corriger pour pouvoir continuer')).toHaveCount(0)
     await expect(page.getByText('colonnes de votre fichier sont inconnues')).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Suivant' })).toBeEnabled()
   })
@@ -431,7 +431,7 @@ test.describe('validation', () => {
     await startWizard(page, 'durabilite')
     await uploadAndOpenSpreadsheet(page, 'lave-linge-virgule.csv')
 
-    await expect(page.getByText('2 erreurs sur 1 ligne. Corrigez-les pour pouvoir continuer.')).toBeVisible()
+    await expect(page.getByText('2 erreurs sur 1 ligne à corriger pour pouvoir continuer.')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Suivant' })).toBeDisabled()
 
     // The detail is collapsed until the banner's title is used as a toggle
@@ -439,6 +439,35 @@ test.describe('validation', () => {
     await page.getByRole('button', { name: /erreurs sur 1 ligne/ }).click()
     await expect(page.getByText('La valeur de la colonne 1 est incorrecte')).toBeVisible()
     await expect(page.getByText('La valeur de la colonne 2 est incorrecte')).toBeVisible()
+  })
+
+  test('une erreur unique sur une ligne unique accorde les deux comptes au singulier', async ({ page }) => {
+    const apis = await stubPublicationApis(page)
+    apis.validation = reportWithErrors(1)
+
+    await startWizard(page, 'durabilite')
+    await uploadAndOpenSpreadsheet(page, 'lave-linge-virgule.csv')
+
+    await expect(page.getByText('1 erreur sur 1 ligne à corriger pour pouvoir continuer.')).toBeVisible()
+  })
+
+  test('revalider sans erreur referme le rapport laissé ouvert', async ({ page }) => {
+    const apis = await stubPublicationApis(page)
+    apis.validation = reportWithErrors(2)
+
+    // A schema with unknown columns keeps the banner up once the errors are gone, which is
+    // what leaves the report on screen with nothing to show and no way to collapse it
+    await startWizard(page, 'reparabilite')
+    await uploadAndOpenSpreadsheet(page, 'lave-linge-virgule.csv')
+
+    await page.getByRole('button', { name: /erreurs sur 1 ligne/ }).click()
+    await expect(page.getByText('La valeur de la colonne 1 est incorrecte')).toBeVisible()
+
+    apis.validation = VALID_REPORT
+    await page.getByRole('button', { name: 'Valider les données' }).click()
+
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible()
+    await expect(page.getByRole('columnheader', { name: 'Erreur' })).toHaveCount(0)
   })
 
   test('la saisie manuelle explique pourquoi « Suivant » est grisé', async ({ page }) => {
