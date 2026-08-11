@@ -6,6 +6,7 @@ export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:70
 export type ApiDataset = { id: string, title: string, slug: string }
 export type ApiResource = { id: string, title: string, latest: string, url: string }
 export type ApiHarvestSource = { id: string, name: string, backend: string, schedule: string | null, config: Record<string, unknown> }
+export type ApiOrganization = { id: string, name: string }
 
 export async function createHarvestSource(request: APIRequestContext, name: string, backend: string, config: Record<string, unknown> = {}): Promise<ApiHarvestSource> {
   const response = await request.post(`${API_BASE}/api/1/harvest/sources/`, {
@@ -77,6 +78,22 @@ export async function enableNewExplorer(page: Page, url: string): Promise<void> 
 export async function deleteDatasets(request: APIRequestContext, ids: Array<string>): Promise<void> {
   for (const id of ids.splice(0)) {
     await request.delete(`${API_BASE}/api/1/datasets/${id}/`)
+  }
+}
+
+export async function createOrganization(request: APIRequestContext, name: string): Promise<ApiOrganization> {
+  const response = await request.post(`${API_BASE}/api/1/organizations/`, {
+    data: { name, description: 'Organisation créée par les tests end to end' },
+  })
+  if (!response.ok()) {
+    throw new Error(`Failed to create organization "${name}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+  return await response.json()
+}
+
+export async function deleteOrganizations(request: APIRequestContext, ids: Array<string>): Promise<void> {
+  for (const id of ids.splice(0)) {
+    await request.delete(`${API_BASE}/api/1/organizations/${id}/`)
   }
 }
 

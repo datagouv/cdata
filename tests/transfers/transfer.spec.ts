@@ -1,15 +1,13 @@
 import type { APIRequestContext, Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, deleteDatasets } from '../helpers'
+import { API_BASE, createDataset, createOrganization, deleteDatasets, deleteOrganizations } from '../helpers'
 
 const createdDatasets: Array<string> = []
 const createdOrganizations: Array<string> = []
 
 test.afterEach(async ({ request }) => {
   await deleteDatasets(request, createdDatasets)
-  for (const id of createdOrganizations.splice(0)) {
-    await request.delete(`${API_BASE}/api/1/organizations/${id}/`)
-  }
+  await deleteOrganizations(request, createdOrganizations)
 })
 
 async function createDatasetAndOrganization(request: APIRequestContext, uniqueId: number) {
@@ -18,13 +16,7 @@ async function createDatasetAndOrganization(request: APIRequestContext, uniqueId
 
   // The admin creating the organization becomes a member, so the same user
   // can request the transfer and accept it on behalf of the organization.
-  const organizationResponse = await request.post(`${API_BASE}/api/1/organizations/`, {
-    data: {
-      name: `Org transfert ${uniqueId}`,
-      description: 'Organisation destinataire du transfert',
-    },
-  })
-  const organization = await organizationResponse.json()
+  const organization = await createOrganization(request, `Org transfert ${uniqueId}`)
   createdOrganizations.push(organization.id)
 
   return { dataset, organization }

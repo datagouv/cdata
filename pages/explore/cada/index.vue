@@ -40,7 +40,7 @@
         :key="route.fullPath"
         :resource-id="RESOURCE_ID"
         :global-search="currentSearch"
-        :initial-filters="initialFilters"
+        :initial-filters="filtersFromQuery"
       >
         <TabularToolbar class="py-3" />
         <TabularTable
@@ -227,7 +227,7 @@ const URL_PARAM_MAP: Record<string, UrlFilterParam> = {
   part: { column: 'Partie', operator: 'exact' },
 }
 
-const initialFilters = computed(() => {
+const filtersFromQuery = computed(() => {
   const f: Record<string, ColumnFilters> = {}
   for (const [param, { column, operator }] of Object.entries(URL_PARAM_MAP)) {
     const val = route.query[param]
