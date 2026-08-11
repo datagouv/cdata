@@ -318,6 +318,19 @@ test.describe('import de fichiers', () => {
     await expect(page.getByText('colonnes de votre fichier sont inconnues')).toHaveCount(0)
   })
 
+  test('un CSV séparé par des tabulations est lu comme tel', async ({ page }) => {
+    await stubPublicationApis(page)
+
+    // The delimiter guess used to be thrown off by the trailing newline and fell back
+    // to the comma, which splits the values that hold one
+    await startWizard(page, 'durabilite')
+    await uploadAndOpenSpreadsheet(page, 'lave-linge-tabulation.csv')
+
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible()
+    await expect(page.getByText('8690842902635', { exact: true })).toBeVisible()
+    await expect(page.getByText('colonnes de votre fichier sont inconnues')).toHaveCount(0)
+  })
+
   test('un XLSX garde ses identifiants longs et ses dates', async ({ page }) => {
     await stubPublicationApis(page)
 
