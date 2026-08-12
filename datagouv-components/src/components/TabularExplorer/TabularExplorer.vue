@@ -45,6 +45,10 @@ const props = defineProps<{
   // The explorer owns them afterwards: later changes to this prop are ignored,
   // so pass a fresh instance (or remount) to reset them.
   initialFilters?: Record<string, ColumnFilters>
+  // Sort seeded on mount, e.g. { column: 'Séance', direction: 'desc' }.
+  // Same ownership rule as `initialFilters`: the explorer owns it afterwards,
+  // and the user can drop it from the active-sort chip.
+  initialSort?: SortConfig
 }>()
 
 const { t } = useTranslation()
@@ -76,7 +80,7 @@ const {
 } = useColumnMetadata(profileData, allColumns, t)
 
 // Sort & filter state
-const sort = ref<SortConfig | null>(null)
+const sort = ref<SortConfig | null>(props.initialSort ? { ...props.initialSort } : null)
 const filters = ref<Record<string, ColumnFilters>>({ ...props.initialFilters })
 
 const PAGE_SIZE = 50

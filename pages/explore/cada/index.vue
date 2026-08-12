@@ -41,6 +41,7 @@
         :resource-id="RESOURCE_ID"
         :global-search="currentSearch"
         :initial-filters="filtersFromQuery"
+        :initial-sort="{ column: 'Séance', direction: 'desc' }"
       >
         <TabularToolbar class="py-3" />
         <TabularTable

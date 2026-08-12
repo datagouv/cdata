@@ -133,6 +133,22 @@ test('a year column keeps its digits unformatted too', async ({ page }) => {
   expect(year).toMatch(/^\d{4}$/)
 })
 
+test('the advices are listed with the most recent hearing first', async ({ page }) => {
+  await gotoExplore(page)
+
+  const index = await columnIndex(page, 'Séance')
+  const cells = await page.locator('table tbody tr').locator(`td:nth-child(${index + 1})`).allInnerTexts()
+  expect(cells.length).toBeGreaterThan(1)
+
+  // Cells are rendered as `dd/mm/yyyy`, which does not sort as a string.
+  const dates = cells.map((cell) => {
+    const [day, month, year] = cell.trim().split('/')
+    expect(year, `${cell} is a formatted date`).toBeDefined()
+    return `${year}-${month}-${day}`
+  })
+  expect(dates).toEqual([...dates].sort().reverse())
+})
+
 test('clicking a row link navigates instead of opening the cell popover', async ({ page }) => {
   await gotoExplore(page)
 
