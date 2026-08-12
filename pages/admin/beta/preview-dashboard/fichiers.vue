@@ -2,11 +2,15 @@
   <TabularExplorer
     :resource-id="config.public.tabularApiPreviewResourcesId"
     :initial-filters="initialFilters"
-  />
+  >
+    <TabularToolbar class="py-3" />
+    <TabularTable />
+    <TabularMobileFilters />
+  </TabularExplorer>
 </template>
 
 <script setup lang="ts">
-import { TabularExplorer } from '@datagouv/components-next'
+import { TabularExplorer, TabularMobileFilters, TabularTable, TabularToolbar } from '@datagouv/components-next'
 import { buildFiltersFromQuery } from '~/utils/previewDashboard'
 
 const config = useRuntimeConfig()
