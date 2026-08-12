@@ -235,6 +235,25 @@ test.describe('global search', () => {
   }
 })
 
+test.describe('mobile', () => {
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  test('scrolling to the bottom of the card list loads the next page', async ({ page }) => {
+    await gotoExplore(page)
+
+    // Below `md` the table is replaced by a list of cards, which has to page the
+    // same way the table does.
+    const cards = page.getByTestId('mobile-row')
+    await expect(cards.first()).toBeVisible({ timeout: 30000 })
+    const firstPage = await cards.count()
+    expect(firstPage).toBeGreaterThan(0)
+
+    await cards.last().scrollIntoViewIfNeeded()
+
+    await expect.poll(() => cards.count(), { timeout: 30000 }).toBeGreaterThan(firstPage)
+  })
+})
+
 test.describe('column filter', () => {
   test('date column filter shows a date input', async ({ page }) => {
     await gotoExplore(page)

@@ -4,8 +4,8 @@
   </PreviewUnavailable>
   <div
     v-else
-    id="map"
     ref="mapRef"
+    class="size-full"
   />
 </template>
 
@@ -128,10 +128,3 @@ onMounted(() => {
   displayMap()
 })
 </script>
-
-<style>
-  #map {
-    width: 100%;
-    height: 500px;
-  }
-</style>

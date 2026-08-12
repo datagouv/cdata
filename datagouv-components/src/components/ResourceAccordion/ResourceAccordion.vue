@@ -197,7 +197,10 @@
             :key="tab.key"
             class="px-4"
           >
-            <div v-if="tab.key === 'map'">
+            <div
+              v-if="tab.key === 'map'"
+              class="-mx-4 h-[600px]"
+            >
               <Pmtiles
                 v-if="hasPmtiles"
                 :resource="resource"

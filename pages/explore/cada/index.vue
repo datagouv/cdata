@@ -21,30 +21,35 @@
       </p>
     </div>
 
+    <!-- Outside the explorer: the search drives the query, so it has to stay
+         reachable when that query failed. -->
+    <form
+      class="py-3"
+      @submit.prevent="applySearch"
+    >
+      <SearchInput
+        v-model="searchQuery"
+        :placeholder="$t('Rechercher par objet, administration, thème, mots-clés…')"
+        :auto-focus="false"
+      />
+    </form>
+
     <ClientOnly>
       <TabularExplorer
         v-if="RESOURCE_ID"
         :key="route.fullPath"
         :resource-id="RESOURCE_ID"
+        :global-search="currentSearch"
         :initial-filters="filtersFromQuery"
         :initial-sort="{ column: 'Séance', direction: 'desc' }"
-        full-bleed
-        :global-search="currentSearch"
-        :row-href="{ columns: ['Numéro de dossier'], href: row => `/explore/cada/${row['Numéro de dossier']}` }"
-        :no-format-columns="['Numéro de dossier']"
       >
-        <template #toolbar-top>
-          <form
-            class="py-3"
-            @submit.prevent="applySearch"
-          >
-            <SearchInput
-              v-model="searchQuery"
-              :placeholder="$t('Rechercher par objet, administration, thème, mots-clés…')"
-              :auto-focus="false"
-            />
-          </form>
-        </template>
+        <TabularToolbar class="py-3" />
+        <TabularTable
+          full-bleed
+          :row-href="{ columns: ['Numéro de dossier'], href: row => `/explore/cada/${row['Numéro de dossier']}` }"
+          :no-format-columns="['Numéro de dossier']"
+        />
+        <TabularMobileFilters />
       </TabularExplorer>
       <template #fallback>
         <div class="bg-gray-100 rounded-lg py-12 text-center text-gray-medium">
@@ -181,7 +186,7 @@
 </template>
 
 <script setup lang="ts">
-import { SearchInput, TabularExplorer, TranslationT, provideTabularProfile } from '@datagouv/components-next'
+import { SearchInput, TabularExplorer, TabularMobileFilters, TabularTable, TabularToolbar, TranslationT, provideTabularProfile } from '@datagouv/components-next'
 import type { ColumnFilters } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'

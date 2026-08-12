@@ -28,12 +28,12 @@
             :subject="{ id: dataset.id, class: 'Dataset' }"
           />
           <BrandedButton
-            v-if="exploreUrl"
-            :href="exploreUrl"
-            :icon="RiExternalLinkFill"
+            v-if="exploreHref"
+            :href="exploreHref"
+            :icon="newExplorerEnabled ? RiFullscreenLine : RiExternalLinkFill"
             icon-right
             size="xs"
-            new-tab
+            :new-tab="!newExplorerEnabled"
             @click="$matomo.trackEvent('Jeux de données', 'Explorer les données', 'Bouton : explorer les données')"
           >
             {{ $t("Explorer les données") }}
@@ -476,7 +476,6 @@ import {
   DatasetQuality,
   isOrganizationCertified,
   LoadingBlock,
-  type Resource,
   BrandedButton,
   useFormatDate,
   StatBox,
@@ -490,12 +489,14 @@ import {
   type DatasetMetrics,
   TranslationT,
   getDescriptionShort,
+  type Resource,
   RESOURCE_EXPLORER_PAGE_SIZE,
 } from '@datagouv/components-next'
 import {
   RiDeleteBinLine,
   RiExternalLinkFill,
   RiExternalLinkLine,
+  RiFullscreenLine,
   RiLockLine,
 } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
@@ -607,6 +608,8 @@ onMounted(async () => {
   ])
 })
 
+const { enabled: newExplorerEnabled } = useNewExplorer()
+
 // Use the same cache key as ResourceExplorer's `main` fetch (dataset id + identical params)
 // so Nuxt dedupes the two into a single request on the resources tab. Every part of the key
 // must stay byte-for-byte identical to the explorer's `mainParams`, otherwise the keys diverge
@@ -627,6 +630,15 @@ const exploreUrl = computed(() => {
     return resource.preview_url
   }
   return null
+})
+
+// A single "Explorer" entry point on every tab of the dataset, pointing at the explorer
+// the visitor is actually on: the legacy one, external and limited to the resources it
+// knows how to preview, or the fullscreen page, which handles any resource. Uses the slug
+// so the fullscreen page doesn't answer with a slug redirect.
+const exploreHref = computed(() => {
+  if (!newExplorerEnabled.value) return exploreUrl.value
+  return dataset.value?.resources.total ? `/explore/${dataset.value.slug}` : null
 })
 
 const { data: badgeTranslations } = await useAPI<Record<string, string>>(

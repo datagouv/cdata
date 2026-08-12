@@ -1,9 +1,9 @@
 import type { APIRequestContext, Page } from '@playwright/test'
-import { test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
-export type ApiDataset = { id: string, title: string }
+export type ApiDataset = { id: string, title: string, slug: string }
 export type ApiResource = { id: string, title: string, latest: string, url: string }
 export type ApiHarvestSource = { id: string, name: string, backend: string, schedule: string | null, config: Record<string, unknown> }
 export type ApiOrganization = { id: string, name: string }
@@ -65,6 +65,14 @@ export async function createDatasetWithRemoteResources(request: APIRequestContex
   }
 
   return { dataset, resources }
+}
+
+// The banner is the only way into the new explorer, and it only lives on the resources
+// tab: opt in from there, then navigate wherever the test needs to go.
+export async function enableNewExplorer(page: Page, url: string): Promise<void> {
+  await page.goto(url)
+  await page.getByRole('button', { name: 'Tester la nouvelle navigation' }).click()
+  await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
 }
 
 export async function deleteDatasets(request: APIRequestContext, ids: Array<string>): Promise<void> {
