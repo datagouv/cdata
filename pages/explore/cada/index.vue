@@ -27,6 +27,7 @@
         :key="route.fullPath"
         :resource-id="RESOURCE_ID"
         :initial-filters="filtersFromQuery"
+        :initial-sort="{ column: 'Séance', direction: 'desc' }"
         full-bleed
         :global-search="currentSearch"
         :row-href="{ columns: ['Numéro de dossier'], href: row => `/explore/cada/${row['Numéro de dossier']}` }"
