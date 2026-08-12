@@ -146,7 +146,9 @@ export async function useDatasetResources(datasetGetter: MaybeRefOrGetter<Datase
 
   function updateSearch(newSearch: string) {
     search.value = newSearch
-    flush()
+    // Only a reset skips the debounce: typing must stay debounced, since each
+    // change fires one request per resource type.
+    if (!newSearch) flush()
   }
 
   return {

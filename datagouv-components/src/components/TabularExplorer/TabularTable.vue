@@ -182,6 +182,7 @@
       <div
         v-for="(row, i) in allRows"
         :key="row.__id ?? i"
+        data-testid="mobile-row"
         class="border border-gray-default rounded-lg p-3 space-y-2"
         :class="i % 2 === 1 ? 'bg-gray-lowest-2' : 'bg-white'"
       >
@@ -238,6 +239,13 @@
           {{ mobileExpandedRows.has(i) ? t('Moins') : `+${displayedColumns.length - 4} ${t('champs')}` }}
         </button>
       </div>
+      <!-- Each layout needs its own loader: a `display: none` sentinel never
+           intersects. No `root` here, the cards scroll with the page rather than
+           inside a container. -->
+      <InfiniteLoader
+        v-if="hasMore"
+        @intersect="loadNextPage"
+      />
     </div>
   </div>
 </template>
