@@ -686,6 +686,10 @@ const props = defineProps<{
   // The explorer owns them afterwards: later changes to this prop are ignored,
   // so pass a fresh instance (or remount) to reset them.
   initialFilters?: Record<string, ColumnFilters>
+  // Sort seeded on mount, e.g. { column: 'Séance', direction: 'desc' }.
+  // Same ownership rule as `initialFilters`: the explorer owns it afterwards,
+  // and the user can drop it from the active-sort chip.
+  initialSort?: SortConfig
   // When set, renders <a> tags inside the specified column cells for native
   // browser UX (hover URL, ctrl+click, middle-click).
   rowHref?: { columns: string[], href: (row: TabularRow) => string }
@@ -762,7 +766,7 @@ function getColumnType(col: string): ColumnType {
 }
 
 // Sort & filter state
-const sort = ref<SortConfig | null>(null)
+const sort = ref<SortConfig | null>(props.initialSort ? { ...props.initialSort } : null)
 const filters = ref<Record<string, ColumnFilters>>({ ...props.initialFilters })
 
 const PAGE_SIZE = 50
