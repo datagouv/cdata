@@ -28,12 +28,15 @@ import { computed } from 'vue'
 
 const props = withDefaults(defineProps<{
   articleClass?: string | string[] | Record<string, boolean>
-  mediaSize?: 'sm' | 'lg'
+  mediaSize?: 'sm' | 'lg' | 'xl'
 }>(), {
   mediaSize: 'sm',
 })
 
 const mediaContainerClass = computed(() => {
+  if (props.mediaSize === 'xl') {
+    return 'w-[250px] h-[190px]'
+  }
   if (props.mediaSize === 'lg') {
     return 'w-[225px] h-[120px]'
   }

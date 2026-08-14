@@ -1,5 +1,5 @@
 <template>
-  <ObjectCard media-size="lg">
+  <ObjectCard media-size="xl">
     <template #media>
       <img
         v-if="chart.image"

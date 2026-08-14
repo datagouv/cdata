@@ -349,15 +349,12 @@ test('saving chart sends correct data to API', async ({ page, baseURL }) => {
   await page.getByLabel('Description').fill('Test Description')
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
-  const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
 
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
   const response = await responsePromise
   const responseBody = (await response.json()) as Chart
-  await getPromise
 
   expect(responseBody!.title).toBe('Test Chart')
-  expect(await page.getByLabel('Graphiques existants').inputValue()).toBe(responseBody!.id)
   await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody!.id}/`)
 })
 
@@ -368,60 +365,16 @@ test('saving chart shows success message', async ({ page, baseURL }) => {
   await page.getByLabel('Description').fill('Test Description')
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
-  const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
 
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
   const response = await responsePromise
   const responseBody = (await response.json()) as Chart
-  await getPromise
 
   await page.waitForTimeout(300)
 
   await expect(page.getByText('Graphique sauvegardé !')).toBeVisible()
 
   await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody!.id}/`)
-})
-
-test('existing charts selector shows placeholder option', async ({ page }) => {
-  await page.goto('/admin/beta/chart')
-
-  await page.waitForLoadState('networkidle')
-
-  const chartOptions = await page.getByLabel('Graphiques existants').locator('option').allTextContents()
-
-  expect(chartOptions[0]).toBe('Sélectionnez un graphique')
-})
-
-test('load button is disabled without selected chart', async ({ page }) => {
-  await page.goto('/admin/beta/chart')
-  await page.waitForLoadState('networkidle')
-
-  const loadButton = page.getByRole('button', { name: 'Charger' })
-  await expect(loadButton).toBeDisabled()
-})
-
-test('load button becomes enabled when chart is selected', async ({ page, baseURL }) => {
-  await setupChart(page)
-
-  await page.getByLabel('Titre').fill('Chart to load')
-  await page.getByLabel('Description').fill('Chart to load description')
-
-  const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
-  const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
-
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
-  const response = await responsePromise
-  const responseBody = (await response.json()) as Chart
-  await getPromise
-
-  const chartId = responseBody!.id
-
-  await page.getByLabel('Graphiques existants').selectOption(chartId)
-
-  const loadButton = page.getByRole('button', { name: 'Charger' })
-  await expect(loadButton).toBeEnabled()
-
-  await page.request.delete(`${baseURL}/api/1/visualizations/${chartId}/`)
 })
 
 test('complete chart configuration flow', async ({ page, baseURL }) => {
@@ -454,18 +407,15 @@ test('complete chart configuration flow', async ({ page, baseURL }) => {
   await page.getByLabel('Position unité').selectOption('prefix')
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
-  const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
 
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
   const response = await responsePromise
   const responseBody = (await response.json()) as Chart
-  await getPromise
 
   await page.waitForTimeout(300)
   await expect(page.getByText('Graphique sauvegardé !')).toBeVisible()
 
   expect(responseBody!.title).toBe('Graphique complet')
-  expect(await page.getByLabel('Graphiques existants').inputValue()).toBe(responseBody!.id)
 
   expect(await page.getByLabel('Titre').inputValue()).toBe('Graphique complet')
   expect(await page.getByLabel('Description').inputValue()).toBe('Test complet de configuration')
@@ -581,100 +531,13 @@ test('saving chart with count aggregation round-trips correctly', async ({ page,
   await clickOutside(page)
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
-  const getPromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET')
 
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
   const response = await responsePromise
   const responseBody = (await response.json()) as Chart
-  await getPromise
 
   expect(responseBody.series[0].aggregate_y).toBe('count')
   expect(responseBody.series[0].column_y).toBe(responseBody.x_axis.column_x)
-  expect(await page.getByLabel('Graphiques existants').inputValue()).toBe(responseBody.id)
 
   await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody.id}/`)
-})
-
-test('y-axis columns should not be empty after selecting resource from loaded chart', async ({ page, baseURL }) => {
-  await setupChart(page)
-
-  await page.getByLabel('Titre').fill('Test Columns Wipe')
-  await page.getByLabel('Description').fill('Test')
-
-  const saveResponsePromise = page.waitForResponse(response =>
-    response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST',
-  )
-  const imageResponsePromise = page.waitForResponse(response =>
-    response.url().includes('/image/') && response.request().method() === 'POST',
-  )
-  const getPromise = page.waitForResponse(response =>
-    response.url().includes('/api/1/visualizations/') && response.request().method() === 'GET',
-  )
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
-  const saveResponse = await saveResponsePromise
-  const chartData = (await saveResponse.json()) as Chart
-  await getPromise
-  await imageResponsePromise
-
-  await page.reload()
-  await page.waitForLoadState('networkidle')
-
-  await page.getByLabel('Graphiques existants').selectOption(chartData.id)
-  await page.getByRole('button', { name: 'Charger' }).click()
-  await page.waitForLoadState('networkidle')
-
-  await page.getByTestId('producer-select').click()
-  await page.getByRole('option', { name: 'Admin User', exact: true }).click()
-
-  const resourceSelect = page.getByLabel('Choix de la ressource')
-  const optionCount = await resourceSelect.locator('option').count()
-  if (optionCount >= 2) {
-    await resourceSelect.selectOption({ index: 1 })
-    await page.waitForTimeout(50)
-
-    await page.getByTestId('searchable-select-colonne-y').click()
-    await page.waitForTimeout(50)
-    const options = await page.getByRole('option').allTextContents()
-    await page.keyboard.press('Escape')
-
-    expect(options.length).toBeGreaterThan(0)
-  }
-
-  await page.request.delete(`${baseURL}/api/1/visualizations/${chartData.id}/`)
-})
-
-test('x-axis dropdown should show columns from all chart resources after loading', async ({ page, baseURL }) => {
-  await setupChart(page)
-
-  const saveResponsePromise = page.waitForResponse(response =>
-    response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST',
-  )
-  const imageResponsePromise = page.waitForResponse(response =>
-    response.url().includes('/image/') && response.request().method() === 'POST',
-  )
-  await page.getByLabel('Titre').fill('Test All Columns Loaded')
-  await page.getByLabel('Description').fill('Test')
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
-  const saveResponse = await saveResponsePromise
-  const chartData = (await saveResponse.json()) as Chart
-  await imageResponsePromise
-
-  await page.reload()
-  await page.waitForLoadState('networkidle')
-
-  await page.getByLabel('Graphiques existants').selectOption(chartData.id)
-  await page.getByRole('button', { name: 'Charger' }).click()
-  await page.waitForLoadState('networkidle')
-
-  await page.getByTestId('producer-select').click()
-  await page.getByRole('option', { name: 'Admin User', exact: true }).click()
-
-  await page.getByTestId('searchable-select-choisir-quoi-afficher').click()
-  const options = await page.getByRole('option').allTextContents()
-  await clickOutside(page)
-
-  expect(options.length).toBeGreaterThan(1)
-  expect(options.some(opt => opt !== 'Sélectionnez une option' && opt !== '')).toBeTruthy()
-
-  await page.request.delete(`${baseURL}/api/1/visualizations/${chartData.id}/`)
 })

@@ -80,46 +80,6 @@
       </div>
 
       <div class="col-span-5 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
-        <fieldset
-          v-if="isAdmin"
-          class="min-w-0 space-y-4"
-        >
-          <label
-            for="existing-charts"
-            class="mb-2 font-bold"
-          >
-            {{ $t('Graphiques existants') }}
-          </label>
-          <div class="flex gap-2">
-            <select
-              id="existing-charts"
-              v-model="selectedChartId"
-              class="flex-1 fr-select"
-            >
-              <option
-                value=""
-                disabled
-              >
-                {{ $t('Sélectionnez un graphique') }}
-              </option>
-              <option
-                v-for="column in charts?.data"
-                :key="column.id"
-                :value="column.id"
-              >
-                {{ column.title }}
-              </option>
-            </select>
-            <button
-              class="fr-btn"
-              type="button"
-              :disabled="!selectedChartId"
-              @click="loadSelectedChart"
-            >
-              {{ $t('Charger') }}
-            </button>
-          </div>
-        </fieldset>
         <fieldset class="min-w-0">
           <ProducerSelect
             v-model="producer"
@@ -477,7 +437,6 @@ import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularD
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartLine, RiCalculatorLine, RiLineChartLine, RiText } from '@remixicon/vue'
-import { useAPI } from '~/utils/api'
 import { isMeAdmin } from '~/utils/auth'
 import { keepValidSortCombined } from '~/utils/charts'
 import ChartFilterRow from './ChartFilterRow.vue'
@@ -508,7 +467,6 @@ const { t } = useTranslation()
 const hasTabularData = useHasTabularData()
 const getProfile = useGetProfile()
 const isAdmin = isMeAdmin()
-const { data: charts, refresh } = await useAPI<PaginatedArray<Chart>>('/api/1/visualizations/', { lazy: true })
 
 const $chartsApi = $fetch.create({
   baseURL: runtimeConfig.public.chartsApiBase as string,
@@ -524,6 +482,10 @@ const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/componen
 const form = defineModel<ChartForm>({
   required: true,
 })
+
+const props = defineProps<{
+  chartId?: string
+}>()
 
 const columns = ref<ColumnsDefinition>({})
 const producer = ref<Owned | null>(null)
@@ -541,7 +503,6 @@ watch(producer, (newProducer) => {
   }
 }, { immediate: true })
 const savedChart = ref<Chart | null>(null)
-const selectedChartId = ref('')
 
 const chartForViewer = ref(toChartApi(form.value))
 
@@ -835,19 +796,11 @@ async function loadChart(id: string) {
 
         selectedResource.value = data.series[0].resource_id
       }
-
-      toast.success(t('Graphique chargé !'))
     }
   }
   catch (error) {
     console.error('Failed to load chart:', error)
     toast.error(t('Erreur lors du chargement du graphique'))
-  }
-}
-
-function loadSelectedChart() {
-  if (selectedChartId.value) {
-    loadChart(selectedChartId.value)
   }
 }
 
@@ -881,8 +834,6 @@ async function saveChart() {
     }
 
     toast.success(update ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
-    await refresh()
-    selectedChartId.value = savedChart.value.id
   }
   catch (error) {
     console.error('Failed to save chart:', error)
@@ -1025,4 +976,8 @@ watch(
   },
   { immediate: true },
 )
+
+if (props.chartId) {
+  await loadChart(props.chartId)
+}
 </script>

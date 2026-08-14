@@ -151,6 +151,11 @@
               to="/admin/site/reuses"
             />
             <AdminSidebarLink
+              :icon="RiBarChartBoxLine"
+              :label="$t('Graphiques')"
+              to="/admin/site/charts"
+            />
+            <AdminSidebarLink
               :icon="RiBuilding2Line"
               :label="$t('Organisations')"
               to="/admin/site/organizations"
