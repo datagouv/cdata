@@ -9,6 +9,10 @@ export const GEOPF_PUSHABLE_FORMAT = 'gpkg'
 export type GeopfPushStatus = 'pending' | 'done' | 'error' | 'timeout'
 export type GeopfPullStatus = 'pending' | 'done' | 'error'
 
+// Large enough to cover a typical dataset's gpkg/offering resources in one request,
+// since only this small subset (eligible resources) is relevant to geopf sync.
+export const GEOPF_LIST_PAGE_SIZE = 100
+
 export function isGeopfPushable(resource: Resource): boolean {
   return resource.format?.toLowerCase() === GEOPF_PUSHABLE_FORMAT && !isGeopfOffering(resource)
 }

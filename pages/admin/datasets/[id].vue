@@ -122,7 +122,7 @@
           { href: `${getDatasetAdminUrl(dataset)}/files`, label: t('Fichiers') },
           { href: `${getDatasetAdminUrl(dataset)}/discussions`, label: t('Discussions') },
           { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activités'), show: dataset.permissions.edit },
-          { href: `${getDatasetAdminUrl(dataset)}/geopf`, label: t('Synchronisation cartes.gouv.fr'), show: config.public.geopfEnabled && dataset.permissions.edit_resources },
+          { href: `${getDatasetAdminUrl(dataset)}/geopf`, label: t('Synchronisation cartes.gouv.fr'), show: config.public.geopfEnabled && dataset.permissions.edit_resources && hasEligibleGeopfResource },
         ]"
       />
 
@@ -136,13 +136,15 @@
 
 <script setup lang="ts">
 import { BrandedButton, DatasetQualityTooltipContent, QualityScore, summarize, useFormatDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
-import type { Activity, DatasetV2WithFullObject } from '@datagouv/components-next'
+import type { Activity, DatasetV2WithFullObject, Resource } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiDownloadLine, RiEyeLine, RiLineChartLine, RiPriceTag3Line, RiStarLine } from '@remixicon/vue'
 import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
+import { geopfEligibilityRefreshKey } from '~/components/Datasets/geopfEligibilityRefreshKey'
 import type { PaginatedArray } from '~/types/types'
+import { GEOPF_LIST_PAGE_SIZE, isGeopfOffering, isGeopfPushable } from '~/utils/geopf'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 definePageMeta({
@@ -168,6 +170,17 @@ const { data: activities } = await useAPI<PaginatedArray<Activity>>('/api/1/acti
     sort: '-created_at',
   },
 })
+
+// Fetched only to decide whether the geopf tab is worth showing: a dataset with no
+// gpkg resource and nothing pulled back from cartes.gouv.fr has nothing to do there.
+const { data: geopfResources, refresh: refreshGeopfResources } = config.public.geopfEnabled
+  ? await useAPI<PaginatedArray<Resource>>(computed(() => dataset.value?.resources.href ?? ''), { query: { page_size: GEOPF_LIST_PAGE_SIZE } })
+  : { data: ref(null), refresh: async () => {} }
+const hasEligibleGeopfResource = computed(() => (geopfResources.value?.data ?? []).some(r => isGeopfPushable(r) || isGeopfOffering(r)))
+
+// The Files tab (a NuxtPage descendant) calls this after any resource change, so
+// a newly-uploaded gpkg makes the tab appear without a full page reload.
+provide(geopfEligibilityRefreshKey, () => refreshGeopfResources())
 
 // Stable reference: NuxtPage compares page-key by reference, so an inline function here
 // would re-trigger the loading indicator whenever `dataset` changes and this re-renders.

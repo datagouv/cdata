@@ -160,12 +160,7 @@ import GeopfPushButton from './GeopfPushButton.vue'
 import AdminTable from '../AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../AdminTable/Table/AdminTableTh.vue'
 import type { PaginatedArray } from '~/types/types'
-import { getGeopfFicheUrl, getGeopfOfferingLastSyncedAt, getGeopfPullState, getGeopfPushState, isGeopfOffering, isGeopfPushable } from '~/utils/geopf'
-
-// Large enough to cover a typical dataset's gpkg/offering resources in one request:
-// this view only lists a small subset (eligible resources), so full pagination
-// isn't needed, unlike the main Fichiers tab.
-const GEOPF_LIST_PAGE_SIZE = 100
+import { GEOPF_LIST_PAGE_SIZE, getGeopfFicheUrl, getGeopfOfferingLastSyncedAt, getGeopfPullState, getGeopfPushState, isGeopfOffering, isGeopfPushable } from '~/utils/geopf'
 
 const route = useRoute()
 const { $api } = useNuxtApp()

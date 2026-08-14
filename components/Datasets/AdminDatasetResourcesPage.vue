@@ -214,6 +214,7 @@ import AdminTableTh from '../AdminTable/Table/AdminTableTh.vue'
 import UploadResourceModal from './UploadResourceModal.vue'
 import FileEditModal from './FileEditModal.vue'
 import FileEditModalFromQueryStringClient from './FileEditModalFromQueryString.client.vue'
+import { geopfEligibilityRefreshKey } from './geopfEligibilityRefreshKey'
 import type { AdminBadgeType, CommunityResourceForm, PaginatedArray, ResourceForm } from '~/types/types'
 
 const route = useRoute()
@@ -242,9 +243,11 @@ const params = computed(() => {
   }
 })
 
+const refreshGeopfEligibility = inject(geopfEligibilityRefreshKey, () => {})
 const refreshResources = async () => {
   if (!dataset.value) return
   resourcesPage.value = await $api<PaginatedArray<Resource>>(dataset.value.resources.href, { query: params.value })
+  refreshGeopfEligibility()
 }
 watchEffect(async () => await refreshResources())
 
