@@ -1,10 +1,33 @@
 import type { APIRequestContext, Page } from '@playwright/test'
-import { test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
-export type ApiDataset = { id: string, title: string }
+export type ApiDataset = { id: string, title: string, slug: string }
 export type ApiResource = { id: string, title: string, latest: string, url: string }
+export type ApiHarvestSource = { id: string, name: string, backend: string, schedule: string | null, config: Record<string, unknown> }
+export type ApiOrganization = { id: string, name: string }
+
+export async function createHarvestSource(request: APIRequestContext, name: string, backend: string, config: Record<string, unknown> = {}): Promise<ApiHarvestSource> {
+  const response = await request.post(`${API_BASE}/api/1/harvest/sources/`, {
+    data: {
+      name,
+      backend,
+      url: 'https://example.com/csw',
+      config,
+    },
+  })
+  if (!response.ok()) {
+    throw new Error(`Failed to create harvest source "${name}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+  return await response.json()
+}
+
+export async function deleteHarvestSources(request: APIRequestContext, ids: Array<string>): Promise<void> {
+  for (const id of ids.splice(0)) {
+    await request.delete(`${API_BASE}/api/1/harvest/source/${id}/`)
+  }
+}
 
 export async function createDataset(request: APIRequestContext, title: string, description: string): Promise<ApiDataset> {
   const response = await request.post(`${API_BASE}/api/1/datasets/`, {
@@ -44,9 +67,33 @@ export async function createDatasetWithRemoteResources(request: APIRequestContex
   return { dataset, resources }
 }
 
+// The banner is the only way into the new explorer, and it only lives on the resources
+// tab: opt in from there, then navigate wherever the test needs to go.
+export async function enableNewExplorer(page: Page, url: string): Promise<void> {
+  await page.goto(url)
+  await page.getByRole('button', { name: 'Tester la nouvelle navigation' }).click()
+  await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
+}
+
 export async function deleteDatasets(request: APIRequestContext, ids: Array<string>): Promise<void> {
   for (const id of ids.splice(0)) {
     await request.delete(`${API_BASE}/api/1/datasets/${id}/`)
+  }
+}
+
+export async function createOrganization(request: APIRequestContext, name: string): Promise<ApiOrganization> {
+  const response = await request.post(`${API_BASE}/api/1/organizations/`, {
+    data: { name, description: 'Organisation créée par les tests end to end' },
+  })
+  if (!response.ok()) {
+    throw new Error(`Failed to create organization "${name}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+  return await response.json()
+}
+
+export async function deleteOrganizations(request: APIRequestContext, ids: Array<string>): Promise<void> {
+  for (const id of ids.splice(0)) {
+    await request.delete(`${API_BASE}/api/1/organizations/${id}/`)
   }
 }
 

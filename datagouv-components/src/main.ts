@@ -24,7 +24,7 @@ import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
 import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm, CombinedSort, ColumnDefinition, ColumnsDefinition } from './types/visualizations'
-import type { ColumnType } from './components/TabularExplorer/types'
+import type { ColumnFilters, ColumnType, TabularRow } from './components/TabularExplorer/types'
 import type { GlobalSearchConfig, SearchType, SearchTypeConfig, SortOption, HiddenFilter, BuiltInFilterKey, DatasetSearchConfig, DatasetSearchFilters, DataserviceSearchConfig, DataserviceSearchFilters, ReuseSearchConfig, ReuseSearchFilters, OrganizationSearchConfig, OrganizationSearchFilters, TopicSearchConfig, TopicSearchFilters } from './types/search'
 import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 import { useSearchFilter } from './composables/useSearchFilter'
@@ -108,6 +108,9 @@ import SelectGroup from './components/Form/SelectGroup.vue'
 import Listbox from './components/Form/Listbox.vue'
 import InfiniteLoader from './components/InfiniteLoader.vue'
 import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
+import TabularMobileFilters from './components/TabularExplorer/TabularMobileFilters.vue'
+import TabularTable from './components/TabularExplorer/TabularTable.vue'
+import TabularToolbar from './components/TabularExplorer/TabularToolbar.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 import { ofetch } from 'ofetch'
@@ -123,6 +126,8 @@ export * from './composables/useTranslation'
 export * from './composables/useHasTabularData'
 export * from './composables/useResourceCapabilities'
 export * from './composables/useTabularProfile'
+export * from './composables/useDatasetResources'
+export * from './composables/useResizable'
 
 export * from './functions/activities'
 export * from './functions/datasets'
@@ -258,8 +263,10 @@ export type {
   ChartForApi,
   CombinedSort,
   ColumnDefinition,
+  ColumnFilters,
   ColumnType,
   ColumnsDefinition,
+  TabularRow,
   FilterCondition,
   Filter,
   AndFilters,
@@ -411,4 +418,7 @@ export {
   Listbox,
   InfiniteLoader,
   TabularExplorer,
+  TabularMobileFilters,
+  TabularTable,
+  TabularToolbar,
 }

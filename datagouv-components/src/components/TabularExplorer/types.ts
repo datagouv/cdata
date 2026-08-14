@@ -62,7 +62,7 @@ export type TabularTopValue = {
   count: number
 }
 
-export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean'
+export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean' | 'year'
 
 export type ColumnFilters = {
   in?: string[]
@@ -78,9 +78,4 @@ export type SortDirection = 'asc' | 'desc'
 export type SortConfig = {
   column: string
   direction: SortDirection
-}
-
-export type BadgeStyle = {
-  backgroundColor: string
-  color: string
 }

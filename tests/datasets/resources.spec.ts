@@ -2,9 +2,8 @@ import type { APIRequestContext } from '@playwright/test'
 import { test, expect } from '../base'
 import { API_BASE, createDatasetWithRemoteResources, deleteDatasets } from '../helpers'
 
-// Pin the old resources layout: these tests target ResourceAccordion,
-// not the new explorer behind the ?new_explorer=1 feature flag.
-const LAYOUT_QUERY = 'new_explorer=0'
+// These tests target ResourceAccordion, which is what a visitor gets until they opt into
+// the new explorer from the banner — the cookie that carries the choice is absent here.
 
 const createdDatasets: Array<string> = []
 
@@ -34,7 +33,7 @@ test.describe('Public resources display', () => {
     expect(firstPage).toHaveLength(10)
     expect(secondPage).toHaveLength(2)
 
-    await page.goto(`/datasets/${dataset.id}/?${LAYOUT_QUERY}`)
+    await page.goto(`/datasets/${dataset.id}/`)
     await page.waitForLoadState('networkidle')
 
     // First page: 10 resources out of 12
@@ -57,7 +56,7 @@ test.describe('Public resources display', () => {
 
     const firstPage = await getDisplayedTitles(request, dataset.id, 1)
 
-    await page.goto(`/datasets/${dataset.id}/?${LAYOUT_QUERY}`)
+    await page.goto(`/datasets/${dataset.id}/`)
     await page.waitForLoadState('networkidle')
 
     await page.getByPlaceholder('Rechercher').fill('Fichier numero 07')
@@ -81,7 +80,7 @@ test.describe('Public resources display', () => {
     const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test public resources ${Date.now()}`, resourceTitles(1))
     createdDatasets.push(dataset.id)
 
-    await page.goto(`/datasets/${dataset.id}/?${LAYOUT_QUERY}`)
+    await page.goto(`/datasets/${dataset.id}/`)
     await page.waitForLoadState('networkidle')
 
     // navigator.clipboard only exists in secure contexts: CI runs on localhost
@@ -105,7 +104,7 @@ test.describe('Public resources display', () => {
     const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test public resources ${Date.now()}`, resourceTitles(3))
     createdDatasets.push(dataset.id)
 
-    await page.goto(`/datasets/${dataset.id}/?resource_id=${resources[1].id}&${LAYOUT_QUERY}`)
+    await page.goto(`/datasets/${dataset.id}/?resource_id=${resources[1].id}`)
     await page.waitForLoadState('networkidle')
 
     await expect(page.getByText('Vous consultez une resource spécifique.')).toBeVisible()
@@ -122,7 +121,7 @@ test.describe('Public resources display', () => {
     const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test public resources ${Date.now()}`, resourceTitles(1))
     createdDatasets.push(dataset.id)
 
-    await page.goto(`/datasets/${dataset.id}/?${LAYOUT_QUERY}`)
+    await page.goto(`/datasets/${dataset.id}/`)
     await page.waitForLoadState('networkidle')
 
     await page.getByTestId('expand-button').first().click()

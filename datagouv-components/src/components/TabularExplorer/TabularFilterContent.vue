@@ -61,18 +61,22 @@
       </div>
     </div>
 
-    <!-- Search (contains) -->
-    <div class="px-3 py-2 border-b border-black/10">
+    <!-- Search (contains) or date filter -->
+    <div
+      v-if="columnType !== 'boolean'"
+      class="px-3 py-2 border-b border-black/10"
+    >
       <div class="relative">
-        <RiSearchLine
+        <component
+          :is="searchField.icon"
           class="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-medium"
           aria-hidden="true"
         />
         <input
           v-model="search"
-          type="text"
+          :type="searchField.type"
           class="w-full h-8 text-sm border border-transparent rounded-lg py-1 pl-8 pr-3 bg-[#f3f3f5] focus:outline-none focus:border-new-primary"
-          :placeholder="t('Rechercher...')"
+          :placeholder="searchField.placeholder"
         >
       </div>
     </div>
@@ -100,14 +104,7 @@
           />
         </span>
         <span class="flex-1 truncate text-left text-xs">
-          <span
-            v-if="categoryBadgeStyles?.[top.value]"
-            class="inline-block rounded font-medium px-2 py-0.5 text-xs"
-            :style="{ backgroundColor: categoryBadgeStyles![top.value]!.backgroundColor, color: categoryBadgeStyles![top.value]!.color }"
-          >{{ top.value }}</span>
-          <template v-else>
-            {{ top.value ?? 'null' }}
-          </template>
+          {{ top.value ?? 'null' }}
         </span>
         <span class="font-mono text-xs text-gray-low tabular-nums shrink-0">{{ top.count }}</span>
       </button>
@@ -154,14 +151,14 @@
 
     <!-- Number range -->
     <form
-      v-if="columnType === 'number' && columnProfile"
+      v-if="(columnType === 'number' || columnType === 'year') && columnProfile"
       class="px-3 py-2 border-b border-black/10 space-y-2"
       @submit.prevent="applyRange"
     >
       <div class="flex items-center gap-2 text-xs text-gray-plain">
-        <span class="tabular-nums">{{ formatNumber(profileMin) }}</span>
+        <span class="tabular-nums">{{ columnType === 'year' ? profileMin : formatNumber(profileMin) }}</span>
         <span class="text-gray-medium">—</span>
-        <span class="tabular-nums">{{ formatNumber(profileMax) }}</span>
+        <span class="tabular-nums">{{ columnType === 'year' ? profileMax : formatNumber(profileMax) }}</span>
       </div>
       <div class="flex items-center gap-2">
         <input
@@ -213,13 +210,14 @@ import {
   RiArrowUpLine,
   RiArrowDownLine,
   RiSearchLine,
+  RiCalendarLine,
   RiCheckLine,
 } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useFormatTabular } from '../../functions/tabular'
 import BrandedButton from '../BrandedButton.vue'
 import ProgressBar from '../ProgressBar.vue'
-import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig, SortDirection, BadgeStyle } from './types'
+import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig, SortDirection } from './types'
 
 const props = defineProps<{
   column: string
@@ -227,7 +225,6 @@ const props = defineProps<{
   columnProfile: TabularColumnProfile | null
   nullPercent: string
   totalLines: number
-  categoryBadgeStyles?: Record<string, BadgeStyle>
   booleanCounts?: { trueCount: number, falseCount: number }
 }>()
 
@@ -239,13 +236,25 @@ const { formatNumber } = useFormatTabular()
 
 const search = ref('')
 
+// Numbers, years and dates are matched exactly (the API has no `contains` for
+// them), so the field offers the matching native picker instead of a text search.
+const searchField = computed(() => {
+  switch (props.columnType) {
+    case 'date': return { icon: RiCalendarLine, type: 'date', placeholder: '' }
+    case 'number':
+    case 'year': return { icon: RiSearchLine, type: 'number', placeholder: t('Rechercher...') }
+    default: return { icon: RiSearchLine, type: 'text', placeholder: t('Rechercher...') }
+  }
+})
+
 watchDebounced(search, (q) => {
   const existing = filters.value[props.column] ?? {}
+  const operator = props.columnType === 'number' || props.columnType === 'year' || props.columnType === 'date' ? 'exact' : 'contains'
   if (q) {
-    filters.value = { ...filters.value, [props.column]: { ...existing, contains: q } }
+    filters.value = { ...filters.value, [props.column]: { ...existing, [operator]: q } }
   }
   else {
-    const { contains: _, ...rest } = existing
+    const { [operator]: _, ...rest } = existing
     filters.value = { ...filters.value, [props.column]: rest }
   }
 }, { debounce: 300 })

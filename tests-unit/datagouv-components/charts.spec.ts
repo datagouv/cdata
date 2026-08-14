@@ -124,6 +124,20 @@ describe('buildColumnsFromProfile', () => {
     ])
   })
 
+  it('keeps a year column as a number, the only numeric type the chart stack knows', () => {
+    const yearFormatProfile: { profile: TabularProfile } = {
+      profile: {
+        ...profile.profile,
+        columns: {
+          ...profile.profile.columns,
+          year: { score: 1, format: 'year', python_type: 'int' },
+        },
+      },
+    }
+    const columns = buildColumnsFromProfile(yearFormatProfile)
+    expect(columns.find(c => c.name === 'year')).toEqual({ name: 'year', type: 'number', min: 2018, max: 2023 })
+  })
+
   it('drops non-numeric min/max values', () => {
     const invalidProfile: { profile: TabularProfile } = {
       profile: {

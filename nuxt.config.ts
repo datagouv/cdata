@@ -2,7 +2,6 @@ import { resolve } from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import toml from './rollup-plugin-smol-toml'
 
-const nbSitemapsDatasets = 10
 const isFrenchGovernment = true
 // const swrDuration = process.env.NUXT_TEMPLATE_CACHE_DURATION ? parseInt(process.env.NUXT_TEMPLATE_CACHE_DURATION) : 60
 // https://nuxt.com/docs/api/configuration/nuxt-config
@@ -77,6 +76,10 @@ export default defineNuxtConfig({
       schemaValidataUrl: 'https://validata.fr',
       tabularApiUrl: 'https://tabular-api.data.gouv.fr',
       tabularApiDataserviceId: undefined,
+      tabularApiPreviewResourcesId: '982d9dd0-365a-4c4b-8a83-75dec40c36bb',
+      tabularApiPreviewStatsId: '33cf9a65-3f77-4d88-acd1-bca420d83e60',
+      cadaResourceId: undefined,
+      cadaDatasetUrl: 'https://www.data.gouv.fr/datasets/avis-et-conseils-de-la-cada',
 
       qualityDescriptionLength: 100,
       searchDebounce: 300,
@@ -104,6 +107,11 @@ export default defineNuxtConfig({
       guidesCommunityResources: 'https://guides.data.gouv.fr/jeux-de-donnees/ressource-communautaire',
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
+
+      // Feedback form for the new resource explorer. Empty by default (set via
+      // NUXT_PUBLIC_EXPLORER_FEEDBACK_URL) — the banner's "Donner votre avis" link
+      // only shows when it is set.
+      explorerFeedbackUrl: '',
 
       // Grist endpoint for the "Suivi des ouvertures" table on /suivi-de-publication/engagements-et-demandes.
       // Provided through NUXT_PUBLIC_OUVERTURES_GRIST_BASE_URL / NUXT_PUBLIC_OUVERTURES_GRIST_TABLE
@@ -167,7 +175,7 @@ export default defineNuxtConfig({
       newsletterSubscriptionUrl: 'https://qvo970cr.sibpages.com/',
 
       maxNumberOfResourcesToUploadInParallel: 3,
-      resourceFileUploadChunk: 2 * 1000 * 1000,
+      resourceFileUploadChunk: 20 * 1000 * 1000,
       maxSortableFiles: 50,
 
       geopfEnabled: false,
@@ -392,45 +400,18 @@ export default defineNuxtConfig({
   sitemap: {
     cacheMaxAgeSeconds: 3600, // 1 hour
     sitemaps: {
-      content: {
+      static: {
         includeAppSources: true,
         exclude: ['/admin/**'],
       },
-      dataservices: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=dataservice',
-        ],
-      },
-      organizations: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=organization',
-        ],
-      },
-      posts: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=post',
-        ],
-      },
-      reuses: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=reuse',
-        ],
-      },
-      // split datasets between nbSitemapsDatasets sections
-      ...Array.from({ length: nbSitemapsDatasets }, (_, i) => i + 1).map(section => ({
-        [`datasets_${section}`]: {
-          sources: [
-            `/nuxt-api/sitemaps/urls?type=dataset&section=${section}&nbSitemapSections=${nbSitemapsDatasets}`,
-          ],
-        },
-      })).reduce((acc, obj) => ({ ...acc, ...obj }), {}),
       pages: {
         sources: [
           '/nuxt-api/sitemaps/pages',
         ],
       },
-      // TODO: add support
     },
+
+    // TODO: add /support pages
   },
   // TODO: add sentry config for stack traces based on source maps
   // https://docs.sentry.io/platforms/javascript/guides/nuxt/#add-readable-stack-traces-to-errors
