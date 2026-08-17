@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { createMemoryHistory, createRouter } from 'vue-router'
 import { humanJoin, redirectLegacyHashes, removeLangPrefix, useIsCurrentTab } from '~/utils/helpers'
 
 describe('removeLangPrefix', () => {
@@ -33,8 +34,14 @@ describe('humanJoin', () => {
 })
 
 describe('useIsCurrentTab', () => {
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [{ path: '/:pathMatch(.*)*', component: {} }],
+  })
+
   const setup = (fullPath: string, links: Array<{ href: string }>) => {
-    vi.stubGlobal('useRoute', () => ({ fullPath }))
+    vi.stubGlobal('useRouter', () => router)
+    vi.stubGlobal('useRoute', () => router.resolve(fullPath))
     vi.stubGlobal('useRequestURL', () => new URL('https://www.data.gouv.fr/'))
     vi.stubGlobal('useRuntimeConfig', () => ({ public: { apiBase: 'https://www.data.gouv.fr' } }))
     return useIsCurrentTab(links)

@@ -34,9 +34,6 @@ export function useIsCurrentUrl() {
   }
 }
 
-// Only used to parse relative URLs with the `URL` API, never sent anywhere.
-const PARSING_BASE_URL = 'http://relative.invalid'
-
 /**
  * Tells which link of a group of tabs is the current one.
  *
@@ -46,19 +43,19 @@ const PARSING_BASE_URL = 'http://relative.invalid'
  */
 export function useIsCurrentTab(links: MaybeRefOrGetter<Array<{ href: string }>>) {
   const absoluteUrlToRelative = useAbsoluteUrlToRelative()
+  const router = useRouter()
   const route = useRoute()
 
-  const parse = (url: string) => new URL(absoluteUrlToRelative(url), PARSING_BASE_URL)
+  const resolve = (url: string) => router.resolve(absoluteUrlToRelative(url))
 
-  const tabParams = computed(() => new Set(toValue(links).flatMap(link => [...parse(link.href).searchParams.keys()])))
+  const tabParams = computed(() => new Set(toValue(links).flatMap(link => Object.keys(resolve(link.href).query))))
 
   return (url: string): boolean => {
-    const link = parse(url)
-    const current = new URL(route.fullPath, PARSING_BASE_URL)
+    const link = resolve(url)
 
-    if (trimEndSlash(link.pathname) !== trimEndSlash(current.pathname)) return false
+    if (trimEndSlash(link.path) !== trimEndSlash(route.path)) return false
 
-    return [...tabParams.value].every(param => link.searchParams.get(param) === current.searchParams.get(param))
+    return [...tabParams.value].every(param => link.query[param] === route.query[param])
   }
 }
 
