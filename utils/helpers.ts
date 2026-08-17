@@ -34,6 +34,34 @@ export function useIsCurrentUrl() {
   }
 }
 
+// Only used to parse relative URLs with the `URL` API, never sent anywhere.
+const PARSING_BASE_URL = 'http://relative.invalid'
+
+/**
+ * Tells which link of a group of tabs is the current one.
+ *
+ * Unlike `useIsCurrentUrl`, only the query params that some tab actually sets are
+ * compared: any other param (a selected resource, a page number, a filter…) belongs
+ * to the page, not to the tab group, and must not deselect the current tab.
+ */
+export function useIsCurrentTab(links: MaybeRefOrGetter<Array<{ href: string }>>) {
+  const absoluteUrlToRelative = useAbsoluteUrlToRelative()
+  const route = useRoute()
+
+  const parse = (url: string) => new URL(absoluteUrlToRelative(url), PARSING_BASE_URL)
+
+  const tabParams = computed(() => new Set(toValue(links).flatMap(link => [...parse(link.href).searchParams.keys()])))
+
+  return (url: string): boolean => {
+    const link = parse(url)
+    const current = new URL(route.fullPath, PARSING_BASE_URL)
+
+    if (trimEndSlash(link.pathname) !== trimEndSlash(current.pathname)) return false
+
+    return [...tabParams.value].every(param => link.searchParams.get(param) === current.searchParams.get(param))
+  }
+}
+
 export function humanJoin(source: Array<string>): string {
   const array = [...source]
 

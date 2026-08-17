@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { humanJoin, redirectLegacyHashes, removeLangPrefix } from '~/utils/helpers'
+import { humanJoin, redirectLegacyHashes, removeLangPrefix, useIsCurrentTab } from '~/utils/helpers'
 
 describe('removeLangPrefix', () => {
   it('removes a language prefix', () => {
@@ -29,6 +29,62 @@ describe('humanJoin', () => {
     const source = ['a', 'b', 'c']
     humanJoin(source)
     expect(source).toEqual(['a', 'b', 'c'])
+  })
+})
+
+describe('useIsCurrentTab', () => {
+  const setup = (fullPath: string, links: Array<{ href: string }>) => {
+    vi.stubGlobal('useRoute', () => ({ fullPath }))
+    vi.stubGlobal('useRequestURL', () => new URL('https://www.data.gouv.fr/'))
+    vi.stubGlobal('useRuntimeConfig', () => ({ public: { apiBase: 'https://www.data.gouv.fr' } }))
+    return useIsCurrentTab(links)
+  }
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  const datasetTabs = [
+    { href: '/datasets/slug' },
+    { href: '/datasets/slug/discussions' },
+  ]
+
+  it('selects the tab matching the current path', () => {
+    let isCurrentTab = setup('/datasets/slug', datasetTabs)
+    expect(isCurrentTab('/datasets/slug')).toBe(true)
+    expect(isCurrentTab('/datasets/slug/discussions')).toBe(false)
+
+    isCurrentTab = setup('/datasets/slug/discussions', datasetTabs)
+    expect(isCurrentTab('/datasets/slug')).toBe(false)
+    expect(isCurrentTab('/datasets/slug/discussions')).toBe(true)
+  })
+
+  it('keeps the tab selected when the page adds its own query params', () => {
+    const isCurrentTab = setup('/datasets/slug?resource_id=abc-123&page=2', datasetTabs)
+    expect(isCurrentTab('/datasets/slug')).toBe(true)
+    expect(isCurrentTab('/datasets/slug/discussions')).toBe(false)
+  })
+
+  it('still discriminates on the query params the tabs themselves set', () => {
+    const moderationTabs = [
+      { href: '/admin/site/moderation' },
+      { href: '/admin/site/moderation?type=Dataset' },
+      { href: '/admin/site/moderation?type=Reuse' },
+    ]
+
+    let isCurrentTab = setup('/admin/site/moderation?type=Dataset&page=3', moderationTabs)
+    expect(isCurrentTab('/admin/site/moderation')).toBe(false)
+    expect(isCurrentTab('/admin/site/moderation?type=Dataset')).toBe(true)
+    expect(isCurrentTab('/admin/site/moderation?type=Reuse')).toBe(false)
+
+    isCurrentTab = setup('/admin/site/moderation?page=3', moderationTabs)
+    expect(isCurrentTab('/admin/site/moderation')).toBe(true)
+    expect(isCurrentTab('/admin/site/moderation?type=Dataset')).toBe(false)
+  })
+
+  it('accepts absolute urls and trailing slashes', () => {
+    const isCurrentTab = setup('/datasets/slug?resource_id=abc-123', datasetTabs)
+    expect(isCurrentTab('https://www.data.gouv.fr/datasets/slug/')).toBe(true)
   })
 })
 
