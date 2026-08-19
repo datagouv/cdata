@@ -64,16 +64,7 @@
                 {{ formatDate(reuse.created_at) }}
               </dd>
             </div>
-            <div>
-              <StatBox
-                :title="$t('Vues')"
-                :data="metricsViews"
-                size="sm"
-                type="line"
-                :summary="metricsViewsTotal"
-                :since="metricsSince"
-              />
-            </div>
+            <ReuseStatBox :reuse="reuse" />
           </dl>
         </div>
       </div>
@@ -201,15 +192,13 @@
 </template>
 
 <script setup lang="ts">
-import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseV2, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, useFormatDate, MarkdownViewer, BrandedButton } from '@datagouv/components-next'
+import { DataserviceCard, type Dataservice, getTopic, useReuseType, type Reuse, type ReuseV2, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, useFormatDate, MarkdownViewer, BrandedButton } from '@datagouv/components-next'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{
   reuse: Reuse
 }>()
-
-const config = useRuntimeConfig()
 
 const { formatDate } = useFormatDate()
 
@@ -252,19 +241,4 @@ const { data: reuses, status } = await useAPI<PaginatedArray<ReuseV2>>(`/api/2/r
 
 // We want 3 reuses, but we don't want the one from the current page
 const relatedReusesData = computed(() => (reuses.value?.data ?? []).filter(r => props.reuse.id != r.id).slice(0, 3))
-
-const metricsSince = computed(() => {
-  // max of the start of metrics computing and the creation of the reuse on the platform
-  return [props.reuse.created_at, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
-})
-
-const metricsViews = ref<null | Record<string, number>>(null)
-const metricsViewsTotal = ref<null | number>(null)
-
-watchEffect(async () => {
-  if (!props.reuse.id) return
-  const metrics = await getReuseMetrics(props.reuse.id)
-  metricsViews.value = metrics.reuseViews
-  metricsViewsTotal.value = metrics.reuseViewsTotal
-})
 </script>

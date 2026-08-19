@@ -194,25 +194,7 @@
                 :object="dataset"
               />
 
-              <div class="grid gap-4 xl:grid-cols-2">
-                <StatBox
-                  :title="$t('Vues')"
-                  :data="datasetVisits"
-                  size="sm"
-                  type="line"
-                  :summary="datasetVisitsTotal"
-                  :since="metricsSince"
-                />
-                <StatBox
-                  v-if="dataset.access_type === 'open'"
-                  :title="$t('Téléchargements')"
-                  :data="datasetDownloadsResources"
-                  size="sm"
-                  type="line"
-                  :summary="datasetDownloadsResourcesTotal"
-                  :since="metricsSince"
-                />
-              </div>
+              <DatasetStatBoxes :dataset="dataset" />
 
               <div v-if="dataset.access_type === 'open'">
                 <DatasetQuality
@@ -478,15 +460,12 @@ import {
   LoadingBlock,
   BrandedButton,
   useFormatDate,
-  StatBox,
   Toggletip,
   type TranslatedBadge,
   LabelTag,
   LicenseBadge,
   AppLink,
   MarkdownViewer,
-  useMetrics,
-  type DatasetMetrics,
   TranslationT,
   getDescriptionShort,
   type Resource,
@@ -651,25 +630,6 @@ const badges = computed(() =>
     label: badgeTranslations.value?.[b.kind] ?? '',
   })),
 )
-
-const metricsSince = computed(() => {
-  if (!dataset.value) return config.public.metricsSince
-  // max of the start of metrics computing and the creation of the dataset on the platform
-  return [dataset.value.internal.created_at_internal, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
-})
-
-const { getDatasetMetrics } = useMetrics()
-const datasetMetrics = ref<DatasetMetrics | null>(null)
-
-watchEffect(async () => {
-  if (!dataset.value || !dataset.value.id) return
-  datasetMetrics.value = await getDatasetMetrics(dataset.value.id)
-})
-
-const datasetVisits = computed(() => datasetMetrics.value?.visits ?? {})
-const datasetDownloadsResources = computed(() => datasetMetrics.value?.downloads ?? {})
-const datasetVisitsTotal = computed(() => datasetMetrics.value?.visitsTotal ?? 0)
-const datasetDownloadsResourcesTotal = computed(() => datasetMetrics.value?.downloadsTotal ?? 0)
 
 const { data: categories } = await useAPI<Array<{ value: string, label: string, definition: string }>>('/api/1/access_type/reason_categories/')
 const category = computed(() => {
