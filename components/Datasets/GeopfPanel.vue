@@ -74,6 +74,9 @@ const disconnect = async () => {
     toast.success(t('Vous êtes déconnecté de cartes.gouv.fr.'))
     emit('disconnected')
   }
+  catch {
+    // plugins/api.ts already toasted the error.
+  }
   finally {
     disconnecting.value = false
   }
