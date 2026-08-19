@@ -1,5 +1,6 @@
-import type { Resource } from '@datagouv/components-next'
 import type { AdminBadgeType } from '~/types/types'
+
+export { isGeopfSynced } from '@datagouv/components-next'
 
 export type GeopfPushStatus = 'pending' | 'done' | 'error' | 'timeout'
 export type GeopfPullStatus = 'pending' | 'done' | 'error'
@@ -49,12 +50,6 @@ export function geopfDatasetStatusUrl(datasetId: string): string {
 // Shared by the admin dataset layout and the sync page, so both read one useAsyncData entry.
 export function geopfDatasetStatusKey(datasetId: string): string {
   return `geopf-status-${datasetId}`
-}
-
-// Resources whose local edition would diverge from what cartes.gouv.fr publishes.
-export function isGeopfSynced(resource: Resource): boolean {
-  const status = resource.extras['geopf:push:status']
-  return status === 'done' || status === 'pending' || typeof resource.extras['geopf:offering:id'] === 'string'
 }
 
 // Raw pass-through of geopf's own API shape (GET /datastores).

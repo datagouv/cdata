@@ -163,7 +163,7 @@
             :dataset-id="dataset.id"
             :resource-id="resource.id"
             :is-community-resource="isCommunityResource"
-            :disabled="isGeopfSynced"
+            :disabled="isGeopfSynced(resource)"
             size="xs"
           />
         </p>
@@ -317,7 +317,7 @@ import { trackEvent } from '../../functions/matomo'
 import CopyButton from '../CopyButton.vue'
 import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
-import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceExternalUrl, getResourceFilesize, isImagePreviewFormat } from '../../functions/resources'
+import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceExternalUrl, getResourceFilesize, isGeopfSynced, isImagePreviewFormat } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useHasTabularData } from '../../composables/useHasTabularData'
@@ -371,12 +371,6 @@ const hasTabularData = computed(() => checkTabularData(props.resource))
 
 const hasPmtiles = computed(() => {
   return props.resource.extras['analysis:parsing:pmtiles_url'] || props.resource.format === 'pmtiles'
-})
-
-// Mirrors `isGeopfSynced` in cdata's utils/geopf.ts.
-const isGeopfSynced = computed(() => {
-  const status = props.resource.extras['geopf:push:status']
-  return status === 'done' || status === 'pending' || typeof props.resource.extras['geopf:offering:id'] === 'string'
 })
 
 const hasDatafairPreview = computed(() => {
