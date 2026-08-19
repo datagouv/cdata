@@ -163,7 +163,6 @@ import { geopfDatasetStatusKey, geopfDatasetStatusUrl, type GeopfDatasetStatus }
 const route = useRoute()
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
-const config = useRuntimeConfig()
 
 const datasetId = computed(() => String(route.params.id))
 
@@ -183,9 +182,7 @@ const { data: sync, status, refresh: refreshSync } = await useAPI<GeopfDatasetSt
   { key: geopfDatasetStatusKey(datasetId.value) },
 )
 
-const { data: geopfConnected } = config.public.geopfEnabled
-  ? await useAPI<{ connected: boolean, expires_at: string | null }>('/api/1/geopf/status/')
-  : { data: ref(null) }
+const { data: geopfConnected } = await useAPI<{ connected: boolean, expires_at: string | null }>('/api/1/geopf/status/')
 const isGeopfConnected = computed(() => geopfConnected.value?.connected ?? null)
 const reauthRequired = ref(false)
 const datastoreId = ref<string | null>(null)
