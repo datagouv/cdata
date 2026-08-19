@@ -6,8 +6,8 @@
         size="xs"
         :icon="RiDownloadCloud2Line"
         :disabled="!!disabledReason"
-        :loading="pulling || pullState.status === 'pending'"
-        @click="pull"
+        :loading="pulling || pull.status === 'pending'"
+        @click="startPull"
       >
         {{ t('Récupérer les services') }}
       </BrandedButton>
@@ -18,32 +18,34 @@
     </component>
 
     <span
-      v-if="pullState.status === 'done' && pullState.lastSyncedAt"
+      v-if="pull.status === 'done' && pull.last_synced_at"
       class="text-xs text-gray-medium"
     >
-      {{ t('Dernière synchronisation : {date}', { date: formatDate(pullState.lastSyncedAt) }) }}
+      {{ t('Dernière synchronisation : {date}', { date: formatDate(pull.last_synced_at) }) }}
     </span>
     <span
-      v-else-if="pullState.status === 'error'"
+      v-else-if="pull.status === 'error'"
       class="text-xs text-new-error"
     >
-      {{ pullState.error }}
+      {{ pull.error }}
     </span>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Tooltip, useFormatDate, type DatasetV2 } from '@datagouv/components-next'
+import { BrandedButton, Tooltip, useFormatDate } from '@datagouv/components-next'
 import { RiDownloadCloud2Line } from '@remixicon/vue'
-import { getGeopfFicheUrl, getGeopfPullState, isGeopfReauthRequired } from '~/utils/geopf'
+import { isGeopfReauthRequired, type GeopfDatasetStatus } from '~/utils/geopf'
 
 const props = defineProps<{
-  dataset: DatasetV2
+  datasetId: string
   connected: boolean | null
+  pull: GeopfDatasetStatus['pull']
+  ficheUrl: string | null
+  refresh: () => Promise<void>
 }>()
 
 const emit = defineEmits<{
-  pulled: []
   reauthRequired: []
 }>()
 
@@ -51,22 +53,20 @@ const { $api } = useNuxtApp()
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
-const ficheUrl = computed(() => getGeopfFicheUrl(props.dataset))
-const pullState = computed(() => getGeopfPullState(props.dataset))
-
 const disabledReason = computed(() => {
   if (props.connected !== true) return t('Connectez-vous à cartes.gouv.fr pour récupérer les services.')
-  if (!ficheUrl.value) return t('Envoyez d\'abord un fichier au format GeoPackage (.gpkg) vers cartes.gouv.fr.')
+  if (!props.ficheUrl) return t('Envoyez d\'abord un fichier au format GeoPackage (.gpkg) vers cartes.gouv.fr.')
   return null
 })
 
 const pulling = ref(false)
 
-const pull = async () => {
+const startPull = async () => {
   pulling.value = true
   try {
-    await $api(`/api/1/geopf/pull-offerings/${props.dataset.id}/`, { method: 'POST' })
-    emit('pulled')
+    await $api(`/api/1/geopf/pull-offerings/${props.datasetId}/`, { method: 'POST' })
+    // Awaited: udata marks the dataset `pending` before enqueueing, so this returns the new status.
+    await props.refresh()
   }
   catch (error) {
     if (isGeopfReauthRequired(error)) {

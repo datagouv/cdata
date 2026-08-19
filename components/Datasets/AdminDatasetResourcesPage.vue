@@ -78,7 +78,7 @@
       :schemas="schemas ?? []"
       :dataset
       @submit="updateResource"
-      @delete="refreshResources"
+      @delete="refreshAfterMutation"
     />
 
     <LoadingBlock
@@ -187,7 +187,7 @@
                 :loading
                 :resource="resourceToForm(resource, schemas ?? [])"
                 @submit="updateResource"
-                @delete="refreshResources"
+                @delete="refreshAfterMutation"
               />
             </td>
           </tr>
@@ -243,13 +243,19 @@ const params = computed(() => {
   }
 })
 
-const refreshGeopfEligibility = inject(geopfEligibilityRefreshKey, () => {})
 const refreshResources = async () => {
   if (!dataset.value) return
   resourcesPage.value = await $api<PaginatedArray<Resource>>(dataset.value.resources.href, { query: params.value })
-  refreshGeopfEligibility()
 }
 watchEffect(async () => await refreshResources())
+
+// Kept off `refreshResources`, which the watchEffect above also runs on every
+// pagination change.
+const refreshGeopfEligibility = inject(geopfEligibilityRefreshKey, () => {})
+const refreshAfterMutation = async () => {
+  await refreshResources()
+  refreshGeopfEligibility()
+}
 
 const { t } = useTranslation()
 
@@ -275,7 +281,7 @@ const saveFirstNewFile = async (closeModal: () => void, form: ResourceForm | Com
   removeFirstNewFile()
 
   page.value = 1
-  refreshResources()
+  refreshAfterMutation()
 }
 const updateResource = async (closeModal: () => void, resourceForm: ResourceForm | CommunityResourceForm) => {
   if (!dataset.value) return
@@ -283,7 +289,7 @@ const updateResource = async (closeModal: () => void, resourceForm: ResourceForm
 
   try {
     await saveResourceForm(dataset.value, resourceForm)
-    await refreshResources()
+    await refreshAfterMutation()
     closeModal()
   }
   finally {

@@ -36,11 +36,12 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, toast, type DatasetV2 } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, toast } from '@datagouv/components-next'
 import { RiLogoutBoxLine } from '@remixicon/vue'
 
 const props = defineProps<{
-  dataset: DatasetV2
+  // Id, not slug: /geopf/login/ only resolves by id.
+  datasetId: string
   connected: boolean | null
   reauthRequired?: boolean
 }>()
@@ -53,7 +54,7 @@ const { $api } = useNuxtApp()
 const { t } = useTranslation()
 const config = useRuntimeConfig()
 
-const geopfLoginUrl = computed(() => `${config.public.apiBase}/api/1/geopf/login/?dataset_id=${encodeURIComponent(props.dataset.id)}`)
+const geopfLoginUrl = computed(() => `${config.public.apiBase}/api/1/geopf/login/?dataset_id=${encodeURIComponent(props.datasetId)}`)
 
 const bannerType = computed(() => {
   if (props.reauthRequired) return 'danger'

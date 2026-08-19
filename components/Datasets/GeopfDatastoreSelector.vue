@@ -23,11 +23,12 @@
 </template>
 
 <script setup lang="ts">
-import { SelectGroup, type DatasetV2 } from '@datagouv/components-next'
-import { getGeopfDatastoreId, type GeopfDatastore } from '~/utils/geopf'
+import { SelectGroup } from '@datagouv/components-next'
+import type { GeopfDatastore } from '~/utils/geopf'
 
 const props = defineProps<{
-  dataset: DatasetV2
+  // Set on the dataset's first successful push, not editable afterwards.
+  pinnedDatastoreId: string | null
   connected: boolean | null
 }>()
 
@@ -35,22 +36,20 @@ const model = defineModel<string | null>({ default: null })
 
 const { t } = useTranslation()
 
-const pinnedDatastoreId = computed(() => getGeopfDatastoreId(props.dataset))
-
 const { data: datastores } = props.connected === true
   ? await useAPI<Array<GeopfDatastore>>('/api/1/geopf/datastores/')
   : { data: ref(null) }
 
 const datastoreOptions = computed(() => (datastores.value ?? []).map(datastore => ({ label: datastore.name, value: datastore.datastore_id })))
-const pinnedDatastoreName = computed(() => (datastores.value ?? []).find(datastore => datastore.datastore_id === pinnedDatastoreId.value)?.name ?? null)
+const pinnedDatastoreName = computed(() => (datastores.value ?? []).find(datastore => datastore.datastore_id === props.pinnedDatastoreId)?.name ?? null)
 
 const localSelection = ref<string | null>(null)
 
-watch(pinnedDatastoreId, (id) => {
+watch(() => props.pinnedDatastoreId, (id) => {
   if (id) model.value = id
 }, { immediate: true })
 
 watch(localSelection, (id) => {
-  if (!pinnedDatastoreId.value) model.value = id
+  if (!props.pinnedDatastoreId) model.value = id
 })
 </script>

@@ -1,88 +1,60 @@
-import type { DatasetV2, Resource } from '@datagouv/components-next'
+import type { Resource } from '@datagouv/components-next'
 import type { AdminBadgeType } from '~/types/types'
-
-// Only gpkg is processed by the udata geopf plugin today (GEOPF_PUSHABLE_FORMATS),
-// and it isn't exposed by any API endpoint, so this is a known, documented coupling
-// with the backend config: see udata/docs/geopf.md.
-export const GEOPF_PUSHABLE_FORMAT = 'gpkg'
 
 export type GeopfPushStatus = 'pending' | 'done' | 'error' | 'timeout'
 export type GeopfPullStatus = 'pending' | 'done' | 'error'
 
-// Large enough to cover a typical dataset's gpkg/offering resources in one request,
-// since only this small subset (eligible resources) is relevant to geopf sync.
-export const GEOPF_LIST_PAGE_SIZE = 100
-
-export function isGeopfPushable(resource: Resource): boolean {
-  return resource.format?.toLowerCase() === GEOPF_PUSHABLE_FORMAT && !isGeopfOffering(resource)
+// Shape of `GET /api/1/geopf/status/<dataset_id>/` (see udata/docs/geopf.md).
+// A null `status` means "never run".
+export type GeopfPushableResource = {
+  id: string
+  title: string
+  format: string | null
+  url: string | null
+  push: {
+    status: GeopfPushStatus | null
+    last_synced_at: string | null
+    error: string | null
+    task_id: string | null
+    stored_data_id: string | null
+  }
 }
 
-export function isGeopfOffering(resource: Resource): boolean {
-  return typeof resource.extras['geopf:offering:id'] === 'string'
+export type GeopfOfferingResource = {
+  id: string
+  title: string
+  format: string | null
+  url: string | null
+  offering_id: string
+  last_synced_at: string | null
 }
 
-export function getGeopfOfferingLastSyncedAt(resource: Resource): string | null {
-  return (resource.extras['geopf:offering:last-synced-at'] as string | undefined) ?? null
+export type GeopfDatasetStatus = {
+  datastore_id: string | null
+  fiche_url: string | null
+  pull: {
+    status: GeopfPullStatus | null
+    last_synced_at: string | null
+    error: string | null
+    task_id: string | null
+  }
+  pushable: Array<GeopfPushableResource>
+  offerings: Array<GeopfOfferingResource>
 }
 
-// A resource tied into the Géoplateforme sync (successfully pushed, or pulled back
-// as an offering) shouldn't be edited/replaced locally: doing so would silently
-// diverge from what's published on cartes.gouv.fr.
+export function geopfDatasetStatusUrl(datasetId: string): string {
+  return `/api/1/geopf/status/${datasetId}/`
+}
+
+// Shared by the admin dataset layout and the sync page, so both read one useAsyncData entry.
+export function geopfDatasetStatusKey(datasetId: string): string {
+  return `geopf-status-${datasetId}`
+}
+
+// Resources whose local edition would diverge from what cartes.gouv.fr publishes.
 export function isGeopfSynced(resource: Resource): boolean {
-  return resource.extras['geopf:push:status'] === 'done' || isGeopfOffering(resource)
-}
-
-export type GeopfPushState
-  = | { status: null }
-    | { status: 'pending' }
-    | { status: 'done', lastSyncedAt: string | null }
-    | { status: 'error' | 'timeout', error: string | null }
-
-export function getGeopfPushState(resource: Resource): GeopfPushState {
-  const status = resource.extras['geopf:push:status'] as GeopfPushStatus | undefined
-
-  if (status === 'done') {
-    return { status: 'done', lastSyncedAt: (resource.extras['geopf:push:last-synced-at'] as string | undefined) ?? null }
-  }
-  if (status === 'error' || status === 'timeout') {
-    return { status, error: (resource.extras['geopf:push:error'] as string | undefined) ?? null }
-  }
-  if (status === 'pending') {
-    return { status: 'pending' }
-  }
-  return { status: null }
-}
-
-export type GeopfPullState
-  = | { status: null }
-    | { status: 'pending' }
-    | { status: 'done', lastSyncedAt: string | null }
-    | { status: 'error', error: string | null }
-
-export function getGeopfPullState(dataset: DatasetV2): GeopfPullState {
-  const status = dataset.extras['geopf:pull:status'] as GeopfPullStatus | undefined
-
-  if (status === 'done') {
-    return { status: 'done', lastSyncedAt: (dataset.extras['geopf:pull:last-synced-at'] as string | undefined) ?? null }
-  }
-  if (status === 'error') {
-    return { status: 'error', error: (dataset.extras['geopf:pull:error'] as string | undefined) ?? null }
-  }
-  if (status === 'pending') {
-    return { status: 'pending' }
-  }
-  return { status: null }
-}
-
-export function getGeopfFicheUrl(dataset: DatasetV2): string | null {
-  return (dataset.extras['geopf:push:fiche-url'] as string | undefined) ?? null
-}
-
-// A dataset lives in exactly one entrepôt: this is pinned in dataset extras on
-// the first *successful* push and reused as-is by every later push (see
-// udata/docs/geopf.md). Not editable once set.
-export function getGeopfDatastoreId(dataset: DatasetV2): string | null {
-  return (dataset.extras['geopf:push:datastore-id'] as string | undefined) ?? null
+  const status = resource.extras['geopf:push:status']
+  return status === 'done' || status === 'pending' || typeof resource.extras['geopf:offering:id'] === 'string'
 }
 
 // Raw pass-through of geopf's own API shape (GET /datastores).
@@ -91,9 +63,7 @@ export type GeopfDatastore = {
   name: string
 }
 
-// 424 means "not connected to Géoplateforme" for both push and pull (see udata/docs/geopf.md);
-// the global $api error handler swallows it silently, so callers check it themselves
-// to prompt reconnection instead of failing silently.
+// Push and pull answer 424 when not connected; the global $api handler swallows it.
 export function isGeopfReauthRequired(error: unknown): boolean {
   if (!error || typeof error !== 'object' || !('response' in error)) return false
   const response = (error as { response?: { status?: number } }).response

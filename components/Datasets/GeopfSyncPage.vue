@@ -3,7 +3,7 @@
     <template v-if="canEdit">
       <GeopfPanel
         v-if="dataset"
-        :dataset="dataset"
+        :dataset-id="dataset.id"
         :connected="isGeopfConnected"
         :reauth-required="reauthRequired"
         class="fr-mb-3w"
@@ -11,22 +11,21 @@
       />
 
       <GeopfDatastoreSelector
-        v-if="dataset"
         v-model="datastoreId"
-        :dataset="dataset"
+        :pinned-datastore-id="sync?.datastore_id ?? null"
         :connected="isGeopfConnected"
         class="fr-mb-3w"
       />
 
       <LoadingBlock
-        v-slot="{ data: loadedResourcesPage }"
+        v-slot="{ data: loadedSync }"
         :status
-        :data="resourcesPage"
+        :data="sync"
       >
         <h2 class="text-sm font-bold uppercase">
           {{ t('Fichiers à envoyer') }}
         </h2>
-        <AdminTable v-if="loadedResourcesPage && pushableResources.length">
+        <AdminTable v-if="loadedSync.pushable.length">
           <thead>
             <tr>
               <AdminTableTh scope="col">
@@ -42,7 +41,7 @@
           </thead>
           <tbody>
             <tr
-              v-for="resource in pushableResources"
+              v-for="resource in loadedSync.pushable"
               :key="resource.id"
             >
               <td>
@@ -57,12 +56,11 @@
               </td>
               <td>
                 <GeopfPushButton
-                  v-if="dataset"
                   :resource="resource"
-                  :dataset-id="dataset.id"
+                  :dataset-id="datasetId"
                   :connected="isGeopfConnected"
                   :datastore-id="datastoreId"
-                  @pushed="onGeopfPushed"
+                  :refresh="refreshSync"
                   @reauth-required="reauthRequired = true"
                 />
               </td>
@@ -81,14 +79,15 @@
             {{ t('Services récupérés depuis cartes.gouv.fr') }}
           </h2>
           <GeopfPullAction
-            v-if="dataset"
-            :dataset="dataset"
+            :dataset-id="datasetId"
             :connected="isGeopfConnected"
-            @pulled="onGeopfPulled"
+            :pull="loadedSync.pull"
+            :fiche-url="loadedSync.fiche_url"
+            :refresh="refreshSync"
             @reauth-required="reauthRequired = true"
           />
         </div>
-        <AdminTable v-if="loadedResourcesPage && syncedResources.length">
+        <AdminTable v-if="loadedSync.offerings.length">
           <thead>
             <tr>
               <AdminTableTh scope="col">
@@ -104,7 +103,7 @@
           </thead>
           <tbody>
             <tr
-              v-for="resource in syncedResources"
+              v-for="resource in loadedSync.offerings"
               :key="resource.id"
             >
               <td>
@@ -118,7 +117,7 @@
                 {{ resource.format }}
               </td>
               <td>
-                {{ formatDate(getGeopfOfferingLastSyncedAt(resource)) }}
+                {{ formatDate(resource.last_synced_at) }}
               </td>
             </tr>
           </tbody>
@@ -131,10 +130,10 @@
         </p>
 
         <BrandedButton
-          v-if="ficheUrl"
+          v-if="loadedSync.fiche_url"
           color="secondary"
           size="xs"
-          :href="ficheUrl"
+          :href="loadedSync.fiche_url"
           new-tab
           class="mt-3"
         >
@@ -152,31 +151,37 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, LoadingBlock, useFormatDate, type DatasetV2, type Resource } from '@datagouv/components-next'
+import { BrandedButton, LoadingBlock, useFormatDate, type DatasetV2 } from '@datagouv/components-next'
 import GeopfDatastoreSelector from './GeopfDatastoreSelector.vue'
 import GeopfPanel from './GeopfPanel.vue'
 import GeopfPullAction from './GeopfPullAction.vue'
 import GeopfPushButton from './GeopfPushButton.vue'
 import AdminTable from '../AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../AdminTable/Table/AdminTableTh.vue'
-import type { PaginatedArray } from '~/types/types'
-import { GEOPF_LIST_PAGE_SIZE, getGeopfFicheUrl, getGeopfOfferingLastSyncedAt, getGeopfPullState, getGeopfPushState, isGeopfOffering, isGeopfPushable } from '~/utils/geopf'
+import { geopfDatasetStatusKey, geopfDatasetStatusUrl, type GeopfDatasetStatus } from '~/utils/geopf'
 
 const route = useRoute()
-const { $api } = useNuxtApp()
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
 
-const datasetUrl = computed(() => `/api/2/datasets/${route.params.id}/`)
-const { data: dataset, status, refresh: refreshDataset } = await useAPI<DatasetV2>(datasetUrl, {
+const datasetId = computed(() => String(route.params.id))
+
+// Only for the permission check; dedupes with the parent admin layout's identical call.
+const datasetUrl = computed(() => `/api/2/datasets/${datasetId.value}/`)
+const { data: dataset } = await useAPI<DatasetV2>(datasetUrl, {
   redirectOn404: true,
   headers: {
     'X-Get-Datasets-Full-Objects': 'True',
   },
 })
 const canEdit = computed(() => dataset.value?.permissions.edit_resources ?? false)
-const ficheUrl = computed(() => dataset.value ? getGeopfFicheUrl(dataset.value) : null)
+
+// Everything both tables render, already filtered and projected by udata.
+const { data: sync, status, refresh: refreshSync } = await useAPI<GeopfDatasetStatus>(
+  computed(() => geopfDatasetStatusUrl(datasetId.value)),
+  { key: geopfDatasetStatusKey(datasetId.value) },
+)
 
 const { data: geopfConnected } = config.public.geopfEnabled
   ? await useAPI<{ connected: boolean, expires_at: string | null }>('/api/1/geopf/status/')
@@ -185,28 +190,11 @@ const isGeopfConnected = computed(() => geopfConnected.value?.connected ?? null)
 const reauthRequired = ref(false)
 const datastoreId = ref<string | null>(null)
 
-const resourcesPage = ref<PaginatedArray<Resource> | null>(null)
-const refreshResources = async () => {
-  if (!dataset.value) return
-  resourcesPage.value = await $api<PaginatedArray<Resource>>(dataset.value.resources.href, { query: { page_size: GEOPF_LIST_PAGE_SIZE } })
-}
-watchEffect(async () => await refreshResources())
-
-const pushableResources = computed(() => (resourcesPage.value?.data ?? []).filter(isGeopfPushable))
-const syncedResources = computed(() => (resourcesPage.value?.data ?? []).filter(isGeopfOffering))
-
 const geopfPending = computed(() => {
-  const pushPending = pushableResources.value.some(r => getGeopfPushState(r).status === 'pending')
-  const pullPending = dataset.value ? getGeopfPullState(dataset.value).status === 'pending' : false
-  return pushPending || pullPending
+  if (!sync.value) return false
+  return sync.value.pushable.some(r => r.push.status === 'pending') || sync.value.pull.status === 'pending'
 })
-useGeopfPolling(geopfPending, async () => {
-  await Promise.all([refreshResources(), refreshDataset()])
-})
+useGeopfPolling(geopfPending, refreshSync)
 
-const onGeopfPulled = async () => await Promise.all([refreshDataset(), refreshResources()])
-// A push can also write dataset-level extras (fiche-url, pinned datastore-id) on its
-// first success, so refresh both here too — not just the resource that was pushed.
-const onGeopfPushed = async () => await Promise.all([refreshDataset(), refreshResources()])
 const onGeopfDisconnected = () => reloadNuxtApp({ path: route.fullPath })
 </script>

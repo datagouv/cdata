@@ -1,7 +1,7 @@
 <template>
   <component
     :is="disabledReason ? Tooltip : 'div'"
-    v-if="pushState.status === null"
+    v-if="push.status === null"
   >
     <BrandedButton
       color="secondary"
@@ -9,7 +9,7 @@
       :icon="RiUploadCloud2Line"
       :disabled="!!disabledReason"
       :loading="pushing"
-      @click="push"
+      @click="startPush"
     >
       {{ t('Envoyer vers cartes.gouv.fr') }}
     </BrandedButton>
@@ -20,28 +20,28 @@
   </component>
 
   <AdminBadge
-    v-else-if="pushState.status === 'pending'"
+    v-else-if="push.status === 'pending'"
     size="xs"
-    :type="getGeopfBadgeType(pushState.status)"
+    :type="getGeopfBadgeType(push.status)"
   >
     {{ t('Envoi en cours…') }}
   </AdminBadge>
 
   <div
-    v-else-if="pushState.status === 'done'"
+    v-else-if="push.status === 'done'"
     class="flex flex-col items-start"
   >
     <AdminBadge
       size="xs"
-      :type="getGeopfBadgeType(pushState.status)"
+      :type="getGeopfBadgeType(push.status)"
     >
       {{ t('Synchronisé') }}
     </AdminBadge>
     <span
-      v-if="pushState.lastSyncedAt"
+      v-if="push.last_synced_at"
       class="text-xs text-gray-medium"
     >
-      {{ formatDate(pushState.lastSyncedAt) }}
+      {{ formatDate(push.last_synced_at) }}
     </span>
   </div>
 
@@ -52,13 +52,13 @@
     <Tooltip>
       <AdminBadge
         size="xs"
-        :type="getGeopfBadgeType(pushState.status)"
+        :type="getGeopfBadgeType(push.status)"
       >
-        {{ pushState.status === 'timeout' ? t('Délai dépassé') : t("Échec de l'envoi") }}
+        {{ push.status === 'timeout' ? t('Délai dépassé') : t("Échec de l'envoi") }}
       </AdminBadge>
 
       <template #tooltip>
-        {{ pushState.error }}
+        {{ push.error }}
       </template>
     </Tooltip>
 
@@ -68,7 +68,7 @@
       :icon="RiRefreshLine"
       :disabled="!!disabledReason"
       :loading="pushing"
-      @click="push"
+      @click="startPush"
     >
       {{ t('Réessayer') }}
     </BrandedButton>
@@ -76,19 +76,19 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Tooltip, useFormatDate, type Resource } from '@datagouv/components-next'
+import { BrandedButton, Tooltip, useFormatDate } from '@datagouv/components-next'
 import { RiRefreshLine, RiUploadCloud2Line } from '@remixicon/vue'
-import { getGeopfBadgeType, getGeopfPushState, isGeopfReauthRequired } from '~/utils/geopf'
+import { getGeopfBadgeType, isGeopfReauthRequired, type GeopfPushableResource } from '~/utils/geopf'
 
 const props = defineProps<{
-  resource: Resource
+  resource: GeopfPushableResource
   datasetId: string
   connected: boolean | null
   datastoreId: string | null
+  refresh: () => Promise<void>
 }>()
 
 const emit = defineEmits<{
-  pushed: []
   reauthRequired: []
 }>()
 
@@ -96,7 +96,7 @@ const { $api } = useNuxtApp()
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
-const pushState = computed(() => getGeopfPushState(props.resource))
+const push = computed(() => props.resource.push)
 
 const disabledReason = computed(() => {
   if (props.connected !== true) return t('Connectez-vous à cartes.gouv.fr pour envoyer ce fichier.')
@@ -106,14 +106,16 @@ const disabledReason = computed(() => {
 
 const pushing = ref(false)
 
-const push = async () => {
+const startPush = async () => {
   pushing.value = true
   try {
     await $api(`/api/1/geopf/push/${props.datasetId}/${props.resource.id}/`, {
       method: 'POST',
       body: { datastore_id: props.datastoreId },
     })
-    emit('pushed')
+    // Awaited: udata marks the resource `pending` before enqueueing, so this returns
+    // the new status and the button never re-enables in between.
+    await props.refresh()
   }
   catch (error) {
     if (isGeopfReauthRequired(error)) {

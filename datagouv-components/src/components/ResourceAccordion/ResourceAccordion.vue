@@ -373,10 +373,10 @@ const hasPmtiles = computed(() => {
   return props.resource.extras['analysis:parsing:pmtiles_url'] || props.resource.format === 'pmtiles'
 })
 
-// A resource successfully pushed to, or pulled back from, Géoplateforme shouldn't be
-// edited locally: doing so would silently diverge from what's published on cartes.gouv.fr.
+// Mirrors `isGeopfSynced` in cdata's utils/geopf.ts.
 const isGeopfSynced = computed(() => {
-  return props.resource.extras['geopf:push:status'] === 'done' || typeof props.resource.extras['geopf:offering:id'] === 'string'
+  const status = props.resource.extras['geopf:push:status']
+  return status === 'done' || status === 'pending' || typeof props.resource.extras['geopf:offering:id'] === 'string'
 })
 
 const hasDatafairPreview = computed(() => {

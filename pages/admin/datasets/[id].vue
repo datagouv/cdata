@@ -136,7 +136,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, DatasetQualityTooltipContent, QualityScore, summarize, useFormatDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
-import type { Activity, DatasetV2WithFullObject, Resource } from '@datagouv/components-next'
+import type { Activity, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiDownloadLine, RiEyeLine, RiLineChartLine, RiPriceTag3Line, RiStarLine } from '@remixicon/vue'
 import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
@@ -144,7 +144,7 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 import { geopfEligibilityRefreshKey } from '~/components/Datasets/geopfEligibilityRefreshKey'
 import type { PaginatedArray } from '~/types/types'
-import { GEOPF_LIST_PAGE_SIZE, isGeopfOffering, isGeopfPushable } from '~/utils/geopf'
+import { geopfDatasetStatusKey, geopfDatasetStatusUrl, type GeopfDatasetStatus } from '~/utils/geopf'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 definePageMeta({
@@ -171,16 +171,19 @@ const { data: activities } = await useAPI<PaginatedArray<Activity>>('/api/1/acti
   },
 })
 
-// Fetched only to decide whether the geopf tab is worth showing: a dataset with no
-// gpkg resource and nothing pulled back from cartes.gouv.fr has nothing to do there.
-const { data: geopfResources, refresh: refreshGeopfResources } = config.public.geopfEnabled
-  ? await useAPI<PaginatedArray<Resource>>(computed(() => dataset.value?.resources.href ?? ''), { query: { page_size: GEOPF_LIST_PAGE_SIZE } })
+// Drives the geopf tab's visibility. Shares its useAsyncData key with GeopfSyncPage.
+const canFetchGeopfStatus = Boolean(config.public.geopfEnabled && dataset.value?.permissions.edit_resources)
+const { data: geopfStatus, refresh: refreshGeopfStatus } = canFetchGeopfStatus
+  ? await useAPI<GeopfDatasetStatus>(
+      computed(() => geopfDatasetStatusUrl(String(route.params.id))),
+      { key: geopfDatasetStatusKey(String(route.params.id)) },
+    )
   : { data: ref(null), refresh: async () => {} }
-const hasEligibleGeopfResource = computed(() => (geopfResources.value?.data ?? []).some(r => isGeopfPushable(r) || isGeopfOffering(r)))
+const hasEligibleGeopfResource = computed(() => Boolean(geopfStatus.value && (geopfStatus.value.pushable.length || geopfStatus.value.offerings.length)))
 
 // The Files tab (a NuxtPage descendant) calls this after any resource change, so
 // a newly-uploaded gpkg makes the tab appear without a full page reload.
-provide(geopfEligibilityRefreshKey, () => refreshGeopfResources())
+provide(geopfEligibilityRefreshKey, () => refreshGeopfStatus())
 
 // Stable reference: NuxtPage compares page-key by reference, so an inline function here
 // would re-trigger the loading indicator whenever `dataset` changes and this re-renders.
