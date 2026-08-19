@@ -36,7 +36,7 @@ export default defineNuxtPlugin({
             options.query['lang'] = locale
           }
         },
-        async onResponseError({ response, options }) {
+        async onResponseError({ request, response, options }) {
           if (response.status === 404) {
             if (apiOptions.redirectOn404) {
               await nuxtApp.runWithContext(() => showError({ statusCode: 404, statusMessage: 'Page Not Found' }))
@@ -60,9 +60,8 @@ export default defineNuxtPlugin({
             }
           }
 
-          if (response.status === 424) {
-            // Used by geopf push/pull to mean "not connected": callers handle this
-            // themselves (prompt to reconnect) instead of a generic toast.
+          if (response.status === 424 && typeof request === 'string' && request.includes('/geopf/')) {
+            // Means "not connected": callers handle this themselves (prompt to reconnect).
             return
           }
 
