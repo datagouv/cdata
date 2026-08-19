@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { describe, expect, it } from 'vitest'
 import { configKey, type ResolvedPluginConfig } from '~/datagouv-components/src/config'
-import { detectOgcService, getResourceCorsStatus, isCommunityResource } from '~/datagouv-components/src/functions/resources'
+import { detectOgcService, getResourceCorsStatus, isCommunityResource, isGeopfSynced } from '~/datagouv-components/src/functions/resources'
 import type { CommunityResource, Resource } from '~/datagouv-components/src/types/resources'
 
 // `useComponentsConfig` relies on Vue's inject: run the function inside an app
@@ -68,5 +68,29 @@ describe('isCommunityResource', () => {
     expect(isCommunityResource({ owner: null } as unknown as CommunityResource)).toBe(true)
     expect(isCommunityResource({ organization: null } as unknown as CommunityResource)).toBe(true)
     expect(isCommunityResource({ id: 'res-1' } as unknown as Resource)).toBe(false)
+  })
+})
+
+describe('isGeopfSynced', () => {
+  it('is false without any geopf extras', () => {
+    expect(isGeopfSynced({ extras: {} } as Resource)).toBe(false)
+  })
+
+  it('is true while a push is pending, or once it succeeded', () => {
+    expect(isGeopfSynced({ extras: { 'geopf:push:status': 'pending' } } as unknown as Resource)).toBe(true)
+    expect(isGeopfSynced({ extras: { 'geopf:push:status': 'done' } } as unknown as Resource)).toBe(true)
+  })
+
+  it('is false for a failed or timed out push', () => {
+    expect(isGeopfSynced({ extras: { 'geopf:push:status': 'error' } } as unknown as Resource)).toBe(false)
+    expect(isGeopfSynced({ extras: { 'geopf:push:status': 'timeout' } } as unknown as Resource)).toBe(false)
+  })
+
+  it('is true for a resource pulled back as an offering', () => {
+    expect(isGeopfSynced({ extras: { 'geopf:offering:id': 'offering-1' } } as unknown as Resource)).toBe(true)
+  })
+
+  it('ignores a non-string offering id', () => {
+    expect(isGeopfSynced({ extras: { 'geopf:offering:id': 42 } } as unknown as Resource)).toBe(false)
   })
 })
