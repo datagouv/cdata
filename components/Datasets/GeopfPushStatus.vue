@@ -22,7 +22,7 @@
   <AdminBadge
     v-else-if="push.status === 'pending'"
     size="xs"
-    :type="getGeopfBadgeType(push.status)"
+    type="primary"
   >
     {{ t('Envoi en cours…') }}
   </AdminBadge>
@@ -33,7 +33,7 @@
   >
     <AdminBadge
       size="xs"
-      :type="getGeopfBadgeType(push.status)"
+      type="success"
     >
       {{ t('Synchronisé') }}
     </AdminBadge>
@@ -52,7 +52,7 @@
     <Tooltip>
       <AdminBadge
         size="xs"
-        :type="getGeopfBadgeType(push.status)"
+        type="danger"
       >
         {{ push.status === 'timeout' ? t('Délai dépassé') : t("Échec de l'envoi") }}
       </AdminBadge>
@@ -78,7 +78,7 @@
 <script setup lang="ts">
 import { BrandedButton, Tooltip, useFormatDate } from '@datagouv/components-next'
 import { RiRefreshLine, RiUploadCloud2Line } from '@remixicon/vue'
-import { getGeopfBadgeType, isGeopfReauthRequired, type GeopfPushableResource } from '~/utils/geopf'
+import { isGeopfReauthRequired, type GeopfPushableResource } from '~/utils/geopf'
 
 const props = defineProps<{
   resource: GeopfPushableResource

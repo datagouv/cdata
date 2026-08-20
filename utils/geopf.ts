@@ -1,5 +1,3 @@
-import type { AdminBadgeType } from '~/types/types'
-
 export { isGeopfSynced } from '@datagouv/components-next'
 
 export type GeopfPushStatus = 'pending' | 'done' | 'error' | 'timeout'
@@ -63,18 +61,4 @@ export function isGeopfReauthRequired(error: unknown): boolean {
   if (!error || typeof error !== 'object' || !('response' in error)) return false
   const response = (error as { response?: { status?: number } }).response
   return response?.status === 424
-}
-
-export function getGeopfBadgeType(status: GeopfPushStatus | GeopfPullStatus | null): AdminBadgeType {
-  switch (status) {
-    case 'done':
-      return 'success'
-    case 'pending':
-      return 'primary'
-    case 'error':
-    case 'timeout':
-      return 'danger'
-    default:
-      return 'secondary'
-  }
 }

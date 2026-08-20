@@ -55,7 +55,7 @@ const { formatDate } = useFormatDate()
 
 const disabledReason = computed(() => {
   if (props.connected !== true) return t('Connectez-vous à cartes.gouv.fr pour récupérer les services.')
-  if (!props.ficheUrl) return t('Envoyez d\'abord un fichier au format GeoPackage (.gpkg) vers cartes.gouv.fr.')
+  if (!props.ficheUrl) return t('Envoyez d\'abord un fichier éligible vers cartes.gouv.fr.')
   return null
 })
 
