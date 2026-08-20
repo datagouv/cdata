@@ -113,8 +113,7 @@ const startPush = async () => {
       method: 'POST',
       body: { datastore_id: props.datastoreId },
     })
-    // Awaited: udata marks the resource `pending` before enqueueing, so this returns
-    // the new status and the button never re-enables in between.
+    // Awaited: udata marks the resource `pending` before enqueueing, so this returns the new status
     await props.refresh()
   }
   catch (error) {

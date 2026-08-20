@@ -4,8 +4,8 @@
     icon-only
     :icon="RiPencilLine"
     color="warning"
-    :disabled="disabled"
-    :title="disabled ? t('Vous ne pouvez pas modifier cette ressource car elle est synchronisée avec cartes.gouv.fr') : t('Éditer le fichier')"
+    :disabled="!!disabledReason"
+    :title="disabledReason ?? t('Éditer le fichier')"
     data-testid="edit-button"
   />
 </template>
@@ -20,12 +20,12 @@ type Props = {
   datasetId: string
   isCommunityResource?: boolean
   resourceId: string
-  disabled?: boolean
+  disabledReason?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isCommunityResource: false,
-  disabled: false,
+  disabledReason: null,
 })
 
 const { t } = useTranslation()
