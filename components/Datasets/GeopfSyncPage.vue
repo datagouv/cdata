@@ -12,20 +12,20 @@
 
       <GeopfDatastoreSelector
         v-model="datastoreId"
-        :pinned-datastore-id="sync?.datastore_id ?? null"
+        :pinned-datastore-id="geopfDatasetStatus?.datastore_id ?? null"
         :connected="isGeopfConnected"
         class="fr-mb-3w"
       />
 
       <LoadingBlock
-        v-slot="{ data: loadedSync }"
+        v-slot="{ data: loadedGeopfDatasetStatus }"
         :status
-        :data="sync"
+        :data="geopfDatasetStatus"
       >
         <h2 class="text-sm font-bold uppercase">
           {{ t('Fichiers à envoyer') }}
         </h2>
-        <AdminTable v-if="loadedSync.pushable.length">
+        <AdminTable v-if="loadedGeopfDatasetStatus.pushable.length">
           <thead>
             <tr>
               <AdminTableTh scope="col">
@@ -41,7 +41,7 @@
           </thead>
           <tbody>
             <tr
-              v-for="resource in loadedSync.pushable"
+              v-for="resource in loadedGeopfDatasetStatus.pushable"
               :key="resource.id"
             >
               <td>
@@ -60,7 +60,7 @@
                   :dataset-id="datasetId"
                   :connected="isGeopfConnected"
                   :datastore-id="datastoreId"
-                  :refresh="refreshSync"
+                  :refresh="refreshGeopfDatasetStatus"
                   @reauth-required="reauthRequired = true"
                 />
               </td>
@@ -81,13 +81,13 @@
           <GeopfPullAction
             :dataset-id="datasetId"
             :connected="isGeopfConnected"
-            :pull="loadedSync.pull"
-            :fiche-url="loadedSync.fiche_url"
-            :refresh="refreshSync"
+            :pull="loadedGeopfDatasetStatus.pull"
+            :fiche-url="loadedGeopfDatasetStatus.fiche_url"
+            :refresh="refreshGeopfDatasetStatus"
             @reauth-required="reauthRequired = true"
           />
         </div>
-        <AdminTable v-if="loadedSync.offerings.length">
+        <AdminTable v-if="loadedGeopfDatasetStatus.offerings.length">
           <thead>
             <tr>
               <AdminTableTh scope="col">
@@ -103,7 +103,7 @@
           </thead>
           <tbody>
             <tr
-              v-for="resource in loadedSync.offerings"
+              v-for="resource in loadedGeopfDatasetStatus.offerings"
               :key="resource.id"
             >
               <td>
@@ -130,10 +130,10 @@
         </p>
 
         <BrandedButton
-          v-if="loadedSync.fiche_url"
+          v-if="loadedGeopfDatasetStatus.fiche_url"
           color="secondary"
           size="xs"
-          :href="loadedSync.fiche_url"
+          :href="loadedGeopfDatasetStatus.fiche_url"
           new-tab
           class="mt-3"
         >
@@ -177,7 +177,7 @@ const { data: dataset } = await useAPI<DatasetV2>(datasetUrl, {
 const canEdit = computed(() => dataset.value?.permissions.edit_resources ?? false)
 
 // Everything both tables render, already filtered and projected by udata.
-const { data: sync, status, refresh: refreshSync } = await useAPI<GeopfDatasetStatus>(
+const { data: geopfDatasetStatus, status, refresh: refreshGeopfDatasetStatus } = await useAPI<GeopfDatasetStatus>(
   computed(() => geopfDatasetStatusUrl(datasetId.value)),
   { key: geopfDatasetStatusKey(datasetId.value) },
 )
@@ -188,10 +188,10 @@ const reauthRequired = ref(false)
 const datastoreId = ref<string | null>(null)
 
 const geopfPending = computed(() => {
-  if (!sync.value) return false
-  return sync.value.pushable.some(r => r.push.status === 'pending') || sync.value.pull.status === 'pending'
+  if (!geopfDatasetStatus.value) return false
+  return geopfDatasetStatus.value.pushable.some(r => r.push.status === 'pending') || geopfDatasetStatus.value.pull.status === 'pending'
 })
-useGeopfPolling(geopfPending, refreshSync)
+useGeopfPolling(geopfPending, refreshGeopfDatasetStatus)
 
 const onGeopfDisconnected = () => reloadNuxtApp({ path: route.fullPath })
 </script>

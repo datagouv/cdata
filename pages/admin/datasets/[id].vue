@@ -173,17 +173,17 @@ const { data: activities } = await useAPI<PaginatedArray<Activity>>('/api/1/acti
 
 // Drives the geopf tab's visibility. Shares its useAsyncData key with GeopfSyncPage.
 const canFetchGeopfStatus = Boolean(config.public.geopfEnabled && dataset.value?.permissions.edit_resources)
-const { data: geopfStatus, refresh: refreshGeopfStatus } = canFetchGeopfStatus
+const { data: geopfDatasetStatus, refresh: refreshGeopfDatasetStatus } = canFetchGeopfStatus
   ? await useAPI<GeopfDatasetStatus>(
       computed(() => geopfDatasetStatusUrl(String(route.params.id))),
       { key: geopfDatasetStatusKey(String(route.params.id)) },
     )
   : { data: ref(null), refresh: async () => {} }
-const hasEligibleGeopfResource = computed(() => Boolean(geopfStatus.value && (geopfStatus.value.pushable.length || geopfStatus.value.offerings.length)))
+const hasEligibleGeopfResource = computed(() => Boolean(geopfDatasetStatus.value && (geopfDatasetStatus.value.pushable.length || geopfDatasetStatus.value.offerings.length)))
 
 // The Files tab (a NuxtPage descendant) calls this after any resource change, so
 // a newly-uploaded gpkg makes the tab appear without a full page reload.
-provide(geopfEligibilityRefreshKey, () => refreshGeopfStatus())
+provide(geopfEligibilityRefreshKey, () => refreshGeopfDatasetStatus())
 
 // Stable reference: NuxtPage compares page-key by reference, so an inline function here
 // would re-trigger the loading indicator whenever `dataset` changes and this re-renders.
