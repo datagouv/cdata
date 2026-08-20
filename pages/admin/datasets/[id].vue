@@ -181,11 +181,11 @@ const { data: geopfDatasetStatus, refresh: refreshGeopfDatasetStatus } = canFetc
   : { data: ref(null), refresh: async () => {} }
 const hasEligibleGeopfResource = computed(() => Boolean(geopfDatasetStatus.value && (geopfDatasetStatus.value.pushable.length || geopfDatasetStatus.value.offerings.length)))
 
-// The Files tab (a NuxtPage descendant) calls this after any resource change, so
-// a newly-uploaded gpkg makes the tab appear without a full page reload.
+// The Files tab calls this after any resource change, so a newly-uploaded eligibile
+// resource makes the tab appear without a full page reload.
 provide(geopfEligibilityRefreshKey, () => refreshGeopfDatasetStatus())
 
-// Stable reference: NuxtPage compares page-key by reference, so an inline function here
+// Stable reference: NuxtPage compares page-key by reference, so an inline function for pageKey
 // would re-trigger the loading indicator whenever `dataset` changes and this re-renders.
 function pageKey(route: RouteLocationNormalizedLoaded) {
   return route.fullPath
