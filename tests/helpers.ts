@@ -55,6 +55,9 @@ export async function createRemoteResource(request: APIRequestContext, datasetId
       ...(extras ? { extras } : {}),
     },
   })
+  if (!response.ok()) {
+    throw new Error(`Failed to create resource "${title}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
   return await response.json()
 }
 
