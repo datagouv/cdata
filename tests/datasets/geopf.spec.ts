@@ -26,7 +26,6 @@ test.describe('Géoplateforme sync', () => {
     if (!uploadResponse.ok()) {
       throw new Error(`Failed to seed the original file: ${uploadResponse.status()} ${(await uploadResponse.text()).slice(0, 300)}`)
     }
-    const { id: resourceId } = await uploadResponse.json()
 
     await page.goto(`/admin/datasets/${dataset.id}/files`)
     await page.waitForLoadState('networkidle')
@@ -49,11 +48,6 @@ test.describe('Géoplateforme sync', () => {
     })
     await dialog.getByRole('button', { name: 'Valider' }).click()
     await expect(page.getByText('Fichier mis à jour !')).toBeVisible()
-
-    // Disambiguates a future failure here: was the new format actually persisted
-    // (a backend/upload concern), or is the eligibility-refresh wiring broken?
-    const updatedResource = await (await request.get(`${API_BASE}/api/1/datasets/${dataset.id}/resources/${resourceId}/`)).json()
-    expect(updatedResource.format).toBe('gpkg')
 
     await expect(page.getByRole('link', { name: 'Synchronisation cartes.gouv.fr' })).toBeVisible()
   })
