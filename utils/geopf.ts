@@ -3,8 +3,6 @@ export { isGeopfSynced } from '@datagouv/components-next'
 export type GeopfPushStatus = 'pending' | 'done' | 'error' | 'timeout'
 export type GeopfPullStatus = 'pending' | 'done' | 'error'
 
-// Shape of `GET /api/1/geopf/status/<dataset_id>/` (see udata/docs/geopf.md).
-// A null `status` means "never run".
 export type GeopfPushableResource = {
   id: string
   title: string
@@ -28,6 +26,7 @@ export type GeopfOfferingResource = {
   last_synced_at: string | null
 }
 
+// Shape of `GET /api/1/geopf/status/<dataset_id>/`
 export type GeopfDatasetStatus = {
   datastore_id: string | null
   fiche_url: string | null
@@ -50,7 +49,6 @@ export function geopfDatasetStatusKey(datasetId: string): string {
   return `geopf-status-${datasetId}`
 }
 
-// Raw pass-through of geopf's own API shape (GET /datastores).
 export type GeopfDatastore = {
   datastore_id: string
   name: string

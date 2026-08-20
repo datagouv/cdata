@@ -179,7 +179,7 @@ export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Datas
   return `${dataset.page}${isCommunityResource(resource) ? '/community-resources' : ''}?resource_id=${resource.id}`
 }
 
-// Resources whose local edition would diverge from what cartes.gouv.fr publishes.
+// Resources that are (being) pushed to geopf or pulled from geopf
 export function isGeopfSynced(resource: Resource | CommunityResource): boolean {
   const status = resource.extras['geopf:push:status']
   return status === 'done' || status === 'pending' || typeof resource.extras['geopf:offering:id'] === 'string'
