@@ -2,7 +2,6 @@
   <div class="bg-white fr-p-3w">
     <template v-if="canEdit">
       <GeopfPanel
-        v-if="dataset"
         :dataset-id="dataset.id"
         :connected="isGeopfConnected"
         :reauth-required="reauthRequired"
@@ -160,21 +159,17 @@ import AdminTable from '../AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../AdminTable/Table/AdminTableTh.vue'
 import { geopfDatasetStatusKey, geopfDatasetStatusUrl, type GeopfDatasetStatus } from '~/utils/geopf'
 
+const props = defineProps<{
+  dataset: DatasetV2
+}>()
+
 const route = useRoute()
 const { t } = useTranslation()
 const { formatDate } = useFormatDate()
 
 const datasetId = computed(() => String(route.params.id))
 
-// Only for the permission check; dedupes with the parent admin layout's identical call.
-const datasetUrl = computed(() => `/api/2/datasets/${datasetId.value}/`)
-const { data: dataset } = await useAPI<DatasetV2>(datasetUrl, {
-  redirectOn404: true,
-  headers: {
-    'X-Get-Datasets-Full-Objects': 'True',
-  },
-})
-const canEdit = computed(() => dataset.value?.permissions.edit_resources ?? false)
+const canEdit = computed(() => props.dataset.permissions.edit_resources)
 
 // Everything both tables render, already filtered and projected by udata.
 const { data: geopfDatasetStatus, status, refresh: refreshGeopfDatasetStatus } = await useAPI<GeopfDatasetStatus>(

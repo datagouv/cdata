@@ -1,5 +1,8 @@
 <template>
-  <GeopfSyncPage v-if="config.public.geopfEnabled" />
+  <GeopfSyncPage
+    v-if="config.public.geopfEnabled"
+    :dataset="dataset"
+  />
 </template>
 
 <script setup lang="ts">
