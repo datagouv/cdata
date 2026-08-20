@@ -531,7 +531,7 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-0">
-              {{ harvested ? t("Attributions et points de contact") : t("Points de contact") }}
+              {{ t("Points de contact et attributions") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -544,14 +544,12 @@
               v-model="form.contact_points[index]"
               class="pt-3"
               :organization="form.owned?.organization"
-              :show-attributions="harvested"
             />
             <ContactPointSelect
               v-if="form.contact_points.length === 0"
               v-model="form.contact_points[0]"
               class="pt-3"
               :organization="form.owned?.organization"
-              :show-attributions="harvested"
             />
             <BrandedButton
               class="mt-4"
@@ -561,7 +559,7 @@
               :icon="RiAddLine"
               @click="form.contact_points.push({ ...defaultContactForm })"
             >
-              {{ harvested ? t('Nouvelle attribution') : t('Nouveau contact') }}
+              {{ t('Nouvelle attribution') }}
             </BrandedButton>
           </LinkedToAccordion>
         </fieldset>
@@ -789,7 +787,6 @@ const datasetForm = defineModel<DatasetForm>({ required: true })
 const props = withDefaults(defineProps<{
   submitLabel: string
   type: 'create' | 'update'
-  harvested?: boolean
   badges?: Array<Badge>
   canEdit?: boolean
   readOnlyMessage?: string

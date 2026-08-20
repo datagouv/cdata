@@ -7,7 +7,6 @@
     <DescribeDataservice
       v-if="dataserviceForm"
       v-model="dataserviceForm"
-      :harvested="harvested"
       type="update"
       @feature="feature"
       @submit="save"
@@ -163,11 +162,9 @@ const isLoading = ref(false)
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
 const { data: dataservice, status, refresh } = await useAPI<Dataservice>(url, { redirectOn404: true })
 const dataserviceForm = ref<DataserviceForm | null>(null)
-const harvested = ref(false)
 watchEffect(() => {
   if (!dataservice.value) return
   dataserviceForm.value = dataserviceToForm(dataservice.value)
-  harvested.value = isHarvested(dataservice.value)
 })
 
 async function save() {
