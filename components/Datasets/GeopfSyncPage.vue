@@ -55,7 +55,7 @@
                 {{ resource.format }}
               </td>
               <td>
-                <GeopfPushButton
+                <GeopfPushStatus
                   :resource="resource"
                   :dataset-id="datasetId"
                   :connected="isGeopfConnected"
@@ -71,14 +71,14 @@
           v-else
           class="text-sm text-gray-medium m-0"
         >
-          {{ t("Aucun fichier au format GeoPackage (.gpkg) n'a été trouvé dans ce jeu de données.") }}
+          {{ t("Aucun fichier éligible n'a été trouvé dans ce jeu de données.") }}
         </p>
 
         <div class="flex flex-wrap justify-between items-start gap-2 mt-8 mb-3">
           <h2 class="text-sm font-bold uppercase m-0">
             {{ t('Services récupérés depuis cartes.gouv.fr') }}
           </h2>
-          <GeopfPullAction
+          <GeopfPullButton
             :dataset-id="datasetId"
             :connected="isGeopfConnected"
             :pull="loadedGeopfDatasetStatus.pull"
@@ -154,8 +154,8 @@
 import { BrandedButton, LoadingBlock, useFormatDate, type DatasetV2 } from '@datagouv/components-next'
 import GeopfDatastoreSelector from './GeopfDatastoreSelector.vue'
 import GeopfPanel from './GeopfPanel.vue'
-import GeopfPullAction from './GeopfPullAction.vue'
-import GeopfPushButton from './GeopfPushButton.vue'
+import GeopfPullButton from './GeopfPullButton.vue'
+import GeopfPushStatus from './GeopfPushStatus.vue'
 import AdminTable from '../AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../AdminTable/Table/AdminTableTh.vue'
 import { geopfDatasetStatusKey, geopfDatasetStatusUrl, type GeopfDatasetStatus } from '~/utils/geopf'
