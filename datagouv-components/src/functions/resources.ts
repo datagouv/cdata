@@ -179,6 +179,12 @@ export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Datas
   return `${dataset.page}${isCommunityResource(resource) ? '/community-resources' : ''}?resource_id=${resource.id}`
 }
 
+// Resources that are (being) pushed to geopf or pulled from geopf
+export function isGeopfSynced(resource: Resource | CommunityResource): boolean {
+  const status = resource.extras['geopf:push:status']
+  return status === 'done' || status === 'pending' || typeof resource.extras['geopf:offering:id'] === 'string'
+}
+
 export function getResourceFilesize(resource: Resource): null | number {
   if (resource.filesize) return resource.filesize
   if ('analysis:content-length' in resource.extras) return resource.extras['analysis:content-length'] as number

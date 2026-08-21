@@ -178,6 +178,8 @@ export default defineNuxtConfig({
       resourceFileUploadChunk: 20 * 1000 * 1000,
       maxSortableFiles: 50,
 
+      geopfEnabled: false,
+
       maxNumberOfDatasetsForDataserviceUpdate: 200,
 
       captcheta: {

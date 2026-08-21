@@ -148,7 +148,9 @@ jobs:
         with:
           repository: opendatateam/udata
           path: ${{ env.UDATA_WORKING_DIR }}
-          ref: main
+          # FIXME: geopf lives on this branch, not yet merged to main. Point back
+          # to `main` once the udata geopf PR (feat/geopf/init) merges.
+          ref: feat/geopf/init
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
@@ -248,6 +250,7 @@ jobs:
           NUXT_SITE_URL: http://localhost:3000
           NUXT_PUBLIC_CHARTS_API_BASE: http://localhost:7000
           NUXT_PUBLIC_CADA_RESOURCE_ID: 3a6d6fe3-8548-43ed-ad09-72052771447c
+          NUXT_PUBLIC_GEOPF_ENABLED: "true"
         run: |
           # Start cdata server in background using pre-built artifacts
           PORT=3000 node .output/server/index.mjs > cdata.log 2>&1 &
