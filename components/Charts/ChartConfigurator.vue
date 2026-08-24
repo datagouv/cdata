@@ -484,7 +484,7 @@ const form = defineModel<ChartForm>({
 })
 
 const props = defineProps<{
-  chartId?: string
+  initialChart?: Chart
 }>()
 
 const columns = ref<ColumnsDefinition>({})
@@ -753,49 +753,46 @@ async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
   })
 }
 
-async function loadChart(id: string) {
+async function loadChart(data: Chart) {
   try {
-    const data = await $api<Chart>(`/api/1/visualizations/${id}/`)
-    if (data) {
-      savedChart.value = data
+    savedChart.value = data
 
-      const chartResources = new Set<string>()
-      for (const serie of data.series) {
-        if (serie.resource_id) {
-          chartResources.add(serie.resource_id)
+    const chartResources = new Set<string>()
+    for (const serie of data.series) {
+      if (serie.resource_id) {
+        chartResources.add(serie.resource_id)
+      }
+    }
+
+    form.value = toChartForm(data)
+
+    await loadMissingResourcesForChart(Array.from(chartResources))
+    await loadColumnsForResources(Array.from(chartResources))
+
+    if (data.organization) {
+      producer.value = { organization: data.organization, owner: null }
+    }
+    if (data.owner) {
+      producer.value = { organization: null, owner: data.owner }
+    }
+
+    if (!dataset.value && data.series.length > 0 && data.series[0]?.resource_id) {
+      try {
+        const resourceData = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${data.series[0].resource_id}/`)
+        if (resourceData.dataset_id) {
+          const fetchedDataset = await $chartsApi<DatasetSuggest>(`/api/2/datasets/${resourceData.dataset_id}/`)
+          dataset.value = fetchedDataset
         }
       }
-
-      form.value = toChartForm(data)
-
-      await loadMissingResourcesForChart(Array.from(chartResources))
-      await loadColumnsForResources(Array.from(chartResources))
-
-      if (data.organization) {
-        producer.value = { organization: data.organization, owner: null }
+      catch (error) {
+        console.error('Failed to load dataset for chart:', error)
       }
-      if (data.owner) {
-        producer.value = { organization: null, owner: data.owner }
-      }
+    }
 
-      if (!dataset.value && data.series.length > 0 && data.series[0]?.resource_id) {
-        try {
-          const resourceData = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${data.series[0].resource_id}/`)
-          if (resourceData.dataset_id) {
-            const fetchedDataset = await $chartsApi<DatasetSuggest>(`/api/2/datasets/${resourceData.dataset_id}/`)
-            dataset.value = fetchedDataset
-          }
-        }
-        catch (error) {
-          console.error('Failed to load dataset for chart:', error)
-        }
-      }
+    if (data.series.length > 0 && data.series[0]?.resource_id) {
+      await nextTick()
 
-      if (data.series.length > 0 && data.series[0]?.resource_id) {
-        await nextTick()
-
-        selectedResource.value = data.series[0].resource_id
-      }
+      selectedResource.value = data.series[0].resource_id
     }
   }
   catch (error) {
@@ -977,7 +974,7 @@ watch(
   { immediate: true },
 )
 
-if (props.chartId) {
-  await loadChart(props.chartId)
+if (props.initialChart) {
+  await loadChart(props.initialChart)
 }
 </script>

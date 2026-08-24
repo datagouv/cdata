@@ -11,46 +11,36 @@
         {{ $t('Édition') }}
       </BreadcrumbItem>
     </Breadcrumb>
-    <ChartConfigurator
-      v-model="chart"
-      :chart-id="cid"
-    />
+    <LoadingBlock
+      v-slot="{ data: loadedChart }"
+      :status
+      :data="loadedChart"
+    >
+      <ChartConfigurator
+        v-if="chartForm"
+        v-model="chartForm"
+        :initial-chart="loadedChart"
+      />
+    </LoadingBlock>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { ChartForm } from '@datagouv/components-next'
+import type { Chart, ChartForm } from '@datagouv/components-next'
+import { LoadingBlock, toChartForm } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ChartConfigurator from '~/components/Charts/ChartConfigurator.vue'
 
 const route = useRoute()
-const me = useMe()
 
-const cid = computed(() => route.params.cid as string)
+const cid = route.params.cid as string
 
-const chart = ref<ChartForm>({
-  owned: {
-    organization: null,
-    owner: me.value.id,
-  },
-  title: 'Mon graphique',
-  description: '',
-  private: false,
-  x_axis: {
-    column_x: '',
-    type: 'discrete',
-    sort_combined: '',
-  },
-  y_axis: {
-    label: '',
-    min: null,
-    max: null,
-    unit: '',
-    unit_position: 'suffix',
-  },
-  filter: null,
-  chart_type: 'histogram',
-  series: [],
-  extras: {},
+const { data: loadedChart, status } = await useAPI<Chart>(`/api/1/visualizations/${cid}/`, { lazy: true })
+
+const chartForm = ref<ChartForm | null>(null)
+watchEffect(() => {
+  if (loadedChart.value) {
+    chartForm.value = toChartForm(loadedChart.value)
+  }
 })
 </script>

@@ -541,3 +541,75 @@ test('saving chart with count aggregation round-trips correctly', async ({ page,
 
   await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody.id}/`)
 })
+
+test('y-axis columns should not be empty after selecting resource from loaded chart', async ({ page, baseURL }) => {
+  await setupChart(page)
+
+  await page.getByLabel('Titre').fill('Test Columns Wipe')
+  await page.getByLabel('Description').fill('Test')
+
+  const saveResponsePromise = page.waitForResponse(response =>
+    response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST',
+  )
+  const imageResponsePromise = page.waitForResponse(response =>
+    response.url().includes('/image/') && response.request().method() === 'POST',
+  )
+  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  const saveResponse = await saveResponsePromise
+  const chartData = (await saveResponse.json()) as Chart
+  await imageResponsePromise
+
+  await page.goto(`/admin/beta/charts/${chartData.id}`)
+  await page.waitForLoadState('networkidle')
+
+  await page.getByTestId('producer-select').click()
+  await page.getByRole('option', { name: 'Admin User', exact: true }).click()
+
+  const resourceSelect = page.getByLabel('Choix de la ressource')
+  const optionCount = await resourceSelect.locator('option').count()
+  if (optionCount >= 2) {
+    await resourceSelect.selectOption({ index: 1 })
+    await page.waitForTimeout(50)
+
+    await page.getByTestId('searchable-select-colonne-y').click()
+    await page.waitForTimeout(50)
+    const options = await page.getByRole('option').allTextContents()
+    await page.keyboard.press('Escape')
+
+    expect(options.length).toBeGreaterThan(0)
+  }
+
+  await page.request.delete(`${baseURL}/api/1/visualizations/${chartData.id}/`)
+})
+
+test('x-axis dropdown should show columns from all chart resources after loading', async ({ page, baseURL }) => {
+  await setupChart(page)
+
+  const saveResponsePromise = page.waitForResponse(response =>
+    response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST',
+  )
+  const imageResponsePromise = page.waitForResponse(response =>
+    response.url().includes('/image/') && response.request().method() === 'POST',
+  )
+  await page.getByLabel('Titre').fill('Test All Columns Loaded')
+  await page.getByLabel('Description').fill('Test')
+  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  const saveResponse = await saveResponsePromise
+  const chartData = (await saveResponse.json()) as Chart
+  await imageResponsePromise
+
+  await page.goto(`/admin/beta/charts/${chartData.id}`)
+  await page.waitForLoadState('networkidle')
+
+  await page.getByTestId('producer-select').click()
+  await page.getByRole('option', { name: 'Admin User', exact: true }).click()
+
+  await page.getByTestId('searchable-select-choisir-quoi-afficher').click()
+  const options = await page.getByRole('option').allTextContents()
+  await clickOutside(page)
+
+  expect(options.length).toBeGreaterThan(1)
+  expect(options.some(opt => opt !== 'Sélectionnez une option' && opt !== '')).toBeTruthy()
+
+  await page.request.delete(`${baseURL}/api/1/visualizations/${chartData.id}/`)
+})
