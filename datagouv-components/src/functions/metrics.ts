@@ -31,49 +31,80 @@ export type ReuseMetrics = {
   visitsTotal: number
 }
 
+type MonthlyVisitsRow = { metric_month: string, monthly_visit: number }
+type MonthlyDatasetRow = MonthlyVisitsRow & { monthly_download_resource: number }
+type MonthlyOrganizationRow = {
+  metric_month: string
+  monthly_download_resource: number
+  monthly_visit_dataservice: number
+  monthly_visit_dataset: number
+  monthly_visit_reuse: number
+}
+
+type TotalVisitsRow = { visit: number }
+type TotalDatasetRow = TotalVisitsRow & { download_resource: number }
+type TotalOrganizationRow = {
+  download_resource: number
+  visit_dataservice: number
+  visit_dataset: number
+  visit_reuse: number
+}
+
+/**
+ * The metrics API is a separate service, and the numbers it serves are secondary
+ * to every page that displays them: an outage must leave the page readable. It
+ * used to reject inside the callers' watchers instead, escaping as an unhandled
+ * `TypeError: Failed to fetch` — the top client-side error on data.gouv.fr.
+ *
+ * Returning `null` puts the caller back on the "no metrics" state it already
+ * renders while loading, for a failure at any of the three steps: the request
+ * itself, an error status, or a body that isn't the expected page of rows.
+ */
+async function fetchMetrics<Row>(url: string): Promise<Array<Row> | null> {
+  try {
+    const response = await fetch(url)
+    if (!response.ok) return null
+
+    const page: { data?: Array<Row> } = await response.json()
+    return Array.isArray(page?.data) ? page.data : null
+  }
+  catch {
+    return null
+  }
+}
+
 /**
  * There is only one metrics API endpoint to get these 3 values.
  * The rest of the metrics aren't stored yet at the organization level
  */
-export async function getOrganizationMetrics(oid: string, metricsApi: string): Promise<OrganizationMetrics> {
+export async function getOrganizationMetrics(oid: string, metricsApi: string): Promise<OrganizationMetrics | null> {
   // Fetching last 12 months
-  const response = await fetch(`${metricsApi}/api/organizations/data/?organization_id__exact=${oid}&metric_month__sort=desc&page_size=12`)
-  const page = await response.json()
+  const rows = await fetchMetrics<MonthlyOrganizationRow>(`${metricsApi}/api/organizations/data/?organization_id__exact=${oid}&metric_month__sort=desc&page_size=12`)
+  if (!rows) return null
 
   const dataservicesViews: Record<string, number> = {}
   const datasetsViews: Record<string, number> = {}
   const downloads: Record<string, number> = {}
   const reusesViews: Record<string, number> = {}
 
-  for (const { metric_month, monthly_download_resource, monthly_visit_dataservice, monthly_visit_dataset, monthly_visit_reuse } of page.data) {
+  for (const { metric_month, monthly_download_resource, monthly_visit_dataservice, monthly_visit_dataset, monthly_visit_reuse } of rows) {
     dataservicesViews[metric_month] = monthly_visit_dataservice
     datasetsViews[metric_month] = monthly_visit_dataset
     downloads[metric_month] = monthly_download_resource
     reusesViews[metric_month] = monthly_visit_reuse
   }
   // Fetching totals
-  const totalResponse = await fetch(`${metricsApi}/api/organizations_total/data/?organization_id__exact=${oid}`)
-  const totalPage = await totalResponse.json()
+  const total = (await fetchMetrics<TotalOrganizationRow>(`${metricsApi}/api/organizations_total/data/?organization_id__exact=${oid}`))?.[0]
 
-  let dataservicesViewsTotal = 0
-  let datasetsViewsTotal = 0
-  let downloadsTotal = 0
-  let reusesViewsTotal = 0
-  if (page.data[0]) {
-    dataservicesViewsTotal = totalPage.data[0].visit_dataservice
-    datasetsViewsTotal = totalPage.data[0].visit_dataset
-    downloadsTotal = totalPage.data[0].download_resource
-    reusesViewsTotal = totalPage.data[0].visit_reuse
-  }
   return {
     downloads,
-    downloadsTotal,
+    downloadsTotal: total?.download_resource ?? 0,
     reusesViews,
-    reusesViewsTotal,
+    reusesViewsTotal: total?.visit_reuse ?? 0,
     dataservicesViews,
-    dataservicesViewsTotal,
+    dataservicesViewsTotal: total?.visit_dataservice ?? 0,
     datasetsViews,
-    datasetsViewsTotal,
+    datasetsViewsTotal: total?.visit_dataset ?? 0,
   }
 }
 
@@ -87,35 +118,27 @@ export function createOrganizationMetricsUrl(datasetsViews: Record<string, numbe
   return URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
 }
 
-export async function getDatasetMetrics(datasetId: string, metricsApi: string): Promise<DatasetMetrics> {
+export async function getDatasetMetrics(datasetId: string, metricsApi: string): Promise<DatasetMetrics | null> {
   // Fetching last 12 months
-  const response = await fetch(`${metricsApi}/api/datasets/data/?dataset_id__exact=${datasetId}&metric_month__sort=desc&page_size=12`)
-  const page = await response.json()
+  const rows = await fetchMetrics<MonthlyDatasetRow>(`${metricsApi}/api/datasets/data/?dataset_id__exact=${datasetId}&metric_month__sort=desc&page_size=12`)
+  if (!rows) return null
 
   const visits: Record<string, number> = {}
   const downloads: Record<string, number> = {}
 
-  for (const { metric_month, monthly_visit, monthly_download_resource } of page.data) {
+  for (const { metric_month, monthly_visit, monthly_download_resource } of rows) {
     visits[metric_month] = monthly_visit
     downloads[metric_month] = monthly_download_resource
   }
 
   // Fetching totals
-  const totalResponse = await fetch(`${metricsApi}/api/datasets_total/data/?dataset_id__exact=${datasetId}`)
-  const totalPage = await totalResponse.json()
-
-  let visitsTotal = 0
-  let downloadsTotal = 0
-  if (totalPage.data[0]) {
-    visitsTotal = totalPage.data[0].visit
-    downloadsTotal = totalPage.data[0].download_resource
-  }
+  const total = (await fetchMetrics<TotalDatasetRow>(`${metricsApi}/api/datasets_total/data/?dataset_id__exact=${datasetId}`))?.[0]
 
   return {
     visits,
-    visitsTotal,
+    visitsTotal: total?.visit ?? 0,
     downloads,
-    downloadsTotal,
+    downloadsTotal: total?.download_resource ?? 0,
   }
 }
 
@@ -149,54 +172,42 @@ export async function createDatasetsForOrganizationMetricsUrl(organizationId: st
   return URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
 }
 
-export async function getDataserviceMetrics(dataserviceId: string, metricsApi: string): Promise<DataserviceMetrics> {
+export async function getDataserviceMetrics(dataserviceId: string, metricsApi: string): Promise<DataserviceMetrics | null> {
   // Fetching last 12 months
-  const response = await fetch(`${metricsApi}/api/dataservices/data/?dataservice_id__exact=${dataserviceId}&metric_month__sort=desc&page_size=12`)
-  const page = await response.json()
+  const rows = await fetchMetrics<MonthlyVisitsRow>(`${metricsApi}/api/dataservices/data/?dataservice_id__exact=${dataserviceId}&metric_month__sort=desc&page_size=12`)
+  if (!rows) return null
 
   const visits: Record<string, number> = {}
 
-  for (const { metric_month, monthly_visit } of page.data) {
+  for (const { metric_month, monthly_visit } of rows) {
     visits[metric_month] = monthly_visit
   }
 
   // Fetching totals
-  const totalResponse = await fetch(`${metricsApi}/api/dataservices_total/data/?dataservice_id__exact=${dataserviceId}`)
-  const totalPage = await totalResponse.json()
-
-  let visitsTotal = 0
-  if (totalPage.data[0]) {
-    visitsTotal = totalPage.data[0].visit
-  }
+  const total = (await fetchMetrics<TotalVisitsRow>(`${metricsApi}/api/dataservices_total/data/?dataservice_id__exact=${dataserviceId}`))?.[0]
 
   return {
     visits,
-    visitsTotal,
+    visitsTotal: total?.visit ?? 0,
   }
 }
 
-export async function getReuseMetrics(reuseId: string, metricsApi: string): Promise<ReuseMetrics> {
+export async function getReuseMetrics(reuseId: string, metricsApi: string): Promise<ReuseMetrics | null> {
   // Fetching last 12 months
-  const response = await fetch(`${metricsApi}/api/reuses/data/?reuse_id__exact=${reuseId}&metric_month__sort=desc&page_size=12`)
-  const page = await response.json()
+  const rows = await fetchMetrics<MonthlyVisitsRow>(`${metricsApi}/api/reuses/data/?reuse_id__exact=${reuseId}&metric_month__sort=desc&page_size=12`)
+  if (!rows) return null
 
   const visits: Record<string, number> = {}
 
-  for (const { metric_month, monthly_visit } of page.data) {
+  for (const { metric_month, monthly_visit } of rows) {
     visits[metric_month] = monthly_visit
   }
 
   // Fetching totals
-  const totalResponse = await fetch(`${metricsApi}/api/reuses_total/data/?reuse_id__exact=${reuseId}`)
-  const totalPage = await totalResponse.json()
-
-  let visitsTotal = 0
-  if (totalPage.data[0]) {
-    visitsTotal = totalPage.data[0].visit
-  }
+  const total = (await fetchMetrics<TotalVisitsRow>(`${metricsApi}/api/reuses_total/data/?reuse_id__exact=${reuseId}`))?.[0]
 
   return {
     visits,
-    visitsTotal,
+    visitsTotal: total?.visit ?? 0,
   }
 }

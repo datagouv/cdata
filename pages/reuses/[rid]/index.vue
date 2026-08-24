@@ -201,7 +201,7 @@
 </template>
 
 <script setup lang="ts">
-import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseV2, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, useFormatDate, MarkdownViewer, BrandedButton } from '@datagouv/components-next'
+import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseV2, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, useFormatDate, useMetrics, MarkdownViewer, BrandedButton } from '@datagouv/components-next'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import type { PaginatedArray } from '~/types/types'
 
@@ -258,13 +258,14 @@ const metricsSince = computed(() => {
   return [props.reuse.created_at, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
 })
 
+const { getReuseMetrics } = useMetrics()
 const metricsViews = ref<null | Record<string, number>>(null)
 const metricsViewsTotal = ref<null | number>(null)
 
 watchEffect(async () => {
   if (!props.reuse.id) return
   const metrics = await getReuseMetrics(props.reuse.id)
-  metricsViews.value = metrics.reuseViews
-  metricsViewsTotal.value = metrics.reuseViewsTotal
+  metricsViews.value = metrics?.visits ?? null
+  metricsViewsTotal.value = metrics?.visitsTotal ?? null
 })
 </script>
