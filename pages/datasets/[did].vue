@@ -641,14 +641,17 @@ const exploreHref = computed(() => {
   return dataset.value?.resources.total ? `/explore/${dataset.value.slug}` : null
 })
 
-const { data: badgeTranslations } = await useAPI<Record<string, string>>(
-  '/api/1/datasets/badges',
-)
+// The badge labels are a reference list needed only to name the badges this
+// dataset carries: most datasets carry none, and fetching it for them would be
+// one request per page view for nothing.
+const badgeTranslations = dataset.value?.badges?.length
+  ? (await useFetch('/nuxt-api/dataset-badges')).data
+  : null
 
 const badges = computed(() =>
   (dataset.value?.badges ?? []).map<TranslatedBadge>(b => ({
     ...b,
-    label: badgeTranslations.value?.[b.kind] ?? '',
+    label: badgeTranslations?.value?.[b.kind] ?? '',
   })),
 )
 
@@ -671,9 +674,14 @@ const datasetDownloadsResources = computed(() => datasetMetrics.value?.downloads
 const datasetVisitsTotal = computed(() => datasetMetrics.value?.visitsTotal ?? 0)
 const datasetDownloadsResourcesTotal = computed(() => datasetMetrics.value?.downloadsTotal ?? 0)
 
-const { data: categories } = await useAPI<Array<{ value: string, label: string, definition: string }>>('/api/1/access_type/reason_categories/')
+// Same reasoning as the badge labels above: only a restricted dataset names a
+// reason category, which is 0.3% of them.
+const reasonCategories = dataset.value?.access_type_reason_category
+  ? (await useFetch('/nuxt-api/access-type-reason-categories')).data
+  : null
+
 const category = computed(() => {
   if (!dataset.value?.access_type_reason_category) return null
-  return categories.value?.find(c => c.value === dataset.value?.access_type_reason_category)
+  return reasonCategories?.value?.find(c => c.value === dataset.value?.access_type_reason_category)
 })
 </script>
