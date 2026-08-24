@@ -67,14 +67,24 @@ export const loadMe = async (meState: Ref<Me | null | undefined>) => {
   const token = useToken()
   const { setCurrentOrganization, setCurrentUser } = useCurrentOwnedSetters()
 
+  // The vast majority of server-side renders are for anonymous visitors, for whom
+  // `/api/1/me` can only answer 401. Without any credential in the request we know
+  // the answer without asking. Server-side only: session cookies are HttpOnly, so
+  // the browser cannot tell whether they are set.
+  if (import.meta.server && !token.value && !config.public.devApiKey) {
+    const session = useCookie(config.sessionCookieName).value || useCookie(config.rememberCookieName).value
+    if (!session) {
+      meState.value = null
+      return
+    }
+  }
+
   const headers: Record<string, string> = {}
 
   if (cookie) {
-    // console.log('Cookie is set to ' + cookie)
     headers['cookie'] = cookie
   }
   if (token.value) {
-    // console.log('Token is set to ' + token.value)
     headers['Authentication-Token'] = token.value
   }
   if (config.public.devApiKey) {
