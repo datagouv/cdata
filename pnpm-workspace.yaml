@@ -16,9 +16,6 @@ ignoredBuiltDependencies:
   - core-js
   - unrs-resolver
 
-patchedDependencies:
-  "@nuxt/nitro-server": patches/@nuxt__nitro-server.patch
-
 overrides:
   shell-quote: ^1.9.0
   flatted: ^3.4.2
