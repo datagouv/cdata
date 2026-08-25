@@ -4,8 +4,8 @@ import type { BrowserContext } from '@playwright/test'
 // fetches metric-api.data.gouv.fr from the browser, so an outage of that
 // third-party service used to fail unrelated tests.
 //
-// The app now survives such an outage (see `fetchMetrics` in the components
-// package, and metrics-outage.spec.ts), but that is not enough for the suite:
+// The app now survives such an outage (the pages hand these calls to
+// `useAsyncData`, see metrics.spec.ts), but that is not enough for the suite:
 // Chromium logs `Failed to load resource: net::ERR_*` for the failed request
 // whatever the app does with the rejection, and assertNoConsoleErrors sees it.
 // This fake answers the same shapes for any entity id, so no test depends on a

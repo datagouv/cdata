@@ -195,7 +195,7 @@
               />
 
               <div
-                v-if="!metricsFailed"
+                v-if="!metricsError"
                 class="grid gap-4 xl:grid-cols-2"
               >
                 <!-- ClientOnly: the loading skeletons of StatBox get their ids from
@@ -493,7 +493,6 @@ import {
   AppLink,
   MarkdownViewer,
   useMetrics,
-  type DatasetMetrics,
   TranslationT,
   getDescriptionShort,
   type Resource,
@@ -670,21 +669,14 @@ const metricsSince = computed(() => {
 
 const { getDatasetMetrics } = useMetrics()
 
-// `undefined` while the request is in flight, `null` when the metrics API failed
-// (`getDatasetMetrics` answers `null` rather than rejecting): the boxes show their loading
-// state for the former and disappear for the latter, instead of presenting a zero the API
-// never returned.
-const datasetMetrics = ref<DatasetMetrics | null>()
-const metricsFailed = computed(() => datasetMetrics.value === null)
-
-watchEffect(async () => {
-  // The render doesn't await this watcher, so the answer never reaches the SSR output:
-  // requesting it from the server only adds a call whose result is thrown away.
-  if (import.meta.server) return
-  if (!dataset.value?.id) return
-
-  datasetMetrics.value = await getDatasetMetrics(dataset.value.id)
-})
+// `server: false` keeps the call out of the render: the metrics API is a third-party service
+// and its numbers are secondary to the page, so waiting for it would delay the whole page.
+// The boxes disappear on `error` rather than presenting a zero the API never returned.
+const { data: datasetMetrics, error: metricsError } = useAsyncData(
+  'dataset-metrics',
+  () => dataset.value?.id ? getDatasetMetrics(dataset.value.id) : Promise.resolve(null),
+  { lazy: true, server: false, watch: [() => dataset.value?.id] },
+)
 
 // Same reasoning as the badge labels above: only a restricted dataset names a
 // reason category, which is 0.3% of them.

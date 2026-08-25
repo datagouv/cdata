@@ -40,7 +40,7 @@
           />
         </ClientOnly>
       </section>
-      <template v-if="!metricsFailed">
+      <template v-if="!metricsError">
         <Divider
           color="bg-gray-default"
           class="mb-6 pr-24"
@@ -294,7 +294,7 @@ const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
 const me = useMaybeMe()
 
-const { metrics, failed: metricsFailed, downloadStatsUrl } = useOrganizationMetrics(() => props.organization)
+const { metrics, error: metricsError, downloadStatsUrl } = useOrganizationMetrics(() => props.organization)
 
 const reason = ref('')
 

@@ -63,7 +63,7 @@
           />
         </ClientOnly>
       </section>
-      <template v-if="organization && !metricsFailed">
+      <template v-if="organization && !metricsError">
         <Divider
           color="bg-gray-default"
           class="mb-6 pr-24"
@@ -112,5 +112,5 @@ const props = defineProps<{
   user?: User | null
 }>()
 
-const { metrics, failed: metricsFailed, downloadStatsUrl } = useOrganizationMetrics(() => props.organization)
+const { metrics, error: metricsError, downloadStatsUrl } = useOrganizationMetrics(() => props.organization)
 </script>

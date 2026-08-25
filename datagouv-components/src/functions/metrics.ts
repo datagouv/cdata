@@ -51,36 +51,29 @@ type TotalOrganizationRow = {
 }
 
 /**
- * The metrics API is a separate service, and the numbers it serves are secondary
- * to every page that displays them: an outage must leave the page readable. It
- * used to reject inside the callers' watchers instead, escaping as an unhandled
- * `TypeError: Failed to fetch` — the top client-side error on data.gouv.fr.
- *
- * Returning `null` puts the caller back on the "no metrics" state it already
- * renders while loading, for a failure at any of the three steps: the request
- * itself, an error status, or a body that isn't the expected page of rows.
+ * The metrics API is a separate service that answers over the network, so a call fails in
+ * three ways: the request itself, an error status, or a body that isn't the expected page
+ * of rows. Rejecting on the last two turns them into the same failure as the first, which
+ * callers already hand to `useAsyncData` — reading `page.data` straight would instead throw
+ * a `TypeError` a few lines later, naming a symptom rather than the service.
  */
-async function fetchMetrics<Row>(url: string): Promise<Array<Row> | null> {
-  try {
-    const response = await fetch(url)
-    if (!response.ok) return null
+async function fetchMetrics<Row>(url: string): Promise<Array<Row>> {
+  const response = await fetch(url)
+  if (!response.ok) throw new Error(`The metrics API answered ${response.status} for ${url}`)
 
-    const page: { data?: Array<Row> } = await response.json()
-    return Array.isArray(page?.data) ? page.data : null
-  }
-  catch {
-    return null
-  }
+  const page: { data?: Array<Row> } = await response.json()
+  if (!Array.isArray(page?.data)) throw new Error(`The metrics API answered an unexpected body for ${url}`)
+
+  return page.data
 }
 
 /**
  * There is only one metrics API endpoint to get these 3 values.
  * The rest of the metrics aren't stored yet at the organization level
  */
-export async function getOrganizationMetrics(oid: string, metricsApi: string): Promise<OrganizationMetrics | null> {
+export async function getOrganizationMetrics(oid: string, metricsApi: string): Promise<OrganizationMetrics> {
   // Fetching last 12 months
   const rows = await fetchMetrics<MonthlyOrganizationRow>(`${metricsApi}/api/organizations/data/?organization_id__exact=${oid}&metric_month__sort=desc&page_size=12`)
-  if (!rows) return null
 
   const dataservicesViews: Record<string, number> = {}
   const datasetsViews: Record<string, number> = {}
@@ -94,7 +87,7 @@ export async function getOrganizationMetrics(oid: string, metricsApi: string): P
     reusesViews[metric_month] = monthly_visit_reuse
   }
   // Fetching totals
-  const total = (await fetchMetrics<TotalOrganizationRow>(`${metricsApi}/api/organizations_total/data/?organization_id__exact=${oid}`))?.[0]
+  const total = (await fetchMetrics<TotalOrganizationRow>(`${metricsApi}/api/organizations_total/data/?organization_id__exact=${oid}`))[0]
 
   return {
     downloads,
@@ -118,10 +111,9 @@ export function createOrganizationMetricsUrl(datasetsViews: Record<string, numbe
   return URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
 }
 
-export async function getDatasetMetrics(datasetId: string, metricsApi: string): Promise<DatasetMetrics | null> {
+export async function getDatasetMetrics(datasetId: string, metricsApi: string): Promise<DatasetMetrics> {
   // Fetching last 12 months
   const rows = await fetchMetrics<MonthlyDatasetRow>(`${metricsApi}/api/datasets/data/?dataset_id__exact=${datasetId}&metric_month__sort=desc&page_size=12`)
-  if (!rows) return null
 
   const visits: Record<string, number> = {}
   const downloads: Record<string, number> = {}
@@ -132,7 +124,7 @@ export async function getDatasetMetrics(datasetId: string, metricsApi: string): 
   }
 
   // Fetching totals
-  const total = (await fetchMetrics<TotalDatasetRow>(`${metricsApi}/api/datasets_total/data/?dataset_id__exact=${datasetId}`))?.[0]
+  const total = (await fetchMetrics<TotalDatasetRow>(`${metricsApi}/api/datasets_total/data/?dataset_id__exact=${datasetId}`))[0]
 
   return {
     visits,
@@ -172,10 +164,9 @@ export async function createDatasetsForOrganizationMetricsUrl(organizationId: st
   return URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
 }
 
-export async function getDataserviceMetrics(dataserviceId: string, metricsApi: string): Promise<DataserviceMetrics | null> {
+export async function getDataserviceMetrics(dataserviceId: string, metricsApi: string): Promise<DataserviceMetrics> {
   // Fetching last 12 months
   const rows = await fetchMetrics<MonthlyVisitsRow>(`${metricsApi}/api/dataservices/data/?dataservice_id__exact=${dataserviceId}&metric_month__sort=desc&page_size=12`)
-  if (!rows) return null
 
   const visits: Record<string, number> = {}
 
@@ -184,7 +175,7 @@ export async function getDataserviceMetrics(dataserviceId: string, metricsApi: s
   }
 
   // Fetching totals
-  const total = (await fetchMetrics<TotalVisitsRow>(`${metricsApi}/api/dataservices_total/data/?dataservice_id__exact=${dataserviceId}`))?.[0]
+  const total = (await fetchMetrics<TotalVisitsRow>(`${metricsApi}/api/dataservices_total/data/?dataservice_id__exact=${dataserviceId}`))[0]
 
   return {
     visits,
@@ -192,10 +183,9 @@ export async function getDataserviceMetrics(dataserviceId: string, metricsApi: s
   }
 }
 
-export async function getReuseMetrics(reuseId: string, metricsApi: string): Promise<ReuseMetrics | null> {
+export async function getReuseMetrics(reuseId: string, metricsApi: string): Promise<ReuseMetrics> {
   // Fetching last 12 months
   const rows = await fetchMetrics<MonthlyVisitsRow>(`${metricsApi}/api/reuses/data/?reuse_id__exact=${reuseId}&metric_month__sort=desc&page_size=12`)
-  if (!rows) return null
 
   const visits: Record<string, number> = {}
 
@@ -204,7 +194,7 @@ export async function getReuseMetrics(reuseId: string, metricsApi: string): Prom
   }
 
   // Fetching totals
-  const total = (await fetchMetrics<TotalVisitsRow>(`${metricsApi}/api/reuses_total/data/?reuse_id__exact=${reuseId}`))?.[0]
+  const total = (await fetchMetrics<TotalVisitsRow>(`${metricsApi}/api/reuses_total/data/?reuse_id__exact=${reuseId}`))[0]
 
   return {
     visits,
