@@ -644,14 +644,14 @@ const exploreHref = computed(() => {
 // The badge labels are a reference list needed only to name the badges this
 // dataset carries: most datasets carry none, and fetching it for them would be
 // one request per page view for nothing.
-const badgeTranslations = dataset.value?.badges?.length
-  ? (await useFetch('/nuxt-api/dataset-badges')).data
-  : null
+const { data: badgeTranslations } = await useFetch('/nuxt-api/dataset-badges', {
+  immediate: Boolean(dataset.value?.badges?.length),
+})
 
 const badges = computed(() =>
   (dataset.value?.badges ?? []).map<TranslatedBadge>(b => ({
     ...b,
-    label: badgeTranslations?.value?.[b.kind] ?? '',
+    label: badgeTranslations.value?.[b.kind] ?? '',
   })),
 )
 
@@ -676,12 +676,12 @@ const datasetDownloadsResourcesTotal = computed(() => datasetMetrics.value?.down
 
 // Same reasoning as the badge labels above: only a restricted dataset names a
 // reason category, which is 0.3% of them.
-const reasonCategories = dataset.value?.access_type_reason_category
-  ? (await useFetch('/nuxt-api/access-type-reason-categories')).data
-  : null
+const { data: reasonCategories } = await useFetch('/nuxt-api/access-type-reason-categories', {
+  immediate: Boolean(dataset.value?.access_type_reason_category),
+})
 
 const category = computed(() => {
   if (!dataset.value?.access_type_reason_category) return null
-  return reasonCategories?.value?.find(c => c.value === dataset.value?.access_type_reason_category)
+  return reasonCategories.value?.find(c => c.value === dataset.value?.access_type_reason_category)
 })
 </script>
