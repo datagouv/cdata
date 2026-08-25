@@ -194,24 +194,31 @@
                 :object="dataset"
               />
 
-              <div class="grid gap-4 xl:grid-cols-2">
-                <StatBox
-                  :title="$t('Vues')"
-                  :data="datasetVisits"
-                  size="sm"
-                  type="line"
-                  :summary="datasetVisitsTotal"
-                  :since="metricsSince"
-                />
-                <StatBox
-                  v-if="dataset.access_type === 'open'"
-                  :title="$t('Téléchargements')"
-                  :data="datasetDownloadsResources"
-                  size="sm"
-                  type="line"
-                  :summary="datasetDownloadsResourcesTotal"
-                  :since="metricsSince"
-                />
+              <div
+                v-if="!metricsFailed"
+                class="grid gap-4 xl:grid-cols-2"
+              >
+                <!-- ClientOnly: the loading skeletons of StatBox get their ids from
+                     `Math.random()`, which differ between the server and the client render. -->
+                <ClientOnly>
+                  <StatBox
+                    :title="$t('Vues')"
+                    :data="datasetMetrics?.visits"
+                    size="sm"
+                    type="line"
+                    :summary="datasetMetrics?.visitsTotal"
+                    :since="metricsSince"
+                  />
+                  <StatBox
+                    v-if="dataset.access_type === 'open'"
+                    :title="$t('Téléchargements')"
+                    :data="datasetMetrics?.downloads"
+                    size="sm"
+                    type="line"
+                    :summary="datasetMetrics?.downloadsTotal"
+                    :since="metricsSince"
+                  />
+                </ClientOnly>
               </div>
 
               <div v-if="dataset.access_type === 'open'">
@@ -659,17 +666,22 @@ const metricsSince = computed(() => {
 })
 
 const { getDatasetMetrics } = useMetrics()
-const datasetMetrics = ref<DatasetMetrics | null>(null)
+
+// `undefined` while the request is in flight, `null` when the metrics API failed
+// (`getDatasetMetrics` answers `null` rather than rejecting): the boxes show their loading
+// state for the former and disappear for the latter, instead of presenting a zero the API
+// never returned.
+const datasetMetrics = ref<DatasetMetrics | null>()
+const metricsFailed = computed(() => datasetMetrics.value === null)
 
 watchEffect(async () => {
-  if (!dataset.value || !dataset.value.id) return
+  // The render doesn't await this watcher, so the answer never reaches the SSR output:
+  // requesting it from the server only adds a call whose result is thrown away.
+  if (import.meta.server) return
+  if (!dataset.value?.id) return
+
   datasetMetrics.value = await getDatasetMetrics(dataset.value.id)
 })
-
-const datasetVisits = computed(() => datasetMetrics.value?.visits ?? {})
-const datasetDownloadsResources = computed(() => datasetMetrics.value?.downloads ?? {})
-const datasetVisitsTotal = computed(() => datasetMetrics.value?.visitsTotal ?? 0)
-const datasetDownloadsResourcesTotal = computed(() => datasetMetrics.value?.downloadsTotal ?? 0)
 
 const { data: categories } = await useAPI<Array<{ value: string, label: string, definition: string }>>('/api/1/access_type/reason_categories/')
 const category = computed(() => {

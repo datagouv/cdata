@@ -63,7 +63,7 @@
           />
         </ClientOnly>
       </section>
-      <template v-if="organization">
+      <template v-if="organization && !metricsFailed">
         <Divider
           color="bg-gray-default"
           class="mb-6 pr-24"
@@ -104,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, PaddedContainer, StatBox, useMetrics, createOrganizationMetricsUrl, type Organization, type User, type OrganizationMetrics } from '@datagouv/components-next'
+import { BrandedButton, PaddedContainer, StatBox, type Organization, type User } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 
 const props = defineProps<{
@@ -112,17 +112,5 @@ const props = defineProps<{
   user?: User | null
 }>()
 
-const { getOrganizationMetrics } = useMetrics()
-const metrics = ref<OrganizationMetrics | null>(null)
-
-watchEffect(async () => {
-  if (!props.organization) return
-  metrics.value = await getOrganizationMetrics(props.organization.id)
-})
-
-const downloadStatsUrl = computed(() => {
-  if (!metrics.value) return null
-
-  return createOrganizationMetricsUrl(metrics.value.datasetsViews, metrics.value.downloads, metrics.value.dataservicesViews, metrics.value.reusesViews)
-})
+const { metrics, failed: metricsFailed, downloadStatsUrl } = useOrganizationMetrics(() => props.organization)
 </script>

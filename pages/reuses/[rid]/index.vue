@@ -64,15 +64,19 @@
                 {{ formatDate(reuse.created_at) }}
               </dd>
             </div>
-            <div>
-              <StatBox
-                :title="$t('Vues')"
-                :data="metricsViews"
-                size="sm"
-                type="line"
-                :summary="metricsViewsTotal"
-                :since="metricsSince"
-              />
+            <div v-if="!metricsFailed">
+              <!-- ClientOnly: the loading skeletons of StatBox get their ids from
+                   `Math.random()`, which differ between the server and the client render. -->
+              <ClientOnly>
+                <StatBox
+                  :title="$t('Vues')"
+                  :data="reuseMetrics?.visits"
+                  size="sm"
+                  type="line"
+                  :summary="reuseMetrics?.visitsTotal"
+                  :since="metricsSince"
+                />
+              </ClientOnly>
             </div>
           </dl>
         </div>
@@ -201,7 +205,7 @@
 </template>
 
 <script setup lang="ts">
-import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseV2, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, useFormatDate, useMetrics, MarkdownViewer, BrandedButton } from '@datagouv/components-next'
+import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseMetrics, type ReuseV2, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, useFormatDate, useMetrics, MarkdownViewer, BrandedButton } from '@datagouv/components-next'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import type { PaginatedArray } from '~/types/types'
 
@@ -259,13 +263,19 @@ const metricsSince = computed(() => {
 })
 
 const { getReuseMetrics } = useMetrics()
-const metricsViews = ref<null | Record<string, number>>(null)
-const metricsViewsTotal = ref<null | number>(null)
+
+// `undefined` while the request is in flight, `null` when the metrics API failed
+// (`getReuseMetrics` answers `null` rather than rejecting): the box shows its loading state
+// for the former and disappears for the latter, instead of loading forever.
+const reuseMetrics = ref<ReuseMetrics | null>()
+const metricsFailed = computed(() => reuseMetrics.value === null)
 
 watchEffect(async () => {
+  // The render doesn't await this watcher, so the answer never reaches the SSR output:
+  // requesting it from the server only adds a call whose result is thrown away.
+  if (import.meta.server) return
   if (!props.reuse.id) return
-  const metrics = await getReuseMetrics(props.reuse.id)
-  metricsViews.value = metrics?.visits ?? null
-  metricsViewsTotal.value = metrics?.visitsTotal ?? null
+
+  reuseMetrics.value = await getReuseMetrics(props.reuse.id)
 })
 </script>
