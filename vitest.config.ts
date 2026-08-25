@@ -13,6 +13,12 @@ export default defineConfig({
       '~': fileURLToPath(new URL('.', import.meta.url)),
     },
   },
+  // Nuxt injects these flags at build time; under vitest we run the server side of
+  // the universal code, which is the only side able to read HttpOnly cookies.
+  define: {
+    'import.meta.server': 'true',
+    'import.meta.client': 'false',
+  },
   test: {
     include: ['tests-unit/**/*.spec.ts'],
     environment: 'node',
