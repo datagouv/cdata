@@ -14,15 +14,14 @@ import type { BrowserContext } from '@playwright/test'
 // A test that wants the outage itself declares its own `page.route` — page
 // routes take precedence over the context route installed here.
 
-const METRICS_API = process.env.NUXT_PUBLIC_METRICS_API || 'https://metric-api.data.gouv.fr'
+export const METRICS_API = process.env.NUXT_PUBLIC_METRICS_API || 'https://metric-api.data.gouv.fr'
 
 const MONTHS_COUNT = 12
 
-// Parallel lists: `TOTAL_METRICS[i]` is the sum, over the returned months, of
-// `MONTHLY_METRICS[i]`. Every row carries every metric — the API has one
-// endpoint family per model, but the callers only read the fields they know.
-const MONTHLY_METRICS = ['monthly_visit', 'monthly_download_resource', 'monthly_visit_dataset', 'monthly_visit_dataservice', 'monthly_visit_reuse']
-const TOTAL_METRICS = ['visit', 'download_resource', 'visit_dataset', 'visit_dataservice', 'visit_reuse']
+// A metric is named `visit` on the totals endpoint and `monthly_visit` on the monthly one, so
+// one list drives both. Every row carries every metric — the API has one endpoint family per
+// model, but the callers only read the fields they know.
+const METRICS = ['visit', 'download_resource', 'visit_dataset', 'visit_dataservice', 'visit_reuse']
 
 /** `YYYY-MM` of the month `monthsAgo` months before the current one. */
 function metricMonth(monthsAgo: number): string {
@@ -38,17 +37,19 @@ const monthlyValue = (monthsAgo: number, metricIndex: number) => (MONTHS_COUNT -
 // Most recent month first, matching `metric_month__sort=desc`.
 const monthlyRows = () => Array.from({ length: MONTHS_COUNT }, (_, monthsAgo) => ({
   metric_month: metricMonth(monthsAgo),
-  ...Object.fromEntries(MONTHLY_METRICS.map((metric, index) => [metric, monthlyValue(monthsAgo, index)])),
+  ...Object.fromEntries(METRICS.map((metric, index) => [`monthly_${metric}`, monthlyValue(monthsAgo, index)])),
 }))
 
-const totalRow = () => Object.fromEntries(TOTAL_METRICS.map((metric, index) => [
+// Summing the months this fake serves is a convenience, not a rule of the real API, whose
+// totals are all-time and outlive the 12 months the monthly endpoint returns.
+const totalRow = () => Object.fromEntries(METRICS.map((metric, index) => [
   metric,
   Array.from({ length: MONTHS_COUNT }, (_, monthsAgo) => monthlyValue(monthsAgo, index)).reduce((sum, value) => sum + value, 0),
 ]))
 
 // The app reads these cross-origin from the browser, so the mocked responses
 // need the header the real API sends.
-const CORS_HEADERS = { 'Access-Control-Allow-Origin': '*' }
+export const CORS_HEADERS = { 'Access-Control-Allow-Origin': '*' }
 
 export async function fakeMetricsApi(context: BrowserContext): Promise<void> {
   await context.route(`${METRICS_API}/**`, async (route) => {

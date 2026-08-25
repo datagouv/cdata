@@ -1,14 +1,14 @@
 import type { APIRequestContext, Page, Route } from '@playwright/test'
 import { test, expect } from './base'
 import { createDataset, createOrganization, createReuse, deleteDatasets, deleteOrganizations, deleteReuses } from './helpers'
+import { CORS_HEADERS, METRICS_API } from './metricsApi'
 
-// `tests/metricsApi.ts` answers for metric-api.data.gouv.fr in every test of the suite, so no
-// test depends on that third-party service. The tests below override it with their own answers:
+// `tests/metricsApi.ts` answers for the metrics API in every test of the suite, so no test
+// depends on that third-party service. The tests below override it with their own answers:
 // page routes take precedence over the context route it installs.
 //
 // The metrics API sits on another origin, so a fulfilled answer needs the CORS header the real
 // one sends, otherwise the browser reports a CORS failure instead of what the test serves.
-const CORS_HEADERS = { 'Access-Control-Allow-Origin': '*' }
 
 const answerWith = (json: object) => (route: Route) => route.fulfill({ json, headers: CORS_HEADERS })
 const noMonthlyRow = answerWith({ data: [], links: { next: null } })
@@ -68,15 +68,22 @@ test.describe('all-time totals', () => {
   })
 })
 
-// The dataset page fetches the metrics API from the browser. When that service answers with an
+// Every page below fetches the metrics API from the browser. When that service answers with an
 // error or not at all, the rejection used to escape the page's watcher as an unhandled
 // `TypeError: Failed to fetch` — the top client-side error reported on www.data.gouv.fr.
 //
 // Chromium logs the failed request itself whatever the app does, so that one message is allowed.
 // What these tests assert is that nothing *else* reaches the console: no unhandled rejection,
 // and a page that drops its stat boxes rather than showing a zero the API never returned.
+//
+// Each page hides a different piece of markup — a `<div>` inside a grid, a `<div>` inside a
+// `<dl>`, a `<template>` wrapping a divider — so each one is covered rather than assumed to
+// behave like the dataset page.
 test.describe('metrics API unavailable', () => {
   test.use({ allowedConsoleMessages: ['net::ERR_FAILED', 'the server responded with a status of 500'] })
+
+  const abortMetrics = (page: Page) => page.route(`${METRICS_API}/**`, route => route.abort())
+  const failMetrics = (page: Page) => page.route(`${METRICS_API}/**`, route => route.fulfill({ status: 500, contentType: 'text/html', body: '<html>oops</html>', headers: CORS_HEADERS }))
 
   async function expectDatasetPageWithoutStatBoxes(page: Page, request: APIRequestContext) {
     const dataset = await createDataset(request, `Test metrics outage ${Date.now()}`, 'Dataset pour tester une panne de l\'API des métriques')
@@ -93,14 +100,46 @@ test.describe('metrics API unavailable', () => {
   }
 
   test('the dataset page survives an unreachable metrics API', async ({ page, request }) => {
-    await page.route('**metric-api.data.gouv.fr/**', route => route.abort())
+    await abortMetrics(page)
 
     await expectDatasetPageWithoutStatBoxes(page, request)
   })
 
   test('the dataset page survives a metrics API returning an error', async ({ page, request }) => {
-    await page.route('**metric-api.data.gouv.fr/**', route => route.fulfill({ status: 500, contentType: 'text/html', body: '<html>oops</html>', headers: CORS_HEADERS }))
+    await failMetrics(page)
 
     await expectDatasetPageWithoutStatBoxes(page, request)
+  })
+
+  test('the reuse page survives an unreachable metrics API', async ({ page, request }) => {
+    await abortMetrics(page)
+
+    const reuse = await createReuse(request, `Test metrics outage ${Date.now()}`, `https://example.com/reuse-metrics-outage-${Date.now()}`)
+    createdReuses.push(reuse.id)
+
+    await page.goto(`/reuses/${reuse.id}`)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(reuse.title)
+    await page.waitForLoadState('networkidle')
+
+    // Control: the sibling entries of the same `<dl>` are still there.
+    await expect(page.getByText('Date de création')).toBeVisible()
+    await expect(page.getByText('Vues', { exact: true })).toBeHidden()
+  })
+
+  test('the organization page survives an unreachable metrics API', async ({ page, request }) => {
+    await abortMetrics(page)
+
+    const organization = await createOrganization(request, `Test metrics outage ${Date.now()}`)
+    createdOrganizations.push(organization.id)
+
+    await page.goto(`/organizations/${organization.id}/information`)
+    await page.getByRole('button', { name: 'Voir les statistiques' }).click()
+    await page.waitForLoadState('networkidle')
+
+    // Control: the section itself is still rendered, so the absence below is the boxes going
+    // away rather than the section failing to open. Its own title is used because the box
+    // titles above the divider ("Jeux de données"…) also name the navigation tabs.
+    await expect(page.getByText('Statistiques générales des 12 derniers mois')).toBeVisible()
+    await expect(page.getByText('Téléchargements des données')).toBeHidden()
   })
 })
