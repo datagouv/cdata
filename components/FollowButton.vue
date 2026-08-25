@@ -1,11 +1,11 @@
 <template>
   <LoadingBlock
+    v-if="me"
     v-slot="{ data: follower }"
     :status="followStatus"
     :data="follower"
   >
     <BrandedButton
-      v-if="me"
       type="button"
       color="secondary"
       :disabled="readOnlyEnabled"
@@ -31,6 +31,12 @@ import { RiStarFill, RiStarLine } from '@remixicon/vue'
 import { ref } from 'vue'
 import type { PaginatedArray } from '~/types/types'
 
+type Follower = {
+  id: string
+  follower: string
+  since: string
+}
+
 const props = defineProps<{
   url: string
 }>()
@@ -40,14 +46,15 @@ const { $api } = useNuxtApp()
 
 const me = useMaybeMe()
 
-const { data: follower, status: followStatus } = await useAPI<PaginatedArray<{
-  id: string
-  follower: string
-  since: string
-}>>(props.url, {
-  query: {
-    user: me.value?.id ?? undefined,
-  },
+const { data: follower, status: followStatus } = await useAPI<PaginatedArray<Follower>>(props.url, {
+  // Only a logged-in user is shown the button, so an anonymous visitor has
+  // nothing to ask here — and without a `user` to filter on, the call would
+  // list every follower of the object for a result nobody reads.
+  // TODO: switch to the `enabled` option once we run Nuxt 4.5+. It is the one
+  // meant for this: it gates every execution, where `immediate` only gates the
+  // initial one.
+  immediate: Boolean(me.value),
+  query: { user: me.value?.id },
 })
 
 const animating = ref(false)
@@ -63,7 +70,6 @@ const iconAttrs = computed(() => ({
   class: animating.value ? 'animate-ping' : '',
 }))
 
-// The button is only rendered for logged-in users (v-if="me" above)
 async function toggleFollow() {
   loading.value = true
   try {

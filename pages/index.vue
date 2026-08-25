@@ -478,9 +478,8 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, summarize, useFormatDate, type Site } from '@datagouv/components-next'
+import { BrandedButton, summarize, useFormatDate, TranslationT } from '@datagouv/components-next'
 import { RiArrowRightLine, RiBardLine, RiLineChartLine, RiNewspaperLine, RiSearchLine, RiVipDiamondLine } from '@remixicon/vue'
-import { TranslationT } from '@datagouv/components-next'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 
@@ -499,7 +498,7 @@ useSeoMeta({
 })
 
 const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts/', { params: { kind: 'news' } })
-const { data: site } = await useAPI<Site>('/api/1/site/')
+const { data: site } = await useSite()
 
 const lastPost = computed(() => {
   if (!posts.value || !posts.value.data.length) return null

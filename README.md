@@ -98,6 +98,7 @@ This project uses [pnpm](https://pnpm.io/) instead of npm mostly for security re
 - `NUXT_PUBLIC_SENTRY_DSN`: Sentry DSN for error tracking
 - `NUXT_TEMPLATE_CACHE_DURATION`: Duration for template caching
 - `NUXT_SITE_URL`: Site URL (used for OG tags, sitemap, etc.)
+- `NUXT_SESSION_COOKIE_NAME` / `NUXT_REMEMBER_COOKIE_NAME`: names of the udata session cookies (`SESSION_COOKIE_NAME` and `REMEMBER_COOKIE_NAME` on the backend, defaults `session` and `remember_token`). A request carrying none of them is anonymous and skips the `/api/1/me` call, so a mismatch logs every visitor out.
 
 You can work on `cdata` without a local `udata` backend by pointing to https://demo.data.gouv.fr directly. Create a `.env` file at the root of the project:
 

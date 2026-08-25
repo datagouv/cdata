@@ -90,14 +90,13 @@
 </template>
 
 <script setup lang="ts">
-import type { Site } from '@datagouv/components-next'
 import { BrandedButton, SimpleBanner, StatBox } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const config = useRuntimeConfig()
-const { data: site } = await useAPI<Site>('/api/1/site/')
+const { data: site } = await useSite()
 
 const downloadUrl = computed(() => {
   return `${config.public.metricsApi}/api/site/data/csv/?metric_month__sort=asc`
