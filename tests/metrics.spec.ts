@@ -72,15 +72,24 @@ test.describe('all-time totals', () => {
 // error or not at all, the rejection used to escape the page's watcher as an unhandled
 // `TypeError: Failed to fetch` — the top client-side error reported on www.data.gouv.fr.
 //
-// Chromium logs the failed request itself whatever the app does, so that one message is allowed.
-// What these tests assert is that nothing *else* reaches the console: no unhandled rejection,
-// and a page that drops its stat boxes rather than showing a zero the API never returned.
+// The browser logs the failed request itself whatever the app does, so those messages are
+// allowed. What these tests assert is that nothing *else* reaches the console: no unhandled
+// rejection, and a page that drops its stat boxes rather than showing a zero the API never
+// returned.
 //
 // Each page hides a different piece of markup — a `<div>` inside a grid, a `<div>` inside a
 // `<dl>`, a `<template>` wrapping a divider — so each one is covered rather than assumed to
 // behave like the dataset page.
 test.describe('metrics API unavailable', () => {
-  test.use({ allowedConsoleMessages: ['net::ERR_FAILED', 'the server responded with a status of 500'] })
+  // An aborted cross-origin request is worded per engine, so both spellings are needed — a
+  // Chromium-only list fails the whole describe on the Firefox shards. `CORS request did not
+  // succeed` is Firefox's wording for "the request never completed", distinct from the missing
+  // `Access-Control-Allow-Origin` it reports when the header is the actual problem.
+  test.use({ allowedConsoleMessages: [
+    'net::ERR_FAILED',
+    'CORS request did not succeed',
+    'the server responded with a status of 500',
+  ] })
 
   const abortMetrics = (page: Page) => page.route(`${METRICS_API}/**`, route => route.abort())
   const failMetrics = (page: Page) => page.route(`${METRICS_API}/**`, route => route.fulfill({ status: 500, contentType: 'text/html', body: '<html>oops</html>', headers: CORS_HEADERS }))
