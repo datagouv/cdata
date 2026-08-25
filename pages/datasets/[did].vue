@@ -201,21 +201,23 @@
                 <!-- ClientOnly: the loading skeletons of StatBox get their ids from
                      `Math.random()`, which differ between the server and the client render. -->
                 <ClientOnly>
+                  <!-- `?? null`: StatBox shows its loading skeletons on a strict `null`, and
+                       `data` is `undefined` until the request answers. -->
                   <StatBox
                     :title="$t('Vues')"
-                    :data="datasetMetrics?.visits"
+                    :data="datasetMetrics?.visits ?? null"
                     size="sm"
                     type="line"
-                    :summary="datasetMetrics?.visitsTotal"
+                    :summary="datasetMetrics?.visitsTotal ?? null"
                     :since="metricsSince"
                   />
                   <StatBox
                     v-if="dataset.access_type === 'open'"
                     :title="$t('Téléchargements')"
-                    :data="datasetMetrics?.downloads"
+                    :data="datasetMetrics?.downloads ?? null"
                     size="sm"
                     type="line"
-                    :summary="datasetMetrics?.downloadsTotal"
+                    :summary="datasetMetrics?.downloadsTotal ?? null"
                     :since="metricsSince"
                   />
                 </ClientOnly>

@@ -49,29 +49,31 @@
           class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 pb-4"
         >
           <ClientOnly>
+            <!-- `?? null`: StatBox shows its loading skeletons on a strict `null`, and
+                 `metrics` is `undefined` until the request answers. -->
             <StatBox
               :title="$t('Vues')"
-              :data="metrics?.datasetsViews"
+              :data="metrics?.datasetsViews ?? null"
               type="line"
-              :summary="metrics?.datasetsViewsTotal"
+              :summary="metrics?.datasetsViewsTotal ?? null"
             />
             <StatBox
               :title="$t('Téléchargements des données')"
-              :data="metrics?.downloads"
+              :data="metrics?.downloads ?? null"
               type="line"
-              :summary="metrics?.downloadsTotal"
+              :summary="metrics?.downloadsTotal ?? null"
             />
             <StatBox
               :title="$t('Nombre de visites des API')"
-              :data="metrics?.dataservicesViews"
+              :data="metrics?.dataservicesViews ?? null"
               type="line"
-              :summary="metrics?.dataservicesViewsTotal"
+              :summary="metrics?.dataservicesViewsTotal ?? null"
             />
             <StatBox
               :title="$t('Nombre de visites des réutilisations')"
-              :data="metrics?.reusesViews"
+              :data="metrics?.reusesViews ?? null"
               type="line"
-              :summary="metrics?.reusesViewsTotal"
+              :summary="metrics?.reusesViewsTotal ?? null"
             />
           </ClientOnly>
         </section>

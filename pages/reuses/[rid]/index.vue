@@ -68,12 +68,14 @@
               <!-- ClientOnly: the loading skeletons of StatBox get their ids from
                    `Math.random()`, which differ between the server and the client render. -->
               <ClientOnly>
+                <!-- `?? null`: StatBox shows its loading skeletons on a strict `null`, and
+                     `data` is `undefined` until the request answers. -->
                 <StatBox
                   :title="$t('Vues')"
-                  :data="reuseMetrics?.visits"
+                  :data="reuseMetrics?.visits ?? null"
                   size="sm"
                   type="line"
-                  :summary="reuseMetrics?.visitsTotal"
+                  :summary="reuseMetrics?.visitsTotal ?? null"
                   :since="metricsSince"
                 />
               </ClientOnly>
