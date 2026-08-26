@@ -156,10 +156,10 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import HarvesterBadge from '~/components/Harvesters/HarvesterBadge.vue'
 import TabLinks from '~/components/TabLinks.vue'
 import type { HarvesterJob, HarvesterSource } from '~/types/harvesters'
-import { keepScrollBetweenTabs } from '~/utils/scroll'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  scrollToTop: keepScrollBetweenTabs,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const config = useRuntimeConfig()

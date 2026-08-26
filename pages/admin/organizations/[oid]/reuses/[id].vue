@@ -45,10 +45,10 @@ import { RiEyeLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
-import { keepScrollBetweenTabs } from '~/utils/scroll'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  scrollToTop: keepScrollBetweenTabs,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const { t } = useTranslation()

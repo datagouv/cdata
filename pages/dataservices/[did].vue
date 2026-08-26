@@ -327,10 +327,10 @@ import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import { useElementSize } from '@vueuse/core'
-import { keepScrollBetweenTabs } from '~/utils/scroll'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  scrollToTop: keepScrollBetweenTabs,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const config = useRuntimeConfig()

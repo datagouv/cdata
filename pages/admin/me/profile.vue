@@ -40,10 +40,10 @@
 import AdminUserProfileHeader from '~/components/User/AdminUserProfileHeader.vue'
 import AdminOrgInvitation from '~/components/AdminOrgInvitation/AdminOrgInvitation.vue'
 import type { OrgInvitation } from '~/types/types'
-import { keepScrollBetweenTabs } from '~/utils/scroll'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  scrollToTop: keepScrollBetweenTabs,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const { t } = useTranslation()
