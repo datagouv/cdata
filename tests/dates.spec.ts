@@ -8,7 +8,7 @@ import { test, expect } from './base'
 test.use({ timezoneId: 'Pacific/Kiritimati' })
 
 test('a dataset list hydrates without mismatch from another timezone', async ({ page }) => {
-  await page.goto('/datasets')
+  await page.goto('/datasets/search/')
 
   await expect(page.locator('time').first()).toBeVisible()
 })
