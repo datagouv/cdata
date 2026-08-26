@@ -194,24 +194,33 @@
                 :object="dataset"
               />
 
-              <div class="grid gap-4 xl:grid-cols-2">
-                <StatBox
-                  :title="$t('Vues')"
-                  :data="datasetVisits"
-                  size="sm"
-                  type="line"
-                  :summary="datasetVisitsTotal"
-                  :since="metricsSince"
-                />
-                <StatBox
-                  v-if="dataset.access_type === 'open'"
-                  :title="$t('Téléchargements')"
-                  :data="datasetDownloadsResources"
-                  size="sm"
-                  type="line"
-                  :summary="datasetDownloadsResourcesTotal"
-                  :since="metricsSince"
-                />
+              <div
+                v-if="!metricsError"
+                class="grid gap-4 xl:grid-cols-2"
+              >
+                <!-- ClientOnly: the loading skeletons of StatBox get their ids from
+                     `Math.random()`, which differ between the server and the client render. -->
+                <ClientOnly>
+                  <!-- `?? null`: StatBox shows its loading skeletons on a strict `null`, and
+                       `data` is `undefined` until the request answers. -->
+                  <StatBox
+                    :title="$t('Vues')"
+                    :data="datasetMetrics?.visits ?? null"
+                    size="sm"
+                    type="line"
+                    :summary="datasetMetrics?.visitsTotal ?? null"
+                    :since="metricsSince"
+                  />
+                  <StatBox
+                    v-if="dataset.access_type === 'open'"
+                    :title="$t('Téléchargements')"
+                    :data="datasetMetrics?.downloads ?? null"
+                    size="sm"
+                    type="line"
+                    :summary="datasetMetrics?.downloadsTotal ?? null"
+                    :since="metricsSince"
+                  />
+                </ClientOnly>
               </div>
 
               <div v-if="dataset.access_type === 'open'">
@@ -486,7 +495,6 @@ import {
   AppLink,
   MarkdownViewer,
   useMetrics,
-  type DatasetMetrics,
   TranslationT,
   getDescriptionShort,
   type Resource,
@@ -662,17 +670,15 @@ const metricsSince = computed(() => {
 })
 
 const { getDatasetMetrics } = useMetrics()
-const datasetMetrics = ref<DatasetMetrics | null>(null)
 
-watchEffect(async () => {
-  if (!dataset.value || !dataset.value.id) return
-  datasetMetrics.value = await getDatasetMetrics(dataset.value.id)
-})
-
-const datasetVisits = computed(() => datasetMetrics.value?.visits ?? {})
-const datasetDownloadsResources = computed(() => datasetMetrics.value?.downloads ?? {})
-const datasetVisitsTotal = computed(() => datasetMetrics.value?.visitsTotal ?? 0)
-const datasetDownloadsResourcesTotal = computed(() => datasetMetrics.value?.downloadsTotal ?? 0)
+// `server: false` keeps the call out of the render: the metrics API is a third-party service
+// and its numbers are secondary to the page, so waiting for it would delay the whole page.
+// The boxes disappear on `error` rather than presenting a zero the API never returned.
+const { data: datasetMetrics, error: metricsError } = useAsyncData(
+  'dataset-metrics',
+  () => dataset.value?.id ? getDatasetMetrics(dataset.value.id) : Promise.resolve(null),
+  { lazy: true, server: false, watch: [() => dataset.value?.id] },
+)
 
 // Same reasoning as the badge labels above: only a restricted dataset names a
 // reason category, which is 0.3% of them.
