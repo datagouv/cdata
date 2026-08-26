@@ -22,7 +22,7 @@
           type="Dataset"
           :subject="dataset"
         />
-        vers votre organization
+        vers votre organisation
         <a
           href="#"
           class="link"

@@ -33,7 +33,7 @@ const SUBJECT_CONFIGS = [
     type: 'Dataset' as const,
     publicBase: 'datasets',
     adminBase: 'admin/datasets',
-    deepLinkBanner: 'Vous consultez une discussion spécifique sur ce jeu de donnée.',
+    deepLinkBanner: 'Vous consultez une discussion spécifique sur ce jeu de données.',
     create: async (request: APIRequestContext, uniqueId: number): Promise<Subject> => {
       const dataset = await createDataset(request, `Test discussions ${uniqueId}`, 'Dataset pour tester les discussions')
       createdDatasets.push(dataset.id)
