@@ -589,7 +589,8 @@
               :placeholder="$t('Recherchez une fréquence…')"
               :get-option-id="(frequency) => frequency.label"
               :display-value="(frequency) => frequency.label"
-              :options="frequencies ?? []"
+              :options="frequencies"
+              :group-by="groupFrequency"
               :multiple="false"
               :required="true"
               :error-text="getFirstError('frequency')"
@@ -774,7 +775,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, Tooltip, AI_SUGGESTION_MIN_DESCRIPTION_LENGTH, DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH, SearchableSelect } from '@datagouv/components-next'
-import { SimpleBanner, type Badge, type Frequency, type License } from '@datagouv/components-next'
+import { SimpleBanner, type Badge, type License } from '@datagouv/components-next'
 import { RiAddLine, RiStarFill, RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
@@ -833,7 +834,7 @@ watch(() => props.badges, (badges) => {
 })
 watch(newBadges, badges => emit('badges-change', badges))
 
-const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies/', { lazy: true })
+const { frequencies, groupFrequency } = await useFrequencies()
 
 const { data: allLicenses } = await useAPI<Array<License>>('/api/1/datasets/licenses/', { lazy: true })
 
