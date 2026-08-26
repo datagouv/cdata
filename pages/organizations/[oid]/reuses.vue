@@ -87,4 +87,6 @@ const { data: results, status } = await useAPI<PaginatedArray<ReuseV2>>('/api/2/
   params,
   lazy: true,
 })
+
+useNotFoundWhenPageOutOfRange(page, pageSize, () => results.value?.total)
 </script>
