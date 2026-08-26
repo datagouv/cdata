@@ -38,6 +38,33 @@ test('can create a minimal dataset', async ({ page }) => {
   await expect(page.locator('[id="__nuxt"]')).toContainText('Ce jeu de données a été publié à l\'initiative et sous la responsabilité de Admin User.')
 })
 
+test('the frequency select lists the main frequencies before the others', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Publier sur data.gouv.fr' }).click()
+  await page.getByRole('link', { name: 'Un jeu de données' }).click()
+  await page.getByRole('button', { name: 'Commencer la publication' }).click()
+  await page.getByTestId('select-frequency').click()
+
+  const rows = page.getByRole('listbox').locator('li')
+  await expect(rows.first()).toBeVisible()
+  const labels = (await rows.allTextContents()).map(label => label.trim())
+
+  expect(labels.slice(0, 10)).toEqual([
+    'Fréquences principales',
+    'Temps réel',
+    'Quotidienne',
+    'Hebdomadaire',
+    'Mensuelle',
+    'Trimestrielle',
+    'Annuelle',
+    'Ponctuelle',
+    'Sans régularité',
+    'Autres fréquences',
+  ])
+  // The whole vocabulary is still reachable, under the second group.
+  expect(labels).toContain('Inconnu')
+})
+
 async function createMinimalDataset(page: Page, title: string) {
   await page.getByRole('button', { name: 'Publier sur data.gouv.fr' }).click()
   await page.getByRole('link', { name: 'Un jeu de données' }).click()

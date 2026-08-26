@@ -119,7 +119,8 @@
               :placeholder="$t('Recherchez une fréquence…')"
               :get-option-id="(frequency) => frequency.label"
               :display-value="(frequency) => frequency.label"
-              :options="frequencies ?? []"
+              :options="frequencies"
+              :group-by="groupFrequency"
               :multiple="false"
               :required="true"
               :error-text="getFirstError('frequency')"
@@ -169,7 +170,6 @@
 
 <script setup lang="ts">
 import { BrandedButton, PaddedContainer, SimpleBanner, SearchableSelect } from '@datagouv/components-next'
-import type { Frequency } from '@datagouv/components-next'
 import { ref } from 'vue'
 import Alert from '~/components/Alert/Alert.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
@@ -189,7 +189,7 @@ const titleAccordionId = useId()
 const descriptionAccordionId = useId()
 const frequencyAccordionId = useId()
 
-const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies/', { lazy: true })
+const { frequencies, groupFrequency } = await useFrequencies()
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 

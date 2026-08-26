@@ -214,6 +214,19 @@ export default defineNuxtConfig({
         ],
       },
 
+      // Shown first in the update frequency selects, in this (temporal) order.
+      // Every other frequency of the API vocabulary follows, in its own group.
+      mainFrequencies: [
+        'continuous',
+        'daily',
+        'weekly',
+        'monthly',
+        'quarterly',
+        'annual',
+        'punctual',
+        'irregular',
+      ],
+
       // A corresponding SVG at `datagouv-components/assets/labels` will be shown before the badge label
       datasetBadges: ['spd', 'inspire', 'hvd', 'sl', 'sr'],
 
