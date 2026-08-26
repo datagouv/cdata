@@ -290,7 +290,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type Site } from '@datagouv/components-next'
+import { BrandedButton } from '@datagouv/components-next'
 import { RiBlueskyLine, RiGithubLine, RiLinkedinBoxLine, RiMastodonLine, RiRssLine, RiYoutubeLine } from '@remixicon/vue'
 
 const config = useRuntimeConfig()
@@ -349,5 +349,5 @@ const networkLinks: Array<Link> = [
   { label: 'service-public.fr', link: 'https://www.service-public.fr' },
 ]
 
-const { data: site } = await useAPI<Site>('/api/1/site/')
+const { data: site } = await useSite()
 </script>

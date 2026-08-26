@@ -280,16 +280,6 @@ defineOgImage('MainPage.takumi', {
 
 const route = useRoute()
 
-onMounted(async () => {
-  const hasFacets = Object.keys(route.query).some(key =>
-    ['q', 'sort', 'is_restricted', 'organization', 'page'].includes(key),
-  )
-
-  if (hasFacets) {
-    await navigateTo({ path: '/dataservices/search', query: route.query })
-  }
-})
-
 const { site, blocs: siteBlocs, saveBlocs } = await useSiteBlocs('dataservices_blocs', ['metrics'])
 
 const isEditing = computed(() => route.query.edit === 'true')

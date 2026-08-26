@@ -34,6 +34,31 @@ export function useIsCurrentUrl() {
   }
 }
 
+/**
+ * Tells which link of a group of tabs is the current one.
+ *
+ * Unlike `useIsCurrentUrl`, only the query params that some tab actually sets are
+ * compared: any other param (a selected resource, a page number, a filter…) belongs
+ * to the page, not to the tab group, and must not deselect the current tab.
+ */
+export function useIsCurrentTab(links: MaybeRefOrGetter<Array<{ href: string }>>) {
+  const absoluteUrlToRelative = useAbsoluteUrlToRelative()
+  const router = useRouter()
+  const route = useRoute()
+
+  const resolve = (url: string) => router.resolve(absoluteUrlToRelative(url))
+
+  const tabParams = computed(() => new Set(toValue(links).flatMap(link => Object.keys(resolve(link.href).query))))
+
+  return (url: string): boolean => {
+    const link = resolve(url)
+
+    if (trimEndSlash(link.path) !== trimEndSlash(route.path)) return false
+
+    return [...tabParams.value].every(param => link.query[param] === route.query[param])
+  }
+}
+
 export function humanJoin(source: Array<string>): string {
   const array = [...source]
 

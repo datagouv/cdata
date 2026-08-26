@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { escapeCsvValue, filesize, summarize } from '~/datagouv-components/src/functions/helpers'
+import { escapeCsvValue, filesize, isSafeHttpUrl, summarize } from '~/datagouv-components/src/functions/helpers'
 
 describe('escapeCsvValue', () => {
   // Expected values come from RFC 4180, not from the implementation
@@ -21,6 +21,33 @@ describe('escapeCsvValue', () => {
 
   it('doubles inner quotes', () => {
     expect(escapeCsvValue('say "hi"')).toEqual('"say ""hi"""')
+  })
+})
+
+describe('isSafeHttpUrl', () => {
+  it('accepts absolute http(s) URLs', () => {
+    expect(isSafeHttpUrl('https://example.com/data.parquet')).toBe(true)
+    expect(isSafeHttpUrl('http://example.com/data.parquet')).toBe(true)
+  })
+
+  it('rejects dangerous or non-http schemes', () => {
+    expect(isSafeHttpUrl('javascript:alert(document.domain)')).toBe(false)
+    expect(isSafeHttpUrl('JaVaScRiPt:alert(1)')).toBe(false)
+    expect(isSafeHttpUrl('data:text/html,<script>alert(1)</script>')).toBe(false)
+    expect(isSafeHttpUrl('vbscript:msgbox(1)')).toBe(false)
+    expect(isSafeHttpUrl('file:///etc/passwd')).toBe(false)
+  })
+
+  it('rejects relative and protocol-relative URLs', () => {
+    expect(isSafeHttpUrl('//evil.tld/x')).toBe(false)
+    expect(isSafeHttpUrl('/datasets/r/123')).toBe(false)
+    expect(isSafeHttpUrl('')).toBe(false)
+  })
+
+  it('rejects non-string values', () => {
+    expect(isSafeHttpUrl(undefined)).toBe(false)
+    expect(isSafeHttpUrl(null)).toBe(false)
+    expect(isSafeHttpUrl(1234)).toBe(false)
   })
 })
 

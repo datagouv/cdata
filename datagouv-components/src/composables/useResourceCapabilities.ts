@@ -1,14 +1,13 @@
 import { computed, type MaybeRefOrGetter, toValue } from 'vue'
 import { useComponentsConfig } from '../config'
 import { isOrganizationCertified } from '../functions/organizations'
-import { getWfsExportFormats } from '../functions/resourceCapabilities'
+import { getGeneratedFormats, getWfsExportFormats } from '../functions/resourceCapabilities'
 import { detectOgcService, getParsingErrorMessage, getParsingErrorStep, isImagePreviewFormat } from '../functions/resources'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import type { Resource, WfsMetadata } from '../types/resources'
 import { useHasTabularData } from './useHasTabularData'
 import { useTranslation } from './useTranslation'
 
-const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 const URL_FORMATS = ['url', 'doi', 'www:link', 'www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
 
 // Which preview the data tab shows. Single source of truth: the viewer renders it and
@@ -54,24 +53,7 @@ export function useResourceCapabilities(
   const hasPmtilesError = computed(() => getParsingErrorStep(toValue(resource)) === 'pmtiles_export')
   const pmtilesError = computed(() => hasPmtilesError.value ? getParsingErrorMessage(toValue(resource)) : null)
 
-  const generatedFormats = computed(() => {
-    const r = toValue(resource)
-    const formats = GENERATED_FORMATS
-      .filter(format => `analysis:parsing:${format}_url` in r.extras)
-      .map(format => ({
-        url: r.extras[`analysis:parsing:${format}_url`] as string,
-        size: r.extras[`analysis:parsing:${format}_size`] as number | undefined,
-        format,
-      }))
-    if ('analysis:parsing:parsing_table' in r.extras) {
-      formats.push({
-        url: `${config.tabularApiUrl}/api/resources/${r.id}/data/json/`,
-        size: undefined,
-        format: 'json',
-      })
-    }
-    return formats
-  })
+  const generatedFormats = computed(() => getGeneratedFormats(toValue(resource), config.tabularApiUrl))
 
   const wfsFormats = computed(() => {
     return getWfsExportFormats(toValue(resource))

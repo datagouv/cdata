@@ -7,6 +7,7 @@ export type ApiDataset = { id: string, title: string, slug: string }
 export type ApiResource = { id: string, title: string, latest: string, url: string }
 export type ApiHarvestSource = { id: string, name: string, backend: string, schedule: string | null, config: Record<string, unknown> }
 export type ApiOrganization = { id: string, name: string }
+export type ApiReuse = { id: string, title: string, slug: string }
 
 export async function createHarvestSource(request: APIRequestContext, name: string, backend: string, config: Record<string, unknown> = {}): Promise<ApiHarvestSource> {
   const response = await request.post(`${API_BASE}/api/1/harvest/sources/`, {
@@ -78,6 +79,29 @@ export async function enableNewExplorer(page: Page, url: string): Promise<void> 
 export async function deleteDatasets(request: APIRequestContext, ids: Array<string>): Promise<void> {
   for (const id of ids.splice(0)) {
     await request.delete(`${API_BASE}/api/1/datasets/${id}/`)
+  }
+}
+
+// `url` has to differ between reuses: udata hashes it into a unique `urlhash`.
+export async function createReuse(request: APIRequestContext, title: string, url: string): Promise<ApiReuse> {
+  const response = await request.post(`${API_BASE}/api/1/reuses/`, {
+    data: {
+      title,
+      url,
+      description: 'Réutilisation créée par les tests end to end',
+      type: 'application',
+      topic: 'transport_and_mobility',
+    },
+  })
+  if (!response.ok()) {
+    throw new Error(`Failed to create reuse "${title}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+  return await response.json()
+}
+
+export async function deleteReuses(request: APIRequestContext, ids: Array<string>): Promise<void> {
+  for (const id of ids.splice(0)) {
+    await request.delete(`${API_BASE}/api/1/reuses/${id}/`)
   }
 }
 
