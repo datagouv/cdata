@@ -54,9 +54,9 @@ const title = computed(() => parsed.value
 // `formatDate` fills in a default `dateStyle` on the object it receives, so it gets a
 // copy: mutating `props.options` would leak the default back to the parent.
 const formatted = computed(() => {
-  if (props.format === 'relative') return formatRelativeIfRecentDate(props.date, { ...props.options })
-  if (props.format === 'from-now') return formatFromNow(props.date)
-  return formatDate(props.date, { ...props.options })
+  if (props.format === 'relative') return formatRelativeIfRecentDate(parsed.value, { ...props.options })
+  if (props.format === 'from-now') return formatFromNow(parsed.value)
+  return formatDate(parsed.value, { ...props.options })
 })
 
 const text = computed(() => props.label ? props.label(formatted.value) : formatted.value)
