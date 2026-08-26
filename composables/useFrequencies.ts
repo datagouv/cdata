@@ -5,12 +5,12 @@ import type { Frequency } from '@datagouv/components-next'
  *
  * The API exposes the whole European vocabulary, which is useful for harvested
  * datasets but too granular for producers publishing directly here. The ones
- * listed in `mainFrequencies` are moved to the top of the list, in their
+ * listed in `commonFrequencies` are moved to the top of the list, in their
  * configured temporal order, and every other frequency follows in its own group.
  */
 export async function useFrequencies() {
   const { t } = useTranslation()
-  const mainIds = useRuntimeConfig().public.mainFrequencies
+  const commonIds = useRuntimeConfig().public.commonFrequencies
 
   const { data: allFrequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies/', { lazy: true })
 
@@ -18,15 +18,15 @@ export async function useFrequencies() {
     const all = allFrequencies.value
     if (!all) return []
 
-    const main = mainIds
+    const common = commonIds
       .map(id => all.find(frequency => frequency.id === id))
       .filter((frequency): frequency is Frequency => !!frequency)
 
-    return [...main, ...all.filter(frequency => !mainIds.includes(frequency.id))]
+    return [...common, ...all.filter(frequency => !commonIds.includes(frequency.id))]
   })
 
-  const groupFrequency = (frequency: Frequency) => mainIds.includes(frequency.id)
-    ? t('Fréquences principales')
+  const groupFrequency = (frequency: Frequency) => commonIds.includes(frequency.id)
+    ? t('Fréquences courantes')
     : t('Autres fréquences')
 
   return { frequencies, groupFrequency }

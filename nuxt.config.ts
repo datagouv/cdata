@@ -216,7 +216,7 @@ export default defineNuxtConfig({
 
       // Shown first in the update frequency selects, in this (temporal) order.
       // Every other frequency of the API vocabulary follows, in its own group.
-      mainFrequencies: [
+      commonFrequencies: [
         'continuous',
         'daily',
         'weekly',

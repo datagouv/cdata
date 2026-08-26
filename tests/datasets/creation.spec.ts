@@ -38,7 +38,7 @@ test('can create a minimal dataset', async ({ page }) => {
   await expect(page.locator('[id="__nuxt"]')).toContainText('Ce jeu de données a été publié à l\'initiative et sous la responsabilité de Admin User.')
 })
 
-test('the frequency select lists the main frequencies before the others', async ({ page }) => {
+test('the frequency select lists the common frequencies before the others', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Publier sur data.gouv.fr' }).click()
   await page.getByRole('link', { name: 'Un jeu de données' }).click()
@@ -50,7 +50,7 @@ test('the frequency select lists the main frequencies before the others', async 
   const labels = (await rows.allTextContents()).map(label => label.trim())
 
   expect(labels.slice(0, 10)).toEqual([
-    'Fréquences principales',
+    'Fréquences courantes',
     'Temps réel',
     'Quotidienne',
     'Hebdomadaire',
