@@ -228,6 +228,7 @@
               size="sm"
               :icon="RiRssLine"
               icon-only
+              external
               target="_blank"
             />
           </div>

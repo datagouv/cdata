@@ -40,40 +40,44 @@
           />
         </ClientOnly>
       </section>
-      <Divider
-        color="bg-gray-default"
-        class="mb-6 pr-24"
-      />
-      <section
-        class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 pb-4"
-      >
-        <ClientOnly>
-          <StatBox
-            :title="$t('Vues')"
-            :data="metrics?.datasetsViews"
-            type="line"
-            :summary="metrics?.datasetsViewsTotal"
-          />
-          <StatBox
-            :title="$t('Téléchargements des données')"
-            :data="metrics?.downloads"
-            type="line"
-            :summary="metrics?.downloadsTotal"
-          />
-          <StatBox
-            :title="$t('Nombre de visites des API')"
-            :data="metrics?.dataservicesViews"
-            type="line"
-            :summary="metrics?.dataservicesViewsTotal"
-          />
-          <StatBox
-            :title="$t('Nombre de visites des réutilisations')"
-            :data="metrics?.reusesViews"
-            type="line"
-            :summary="metrics?.reusesViewsTotal"
-          />
-        </ClientOnly>
-      </section>
+      <template v-if="!metricsError">
+        <Divider
+          color="bg-gray-default"
+          class="mb-6 pr-24"
+        />
+        <section
+          class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 pb-4"
+        >
+          <ClientOnly>
+            <!-- `?? null`: StatBox shows its loading skeletons on a strict `null`, and
+                 `metrics` is `undefined` until the request answers. -->
+            <StatBox
+              :title="$t('Vues')"
+              :data="metrics?.datasetsViews ?? null"
+              type="line"
+              :summary="metrics?.datasetsViewsTotal ?? null"
+            />
+            <StatBox
+              :title="$t('Téléchargements des données')"
+              :data="metrics?.downloads ?? null"
+              type="line"
+              :summary="metrics?.downloadsTotal ?? null"
+            />
+            <StatBox
+              :title="$t('Nombre de visites des API')"
+              :data="metrics?.dataservicesViews ?? null"
+              type="line"
+              :summary="metrics?.dataservicesViewsTotal ?? null"
+            />
+            <StatBox
+              :title="$t('Nombre de visites des réutilisations')"
+              :data="metrics?.reusesViews ?? null"
+              type="line"
+              :summary="metrics?.reusesViewsTotal ?? null"
+            />
+          </ClientOnly>
+        </section>
+      </template>
     </SectionCollapse>
     <SectionCollapse
       :title="$t('Membres')"
@@ -280,7 +284,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, CopyButton, FormattedDate, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, useMetrics, createOrganizationMetricsUrl, type Organization, type OrganizationMetrics, toast } from '@datagouv/components-next'
+import { Avatar, BrandedButton, CopyButton, FormattedDate, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, type Organization, toast } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
@@ -295,18 +299,7 @@ const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
 const me = useMaybeMe()
 
-const { getOrganizationMetrics } = useMetrics()
-const metrics = ref<OrganizationMetrics | null>(null)
-
-watchEffect(async () => {
-  metrics.value = await getOrganizationMetrics(props.organization.id)
-})
-
-const downloadStatsUrl = computed(() => {
-  if (!metrics.value) return null
-
-  return createOrganizationMetricsUrl(metrics.value.datasetsViews, metrics.value.downloads, metrics.value.dataservicesViews, metrics.value.reusesViews)
-})
+const { metrics, error: metricsError, downloadStatsUrl } = useOrganizationMetrics(() => props.organization)
 
 const reason = ref('')
 
