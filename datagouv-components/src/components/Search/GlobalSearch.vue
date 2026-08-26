@@ -6,7 +6,6 @@
   >
     <div
       v-if="!hideSearchInput"
-      ref="search"
       class="flex flex-wrap items-center justify-between"
       data-cy="search"
     >
@@ -365,6 +364,7 @@ import { configKey, forEachActiveCustomFilter, isCustomFilterActive, searchFilte
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
+import { scrollToBlockTop } from '../../functions/scroll'
 import type { AsyncDataRequestStatus } from '../../functions/api.types'
 import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
@@ -797,14 +797,15 @@ function getFacets(key: string): FacetItem[] | undefined {
 }
 
 // Scroll handling
-const searchRef = useTemplateRef('search')
+const resultsRef = useTemplateRef('results')
 
-function scrollToTop() {
-  searchRef.value?.scrollIntoView({ behavior: 'smooth' })
-}
+// Every change of criteria replaces the result list, so bring its top back into
+// view: the reader restarts at the first result instead of landing in the
+// middle of a list they have not seen yet.
+watch([filtersForReset, sort, currentType], () => scrollToBlockTop(resultsRef.value))
 
 function changePage(newPage: number) {
   page.value = newPage
-  scrollToTop()
+  scrollToBlockTop(resultsRef.value)
 }
 </script>

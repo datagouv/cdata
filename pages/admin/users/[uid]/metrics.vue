@@ -3,8 +3,10 @@
 </template>
 
 <script setup lang="ts">
+import { keepScrollBetweenTabs } from '~/utils/scroll'
+
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollBetweenTabs,
 })
 
 const { currentUser: user } = useCurrentOwned()

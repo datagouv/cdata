@@ -110,9 +110,10 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 import type { PaginatedArray } from '~/types/types'
+import { keepScrollBetweenTabs } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollBetweenTabs,
 })
 
 const { t } = useTranslation()

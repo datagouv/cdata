@@ -515,6 +515,7 @@ import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import { useElementSize } from '@vueuse/core'
+import { keepScrollBetweenTabs } from '~/utils/scroll'
 
 const config = useRuntimeConfig()
 const siteConfig = useSiteConfig()
@@ -523,7 +524,7 @@ const { formatDate } = useFormatDate()
 const { t } = useTranslation()
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollBetweenTabs,
 })
 
 const sidebar = useTemplateRef('sidebar')

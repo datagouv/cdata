@@ -137,6 +137,11 @@ import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import { isUserOrgAdmin, useMaybeMe } from '~/utils/auth'
+import { keepScrollBetweenTabs } from '~/utils/scroll'
+
+definePageMeta({
+  scrollToTop: keepScrollBetweenTabs,
+})
 
 const config = useRuntimeConfig()
 const route = useRoute()
