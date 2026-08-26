@@ -57,7 +57,12 @@
       />
       <RiSubtractLine class="hidden md:block size-4 flex-none fill-gray-medium" />
       <div class="w-full md:w-auto text-gray-medium whitespace-nowrap">
-        {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataset.last_update, { dateStyle: 'medium' }) }) }}
+        <FormattedDate
+          :date="dataset.last_update"
+          format="relative"
+          :options="{ dateStyle: 'medium' }"
+          :label="date => t('Mis à jour {date}', { date })"
+        />
       </div>
     </div>
     <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium">
@@ -122,7 +127,6 @@ import { RiArchiveLine, RiDatabase2Line, RiDownloadLine, RiEyeLine, RiLineChartL
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import type { TitleTag } from '../types/ui'
 import { summarize } from '../functions/helpers'
-import { useFormatDate } from '../functions/dates'
 import { getDescriptionShort } from '../functions/description'
 import { useTranslation } from '../composables/useTranslation'
 import DatasetQualityInline from './DatasetQualityInline.vue'
@@ -134,6 +138,7 @@ import ObjectCard from './ObjectCard.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
+import FormattedDate from './FormattedDate.vue'
 
 type Props = {
   dataset: Dataset | DatasetV2
@@ -149,5 +154,4 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { t } = useTranslation()
-const { formatRelativeIfRecentDate } = useFormatDate()
 </script>

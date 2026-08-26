@@ -53,7 +53,7 @@
                 {{ $t('Dernière mise à jour') }}
               </dt>
               <dd class="p-0 text-sm text-mention-grey">
-                {{ formatDate(reuse.last_modified) }}
+                <FormattedDate :date="reuse.last_modified" />
               </dd>
             </div>
             <div>
@@ -61,7 +61,7 @@
                 {{ $t('Date de création') }}
               </dt>
               <dd class="p-0 text-sm text-mention-grey">
-                {{ formatDate(reuse.created_at) }}
+                <FormattedDate :date="reuse.created_at" />
               </dd>
             </div>
             <div>
@@ -201,7 +201,7 @@
 </template>
 
 <script setup lang="ts">
-import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseV2, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, useFormatDate, MarkdownViewer, BrandedButton } from '@datagouv/components-next'
+import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseV2, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, FormattedDate, MarkdownViewer, BrandedButton } from '@datagouv/components-next'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import type { PaginatedArray } from '~/types/types'
 
@@ -210,8 +210,6 @@ const props = defineProps<{
 }>()
 
 const config = useRuntimeConfig()
-
-const { formatDate } = useFormatDate()
 
 const { label } = useReuseType(props.reuse.type)
 

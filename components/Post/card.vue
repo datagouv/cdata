@@ -18,19 +18,20 @@
         v-if="post.published"
         class="mb-0 text-gray-medium"
       >
-        {{ $t('Publié le {date}', { date: formatDate(post.published) }) }}
+        <FormattedDate
+          :date="post.published"
+          :label="date => $t('Publié le {date}', { date })"
+        />
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useFormatDate } from '@datagouv/components-next'
+import { FormattedDate } from '@datagouv/components-next'
 import type { Post } from '~/types/posts'
 
 defineProps<{
   post: Post
 }>()
-
-const { formatDate } = useFormatDate()
 </script>

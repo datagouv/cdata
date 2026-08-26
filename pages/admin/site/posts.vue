@@ -93,8 +93,8 @@
                   {{ getStatus(post).label }}
                 </AdminBadge>
               </td>
-              <td>{{ formatDate(post.created_at) }}</td>
-              <td>{{ formatDate(post.last_modified) }}</td>
+              <td><FormattedDate :date="post.created_at" /></td>
+              <td><FormattedDate :date="post.last_modified" /></td>
               <td>
                 <BrandedButton
                   size="xs"
@@ -158,7 +158,7 @@
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, Pagination, BrandedButton, useFormatDate, SearchableSelect } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, BrandedButton, FormattedDate, useFormatDate, SearchableSelect } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 import { RiAddLine, RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'

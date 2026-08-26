@@ -27,7 +27,12 @@
       v-if="post.published || post.created_at"
       class="text-sm text-gray-medium mt-1"
     >
-      {{ t('Publié {date}', { date: formatDate(post.published || post.created_at) }) }}
+      <FormattedDate
+        :date="post.published || post.created_at"
+        format="relative"
+        :options="{ dateStyle: 'long', timeStyle: 'short' }"
+        :label="date => t('Publié {date}', { date })"
+      />
     </div>
 
     <slot />
@@ -37,13 +42,13 @@
 <script setup lang="ts">
 import { RiArticleLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { useFormatDate } from '../functions/dates'
 import { useTranslation } from '../composables/useTranslation'
 import type { Post } from '../types/posts'
 import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
+import FormattedDate from './FormattedDate.vue'
 
 defineProps<{
   post: Post
@@ -51,12 +56,4 @@ defineProps<{
 }>()
 
 const { t } = useTranslation()
-const { formatRelativeIfRecentDate } = useFormatDate()
-
-const formatDate = (dateString: string) => {
-  return formatRelativeIfRecentDate(dateString, {
-    dateStyle: 'long',
-    timeStyle: 'short',
-  })
-}
 </script>

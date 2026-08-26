@@ -83,7 +83,10 @@
                   </slot>
                 </p>
                 <p class="m-0 flex-none text-xs text-gray-medium">
-                  {{ t('le {date}', { date: formatDate(activity.created_at) }) }}
+                  <FormattedDate
+                    :date="activity.created_at"
+                    :label="date => t('le {date}', { date })"
+                  />
                 </p>
               </div>
             </li>
@@ -125,6 +128,7 @@ import Avatar from '../Avatar.vue'
 import LoadingBlock from '../LoadingBlock.vue'
 import Pagination from '../Pagination.vue'
 import PaddedContainer from '../PaddedContainer.vue'
+import FormattedDate from '../FormattedDate.vue'
 import listSrc from '../../../assets/illustrations/list.svg?url'
 
 const props = defineProps<{

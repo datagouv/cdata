@@ -39,10 +39,27 @@
           >{{ token.token_prefix }}…</span>
         </div>
         <div class="text-xs text-gray-500">
-          <span>{{ $t('Créé {date}', { date: formatRelativeIfRecentDate(token.created_at) }) }}</span>
-          <span v-if="token.last_used_at"> · {{ $t('Utilisé {date}', { date: formatRelativeIfRecentDate(token.last_used_at) }) }}</span>
+          <FormattedDate
+            :date="token.created_at"
+            format="relative"
+            :label="date => $t('Créé {date}', { date })"
+          />
+          <template v-if="token.last_used_at">
+            ·
+            <FormattedDate
+              :date="token.last_used_at"
+              format="relative"
+              :label="date => $t('Utilisé {date}', { date })"
+            />
+          </template>
           <span v-else> · {{ $t('Jamais utilisé') }}</span>
-          <span v-if="token.expires_at"> · {{ $t('Expire le {date}', { date: formatDate(token.expires_at) }) }}</span>
+          <template v-if="token.expires_at">
+            ·
+            <FormattedDate
+              :date="token.expires_at"
+              :label="date => $t('Expire le {date}', { date })"
+            />
+          </template>
           <template v-if="token.user_agents.length === 1">
             · {{ token.user_agents[0] }}
           </template>
@@ -120,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, CopyButton, SimpleBanner, toast, useFormatDate } from '@datagouv/components-next'
+import { BrandedButton, CopyButton, FormattedDate, SimpleBanner, toast } from '@datagouv/components-next'
 import { RiDeleteBin6Line } from '@remixicon/vue'
 import type { ApiToken, ApiTokenCreated } from '~/types/api-tokens'
 import CreateApiTokenModal from './CreateApiTokenModal.vue'
@@ -128,7 +145,6 @@ import ModalClient from '~/components/Modal/Modal.client.vue'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { formatDate, formatRelativeIfRecentDate } = useFormatDate()
 
 const tokens = ref<ApiToken[]>([])
 const newlyCreatedToken = ref<string | null>(null)

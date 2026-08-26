@@ -29,10 +29,16 @@
     </div>
     <div>—</div>
     <div v-if="comment.last_modified_at">
-      {{ $t('Mis à jour le {date}', { date: formatDate(comment.last_modified_at) }) }}
+      <FormattedDate
+        :date="comment.last_modified_at"
+        :label="date => $t('Mis à jour le {date}', { date })"
+      />
     </div>
     <div v-else>
-      {{ $t('Posté le {date}', { date: formatDate(comment.posted_on) }) }}
+      <FormattedDate
+        :date="comment.posted_on"
+        :label="date => $t('Posté le {date}', { date })"
+      />
     </div>
     <div v-if="isProducer">
       —
@@ -48,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, OrganizationLogo, useFormatDate } from '@datagouv/components-next'
+import { Avatar, FormattedDate, OrganizationLogo } from '@datagouv/components-next'
 import type { Comment, DiscussionSubjectTypes } from '~/types/discussions'
 import { isProducerOfSubject } from '~/utils/discussions'
 
@@ -56,8 +62,6 @@ const props = defineProps<{
   comment: Comment
   subject?: DiscussionSubjectTypes
 }>()
-
-const { formatDate } = useFormatDate()
 
 const isProducer = computed(() => props.subject && isProducerOfSubject(props.subject, props.comment))
 </script>

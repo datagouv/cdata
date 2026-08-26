@@ -110,7 +110,10 @@
             &mdash;
             <span>{{ getActivityTranslation(activities.data[0]) }}</span>
             &mdash;
-            <span class="text-gray-medium">{{ formatDate(activities.data[0].created_at) }}</span>
+            <FormattedDate
+              class="text-gray-medium"
+              :date="activities.data[0].created_at"
+            />
           </p>
         </div>
       </div>
@@ -134,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, DatasetQualityTooltipContent, QualityScore, summarize, useFormatDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
+import { BrandedButton, DatasetQualityTooltipContent, QualityScore, summarize, FormattedDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
 import type { Activity, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiDownloadLine, RiEyeLine, RiLineChartLine, RiPriceTag3Line, RiStarLine } from '@remixicon/vue'
 import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
@@ -151,7 +154,6 @@ const { t } = useTranslation()
 const me = useMe()
 
 const route = useRoute()
-const { formatDate } = useFormatDate()
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset } = await useAPI<DatasetV2WithFullObject>(url, {
   redirectOn404: true,

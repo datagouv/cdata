@@ -176,7 +176,10 @@
                 <template v-if="subjects[report.id]">
                   <div v-if="subjects[report.id].value">
                     <div>
-                      {{ t('Créé le {date}', { date: formatDate(getSubjectCreatedDate(report, subjects[report.id])) }) }}
+                      <FormattedDate
+                        :date="getSubjectCreatedDate(report, subjects[report.id])"
+                        :label="date => t('Créé le {date}', { date })"
+                      />
                     </div>
                     <p
                       v-if="getSubjectCreatedBy(report, subjects[report.id])"
@@ -190,7 +193,12 @@
                       />
                     </p>
                     <div v-if="report.subject && report.subject.id in activities">
-                      <div>{{ t('Modifié le {date}', { date: formatDate(activities[report.subject.id].created_at) }) }}</div>
+                      <div>
+                        <FormattedDate
+                          :date="activities[report.subject.id].created_at"
+                          :label="date => t('Modifié le {date}', { date })"
+                        />
+                      </div>
                       <p class="flex items-center min-w-0">
                         {{ t('par ') }}
                         <AvatarWithName
@@ -209,7 +217,7 @@
                 </div>
               </td>
               <td>
-                <div>{{ formatDate(report.reported_at) }}</div>
+                <div><FormattedDate :date="report.reported_at" /></div>
                 <p
                   v-if="report.by"
                   class="inline-flex items-center"
@@ -345,7 +353,7 @@
 
 <script setup lang="ts">
 import type { Report, ReportReason, ReportSubject, Activity, Dataservice, DatasetV2, Organization, Reuse, User, UserReference } from '@datagouv/components-next'
-import { AvatarWithName, LoadingBlock, Pagination, SearchableSelect, useFormatDate, BrandedButton } from '@datagouv/components-next'
+import { AvatarWithName, FormattedDate, LoadingBlock, Pagination, SearchableSelect, BrandedButton } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine, RiRobot2Line, RiSpyLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'
@@ -362,7 +370,6 @@ import ReuseBadge from '~/components/AdminBadge/ReuseBadge.vue'
 import TabLinks from '~/components/TabLinks.vue'
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 const { $api } = useNuxtApp()
 
 useSeoMeta({ title: t('Modération'), robots: 'noindex' })

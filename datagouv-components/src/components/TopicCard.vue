@@ -45,7 +45,12 @@
         v-if="topic.last_modified"
         class="w-full md:w-auto text-gray-medium whitespace-nowrap"
       >
-        {{ t('Mis à jour {date}', { date: formatDate(topic.last_modified) }) }}
+        <FormattedDate
+          :date="topic.last_modified"
+          format="relative"
+          :options="{ dateStyle: 'long' }"
+          :label="date => t('Mis à jour {date}', { date })"
+        />
       </div>
     </div>
 
@@ -97,7 +102,6 @@
 import { RiBookShelfLine, RiDatabase2Line, RiLineChartLine, RiSubtractLine, RiTerminalLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { TopicV2 } from '../types/topics'
-import { useFormatDate } from '../functions/dates'
 import { useTranslation } from '../composables/useTranslation'
 import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
@@ -106,6 +110,7 @@ import OrganizationLogo from './OrganizationLogo.vue'
 import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
+import FormattedDate from './FormattedDate.vue'
 
 type TopicWithStats = TopicV2 & {
   nb_datasets?: number
@@ -124,11 +129,4 @@ withDefaults(defineProps<{
 })
 
 const { t } = useTranslation()
-const { formatRelativeIfRecentDate } = useFormatDate()
-
-const formatDate = (dateString: string) => {
-  return formatRelativeIfRecentDate(dateString, {
-    dateStyle: 'long',
-  })
-}
 </script>

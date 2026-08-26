@@ -39,7 +39,11 @@
             />
             <p class="text-sm m-0">
               <!-- Not sure if this date is useful, since it's about modification on a ressource  -->
-              {{ $t('Mis à jour {date}', { date: formatRelativeIfRecentDate(resourceForm.resource.last_modified) }) }}
+              <FormattedDate
+                :date="resourceForm.resource.last_modified"
+                format="relative"
+                :label="date => $t('Mis à jour {date}', { date })"
+              />
             </p>
           </template>
 
@@ -160,7 +164,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, filesize as formatFilesize, useFormatDate, ResourceIcon } from '@datagouv/components-next'
+import { BrandedButton, filesize as formatFilesize, FormattedDate, ResourceIcon } from '@datagouv/components-next'
 import { computed } from 'vue'
 import { RiCodeSSlashLine, RiDeleteBinLine, RiInformationLine, RiLink, RiMapPin2Line, RiSubtractLine } from '@remixicon/vue'
 import FileEditModal from '../Datasets/FileEditModal.vue'
@@ -181,8 +185,6 @@ withDefaults(defineProps<{
 defineEmits<{
   (e: 'delete' | 'edit'): void
 }>()
-
-const { formatRelativeIfRecentDate } = useFormatDate()
 
 const save = (close: () => void, form: ResourceForm | CommunityResourceForm) => {
   // We don't want to link the `form` inside the modal to the

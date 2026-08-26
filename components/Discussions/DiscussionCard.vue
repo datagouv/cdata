@@ -38,7 +38,10 @@
           {{ thread.closed_by.first_name }} {{ thread.closed_by.last_name }}
         </CdataLink>
       </span>
-      {{ $t('le {date}', { date: formatDate(thread.closed) }) }}
+      <FormattedDate
+        :date="thread.closed"
+        :label="date => $t('le {date}', { date })"
+      />
     </div>
     <template v-if="!thread.closed || openDiscussionIfClosed">
       <template
@@ -92,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, OrganizationLogo, ReadMore, useFormatDate } from '@datagouv/components-next'
+import { Avatar, BrandedButton, FormattedDate, OrganizationLogo, ReadMore } from '@datagouv/components-next'
 import ThreadHeader from './ThreadHeader.vue'
 import CommentBlock from './CommentBlock.vue'
 import RespondForm from './RespondForm.vue'
@@ -108,7 +111,6 @@ defineEmits<{
 
 const openDiscussionIfClosed = ref(false)
 const showRespondForm = ref(false)
-const { formatDate } = useFormatDate()
 const me = useMaybeMe()
 const route = useRoute()
 

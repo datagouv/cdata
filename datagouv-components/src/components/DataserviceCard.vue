@@ -72,7 +72,12 @@
       />
       <!-- https://github.com/datagouv/cdata/issues/653 -->
       <p class="text-sm whitespace-nowrap mb-0 text-gray-medium">
-        {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataservice.metadata_modified_at, { dateStyle: 'medium' }) }) }}
+        <FormattedDate
+          :date="dataservice.metadata_modified_at"
+          format="relative"
+          :options="{ dateStyle: 'medium' }"
+          :label="date => t('Mis à jour {date}', { date })"
+        />
       </p>
       <RiSubtractLine
         aria-hidden="true"
@@ -118,7 +123,6 @@ import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { RiArchiveLine, RiEyeLine, RiLockLine, RiPassValidLine, RiSparklingLine, RiStarLine, RiSubtractLine, RiTerminalLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../config'
-import { useFormatDate } from '../functions/dates'
 import { summarize } from '../functions/helpers'
 import type { Dataservice } from '../types/dataservices'
 import type { TitleTag } from '../types/ui'
@@ -132,6 +136,7 @@ import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import DataserviceQualityInline from './DataserviceQualityInline.vue'
+import FormattedDate from './FormattedDate.vue'
 
 type Props = {
   dataservice: Dataservice
@@ -146,7 +151,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { t } = useTranslation()
-const { formatRelativeIfRecentDate } = useFormatDate()
 
 const config = useComponentsConfig()
 const isTabularApi = computed(() => {

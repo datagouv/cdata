@@ -173,7 +173,11 @@
         class="mt-4"
       >
         <template v-if="rotationPending">
-          {{ $t("Rotation demandée {date}, en attente du changement de mot de passe par l'utilisateur.", { date: formatFromNow(user.password_rotation_demanded) }) }}
+          <FormattedDate
+            :date="user.password_rotation_demanded"
+            format="from-now"
+            :label="date => $t(`Rotation demandée {date}, en attente du changement de mot de passe par l'utilisateur.`, { date })"
+          />
         </template>
         <template v-else>
           {{ $t("L'utilisateur sera déconnecté et devra définir un nouveau mot de passe à sa prochaine connexion.") }}
@@ -213,7 +217,7 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, PaddedContainer, toast, SearchableSelect, useFormatDate } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, FormattedDate, PaddedContainer, toast, SearchableSelect } from '@datagouv/components-next'
 import type { User } from '@datagouv/components-next'
 import { RiEditLine, RiSaveLine } from '@remixicon/vue'
 import DeleteUserModal from './DeleteUserModal.vue'
@@ -236,7 +240,6 @@ const me = useMe()
 const config = useNuxtApp().$config
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { formatFromNow } = useFormatDate()
 
 const emailId = useId()
 const passwordId = useId()
