@@ -309,6 +309,25 @@ test('switching type resets page and clears a type-scoped custom filter in one g
   expect(url.searchParams.has('page')).toBeFalsy()
 })
 
+test.describe('mobile', () => {
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  test('the collapsed filter panel does not break hydration', async ({ page }) => {
+    // The server has no viewport and always renders the panel expanded. When the
+    // panel was collapsed from a JS media query, a narrow client dropped it from
+    // its vdom and Vue tore the subtree down mid-hydration. The console fixture in
+    // tests/base.ts turns the resulting mismatch into a failure.
+    await page.goto('/datasets/search/?badge=hvd')
+    await page.waitForLoadState('networkidle')
+
+    const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
+    await expect(badgeFieldset).toBeHidden()
+
+    await page.getByRole('button', { name: 'Filtres' }).click()
+    await expect(badgeFieldset).toBeVisible()
+  })
+})
+
 test('clicking dataset navigates to detail', async ({ page }) => {
   await page.goto('/datasets/search/')
   // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)

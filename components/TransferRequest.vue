@@ -22,7 +22,7 @@
         />
         &nbsp;
         <template v-if="transfer.recipient.class === 'Organization'">
-          {{ $t('vers votre organization') }}
+          {{ $t('vers votre organisation') }}
           <a
             :href="transfer.recipient.page"
             class="link"

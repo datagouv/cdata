@@ -88,6 +88,24 @@ test.describe('Dataset files management', () => {
     await expect(page.locator('tbody tr').filter({ hasText: 'Ressource conservée' })).toBeVisible()
   })
 
+  test('a ?resource_id pointing at a deleted file does not break the page', async ({ page, request }) => {
+    const { dataset } = await createDatasetWithRemoteResources(request, `Test files management ${Date.now()}`, ['Ressource conservée'])
+    createdDatasets.push(dataset.id)
+
+    const pageErrors: Array<Error> = []
+    page.on('pageerror', error => pageErrors.push(error))
+
+    // The link was shared or bookmarked while the file still existed
+    await page.goto(`/admin/datasets/${dataset.id}/files?resource_id=00000000-0000-0000-0000-000000000000`)
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.getByText('Ce fichier est introuvable.')).toBeVisible()
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+    await expect(page).not.toHaveURL(/resource_id=/)
+    await expect(page.locator('tbody tr').filter({ hasText: 'Ressource conservée' })).toBeVisible()
+    expect(pageErrors).toEqual([])
+  })
+
   test('can replace an uploaded file', async ({ page, request }) => {
     const uniqueId = Date.now()
     const dataset = await createDataset(request, `Test files replace ${uniqueId}`, 'Dataset pour tester le remplacement de fichier')

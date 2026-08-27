@@ -26,6 +26,11 @@ test('dataset with labels shows label section', async ({ page }) => {
 
   // Check that labels are clickable links
   await expect(labelsList.locator('a')).toHaveCount(1)
+
+  // The label text comes from the badge reference list, which the page only
+  // fetches for datasets that carry badges: a link with an empty label means
+  // that list was not loaded.
+  await expect(labelsList.locator('a')).toHaveText(/Service public de la donnée/)
 })
 
 test('dataset labels have proper tooltips and information', async ({
@@ -84,10 +89,13 @@ test('clicking dataset label navigates to filtered search', async ({
 })
 
 test('dataset without labels does not show label section', async ({ page }) => {
-  await page.goto('/datasets/fichier-des-personnes-decedees')
-  // Check if this dataset has no label section
-  const labelSection = page.getByTestId('labelsList')
-  await expect(labelSection).not.toBeVisible()
+  await page.goto('/datasets/base-adresse-nationale')
+
+  // Assert the dataset page actually rendered: on a 404 the label section would
+  // be missing too, and the test would pass without testing anything.
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Base Adresse Nationale')
+
+  await expect(page.getByTestId('label-list')).not.toBeVisible()
 })
 
 test('tabs are accessible', async ({ page }) => {

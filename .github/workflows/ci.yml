@@ -436,6 +436,12 @@ jobs:
   publish-datagouv-components:
     needs: [quality_and_test, e2e]
     runs-on: ubuntu-latest
+    # The version is read from the `dev` dist-tag then incremented, so two overlapping runs would
+    # compute the same number and the second would get a 403. `queue: max` serializes them FIFO
+    # (up to 100 pending) instead of cancelling the pending one like the default `queue: single`.
+    concurrency:
+      group: publish-datagouv-components
+      queue: max
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout repository
