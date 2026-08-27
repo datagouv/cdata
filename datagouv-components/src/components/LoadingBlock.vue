@@ -1,8 +1,11 @@
 <template>
   <div class="relative">
     <div :class="{ 'opacity-50 min-h-64': loading }">
+      <!-- Keep the previous content while reloading, dimmed under the loader:
+           dropping it collapses the page height, which makes the browser clamp
+           the scroll and throws the reader back to the top. -->
       <slot
-        v-if="!loading && !hasError && data"
+        v-if="!hasError && data"
         :data="data"
       />
       <slot

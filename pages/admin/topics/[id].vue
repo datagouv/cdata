@@ -34,9 +34,10 @@
 import type { TopicV2 } from '@datagouv/components-next'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const route = useRoute()

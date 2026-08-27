@@ -145,12 +145,6 @@ import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 import type { PageBloc } from '~/types/pages'
 import type { Post } from '~/types/posts'
 
-// Keep the scroll position when toggling the `edit` query, otherwise the global
-// scrollBehavior resets to the top and cancels the scroll-to-blocs below.
-definePageMeta({
-  keepScroll: true,
-})
-
 const config = useRuntimeConfig()
 const siteConfig = useSiteConfig()
 const route = useRoute()

@@ -114,9 +114,10 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import type { Thread } from '~/types/discussions'
 import type { PaginatedArray } from '~/types/types'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const route = useRoute()

@@ -143,10 +143,6 @@ type HvdRecord = GristRecord & {
   fields: HvdFields
 }
 
-// Filters are synced to the URL query by GristTableViewer; keepScroll prevents
-// each query update from scrolling back to the top of the page.
-definePageMeta({ keepScroll: true })
-
 const config = useRuntimeConfig()
 const { t } = useTranslation()
 

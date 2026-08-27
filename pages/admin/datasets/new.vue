@@ -59,6 +59,7 @@ import Stepper from '~/components/Stepper/Stepper.vue'
 import type { DatasetForm, EnrichedLicense, ResourceForm, SpatialGranularity, SpatialZone, Tag } from '~/types/types'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import { goToStep } from '~/utils/scroll'
 
 const { t } = useTranslation()
 const config = useRuntimeConfig()
@@ -114,7 +115,7 @@ const isCurrentStepValid = computed(() => {
 })
 
 const moveToStep = (step: number) => {
-  return navigateTo({ path: route.path, query: { ...route.query, step } })
+  return goToStep(route, { ...route.query, step })
 }
 
 const datasetNext = () => {
