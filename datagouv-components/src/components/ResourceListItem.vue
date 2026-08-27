@@ -43,37 +43,43 @@
 
   <!-- Hover card: the row truncates the title, so surface the full name plus the
        same metadata line as the viewer header. Placed beside the row (not below) so
-       it doesn't hide the sibling rows we're scanning. -->
-  <Teleport to="body">
-    <div
-      v-if="show"
-      ref="card"
-      role="tooltip"
-      class="pointer-events-none z-[80] w-max rounded border border-gray-default bg-white p-2 text-left shadow-[0_2px_4px_rgba(0,0,0,0.04),2px_4px_16px_rgba(0,0,0,0.12)]"
-      :style="floatingStyles"
-    >
-      <span class="block whitespace-nowrap text-[13px] font-medium leading-5 text-gray-title">{{ resource.title || t('Fichier sans nom') }}</span>
-      <div class="mt-1 flex items-center gap-1 text-[12px] leading-4 text-gray-medium">
-        <span>{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
-        <template v-if="humanFilesize">
+       it doesn't hide the sibling rows we're scanning.
+       ClientOnly: Vue hydrates a teleport by scanning the target from its first child,
+       so an SSR-rendered teleport to `body` breaks as soon as anything else is prepended
+       there — and Nuxt emits the `bodyOpen` head tags before it. The card only ever opens
+       on hover, so there is nothing to render on the server anyway. -->
+  <ClientOnly>
+    <Teleport to="body">
+      <div
+        v-if="show"
+        ref="card"
+        role="tooltip"
+        class="pointer-events-none z-[80] w-max rounded border border-gray-default bg-white p-2 text-left shadow-[0_2px_4px_rgba(0,0,0,0.04),2px_4px_16px_rgba(0,0,0,0.12)]"
+        :style="floatingStyles"
+      >
+        <span class="block whitespace-nowrap text-[13px] font-medium leading-5 text-gray-title">{{ resource.title || t('Fichier sans nom') }}</span>
+        <div class="mt-1 flex items-center gap-1 text-[12px] leading-4 text-gray-medium">
+          <span>{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
+          <template v-if="humanFilesize">
+            <span>·</span>
+            <span>{{ humanFilesize }}</span>
+          </template>
+          <template v-if="resource.format">
+            <span>·</span>
+            <span class="rounded bg-gray-lower px-1.5 py-0.5 uppercase leading-4">{{ resource.format }}</span>
+          </template>
           <span>·</span>
-          <span>{{ humanFilesize }}</span>
-        </template>
-        <template v-if="resource.format">
-          <span>·</span>
-          <span class="rounded bg-gray-lower px-1.5 py-0.5 uppercase leading-4">{{ resource.format }}</span>
-        </template>
-        <span>·</span>
-        <span class="inline-flex items-center gap-0.5">
-          <RiDownloadLine
-            class="size-3"
-            aria-hidden="true"
-          />
-          {{ summarize(resource.metrics.views) }}
-        </span>
+          <span class="inline-flex items-center gap-0.5">
+            <RiDownloadLine
+              class="size-3"
+              aria-hidden="true"
+            />
+            {{ summarize(resource.metrics.views) }}
+          </span>
+        </div>
       </div>
-    </div>
-  </Teleport>
+    </Teleport>
+  </ClientOnly>
 </template>
 
 <script setup lang="ts">
@@ -83,6 +89,7 @@ import { useEventListener } from '@vueuse/core'
 import type { RouteLocationRaw } from 'vue-router'
 import { RiDownloadLine } from '@remixicon/vue'
 import AppLink from './AppLink.vue'
+import ClientOnly from './ClientOnly.vue'
 import File from './Icons/File.vue'
 import { getResourceFormatIcon, getResourceIconColor, getResourceFilesize } from '../functions/resources'
 import { filesize, summarize } from '../functions/helpers'
