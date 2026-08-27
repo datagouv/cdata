@@ -12,6 +12,10 @@ async function expectCleanNotFound(page: Page, url: string) {
   const response = await page.goto(url)
   expect(response?.status(), url).toBe(404)
   await expect(page.getByRole('heading', { level: 1, name: '404' })).toBeVisible()
+  // The heading is server rendered, so it shows up while the header is still
+  // prefetching the admin layout and middleware through NuxtLink. Navigating away
+  // then aborts those module requests, which Firefox reports as a console error.
+  await page.waitForLoadState('networkidle')
 }
 
 test.describe('Organization listings pagination', () => {
