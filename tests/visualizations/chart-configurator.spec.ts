@@ -548,6 +548,10 @@ test('y-axis columns should not be empty after selecting resource from loaded ch
   await page.getByLabel('Titre').fill('Test Columns Wipe')
   await page.getByLabel('Description').fill('Test')
 
+  // The chart preview must be rendered before saving, otherwise the capture is empty
+  // and no image upload happens.
+  await expect(page.locator('canvas').first()).toBeVisible()
+
   const saveResponsePromise = page.waitForResponse(response =>
     response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST',
   )
@@ -593,6 +597,11 @@ test('x-axis dropdown should show columns from all chart resources after loading
   )
   await page.getByLabel('Titre').fill('Test All Columns Loaded')
   await page.getByLabel('Description').fill('Test')
+
+  // The chart preview must be rendered before saving, otherwise the capture is empty
+  // and no image upload happens.
+  await expect(page.locator('canvas').first()).toBeVisible()
+
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
   const saveResponse = await saveResponsePromise
   const chartData = (await saveResponse.json()) as Chart

@@ -20,14 +20,14 @@
     </div>
 
     <LoadingBlock
-      v-slot="{ data: pageData }"
+      v-slot="{ data: chartsPage }"
       :status
       :data="pageData"
     >
-      <div v-if="pageData && pageData.total > 0">
+      <div v-if="chartsPage && chartsPage.total > 0">
         <div class="not-prose grid gap-4">
           <ChartCard
-            v-for="chart in pageData.data"
+            v-for="chart in chartsPage.data"
             :key="chart.id"
             :chart
             :chart-url="`/admin/beta/charts/${chart.id}`"
@@ -36,7 +36,7 @@
         <Pagination
           :page="page"
           :page-size="pageSize"
-          :total-results="pageData.total"
+          :total-results="chartsPage.total"
           @change="(changedPage: number) => page = changedPage"
         />
       </div>
@@ -77,5 +77,5 @@ const params = computed(() => {
   }
 })
 
-const { data: pageData, status } = await useAPI<PaginatedArray<Chart>>('/api/1/visualizations/', { lazy: true, query: params })
+const { data: pageData, status } = await useAPI<PaginatedArray<Chart>>('/api/1/visualizations/', { lazy: true, server: false, query: params })
 </script>

@@ -12,14 +12,14 @@
       </BreadcrumbItem>
     </Breadcrumb>
     <LoadingBlock
-      v-slot="{ data: loadedChart }"
+      v-slot="{ data: chart }"
       :status
       :data="loadedChart"
     >
       <ChartConfigurator
         v-if="chartForm"
         v-model="chartForm"
-        :initial-chart="loadedChart"
+        :initial-chart="chart"
       />
     </LoadingBlock>
   </div>
@@ -35,7 +35,7 @@ const route = useRoute()
 
 const cid = route.params.cid as string
 
-const { data: loadedChart, status } = await useAPI<Chart>(`/api/1/visualizations/${cid}/`, { lazy: true })
+const { data: loadedChart, status } = await useAPI<Chart>(`/api/1/visualizations/${cid}/`, { lazy: true, server: false })
 
 const chartForm = ref<ChartForm | null>(null)
 watchEffect(() => {
