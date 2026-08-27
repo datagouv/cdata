@@ -528,6 +528,11 @@ const isUserAlreadyInvitedOrMember = (user: UserSuggest | null): string | null =
   if (pendingInvitations.value.some(i => i.user?.id === user.id)) {
     return t('Cet utilisateur a déjà été invité')
   }
+  // Inviting someone who already applied would let them join through the invitation
+  // while their request stays pending, and accepting it afterwards answers a 409.
+  if (pendingRequests.value.some(r => r.user?.id === user.id)) {
+    return t('Cet utilisateur a déjà demandé à rejoindre l\'organisation')
+  }
   return null
 }
 
@@ -538,6 +543,9 @@ const isEmailAlreadyInvited = (emailValue: string): string | null => {
   }
   if (organization.value?.members.some(m => m.user.email?.toLowerCase() === emailValue.toLowerCase())) {
     return t('Un membre avec cette adresse email existe déjà')
+  }
+  if (pendingRequests.value.some(r => r.user?.email?.toLowerCase() === emailValue.toLowerCase())) {
+    return t('Cet utilisateur a déjà demandé à rejoindre l\'organisation')
   }
   return null
 }

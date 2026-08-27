@@ -117,6 +117,7 @@
         color="primary"
         size="xs"
         :icon="RiCheckLine"
+        :loading="loading"
         @click="accept"
       >
         {{ $t('Accepter la demande') }}
