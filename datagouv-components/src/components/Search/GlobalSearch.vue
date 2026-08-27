@@ -356,6 +356,7 @@
 <script setup lang="ts">
 import { computed, provide, shallowReactive, useSlots, watch, useTemplateRef, type Component, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
+import { useRoute } from 'vue-router'
 import { RiBookShelfLine, RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiLightbulbLine, RiLineChartLine, RiRssLine, RiTerminalLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
 import { useTranslation } from '../../composables/useTranslation'
@@ -423,6 +424,7 @@ if (!currentType.value) currentType.value = configKey(props.config[0] ?? { class
 
 const { t } = useTranslation()
 const componentsConfig = useComponentsConfig()
+const route = useRoute()
 
 // Custom filter registry for useSearchFilter composable
 const customFilterRegistry = shallowReactive(new Map<string, CustomFilterEntry>())
@@ -799,13 +801,13 @@ function getFacets(key: string): FacetItem[] | undefined {
 // Scroll handling
 const resultsRef = useTemplateRef('results')
 
-// Every change of criteria replaces the result list, so bring its top back into
-// view: the reader restarts at the first result instead of landing in the
-// middle of a list they have not seen yet.
-watch([filtersForReset, sort, currentType], () => scrollToBlockTop(resultsRef.value))
+// Every criteria lives in the URL, custom filters included, so watching the
+// query covers them all: whenever the result list is replaced, bring its top
+// back into view rather than leaving the reader in the middle of a list they
+// have not seen yet.
+watch(() => route.query, () => scrollToBlockTop(resultsRef.value))
 
 function changePage(newPage: number) {
   page.value = newPage
-  scrollToBlockTop(resultsRef.value)
 }
 </script>
