@@ -48,6 +48,7 @@ import Stepper from '~/components/Stepper/Stepper.vue'
 import { loadMe } from '~/utils/auth'
 import type { NewOrganization } from '~/types/types'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import { goToStep } from '~/utils/scroll'
 
 const { t } = useTranslation()
 const config = useRuntimeConfig()
@@ -89,7 +90,7 @@ const isCurrentStepValid = computed(() => {
 })
 
 function moveToStep(step: number) {
-  navigateTo({ path: route.path, query: { ...route.query, step } })
+  goToStep(route, { ...route.query, step })
 }
 
 async function createOrganizationAndMoveToNextStep(logo_file: File | null) {

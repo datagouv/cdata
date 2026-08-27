@@ -66,6 +66,7 @@ import type {
   DataserviceForm,
   DatasetSuggest,
 } from '~/types/types'
+import { goToStep } from '~/utils/scroll'
 
 const { t } = useTranslation()
 const route = useRoute()
@@ -123,7 +124,7 @@ const isCurrentStepValid = computed(() => {
 })
 
 function moveToStep(step: number) {
-  return navigateTo({ path: route.path, query: { ...route.query, step } })
+  return goToStep(route, { ...route.query, step })
 }
 
 const dataserviceNext = () => {

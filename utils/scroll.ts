@@ -1,4 +1,14 @@
-import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import type { LocationQueryRaw, RouteLocationNormalizedLoaded } from 'vue-router'
+
+/**
+ * Every step of a wizard lives under the same route, the step being a query
+ * param, so the router keeps the scroll from one to the next. A step is a new
+ * screen though, so move back to the top of it.
+ */
+export async function goToStep(route: RouteLocationNormalizedLoaded, query: LocationQueryRaw) {
+  await navigateTo({ path: route.path, query })
+  window.scrollTo({ top: 0 })
+}
 
 /**
  * The sub-routes of a same object (`/datasets/x` → `/datasets/x/discussions`,

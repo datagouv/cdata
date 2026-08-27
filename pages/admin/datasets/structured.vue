@@ -69,6 +69,7 @@ import type { DatasetForm, EnrichedLicense, ResourceForm, SpatialGranularity, Ta
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import type { AssociateSchemaForm } from '~/types/schema'
+import { goToStep } from '~/utils/scroll'
 
 const { t } = useTranslation()
 const config = useRuntimeConfig()
@@ -159,7 +160,7 @@ function moveToStep(step: '2-sheet' | 1 | 2 | 3 | 4) {
   if (step !== '2-sheet') {
     file.value = null
   }
-  return navigateTo({ path: route.path, query: { ...route.query, step } })
+  return goToStep(route, { ...route.query, step })
 }
 
 function dataNext() {

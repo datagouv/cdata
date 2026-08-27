@@ -1,5 +1,6 @@
-import type { Page } from '@playwright/test'
+import type { APIRequestContext, Page } from '@playwright/test'
 import { test, expect } from './base'
+import { API_BASE, createDatasetWithRemoteResources, deleteDatasets } from './helpers'
 
 // The whole scroll behaviour comes from Nuxt: hash anchors, keeping the position
 // between the tabs of a same object (`definePageMeta({ scrollToTop })`), and
@@ -59,55 +60,76 @@ test.describe('Tabs', () => {
 })
 
 test.describe('Result lists', () => {
-  const resultsTop = (page: Page) => page.getByTestId('search-result-count')
+  const createdDatasets: Array<string> = []
 
-  test('paging goes back to the top of the list, not to the top of the page', async ({ page }) => {
-    await page.goto('/design/dataset-search')
-    await expect(resultsTop(page)).toBeVisible()
+  test.afterEach(async ({ request }) => {
+    await deleteDatasets(request, createdDatasets)
+  })
+
+  // A dataset of our own: the search fixtures hold too few datasets to paginate.
+  // Resources are listed newest first, so read both page tops from the same
+  // endpoint the page uses rather than guessing them from the creation order.
+  async function datasetWithTwoPagesOfResources(page: Page, request: APIRequestContext) {
+    const titles = Array.from({ length: 12 }, (_, index) => `Fichier numero ${String(index + 1).padStart(2, '0')}`)
+    const { dataset } = await createDatasetWithRemoteResources(request, `Test scroll ${Date.now()}`, titles)
+    createdDatasets.push(dataset.id)
+
+    const firstOf = async (pageNumber: number) => {
+      const response = await request.get(`${API_BASE}/api/2/datasets/${dataset.id}/resources/?type=main&page=${pageNumber}&page_size=10`)
+      const { data } = await response.json()
+      return data[0].title as string
+    }
+    const tops = { firstOfFirstPage: await firstOf(1), firstOfSecondPage: await firstOf(2) }
+
+    await page.goto(`/datasets/${dataset.id}/`)
     await page.waitForLoadState('networkidle')
+
+    return tops
+  }
+
+  test('paging goes back to the top of the list, not to the top of the page', async ({ page, request }) => {
+    const { firstOfSecondPage } = await datasetWithTwoPagesOfResources(page, request)
 
     const nextPage = page.getByTestId('next-page')
     await nextPage.scrollIntoViewIfNeeded()
-    await expect(resultsTop(page)).not.toBeInViewport()
-
     await nextPage.click()
 
-    await expect(page).toHaveURL(/page=2/)
-    await expect(resultsTop(page)).toBeInViewport()
-    // The list starts below the page header: landing at the very top of the
+    await expect(page.getByText(firstOfSecondPage)).toBeInViewport()
+    // The list starts below the dataset header: landing at the very top of the
     // document would mean the scroll was reset instead of aimed at the list.
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
   })
 
-  test('paging leaves the page alone when the top of the list is already visible', async ({ page }) => {
-    // A tall viewport keeps the whole list and its pagination on screen at once.
-    await page.setViewportSize({ width: 1280, height: 2200 })
-    await page.goto('/design/dataset-search')
-    await expect(resultsTop(page)).toBeVisible()
-    await page.waitForLoadState('networkidle')
+  test('paging leaves the page alone when the top of the list is already visible', async ({ page, request }) => {
+    const { firstOfFirstPage, firstOfSecondPage } = await datasetWithTwoPagesOfResources(page, request)
 
-    const nextPage = page.getByTestId('next-page')
-    await nextPage.scrollIntoViewIfNeeded()
-    await expect(resultsTop(page)).toBeInViewport()
+    // Put the top of the list on screen, then page from there. Clicking through
+    // Playwright would scroll the pagination into view first and undo that, so
+    // the click is dispatched where the reader would trigger it from.
+    await page.getByText(firstOfFirstPage).scrollIntoViewIfNeeded()
     const before = await page.evaluate(() => window.scrollY)
+    expect(before).toBeGreaterThan(0)
 
-    await nextPage.click()
+    await page.evaluate(() => document.querySelector<HTMLElement>('[data-testid="next-page"]')?.click())
 
-    await expect(page).toHaveURL(/page=2/)
+    await expect(page.getByText(firstOfSecondPage)).toBeVisible()
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(before)
   })
 
   test('changing a filter brings the top of the list back into view', async ({ page }) => {
+    // A short viewport keeps the top of the results off screen once scrolled
+    // down to the filters.
+    await page.setViewportSize({ width: 1280, height: 600 })
     await page.goto('/design/dataset-search')
-    await expect(resultsTop(page)).toBeVisible()
+    await expect(page.getByTestId('search-result-count')).toBeVisible()
     await page.waitForLoadState('networkidle')
 
     const themeFilter = page.locator('#theme-filter')
     await themeFilter.scrollIntoViewIfNeeded()
-    await expect(resultsTop(page)).not.toBeInViewport()
+    await expect(page.getByTestId('search-result-count')).not.toBeInViewport()
 
     await themeFilter.selectOption('education')
 
-    await expect(resultsTop(page)).toBeInViewport()
+    await expect(page.getByTestId('search-result-count')).toBeInViewport()
   })
 })
