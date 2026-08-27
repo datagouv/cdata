@@ -17,33 +17,6 @@ export function useFormatDate() {
   }
 
   /**
-   * Format the month a value belongs to. A month carries no timezone — April 2026 is
-   * April everywhere — so the components are read off the string and rebuilt locally:
-   * `new Date('2026-04')` would land on midnight UTC, which a reader west of it reads
-   * as March. Takes `YYYY-MM`, `YYYY-MM-DD`, or a `Date` for the month it falls in.
-   */
-  const formatMonth = (value: Date | string | null | undefined, options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long' }) => {
-    if (!value) {
-      return ''
-    }
-    let date: Date
-    if (typeof value === 'string') {
-      const [year, month] = value.split('-').map(Number)
-      if (!year || !month) {
-        return ''
-      }
-      date = new Date(year, month - 1)
-    }
-    else {
-      date = value
-    }
-    if (isNaN(date.getTime())) {
-      return ''
-    }
-    return new Intl.DateTimeFormat(locale, options).format(date)
-  }
-
-  /**
    * Format date as relative from now.
    * It displays "today" or Intl.RelativeTimeFormat content, based on date.
    */
@@ -114,7 +87,6 @@ export function useFormatDate() {
 
   return {
     formatDate,
-    formatMonth,
     formatFromNow,
     formatRelativeIfRecentDate,
   }
