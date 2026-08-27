@@ -8,8 +8,9 @@ on:
   workflow_dispatch:
 
 env:
-  CONTAINER_REGISTRY_URL: ${{ vars.CONTAINER_REGISTRY_URL }}
-  APP_NAME: ${{ vars.APP_NAME }}
+  CONTAINER_REGISTRY_SERVER: ${{ vars.CONTAINER_REGISTRY_SERVER }}
+  CONTAINER_REGISTRY_NAMESPACE: ${{ vars.CONTAINER_REGISTRY_NAMESPACE }}
+  CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
   UDATA_WORKING_DIR: udata
 
 permissions:
@@ -365,18 +366,18 @@ jobs:
           echo "short=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
           echo "long=$GITHUB_SHA" >> $GITHUB_OUTPUT
 
-      - name: Log in to GitLab Container Registry
+      - name: Log in to our Docker Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.CONTAINER_REGISTRY_URL }}
-          username: oauth2
-          password: ${{ secrets.GITLAB_API_TOKEN }}
+          registry: ${{ env.CONTAINER_REGISTRY_SERVER }}
+          username: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
+          password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
 
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.CONTAINER_REGISTRY_URL }}/${{ env.APP_NAME }}
+          images: ${{ env.CONTAINER_REGISTRY_SERVER }}/${{ env.CONTAINER_REGISTRY_NAMESPACE }}/${{ env.CONTAINER_NAME }}
           tags: |
             type=sha,format=short,prefix=
             type=sha,format=long,prefix=
@@ -432,6 +433,12 @@ jobs:
   publish-datagouv-components:
     needs: [quality_and_test, e2e]
     runs-on: ubuntu-latest
+    # The version is read from the `dev` dist-tag then incremented, so two overlapping runs would
+    # compute the same number and the second would get a 403. `queue: max` serializes them FIFO
+    # (up to 100 pending) instead of cancelling the pending one like the default `queue: single`.
+    concurrency:
+      group: publish-datagouv-components
+      queue: max
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout repository

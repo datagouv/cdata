@@ -49,6 +49,13 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // Names of the udata cookies that can carry an authenticated session. When the
+    // incoming request has none of them, the visitor is anonymous and `/api/1/me`
+    // can only answer 401, so we skip the call. Both names are configurable in
+    // udata (`SESSION_COOKIE_NAME`, `REMEMBER_COOKIE_NAME`) and must be kept in
+    // sync here.
+    sessionCookieName: 'session',
+    rememberCookieName: 'remember_token',
     crispIdentifier: '',
     crispKey: '',
     crispWebsiteId: '',
@@ -206,6 +213,19 @@ export default defineNuxtConfig({
           { value: 'notspecified' },
         ],
       },
+
+      // Shown first in the update frequency selects, in this (temporal) order.
+      // Every other frequency of the API vocabulary follows, in its own group.
+      commonFrequencies: [
+        'continuous',
+        'daily',
+        'weekly',
+        'monthly',
+        'quarterly',
+        'annual',
+        'punctual',
+        'irregular',
+      ],
 
       // A corresponding SVG at `datagouv-components/assets/labels` will be shown before the badge label
       datasetBadges: ['spd', 'inspire', 'hvd', 'sl', 'sr'],
