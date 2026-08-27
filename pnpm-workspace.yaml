@@ -2,8 +2,6 @@ packages:
   - "."
   - "datagouv-components"
 
-injectWorkspacePackages: true
-
 onlyBuiltDependencies:
   - "@parcel/watcher"
   - "@scarf/scarf"
