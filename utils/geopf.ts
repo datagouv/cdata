@@ -22,14 +22,18 @@ export type GeopfOfferingResource = {
   title: string
   format: string | null
   url: string | null
-  offering_id: string
-  last_synced_at: string | null
+  offering: {
+    id: string
+    last_synced_at: string | null
+  }
 }
 
 // Shape of `GET /api/1/geopf/status/<dataset_id>/`
 export type GeopfDatasetStatus = {
-  datastore_id: string | null
-  fiche_url: string | null
+  push: {
+    datastore_id: string | null
+    fiche_url: string | null
+  }
   pull: {
     status: GeopfPullStatus | null
     last_synced_at: string | null

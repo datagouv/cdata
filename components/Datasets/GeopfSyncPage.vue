@@ -11,7 +11,7 @@
 
       <GeopfDatastoreSelector
         v-model="datastoreId"
-        :pinned-datastore-id="geopfDatasetStatus?.datastore_id ?? null"
+        :pinned-datastore-id="geopfDatasetStatus?.push.datastore_id ?? null"
         :connected="isGeopfConnected"
         class="fr-mb-3w"
       />
@@ -81,7 +81,7 @@
             :dataset-id="datasetId"
             :connected="isGeopfConnected"
             :pull="loadedGeopfDatasetStatus.pull"
-            :fiche-url="loadedGeopfDatasetStatus.fiche_url"
+            :fiche-url="loadedGeopfDatasetStatus.push.fiche_url"
             :refresh="refreshGeopfDatasetStatus"
             @reauth-required="reauthRequired = true"
           />
@@ -116,7 +116,7 @@
                 {{ resource.format }}
               </td>
               <td>
-                {{ formatDate(resource.last_synced_at) }}
+                {{ formatDate(resource.offering.last_synced_at) }}
               </td>
             </tr>
           </tbody>
@@ -129,10 +129,10 @@
         </p>
 
         <BrandedButton
-          v-if="loadedGeopfDatasetStatus.fiche_url"
+          v-if="loadedGeopfDatasetStatus.push.fiche_url"
           color="secondary"
           size="xs"
-          :href="loadedGeopfDatasetStatus.fiche_url"
+          :href="loadedGeopfDatasetStatus.push.fiche_url"
           new-tab
           class="mt-3"
         >
