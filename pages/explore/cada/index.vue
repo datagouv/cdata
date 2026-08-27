@@ -197,13 +197,15 @@ const CADA_DATASET_URL = config.public.cadaDatasetUrl
 
 const { t } = useTranslation()
 
+const route = useRoute()
+
+useNoindexWhenFiltered()
+
 useSeoMeta({
   title: () => t('Avis et conseils de la CADA'),
   description: () =>
     t('Recherchez parmi les avis et conseils rendus par la Commission d\'accès aux documents administratifs.'),
 })
-
-const route = useRoute()
 
 const searchQuery = ref('')
 const currentSearch = ref('')

@@ -117,6 +117,23 @@ test.describe('Public resources display', () => {
     await expect(page.getByText(resources[0].title)).toBeVisible()
   })
 
+  test('deep-link to a deleted resource falls back to the full list', async ({ page, request }) => {
+    const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test public resources ${Date.now()}`, resourceTitles(2))
+    createdDatasets.push(dataset.id)
+
+    const pageErrors: Array<Error> = []
+    page.on('pageerror', error => pageErrors.push(error))
+
+    // The link was shared or bookmarked while the resource still existed
+    await page.goto(`/datasets/${dataset.id}/?resource_id=00000000-0000-0000-0000-000000000000`)
+
+    await expect(page.getByText('Ce fichier est introuvable.')).toBeVisible()
+    await expect(page.getByText('Vous consultez une resource spécifique.')).not.toBeVisible()
+    await expect(page.getByText(resources[0].title)).toBeVisible()
+    await expect(page).not.toHaveURL(/resource_id=/)
+    expect(pageErrors).toEqual([])
+  })
+
   test('remote resource has a correct download link', async ({ page, request }) => {
     const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test public resources ${Date.now()}`, resourceTitles(1))
     createdDatasets.push(dataset.id)
