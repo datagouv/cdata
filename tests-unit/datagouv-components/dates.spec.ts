@@ -36,6 +36,33 @@ describe('formatFromNow', () => {
   })
 })
 
+describe('formatMonth', () => {
+  // A month carries no timezone, so the helper has to hold in a zone where midnight
+  // UTC still falls on the previous month — which is exactly where parsing the string
+  // as an instant gives the wrong answer.
+  beforeAll(() => vi.stubEnv('TZ', 'America/Cayenne'))
+  afterAll(() => vi.unstubAllEnvs())
+
+  it('reads the month off the string instead of parsing it as an instant', () => {
+    const { formatMonth } = useFormatDate()
+    expect(formatMonth('2026-04')).toEqual('avril 2026')
+    expect(formatMonth('2022-07-01')).toEqual('juillet 2022')
+  })
+
+  it('takes the month a date falls in, and the asked-for wording', () => {
+    const { formatMonth } = useFormatDate()
+    expect(formatMonth(new Date(2026, 3, 15))).toEqual('avril 2026')
+    expect(formatMonth('2026-04', { year: 'numeric', month: 'short' })).toEqual('avr. 2026')
+  })
+
+  it('returns an empty string without a usable value', () => {
+    const { formatMonth } = useFormatDate()
+    expect(formatMonth(null)).toEqual('')
+    expect(formatMonth(undefined)).toEqual('')
+    expect(formatMonth('not a date')).toEqual('')
+  })
+})
+
 describe('formatRelativeIfRecentDate', () => {
   it('is relative under a month', () => {
     const { formatRelativeIfRecentDate } = useFormatDate()

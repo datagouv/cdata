@@ -74,11 +74,7 @@
         <strong>
           + {{ summarize(lastValue, 2) }}
         </strong>
-        {{ t(" en ") }}
-        <FormattedDate
-          :date="lastMonth"
-          :options="{ dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }"
-        />
+        {{ t(" en ") }}{{ formatMonth(lastMonth, { year: 'numeric', month: 'short' }) }}
       </p>
     </template>
   </div>
@@ -151,11 +147,7 @@
       <strong class="mr-1">
         + {{ summarize(lastValue, 2) }}
       </strong>
-      {{ t(" en ") }}
-      <FormattedDate
-        :date="lastMonth"
-        :options="{ dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }"
-      />
+      {{ t(" en ") }}{{ formatMonth(lastMonth, { year: 'numeric', month: 'short' }) }}
     </p>
   </div>
 </template>
@@ -166,6 +158,7 @@ import { ContentLoader } from 'vue-content-loader'
 import FormattedDate from './FormattedDate.vue'
 import { summarize } from '../functions/helpers'
 import { useTranslation } from '../composables/useTranslation'
+import { useFormatDate } from '../functions/dates'
 import SmallChart from './SmallChart.vue'
 
 const props = defineProps<{
@@ -178,6 +171,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useTranslation()
+const { formatMonth } = useFormatDate()
 
 const months = computed(() => props.data ? Object.keys(props.data) : [])
 const values = computed(() => props.data ? Object.values(props.data) : [])

@@ -13,11 +13,7 @@
     </h1>
 
     <p class="text-sm text-gray-medium my-5">
-      {{ $t('Les statistiques sont comptabilisées à partir de ') }}
-      <FormattedDate
-        :date="config.public.metricsSince"
-        :options="{ dateStyle: undefined, year: 'numeric', month: 'long', day: undefined }"
-      />.
+      {{ $t('Les statistiques sont comptabilisées à partir de ') }}{{ formatMonth(config.public.metricsSince) }}.
       <br>
       <span v-if="new Date().getHours() > 7 - 1">{{ $t('Mises à jour ce matin.') }}</span>
       <span v-else>{{ $t('Mises à jour hier.') }}</span>
@@ -47,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { FormattedDate, type Organization, type User } from '@datagouv/components-next'
+import { type Organization, useFormatDate, type User } from '@datagouv/components-next'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
@@ -61,6 +57,7 @@ defineEmits<{
 }>()
 
 const config = useRuntimeConfig()
+const { formatMonth } = useFormatDate()
 
 const me = useMe()
 
