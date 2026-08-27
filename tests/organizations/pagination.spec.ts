@@ -15,8 +15,8 @@ async function expectCleanNotFound(page: Page, url: string) {
 }
 
 test.describe('Organization listings pagination', () => {
-  // A page past the last one cannot be covered here, because the two search backends
-  // disagree on it and only one of them reaches the guard:
+  // The two search backends disagree on a page past the last one, and only one of them
+  // reaches the guard:
   //
   // - with elasticsearch (production), the API answers 200 with the `total`, so the
   //   guard computes the page count and answers a 404. This is the Sentry case.
@@ -26,19 +26,19 @@ test.describe('Organization listings pagination', () => {
   //   guard has no total to compare against, and the page stays a 200 showing a
   //   loading error.
   //
-  // Re-enable once the e2e backend runs elasticsearch. Until then the crash itself is
-  // covered by the getVisiblePages unit tests.
-  //
-  // test('a page past the last one answers a clean 404', async ({ page }) => {
-  //   // The listing must really load, otherwise there is no total to compare the page
-  //   // against and the rest of this test would pass without exercising anything.
-  //   const firstPage = await page.goto(`/organizations/${ORG}/datasets`)
-  //   expect(firstPage?.status()).toBe(200)
-  //   await expect(page.getByRole('heading', { name: /DPE Logements/ })).toBeVisible()
-  //
-  //   await expectCleanNotFound(page, `/organizations/${ORG}/datasets?page=2`)
-  //   await expectCleanNotFound(page, `/organizations/${ORG}/datasets?page=127`)
-  // })
+  // Re-enable once the two paths agree, either by making the API answer the same thing
+  // in both or by running elasticsearch here. Until then the crash itself is covered by
+  // the getVisiblePages unit tests.
+  test.fixme('a page past the last one answers a clean 404', async ({ page }) => {
+    // The listing must really load, otherwise there is no total to compare the page
+    // against and the rest of this test would pass without exercising anything.
+    const firstPage = await page.goto(`/organizations/${ORG}/datasets`)
+    expect(firstPage?.status()).toBe(200)
+    await expect(page.getByRole('heading', { name: /DPE Logements/ })).toBeVisible()
+
+    await expectCleanNotFound(page, `/organizations/${ORG}/datasets?page=2`)
+    await expectCleanNotFound(page, `/organizations/${ORG}/datasets?page=127`)
+  })
 
   test('a malformed page answers a clean 404', async ({ page }) => {
     // These never depend on the listing having loaded: no page count can make them valid.
