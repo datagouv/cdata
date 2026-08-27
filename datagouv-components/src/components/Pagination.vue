@@ -19,7 +19,7 @@
       </li>
       <li>
         <a
-          :href="getHref(page - 1)"
+          :href="getHref(currentPage - 1)"
           class="fr-pagination__link fr-pagination__link--prev fr-pagination__link--lg-label"
           data-testid="previous-page"
           @click.prevent.stop="previousPage"
@@ -29,10 +29,10 @@
       </li>
       <li>
         <a
-          :aria-current="page === 1 ? 'page' : undefined"
+          :aria-current="currentPage === 1 ? 'page' : undefined"
           :href="getHref(1)"
           class="fr-pagination__link"
-          :class="{ 'fr-hidden fr-unhidden-sm': page > 1 }"
+          :class="{ 'fr-hidden fr-unhidden-sm': currentPage > 1 }"
           :title="t('Page {nb}', { nb: 1 })"
           :data-testid="1"
           @click.prevent.stop="onClick(1)"
@@ -47,8 +47,8 @@
         <a
           v-if="index"
           class="fr-pagination__link"
-          :class="{ 'fr-hidden fr-unhidden-lg': index < page - 1 || index > page + 1 }"
-          :aria-current="page === index ? 'page' : undefined"
+          :class="{ 'fr-hidden fr-unhidden-lg': index < currentPage - 1 || index > currentPage + 1 }"
+          :aria-current="currentPage === index ? 'page' : undefined"
           :href="getHref(index)"
           :title="t('Page {nb}', { nb: index })"
           :data-testid="index"
@@ -66,7 +66,7 @@
       <li>
         <a
           class="fr-pagination__link"
-          :aria-current="page === pageCount ? 'page' : undefined"
+          :aria-current="currentPage === pageCount ? 'page' : undefined"
           :href="getHref(pageCount)"
           :title="t('Page {nb}', { nb: pageCount })"
           :data-testid="pageCount"
@@ -78,7 +78,7 @@
       <li>
         <a
           class="fr-pagination__link fr-pagination__link--next fr-pagination__link--lg-label"
-          :href="getHref(page + 1)"
+          :href="getHref(currentPage + 1)"
           data-testid="next-page"
           @click.prevent.stop="nextPage"
         >
@@ -103,6 +103,7 @@
 import { computed, useTemplateRef } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTranslation } from '../composables/useTranslation'
+import { clampPage, getVisiblePages } from '../functions/paginate'
 
 type Props = {
   /**
@@ -128,52 +129,13 @@ const props = withDefaults(defineProps<Props>(), {
   pageSize: 20,
 })
 
-const PAGES_AROUND = 3
-
-function range(size: number, startAt = 1) {
-  return [...Array(size).keys()].map(i => i + startAt)
-}
-
-function getPages(pageCount: number) {
-  return range(pageCount)
-}
-
-function getPagesShown(pages: { length: number }, currentPage: number) {
-  return Math.min(
-    PAGES_AROUND * 2 + 1,
-    pages.length - 2,
-    PAGES_AROUND + currentPage - 1,
-    PAGES_AROUND + pages.length - currentPage,
-  )
-}
-
-function getStartPage(currentPage: number) {
-  return Math.max(
-    currentPage - PAGES_AROUND, // we want to start 3 pages before the current one
-    2, // we don't want to start below page 2
-  )
-}
-
-function getVisiblePages(currentPage: number, pageCount: number) {
-  const pages = getPages(pageCount)
-  const start = getStartPage(currentPage)
-  if (pageCount <= 2) {
-    return []
-  }
-  const pagination: Array<number | null> = range(getPagesShown(pages, currentPage), start)
-  if (!pagination.includes(2)) {
-    pagination.unshift(null)
-  }
-  if (!pagination.includes(pageCount - 1)) {
-    pagination.push(null)
-  }
-  return pagination
-}
-
 const { t } = useTranslation()
 const route = useRoute()
 const pageCount = computed(() => Math.ceil(props.totalResults / props.pageSize))
-const visiblePages = computed(() => getVisiblePages(props.page, pageCount.value))
+// The `page` prop often comes straight from a query string, so it is normalised
+// once here and every link below builds on an existing page.
+const currentPage = computed(() => clampPage(props.page, pageCount.value))
+const visiblePages = computed(() => getVisiblePages(currentPage.value, pageCount.value))
 
 const nav = useTemplateRef('navRef')
 function change(index: number) {
@@ -186,20 +148,20 @@ function change(index: number) {
 }
 
 function onClick(index: number) {
-  if (index !== props.page) {
+  if (index !== currentPage.value) {
     change(index)
   }
 }
 
 function nextPage() {
-  const index = props.page + 1
+  const index = currentPage.value + 1
   if (index <= pageCount.value) {
     change(index)
   }
 }
 
 function previousPage() {
-  const index = props.page - 1
+  const index = currentPage.value - 1
   if (index > 0) {
     change(index)
   }
@@ -209,7 +171,7 @@ function getHref(forPage: number) {
   if (forPage < 1 || forPage > pageCount.value) {
     return undefined
   }
-  if (props.page === forPage) {
+  if (currentPage.value === forPage) {
     return undefined
   }
   const search = new URLSearchParams(route.query as Record<string, string>)
