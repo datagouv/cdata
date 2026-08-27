@@ -82,12 +82,15 @@
                     </template>
                   </slot>
                 </p>
-                <p class="m-0 flex-none text-xs text-gray-medium">
-                  <FormattedDate
-                    :date="activity.created_at"
-                    :label="date => t('le {date}', { date })"
-                  />
-                </p>
+                <TranslationT
+                  tag="p"
+                  class="m-0 flex-none text-xs text-gray-medium"
+                  keypath="le {date}"
+                >
+                  <template #date>
+                    <FormattedDate :date="activity.created_at" />
+                  </template>
+                </TranslationT>
               </div>
             </li>
           </ul>
@@ -129,6 +132,7 @@ import LoadingBlock from '../LoadingBlock.vue'
 import Pagination from '../Pagination.vue'
 import PaddedContainer from '../PaddedContainer.vue'
 import FormattedDate from '../FormattedDate.vue'
+import TranslationT from '../TranslationT.vue'
 import listSrc from '../../../assets/illustrations/list.svg?url'
 
 const props = defineProps<{

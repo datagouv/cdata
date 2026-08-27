@@ -90,10 +90,11 @@
         @change="changePage"
       />
       <div class="fr-px-5v">
-        <FormattedDate
-          :date="parsingFinishedAt"
-          :label="date => t('Dernière mise à jour de la prévisualisation : {date}', { date })"
-        /> —
+        <TranslationT keypath="Dernière mise à jour de la prévisualisation : {date}">
+          <template #date>
+            <FormattedDate :date="parsingFinishedAt" />
+          </template>
+        </TranslationT> —
         {{ t('{count} colonnes', columns.length) }} —
         {{ t('Lignes {count}', rowCount) }}
       </div>
@@ -107,6 +108,7 @@ import { RiArrowDownLine, RiArrowUpLine, RiExternalLinkFill } from '@remixicon/v
 import Pagination from '../Pagination.vue'
 import { getData, type SortConfig } from '../../functions/tabularApi'
 import FormattedDate from '../FormattedDate.vue'
+import TranslationT from '../TranslationT.vue'
 import { trackEvent } from '../../functions/matomo'
 import type { Resource } from '../../types/resources'
 import { useComponentsConfig } from '../../config'

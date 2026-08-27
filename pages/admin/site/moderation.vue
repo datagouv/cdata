@@ -175,12 +175,14 @@
               <td>
                 <template v-if="subjects[report.id]">
                   <div v-if="subjects[report.id].value">
-                    <div>
-                      <FormattedDate
-                        :date="getSubjectCreatedDate(report, subjects[report.id])"
-                        :label="date => t('Créé le {date}', { date })"
-                      />
-                    </div>
+                    <TranslationT
+                      tag="div"
+                      keypath="Créé le {date}"
+                    >
+                      <template #date>
+                        <FormattedDate :date="getSubjectCreatedDate(report, subjects[report.id])" />
+                      </template>
+                    </TranslationT>
                     <p
                       v-if="getSubjectCreatedBy(report, subjects[report.id])"
                       class="flex items-center min-w-0"
@@ -193,12 +195,14 @@
                       />
                     </p>
                     <div v-if="report.subject && report.subject.id in activities">
-                      <div>
-                        <FormattedDate
-                          :date="activities[report.subject.id].created_at"
-                          :label="date => t('Modifié le {date}', { date })"
-                        />
-                      </div>
+                      <TranslationT
+                        tag="div"
+                        keypath="Modifié le {date}"
+                      >
+                        <template #date>
+                          <FormattedDate :date="activities[report.subject.id].created_at" />
+                        </template>
+                      </TranslationT>
                       <p class="flex items-center min-w-0">
                         {{ t('par ') }}
                         <AvatarWithName
@@ -353,7 +357,7 @@
 
 <script setup lang="ts">
 import type { Report, ReportReason, ReportSubject, Activity, Dataservice, DatasetV2, Organization, Reuse, User, UserReference } from '@datagouv/components-next'
-import { AvatarWithName, FormattedDate, LoadingBlock, Pagination, SearchableSelect, BrandedButton } from '@datagouv/components-next'
+import { AvatarWithName, FormattedDate, LoadingBlock, Pagination, SearchableSelect, BrandedButton, TranslationT } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine, RiRobot2Line, RiSpyLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'

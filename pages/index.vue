@@ -448,12 +448,15 @@
               <h3 class="text-gray-title font-extrabold text-3xl">
                 {{ lastPost.name }}
               </h3>
-              <p class="text-mention-grey text-sm">
-                <FormattedDate
-                  :date="lastPost.published"
-                  :label="date => $t('Publié le {date}', { date })"
-                />
-              </p>
+              <TranslationT
+                tag="p"
+                class="text-mention-grey text-sm"
+                keypath="Publié le {date}"
+              >
+                <template #date>
+                  <FormattedDate :date="lastPost.published" />
+                </template>
+              </TranslationT>
               <p class="text-gray-plain mb-0">
                 {{ lastPost.headline }}
               </p>

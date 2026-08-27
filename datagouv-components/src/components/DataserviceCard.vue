@@ -71,14 +71,19 @@
         class="size-4 flex-none fill-gray-medium"
       />
       <!-- https://github.com/datagouv/cdata/issues/653 -->
-      <p class="text-sm whitespace-nowrap mb-0 text-gray-medium">
-        <FormattedDate
-          :date="dataservice.metadata_modified_at"
-          format="relative"
-          :options="{ dateStyle: 'medium' }"
-          :label="date => t('Mis à jour {date}', { date })"
-        />
-      </p>
+      <TranslationT
+        tag="p"
+        class="text-sm whitespace-nowrap mb-0 text-gray-medium"
+        keypath="Mis à jour {date}"
+      >
+        <template #date>
+          <FormattedDate
+            :date="dataservice.metadata_modified_at"
+            format="relative"
+            :options="{ dateStyle: 'medium' }"
+          />
+        </template>
+      </TranslationT>
       <RiSubtractLine
         aria-hidden="true"
         class="size-4 flex-none fill-gray-medium"
@@ -137,6 +142,7 @@ import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import DataserviceQualityInline from './DataserviceQualityInline.vue'
 import FormattedDate from './FormattedDate.vue'
+import TranslationT from './TranslationT.vue'
 
 type Props = {
   dataservice: Dataservice

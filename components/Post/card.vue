@@ -14,21 +14,22 @@
           {{ post.name }}
         </CdataLink>
       </p>
-      <p
+      <TranslationT
         v-if="post.published"
+        tag="p"
         class="mb-0 text-gray-medium"
+        keypath="Publié le {date}"
       >
-        <FormattedDate
-          :date="post.published"
-          :label="date => $t('Publié le {date}', { date })"
-        />
-      </p>
+        <template #date>
+          <FormattedDate :date="post.published" />
+        </template>
+      </TranslationT>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { FormattedDate } from '@datagouv/components-next'
+import { FormattedDate, TranslationT } from '@datagouv/components-next'
 import type { Post } from '~/types/posts'
 
 defineProps<{

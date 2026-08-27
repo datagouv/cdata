@@ -28,18 +28,24 @@
       </CdataLink>
     </div>
     <div>—</div>
-    <div v-if="comment.last_modified_at">
-      <FormattedDate
-        :date="comment.last_modified_at"
-        :label="date => $t('Mis à jour le {date}', { date })"
-      />
-    </div>
-    <div v-else>
-      <FormattedDate
-        :date="comment.posted_on"
-        :label="date => $t('Posté le {date}', { date })"
-      />
-    </div>
+    <TranslationT
+      v-if="comment.last_modified_at"
+      tag="div"
+      keypath="Mis à jour le {date}"
+    >
+      <template #date>
+        <FormattedDate :date="comment.last_modified_at" />
+      </template>
+    </TranslationT>
+    <TranslationT
+      v-else
+      tag="div"
+      keypath="Posté le {date}"
+    >
+      <template #date>
+        <FormattedDate :date="comment.posted_on" />
+      </template>
+    </TranslationT>
     <div v-if="isProducer">
       —
     </div>
@@ -54,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, FormattedDate, OrganizationLogo } from '@datagouv/components-next'
+import { Avatar, FormattedDate, OrganizationLogo, TranslationT } from '@datagouv/components-next'
 import type { Comment, DiscussionSubjectTypes } from '~/types/discussions'
 import { isProducerOfSubject } from '~/utils/discussions'
 

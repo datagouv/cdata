@@ -41,17 +41,20 @@
         aria-hidden="true"
         class="hidden md:block size-4 flex-none fill-gray-medium"
       />
-      <div
+      <TranslationT
         v-if="topic.last_modified"
+        tag="div"
         class="w-full md:w-auto text-gray-medium whitespace-nowrap"
+        keypath="Mis à jour {date}"
       >
-        <FormattedDate
-          :date="topic.last_modified"
-          format="relative"
-          :options="{ dateStyle: 'long' }"
-          :label="date => t('Mis à jour {date}', { date })"
-        />
-      </div>
+        <template #date>
+          <FormattedDate
+            :date="topic.last_modified"
+            format="relative"
+            :options="{ dateStyle: 'long' }"
+          />
+        </template>
+      </TranslationT>
     </div>
 
     <ObjectCardShortDescription :text="topic.description" />
@@ -102,7 +105,6 @@
 import { RiBookShelfLine, RiDatabase2Line, RiLineChartLine, RiSubtractLine, RiTerminalLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { TopicV2 } from '../types/topics'
-import { useTranslation } from '../composables/useTranslation'
 import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
@@ -111,6 +113,7 @@ import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
 import FormattedDate from './FormattedDate.vue'
+import TranslationT from './TranslationT.vue'
 
 type TopicWithStats = TopicV2 & {
   nb_datasets?: number
@@ -127,6 +130,4 @@ withDefaults(defineProps<{
   showLogo: true,
   showStats: true,
 })
-
-const { t } = useTranslation()
 </script>

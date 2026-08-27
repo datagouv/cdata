@@ -70,12 +70,15 @@
             {{ topic.name }}
           </h1>
 
-          <p class="text-sm text-gray-medium m-0">
-            <FormattedDate
-              :date="topic.last_modified"
-              :label="date => $t('Mis à jour {date}', { date })"
-            />
-          </p>
+          <TranslationT
+            tag="p"
+            class="text-sm text-gray-medium m-0"
+            keypath="Mis à jour {date}"
+          >
+            <template #date>
+              <FormattedDate :date="topic.last_modified" />
+            </template>
+          </TranslationT>
 
           <div
             v-if="topic.tags.length"
@@ -112,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, FormattedDate, getDescriptionShort, LoadingBlock, OrganizationLogo, OrganizationNameWithCertificate, type TopicV2 } from '@datagouv/components-next'
+import { Avatar, FormattedDate, getDescriptionShort, LoadingBlock, OrganizationLogo, OrganizationNameWithCertificate, type TopicV2, TranslationT } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import type { Thread } from '~/types/discussions'

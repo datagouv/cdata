@@ -24,11 +24,14 @@
            carried by the separators' margins. -->
       <div class="min-w-0 truncate [flex-shrink:9999]">
         <span class="mr-1.5">·</span>
-        <FormattedDate
-          :date="resource.last_modified"
-          format="relative"
-          :label="date => t('mis à jour {date}', { date })"
-        />
+        <TranslationT keypath="mis à jour {date}">
+          <template #date>
+            <FormattedDate
+              :date="resource.last_modified"
+              format="relative"
+            />
+          </template>
+        </TranslationT>
         <template v-if="resourceFilesize">
           <span class="mx-1.5">·</span>
           <span>{{ filesize(resourceFilesize) }}</span>
@@ -89,6 +92,7 @@ import SchemaBadge from '../ResourceAccordion/SchemaBadge.vue'
 import ResourceSelector from './ResourceSelector.vue'
 import ResourceMainAction from './ResourceMainAction.vue'
 import FormattedDate from '../FormattedDate.vue'
+import TranslationT from '../TranslationT.vue'
 import { filesize, summarize } from '../../functions/helpers'
 import { getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
 import { trackEvent } from '../../functions/matomo'

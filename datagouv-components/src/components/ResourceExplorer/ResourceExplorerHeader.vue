@@ -18,12 +18,14 @@
         <span class="min-w-0 truncate font-bold text-gray-title">{{ dataset.title }}</span>
         <template v-if="dataset.last_update">
           <span class="hidden shrink-0 text-gray-medium sm:inline">·</span>
-          <span class="hidden truncate text-gray-medium sm:inline">
-            <FormattedDate
-              :date="dataset.last_update"
-              :label="date => t('mis à jour le {date}', { date })"
-            />
-          </span>
+          <TranslationT
+            class="hidden truncate text-gray-medium sm:inline"
+            keypath="mis à jour le {date}"
+          >
+            <template #date>
+              <FormattedDate :date="dataset.last_update" />
+            </template>
+          </TranslationT>
         </template>
       </div>
     </div>
@@ -57,6 +59,7 @@ import BrandedButton from '../BrandedButton.vue'
 import OrganizationLogo from '../OrganizationLogo.vue'
 import ResourceMainAction from './ResourceMainAction.vue'
 import FormattedDate from '../FormattedDate.vue'
+import TranslationT from '../TranslationT.vue'
 import { getOwnerName } from '../../functions/owned'
 import { useTranslation } from '../../composables/useTranslation'
 import type { Dataset, DatasetV2 } from '../../types/datasets'

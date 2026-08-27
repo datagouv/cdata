@@ -3,16 +3,16 @@
        reader's and at read time, so the displayed text and the `title` legitimately
        differ and Vue is told to accept it. Vue only honours `data-allow-mismatch` on
        an element whose children are plain text, never on a text node coming from a
-       slot: hence `label` instead of a slot, and two static elements instead of a
-       `<component :is>`, which would pass the text through a slot too. -->
+       slot: hence two static elements instead of a `<component :is>`, which would
+       pass the text through a slot. -->
   <time
     v-if="datetime"
     :datetime
     :title
     data-allow-mismatch="text,attribute"
-  >{{ text }}</time>
+  >{{ formatted }}</time>
   <!-- No date to format: nothing here depends on the timezone or on "now". -->
-  <span v-else>{{ text }}</span>
+  <span v-else>{{ formatted }}</span>
 </template>
 
 <script setup lang="ts">
@@ -27,12 +27,9 @@ const props = withDefaults(defineProps<{
    */
   format?: 'date' | 'relative' | 'from-now'
   options?: Intl.DateTimeFormatOptions
-  /** Wording around the date, e.g. `date => t('Updated {date}', { date })`. */
-  label?: (formatted: string) => string
 }>(), {
   format: 'date',
   options: () => ({}),
-  label: undefined,
 })
 
 const { formatDate, formatFromNow, formatRelativeIfRecentDate } = useFormatDate()
@@ -58,6 +55,4 @@ const formatted = computed(() => {
   if (props.format === 'from-now') return formatFromNow(parsed.value)
   return formatDate(parsed.value, { ...props.options })
 })
-
-const text = computed(() => props.label ? props.label(formatted.value) : formatted.value)
 </script>

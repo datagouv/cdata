@@ -13,6 +13,18 @@ test('a dataset list hydrates without mismatch from another timezone', async ({ 
   await expect(page.locator('time').first()).toBeVisible()
 })
 
+test('the wording around a date stays outside the time element', async ({ page }) => {
+  await page.goto('/datasets/search/')
+
+  // `datetime` describes what the element contains, so the element holds the date and
+  // nothing else: a whole sentence inside it would claim the wording is part of the
+  // instant. The wording belongs to the sentence around it.
+  const date = page.locator('time').first()
+  await expect(date).toBeVisible()
+  await expect(date).not.toContainText('Mis à jour')
+  await expect(page.getByText('Mis à jour').first()).toBeVisible()
+})
+
 test('a dataset page hydrates without mismatch from another timezone', async ({ page }) => {
   await page.goto('/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/')
 

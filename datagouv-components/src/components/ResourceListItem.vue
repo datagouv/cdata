@@ -54,11 +54,14 @@
     >
       <span class="block whitespace-nowrap text-[13px] font-medium leading-5 text-gray-title">{{ resource.title || t('Fichier sans nom') }}</span>
       <div class="mt-1 flex items-center gap-1 text-[12px] leading-4 text-gray-medium">
-        <FormattedDate
-          :date="resource.last_modified"
-          format="relative"
-          :label="date => t('mis à jour {date}', { date })"
-        />
+        <TranslationT keypath="mis à jour {date}">
+          <template #date>
+            <FormattedDate
+              :date="resource.last_modified"
+              format="relative"
+            />
+          </template>
+        </TranslationT>
         <template v-if="humanFilesize">
           <span>·</span>
           <span>{{ humanFilesize }}</span>
@@ -89,6 +92,7 @@ import { RiDownloadLine } from '@remixicon/vue'
 import AppLink from './AppLink.vue'
 import File from './Icons/File.vue'
 import FormattedDate from './FormattedDate.vue'
+import TranslationT from './TranslationT.vue'
 import { getResourceFormatIcon, getResourceIconColor, getResourceFilesize } from '../functions/resources'
 import { filesize, summarize } from '../functions/helpers'
 import { useTranslation } from '../composables/useTranslation'

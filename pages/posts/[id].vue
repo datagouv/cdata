@@ -58,15 +58,16 @@
             {{ post.name }}
           </h1>
           <template v-if="post.published || isMeAdmin()">
-            <p
+            <TranslationT
               v-if="post.published"
+              tag="p"
               class="text-xs mt-2 mb-0"
+              keypath="Publié le {date}"
             >
-              <FormattedDate
-                :date="post.published"
-                :label="date => $t('Publié le {date}', { date })"
-              />
-            </p>
+              <template #date>
+                <FormattedDate :date="post.published" />
+              </template>
+            </TranslationT>
             <p
               v-else
               class="text-xs mb-0"
@@ -140,7 +141,7 @@
 </template>
 
 <script setup lang="ts">
-import { markdownClasses, MarkdownViewer, LoadingBlock, BrandedButton, toast, FormattedDate } from '@datagouv/components-next'
+import { markdownClasses, MarkdownViewer, LoadingBlock, BrandedButton, toast, FormattedDate, TranslationT } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'

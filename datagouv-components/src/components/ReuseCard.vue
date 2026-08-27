@@ -21,13 +21,18 @@
               :organization-url="organizationUrl"
             />
             <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
-            <FormattedDate
+            <TranslationT
               class="block flex-none"
-              :date="reuse.created_at"
-              format="relative"
-              :options="{ dateStyle: 'medium' }"
-              :label="date => t('publié {date}', { date })"
-            />
+              keypath="publié {date}"
+            >
+              <template #date>
+                <FormattedDate
+                  :date="reuse.created_at"
+                  format="relative"
+                  :options="{ dateStyle: 'medium' }"
+                />
+              </template>
+            </TranslationT>
           </div>
           <ReuseDetails :reuse />
         </div>
@@ -81,6 +86,7 @@ import ObjectCardOwner from './ObjectCardOwner.vue'
 import ReuseDetails from './ReuseDetails.vue'
 import Placeholder from './Placeholder.vue'
 import FormattedDate from './FormattedDate.vue'
+import TranslationT from './TranslationT.vue'
 
 const props = withDefaults(defineProps<{
   reuse: Reuse | ReuseV2

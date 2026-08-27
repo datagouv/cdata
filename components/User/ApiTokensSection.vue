@@ -39,26 +39,33 @@
           >{{ token.token_prefix }}…</span>
         </div>
         <div class="text-xs text-gray-500">
-          <FormattedDate
-            :date="token.created_at"
-            format="relative"
-            :label="date => $t('Créé {date}', { date })"
-          />
+          <TranslationT keypath="Créé {date}">
+            <template #date>
+              <FormattedDate
+                :date="token.created_at"
+                format="relative"
+              />
+            </template>
+          </TranslationT>
           <template v-if="token.last_used_at">
             ·
-            <FormattedDate
-              :date="token.last_used_at"
-              format="relative"
-              :label="date => $t('Utilisé {date}', { date })"
-            />
+            <TranslationT keypath="Utilisé {date}">
+              <template #date>
+                <FormattedDate
+                  :date="token.last_used_at"
+                  format="relative"
+                />
+              </template>
+            </TranslationT>
           </template>
           <span v-else> · {{ $t('Jamais utilisé') }}</span>
           <template v-if="token.expires_at">
             ·
-            <FormattedDate
-              :date="token.expires_at"
-              :label="date => $t('Expire le {date}', { date })"
-            />
+            <TranslationT keypath="Expire le {date}">
+              <template #date>
+                <FormattedDate :date="token.expires_at" />
+              </template>
+            </TranslationT>
           </template>
           <template v-if="token.user_agents.length === 1">
             · {{ token.user_agents[0] }}
@@ -137,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, CopyButton, FormattedDate, SimpleBanner, toast } from '@datagouv/components-next'
+import { BrandedButton, CopyButton, FormattedDate, SimpleBanner, toast, TranslationT } from '@datagouv/components-next'
 import { RiDeleteBin6Line } from '@remixicon/vue'
 import type { ApiToken, ApiTokenCreated } from '~/types/api-tokens'
 import CreateApiTokenModal from './CreateApiTokenModal.vue'
