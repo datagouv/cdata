@@ -237,10 +237,16 @@
             </a>
           </div>
           <div class="fr-footer__content">
-            <p class="fr-footer__content-desc">
+            <div
+              v-if="appConfig.isFrenchGovernment"
+              class="w-full text-right mb-2"
+            >
+              <LogoNumeriqueGouv class="inline-block w-45" />
+            </div>
+            <p class="fr-footer__content-desc text-right">
               {{ $t("Un produit de la Direction Interministérielle du Numérique (DINUM).") }}
             </p>
-            <ul class="fr-footer__content-list">
+            <ul class="fr-footer__content-list w-full justify-end">
               <li
                 v-for="item in networkLinks"
                 :key="item.label"

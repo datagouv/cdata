@@ -6,41 +6,43 @@
 
   <AdminTable>
     <thead>
-      <AdminTableTh
-        :sorted="sorted('title')"
-        scope="col"
-        @sort="(direction: SortDirection) => $emit('sort', 'title', direction)"
-      >
-        {{ t("Titre de la ressource") }}
-      </AdminTableTh>
-      <AdminTableTh class="w-44">
-        {{ t("Statut") }}
-      </AdminTableTh>
-      <AdminTableTh class="w-14">
-        {{ t("Format") }}
-      </AdminTableTh>
-      <AdminTableTh
-        class="w-32"
-        :sorted="sorted('created_at_internal')"
-        scope="col"
-        @sort="(direction: SortDirection) => $emit('sort', 'created_at_internal', direction)"
-      >
-        {{ t("Créé le") }}
-      </AdminTableTh>
-      <AdminTableTh
-        class="w-32"
-        :sorted="sorted('last_modified_internal')"
-        scope="col"
-        @sort="(direction: SortDirection) => $emit('sort', 'last_modified_internal', direction)"
-      >
-        {{ t("Modifié le") }}
-      </AdminTableTh>
-      <AdminTableTh
-        class="w-32"
-        scope="col"
-      >
-        {{ t("Action") }}
-      </AdminTableTh>
+      <tr>
+        <AdminTableTh
+          :sorted="sorted('title')"
+          scope="col"
+          @sort="(direction: SortDirection) => $emit('sort', 'title', direction)"
+        >
+          {{ t("Titre de la ressource") }}
+        </AdminTableTh>
+        <AdminTableTh class="w-44">
+          {{ t("Statut") }}
+        </AdminTableTh>
+        <AdminTableTh class="w-14">
+          {{ t("Format") }}
+        </AdminTableTh>
+        <AdminTableTh
+          class="w-32"
+          :sorted="sorted('created_at_internal')"
+          scope="col"
+          @sort="(direction: SortDirection) => $emit('sort', 'created_at_internal', direction)"
+        >
+          {{ t("Créé le") }}
+        </AdminTableTh>
+        <AdminTableTh
+          class="w-32"
+          :sorted="sorted('last_modified_internal')"
+          scope="col"
+          @sort="(direction: SortDirection) => $emit('sort', 'last_modified_internal', direction)"
+        >
+          {{ t("Modifié le") }}
+        </AdminTableTh>
+        <AdminTableTh
+          class="w-32"
+          scope="col"
+        >
+          {{ t("Action") }}
+        </AdminTableTh>
+      </tr>
     </thead>
     <tbody>
       <tr

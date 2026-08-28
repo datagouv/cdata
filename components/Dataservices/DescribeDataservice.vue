@@ -349,7 +349,7 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-0">
-              {{ harvested ? t("Attributions et points de contacts") : t("Points de contact") }}
+              {{ t("Points de contact et attributions") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -363,14 +363,12 @@
               v-model="form.contact_points[index]"
               class="pt-3"
               :organization="form.owned?.organization"
-              :show-attributions="harvested"
             />
             <ContactPointSelect
               v-if="form.contact_points.length === 0"
               v-model="form.contact_points[0]"
               class="pt-3"
               :organization="form.owned?.organization"
-              :show-attributions="harvested"
             />
             <BrandedButton
               class="mt-3"
@@ -380,7 +378,7 @@
               :icon="RiAddLine"
               @click="form.contact_points.push({ ...defaultContactForm })"
             >
-              {{ harvested ? t('Nouvelle attribution') : t('Nouveau contact') }}
+              {{ t('Nouvelle attribution') }}
             </BrandedButton>
           </LinkedToAccordion>
         </fieldset>
@@ -561,7 +559,6 @@ import ProducerSelect from '~/components/ProducerSelect.vue'
 import type { DataserviceForm } from '~/types/types'
 
 const props = defineProps<{
-  harvested?: boolean
   type: 'create' | 'update'
 }>()
 const dataserviceForm = defineModel<DataserviceForm>({ required: true })
