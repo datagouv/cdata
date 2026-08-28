@@ -2,7 +2,13 @@
   <ObjectCard media-size="xl">
     <template #badge>
       <ObjectCardBadge
-        v-if="chart.private"
+        v-if="chart.deleted_at"
+        :icon="RiDeleteBinLine"
+      >
+        {{ t('Supprimé') }}
+      </ObjectCardBadge>
+      <ObjectCardBadge
+        v-else-if="chart.private"
         :icon="RiLockLine"
       >
         {{ t('Brouillon') }}
@@ -68,7 +74,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RiBarChartBoxLine, RiEyeLine, RiLineChartLine, RiLockLine, RiSubtractLine } from '@remixicon/vue'
+import { RiBarChartBoxLine, RiDeleteBinLine, RiEyeLine, RiLineChartLine, RiLockLine, RiSubtractLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Chart } from '../types/visualizations'
 import { useFormatDate } from '../functions/dates'
