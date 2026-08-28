@@ -37,10 +37,19 @@
               aria-hidden="true"
               class="first:hidden size-3 mt-0.5"
             />
-            <p class="text-sm m-0">
-              <!-- Not sure if this date is useful, since it's about modification on a ressource  -->
-              {{ $t('Mis à jour {date}', { date: formatRelativeIfRecentDate(resourceForm.resource.last_modified) }) }}
-            </p>
+            <!-- Not sure if this date is useful, since it's about modification on a ressource  -->
+            <TranslationT
+              tag="p"
+              class="text-sm m-0"
+              keypath="Mis à jour {date}"
+            >
+              <template #date>
+                <FormattedDate
+                  :date="resourceForm.resource.last_modified"
+                  format="relative"
+                />
+              </template>
+            </TranslationT>
           </template>
 
           <template v-if="guessFormat(resourceForm, extensions)">
@@ -160,7 +169,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, filesize as formatFilesize, useFormatDate, ResourceIcon } from '@datagouv/components-next'
+import { BrandedButton, filesize as formatFilesize, FormattedDate, ResourceIcon, TranslationT } from '@datagouv/components-next'
 import { computed } from 'vue'
 import { RiCodeSSlashLine, RiDeleteBinLine, RiInformationLine, RiLink, RiMapPin2Line, RiSubtractLine } from '@remixicon/vue'
 import FileEditModal from '../Datasets/FileEditModal.vue'
@@ -181,8 +190,6 @@ withDefaults(defineProps<{
 defineEmits<{
   (e: 'delete' | 'edit'): void
 }>()
-
-const { formatRelativeIfRecentDate } = useFormatDate()
 
 const save = (close: () => void, form: ResourceForm | CommunityResourceForm) => {
   // We don't want to link the `form` inside the modal to the

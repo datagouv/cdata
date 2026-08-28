@@ -21,7 +21,18 @@
               :organization-url="organizationUrl"
             />
             <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
-            <span class="block flex-none">{{ t('publié {date}', { date: formatRelativeIfRecentDate(reuse.created_at, { dateStyle: 'medium' }) }) }}</span>
+            <TranslationT
+              class="block flex-none"
+              keypath="publié {date}"
+            >
+              <template #date>
+                <FormattedDate
+                  :date="reuse.created_at"
+                  format="relative"
+                  :options="{ dateStyle: 'medium' }"
+                />
+              </template>
+            </TranslationT>
           </div>
           <ReuseDetails :reuse />
         </div>
@@ -67,7 +78,6 @@
 import { RiLockLine, RiSubtractLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { useFormatDate } from '../functions/dates'
 import type { Reuse, ReuseV2 } from '../types/reuses'
 import type { TitleTag } from '../types/ui'
 import { useTranslation } from '../composables/useTranslation'
@@ -75,6 +85,8 @@ import AppLink from './AppLink.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
 import ReuseDetails from './ReuseDetails.vue'
 import Placeholder from './Placeholder.vue'
+import FormattedDate from './FormattedDate.vue'
+import TranslationT from './TranslationT.vue'
 
 const props = withDefaults(defineProps<{
   reuse: Reuse | ReuseV2
@@ -97,7 +109,6 @@ const props = withDefaults(defineProps<{
 })
 
 const { t } = useTranslation()
-const { formatRelativeIfRecentDate } = useFormatDate()
 
 const reuseUrl = computed(() => props.reuseUrl || props.reuse.page)
 </script>
