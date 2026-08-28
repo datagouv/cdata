@@ -77,5 +77,5 @@ const params = computed(() => {
   }
 })
 
-const { data: pageData, status } = await useAPI<PaginatedArray<Chart>>('/api/1/visualizations/', { lazy: true, server: false, query: params })
+const { data: pageData, status } = await useAPI<PaginatedArray<Chart>>('/api/1/visualizations/', { lazy: true, query: params })
 </script>
