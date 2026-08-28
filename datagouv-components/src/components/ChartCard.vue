@@ -1,5 +1,14 @@
 <template>
   <ObjectCard media-size="xl">
+    <template #badge>
+      <ObjectCardBadge
+        v-if="chart.private"
+        :icon="RiLockLine"
+      >
+        {{ t('Brouillon') }}
+      </ObjectCardBadge>
+    </template>
+
     <template #media>
       <img
         v-if="chart.image"
@@ -59,7 +68,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RiBarChartBoxLine, RiEyeLine, RiLineChartLine, RiSubtractLine } from '@remixicon/vue'
+import { RiBarChartBoxLine, RiEyeLine, RiLineChartLine, RiLockLine, RiSubtractLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Chart } from '../types/visualizations'
 import { useFormatDate } from '../functions/dates'
@@ -67,6 +76,7 @@ import { summarize } from '../functions/helpers'
 import { useTranslation } from '../composables/useTranslation'
 import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
+import ObjectCardBadge from './ObjectCardBadge.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'

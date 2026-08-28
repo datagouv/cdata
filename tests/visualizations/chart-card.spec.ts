@@ -43,6 +43,7 @@ const lineChart = {
   description: 'Une courbe de démonstration pour la carte.',
   page: 'http://dev.local:3000/visualizations/courbe-de-demonstration/',
   image: null,
+  private: true,
   series: [{ type: 'line', column_y: 'valeur', aggregate_y: 'sum', resource_id: 'resource-1', column_x_name_override: null, filters: null }],
   metrics: { views: 7 },
 }
@@ -80,4 +81,12 @@ test('chart card with image displays an img, without image a placeholder', async
 test('chart card title link points to the chart page', async ({ page }) => {
   const link = page.getByRole('link', { name: 'Histogramme de démonstration' })
   await expect(link).toHaveAttribute('href', /\/visualizations\/histogramme-de-demonstration\//)
+})
+
+test('private chart card displays a draft badge, public chart card does not', async ({ page }) => {
+  const lineCard = page.locator('article').filter({ hasText: 'Courbe de démonstration' })
+  await expect(lineCard.getByText('Brouillon')).toBeVisible()
+
+  const histogramCard = page.locator('article').filter({ hasText: 'Histogramme de démonstration' })
+  await expect(histogramCard.getByText('Brouillon')).not.toBeVisible()
 })
