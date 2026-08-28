@@ -38,7 +38,7 @@ export function useColumnMetadata(
     if (!profile) return 'text'
     const colInfo = profile.columns[col]
     if (!colInfo) return 'text'
-    return resolveColumnType(colInfo, profile.categorical.includes(col))
+    return resolveColumnType(colInfo, profile.categorical?.includes(col) ?? false)
   }
 
   const columnTypesMap = computed<Record<string, ColumnType>>(() => {
