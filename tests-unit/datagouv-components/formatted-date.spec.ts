@@ -55,13 +55,23 @@ describe('an instant', () => {
   it('is rendered in the reader timezone, and says so', async () => {
     // 00:30 UTC on the 25th is still the 24th at 21:30 here: the shift is the point.
     const html = await render({ date: '2026-04-25T00:30:00Z' })
-    expect(html).toContain('24 avril 2026')
+    // Bounded by the tag, so the `title` attribute cannot satisfy this on its own.
+    expect(html).toContain('>24 avril 2026</time>')
     expect(html).toContain('datetime="2026-04-25T00:30:00.000Z"')
     expect(html).toContain('data-allow-mismatch')
   })
 
   it('reveals the exact moment on hover', async () => {
     expect(await render({ date: '2026-04-25T00:30:00Z' })).toContain('title="24 avril 2026 à 21:30"')
+  })
+
+  it('carries no title when the displayed form already spells the moment out', async () => {
+    const html = await render({
+      date: '2026-04-25T00:30:00Z',
+      options: { dateStyle: 'long', timeStyle: 'short' },
+    })
+    expect(html).toContain('>24 avril 2026 à 21:30</time>')
+    expect(html).not.toContain('title=')
   })
 })
 

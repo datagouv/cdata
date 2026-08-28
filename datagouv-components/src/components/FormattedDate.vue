@@ -57,24 +57,25 @@ const datetime = computed(() => {
   return plainDate.value ? plainDate.value[0] : parsed.value.toISOString()
 })
 
-// Hovering an instant gives the exact moment, which the displayed form usually omits:
-// the relative forms drop it entirely, and most styles drop the time. A plain date has
-// no moment to reveal — a `title` there would be one we made up.
-const title = computed(() => parsed.value && !plainDate.value
-  ? formatDate(parsed.value, { dateStyle: 'long', timeStyle: 'short' })
-  : undefined)
-
 // Only what genuinely differs between server and browser is exempted: an instant, and
 // the relative forms, which are measured against "now".
 const allowMismatch = computed(() => !plainDate.value || props.format !== 'date'
   ? 'text,attribute'
   : undefined)
 
-// `formatDate` fills in a default `dateStyle` on the object it receives, so it gets a
-// copy: mutating `props.options` would leak the default back to the parent.
 const formatted = computed(() => {
-  if (props.format === 'relative') return formatRelativeIfRecentDate(parsed.value, { ...props.options })
+  if (props.format === 'relative') return formatRelativeIfRecentDate(parsed.value, props.options)
   if (props.format === 'from-now') return formatFromNow(parsed.value)
-  return formatDate(parsed.value, { ...props.options })
+  return formatDate(parsed.value, props.options)
+})
+
+// Hovering an instant gives the exact moment, which the displayed form usually omits:
+// the relative forms drop it entirely, and most styles drop the time. A plain date has
+// no moment to reveal — a `title` there would be one we made up, and a form that already
+// spells the moment out needs no tooltip repeating it word for word.
+const title = computed(() => {
+  if (!parsed.value || plainDate.value) return undefined
+  const exact = formatDate(parsed.value, { dateStyle: 'long', timeStyle: 'short' })
+  return exact === formatted.value ? undefined : exact
 })
 </script>

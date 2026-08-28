@@ -88,9 +88,19 @@
               <td>
                 <AdminBadge
                   size="xs"
-                  :type="getStatus(post).type"
+                  :type="post.published ? 'primary' : 'secondary'"
                 >
-                  {{ getStatus(post).label }}
+                  <TranslationT
+                    v-if="post.published"
+                    keypath="Publié le {date}"
+                  >
+                    <template #date>
+                      <FormattedDate :date="post.published" />
+                    </template>
+                  </TranslationT>
+                  <template v-else>
+                    {{ t('Brouillon') }}
+                  </template>
                 </AdminBadge>
               </td>
               <td><FormattedDate :date="post.created_at" /></td>
@@ -158,11 +168,11 @@
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, Pagination, BrandedButton, FormattedDate, useFormatDate, SearchableSelect } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, BrandedButton, FormattedDate, TranslationT, SearchableSelect } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 import { RiAddLine, RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
-import type { AdminBadgeType, PaginatedArray } from '~/types/types'
+import type { PaginatedArray } from '~/types/types'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
@@ -170,7 +180,6 @@ import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import type { Post } from '~/types/posts'
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
 
 const page = ref(1)
@@ -209,20 +218,5 @@ watch(qDebounced, () => {
 
 function getKindLabel(kind: Post['kind']) {
   return kind === 'page' ? t('Page') : t('Actualité')
-}
-
-function getStatus(post: Post): { label: string, type: AdminBadgeType } {
-  if (post.published) {
-    return {
-      label: t('Publié le {date}', { date: formatDate(post.published) }),
-      type: 'primary',
-    }
-  }
-  else {
-    return {
-      label: t('Brouillon'),
-      type: 'secondary',
-    }
-  }
 }
 </script>
