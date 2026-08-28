@@ -433,7 +433,7 @@
 
 <script setup lang="ts">
 import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
-import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
+import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartLine, RiCalculatorLine, RiLineChartLine, RiText } from '@remixicon/vue'
@@ -484,6 +484,10 @@ const form = defineModel<ChartForm>({
 })
 
 const props = defineProps<{
+  /**
+   * Full chart being edited, used only to initialize producer/resources/dataset
+   * and to keep the chart id for saving — the form data itself comes from the v-model
+   */
   initialChart?: Chart
 }>()
 
@@ -753,51 +757,43 @@ async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
   })
 }
 
-async function loadChart(data: Chart) {
-  try {
-    savedChart.value = data
+async function initializeFromChart(data: Chart) {
+  savedChart.value = data
 
-    const chartResources = new Set<string>()
-    for (const serie of data.series) {
-      if (serie.resource_id) {
-        chartResources.add(serie.resource_id)
-      }
-    }
-
-    form.value = toChartForm(data)
-
-    await loadMissingResourcesForChart(Array.from(chartResources))
-    await loadColumnsForResources(Array.from(chartResources))
-
-    if (data.organization) {
-      producer.value = { organization: data.organization, owner: null }
-    }
-    if (data.owner) {
-      producer.value = { organization: null, owner: data.owner }
-    }
-
-    if (!dataset.value && data.series.length > 0 && data.series[0]?.resource_id) {
-      try {
-        const resourceData = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${data.series[0].resource_id}/`)
-        if (resourceData.dataset_id) {
-          const fetchedDataset = await $chartsApi<DatasetSuggest>(`/api/2/datasets/${resourceData.dataset_id}/`)
-          dataset.value = fetchedDataset
-        }
-      }
-      catch (error) {
-        console.error('Failed to load dataset for chart:', error)
-      }
-    }
-
-    if (data.series.length > 0 && data.series[0]?.resource_id) {
-      await nextTick()
-
-      selectedResource.value = data.series[0].resource_id
+  const chartResources = new Set<string>()
+  for (const serie of data.series) {
+    if (serie.resource_id) {
+      chartResources.add(serie.resource_id)
     }
   }
-  catch (error) {
-    console.error('Failed to load chart:', error)
-    toast.error(t('Erreur lors du chargement du graphique'))
+
+  await loadMissingResourcesForChart(Array.from(chartResources))
+  await loadColumnsForResources(Array.from(chartResources))
+
+  if (data.organization) {
+    producer.value = { organization: data.organization, owner: null }
+  }
+  if (data.owner) {
+    producer.value = { organization: null, owner: data.owner }
+  }
+
+  if (!dataset.value && data.series.length > 0 && data.series[0]?.resource_id) {
+    try {
+      const resourceData = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${data.series[0].resource_id}/`)
+      if (resourceData.dataset_id) {
+        const fetchedDataset = await $chartsApi<DatasetSuggest>(`/api/2/datasets/${resourceData.dataset_id}/`)
+        dataset.value = fetchedDataset
+      }
+    }
+    catch (error) {
+      console.error('Failed to load dataset for chart:', error)
+    }
+  }
+
+  if (data.series.length > 0 && data.series[0]?.resource_id) {
+    await nextTick()
+
+    selectedResource.value = data.series[0].resource_id
   }
 }
 
@@ -975,6 +971,6 @@ watch(
 )
 
 if (props.initialChart) {
-  await loadChart(props.initialChart)
+  await initializeFromChart(props.initialChart)
 }
 </script>
