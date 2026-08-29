@@ -410,7 +410,10 @@ export default defineNuxtConfig({
   },
   sentry: {
     sourceMapsUploadOptions: {
-      // disable sourcemaps upload from build, it's done later during the release with sentry-cli
+      // Keeping the bundler plugin out also keeps it from stamping its own debug id: it only
+      // writes one as a runtime snippet, never the `//# debugId=` comment and the matching
+      // key in the map that an upload pairs on, so it would compete with the id the CI build
+      // injects rather than replace it. Upload is done during the release with sentry-cli.
       enabled: false,
     },
   },
@@ -431,6 +434,4 @@ export default defineNuxtConfig({
 
     // TODO: add /support pages
   },
-  // TODO: add sentry config for stack traces based on source maps
-  // https://docs.sentry.io/platforms/javascript/guides/nuxt/#add-readable-stack-traces-to-errors
 })

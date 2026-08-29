@@ -49,6 +49,13 @@ jobs:
       - name: Build application
         run: NUXT_APP_COMMIT_ID=$(git rev-parse --short HEAD) pnpm run build
 
+      # Injection rewrites the bundles and shifts their source maps by the same amount, so it
+      # has to happen on the artifact everyone downloads. Done in the `sentry` job instead, it
+      # would only ever touch a copy that is never deployed, and the maps would be uploaded
+      # two lines off. No credentials needed: the command only writes ids into the files.
+      - name: Inject Sentry debug IDs
+        run: pnpm dlx @sentry/cli sourcemaps inject .output/public/_nuxt
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -421,6 +428,10 @@ jobs:
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
           SENTRY_URL: ${{ secrets.SENTRY_URL }}
         with:
+          # Injection happens during the build, on the artifact this job downloads. Letting
+          # the action do it here would rewrite its own copy and upload maps two lines off
+          # from the deployed bundles.
+          inject: false
           sourcemaps: ".output/public/_nuxt"
           url_prefix: "~/_nuxt"
           environment: ${{ github.ref_name }}
