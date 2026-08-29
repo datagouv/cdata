@@ -13,19 +13,24 @@ const noopMatomo = {
 }
 
 export default defineNuxtPlugin({
-  async setup(nuxtApp) {
+  async setup() {
     const _paq = (window._paq = window._paq || [])
     if (!_paq) return { provide: { matomo: noopMatomo } }
 
-    let u = nuxtApp.$config.public.matomo.host
-    const debug = nuxtApp.$config.public.matomo.debug
-    const dryRun = nuxtApp.$config.public.matomo.dryRun
+    // `useRuntimeConfig()` rather than `nuxtApp.$config`: `NuxtApp` is typed from every
+    // plugin's injections, so reading config off it makes this plugin's own injected type
+    // circular. TypeScript then widens the whole injection intersection to `any` and every
+    // `$api` / `$t` in the app silently loses its type.
+    const config = useRuntimeConfig()
+    let u = config.public.matomo.host
+    const debug = config.public.matomo.debug
+    const dryRun = config.public.matomo.dryRun
     if (!u) return { provide: { matomo: noopMatomo } }
 
     u = u.endsWith('/') ? u : u + '/'
     /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
     _paq.push(['setTrackerUrl', u + 'matomo.php'])
-    _paq.push(['setSiteId', nuxtApp.$config.public.matomo.siteId])
+    _paq.push(['setSiteId', config.public.matomo.siteId])
     _paq.push(['enableLinkTracking'])
 
     try {
