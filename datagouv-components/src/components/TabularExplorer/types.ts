@@ -24,25 +24,28 @@ export type TabularProfileResponse = {
   indexes: null
 }
 
+// Only CSV resources go through csv-detective: for the other formats the API
+// indexes (parquet…), the profile is reduced to the column names, their types
+// and the row count. Everything csv-detective produces is therefore optional.
 export type TabularProfile = {
   header: string[]
   columns: Record<string, TabularColumnInfo>
-  formats: Record<string, string[]>
-  profile: Record<string, TabularColumnProfile>
-  encoding: string
-  separator: string
-  categorical: string[]
   total_lines: number
-  nb_duplicates: number
-  columns_fields: Record<string, TabularColumnInfo>
-  columns_labels: Record<string, TabularColumnInfo>
-  header_row_idx: number
-  heading_columns: number
-  trailing_columns: number
+  formats?: Record<string, string[]>
+  profile?: Record<string, TabularColumnProfile>
+  encoding?: string
+  separator?: string
+  categorical?: string[]
+  nb_duplicates?: number
+  columns_fields?: Record<string, TabularColumnInfo>
+  columns_labels?: Record<string, TabularColumnInfo>
+  header_row_idx?: number
+  heading_columns?: number
+  trailing_columns?: number
 }
 
 export type TabularColumnInfo = {
-  score: number
+  score?: number
   format: string
   python_type: string
 }
