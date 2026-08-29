@@ -58,6 +58,7 @@ export default defineNuxtConfig({
     rememberCookieName: 'remember_token',
     crispIdentifier: '',
     crispKey: '',
+    albertApiKey: '',
     crispWebsiteId: '',
     pagesGhRepoName: 'datagouv/datagouvfr-pages',
     pagesGhRepoBranch: 'master',
