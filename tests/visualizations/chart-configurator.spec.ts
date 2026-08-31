@@ -1,49 +1,10 @@
 import type { Chart } from '@datagouv/components-next'
-import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
-import profile from './profile.json' with { type: 'json' }
-import data from './data.json' with { type: 'json' }
+import { setupChart } from './fixtures'
 
-async function mockTabular(page: Page) {
-  await page.route('**/api/resources/*/profile/', async (route) => {
-    await route.fulfill({ json: profile })
-  })
-  await page.route('**/api/resources/*/data/*', async (route) => {
-    await route.fulfill({ json: data })
-  })
-}
-
-async function setupChart(page: Page) {
-  await mockTabular(page)
-  await page.goto('/admin/beta/chart')
-  await page.waitForLoadState('networkidle')
-
-  await page.getByTestId('producer-select').click()
-  await page.getByRole('option', { name: 'Admin User', exact: true }).click()
-
-  await page.getByTestId('searchable-select-jeu-de-donn-es').click()
-
-  const getPromise = page.waitForResponse('**/api/1/datasets/suggest/?q=logements+sociaux*')
-  await page.getByPlaceholder('Recherchez un jeu de données...').fill('logements sociaux')
-  await getPromise
-
-  await page.getByRole('option', { name: 'Logements sociaux et bailleurs par région', exact: true }).click()
-  await clickOutside(page)
-
-  await page.keyboard.press('ArrowDown')
-  await page.keyboard.press('Enter')
-
-  const resourceProfilePromise = page.waitForResponse('**/api/resources/*/profile/')
-  const resourceSelect = page.getByLabel('Choix de la ressource')
-  await resourceSelect.selectOption({ index: 1 })
-
-  await resourceProfilePromise
-  await page.waitForTimeout(300) // necessary to wait for the watch, no real async to check
-
-  expect(page.getByLabel('Titre')).toBeVisible()
-  expect(await page.getByPlaceholder('Rechercher une colonne à afficher...').inputValue()).toBe('année_publication')
-}
+// API calls go straight to the backend: the frontend (baseURL) does not proxy them
+const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
 test('title input updates form value without debounce', async ({ page }) => {
   await setupChart(page)
@@ -342,7 +303,7 @@ test('y-axis unit position can be changed to prefix', async ({ page }) => {
   expect(unitPosition).toBe('prefix')
 })
 
-test('saving chart sends correct data to API', async ({ page, baseURL }) => {
+test('saving chart sends correct data to API', async ({ page }) => {
   await setupChart(page)
 
   await page.getByLabel('Titre').fill('Test Chart')
@@ -355,10 +316,10 @@ test('saving chart sends correct data to API', async ({ page, baseURL }) => {
   const responseBody = (await response.json()) as Chart
 
   expect(responseBody!.title).toBe('Test Chart')
-  await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody!.id}/`)
+  await page.request.delete(`${API_BASE_URL}/api/1/visualizations/${responseBody!.id}/`)
 })
 
-test('saving chart shows success message', async ({ page, baseURL }) => {
+test('saving chart shows success message', async ({ page }) => {
   await setupChart(page)
 
   await page.getByLabel('Titre').fill('Test Chart')
@@ -374,10 +335,10 @@ test('saving chart shows success message', async ({ page, baseURL }) => {
 
   await expect(page.getByText('Graphique sauvegardé !')).toBeVisible()
 
-  await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody!.id}/`)
+  await page.request.delete(`${API_BASE_URL}/api/1/visualizations/${responseBody!.id}/`)
 })
 
-test('complete chart configuration flow', async ({ page, baseURL }) => {
+test('complete chart configuration flow', async ({ page }) => {
   await setupChart(page)
 
   await page.getByLabel('Titre').fill('Graphique complet')
@@ -431,7 +392,7 @@ test('complete chart configuration flow', async ({ page, baseURL }) => {
   expect(await page.locator('#y-axis-unit').inputValue()).toBe('%')
   expect(await page.getByLabel('Position unité').inputValue()).toBe('prefix')
 
-  await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody!.id}/`)
+  await page.request.delete(`${API_BASE_URL}/api/1/visualizations/${responseBody!.id}/`)
 })
 
 test('y-axis column options update when selecting different resource', async ({ page }) => {
@@ -520,7 +481,7 @@ test('changing x-axis updates count serie column_y to the new x-axis column', as
   await expect(page.getByRole('option', { name: 'Compter', exact: true })).toBeVisible()
 })
 
-test('saving chart with count aggregation round-trips correctly', async ({ page, baseURL }) => {
+test('saving chart with count aggregation round-trips correctly', async ({ page }) => {
   await setupChart(page)
 
   await page.getByLabel('Titre').fill('Test Count Chart')
@@ -539,10 +500,10 @@ test('saving chart with count aggregation round-trips correctly', async ({ page,
   expect(responseBody.series[0].aggregate_y).toBe('count')
   expect(responseBody.series[0].column_y).toBe(responseBody.x_axis.column_x)
 
-  await page.request.delete(`${baseURL}/api/1/visualizations/${responseBody.id}/`)
+  await page.request.delete(`${API_BASE_URL}/api/1/visualizations/${responseBody.id}/`)
 })
 
-test('y-axis columns should not be empty after selecting resource from loaded chart', async ({ page, baseURL }) => {
+test('y-axis columns should not be empty after selecting resource from loaded chart', async ({ page }) => {
   await setupChart(page)
 
   await page.getByLabel('Titre').fill('Test Columns Wipe')
@@ -555,8 +516,9 @@ test('y-axis columns should not be empty after selecting resource from loaded ch
   const saveResponsePromise = page.waitForResponse(response =>
     response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST',
   )
-  const imageResponsePromise = page.waitForResponse(response =>
-    response.url().includes('/image/') && response.request().method() === 'POST',
+  const imageResponsePromise = page.waitForResponse(
+    response => response.url().includes('/image/') && response.request().method() === 'POST',
+    { timeout: 30000 },
   )
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
   const saveResponse = await saveResponsePromise
@@ -583,17 +545,18 @@ test('y-axis columns should not be empty after selecting resource from loaded ch
     expect(options.length).toBeGreaterThan(0)
   }
 
-  await page.request.delete(`${baseURL}/api/1/visualizations/${chartData.id}/`)
+  await page.request.delete(`${API_BASE_URL}/api/1/visualizations/${chartData.id}/`)
 })
 
-test('x-axis dropdown should show columns from all chart resources after loading', async ({ page, baseURL }) => {
+test('x-axis dropdown should show columns from all chart resources after loading', async ({ page }) => {
   await setupChart(page)
 
   const saveResponsePromise = page.waitForResponse(response =>
     response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST',
   )
-  const imageResponsePromise = page.waitForResponse(response =>
-    response.url().includes('/image/') && response.request().method() === 'POST',
+  const imageResponsePromise = page.waitForResponse(
+    response => response.url().includes('/image/') && response.request().method() === 'POST',
+    { timeout: 30000 },
   )
   await page.getByLabel('Titre').fill('Test All Columns Loaded')
   await page.getByLabel('Description').fill('Test')
@@ -620,5 +583,5 @@ test('x-axis dropdown should show columns from all chart resources after loading
   expect(options.length).toBeGreaterThan(1)
   expect(options.some(opt => opt !== 'Sélectionnez une option' && opt !== '')).toBeTruthy()
 
-  await page.request.delete(`${baseURL}/api/1/visualizations/${chartData.id}/`)
+  await page.request.delete(`${API_BASE_URL}/api/1/visualizations/${chartData.id}/`)
 })

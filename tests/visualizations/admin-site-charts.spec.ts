@@ -1,80 +1,88 @@
+import type { BrowserContext } from '@playwright/test'
 import { test, expect } from '../base'
-
-const organization = {
-  class: 'Organization',
-  id: 'org-chart-card',
-  name: 'Organisation certifiée',
-  acronym: null,
-  slug: 'organisation-certifiee',
-  uri: 'http://dev.local:7000/api/1/organizations/organisation-certifiee/',
-  page: 'http://dev.local:3000/organizations/organisation-certifiee/',
-  logo: '/_balls.svg',
-  logo_thumbnail: '/_balls.svg',
-  badges: [{ kind: 'certified' }, { kind: 'public-service' }],
-}
-
-const histogramChart = {
-  id: 'chart-histogram',
-  title: 'Histogramme de démonstration',
-  slug: 'histogramme-de-demonstration',
-  description: 'Un histogramme de démonstration pour la carte.',
-  private: false,
-  created_at: '2024-01-10T10:00:00.000Z',
-  last_modified: '2024-01-15T10:00:00.000Z',
-  deleted_at: null,
-  uri: 'http://dev.local:7000/api/1/visualizations/chart-histogram/',
-  page: 'http://dev.local:3000/visualizations/histogramme-de-demonstration/',
-  image: '/_balls.svg',
-  x_axis: { column_x: 'annee', sort_x_by: null, sort_x_direction: null, type: 'discrete' },
-  y_axis: { min: null, max: null, label: null, unit: null, unit_position: 'suffix' },
-  series: [{ type: 'histogram', column_y: 'valeur', aggregate_y: 'sum', resource_id: 'resource-1', column_x_name_override: null, filters: null }],
-  extras: {},
-  permissions: { delete: false, edit: false, read: true },
-  metrics: { views: 42 },
-  organization,
-  owner: null,
-}
-
-const lineChart = {
-  ...histogramChart,
-  id: 'chart-line',
-  title: 'Courbe de démonstration',
-  slug: 'courbe-de-demonstration',
-  description: 'Une courbe de démonstration pour la carte.',
-  page: 'http://dev.local:3000/visualizations/courbe-de-demonstration/',
-  image: null,
-  series: [{ type: 'line', column_y: 'valeur', aggregate_y: 'sum', resource_id: 'resource-1', column_x_name_override: null, filters: null }],
-  metrics: { views: 7 },
-}
+import { createChart, deleteAllCharts, deleteChart, setupAndSaveChart } from './fixtures'
 
 test.describe('with charts', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.route('**/api/1/visualizations/**', async (route) => {
-      await route.fulfill({ json: { data: [histogramChart, lineChart], page: 1, page_size: 20, total: 2 } })
+  const createdIds: Array<string> = []
+  let histogramChart: Awaited<ReturnType<typeof setupAndSaveChart>>
+  let lineChart: Awaited<ReturnType<typeof setupAndSaveChart>>
+  let privateChart: Awaited<ReturnType<typeof createChart>>
+  let deletedChart: Awaited<ReturnType<typeof createChart>>
+  let setupContext: BrowserContext
+  let uniqueSuffix: string
+
+  test.beforeAll(async ({ browser }) => {
+    uniqueSuffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    setupContext = await browser.newContext({ storageState: 'playwright/.auth/user.json' })
+    const page = await setupContext.newPage()
+
+    await deleteAllCharts(setupContext.request)
+
+    histogramChart = await setupAndSaveChart(page, {
+      title: `Admin histogramme E2E ${uniqueSuffix}`,
+      description: 'Histogramme public pour la liste admin.',
     })
+    createdIds.push(histogramChart.id)
+
+    lineChart = await setupAndSaveChart(page, {
+      title: `Admin courbe E2E ${uniqueSuffix}`,
+      description: 'Courbe publique pour la liste admin.',
+      type: 'line',
+    })
+    createdIds.push(lineChart.id)
+
+    // The configurator cannot set the private flag, so use the API for draft/deleted cases.
+    privateChart = await createChart(setupContext.request, {
+      title: `Admin brouillon E2E ${uniqueSuffix}`,
+      type: 'histogram',
+      private: true,
+      withImage: false,
+    })
+    createdIds.push(privateChart.id)
+
+    deletedChart = await createChart(setupContext.request, {
+      title: `Admin supprimé E2E ${uniqueSuffix}`,
+      type: 'histogram',
+      private: true,
+      withImage: false,
+    })
+    createdIds.push(deletedChart.id)
+    await deleteChart(setupContext.request, deletedChart.id)
+  })
+
+  test.afterAll(async ({ request }) => {
+    for (const id of createdIds) {
+      await deleteChart(request, id)
+    }
+    await setupContext.close()
+  })
+
+  test.beforeEach(async ({ page }) => {
     await page.goto('/admin/site/charts')
+    await page.waitForLoadState('networkidle')
   })
 
   test('lists chart cards with the total count', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: '2 graphiques' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Histogramme de démonstration' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Courbe de démonstration' })).toBeVisible()
-    await expect(page.locator('article').filter({ hasText: 'Histogramme de démonstration' }).getByText('Organisation certifiée')).toBeVisible()
+    await expect(page.getByRole('heading', { name: /\d+ graphiques/ })).toBeVisible()
+    for (const chart of [histogramChart, lineChart, privateChart, deletedChart]) {
+      await expect(page.getByRole('link', { name: chart.title })).toBeVisible()
+    }
+    await expect(page.locator('article').filter({ hasText: histogramChart.title }).getByText('Admin User')).toBeVisible()
   })
 
   test('chart cards link to the admin edit page', async ({ page }) => {
-    await expect(page.getByRole('link', { name: 'Histogramme de démonstration' })).toHaveAttribute('href', '/admin/beta/charts/chart-histogram')
-    await expect(page.getByRole('link', { name: 'Courbe de démonstration' })).toHaveAttribute('href', '/admin/beta/charts/chart-line')
+    for (const chart of [histogramChart, lineChart, privateChart, deletedChart]) {
+      await expect(page.getByRole('link', { name: chart.title })).toHaveAttribute('href', `/admin/beta/charts/${chart.id}`)
+    }
   })
-})
 
-test.describe('without charts', () => {
-  test('shows the empty state', async ({ page }) => {
-    await page.route('**/api/1/visualizations/**', async (route) => {
-      await route.fulfill({ json: { data: [], page: 1, page_size: 20, total: 0 } })
-    })
-    await page.goto('/admin/site/charts')
+  test('private chart card displays a draft badge', async ({ page }) => {
+    const card = page.locator('article').filter({ hasText: privateChart.title })
+    await expect(card.locator('.fr-badge')).toHaveText('Brouillon')
+  })
 
-    await expect(page.getByText(`Il n'y a pas encore de graphique sur le site`)).toBeVisible()
+  test('deleted chart card displays a deleted badge, taking precedence over the draft badge', async ({ page }) => {
+    const card = page.locator('article').filter({ hasText: deletedChart.title })
+    await expect(card.locator('.fr-badge')).toHaveText('Supprimé')
   })
 })

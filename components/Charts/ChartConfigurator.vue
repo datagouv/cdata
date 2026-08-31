@@ -798,39 +798,34 @@ async function initializeFromChart(data: Chart) {
 }
 
 async function saveChart() {
-  try {
-    const chartForApi = toChartApi(form.value)
-    const update = savedChart.value?.id
-    if (update) {
-      savedChart.value = await $api<Chart>(`/api/1/visualizations/${savedChart.value!.id}/`, {
-        method: 'PATCH',
-        body: JSON.stringify(chartForApi),
-      })
-    }
-    else {
-      savedChart.value = await $api<Chart>('/api/1/visualizations/', {
-        method: 'POST',
-        body: JSON.stringify(chartForApi),
-      })
-    }
-
-    const imageUrl = chartViewerWrapperRef.value?.capture()
-    if (imageUrl) {
-      const i = await fetch(imageUrl)
-      const imageBlob = await i.blob()
-      const formData = new FormData()
-      formData.set('file', imageBlob, 'image.png')
-      await $fileApi(`/api/1/visualizations/${savedChart.value.id}/image/`, {
-        method: 'POST',
-        body: formData,
-      })
-    }
-
-    toast.success(update ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
+  const chartForApi = toChartApi(form.value)
+  const update = savedChart.value?.id
+  if (update) {
+    savedChart.value = await $api<Chart>(`/api/1/visualizations/${savedChart.value!.id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(chartForApi),
+    })
   }
-  catch (error) {
-    console.error('Failed to save chart:', error)
+  else {
+    savedChart.value = await $api<Chart>('/api/1/visualizations/', {
+      method: 'POST',
+      body: JSON.stringify(chartForApi),
+    })
   }
+
+  const imageUrl = chartViewerWrapperRef.value?.capture()
+  if (imageUrl) {
+    const i = await fetch(imageUrl)
+    const imageBlob = await i.blob()
+    const formData = new FormData()
+    formData.set('file', imageBlob, 'image.png')
+    await $fileApi(`/api/1/visualizations/${savedChart.value.id}/image/`, {
+      method: 'POST',
+      body: formData,
+    })
+  }
+
+  toast.success(update ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
 }
 
 function removeFilter(index: number) {

@@ -80,6 +80,7 @@
         <ChartCard
           v-if="data"
           :chart="data"
+          :chart-url="`/visualizations/${data.slug}/`"
         />
       </LoadingBlock>
     </div>
