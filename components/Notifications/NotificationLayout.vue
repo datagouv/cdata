@@ -25,7 +25,7 @@
     </div>
     <div class="flex-none flex m-0 gap-1.5">
       <p class="m-0 text-xs">
-        {{ formatDate(notification.created_at) }}
+        <FormattedDate :date="notification.created_at" />
       </p>
       <AnimatedLoader
         v-if="loading"
@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { AnimatedLoader, useFormatDate } from '@datagouv/components-next'
+import { AnimatedLoader, FormattedDate } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import CdataLink from '../CdataLink.vue'
 import type { UserNotification } from '~/types/notifications'
@@ -62,7 +62,6 @@ const props = defineProps<{
   titleLinkTitle?: string
 }>()
 
-const { formatDate } = useFormatDate()
 const { loading, markAsRead } = useMarkAsRead()
 
 const handleMarkAsRead = () => {

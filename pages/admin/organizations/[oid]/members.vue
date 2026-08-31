@@ -244,9 +244,13 @@
                 {{ member.label }}
               </AdminBadge>
             </td>
-            <td>{{ formatDate(member.since) }}</td>
+            <td><FormattedDate :date="member.since" /></td>
             <td>
-              <span v-if="member.user.last_login_at">{{ formatFromNow(member.user.last_login_at) }}</span>
+              <FormattedDate
+                v-if="member.user.last_login_at"
+                :date="member.user.last_login_at"
+                format="from-now"
+              />
               <span v-else>{{ t("Aucune connexion") }}</span>
             </td>
             <td>
@@ -364,7 +368,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BannerAction, BrandedButton, LoadingBlock, SearchableSelect, SelectGroup, useFormatDate, useGetUserAvatar, type Member, type MemberRole, type Organization } from '@datagouv/components-next'
+import { Avatar, BannerAction, BrandedButton, FormattedDate, LoadingBlock, SearchableSelect, SelectGroup, useGetUserAvatar, type Member, type MemberRole, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiEyeLine, RiLogoutBoxRLine, RiPencilLine, RiUserAddLine } from '@remixicon/vue'
 import type { Assignment, PendingMembershipRequest, UserSuggest } from '~/types/types'
@@ -380,7 +384,6 @@ import { email, required } from '~/composables/useForm'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
-const { formatDate, formatFromNow } = useFormatDate()
 const { $api } = useNuxtApp()
 const getUserAvatar = useGetUserAvatar()
 

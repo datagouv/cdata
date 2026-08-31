@@ -59,7 +59,14 @@
       >
         <span class="block whitespace-nowrap text-[13px] font-medium leading-5 text-gray-title">{{ resource.title || t('Fichier sans nom') }}</span>
         <div class="mt-1 flex items-center gap-1 text-[12px] leading-4 text-gray-medium">
-          <span>{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
+          <TranslationT keypath="mis à jour {date}">
+            <template #date>
+              <FormattedDate
+                :date="resource.last_modified"
+                format="relative"
+              />
+            </template>
+          </TranslationT>
           <template v-if="humanFilesize">
             <span>·</span>
             <span>{{ humanFilesize }}</span>
@@ -91,9 +98,10 @@ import { RiDownloadLine } from '@remixicon/vue'
 import AppLink from './AppLink.vue'
 import ClientOnly from './ClientOnly.vue'
 import File from './Icons/File.vue'
+import FormattedDate from './FormattedDate.vue'
+import TranslationT from './TranslationT.vue'
 import { getResourceFormatIcon, getResourceIconColor, getResourceFilesize } from '../functions/resources'
 import { filesize, summarize } from '../functions/helpers'
-import { useFormatDate } from '../functions/dates'
 import { useTranslation } from '../composables/useTranslation'
 import type { Resource } from '../types/resources'
 
@@ -116,7 +124,6 @@ const props = withDefaults(defineProps<{
 })
 
 const { t } = useTranslation()
-const { formatRelativeIfRecentDate } = useFormatDate()
 
 // Render the icon directly (not via ResourceIcon which forces a gray color) so the
 // colored badge can tint it through currentColor + [&_svg]:fill-current.

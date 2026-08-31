@@ -71,8 +71,8 @@
               <td>
                 <DatasetBadge :dataset />
               </td>
-              <td>{{ formatDate(dataset.created_at) }}</td>
-              <td>{{ formatDate(dataset.last_modified) }}</td>
+              <td><FormattedDate :date="dataset.created_at" /></td>
+              <td><FormattedDate :date="dataset.last_modified" /></td>
             </tr>
           </tbody>
         </AdminTable>
@@ -107,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, Pagination, useFormatDate } from '@datagouv/components-next'
+import { FormattedDate, LoadingBlock, Pagination } from '@datagouv/components-next'
 import type { DatasetV2 } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
@@ -124,7 +124,6 @@ const props = defineProps<{
 const selectedIds = defineModel<Set<string>>({ required: true })
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
 
 const page = ref(1)

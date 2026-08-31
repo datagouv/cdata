@@ -70,9 +70,15 @@
             {{ topic.name }}
           </h1>
 
-          <p class="text-sm text-gray-medium m-0">
-            {{ $t('Mis à jour {date}', { date: formatDate(topic.last_modified) }) }}
-          </p>
+          <TranslationT
+            tag="p"
+            class="text-sm text-gray-medium m-0"
+            keypath="Mis à jour {date}"
+          >
+            <template #date>
+              <FormattedDate :date="topic.last_modified" />
+            </template>
+          </TranslationT>
 
           <div
             v-if="topic.tags.length"
@@ -109,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, getDescriptionShort, LoadingBlock, OrganizationLogo, OrganizationNameWithCertificate, useFormatDate, type TopicV2 } from '@datagouv/components-next'
+import { Avatar, FormattedDate, getDescriptionShort, LoadingBlock, OrganizationLogo, OrganizationNameWithCertificate, type TopicV2, TranslationT } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import type { Thread } from '~/types/discussions'
@@ -121,8 +127,6 @@ definePageMeta({
 
 const route = useRoute()
 const config = useRuntimeConfig()
-
-const { formatDate } = useFormatDate()
 
 const url = computed(() => `/api/2/topics/${route.params.id}/`)
 const { data: topic, status } = await useAPI<TopicV2>(url, { redirectOn404: true, redirectOnSlug: 'id' })

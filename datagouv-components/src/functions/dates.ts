@@ -9,11 +9,9 @@ export function useFormatDate() {
     if (!date) {
       return ''
     }
-    date = new Date(date)
-    if (!('dateStyle' in options)) {
-      options.dateStyle = 'long'
-    }
-    return new Intl.DateTimeFormat(locale, options).format(date)
+    // An explicit `dateStyle: undefined` overrides the default, which is how callers ask
+    // for `year`/`month` components — `dateStyle` and those cannot be combined.
+    return new Intl.DateTimeFormat(locale, { dateStyle: 'long', ...options }).format(new Date(date))
   }
 
   /**

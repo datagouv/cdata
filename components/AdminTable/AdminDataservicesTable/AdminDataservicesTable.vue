@@ -60,10 +60,10 @@
         <td>
           <AccessTypeBadge :access-type="dataservice.access_type" />
         </td>
-        <td>{{ formatDate(dataservice.created_at) }}</td>
+        <td><FormattedDate :date="dataservice.created_at" /></td>
         <td>
           <div v-if="dataservice.id in activities">
-            <p>{{ formatDate(activities[dataservice.id].created_at) }}</p>
+            <p><FormattedDate :date="activities[dataservice.id].created_at" /></p>
             <p class="inline-flex items-center">
               {{ t('par ') }}
               <AvatarWithName
@@ -73,7 +73,7 @@
             </p>
           </div>
           <template v-else>
-            {{ formatDate(dataservice.metadata_modified_at) }}
+            <FormattedDate :date="dataservice.metadata_modified_at" />
           </template>
         </td>
         <td>{{ dataservice.rate_limiting }}</td>
@@ -108,7 +108,7 @@
 
 <script setup lang="ts">
 import type { Activity, Dataservice } from '@datagouv/components-next'
-import { AvatarWithName, BrandedButton, useFormatDate } from '@datagouv/components-next'
+import { AvatarWithName, BrandedButton, FormattedDate } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
@@ -131,7 +131,6 @@ defineEmits<{
 }>()
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 
 function sorted(column: DataserviceSortedBy) {
   if (props.sortedBy === column) {
