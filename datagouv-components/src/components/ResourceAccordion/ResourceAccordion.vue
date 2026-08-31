@@ -173,6 +173,7 @@
             :dataset-id="dataset.id"
             :resource-id="resource.id"
             :is-community-resource="isCommunityResource"
+            :disabled-reason="editDisabledReason"
             size="xs"
           />
         </p>
@@ -327,7 +328,7 @@ import { trackEvent } from '../../functions/matomo'
 import CopyButton from '../CopyButton.vue'
 import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
-import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceExternalUrl, getResourceFilesize, isImagePreviewFormat } from '../../functions/resources'
+import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceExternalUrl, getResourceFilesize, isGeopfSynced, isImagePreviewFormat } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useHasTabularData } from '../../composables/useHasTabularData'
@@ -380,6 +381,10 @@ const hasTabularData = computed(() => checkTabularData(props.resource))
 
 const hasPmtiles = computed(() => {
   return props.resource.extras['analysis:parsing:pmtiles_url'] || props.resource.format === 'pmtiles'
+})
+
+const editDisabledReason = computed(() => {
+  return isGeopfSynced(props.resource) ? t('Vous ne pouvez pas modifier cette ressource car elle est synchronisée avec cartes.gouv.fr') : null
 })
 
 const hasDatafairPreview = computed(() => {
