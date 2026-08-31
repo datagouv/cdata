@@ -73,8 +73,16 @@ test.describe('Géoplateforme sync', () => {
     const uniqueId = Date.now()
     const dataset = await createDataset(request, `Test geopf synced resource ${uniqueId}`, 'Dataset pour tester l\'édition')
     createdDatasets.push(dataset.id)
-    await createRemoteResource(request, dataset.id, `geopf-done-${uniqueId}`, { extras: { 'geopf:push:status': 'done' } })
+    await createRemoteResource(request, dataset.id, `geopf-done-${uniqueId}`)
     await createRemoteResource(request, dataset.id, `geopf-untouched-${uniqueId}`)
+
+    // resource.geopf is readonly, only ever set by the real push/pull flow: serve the
+    // real Files-tab payload back with the first resource patched as synced.
+    const payload = await (await request.get(`${API_BASE}/api/2/datasets/${dataset.id}/resources/`)).json()
+    const syncedResource = payload.data.find((r: { title: string }) => r.title === `geopf-done-${uniqueId}`)
+    syncedResource.geopf = { push_status: 'done' }
+
+    await page.route(new RegExp(`/api/2/datasets/${dataset.id}/resources/`), route => route.fulfill({ json: payload }))
 
     await page.goto(`/admin/datasets/${dataset.id}/files`)
     await page.waitForLoadState('networkidle')

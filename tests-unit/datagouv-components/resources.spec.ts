@@ -72,25 +72,22 @@ describe('isCommunityResource', () => {
 })
 
 describe('isGeopfSynced', () => {
-  it('is false without any geopf extras', () => {
-    expect(isGeopfSynced({ extras: {} } as Resource)).toBe(false)
+  it('is false without any geopf metadata', () => {
+    expect(isGeopfSynced({ geopf: null } as Resource)).toBe(false)
   })
 
-  it('is true while a push is pending, or once it succeeded', () => {
-    expect(isGeopfSynced({ extras: { 'geopf:push:status': 'pending' } } as unknown as Resource)).toBe(true)
-    expect(isGeopfSynced({ extras: { 'geopf:push:status': 'done' } } as unknown as Resource)).toBe(true)
-  })
-
-  it('is false for a failed or timed out push', () => {
-    expect(isGeopfSynced({ extras: { 'geopf:push:status': 'error' } } as unknown as Resource)).toBe(false)
-    expect(isGeopfSynced({ extras: { 'geopf:push:status': 'timeout' } } as unknown as Resource)).toBe(false)
+  it('is true once any push has been attempted, whatever its outcome', () => {
+    expect(isGeopfSynced({ geopf: { push_status: 'pending' } } as Resource)).toBe(true)
+    expect(isGeopfSynced({ geopf: { push_status: 'done' } } as Resource)).toBe(true)
+    expect(isGeopfSynced({ geopf: { push_status: 'error' } } as Resource)).toBe(true)
+    expect(isGeopfSynced({ geopf: { push_status: 'timeout' } } as Resource)).toBe(true)
   })
 
   it('is true for a resource pulled back as an offering', () => {
-    expect(isGeopfSynced({ extras: { 'geopf:offering:id': 'offering-1' } } as unknown as Resource)).toBe(true)
+    expect(isGeopfSynced({ geopf: { offering_id: 'offering-1' } } as Resource)).toBe(true)
   })
 
   it('ignores a non-string offering id', () => {
-    expect(isGeopfSynced({ extras: { 'geopf:offering:id': 42 } } as unknown as Resource)).toBe(false)
+    expect(isGeopfSynced({ geopf: { offering_id: 42 as unknown as string } } as Resource)).toBe(false)
   })
 })
