@@ -10,12 +10,25 @@
       <div class="space-x-1">
         <RiCalendarEventLine class="inline size-3" />
         <span>{{ $t('Débuté le :') }}</span>
-        <span class="font-mono">{{ formatDate(job.started || job.created, { dateStyle: 'long', timeStyle: 'short' }) }}</span>
+        <FormattedDate
+          class="font-mono"
+          :date="job.started || job.created"
+          :options="{ dateStyle: 'long', timeStyle: 'short' }"
+        />
       </div>
       <div class="space-x-1">
         <RiCalendarEventLine class="inline size-3" />
         <span>{{ $t('Terminé le :') }}</span>
-        <span class="font-mono">{{ job.ended ? formatDate(job.ended, { dateStyle: 'long', timeStyle: 'short' }) : '—' }}</span>
+        <FormattedDate
+          v-if="job.ended"
+          class="font-mono"
+          :date="job.ended"
+          :options="{ dateStyle: 'long', timeStyle: 'short' }"
+        />
+        <span
+          v-else
+          class="font-mono"
+        >&mdash;</span>
       </div>
       <div class="space-x-1">
         <RiCheckboxCircleLine class="inline size-3" />
@@ -280,7 +293,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pagination, SearchableSelect, Tooltip, useFormatDate } from '@datagouv/components-next'
+import { FormattedDate, Pagination, SearchableSelect, Tooltip } from '@datagouv/components-next'
 import { RiAlertLine, RiArchiveLine, RiCalendarEventLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiEyeOffLine, RiInformationLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
@@ -290,7 +303,6 @@ import type { AdminBadgeType } from '~/types/types'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 
 const props = withDefaults(defineProps<{
   job: HarvesterJob | HarvesterJobPreview

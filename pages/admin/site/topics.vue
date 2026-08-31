@@ -59,7 +59,7 @@
                   {{ topic.name }}
                 </CdataLink>
               </td>
-              <td>{{ formatDate(topic.created_at) }}</td>
+              <td><FormattedDate :date="topic.created_at" /></td>
               <td>{{ elementsCounts[topic.id]?.['Dataset'] ?? "..." }}</td>
               <td>{{ elementsCounts[topic.id]?.['Reuse'] ?? "..." }}</td>
             </tr>
@@ -106,7 +106,7 @@
 
 <script setup lang="ts">
 import type { TopicV2, TopicElement, TopicElementClass } from '@datagouv/components-next'
-import { useFormatDate, LoadingBlock, Pagination, BrandedButton } from '@datagouv/components-next'
+import { FormattedDate, LoadingBlock, Pagination, BrandedButton } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { RiSearchLine } from '@remixicon/vue'
@@ -119,7 +119,6 @@ import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import AdminInput from '~/components/AdminInput.vue'
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 
 const config = useRuntimeConfig()
 const page = ref(1)

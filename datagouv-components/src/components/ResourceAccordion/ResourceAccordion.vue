@@ -60,7 +60,17 @@
             aria-hidden="true"
             class="size-3 fill-gray-medium"
           />
-          <span class="text-xs mb-0">{{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(lastUpdate) }) }}</span>
+          <TranslationT
+            class="text-xs mb-0"
+            keypath="Mis à jour {date}"
+          >
+            <template #date>
+              <FormattedDate
+                :date="lastUpdate"
+                format="relative"
+              />
+            </template>
+          </TranslationT>
           <RiSubtractLine
             aria-hidden="true"
             class="size-3 fill-gray-medium"
@@ -304,7 +314,8 @@ import { ref, computed, defineAsyncComponent } from 'vue'
 import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiSubtractLine } from '@remixicon/vue'
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
 import { filesize, summarize } from '../../functions/helpers'
-import { useFormatDate } from '../../functions/dates'
+import FormattedDate from '../FormattedDate.vue'
+import TranslationT from '../TranslationT.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
 import type { CommunityResource, Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
@@ -356,7 +367,6 @@ const ImagePreview = defineAsyncComponent(() => import('./ImagePreview.client.vu
 const DatafairPreview = defineAsyncComponent(() => import('./Datafair.client.vue'))
 
 const { t } = useTranslation()
-const { formatRelativeIfRecentDate } = useFormatDate()
 const checkTabularData = useHasTabularData()
 
 const hasPreview = computed(() => {

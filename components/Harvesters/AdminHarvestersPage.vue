@@ -105,10 +105,10 @@
                 <HarvesterBadge :harvester />
               </td>
               <td>{{ harvester.backend }}</td>
-              <td>{{ formatDate(harvester.created_at) }}</td>
+              <td><FormattedDate :date="harvester.created_at" /></td>
               <td>
                 <template v-if="harvester.last_job?.ended">
-                  {{ formatDate(harvester.last_job.ended) }}
+                  <FormattedDate :date="harvester.last_job.ended" />
                 </template>
                 <template v-else>
                   {{ t('Pas encore') }}
@@ -182,7 +182,7 @@
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, Pagination, BrandedButton, type Organization, useFormatDate } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, BrandedButton, type Organization, FormattedDate } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { RiPencilLine, RiSearchLine } from '@remixicon/vue'
@@ -199,7 +199,6 @@ const props = defineProps<{
   organization?: Organization | null
 }>()
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
 
 const page = ref(1)
