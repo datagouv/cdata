@@ -49,19 +49,20 @@ const route = useRoute()
 // Feedback form link for the banner; only shown when configured. Query params
 // pre-fill the form with what the visitor was looking at: the dataset, the
 // resource shown in the explorer (forwarded via `select`, unknown during SSR)
-// and the browser (client-side only, so it appears after hydration).
+// and a simplified "Browser - device" string (client-side only, so it appears
+// after hydration).
 const feedbackBaseUrl = useRuntimeConfig().public.explorerFeedbackUrl
 const feedbackResource = ref<Resource | null>(null)
 const feedbackUserAgent = ref<string | null>(null)
 onMounted(() => {
-  feedbackUserAgent.value = navigator.userAgent
+  feedbackUserAgent.value = getSimplifiedUserAgent(navigator.userAgent)
 })
 const feedbackUrl = computed(() => {
   if (!feedbackBaseUrl) return ''
   return buildExplorerFeedbackUrl(feedbackBaseUrl, {
     dataset: props.dataset,
     resource: feedbackResource.value,
-    userAgent: feedbackUserAgent.value,
+    simplifiedUserAgent: feedbackUserAgent.value,
   })
 })
 

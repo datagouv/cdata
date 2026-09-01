@@ -29,5 +29,5 @@ test('the feedback link pre-fills the form with the current context', async ({ p
   expect(href.searchParams.get('dataset_url')).toContain(`/datasets/${dataset.slug}`)
   expect(href.searchParams.get('url_ressource')).toBe(resource.url)
   expect(href.searchParams.get('format_ressource')).toBe('csv')
-  expect(href.searchParams.get('navigateur_appareil')).toContain('Mozilla')
+  expect(href.searchParams.get('navigateur_appareil')).toBe('Chrome - desktop')
 })
