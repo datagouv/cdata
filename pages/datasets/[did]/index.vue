@@ -28,6 +28,7 @@
       :dataset
       :explore-to="exploreTo"
       no-results-image="/illustrations/dataset.svg"
+      @select="feedbackResource = $event"
     />
     <DatasetsLegacyResourceList
       v-else
@@ -45,8 +46,24 @@ const props = defineProps<{ dataset: DatasetV2 }>()
 
 const route = useRoute()
 
-// Feedback form link for the banner; only shown when configured.
-const feedbackUrl = useRuntimeConfig().public.explorerFeedbackUrl
+// Feedback form link for the banner; only shown when configured. Query params
+// pre-fill the form with what the visitor was looking at: the dataset, the
+// resource shown in the explorer (forwarded via `select`, unknown during SSR)
+// and the browser (client-side only, so it appears after hydration).
+const feedbackBaseUrl = useRuntimeConfig().public.explorerFeedbackUrl
+const feedbackResource = ref<Resource | null>(null)
+const feedbackUserAgent = ref<string | null>(null)
+onMounted(() => {
+  feedbackUserAgent.value = navigator.userAgent
+})
+const feedbackUrl = computed(() => {
+  if (!feedbackBaseUrl) return ''
+  return buildExplorerFeedbackUrl(feedbackBaseUrl, {
+    dataset: props.dataset,
+    resource: feedbackResource.value,
+    userAgent: feedbackUserAgent.value,
+  })
+})
 
 // Opens the fullscreen explorer on the current resource, next to the download button.
 // Slug rather than id, so the explorer doesn't answer with a canonical redirect.
