@@ -30,5 +30,7 @@ test('the feedback link pre-fills the form with the current context', async ({ p
   expect(href.searchParams.get('dataset_url')).toContain(`/datasets/${dataset.slug}`)
   expect(href.searchParams.get('url_ressource')).toBe(`${href.searchParams.get('dataset_url')}${resourceQuery}`)
   expect(href.searchParams.get('format_ressource')).toBe('csv')
-  expect(href.searchParams.get('navigateur_appareil')).toBe('Chrome - desktop')
+  // The spec runs on both chromium and firefox projects.
+  const expectedBrowser = test.info().project.name === 'firefox' ? 'Firefox' : 'Chrome'
+  expect(href.searchParams.get('navigateur_appareil')).toBe(`${expectedBrowser} - desktop`)
 })
