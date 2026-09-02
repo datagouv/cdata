@@ -45,11 +45,9 @@ export function getSimplifiedUserAgent(userAgent: string): string {
 }
 
 // Builds the banner's feedback-form URL with the current context pre-filled as
-// query params, so the form owner knows what the visitor was looking at. The
-// base URL comes from runtime config (`NUXT_PUBLIC_EXPLORER_FEEDBACK_URL`) and
-// may carry query params of its own. Resource params are omitted (not sent
-// empty) until the explorer resolves its selection, and the simplified user
-// agent only exists client-side.
+// query params, so the form owner knows what the visitor was looking at. Resource
+// params are omitted (not sent empty) until the explorer resolves its selection,
+// and the simplified user agent only exists client-side.
 export function buildExplorerFeedbackUrl(baseUrl: string, { dataset, resource, simplifiedUserAgent }: ExplorerFeedbackContext): string {
   let url: URL
   try {
