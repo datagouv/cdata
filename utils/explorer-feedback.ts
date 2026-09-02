@@ -1,8 +1,12 @@
-import type { DatasetV2, Resource } from '@datagouv/components-next'
+import type { DatasetV2 } from '@datagouv/components-next'
 
 export type ExplorerFeedbackContext = {
   dataset: Pick<DatasetV2, 'id' | 'page' | 'title'>
-  resource: Pick<Resource, 'url' | 'format'> | null
+  // The selected resource's canonical permalink (getResourceExternalUrl), not
+  // its raw file URL.
+  resourceExternalUrl: string | null
+  // The selected resource's format; only set together with resourceExternalUrl.
+  resourceFormat: string | null
   simplifiedUserAgent: string | null
 }
 
@@ -48,7 +52,7 @@ export function getSimplifiedUserAgent(userAgent: string): string {
 // query params, so the form owner knows what the visitor was looking at. Resource
 // params are omitted (not sent empty) until the explorer resolves its selection,
 // and the simplified user agent only exists client-side.
-export function buildExplorerFeedbackUrl(baseUrl: string, { dataset, resource, simplifiedUserAgent }: ExplorerFeedbackContext): string {
+export function buildExplorerFeedbackUrl(baseUrl: string, { dataset, resourceExternalUrl, resourceFormat, simplifiedUserAgent }: ExplorerFeedbackContext): string {
   let url: URL
   try {
     url = new URL(baseUrl)
@@ -60,9 +64,11 @@ export function buildExplorerFeedbackUrl(baseUrl: string, { dataset, resource, s
   url.searchParams.set('dataset_id', dataset.id)
   url.searchParams.set('dataset_url', dataset.page)
   url.searchParams.set('dataset_name', dataset.title)
-  if (resource) {
-    url.searchParams.set('url_ressource', resource.url)
-    url.searchParams.set('format_ressource', resource.format)
+  if (resourceExternalUrl) {
+    url.searchParams.set('url_ressource', resourceExternalUrl)
+  }
+  if (resourceFormat) {
+    url.searchParams.set('format_ressource', resourceFormat)
   }
   if (simplifiedUserAgent) {
     url.searchParams.set('navigateur_appareil', simplifiedUserAgent)

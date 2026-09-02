@@ -12,8 +12,9 @@ test('the feedback link pre-fills the form with the current context', async ({ p
   const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explorer feedback ${Date.now()}`, ['Fichier numero 01'])
   createdDatasets.push(dataset.id)
   const resource = resources[0]!
+  const resourceQuery = `?resource_id=${resource.id}`
 
-  await enableNewExplorer(page, `/datasets/${dataset.id}?resource_id=${resource.id}`)
+  await enableNewExplorer(page, `/datasets/${dataset.id}${resourceQuery}`)
 
   const link = page.getByRole('link', { name: 'Donner votre avis' })
   // The resource params only appear once the explorer has forwarded its
@@ -27,7 +28,7 @@ test('the feedback link pre-fills the form with the current context', async ({ p
   expect(href.searchParams.get('dataset_id')).toBe(dataset.id)
   expect(href.searchParams.get('dataset_name')).toBe(dataset.title)
   expect(href.searchParams.get('dataset_url')).toContain(`/datasets/${dataset.slug}`)
-  expect(href.searchParams.get('url_ressource')).toBe(resource.url)
+  expect(href.searchParams.get('url_ressource')).toBe(`${href.searchParams.get('dataset_url')}${resourceQuery}`)
   expect(href.searchParams.get('format_ressource')).toBe('csv')
   expect(href.searchParams.get('navigateur_appareil')).toBe('Chrome - desktop')
 })

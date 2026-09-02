@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, ResourceExplorer, type DatasetV2, type Resource } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, getResourceExternalUrl, ResourceExplorer, type DatasetV2, type Resource } from '@datagouv/components-next'
 
 const props = defineProps<{ dataset: DatasetV2 }>()
 
@@ -61,7 +61,8 @@ const feedbackUrl = computed(() => {
   if (!feedbackBaseUrl) return ''
   return buildExplorerFeedbackUrl(feedbackBaseUrl, {
     dataset: props.dataset,
-    resource: feedbackResource.value,
+    resourceExternalUrl: feedbackResource.value ? getResourceExternalUrl(props.dataset, feedbackResource.value) : null,
+    resourceFormat: feedbackResource.value?.format ?? null,
     simplifiedUserAgent: feedbackUserAgent.value,
   })
 })
