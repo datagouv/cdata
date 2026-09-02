@@ -117,7 +117,9 @@ export default defineNuxtConfig({
 
       // Feedback form for the new resource explorer. Empty by default (set via
       // NUXT_PUBLIC_EXPLORER_FEEDBACK_URL) — the banner's "Donner votre avis" link
-      // only shows when it is set.
+      // only shows when it is set. The link is pre-filled with query params
+      // (dataset_id, dataset_url, dataset_name, url_ressource, format_ressource,
+      // navigateur_appareil), see utils/explorer-feedback.ts.
       explorerFeedbackUrl: '',
 
       // Grist endpoint for the "Suivi des ouvertures" table on /suivi-de-publication/engagements-et-demandes.
