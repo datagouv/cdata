@@ -134,7 +134,7 @@
               scope="col"
               class="px-3 py-3.5 text-right text-sm font-semibold text-gray-title border-b border-r border-gray-default last:border-r-0"
             >
-              {{ t('% too big') }}
+              {{ t('% trop volumineux') }}
             </th>
             <th
               scope="col"
@@ -222,14 +222,14 @@
                 class="link"
                 :to="{
                   path: '/admin/beta/preview-dashboard/fichiers',
-                  query: { format: row.Format },
+                  query: { format: row['format normalisé'] },
                 }"
               >
-                {{ row.Format }}
+                {{ row['format normalisé'] }}
               </NuxtLink>
             </td>
             <td class="px-3 py-1 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
-              <div>{{ formatNumber(row.Nombre) }}</div>
+              <div>{{ formatNumber(row.nombre) }}</div>
               <DeltaIndicator
                 :value="row.countDelta"
                 unit="count"
@@ -245,10 +245,10 @@
               {{ formatPercentage(row['% erreur']) }}
             </td>
             <td class="px-3 py-1 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
-              {{ formatPercentage(row['% too big']) }}
+              {{ formatPercentage(row['% trop volumineux']) }}
             </td>
             <td class="px-3 py-1 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
-              {{ formatNumber(row['Prévisualisable']) }}
+              {{ formatNumber(row['prévisualisable']) }}
             </td>
             <td class="px-3 py-1 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
               <PercentageMeter :value="row['% prévisualisable']" />
@@ -324,7 +324,7 @@ async function fetchMonthRows(month: string): Promise<PreviewDashboardFormatStat
   const base = `${config.public.tabularApiUrl}/api/resources/${config.public.tabularApiPreviewStatsId}/data/`
   const rows: PreviewDashboardFormatStat[] = []
   for (let page = 1; ; page++) {
-    const params = new URLSearchParams({ page: String(page), page_size: String(PAGE_SIZE), Mois__exact: month })
+    const params = new URLSearchParams({ page: String(page), page_size: String(PAGE_SIZE), mois__exact: month })
     const response = await $fetch<TabularDataResponse<PreviewDashboardFormatStat>>(`${base}?${params.toString()}`)
     rows.push(...response.data)
     if (response.data.length === 0 || rows.length >= response.meta.total) return rows

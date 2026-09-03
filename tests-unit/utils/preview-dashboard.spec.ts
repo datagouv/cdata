@@ -4,16 +4,16 @@ import type { PreviewDashboardFormatStat } from '~/types/preview-dashboard'
 
 function makeStat(overrides: Partial<PreviewDashboardFormatStat> = {}): PreviewDashboardFormatStat {
   return {
-    'Famille de format': 'Tabulaire',
-    'Format': 'csv',
-    'Nombre': 10,
-    'Prévisualisable': 5,
+    'famille': 'Tabulaire',
+    'format normalisé': 'csv',
+    'nombre': 10,
+    'prévisualisable': 5,
     '% catalogue': 2.5,
     '% erreur': 0.5,
-    '% too big': 0.2,
+    '% trop volumineux': 0.2,
     '% prévisualisable': 50,
     '% prévisualisation manquante': 0.3,
-    'Mois': '2026-07',
+    'mois': '2026-07',
     '__id': 1,
     ...overrides,
   }
@@ -147,9 +147,9 @@ describe('getDeltaDirection', () => {
 describe('computeFamilyStats', () => {
   it('ignores rows from other months', () => {
     const rows = [
-      makeStat({ Mois: '2026-07', __id: 1 }),
-      makeStat({ Mois: '2026-06', __id: 2 }),
-      makeStat({ Mois: '2026-05', __id: 3 }),
+      makeStat({ mois: '2026-07', __id: 1 }),
+      makeStat({ mois: '2026-06', __id: 2 }),
+      makeStat({ mois: '2026-05', __id: 3 }),
     ]
     const stats = computeFamilyStats(rows, '2026-07', '2026-06')
     expect(stats).toHaveLength(1)
@@ -158,8 +158,8 @@ describe('computeFamilyStats', () => {
 
   it('weights percentage columns by Nombre', () => {
     const rows = [
-      makeStat({ 'Format': 'csv', 'Nombre': 10, '% erreur': 10, '% too big': 5, '% prévisualisation manquante': 2, '__id': 1 }),
-      makeStat({ 'Format': 'xlsx', 'Nombre': 30, '% erreur': 20, '% too big': 15, '% prévisualisation manquante': 6, '__id': 2 }),
+      makeStat({ 'format normalisé': 'csv', 'nombre': 10, '% erreur': 10, '% trop volumineux': 5, '% prévisualisation manquante': 2, '__id': 1 }),
+      makeStat({ 'format normalisé': 'xlsx', 'nombre': 30, '% erreur': 20, '% trop volumineux': 15, '% prévisualisation manquante': 6, '__id': 2 }),
     ]
     const stats = computeFamilyStats(rows, '2026-07', '2026-06')
     expect(stats[0].percentageError).toBeCloseTo(17.5)
@@ -169,9 +169,9 @@ describe('computeFamilyStats', () => {
 
   it('computes percentageOfCatalog against the current month total', () => {
     const rows = [
-      makeStat({ 'Famille de format': 'Tabulaire', 'Nombre': 10, '__id': 1 }),
-      makeStat({ 'Famille de format': 'Document', 'Format': 'pdf', 'Nombre': 30, '__id': 2 }),
-      makeStat({ 'Famille de format': 'Tabulaire', 'Mois': '2026-06', 'Nombre': 100, '__id': 3 }),
+      makeStat({ famille: 'Tabulaire', nombre: 10, __id: 1 }),
+      makeStat({ 'famille': 'Document', 'format normalisé': 'pdf', 'nombre': 30, '__id': 2 }),
+      makeStat({ famille: 'Tabulaire', mois: '2026-06', nombre: 100, __id: 3 }),
     ]
     const stats = computeFamilyStats(rows, '2026-07', '2026-06')
     const tabulaire = stats.find(s => s.family === 'Tabulaire')!
@@ -180,12 +180,12 @@ describe('computeFamilyStats', () => {
 
   it('computes positive, negative and zero deltas against the previous month', () => {
     const rows = [
-      makeStat({ 'Famille de format': 'Tabulaire', 'Format': 'csv', 'Mois': '2026-07', 'Nombre': 13, 'Prévisualisable': 13, '__id': 1 }),
-      makeStat({ 'Famille de format': 'Tabulaire', 'Format': 'csv', 'Mois': '2026-06', 'Nombre': 10, 'Prévisualisable': 5, '__id': 2 }),
-      makeStat({ 'Famille de format': 'Document', 'Format': 'pdf', 'Mois': '2026-07', 'Nombre': 8, 'Prévisualisable': 4, '__id': 3 }),
-      makeStat({ 'Famille de format': 'Document', 'Format': 'pdf', 'Mois': '2026-06', 'Nombre': 10, 'Prévisualisable': 5, '__id': 4 }),
-      makeStat({ 'Famille de format': 'Image', 'Format': 'png', 'Mois': '2026-07', 'Nombre': 10, 'Prévisualisable': 5, '__id': 5 }),
-      makeStat({ 'Famille de format': 'Image', 'Format': 'png', 'Mois': '2026-06', 'Nombre': 10, 'Prévisualisable': 5, '__id': 6 }),
+      makeStat({ 'famille': 'Tabulaire', 'format normalisé': 'csv', 'mois': '2026-07', 'nombre': 13, 'prévisualisable': 13, '__id': 1 }),
+      makeStat({ 'famille': 'Tabulaire', 'format normalisé': 'csv', 'mois': '2026-06', 'nombre': 10, 'prévisualisable': 5, '__id': 2 }),
+      makeStat({ 'famille': 'Document', 'format normalisé': 'pdf', 'mois': '2026-07', 'nombre': 8, 'prévisualisable': 4, '__id': 3 }),
+      makeStat({ 'famille': 'Document', 'format normalisé': 'pdf', 'mois': '2026-06', 'nombre': 10, 'prévisualisable': 5, '__id': 4 }),
+      makeStat({ 'famille': 'Image', 'format normalisé': 'png', 'mois': '2026-07', 'nombre': 10, 'prévisualisable': 5, '__id': 5 }),
+      makeStat({ 'famille': 'Image', 'format normalisé': 'png', 'mois': '2026-06', 'nombre': 10, 'prévisualisable': 5, '__id': 6 }),
     ]
     const stats = computeFamilyStats(rows, '2026-07', '2026-06')
     const tabulaire = stats.find(s => s.family === 'Tabulaire')!
@@ -202,10 +202,10 @@ describe('computeFamilyStats', () => {
 
   it('sums every format of a family before comparing it to the previous month', () => {
     const rows = [
-      makeStat({ Format: 'csv', Mois: '2026-07', Nombre: 30, Prévisualisable: 24, __id: 1 }),
-      makeStat({ Format: 'xlsx', Mois: '2026-07', Nombre: 10, Prévisualisable: 6, __id: 2 }),
-      makeStat({ Format: 'csv', Mois: '2026-06', Nombre: 20, Prévisualisable: 10, __id: 3 }),
-      makeStat({ Format: 'xlsx', Mois: '2026-06', Nombre: 10, Prévisualisable: 5, __id: 4 }),
+      makeStat({ 'format normalisé': 'csv', 'mois': '2026-07', 'nombre': 30, 'prévisualisable': 24, '__id': 1 }),
+      makeStat({ 'format normalisé': 'xlsx', 'mois': '2026-07', 'nombre': 10, 'prévisualisable': 6, '__id': 2 }),
+      makeStat({ 'format normalisé': 'csv', 'mois': '2026-06', 'nombre': 20, 'prévisualisable': 10, '__id': 3 }),
+      makeStat({ 'format normalisé': 'xlsx', 'mois': '2026-06', 'nombre': 10, 'prévisualisable': 5, '__id': 4 }),
     ]
     const stats = computeFamilyStats(rows, '2026-07', '2026-06')
     // 40 - 30 resources, and 30/40 previewable against 15/30 the month before
@@ -214,7 +214,7 @@ describe('computeFamilyStats', () => {
   })
 
   it('leaves deltas undefined when there is no previous month data', () => {
-    const rows = [makeStat({ Mois: '2026-07', __id: 1 })]
+    const rows = [makeStat({ mois: '2026-07', __id: 1 })]
     const stats = computeFamilyStats(rows, '2026-07', '2026-06')
     expect(stats[0].countDelta).toBeUndefined()
     expect(stats[0].previewDelta).toBeUndefined()
@@ -224,8 +224,8 @@ describe('computeFamilyStats', () => {
 
   it('leaves previewDelta undefined when the current month count is zero', () => {
     const rows = [
-      makeStat({ Mois: '2026-07', Nombre: 0, Prévisualisable: 0, __id: 1 }),
-      makeStat({ Mois: '2026-06', Nombre: 10, Prévisualisable: 5, __id: 2 }),
+      makeStat({ mois: '2026-07', nombre: 0, prévisualisable: 0, __id: 1 }),
+      makeStat({ mois: '2026-06', nombre: 10, prévisualisable: 5, __id: 2 }),
     ]
     const stats = computeFamilyStats(rows, '2026-07', '2026-06')
     expect(stats[0].previewDelta).toBeUndefined()
@@ -233,8 +233,8 @@ describe('computeFamilyStats', () => {
 
   it('sorts families by descending count', () => {
     const rows = [
-      makeStat({ 'Famille de format': 'Tabulaire', 'Nombre': 10, '__id': 1 }),
-      makeStat({ 'Famille de format': 'Document', 'Format': 'pdf', 'Nombre': 30, '__id': 2 }),
+      makeStat({ famille: 'Tabulaire', nombre: 10, __id: 1 }),
+      makeStat({ 'famille': 'Document', 'format normalisé': 'pdf', 'nombre': 30, '__id': 2 }),
     ]
     const stats = computeFamilyStats(rows, '2026-07', '2026-06')
     expect(stats.map(s => s.family)).toEqual(['Document', 'Tabulaire'])
@@ -246,8 +246,8 @@ describe('computeFamilyStats', () => {
 describe('computeFamilyStats summary totals', () => {
   it('sums only the rows of the requested month', () => {
     const rows = [
-      makeStat({ Mois: '2026-07', Nombre: 10, Prévisualisable: 5, __id: 1 }),
-      makeStat({ Mois: '2026-06', Nombre: 7, Prévisualisable: 4, __id: 2 }),
+      makeStat({ mois: '2026-07', nombre: 10, prévisualisable: 5, __id: 1 }),
+      makeStat({ mois: '2026-06', nombre: 7, prévisualisable: 4, __id: 2 }),
     ]
     const stats = computeFamilyStats(rows, '2026-07', '2026-06')
     const total = stats.reduce((sum, family) => sum + family.count, 0)
@@ -258,7 +258,7 @@ describe('computeFamilyStats summary totals', () => {
   })
 
   it('returns no family when there are no rows for the requested month', () => {
-    const rows = [makeStat({ Mois: '2026-06', __id: 1 })]
+    const rows = [makeStat({ mois: '2026-06', __id: 1 })]
     expect(computeFamilyStats(rows, '2026-07', '2026-06')).toEqual([])
   })
 
