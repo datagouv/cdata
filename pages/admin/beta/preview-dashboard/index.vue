@@ -65,6 +65,13 @@
         <AnimatedLoader />
       </div>
       <SimpleBanner
+        v-else-if="!config.public.tabularApiPreviewStatsId"
+        type="warning"
+        class="mt-2"
+      >
+        {{ t('Statistiques de prévisualisations non disponibles.') }}
+      </SimpleBanner>
+      <SimpleBanner
         v-else-if="error"
         type="warning"
         class="mt-2"
@@ -313,6 +320,7 @@ const PAGE_SIZE = 100
 // a response cut off at one page would silently skew all of them: keep paging
 // until the API has handed over as many rows as it announced.
 async function fetchMonthRows(month: string): Promise<PreviewDashboardFormatStat[]> {
+  if (!config.public.tabularApiPreviewStatsId) return []
   const base = `${config.public.tabularApiUrl}/api/resources/${config.public.tabularApiPreviewStatsId}/data/`
   const rows: PreviewDashboardFormatStat[] = []
   for (let page = 1; ; page++) {
