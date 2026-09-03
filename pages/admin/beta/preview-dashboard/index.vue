@@ -274,7 +274,6 @@ import {
   RiFileTextLine,
   RiImageLine,
   RiLink,
-  RiMap2Line,
   RiQuestionLine,
   RiTableLine,
 } from '@remixicon/vue'
@@ -386,7 +385,6 @@ function getFamilyIcon(family: string): Component {
     case 'données structurées':
       return RiBracesLine
     case 'tabulaire':
-    case 'tableur':
       return RiTableLine
     case 'api':
       return RiCodeSSlashLine
@@ -394,12 +392,8 @@ function getFamilyIcon(family: string): Component {
       return RiFileTextLine
     case 'archive':
       return RiArchiveLine
-    case 'géospatial':
-      return RiMap2Line
     case 'image':
-    case 'images':
       return RiImageLine
-    case 'lien':
     case 'liens':
       return RiLink
     default:
