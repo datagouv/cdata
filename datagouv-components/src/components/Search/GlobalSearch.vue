@@ -668,7 +668,7 @@ const strategies: { [K in SearchType]: SearchStrategy<K> } = {
 const resultsMap: Record<string, SearchEntry> = {}
 for (const c of props.config) {
   const key = configKey(c)
-  const params = useStableQueryParams({ ...stableParamsOptions, typeConfig: c })
+  const { params } = useStableQueryParams({ ...stableParamsOptions, typeConfig: c })
   resultsMap[key] = await strategies[c.class].fetch(params, initialType === key)
 }
 
