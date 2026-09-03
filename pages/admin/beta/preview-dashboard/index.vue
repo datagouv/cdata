@@ -20,7 +20,7 @@
             {{ t('Images : prévisualisation limitée aux fichiers de {size} maximum.', { size: imagePreviewSize }) }}
           </li>
           <li>
-            {{ t('Seuls les formats représentant au moins 100 ressources sont affichés individuellement.') }}
+            {{ t('Seuls les formats représentant au moins 10 ressources sont affichés individuellement.') }}
           </li>
           <li>
             {{ t('Certains formats très proches ont été regroupés pour rendre l’analyse plus lisible.') }}
