@@ -53,7 +53,7 @@
       <CopyButton
         :label="t('Copier le lien')"
         :copied-label="t('Lien copié !')"
-        :text="resourceExternalUrl"
+        :text="externalUrl"
         icon-only
         class="hidden shrink-0 md:inline-flex"
       />
@@ -110,6 +110,8 @@ const props = defineProps<{
   resources?: Resource[]
   resourceTo?: (resource: Resource) => RouteLocationRaw
   exploreTo?: (resource: Resource) => string
+  // Overrides the "Copier le lien" target.
+  resourceExternalUrl?: (resource: Resource) => string
   replace?: boolean
   // Fullscreen mode hides the inline actions — they live in the dataset context bar above.
   fullscreen?: boolean
@@ -118,5 +120,5 @@ const props = defineProps<{
 const { t } = useTranslation()
 
 const resourceFilesize = computed(() => getResourceFilesize(props.resource))
-const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset, props.resource))
+const externalUrl = computed(() => props.resourceExternalUrl ? props.resourceExternalUrl(props.resource) : getResourceExternalUrl(props.dataset, props.resource))
 </script>
