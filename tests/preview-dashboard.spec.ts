@@ -33,6 +33,7 @@ const resourcesData: TabularRow[] = [
     'erreur source inaccessible': false,
     'erreur analyse': false,
     'erreur cors bloqué': false,
+    'erreur cors header manquant': false,
     'erreur cors inconnu': false,
     'erreur fichier trop volumineux': false,
     'erreur taille inconnue': false,
