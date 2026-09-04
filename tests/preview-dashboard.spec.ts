@@ -24,16 +24,16 @@ const resourcesData: TabularRow[] = [
     'taille détectée': 1024,
     'téléchargements': 42,
     'dernière modification': '2026-06-30T10:00:00Z',
-    'dernière maj tabular': '2026-06-30T12:00:00Z',
+    'dernière mise à jour tabular': '2026-06-30T12:00:00Z',
     'délai tabular (jours)': 0,
     'aperçus actifs': 'tabular',
     'a un aperçu': true,
     'a une erreur': false,
-    'a un too big': false,
     'aperçu manquant': false,
     'erreur source inaccessible': false,
     'erreur analyse': false,
-    'erreur cors': false,
+    'erreur cors bloqué': false,
+    'erreur cors header manquant': false,
     'erreur cors inconnu': false,
     'erreur fichier trop volumineux': false,
     'erreur taille inconnue': false,
@@ -56,16 +56,16 @@ const resourcesProfile = {
       'taille détectée',
       'téléchargements',
       'dernière modification',
-      'dernière maj tabular',
+      'dernière mise à jour tabular',
       'délai tabular (jours)',
       'aperçus actifs',
       'a un aperçu',
       'a une erreur',
-      'a un too big',
       'aperçu manquant',
       'erreur source inaccessible',
       'erreur analyse',
-      'erreur cors',
+      'erreur cors bloqué',
+      'erreur cors header manquant',
       'erreur cors inconnu',
       'erreur fichier trop volumineux',
       'erreur taille inconnue',
@@ -91,27 +91,27 @@ const resourcesProfile = {
 
 const statsData: PreviewDashboardFormatStat[] = [
   {
-    'Famille de format': 'Tabulaire',
-    'Format': 'csv',
-    'Nombre': 10,
-    'Prévisualisable': 5,
+    'famille': 'Tabulaire',
+    'format normalisé': 'csv',
+    'nombre': 10,
+    'prévisualisable': 5,
     '% catalogue': 2.5,
     '% erreur': 0.5,
-    '% too big': 0.2,
+    '% trop volumineux': 0.2,
     '% prévisualisable': 50,
     '% prévisualisation manquante': 0.3,
-    'Mois': currentMonth,
+    'mois': currentMonth,
     '__id': 1,
   },
 ]
 
 const previousMonthStatsData: PreviewDashboardFormatStat[] = statsData.map(row => ({
   ...row,
-  'Mois': previousMonth,
-  'Nombre': row.Nombre - 3,
+  'mois': previousMonth,
+  'nombre': row.nombre - 3,
   // 3/7 ≈ 42.9% < 50%: the family-level preview ratio must decrease in the
   // previous month so the month-over-month deltas asserted below are positive
-  'Prévisualisable': row['Prévisualisable'] - 2,
+  'prévisualisable': row['prévisualisable'] - 2,
   '% prévisualisable': row['% prévisualisable'] - 5,
 }))
 
@@ -134,9 +134,9 @@ async function mockTabularApi(page: Page, stats: PreviewDashboardFormatStat[] = 
 
   await page.route(`**/api/resources/${statsResourceId}/data/**`, async (route) => {
     const url = new URL(route.request().url())
-    const requestedMonth = url.searchParams.get('Mois__exact')
+    const requestedMonth = url.searchParams.get('mois__exact')
     const data = requestedMonth
-      ? stats.filter(row => row.Mois === requestedMonth)
+      ? stats.filter(row => row.mois === requestedMonth)
       : stats
     await route.fulfill({
       json: {
@@ -262,22 +262,22 @@ test.describe('Preview dashboard', () => {
 
   test('aggregates every page of the month, not just the first one', async ({ page }) => {
     const manyFormats: PreviewDashboardFormatStat[] = Array.from({ length: 150 }, (_, index) => ({
-      'Famille de format': 'Tabulaire',
-      'Format': `format-${index}`,
-      'Nombre': 1,
-      'Prévisualisable': 1,
+      'famille': 'Tabulaire',
+      'format normalisé': `format-${index}`,
+      'nombre': 1,
+      'prévisualisable': 1,
       '% catalogue': 0,
       '% erreur': 0,
-      '% too big': 0,
+      '% trop volumineux': 0,
       '% prévisualisable': 100,
       '% prévisualisation manquante': 0,
-      'Mois': currentMonth,
+      'mois': currentMonth,
       '__id': index + 1,
     }))
 
     await page.route(`**/api/resources/${statsResourceId}/data/**`, async (route) => {
       const url = new URL(route.request().url())
-      const monthRows = manyFormats.filter(row => row.Mois === url.searchParams.get('Mois__exact'))
+      const monthRows = manyFormats.filter(row => row.mois === url.searchParams.get('mois__exact'))
       const pageNumber = Number(url.searchParams.get('page'))
       const pageSize = Number(url.searchParams.get('page_size'))
       await route.fulfill({
