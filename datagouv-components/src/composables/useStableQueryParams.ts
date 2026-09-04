@@ -23,9 +23,7 @@ interface StableQueryParamsOptions {
 export function useStableQueryParams(options: StableQueryParamsOptions) {
   const { typeConfig, allFilters, customFilterRegistry, q, sort, page, pageSize } = options
   const stableParams = ref<Record<string, unknown>>({})
-  // Same params minus sort and page: the signature of everything that affects
-  // facet aggregations. Used by useStableFacets to keep facets stable across
-  // sort and page changes.
+  // Same params minus sort and page
   const stableFacetParams = ref<Record<string, unknown>>({})
 
   const buildParams = () => {
