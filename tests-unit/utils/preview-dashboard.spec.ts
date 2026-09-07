@@ -156,7 +156,7 @@ describe('computeFamilyStats', () => {
     expect(stats[0].count).toBe(10)
   })
 
-  it('weights percentage columns by Nombre', () => {
+  it('weights percentage columns by nombre', () => {
     const rows = [
       makeStat({ 'format normalisé': 'csv', 'nombre': 10, '% erreur': 10, '% trop volumineux': 5, '% prévisualisation manquante': 2, '__id': 1 }),
       makeStat({ 'format normalisé': 'xlsx', 'nombre': 30, '% erreur': 20, '% trop volumineux': 15, '% prévisualisation manquante': 6, '__id': 2 }),

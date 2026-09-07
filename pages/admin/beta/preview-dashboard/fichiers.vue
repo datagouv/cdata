@@ -13,7 +13,7 @@
     class="mt-2"
     type="warning"
   >
-    {{ t('Statistiques de prévisualisations non disponibles.') }}
+    {{ t('Liste des fichiers non disponible.') }}
   </SimpleBanner>
 </template>
 
