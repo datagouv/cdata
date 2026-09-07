@@ -97,7 +97,7 @@
         </td>
         <td>
           <div>
-            <p>{{ formatDate(getLastComment(discussion).posted_on) }}</p>
+            <p><FormattedDate :date="getLastComment(discussion).posted_on" /></p>
             <p class="inline-flex items-center">
               {{ t('par ') }}
               <AvatarWithName
@@ -108,11 +108,11 @@
           </div>
         </td>
         <td>
-          {{ formatDate(discussion.created) }}
+          <FormattedDate :date="discussion.created" />
         </td>
         <td>
           <template v-if="discussion.closed">
-            {{ formatDate(discussion.closed) }}
+            <FormattedDate :date="discussion.closed" />
           </template>
         </td>
         <td>
@@ -141,7 +141,7 @@
 </template>
 
 <script setup lang="ts">
-import { AvatarWithName, BrandedButton, useFormatDate } from '@datagouv/components-next'
+import { AvatarWithName, BrandedButton, FormattedDate } from '@datagouv/components-next'
 import { RiEyeLine } from '@remixicon/vue'
 import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
@@ -162,7 +162,6 @@ defineEmits<{
 }>()
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 const { $api } = useNuxtApp()
 
 const subjects = ref<Record<string, DiscussionSubjectTypes | null>>({})

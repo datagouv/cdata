@@ -4,7 +4,7 @@ import type { Resource } from '../../types/resources'
 import CopyButton from '../CopyButton.vue'
 import DescriptionDetails from '../DescriptionDetails.vue'
 import DescriptionTerm from '../DescriptionTerm.vue'
-import { useFormatDate } from '../../functions/dates'
+import FormattedDate from '../FormattedDate.vue'
 import { filesize } from '../../functions/helpers'
 import ExtraAccordion from '../ExtraAccordion.vue'
 import { getResourceTitleId, getResourceLabel, getResourceFilesize } from '../../functions/resources'
@@ -19,7 +19,6 @@ const resourceTitleId = computed(() => getResourceTitleId(props.resource))
 const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 </script>
 
 <template>
@@ -94,11 +93,11 @@ const { formatDate } = useFormatDate()
       >
         <DescriptionTerm>{{ t('Créée le') }}</DescriptionTerm>
         <DescriptionDetails>
-          {{ formatDate(resource.created_at) }}
+          <FormattedDate :date="resource.created_at" />
         </DescriptionDetails>
         <DescriptionTerm>{{ t('Modifiée le') }}</DescriptionTerm>
         <DescriptionDetails>
-          {{ formatDate(resource.last_modified) }}
+          <FormattedDate :date="resource.last_modified" />
         </DescriptionDetails>
       </dl>
       <dl

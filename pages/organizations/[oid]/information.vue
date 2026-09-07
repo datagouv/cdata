@@ -194,7 +194,9 @@
       <DescriptionList class="mb-2">
         <div>
           <DescriptionListTerm>{{ $t('Dernière mise à jour') }}</DescriptionListTerm>
-          <DescriptionListDetails>{{ formatDate(organization.last_modified) }}</DescriptionListDetails>
+          <DescriptionListDetails>
+            <FormattedDate :date="organization.last_modified" />
+          </DescriptionListDetails>
         </div>
         <div>
           <DescriptionListTerm>{{ $t('Identifiant') }}</DescriptionListTerm>
@@ -213,7 +215,9 @@
       <DescriptionList>
         <div>
           <DescriptionListTerm>{{ $t('Date de création') }}</DescriptionListTerm>
-          <DescriptionListDetails>{{ formatDate(organization.created_at) }}</DescriptionListDetails>
+          <DescriptionListDetails>
+            <FormattedDate :date="organization.created_at" />
+          </DescriptionListDetails>
         </div>
       </DescriptionList>
     </SectionCollapse>
@@ -280,7 +284,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, CopyButton, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, useFormatDate, type Organization, toast } from '@datagouv/components-next'
+import { Avatar, BrandedButton, CopyButton, FormattedDate, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, type Organization, toast } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
@@ -290,7 +294,6 @@ const props = defineProps<{
 }>()
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 
 const config = useRuntimeConfig()
 const { $api } = useNuxtApp()

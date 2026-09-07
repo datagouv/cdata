@@ -24,7 +24,7 @@
                 {{ advice.Type }} {{ advice['Numéro de dossier'] }}
               </h1>
               <p class="text-sm text-gray-medium">
-                {{ $t('Séance du') }} {{ formatDate(advice['Séance']) }}
+                {{ $t('Séance du') }} <FormattedDate :date="advice['Séance']" />
               </p>
             </div>
 
@@ -162,7 +162,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, fetchTabularData, LoadingBlock, useComponentsConfig, useFormatDate } from '@datagouv/components-next'
+import { BrandedButton, fetchTabularData, FormattedDate, LoadingBlock, useComponentsConfig } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
@@ -175,7 +175,6 @@ definePageMeta({
 })
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
 const componentsConfig = useComponentsConfig()
 const route = useRoute()

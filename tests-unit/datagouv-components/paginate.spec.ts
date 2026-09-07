@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getVisiblePages } from '~/utils/paginate'
+import { getVisiblePages } from '~/datagouv-components/src/functions/paginate'
 
 // Expected values are derived from the UI spec, not from the implementation:
 // the component renders page 1 and the last page itself, `getVisiblePages`
@@ -41,5 +41,29 @@ describe('getVisiblePages', () => {
 
   it('never adds ellipses when the window touches both boundaries', () => {
     expect(getVisiblePages(2, 4)).toEqual([2, 3])
+  })
+
+  // The current page comes from `?page=`, so it can be anything a crawler or a
+  // stale link carries. Every case below used to build an array of negative or
+  // NaN length, throwing `RangeError: Invalid array length` and taking the whole
+  // SSR render down with a 500.
+  describe('with a current page that does not exist', () => {
+    it('falls back to the last page when the current page is past the end', () => {
+      expect(getVisiblePages(127, 18)).toEqual(getVisiblePages(18, 18))
+      expect(getVisiblePages(19, 18)).toEqual(getVisiblePages(18, 18))
+    })
+
+    it('falls back to the first page when the current page is not a number', () => {
+      expect(getVisiblePages(Number('abc'), 10)).toEqual(getVisiblePages(1, 10))
+    })
+
+    it('falls back to the first page when the current page is below 1', () => {
+      expect(getVisiblePages(0, 10)).toEqual(getVisiblePages(1, 10))
+      expect(getVisiblePages(-5, 10)).toEqual(getVisiblePages(1, 10))
+    })
+
+    it('truncates a fractional current page', () => {
+      expect(getVisiblePages(5.7, 10)).toEqual(getVisiblePages(5, 10))
+    })
   })
 })

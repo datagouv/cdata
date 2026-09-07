@@ -14,6 +14,35 @@ afterAll(() => {
   vi.useRealTimers()
 })
 
+describe('formatDate', () => {
+  it('defaults to a long date style', () => {
+    const { formatDate } = useFormatDate()
+    expect(formatDate(new Date(2026, 3, 24))).toEqual('24 avril 2026')
+  })
+
+  it('lets an explicit `dateStyle: undefined` make room for date components', () => {
+    // `dateStyle` cannot be combined with `year`/`month`, so callers wanting a month
+    // label pass `dateStyle: undefined` to defeat the default. Filling the default in
+    // regardless would throw a TypeError in Intl.
+    const { formatDate } = useFormatDate()
+    const options = { dateStyle: undefined, year: 'numeric', month: 'long' } as const
+    expect(formatDate(new Date(2026, 3, 24), options)).toEqual('avril 2026')
+  })
+
+  it('leaves the options it receives untouched', () => {
+    const { formatDate } = useFormatDate()
+    const options: Intl.DateTimeFormatOptions = { timeStyle: 'short' }
+    formatDate(new Date(2026, 3, 24), options)
+    expect(options).toEqual({ timeStyle: 'short' })
+  })
+
+  it('returns an empty string without a date', () => {
+    const { formatDate } = useFormatDate()
+    expect(formatDate(null)).toEqual('')
+    expect(formatDate(undefined)).toEqual('')
+  })
+})
+
 describe('formatFromNow', () => {
   it('formats around today', () => {
     const { formatFromNow } = useFormatDate()

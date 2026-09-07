@@ -38,7 +38,10 @@
           </div>
         </div>
         <div class="text-sm/6 text-gray-medium">
-          {{ formatDate(date, { dateStyle: 'long', timeStyle: 'short' }) }}
+          <FormattedDate
+            :date
+            :options="{ dateStyle: 'long', timeStyle: 'short' }"
+          />
         </div>
       </div>
       <div class="flex flex-col space-y-2.5 items-end">
@@ -49,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, useFormatDate } from '@datagouv/components-next'
+import { Avatar, FormattedDate } from '@datagouv/components-next'
 import type { User } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import AdminBadge from './AdminBadge/AdminBadge.vue'
@@ -61,6 +64,4 @@ defineProps<{
   user: User
   date: Date
 }>()
-
-const { formatDate } = useFormatDate()
 </script>

@@ -112,8 +112,22 @@
               <td>
                 <JobBadge :job />
               </td>
-              <td>{{ job.started ? formatDate(job.started, { dateStyle: 'long', timeStyle: 'short' }) : formatDate(job.created, { dateStyle: 'long', timeStyle: 'short' }) }}</td>
-              <td>{{ job.ended ? formatDate(job.ended, { dateStyle: 'long', timeStyle: 'short' }) : '—' }}</td>
+              <td>
+                <FormattedDate
+                  :date="job.started || job.created"
+                  :options="{ dateStyle: 'long', timeStyle: 'short' }"
+                />
+              </td>
+              <td>
+                <FormattedDate
+                  v-if="job.ended"
+                  :date="job.ended"
+                  :options="{ dateStyle: 'long', timeStyle: 'short' }"
+                />
+                <template v-else>
+                  &mdash;
+                </template>
+              </td>
               <td class="!text-right font-mono">
                 {{ job.items.by_type.dataset }}
               </td>
@@ -169,7 +183,7 @@
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, Pagination, BrandedButton, useFormatDate, Tooltip } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, BrandedButton, FormattedDate, Tooltip } from '@datagouv/components-next'
 import { RiArchiveLine, RiCheckLine, RiCloseLine, RiEyeOffLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
@@ -181,7 +195,6 @@ const page = ref(1)
 const pageSize = ref(20)
 
 const route = useRoute()
-const { formatDate } = useFormatDate()
 
 const sourceUrl = computed(() => `/api/1/harvest/source/${route.params.id}`)
 const { data: harvester } = await useAPI<HarvesterSource>(sourceUrl, { redirectOn404: true })

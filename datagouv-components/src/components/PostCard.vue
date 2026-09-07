@@ -23,12 +23,20 @@
 
     <ObjectCardShortDescription :text="post.headline || post.content" />
 
-    <div
+    <TranslationT
       v-if="post.published || post.created_at"
+      tag="div"
       class="text-sm text-gray-medium mt-1"
+      keypath="Publié {date}"
     >
-      {{ t('Publié {date}', { date: formatDate(post.published || post.created_at) }) }}
-    </div>
+      <template #date>
+        <FormattedDate
+          :date="post.published || post.created_at"
+          format="relative"
+          :options="{ dateStyle: 'long', timeStyle: 'short' }"
+        />
+      </template>
+    </TranslationT>
 
     <slot />
   </ObjectCard>
@@ -37,26 +45,16 @@
 <script setup lang="ts">
 import { RiArticleLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { useFormatDate } from '../functions/dates'
-import { useTranslation } from '../composables/useTranslation'
 import type { Post } from '../types/posts'
 import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
+import FormattedDate from './FormattedDate.vue'
+import TranslationT from './TranslationT.vue'
 
 defineProps<{
   post: Post
   postUrl?: RouteLocationRaw
 }>()
-
-const { t } = useTranslation()
-const { formatRelativeIfRecentDate } = useFormatDate()
-
-const formatDate = (dateString: string) => {
-  return formatRelativeIfRecentDate(dateString, {
-    dateStyle: 'long',
-    timeStyle: 'short',
-  })
-}
 </script>

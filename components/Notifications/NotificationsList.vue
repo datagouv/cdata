@@ -62,6 +62,7 @@ watchEffect(async () => {
     if (notification.details.class !== 'DiscussionNotificationDetails' || notification.details.discussion.subject.id in subjectsPromises.value) continue
 
     const id = notification.details.discussion.subject.id
+    subjects.value[id] = null // The subject is rendered before it is fetched, `null` hides it until then
     subjectsPromises.value[id] = getSubject($api, notification.details.discussion.subject)
       .then((subject) => {
         subjects.value[id] = subject // Working because there is no conflicts between IDs from different types

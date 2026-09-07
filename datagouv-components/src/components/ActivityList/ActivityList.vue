@@ -12,7 +12,10 @@
           class="my-1"
         >
           <p class="pl-3 mb-1 text-xs text-gray-medium">
-            {{ month }}
+            <FormattedDate
+              :date="month"
+              :options="{ dateStyle: undefined, year: 'numeric', month: 'long', day: undefined }"
+            />
           </p>
           <ul
             class="space-y-2 p-0 m-0"
@@ -82,9 +85,15 @@
                     </template>
                   </slot>
                 </p>
-                <p class="m-0 flex-none text-xs text-gray-medium">
-                  {{ t('le {date}', { date: formatDate(activity.created_at) }) }}
-                </p>
+                <TranslationT
+                  tag="p"
+                  class="m-0 flex-none text-xs text-gray-medium"
+                  keypath="le {date}"
+                >
+                  <template #date>
+                    <FormattedDate :date="activity.created_at" />
+                  </template>
+                </TranslationT>
               </div>
             </li>
           </ul>
@@ -118,13 +127,14 @@ import { useRoute } from 'vue-router'
 import { useTranslation } from '../../composables/useTranslation'
 import { getActivityTranslation } from '../../functions/activities'
 import { useFetch } from '../../functions/api'
-import { useFormatDate } from '../../functions/dates'
 import type { PaginatedArray } from '../../types/api'
 import type { Activity } from '../../types/activity'
 import Avatar from '../Avatar.vue'
 import LoadingBlock from '../LoadingBlock.vue'
 import Pagination from '../Pagination.vue'
 import PaddedContainer from '../PaddedContainer.vue'
+import FormattedDate from '../FormattedDate.vue'
+import TranslationT from '../TranslationT.vue'
 import listSrc from '../../../assets/illustrations/list.svg?url'
 
 const props = defineProps<{
@@ -133,7 +143,6 @@ const props = defineProps<{
 }>()
 
 const route = useRoute()
-const { formatDate } = useFormatDate()
 const { t } = useTranslation()
 
 const page = ref(parseInt(route.query.page as string | undefined ?? '1', 10))
@@ -146,13 +155,13 @@ const { data: activities, status } = await useFetch<PaginatedArray<Activity>>('/
   },
 })
 
+// Grouping on a month read in the reader's timezone would change both the number of
+// groups and their keys between the server render and the browser's — a mismatch on
+// the children themselves, which no `data-allow-mismatch` covers. The `YYYY-MM` the
+// timestamp starts with is the same string for everyone; the month is worded from it
+// at render time.
 const groupedActivities = computed(() => activities.value?.data.reduce((grouped, activity) => {
-  const activityMonth = formatDate(activity.created_at, {
-    dateStyle: undefined,
-    day: undefined,
-    month: 'long',
-    year: 'numeric',
-  })
+  const activityMonth = activity.created_at.slice(0, 7)
   if (!grouped[activityMonth]) {
     grouped[activityMonth] = []
   }

@@ -14,9 +14,12 @@
 
     <p class="text-sm text-gray-medium my-5">
       {{ $t('Les statistiques sont comptabilisées à partir de ') }}
-      {{ formatDate(config.public.metricsSince, { dateStyle: undefined, year: 'numeric', month: 'long', day: undefined }) }}.
+      <FormattedDate
+        :date="config.public.metricsSince"
+        :options="{ dateStyle: undefined, year: 'numeric', month: 'long', day: undefined }"
+      />.
       <br>
-      <span v-if="new Date().getHours() > 7 - 1">{{ $t('Mises à jour ce matin.') }}</span>
+      <span v-if="metricsUpdatedToday">{{ $t('Mises à jour ce matin.') }}</span>
       <span v-else>{{ $t('Mises à jour hier.') }}</span>
     </p>
 
@@ -44,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { useFormatDate, type Organization, type User } from '@datagouv/components-next'
+import { FormattedDate, type Organization, type User } from '@datagouv/components-next'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
@@ -58,9 +61,14 @@ defineEmits<{
 }>()
 
 const config = useRuntimeConfig()
-const { formatDate } = useFormatDate()
 
 const me = useMe()
+
+// The metrics batch runs at 7am Paris time, so the cutoff is in that timezone, not the reader's.
+// `hourCycle: 'h23'` rather than `hour12: false`, which renders midnight as 24 on some ICU builds.
+const metricsUpdatedToday = computed(() =>
+  Number(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris', hour: '2-digit', hourCycle: 'h23' })) >= 7,
+)
 
 const metricsUrl = computed(() => {
   if (props.organization) {

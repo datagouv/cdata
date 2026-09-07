@@ -58,7 +58,10 @@
           </div>
         </div>
         <div class="text-sm/6 text-gray-medium">
-          {{ formatDate(new Date(invitation.created), { dateStyle: 'long', timeStyle: 'short' }) }}
+          <FormattedDate
+            :date="invitation.created"
+            :options="{ dateStyle: 'long', timeStyle: 'short' }"
+          />
         </div>
       </div>
       <div class="flex gap-2.5 items-start">
@@ -85,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, useFormatDate } from '@datagouv/components-next'
+import { BrandedButton, FormattedDate } from '@datagouv/components-next'
 import { ref } from 'vue'
 import { RiBuilding2Line, RiCheckLine, RiUserAddLine } from '@remixicon/vue'
 import AdminBadge from '../AdminBadge/AdminBadge.vue'
@@ -101,7 +104,6 @@ const emits = defineEmits<{
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { formatDate } = useFormatDate()
 const loading = ref(false)
 
 const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })

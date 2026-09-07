@@ -47,9 +47,21 @@
       />
     </dd>
     <template v-if="generatedFormats.length">
-      <dt class="font-bold fr-text--sm fr-mb-0">
-        {{ t('Formats générés automatiquement par {platform} (dernière mise à jour {date})', { platform: config.name, date: conversionsLastUpdate }) }}
-      </dt>
+      <TranslationT
+        tag="dt"
+        class="font-bold fr-text--sm fr-mb-0"
+        keypath="Formats générés automatiquement par {platform} (dernière mise à jour {date})"
+      >
+        <template #platform>
+          {{ config.name }}
+        </template>
+        <template #date>
+          <FormattedDate
+            :date="conversionsFinishedAt"
+            format="relative"
+          />
+        </template>
+      </TranslationT>
       <dd
         v-for="generatedFormat in generatedFormats"
         :key="generatedFormat.format"
@@ -132,7 +144,8 @@ import { filesize } from '../../functions/helpers'
 import { getResourceFilesize } from '../../functions/resources'
 import { trackEvent } from '../../functions/matomo'
 import { useComponentsConfig } from '../../config'
-import { useFormatDate } from '../../functions/dates'
+import FormattedDate from '../FormattedDate.vue'
+import TranslationT from '../TranslationT.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useResourceCapabilities } from '../../composables/useResourceCapabilities'
 import type { Resource } from '../../types/resources'
@@ -145,7 +158,6 @@ const props = defineProps<{
 
 const { t } = useTranslation()
 const config = useComponentsConfig()
-const { formatRelativeIfRecentDate } = useFormatDate()
 
 const { generatedFormats, wfsFormats, defaultWfsProjection } = useResourceCapabilities(
   () => props.resource,
@@ -154,7 +166,7 @@ const { generatedFormats, wfsFormats, defaultWfsProjection } = useResourceCapabi
 
 const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 
-const conversionsLastUpdate = computed(() =>
-  formatRelativeIfRecentDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined),
+const conversionsFinishedAt = computed(() =>
+  props.resource.extras['analysis:parsing:finished_at'] as string | undefined,
 )
 </script>

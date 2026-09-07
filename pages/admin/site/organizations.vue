@@ -83,7 +83,7 @@
                   </AdminContentWithTooltip>
                 </div>
               </td>
-              <td>{{ formatDate(organization.created_at) }}</td>
+              <td><FormattedDate :date="organization.created_at" /></td>
               <td>
                 <CdataLink :to="`/admin/organizations/${organization.id}/datasets`">
                   {{ organization.metrics.datasets || 0 }}
@@ -167,7 +167,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, LoadingBlock, OrganizationLogo, useFormatDate } from '@datagouv/components-next'
+import { BrandedButton, FormattedDate, LoadingBlock, OrganizationLogo } from '@datagouv/components-next'
 import { Pagination, type Organization } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
@@ -181,7 +181,6 @@ import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import AdminInput from '~/components/AdminInput.vue'
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
 
 const page = ref(1)

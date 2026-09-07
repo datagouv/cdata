@@ -1,4 +1,3 @@
-import type { Dataservice, Dataset, DatasetV2, DatasetV2WithFullObject } from '@datagouv/components-next'
 import cloneDeep from 'lodash-es/cloneDeep'
 import type { HarvestBackend, HarvesterForm, HarvesterJob, HarvesterSource, HarvestSourceConfig, HarvestSourceFilter, NewHarvesterForApi } from '~/types/harvesters'
 
@@ -8,10 +7,6 @@ export function getHarvesterAdminUrl(harvester: HarvesterSource) {
 
 export function getHarvesterJobAdminUrl(harvester: HarvesterSource, job: HarvesterJob) {
   return `${getHarvesterAdminUrl(harvester)}/jobs/${job.id}`
-}
-
-export function isHarvested(dataset: Dataservice | Dataset | DatasetV2 | DatasetV2WithFullObject) {
-  return !!dataset.harvest?.source_id || false
 }
 
 export function harvesterToForm(harvester: HarvesterSource): HarvesterForm {

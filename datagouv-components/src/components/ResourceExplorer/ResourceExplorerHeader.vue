@@ -18,9 +18,14 @@
         <span class="min-w-0 truncate font-bold text-gray-title">{{ dataset.title }}</span>
         <template v-if="dataset.last_update">
           <span class="hidden shrink-0 text-gray-medium sm:inline">·</span>
-          <span class="hidden truncate text-gray-medium sm:inline">
-            {{ t('mis à jour le {date}', { date: formatDate(dataset.last_update) }) }}
-          </span>
+          <TranslationT
+            class="hidden truncate text-gray-medium sm:inline"
+            keypath="mis à jour le {date}"
+          >
+            <template #date>
+              <FormattedDate :date="dataset.last_update" />
+            </template>
+          </TranslationT>
         </template>
       </div>
     </div>
@@ -53,9 +58,10 @@ import Avatar from '../Avatar.vue'
 import BrandedButton from '../BrandedButton.vue'
 import OrganizationLogo from '../OrganizationLogo.vue'
 import ResourceMainAction from './ResourceMainAction.vue'
+import FormattedDate from '../FormattedDate.vue'
+import TranslationT from '../TranslationT.vue'
 import { getOwnerName } from '../../functions/owned'
 import { useTranslation } from '../../composables/useTranslation'
-import { useFormatDate } from '../../functions/dates'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 import type { Resource } from '../../types/resources'
 
@@ -66,7 +72,6 @@ const props = defineProps<{
 }>()
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 
 // Plain producer name, matching the prototype: dark text, no link, no certificate
 // badge — unlike ObjectCardOwner which renders a styled link.

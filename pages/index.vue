@@ -448,9 +448,15 @@
               <h3 class="text-gray-title font-extrabold text-3xl">
                 {{ lastPost.name }}
               </h3>
-              <p class="text-mention-grey text-sm">
-                {{ $t('Publié le {date}', { date: formatDate(lastPost.published) }) }}
-              </p>
+              <TranslationT
+                tag="p"
+                class="text-mention-grey text-sm"
+                keypath="Publié le {date}"
+              >
+                <template #date>
+                  <FormattedDate :date="lastPost.published" />
+                </template>
+              </TranslationT>
               <p class="text-gray-plain mb-0">
                 {{ lastPost.headline }}
               </p>
@@ -478,15 +484,13 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, summarize, useFormatDate, TranslationT } from '@datagouv/components-next'
+import { BrandedButton, summarize, FormattedDate, TranslationT } from '@datagouv/components-next'
 import { RiArrowRightLine, RiBardLine, RiLineChartLine, RiNewspaperLine, RiSearchLine, RiVipDiamondLine } from '@remixicon/vue'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
-
-const { formatDate } = useFormatDate()
 
 const title = t('{site} : Plateforme ouverte des données publiques françaises', { site: config.public.title })
 

@@ -185,7 +185,7 @@
                   {{ $t("Dernière mise à jour") }}
                 </dt>
                 <dd class="p-0 text-sm">
-                  {{ formatDate(dataset.last_update) }}
+                  <FormattedDate :date="dataset.last_update" />
                 </dd>
               </div>
 
@@ -486,7 +486,7 @@ import {
   isOrganizationCertified,
   LoadingBlock,
   BrandedButton,
-  useFormatDate,
+  FormattedDate,
   StatBox,
   Toggletip,
   type TranslatedBadge,
@@ -520,7 +520,6 @@ import { keepScrollWithinPage } from '~/utils/scroll'
 const config = useRuntimeConfig()
 const siteConfig = useSiteConfig()
 const route = useRoute()
-const { formatDate } = useFormatDate()
 const { t } = useTranslation()
 
 definePageMeta({

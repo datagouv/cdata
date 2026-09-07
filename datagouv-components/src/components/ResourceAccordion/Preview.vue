@@ -90,7 +90,11 @@
         @change="changePage"
       />
       <div class="fr-px-5v">
-        {{ t("Dernière mise à jour de la prévisualisation : {date}", { date: lastUpdate }) }} —
+        <TranslationT keypath="Dernière mise à jour de la prévisualisation : {date}">
+          <template #date>
+            <FormattedDate :date="parsingFinishedAt" />
+          </template>
+        </TranslationT> —
         {{ t('{count} colonnes', columns.length) }} —
         {{ t('Lignes {count}', rowCount) }}
       </div>
@@ -103,7 +107,8 @@ import { computed, onMounted, ref } from 'vue'
 import { RiArrowDownLine, RiArrowUpLine, RiExternalLinkFill } from '@remixicon/vue'
 import Pagination from '../Pagination.vue'
 import { getData, type SortConfig } from '../../functions/tabularApi'
-import { useFormatDate } from '../../functions/dates'
+import FormattedDate from '../FormattedDate.vue'
+import TranslationT from '../TranslationT.vue'
 import { trackEvent } from '../../functions/matomo'
 import type { Resource } from '../../types/resources'
 import { useComponentsConfig } from '../../config'
@@ -116,7 +121,6 @@ import PreviewLoader from './PreviewLoader.vue'
 const props = defineProps<{ resource: Resource }>()
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 
 const rows = ref<Array<Record<string, unknown>>>([])
 const columns = ref<Array<string>>([])
@@ -196,7 +200,7 @@ function sortByField(col: string) {
   getTableInfos(currentPage.value, sortConfig.value)
 };
 
-const lastUpdate = computed(() => formatDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined))
+const parsingFinishedAt = computed(() => props.resource.extras['analysis:parsing:finished_at'] as string | undefined)
 
 onMounted(() => {
   getTableInfos(currentPage.value)

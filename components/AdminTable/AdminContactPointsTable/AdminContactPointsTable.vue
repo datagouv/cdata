@@ -1,26 +1,28 @@
 <template>
   <AdminTable>
     <thead>
-      <AdminTableTh scope="col">
-        {{ t("Nom du point de contact") }}
-      </AdminTableTh>
-      <AdminTableTh class="w-44">
-        {{ t("Rôle") }}
-      </AdminTableTh>
-      <AdminTableTh>
-        {{ t("E-mail du contact") }}
-      </AdminTableTh>
-      <AdminTableTh
-        scope="col"
-      >
-        {{ t("Url du point de contact") }}
-      </AdminTableTh>
-      <AdminTableTh
-        class="w-32"
-        scope="col"
-      >
-        {{ t("Action") }}
-      </AdminTableTh>
+      <tr>
+        <AdminTableTh scope="col">
+          {{ t("Nom du point de contact") }}
+        </AdminTableTh>
+        <AdminTableTh class="w-44">
+          {{ t("Rôle") }}
+        </AdminTableTh>
+        <AdminTableTh>
+          {{ t("E-mail du contact") }}
+        </AdminTableTh>
+        <AdminTableTh
+          scope="col"
+        >
+          {{ t("Url du point de contact") }}
+        </AdminTableTh>
+        <AdminTableTh
+          class="w-32"
+          scope="col"
+        >
+          {{ t("Action") }}
+        </AdminTableTh>
+      </tr>
     </thead>
     <tbody>
       <tr

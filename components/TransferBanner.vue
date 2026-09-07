@@ -33,12 +33,18 @@
           <div
             v-for="existingTransfer in existingTransfers"
             :key="existingTransfer.id"
+            class="space-x-1"
           >
-            {{ $t('Transfert vers {recipient} déjà demandé le {date}', {
-              recipient: existingTransfer.recipient.class === 'Organization'
-                ? existingTransfer.recipient.name : `${existingTransfer.recipient.first_name} ${existingTransfer.recipient.last_name}`,
-              date: formatDate(existingTransfer.created),
-            }) }}
+            <TranslationT keypath="Transfert vers {recipient} déjà demandé le {date}">
+              <template #recipient>
+                {{ existingTransfer.recipient.class === 'Organization'
+                  ? existingTransfer.recipient.name
+                  : `${existingTransfer.recipient.first_name} ${existingTransfer.recipient.last_name}` }}
+              </template>
+              <template #date>
+                <FormattedDate :date="existingTransfer.created" />
+              </template>
+            </TranslationT>
             <span v-if="existingTransfer.user">{{ $t('par {user}', { user: `${existingTransfer.user.first_name} ${existingTransfer.user.last_name}` }) }}</span>
           </div>
         </div>
@@ -87,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { AnimatedLoader, BannerAction, BrandedButton, useFormatDate, toast } from '@datagouv/components-next'
+import { AnimatedLoader, BannerAction, BrandedButton, FormattedDate, toast, TranslationT } from '@datagouv/components-next'
 import type { Dataservice, DatasetV2, DatasetV2WithFullObject, Owned, Reuse } from '@datagouv/components-next'
 import { RiSendPlaneLine } from '@remixicon/vue'
 import type { TransferRequest } from '~/types/types'
@@ -100,7 +106,6 @@ const props = defineProps<{
 
 const { $api } = useNuxtApp()
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 
 const loading = ref(false)
 const to = ref<Owned | null>(null)
