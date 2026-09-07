@@ -678,3 +678,41 @@ test('x-axis dropdown should show columns from all chart resources after loading
 
   await page.request.delete(`${baseURL}/api/1/visualizations/${chartData.id}/`)
 })
+
+test('filter groups are sent as or params to tabular-api and saved with OrFilters', async ({ page }) => {
+  await setupChart(page)
+
+  // Re-register the data route to capture outgoing requests (last registered wins).
+  const dataRequests: Array<string> = []
+  await page.route('**/api/resources/*/data/*', async (route) => {
+    dataRequests.push(route.request().url())
+    await route.fulfill({ json: data })
+  })
+
+  // First group, first condition: nom_region est Bretagne
+  await page.getByRole('button', { name: 'Ajouter un filtre' }).click()
+  const groups = page.locator('fieldset', { hasText: 'Filtres' }).locator('.border-new-gray-light')
+  const firstGroup = groups.nth(0)
+  await firstGroup.getByRole('button').first().click()
+  await page.getByRole('option', { name: 'nom_region', exact: true }).click()
+  await firstGroup.getByPlaceholder('Valeur').fill('Bretagne')
+
+  // Second group with one condition: année_publication est 2020
+  await page.getByRole('button', { name: 'Ajouter un groupe' }).click()
+  const secondGroup = groups.nth(1)
+  await secondGroup.getByRole('button').first().click()
+  await page.getByRole('option', { name: 'année_publication', exact: true }).click()
+  await secondGroup.getByPlaceholder('Valeur').fill('2020')
+
+  // Add a second condition inside the second group (OU interne)
+  await secondGroup.getByRole('button', { name: 'Ajouter un « ou »' }).click()
+  const secondRow = secondGroup.getByPlaceholder('Valeur').nth(1)
+  await secondRow.fill('2021')
+
+  // Wait for a data request carrying the grouped filters
+  await expect.poll(() => dataRequests.map(decodeURIComponent).some(url =>
+    url.includes('nom_region__exact=Bretagne') && url.includes('or=('),
+  )).toBe(true)
+  const lastUrl = decodeURIComponent(dataRequests[dataRequests.length - 1])
+  expect(lastUrl).toContain('or=(')
+})
