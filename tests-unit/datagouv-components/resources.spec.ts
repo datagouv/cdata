@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { describe, expect, it } from 'vitest'
 import { configKey, type ResolvedPluginConfig } from '~/datagouv-components/src/config'
-import { detectOgcService, getResourceCorsStatus, isCommunityResource } from '~/datagouv-components/src/functions/resources'
+import { detectOgcService, getResourceCorsStatus, isCommunityResource, isGeopfSynced } from '~/datagouv-components/src/functions/resources'
 import type { CommunityResource, Resource } from '~/datagouv-components/src/types/resources'
 
 // `useComponentsConfig` relies on Vue's inject: run the function inside an app
@@ -68,5 +68,26 @@ describe('isCommunityResource', () => {
     expect(isCommunityResource({ owner: null } as unknown as CommunityResource)).toBe(true)
     expect(isCommunityResource({ organization: null } as unknown as CommunityResource)).toBe(true)
     expect(isCommunityResource({ id: 'res-1' } as unknown as Resource)).toBe(false)
+  })
+})
+
+describe('isGeopfSynced', () => {
+  it('is false without any geopf metadata', () => {
+    expect(isGeopfSynced({ geopf: null } as Resource)).toBe(false)
+  })
+
+  it('is true once any push has been attempted, whatever its outcome', () => {
+    expect(isGeopfSynced({ geopf: { push_status: 'pending' } } as Resource)).toBe(true)
+    expect(isGeopfSynced({ geopf: { push_status: 'done' } } as Resource)).toBe(true)
+    expect(isGeopfSynced({ geopf: { push_status: 'error' } } as Resource)).toBe(true)
+    expect(isGeopfSynced({ geopf: { push_status: 'timeout' } } as Resource)).toBe(true)
+  })
+
+  it('is true for a resource pulled back as an offering', () => {
+    expect(isGeopfSynced({ geopf: { offering_id: 'offering-1' } } as Resource)).toBe(true)
+  })
+
+  it('ignores a non-string offering id', () => {
+    expect(isGeopfSynced({ geopf: { offering_id: 42 as unknown as string } } as Resource)).toBe(false)
   })
 })

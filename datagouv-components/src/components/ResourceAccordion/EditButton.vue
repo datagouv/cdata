@@ -4,7 +4,8 @@
     icon-only
     :icon="RiPencilLine"
     color="warning"
-    :title="t('Éditer le fichier')"
+    :disabled="!!disabledReason"
+    :title="disabledReason ?? t('Éditer le fichier')"
     data-testid="edit-button"
   />
 </template>
@@ -19,10 +20,12 @@ type Props = {
   datasetId: string
   isCommunityResource?: boolean
   resourceId: string
+  disabledReason?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isCommunityResource: false,
+  disabledReason: null,
 })
 
 const { t } = useTranslation()

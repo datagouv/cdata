@@ -44,7 +44,7 @@
     </div>
     <div class="fr-col-12 fr-col-md-8 fr-col-lg-9 fr-col-xl-10 md:h-full !px-4 sm:!px-10 pb-8 md:pb-16 lg:pb-64">
       <NuxtPage
-        :page-key="route => route.fullPath"
+        :page-key="pageKey"
       />
     </div>
   </div>
@@ -54,6 +54,7 @@
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import AdminSidebarMenu from '~/components/AdminSidebar/AdminSidebarMenu/AdminSidebarMenu.vue'
 import type { OrganizationReference } from '@datagouv/components-next'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 definePageMeta({
   layout: 'fluid',
@@ -78,6 +79,12 @@ useSeoMeta({ title: 'Admin' })
 
 const { organizations, users } = useCurrentOwned()
 const isSiteAdmin = computed(() => me.value.roles?.includes('admin') || false)
+
+// Stable reference: NuxtPage compares page-key by reference, so an inline function here
+// would re-trigger the loading indicator on every render of this component.
+function pageKey(route: RouteLocationNormalizedLoaded) {
+  return route.fullPath
+}
 </script>
 
 <style>
