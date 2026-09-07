@@ -20,7 +20,7 @@
             {{ t('Images : prévisualisation limitée aux fichiers de {size} maximum.', { size: imagePreviewSize }) }}
           </li>
           <li>
-            {{ t('Seuls les formats représentant au moins 100 ressources sont affichés individuellement.') }}
+            {{ t('Seuls les formats représentant au moins 10 ressources sont affichés individuellement.') }}
           </li>
           <li>
             {{ t('Certains formats très proches ont été regroupés pour rendre l’analyse plus lisible.') }}
@@ -64,6 +64,13 @@
       >
         <AnimatedLoader />
       </div>
+      <SimpleBanner
+        v-else-if="!config.public.tabularApiPreviewStatsId"
+        type="warning"
+        class="mt-2"
+      >
+        {{ t('Statistiques de prévisualisations non disponibles.') }}
+      </SimpleBanner>
       <SimpleBanner
         v-else-if="error"
         type="warning"
@@ -127,7 +134,7 @@
               scope="col"
               class="px-3 py-3.5 text-right text-sm font-semibold text-gray-title border-b border-r border-gray-default last:border-r-0"
             >
-              {{ t('% too big') }}
+              {{ t('% trop volumineux') }}
             </th>
             <th
               scope="col"
@@ -215,14 +222,14 @@
                 class="link"
                 :to="{
                   path: '/admin/beta/preview-dashboard/fichiers',
-                  query: { format: row.Format },
+                  query: { format: row['format normalisé'] },
                 }"
               >
-                {{ row.Format }}
+                {{ row['format normalisé'] }}
               </NuxtLink>
             </td>
             <td class="px-3 py-1 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
-              <div>{{ formatNumber(row.Nombre) }}</div>
+              <div>{{ formatNumber(row.nombre) }}</div>
               <DeltaIndicator
                 :value="row.countDelta"
                 unit="count"
@@ -238,10 +245,10 @@
               {{ formatPercentage(row['% erreur']) }}
             </td>
             <td class="px-3 py-1 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
-              {{ formatPercentage(row['% too big']) }}
+              {{ formatPercentage(row['% trop volumineux']) }}
             </td>
             <td class="px-3 py-1 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
-              {{ formatNumber(row['Prévisualisable']) }}
+              {{ formatNumber(row['prévisualisable']) }}
             </td>
             <td class="px-3 py-1 text-right text-sm whitespace-nowrap text-gray-plain border-r border-gray-default last:border-r-0">
               <PercentageMeter :value="row['% prévisualisable']" />
@@ -267,7 +274,6 @@ import {
   RiFileTextLine,
   RiImageLine,
   RiLink,
-  RiMap2Line,
   RiQuestionLine,
   RiTableLine,
 } from '@remixicon/vue'
@@ -313,10 +319,11 @@ const PAGE_SIZE = 100
 // a response cut off at one page would silently skew all of them: keep paging
 // until the API has handed over as many rows as it announced.
 async function fetchMonthRows(month: string): Promise<PreviewDashboardFormatStat[]> {
+  if (!config.public.tabularApiPreviewStatsId) return []
   const base = `${config.public.tabularApiUrl}/api/resources/${config.public.tabularApiPreviewStatsId}/data/`
   const rows: PreviewDashboardFormatStat[] = []
   for (let page = 1; ; page++) {
-    const params = new URLSearchParams({ page: String(page), page_size: String(PAGE_SIZE), Mois__exact: month })
+    const params = new URLSearchParams({ page: String(page), page_size: String(PAGE_SIZE), mois__exact: month })
     const response = await $fetch<TabularDataResponse<PreviewDashboardFormatStat>>(`${base}?${params.toString()}`)
     rows.push(...response.data)
     if (response.data.length === 0 || rows.length >= response.meta.total) return rows
@@ -378,7 +385,6 @@ function getFamilyIcon(family: string): Component {
     case 'données structurées':
       return RiBracesLine
     case 'tabulaire':
-    case 'tableur':
       return RiTableLine
     case 'api':
       return RiCodeSSlashLine
@@ -386,12 +392,8 @@ function getFamilyIcon(family: string): Component {
       return RiFileTextLine
     case 'archive':
       return RiArchiveLine
-    case 'géospatial':
-      return RiMap2Line
     case 'image':
-    case 'images':
       return RiImageLine
-    case 'lien':
     case 'liens':
       return RiLink
     default:

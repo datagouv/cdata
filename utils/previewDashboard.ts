@@ -66,7 +66,7 @@ export type PreviewDashboardFamilyStats = {
   formats: Array<PreviewDashboardFormatStat & { countDelta?: number, previewDelta?: number }>
 }
 
-type WeightedPercentageColumn = '% prévisualisation manquante' | '% erreur' | '% too big'
+type WeightedPercentageColumn = '% prévisualisation manquante' | '% erreur' | '% trop volumineux'
 
 export function computeFamilyStats(
   rows: PreviewDashboardFormatStat[],
@@ -74,13 +74,13 @@ export function computeFamilyStats(
   previousMonth: string,
 ): PreviewDashboardFamilyStats[] {
   const totalCount = rows
-    .filter(row => row.Mois === currentMonth)
-    .reduce((sum, row) => sum + row.Nombre, 0)
+    .filter(row => row.mois === currentMonth)
+    .reduce((sum, row) => sum + row.nombre, 0)
 
   const byFamily = new Map<string, PreviewDashboardFormatStat[]>()
   for (const row of rows) {
-    if (row.Mois !== currentMonth) continue
-    const family = row['Famille de format']
+    if (row.mois !== currentMonth) continue
+    const family = row['famille']
     if (!byFamily.has(family)) {
       byFamily.set(family, [])
     }
@@ -90,27 +90,27 @@ export function computeFamilyStats(
   const previousFamilyTotals = new Map<string, { count: number, withPreview: number }>()
   const previousFormatMap = new Map<string, PreviewDashboardFormatStat>()
   for (const row of rows) {
-    if (row.Mois !== previousMonth) continue
-    const family = row['Famille de format']
+    if (row.mois !== previousMonth) continue
+    const family = row['famille']
     const totals = previousFamilyTotals.get(family) ?? { count: 0, withPreview: 0 }
-    totals.count += row.Nombre
-    totals.withPreview += row['Prévisualisable']
+    totals.count += row.nombre
+    totals.withPreview += row['prévisualisable']
     previousFamilyTotals.set(family, totals)
-    previousFormatMap.set(`${family}|${row.Format}`, row)
+    previousFormatMap.set(`${family}|${row['format normalisé']}`, row)
   }
 
   return Array.from(byFamily.entries())
     .map(([family, formats]) => {
-      const count = formats.reduce((sum, row) => sum + row.Nombre, 0)
-      const withPreview = formats.reduce((sum, row) => sum + row['Prévisualisable'], 0)
+      const count = formats.reduce((sum, row) => sum + row.nombre, 0)
+      const withPreview = formats.reduce((sum, row) => sum + row['prévisualisable'], 0)
       const percentageOfCatalog = totalCount > 0 ? (count / totalCount) * 100 : 0
       // The dataset gives each percentage per format: averaging them at family
       // level only makes sense weighted by the number of resources behind each.
       const weightedAverage = (column: WeightedPercentageColumn) =>
-        count > 0 ? formats.reduce((sum, row) => sum + ((row[column] ?? 0) * row.Nombre), 0) / count : 0
+        count > 0 ? formats.reduce((sum, row) => sum + ((row[column] ?? 0) * row.nombre), 0) / count : 0
       const percentageMissingPreview = weightedAverage('% prévisualisation manquante')
       const percentageError = weightedAverage('% erreur')
-      const percentageTooBig = weightedAverage('% too big')
+      const percentageTooBig = weightedAverage('% trop volumineux')
       const percentageWithPreview = count > 0 ? (withPreview / count) * 100 : 0
 
       const previousFamily = previousFamilyTotals.get(family)
@@ -120,8 +120,8 @@ export function computeFamilyStats(
         : undefined
 
       const formatsWithDelta = formats.map((row) => {
-        const previousRow = previousFormatMap.get(`${family}|${row.Format}`)
-        const rowCountDelta = previousRow != null ? row.Nombre - previousRow.Nombre : undefined
+        const previousRow = previousFormatMap.get(`${family}|${row['format normalisé']}`)
+        const rowCountDelta = previousRow != null ? row.nombre - previousRow.nombre : undefined
         const rowPreviewDelta = previousRow != null
           ? row['% prévisualisable'] - previousRow['% prévisualisable']
           : undefined
