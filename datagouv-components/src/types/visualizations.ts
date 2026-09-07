@@ -12,10 +12,15 @@ export type Filter = {
 
 export type AndFilters = {
   _cls: 'AndFilters'
+  filters: Array<Filter | OrFilters>
+}
+
+export type OrFilters = {
+  _cls: 'OrFilters'
   filters: Array<Filter | AndFilters>
 }
 
-export type GenericFilter = Filter | AndFilters
+export type GenericFilter = Filter | AndFilters | OrFilters
 
 export type XAxisType = 'discrete' | 'continuous'
 
