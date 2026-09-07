@@ -176,26 +176,52 @@
             <p class="font-bold mb-2">
               {{ $t('Filtres') }}
             </p>
-            <div class="space-y-3">
-              <ChartFilterRow
-                v-for="(filter, index) in filterList"
-                :key="index"
-                :model-value="filter"
-                :index="index"
-                :column-options="columnDetails"
-                :condition-options="conditionOptions"
-                @update:model-value="updateFilter(index, $event)"
-                @remove="removeFilter(index)"
+            <div
+              v-if="filterGroups.groups.length > 1"
+              class="flex items-center gap-2"
+            >
+              <span class="text-xs text-gray-600">{{ $t('Combiner les groupes avec') }}</span>
+              <Listbox
+                v-model="rootCombinatorProxy"
+                class="w-24"
+                :options="['and', 'or']"
+                :display-value="(opt) => opt === 'and' ? $t('ET') : $t('OU')"
               />
             </div>
-            <BrandedButton
-              size="sm"
-              color="tertiary"
-              :icon="RiAddLine"
-              @click="addFilter"
-            >
-              {{ $t('Ajouter un filtre') }}
-            </BrandedButton>
+            <div class="space-y-3">
+              <ChartFilterGroup
+                v-for="(group, groupIndex) in filterGroups.groups"
+                :key="groupIndex"
+                :group="group"
+                :group-index="groupIndex"
+                :inner-combinator="filterGroups.rootCombinator === 'and' ? 'or' : 'and'"
+                :can-remove-group="filterGroups.groups.length > 1"
+                :column-options="columnDetails"
+                :condition-options="conditionOptions"
+                @update:filter="(i, f) => updateFilter(groupIndex, i, f)"
+                @remove:filter="(i) => removeFilter(groupIndex, i)"
+                @add-condition="addCondition(groupIndex)"
+                @remove-group="removeGroup(groupIndex)"
+              />
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <BrandedButton
+                size="sm"
+                color="tertiary"
+                :icon="RiAddLine"
+                @click="addFilter"
+              >
+                {{ $t('Ajouter un filtre') }}
+              </BrandedButton>
+              <BrandedButton
+                size="sm"
+                color="tertiary"
+                :icon="RiAddLine"
+                @click="addGroup"
+              >
+                {{ $t('Ajouter un groupe') }}
+              </BrandedButton>
+            </div>
           </fieldset>
 
           <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
@@ -472,7 +498,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
 import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
@@ -480,7 +506,9 @@ import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChart
 import { useAPI } from '~/utils/api'
 import { isMeAdmin } from '~/utils/auth'
 import { keepValidSortCombined } from '~/utils/charts'
-import ChartFilterRow from './ChartFilterRow.vue'
+import { fromFilterGroups, toFilterGroups } from '~/utils/chartFilters'
+import type { FilterGroupCombinator, FilterGroupsState } from '~/utils/chartFilters'
+import ChartFilterGroup from './ChartFilterGroup.vue'
 import ProducerSelect from '../ProducerSelect.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
@@ -647,26 +675,20 @@ const columnDetails = computed<Array<{ key: string, value: string, disabled: boo
   return options
 })
 
-function isFilter(f: GenericFilter | null): f is Filter {
-  return f?._cls === 'Filter'
-}
+const filterGroups = computed<FilterGroupsState>(() => toFilterGroups(form.value.filter))
 
-function isAndFilters(f: GenericFilter | null): f is AndFilters {
-  return f?._cls === 'AndFilters'
-}
-
-const filterList = computed<Array<Filter>>(() => {
-  if (!form.value.filter) return []
-
-  const filter = form.value.filter
-  if (isFilter(filter)) {
-    return [filter]
-  }
-  else if (isAndFilters(filter)) {
-    return filter.filters.filter(isFilter)
-  }
-  return []
+const rootCombinatorProxy = computed<FilterGroupCombinator>({
+  get: () => filterGroups.value.rootCombinator,
+  set: combinator => applyFilterGroups({ ...filterGroups.value, rootCombinator: combinator }),
 })
+
+function applyFilterGroups(state: FilterGroupsState) {
+  form.value.filter = fromFilterGroups(state)
+}
+
+function newEmptyFilter(): Filter {
+  return { _cls: 'Filter', column: '', condition: 'exact', value: '' }
+}
 
 function getColumnTypeIcon(colType: ColumnType | 'count'): Component {
   if (colType === 'count') {
@@ -889,46 +911,36 @@ async function saveChart() {
   }
 }
 
-function removeFilter(index: number) {
-  if (!form.value.filter) return
-
-  if (isFilter(form.value.filter)) {
-    form.value.filter = null
-  }
-  else if (isAndFilters(form.value.filter)) {
-    form.value.filter.filters.splice(index, 1)
-    if (form.value.filter.filters.length === 0) {
-      form.value.filter = null
-    }
-  }
-}
-
-function updateFilter(index: number, newFilter: Filter) {
-  if (!form.value.filter) return
-
-  if (isFilter(form.value.filter)) {
-    form.value.filter = newFilter
-  }
-  else if (isAndFilters(form.value.filter)) {
-    form.value.filter.filters[index] = newFilter
-  }
-}
-
 function addFilter() {
-  const newFilter: Filter = { _cls: 'Filter', column: '', condition: 'exact' as const, value: '' }
+  const groups = filterGroups.value.groups.map(g => [...g])
+  if (groups.length === 0) groups.push([])
+  groups[groups.length - 1].push(newEmptyFilter())
+  applyFilterGroups({ ...filterGroups.value, groups })
+}
 
-  if (!form.value.filter) {
-    form.value.filter = newFilter
-  }
-  else if (isFilter(form.value.filter)) {
-    form.value.filter = {
-      _cls: 'AndFilters',
-      filters: [form.value.filter, newFilter],
-    }
-  }
-  else if (isAndFilters(form.value.filter)) {
-    form.value.filter.filters.push(newFilter)
-  }
+function addGroup() {
+  applyFilterGroups({ ...filterGroups.value, groups: [...filterGroups.value.groups, [newEmptyFilter()]] })
+}
+
+function removeGroup(groupIndex: number) {
+  applyFilterGroups({ ...filterGroups.value, groups: filterGroups.value.groups.filter((_, i) => i !== groupIndex) })
+}
+
+function addCondition(groupIndex: number) {
+  const groups = filterGroups.value.groups.map((g, i) => (i === groupIndex ? [...g, newEmptyFilter()] : g))
+  applyFilterGroups({ ...filterGroups.value, groups })
+}
+
+function updateFilter(groupIndex: number, filterIndex: number, newFilter: Filter) {
+  const groups = filterGroups.value.groups.map((g, i) =>
+    (i === groupIndex ? g.map((f, j) => (j === filterIndex ? newFilter : f)) : g))
+  applyFilterGroups({ ...filterGroups.value, groups })
+}
+
+function removeFilter(groupIndex: number, filterIndex: number) {
+  const groups = filterGroups.value.groups.map((g, i) =>
+    (i === groupIndex ? g.filter((_, j) => j !== filterIndex) : g))
+  applyFilterGroups({ ...filterGroups.value, groups })
 }
 
 watch(

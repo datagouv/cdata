@@ -1,7 +1,7 @@
 <template>
   <div class="flex items-center gap-2 flex-wrap md:flex-nowrap">
-    <div class="text-xs text-gray-600">
-      {{ index === 0 ? $t('Quand') : $t('Et que') }}
+    <div class="text-xs text-gray-600 w-14 shrink-0">
+      {{ connectorLabel }}
     </div>
     <Listbox
       v-model="filter.column"
@@ -46,7 +46,7 @@ import { computed } from 'vue'
 const filter = defineModel<Filter>({ required: true })
 
 const props = defineProps<{
-  index: number
+  connector: 'first' | 'and' | 'or' | 'none'
   columnOptions: Array<{ key: string, value: string, disabled: boolean }>
   conditionOptions: Array<FilterCondition>
 }>()
@@ -56,6 +56,13 @@ defineEmits<{
 }>()
 
 const { t } = useTranslation()
+
+const connectorLabel = computed(() => {
+  if (props.connector === 'first') return t('Quand')
+  if (props.connector === 'and') return t('Et que')
+  if (props.connector === 'or') return t('Ou que')
+  return ''
+})
 
 const listboxOptions = computed(() =>
   props.columnOptions.map(opt => opt.key),
