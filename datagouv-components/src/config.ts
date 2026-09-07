@@ -1,6 +1,8 @@
 import { inject, type Component, type InjectionKey } from 'vue'
 import type { UseFetchFunction } from './functions/api.types'
 import type { $Fetch, FetchOptions } from 'ofetch'
+import type { Dataset, DatasetV2 } from './types/datasets'
+import type { CommunityResource, Resource } from './types/resources'
 
 export type PluginConfig = {
   name: string // Name of the application (ex: data.gouv.fr)
@@ -45,6 +47,8 @@ export type PluginConfig = {
   clientOnly?: Component | null
   searchDebounce?: number
   forumUrl?: string
+  /** Overrides the "Copier le lien" target built by `getResourceExternalUrl`. */
+  resourceExternalUrl?: (dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource | CommunityResource) => string
 }
 
 export const configKey = Symbol() as InjectionKey<PluginConfig>
