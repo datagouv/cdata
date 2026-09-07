@@ -165,7 +165,7 @@ const FALSY_VALUES = ['false', '0', 'non', 'no']
 // the value in double quotes (as the API README suggests) does not work here —
 // the API keeps them as part of the searched string and returns no result. It
 // does percent-decode the value after parsing, so encoding them is enough.
-function encodeConditionValue(value: string): string {
+export function encodeConditionValue(value: string): string {
   return encodeURIComponent(value)
     .replace(/\./g, '%2E')
     .replace(/\(/g, '%28')
