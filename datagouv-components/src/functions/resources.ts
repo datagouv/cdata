@@ -177,7 +177,7 @@ export function isCommunityResource(resource: Resource | CommunityResource): boo
 
 export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource | CommunityResource): string {
   const config = useComponentsConfig()
-  if (config.resourceExternalUrl) return config.resourceExternalUrl(dataset, resource)
+  if (config.getResourceExternalUrl) return config.getResourceExternalUrl(dataset, resource)
 
   return `${dataset.page}${isCommunityResource(resource) ? '/community-resources' : ''}?resource_id=${resource.id}`
 }

@@ -47,8 +47,12 @@ export type PluginConfig = {
   clientOnly?: Component | null
   searchDebounce?: number
   forumUrl?: string
-  /** Overrides the "Copier le lien" target built by `getResourceExternalUrl`. */
-  resourceExternalUrl?: (dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource | CommunityResource) => string
+  /**
+   * Overrides the "Copier le lien" target built by `getResourceExternalUrl`.
+   * Must return an absolute URL: it is copied to the clipboard and used as an
+   * external, `_blank` link target.
+   */
+  getResourceExternalUrl?: (dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource | CommunityResource) => string
 }
 
 export const configKey = Symbol() as InjectionKey<PluginConfig>
