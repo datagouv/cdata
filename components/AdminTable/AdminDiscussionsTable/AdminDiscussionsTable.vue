@@ -12,15 +12,15 @@
         </AdminTableTh>
         <AdminTableTh
           scope="col"
-          class="w-44"
+          class="w-1/3"
         >
-          {{ t("Statut") }}
+          {{ t("Premier commentaire") }}
         </AdminTableTh>
         <AdminTableTh
           scope="col"
           class="w-44"
         >
-          {{ t("Nombre de commentaires") }}
+          {{ t("Statut") }}
         </AdminTableTh>
         <AdminTableTh
           scope="col"
@@ -44,7 +44,10 @@
         >
           {{ t("Fermée le") }}
         </AdminTableTh>
-        <AdminTableTh scope="col">
+        <AdminTableTh
+          scope="col"
+          class="w-0"
+        >
           {{ t("Actions") }}
         </AdminTableTh>
       </tr>
@@ -59,11 +62,16 @@
                a <div> and a <div> inside a <p> is restructured by the browser
                parser, causing hydration mismatches -->
           <div class="fr-text--bold">
-            <TextClamp
-              :text="discussion.title"
-              :auto-resize="true"
-              :max-lines="1"
-            />
+            <CdataLink
+              class="link"
+              :to="discussion.self_web_url"
+            >
+              <TextClamp
+                :text="discussion.title"
+                :auto-resize="true"
+                :max-lines="2"
+              />
+            </CdataLink>
           </div>
           <div v-if="!subject && subjects[discussion.subject.id]">
             <CdataLink
@@ -85,15 +93,33 @@
           </div>
         </td>
         <td>
+          <TextClamp
+            class="overflow-wrap-anywhere"
+            :text="discussion.discussion[0].content"
+            :auto-resize="true"
+            :max-lines="3"
+            @clamp-change="(clamped: boolean) => clampedContents[discussion.id] = clamped"
+          />
+          <p
+            v-if="getOpenThreadLabel(discussion) && getSubjectOf(discussion)"
+            class="m-0 text-right"
+          >
+            <button
+              type="button"
+              class="link italic"
+              @click="openThread(discussion, isFullyShown(discussion))"
+            >
+              {{ getOpenThreadLabel(discussion) }}
+            </button>
+          </p>
+        </td>
+        <td>
           <AdminBadge
             size="xs"
             :type="getStatus(discussion).type"
           >
             {{ getStatus(discussion).label }}
           </AdminBadge>
-        </td>
-        <td class="font-mono text-right">
-          {{ discussion.discussion.length }}
         </td>
         <td>
           <div>
@@ -116,11 +142,14 @@
           </template>
         </td>
         <td>
-          <template v-if="subject || subjects[discussion.subject.id]">
+          <div
+            v-if="getSubjectOf(discussion)"
+            class="flex items-center"
+          >
             <BrandedButton
               size="xs"
               color="tertiary"
-              :href="getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id])"
+              :href="getDiscussionUrl(discussion.id, getSubjectOf(discussion))"
               :icon="RiEyeLine"
               :title="$t('Voir la discussion')"
               :aria-label="$t('Voir la discussion {title}', { title: discussion.title })"
@@ -128,12 +157,27 @@
               keep-margins-even-without-borders
             />
 
-            <DiscussionsRespondModal
+            <BrandedButton
+              v-if="!discussion.closed"
+              size="xs"
+              color="tertiary"
+              :icon="RiChatNewLine"
+              :title="$t('Répondre à la discussion')"
+              :aria-label="$t('Répondre à la discussion {title}', { title: discussion.title })"
+              icon-only
+              keep-margins-even-without-borders
+              @click="openThread(discussion, true)"
+            />
+
+            <DiscussionsThreadModal
+              :model-value="openedThreadId === discussion.id"
               :thread="discussion"
-              :subject="(subject || subjects[discussion.subject.id]) ?? undefined"
+              :subject="getSubjectOf(discussion) ?? undefined"
+              :respond-immediately="openedThreadId === discussion.id && openedToRespond"
+              @update:model-value="(opened: boolean | undefined) => openedThreadId = opened ? discussion.id : null"
               @responded="$emit('refresh')"
             />
-          </template>
+          </div>
         </td>
       </tr>
     </tbody>
@@ -142,7 +186,7 @@
 
 <script setup lang="ts">
 import { AvatarWithName, BrandedButton, FormattedDate } from '@datagouv/components-next'
-import { RiEyeLine } from '@remixicon/vue'
+import { RiChatNewLine, RiEyeLine } from '@remixicon/vue'
 import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
 import type { DiscussionSortedBy, DiscussionSubjectTypes, Thread } from '~/types/discussions'
@@ -181,6 +225,44 @@ watchEffect(async () => {
 
   await Promise.all(Object.values(subjectsPromises.value))
 })
+
+const openedThreadId = ref<string | null>(null)
+const openedToRespond = ref(false)
+const clampedContents = ref<Record<string, boolean>>({})
+
+function openThread(discussion: Thread, respond: boolean) {
+  openedToRespond.value = respond
+  openedThreadId.value = discussion.id
+}
+
+/** The table already shows the whole thread: there is nothing left to read. */
+function isFullyShown(discussion: Thread): boolean {
+  return discussion.discussion.length === 1 && !clampedContents.value[discussion.id]
+}
+
+function getSubjectOf(discussion: Thread): DiscussionSubjectTypes | null {
+  return props.subject ?? subjects.value[discussion.subject.id] ?? null
+}
+
+/**
+ * Label of the trigger opening the whole thread: the number of answers when
+ * there are some, an invitation to read the first comment in full when the
+ * table clamped it away, and otherwise what is left to do on the thread.
+ * Nothing on a closed thread the table already shows entirely.
+ */
+function getOpenThreadLabel(discussion: Thread): string | null {
+  const answers = discussion.discussion.length - 1
+  if (answers > 0) {
+    return t('et {n} commentaire suivant | et {n} commentaires suivants', { n: answers })
+  }
+  if (clampedContents.value[discussion.id]) {
+    return t('voir plus')
+  }
+  if (!discussion.closed) {
+    return t('répondre')
+  }
+  return null
+}
 
 function sorted(column: DiscussionSortedBy) {
   if (props.sortedBy === column) {

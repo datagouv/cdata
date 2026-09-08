@@ -45,7 +45,7 @@
         <FormattedDate :date="thread.closed" />
       </template>
     </TranslationT>
-    <template v-if="!thread.closed || openDiscussionIfClosed">
+    <template v-if="alwaysExpanded || !thread.closed || openDiscussionIfClosed">
       <template
         v-for="comment, index in thread.discussion"
         :key="index"
@@ -76,7 +76,7 @@
     </template>
     <footer class="flex justify-end">
       <BrandedButton
-        v-if="thread.closed"
+        v-if="thread.closed && !alwaysExpanded"
         color="secondary"
         size="xs"
         @click="openDiscussionIfClosed = !openDiscussionIfClosed"
@@ -85,7 +85,7 @@
         <span v-else>{{ $t('Voir la discussion') }}</span>
       </BrandedButton>
       <BrandedButton
-        v-else-if="!showRespondForm"
+        v-else-if="!thread.closed && !showRespondForm"
         color="secondary"
         size="xs"
         @click="showRespondFormIfConnected"
@@ -103,9 +103,15 @@ import CommentBlock from './CommentBlock.vue'
 import RespondForm from './RespondForm.vue'
 import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
-defineProps<{
+const props = defineProps<{
   thread: Thread
   subject: DiscussionSubjectTypes
+  // Closed threads are collapsed behind a toggle in the public list; in a modal
+  // the thread is what the reader came for, so it stays open.
+  alwaysExpanded?: boolean
+  // For callers whose own trigger already said "respond": clicking it should not
+  // land on a card where "Répondre" has to be clicked a second time.
+  respondImmediately?: boolean
 }>()
 defineEmits<{
   change: []
@@ -113,6 +119,9 @@ defineEmits<{
 
 const openDiscussionIfClosed = ref(false)
 const showRespondForm = ref(false)
+// The modal keeps its content mounted while hidden, so the prop is read on each
+// change rather than only at setup.
+watch(() => props.respondImmediately, respond => showRespondForm.value = respond ?? false, { immediate: true })
 const me = useMaybeMe()
 const route = useRoute()
 

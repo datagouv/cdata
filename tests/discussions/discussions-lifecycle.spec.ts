@@ -141,6 +141,44 @@ for (const config of SUBJECT_CONFIGS) {
       await expect(page.getByText(`Sujet beta ${uniqueId}`, { exact: true })).not.toBeVisible()
     })
 
+    test('admin table links the title and shows the first message', async ({ page, request }) => {
+      const uniqueId = Date.now()
+      const subject = await config.create(request, uniqueId)
+      const discussion = await createDiscussion(request, config.type, subject.id, `Discussion listée ${uniqueId}`)
+
+      await page.goto(`/${config.adminBase}/${subject.id}/discussions`)
+      await page.waitForLoadState('networkidle')
+
+      const titleLink = page.locator(`a[href$="/discussions?discussion_id=${discussion.id}"]`)
+      await expect(titleLink).toContainText(`Discussion listée ${uniqueId}`)
+
+      await expect(page.getByText('Premier message de la discussion.')).toBeVisible()
+
+      await titleLink.click()
+      await expect(page.getByText(config.deepLinkBanner)).toBeVisible()
+    })
+
+    test('admin table opens the whole thread in a modal', async ({ page, request }) => {
+      const uniqueId = Date.now()
+      const subject = await config.create(request, uniqueId)
+      const discussion = await createDiscussion(request, config.type, subject.id, `Discussion à déplier ${uniqueId}`)
+      await request.post(`${API_BASE}/api/1/discussions/${discussion.id}/`, {
+        data: { comment: 'Réponse visible seulement dans la modale' },
+      })
+
+      await page.goto(`/${config.adminBase}/${subject.id}/discussions`)
+      await page.waitForLoadState('networkidle')
+
+      // The table only shows the first comment: the answer lives behind the trigger
+      await expect(page.getByText('Réponse visible seulement dans la modale')).not.toBeVisible()
+
+      await page.getByRole('button', { name: 'et 1 commentaire suivant' }).click()
+
+      const dialog = page.getByRole('dialog')
+      await expect(dialog.getByText('Premier message de la discussion.')).toBeVisible()
+      await expect(dialog.getByText('Réponse visible seulement dans la modale')).toBeVisible()
+    })
+
     test('admin page can filter open and closed discussions', async ({ page, request }) => {
       const uniqueId = Date.now()
       const subject = await config.create(request, uniqueId)
