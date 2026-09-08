@@ -55,9 +55,26 @@
           :title="t('Ajouter un lien vers la documentation machine')"
           :state="accordionState('machine_documentation_url')"
         >
-          <p class="fr-m-0">
+          <p class="mb-3">
             {{ t("Idéalement, proposez un lien OpenAPI (Swagger) qui permet aux développeurs d'explorer les endpoints, voir les méthodes disponibles, et tester des requêtes directement depuis la documentation. Dans le cas de services géographiques, vous pouvez renseigner un lien vers le service avec une requête GetCapabilities pour obtenir les métadonnées du service.") }}
           </p>
+          <SimpleBanner type="primary">
+            <span
+              class="fr-icon-info-line mr-2"
+              aria-hidden="true"
+            />
+            <TranslationT
+              keypath="Vous êtes une administration et vous n'avez pas de solution pour héberger ce fichier ? Déposez-le sur {files}, le service de partage de fichiers de La Suite numérique, puis renseignez ici son lien de partage."
+            >
+              <template #files>
+                <a
+                  href="https://fichiers.numerique.gouv.fr"
+                  target="_blank"
+                  rel="noopener"
+                >fichiers.numerique.gouv.fr</a>
+              </template>
+            </TranslationT>
+          </SimpleBanner>
         </Accordion>
         <Accordion
           :id="technicalDocumentationUrlAccordionId"
