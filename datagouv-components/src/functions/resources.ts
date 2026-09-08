@@ -179,8 +179,6 @@ export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Datas
   return `${dataset.page}${isCommunityResource(resource) ? '/community-resources' : ''}?resource_id=${resource.id}`
 }
 
-// Shared by every "Copier le lien" call site (ResourceViewerHeader, ResourceAccordion): resolves
-// the caller's `resourceExternalUrl` prop override, falling back to the default external URL.
 export function resolveResourceExternalUrl<R extends Resource | CommunityResource>(
   dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>,
   resource: R,
