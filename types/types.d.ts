@@ -108,6 +108,13 @@ export type EditingMember = Member & {
   newRole?: MemberRole
 }
 
+export type OrganizationRole = {
+  id: MemberRole
+  label: string
+  // Optional: udata versions before 17.7 do not expose it.
+  description?: string
+}
+
 export type MultiSelectOption = {
   label: string
   value: string

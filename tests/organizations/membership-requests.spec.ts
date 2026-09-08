@@ -61,7 +61,7 @@ test.describe('Membership requests', () => {
 
       // A role is needed too, otherwise the submit button stays disabled on its own
       // and would prove nothing about the pending request.
-      await page.locator('select').selectOption('editor')
+      await page.locator('input[type="radio"][value="editor"]').check()
 
       await page.getByTestId('searchable-select-utilisateur').click()
       await page.getByPlaceholder('Rechercher un utilisateur').fill('Normal')

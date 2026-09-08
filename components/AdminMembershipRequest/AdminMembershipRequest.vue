@@ -197,7 +197,6 @@ import { RiCheckLine, RiMailLine, RiMailSendLine, RiUserAddLine } from '@remixic
 import InputGroup from '../InputGroup/InputGroup.vue'
 import ModalWithButton from '../Modal/ModalWithButton.vue'
 import AdminBadge from '../AdminBadge/AdminBadge.vue'
-import type { MemberRole } from '@datagouv/components-next'
 import type { PendingMembershipRequest } from '~/types/types'
 
 const props = defineProps<{
@@ -213,7 +212,7 @@ const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const loading = ref(false)
 
-const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })
+const { data: roles } = await useOrganizationRoles()
 
 const roleLabel = computed(() => {
   if (!roles.value || !props.request.role) return null

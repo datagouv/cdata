@@ -189,6 +189,7 @@
         <fieldset
           v-if="isGlobalAdmin && type === 'update'"
           class="fr-fieldset"
+          :disabled="!canEdit"
         >
           <legend
             id="featured-legend"
@@ -208,6 +209,7 @@
           v-if="type === 'create'"
           class="fr-fieldset"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -231,6 +233,7 @@
         <fieldset
           class="fr-fieldset min-w-0"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -276,12 +279,14 @@
             class="fr-fieldset__element min-w-0"
             :accordion="writeAGoodDescriptionAccordionId"
           >
+            <!-- The markdown editor is a contenteditable, not a form control: the enclosing disabled fieldset does not reach it. -->
             <InputGroup
               v-model="form.description"
               class="mb-3"
               :label="$t('Description')"
               :required="true"
               type="markdown"
+              :disabled="!canEdit"
               :has-error="!!getFirstError('description')"
               :has-warning="!!getFirstWarning('description')"
               :error-text="getFirstError('description')"
@@ -436,6 +441,7 @@
         <fieldset
           class="fr-fieldset"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -525,6 +531,7 @@
           v-if="form.owned?.organization"
           class="fr-fieldset"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -566,6 +573,7 @@
         <fieldset
           class="fr-fieldset"
           aria-labelledby="time-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="time-legend"
@@ -638,6 +646,7 @@
         <fieldset
           class="fr-fieldset"
           aria-labelledby="space-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="space-legend"

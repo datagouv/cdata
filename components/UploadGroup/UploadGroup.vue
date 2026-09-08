@@ -141,6 +141,7 @@ const open = () => {
 }
 
 const onChange = (files: File[] | null) => {
+  if (props.disabled) return
   emit('change', files ?? [])
 }
 
@@ -149,10 +150,7 @@ const onChange = (files: File[] | null) => {
  */
 const change = (event: Event) => {
   const target = event.target as HTMLInputElement | null
-  const files = Array.from(target?.files ?? [])
-  if (!props.disabled) {
-    onChange(files)
-  }
+  onChange(Array.from(target?.files ?? []))
 }
 
 useDropZone(dropFilesHereRef, onChange)

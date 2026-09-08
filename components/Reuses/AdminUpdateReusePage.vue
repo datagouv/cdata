@@ -8,15 +8,27 @@
       v-if="reuseForm"
       v-model="reuseForm"
       type="update"
+      :can-edit="reuse.permissions.edit"
       @feature="feature"
       @submit="save"
     >
-      <template
-        v-if="reuse.permissions.edit"
-        #top
-      >
+      <template #top>
+        <SimpleBanner
+          v-if="!reuse.permissions.edit"
+          class="mb-4"
+          type="primary"
+        >
+          <p class="font-bold mb-1">
+            {{ $t("Cette réutilisation est en lecture seule") }}
+          </p>
+          <p class="m-0 text-xs/5">
+            {{ reuse.organization
+              ? $t("Vous n'avez pas la permission de la modifier. Demandez à un administrateur de {org} de vous donner accès à cette réutilisation.", { org: reuse.organization.name })
+              : $t("Vous n'avez pas la permission de la modifier.") }}
+          </p>
+        </SimpleBanner>
         <BannerAction
-          v-if="!reuse.deleted && !reuse.archived"
+          v-if="reuse.permissions.edit && !reuse.deleted && !reuse.archived"
           class="mb-4"
           type="primary"
           :title="$t('Modifier la visibilité de la réutilisation')"
@@ -48,7 +60,7 @@
           </template>
         </BannerAction>
         <BannerAction
-          v-if="reuse.deleted"
+          v-if="reuse.permissions.edit && reuse.deleted"
           class="mb-4"
           type="warning"
           :title="$t('Restaurer la réutilisation')"
@@ -148,7 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, LoadingBlock, SimpleBanner, TranslationT, toast } from '@datagouv/components-next'
 import type { Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'

@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test'
-import { clickOutside } from '../helpers'
 
 const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 const ORG_ID = '6461fa1f4e1de2ee027048b7'
@@ -34,11 +33,16 @@ test.describe('Partial editor', () => {
       // The dataset selector should NOT be visible before selecting partial_editor
       await expect(page.getByText('Choisir les jeux de données éditables par ce membre')).not.toBeVisible()
 
-      await page.locator('select').selectOption('partial_editor')
-      await clickOutside(page)
+      // Each role states what it allows
+      await expect(page.getByText('Peut créer des contenus et modifier seulement certains contenus.')).toBeVisible()
+
+      await page.locator('input[type="radio"][value="partial_editor"]').check()
 
       // The dataset selector should now be visible
       await expect(page.getByText('Choisir les jeux de données éditables par ce membre')).toBeVisible()
+
+      // With nothing selected, the consequence must be spelled out
+      await expect(page.getByText('ce membre ne pourra modifier aucun jeu de données')).toBeVisible()
 
       // Wait for the datasets table to load and check the created dataset
       const datasetRow = page.locator('tr').filter({ hasText: dataset.title })
@@ -46,6 +50,7 @@ test.describe('Partial editor', () => {
       await datasetRow.locator('input[type="checkbox"]').click()
 
       await expect(page.getByText('1 jeu de données sélectionné')).toBeVisible()
+      await expect(page.getByText('ce membre ne pourra modifier aucun jeu de données')).not.toBeVisible()
 
       await page.getByRole('button', { name: 'Envoyer l\'invitation' }).click()
       await expect(page.getByRole('heading', { name: 'Inviter un membre' })).not.toBeVisible({ timeout: 10000 })

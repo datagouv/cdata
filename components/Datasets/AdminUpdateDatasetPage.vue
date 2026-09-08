@@ -16,12 +16,23 @@
       @badges-change="pendingBadges = $event"
       @submit="save"
     >
-      <template
-        v-if="dataset.permissions.edit"
-        #top
-      >
+      <template #top>
+        <SimpleBanner
+          v-if="!dataset.permissions.edit"
+          class="mb-4"
+          type="primary"
+        >
+          <p class="font-bold mb-1">
+            {{ $t("Ce jeu de données est en lecture seule") }}
+          </p>
+          <p class="m-0 text-xs/5">
+            {{ dataset.organization
+              ? $t("Vous n'avez pas la permission de le modifier. Demandez à un administrateur de {org} de vous donner accès à ce jeu de données.", { org: dataset.organization.name })
+              : $t("Vous n'avez pas la permission de le modifier.") }}
+          </p>
+        </SimpleBanner>
         <BannerAction
-          v-if="!dataset.deleted && !dataset.archived"
+          v-if="dataset.permissions.edit && !dataset.deleted && !dataset.archived"
           class="mb-4"
           type="primary"
           :title="$t('Modifier la visibilité du jeu de données')"
@@ -53,7 +64,7 @@
           </template>
         </BannerAction>
         <BannerAction
-          v-if="dataset.deleted"
+          v-if="dataset.permissions.edit && dataset.deleted"
           class="mb-4"
           type="warning"
           :title="$t('Restaurer ce jeu de données')"
@@ -134,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, LoadingBlock, SimpleBanner, TranslationT, toast } from '@datagouv/components-next'
 import type { Badge, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'

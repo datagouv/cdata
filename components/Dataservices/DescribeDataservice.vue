@@ -158,6 +158,7 @@
         <fieldset
           v-if="isMeAdmin() && type === 'update'"
           class="fr-fieldset"
+          :disabled="!canEdit"
         >
           <legend
             id="featured-legend"
@@ -177,6 +178,7 @@
           v-if="type === 'create'"
           class="fr-fieldset"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -199,6 +201,7 @@
         <fieldset
           class="fr-fieldset min-w-0"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -250,12 +253,14 @@
             class="fr-fieldset__element min-w-0"
             :accordion="addDescriptionAccordionId"
           >
+            <!-- The markdown editor is a contenteditable, not a form control: the enclosing disabled fieldset does not reach it. -->
             <InputGroup
               v-model="form.description"
               class="mb-3"
               :label="$t('Description')"
               :required="true"
               type="markdown"
+              :disabled="!canEdit"
               :has-error="!!getFirstError('description')"
               :has-warning="!!getFirstWarning('description')"
               :error-text="getFirstError('description')"
@@ -343,6 +348,7 @@
           v-if="form.owned?.organization"
           class="fr-fieldset"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -385,6 +391,7 @@
         <fieldset
           class="fr-fieldset min-w-0"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -443,6 +450,7 @@
         <fieldset
           class="fr-fieldset"
           aria-labelledby="rate-limiting-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="rate-limiting-legend"
@@ -558,9 +566,12 @@ import ContactPointSelect from '~/components/ContactPointSelect.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import type { DataserviceForm } from '~/types/types'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   type: 'create' | 'update'
-}>()
+  canEdit?: boolean
+}>(), {
+  canEdit: true,
+})
 const dataserviceForm = defineModel<DataserviceForm>({ required: true })
 
 const emit = defineEmits<{

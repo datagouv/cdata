@@ -128,7 +128,7 @@
                   @change="touch('email')"
                 />
 
-                <SelectGroup
+                <RadioButtons
                   v-if="roles && roles.length > 0"
                   v-model="inviteForm.role"
                   :label="t('Rôle')"
@@ -305,7 +305,7 @@
                       :id="editFormId"
                       @submit.prevent="updateRole(member, close)"
                     >
-                      <SelectGroup
+                      <RadioButtons
                         v-if="roles && roles.length > 0"
                         v-model="newRole"
                         :label="t('Rôle du membre')"
@@ -368,7 +368,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BannerAction, BrandedButton, FormattedDate, LoadingBlock, SearchableSelect, SelectGroup, useGetUserAvatar, type Member, type MemberRole, type Organization } from '@datagouv/components-next'
+import { Avatar, BannerAction, BrandedButton, FormattedDate, LoadingBlock, SearchableSelect, useGetUserAvatar, type Member, type MemberRole, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiEyeLine, RiLogoutBoxRLine, RiPencilLine, RiUserAddLine } from '@remixicon/vue'
 import type { Assignment, PendingMembershipRequest, UserSuggest } from '~/types/types'
@@ -427,12 +427,13 @@ const refreshAll = async () => {
 }
 
 const newRole = ref<MemberRole | null>(null)
-const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })
+const { data: roles } = await useOrganizationRoles()
 const rolesOptions = computed(() => {
   if (!roles.value) return []
 
   return roles.value.map(role => ({
     label: role.label,
+    description: role.description,
     value: role.id,
   }))
 })

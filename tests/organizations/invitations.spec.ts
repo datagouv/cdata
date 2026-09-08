@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test'
-import { clickOutside } from '../helpers'
 
 test.describe('Organization member invitations', () => {
   test('can invite member by email', async ({ page }) => {
@@ -9,8 +8,7 @@ test.describe('Organization member invitations', () => {
     await expect(page.getByRole('heading', { name: 'Inviter un membre' })).toBeVisible()
 
     await page.locator('input[type="email"]').fill('normal@example.com')
-    await page.locator('select').selectOption('editor')
-    await clickOutside(page)
+    await page.locator('input[type="radio"][value="editor"]').check()
 
     await page.getByRole('button', { name: 'Envoyer l\'invitation' }).click()
     await expect(page.getByRole('heading', { name: 'Inviter un membre' })).not.toBeVisible({ timeout: 10000 })
@@ -32,8 +30,7 @@ test.describe('Organization member invitations', () => {
     await expect(page.getByRole('heading', { name: 'Inviter un membre' })).toBeVisible()
 
     await page.locator('input[type="email"]').fill(uniqueEmail)
-    await page.locator('select').selectOption('editor')
-    await clickOutside(page)
+    await page.locator('input[type="radio"][value="editor"]').check()
 
     await page.getByRole('button', { name: 'Envoyer l\'invitation' }).click()
     await expect(page.getByRole('heading', { name: 'Inviter un membre' })).not.toBeVisible({ timeout: 10000 })

@@ -1,6 +1,5 @@
 <template>
   <fieldset
-    id="radio-inline"
     class="fr-fieldset"
     :aria-labelledby="`${legendId}`"
   >
@@ -13,9 +12,13 @@
     <div
       v-for="(option, index) in options"
       :key="option.label"
-      class="fr-fieldset__element fr-fieldset__element--inline"
+      class="fr-fieldset__element"
+      :class="{ 'fr-fieldset__element--inline': !hasDescriptions }"
     >
-      <div class="fr-radio-group">
+      <div
+        class="fr-radio-group"
+        :class="{ 'fr-radio-rich': hasDescriptions }"
+      >
         <input
           :id="`${inputPrefixId}-${index}`"
           v-model="model"
@@ -27,6 +30,12 @@
           :for="`${inputPrefixId}-${index}`"
         >
           {{ option.label }}
+          <span
+            v-if="option.description"
+            class="fr-hint-text"
+          >
+            {{ option.description }}
+          </span>
         </label>
       </div>
     </div>
@@ -34,11 +43,15 @@
 </template>
 
 <script setup lang="ts" generic="T">
-defineProps<{
+const props = defineProps<{
   label: string
-  options: Array<{ value: T, label: string }>
+  options: Array<{ value: T, label: string, description?: string }>
 }>()
 const model = defineModel<T>()
+
+// Descriptions need the room a single line of inline options doesn't have, and
+// the bordered `fr-radio-rich` card to separate one option from the next.
+const hasDescriptions = computed(() => props.options.some(option => option.description))
 
 const legendId = useId()
 const inputPrefixId = useId()
