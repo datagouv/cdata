@@ -25,10 +25,10 @@ import { useFetch } from '../../functions/api'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { injectTabularProfile } from '../../composables/useTabularProfile'
-import { hasFilterForColumn as _hasFilterForColumn, buildGlobalSearchConditions } from '../../functions/tabular'
+import { hasFilterForColumn as _hasFilterForColumn, buildDateFilterParams, buildGlobalSearchConditions, useFormatTabular } from '../../functions/tabular'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import TabularSkeleton from './TabularSkeleton.vue'
-import type { TabularDataResponse, TabularRow, SortConfig, ColumnFilters } from './types'
+import type { TabularDataResponse, TabularRow, SortConfig, ColumnFilters, DateFilter } from './types'
 import { provideTabularContext, type ActiveFilter } from './useTabularContext'
 import { useColumnMetadata } from './useColumnMetadata'
 
@@ -111,6 +111,9 @@ const dataQuery = computed(() => {
     }
     else if (filter.null === 'exclude') {
       q[`${col}__isnotnull`] = ''
+    }
+    if (filter.date) {
+      Object.assign(q, buildDateFilterParams(col, filter.date))
     }
   }
   if (props.globalSearch && profileData.value?.profile) {
@@ -208,6 +211,17 @@ function selectOnlyColumn(col: string) {
   visibleColumns.value = new Set([col])
 }
 
+const { formatCellDate } = useFormatTabular()
+
+function describeDateFilter(filter: DateFilter): string {
+  switch (filter.operator) {
+    case 'is': return `= ${formatCellDate(filter.start)}`
+    case 'before': return `${t('avant le')} ${formatCellDate(filter.start)}`
+    case 'after': return `${t('après le')} ${formatCellDate(filter.start)}`
+    case 'between': return `${formatCellDate(filter.start)} – ${formatCellDate(filter.end)}`
+  }
+}
+
 // Active filters
 const activeFilters = computed<ActiveFilter[]>(() => {
   const result: ActiveFilter[] = []
@@ -241,6 +255,9 @@ const activeFilters = computed<ActiveFilter[]>(() => {
     }
     else if (filter.max != null) {
       parts.push(`≤ ${filter.max}`)
+    }
+    if (filter.date) {
+      parts.push(describeDateFilter(filter.date))
     }
     if (parts.length) {
       result.push({ column: col, label: parts.join(', ') })

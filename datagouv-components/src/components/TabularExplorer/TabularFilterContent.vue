@@ -61,9 +61,16 @@
       </div>
     </div>
 
-    <!-- Search (contains) or date filter -->
+    <!-- Date filter -->
+    <TabularDateFilter
+      v-if="columnType === 'date'"
+      v-model:filters="filters"
+      :column="column"
+    />
+
+    <!-- Search (contains) -->
     <div
-      v-if="columnType !== 'boolean'"
+      v-if="columnType !== 'boolean' && columnType !== 'date'"
       class="px-3 py-2 border-b border-black/10"
     >
       <div class="relative">
@@ -210,13 +217,13 @@ import {
   RiArrowUpLine,
   RiArrowDownLine,
   RiSearchLine,
-  RiCalendarLine,
   RiCheckLine,
 } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useFormatTabular } from '../../functions/tabular'
 import BrandedButton from '../BrandedButton.vue'
 import ProgressBar from '../ProgressBar.vue'
+import TabularDateFilter from './TabularDateFilter.vue'
 import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig, SortDirection } from './types'
 
 const props = defineProps<{
@@ -236,11 +243,10 @@ const { formatNumber } = useFormatTabular()
 
 const search = ref('')
 
-// Numbers, years and dates are matched exactly (the API has no `contains` for
-// them), so the field offers the matching native picker instead of a text search.
+// Numbers and years are matched exactly (the API has no `contains` for them),
+// so the field offers a number input instead of a text search.
 const searchField = computed(() => {
   switch (props.columnType) {
-    case 'date': return { icon: RiCalendarLine, type: 'date', placeholder: '' }
     case 'number':
     case 'year': return { icon: RiSearchLine, type: 'number', placeholder: t('Rechercher...') }
     default: return { icon: RiSearchLine, type: 'text', placeholder: t('Rechercher...') }
@@ -249,7 +255,7 @@ const searchField = computed(() => {
 
 watchDebounced(search, (q) => {
   const existing = filters.value[props.column] ?? {}
-  const operator = props.columnType === 'number' || props.columnType === 'year' || props.columnType === 'date' ? 'exact' : 'contains'
+  const operator = props.columnType === 'number' || props.columnType === 'year' ? 'exact' : 'contains'
   if (q) {
     filters.value = { ...filters.value, [props.column]: { ...existing, [operator]: q } }
   }

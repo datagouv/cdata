@@ -255,15 +255,100 @@ test.describe('mobile', () => {
 })
 
 test.describe('column filter', () => {
-  test('date column filter shows a date input', async ({ page }) => {
+  test('date column filter shows a calendar, not a text search', async ({ page }) => {
     await gotoExplore(page)
 
     await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
 
-    // Date columns show a native date picker input, not a text search
-    await expect(
-      page.getByTestId('column-filter-Séance').locator('input[type="date"]'),
-    ).toBeVisible({ timeout: 3000 })
+    await expect(panel.getByLabel('Condition du filtre')).toBeVisible({ timeout: 3000 })
+    // A day cell proves the calendar rendered; days carry their ISO date
+    await expect(panel.locator('[data-value]').first()).toBeVisible()
+    await expect(panel.getByPlaceholder('Rechercher...')).toHaveCount(0)
+  })
+
+  test('picking a day in the calendar filters on that single day', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+
+    await panel.getByLabel('Année').selectOption('2015')
+    await panel.getByLabel('Mois').selectOption('6')
+    await panel.locator('[data-value="2015-06-11"]').click()
+
+    // A single day is a half-open interval, so the same query works whether the
+    // column holds plain dates or timestamps
+    const response = dataResponse(page, 'Séance__greater=2015-06-11')
+    await panel.getByRole('button', { name: 'Appliquer' }).click()
+    const url = decodeURIComponent((await response).url())
+    expect(url).toContain('Séance__strictly_less=2015-06-12')
+
+    await expect(page.getByTestId('active-filter-Séance')).toContainText('= 11/06/2015')
+    await expect.poll(async () => (await readRowCount(page)).total).toBeLessThan(unfiltered.total)
+  })
+
+  test('the "is after" operator excludes the day it names', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+
+    await panel.getByLabel('Condition du filtre').selectOption('after')
+    await panel.getByLabel('Année').selectOption('2015')
+    await panel.getByLabel('Mois').selectOption('6')
+    await panel.locator('[data-value="2015-06-11"]').click()
+
+    const response = dataResponse(page, 'Séance__greater=2015-06-12')
+    await panel.getByRole('button', { name: 'Appliquer' }).click()
+    expect((await response).ok()).toBe(true)
+
+    await expect(page.getByTestId('active-filter-Séance')).toContainText('après le 11/06/2015')
+    await expect.poll(async () => (await readRowCount(page)).total).toBeLessThan(unfiltered.total)
+  })
+
+  test('"filter by this value" on a date cell selects that day in the calendar', async ({ page }) => {
+    await gotoExplore(page)
+
+    const index = await columnIndex(page, 'Séance')
+    await page.locator('table tbody tr').first().locator('td').nth(index).click()
+    // The popover shows the value as the API sent it, which is also how the
+    // calendar keys its days — no date parsing needed on either side
+    const isoDay = (await page.getByTestId('cell-raw-value').innerText()).trim()
+    await page.getByRole('button', { name: 'Filtrer par cette valeur' }).click()
+
+    // One filter, not two: the cell writes the same `date` filter the panel does,
+    // so the chip shows the formatted day only, never the raw value on its side
+    await expect(page.getByTestId('active-filter-Séance')).not.toContainText(isoDay)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+    await expect(panel.locator(`[data-value="${isoDay}"]`)).toHaveAttribute('data-selected', 'true')
+    await expect(panel.locator('[data-selected]')).toHaveCount(1)
+  })
+
+  test('a date range filters between both days, ends included', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+
+    await panel.getByLabel('Condition du filtre').selectOption('between')
+    await panel.getByLabel('Année').selectOption('2015')
+    await panel.getByLabel('Mois').selectOption('6')
+    await panel.locator('[data-value="2015-06-11"]').click()
+    await panel.locator('[data-value="2015-06-25"]').click()
+
+    const response = dataResponse(page, 'Séance__greater=2015-06-11')
+    await panel.getByRole('button', { name: 'Appliquer' }).click()
+    const url = decodeURIComponent((await response).url())
+    expect(url).toContain('Séance__strictly_less=2015-06-26')
+
+    await expect(page.getByTestId('active-filter-Séance')).toContainText('11/06/2015 – 25/06/2015')
+    await expect.poll(async () => (await readRowCount(page)).total).toBeLessThan(unfiltered.total)
   })
 
   test('year column filter shows a number input', async ({ page }) => {

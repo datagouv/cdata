@@ -1,4 +1,5 @@
 import type { Component } from 'vue'
+import { parseDate, type CalendarDate } from '@internationalized/date'
 import {
   RiHashtag,
   RiPriceTag3Line,
@@ -22,12 +23,72 @@ import {
 } from '@remixicon/vue'
 import { useTranslation } from '../composables/useTranslation'
 import type { TranslationFunction } from '../composables/useTranslation'
-import type { ColumnFilters, ColumnType } from '../components/TabularExplorer/types'
+import type { ColumnFilters, ColumnType, DateFilter } from '../components/TabularExplorer/types'
 
 export function hasFilterForColumn(filters: Record<string, ColumnFilters>, column: string): boolean {
   const f = filters[column]
   if (!f) return false
-  return !!(f.in?.length || f.exact != null || f.contains || f.null || f.min != null || f.max != null)
+  return !!(f.in?.length || f.exact != null || f.contains || f.null || f.min != null || f.max != null || f.date)
+}
+
+// `initialFilters` is a public prop of TabularExplorer, so a filter can carry
+// anything a consumer put in it. An unparseable date is dropped rather than
+// thrown, the way a non-numeric `min` is already ignored by `Number.isFinite`.
+function parseIsoDate(value: string | undefined): CalendarDate | null {
+  if (!value) return null
+  try {
+    return parseDate(value)
+  }
+  catch {
+    return null
+  }
+}
+
+/**
+ * The calendar day a cell of a date column falls on, as an ISO date, or null
+ * when the value is not one the API produced. Timestamps keep only their day:
+ * filtering a whole day is the useful reading of "filter by this value", where
+ * the exact millisecond would only ever match that one row.
+ */
+export function toIsoDay(value: unknown): string | null {
+  const day = String(value ?? '').slice(0, 10)
+  return parseIsoDate(day) ? day : null
+}
+
+/**
+ * The day interval a date filter selects, half-open: `[lower, upper)`.
+ * An absent bound means the interval is open on that side.
+ */
+export function dateFilterBounds(filter: DateFilter): { lower: CalendarDate | null, upper: CalendarDate | null } {
+  const start = parseIsoDate(filter.start)
+  if (!start) return { lower: null, upper: null }
+  switch (filter.operator) {
+    case 'is':
+      return { lower: start, upper: start.add({ days: 1 }) }
+    case 'before':
+      return { lower: null, upper: start }
+    case 'after':
+      return { lower: start.add({ days: 1 }), upper: null }
+    case 'between': {
+      const end = parseIsoDate(filter.end)
+      return { lower: start, upper: end ? end.add({ days: 1 }) : null }
+    }
+  }
+}
+
+/**
+ * Query params for a date filter, as a half-open day interval.
+ *
+ * The same two operators cover `date` and `datetime` columns, which the profile
+ * does not tell apart. `__exact` would not: a timestamp is never equal to a bare
+ * day, so an exact filter silently matches nothing on a `datetime` column.
+ */
+export function buildDateFilterParams(column: string, filter: DateFilter): Record<string, string> {
+  const { lower, upper } = dateFilterBounds(filter)
+  const params: Record<string, string> = {}
+  if (lower) params[`${column}__greater`] = lower.toString()
+  if (upper) params[`${column}__strictly_less`] = upper.toString()
+  return params
 }
 
 export type TypeDisplay = {
