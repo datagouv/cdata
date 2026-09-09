@@ -157,20 +157,21 @@
               keep-margins-even-without-borders
               @click="openThread(discussion, true)"
             />
-
-            <DiscussionsThreadModal
-              :model-value="openedThreadId === discussion.id"
-              :thread="discussion"
-              :subject="getSubjectOf(discussion) ?? undefined"
-              :respond-immediately="openedThreadId === discussion.id && openedToRespond"
-              @update:model-value="(opened: boolean | undefined) => openedThreadId = opened ? discussion.id : null"
-              @responded="$emit('refresh')"
-            />
           </div>
         </td>
       </tr>
     </tbody>
   </AdminTable>
+
+  <DiscussionsThreadModal
+    v-if="openedThread"
+    model-value
+    :thread="openedThread"
+    :subject="getSubjectOf(openedThread) ?? undefined"
+    :respond-immediately="openedToRespond"
+    @update:model-value="openedThread = null"
+    @responded="$emit('refresh')"
+  />
 </template>
 
 <script setup lang="ts">
@@ -221,12 +222,12 @@ watchEffect(async () => {
   await Promise.all(Object.values(subjectsPromises.value))
 })
 
-const openedThreadId = ref<string | null>(null)
+const openedThread = ref<Thread | null>(null)
 const openedToRespond = ref(false)
 
 function openThread(discussion: Thread, respond: boolean) {
   openedToRespond.value = respond
-  openedThreadId.value = discussion.id
+  openedThread.value = discussion
 }
 
 function getSubjectOf(discussion: Thread): DiscussionSubjectTypes | null {
