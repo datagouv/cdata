@@ -101,15 +101,15 @@
             @clamp-change="(clamped: boolean) => clampedContents[discussion.id] = clamped"
           />
           <p
-            v-if="getOpenThreadLabel(discussion) && getSubjectOf(discussion)"
+            v-if="getOpenThreadTrigger(discussion) && getSubjectOf(discussion)"
             class="m-0 text-right"
           >
             <button
               type="button"
               class="link italic"
-              @click="openThread(discussion, isFullyShown(discussion))"
+              @click="openThread(discussion, getOpenThreadTrigger(discussion)!.respond)"
             >
-              {{ getOpenThreadLabel(discussion) }}
+              {{ getOpenThreadTrigger(discussion)!.label }}
             </button>
           </p>
         </td>
@@ -193,6 +193,12 @@ import type { DiscussionSortedBy, DiscussionSubjectTypes, Thread } from '~/types
 import type { AdminBadgeType, SortDirection } from '~/types/types'
 import { getDiscussionUrl, getSubject, getSubjectTypeIcon, getSubjectTitle } from '~/utils/discussions'
 
+type OpenThreadTrigger = {
+  label: string
+  /** Whether opening the thread should go straight to the respond form. */
+  respond: boolean
+}
+
 const props = defineProps<{
   discussions: Array<Thread>
   sortDirection: SortDirection
@@ -235,31 +241,30 @@ function openThread(discussion: Thread, respond: boolean) {
   openedThreadId.value = discussion.id
 }
 
-/** The table already shows the whole thread: there is nothing left to read. */
-function isFullyShown(discussion: Thread): boolean {
-  return discussion.discussion.length === 1 && !clampedContents.value[discussion.id]
-}
-
 function getSubjectOf(discussion: Thread): DiscussionSubjectTypes | null {
   return props.subject ?? subjects.value[discussion.subject.id] ?? null
 }
 
 /**
- * Label of the trigger opening the whole thread: the number of answers when
- * there are some, an invitation to read the first comment in full when the
- * table clamped it away, and otherwise what is left to do on the thread.
- * Nothing on a closed thread the table already shows entirely.
+ * Trigger opening the whole thread: the number of answers when there are some,
+ * an invitation to read the first comment in full when the table clamped it
+ * away, and otherwise what is left to do on the thread. Nothing on a closed
+ * thread the table already shows entirely.
  */
-function getOpenThreadLabel(discussion: Thread): string | null {
+function getOpenThreadTrigger(discussion: Thread): OpenThreadTrigger | null {
   const answers = discussion.discussion.length - 1
   if (answers > 0) {
-    return t('et {n} commentaire suivant | et {n} commentaires suivants', { n: answers })
+    return {
+      label: t('et {n} commentaire suivant | et {n} commentaires suivants', { n: answers }),
+      respond: false,
+    }
   }
   if (clampedContents.value[discussion.id]) {
-    return t('voir plus')
+    return { label: t('voir plus'), respond: false }
   }
+  // The table already shows the whole thread: there is nothing left to read.
   if (!discussion.closed) {
-    return t('répondre')
+    return { label: t('répondre'), respond: true }
   }
   return null
 }
