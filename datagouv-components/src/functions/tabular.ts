@@ -24,6 +24,7 @@ import {
 import { useTranslation } from '../composables/useTranslation'
 import type { TranslationFunction } from '../composables/useTranslation'
 import type { ColumnFilters, ColumnType, DateFilter } from '../components/TabularExplorer/types'
+import { parseDateValue } from './dates'
 
 export function hasFilterForColumn(filters: Record<string, ColumnFilters>, column: string): boolean {
   const f = filters[column]
@@ -34,7 +35,7 @@ export function hasFilterForColumn(filters: Record<string, ColumnFilters>, colum
 // `initialFilters` is a public prop of TabularExplorer, so a filter can carry
 // anything a consumer put in it. An unparseable date is dropped rather than
 // thrown, the way a non-numeric `min` is already ignored by `Number.isFinite`.
-function parseIsoDate(value: string | undefined): CalendarDate | null {
+export function parseIsoDate(value: string | undefined): CalendarDate | null {
   if (!value) return null
   try {
     return parseDate(value)
@@ -59,7 +60,7 @@ export function toIsoDay(value: unknown): string | null {
  * The day interval a date filter selects, half-open: `[lower, upper)`.
  * An absent bound means the interval is open on that side.
  */
-export function dateFilterBounds(filter: DateFilter): { lower: CalendarDate | null, upper: CalendarDate | null } {
+function dateFilterBounds(filter: DateFilter): { lower: CalendarDate | null, upper: CalendarDate | null } {
   const start = parseIsoDate(filter.start)
   if (!start) return { lower: null, upper: null }
   switch (filter.operator) {
@@ -79,9 +80,10 @@ export function dateFilterBounds(filter: DateFilter): { lower: CalendarDate | nu
 /**
  * Query params for a date filter, as a half-open day interval.
  *
- * The same two operators cover `date` and `datetime` columns, which the profile
- * does not tell apart. `__exact` would not: a timestamp is never equal to a bare
- * day, so an exact filter silently matches nothing on a `datetime` column.
+ * The same two operators cover `date` and `datetime` columns, which
+ * `resolveColumnType` merges into one display type. `__exact` would not: a
+ * timestamp is never equal to a bare day, so an exact filter silently matches
+ * nothing on a `datetime` column.
  */
 export function buildDateFilterParams(column: string, filter: DateFilter): Record<string, string> {
   const { lower, upper } = dateFilterBounds(filter)
@@ -209,8 +211,8 @@ export function useFormatTabular() {
 
   function formatCellDate(value: unknown): string {
     if (value == null || value === '') return '–'
-    const d = new Date(String(value))
-    if (Number.isNaN(d.getTime())) return String(value)
+    const d = parseDateValue(String(value))
+    if (!d) return String(value)
     return new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(d)
   }
 

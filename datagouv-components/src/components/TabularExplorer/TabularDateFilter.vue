@@ -1,6 +1,8 @@
 <template>
+  <!-- Spacing carries the grouping: what the filter is (operator, dates), then the
+       calendar with the bar that drives it, then the actions. -->
   <form
-    class="space-y-2 border-b border-black/10 px-3 py-2"
+    class="border-b border-black/10 px-3 py-2"
     @submit.prevent="apply"
   >
     <select
@@ -17,55 +19,24 @@
       </option>
     </select>
 
-    <!-- Editable segments rather than a text input: the value never goes through
-         a locale-dependent parse, and the day/month/year order follows the locale. -->
-    <div class="flex items-stretch gap-2">
-      <DateFieldRoot
-        v-slot="{ segments }"
+    <div class="mt-2 flex items-stretch gap-2">
+      <TabularDateField
         v-model="start"
         v-model:placeholder="placeholder"
-        :locale="locale"
-        granularity="day"
-        class="flex h-8 min-w-0 flex-1 items-center rounded-lg border border-transparent bg-[#f3f3f5] px-2 text-sm tabular-nums focus-within:border-new-primary"
-        :class="start ? 'text-gray-title' : 'text-gray-medium'"
-        :aria-label="isRange ? t('Date de début') : t('Date')"
-      >
-        <DateFieldInput
-          v-for="item in segments"
-          :key="item.part"
-          :part="item.part"
-          class="rounded px-0.5 focus:bg-new-primary focus:text-white focus:outline-none"
-        >
-          {{ item.value }}
-        </DateFieldInput>
-      </DateFieldRoot>
-
-      <DateFieldRoot
+        :label="isRange ? t('Date de début') : t('Date')"
+      />
+      <TabularDateField
         v-if="isRange"
-        v-slot="{ segments }"
         v-model="end"
         v-model:placeholder="placeholder"
-        :locale="locale"
-        granularity="day"
         :min-value="start ?? undefined"
-        class="flex h-8 min-w-0 flex-1 items-center rounded-lg border border-transparent bg-[#f3f3f5] px-2 text-sm tabular-nums focus-within:border-new-primary"
-        :class="end ? 'text-gray-title' : 'text-gray-medium'"
-        :aria-label="t('Date de fin')"
-      >
-        <DateFieldInput
-          v-for="item in segments"
-          :key="item.part"
-          :part="item.part"
-          class="rounded px-0.5 focus:bg-new-primary focus:text-white focus:outline-none"
-        >
-          {{ item.value }}
-        </DateFieldInput>
-      </DateFieldRoot>
+        :label="t('Date de fin')"
+      />
     </div>
 
     <!-- Month and year are pickers rather than a heading: reaching a date years
          away otherwise takes one click per month. -->
-    <div class="flex items-center gap-1">
+    <div class="mt-4 flex items-center gap-1">
       <select
         :value="placeholder.month"
         class="h-7 min-w-0 flex-1 rounded border border-black/10 bg-white px-1 text-xs focus:border-new-primary focus:outline-none"
@@ -220,12 +191,13 @@
       </CalendarGrid>
     </CalendarRoot>
 
-    <div class="flex items-center justify-end gap-2">
+    <div class="mt-4 flex items-center justify-end gap-2">
       <BrandedButton
         color="tertiary"
         size="2xs"
         type="button"
         keep-margins-even-without-borders
+        data-testid="clear-date-filter"
         @click="clear"
       >
         {{ t('Effacer') }}
@@ -244,7 +216,7 @@
 
 <script setup lang="ts">
 import { computed, ref, shallowRef, watch } from 'vue'
-import { parseDate, today, getLocalTimeZone, type DateValue } from '@internationalized/date'
+import { today, getLocalTimeZone, type DateValue } from '@internationalized/date'
 import {
   CalendarCell,
   CalendarCellTrigger,
@@ -254,8 +226,6 @@ import {
   CalendarGridRow,
   CalendarHeadCell,
   CalendarRoot,
-  DateFieldInput,
-  DateFieldRoot,
   RangeCalendarCell,
   RangeCalendarCellTrigger,
   RangeCalendarGrid,
@@ -267,7 +237,9 @@ import {
 } from 'reka-ui'
 import { RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
+import { parseIsoDate } from '../../functions/tabular'
 import BrandedButton from '../BrandedButton.vue'
+import TabularDateField from './TabularDateField.vue'
 import type { ColumnFilters, DateFilter, DateFilterOperator } from './types'
 
 const props = defineProps<{
@@ -292,21 +264,27 @@ type DayState = {
   selected: boolean
   today: boolean
   outsideView: boolean
-  disabled: boolean
 }
 
 const DAY_BASE_CLASS = 'flex size-8 items-center justify-center text-sm tabular-nums transition-colors'
+
+// One utility per axis, never two: `!important` puts every Tailwind class at the
+// same specificity, so a cell carrying two `text-*` is resolved by the order they
+// happen to be emitted in rather than by the order written here.
+function dayText(cell: DayState): string {
+  if (cell.selected) return 'font-medium text-white'
+  if (cell.today) return 'font-bold text-new-primary'
+  return cell.outsideView ? 'text-gray-low' : 'text-gray-title'
+}
 
 function dayClass(cell: DayState): string[] {
   return [
     DAY_BASE_CLASS,
     'rounded-md',
-    cell.disabled ? 'pointer-events-none text-gray-low' : '',
-    cell.outsideView ? 'text-gray-low' : 'text-gray-title',
+    dayText(cell),
     cell.selected
-      ? 'bg-new-primary font-medium text-white'
+      ? 'bg-new-primary'
       : 'group-hover:bg-gray-some group-focus-visible:ring-2 group-focus-visible:ring-new-primary',
-    cell.today && !cell.selected ? 'font-bold text-new-primary' : '',
   ]
 }
 
@@ -318,14 +296,13 @@ function rangeDayClass(cell: DayState & { highlighted: boolean, selectionStart: 
   return [
     DAY_BASE_CLASS,
     'w-full',
-    cell.disabled ? 'pointer-events-none text-gray-low' : '',
-    !isEnd && cell.outsideView ? 'text-gray-low' : '',
-    isEnd ? 'rounded-md bg-new-primary font-medium text-white' : '',
-    !isEnd && inRange ? 'bg-new-primary/10 text-gray-title' : '',
-    !isEnd && !inRange ? 'rounded-md text-gray-title group-hover:bg-gray-some' : '',
+    // Only the two ends read as selected here: the days in between are carried by
+    // the background, not by the text
+    dayText({ ...cell, selected: isEnd }),
+    isEnd ? 'bg-new-primary' : inRange ? 'bg-new-primary/10' : 'group-hover:bg-gray-some',
+    isEnd || !inRange ? 'rounded-md' : '',
     cell.selectionStart ? 'rounded-r-none' : '',
     cell.selectionEnd ? 'rounded-l-none' : '',
-    cell.today && !isEnd ? 'font-bold text-new-primary' : '',
     'group-focus-visible:ring-2 group-focus-visible:ring-new-primary',
   ]
 }
@@ -355,7 +332,9 @@ const range = computed({
 const isComplete = computed(() => Boolean(start.value && (!isRange.value || end.value)))
 
 const monthNames = computed(() => {
-  const formatter = new Intl.DateTimeFormat(locale, { month: 'long' })
+  // `timeZone` matches the instants below: west of UTC, midnight UTC on the 1st
+  // falls in the previous month locally, and every name shifts by one
+  const formatter = new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' })
   return Array.from({ length: 12 }, (_, index) =>
     formatter.format(new Date(Date.UTC(2000, index, 1))))
 })
@@ -383,16 +362,6 @@ function shiftMonths(amount: number) {
   placeholder.value = placeholder.value.add({ months: amount })
 }
 
-function toDateValue(iso: string | undefined): DateValue | undefined {
-  if (!iso) return undefined
-  try {
-    return parseDate(iso)
-  }
-  catch {
-    return undefined
-  }
-}
-
 // Reflect the applied filter: the panel stays mounted between openings, and the
 // filter can also be dropped from the active-filter chip or the panel header.
 watch(() => filters.value[props.column]?.date, (dateFilter) => {
@@ -402,8 +371,8 @@ watch(() => filters.value[props.column]?.date, (dateFilter) => {
     return
   }
   operator.value = dateFilter.operator
-  start.value = toDateValue(dateFilter.start)
-  end.value = toDateValue(dateFilter.end)
+  start.value = parseIsoDate(dateFilter.start) ?? undefined
+  end.value = parseIsoDate(dateFilter.end) ?? undefined
   if (start.value) {
     placeholder.value = start.value
   }

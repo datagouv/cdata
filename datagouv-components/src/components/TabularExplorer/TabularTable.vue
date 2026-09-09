@@ -35,7 +35,10 @@
       ]"
       :aria-busy="isRefreshing"
     >
-      <table class="text-sm border-collapse">
+      <table
+        class="text-sm border-collapse"
+        data-testid="data-table"
+      >
         <thead
           class="sticky top-0 z-10 bg-gray-some transition-shadow"
           :class="scrolled ? 'shadow-[inset_0_-1px_0_0_#E5E5E5,0_6px_8px_-6px_rgba(0,0,0,0.15)]' : 'shadow-[inset_0_-1px_0_0_#E5E5E5]'"

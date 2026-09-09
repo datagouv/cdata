@@ -218,7 +218,11 @@ function describeDateFilter(filter: DateFilter): string {
     case 'is': return `= ${formatCellDate(filter.start)}`
     case 'before': return `${t('avant le')} ${formatCellDate(filter.start)}`
     case 'after': return `${t('après le')} ${formatCellDate(filter.start)}`
-    case 'between': return `${formatCellDate(filter.start)} – ${formatCellDate(filter.end)}`
+    // An open-ended range is what `dateFilterBounds` sends, so it is what the chip
+    // says: repeating the separator as a missing end reads as three dashes in a row
+    case 'between': return filter.end
+      ? `${formatCellDate(filter.start)} – ${formatCellDate(filter.end)}`
+      : `${t('à partir du')} ${formatCellDate(filter.start)}`
   }
 }
 

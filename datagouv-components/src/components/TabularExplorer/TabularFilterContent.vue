@@ -74,16 +74,15 @@
       class="px-3 py-2 border-b border-black/10"
     >
       <div class="relative">
-        <component
-          :is="searchField.icon"
+        <RiSearchLine
           class="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-medium"
           aria-hidden="true"
         />
         <input
           v-model="search"
-          :type="searchField.type"
+          :type="isNumeric ? 'number' : 'text'"
           class="w-full h-8 text-sm border border-transparent rounded-lg py-1 pl-8 pr-3 bg-[#f3f3f5] focus:outline-none focus:border-new-primary"
-          :placeholder="searchField.placeholder"
+          :placeholder="t('Rechercher...')"
         >
       </div>
     </div>
@@ -188,14 +187,7 @@
           :max="profileMax"
         >
       </div>
-      <div class="flex items-center gap-2">
-        <BrandedButton
-          color="primary"
-          size="2xs"
-          type="submit"
-        >
-          {{ t('Appliquer') }}
-        </BrandedButton>
+      <div class="flex items-center justify-end gap-2">
         <BrandedButton
           color="tertiary"
           size="2xs"
@@ -204,6 +196,13 @@
           @click="clearRange"
         >
           {{ t('Effacer') }}
+        </BrandedButton>
+        <BrandedButton
+          color="primary"
+          size="2xs"
+          type="submit"
+        >
+          {{ t('Appliquer') }}
         </BrandedButton>
       </div>
     </form>
@@ -245,17 +244,11 @@ const search = ref('')
 
 // Numbers and years are matched exactly (the API has no `contains` for them),
 // so the field offers a number input instead of a text search.
-const searchField = computed(() => {
-  switch (props.columnType) {
-    case 'number':
-    case 'year': return { icon: RiSearchLine, type: 'number', placeholder: t('Rechercher...') }
-    default: return { icon: RiSearchLine, type: 'text', placeholder: t('Rechercher...') }
-  }
-})
+const isNumeric = computed(() => props.columnType === 'number' || props.columnType === 'year')
 
 watchDebounced(search, (q) => {
   const existing = filters.value[props.column] ?? {}
-  const operator = props.columnType === 'number' || props.columnType === 'year' ? 'exact' : 'contains'
+  const operator = isNumeric.value ? 'exact' : 'contains'
   if (q) {
     filters.value = { ...filters.value, [props.column]: { ...existing, [operator]: q } }
   }
