@@ -58,48 +58,37 @@
         :key="discussion.id"
       >
         <td>
-          <!-- Not <p>s: TextClamp is a .client component, its SSR placeholder is
-               a <div> and a <div> inside a <p> is restructured by the browser
-               parser, causing hydration mismatches -->
-          <div class="fr-text--bold">
+          <p class="fr-text--bold m-0 wrap-anywhere line-clamp-2">
             <CdataLink
               class="link"
               :to="discussion.self_web_url"
             >
-              <TextClamp
-                :text="discussion.title"
-                :auto-resize="true"
-                :max-lines="2"
-              />
+              {{ discussion.title }}
             </CdataLink>
-          </div>
-          <div v-if="!subject && subjects[discussion.subject.id]">
+          </p>
+          <p
+            v-if="!subject && subjects[discussion.subject.id]"
+            class="m-0"
+          >
             <CdataLink
               class="link inline-flex gap-1"
               :to="getSubjectPage(subjects[discussion.subject.id]!)"
             >
               <component
                 :is="getSubjectTypeIcon(discussion.subject.class)"
-                class="self-center size-3"
+                class="self-center size-3 shrink-0"
                 aria-hidden="true"
               />
-              <TextClamp
-                class="overflow-wrap-anywhere"
-                :text="getSubjectTitle(subjects[discussion.subject.id]!)"
-                :auto-resize="true"
-                :max-lines="1"
-              />
+              <span class="wrap-anywhere line-clamp-1">
+                {{ getSubjectTitle(subjects[discussion.subject.id]!) }}
+              </span>
             </CdataLink>
-          </div>
+          </p>
         </td>
         <td>
-          <TextClamp
-            class="overflow-wrap-anywhere"
-            :text="discussion.discussion[0].content"
-            :auto-resize="true"
-            :max-lines="3"
-            @clamp-change="(clamped: boolean) => clampedContents[discussion.id] = clamped"
-          />
+          <p class="m-0 wrap-anywhere line-clamp-3">
+            {{ discussion.discussion[0].content }}
+          </p>
           <p
             v-if="getOpenThreadTrigger(discussion) && getSubjectOf(discussion)"
             class="m-0 text-right"
@@ -234,7 +223,6 @@ watchEffect(async () => {
 
 const openedThreadId = ref<string | null>(null)
 const openedToRespond = ref(false)
-const clampedContents = ref<Record<string, boolean>>({})
 
 function openThread(discussion: Thread, respond: boolean) {
   openedToRespond.value = respond
@@ -247,9 +235,8 @@ function getSubjectOf(discussion: Thread): DiscussionSubjectTypes | null {
 
 /**
  * Trigger opening the whole thread: the number of answers when there are some,
- * an invitation to read the first comment in full when the table clamped it
- * away, and otherwise what is left to do on the thread. Nothing on a closed
- * thread the table already shows entirely.
+ * and otherwise what is left to do on the thread. Nothing on a closed thread
+ * made of a single comment, which the table already shows.
  */
 function getOpenThreadTrigger(discussion: Thread): OpenThreadTrigger | null {
   const answers = discussion.discussion.length - 1
@@ -259,10 +246,6 @@ function getOpenThreadTrigger(discussion: Thread): OpenThreadTrigger | null {
       respond: false,
     }
   }
-  if (clampedContents.value[discussion.id]) {
-    return { label: t('voir plus'), respond: false }
-  }
-  // The table already shows the whole thread: there is nothing left to read.
   if (!discussion.closed) {
     return { label: t('répondre'), respond: true }
   }
