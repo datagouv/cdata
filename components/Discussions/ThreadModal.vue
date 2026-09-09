@@ -9,8 +9,7 @@
         v-if="subject"
         :thread
         :subject
-        always-expanded
-        :respond-immediately
+        respond-immediately
         @change="respond(close)"
       />
     </template>
@@ -24,7 +23,6 @@ import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
 defineProps<{
   thread: Thread
   subject?: DiscussionSubjectTypes
-  respondImmediately?: boolean
 }>()
 
 const emit = defineEmits<{

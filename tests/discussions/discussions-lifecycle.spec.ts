@@ -141,7 +141,7 @@ for (const config of SUBJECT_CONFIGS) {
       await expect(page.getByText(`Sujet beta ${uniqueId}`, { exact: true })).not.toBeVisible()
     })
 
-    test('admin table links the title and shows the first message', async ({ page, request }) => {
+    test('admin table links the title and shows the last message', async ({ page, request }) => {
       const uniqueId = Date.now()
       const subject = await config.create(request, uniqueId)
       const discussion = await createDiscussion(request, config.type, subject.id, `Discussion listée ${uniqueId}`)
@@ -170,14 +170,16 @@ for (const config of SUBJECT_CONFIGS) {
       await page.goto(`/${config.adminBase}/${subject.id}/discussions`)
       await page.waitForLoadState('networkidle')
 
-      // The table only shows the first comment: the answer lives behind the trigger
-      await expect(page.getByText('Réponse visible seulement dans la modale')).not.toBeVisible()
+      // The table only shows the last comment: the first one lives behind the modal
+      await expect(page.getByText('Premier message de la discussion.')).not.toBeVisible()
 
-      await page.getByRole('button', { name: 'et 1 commentaire suivant' }).click()
+      await page.getByRole('button', { name: `Répondre à la discussion Discussion à déplier ${uniqueId}` }).click()
 
       const dialog = page.getByRole('dialog')
       await expect(dialog.getByText('Premier message de la discussion.')).toBeVisible()
       await expect(dialog.getByText('Réponse visible seulement dans la modale')).toBeVisible()
+      // The trigger already said "respond": the form is open without a second click
+      await expect(dialog.getByRole('textbox', { name: /Votre message/ })).toBeVisible()
     })
 
     test('admin page can filter open and closed discussions', async ({ page, request }) => {

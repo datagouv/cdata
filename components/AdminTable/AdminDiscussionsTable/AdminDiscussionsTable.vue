@@ -143,7 +143,6 @@
     model-value
     :thread="openedThread"
     :subject="getSubjectOf(openedThread) ?? undefined"
-    respond-immediately
     @update:model-value="openedThread = null"
     @responded="$emit('refresh')"
   />

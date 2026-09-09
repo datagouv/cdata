@@ -45,7 +45,7 @@
         <FormattedDate :date="thread.closed" />
       </template>
     </TranslationT>
-    <template v-if="alwaysExpanded || !thread.closed || openDiscussionIfClosed">
+    <template v-if="!thread.closed || openDiscussionIfClosed">
       <template
         v-for="comment, index in thread.discussion"
         :key="index"
@@ -76,7 +76,7 @@
     </template>
     <footer class="flex justify-end">
       <BrandedButton
-        v-if="thread.closed && !alwaysExpanded"
+        v-if="thread.closed"
         color="secondary"
         size="xs"
         @click="openDiscussionIfClosed = !openDiscussionIfClosed"
@@ -85,7 +85,7 @@
         <span v-else>{{ $t('Voir la discussion') }}</span>
       </BrandedButton>
       <BrandedButton
-        v-else-if="!thread.closed && !showRespondForm"
+        v-else-if="!showRespondForm"
         color="secondary"
         size="xs"
         @click="showRespondFormIfConnected"
@@ -106,9 +106,6 @@ import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
 const props = defineProps<{
   thread: Thread
   subject: DiscussionSubjectTypes
-  // Closed threads are collapsed behind a toggle in the public list; in a modal
-  // the thread is what the reader came for, so it stays open.
-  alwaysExpanded?: boolean
   // For callers whose own trigger already said "respond": clicking it should not
   // land on a card where "Répondre" has to be clicked a second time.
   respondImmediately?: boolean
