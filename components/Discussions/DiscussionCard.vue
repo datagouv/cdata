@@ -118,10 +118,7 @@ defineEmits<{
 }>()
 
 const openDiscussionIfClosed = ref(false)
-const showRespondForm = ref(false)
-// The modal keeps its content mounted while hidden, so the prop is read on each
-// change rather than only at setup.
-watch(() => props.respondImmediately, respond => showRespondForm.value = respond ?? false, { immediate: true })
+const showRespondForm = ref(props.respondImmediately ?? false)
 const me = useMaybeMe()
 const route = useRoute()
 
