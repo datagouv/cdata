@@ -12,19 +12,13 @@
         </AdminTableTh>
         <AdminTableTh
           scope="col"
-          class="w-1/3"
-        >
-          {{ t("Premier commentaire") }}
-        </AdminTableTh>
-        <AdminTableTh
-          scope="col"
           class="w-44"
         >
           {{ t("Statut") }}
         </AdminTableTh>
         <AdminTableTh
           scope="col"
-          class="min-w-56"
+          class="w-1/3"
         >
           {{ t("Dernier commentaire") }}
         </AdminTableTh>
@@ -86,23 +80,6 @@
           </p>
         </td>
         <td>
-          <p class="m-0 wrap-anywhere line-clamp-3">
-            {{ discussion.discussion[0].content }}
-          </p>
-          <p
-            v-if="getOpenThreadTrigger(discussion) && getSubjectOf(discussion)"
-            class="m-0 text-right"
-          >
-            <button
-              type="button"
-              class="link italic"
-              @click="openThread(discussion, getOpenThreadTrigger(discussion)!.respond)"
-            >
-              {{ getOpenThreadTrigger(discussion)!.label }}
-            </button>
-          </p>
-        </td>
-        <td>
           <AdminBadge
             size="xs"
             :type="getStatus(discussion).type"
@@ -111,16 +88,14 @@
           </AdminBadge>
         </td>
         <td>
-          <div>
-            <p><FormattedDate :date="getLastComment(discussion).posted_on" /></p>
-            <p class="inline-flex items-center">
-              {{ t('par ') }}
-              <AvatarWithName
-                class="fr-ml-1v"
-                :user="getLastComment(discussion).posted_by"
-              />
-            </p>
-          </div>
+          <p class="m-0 wrap-anywhere line-clamp-3">
+            {{ getLastComment(discussion).content }}
+          </p>
+          <p class="m-0 flex items-center justify-end gap-1">
+            <FormattedDate :date="getLastComment(discussion).posted_on" />
+            {{ t('par ') }}
+            <AvatarWithName :user="getLastComment(discussion).posted_by" />
+          </p>
         </td>
         <td>
           <FormattedDate :date="discussion.created" />
@@ -155,7 +130,7 @@
               :aria-label="$t('Répondre à la discussion {title}', { title: discussion.title })"
               icon-only
               keep-margins-even-without-borders
-              @click="openThread(discussion, true)"
+              @click="openedThread = discussion"
             />
           </div>
         </td>
@@ -168,7 +143,7 @@
     model-value
     :thread="openedThread"
     :subject="getSubjectOf(openedThread) ?? undefined"
-    :respond-immediately="openedToRespond"
+    respond-immediately
     @update:model-value="openedThread = null"
     @responded="$emit('refresh')"
   />
@@ -182,12 +157,6 @@ import AdminTableTh from '../Table/AdminTableTh.vue'
 import type { DiscussionSortedBy, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 import type { AdminBadgeType, SortDirection } from '~/types/types'
 import { getDiscussionUrl, getSubject, getSubjectTypeIcon, getSubjectTitle } from '~/utils/discussions'
-
-type OpenThreadTrigger = {
-  label: string
-  /** Whether opening the thread should go straight to the respond form. */
-  respond: boolean
-}
 
 const props = defineProps<{
   discussions: Array<Thread>
@@ -223,34 +192,9 @@ watchEffect(async () => {
 })
 
 const openedThread = ref<Thread | null>(null)
-const openedToRespond = ref(false)
-
-function openThread(discussion: Thread, respond: boolean) {
-  openedToRespond.value = respond
-  openedThread.value = discussion
-}
 
 function getSubjectOf(discussion: Thread): DiscussionSubjectTypes | null {
   return props.subject ?? subjects.value[discussion.subject.id] ?? null
-}
-
-/**
- * Trigger opening the whole thread: the number of answers when there are some,
- * and otherwise what is left to do on the thread. Nothing on a closed thread
- * made of a single comment, which the table already shows.
- */
-function getOpenThreadTrigger(discussion: Thread): OpenThreadTrigger | null {
-  const answers = discussion.discussion.length - 1
-  if (answers > 0) {
-    return {
-      label: t('et {n} commentaire suivant | et {n} commentaires suivants', { n: answers }),
-      respond: false,
-    }
-  }
-  if (!discussion.closed) {
-    return { label: t('répondre'), respond: true }
-  }
-  return null
 }
 
 function sorted(column: DiscussionSortedBy) {
