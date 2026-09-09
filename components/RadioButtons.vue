@@ -13,12 +13,9 @@
       v-for="(option, index) in options"
       :key="option.label"
       class="fr-fieldset__element"
-      :class="{ 'fr-fieldset__element--inline': !hasDescriptions }"
+      :class="{ 'fr-fieldset__element--inline': !stacked }"
     >
-      <div
-        class="fr-radio-group"
-        :class="{ 'fr-radio-rich': hasDescriptions }"
-      >
+      <div class="fr-radio-group">
         <input
           :id="`${inputPrefixId}-${index}`"
           v-model="model"
@@ -43,15 +40,16 @@
 </template>
 
 <script setup lang="ts" generic="T">
-const props = defineProps<{
+withDefaults(defineProps<{
   label: string
   options: Array<{ value: T, label: string, description?: string }>
-}>()
+  // One option per row, instead of all of them on a single line. Needed as soon as
+  // the options carry a description.
+  stacked?: boolean
+}>(), {
+  stacked: false,
+})
 const model = defineModel<T>()
-
-// Descriptions need the room a single line of inline options doesn't have, and
-// the bordered `fr-radio-rich` card to separate one option from the next.
-const hasDescriptions = computed(() => props.options.some(option => option.description))
 
 const legendId = useId()
 const inputPrefixId = useId()

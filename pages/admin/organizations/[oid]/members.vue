@@ -133,6 +133,7 @@
                   v-model="inviteForm.role"
                   :label="t('Rôle')"
                   :options="rolesOptions"
+                  stacked
                 />
 
                 <InputGroup
@@ -310,6 +311,7 @@
                         v-model="newRole"
                         :label="t('Rôle du membre')"
                         :options="rolesOptions"
+                        stacked
                       />
                       <DatasetAssignmentSelector
                         v-if="newRole === 'partial_editor' && currentOrganization"
