@@ -149,8 +149,9 @@ for (const config of SUBJECT_CONFIGS) {
       await page.goto(`/${config.adminBase}/${subject.id}/discussions`)
       await page.waitForLoadState('networkidle')
 
-      const titleLink = page.locator(`a[href$="/discussions?discussion_id=${discussion.id}"]`)
-      await expect(titleLink).toContainText(`Discussion listée ${uniqueId}`)
+      // Exact match: the eye button's label contains the title too
+      const titleLink = page.getByRole('link', { name: `Discussion listée ${uniqueId}`, exact: true })
+      await expect(titleLink).toHaveAttribute('href', new RegExp(`/discussions\\?discussion_id=${discussion.id}$`))
 
       await expect(page.getByText('Premier message de la discussion.')).toBeVisible()
 
