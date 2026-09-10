@@ -128,6 +128,7 @@ export type MultiSelectOption = {
 
 export type UserSuggest = Omit<User, 'avatar' | 'avatar_thumbnail' | 'roles' | 'pages'> & { avatar_url: string | null }
 export type DatasetSuggest = Pick<Dataset, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
+export type DataserviceSuggest = { id: string, title: string, slug: string, page: string }
 export type SpatialZone = {
   code: string
   id: string
@@ -184,7 +185,7 @@ export type NewDatasetForApi = {
   extras?: Record<string, unknown>
 } & WithAccessType
 
-export type ReuseSuggest = Pick<Reuse, 'acronym' | 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
+export type ReuseSuggest = Pick<Reuse, 'id' | 'slug' | 'title' | 'page'> & { image_url: string | null }
 
 export type ReuseForm = {
   featured: boolean
