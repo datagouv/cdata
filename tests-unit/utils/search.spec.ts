@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { toSuggestions } from '~/utils/search'
 
 const dataset = { id: 'd1', title: 'Population', acronym: '', slug: 'population', image_url: null, page: 'https://www.data.gouv.fr/datasets/population' }
-const dataservice = { id: 's1', title: 'API Géo', slug: 'api-geo', page: 'https://www.data.gouv.fr/dataservices/api-geo' }
+const dataservice = { id: 's1', title: 'API Géo', acronym: null, slug: 'api-geo', page: 'https://www.data.gouv.fr/dataservices/api-geo' }
 const reuse = { id: 'r1', title: 'Carte', slug: 'carte', image_url: 'https://example.org/carte.png', page: 'https://www.data.gouv.fr/reuses/carte' }
 const organization = { id: 'o1', name: 'Institut national', acronym: 'INSEE', slug: 'insee', image_url: 'https://example.org/insee.png' }
 
@@ -27,9 +27,7 @@ describe('toSuggestions', () => {
     expect(toSuggestions({ organizations: [{ ...organization, acronym: null }] })[0].label).toEqual('Institut national')
     expect(toSuggestions({ datasets: [{ ...dataset, acronym: 'POP' }] })[0].label).toEqual('Population (POP)')
     expect(toSuggestions({ datasets: [dataset] })[0].label).toEqual('Population')
-  })
-
-  it('keeps the id and image for display', () => {
-    expect(toSuggestions({ reuses: [reuse] })[0]).toMatchObject({ id: 'r1', image_url: 'https://example.org/carte.png' })
+    expect(toSuggestions({ dataservices: [{ ...dataservice, acronym: 'GEO' }] })[0].label).toEqual('API Géo (GEO)')
+    expect(toSuggestions({ dataservices: [dataservice] })[0].label).toEqual('API Géo')
   })
 })

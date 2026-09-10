@@ -40,42 +40,15 @@
         class="list-none pl-0 text-left mt-1 mb-0 max-h-60 overflow-auto rounded-md bg-white text-base shadow-lg focus:outline-none sm:text-sm"
       >
         <ComboboxOption
-          v-for="suggestion in suggestions"
-          :key="`${suggestion.kind}-${suggestion.id}`"
-          v-slot="{ active }"
-          as="template"
-          :value="suggestion"
-        >
-          <li
-            class="relative cursor-default select-none px-4 hover:bg-gray-some *:last:border-0"
-            :class="{ 'text-datagouv': active }"
-          >
-            <div class="flex items-center space-x-2 border-b py-3">
-              <component
-                :is="suggestionIcons[suggestion.kind]"
-                class="h-4 w-4 shrink-0"
-                aria-hidden="true"
-              />
-              <div class="flex-1 truncate">
-                <span class="sr-only">{{ suggestionKindLabels[suggestion.kind] }} : </span>
-                {{ suggestion.label }}
-              </div>
-              <div aria-hidden="true">
-                <RiArrowRightSLine class="h-4 w-4" />
-              </div>
-            </div>
-          </li>
-        </ComboboxOption>
-        <ComboboxOption
-          v-for="(item, index) in menu"
-          :key="`menu-${item.type}`"
+          v-for="item in menu"
+          :key="item.type"
           v-slot="{ active }"
           as="template"
           :value="item"
         >
           <li
             class="relative cursor-default select-none px-4 hover:bg-gray-some *:last:border-0"
-            :class="{ 'text-datagouv': active, 'border-t': suggestions.length > 0 && index === 0 }"
+            :class="{ 'text-datagouv': active }"
           >
             <div class="flex items-center space-x-2 border-b py-3">
               <component
@@ -111,6 +84,33 @@
             </div>
           </li>
         </ComboboxOption>
+        <ComboboxOption
+          v-for="(suggestion, index) in suggestions"
+          :key="`${suggestion.kind}-${suggestion.id}`"
+          v-slot="{ active }"
+          as="template"
+          :value="suggestion"
+        >
+          <li
+            class="relative cursor-default select-none px-4 hover:bg-gray-some *:last:border-0"
+            :class="{ 'text-datagouv': active, 'border-t': index === 0 }"
+          >
+            <div class="flex items-center space-x-2 border-b py-3">
+              <component
+                :is="suggestionIcons[suggestion.kind]"
+                class="h-4 w-4 shrink-0"
+                aria-hidden="true"
+              />
+              <div class="flex-1 truncate">
+                <span class="sr-only">{{ suggestionKindLabels[suggestion.kind] }} : </span>
+                {{ suggestion.label }}
+              </div>
+              <div aria-hidden="true">
+                <RiArrowRightSLine class="h-4 w-4" />
+              </div>
+            </div>
+          </li>
+        </ComboboxOption>
       </ComboboxOptions>
     </TransitionRoot>
   </Combobox>
@@ -139,8 +139,10 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useTranslation()
-const { $api } = useNuxtApp()
 const config = useRuntimeConfig()
+// Not `$api`: it toasts on 429/5xx, which would pile up in the header when the
+// backend is degraded. Suggestions are best-effort and public, so fail silently.
+const suggestFetch = $fetch.create({ baseURL: config.public.apiBase })
 const query = ref('')
 const queryDebounced = refDebounced(query, config.public.searchDebounce)
 const selectedItem = ref<null | Item>(null)
@@ -177,11 +179,11 @@ watch(queryDebounced, async (raw) => {
   if (q.length < MIN_SUGGEST_LENGTH) return
 
   const [datasets, dataservices, reuses, organizations] = await Promise.all([
-    $api<Array<DatasetSuggest>>('/api/1/datasets/suggest/', { query: { q, size: 4 } }).catch(() => []),
+    suggestFetch<Array<DatasetSuggest>>('/api/1/datasets/suggest/', { query: { q, size: 4 } }).catch(() => []),
     // The dataservices endpoint may not exist yet on every server: degrade gracefully.
-    $api<Array<DataserviceSuggest>>('/api/1/dataservices/suggest/', { query: { q, size: 3 } }).catch(() => []),
-    $api<Array<ReuseSuggest>>('/api/1/reuses/suggest/', { query: { q, size: 3 } }).catch(() => []),
-    $api<Array<OrganizationSuggest>>('/api/1/organizations/suggest/', { query: { q, size: 3 } }).catch(() => []),
+    suggestFetch<Array<DataserviceSuggest>>('/api/1/dataservices/suggest/', { query: { q, size: 3 } }).catch(() => []),
+    suggestFetch<Array<ReuseSuggest>>('/api/1/reuses/suggest/', { query: { q, size: 3 } }).catch(() => []),
+    suggestFetch<Array<OrganizationSuggest>>('/api/1/organizations/suggest/', { query: { q, size: 3 } }).catch(() => []),
   ])
   // Stale response: the user kept typing in the meantime.
   if (q !== query.value.trim()) return

@@ -7,7 +7,6 @@ export type Suggestion = {
   kind: SuggestionKind
   id: string
   label: string
-  image_url?: string | null
   // Internal path: never the absolute `page` URL returned by the API.
   to: string
 }
@@ -29,27 +28,24 @@ export function toSuggestions({ datasets = [], dataservices = [], reuses = [], o
       kind: 'dataset',
       id: dataset.id,
       label: withAcronym(dataset.title, dataset.acronym),
-      image_url: dataset.image_url,
       to: `/datasets/${dataset.slug}`,
     })),
     ...dataservices.map((dataservice): Suggestion => ({
       kind: 'dataservice',
       id: dataservice.id,
-      label: dataservice.title,
+      label: withAcronym(dataservice.title, dataservice.acronym),
       to: `/dataservices/${dataservice.slug}`,
     })),
     ...reuses.map((reuse): Suggestion => ({
       kind: 'reuse',
       id: reuse.id,
       label: reuse.title,
-      image_url: reuse.image_url,
       to: `/reuses/${reuse.slug}`,
     })),
     ...organizations.map((organization): Suggestion => ({
       kind: 'organization',
       id: organization.id,
       label: withAcronym(organization.name, organization.acronym),
-      image_url: organization.image_url,
       to: `/organizations/${organization.slug}`,
     })),
   ]
