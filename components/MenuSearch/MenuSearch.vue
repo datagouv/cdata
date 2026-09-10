@@ -180,7 +180,7 @@ watch(queryDebounced, async (raw) => {
 
   const [datasets, dataservices, reuses, organizations] = await Promise.all([
     suggestFetch<Array<DatasetSuggest>>('/api/1/datasets/suggest/', { query: { q, size: 4 } }).catch(() => []),
-    // The dataservices endpoint may not exist yet on every server: degrade gracefully.
+    // The dataservices suggest endpoint may not exist yet, degrade gracefully
     suggestFetch<Array<DataserviceSuggest>>('/api/1/dataservices/suggest/', { query: { q, size: 3 } }).catch(() => []),
     suggestFetch<Array<ReuseSuggest>>('/api/1/reuses/suggest/', { query: { q, size: 3 } }).catch(() => []),
     suggestFetch<Array<OrganizationSuggest>>('/api/1/organizations/suggest/', { query: { q, size: 3 } }).catch(() => []),
