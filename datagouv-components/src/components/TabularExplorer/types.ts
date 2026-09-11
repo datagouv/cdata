@@ -67,6 +67,16 @@ export type TabularTopValue = {
 
 export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean' | 'year'
 
+export type DateFilterOperator = 'is' | 'before' | 'after' | 'between'
+
+export type DateFilter = {
+  operator: DateFilterOperator
+  /** ISO calendar date (YYYY-MM-DD). */
+  start: string
+  /** ISO calendar date, the inclusive upper bound. Only set when `operator` is 'between'. */
+  end?: string
+}
+
 export type ColumnFilters = {
   in?: string[]
   exact?: string
@@ -74,6 +84,7 @@ export type ColumnFilters = {
   max?: number
   contains?: string
   null?: 'only' | 'exclude'
+  date?: DateFilter
 }
 
 export type SortDirection = 'asc' | 'desc'

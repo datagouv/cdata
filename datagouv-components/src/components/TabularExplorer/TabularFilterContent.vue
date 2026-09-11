@@ -61,22 +61,28 @@
       </div>
     </div>
 
-    <!-- Search (contains) or date filter -->
+    <!-- Date filter -->
+    <TabularDateFilter
+      v-if="columnType === 'date'"
+      v-model:filters="filters"
+      :column="column"
+    />
+
+    <!-- Search (contains) -->
     <div
-      v-if="columnType !== 'boolean'"
+      v-if="columnType !== 'boolean' && columnType !== 'date'"
       class="px-3 py-2 border-b border-black/10"
     >
       <div class="relative">
-        <component
-          :is="searchField.icon"
+        <RiSearchLine
           class="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-medium"
           aria-hidden="true"
         />
         <input
           v-model="search"
-          :type="searchField.type"
+          :type="isNumeric ? 'number' : 'text'"
           class="w-full h-8 text-sm border border-transparent rounded-lg py-1 pl-8 pr-3 bg-[#f3f3f5] focus:outline-none focus:border-new-primary"
-          :placeholder="searchField.placeholder"
+          :placeholder="t('Rechercher...')"
         >
       </div>
     </div>
@@ -181,14 +187,7 @@
           :max="profileMax"
         >
       </div>
-      <div class="flex items-center gap-2">
-        <BrandedButton
-          color="primary"
-          size="2xs"
-          type="submit"
-        >
-          {{ t('Appliquer') }}
-        </BrandedButton>
+      <div class="flex items-center justify-end gap-2">
         <BrandedButton
           color="tertiary"
           size="2xs"
@@ -197,6 +196,13 @@
           @click="clearRange"
         >
           {{ t('Effacer') }}
+        </BrandedButton>
+        <BrandedButton
+          color="primary"
+          size="2xs"
+          type="submit"
+        >
+          {{ t('Appliquer') }}
         </BrandedButton>
       </div>
     </form>
@@ -210,13 +216,13 @@ import {
   RiArrowUpLine,
   RiArrowDownLine,
   RiSearchLine,
-  RiCalendarLine,
   RiCheckLine,
 } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useFormatTabular } from '../../functions/tabular'
 import BrandedButton from '../BrandedButton.vue'
 import ProgressBar from '../ProgressBar.vue'
+import TabularDateFilter from './TabularDateFilter.vue'
 import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig, SortDirection } from './types'
 
 const props = defineProps<{
@@ -236,20 +242,13 @@ const { formatNumber } = useFormatTabular()
 
 const search = ref('')
 
-// Numbers, years and dates are matched exactly (the API has no `contains` for
-// them), so the field offers the matching native picker instead of a text search.
-const searchField = computed(() => {
-  switch (props.columnType) {
-    case 'date': return { icon: RiCalendarLine, type: 'date', placeholder: '' }
-    case 'number':
-    case 'year': return { icon: RiSearchLine, type: 'number', placeholder: t('Rechercher...') }
-    default: return { icon: RiSearchLine, type: 'text', placeholder: t('Rechercher...') }
-  }
-})
+// Numbers and years are matched exactly (the API has no `contains` for them),
+// so the field offers a number input instead of a text search.
+const isNumeric = computed(() => props.columnType === 'number' || props.columnType === 'year')
 
 watchDebounced(search, (q) => {
   const existing = filters.value[props.column] ?? {}
-  const operator = props.columnType === 'number' || props.columnType === 'year' || props.columnType === 'date' ? 'exact' : 'contains'
+  const operator = isNumeric.value ? 'exact' : 'contains'
   if (q) {
     filters.value = { ...filters.value, [props.column]: { ...existing, [operator]: q } }
   }
