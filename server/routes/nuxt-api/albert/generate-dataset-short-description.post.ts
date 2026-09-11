@@ -1,5 +1,5 @@
 import { DESCRIPTION_SHORT_MAX_LENGTH } from '~/datagouv-components/src/functions/description'
-import { validateAlbertConfig, callAlbertAPI } from './utils/albert-helpers'
+import { callAlbertAPI } from './utils/albert-helpers'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -11,8 +11,6 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Title and description are required',
     })
   }
-
-  validateAlbertConfig()
 
   const messages = [
     {
