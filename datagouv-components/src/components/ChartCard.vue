@@ -49,9 +49,19 @@
         aria-hidden="true"
         class="size-4 flex-none fill-gray-medium"
       />
-      <p class="text-sm whitespace-nowrap mb-0 text-gray-medium">
-        {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(chart.last_modified, { dateStyle: 'medium' }) }) }}
-      </p>
+      <TranslationT
+        tag="p"
+        class="text-sm whitespace-nowrap mb-0 text-gray-medium"
+        keypath="Mis à jour {date}"
+      >
+        <template #date>
+          <FormattedDate
+            :date="chart.last_modified"
+            format="relative"
+            :options="{ dateStyle: 'medium' }"
+          />
+        </template>
+      </TranslationT>
     </div>
 
     <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium mt-1">
@@ -77,15 +87,16 @@ import { computed } from 'vue'
 import { RiBarChartBoxLine, RiDeleteBinLine, RiEyeLine, RiLineChartLine, RiLockLine, RiSubtractLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Chart } from '../types/visualizations'
-import { useFormatDate } from '../functions/dates'
 import { summarize } from '../functions/helpers'
 import { useTranslation } from '../composables/useTranslation'
 import Placeholder from './Placeholder.vue'
+import FormattedDate from './FormattedDate.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
+import TranslationT from './TranslationT.vue'
 
 const props = defineProps<{
   chart: Chart
@@ -94,7 +105,6 @@ const props = defineProps<{
 }>()
 
 const { t } = useTranslation()
-const { formatRelativeIfRecentDate } = useFormatDate()
 
 const chartIcon = computed(() => {
   return props.chart.series[0]?.type === 'line' ? RiLineChartLine : RiBarChartBoxLine
