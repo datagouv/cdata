@@ -1,4 +1,5 @@
 import type { DatasetV2 } from '@datagouv/components-next'
+import Bowser from 'bowser'
 
 export type ExplorerFeedbackContext = {
   dataset: Pick<DatasetV2, 'id' | 'page' | 'title'>
@@ -11,39 +12,15 @@ export type ExplorerFeedbackContext = {
 }
 
 // Returns a human-readable "Browser - device" string from a raw user agent.
-// Detection is intentionally simple: the form owner only needs a rough idea of
-// the visitor's environment, not a full parser.
+// The form owner only needs a rough idea of the visitor's environment.
 export function getSimplifiedUserAgent(userAgent: string): string {
-  const ua = userAgent.toLowerCase()
+  const parsed = Bowser.parse(userAgent)
 
-  let browser = 'Other'
-  if (ua.includes('firefox/')) {
-    browser = 'Firefox'
-  }
-  else if (ua.includes('edg/')) {
-    browser = 'Edge'
-  }
-  else if (ua.includes('chrome/') || ua.includes('chromium/')) {
-    browser = 'Chrome'
-  }
-  else if (ua.includes('safari/')) {
-    browser = 'Safari'
-  }
-  else if (ua.includes('opera/') || ua.includes('opr/')) {
-    browser = 'Opera'
-  }
+  const browser = parsed.browser.name || 'Other'
 
-  let device = 'desktop'
-  if (ua.includes('ipad') || ua.includes('tablet')) {
-    device = 'tablet'
-  }
-  else if (ua.includes('mobile')) {
-    device = 'mobile'
-  }
-  else if (ua.includes('android')) {
-    // Android tablets usually omit both "Mobile" and "Tablet".
-    device = 'tablet'
-  }
+  const device = parsed.platform.type === 'tablet' || parsed.platform.type === 'mobile'
+    ? parsed.platform.type
+    : 'desktop'
 
   return `${browser} - ${device}`
 }

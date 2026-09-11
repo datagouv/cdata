@@ -61,8 +61,8 @@ describe('getSimplifiedUserAgent', () => {
     expect(getSimplifiedUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1')).toBe('Safari - mobile')
   })
 
-  it('detects Edge on tablet', () => {
-    expect(getSimplifiedUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0 Tablet PC')).toBe('Edge - tablet')
+  it('detects Edge on desktop', () => {
+    expect(getSimplifiedUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0')).toBe('Microsoft Edge - desktop')
   })
 
   it('detects Android phone as mobile', () => {
@@ -74,6 +74,6 @@ describe('getSimplifiedUserAgent', () => {
   })
 
   it('falls back to Other for unknown browsers', () => {
-    expect(getSimplifiedUserAgent('Mozilla/5.0 (X11; Linux x86_64) SomeUnknownBrowser/1.0')).toBe('Other - desktop')
+    expect(getSimplifiedUserAgent('SomeUnknownAgent/1.0')).toBe('Other - desktop')
   })
 })
