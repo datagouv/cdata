@@ -1,13 +1,16 @@
 <template>
-  <div class="border border-new-gray-light rounded-sm p-3 space-y-3">
+  <div :class="[bordered ? 'border border-new-gray-light rounded-sm p-3' : '', 'space-y-3']">
     <ChartFilterRow
       v-for="(filter, index) in group"
       :key="index"
       :model-value="filter"
-      :connector="getConnector(index)"
+      :connector="index === 0 ? 'first' : combinator"
+      :combinator="combinator"
+      :show-combinator-select="showCombinatorSelect && index > 0"
       :column-options="columnOptions"
       :condition-options="conditionOptions"
       @update:model-value="(f) => $emit('update:filter', index, f)"
+      @update:combinator="$emit('update:combinator', $event)"
       @remove="$emit('remove:filter', index)"
     />
     <div class="flex items-center justify-between gap-2">
@@ -17,7 +20,7 @@
         :icon="RiAddLine"
         @click="$emit('add-condition')"
       >
-        {{ addConditionLabel }}
+        {{ t('Ajouter une règle') }}
       </BrandedButton>
       <BrandedButton
         v-if="canRemoveGroup"
@@ -35,35 +38,26 @@
 import type { Filter, FilterCondition } from '@datagouv/components-next'
 import { BrandedButton } from '@datagouv/components-next'
 import { RiAddLine, RiDeleteBinLine } from '@remixicon/vue'
-import { computed } from 'vue'
 import type { FilterGroupCombinator } from '~/utils/chartFilters'
 import ChartFilterRow from './ChartFilterRow.vue'
 
-const props = defineProps<{
+defineProps<{
   group: Array<Filter>
-  groupIndex: number
-  innerCombinator: FilterGroupCombinator
+  combinator: FilterGroupCombinator
+  showCombinatorSelect: boolean
   canRemoveGroup: boolean
+  bordered: boolean
   columnOptions: Array<{ key: string, value: string, disabled: boolean }>
   conditionOptions: Array<FilterCondition>
 }>()
 
 defineEmits<{
   'update:filter': [index: number, filter: Filter]
+  'update:combinator': [combinator: FilterGroupCombinator]
   'remove:filter': [index: number]
   'add-condition': []
   'remove-group': []
 }>()
 
 const { t } = useTranslation()
-
-const addConditionLabel = computed(() =>
-  props.innerCombinator === 'or' ? t('Ajouter un « ou »') : t('Ajouter un « et »'),
-)
-
-function getConnector(index: number): 'first' | 'and' | 'or' | 'none' {
-  if (props.groupIndex === 0 && index === 0) return 'first'
-  if (index === 0) return 'none'
-  return props.innerCombinator
-}
 </script>

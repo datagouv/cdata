@@ -5,17 +5,22 @@ import type { AndFilters, Filter, OrFilters } from '~/datagouv-components/src/ty
 const f = (column: string, value = '1'): Filter => ({ _cls: 'Filter', column, condition: 'exact', value })
 
 describe('toFilterGroups', () => {
-  it('maps null to an empty state with an and root', () => {
-    expect(toFilterGroups(null)).toEqual({ rootCombinator: 'and', groups: [] })
+  it('maps null to an empty state with an or root', () => {
+    expect(toFilterGroups(null)).toEqual({ rootCombinator: 'or', groups: [] })
   })
 
   it('maps a single filter to a one-condition group', () => {
-    expect(toFilterGroups(f('a'))).toEqual({ rootCombinator: 'and', groups: [[f('a')]] })
+    expect(toFilterGroups(f('a'))).toEqual({ rootCombinator: 'or', groups: [[f('a')]] })
   })
 
-  it('maps a flat AndFilters to single-condition groups', () => {
+  it('maps a flat AndFilters to a single and-group under an or root', () => {
     const tree: AndFilters = { _cls: 'AndFilters', filters: [f('a'), f('b')] }
-    expect(toFilterGroups(tree)).toEqual({ rootCombinator: 'and', groups: [[f('a')], [f('b')]] })
+    expect(toFilterGroups(tree)).toEqual({ rootCombinator: 'or', groups: [[f('a'), f('b')]] })
+  })
+
+  it('maps a flat OrFilters to a single or-group under an and root', () => {
+    const tree: OrFilters = { _cls: 'OrFilters', filters: [f('a'), f('b')] }
+    expect(toFilterGroups(tree)).toEqual({ rootCombinator: 'and', groups: [[f('a'), f('b')]] })
   })
 
   it('maps AndFilters of OrFilters to or-groups under an and root', () => {
@@ -69,6 +74,16 @@ describe('fromFilterGroups', () => {
 describe('round-trip', () => {
   it('toFilterGroups ∘ fromFilterGroups preserves the state', () => {
     const state = { rootCombinator: 'or' as const, groups: [[f('a'), f('b')], [f('c')]] }
+    expect(toFilterGroups(fromFilterGroups(state))).toEqual(state)
+  })
+
+  it('preserves a single multi-condition group (no spurious split into groups)', () => {
+    const state = { rootCombinator: 'or' as const, groups: [[f('a'), f('b')]] }
+    expect(toFilterGroups(fromFilterGroups(state))).toEqual(state)
+  })
+
+  it('preserves a flipped single multi-condition group', () => {
+    const state = { rootCombinator: 'and' as const, groups: [[f('a'), f('b')]] }
     expect(toFilterGroups(fromFilterGroups(state))).toEqual(state)
   })
 })

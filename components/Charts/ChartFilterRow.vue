@@ -1,7 +1,17 @@
 <template>
   <div class="flex items-center gap-2 flex-wrap md:flex-nowrap">
-    <div class="text-xs text-gray-600 w-14 shrink-0">
-      {{ connectorLabel }}
+    <div class="min-w-20 shrink-0">
+      <Listbox
+        v-if="showCombinatorSelect"
+        :model-value="combinator"
+        :options="['and', 'or']"
+        :display-value="(opt) => opt === 'and' ? t('Et') : t('Ou')"
+        @update:model-value="(value) => value && $emit('update:combinator', value)"
+      />
+      <span
+        v-else
+        class="text-xs text-gray-600"
+      >{{ connectorLabel }}</span>
     </div>
     <Listbox
       v-model="filter.column"
@@ -29,7 +39,6 @@
 
     <BrandedButton
       size="xs"
-      :disabled="!filter.column"
       :icon="RiDeleteBinLine"
       icon-only
       @click="$emit('remove')"
@@ -47,20 +56,23 @@ const filter = defineModel<Filter>({ required: true })
 
 const props = defineProps<{
   connector: 'first' | 'and' | 'or' | 'none'
+  combinator: 'and' | 'or'
+  showCombinatorSelect: boolean
   columnOptions: Array<{ key: string, value: string, disabled: boolean }>
   conditionOptions: Array<FilterCondition>
 }>()
 
 defineEmits<{
-  remove: []
+  'remove': []
+  'update:combinator': [combinator: 'and' | 'or']
 }>()
 
 const { t } = useTranslation()
 
 const connectorLabel = computed(() => {
   if (props.connector === 'first') return t('Quand')
-  if (props.connector === 'and') return t('Et que')
-  if (props.connector === 'or') return t('Ou que')
+  if (props.connector === 'and') return t('et')
+  if (props.connector === 'or') return t('ou')
   return ''
 })
 

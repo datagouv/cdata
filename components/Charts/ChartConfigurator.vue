@@ -176,44 +176,45 @@
             <p class="font-bold mb-2">
               {{ $t('Filtres') }}
             </p>
-            <div
-              v-if="filterGroups.groups.length > 1"
-              class="flex items-center gap-2"
-            >
-              <span class="text-xs text-gray-600">{{ $t('Combiner les groupes avec') }}</span>
-              <Listbox
-                v-model="rootCombinatorProxy"
-                class="w-24"
-                :options="['and', 'or']"
-                :display-value="(opt) => opt === 'and' ? $t('ET') : $t('OU')"
-              />
-            </div>
             <div class="space-y-3">
-              <ChartFilterGroup
+              <template
                 v-for="(group, groupIndex) in filterGroups.groups"
                 :key="groupIndex"
-                :group="group"
-                :group-index="groupIndex"
-                :inner-combinator="filterGroups.rootCombinator === 'and' ? 'or' : 'and'"
-                :can-remove-group="filterGroups.groups.length > 1"
-                :column-options="columnDetails"
-                :condition-options="conditionOptions"
-                @update:filter="(i, f) => updateFilter(groupIndex, i, f)"
-                @remove:filter="(i) => removeFilter(groupIndex, i)"
-                @add-condition="addCondition(groupIndex)"
-                @remove-group="removeGroup(groupIndex)"
-              />
+              >
+                <p
+                  v-if="groupIndex > 0"
+                  class="text-xs text-gray-600"
+                >
+                  {{ filterGroups.rootCombinator === 'and' ? $t('et') : $t('ou') }}
+                </p>
+                <ChartFilterGroup
+                  :group="group"
+                  :combinator="innerCombinator"
+                  :show-combinator-select="totalRules > 1"
+                  :can-remove-group="filterGroups.groups.length > 1"
+                  :bordered="totalRules > 1"
+                  :column-options="columnDetails"
+                  :condition-options="conditionOptions"
+                  @update:filter="(i, f) => updateFilter(groupIndex, i, f)"
+                  @update:combinator="setInnerCombinator"
+                  @remove:filter="(i) => removeFilter(groupIndex, i)"
+                  @add-condition="addCondition(groupIndex)"
+                  @remove-group="removeGroup(groupIndex)"
+                />
+              </template>
             </div>
             <div class="flex flex-wrap gap-2">
               <BrandedButton
+                v-if="totalRules === 0"
                 size="sm"
                 color="tertiary"
                 :icon="RiAddLine"
                 @click="addFilter"
               >
-                {{ $t('Ajouter un filtre') }}
+                {{ $t('Ajouter une règle') }}
               </BrandedButton>
               <BrandedButton
+                v-if="totalRules > 1"
                 size="sm"
                 color="tertiary"
                 :icon="RiAddLine"
@@ -677,10 +678,22 @@ const columnDetails = computed<Array<{ key: string, value: string, disabled: boo
 
 const filterGroups = computed<FilterGroupsState>(() => toFilterGroups(form.value.filter))
 
-const rootCombinatorProxy = computed<FilterGroupCombinator>({
-  get: () => filterGroups.value.rootCombinator,
-  set: combinator => applyFilterGroups({ ...filterGroups.value, rootCombinator: combinator }),
-})
+/** Conditions inside a group are combined with the opposite of the root combinator. */
+const innerCombinator = computed<FilterGroupCombinator>(() =>
+  filterGroups.value.rootCombinator === 'and' ? 'or' : 'and',
+)
+
+const totalRules = computed(() =>
+  filterGroups.value.groups.reduce((count, group) => count + group.length, 0),
+)
+
+/** All group combinator selects share one value: flip the root to its opposite. */
+function setInnerCombinator(combinator: FilterGroupCombinator) {
+  applyFilterGroups({
+    ...filterGroups.value,
+    rootCombinator: combinator === 'and' ? 'or' : 'and',
+  })
+}
 
 function applyFilterGroups(state: FilterGroupsState) {
   form.value.filter = fromFilterGroups(state)

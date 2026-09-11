@@ -18,10 +18,23 @@ function isFilter(f: GenericFilter | null): f is Filter {
  * The returned groups hold references to the original Filter objects, so
  * in-place edits to a filter stay visible in `form.filter` (the configurator
  * relies on its deep watcher for preview refresh).
+ * The default root is `or`: conditions inside a group are `and`-combined by
+ * default (a new rule is an `and`), so a single group serializes as
+ * `AndFilters` and several groups as `OrFilters` of `AndFilters`.
  */
 export function toFilterGroups(filter: GenericFilter | null): FilterGroupsState {
-  if (!filter) return { rootCombinator: 'and', groups: [] }
-  if (isFilter(filter)) return { rootCombinator: 'and', groups: [[filter]] }
+  if (!filter) return { rootCombinator: 'or', groups: [] }
+  if (isFilter(filter)) return { rootCombinator: 'or', groups: [[filter]] }
+
+  // A combined node whose children are all bare Filters is a single group without
+  // a root wrapper (how fromFilterGroups persists one group with several rules):
+  // the node's own combinator applies inside the group, so the root is its opposite.
+  if (filter.filters.every(isFilter)) {
+    return {
+      rootCombinator: filter._cls === 'AndFilters' ? 'or' : 'and',
+      groups: [filter.filters.filter(isFilter)],
+    }
+  }
 
   const rootCombinator: FilterGroupCombinator = filter._cls === 'AndFilters' ? 'and' : 'or'
   const groups = filter.filters.map((child) => {

@@ -679,7 +679,7 @@ test('x-axis dropdown should show columns from all chart resources after loading
   await page.request.delete(`${baseURL}/api/1/visualizations/${chartData.id}/`)
 })
 
-test('filter groups are sent as or params to tabular-api and saved with OrFilters', async ({ page }) => {
+test('filter groups are sent as or params to tabular-api with synced combinator selects', async ({ page }) => {
   await setupChart(page)
 
   // Re-register the data route to capture outgoing requests (last registered wins).
@@ -689,30 +689,53 @@ test('filter groups are sent as or params to tabular-api and saved with OrFilter
     await route.fulfill({ json: data })
   })
 
-  // First group, first condition: nom_region est Bretagne
-  await page.getByRole('button', { name: 'Ajouter un filtre' }).click()
-  const groups = page.locator('fieldset', { hasText: 'Filtres' }).locator('.border-new-gray-light')
-  const firstGroup = groups.nth(0)
-  await firstGroup.getByRole('button').first().click()
-  await page.getByRole('option', { name: 'nom_region', exact: true }).click()
-  await firstGroup.getByPlaceholder('Valeur').fill('Bretagne')
+  const filters = page.locator('fieldset', { hasText: 'Filtres' })
+  // Group containers only exist once a border is shown, i.e. from the second rule on.
+  const groups = filters.locator('.border-new-gray-light')
 
-  // Second group with one condition: année_publication est 2020
+  // First rule: nom_region est Bretagne (single rule: no border, no combinator select,
+  // the row's first button is the column listbox).
+  await page.getByRole('button', { name: 'Ajouter une règle' }).click()
+  await filters.getByRole('button').first().click()
+  await page.getByRole('option', { name: 'nom_region', exact: true }).click()
+  await filters.getByPlaceholder('Valeur').fill('Bretagne')
+
+  // Second rule in the same group: année_publication est 2020 (combined with ET by default).
+  // The border appears and the new row gets the combinator select (the first row keeps its
+  // "Quand" label). Buttons: col1, cond1, del1, select2, col2… so col2 is nth(4).
+  await page.getByRole('button', { name: 'Ajouter une règle' }).click()
+  const firstGroup = groups.nth(0)
+  await firstGroup.getByRole('button').nth(4).click()
+  await page.getByRole('option', { name: 'année_publication', exact: true }).click()
+  await firstGroup.getByPlaceholder('Valeur').nth(1).fill('2020')
+
+  // The "Ajouter un groupe" button appears once a second rule exists.
+  // The new group holds a single rule: no border-specific select on its "Quand" row,
+  // its first button is the column listbox.
   await page.getByRole('button', { name: 'Ajouter un groupe' }).click()
   const secondGroup = groups.nth(1)
   await secondGroup.getByRole('button').first().click()
   await page.getByRole('option', { name: 'année_publication', exact: true }).click()
-  await secondGroup.getByPlaceholder('Valeur').fill('2020')
+  await secondGroup.getByPlaceholder('Valeur').fill('2021')
 
-  // Add a second condition inside the second group (OU interne)
-  await secondGroup.getByRole('button', { name: 'Ajouter un « ou »' }).click()
-  const secondRow = secondGroup.getByPlaceholder('Valeur').nth(1)
-  await secondRow.fill('2021')
+  // The two groups are combined with "ou" (or root): a label sits between them.
+  await expect(filters.getByText('ou', { exact: true })).toBeVisible()
 
-  // Wait for a data request carrying the grouped filters
-  await expect.poll(() => dataRequests.map(decodeURIComponent).some(url =>
-    url.includes('nom_region__exact=Bretagne') && url.includes('or=('),
-  )).toBe(true)
-  const lastUrl = decodeURIComponent(dataRequests[dataRequests.length - 1])
-  expect(lastUrl).toContain('or=(')
+  // Default is ET inside groups, OU between groups: OrFilters[AndFilters, Filter].
+  await expect.poll(() => decodeURIComponent(dataRequests[dataRequests.length - 1] ?? '')).toContain(
+    'or=(and(nom_region__exact.Bretagne,annee_publication__exact.2020),annee_publication__exact.2021)',
+  )
+
+  // Flipping one group's select to "Ou" flips them all (ET between groups, OU inside).
+  // A single-rule group has no select (its row starts with "Quand"), so only the
+  // first group's select shows "Ou".
+  await firstGroup.getByRole('button', { name: 'Et', exact: true }).click()
+  await page.getByRole('option', { name: 'Ou', exact: true }).click()
+  await expect(firstGroup.getByRole('button', { name: 'Ou', exact: true })).toBeVisible()
+  await expect(secondGroup.getByText('Quand', { exact: true })).toBeVisible()
+  // The between-groups label follows the root flip: "et" (and root).
+  await expect(filters.getByText('et', { exact: true })).toBeVisible()
+  await expect.poll(() => decodeURIComponent(dataRequests[dataRequests.length - 1] ?? '')).toContain(
+    'nom_region__exact=Bretagne&or=(annee_publication__exact.2020,annee_publication__exact.2021)',
+  )
 })
