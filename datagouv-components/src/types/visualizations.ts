@@ -67,6 +67,7 @@ export type Chart = Owned & {
   created_at: string
   last_modified: string
   deleted_at: string | null
+  image: string | null
   uri: string
   page: string
   x_axis: XAxis
