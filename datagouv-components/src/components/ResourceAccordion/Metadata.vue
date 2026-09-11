@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { RiInformationLine } from '@remixicon/vue'
 import type { Resource } from '../../types/resources'
 import CopyButton from '../CopyButton.vue'
 import DescriptionDetails from '../DescriptionDetails.vue'
@@ -7,6 +8,7 @@ import DescriptionTerm from '../DescriptionTerm.vue'
 import FormattedDate from '../FormattedDate.vue'
 import { filesize } from '../../functions/helpers'
 import ExtraAccordion from '../ExtraAccordion.vue'
+import Toggletip from '../Toggletip.vue'
 import { getResourceTitleId, getResourceLabel, getResourceFilesize } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
 
@@ -41,8 +43,23 @@ const { t } = useTranslation()
             </a>
           </code>
         </DescriptionDetails>
-        <DescriptionTerm>
+        <DescriptionTerm class="flex items-center">
           {{ t('URL stable') }}
+          <Toggletip
+            :styled-button="false"
+            button-class="border-transparent -outline-offset-2 inline-flex items-center justify-center rounded-sm p-1 text-gray-medium hover:bg-gray-lower transition-colors"
+          >
+            <RiInformationLine
+              class="size-4"
+              aria-hidden="true"
+            />
+            <span class="sr-only">{{ t(`Qu'est-ce qu'une URL stable ?`) }}</span>
+            <template #toggletip>
+              <p class="fr-text--sm m-0">
+                {{ t(`Cette URL redirige toujours vers la dernière version du fichier. L'URL du fichier, elle, change à chaque mise à jour : privilégiez l'URL stable pour partager la ressource ou l'utiliser dans un script.`) }}
+              </p>
+            </template>
+          </Toggletip>
           <CopyButton
             :label="t(`Copier l'URL stable`)"
             :copied-label="t('URL stable copiée !')"
