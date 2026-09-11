@@ -100,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import type { RouteLocationRaw } from 'vue-router'
 import { useTranslation } from '../../composables/useTranslation'
@@ -127,6 +127,12 @@ const props = withDefaults(defineProps<{
   fullscreen: false,
 })
 
+// The dataset page's feedback link needs the resource currently shown; the URL
+// query param is the source of truth inside, so we forward the resolved selection.
+const emit = defineEmits<{
+  select: [resource: Resource | null]
+}>()
+
 const { t } = useTranslation()
 const route = useRoute()
 
@@ -140,6 +146,8 @@ const {
   search,
   updateSearch,
 } = await useDatasetResources(() => props.dataset)
+
+watch(selectedResource, resource => emit('select', resource), { immediate: true })
 
 const sidebarCollapsed = ref(false)
 
