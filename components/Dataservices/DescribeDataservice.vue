@@ -68,6 +68,7 @@
             >
               <template #files>
                 <a
+                  class="link"
                   href="https://fichiers.numerique.gouv.fr"
                   target="_blank"
                   rel="noopener"
