@@ -47,7 +47,7 @@ const { t } = useTranslation()
           {{ t('URL stable') }}
           <Toggletip
             :styled-button="false"
-            button-class="border-transparent -outline-offset-2 inline-flex items-center justify-center rounded-sm p-1 text-gray-medium hover:bg-gray-lower transition-colors"
+            button-class="ml-1 border-transparent -outline-offset-2 inline-flex items-center justify-center rounded-sm p-1 text-gray-medium hover:bg-gray-lower transition-colors"
           >
             <RiInformationLine
               class="size-4"
