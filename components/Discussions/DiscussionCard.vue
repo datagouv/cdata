@@ -103,16 +103,19 @@ import CommentBlock from './CommentBlock.vue'
 import RespondForm from './RespondForm.vue'
 import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
-defineProps<{
+const props = defineProps<{
   thread: Thread
   subject: DiscussionSubjectTypes
+  // For callers whose own trigger already said "respond": clicking it should not
+  // land on a card where "Répondre" has to be clicked a second time.
+  respondImmediately?: boolean
 }>()
 defineEmits<{
   change: []
 }>()
 
 const openDiscussionIfClosed = ref(false)
-const showRespondForm = ref(false)
+const showRespondForm = ref(props.respondImmediately ?? false)
 const me = useMaybeMe()
 const route = useRoute()
 
