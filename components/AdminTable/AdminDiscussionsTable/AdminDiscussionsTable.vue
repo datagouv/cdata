@@ -18,13 +18,7 @@
         </AdminTableTh>
         <AdminTableTh
           scope="col"
-          class="w-44"
-        >
-          {{ t("Nombre de commentaires") }}
-        </AdminTableTh>
-        <AdminTableTh
-          scope="col"
-          class="min-w-56"
+          class="w-1/3"
         >
           {{ t("Dernier commentaire") }}
         </AdminTableTh>
@@ -44,7 +38,10 @@
         >
           {{ t("Fermée le") }}
         </AdminTableTh>
-        <AdminTableTh scope="col">
+        <AdminTableTh
+          scope="col"
+          class="w-0"
+        >
           {{ t("Actions") }}
         </AdminTableTh>
       </tr>
@@ -55,34 +52,32 @@
         :key="discussion.id"
       >
         <td>
-          <!-- Not <p>s: TextClamp is a .client component, its SSR placeholder is
-               a <div> and a <div> inside a <p> is restructured by the browser
-               parser, causing hydration mismatches -->
-          <div class="fr-text--bold">
-            <TextClamp
-              :text="discussion.title"
-              :auto-resize="true"
-              :max-lines="1"
-            />
-          </div>
-          <div v-if="!subject && subjects[discussion.subject.id]">
+          <p class="fr-text--bold m-0 wrap-anywhere line-clamp-2">
+            <CdataLink
+              class="link"
+              :to="discussion.self_web_url"
+            >
+              {{ discussion.title }}
+            </CdataLink>
+          </p>
+          <p
+            v-if="!subject && subjects[discussion.subject.id]"
+            class="m-0"
+          >
             <CdataLink
               class="link inline-flex gap-1"
               :to="getSubjectPage(subjects[discussion.subject.id]!)"
             >
               <component
                 :is="getSubjectTypeIcon(discussion.subject.class)"
-                class="self-center size-3"
+                class="self-center size-3 shrink-0"
                 aria-hidden="true"
               />
-              <TextClamp
-                class="overflow-wrap-anywhere"
-                :text="getSubjectTitle(subjects[discussion.subject.id]!)"
-                :auto-resize="true"
-                :max-lines="1"
-              />
+              <span class="wrap-anywhere line-clamp-1">
+                {{ getSubjectTitle(subjects[discussion.subject.id]!) }}
+              </span>
             </CdataLink>
-          </div>
+          </p>
         </td>
         <td>
           <AdminBadge
@@ -92,20 +87,15 @@
             {{ getStatus(discussion).label }}
           </AdminBadge>
         </td>
-        <td class="font-mono text-right">
-          {{ discussion.discussion.length }}
-        </td>
         <td>
-          <div>
-            <p><FormattedDate :date="getLastComment(discussion).posted_on" /></p>
-            <p class="inline-flex items-center">
-              {{ t('par ') }}
-              <AvatarWithName
-                class="fr-ml-1v"
-                :user="getLastComment(discussion).posted_by"
-              />
-            </p>
-          </div>
+          <p class="m-0 wrap-anywhere line-clamp-3">
+            {{ getLastComment(discussion).content }}
+          </p>
+          <p class="m-0 flex items-center justify-end gap-1">
+            <FormattedDate :date="getLastComment(discussion).posted_on" />
+            {{ t('par ') }}
+            <AvatarWithName :user="getLastComment(discussion).posted_by" />
+          </p>
         </td>
         <td>
           <FormattedDate :date="discussion.created" />
@@ -116,11 +106,14 @@
           </template>
         </td>
         <td>
-          <template v-if="subject || subjects[discussion.subject.id]">
+          <div
+            v-if="getSubjectOf(discussion)"
+            class="flex items-center"
+          >
             <BrandedButton
               size="xs"
               color="tertiary"
-              :href="getDiscussionUrl(discussion.id, subject || subjects[discussion.subject.id])"
+              :href="getDiscussionUrl(discussion.id, getSubjectOf(discussion))"
               :icon="RiEyeLine"
               :title="$t('Voir la discussion')"
               :aria-label="$t('Voir la discussion {title}', { title: discussion.title })"
@@ -128,21 +121,36 @@
               keep-margins-even-without-borders
             />
 
-            <DiscussionsRespondModal
-              :thread="discussion"
-              :subject="(subject || subjects[discussion.subject.id]) ?? undefined"
-              @responded="$emit('refresh')"
+            <BrandedButton
+              v-if="!discussion.closed"
+              size="xs"
+              color="tertiary"
+              :icon="RiChatNewLine"
+              :title="$t('Répondre à la discussion')"
+              :aria-label="$t('Répondre à la discussion {title}', { title: discussion.title })"
+              icon-only
+              keep-margins-even-without-borders
+              @click="openedThread = discussion"
             />
-          </template>
+          </div>
         </td>
       </tr>
     </tbody>
   </AdminTable>
+
+  <DiscussionsThreadModal
+    v-if="openedThread"
+    model-value
+    :thread="openedThread"
+    :subject="getSubjectOf(openedThread) ?? undefined"
+    @update:model-value="openedThread = null"
+    @responded="$emit('refresh')"
+  />
 </template>
 
 <script setup lang="ts">
 import { AvatarWithName, BrandedButton, FormattedDate } from '@datagouv/components-next'
-import { RiEyeLine } from '@remixicon/vue'
+import { RiChatNewLine, RiEyeLine } from '@remixicon/vue'
 import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
 import type { DiscussionSortedBy, DiscussionSubjectTypes, Thread } from '~/types/discussions'
@@ -181,6 +189,12 @@ watchEffect(async () => {
 
   await Promise.all(Object.values(subjectsPromises.value))
 })
+
+const openedThread = ref<Thread | null>(null)
+
+function getSubjectOf(discussion: Thread): DiscussionSubjectTypes | null {
+  return props.subject ?? subjects.value[discussion.subject.id] ?? null
+}
 
 function sorted(column: DiscussionSortedBy) {
   if (props.sortedBy === column) {

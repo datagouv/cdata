@@ -10,10 +10,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RiBookShelfLine, RiBuilding2Line, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
+import { RiBarChartBoxLine, RiBookShelfLine, RiBuilding2Line, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
 
 const props = defineProps<{
-  type: 'Dataset' | 'Dataservice' | 'Reuse' | 'Organization' | 'Topic'
+  type: 'Dataset' | 'Dataservice' | 'Reuse' | 'Organization' | 'Topic' | 'Chart'
 }>()
 
 const icon = computed(() => {
@@ -23,6 +23,7 @@ const icon = computed(() => {
     Reuse: RiLineChartLine,
     Organization: RiBuilding2Line,
     Topic: RiBookShelfLine,
+    Chart: RiBarChartBoxLine,
   }[props.type]
 })
 </script>

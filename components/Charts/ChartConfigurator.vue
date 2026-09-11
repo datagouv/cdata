@@ -80,46 +80,6 @@
       </div>
 
       <div class="col-span-5 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
-        <fieldset
-          v-if="isAdmin"
-          class="min-w-0 space-y-4"
-        >
-          <label
-            for="existing-charts"
-            class="mb-2 font-bold"
-          >
-            {{ $t('Graphiques existants') }}
-          </label>
-          <div class="flex gap-2">
-            <select
-              id="existing-charts"
-              v-model="selectedChartId"
-              class="flex-1 fr-select"
-            >
-              <option
-                value=""
-                disabled
-              >
-                {{ $t('Sélectionnez un graphique') }}
-              </option>
-              <option
-                v-for="column in charts?.data"
-                :key="column.id"
-                :value="column.id"
-              >
-                {{ column.title }}
-              </option>
-            </select>
-            <button
-              class="fr-btn"
-              type="button"
-              :disabled="!selectedChartId"
-              @click="loadSelectedChart"
-            >
-              {{ $t('Charger') }}
-            </button>
-          </div>
-        </fieldset>
         <fieldset class="min-w-0">
           <ProducerSelect
             v-model="producer"
@@ -473,11 +433,10 @@
 
 <script setup lang="ts">
 import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
-import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
+import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartLine, RiCalculatorLine, RiLineChartLine, RiText } from '@remixicon/vue'
-import { useAPI } from '~/utils/api'
 import { isMeAdmin } from '~/utils/auth'
 import { keepValidSortCombined } from '~/utils/charts'
 import ChartFilterRow from './ChartFilterRow.vue'
@@ -508,7 +467,6 @@ const { t } = useTranslation()
 const hasTabularData = useHasTabularData()
 const getProfile = useGetProfile()
 const isAdmin = isMeAdmin()
-const { data: charts, refresh } = await useAPI<PaginatedArray<Chart>>('/api/1/visualizations/', { lazy: true })
 
 const $chartsApi = $fetch.create({
   baseURL: runtimeConfig.public.chartsApiBase as string,
@@ -524,6 +482,14 @@ const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/componen
 const form = defineModel<ChartForm>({
   required: true,
 })
+
+const props = defineProps<{
+  /**
+   * Full chart being edited, used only to initialize producer/resources/dataset
+   * and to keep the chart id for saving — the form data itself comes from the v-model
+   */
+  initialChart?: Chart
+}>()
 
 const columns = ref<ColumnsDefinition>({})
 const producer = ref<Owned | null>(null)
@@ -541,7 +507,6 @@ watch(producer, (newProducer) => {
   }
 }, { immediate: true })
 const savedChart = ref<Chart | null>(null)
-const selectedChartId = ref('')
 
 const chartForViewer = ref(toChartApi(form.value))
 
@@ -792,101 +757,75 @@ async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
   })
 }
 
-async function loadChart(id: string) {
-  try {
-    const data = await $api<Chart>(`/api/1/visualizations/${id}/`)
-    if (data) {
-      savedChart.value = data
+async function initializeFromChart(data: Chart) {
+  savedChart.value = data
 
-      const chartResources = new Set<string>()
-      for (const serie of data.series) {
-        if (serie.resource_id) {
-          chartResources.add(serie.resource_id)
-        }
-      }
-
-      form.value = toChartForm(data)
-
-      await loadMissingResourcesForChart(Array.from(chartResources))
-      await loadColumnsForResources(Array.from(chartResources))
-
-      if (data.organization) {
-        producer.value = { organization: data.organization, owner: null }
-      }
-      if (data.owner) {
-        producer.value = { organization: null, owner: data.owner }
-      }
-
-      if (!dataset.value && data.series.length > 0 && data.series[0]?.resource_id) {
-        try {
-          const resourceData = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${data.series[0].resource_id}/`)
-          if (resourceData.dataset_id) {
-            const fetchedDataset = await $chartsApi<DatasetSuggest>(`/api/2/datasets/${resourceData.dataset_id}/`)
-            dataset.value = fetchedDataset
-          }
-        }
-        catch (error) {
-          console.error('Failed to load dataset for chart:', error)
-        }
-      }
-
-      if (data.series.length > 0 && data.series[0]?.resource_id) {
-        await nextTick()
-
-        selectedResource.value = data.series[0].resource_id
-      }
-
-      toast.success(t('Graphique chargé !'))
+  const chartResources = new Set<string>()
+  for (const serie of data.series) {
+    if (serie.resource_id) {
+      chartResources.add(serie.resource_id)
     }
   }
-  catch (error) {
-    console.error('Failed to load chart:', error)
-    toast.error(t('Erreur lors du chargement du graphique'))
-  }
-}
 
-function loadSelectedChart() {
-  if (selectedChartId.value) {
-    loadChart(selectedChartId.value)
+  await loadMissingResourcesForChart(Array.from(chartResources))
+  await loadColumnsForResources(Array.from(chartResources))
+
+  if (data.organization) {
+    producer.value = { organization: data.organization, owner: null }
+  }
+  if (data.owner) {
+    producer.value = { organization: null, owner: data.owner }
+  }
+
+  if (!dataset.value && data.series.length > 0 && data.series[0]?.resource_id) {
+    try {
+      const resourceData = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${data.series[0].resource_id}/`)
+      if (resourceData.dataset_id) {
+        const fetchedDataset = await $chartsApi<DatasetSuggest>(`/api/2/datasets/${resourceData.dataset_id}/`)
+        dataset.value = fetchedDataset
+      }
+    }
+    catch (error) {
+      console.error('Failed to load dataset for chart:', error)
+    }
+  }
+
+  if (data.series.length > 0 && data.series[0]?.resource_id) {
+    await nextTick()
+
+    selectedResource.value = data.series[0].resource_id
   }
 }
 
 async function saveChart() {
-  try {
-    const chartForApi = toChartApi(form.value)
-    const update = savedChart.value?.id
-    if (update) {
-      savedChart.value = await $api<Chart>(`/api/1/visualizations/${savedChart.value!.id}/`, {
-        method: 'PATCH',
-        body: JSON.stringify(chartForApi),
-      })
-    }
-    else {
-      savedChart.value = await $api<Chart>('/api/1/visualizations/', {
-        method: 'POST',
-        body: JSON.stringify(chartForApi),
-      })
-    }
-
-    const imageUrl = chartViewerWrapperRef.value?.capture()
-    if (imageUrl) {
-      const i = await fetch(imageUrl)
-      const imageBlob = await i.blob()
-      const formData = new FormData()
-      formData.set('file', imageBlob, 'image.png')
-      await $fileApi(`/api/1/visualizations/${savedChart.value.id}/image/`, {
-        method: 'POST',
-        body: formData,
-      })
-    }
-
-    toast.success(update ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
-    await refresh()
-    selectedChartId.value = savedChart.value.id
+  const chartForApi = toChartApi(form.value)
+  const update = savedChart.value?.id
+  if (update) {
+    savedChart.value = await $api<Chart>(`/api/1/visualizations/${savedChart.value!.id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(chartForApi),
+    })
   }
-  catch (error) {
-    console.error('Failed to save chart:', error)
+  else {
+    savedChart.value = await $api<Chart>('/api/1/visualizations/', {
+      method: 'POST',
+      body: JSON.stringify(chartForApi),
+    })
   }
+
+  const imageUrl = chartViewerWrapperRef.value?.capture()
+  if (imageUrl) {
+    const i = await fetch(imageUrl)
+    const imageBlob = await i.blob()
+    const formData = new FormData()
+    formData.set('file', imageBlob, 'image.png')
+    await $fileApi(`/api/1/visualizations/${savedChart.value.id}/image/`, {
+      method: 'POST',
+      body: formData,
+    })
+  }
+
+  toast.success(update ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
 }
 
 function removeFilter(index: number) {
@@ -1025,4 +964,8 @@ watch(
   },
   { immediate: true },
 )
+
+if (props.initialChart) {
+  await initializeFromChart(props.initialChart)
+}
 </script>

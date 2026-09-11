@@ -167,4 +167,23 @@ describe('buildColumnsFromProfile', () => {
     const createdAtColumn = columns.find(c => c.name === 'created_at')
     expect(createdAtColumn).toEqual({ name: 'created_at', type: 'date', min: undefined, max: undefined })
   })
+
+  // Non-CSV resources (parquet…) are indexed without csv-detective: the profile
+  // only carries the column names, their types and the row count.
+  it('builds columns from a profile without csv-detective output', () => {
+    const parquetProfile: { profile: TabularProfile } = {
+      profile: {
+        header: profile.profile.header,
+        columns: profile.profile.columns,
+        total_lines: profile.profile.total_lines,
+      },
+    }
+    const columns = buildColumnsFromProfile(parquetProfile)
+    expect(columns).toEqual([
+      { name: 'year', type: 'number', min: undefined, max: undefined },
+      { name: 'rate', type: 'number', min: undefined, max: undefined },
+      { name: 'label', type: 'text', min: undefined, max: undefined },
+      { name: 'created_at', type: 'date', min: undefined, max: undefined },
+    ])
+  })
 })

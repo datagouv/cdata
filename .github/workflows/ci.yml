@@ -188,7 +188,7 @@ jobs:
           SERVER_NAME = 'localhost:7000'
           CDATA_BASE_URL="http://localhost:3000"
 
-          CACHE_TYPE = 'null'
+          CACHE_TYPE = 'flask_caching.backends.NullCache'
           DEFAULT_LANGUAGE = 'fr'
 
           SCHEMA_CATALOG_URL='https://schema.data.gouv.fr/schemas/schemas.json'
@@ -248,6 +248,8 @@ jobs:
           NUXT_SITE_URL: http://localhost:3000
           NUXT_PUBLIC_CHARTS_API_BASE: http://localhost:7000
           NUXT_PUBLIC_CADA_RESOURCE_ID: 3a6d6fe3-8548-43ed-ad09-72052771447c
+          NUXT_PUBLIC_TABULAR_API_PREVIEW_RESOURCES_ID: 982d9dd0-365a-4c4b-8a83-75dec40c36bb
+          NUXT_PUBLIC_TABULAR_API_PREVIEW_STATS_ID: 33cf9a65-3f77-4d88-acd1-bca420d83e60
           NUXT_PUBLIC_EXPLORER_FEEDBACK_URL: https://example.com/feedback
         run: |
           # Start cdata server in background using pre-built artifacts
@@ -384,6 +386,7 @@ jobs:
             type=sha,format=long,prefix=
             type=ref,event=branch
             type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
