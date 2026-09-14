@@ -62,6 +62,7 @@
     "@vueuse/integrations": "^14.3.0",
     "@vueuse/nuxt": "^14.3.0",
     "@vueuse/router": "^14.3.0",
+    "bowser": "^2.14.1",
     "dompurify": "^3.4.13",
     "gray-matter": "^4.0.3",
     "leaflet": "^1.9.4",
