@@ -104,6 +104,7 @@ import { computed, useTemplateRef } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTranslation } from '../composables/useTranslation'
 import { clampPage, getVisiblePages } from '../functions/paginate'
+import { scrollToBlockTop } from '../functions/scroll'
 
 type Props = {
   /**
@@ -141,10 +142,7 @@ const nav = useTemplateRef('navRef')
 function change(index: number) {
   emit('change', index)
 
-  if (!nav.value || !nav.value.parentElement) return
-
-  nav.value.parentElement.style.scrollMarginTop = '100px'
-  nav.value.parentElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  scrollToBlockTop(nav.value?.parentElement)
 }
 
 function onClick(index: number) {
