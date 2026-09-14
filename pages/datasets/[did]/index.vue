@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, getResourceExternalUrl, ResourceExplorer, type DatasetV2, type Resource } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, getResourceExternalUrl, ResourceExplorer, useComponentsConfig, type DatasetV2, type Resource } from '@datagouv/components-next'
 
 const props = defineProps<{ dataset: DatasetV2 }>()
 
@@ -52,6 +52,7 @@ const route = useRoute()
 // and a simplified "Browser - device" string (client-side only, so it appears
 // after hydration).
 const feedbackBaseUrl = useRuntimeConfig().public.explorerFeedbackUrl
+const componentsConfig = useComponentsConfig()
 const feedbackResource = ref<Resource | null>(null)
 const feedbackUserAgent = ref<string | null>(null)
 onMounted(() => {
@@ -61,7 +62,7 @@ const feedbackUrl = computed(() => {
   if (!feedbackBaseUrl) return ''
   return buildExplorerFeedbackUrl(feedbackBaseUrl, {
     dataset: props.dataset,
-    resourceExternalUrl: feedbackResource.value ? getResourceExternalUrl(props.dataset, feedbackResource.value) : null,
+    resourceExternalUrl: feedbackResource.value ? getResourceExternalUrl(props.dataset, feedbackResource.value, componentsConfig) : null,
     resourceFormat: feedbackResource.value?.format ?? null,
     simplifiedUserAgent: feedbackUserAgent.value,
   })
