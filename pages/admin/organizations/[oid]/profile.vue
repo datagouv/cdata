@@ -75,13 +75,14 @@ import { BrandedButton, isOrganizationCertified, OrganizationLogo, PaddedContain
 import { RiEyeLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 defineEmits<{
   refresh: []
 }>()
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const props = defineProps<{

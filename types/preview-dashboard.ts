@@ -1,14 +1,14 @@
 export type PreviewDashboardFormatStat = {
-  'Famille de format': string
-  'Format': string
-  'Nombre': number
-  'Prévisualisable': number
+  'famille': string
+  'format normalisé': string
+  'nombre': number
+  'prévisualisable': number
   '% catalogue': number
   '% erreur': number
-  '% too big': number
+  '% trop volumineux': number
   '% prévisualisable': number
   '% prévisualisation manquante': number
-  'Mois': string
+  'mois': string
   '__id': number
 }
 
