@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
 
 test('search launch without params', async ({ page }) => {
@@ -62,78 +63,84 @@ test('search results update when badge filter is applied', async ({ page }) => {
   expect(hasResults || hasNoResultsMessage).toBeTruthy()
 })
 
-test('counts stay on screen while a page change reloads the results', async ({ page }) => {
+// The type counts come from `total`, which udata returns whether or not it runs
+// on Elasticsearch. Facet counts would be a more direct target, but the CI runs
+// udata on MongoDB alone, which answers without any facet.
+const typeCount = (page: Page) => page
+  .locator('fieldset')
+  .filter({ has: page.locator('input[name="search-type"]') })
+  .getByTestId('radio-count')
+  .first()
+
+// Hold searches back so the page can be inspected while a request is in flight.
+const slowDownSearch = (page: Page) => page.route('**/api/2/datasets/search/**', async (route) => {
+  await new Promise(resolve => setTimeout(resolve, 2000))
+  await route.continue()
+})
+
+test('counts stay on screen while a sort change reloads the results', async ({ page }) => {
   await page.goto('/datasets/search/')
   await expect(page.getByTestId('search-result-count')).toBeVisible()
 
-  const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
-  await badgeFieldset.scrollIntoViewIfNeeded()
-  const facetCount = badgeFieldset.getByTestId('radio-count').first()
-  await expect(facetCount).toHaveText(/\d/)
-  const countBeforePageChange = await facetCount.textContent()
+  const count = typeCount(page)
+  await expect(count).toHaveText(/\d/)
+  const countBeforeSort = await count.textContent()
 
-  // Hold the next search back so the page can be inspected mid-request.
-  await page.route('**/api/2/datasets/search/**', async (route) => {
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    await route.continue()
-  })
+  await slowDownSearch(page)
 
-  const searchRequest = page.waitForRequest('**/api/2/datasets/search/**')
-  await page.getByTestId('2').first().click()
-  await searchRequest
+  const sortRequest = page.waitForRequest('**/api/2/datasets/search/**')
+  await page.locator('#sort-search').selectOption({ label: 'Nombre de réutilisations' })
+  await sortRequest
 
   // Read without retrying: the point is the state while the request is in flight.
-  // A page change cannot move a single count, so none of them may go to dots.
-  expect(await facetCount.textContent()).toBe(countBeforePageChange)
+  // Sort cannot move a single count, so none of them may go to dots.
+  expect(await count.textContent()).toBe(countBeforeSort)
 })
 
 test('counts show their loading state while a filter change reloads the results', async ({ page }) => {
   await page.goto('/datasets/search/')
   await expect(page.getByTestId('search-result-count')).toBeVisible()
 
+  const count = typeCount(page)
+  await expect(count).toHaveText(/\d/)
+
+  await slowDownSearch(page)
+
   const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
   await badgeFieldset.scrollIntoViewIfNeeded()
-  const facetCount = badgeFieldset.getByTestId('radio-count').first()
-  await expect(facetCount).toHaveText(/\d/)
-
-  await page.route('**/api/2/datasets/search/**', async (route) => {
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    await route.continue()
-  })
-
-  const searchRequest = page.waitForRequest('**/api/2/datasets/search/**')
+  const filterRequest = page.waitForRequest('**/api/2/datasets/search/**')
   await badgeFieldset.getByText('Données de forte valeur').click()
-  await searchRequest
+  await filterRequest
 
   // A filter change does move the counts, so the stale ones give way to dots.
-  expect(await facetCount.textContent()).toBe('')
+  expect(await count.textContent()).toBe('')
 })
 
 test('counts keep their loading state when a sort change follows a filter change', async ({ page }) => {
   await page.goto('/datasets/search/')
   await expect(page.getByTestId('search-result-count')).toBeVisible()
 
+  const count = typeCount(page)
+  await expect(count).toHaveText(/\d/)
+
+  await slowDownSearch(page)
+
   const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
   await badgeFieldset.scrollIntoViewIfNeeded()
-  const facetCount = badgeFieldset.getByTestId('radio-count').first()
-  await expect(facetCount).toHaveText(/\d/)
-
-  await page.route('**/api/2/datasets/search/**', async (route) => {
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    await route.continue()
-  })
+  const filterRequest = page.waitForRequest('**/api/2/datasets/search/**')
+  await badgeFieldset.getByText('Données de forte valeur').click()
+  await filterRequest
 
   // The sort select sits outside the LoadingBlock, so it stays clickable while
   // the filter request is still in flight — unlike the pagination, which the
   // loader overlay covers.
-  await badgeFieldset.getByText('Données de forte valeur').click()
   const sortRequest = page.waitForRequest('**/api/2/datasets/search/**')
   await page.locator('#sort-search').selectOption({ label: 'Nombre de réutilisations' })
   await sortRequest
 
   // Sort alone cannot move a count, but the filter response never landed: the
   // counts on screen are stale, so they must stay as dots.
-  expect(await facetCount.textContent()).toBe('')
+  expect(await count.textContent()).toBe('')
 })
 
 test('badge filter can be cleared', async ({ page }) => {
