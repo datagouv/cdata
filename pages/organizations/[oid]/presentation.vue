@@ -1,7 +1,7 @@
+<!-- The edit entry point ("Modifier / publier la présentation") lives in the org
+     header (parent layout). Here we only render the blocs, plus a "public" toggle
+     in the save bar so publishing/unpublishing happens together with the save. -->
 <template>
-  <!-- The edit entry point ("Modifier / publier la présentation") lives in the org
-       header (parent layout). Here we only render the blocs, plus a "public" toggle
-       in the save bar so publishing/unpublishing happens together with the save. -->
   <EditoBlocs
     :blocs
     :editable="canEdit"

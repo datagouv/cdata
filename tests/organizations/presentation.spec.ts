@@ -5,6 +5,9 @@ import { test, expect } from '../base'
 // so it is an admin of every organization and may configure their presentation.
 const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
+// Each step waits for networkidle before leaving a page: the header prefetches the
+// organization layout and its middleware through NuxtLink, and navigating away aborts
+// those module requests, which Firefox reports as a console error.
 test.describe('Organization presentation tab', () => {
   test('admin can configure and visitors can read the editorial blocs', async ({ page }) => {
     const uniqueId = Date.now()
@@ -22,6 +25,7 @@ test.describe('Organization presentation tab', () => {
       await page.goto(`/organizations/${org.slug}/datasets`)
       const presentationTab = page.getByRole('link', { name: 'Présentation' })
       await expect(presentationTab).toBeVisible()
+      await page.waitForLoadState('networkidle')
 
       await presentationTab.click()
       await expect(page).toHaveURL(new RegExp(`/organizations/${org.slug}/presentation`))
@@ -38,6 +42,7 @@ test.describe('Organization presentation tab', () => {
       await expect(page.getByRole('button', { name: 'Configurer la présentation' })).toBeVisible()
 
       // Without a presentation, the organization root lands on the datasets tab.
+      await page.waitForLoadState('networkidle')
       await page.goto(`/organizations/${org.slug}/`)
       await expect(page).toHaveURL(new RegExp(`/organizations/${org.slug}/datasets`))
 
@@ -53,9 +58,11 @@ test.describe('Organization presentation tab', () => {
 
       // A draft is not a public landing page: the org root still lands on datasets,
       // for the admin too — they reach the draft through the "Présentation" tab.
+      await page.waitForLoadState('networkidle')
       await page.goto(`/organizations/${org.slug}/`)
       await expect(page).toHaveURL(new RegExp(`/organizations/${org.slug}/datasets`))
 
+      await page.waitForLoadState('networkidle')
       await page.goto(`/organizations/${org.slug}/presentation`)
       // The bloc title and the markdown content render as distinct headings.
       await expect(page.getByRole('heading', { name: 'Bienvenue' })).toBeVisible()
@@ -92,6 +99,7 @@ test.describe('Organization presentation tab', () => {
       expect((await stillPublished.json()).presentation_blocs_published_at).not.toBeNull()
 
       // Now that the presentation is published, the org root redirects to it.
+      await page.waitForLoadState('networkidle')
       await page.goto(`/organizations/${org.slug}/`)
       await expect(page).toHaveURL(new RegExp(`/organizations/${org.slug}/presentation`))
 
@@ -111,6 +119,7 @@ test.describe('Organization presentation tab', () => {
       expect((await draft.json()).presentation_blocs_published_at).toBeNull()
 
       // Back to a draft: the org root lands on datasets again.
+      await page.waitForLoadState('networkidle')
       await page.goto(`/organizations/${org.slug}/`)
       await expect(page).toHaveURL(new RegExp(`/organizations/${org.slug}/datasets`))
     }
