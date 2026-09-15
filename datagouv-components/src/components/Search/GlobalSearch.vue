@@ -686,15 +686,18 @@ for (const c of props.config) {
   const result = await strategies[c.class].fetch(params, initialType === key)
 
   // A reload that only moves sort or pagination leaves every count where it is,
-  // so it must not replace them with loading dots. No previous params means the
-  // initial load, which does need its loading state.
-  const previousParams = ref<Record<string, unknown> | null>(null)
-  watch(params, (_newParams, oldParams) => {
-    previousParams.value = oldParams
+  // so it must not replace them with loading dots. The comparison is against the
+  // params the displayed counts came from, so that two changes in a row cannot
+  // clear the loading state owed to the first one. `data` already holds a value
+  // for the type rendered on the server; no applied params means the initial
+  // load, which does need its loading state.
+  const appliedParams = ref(result.data.value ? params.value : null)
+  watch(result.data, () => {
+    appliedParams.value = params.value
   })
 
-  const countsCanChange = computed(() => !previousParams.value
-    || !isEqualExcept(params.value, previousParams.value, COUNT_INVARIANT_PARAMS))
+  const countsCanChange = computed(() => !appliedParams.value
+    || !isEqualExcept(params.value, appliedParams.value, COUNT_INVARIANT_PARAMS))
 
   const countsLoading = computed(() => countsCanChange.value
     && (result.status.value === 'pending' || result.status.value === 'idle'))

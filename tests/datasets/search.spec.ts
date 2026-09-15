@@ -109,6 +109,33 @@ test('counts show their loading state while a filter change reloads the results'
   expect(await facetCount.textContent()).toBe('')
 })
 
+test('counts keep their loading state when a sort change follows a filter change', async ({ page }) => {
+  await page.goto('/datasets/search/')
+  await expect(page.getByTestId('search-result-count')).toBeVisible()
+
+  const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
+  await badgeFieldset.scrollIntoViewIfNeeded()
+  const facetCount = badgeFieldset.getByTestId('radio-count').first()
+  await expect(facetCount).toHaveText(/\d/)
+
+  await page.route('**/api/2/datasets/search/**', async (route) => {
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    await route.continue()
+  })
+
+  // The sort select sits outside the LoadingBlock, so it stays clickable while
+  // the filter request is still in flight — unlike the pagination, which the
+  // loader overlay covers.
+  await badgeFieldset.getByText('Données de forte valeur').click()
+  const sortRequest = page.waitForRequest('**/api/2/datasets/search/**')
+  await page.locator('#sort-search').selectOption({ label: 'Nombre de réutilisations' })
+  await sortRequest
+
+  // Sort alone cannot move a count, but the filter response never landed: the
+  // counts on screen are stale, so they must stay as dots.
+  expect(await facetCount.textContent()).toBe('')
+})
+
 test('badge filter can be cleared', async ({ page }) => {
   // Start with a badge filter applied
   await page.goto('/datasets/search/?badge=hvd')
