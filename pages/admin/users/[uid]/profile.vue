@@ -25,9 +25,10 @@
 <script setup lang="ts">
 import type { User } from '@datagouv/components-next'
 import AdminUserProfileHeader from '~/components/User/AdminUserProfileHeader.vue'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const { currentUser: user, setCurrentUser } = useCurrentOwned()

@@ -29,8 +29,11 @@
         />
       </div>
       <div
+        id="resource-explorer-viewer"
         class="flex-1 min-w-0"
         :class="fullscreen ? 'flex flex-col' : ''"
+        role="region"
+        :aria-label="t('Détail de la ressource')"
       >
         <!-- Suspense shows the skeleton fallback while the (async) viewer resolves
              its data on each resource switch. `timeout` keeps the previous resource

@@ -3,6 +3,7 @@
     class="relative flex shrink-0 flex-col overflow-hidden border-r border-gray-default bg-white"
     :class="resizing ? '' : 'transition-[width] duration-200'"
     :style="{ width: collapsed ? '48px' : `${width}px` }"
+    :aria-label="t('Ressources')"
   >
     <div
       class="flex h-14 items-center border-b border-gray-default bg-gray-some px-3"

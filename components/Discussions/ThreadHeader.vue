@@ -1,7 +1,7 @@
 <template>
   <header class="space-y-1">
     <div class="flex gap-3 sm:items-center sm:justify-between flex-col sm:flex-row">
-      <h3 class="m-0 text-base/normal text-gray-title flex items-center space-x-1">
+      <h3 class="m-0 text-base/normal text-gray-title flex items-start space-x-1">
         <RiLockLine
           v-if="thread.closed"
           class="size-4"
@@ -16,7 +16,7 @@
       </h3>
       <div
         v-if="showActions"
-        class="space-x-2"
+        class="flex items-center gap-2 shrink-0"
       >
         <BrandedButton
           v-if="isMeAdmin() && thread.spam?.status === 'potential_spam'"
