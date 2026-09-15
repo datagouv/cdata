@@ -408,14 +408,20 @@ export default defineNuxtConfig({
       xl: 1248,
     },
   },
+  // The bundler plugin stamps a debug id into every chunk and the same id into the copies it
+  // uploads, so Sentry pairs a frame with its map by identity instead of by release and URL.
+  // It does that during `renderChunk`, which is the only moment it can: Nitro records each
+  // asset's size and pre-compresses it at the end of the build, so anything rewriting
+  // `.output/public` afterwards serves a truncated script and a stale `.br`.
+  // The upload rides along and needs an auth token, which the CI only hands to `main` builds.
   sentry: {
-    sourceMapsUploadOptions: {
-      // Keeping the bundler plugin out also keeps it from stamping its own debug id: it only
-      // writes one as a runtime snippet, never the `//# debugId=` comment and the matching
-      // key in the map that an upload pairs on, so it would compete with the id the CI build
-      // injects rather than replace it. Upload is done during the release with sentry-cli.
-      enabled: false,
+    release: {
+      // Has to match what the SDK reports at runtime (`appConfig.commitId`), otherwise the
+      // plugin falls back to the full git sha and the two never line up.
+      name: process.env.NUXT_APP_COMMIT_ID,
+      deploy: process.env.GITHUB_REF_NAME ? { env: process.env.GITHUB_REF_NAME } : undefined,
     },
+    telemetry: false,
   },
 
   sitemap: {

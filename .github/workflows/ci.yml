@@ -46,15 +46,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      # The Sentry plugin stamps debug ids into the bundles here, and uploads the source maps
+      # too, but only when it gets a token. Withholding the token everywhere except `main` and
+      # manual runs is what keeps PR builds from uploading: they inject and stay quiet.
       - name: Build application
+        env:
+          SENTRY_AUTH_TOKEN: ${{ (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && secrets.SENTRY_AUTH_TOKEN || '' }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_URL: ${{ secrets.SENTRY_URL }}
         run: NUXT_APP_COMMIT_ID=$(git rev-parse --short HEAD) pnpm run build
-
-      # Injection rewrites the bundles and shifts their source maps by the same amount, so it
-      # has to happen on the artifact everyone downloads. Done in the `sentry` job instead, it
-      # would only ever touch a copy that is never deployed, and the maps would be uploaded
-      # two lines off. No credentials needed: the command only writes ids into the files.
-      - name: Inject Sentry debug IDs
-        run: pnpm dlx @sentry/cli sourcemaps inject .output/public/_nuxt
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
@@ -403,46 +404,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   # ============================================
-  # JOB 5: Sentry - upload source maps (automatic on main, manual on any branch)
-  # ============================================
-  sentry:
-    needs: [quality_and_test, e2e]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v8
-        with:
-          name: build-output
-          path: .output
-
-      - name: Set version
-        id: version
-        run: |
-          echo "short=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
-
-      - name: Create Sentry release
-        uses: getsentry/action-release@v3
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-          SENTRY_URL: ${{ secrets.SENTRY_URL }}
-        with:
-          # Injection happens during the build, on the artifact this job downloads. Letting
-          # the action do it here would rewrite its own copy and upload maps two lines off
-          # from the deployed bundles.
-          inject: false
-          sourcemaps: ".output/public/_nuxt"
-          url_prefix: "~/_nuxt"
-          environment: ${{ github.ref_name }}
-          version: ${{ steps.version.outputs.short }}
-          ignore_missing: true
-
-  # ============================================
-  # JOB 6: Publish datagouv-components (automatic on main, manual on any branch)
+  # JOB 5: Publish datagouv-components (automatic on main, manual on any branch)
   # ============================================
   publish-datagouv-components:
     needs: [quality_and_test, e2e]
