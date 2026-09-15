@@ -590,6 +590,7 @@ const stableParamsOptions = {
   sort,
   page,
   pageSize,
+  currentType,
 }
 
 // Discriminated union: each variant carries its own response type so a `class`
