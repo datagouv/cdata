@@ -331,6 +331,19 @@ test.describe('import de fichiers', () => {
     await expect(page.getByText('colonnes de votre fichier sont inconnues')).toHaveCount(0)
   })
 
+  test('un CSV en Windows-1252 garde ses accents', async ({ page }) => {
+    await stubPublicationApis(page)
+
+    // The encoding spreadsheet tools export French data in, which is not UTF-8:
+    // read with the UTF-8 default, every accent turns into a �
+    await startWizard(page, 'durabilite')
+    await uploadAndOpenSpreadsheet(page, 'lave-linge-point-virgule-latin1.csv')
+
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible()
+    await expect(page.getByText('Générateurs de chaleurs').first()).toBeVisible()
+    await expect(page.getByText('�')).toHaveCount(0)
+  })
+
   test('un XLSX garde ses identifiants longs et ses dates', async ({ page }) => {
     await stubPublicationApis(page)
 
