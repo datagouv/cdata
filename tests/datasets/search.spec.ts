@@ -62,6 +62,53 @@ test('search results update when badge filter is applied', async ({ page }) => {
   expect(hasResults || hasNoResultsMessage).toBeTruthy()
 })
 
+test('counts stay on screen while a page change reloads the results', async ({ page }) => {
+  await page.goto('/datasets/search/')
+  await expect(page.getByTestId('search-result-count')).toBeVisible()
+
+  const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
+  await badgeFieldset.scrollIntoViewIfNeeded()
+  const facetCount = badgeFieldset.getByTestId('radio-count').first()
+  await expect(facetCount).toHaveText(/\d/)
+  const countBeforePageChange = await facetCount.textContent()
+
+  // Hold the next search back so the page can be inspected mid-request.
+  await page.route('**/api/2/datasets/search/**', async (route) => {
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    await route.continue()
+  })
+
+  const searchRequest = page.waitForRequest('**/api/2/datasets/search/**')
+  await page.getByTestId('2').first().click()
+  await searchRequest
+
+  // Read without retrying: the point is the state while the request is in flight.
+  // A page change cannot move a single count, so none of them may go to dots.
+  expect(await facetCount.textContent()).toBe(countBeforePageChange)
+})
+
+test('counts show their loading state while a filter change reloads the results', async ({ page }) => {
+  await page.goto('/datasets/search/')
+  await expect(page.getByTestId('search-result-count')).toBeVisible()
+
+  const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
+  await badgeFieldset.scrollIntoViewIfNeeded()
+  const facetCount = badgeFieldset.getByTestId('radio-count').first()
+  await expect(facetCount).toHaveText(/\d/)
+
+  await page.route('**/api/2/datasets/search/**', async (route) => {
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    await route.continue()
+  })
+
+  const searchRequest = page.waitForRequest('**/api/2/datasets/search/**')
+  await badgeFieldset.getByText('Données de forte valeur').click()
+  await searchRequest
+
+  // A filter change does move the counts, so the stale ones give way to dots.
+  expect(await facetCount.textContent()).toBe('')
+})
+
 test('badge filter can be cleared', async ({ page }) => {
   // Start with a badge filter applied
   await page.goto('/datasets/search/?badge=hvd')

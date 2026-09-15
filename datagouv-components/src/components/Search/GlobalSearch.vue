@@ -34,7 +34,7 @@
                 :key="configKey(typeConfig)"
                 :value="configKey(typeConfig)"
                 :count="resultsMap[configKey(typeConfig)]?.data.value?.total"
-                :loading="resultsMap[configKey(typeConfig)]?.status.value === 'pending' || resultsMap[configKey(typeConfig)]?.status.value === 'idle'"
+                :loading="resultsMap[configKey(typeConfig)]?.countsLoading.value"
                 :icon="typeConfig.icon ?? strategies[typeConfig.class].icon"
               >
                 {{ typeConfig.name || strategies[typeConfig.class].name }}
@@ -106,28 +106,28 @@
                 v-if="isEnabled('format_family')"
                 v-model="formatFamily"
                 :facets="getFacets('format_family')"
-                :loading="searchResultsStatus === 'pending'"
+                :loading="facetsLoading"
                 :style="{ order: getOrder('format_family') }"
               />
               <AccessTypeFilter
                 v-if="isEnabled('access_type')"
                 v-model="accessType"
                 :facets="getFacets('access_type')"
-                :loading="searchResultsStatus === 'pending'"
+                :loading="facetsLoading"
                 :style="{ order: getOrder('access_type') }"
               />
               <LastUpdateRangeFilter
                 v-if="isEnabled('last_update_range')"
                 v-model="lastUpdateRange"
                 :facets="getFacets('last_update')"
-                :loading="searchResultsStatus === 'pending'"
+                :loading="facetsLoading"
                 :style="{ order: getOrder('last_update_range') }"
               />
               <ProducerTypeFilter
                 v-if="isEnabled('producer_type')"
                 v-model="producerType"
                 :facets="getFacets('producer_type')"
-                :loading="searchResultsStatus === 'pending'"
+                :loading="facetsLoading"
                 :exclude="currentTypeConfig?.class === 'organizations' ? ['user'] : []"
                 :style="{ order: getOrder('producer_type') }"
               />
@@ -135,14 +135,14 @@
                 v-if="isEnabled('badge')"
                 v-model="badge"
                 :facets="getFacets('badge')"
-                :loading="searchResultsStatus === 'pending'"
+                :loading="facetsLoading"
                 :style="{ order: getOrder('badge') }"
               />
               <ReuseTypeFilter
                 v-if="isEnabled('type')"
                 v-model="reuseType"
                 :facets="getFacets('type')"
-                :loading="searchResultsStatus === 'pending'"
+                :loading="facetsLoading"
                 :style="{ order: getOrder('type') }"
               />
               <slot
@@ -354,7 +354,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, provide, shallowReactive, useSlots, watch, useTemplateRef, type Component, type Ref } from 'vue'
+import { computed, provide, ref, shallowReactive, useSlots, watch, useTemplateRef, type Component, type ComputedRef, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
 import { useRoute } from 'vue-router'
 import { RiBookShelfLine, RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiLightbulbLine, RiLineChartLine, RiRssLine, RiTerminalLine } from '@remixicon/vue'
@@ -365,6 +365,7 @@ import { configKey, forEachActiveCustomFilter, isCustomFilterActive, searchFilte
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
+import { isEqualExcept } from '../../functions/helpers'
 import { scrollToBlockTop } from '../../functions/scroll'
 import type { AsyncDataRequestStatus } from '../../functions/api.types'
 import type { Dataset } from '../../types/datasets'
@@ -593,13 +594,18 @@ const stableParamsOptions = {
   currentType,
 }
 
+// Refs produced by the fetch, before the counts loading state is attached.
+type SearchResultRefs<C extends SearchType> = {
+  class: C
+  data: Ref<SearchResponseByClass[C] | null>
+  status: Ref<AsyncDataRequestStatus>
+}
+
 // Discriminated union: each variant carries its own response type so a `class`
 // narrow gives the precise shape of `data.value` (no cast needed).
 type SearchEntry = {
-  [K in SearchType]: {
-    class: K
-    data: Ref<SearchResponseByClass[K] | null>
-    status: Ref<AsyncDataRequestStatus>
+  [K in SearchType]: SearchResultRefs<K> & {
+    countsLoading: ComputedRef<boolean>
   }
 }[SearchType]
 
@@ -613,7 +619,7 @@ type SearchStrategy<C extends SearchType> = {
   fetch: (
     params: Ref<Record<string, unknown>>,
     server: boolean,
-  ) => Promise<Extract<SearchEntry, { class: C }>>
+  ) => Promise<SearchResultRefs<C>>
 }
 
 function makeStrategy<C extends SearchType>(
@@ -627,9 +633,9 @@ function makeStrategy<C extends SearchType>(
         meta.url,
         { params, lazy: true, server },
       )
-      // Tautologically equivalent to Extract<SearchEntry, { class: C }>, but TS
-      // cannot prove it on a generic C, so we assert.
-      return { class: cls, data, status } as Extract<SearchEntry, { class: C }>
+      // Tautologically equivalent to SearchResultRefs<C>, but TS cannot prove
+      // it on a generic C, so we assert.
+      return { class: cls, data, status } as SearchResultRefs<C>
     },
   }
 }
@@ -667,12 +673,34 @@ const strategies: { [K in SearchType]: SearchStrategy<K> } = {
   }),
 }
 
+// `sort`, `page` and `page_size` change which results come back, never how many
+// there are nor how the API aggregates them: a refetch that touches only those
+// cannot change a single count we display.
+const COUNT_INVARIANT_PARAMS = ['sort', 'page', 'page_size']
+
 // One params + fetch per config entry, keyed by configKey
 const resultsMap: Record<string, SearchEntry> = {}
 for (const c of props.config) {
   const key = configKey(c)
   const params = useStableQueryParams({ ...stableParamsOptions, typeConfig: c })
-  resultsMap[key] = await strategies[c.class].fetch(params, initialType === key)
+  const result = await strategies[c.class].fetch(params, initialType === key)
+
+  // A reload that only moves sort or pagination leaves every count where it is,
+  // so it must not replace them with loading dots. No previous params means the
+  // initial load, which does need its loading state.
+  const previousParams = ref<Record<string, unknown> | null>(null)
+  watch(params, (_newParams, oldParams) => {
+    previousParams.value = oldParams
+  })
+
+  const countsCanChange = computed(() => !previousParams.value
+    || !isEqualExcept(params.value, previousParams.value, COUNT_INVARIANT_PARAMS))
+
+  const countsLoading = computed(() => countsCanChange.value
+    && (result.status.value === 'pending' || result.status.value === 'idle'))
+
+  // Same generic-C limitation as in makeStrategy: the union is narrowed by key.
+  resultsMap[key] = { ...result, countsLoading } as SearchEntry
 }
 
 // Reset page on filter/sort change. Custom filters (registered via
@@ -793,6 +821,7 @@ const rssUrl = computed(() => {
 
 // Facets for filters
 const currentFacets = computed(() => searchResults.value?.facets)
+const facetsLoading = computed(() => resultsMap[currentType.value]?.countsLoading.value ?? false)
 
 function getFacets(key: string): FacetItem[] | undefined {
   if (!currentFacets.value) return undefined
