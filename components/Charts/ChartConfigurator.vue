@@ -137,25 +137,52 @@
               {{ $t('Filtres') }}
             </p>
             <div class="space-y-3">
-              <ChartFilterRow
-                v-for="(filter, index) in filterList"
-                :key="index"
-                :model-value="filter"
-                :index="index"
-                :column-options="columnDetails"
-                :condition-options="conditionOptions"
-                @update:model-value="updateFilter(index, $event)"
-                @remove="removeFilter(index)"
-              />
+              <template
+                v-for="(group, groupIndex) in filterGroups.groups"
+                :key="groupIndex"
+              >
+                <p
+                  v-if="groupIndex > 0"
+                  class="text-xs text-gray-600"
+                >
+                  {{ filterGroups.rootCombinator === 'and' ? $t('et') : $t('ou') }}
+                </p>
+                <ChartFilterGroup
+                  :group="group"
+                  :combinator="innerCombinator"
+                  :show-combinator-select="totalRules > 1"
+                  :can-remove-group="filterGroups.groups.length > 1"
+                  :bordered="totalRules > 1"
+                  :column-options="columnDetails"
+                  :condition-options="conditionOptions"
+                  @update:filter="(i, f) => updateFilter(groupIndex, i, f)"
+                  @update:combinator="setInnerCombinator"
+                  @remove:filter="(i) => removeFilter(groupIndex, i)"
+                  @add-condition="addCondition(groupIndex)"
+                  @remove-group="removeGroup(groupIndex)"
+                />
+              </template>
             </div>
-            <BrandedButton
-              size="sm"
-              color="tertiary"
-              :icon="RiAddLine"
-              @click="addFilter"
-            >
-              {{ $t('Ajouter un filtre') }}
-            </BrandedButton>
+            <div class="flex flex-wrap gap-2">
+              <BrandedButton
+                v-if="totalRules === 0"
+                size="sm"
+                color="tertiary"
+                :icon="RiAddLine"
+                @click="addFilter"
+              >
+                {{ $t('Ajouter une règle') }}
+              </BrandedButton>
+              <BrandedButton
+                v-if="totalRules > 1"
+                size="sm"
+                color="tertiary"
+                :icon="RiAddLine"
+                @click="addGroup"
+              >
+                {{ $t('Ajouter un groupe') }}
+              </BrandedButton>
+            </div>
           </fieldset>
 
           <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
@@ -432,14 +459,16 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
 import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartLine, RiCalculatorLine, RiLineChartLine, RiText } from '@remixicon/vue'
 import { isMeAdmin } from '~/utils/auth'
 import { keepValidSortCombined } from '~/utils/charts'
-import ChartFilterRow from './ChartFilterRow.vue'
+import { fromFilterGroups, toFilterGroups } from '~/utils/chartFilters'
+import type { FilterGroupCombinator, FilterGroupsState } from '~/utils/chartFilters'
+import ChartFilterGroup from './ChartFilterGroup.vue'
 import ProducerSelect from '../ProducerSelect.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
@@ -612,26 +641,32 @@ const columnDetails = computed<Array<{ key: string, value: string, disabled: boo
   return options
 })
 
-function isFilter(f: GenericFilter | null): f is Filter {
-  return f?._cls === 'Filter'
+const filterGroups = computed<FilterGroupsState>(() => toFilterGroups(form.value.filter))
+
+/** Conditions inside a group are combined with the opposite of the root combinator. */
+const innerCombinator = computed<FilterGroupCombinator>(() =>
+  filterGroups.value.rootCombinator === 'and' ? 'or' : 'and',
+)
+
+const totalRules = computed(() =>
+  filterGroups.value.groups.reduce((count, group) => count + group.length, 0),
+)
+
+/** All group combinator selects share one value: flip the root to its opposite. */
+function setInnerCombinator(combinator: FilterGroupCombinator) {
+  applyFilterGroups({
+    ...filterGroups.value,
+    rootCombinator: combinator === 'and' ? 'or' : 'and',
+  })
 }
 
-function isAndFilters(f: GenericFilter | null): f is AndFilters {
-  return f?._cls === 'AndFilters'
+function applyFilterGroups(state: FilterGroupsState) {
+  form.value.filter = fromFilterGroups(state)
 }
 
-const filterList = computed<Array<Filter>>(() => {
-  if (!form.value.filter) return []
-
-  const filter = form.value.filter
-  if (isFilter(filter)) {
-    return [filter]
-  }
-  else if (isAndFilters(filter)) {
-    return filter.filters.filter(isFilter)
-  }
-  return []
-})
+function newEmptyFilter(): Filter {
+  return { _cls: 'Filter', column: '', condition: 'exact', value: '' }
+}
 
 function getColumnTypeIcon(colType: ColumnType | 'count'): Component {
   if (colType === 'count') {
@@ -828,46 +863,36 @@ async function saveChart() {
   toast.success(update ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
 }
 
-function removeFilter(index: number) {
-  if (!form.value.filter) return
-
-  if (isFilter(form.value.filter)) {
-    form.value.filter = null
-  }
-  else if (isAndFilters(form.value.filter)) {
-    form.value.filter.filters.splice(index, 1)
-    if (form.value.filter.filters.length === 0) {
-      form.value.filter = null
-    }
-  }
-}
-
-function updateFilter(index: number, newFilter: Filter) {
-  if (!form.value.filter) return
-
-  if (isFilter(form.value.filter)) {
-    form.value.filter = newFilter
-  }
-  else if (isAndFilters(form.value.filter)) {
-    form.value.filter.filters[index] = newFilter
-  }
-}
-
 function addFilter() {
-  const newFilter: Filter = { _cls: 'Filter', column: '', condition: 'exact' as const, value: '' }
+  const groups = filterGroups.value.groups.map(g => [...g])
+  if (groups.length === 0) groups.push([])
+  groups[groups.length - 1].push(newEmptyFilter())
+  applyFilterGroups({ ...filterGroups.value, groups })
+}
 
-  if (!form.value.filter) {
-    form.value.filter = newFilter
-  }
-  else if (isFilter(form.value.filter)) {
-    form.value.filter = {
-      _cls: 'AndFilters',
-      filters: [form.value.filter, newFilter],
-    }
-  }
-  else if (isAndFilters(form.value.filter)) {
-    form.value.filter.filters.push(newFilter)
-  }
+function addGroup() {
+  applyFilterGroups({ ...filterGroups.value, groups: [...filterGroups.value.groups, [newEmptyFilter()]] })
+}
+
+function removeGroup(groupIndex: number) {
+  applyFilterGroups({ ...filterGroups.value, groups: filterGroups.value.groups.filter((_, i) => i !== groupIndex) })
+}
+
+function addCondition(groupIndex: number) {
+  const groups = filterGroups.value.groups.map((g, i) => (i === groupIndex ? [...g, newEmptyFilter()] : g))
+  applyFilterGroups({ ...filterGroups.value, groups })
+}
+
+function updateFilter(groupIndex: number, filterIndex: number, newFilter: Filter) {
+  const groups = filterGroups.value.groups.map((g, i) =>
+    (i === groupIndex ? g.map((f, j) => (j === filterIndex ? newFilter : f)) : g))
+  applyFilterGroups({ ...filterGroups.value, groups })
+}
+
+function removeFilter(groupIndex: number, filterIndex: number) {
+  const groups = filterGroups.value.groups.map((g, i) =>
+    (i === groupIndex ? g.filter((_, j) => j !== filterIndex) : g))
+  applyFilterGroups({ ...filterGroups.value, groups })
 }
 
 watch(
