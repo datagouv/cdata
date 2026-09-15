@@ -15,12 +15,16 @@ interface StableQueryParamsOptions {
 }
 
 /**
- * Creates a stable ref for query params that only updates when content actually changes.
+ * Creates stable refs for query params that only update when content actually changes.
  * Applies hiddenFilters first, then user filters (which can override hiddenFilters).
+ * `facetParams` is the same params minus `sort` and `page`, which do not affect
+ * facet aggregations.
  */
 export function useStableQueryParams(options: StableQueryParamsOptions) {
   const { typeConfig, allFilters, customFilterRegistry, q, sort, page, pageSize } = options
   const stableParams = ref<Record<string, unknown>>({})
+  // Same params minus sort and page
+  const stableFacetParams = ref<Record<string, unknown>>({})
 
   const buildParams = () => {
     const params: Record<string, unknown> = {}
@@ -108,9 +112,17 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
       if (JSON.stringify(newParams) !== JSON.stringify(stableParams.value)) {
         stableParams.value = newParams
       }
+
+      const newFacetParams = { ...newParams }
+      delete newFacetParams.sort
+      delete newFacetParams.page
+      delete newFacetParams.page_size
+      if (JSON.stringify(newFacetParams) !== JSON.stringify(stableFacetParams.value)) {
+        stableFacetParams.value = newFacetParams
+      }
     },
     { immediate: true },
   )
 
-  return stableParams
+  return { params: stableParams, facetParams: stableFacetParams }
 }
