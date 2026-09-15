@@ -1,4 +1,7 @@
 const SAMPLE_SIZE = 64 * 1024
+// Longest UTF-8 sequence is 4 bytes; the margin lets a character the sample cut
+// mid-byte complete, so a valid UTF-8 file is not mistaken for windows-1252
+const SAMPLE_MARGIN = 16
 
 /**
  * Guess the text encoding of a delimited file so it can be decoded with the right
@@ -8,15 +11,19 @@ const SAMPLE_SIZE = 64 * 1024
  * ASCII is reported as UTF-8, which decodes it exactly.
  */
 export async function detectFileEncoding(file: Blob): Promise<string> {
-  const sample = new Uint8Array(await file.slice(0, SAMPLE_SIZE).arrayBuffer())
+  const sample = new Uint8Array(await file.slice(0, SAMPLE_SIZE + SAMPLE_MARGIN).arrayBuffer())
 
   if (sample.length >= 2) {
     if (sample[0] === 0xFF && sample[1] === 0xFE) return 'utf-16le'
     if (sample[0] === 0xFE && sample[1] === 0xFF) return 'utf-16be'
   }
 
+  const decoder = new TextDecoder('utf-8', { fatal: true })
   try {
-    new TextDecoder('utf-8', { fatal: true }).decode(sample)
+    // `stream` withholds a trailing partial sequence; the flush then rejects it,
+    // which keeps a real invalid byte from passing as UTF-8
+    decoder.decode(sample, { stream: true })
+    decoder.decode()
     return 'utf-8'
   }
   catch {

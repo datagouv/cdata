@@ -344,6 +344,22 @@ test.describe('import de fichiers', () => {
     await expect(page.getByText('�')).toHaveCount(0)
   })
 
+  test('un CSV UTF-8 coupé en plein caractère sur la fin de l’échantillon garde ses accents', async ({ page }) => {
+    await stubPublicationApis(page)
+
+    // Detection reads a 64 KB sample. When a multibyte character straddles that
+    // cut, a fatal decode without `stream` rejected valid UTF-8 and the whole file
+    // fell back to windows-1252 — GÃ©nÃ©rateurs, which � would not have revealed
+    await startWizard(page, 'durabilite')
+    await uploadAndOpenSpreadsheet(page, 'lave-linge-utf8-64ko.csv')
+
+    // 17 rows on 228 columns is a lot of cells for the table to build in Firefox
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible({ timeout: 20_000 })
+    await expect(page.getByText('Générateurs').first()).toBeVisible()
+    await expect(page.getByText('Ã©')).toHaveCount(0)
+    await expect(page.getByText('�')).toHaveCount(0)
+  })
+
   test('un XLSX garde ses identifiants longs et ses dates', async ({ page }) => {
     await stubPublicationApis(page)
 
