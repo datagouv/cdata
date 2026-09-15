@@ -723,7 +723,7 @@ test('filter groups are sent as or params to tabular-api with synced combinator 
 
   // Default is ET inside groups, OU between groups: OrFilters[AndFilters, Filter].
   await expect.poll(() => decodeURIComponent(dataRequests[dataRequests.length - 1] ?? '')).toContain(
-    'or=(and(nom_region__exact.Bretagne,annee_publication__exact.2020),annee_publication__exact.2021)',
+    'or=(and(nom_region__exact.Bretagne,année_publication__exact.2020),année_publication__exact.2021)',
   )
 
   // Flipping one group's select to "Ou" flips them all (ET between groups, OU inside).
@@ -736,6 +736,6 @@ test('filter groups are sent as or params to tabular-api with synced combinator 
   // The between-groups label follows the root flip: "et" (and root).
   await expect(filters.getByText('et', { exact: true })).toBeVisible()
   await expect.poll(() => decodeURIComponent(dataRequests[dataRequests.length - 1] ?? '')).toContain(
-    'nom_region__exact=Bretagne&or=(annee_publication__exact.2020,annee_publication__exact.2021)',
+    'or=(nom_region__exact.Bretagne,année_publication__exact.2020)&année_publication__exact=2021',
   )
 })
