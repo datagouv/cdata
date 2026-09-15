@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
-import type { ColumnFilters, ColumnType } from '~/datagouv-components/src/components/TabularExplorer/types'
-import { hasFilterForColumn, resolveColumnType, buildGlobalSearchConditions } from '~/datagouv-components/src/functions/tabular'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import type { ColumnFilters, ColumnType, DateFilter } from '~/datagouv-components/src/components/TabularExplorer/types'
+import { buildDateFilterParams, hasFilterForColumn, resolveColumnType, buildGlobalSearchConditions, toIsoDay, useFormatTabular } from '~/datagouv-components/src/functions/tabular'
 
 const has = (filter?: ColumnFilters) => hasFilterForColumn(filter ? { price: filter } : {}, 'price')
 
@@ -31,6 +31,85 @@ describe('hasFilterForColumn', () => {
 
   it('ignores an empty contains filter', () => {
     expect(has({ contains: '' })).toBe(false)
+  })
+
+  it('detects a date filter', () => {
+    expect(has({ date: { operator: 'is', start: '2024-04-07' } })).toBe(true)
+  })
+})
+
+describe('toIsoDay', () => {
+  it('keeps a plain date as-is', () => {
+    expect(toIsoDay('2024-11-01')).toBe('2024-11-01')
+  })
+
+  it('keeps only the day of a timestamp', () => {
+    expect(toIsoDay('2026-09-07T09:22:54.968+02:00')).toBe('2026-09-07')
+  })
+
+  it('rejects anything that is not an ISO date', () => {
+    expect(toIsoDay('01/11/2024')).toBeNull()
+    expect(toIsoDay('')).toBeNull()
+    expect(toIsoDay(null)).toBeNull()
+    expect(toIsoDay('2024-13-01')).toBeNull()
+  })
+})
+
+describe('buildDateFilterParams', () => {
+  const params = (filter: DateFilter) => buildDateFilterParams('published', filter)
+
+  // Every operator becomes a half-open day interval, so the same params work on
+  // a `date` column and on a `datetime` one — `resolveColumnType` merges the two,
+  // and `__exact` on a bare day matches nothing.
+  it('turns "is" into the whole day', () => {
+    expect(params({ operator: 'is', start: '2024-04-07' })).toEqual({
+      published__greater: '2024-04-07',
+      published__strictly_less: '2024-04-08',
+    })
+  })
+
+  it('excludes the day itself from "before"', () => {
+    expect(params({ operator: 'before', start: '2024-04-07' })).toEqual({
+      published__strictly_less: '2024-04-07',
+    })
+  })
+
+  it('excludes the day itself from "after"', () => {
+    expect(params({ operator: 'after', start: '2024-04-07' })).toEqual({
+      published__greater: '2024-04-08',
+    })
+  })
+
+  it('includes both ends of "between"', () => {
+    expect(params({ operator: 'between', start: '2024-04-07', end: '2024-04-20' })).toEqual({
+      published__greater: '2024-04-07',
+      published__strictly_less: '2024-04-21',
+    })
+  })
+
+  it('rolls over month and year boundaries', () => {
+    expect(params({ operator: 'is', start: '2024-02-29' })).toEqual({
+      published__greater: '2024-02-29',
+      published__strictly_less: '2024-03-01',
+    })
+    expect(params({ operator: 'after', start: '2023-12-31' })).toEqual({
+      published__greater: '2024-01-01',
+    })
+  })
+
+  it('leaves "between" open-ended until an end date is picked', () => {
+    expect(params({ operator: 'between', start: '2024-04-07' })).toEqual({
+      published__greater: '2024-04-07',
+    })
+  })
+
+  // `initialFilters` is a public prop, so it can carry anything: an unparseable
+  // date drops the filter instead of throwing and breaking the whole explorer.
+  it('drops a filter whose date is not an ISO date', () => {
+    expect(params({ operator: 'is', start: '07/04/2024' })).toEqual({})
+    expect(params({ operator: 'between', start: '2024-04-07', end: 'nope' })).toEqual({
+      published__greater: '2024-04-07',
+    })
   })
 })
 
@@ -190,5 +269,29 @@ describe('global search query conditions', () => {
     expect(conditions.find(c => c.startsWith('a_bool__'))).toBeUndefined()
     expect(conditions).toContain('a_text__contains.search')
     expect(conditions).toHaveLength(1)
+  })
+})
+
+describe('formatCellDate', () => {
+  // The shift only shows up away from UTC: read as an instant, a bare day lands on
+  // the day before here — in the table cells as well as in the filter chips.
+  beforeAll(() => vi.stubEnv('TZ', 'America/Cayenne'))
+  afterAll(() => vi.unstubAllEnvs())
+
+  it('shows the day the API sent, whatever the reader timezone', () => {
+    const { formatCellDate } = useFormatTabular()
+    expect(formatCellDate('2015-06-18')).toBe('18/06/2015')
+  })
+
+  it('still reads a timestamp as the instant it is', () => {
+    const { formatCellDate } = useFormatTabular()
+    expect(formatCellDate('2015-06-18T09:30:00Z')).toBe('18/06/2015')
+  })
+
+  it('falls back to the raw value it cannot read as a date', () => {
+    const { formatCellDate } = useFormatTabular()
+    expect(formatCellDate('')).toBe('–')
+    expect(formatCellDate(null)).toBe('–')
+    expect(formatCellDate('pas une date')).toBe('pas une date')
   })
 })
