@@ -79,24 +79,25 @@
             :label="$t('Transférer  le jeu de données')"
           />
           <BannerAction
-            v-if="isMeAdmin()"
+            v-if="dataset.doi"
             type="primary"
-            :title="dataset.doi ? $t('DOI du jeu de données') : $t('Créer un DOI')"
+            :title="$t('DOI du jeu de données')"
           >
-            <template v-if="dataset.doi">
+            <p class="m-0">
               {{ dataset.doi }}
-            </template>
-            <template v-else-if="doiBlockedReason">
-              {{ doiBlockedReason }}
-            </template>
-            <template v-else>
-              {{ $t("Un DOI est définitif : une fois créé, le jeu de données ne pourra plus être supprimé, seulement archivé.") }}
-            </template>
+            </p>
+            <p class="m-0">
+              {{ $t("Un jeu de données porteur d'un DOI ne peut plus être supprimé, seulement archivé.") }}
+            </p>
+          </BannerAction>
+          <BannerAction
+            v-if="!dataset.doi && isMeAdmin()"
+            type="primary"
+            :title="$t('Créer un DOI')"
+          >
+            {{ doiBlockedReason ?? $t("Un DOI est définitif : une fois créé, le jeu de données ne pourra plus être supprimé, seulement archivé.") }}
 
-            <template
-              v-if="!dataset.doi"
-              #button
-            >
+            <template #button>
               <BrandedButton
                 :icon="RiFingerprintLine"
                 :loading="isLoading"
@@ -124,7 +125,7 @@
             </template>
           </BannerAction>
           <BannerAction
-            v-if="!dataset.deleted"
+            v-if="!dataset.deleted && !dataset.doi"
             type="danger"
             :title="$t('Supprimer le jeu de données')"
           >
@@ -193,14 +194,7 @@ watchEffect(() => {
   }
 })
 
-// The API refuses to mint a DOI outside of these conditions, so the reason is stated
-// upfront rather than surfaced as an error once the button has been clicked.
-const doiBlockedReason = computed(() => {
-  if (!dataset.value) return null
-  if (!dataset.value.organization) return t('Seul un jeu de données publié par une organisation peut recevoir un DOI.')
-  if (dataset.value.private || dataset.value.deleted || dataset.value.archived) return t('Seul un jeu de données public peut recevoir un DOI.')
-  return null
-})
+const doiBlockedReason = useDoiBlockedReason(dataset)
 
 async function mintDoi() {
   isLoading.value = true

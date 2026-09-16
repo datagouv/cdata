@@ -77,10 +77,9 @@ const { t } = useTranslation()
 const me = useMaybeMe()
 const loading = ref(false)
 
-const { form, touch, getFirstError, validate } = useForm({
-  email: me.value?.email ?? '',
-  message: '',
-}, {
+const emptyForm = () => ({ email: me.value?.email ?? '', message: '' })
+
+const { form, touch, getFirstError, validate } = useForm(emptyForm(), {
   email: [required(), email()],
   message: [required()],
 })
@@ -100,6 +99,9 @@ async function submit(close: () => void) {
       },
     })
     toast.success(t('Votre demande de DOI a bien été envoyée.'))
+    // The modal is never unmounted, so reopening it would otherwise show the message
+    // that was just sent and invite a duplicate.
+    form.value = emptyForm()
     close()
   }
   catch {
