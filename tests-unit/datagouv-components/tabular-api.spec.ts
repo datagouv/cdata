@@ -55,7 +55,7 @@ describe('buildFilterQuery', () => {
 
   it('escapes dots and parens in values inside groups', () => {
     const filters: OrFilters = { _cls: 'OrFilters', filters: [f('a', 'exact', '1.5'), f('b', 'exact', 'x(y)')] }
-    expect(buildFilterQuery(filters)).toBe('or=(a__exact.1%2E5,b__exact.x%28y%29)')
+    expect(buildFilterQuery(filters)).toBe('or=(a__exact.1%252E5,b__exact.x%2528y%2529)')
   })
 
   it('drops groups whose conditions are all empty', () => {

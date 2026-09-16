@@ -140,9 +140,9 @@ describe('global search query conditions', () => {
     // A raw dot ends the operator, a raw parenthesis closes the expression:
     // either one makes the API reject the whole query with a 400.
     expect(buildGlobalSearchConditions(['Objet'], typeForCadaCol, 'art. 6'))
-      .toEqual(['Objet__contains.art%2E%206'])
+      .toEqual(['Objet__contains.art%252E%206'])
     expect(buildGlobalSearchConditions(['Objet'], typeForCadaCol, 'mairie (Paris)'))
-      .toEqual(['Objet__contains.mairie%20%28Paris%29'])
+      .toEqual(['Objet__contains.mairie%20%2528Paris%2529'])
     expect(buildGlobalSearchConditions(['Objet'], typeForCadaCol, 'a,b'))
       .toEqual(['Objet__contains.a%2Cb'])
   })
@@ -173,7 +173,7 @@ describe('global search query conditions', () => {
     }
 
     // The decimal separator is encoded like any other dot of the grammar
-    expect(buildGlobalSearchConditions(cols, c => types[c], '-12.5')).toContain('id__exact.-12%2E5')
+    expect(buildGlobalSearchConditions(cols, c => types[c], '-12.5')).toContain('id__exact.-12%252E5')
   })
 
   it('excludes date, year and boolean columns from global search', () => {

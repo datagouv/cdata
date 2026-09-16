@@ -2,7 +2,7 @@
   <div class="flex items-center gap-2 flex-wrap md:flex-nowrap">
     <div class="min-w-20 shrink-0">
       <Listbox
-        v-if="showCombinatorSelect"
+        v-if="index > 0"
         :model-value="combinator"
         :options="['and', 'or']"
         :display-value="(opt) => opt === 'and' ? t('Et') : t('Ou')"
@@ -11,7 +11,7 @@
       <span
         v-else
         class="text-xs text-gray-600"
-      >{{ connectorLabel }}</span>
+      >{{ t('Quand') }}</span>
     </div>
     <Listbox
       v-model="filter.column"
@@ -51,30 +51,23 @@ import type { Filter, FilterCondition } from '@datagouv/components-next'
 import { Listbox, BrandedButton } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
 import { computed } from 'vue'
+import type { FilterColumnOption, FilterGroupCombinator } from '~/utils/chartFilters'
 
 const filter = defineModel<Filter>({ required: true })
 
 const props = defineProps<{
-  connector: 'first' | 'and' | 'or' | 'none'
-  combinator: 'and' | 'or'
-  showCombinatorSelect: boolean
-  columnOptions: Array<{ key: string, value: string, disabled: boolean }>
+  index: number
+  combinator: FilterGroupCombinator
+  columnOptions: Array<FilterColumnOption>
   conditionOptions: Array<FilterCondition>
 }>()
 
 defineEmits<{
   'remove': []
-  'update:combinator': [combinator: 'and' | 'or']
+  'update:combinator': [combinator: FilterGroupCombinator]
 }>()
 
 const { t } = useTranslation()
-
-const connectorLabel = computed(() => {
-  if (props.connector === 'first') return t('Quand')
-  if (props.connector === 'and') return t('et')
-  if (props.connector === 'or') return t('ou')
-  return ''
-})
 
 const listboxOptions = computed(() =>
   props.columnOptions.map(opt => opt.key),

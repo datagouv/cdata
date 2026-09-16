@@ -150,12 +150,10 @@
                 <ChartFilterGroup
                   :group="group"
                   :combinator="innerCombinator"
-                  :show-combinator-select="totalRules > 1"
                   :can-remove-group="filterGroups.groups.length > 1"
                   :bordered="totalRules > 1"
                   :column-options="columnDetails"
                   :condition-options="conditionOptions"
-                  @update:filter="(i, f) => updateFilter(groupIndex, i, f)"
                   @update:combinator="setInnerCombinator"
                   @remove:filter="(i) => removeFilter(groupIndex, i)"
                   @add-condition="addCondition(groupIndex)"
@@ -169,7 +167,7 @@
                 size="sm"
                 color="tertiary"
                 :icon="RiAddLine"
-                @click="addFilter"
+                @click="addGroup"
               >
                 {{ $t('Ajouter une règle') }}
               </BrandedButton>
@@ -467,7 +465,7 @@ import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChart
 import { isMeAdmin } from '~/utils/auth'
 import { keepValidSortCombined } from '~/utils/charts'
 import { fromFilterGroups, toFilterGroups } from '~/utils/chartFilters'
-import type { FilterGroupCombinator, FilterGroupsState } from '~/utils/chartFilters'
+import type { FilterColumnOption, FilterGroupCombinator, FilterGroupsState } from '~/utils/chartFilters'
 import ChartFilterGroup from './ChartFilterGroup.vue'
 import ProducerSelect from '../ProducerSelect.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
@@ -630,8 +628,8 @@ const sortProxy = computed<SortOption | null>({
   },
 })
 
-const columnDetails = computed<Array<{ key: string, value: string, disabled: boolean }>>(() => {
-  const options: Array<{ key: string, value: string, disabled: boolean }> = [{ key: '', value: t('Colonne'), disabled: true }]
+const columnDetails = computed<Array<FilterColumnOption>>(() => {
+  const options: Array<FilterColumnOption> = [{ key: '', value: t('Colonne'), disabled: true }]
   const resourceColumns = columns.value[selectedResource.value ?? '']
 
   if (resourceColumns) {
@@ -863,13 +861,6 @@ async function saveChart() {
   toast.success(update ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
 }
 
-function addFilter() {
-  const groups = filterGroups.value.groups.map(g => [...g])
-  if (groups.length === 0) groups.push([])
-  groups[groups.length - 1].push(newEmptyFilter())
-  applyFilterGroups({ ...filterGroups.value, groups })
-}
-
 function addGroup() {
   applyFilterGroups({ ...filterGroups.value, groups: [...filterGroups.value.groups, [newEmptyFilter()]] })
 }
@@ -880,12 +871,6 @@ function removeGroup(groupIndex: number) {
 
 function addCondition(groupIndex: number) {
   const groups = filterGroups.value.groups.map((g, i) => (i === groupIndex ? [...g, newEmptyFilter()] : g))
-  applyFilterGroups({ ...filterGroups.value, groups })
-}
-
-function updateFilter(groupIndex: number, filterIndex: number, newFilter: Filter) {
-  const groups = filterGroups.value.groups.map((g, i) =>
-    (i === groupIndex ? g.map((f, j) => (j === filterIndex ? newFilter : f)) : g))
   applyFilterGroups({ ...filterGroups.value, groups })
 }
 

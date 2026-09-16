@@ -4,12 +4,10 @@
       v-for="(filter, index) in group"
       :key="index"
       :model-value="filter"
-      :connector="index === 0 ? 'first' : combinator"
+      :index="index"
       :combinator="combinator"
-      :show-combinator-select="showCombinatorSelect && index > 0"
       :column-options="columnOptions"
       :condition-options="conditionOptions"
-      @update:model-value="(f) => $emit('update:filter', index, f)"
       @update:combinator="$emit('update:combinator', $event)"
       @remove="$emit('remove:filter', index)"
     />
@@ -38,21 +36,19 @@
 import type { Filter, FilterCondition } from '@datagouv/components-next'
 import { BrandedButton } from '@datagouv/components-next'
 import { RiAddLine, RiDeleteBinLine } from '@remixicon/vue'
-import type { FilterGroupCombinator } from '~/utils/chartFilters'
+import type { FilterColumnOption, FilterGroupCombinator } from '~/utils/chartFilters'
 import ChartFilterRow from './ChartFilterRow.vue'
 
 defineProps<{
   group: Array<Filter>
   combinator: FilterGroupCombinator
-  showCombinatorSelect: boolean
   canRemoveGroup: boolean
   bordered: boolean
-  columnOptions: Array<{ key: string, value: string, disabled: boolean }>
+  columnOptions: Array<FilterColumnOption>
   conditionOptions: Array<FilterCondition>
 }>()
 
 defineEmits<{
-  'update:filter': [index: number, filter: Filter]
   'update:combinator': [combinator: FilterGroupCombinator]
   'remove:filter': [index: number]
   'add-condition': []

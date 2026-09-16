@@ -2,6 +2,8 @@ import type { AndFilters, Filter, GenericFilter, OrFilters } from '@datagouv/com
 
 export type FilterGroupCombinator = 'and' | 'or'
 
+export type FilterColumnOption = { key: string, value: string, disabled: boolean }
+
 export type FilterGroupsState = {
   rootCombinator: FilterGroupCombinator
   groups: Array<Array<Filter>>
