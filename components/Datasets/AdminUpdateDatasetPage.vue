@@ -79,6 +79,36 @@
             :label="$t('Transférer  le jeu de données')"
           />
           <BannerAction
+            v-if="dataset.doi"
+            type="primary"
+            :title="$t('DOI du jeu de données')"
+          >
+            <p class="m-0">
+              {{ dataset.doi }}
+            </p>
+            <p class="m-0">
+              {{ $t("Un jeu de données porteur d'un DOI ne peut plus être supprimé, seulement archivé.") }}
+            </p>
+          </BannerAction>
+          <BannerAction
+            v-if="!dataset.doi && isMeAdmin()"
+            type="primary"
+            :title="$t('Créer un DOI')"
+          >
+            {{ doiBlockedReason ?? $t("Un DOI est définitif : une fois créé, le jeu de données ne pourra plus être supprimé, seulement archivé.") }}
+
+            <template #button>
+              <BrandedButton
+                :icon="RiFingerprintLine"
+                :loading="isLoading"
+                :disabled="!!doiBlockedReason"
+                @click="mintDoi"
+              >
+                {{ $t('Créer un DOI') }}
+              </BrandedButton>
+            </template>
+          </BannerAction>
+          <BannerAction
             type="warning"
             :title="dataset.archived ? $t('Désarchiver le jeu de données') : $t('Archiver le jeu de données')"
           >
@@ -95,7 +125,7 @@
             </template>
           </BannerAction>
           <BannerAction
-            v-if="!dataset.deleted"
+            v-if="!dataset.deleted && !dataset.doi"
             type="danger"
             :title="$t('Supprimer le jeu de données')"
           >
@@ -136,7 +166,7 @@
 <script setup lang="ts">
 import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
 import type { Badge, DatasetV2WithFullObject } from '@datagouv/components-next'
-import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
+import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line, RiFingerprintLine } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import { updateBadges } from '~/api/badges'
@@ -163,6 +193,20 @@ watchEffect(() => {
     datasetForm.value = datasetToForm(dataset.value)
   }
 })
+
+const doiBlockedReason = useDoiBlockedReason(dataset)
+
+async function mintDoi() {
+  isLoading.value = true
+  try {
+    await $api(`/api/1/datasets/${route.params.id}/doi`, { method: 'POST' })
+    await refresh()
+    toast.success(t('DOI créé !'))
+  }
+  finally {
+    isLoading.value = false
+  }
+}
 
 async function save() {
   if (!datasetForm.value) throw new Error('No dataset form')
