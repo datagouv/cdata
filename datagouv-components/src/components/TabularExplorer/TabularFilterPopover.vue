@@ -22,7 +22,7 @@
           v-show="open"
           ref="panel"
           static
-          class="bg-white border border-black/10 rounded-lg shadow-md w-64 absolute z-[800]"
+          class="bg-white border border-black/10 rounded-lg shadow-md w-80 absolute z-[800]"
           :style="floatingStyles"
           :data-testid="`column-filter-${column}`"
         >

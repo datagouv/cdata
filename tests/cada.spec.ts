@@ -20,9 +20,18 @@ function dataResponse(page: Page, query: string): Promise<Response> {
   )
 }
 
+/**
+ * The data table, never any other. Column filter panels stay mounted while closed
+ * and are teleported ahead of the page, and a date one renders a calendar — which
+ * is a `<table>` of its own, with seven headers and rows of seven cells.
+ */
+function dataTable(page: Page) {
+  return page.getByTestId('data-table')
+}
+
 /** Index of `column` in the table header, to reach its cells in a row. */
 async function columnIndex(page: Page, column: string): Promise<number> {
-  const headers = await page.locator('table thead th').allInnerTexts()
+  const headers = await dataTable(page).locator('thead th').allInnerTexts()
   const index = headers.findIndex(header => header.includes(column))
   expect(index, `column ${column} is displayed`).toBeGreaterThanOrEqual(0)
   return index
@@ -103,7 +112,7 @@ test('clicking the Numéro de dossier link navigates to the CADA detail page', a
   await expect(page.getByText('Lignes').first()).toBeVisible({ timeout: 30000 })
 
   // Click the first Numéro de dossier link (rendered as an <a> by rowHref)
-  const dossierLink = page.locator('table a.link').first()
+  const dossierLink = dataTable(page).locator('a.link').first()
   await dossierLink.waitFor({ timeout: 30000 })
   await dossierLink.click()
 
@@ -119,7 +128,7 @@ test('the Numéro de dossier column keeps its digits unformatted', async ({ page
 
   // It is an int column, but an identifier: it must not be grouped in thousands
   // the way a quantity would be (20 112 327).
-  const dossier = await page.locator('table a.link').first().innerText()
+  const dossier = await dataTable(page).locator('a.link').first().innerText()
   expect(dossier).toMatch(/^\d+$/)
 })
 
@@ -129,7 +138,7 @@ test('a year column keeps its digits unformatted too', async ({ page }) => {
   // Same as above but driven by the column type rather than by a prop: any
   // resource with a `year` column gets 2011, never 2 011.
   const index = await columnIndex(page, 'Année')
-  const year = await page.locator('table tbody tr').first().locator('td').nth(index).innerText()
+  const year = await dataTable(page).locator('tbody tr').first().locator('td').nth(index).innerText()
   expect(year).toMatch(/^\d{4}$/)
 })
 
@@ -137,7 +146,7 @@ test('the advices are listed with the most recent hearing first', async ({ page 
   await gotoExplore(page)
 
   const index = await columnIndex(page, 'Séance')
-  const cells = await page.locator('table tbody tr').locator(`td:nth-child(${index + 1})`).allInnerTexts()
+  const cells = await dataTable(page).locator('tbody tr').locator(`td:nth-child(${index + 1})`).allInnerTexts()
   expect(cells.length).toBeGreaterThan(1)
 
   // Cells are rendered as `dd/mm/yyyy`, which does not sort as a string.
@@ -154,11 +163,11 @@ test('clicking a row link navigates instead of opening the cell popover', async 
 
   // A cell holding a link belongs to the link: ctrl+click opens the advice in a
   // background tab, and the popover must not pile up on the page we leave.
-  await page.locator('table a.link').first().click({ modifiers: ['ControlOrMeta'] })
+  await dataTable(page).locator('a.link').first().click({ modifiers: ['ControlOrMeta'] })
   await expect(page.getByText('Valeur brute')).toBeHidden()
 
   // Control: any other cell does open it, so the assertion above is not vacuous.
-  await page.locator('table tbody tr').first().locator('td').nth(await columnIndex(page, 'Objet')).click()
+  await dataTable(page).locator('tbody tr').first().locator('td').nth(await columnIndex(page, 'Objet')).click()
   await expect(page.getByText('Valeur brute')).toBeVisible()
 })
 
@@ -194,7 +203,7 @@ test.describe('global search', () => {
     expect((await response).ok()).toBe(true)
 
     // The searched dossier is among the results…
-    await expect(page.locator('table').getByText('20112327').first()).toBeVisible()
+    await expect(dataTable(page).getByText('20112327').first()).toBeVisible()
     // …and the search really did narrow the base
     await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
   })
@@ -211,7 +220,7 @@ test.describe('global search', () => {
     await searchInput.press('Enter')
     expect((await response).ok()).toBe(true)
 
-    await expect(page.locator('table a.link').first()).toBeVisible({ timeout: 30000 })
+    await expect(dataTable(page).locator('a.link').first()).toBeVisible({ timeout: 30000 })
   })
 
   // `.` `(` `)` are the operator separator and the delimiters of the API's
@@ -255,15 +264,151 @@ test.describe('mobile', () => {
 })
 
 test.describe('column filter', () => {
-  test('date column filter shows a date input', async ({ page }) => {
+  test('date column filter shows a calendar, not a text search', async ({ page }) => {
     await gotoExplore(page)
 
     await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
 
-    // Date columns show a native date picker input, not a text search
-    await expect(
-      page.getByTestId('column-filter-Séance').locator('input[type="date"]'),
-    ).toBeVisible({ timeout: 3000 })
+    await expect(panel.getByLabel('Condition du filtre')).toBeVisible({ timeout: 3000 })
+    // A day cell proves the calendar rendered; days carry their ISO date
+    await expect(panel.locator('[data-value]').first()).toBeVisible()
+    await expect(panel.getByPlaceholder('Rechercher...')).toHaveCount(0)
+  })
+
+  test('picking a day in the calendar filters on that single day', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+
+    await panel.getByLabel('Année').selectOption('2015')
+    await panel.getByLabel('Mois', { exact: true }).selectOption('6')
+    await panel.locator('[data-value="2015-06-18"]').click()
+
+    // A single day is a half-open interval, so the same query works whether the
+    // column holds plain dates or timestamps
+    const response = dataResponse(page, 'Séance__greater=2015-06-18')
+    await panel.getByRole('button', { name: 'Appliquer' }).click()
+    const url = decodeURIComponent((await response).url())
+    expect(url).toContain('Séance__strictly_less=2015-06-19')
+
+    await expect(page.getByTestId('active-filter-Séance')).toContainText('= 18/06/2015')
+    // 18 June 2015 is the only sitting day of that month, so rows coming back is
+    // what proves the lower bound includes the day it names
+    await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
+    expect((await readRowCount(page)).shown).toBeGreaterThan(0)
+  })
+
+  test('the "is after" operator excludes the day it names', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+
+    await panel.getByLabel('Condition du filtre').selectOption('after')
+    await panel.getByLabel('Année').selectOption('2015')
+    await panel.getByLabel('Mois', { exact: true }).selectOption('6')
+    await panel.locator('[data-value="2015-06-18"]').click()
+
+    // The named day is the only sitting day of the month, so excluding it is
+    // visible in the count rather than free of consequence
+    const response = dataResponse(page, 'Séance__greater=2015-06-19')
+    await panel.getByRole('button', { name: 'Appliquer' }).click()
+    expect((await response).ok()).toBe(true)
+
+    await expect(page.getByTestId('active-filter-Séance')).toContainText('après le 18/06/2015')
+    await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
+    expect((await readRowCount(page)).shown).toBeGreaterThan(0)
+  })
+
+  test('"filter by this value" on a date cell selects that day in the calendar', async ({ page }) => {
+    await gotoExplore(page)
+
+    const index = await columnIndex(page, 'Séance')
+    await dataTable(page).locator('tbody tr').first().locator('td').nth(index).click()
+    // `Séance` holds bare days, so the raw value the popover shows is already the
+    // key the calendar gives its cells. A timestamp column would need its day
+    // extracted, which `toIsoDay` covers in the unit tests.
+    const isoDay = (await page.getByTestId('cell-raw-value').innerText()).trim()
+    await page.getByRole('button', { name: 'Filtrer par cette valeur' }).click()
+
+    // One filter, not two: the cell writes the same `date` filter the panel does,
+    // so the chip shows the formatted day only, never the raw value on its side
+    await expect(page.getByTestId('active-filter-Séance')).not.toContainText(isoDay)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+    await expect(panel.locator(`[data-value="${isoDay}"]`)).toHaveAttribute('data-selected', 'true')
+    await expect(panel.locator('[data-selected]')).toHaveCount(1)
+  })
+
+  test('a date range filters between both days, ends included', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+
+    await panel.getByLabel('Condition du filtre').selectOption('between')
+    await panel.getByLabel('Année').selectOption('2015')
+    await panel.getByLabel('Mois', { exact: true }).selectOption('6')
+    await panel.locator('[data-value="2015-06-11"]').click()
+    await panel.locator('[data-value="2015-06-18"]').click()
+
+    const response = dataResponse(page, 'Séance__greater=2015-06-11')
+    await panel.getByRole('button', { name: 'Appliquer' }).click()
+    const url = decodeURIComponent((await response).url())
+    expect(url).toContain('Séance__strictly_less=2015-06-19')
+
+    await expect(page.getByTestId('active-filter-Séance')).toContainText('11/06/2015 – 18/06/2015')
+    // The range ends on the only sitting day of the month, so rows coming back is
+    // what proves the last day is inside the interval
+    await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
+    expect((await readRowCount(page)).shown).toBeGreaterThan(0)
+  })
+
+  test('clearing the date filter releases the rows it was holding back', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+
+    await panel.getByLabel('Année').selectOption('2015')
+    await panel.getByLabel('Mois', { exact: true }).selectOption('6')
+    await panel.locator('[data-value="2015-06-18"]').click()
+    await panel.getByRole('button', { name: 'Appliquer' }).click()
+    await expect(page.getByTestId('active-filter-Séance')).toBeVisible()
+
+    // The panel header carries an "Effacer" of its own, hence the test id
+    await panel.getByTestId('clear-date-filter').click()
+
+    await expect(page.getByTestId('active-filter-Séance')).toHaveCount(0)
+    await expect.poll(async () => (await readRowCount(page)).shown).toBe(unfiltered.shown)
+  })
+
+  test('removing the filter from its chip empties the calendar behind it', async ({ page }) => {
+    await gotoExplore(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+
+    await panel.getByLabel('Année').selectOption('2015')
+    await panel.getByLabel('Mois', { exact: true }).selectOption('6')
+    await panel.locator('[data-value="2015-06-18"]').click()
+    await panel.getByRole('button', { name: 'Appliquer' }).click()
+
+    // The panel stays mounted between openings, so dropping the filter from the
+    // chip has to reach back into it
+    await page.getByTestId('active-filter-Séance')
+      .getByRole('button', { name: 'Supprimer ce filtre' })
+      .click()
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    await expect(panel.locator('[data-selected]')).toHaveCount(0)
   })
 
   test('year column filter shows a number input', async ({ page }) => {

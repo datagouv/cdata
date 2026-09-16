@@ -12,7 +12,10 @@
           <p class="text-[10px] text-gray-plain mb-0">
             {{ t('Valeur brute') }}
           </p>
-          <p class="text-xs text-gray-title mb-0">
+          <p
+            class="text-xs text-gray-title mb-0"
+            data-testid="cell-raw-value"
+          >
             {{ displayValue }}
           </p>
         </div>
@@ -77,7 +80,7 @@ import {
 } from '@remixicon/vue'
 import { toast } from 'vue-sonner'
 import { useTranslation } from '../../composables/useTranslation'
-import { buildTypeConfig } from '../../functions/tabular'
+import { buildTypeConfig, toIsoDay } from '../../functions/tabular'
 import ClientOnly from '../ClientOnly.vue'
 import type { ColumnType, ColumnFilters } from './types'
 
@@ -128,7 +131,20 @@ function filterByValue() {
   const val = String(cell.value.value ?? '')
   const col = cell.value.column
   const existing = filters.value[col] ?? {}
-  if (cell.value.columnType === 'categorical' || cell.value.columnType === 'text' || cell.value.columnType === 'date' || cell.value.columnType === 'year') {
+  // A date goes through the same `date` filter the column panel writes, so the
+  // calendar opens on the day that was clicked instead of on an empty month.
+  if (cell.value.columnType === 'date') {
+    const day = toIsoDay(cell.value.value)
+    if (day) {
+      filters.value = { ...filters.value, [col]: { ...existing, date: { operator: 'is', start: day } } }
+    }
+    // An empty cell has no day to select: filtering on the missing values is
+    // what "this value" means there, and the panel shows it as such.
+    else if (cell.value.value == null || cell.value.value === '') {
+      filters.value = { ...filters.value, [col]: { ...existing, null: 'only' } }
+    }
+  }
+  else if (cell.value.columnType === 'categorical' || cell.value.columnType === 'text' || cell.value.columnType === 'year') {
     const current = existing.in ?? []
     if (!current.includes(val)) {
       filters.value = { ...filters.value, [col]: { ...existing, in: [...current, val] } }
