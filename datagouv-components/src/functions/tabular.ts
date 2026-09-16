@@ -224,15 +224,16 @@ const FALSY_VALUES = ['false', '0', 'non', 'no']
 
 // `encodeURIComponent` leaves `.`, `(` and `)` as-is, but they are the operator
 // separator and the delimiters of the API's `or(...)` grammar: a search value
-// containing one makes the parser reject the whole query with a 400. Wrapping
-// the value in double quotes (as the API README suggests) does not work here —
-// the API keeps them as part of the searched string and returns no result. It
-// does percent-decode the value after parsing, so encoding them is enough.
-function encodeConditionValue(value: string): string {
+// containing one makes the parser reject the whole query with a 400.
+// The API percent-decodes the query string once before running the grammar
+// parser, then percent-decodes the parsed value: grammar-significant characters
+// must therefore be sent double-encoded (`%252E`) so the first decode leaves
+// them escaped (`%2E`) for the parser to unquote after parsing.
+export function encodeConditionValue(value: string): string {
   return encodeURIComponent(value)
-    .replace(/\./g, '%2E')
-    .replace(/\(/g, '%28')
-    .replace(/\)/g, '%29')
+    .replace(/\./g, '%252E')
+    .replace(/\(/g, '%2528')
+    .replace(/\)/g, '%2529')
 }
 
 // A decimal literal, not `Number()`: the API compares against a number column,
