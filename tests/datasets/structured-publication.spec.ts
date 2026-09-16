@@ -331,6 +331,34 @@ test.describe('import de fichiers', () => {
     await expect(page.getByText('colonnes de votre fichier sont inconnues')).toHaveCount(0)
   })
 
+  test('un CSV en Windows-1252 garde ses accents', async ({ page }) => {
+    await stubPublicationApis(page)
+
+    // The encoding spreadsheet tools export French data in, which is not UTF-8:
+    // read with the UTF-8 default, every accent turns into a �
+    await startWizard(page, 'durabilite')
+    await uploadAndOpenSpreadsheet(page, 'lave-linge-point-virgule-latin1.csv')
+
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible()
+    await expect(page.getByText('Générateurs de chaleurs').first()).toBeVisible()
+    await expect(page.getByText('�')).toHaveCount(0)
+  })
+
+  test('un CSV UTF-8 dont un caractère multi-octets chevauche 64 Ko garde ses accents', async ({ page }) => {
+    await stubPublicationApis(page)
+
+    // The é of the 17th row starts at byte 65535: a multibyte character at that
+    // spot must not change how the file is decoded
+    await startWizard(page, 'durabilite')
+    await uploadAndOpenSpreadsheet(page, 'lave-linge-utf8-64ko.csv')
+
+    // 17 rows on 228 columns is a lot of cells for the table to build in Firefox
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible({ timeout: 20_000 })
+    await expect(page.getByText('Générateurs').first()).toBeVisible()
+    await expect(page.getByText('Ã©')).toHaveCount(0)
+    await expect(page.getByText('�')).toHaveCount(0)
+  })
+
   test('un XLSX garde ses identifiants longs et ses dates', async ({ page }) => {
     await stubPublicationApis(page)
 
