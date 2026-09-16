@@ -15,17 +15,21 @@ describe('detectFileEncoding', () => {
     expect(await detectFileEncoding(fileFrom([0x43, 0xC3, 0xA9]))).toBe('utf-8')
   })
 
-  it('returns utf-8 when the sample ends mid-character', async () => {
-    // A multibyte character straddling the 64 KB cut used to fail the fatal decode
-    // and send a perfectly valid UTF-8 file down the windows-1252 path
+  it('returns utf-8 regardless of where a multibyte character sits', async () => {
     const bytes = [...new Uint8Array(64 * 1024 - 1).fill(0x61), 0xC3, 0xA9, 0x62]
     expect(await detectFileEncoding(fileFrom(bytes))).toBe('utf-8')
   })
 
-  it('detects Windows-1252 when its byte lands exactly on the sample boundary', async () => {
-    // The reverse trap: buffering the cut sequence must not give a single-byte
-    // accent a free pass either
+  it('detects Windows-1252 wherever its byte sits', async () => {
+    // The reverse trap: a single-byte accent is a would-be UTF-8 lead byte, and
+    // must not get a free pass however the file is read
     const bytes = [...new Uint8Array(64 * 1024 - 1).fill(0x61), 0xE9, 0x6D, 0x65]
+    expect(await detectFileEncoding(fileFrom(bytes))).toBe('windows-1252')
+  })
+
+  it('detects a truncated UTF-8 file as Windows-1252', async () => {
+    // The file itself ends mid-character: it is not valid UTF-8
+    const bytes = [...new Uint8Array(100).fill(0x61), 0xC3]
     expect(await detectFileEncoding(fileFrom(bytes))).toBe('windows-1252')
   })
 

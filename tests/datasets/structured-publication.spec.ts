@@ -344,12 +344,11 @@ test.describe('import de fichiers', () => {
     await expect(page.getByText('�')).toHaveCount(0)
   })
 
-  test('un CSV UTF-8 coupé en plein caractère sur la fin de l’échantillon garde ses accents', async ({ page }) => {
+  test('un CSV UTF-8 dont un caractère multi-octets chevauche 64 Ko garde ses accents', async ({ page }) => {
     await stubPublicationApis(page)
 
-    // Detection reads a 64 KB sample. When a multibyte character straddles that
-    // cut, a fatal decode without `stream` rejected valid UTF-8 and the whole file
-    // fell back to windows-1252 — GÃ©nÃ©rateurs, which � would not have revealed
+    // The é of the 17th row starts at byte 65535: a multibyte character at that
+    // spot must not change how the file is decoded
     await startWizard(page, 'durabilite')
     await uploadAndOpenSpreadsheet(page, 'lave-linge-utf8-64ko.csv')
 
