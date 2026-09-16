@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useFormatDate } from '../functions/dates'
+import { PLAIN_DATE, parseDateValue, useFormatDate } from '../functions/dates'
 
 const props = withDefaults(defineProps<{
   date: Date | string | null | undefined
@@ -35,21 +35,9 @@ const props = withDefaults(defineProps<{
 
 const { formatDate, formatFromNow, formatRelativeIfRecentDate } = useFormatDate()
 
-// `2026`, `2026-04` and `2026-04-24` carry no time of day. `new Date()` reads them as
-// midnight UTC, an instant they never claimed, and then converts it: a reader west of
-// UTC gets the day before — and with it the month, and sometimes the year.
-const PLAIN_DATE = /^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?$/
-
 const plainDate = computed(() => typeof props.date === 'string' ? props.date.match(PLAIN_DATE) : null)
 
-const parsed = computed(() => {
-  if (!props.date) return null
-  const plain = plainDate.value
-  const date = plain
-    ? new Date(Number(plain[1]), Number(plain[2] ?? 1) - 1, Number(plain[3] ?? 1))
-    : new Date(props.date)
-  return isNaN(date.getTime()) ? null : date
-})
+const parsed = computed(() => parseDateValue(props.date))
 
 // Announce the precision the value carries, never more: a month stays a month.
 const datetime = computed(() => {
