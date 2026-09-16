@@ -79,6 +79,35 @@
             :label="$t('Transférer  le jeu de données')"
           />
           <BannerAction
+            v-if="isMeAdmin()"
+            type="primary"
+            :title="dataset.doi ? $t('DOI du jeu de données') : $t('Créer un DOI')"
+          >
+            <template v-if="dataset.doi">
+              {{ dataset.doi }}
+            </template>
+            <template v-else-if="doiBlockedReason">
+              {{ doiBlockedReason }}
+            </template>
+            <template v-else>
+              {{ $t("Un DOI est définitif : une fois créé, le jeu de données ne pourra plus être supprimé, seulement archivé.") }}
+            </template>
+
+            <template
+              v-if="!dataset.doi"
+              #button
+            >
+              <BrandedButton
+                :icon="RiFingerprintLine"
+                :loading="isLoading"
+                :disabled="!!doiBlockedReason"
+                @click="mintDoi"
+              >
+                {{ $t('Créer un DOI') }}
+              </BrandedButton>
+            </template>
+          </BannerAction>
+          <BannerAction
             type="warning"
             :title="dataset.archived ? $t('Désarchiver le jeu de données') : $t('Archiver le jeu de données')"
           >
@@ -136,7 +165,7 @@
 <script setup lang="ts">
 import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
 import type { Badge, DatasetV2WithFullObject } from '@datagouv/components-next'
-import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
+import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line, RiFingerprintLine } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import { updateBadges } from '~/api/badges'
@@ -163,6 +192,27 @@ watchEffect(() => {
     datasetForm.value = datasetToForm(dataset.value)
   }
 })
+
+// The API refuses to mint a DOI outside of these conditions, so the reason is stated
+// upfront rather than surfaced as an error once the button has been clicked.
+const doiBlockedReason = computed(() => {
+  if (!dataset.value) return null
+  if (!dataset.value.organization) return t('Seul un jeu de données publié par une organisation peut recevoir un DOI.')
+  if (dataset.value.private || dataset.value.deleted || dataset.value.archived) return t('Seul un jeu de données public peut recevoir un DOI.')
+  return null
+})
+
+async function mintDoi() {
+  isLoading.value = true
+  try {
+    await $api(`/api/1/datasets/${route.params.id}/doi`, { method: 'POST' })
+    await refresh()
+    toast.success(t('DOI créé !'))
+  }
+  finally {
+    isLoading.value = false
+  }
+}
 
 async function save() {
   if (!datasetForm.value) throw new Error('No dataset form')
