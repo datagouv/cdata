@@ -147,7 +147,8 @@ import TranslationT from './TranslationT.vue'
 type Props = {
   dataservice: Dataservice
   dataserviceUrl?: RouteLocationRaw
-  organizationUrl?: RouteLocationRaw
+  // undefined falls back to the organization's data.gouv.fr page; pass null to render plain, non-linked text
+  organizationUrl?: RouteLocationRaw | null
   showDescription?: boolean
   titleTag?: TitleTag
 }

@@ -100,8 +100,9 @@ const props = withDefaults(defineProps<{
   /**
   * The organizationUrl is an optional route location object to allow Vue Router to navigate to the details of the organization linked to tha reuse.
   * It is used as a separate prop to allow other sites using the package to define their own organization pages.
+  * Pass null instead of a route to render the organization name as plain, non-linked text.
   */
-  organizationUrl?: RouteLocationRaw
+  organizationUrl?: RouteLocationRaw | null
 
   titleTag?: TitleTag
 }>(), {
