@@ -80,7 +80,7 @@ import {
 } from '@remixicon/vue'
 import { toast } from 'vue-sonner'
 import { useTranslation } from '../../composables/useTranslation'
-import { buildTypeConfig, toIsoDay } from '../../functions/tabular'
+import { buildCellValueFilter, buildTypeConfig } from '../../functions/tabular'
 import ClientOnly from '../ClientOnly.vue'
 import type { ColumnType, ColumnFilters } from './types'
 
@@ -128,36 +128,10 @@ function close() {
 
 function filterByValue() {
   if (!cell.value) return
-  const val = String(cell.value.value ?? '')
   const col = cell.value.column
-  const existing = filters.value[col] ?? {}
-  // A date goes through the same `date` filter the column panel writes, so the
-  // calendar opens on the day that was clicked instead of on an empty month.
-  if (cell.value.columnType === 'date') {
-    const day = toIsoDay(cell.value.value)
-    if (day) {
-      filters.value = { ...filters.value, [col]: { ...existing, date: { operator: 'is', start: day } } }
-    }
-    // An empty cell has no day to select: filtering on the missing values is
-    // what "this value" means there, and the panel shows it as such.
-    else if (cell.value.value == null || cell.value.value === '') {
-      filters.value = { ...filters.value, [col]: { ...existing, null: 'only' } }
-    }
-  }
-  else if (cell.value.columnType === 'categorical' || cell.value.columnType === 'text' || cell.value.columnType === 'year') {
-    const current = existing.in ?? []
-    if (!current.includes(val)) {
-      filters.value = { ...filters.value, [col]: { ...existing, in: [...current, val] } }
-    }
-  }
-  else if (cell.value.columnType === 'number') {
-    const num = Number(cell.value.value)
-    if (Number.isFinite(num)) {
-      filters.value = { ...filters.value, [col]: { ...existing, min: num, max: num } }
-    }
-  }
-  else if (cell.value.columnType === 'boolean') {
-    filters.value = { ...filters.value, [col]: { ...existing, exact: val } }
+  filters.value = {
+    ...filters.value,
+    [col]: buildCellValueFilter(cell.value.columnType, cell.value.value, filters.value[col] ?? {}),
   }
   close()
 }
