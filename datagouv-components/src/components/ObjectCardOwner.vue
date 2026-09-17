@@ -20,6 +20,7 @@
       <OrganizationNameWithCertificate
         :organization
         size="sm"
+        color-class="text-gray-title"
       />
     </span>
   </div>

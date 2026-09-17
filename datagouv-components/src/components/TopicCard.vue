@@ -35,6 +35,7 @@
       <ObjectCardOwner
         :organization="topic.organization"
         :owner="topic.owner"
+        :organization-url="organizationUrl"
       />
       <RiSubtractLine
         v-if="(topic.organization || topic.owner) && topic.last_modified"
@@ -124,6 +125,7 @@ type TopicWithStats = TopicV2 & {
 withDefaults(defineProps<{
   topic: TopicWithStats
   topicUrl?: RouteLocationRaw
+  organizationUrl?: RouteLocationRaw | null
   showLogo?: boolean
   showStats?: boolean
 }>(), {
