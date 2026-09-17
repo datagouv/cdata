@@ -41,7 +41,6 @@
                     <AppLink
                       v-if="activity.extras.resource_id"
                       :to="getResourceLink(activity)"
-                      :class="{ underline: getResourceLink(activity) }"
                     >
                       {{ getResourceLabel(activity) }}
                     </AppLink>
@@ -151,12 +150,12 @@ function getResourceLabel(activity: Activity) {
   return activity.extras.resource_title ?? activity.extras.resource_id ?? ''
 }
 
-// The admin's files tab opens a resource from `?resource_id`, which is also how
-// `ResourceAccordion/EditButton` reaches it. A removed resource has nothing left to
-// open, so its name stays plain text rather than leading to a "file not found".
+// The dataset page opens a resource from `?resource_id`, and `related_to_url` already
+// carries that page. A removed resource has nothing left to open, so its name stays
+// plain text rather than leading to a "file not found".
 function getResourceLink(activity: Activity) {
   if (activity.key === 'dataset:resource:deleted') return null
   if (activity.related_to_kind !== 'Dataset' || !activity.extras.resource_id) return null
-  return `/admin/datasets/${activity.related_to_id}/files/?resource_id=${activity.extras.resource_id}`
+  return `${activity.related_to_url}?resource_id=${activity.extras.resource_id}`
 }
 </script>
