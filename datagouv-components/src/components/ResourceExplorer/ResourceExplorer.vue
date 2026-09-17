@@ -49,6 +49,7 @@
             :resources="flatResources"
             :resource-to="resourceTo"
             :explore-to="exploreTo"
+            :resource-external-url="resourceExternalUrl"
             replace
             :fullscreen
           />
@@ -59,6 +60,7 @@
               :resources="flatResources"
               :resource-to="resourceTo"
               :explore-to="exploreTo"
+              :resource-external-url="resourceExternalUrl"
               replace
               :fullscreen
             />
@@ -122,6 +124,8 @@ const props = withDefaults(defineProps<{
   // Inline mode only: link builder for the "Explorer" button in the viewer header
   // that opens the fullscreen explorer on the current resource.
   exploreTo?: (resource: Resource) => string
+  // Overrides the "Copier le lien" target.
+  resourceExternalUrl?: (resource: Resource) => string
 }>(), {
   noResultsImage: '',
   fullscreen: false,

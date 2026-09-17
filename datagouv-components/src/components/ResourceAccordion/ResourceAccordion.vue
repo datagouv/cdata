@@ -47,7 +47,7 @@
           <CopyButton
             :label="t('Copier le lien')"
             :copied-label="t('Lien copié !')"
-            :text="resourceExternalUrl"
+            :text="externalUrl"
             class="z-2"
           />
         </div>
@@ -327,7 +327,7 @@ import { trackEvent } from '../../functions/matomo'
 import CopyButton from '../CopyButton.vue'
 import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
-import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceExternalUrl, getResourceFilesize, isImagePreviewFormat } from '../../functions/resources'
+import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceFilesize, isImagePreviewFormat, resolveResourceExternalUrl } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useHasTabularData } from '../../composables/useHasTabularData'
@@ -349,6 +349,8 @@ const props = withDefaults(defineProps<{
   isCommunityResource?: boolean
   resource: Resource | CommunityResource
   canEdit?: boolean
+  // Overrides the "Copier le lien" target.
+  resourceExternalUrl?: (resource: Resource | CommunityResource) => string
 }>(), {
   expandedOnMount: false,
   isCommunityResource: false,
@@ -468,7 +470,7 @@ const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 const unavailable = availabilityChecked && props.resource.extras['check:available'] === false
 const downloadButtonTitle = unavailable ? t(`Le robot de {certifier} n'a pas pu accéder à ce fichier - Télécharger le fichier en {format}`, { certifier: config.name, format: format.value }) : t(`Télécharger le fichier en {format}`, { format: format.value })
 
-const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset, props.resource))
+const externalUrl = computed(() => resolveResourceExternalUrl(props.dataset, props.resource, props.resourceExternalUrl))
 
 const resourceContentId = 'resource-' + props.resource.id
 const resourceHeaderId = 'resource-' + props.resource.id + '-header'
