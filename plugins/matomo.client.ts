@@ -15,7 +15,6 @@ const noopMatomo = {
 export default defineNuxtPlugin({
   async setup(nuxtApp) {
     const _paq = (window._paq = window._paq || [])
-    if (!_paq) return { provide: { matomo: noopMatomo } }
 
     let u = nuxtApp.$config.public.matomo.host
     const debug = nuxtApp.$config.public.matomo.debug
@@ -35,18 +34,55 @@ export default defineNuxtPlugin({
       if (debug) {
         console.log(matomo)
       }
-      if (matomo) {
-        const router = useRouter()
-        router.afterEach((to, from) => {
-          trackPageView(to, from, debug, dryRun)
-          matomo.enableLinkTracking(true)
+      if (!matomo) {
+        return { provide: { matomo: noopMatomo } }
+      }
+
+      const trackEvent = (category: string, action: string, name?: string) => {
+        if (debug) console.debug(`[matomo] tracking event ${category} ${action} ${name ? name : ''}`)
+        if (dryRun) return
+        matomo.trackEvent(category, action, name)
+      }
+
+      const trackPageView = (to: RouteLocationNormalizedGeneric, from?: RouteLocationNormalizedGeneric) => {
+        if (to.meta.matomoIgnore) {
+          if (debug) console.debug('[matomo] Ignoring ' + to.fullPath)
+          return
+        }
+        if (debug) console.debug('[matomo] tracking page view to ' + to.fullPath)
+        if (dryRun) return
+        if (from?.fullPath) {
+          // Send the full previous page URL: the tracker keeps the landing
+          // referrer forever otherwise, and a path-only value would be
+          // discarded by Matomo as an invalid referrer URL.
+          matomo.setReferrerUrl(window.location.origin + from.fullPath)
+        }
+        matomo.trackPageView((to.meta.title as string | undefined) || to.fullPath)
+        matomo.enableLinkTracking(true)
+      }
+
+      matomo.enableLinkTracking(true)
+
+      // matomo.js tracks the initial page view itself when it loads, so hook
+      // the router only once the initial navigation has completed: in-app
+      // navigations are tracked exactly once, without a duplicate landing hit.
+      const trackAfterEachNavigation = () => {
+        useRouter().afterEach((to, from) => {
+          trackPageView(to, from)
         })
       }
+      if (nuxtApp.isHydrating) {
+        nuxtApp.hook('app:mounted', trackAfterEachNavigation)
+      }
+      else {
+        trackAfterEachNavigation()
+      }
+
       return {
         provide: {
           matomo: {
-            trackPageView: (to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => trackPageView(to, from, debug, dryRun),
-            trackEvent: (category: string, action: string, name?: string) => trackEvent(category, action, name, debug, dryRun),
+            trackPageView: (to: RouteLocationNormalizedGeneric) => trackPageView(to),
+            trackEvent,
           },
         },
       }
@@ -56,39 +92,6 @@ export default defineNuxtPlugin({
     }
   },
 })
-
-function trackEvent(category: string, action: string, name?: string, debug = false, dryRun = false) {
-  const matomo = getMatomo()
-  if (!matomo) {
-    if (debug) console.debug('[matomo] No matomo tracker found')
-    return
-  }
-  if (debug) console.debug(`[matomo] tracking event ${category} ${action} ${name ? name : ''}`)
-  if (dryRun) {
-    return
-  }
-  matomo.trackEvent(category, action, name)
-}
-
-function trackPageView(to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric, debug: boolean, dryRun: boolean) {
-  const matomo = getMatomo()
-  if (!matomo) {
-    if (debug) console.debug('[matomo] No matomo tracker found')
-    return
-  }
-  if (to.meta.matomoIgnore) {
-    if (debug) console.debug('[matomo] Ignoring ' + to.fullPath)
-    return
-  }
-  if (debug) console.debug('[matomo] tracking page view to ' + to.fullPath)
-  if (dryRun) {
-    return
-  }
-  if (from.fullPath) {
-    matomo.setReferrerUrl(from.fullPath)
-  }
-  matomo.trackPageView((to.meta.title as string | undefined) || to.fullPath)
-}
 
 // from https://github.com/AmazingDreams/vue-matomo/blob/master/src/utils.js#L5
 function loadScript(trackerScript: string, crossOrigin = undefined) {

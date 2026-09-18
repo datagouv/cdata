@@ -102,6 +102,11 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'pnpm run dev',
+    // Point the matomo host at the test server itself: the matomo plugin loads
+    // instead of falling back to the no-op, /matomo.js 404s (a console error the
+    // base fixture already ignores), and tracking specs mock matomo.js to assert
+    // what the app sends to the tracker.
+    env: { NUXT_PUBLIC_MATOMO_HOST: process.env.BASE_URL || 'http://localhost:3000' },
     url: process.env.BASE_URL || 'http://localhost:3000',
     reuseExistingServer: true,
   },
