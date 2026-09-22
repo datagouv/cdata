@@ -28,14 +28,9 @@ export default defineNuxtPlugin(() => {
     proxy._paq.push(['trackPageView'])
   }
 
-  // Registered during the plugin setup, before the initial page:finish, so the
-  // landing page view is covered. useScriptEventPage fires only in the browser,
-  // only when a page finished rendering, and only when the path or the title
-  // changed since the last event. The app re-replaces the route at hydration
-  // without changing the URL or the title: those never reach the callback.
-  // A path change with an unchanged title (most navigations) and a title
-  // change with an unchanged path (e.g. search results finishing loading) both
-  // reach it; the lastPath guard below filters the latter out.
+  // Registered in the plugin setup, before the initial page:finish, so the
+  // landing page view is covered. The callback fires when the path or the
+  // title changes: the lastPath guard filters out title-only updates.
   let lastPath: string | undefined
   useScriptEventPage((payload) => {
     const route = router.currentRoute.value
