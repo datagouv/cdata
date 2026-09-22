@@ -25,10 +25,6 @@ export default defineNuxtPlugin(() => {
   const trackPageView = () => {
     if (debug) console.debug('[matomo] tracking page view to ' + router.currentRoute.value.fullPath)
     if (dryRun) return
-    // No setCustomUrl/setDocumentTitle: the tracker reads window.location and
-    // document.title when the queued call is processed, and no setReferrerUrl:
-    // a wrong or path-only referrer would be discarded by Matomo and the
-    // visit reclassified as direct entry.
     proxy._paq.push(['trackPageView'])
   }
 
