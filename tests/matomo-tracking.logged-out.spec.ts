@@ -19,7 +19,8 @@ declare global {
 
 // The matomo tracker script is replaced by a mock recording every tracker call,
 // so the test can assert exactly what plugins/matomo.client.ts sends:
-// - the landing page view is NOT tracked by the plugin (matomo.js does it on load)
+// - the landing page view is queued for matomo.js (_paq), which sends it on
+//   load with the genuine landing referrer — the plugin must not also track it
 // - in-app navigations are tracked once, with the full previous page URL as
 //   referrer (a path-only referrer is discarded by Matomo as invalid, which
 //   used to reclassify every session as direct entry)
@@ -61,10 +62,17 @@ test.describe('Matomo tracking', () => {
     }))
   })
 
-  test('tracks nothing on landing: matomo.js already tracks the initial page view', async ({ page }) => {
+  test('queues the landing page view for matomo.js, without tracking it through the plugin', async ({ page }) => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
     await waitForTracker(page)
+
+    // The landing hit goes through the _paq queue so the real matomo.js sends
+    // it on load. The mock does not process the queue, so the plugin must not
+    // call the tracker API for it either, or the landing page would be tracked
+    // twice (and bounces would vanish if the queue push were missing).
+    const queuedCalls = await page.evaluate(() => (window as unknown as { _paq: unknown[][] })._paq ?? [])
+    expect(queuedCalls).toContainEqual(['trackPageView'])
 
     const calls = await matomoCalls(page)
     expect(calls.filter(([method]) => method === 'trackPageView')).toHaveLength(0)

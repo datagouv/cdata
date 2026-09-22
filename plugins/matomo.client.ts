@@ -25,6 +25,10 @@ export default defineNuxtPlugin({
     /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
     _paq.push(['setTrackerUrl', u + 'matomo.php'])
     _paq.push(['setSiteId', nuxtApp.$config.public.matomo.siteId])
+    // matomo.js sends the landing page view when it loads, with the genuine
+    // landing referrer (a path-only referrer set later would be discarded by
+    // Matomo as invalid and the visit reclassified as direct entry).
+    _paq.push(['trackPageView'])
     _paq.push(['enableLinkTracking'])
 
     try {
@@ -63,20 +67,21 @@ export default defineNuxtPlugin({
 
       matomo.enableLinkTracking(true)
 
-      // matomo.js tracks the initial page view itself when it loads, so hook
-      // the router only once the initial navigation has completed: in-app
-      // navigations are tracked exactly once, without a duplicate landing hit.
-      const trackAfterEachNavigation = () => {
-        useRouter().afterEach((to, from) => {
-          trackPageView(to, from)
-        })
-      }
-      if (nuxtApp.isHydrating) {
-        nuxtApp.hook('app:mounted', trackAfterEachNavigation)
-      }
-      else {
-        trackAfterEachNavigation()
-      }
+      // The landing hit is sent by matomo.js from the _paq queue, so skip the
+      // initial navigation here: in-app navigations are tracked exactly once,
+      // without a duplicate landing hit. Rely on the initial navigation being
+      // finished rather than on app:mounted: the latter may have already fired
+      // when matomo.js finishes loading late, and a hook registered after the
+      // event never runs — which would silently disable tracking entirely.
+      const router = useRouter()
+      let initialNavigationDone = false
+      router.isReady().then(() => {
+        initialNavigationDone = true
+      })
+      router.afterEach((to, from) => {
+        if (!initialNavigationDone) return
+        trackPageView(to, from)
+      })
 
       return {
         provide: {
