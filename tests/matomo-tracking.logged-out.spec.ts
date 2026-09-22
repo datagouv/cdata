@@ -25,8 +25,11 @@ declare global {
 // - in-app navigations are tracked once, with the full previous page URL as
 //   referrer (a path-only referrer is discarded by Matomo as invalid, which
 //   used to reclassify every session as direct entry)
-// Requires NUXT_PUBLIC_MATOMO_HOST to be set on the webServer (see playwright.config.ts)
-// so the matomo plugin actually loads instead of the no-op fallback.
+// Requires NUXT_PUBLIC_MATOMO_HOST to be set on the server under test (CI
+// workflow, or a locally started `pnpm run preview`) so the matomo plugin
+// actually loads instead of the no-op fallback. Requires a production
+// server: the dev server never fires the page load event (page.goto
+// times out).
 const mockMatomo = () => {
   window.__matomoCalls = []
   // Record every history navigation so CI failures show exactly which
