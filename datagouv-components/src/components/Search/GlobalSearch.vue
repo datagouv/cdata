@@ -416,6 +416,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   resultsCount: [total: number]
+  search: [keyword: string, type: string, total: number]
 }>()
 
 // defineModel's default is static and can't depend on props, so we cast and initialize manually
@@ -750,6 +751,23 @@ const searchResultsStatus = computed(() => resultsMap[currentType.value]?.status
 
 watch(searchResults, (results) => {
   if (results) emit('resultsCount', results.total)
+}, { immediate: true })
+
+// Site search tracking: emit once per settled search (keyword or type change)
+// with its result count, so hosts can forward it to their analytics (e.g.
+// Matomo trackSiteSearch). Immediate to cover landings with ?q= (initial fetch
+// is SSR). Pagination, sort and filter changes refetch results but re-emit
+// nothing: the keyword+type pair is unchanged.
+const lastEmittedSearch = ref<{ keyword: string, type: string } | null>(null)
+
+watch([searchResultsStatus, currentType], () => {
+  if (searchResultsStatus.value !== 'success') return
+  const keyword = qForParams.value.trim()
+  if (!keyword) return
+  const type = currentType.value
+  if (lastEmittedSearch.value?.keyword === keyword && lastEmittedSearch.value.type === type) return
+  lastEmittedSearch.value = { keyword, type }
+  emit('search', keyword, type, searchResults.value?.total ?? 0)
 }, { immediate: true })
 
 // RSS feed URL for datasets
