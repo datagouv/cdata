@@ -33,9 +33,13 @@ export default defineNuxtPlugin(() => {
   }
 
   // Registered during the plugin setup, before the initial page:finish, so the
-  // landing page view is covered. useScriptEventPage only fires when a page
-  // finished rendering and skips same-path/same-title re-renders (the app
-  // re-replaces the route at hydration without changing the URL).
+  // landing page view is covered. useScriptEventPage fires only in the browser,
+  // only when a page finished rendering, and only when the path or the title
+  // changed since the last event. The app re-replaces the route at hydration
+  // without changing the URL or the title: those never reach the callback.
+  // A path change with an unchanged title (most navigations) and a title
+  // change with an unchanged path (e.g. search results finishing loading) both
+  // reach it; the lastPath guard below filters the latter out.
   let lastPath: string | undefined
   useScriptEventPage((payload) => {
     const route = router.currentRoute.value
@@ -44,8 +48,6 @@ export default defineNuxtPlugin(() => {
       lastPath = payload.path
       return
     }
-    // The title can change on a same-path render (e.g. search results): not a
-    // new page view.
     if (payload.path === lastPath) return
     lastPath = payload.path
     trackPageView()
