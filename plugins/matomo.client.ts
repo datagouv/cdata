@@ -1,123 +1,66 @@
-import { getMatomo } from '@datagouv/components-next'
-import type { RouteLocationNormalizedGeneric } from 'vue-router'
-
-declare global {
-  interface Window {
-    _paq?: Array<unknown[]>
-  }
-}
+import { useScriptEventPage, useScriptMatomoAnalytics } from '#imports'
 
 const noopMatomo = {
   trackPageView: () => {},
   trackEvent: () => {},
 }
 
-export default defineNuxtPlugin({
-  async setup(nuxtApp) {
-    const _paq = (window._paq = window._paq || [])
+export default defineNuxtPlugin(() => {
+  const config = useRuntimeConfig()
+  const router = useRouter()
+  const matomoUrl = config.public.matomo.host
+  const debug = config.public.matomo.debug
+  const dryRun = config.public.matomo.dryRun
+  if (!matomoUrl) return { provide: { matomo: noopMatomo } }
 
-    let u = nuxtApp.$config.public.matomo.host
-    const debug = nuxtApp.$config.public.matomo.debug
-    const dryRun = nuxtApp.$config.public.matomo.dryRun
-    if (!u) return { provide: { matomo: noopMatomo } }
-
-    u = u.endsWith('/') ? u : u + '/'
-    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-    _paq.push(['setTrackerUrl', u + 'matomo.php'])
-    _paq.push(['setSiteId', nuxtApp.$config.public.matomo.siteId])
-    // matomo.js sends the landing page view when it loads, with the genuine
-    // landing referrer (a path-only referrer set later would be discarded by
-    // Matomo as invalid and the visit reclassified as direct entry).
-    _paq.push(['trackPageView'])
-    _paq.push(['enableLinkTracking'])
-
-    try {
-      // loadScript could crash on AdBloc.
-      await loadScript(u + 'matomo.js')
-      const matomo = getMatomo()
-      if (debug) {
-        console.log(matomo)
-      }
-      if (!matomo) {
-        return { provide: { matomo: noopMatomo } }
-      }
-
-      const trackEvent = (category: string, action: string, name?: string) => {
-        if (debug) console.debug(`[matomo] tracking event ${category} ${action} ${name ? name : ''}`)
-        if (dryRun) return
-        matomo.trackEvent(category, action, name)
-      }
-
-      const trackPageView = (to: RouteLocationNormalizedGeneric, from?: RouteLocationNormalizedGeneric) => {
-        if (to.meta.matomoIgnore) {
-          if (debug) console.debug('[matomo] Ignoring ' + to.fullPath)
-          return
-        }
-        if (debug) console.debug('[matomo] tracking page view to ' + to.fullPath)
-        if (dryRun) return
-        if (from?.fullPath) {
-          // Send the full previous page URL: the tracker keeps the landing
-          // referrer forever otherwise, and a path-only value would be
-          // discarded by Matomo as an invalid referrer URL.
-          matomo.setReferrerUrl(window.location.origin + from.fullPath)
-        }
-        matomo.trackPageView((to.meta.title as string | undefined) || to.fullPath)
-        matomo.enableLinkTracking(true)
-      }
-
-      matomo.enableLinkTracking(true)
-
-      // The landing hit is sent by matomo.js from the _paq queue, so skip the
-      // initial navigation here: in-app navigations are tracked exactly once,
-      // without a duplicate landing hit nor a setReferrerUrl clobbering the
-      // genuine landing referrer with an internal URL (which Matomo discards,
-      // reclassifying the visit as direct entry). Three cases are not real
-      // page changes and must not be tracked:
-      // - the initial navigation: its `from` is START_LOCATION, the only
-      //   location with no matched routes (identity comparison with the
-      //   START_LOCATION export is unreliable — Nuxt can use a different
-      //   vue-router instance than the plugin's import);
-      // - failed/duplicated navigations (afterEach also runs for those);
-      // - same-URL replacements: the app re-replaces the route at hydration
-      //   without changing the URL, which would send duplicate page views.
-      useRouter().afterEach((to, from, failure) => {
-        if (failure) return
-        if (from.matched.length === 0) return
-        if (to.fullPath === from.fullPath) return
-        trackPageView(to, from)
-      })
-
-      return {
-        provide: {
-          matomo: {
-            trackPageView: (to: RouteLocationNormalizedGeneric) => trackPageView(to),
-            trackEvent,
-          },
-        },
-      }
-    }
-    catch {
-      return { provide: { matomo: noopMatomo } }
-    }
-  },
-})
-
-// from https://github.com/AmazingDreams/vue-matomo/blob/master/src/utils.js#L5
-function loadScript(trackerScript: string, crossOrigin = undefined) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script')
-    script.async = true
-    script.defer = true
-    script.src = trackerScript
-
-    if (crossOrigin && ['anonymous', 'use-credentials'].includes(crossOrigin)) {
-      script.crossOrigin = crossOrigin
-    }
-
-    const head = document.head || document.getElementsByTagName('head')[0]
-    head.appendChild(script)
-
-    script.onload = resolve
-    script.onerror = reject
+  const { proxy } = useScriptMatomoAnalytics({
+    matomoUrl,
+    siteId: config.public.matomo.siteId,
+    enableLinkTracking: true,
+    // Page views are tracked by our own useScriptEventPage callback below:
+    // the built-in watcher cannot skip routes flagged with matomoIgnore.
+    watch: false,
   })
-}
+
+  const trackPageView = () => {
+    if (debug) console.debug('[matomo] tracking page view to ' + router.currentRoute.value.fullPath)
+    if (dryRun) return
+    // No setCustomUrl/setDocumentTitle: the tracker reads window.location and
+    // document.title when the queued call is processed, and no setReferrerUrl:
+    // a wrong or path-only referrer would be discarded by Matomo and the
+    // visit reclassified as direct entry.
+    proxy._paq.push(['trackPageView'])
+  }
+
+  // Registered during the plugin setup, before the initial page:finish, so the
+  // landing page view is covered. useScriptEventPage only fires when a page
+  // finished rendering and skips same-path/same-title re-renders (the app
+  // re-replaces the route at hydration without changing the URL).
+  let lastPath: string | undefined
+  useScriptEventPage((payload) => {
+    const route = router.currentRoute.value
+    if (route.meta.matomoIgnore) {
+      if (debug) console.debug('[matomo] Ignoring ' + payload.path)
+      lastPath = payload.path
+      return
+    }
+    // The title can change on a same-path render (e.g. search results): not a
+    // new page view.
+    if (payload.path === lastPath) return
+    lastPath = payload.path
+    trackPageView()
+  })
+
+  return {
+    provide: {
+      matomo: {
+        trackPageView: () => trackPageView(),
+        trackEvent: (category: string, action: string, name?: string) => {
+          if (debug) console.debug(`[matomo] tracking event ${category} ${action} ${name ? name : ''}`)
+          if (dryRun) return
+          proxy._paq.push(['trackEvent', category, action, name])
+        },
+      },
+    },
+  }
+})

@@ -10,6 +10,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@nuxt/image',
+    '@nuxt/scripts',
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
     '@nuxt/fonts',
