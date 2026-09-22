@@ -26,6 +26,7 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 definePageMeta({
   key: 'search',
+  matomoSearch: true,
 })
 
 const config = useRuntimeConfig()
