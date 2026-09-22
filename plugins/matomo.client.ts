@@ -1,5 +1,4 @@
 import { getMatomo } from '@datagouv/components-next'
-import { START_LOCATION } from 'vue-router'
 import type { RouteLocationNormalizedGeneric } from 'vue-router'
 
 declare global {
@@ -72,12 +71,14 @@ export default defineNuxtPlugin({
       // initial navigation here: in-app navigations are tracked exactly once,
       // without a duplicate landing hit nor a setReferrerUrl clobbering the
       // genuine landing referrer with an internal URL (which Matomo discards,
-      // reclassifying the visit as direct entry). START_LOCATION identity is
-      // the only reliable test: the router.isReady() promise can resolve
-      // before the initial navigation's afterEach hooks run, and the app:mounted
-      // hook may have already fired when matomo.js loads late.
+      // reclassifying the visit as direct entry). The initial navigation is
+      // detected structurally: its `from` is START_LOCATION, the only location
+      // with no matched routes. Identity comparison with the START_LOCATION
+      // export is unreliable (Nuxt can use a different vue-router instance
+      // than the plugin's import), and the router.isReady() promise can
+      // resolve before the initial navigation's afterEach hooks run.
       useRouter().afterEach((to, from) => {
-        if (from === START_LOCATION) return
+        if (from.matched.length === 0) return
         trackPageView(to, from)
       })
 
