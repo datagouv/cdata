@@ -71,14 +71,19 @@ export default defineNuxtPlugin({
       // initial navigation here: in-app navigations are tracked exactly once,
       // without a duplicate landing hit nor a setReferrerUrl clobbering the
       // genuine landing referrer with an internal URL (which Matomo discards,
-      // reclassifying the visit as direct entry). The initial navigation is
-      // detected structurally: its `from` is START_LOCATION, the only location
-      // with no matched routes. Identity comparison with the START_LOCATION
-      // export is unreliable (Nuxt can use a different vue-router instance
-      // than the plugin's import), and the router.isReady() promise can
-      // resolve before the initial navigation's afterEach hooks run.
-      useRouter().afterEach((to, from) => {
+      // reclassifying the visit as direct entry). Three cases are not real
+      // page changes and must not be tracked:
+      // - the initial navigation: its `from` is START_LOCATION, the only
+      //   location with no matched routes (identity comparison with the
+      //   START_LOCATION export is unreliable — Nuxt can use a different
+      //   vue-router instance than the plugin's import);
+      // - failed/duplicated navigations (afterEach also runs for those);
+      // - same-URL replacements: the app re-replaces the route at hydration
+      //   without changing the URL, which would send duplicate page views.
+      useRouter().afterEach((to, from, failure) => {
+        if (failure) return
         if (from.matched.length === 0) return
+        if (to.fullPath === from.fullPath) return
         trackPageView(to, from)
       })
 
