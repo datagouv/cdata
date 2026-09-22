@@ -354,7 +354,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, provide, shallowReactive, useSlots, watch, useTemplateRef, type Component, type Ref } from 'vue'
+import { computed, provide, ref, shallowReactive, useSlots, watch, useTemplateRef, type Component, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
 import { useRoute } from 'vue-router'
 import { RiBookShelfLine, RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiLightbulbLine, RiLineChartLine, RiRssLine, RiTerminalLine } from '@remixicon/vue'
