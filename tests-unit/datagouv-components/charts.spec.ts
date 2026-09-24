@@ -54,6 +54,29 @@ describe('toChartForm / toChartApi', () => {
     expect(toChartApi(form).series[0].filters).toEqual(filter)
   })
 
+  it('round-trips grouped filters through the form', () => {
+    const filters = {
+      _cls: 'AndFilters',
+      filters: [
+        { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Bretagne' },
+        { _cls: 'OrFilters', filters: [
+          { _cls: 'Filter', column: 'annee', condition: 'exact', value: '2020' },
+          { _cls: 'Filter', column: 'annee', condition: 'exact', value: '2021' },
+        ] },
+      ],
+    } as const
+    const chart = {
+      ...baseChart,
+      series: [{ type: 'bar', column_y: 'montant', aggregate_y: 'sum', filters }],
+    } as unknown as Chart
+
+    const form = toChartForm(chart)
+    expect(form.filter).toEqual(filters)
+
+    const api = toChartApi(form)
+    expect(api.series[0].filters).toEqual(filters)
+  })
+
   it('round-trips a count aggregation', () => {
     const chart = {
       ...baseChart,

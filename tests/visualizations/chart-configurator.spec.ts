@@ -2,6 +2,7 @@ import type { Chart } from '@datagouv/components-next'
 import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
 import { setupChart } from './fixtures'
+import data from './data.json' with { type: 'json' }
 
 // API calls go straight to the backend: the frontend (baseURL) does not proxy them
 const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
@@ -584,4 +585,65 @@ test('x-axis dropdown should show columns from all chart resources after loading
   expect(options.some(opt => opt !== 'Sélectionnez une option' && opt !== '')).toBeTruthy()
 
   await page.request.delete(`${API_BASE_URL}/api/1/visualizations/${chartData.id}/`)
+})
+
+test('filter groups are sent as or params to tabular-api with synced combinator selects', async ({ page }) => {
+  await setupChart(page)
+
+  // Re-register the data route to capture outgoing requests (last registered wins).
+  const dataRequests: Array<string> = []
+  await page.route('**/api/resources/*/data/*', async (route) => {
+    dataRequests.push(route.request().url())
+    await route.fulfill({ json: data })
+  })
+
+  const filters = page.locator('fieldset', { hasText: 'Filtres' })
+  // Group containers only exist once a border is shown, i.e. from the second rule on.
+  const groups = filters.locator('.border-new-gray-light')
+
+  // First rule: nom_region est Bretagne (single rule: no border, no combinator select,
+  // the row's first button is the column listbox).
+  await page.getByRole('button', { name: 'Ajouter une règle' }).click()
+  await filters.getByRole('button').first().click()
+  await page.getByRole('option', { name: 'nom_region', exact: true }).click()
+  await filters.getByPlaceholder('Valeur').fill('Bretagne')
+
+  // Second rule in the same group: année_publication est 2020 (combined with ET by default).
+  // The border appears and the new row gets the combinator select (the first row keeps its
+  // "Quand" label). Buttons: col1, cond1, del1, select2, col2… so col2 is nth(4).
+  await page.getByRole('button', { name: 'Ajouter une règle' }).click()
+  const firstGroup = groups.nth(0)
+  await firstGroup.getByRole('button').nth(4).click()
+  await page.getByRole('option', { name: 'année_publication', exact: true }).click()
+  await firstGroup.getByPlaceholder('Valeur').nth(1).fill('2020')
+
+  // The "Ajouter un groupe" button appears once a second rule exists.
+  // The new group holds a single rule: no border-specific select on its "Quand" row,
+  // its first button is the column listbox.
+  await page.getByRole('button', { name: 'Ajouter un groupe' }).click()
+  const secondGroup = groups.nth(1)
+  await secondGroup.getByRole('button').first().click()
+  await page.getByRole('option', { name: 'année_publication', exact: true }).click()
+  await secondGroup.getByPlaceholder('Valeur').fill('2021')
+
+  // The two groups are combined with "ou" (or root): a label sits between them.
+  await expect(filters.getByText('ou', { exact: true })).toBeVisible()
+
+  // Default is ET inside groups, OU between groups: OrFilters[AndFilters, Filter].
+  await expect.poll(() => decodeURIComponent(dataRequests[dataRequests.length - 1] ?? '')).toContain(
+    'or=(and(nom_region__exact.Bretagne,année_publication__exact.2020),année_publication__exact.2021)',
+  )
+
+  // Flipping one group's select to "Ou" flips them all (ET between groups, OU inside).
+  // A single-rule group has no select (its row starts with "Quand"), so only the
+  // first group's select shows "Ou".
+  await firstGroup.getByRole('button', { name: 'Et', exact: true }).click()
+  await page.getByRole('option', { name: 'Ou', exact: true }).click()
+  await expect(firstGroup.getByRole('button', { name: 'Ou', exact: true })).toBeVisible()
+  await expect(secondGroup.getByText('Quand', { exact: true })).toBeVisible()
+  // The between-groups label follows the root flip: "et" (and root).
+  await expect(filters.getByText('et', { exact: true })).toBeVisible()
+  await expect.poll(() => decodeURIComponent(dataRequests[dataRequests.length - 1] ?? '')).toContain(
+    'or=(nom_region__exact.Bretagne,année_publication__exact.2020)&année_publication__exact=2021',
+  )
 })
