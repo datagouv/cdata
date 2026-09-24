@@ -398,7 +398,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
 
   // Take the final screenshot for visual regression testing
   await expect(page).toHaveScreenshot('edito-page-final.png', {
-    mask: [page.getByTestId('user-avatar'), page.getByTestId('commit-version')],
+    mask: [page.getByTestId('user-avatar'), page.getByTestId('commit-version'), page.getByTestId('udata-version')],
     fullPage: true,
     maxDiffPixelRatio: 0.01, // Allow 1% pixel difference for minor rendering variations
   })
