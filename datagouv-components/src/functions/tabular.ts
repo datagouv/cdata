@@ -93,6 +93,39 @@ export function buildDateFilterParams(column: string, filter: DateFilter): Recor
   return params
 }
 
+/**
+ * The filter "filter by this value" sets on a column for the cell that was
+ * clicked, merged into the filters already set on that column.
+ *
+ * An empty cell holds no value to match on: whatever the column type, filtering
+ * on the missing values is what "this value" means there — and it is the filter
+ * the column panel offers for them.
+ */
+export function buildCellValueFilter(columnType: ColumnType, value: unknown, existing: ColumnFilters): ColumnFilters {
+  if (value == null || value === '') return { ...existing, null: 'only' }
+  switch (columnType) {
+    // A date goes through the same `date` filter the column panel writes, so the
+    // calendar opens on the day that was clicked instead of on an empty month.
+    case 'date': {
+      const day = toIsoDay(value)
+      return day ? { ...existing, date: { operator: 'is', start: day } } : existing
+    }
+    case 'number': {
+      const num = Number(value)
+      return Number.isFinite(num) ? { ...existing, min: num, max: num } : existing
+    }
+    case 'boolean':
+      return { ...existing, exact: String(value) }
+    case 'categorical':
+    case 'text':
+    case 'year': {
+      const val = String(value)
+      const selected = existing.in ?? []
+      return selected.includes(val) ? existing : { ...existing, in: [...selected, val] }
+    }
+  }
+}
+
 export type TypeDisplay = {
   icon: Component
   label: string

@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { ColumnFilters, ColumnType, DateFilter } from '~/datagouv-components/src/components/TabularExplorer/types'
-import { buildDateFilterParams, hasFilterForColumn, resolveColumnType, buildGlobalSearchConditions, toIsoDay, useFormatTabular } from '~/datagouv-components/src/functions/tabular'
+import { buildCellValueFilter, buildDateFilterParams, hasFilterForColumn, resolveColumnType, buildGlobalSearchConditions, toIsoDay, useFormatTabular } from '~/datagouv-components/src/functions/tabular'
 
 const has = (filter?: ColumnFilters) => hasFilterForColumn(filter ? { price: filter } : {}, 'price')
 
@@ -110,6 +110,59 @@ describe('buildDateFilterParams', () => {
     expect(params({ operator: 'between', start: '2024-04-07', end: 'nope' })).toEqual({
       published__greater: '2024-04-07',
     })
+  })
+})
+
+describe('buildCellValueFilter', () => {
+  const ALL_TYPES: ColumnType[] = ['number', 'categorical', 'text', 'date', 'boolean', 'year']
+
+  it('filters on the missing values whatever the type of an empty cell', () => {
+    // An empty cell used to be turned into an empty `__in` / `__exact` param,
+    // which the Tabular API rejects with a 400 the browser reports as a network
+    // error — and into `0` on a number column, silently filtering on a value
+    // the cell does not hold.
+    for (const type of ALL_TYPES) {
+      expect(buildCellValueFilter(type, null, {})).toEqual({ null: 'only' })
+      expect(buildCellValueFilter(type, '', {})).toEqual({ null: 'only' })
+    }
+  })
+
+  it('keeps the filters already set on the column', () => {
+    expect(buildCellValueFilter('text', null, { contains: 'needle' })).toEqual({ contains: 'needle', null: 'only' })
+    expect(buildCellValueFilter('text', 'Ain', { in: ['Aisne'] })).toEqual({ in: ['Aisne', 'Ain'] })
+  })
+
+  it('adds a value to the selection of the value-based types', () => {
+    for (const type of ['categorical', 'text', 'year'] as const) {
+      expect(buildCellValueFilter(type, 'Ain', {})).toEqual({ in: ['Ain'] })
+    }
+  })
+
+  it('does not select an already selected value twice', () => {
+    expect(buildCellValueFilter('text', 'Ain', { in: ['Ain'] })).toEqual({ in: ['Ain'] })
+  })
+
+  it('pins a number column to the exact value, zero included', () => {
+    expect(buildCellValueFilter('number', 42, {})).toEqual({ min: 42, max: 42 })
+    expect(buildCellValueFilter('number', 0, {})).toEqual({ min: 0, max: 0 })
+  })
+
+  it('leaves the filters untouched when a number cell holds no number', () => {
+    expect(buildCellValueFilter('number', 'N/A', { contains: 'needle' })).toEqual({ contains: 'needle' })
+  })
+
+  it('selects the day a date cell falls on', () => {
+    expect(buildCellValueFilter('date', '2026-09-07T09:22:54.968+02:00', {}))
+      .toEqual({ date: { operator: 'is', start: '2026-09-07' } })
+  })
+
+  it('leaves the filters untouched when a date cell holds no ISO date', () => {
+    expect(buildCellValueFilter('date', '07/09/2026', { contains: 'needle' })).toEqual({ contains: 'needle' })
+  })
+
+  it('matches a boolean cell exactly', () => {
+    expect(buildCellValueFilter('boolean', true, {})).toEqual({ exact: 'true' })
+    expect(buildCellValueFilter('boolean', false, {})).toEqual({ exact: 'false' })
   })
 })
 
