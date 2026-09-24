@@ -1,5 +1,3 @@
-import { useScriptEventPage, useScriptMatomoAnalytics } from '#imports'
-
 const noopMatomo = {
   trackPageView: () => {},
   trackEvent: () => {},
