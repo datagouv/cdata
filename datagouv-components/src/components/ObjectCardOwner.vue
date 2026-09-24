@@ -4,6 +4,7 @@
     class="-mr-0.5 flex-initial truncate"
   >
     <AppLink
+      v-if="organizationUrl !== null"
       class="link text-sm overflow-hidden flex items-center relative z-[2] truncate"
       :to="organizationUrl || organization.page"
     >
@@ -12,6 +13,16 @@
         size="sm"
       />
     </AppLink>
+    <span
+      v-else
+      class="text-sm overflow-hidden flex items-center truncate"
+    >
+      <OrganizationNameWithCertificate
+        :organization
+        size="sm"
+        color-class="text-gray-title"
+      />
+    </span>
   </div>
   <div
     v-else-if="ownerName"
@@ -33,7 +44,8 @@ import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.v
 const props = defineProps<{
   organization?: OrganizationReference | null
   owner?: UserReference | null
-  organizationUrl?: RouteLocationRaw
+  // undefined falls back to organization.page; pass null to render plain, non-linked text
+  organizationUrl?: RouteLocationRaw | null
 }>()
 
 const ownerName = computed(() => {

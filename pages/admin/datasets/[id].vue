@@ -149,9 +149,10 @@ import { geopfEligibilityRefreshKey } from '~/components/Datasets/geopfEligibili
 import type { PaginatedArray } from '~/types/types'
 import { geopfDatasetStatusKey, geopfDatasetStatusUrl, type GeopfDatasetStatus } from '~/utils/geopf'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const { t } = useTranslation()

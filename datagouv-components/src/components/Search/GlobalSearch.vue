@@ -6,7 +6,6 @@
   >
     <div
       v-if="!hideSearchInput"
-      ref="search"
       class="flex flex-wrap items-center justify-between"
       data-cy="search"
     >
@@ -357,6 +356,7 @@
 <script setup lang="ts">
 import { computed, provide, shallowReactive, useSlots, watch, useTemplateRef, type Component, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
+import { useRoute } from 'vue-router'
 import { RiBookShelfLine, RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiLightbulbLine, RiLineChartLine, RiRssLine, RiTerminalLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
 import { useTranslation } from '../../composables/useTranslation'
@@ -365,6 +365,7 @@ import { configKey, forEachActiveCustomFilter, isCustomFilterActive, searchFilte
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
+import { scrollToBlockTop } from '../../functions/scroll'
 import type { AsyncDataRequestStatus } from '../../functions/api.types'
 import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
@@ -423,6 +424,7 @@ if (!currentType.value) currentType.value = configKey(props.config[0] ?? { class
 
 const { t } = useTranslation()
 const componentsConfig = useComponentsConfig()
+const route = useRoute()
 
 // Custom filter registry for useSearchFilter composable
 const customFilterRegistry = shallowReactive(new Map<string, CustomFilterEntry>())
@@ -797,14 +799,15 @@ function getFacets(key: string): FacetItem[] | undefined {
 }
 
 // Scroll handling
-const searchRef = useTemplateRef('search')
+const resultsRef = useTemplateRef('results')
 
-function scrollToTop() {
-  searchRef.value?.scrollIntoView({ behavior: 'smooth' })
-}
+// Every criteria lives in the URL, custom filters included, so watching the
+// query covers them all: whenever the result list is replaced, bring its top
+// back into view rather than leaving the reader in the middle of a list they
+// have not seen yet.
+watch(() => route.query, () => scrollToBlockTop(resultsRef.value))
 
 function changePage(newPage: number) {
   page.value = newPage
-  scrollToTop()
 }
 </script>

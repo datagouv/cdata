@@ -183,6 +183,14 @@ export function isGeopfSynced(resource: Resource | CommunityResource): boolean {
   return resource.geopf?.push_status != null || typeof resource.geopf?.offering_id === 'string'
 }
 
+export function resolveResourceExternalUrl<R extends Resource | CommunityResource>(
+  dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>,
+  resource: R,
+  override?: (resource: R) => string,
+): string {
+  return override ? override(resource) : getResourceExternalUrl(dataset, resource)
+}
+
 export function getResourceFilesize(resource: Resource): null | number {
   if (resource.filesize) return resource.filesize
   if ('analysis:content-length' in resource.extras) return resource.extras['analysis:content-length'] as number

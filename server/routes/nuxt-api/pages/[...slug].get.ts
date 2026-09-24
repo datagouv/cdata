@@ -1,5 +1,6 @@
 import matter from 'gray-matter'
 import { FetchError, ofetch } from 'ofetch'
+import { isSafePageSlug } from '~/server/utils/pages-slug'
 
 type Page = {
   ghUrl: string
@@ -53,6 +54,13 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const repo = config.pagesGhRepoName
   if (!slug || !repo)
+    throw createError({ statusCode: 404, statusMessage: 'Page Not Found' })
+
+  // Reject anything that could escape `pages/` before it reaches the upstream URL
+  // or the cache. Done here, ahead of `fetchPage`, so a hostile slug never creates
+  // a cache entry. Same 404 as a missing page: a rejected traversal must not look
+  // different from a slug that simply does not exist.
+  if (!isSafePageSlug(slug))
     throw createError({ statusCode: 404, statusMessage: 'Page Not Found' })
 
   const page = await fetchPage(repo, config.pagesGhRepoBranch, slug)

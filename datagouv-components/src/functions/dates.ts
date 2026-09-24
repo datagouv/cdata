@@ -2,6 +2,26 @@ import { useTranslation } from '../composables/useTranslation'
 
 const SECONDS_IN_A_DAY = 3600 * 24
 
+/**
+ * `2026`, `2026-04` and `2026-04-24` carry no time of day. `new Date()` reads them as
+ * midnight UTC, an instant they never claimed, and then converts it: a reader west of
+ * UTC gets the day before — and with it the month, and sometimes the year.
+ */
+export const PLAIN_DATE = /^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?$/
+
+/**
+ * A date value read as the day it names. A plain date is built in local time, where no
+ * conversion can move it; anything else is an instant and keeps being read as one.
+ */
+export function parseDateValue(value: Date | string | null | undefined): Date | null {
+  if (!value) return null
+  const plain = typeof value === 'string' ? value.match(PLAIN_DATE) : null
+  const date = plain
+    ? new Date(Number(plain[1]), Number(plain[2] ?? 1) - 1, Number(plain[3] ?? 1))
+    : new Date(value)
+  return isNaN(date.getTime()) ? null : date
+}
+
 export function useFormatDate() {
   const { t, locale } = useTranslation()
 

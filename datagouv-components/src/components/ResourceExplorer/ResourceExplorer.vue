@@ -29,8 +29,11 @@
         />
       </div>
       <div
+        id="resource-explorer-viewer"
         class="flex-1 min-w-0"
         :class="fullscreen ? 'flex flex-col' : ''"
+        role="region"
+        :aria-label="t('Détail de la ressource')"
       >
         <!-- Suspense shows the skeleton fallback while the (async) viewer resolves
              its data on each resource switch. `timeout` keeps the previous resource
@@ -46,6 +49,7 @@
             :resources="flatResources"
             :resource-to="resourceTo"
             :explore-to="exploreTo"
+            :resource-external-url="resourceExternalUrl"
             replace
             :fullscreen
           />
@@ -56,6 +60,7 @@
               :resources="flatResources"
               :resource-to="resourceTo"
               :explore-to="exploreTo"
+              :resource-external-url="resourceExternalUrl"
               replace
               :fullscreen
             />
@@ -119,6 +124,8 @@ const props = withDefaults(defineProps<{
   // Inline mode only: link builder for the "Explorer" button in the viewer header
   // that opens the fullscreen explorer on the current resource.
   exploreTo?: (resource: Resource) => string
+  // Overrides the "Copier le lien" target.
+  resourceExternalUrl?: (resource: Resource) => string
 }>(), {
   noResultsImage: '',
   fullscreen: false,

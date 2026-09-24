@@ -44,6 +44,7 @@ import DescribePost from '~/components/Posts/DescribePost.vue'
 import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { Post, PostForm } from '~/types/posts'
+import { goToStep } from '~/utils/scroll'
 
 const { t } = useTranslation()
 const route = useRoute()
@@ -94,7 +95,7 @@ const isCurrentStepValid = computed(() => {
 })
 
 function moveToStep(step: number) {
-  return navigateTo({ path: route.path, query: { ...route.query, step } })
+  return goToStep(route, { ...route.query, step })
 }
 
 async function postNext(form: PostForm) {

@@ -38,6 +38,7 @@ import Avatar from './components/Avatar.vue'
 import AvatarWithName from './components/AvatarWithName.vue'
 import BannerAction from './components/BannerAction.vue'
 import BrandedButton from './components/BrandedButton.vue'
+import ChartCard from './components/ChartCard.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
 import DataserviceQuality from './components/DataserviceQuality.vue'
@@ -344,6 +345,7 @@ export {
   AvatarWithName,
   BannerAction,
   BrandedButton,
+  ChartCard,
   CopyButton,
   DataserviceCard,
   DataserviceQuality,
