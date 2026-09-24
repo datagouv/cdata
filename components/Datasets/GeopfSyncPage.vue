@@ -9,6 +9,17 @@
         @disconnected="onGeopfDisconnected"
       />
 
+      <BrandedButton
+        v-if="geopfDatasetStatus?.push.fiche_url"
+        color="secondary"
+        size="xs"
+        :href="geopfDatasetStatus.push.fiche_url"
+        new-tab
+        class="fr-mb-3w"
+      >
+        {{ t('Voir la fiche sur cartes.gouv.fr') }}
+      </BrandedButton>
+
       <GeopfDatastoreSelector
         v-model="datastoreId"
         :pinned-datastore-id="geopfDatasetStatus?.push.datastore_id ?? null"
@@ -18,22 +29,34 @@
 
       <LoadingBlock
         v-slot="{ data: loadedGeopfDatasetStatus }"
-        :status
+        :status="displayStatus"
         :data="geopfDatasetStatus"
       >
         <h2 class="text-sm font-bold uppercase">
           {{ t('Fichiers à envoyer') }}
         </h2>
-        <AdminTable v-if="loadedGeopfDatasetStatus.pushable.length">
+        <AdminTable
+          v-if="loadedGeopfDatasetStatus.pushable.length"
+          fixed
+        >
           <thead>
             <tr>
-              <AdminTableTh scope="col">
+              <AdminTableTh
+                scope="col"
+                class="w-1/2"
+              >
                 {{ t('Nom du fichier') }}
               </AdminTableTh>
-              <AdminTableTh scope="col">
+              <AdminTableTh
+                scope="col"
+                class="w-1/6"
+              >
                 {{ t('Format') }}
               </AdminTableTh>
-              <AdminTableTh scope="col">
+              <AdminTableTh
+                scope="col"
+                class="w-1/3"
+              >
                 {{ t('Envoi') }}
               </AdminTableTh>
             </tr>
@@ -73,19 +96,9 @@
           {{ t("Aucun fichier éligible n'a été trouvé dans ce jeu de données.") }}
         </p>
 
-        <div class="flex flex-wrap justify-between items-start gap-2 mt-8 mb-3">
-          <h2 class="text-sm font-bold uppercase m-0">
-            {{ t('Services récupérés depuis cartes.gouv.fr') }}
-          </h2>
-          <GeopfPullButton
-            :dataset-id="datasetId"
-            :connected="isGeopfConnected"
-            :pull="loadedGeopfDatasetStatus.pull"
-            :fiche-url="loadedGeopfDatasetStatus.push.fiche_url"
-            :refresh="refreshGeopfDatasetStatus"
-            @reauth-required="reauthRequired = true"
-          />
-        </div>
+        <h2 class="text-sm font-bold uppercase mt-8 mb-3">
+          {{ t('Services récupérés depuis cartes.gouv.fr') }}
+        </h2>
         <AdminTable v-if="loadedGeopfDatasetStatus.offerings.length">
           <thead>
             <tr>
@@ -128,16 +141,15 @@
           {{ t("Aucun service n'a encore été synchronisé depuis cartes.gouv.fr.") }}
         </p>
 
-        <BrandedButton
-          v-if="loadedGeopfDatasetStatus.push.fiche_url"
-          color="secondary"
-          size="xs"
-          :href="loadedGeopfDatasetStatus.push.fiche_url"
-          new-tab
+        <GeopfPullButton
+          :dataset-id="datasetId"
+          :connected="isGeopfConnected"
+          :pull="loadedGeopfDatasetStatus.pull"
+          :fiche-url="loadedGeopfDatasetStatus.push.fiche_url"
+          :refresh="refreshGeopfDatasetStatus"
           class="mt-3"
-        >
-          {{ t('Voir la fiche sur cartes.gouv.fr') }}
-        </BrandedButton>
+          @reauth-required="reauthRequired = true"
+        />
       </LoadingBlock>
     </template>
     <p
@@ -176,6 +188,15 @@ const { data: geopfDatasetStatus, status, refresh: refreshGeopfDatasetStatus } =
   computed(() => geopfDatasetStatusUrl(datasetId.value)),
   { key: geopfDatasetStatusKey(datasetId.value) },
 )
+
+// `status` flips back to 'pending' on every background poll refresh, which would make
+// LoadingBlock flash its overlay loader every few seconds. Only show that overlay for the
+// genuine first load; once we have data, keep displaying it (dimmed) instead of blinking.
+const hasLoadedOnce = ref(geopfDatasetStatus.value !== null)
+watch(geopfDatasetStatus, (value) => {
+  if (value !== null) hasLoadedOnce.value = true
+})
+const displayStatus = computed(() => hasLoadedOnce.value && status.value === 'pending' ? 'success' : status.value)
 
 const { data: geopfConnected } = await useAPI<{ connected: boolean, expires_at: string | null }>('/api/1/geopf/status/')
 const isGeopfConnected = computed(() => geopfConnected.value?.connected ?? null)

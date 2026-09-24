@@ -1,14 +1,13 @@
 <template>
   <component
     :is="disabledReason ? Tooltip : 'div'"
-    v-if="push.status === null"
+    v-if="push.status === null && !pushing"
   >
     <BrandedButton
       color="secondary"
       size="xs"
       :icon="RiUploadCloud2Line"
       :disabled="!!disabledReason"
-      :loading="pushing"
       @click="startPush"
     >
       {{ t('Envoyer vers cartes.gouv.fr') }}
@@ -19,13 +18,20 @@
     </template>
   </component>
 
-  <AdminBadge
-    v-else-if="push.status === 'pending'"
-    size="xs"
-    type="primary"
+  <div
+    v-else-if="pushing || push.status === 'pending'"
+    class="flex flex-col items-start gap-1"
   >
-    {{ t('Envoi en cours…') }}
-  </AdminBadge>
+    <AdminBadge
+      size="xs"
+      type="primary"
+    >
+      {{ t('Envoi en cours…') }}
+    </AdminBadge>
+    <span class="text-xs text-gray-medium">
+      {{ t('Cette opération peut prendre du temps. Vous recevrez un e-mail une fois l\'envoi terminé et pouvez continuer votre navigation.') }}
+    </span>
+  </div>
 
   <div
     v-else-if="push.status === 'done'"
@@ -67,7 +73,6 @@
       size="xs"
       :icon="RiRefreshLine"
       :disabled="!!disabledReason"
-      :loading="pushing"
       @click="startPush"
     >
       {{ t('Réessayer') }}

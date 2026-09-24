@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-end gap-1">
+  <div class="flex flex-col items-start gap-1">
     <component :is="disabledReason ? Tooltip : 'div'">
       <BrandedButton
         color="secondary"
