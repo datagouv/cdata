@@ -28,6 +28,22 @@ const waitForTracker = (page: Page) =>
     })
     .toBeGreaterThan(0)
 
+// Each page view queues setCustomUrl, setDocumentTitle then trackPageView in
+// the same tick. The useScriptEventPage callback runs in a microtask after
+// page:finish (up to ~100 ms later), so counts are polled rather than read
+// right after the URL changes.
+const expectPageViewCount = (page: Page, count: number) =>
+  expect
+    .poll(async () => {
+      const [pageViews, customUrls, titles] = await Promise.all([
+        queuedCalls(page, 'trackPageView'),
+        queuedCalls(page, 'setCustomUrl'),
+        queuedCalls(page, 'setDocumentTitle'),
+      ])
+      return { pageViews: pageViews.length, customUrls: customUrls.length, titles: titles.length }
+    }, { timeout: 15_000 })
+    .toEqual({ pageViews: count, customUrls: count, titles: count })
+
 test.describe('Matomo tracking', () => {
   test.beforeEach(async ({ page }) => {
     await page.route('**/matomo.js', route => route.fulfill({
@@ -41,7 +57,7 @@ test.describe('Matomo tracking', () => {
     await page.waitForLoadState('networkidle')
     await waitForTracker(page)
 
-    expect(await queuedCalls(page, 'trackPageView')).toHaveLength(1)
+    await expectPageViewCount(page, 1)
     expect(await queuedCalls(page, 'setReferrerUrl')).toHaveLength(0)
   })
 
@@ -52,11 +68,11 @@ test.describe('Matomo tracking', () => {
 
     await page.getByRole('link', { name: 'Données' }).first().click()
     await expect(page).toHaveURL('/datasets')
-    expect(await queuedCalls(page, 'trackPageView')).toHaveLength(2)
+    await expectPageViewCount(page, 2)
 
     await page.getByRole('link', { name: 'Réutilisations' }).first().click()
     await expect(page).toHaveURL('/reuses')
-    expect(await queuedCalls(page, 'trackPageView')).toHaveLength(3)
+    await expectPageViewCount(page, 3)
 
     expect(await queuedCalls(page, 'setReferrerUrl')).toHaveLength(0)
   })
@@ -65,7 +81,11 @@ test.describe('Matomo tracking', () => {
     await page.goto('/login')
     await page.waitForLoadState('networkidle')
     await waitForTracker(page)
+    // Give the page:finish callback (which skips this route) time to fire.
+    await page.waitForTimeout(500)
 
     expect(await queuedCalls(page, 'trackPageView')).toHaveLength(0)
+    expect(await queuedCalls(page, 'setCustomUrl')).toHaveLength(0)
+    expect(await queuedCalls(page, 'setDocumentTitle')).toHaveLength(0)
   })
 })

@@ -20,9 +20,11 @@ export default defineNuxtPlugin(() => {
     watch: false,
   })
 
-  const trackPageView = () => {
-    if (debug) console.debug('[matomo] tracking page view to ' + router.currentRoute.value.fullPath)
+  const trackPageView = (page: { path: string, title?: string }) => {
+    if (debug) console.debug('[matomo] tracking page view to ' + page.path)
     if (dryRun) return
+    proxy._paq.push(['setCustomUrl', page.path])
+    proxy._paq.push(['setDocumentTitle', page.title ?? ''])
     proxy._paq.push(['trackPageView'])
   }
 
@@ -39,13 +41,16 @@ export default defineNuxtPlugin(() => {
     }
     if (payload.path === lastPath) return
     lastPath = payload.path
-    trackPageView()
+    trackPageView(payload)
   })
 
   return {
     provide: {
       matomo: {
-        trackPageView: () => trackPageView(),
+        trackPageView: () => trackPageView({
+          path: router.currentRoute.value.fullPath,
+          title: document.title,
+        }),
         trackEvent: (category: string, action: string, name?: string) => {
           if (debug) console.debug(`[matomo] tracking event ${category} ${action} ${name ? name : ''}`)
           if (dryRun) return
