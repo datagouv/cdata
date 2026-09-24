@@ -105,10 +105,11 @@ test.describe('Dataset ownership transfer', () => {
     // fetched by the browser, where it can be intercepted, instead of during SSR.
     await page.goto(`/admin/organizations/${organization.id}/reuses`)
     await page.waitForLoadState('networkidle')
-    await page.locator(`a[href="/admin/organizations/${organization.id}/datasets"]`).click()
+    await page.getByRole('link', { name: 'Jeux de données' })
+      .and(page.locator(`[href="/admin/organizations/${organization.id}/datasets"]`))
+      .click()
 
-    await expect(page.getByText('a demandé un transfert')).toBeVisible()
-    await expect(page.getByRole('link', { name: ownerName })).toBeVisible()
+    await expect(page.getByText(`${ownerName} a demandé un transfert`)).toBeVisible()
     await expect(page.getByRole('link', { name: `Test transfer dataset ${uniqueId}` }).first()).toBeVisible()
   })
 })
