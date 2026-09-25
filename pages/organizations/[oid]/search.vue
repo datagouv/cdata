@@ -4,6 +4,7 @@
       v-model:type="searchType"
       :config="searchConfig"
       hide-search-input
+      @search="trackSearch"
     />
   </div>
 </template>
@@ -12,12 +13,23 @@
 import { GlobalSearch, getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig } from '@datagouv/components-next'
 import type { SearchType, GlobalSearchConfig, Organization } from '@datagouv/components-next'
 
+definePageMeta({
+  matomoSearch: true,
+})
+
 const props = defineProps<{
   organization: Organization
 }>()
 
 const route = useRoute()
 const searchType = ref<SearchType>((route.query.type as SearchType) || 'datasets')
+
+const { $matomo } = useNuxtApp()
+
+function trackSearch(keyword: string, type: string, total: number) {
+  if (!import.meta.client) return
+  $matomo.trackSiteSearch(keyword, type, total)
+}
 
 const searchConfig: GlobalSearchConfig = [
   getDefaultDatasetConfig({

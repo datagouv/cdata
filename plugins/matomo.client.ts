@@ -1,5 +1,6 @@
 import { getMatomo } from '@datagouv/components-next'
 import type { RouteLocationNormalizedGeneric } from 'vue-router'
+import { shouldSkipMatomoPageView } from '~/utils/matomo'
 
 declare global {
   interface Window {
@@ -10,6 +11,7 @@ declare global {
 const noopMatomo = {
   trackPageView: () => {},
   trackEvent: () => {},
+  trackSiteSearch: () => {},
 }
 
 export default defineNuxtPlugin({
@@ -47,6 +49,7 @@ export default defineNuxtPlugin({
           matomo: {
             trackPageView: (to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => trackPageView(to, from, debug, dryRun),
             trackEvent: (category: string, action: string, name?: string) => trackEvent(category, action, name, debug, dryRun),
+            trackSiteSearch: (keyword: string, category: string, resultsCount: number) => trackSiteSearch(keyword, category, resultsCount, debug, dryRun),
           },
         },
       }
@@ -70,13 +73,26 @@ function trackEvent(category: string, action: string, name?: string, debug = fal
   matomo.trackEvent(category, action, name)
 }
 
+function trackSiteSearch(keyword: string, category: string, resultsCount: number, debug = false, dryRun = false) {
+  const matomo = getMatomo()
+  if (!matomo) {
+    if (debug) console.debug('[matomo] No matomo tracker found')
+    return
+  }
+  if (debug) console.debug(`[matomo] tracking site search "${keyword}" (${category}) ${resultsCount} results`)
+  if (dryRun) {
+    return
+  }
+  matomo.trackSiteSearch(keyword, category, resultsCount)
+}
+
 function trackPageView(to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric, debug: boolean, dryRun: boolean) {
   const matomo = getMatomo()
   if (!matomo) {
     if (debug) console.debug('[matomo] No matomo tracker found')
     return
   }
-  if (to.meta.matomoIgnore) {
+  if (shouldSkipMatomoPageView(to, from)) {
     if (debug) console.debug('[matomo] Ignoring ' + to.fullPath)
     return
   }

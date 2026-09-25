@@ -16,6 +16,7 @@
     <GlobalSearch
       v-model:type="currentType"
       :config="searchConfig"
+      @search="trackSearch"
     />
   </div>
 </template>
@@ -26,6 +27,7 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 definePageMeta({
   key: 'search',
+  matomoSearch: true,
 })
 
 const config = useRuntimeConfig()
@@ -57,6 +59,13 @@ const currentType = computed<SearchType>({
 })
 
 useNoindexWhenFiltered()
+
+const { $matomo } = useNuxtApp()
+
+function trackSearch(keyword: string, type: string, total: number) {
+  if (!import.meta.client) return
+  $matomo.trackSiteSearch(keyword, type, total)
+}
 
 const heading = computed(() => {
   switch (currentType.value) {
