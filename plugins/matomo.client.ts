@@ -1,111 +1,62 @@
-import { getMatomo } from '@datagouv/components-next'
-import type { RouteLocationNormalizedGeneric } from 'vue-router'
-
-declare global {
-  interface Window {
-    _paq?: Array<unknown[]>
-  }
-}
-
 const noopMatomo = {
   trackPageView: () => {},
   trackEvent: () => {},
 }
 
-export default defineNuxtPlugin({
-  async setup(nuxtApp) {
-    const _paq = (window._paq = window._paq || [])
-    if (!_paq) return { provide: { matomo: noopMatomo } }
+export default defineNuxtPlugin(() => {
+  const config = useRuntimeConfig()
+  const router = useRouter()
+  const matomoUrl = config.public.matomo.host
+  const debug = config.public.matomo.debug
+  const dryRun = config.public.matomo.dryRun
+  if (!matomoUrl) return { provide: { matomo: noopMatomo } }
 
-    let u = nuxtApp.$config.public.matomo.host
-    const debug = nuxtApp.$config.public.matomo.debug
-    const dryRun = nuxtApp.$config.public.matomo.dryRun
-    if (!u) return { provide: { matomo: noopMatomo } }
-
-    u = u.endsWith('/') ? u : u + '/'
-    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-    _paq.push(['setTrackerUrl', u + 'matomo.php'])
-    _paq.push(['setSiteId', nuxtApp.$config.public.matomo.siteId])
-    _paq.push(['enableLinkTracking'])
-
-    try {
-      // loadScript could crash on AdBloc.
-      await loadScript(u + 'matomo.js')
-      const matomo = getMatomo()
-      if (debug) {
-        console.log(matomo)
-      }
-      if (matomo) {
-        const router = useRouter()
-        router.afterEach((to, from) => {
-          trackPageView(to, from, debug, dryRun)
-          matomo.enableLinkTracking(true)
-        })
-      }
-      return {
-        provide: {
-          matomo: {
-            trackPageView: (to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => trackPageView(to, from, debug, dryRun),
-            trackEvent: (category: string, action: string, name?: string) => trackEvent(category, action, name, debug, dryRun),
-          },
-        },
-      }
-    }
-    catch {
-      return { provide: { matomo: noopMatomo } }
-    }
-  },
-})
-
-function trackEvent(category: string, action: string, name?: string, debug = false, dryRun = false) {
-  const matomo = getMatomo()
-  if (!matomo) {
-    if (debug) console.debug('[matomo] No matomo tracker found')
-    return
-  }
-  if (debug) console.debug(`[matomo] tracking event ${category} ${action} ${name ? name : ''}`)
-  if (dryRun) {
-    return
-  }
-  matomo.trackEvent(category, action, name)
-}
-
-function trackPageView(to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric, debug: boolean, dryRun: boolean) {
-  const matomo = getMatomo()
-  if (!matomo) {
-    if (debug) console.debug('[matomo] No matomo tracker found')
-    return
-  }
-  if (to.meta.matomoIgnore) {
-    if (debug) console.debug('[matomo] Ignoring ' + to.fullPath)
-    return
-  }
-  if (debug) console.debug('[matomo] tracking page view to ' + to.fullPath)
-  if (dryRun) {
-    return
-  }
-  if (from.fullPath) {
-    matomo.setReferrerUrl(from.fullPath)
-  }
-  matomo.trackPageView((to.meta.title as string | undefined) || to.fullPath)
-}
-
-// from https://github.com/AmazingDreams/vue-matomo/blob/master/src/utils.js#L5
-function loadScript(trackerScript: string, crossOrigin = undefined) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script')
-    script.async = true
-    script.defer = true
-    script.src = trackerScript
-
-    if (crossOrigin && ['anonymous', 'use-credentials'].includes(crossOrigin)) {
-      script.crossOrigin = crossOrigin
-    }
-
-    const head = document.head || document.getElementsByTagName('head')[0]
-    head.appendChild(script)
-
-    script.onload = resolve
-    script.onerror = reject
+  const { proxy } = useScriptMatomoAnalytics({
+    matomoUrl,
+    siteId: config.public.matomo.siteId,
+    enableLinkTracking: true,
+    // Page views are tracked by our own useScriptEventPage callback below:
+    // the built-in watcher cannot skip routes flagged with matomoIgnore.
+    watch: false,
   })
-}
+
+  const trackPageView = (page: { path: string, title?: string }) => {
+    if (debug) console.debug('[matomo] tracking page view to ' + page.path)
+    if (dryRun) return
+    proxy._paq.push(['setCustomUrl', page.path])
+    proxy._paq.push(['setDocumentTitle', page.title ?? ''])
+    proxy._paq.push(['trackPageView'])
+  }
+
+  // Registered in the plugin setup, before the initial page:finish, so the
+  // landing page view is covered. The callback fires when the path or the
+  // title changes: the lastPath guard filters out title-only updates.
+  let lastPath: string | undefined
+  useScriptEventPage((payload) => {
+    const route = router.currentRoute.value
+    if (route.meta.matomoIgnore) {
+      if (debug) console.debug('[matomo] Ignoring ' + payload.path)
+      lastPath = payload.path
+      return
+    }
+    if (payload.path === lastPath) return
+    lastPath = payload.path
+    trackPageView(payload)
+  })
+
+  return {
+    provide: {
+      matomo: {
+        trackPageView: () => trackPageView({
+          path: router.currentRoute.value.fullPath,
+          title: document.title,
+        }),
+        trackEvent: (category: string, action: string, name?: string) => {
+          if (debug) console.debug(`[matomo] tracking event ${category} ${action} ${name ? name : ''}`)
+          if (dryRun) return
+          proxy._paq.push(['trackEvent', category, action, name])
+        },
+      },
+    },
+  }
+})
