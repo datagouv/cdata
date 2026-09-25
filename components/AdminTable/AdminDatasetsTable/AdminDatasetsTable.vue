@@ -78,9 +78,9 @@
             <p><FormattedDate :date="activities[dataset.id].created_at" /></p>
             <p class="inline-flex items-center">
               {{ t('par ') }}
-              <AvatarWithName
+              <ActivityActor
                 class="fr-ml-1v"
-                :user="activities[dataset.id].actor"
+                :actor="activities[dataset.id].actor"
               />
             </p>
           </div>
@@ -133,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { QualityScore, DatasetQualityTooltipContent, BrandedButton, AvatarWithName, Tooltip, FormattedDate } from '@datagouv/components-next'
+import { QualityScore, DatasetQualityTooltipContent, BrandedButton, ActivityActor, Tooltip, FormattedDate } from '@datagouv/components-next'
 import type { Activity, Dataset, DatasetV2 } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminContentWithTooltip from '../../AdminContentWithTooltip/AdminContentWithTooltip.vue'
