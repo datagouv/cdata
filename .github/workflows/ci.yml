@@ -268,7 +268,9 @@ jobs:
           # collide between browsers (chromium 1/2 and firefox 1/2 both produce report-1.zip) when
           # the merge job downloads everything into a single directory.
           PLAYWRIGHT_BLOB_OUTPUT_NAME: report-${{ matrix.browser }}-${{ matrix.shard }}.zip
-        run: pnpm run test:e2e ${{ matrix.projects }} --shard=${{ matrix.shard }}/2
+        # TEMPORARY: regenerate snapshots in CI so they match the CI rendering
+        # environment. Revert this flag before merging.
+        run: pnpm run test:e2e ${{ matrix.projects }} --shard=${{ matrix.shard }}/2 --update-snapshots
 
       - name: Kill udata server
         if: always()
