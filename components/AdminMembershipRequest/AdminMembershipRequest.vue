@@ -99,10 +99,17 @@
     type="primary"
     :icon="RiUserAddLine"
     :badge="$t(`Demande de rattachement`)"
-    :user="request.user!"
     :date="new Date(request.created)"
   >
+    <template #avatar>
+      <Avatar
+        :user="request.user!"
+        rounded
+        :size="24"
+      />
+    </template>
     <template #title>
+      <span class="font-bold">{{ request.user!.first_name }} {{ request.user!.last_name }}</span>
       <code
         v-if="request.user?.email"
         class="text-gray-medium bg-gray-lower px-1 text-sm rounded-sm break-all"

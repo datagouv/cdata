@@ -12,17 +12,10 @@
     <div class="flex flex-wrap justify-between space-x-5">
       <div class="space-y-1">
         <div class="flex flex-wrap items-start space-x-1">
-          <Avatar
-            :user
-            rounded
-            :size="24"
-          />
+          <slot name="avatar" />
           <div>
-            <div class="flex flex-wrap items-baseline space-x-1 text-gray-title text-sm/6">
-              <div class="font-bold ">
-                {{ user.first_name }} {{ user.last_name }}
-              </div>
-              <div><slot name="title" /></div>
+            <div class="text-gray-title text-sm/6">
+              <slot name="title" />
             </div>
             <div class="!text-sm/6">
               <slot name="subtitle" />
@@ -52,8 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, FormattedDate } from '@datagouv/components-next'
-import type { User } from '@datagouv/components-next'
+import { FormattedDate } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import AdminBadge from './AdminBadge/AdminBadge.vue'
 
@@ -61,7 +53,6 @@ defineProps<{
   type: 'warning' | 'primary'
   icon: Component
   badge: string
-  user: User
   date: Date
 }>()
 </script>
