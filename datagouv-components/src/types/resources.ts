@@ -12,6 +12,11 @@ export type FileResourceFileType = 'file'
 
 export type ResourceFileType = RemoteResourceFileType | FileResourceFileType
 
+export type GeopfResourceMetadata = {
+  push_status?: 'pending' | 'done' | 'error' | 'timeout' | null
+  offering_id?: string | null
+}
+
 export type Resource = {
   id: string
   title: string
@@ -22,6 +27,7 @@ export type Resource = {
   extras: Record<string, unknown>
   metrics: { views: number }
   harvest: Harvest
+  geopf: GeopfResourceMetadata | null
   filesize: number | null
   filetype: ResourceFileType
   format: string

@@ -28,9 +28,13 @@ function trimEndSlash(url: string): string {
 export function useIsCurrentUrl() {
   const absoluteUrlToRelative = useAbsoluteUrlToRelative()
   const route = useRoute()
+  const router = useRouter()
 
   return (url: string): boolean => {
-    return trimEndSlash(absoluteUrlToRelative(url)) === trimEndSlash(route.fullPath)
+    // Compare paths only: nav/tab links never carry a query string of their own,
+    // so a route with one (e.g. `?flash=connected`) shouldn't fail the match.
+    const urlPath = router.resolve(absoluteUrlToRelative(url)).path
+    return trimEndSlash(urlPath) === trimEndSlash(route.path)
   }
 }
 
