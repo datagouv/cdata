@@ -245,6 +245,11 @@ jobs:
         env:
           NUXT_PUBLIC_API_BASE: http://localhost:7000
           NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "hero_15.png"
+          # Lets the matomo plugin load (tests stub matomo.js at the context
+          # level, the tracking spec asserts what the app sends). CI pre-starts
+          # this server and Playwright reuses it (reuseExistingServer), so the
+          # webServer.env in playwright.config.ts does not apply here.
+          NUXT_PUBLIC_MATOMO_HOST: http://localhost:3000
           NUXT_SITE_URL: http://localhost:3000
           NUXT_PUBLIC_CHARTS_API_BASE: http://localhost:7000
           NUXT_PUBLIC_CADA_RESOURCE_ID: 3a6d6fe3-8548-43ed-ad09-72052771447c
