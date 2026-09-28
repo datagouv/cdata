@@ -1,27 +1,15 @@
 <template>
   <ModalWithButton
-    v-if="!thread.closed"
-    :title="$t('Répondre')"
+    v-model="opened"
+    :title="thread.title"
     size="lg"
   >
-    <template #button="{ attrs, listeners }">
-      <BrandedButton
-        :icon="RiChatNewLine"
-        size="xs"
-        color="tertiary"
-        icon-only
-        keep-margins-even-without-borders
-        :title="$t('Répondre à la discussion')"
-        :aria-label="$t('Répondre à la discussion {title}', { title: thread.title })"
-        v-bind="attrs"
-        v-on="listeners"
-      />
-    </template>
     <template #default="{ close }">
       <DiscussionCard
         v-if="subject"
         :thread
         :subject
+        respond-immediately
         @change="respond(close)"
       />
     </template>
@@ -29,8 +17,6 @@
 </template>
 
 <script setup lang="ts">
-import { RiChatNewLine } from '@remixicon/vue'
-import { BrandedButton } from '@datagouv/components-next'
 import DiscussionCard from '~/components/Discussions/DiscussionCard.vue'
 import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
@@ -42,6 +28,8 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'responded'): void
 }>()
+
+const opened = defineModel<boolean>()
 
 function respond(close: () => void) {
   emit('responded')

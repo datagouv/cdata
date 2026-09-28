@@ -176,10 +176,15 @@ export function isCommunityResource(resource: Resource | CommunityResource): boo
 }
 
 export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource | CommunityResource): string {
-  const config = useComponentsConfig()
-  if (config.getResourceExternalUrl) return config.getResourceExternalUrl(dataset, resource)
-
   return `${dataset.page}${isCommunityResource(resource) ? '/community-resources' : ''}?resource_id=${resource.id}`
+}
+
+export function resolveResourceExternalUrl<R extends Resource | CommunityResource>(
+  dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>,
+  resource: R,
+  override?: (resource: R) => string,
+): string {
+  return override ? override(resource) : getResourceExternalUrl(dataset, resource)
 }
 
 export function getResourceFilesize(resource: Resource): null | number {

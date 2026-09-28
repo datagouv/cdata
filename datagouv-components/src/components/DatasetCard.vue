@@ -150,7 +150,8 @@ type Props = {
   dataset: Dataset | DatasetV2
   datasetUrl?: RouteLocationRaw
   datasetUrlInNewTab?: boolean
-  organizationUrl?: RouteLocationRaw
+  // undefined falls back to the organization's data.gouv.fr page; pass null to render plain, non-linked text
+  organizationUrl?: RouteLocationRaw | null
   showDescriptionShort?: boolean
   titleTag?: TitleTag
 }

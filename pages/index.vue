@@ -347,7 +347,7 @@
                 v-for="platform in [
                   { name: 'ecologie', url: 'https://ecologie.data.gouv.fr' },
                   { name: 'transport', url: 'https://transport.data.gouv.fr' },
-                  { name: 'météo', url: 'https://meteo.data.gouv.fr' },
+                  { name: 'meteo', url: 'https://meteo.data.gouv.fr' },
                   { name: 'culture', url: 'https://culture.data.gouv.fr' },
                   { name: 'logistique', url: 'https://logistique.data.gouv.fr' },
                   { name: 'simplifions', url: 'https://simplifions.data.gouv.fr' },
@@ -386,7 +386,7 @@
                   </template>
                 </TranslationT>
                 <TranslationT
-                  v-if="platform.name === 'météo'"
+                  v-if="platform.name === 'meteo'"
                   tag="p"
                   class="mb-0 text-gray-silver"
                   keypath="Les données publiques relatives à la météorologie et à la climatologie produites par {name}."

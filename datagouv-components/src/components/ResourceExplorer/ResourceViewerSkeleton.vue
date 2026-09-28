@@ -9,6 +9,7 @@
       :resources
       :resource-to
       :explore-to="exploreTo"
+      :resource-external-url="resourceExternalUrl"
       :replace
       :fullscreen
     />
@@ -80,6 +81,7 @@ const props = defineProps<{
   resources?: Resource[]
   resourceTo?: (resource: Resource) => RouteLocationRaw
   exploreTo?: (resource: Resource) => string
+  resourceExternalUrl?: (resource: Resource) => string
   replace?: boolean
   fullscreen?: boolean
 }>()

@@ -140,8 +140,12 @@ const discussionsCount = computed(() => discussions.value?.total ?? 0)
 const title = computed(() => `${topic.value?.name} | ${config.public.title}`)
 const description = computed(() => topic.value ? getDescriptionShort(topic.value) : '')
 
+// Topics are curated collections, most of them built for a third-party portal
+// (ecospheres…). Indexing them here makes our copy compete with — and outrank —
+// the portal's own page, so we keep the whole section out of the search index.
 useSeoMeta({
   title,
   description,
+  robots: 'noindex',
 })
 </script>
