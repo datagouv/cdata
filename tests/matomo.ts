@@ -1,11 +1,10 @@
 import type { BrowserContext } from '@playwright/test'
 
-// The matomo host must be set on the server under test (NUXT_PUBLIC_MATOMO_HOST,
-// e.g. in the CI workflow or when starting a local preview) so every spec loads
-// matomo.js. A failed load logs a console error (404, MIME refusal or
-// DNS failure depending on the host) that assertNoConsoleErrors would fail
-// on, so this fake serves an empty script: the plugin loads it, finds no
-// window.Matomo and falls back to its no-op implementation.
+// The server under test must have NUXT_PUBLIC_MATOMO_HOST set so every spec
+// loads matomo.js. A failed load logs a console error that
+// assertNoConsoleErrors would fail on, so this fake serves an empty script:
+// it loads cleanly and the plugin queues tracker calls into window._paq
+// regardless of the script content.
 //
 // A test that asserts what the app sends to the tracker (matomo-tracking
 // spec) installs its own page route with a recording mock — page routes take

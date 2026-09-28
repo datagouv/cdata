@@ -1,5 +1,4 @@
 const noopMatomo = {
-  trackPageView: () => {},
   trackEvent: () => {},
 }
 
@@ -47,10 +46,6 @@ export default defineNuxtPlugin(() => {
   return {
     provide: {
       matomo: {
-        trackPageView: () => trackPageView({
-          path: router.currentRoute.value.fullPath,
-          title: document.title,
-        }),
         trackEvent: (category: string, action: string, name?: string) => {
           if (debug) console.debug(`[matomo] tracking event ${category} ${action} ${name ? name : ''}`)
           if (dryRun) return
