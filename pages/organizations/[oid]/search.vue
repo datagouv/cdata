@@ -12,6 +12,10 @@
 import { GlobalSearch, getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig } from '@datagouv/components-next'
 import type { SearchType, GlobalSearchConfig, Organization } from '@datagouv/components-next'
 
+definePageMeta({
+  matomoSearch: true,
+})
+
 const props = defineProps<{
   organization: Organization
 }>()

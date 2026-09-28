@@ -1,3 +1,5 @@
+import { resolveMatomo } from '../config.js'
+
 export type MatomoTracker = {
   // https://developer.matomo.org/api-reference/tracking-javascript
   enableLinkTracking(bool: boolean): void
@@ -9,15 +11,10 @@ export type MatomoTracker = {
   // More TODO
 }
 
-// inspired by https://github.com/AmazingDreams/vue-matomo/blob/master/src/index.js
-export function getMatomo() {
-  // @ts-expect-error Matomo might be defined by project
-  return window?.Matomo?.getTracker() as MatomoTracker | undefined
+export function trackEvent(category: string, action: string, name?: string): void {
+  resolveMatomo()?.trackEvent(category, action, name)
 }
 
-export function trackEvent(category: string, action: string, name?: string): void {
-  const matomo = getMatomo()
-  if (matomo) {
-    matomo.trackEvent(category, action, name)
-  }
+export function trackSiteSearch(keyword: string, category: string, resultsCount: number): void {
+  resolveMatomo()?.trackSiteSearch(keyword, category, resultsCount)
 }
