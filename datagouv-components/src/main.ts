@@ -303,7 +303,7 @@ export {
 // Vue Plugin
 const datagouv: Plugin<PluginConfig> = {
   async install(app: App, options) {
-    setMatomoResolver(options.matomo ?? null)
+    setMatomoResolver(options.matomo)
     // Default `$fetch` to an ofetch instance carrying the datagouv API specifics + the consumer's
     // auth hooks, so everything downstream (the default `useFetch`, imperative helpers) can rely on
     // a single configured fetch. A consumer that provides its own `$fetch` keeps full control.

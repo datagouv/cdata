@@ -46,6 +46,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     // Lazy factory: this plugin runs before matomo.client.ts and the tracker
     // only exists on the client, so resolve $matomo at call time (the
     // components call it from watchers/click handlers, long after setup).
-    matomo: import.meta.client ? () => useNuxtApp().$matomo : null,
+    matomo: import.meta.client ? () => useNuxtApp().$matomo : undefined,
   })
 })

@@ -52,7 +52,7 @@ export type PluginConfig = {
    * report site searches and resource interactions through it, so hosts keep
    * control over noop/dryRun/debug semantics. Hosts without analytics omit it.
    */
-  matomo?: (() => MatomoHandle | undefined | null) | null
+  matomo?: () => MatomoHandle | undefined
 }
 
 /** Tracker surface the components actually use. */
@@ -61,14 +61,14 @@ export type MatomoHandle = Pick<MatomoTracker, 'trackEvent' | 'trackSiteSearch'>
 // Populated by the plugin's install() from `PluginConfig.matomo`. Module-level
 // (rather than injected) so imperative helpers in `functions/matomo` can reach
 // it without a component context. Not re-exported from main.ts: internal.
-let matomoResolver: PluginConfig['matomo'] = null
+let matomoResolver: PluginConfig['matomo']
 
 export function setMatomoResolver(fn: PluginConfig['matomo']) {
   matomoResolver = fn
 }
 
 export function resolveMatomo(): MatomoHandle | undefined {
-  return matomoResolver?.() ?? undefined
+  return matomoResolver?.()
 }
 
 export const configKey = Symbol() as InjectionKey<PluginConfig>
